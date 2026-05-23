@@ -1,0 +1,22 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "question-constellation",
+	"compatibility_date": "2026-05-23",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare",
+		"not_found_handling": "404-page",
+		"run_worker_first": true
+	},
+	"d1_databases": [
+		{
+			"binding": "QUESTION_DB",
+			"database_name": "question-constellation",
+			"database_id": "1a344d0a-25ed-4e05-8d2e-b787d75a63cd"
+		}
+	],
+	"workers_dev": true,
+	"preview_urls": true
+}
