@@ -26,11 +26,19 @@ pnpm run build
 
 ## Deployment
 
-The repo includes a GitHub Actions workflow that deploys the Cloudflare Worker on pushes to `origin/main`.
-The workflow expects these repository secrets:
+The app is configured for Cloudflare Workers through `wrangler.jsonc`. This repo intentionally does
+not use GitHub Actions for Cloudflare deployment.
 
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN`
+For Cloudflare-side deploys from `origin/main`, connect the GitHub repo in Cloudflare and use:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run build
+pnpm wrangler deploy
+```
+
+The Worker runtime needs these Cloudflare secrets:
+
 - `GOOGLE_SERVICE_ACCOUNT_JSON`
 - `GOOGLE_API_KEY`
 - `AUTH_COOKIE_SECRET`
