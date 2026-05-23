@@ -7,17 +7,17 @@
 		"dev": "vite dev",
 		"dev:server": "scripts/dev-server.sh start",
 		"clean:adapter": "rm -rf .svelte-kit/cloudflare .svelte-kit/cloudflare-tmp .svelte-kit/output",
-		"build": "pnpm run clean:adapter && wrangler types --check && vite build",
+		"build": "pnpm run gen && vite build",
 		"deploy": "wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"prepare": "svelte-kit sync || echo ''",
-		"check": "pnpm run clean:adapter && wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "pnpm run gen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:unit": "vitest",
 		"test": "pnpm run test:unit -- --run",
-		"gen": "pnpm run clean:adapter && wrangler types"
+		"gen": "pnpm run clean:adapter && wrangler types && prettier --write worker-configuration.d.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",
