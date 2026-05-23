@@ -112,7 +112,12 @@
 									{/each}
 								</div>
 								<span>Used {pattern.usedCount} times</span>
-								<a class="open-link" href={resolve('/thinking-memory#selected')}>
+								<a
+									class="open-link"
+									href={resolve('/practice/[familyId]', {
+										familyId: pattern.discoveredFromFamilyId
+									})}
+								>
 									Open <ChevronRight size={17} />
 								</a>
 							</div>
@@ -156,27 +161,59 @@
 					<span class="badge">Selected pattern</span>
 					<h2>{data.selectedPattern.title}</h2>
 					<p>{data.selectedPattern.summary}</p>
+					<p>
+						<strong>Discovered after:</strong>
+						{data.sourceFamily.title} ({data.sourceFamily.topic})
+					</p>
 					<div class="topic-row">
 						{#each data.selectedPattern.topics as topic (topic)}
 							<span class="topic-pill">{topic}</span>
 						{/each}
 					</div>
-					<a class="btn primary" href={resolve('/')}>
-						Practise linked questions
+					<a
+						class="btn primary"
+						href={resolve('/practice/[familyId]', {
+							familyId: data.sourceFamily.id
+						})}
+					>
+						Reopen practice
 						<ArrowRight size={20} />
 					</a>
-					<a class="btn blue" href={resolve('/')}>
+					<a
+						class="btn blue"
+						href={resolve('/practice/[familyId]', {
+							familyId: data.sourceFamily.id
+						})}
+					>
 						<Eye size={20} />
-						See example
+						See transfer map
 					</a>
 				</div>
 				<div class="split-rail">
 					<h3>Example linked question families</h3>
 					<div class="linked-list">
-						{#each data.selectedPattern.questionFamilies as family (family)}
-							<div class="mini-row">
-								<Leaf size={18} color="#008762" />
-								<span>{family}</span>
+						<a
+							class="mini-row tone-green"
+							href={resolve('/practice/[familyId]', {
+								familyId: data.sourceFamily.id
+							})}
+						>
+							<Leaf size={18} />
+							<span>
+								<strong>{data.sourceFamily.title}</strong><br />
+								<small>Original discovery question</small>
+							</span>
+							<ChevronRight size={17} />
+						</a>
+						{#each data.sourceFamily.transferQuestions as family (family.id)}
+							{@const subject = data.subjects.find((item) => item.id === family.subjectId)}
+							{@const TransferIcon = subject ? subjectIcons[subject.icon] : BookOpen}
+							<div class={['mini-row', subject && `tone-${subject.tone}`]}>
+								<TransferIcon size={18} />
+								<span>
+									<strong>{family.title}</strong><br />
+									<small>{family.topic}</small>
+								</span>
 								<ChevronRight size={17} />
 							</div>
 						{/each}
@@ -279,7 +316,12 @@
 								<strong>{pattern.title}</strong><br />
 								<small>{subject?.name}</small>
 							</span>
-							<a class="open-link" href={resolve('/thinking-memory#selected')}>Continue</a>
+							<a
+								class="open-link"
+								href={resolve('/practice/[familyId]', {
+									familyId: pattern.discoveredFromFamilyId
+								})}>Continue</a
+							>
 						</div>
 					{/each}
 				</div>

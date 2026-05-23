@@ -44,6 +44,7 @@
 				.toUpperCase() ??
 			'LS'
 	);
+	const activePracticeSubjectId = $derived(data.familySubjectMap[page.params.familyId ?? '']);
 </script>
 
 <svelte:head>
@@ -67,9 +68,13 @@
 						class={[
 							'nav-item',
 							`tone-${subject.tone}`,
-							page.url.pathname === '/' && subject.id === 'biology' && 'active'
+							((page.url.pathname === '/' && subject.id === 'biology') ||
+								activePracticeSubjectId === subject.id) &&
+								'active'
 						]}
-						href={resolve('/')}
+						href={resolve('/practice/[familyId]', {
+							familyId: data.subjectFamilyLinks[subject.id]
+						})}
 					>
 						<Icon size={20} strokeWidth={2.4} />
 						<span>{subject.name}</span>

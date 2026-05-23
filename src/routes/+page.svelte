@@ -59,7 +59,12 @@
 				it again and again across any topic.
 			</p>
 			<div class="hero-actions">
-				<a class="btn primary" href={resolve('/#start')}>
+				<a
+					class="btn primary"
+					href={resolve('/practice/[familyId]', {
+						familyId: data.suggestedFamily.id
+					})}
+				>
 					<Leaf size={23} />
 					Start with Biology
 					<ArrowRight size={21} />
@@ -77,7 +82,9 @@
 			{@const Icon = subjectIcons[subject.icon]}
 			<a
 				class={['subject-card', `tone-${subject.tone}`, subject.id === 'biology' && 'active']}
-				href={resolve('/')}
+				href={resolve('/practice/[familyId]', {
+					familyId: data.subjectFamilyLinks[subject.id]
+				})}
 			>
 				<span class="icon-orb"><Icon size={32} strokeWidth={2.4} /></span>
 				<h2>{subject.name}</h2>
@@ -93,17 +100,22 @@
 				<HeartPulse size={80} strokeWidth={1.8} />
 			</div>
 			<div class="question-copy">
-				<span class="badge">Biology - {data.suggestedQuestion.topic}</span>
-				<h2>{data.suggestedQuestion.prompt}</h2>
-				<p><strong>{data.suggestedQuestion.meta}</strong></p>
-				<a class="btn primary" href={resolve('/thinking-memory')}>
+				<span class="badge">Biology - {data.suggestedFamily.topic}</span>
+				<h2>{data.suggestedFamily.prompt}</h2>
+				<p><strong>{data.suggestedFamily.meta}</strong></p>
+				<a
+					class="btn primary"
+					href={resolve('/practice/[familyId]', {
+						familyId: data.suggestedFamily.id
+					})}
+				>
 					Try this question family
 					<ArrowRight size={20} />
 				</a>
 			</div>
 			<div class="split-rail">
 				<ul class="check-list">
-					{#each data.suggestedQuestion.checks as check (check)}
+					{#each data.suggestedFamily.checks as check (check)}
 						<li><CheckCircle2 size={18} color="#008762" /> {check}</li>
 					{/each}
 				</ul>
@@ -146,7 +158,7 @@
 			<div class="panel-header">
 				<div class="title-row">
 					<Brain size={24} color="#005cff" />
-					<h2>What you'll build: Thinking Memory</h2>
+					<h2>After practice: Thinking Memory</h2>
 				</div>
 			</div>
 			<div class="pattern-stack">
@@ -170,7 +182,7 @@
 					</div>
 				{/each}
 			</div>
-			<p>Use them across topics to answer more questions with less effort.</p>
+			<p>Patterns are revealed after a question family, then saved for reuse across topics.</p>
 		</div>
 	</section>
 

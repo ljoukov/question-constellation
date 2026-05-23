@@ -1,9 +1,11 @@
-import { getSubjects } from '$lib/server/questionData';
+import { getFamilySubjectMap, getSubjectFamilyLinks, getSubjects } from '$lib/server/questionData';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	return {
 		user: locals.user,
-		subjects: getSubjects()
+		subjects: getSubjects(),
+		subjectFamilyLinks: getSubjectFamilyLinks(),
+		familySubjectMap: getFamilySubjectMap()
 	};
 };
