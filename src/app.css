@@ -542,6 +542,10 @@ a {
 	color: #334155;
 }
 
+.practice-transfer .primary-button + .secondary-button {
+	margin-top: 0.8rem;
+}
+
 .question-row h3 {
 	margin: 0;
 	font-size: 0.94rem;
