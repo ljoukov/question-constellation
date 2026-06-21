@@ -2,6 +2,11 @@
 
 SvelteKit app for exploring GCSE question families and reusable Thinking Memory patterns.
 
+## Product Docs
+
+- [Product methodology](docs/product-methodology.md)
+- [Product flows and mobile mocks](docs/product-flows.md)
+
 ## Local Development
 
 ```sh

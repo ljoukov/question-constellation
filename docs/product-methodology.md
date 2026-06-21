@@ -2,6 +2,8 @@
 
 Question Constellation is built around connected question families unlocked by reusable reasoning patterns. The screenshots show the visual direction, but the core educational logic is:
 
+For the detailed product flows, acquisition paths, screen specifications, and current mock boards, see [product-flows.md](product-flows.md).
+
 1. The first-time home screen should be subject -> concrete question family/topic -> practice, not thinking move -> questions. Beginners should enter through familiar GCSE content because abstract thinking moves create too much cognitive load before the learner has experienced them.
 
 2. The thinking pattern should feel earned, not selected from a menu. The intended flow is: student tries a real GCSE question, the app repairs or builds the missing reasoning chain, then reveals and names the reusable pattern.
