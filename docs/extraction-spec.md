@@ -4,6 +4,52 @@ This document defines what an extraction agent should recover from exam-paper an
 
 The existing product docs explain the human-facing product direction. This document is stricter: it is the contract for paper import, mark-scheme alignment, answer-chain derivation, review flags, and storage.
 
+## LLM Extraction Prompt
+
+Use this section as the top-level prompt when a Codex or other LLM agent extracts questions from papers and mark schemes.
+
+Use this document as the contract for output shape, provenance, confidence, review flags, and D1/SQLite storage. Do not treat it as a request for keyword classification.
+
+The core task is semantic answer-chain extraction. For each atomic question, read the question and the mark scheme together, then infer the ordered reasoning links that actually earn marks. A topic label, specification reference, command word, mark value, or repeated vocabulary is metadata only. These fields can help search, filtering, and audit, but they are not the grouping method.
+
+For each question, decide:
+
+- What does a full-mark answer have to connect?
+- Which ordered reasoning links are required by the mark scheme?
+- Which mark-scheme items support each link?
+- What would a plausible weak answer say, and which link would it miss?
+- Is this actually an answer-chain question, or is it better classified as recall, calculation method, level descriptor, or no-chain candidate?
+
+For each proposed chain or constellation, include:
+
+- The chain title and canonical chain text.
+- Ordered chain steps with step roles.
+- Supporting mark-scheme evidence for each step.
+- Member questions and their transfer distance.
+- A concise fit rationale explaining why these questions share the same chain.
+- Near-miss notes when similar-looking questions should not be grouped because the reasoning differs.
+- Confidence and human-review flags.
+
+Do not use these shortcuts as final grouping evidence:
+
+- Shared keywords.
+- Same topic or specification path.
+- Same command word.
+- Same mark value.
+- Same paper or exam board.
+- Embedding or text similarity without reasoning verification.
+
+Two questions belong in the same constellation only if the same ordered chain of reasoning would score marks in both, and the same missing link would explain a weak answer in both. If that cannot be shown from the prompt and mark scheme, flag the case instead of forcing a group.
+
+When priorities conflict, follow this order:
+
+1. Preserve source evidence and provenance.
+2. Infer semantic mark-scoring reasoning chains.
+3. Use topic and keyword metadata only for search, filtering, and audit.
+4. Flag uncertain cases instead of creating weak chains or weak constellations.
+
+Output concise evidence rationales. Do not emit private reasoning traces; emit auditable claims tied to source text and mark-scheme items.
+
 ## Product Definitions
 
 ### Question Constellation
@@ -685,7 +731,7 @@ Before returning an extraction result, the agent should verify:
 - Every model answer has a derivation and confidence.
 - Every answer-chain step has a role.
 - Every answer chain has at least two steps unless it is explicitly a calculation or single-step recall candidate.
-- Every constellation candidate has a fit rationale.
+- Every constellation candidate has a semantic fit rationale, not just shared topic, keyword, or text similarity.
 - Every uncertain diagram/table/source extract has an asset review flag.
 - No generated answer-chain or model-answer content is published solely because it exists.
 
