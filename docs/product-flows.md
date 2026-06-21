@@ -422,7 +422,12 @@ Do not include:
 
 ## Mock Boards
 
-### Discovery To Constellation
+All flow mocks live in `docs/assets/product-flows/`. The mobile boards document the
+portrait-first journey. The desktop mocks document the later wide-screen direction:
+keep one focused learning surface primary, use the secondary column for guidance or
+state, and avoid revealing the full chain before the student has acted.
+
+### Mobile: Discovery To Constellation
 
 ![Question Constellation Biology Answer Chain](assets/product-flows/biology-answer-chain.png)
 
@@ -432,7 +437,7 @@ This board shows the first public journey:
 2. Answer chain page
 3. Constellation page
 
-### Practice To Thinking Memory
+### Mobile: Practice To Thinking Memory
 
 ![Question Constellation Practice Memory](assets/product-flows/practice-memory.png)
 
@@ -441,6 +446,42 @@ This board shows the continuation:
 1. Attempt question 2
 2. Checklist result
 3. Saved chain in Thinking Memory
+
+### Desktop: Public Question Learning
+
+![Desktop public question learning mock](assets/product-flows/desktop-public-question-learning.png)
+
+This mock shows the desktop entry point before reveal. The central content is the
+specific exam question and learning goal; the side column teaches what to look for
+without exposing the answer chain too early.
+
+### Desktop: Answer Chain Reveal
+
+![Desktop answer chain reveal mock](assets/product-flows/desktop-answer-chain-reveal.png)
+
+This mock shows the post-reveal state: chain first, then model answer, checklist,
+weak answer, and the constellation action.
+
+### Desktop: Practice Attempt
+
+![Desktop practice attempt mock](assets/product-flows/desktop-practice-attempt.png)
+
+This mock keeps the student attempt central. The chain support is present but
+collapsed until the student chooses help or checks their answer.
+
+### Desktop: Checklist And Rewrite
+
+![Desktop checklist rewrite mock](assets/product-flows/desktop-checklist-rewrite.png)
+
+This mock shows feedback as chain-link evidence, not chat. Missing links lead into a
+rewrite task where the answer chain is visible as a repair scaffold.
+
+### Desktop: Thinking Memory
+
+![Desktop Thinking Memory mock](assets/product-flows/desktop-thinking-memory.png)
+
+This mock shows Thinking Memory as a retrieval surface for saved answer chains after
+practice, with review and relearn actions tied back to concrete questions.
 
 ## Content Example
 
