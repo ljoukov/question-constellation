@@ -2,7 +2,7 @@
 
 Question Constellation is a lightweight public GCSE question bank organized by answer chains: the hidden reasoning steps that turn a weak answer into a mark-scoring answer. It should feel like an exam-question atlas, not a generic chatbot, a full GCSE workspace, or a dashboard-first revision app.
 
-For the detailed product flows, acquisition paths, screen specifications, and current mock boards, see [product-flows.md](product-flows.md).
+For the detailed product flows, acquisition paths, screen specifications, and current mock boards, see [product-flows.md](product-flows.md). For extraction-agent definitions, mark-scheme alignment rules, and the D1 storage schema, see [extraction-spec.md](extraction-spec.md).
 
 ## Core Doctrine
 

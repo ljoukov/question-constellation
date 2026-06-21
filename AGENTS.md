@@ -2,6 +2,7 @@
 
 - Read `docs/product-methodology.md` before changing product direction, navigation, data models, onboarding, question-bank surfaces, or Thinking Memory behavior.
 - Read `docs/product-flows.md` before changing acquisition paths, public question pages, answer-chain pages, constellation pages, practice/check flows, or mobile UX.
+- Read `docs/extraction-spec.md` before building extraction agents, importing papers or mark schemes, changing answer-chain derivation, or changing question-bank storage/schema.
 - Question Constellation should currently feel like a lightweight public GCSE question bank / exam-question atlas organized by answer chains, not a generic chatbot, full GCSE workspace, or dashboard-first revision app.
 - First-use flows should start with a concrete public exam question -> answer chain -> constellation -> practice. Do not expose abstract thinking patterns as the main starting taxonomy.
 - Runtime model use should be optional and lightweight; curated questions, model answers, mark checklists, common weak answers, and static answer-chain structure should carry most product value.

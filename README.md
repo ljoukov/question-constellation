@@ -6,6 +6,7 @@ SvelteKit app for exploring GCSE question families and reusable Thinking Memory 
 
 - [Product methodology](docs/product-methodology.md)
 - [Product flows and mobile mocks](docs/product-flows.md)
+- [Extraction specification and D1 schema](docs/extraction-spec.md)
 
 ## Local Development
 
