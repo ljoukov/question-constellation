@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
+	import SubjectSwitcher from '$lib/components/SubjectSwitcher.svelte';
 	import {
 		Bookmark,
 		Circle,
@@ -25,7 +27,6 @@
 		resolve('/questions/[questionId]/practice', { questionId: data.question.id })
 	);
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
-	const navSubjectLabel = $derived(topicLabel || data.question.meta.paper);
 	const promptLines = $derived(
 		data.question.prompt
 			.split(/\r?\n/)
@@ -54,10 +55,21 @@
 			<strong>Question Constellation</strong>
 		</a>
 		<nav class="desktop-nav" aria-label="Main navigation">
-			<a href={questionHref}>{navSubjectLabel}</a>
+			<SubjectSwitcher
+				subjects={data.subjectNavigation}
+				currentSubject={topicLabel || data.question.meta.paper}
+			/>
 			<a href={practiceHref}>Practice</a>
 		</nav>
-		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
+		<div class="header-actions public-header-actions">
+			<span class="mobile-subject-wrapper">
+				<SubjectSwitcher
+					subjects={data.subjectNavigation}
+					currentSubject={topicLabel || data.question.meta.paper}
+				/>
+			</span>
+			<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
+		</div>
 	</header>
 
 	<div class="flow-grid public-grid">
@@ -76,7 +88,7 @@
 				<span class="pill">{data.question.meta.questionType}</span>
 			</section>
 
-			<section class="exam-question-card">
+			<section class="exam-question-card" class:has-assets={data.question.assets.length > 0}>
 				<div class="question-letter">Q</div>
 				<div class="question-content">
 					{#if data.question.context}
@@ -85,10 +97,7 @@
 					{#if data.question.assets.length > 0}
 						<div class="question-assets question-card-assets" aria-label="Question source images">
 							{#each data.question.assets as asset (asset.id)}
-								<figure>
-									<img src={asset.publicPath} alt={asset.altText} loading="eager" />
-									<figcaption>{asset.sourceLabel}</figcaption>
-								</figure>
+								<QuestionAssetFigure {asset} loading="eager" />
 							{/each}
 						</div>
 					{/if}

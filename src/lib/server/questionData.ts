@@ -53,6 +53,8 @@ export type QuestionAsset = {
 	altText: string;
 	required: boolean;
 	role: string | null;
+	paperWidthPx: number | null;
+	paperHeightPx: number | null;
 };
 
 export type Question = {
@@ -221,6 +223,16 @@ type AssetRow = {
 	alt_text: string | null;
 	required: number;
 	role: string | null;
+	metadata_json: string;
+};
+
+type AssetMetadata = {
+	image_candidates?: Array<{
+		width?: number;
+		height?: number;
+		x_ppi?: number;
+		y_ppi?: number;
+	}>;
 };
 
 type ChecklistRow = {
@@ -252,6 +264,34 @@ function parseJson<T>(raw: string | null | undefined, fallback: T): T {
 	} catch {
 		return fallback;
 	}
+}
+
+const GCSE_QUESTION_TEXT_CSS_PX = 16;
+const GCSE_PAPER_BODY_TEXT_PT = 12;
+const GCSE_PAPER_CSS_PX_PER_INCH = (GCSE_QUESTION_TEXT_CSS_PX / GCSE_PAPER_BODY_TEXT_PT) * 72;
+
+function paperAssetSize(
+	metadataJson: string
+): Pick<QuestionAsset, 'paperWidthPx' | 'paperHeightPx'> {
+	const metadata = parseJson<AssetMetadata>(metadataJson, {});
+	const candidate = metadata.image_candidates?.find(
+		(item) =>
+			typeof item.width === 'number' &&
+			typeof item.height === 'number' &&
+			typeof item.x_ppi === 'number' &&
+			typeof item.y_ppi === 'number' &&
+			item.x_ppi > 0 &&
+			item.y_ppi > 0
+	);
+
+	if (!candidate?.width || !candidate.height || !candidate.x_ppi || !candidate.y_ppi) {
+		return { paperWidthPx: null, paperHeightPx: null };
+	}
+
+	return {
+		paperWidthPx: Math.round((candidate.width / candidate.x_ppi) * GCSE_PAPER_CSS_PX_PER_INCH),
+		paperHeightPx: Math.round((candidate.height / candidate.y_ppi) * GCSE_PAPER_CSS_PX_PER_INCH)
+	};
 }
 
 function distanceFromDb(value: string | null | undefined): TransferDistance {
@@ -428,7 +468,7 @@ async function getPrimaryMembership(questionId: string): Promise<MembershipRow> 
 
 async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
 	const rows = await queryRows<AssetRow>(
-		`SELECT id, asset_type, source_label, public_path, alt_text, required, role
+		`SELECT id, asset_type, source_label, public_path, alt_text, required, role, metadata_json
 		 FROM question_assets
 		 WHERE question_id = ?
 		 ORDER BY required DESC, source_label, id`,
@@ -437,15 +477,20 @@ async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
 
 	return rows
 		.filter((row) => row.public_path)
-		.map((row) => ({
-			id: row.id,
-			assetType: row.asset_type,
-			sourceLabel: row.source_label ?? 'Source image',
-			publicPath: row.public_path ?? '',
-			altText: row.alt_text ?? row.source_label ?? 'Question paper image',
-			required: Boolean(row.required),
-			role: row.role
-		}));
+		.map((row) => {
+			const paperSize = paperAssetSize(row.metadata_json);
+
+			return {
+				id: row.id,
+				assetType: row.asset_type,
+				sourceLabel: row.source_label ?? 'Source image',
+				publicPath: row.public_path ?? '',
+				altText: row.alt_text ?? row.source_label ?? 'Question paper image',
+				required: Boolean(row.required),
+				role: row.role,
+				...paperSize
+			};
+		});
 }
 
 async function getModelAnswer(questionId: string, chain: AnswerChain): Promise<string> {

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
+	import SubjectSwitcher from '$lib/components/SubjectSwitcher.svelte';
 	import {
 		ArrowLeft,
 		ArrowRight,
@@ -24,6 +26,9 @@
 	const constellationHref = $derived(
 		resolve('/constellations/[chainId]', { chainId: data.chain.id })
 	);
+	const currentSubject = $derived(
+		data.question.meta.topic.split(':')[0] || data.question.meta.paper
+	);
 </script>
 
 <svelte:head>
@@ -42,7 +47,10 @@
 		<a class="brand-lockup" href={questionHref}>
 			<strong>Question Constellation</strong>
 		</a>
-		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
+		<div class="header-actions">
+			<SubjectSwitcher subjects={data.subjectNavigation} {currentSubject} />
+			<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
+		</div>
 	</header>
 
 	<div class="flow-grid chain-grid">
@@ -77,10 +85,7 @@
 								{#if data.question.assets.length > 0}
 									<div class="question-assets compact-assets" aria-label="Question source images">
 										{#each data.question.assets as asset (asset.id)}
-											<figure>
-												<img src={asset.publicPath} alt={asset.altText} loading="lazy" />
-												<figcaption>{asset.sourceLabel}</figcaption>
-											</figure>
+											<QuestionAssetFigure {asset} />
 										{/each}
 									</div>
 								{/if}

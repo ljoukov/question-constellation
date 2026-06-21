@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
 	import {
 		ArrowLeft,
 		Bookmark,
@@ -314,6 +315,14 @@
 					</section>
 				{/if}
 
+				{#if data.question.assets.length > 0}
+					<div class="question-assets practice-assets" aria-label="Question source images">
+						{#each data.question.assets as asset (asset.id)}
+							<QuestionAssetFigure {asset} />
+						{/each}
+					</div>
+				{/if}
+
 				<h1 class="attempt-question">{data.question.prompt}</h1>
 
 				<section class="memory-first-card">
@@ -372,17 +381,6 @@
 							<p>{gradeError}</p>
 						</div>
 					</section>
-				{/if}
-
-				{#if data.question.assets.length > 0}
-					<div class="question-assets practice-assets" aria-label="Question source images">
-						{#each data.question.assets as asset (asset.id)}
-							<figure>
-								<img src={asset.publicPath} alt={asset.altText} loading="lazy" />
-								<figcaption>{asset.sourceLabel}</figcaption>
-							</figure>
-						{/each}
-					</div>
 				{/if}
 			</section>
 		</div>
