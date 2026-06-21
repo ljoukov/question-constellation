@@ -45,13 +45,7 @@ async function getSubjectNavigation(): Promise<SubjectNavigationItem[]> {
 }
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-	let subjectNavigation: SubjectNavigationItem[] = [];
-
-	try {
-		subjectNavigation = await getSubjectNavigation();
-	} catch {
-		subjectNavigation = [];
-	}
+	const subjectNavigation = await getSubjectNavigation().catch(() => []);
 
 	return {
 		user: locals.user,

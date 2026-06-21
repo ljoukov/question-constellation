@@ -9,6 +9,9 @@ declare global {
 				AUTH_COOKIE_SECRET?: string;
 				CHATGPT_AUTH_TOKEN_PROVIDER_URL?: string;
 				CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY?: string;
+				CHATGPT_AUTH_API_KEY?: string;
+				CHATGPT_AUTH_TOKEN_PROVIDER_STORE?: string;
+				CHATGPT_RESPONSES_WEBSOCKET_MODE?: string;
 				QUESTION_DB?: D1Database;
 				QUESTION_R2?: R2Bucket;
 				[key: string]: unknown;

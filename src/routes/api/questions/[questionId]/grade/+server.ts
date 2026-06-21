@@ -3,6 +3,16 @@ import { createSseStream, sseResponse } from '$lib/server/sse';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
 
+type SerializedError = {
+	name: string;
+	message: string;
+	stack?: string;
+	stage?: string;
+	cause?: SerializedError | string;
+	code?: string | number;
+	status?: string | number;
+};
+
 const paramsSchema = z.object({
 	questionId: z.string().trim().min(1, 'questionId is required')
 });
@@ -20,6 +30,49 @@ function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: Grad
 		event: delta.type === 'thought' ? 'thought' : 'text',
 		data: delta.delta
 	});
+}
+
+function serializeError(error: unknown, depth = 0): SerializedError | string {
+	if (depth > 2) return '[cause truncated]';
+	if (!(error instanceof Error)) return String(error);
+
+	const record = error as Error & {
+		stage?: unknown;
+		cause?: unknown;
+		code?: unknown;
+		status?: unknown;
+	};
+	const serialized: SerializedError = {
+		name: error.name,
+		message: error.message
+	};
+	if (error.stack) serialized.stack = error.stack;
+	if (typeof record.stage === 'string') serialized.stage = record.stage;
+	if (typeof record.code === 'string' || typeof record.code === 'number') {
+		serialized.code = record.code;
+	}
+	if (typeof record.status === 'string' || typeof record.status === 'number') {
+		serialized.status = record.status;
+	}
+	if (record.cause) serialized.cause = serializeError(record.cause, depth + 1);
+	return serialized;
+}
+
+function gradingRuntimeDiagnostics(platformEnv: unknown) {
+	const envRecord =
+		platformEnv && typeof platformEnv === 'object' ? (platformEnv as Record<string, unknown>) : {};
+	return {
+		hasTokenProviderUrl: typeof envRecord.CHATGPT_AUTH_TOKEN_PROVIDER_URL === 'string',
+		hasTokenProviderApiKey:
+			typeof envRecord.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY === 'string' ||
+			typeof envRecord.CHATGPT_AUTH_API_KEY === 'string',
+		hasLegacyApiKey: typeof envRecord.CHATGPT_AUTH_API_KEY === 'string',
+		hasTokenProviderStore: typeof envRecord.CHATGPT_AUTH_TOKEN_PROVIDER_STORE === 'string',
+		websocketMode:
+			typeof envRecord.CHATGPT_RESPONSES_WEBSOCKET_MODE === 'string'
+				? envRecord.CHATGPT_RESPONSES_WEBSOCKET_MODE
+				: 'off'
+	};
 }
 
 export const POST: RequestHandler = async ({ params, request, platform }) => {
@@ -65,13 +118,18 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 			});
 		} catch (error) {
 			console.error('[question-grade] failed to grade answer', {
-				error,
+				error: serializeError(error),
+				runtime: gradingRuntimeDiagnostics(platform?.env),
 				questionId
 			});
 			send({
 				event: 'error',
 				data: JSON.stringify({
 					error: 'grading_failed',
+					stage:
+						error instanceof Error && 'stage' in error && typeof error.stage === 'string'
+							? error.stage
+							: 'unknown',
 					message: 'Unable to grade this answer right now.'
 				})
 			});

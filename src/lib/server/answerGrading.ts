@@ -6,6 +6,29 @@ const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
 const GRADING_THINKING_LEVEL = 'medium';
 const NONE = 'none';
 
+export type QuestionGradeStage =
+	| 'load_question'
+	| 'build_prompt'
+	| 'configure_llm_env'
+	| 'import_llm'
+	| 'start_stream'
+	| 'stream_events'
+	| 'collect_result'
+	| 'parse_result';
+
+export class QuestionGradeRuntimeError extends Error {
+	readonly stage: QuestionGradeStage;
+	override readonly cause: unknown;
+
+	constructor(stage: QuestionGradeStage, cause: unknown) {
+		const causeMessage = cause instanceof Error ? cause.message : String(cause);
+		super(`Question grading failed during ${stage}: ${causeMessage}`, { cause });
+		this.name = 'QuestionGradeRuntimeError';
+		this.stage = stage;
+		this.cause = cause;
+	}
+}
+
 export type GradeStreamDelta =
 	| { type: 'status'; phase: 'calling' | 'thinking' | 'grading' }
 	| { type: 'thought'; delta: string }
@@ -36,14 +59,23 @@ export function configureLlmProcessEnv(platformEnv?: unknown): void {
 		env.CHATGPT_AUTH_TOKEN_PROVIDER_URL;
 	const tokenProviderApiKey =
 		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY') ??
-		env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY;
-
+		env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY ??
+		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_API_KEY') ??
+		env.CHATGPT_AUTH_API_KEY;
+	const tokenProviderStore =
+		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_STORE') ??
+		env.CHATGPT_AUTH_TOKEN_PROVIDER_STORE;
 	if (tokenProviderUrl) {
 		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_URL = tokenProviderUrl;
 	}
 	if (tokenProviderApiKey) {
 		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY = tokenProviderApiKey;
+		process.env.CHATGPT_AUTH_API_KEY = tokenProviderApiKey;
 	}
+	if (tokenProviderStore) {
+		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_STORE = tokenProviderStore;
+	}
+	process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE = 'off';
 }
 
 function clampMark(value: number, maxMarks: number): number {
@@ -212,54 +244,66 @@ export async function gradeQuestionAnswerStreaming({
 	signal?: AbortSignal;
 	onDelta?: (delta: GradeStreamDelta) => void;
 }): Promise<QuestionGradeResult> {
-	const data = await loadQuestionForGrading(questionId);
-	const prompt = buildGradePrompt(data, studentAnswer);
-	configureLlmProcessEnv(platformEnv);
-	onDelta?.({ type: 'status', phase: 'calling' });
+	let stage: QuestionGradeStage = 'load_question';
+	try {
+		const data = await loadQuestionForGrading(questionId);
+		stage = 'build_prompt';
+		const prompt = buildGradePrompt(data, studentAnswer);
+		stage = 'configure_llm_env';
+		configureLlmProcessEnv(platformEnv);
+		onDelta?.({ type: 'status', phase: 'calling' });
 
-	const { streamText } = await import('@ljoukov/llm');
-	const call = streamText({
-		model: GRADING_MODEL,
-		input: prompt,
-		thinkingLevel: GRADING_THINKING_LEVEL,
-		signal,
-		telemetry: false
-	});
-
-	let rawText = '';
-	let thoughtText = '';
-	let sawThought = false;
-	let sawResponse = false;
-
-	for await (const event of call.events) {
-		handleStreamEvent(event, {
-			onThought(text) {
-				thoughtText += text;
-				if (!sawThought) {
-					sawThought = true;
-					onDelta?.({ type: 'status', phase: 'thinking' });
-				}
-				onDelta?.({ type: 'thought', delta: text });
-			},
-			onResponse(text) {
-				rawText += text;
-				if (!sawResponse) {
-					sawResponse = true;
-					onDelta?.({ type: 'status', phase: 'grading' });
-				}
-				onDelta?.({ type: 'text', delta: text });
-			}
+		stage = 'import_llm';
+		const { streamText } = await import('@ljoukov/llm');
+		stage = 'start_stream';
+		const call = streamText({
+			model: GRADING_MODEL,
+			input: prompt,
+			thinkingLevel: GRADING_THINKING_LEVEL,
+			signal,
+			telemetry: false
 		});
-	}
 
-	const llmResult = await call.result;
-	const finalText = rawText.trim() ? rawText : llmResult.text;
-	const finalThoughts = thoughtText.trim() ? thoughtText : llmResult.thoughts;
-	return {
-		...parseGradeResponse(finalText, data),
-		thinkingMarkdown: lastMarkdownParagraph(finalThoughts),
-		modelVersion: llmResult.modelVersion
-	};
+		let rawText = '';
+		let thoughtText = '';
+		let sawThought = false;
+		let sawResponse = false;
+
+		stage = 'stream_events';
+		for await (const event of call.events) {
+			handleStreamEvent(event, {
+				onThought(text) {
+					thoughtText += text;
+					if (!sawThought) {
+						sawThought = true;
+						onDelta?.({ type: 'status', phase: 'thinking' });
+					}
+					onDelta?.({ type: 'thought', delta: text });
+				},
+				onResponse(text) {
+					rawText += text;
+					if (!sawResponse) {
+						sawResponse = true;
+						onDelta?.({ type: 'status', phase: 'grading' });
+					}
+					onDelta?.({ type: 'text', delta: text });
+				}
+			});
+		}
+
+		stage = 'collect_result';
+		const llmResult = await call.result;
+		const finalText = rawText.trim() ? rawText : llmResult.text;
+		const finalThoughts = thoughtText.trim() ? thoughtText : llmResult.thoughts;
+		stage = 'parse_result';
+		return {
+			...parseGradeResponse(finalText, data),
+			thinkingMarkdown: lastMarkdownParagraph(finalThoughts),
+			modelVersion: llmResult.modelVersion
+		};
+	} catch (error) {
+		throw new QuestionGradeRuntimeError(stage, error);
+	}
 }
 
 function handleStreamEvent(
