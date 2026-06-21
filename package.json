@@ -7,19 +7,20 @@
 		"dev": "vite dev",
 		"dev:server": "scripts/dev-server.sh start",
 		"clean:adapter": "rm -rf .svelte-kit/cloudflare .svelte-kit/cloudflare-tmp .svelte-kit/output",
-		"build": "pnpm run gen && vite build",
+		"build": "npm run gen && vite build",
 		"extract:aqa": "node scripts/extract-aqa-data.mjs",
+		"import:chained": "node scripts/import-chained-questions.mjs",
 		"upload:r2-images": "node scripts/upload-r2-images.mjs",
 		"deploy": "wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"prepare": "svelte-kit sync || echo ''",
-		"check": "pnpm run gen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "npm run gen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:unit": "vitest",
-		"test": "pnpm run test:unit -- --run",
-		"gen": "pnpm run clean:adapter && wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts"
+		"test": "vitest --run",
+		"gen": "npm run clean:adapter && wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",
@@ -43,6 +44,8 @@
 		"wrangler": "^4.81.0"
 	},
 	"dependencies": {
-		"@lucide/svelte": "^1.16.0"
+		"@lucide/svelte": "^1.16.0",
+		"jose": "^6.2.3",
+		"zod": "^4.4.3"
 	}
 }

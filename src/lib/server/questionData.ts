@@ -1,4 +1,6 @@
-export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer';
+import { queryFirst, queryRows } from './db';
+
+export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer' | 'unclassified';
 
 export type ExamMeta = {
 	qualification: string;
@@ -15,7 +17,16 @@ export type ChainStep = {
 	id: string;
 	short: string;
 	label: string;
-	role: 'given' | 'link' | 'process' | 'effect';
+	role:
+		| 'given'
+		| 'cause'
+		| 'process'
+		| 'link'
+		| 'effect'
+		| 'evidence'
+		| 'method'
+		| 'calculation'
+		| 'conclusion';
 	explanation: string;
 	markEvidence: string;
 	commonOmission: string;
@@ -34,12 +45,23 @@ export type RepairChainNode = {
 	icon: 'target' | 'droplet' | 'oxygen' | 'atom' | 'zap';
 };
 
+export type QuestionAsset = {
+	id: string;
+	assetType: string;
+	sourceLabel: string;
+	publicPath: string;
+	altText: string;
+	required: boolean;
+	role: string | null;
+};
+
 export type Question = {
 	id: string;
 	sourceRef: string;
 	title: string;
 	prompt: string;
 	context: string;
+	assets: QuestionAsset[];
 	meta: ExamMeta;
 	transferDistance: TransferDistance;
 	distanceLabel: string;
@@ -144,560 +166,615 @@ export type ThinkingMemoryPageData = {
 	questions: Question[];
 };
 
-const chain: AnswerChain = {
-	id: 'supply-respiration-energy-effect',
-	title: 'Supply -> respiration -> energy -> effect',
-	canonicalText: 'supply -> oxygen/glucose -> respiration -> energy -> effect',
-	concreteText: 'blood flow -> oxygen -> respiration -> energy -> pain',
-	pageTitle: 'Same answer chain',
-	summary:
-		'Use this when a question asks how a change in supply affects cell respiration, energy release, and the final visible effect.',
-	commonMissingLink:
-		'Students often jump from blood or oxygen straight to the symptom and miss respiration or energy.',
-	modelAnswer:
-		'Reduced blood flow means less oxygen reaches heart muscle cells. The cells carry out less aerobic respiration, so less energy is released for contraction. This can cause chest pain because the muscle cannot work normally.',
-	steps: [
-		{
-			id: 'supply',
-			short: 'Supply changes',
-			label: 'Start with the concrete supply change',
-			role: 'given',
-			explanation:
-				'Name the change in blood flow, oxygen, glucose, or another useful supply before explaining the symptom.',
-			markEvidence: 'Mark schemes usually credit the reduced supply before downstream effects.',
-			commonOmission:
-				'Starting with pain, tiredness, or poor growth without naming what changed first.'
-		},
-		{
-			id: 'resource',
-			short: 'Useful substance reaches cells',
-			label: 'Say what reaches the cells',
-			role: 'link',
-			explanation:
-				'Connect the supply change to oxygen or glucose reaching the cells that need to work.',
-			markEvidence:
-				'Mark schemes usually require oxygen, glucose, or named reactant reaching cells.',
-			commonOmission: 'Saying "less blood" or "less food" without the useful substance.'
-		},
-		{
-			id: 'respiration',
-			short: 'Respiration changes',
-			label: 'Connect the substance to respiration',
-			role: 'process',
-			explanation:
-				'State how the change affects aerobic respiration or respiration rate inside the cells.',
-			markEvidence: 'The respiration link is normally the hidden mark students miss.',
-			commonOmission: 'Mentioning oxygen but not saying what oxygen is used for.'
-		},
-		{
-			id: 'energy',
-			short: 'Energy release changes',
-			label: 'Name the energy consequence',
-			role: 'link',
-			explanation:
-				'Show that less respiration means less energy released for the cell or tissue job.',
-			markEvidence: 'Mark schemes often credit energy release separately from respiration.',
-			commonOmission: 'Saying cells are "weaker" without explaining energy release.'
-		},
-		{
-			id: 'effect',
-			short: 'Final effect',
-			label: 'Finish with the effect asked for',
-			role: 'effect',
-			explanation:
-				'Return to the exact outcome in the prompt: pain, movement, active transport, contraction, or growth.',
-			markEvidence:
-				'The final mark usually depends on answering the symptom or outcome in the question.',
-			commonOmission: 'Writing a good process chain but not answering the actual question.'
-		}
-	]
+type QuestionRow = {
+	id: string;
+	source_question_ref: string;
+	prompt_text: string;
+	context_text: string | null;
+	command_word: string | null;
+	marks: number | null;
+	board: string | null;
+	qualification: string | null;
+	subject: string | null;
+	subject_area: string | null;
+	tier: string | null;
+	paper: string | null;
+	topic_path_json: string;
+	metadata_json: string;
 };
 
-const baseMeta: Omit<ExamMeta, 'topic' | 'questionType' | 'marks'> = {
-	qualification: 'GCSE',
-	board: 'AQA',
-	subject: 'Combined Science',
-	tier: 'Higher',
-	paper: 'Biology Paper 1'
+type ChainRow = {
+	id: string;
+	title: string;
+	canonical_chain_text: string;
+	summary: string | null;
+	subject_area: string | null;
+	broad_topic: string | null;
+	metadata_json: string;
 };
 
-const questions: Question[] = [
-	{
-		id: 'blood-flow-chest-pain',
-		sourceRef: 'Q01.2',
-		title: 'Chest pain from reduced blood flow',
-		prompt: 'Explain why reduced blood flow to the heart can cause chest pain.',
-		context:
-			'A coronary artery becomes narrowed. During exercise, the heart muscle needs more oxygen for aerobic respiration and contraction.',
-		meta: {
-			...baseMeta,
-			topic: 'Organisation: the heart and blood vessels',
-			questionType: 'Explain',
-			marks: 4
-		},
-		transferDistance: 'start',
-		distanceLabel: 'start',
-		constellationRole: 'First question',
-		modelAnswer: chain.modelAnswer,
-		commonWeakAnswer: 'Less blood gets to the heart, so it hurts.',
-		weakAnswerMissingStepIds: ['respiration', 'energy'],
-		checklist: [
-			{
-				id: 'blood-flow',
-				text: 'Say that reduced blood flow lowers oxygen supply to heart muscle cells.',
-				stepId: 'resource'
-			},
-			{
-				id: 'less-respiration',
-				text: 'Link less oxygen to less aerobic respiration.',
-				stepId: 'respiration'
-			},
-			{
-				id: 'less-energy',
-				text: 'Say that less respiration releases less energy for contraction.',
-				stepId: 'energy'
-			},
-			{
-				id: 'pain-effect',
-				text: 'Finish by explaining chest pain or the heart muscle not working normally.',
-				stepId: 'effect'
-			}
-		],
-		repairChain: [
-			{ id: 'blood-flow-node', label: 'blood flow', stepId: null, icon: 'droplet' },
-			{ id: 'oxygen-node', label: 'oxygen', stepId: 'resource', icon: 'oxygen' },
-			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
-			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
-			{ id: 'pain-node', label: 'pain', stepId: 'effect', icon: 'target' }
-		],
-		practiceDraft:
-			'Less blood gets to the heart during exercise so the heart muscle does not get enough oxygen.',
-		whyThisFits:
-			'The mark-scoring answer must connect blood flow to oxygen, respiration, energy release, and pain.'
-	},
-	{
-		id: 'heart-rate-exercise',
-		sourceRef: 'Q03.4',
-		title: 'Heart rate during exercise',
-		prompt:
-			'Explain why heart rate increases during vigorous exercise. Refer to muscle cells in your answer.',
-		context:
-			'Muscle cells contract more during vigorous exercise, so their demand for respiration increases.',
-		meta: {
-			...baseMeta,
-			topic: 'Bioenergetics: aerobic respiration',
-			questionType: 'Explain',
-			marks: 4
-		},
-		transferDistance: 'near',
-		distanceLabel: 'near',
-		constellationRole: 'Nearby practice',
-		modelAnswer:
-			'During vigorous exercise, muscle cells need more energy for contraction. They respire faster, so they need more oxygen and glucose delivered in the blood. A higher heart rate increases blood flow to the muscles.',
-		commonWeakAnswer: 'The heart beats faster because the muscles are working harder.',
-		weakAnswerMissingStepIds: ['resource', 'respiration', 'energy'],
-		checklist: [
-			{
-				id: 'muscle-energy',
-				text: 'Say that muscle cells need more energy for contraction.',
-				stepId: 'energy'
-			},
-			{
-				id: 'faster-respiration',
-				text: 'Link this to a higher rate of respiration.',
-				stepId: 'respiration'
-			},
-			{
-				id: 'deliver-substances',
-				text: 'Mention oxygen and/or glucose being delivered in the blood.',
-				stepId: 'resource'
-			},
-			{
-				id: 'heart-rate-effect',
-				text: 'Explain that increased heart rate raises blood flow to muscles.',
-				stepId: 'effect'
-			}
-		],
-		repairChain: [
-			{ id: 'heart-rate-node', label: 'heart rate', stepId: null, icon: 'target' },
-			{ id: 'blood-flow-node', label: 'blood flow', stepId: 'effect', icon: 'droplet' },
-			{ id: 'oxygen-glucose-node', label: 'oxygen/glucose', stepId: 'resource', icon: 'oxygen' },
-			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
-			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
-			{
-				id: 'contraction-node',
-				label: 'muscle contraction',
-				stepId: 'energy',
-				icon: 'target'
-			}
-		],
-		practiceDraft:
-			'The heart rate increases because the muscles need more oxygen while they are working hard.',
-		whyThisFits:
-			'It uses the same supply, respiration, energy, effect links but starts from increased demand.'
-	},
-	{
-		id: 'muscle-fatigue-respiration',
-		sourceRef: 'Q04.1',
-		title: 'Muscle fatigue in vigorous exercise',
-		prompt:
-			'During vigorous exercise, oxygen supply may not meet demand. Explain why muscles can become fatigued.',
-		context:
-			'The question asks for the chain from limited oxygen to reduced aerobic respiration and muscle performance.',
-		meta: {
-			...baseMeta,
-			topic: 'Bioenergetics: exercise',
-			questionType: 'Explain',
-			marks: 4
-		},
-		transferDistance: 'near',
-		distanceLabel: 'near',
-		constellationRole: 'Nearby practice',
-		modelAnswer:
-			'If not enough oxygen reaches muscle cells, aerobic respiration cannot release energy fast enough. The cells rely more on anaerobic respiration, lactic acid builds up, and the muscles fatigue.',
-		commonWeakAnswer: 'The muscles get tired because there is not enough oxygen.',
-		weakAnswerMissingStepIds: ['respiration', 'energy', 'effect'],
-		checklist: [
-			{
-				id: 'oxygen-demand',
-				text: 'Say oxygen supply does not meet the demand of muscle cells.',
-				stepId: 'resource'
-			},
-			{
-				id: 'aerobic-rate',
-				text: 'Connect low oxygen to less aerobic respiration.',
-				stepId: 'respiration'
-			},
-			{
-				id: 'energy-rate',
-				text: 'Explain that energy is released too slowly for contraction.',
-				stepId: 'energy'
-			},
-			{
-				id: 'fatigue-effect',
-				text: 'Finish with fatigue or lactic acid build-up affecting contraction.',
-				stepId: 'effect'
-			}
-		],
-		repairChain: [
-			{ id: 'oxygen-supply-node', label: 'oxygen supply', stepId: 'resource', icon: 'oxygen' },
-			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
-			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
-			{ id: 'fatigue-node', label: 'fatigue', stepId: 'effect', icon: 'target' }
-		],
-		practiceDraft: 'The muscles fatigue because oxygen cannot get to them quickly enough.',
-		whyThisFits:
-			'The same respiration and energy links explain the final effect, even though the symptom is fatigue rather than chest pain.'
-	},
-	{
-		id: 'sperm-mitochondria',
-		sourceRef: 'Q05.3',
-		title: 'Sperm cells and mitochondria',
-		prompt: 'Explain why sperm cells contain many mitochondria.',
-		context:
-			'This question looks like cell structure, but the marks come from connecting mitochondria to respiration, energy, and movement.',
-		meta: {
-			...baseMeta,
-			topic: 'Cell biology: specialised cells',
-			questionType: 'Explain',
-			marks: 3
-		},
-		transferDistance: 'stretch',
-		distanceLabel: 'stretch',
-		constellationRole: 'Less obvious topic',
-		modelAnswer:
-			'Mitochondria are the site of aerobic respiration. Respiration releases energy, which sperm cells need to swim towards the egg.',
-		commonWeakAnswer: 'Sperm cells have mitochondria so they can swim.',
-		weakAnswerMissingStepIds: ['respiration', 'energy'],
-		checklist: [
-			{
-				id: 'mitochondria-site',
-				text: 'Say mitochondria are where aerobic respiration happens.',
-				stepId: 'respiration'
-			},
-			{
-				id: 'release-energy',
-				text: 'Say respiration releases energy.',
-				stepId: 'energy'
-			},
-			{
-				id: 'movement',
-				text: 'Use the energy to explain sperm movement towards the egg.',
-				stepId: 'effect'
-			}
-		],
-		repairChain: [
-			{ id: 'mitochondria-node', label: 'mitochondria', stepId: null, icon: 'atom' },
-			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
-			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
-			{ id: 'movement-node', label: 'movement to egg', stepId: 'effect', icon: 'target' }
-		],
-		practiceDraft: 'They have mitochondria because they need energy to swim.',
-		whyThisFits:
-			'The context changes to cell structure, but full marks still depend on respiration -> energy -> effect.'
-	},
-	{
-		id: 'root-hair-active-transport',
-		sourceRef: 'Q06.2',
-		title: 'Root hair cells and active transport',
-		prompt:
-			'Explain why root hair cells need energy for active transport of mineral ions from the soil.',
-		context:
-			'The visible topic is plants, but the reasoning chain still runs through respiration and energy release.',
-		meta: {
-			...baseMeta,
-			topic: 'Transport in cells: active transport',
-			questionType: 'Explain',
-			marks: 4
-		},
-		transferDistance: 'stretch',
-		distanceLabel: 'stretch',
-		constellationRole: 'Less obvious topic',
-		modelAnswer:
-			'Active transport moves mineral ions from a lower concentration in the soil to a higher concentration in the root hair cell. This movement is against the concentration gradient, so it requires energy released by respiration.',
-		commonWeakAnswer: 'Root hair cells need energy to take in minerals.',
-		weakAnswerMissingStepIds: ['respiration', 'effect'],
-		checklist: [
-			{
-				id: 'against-gradient',
-				text: 'Say active transport moves ions against the concentration gradient.',
-				stepId: 'effect'
-			},
-			{
-				id: 'energy-needed',
-				text: 'Say this process requires energy.',
-				stepId: 'energy'
-			},
-			{
-				id: 'respiration-source',
-				text: 'Link that energy to respiration.',
-				stepId: 'respiration'
-			},
-			{
-				id: 'mineral-uptake',
-				text: 'Return to mineral ions being taken into root hair cells.',
-				stepId: 'effect'
-			}
-		],
-		repairChain: [
-			{ id: 'root-hair-node', label: 'root hair cell', stepId: null, icon: 'target' },
-			{ id: 'active-transport-node', label: 'active transport', stepId: 'effect', icon: 'target' },
-			{ id: 'gradient-node', label: 'against gradient', stepId: 'effect', icon: 'droplet' },
-			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
-			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' }
-		],
-		practiceDraft: 'They need energy because minerals are moved into the cell by active transport.',
-		whyThisFits:
-			'The answer still has to explain how a cell process depends on energy released by respiration.'
-	},
-	{
-		id: 'blocked-artery-heart-muscle',
-		sourceRef: 'Q08.5',
-		title: 'Blocked arteries and heart muscle',
-		prompt:
-			'A blood clot blocks a coronary artery. Explain how this can damage part of the heart muscle.',
-		context:
-			'This is the harder transfer because the final effect is tissue damage rather than pain.',
-		meta: {
-			...baseMeta,
-			topic: 'Organisation: coronary heart disease',
-			questionType: 'Explain',
-			marks: 5
-		},
-		transferDistance: 'exam-transfer',
-		distanceLabel: 'exam transfer',
-		constellationRole: 'Exam transfer',
-		modelAnswer:
-			'The blocked artery stops oxygenated blood reaching part of the heart muscle. Without oxygen, the cells cannot carry out enough aerobic respiration, so not enough energy is released. The cells cannot contract or stay alive and the tissue can be damaged.',
-		commonWeakAnswer: 'The blockage stops blood getting to the heart and damages it.',
-		weakAnswerMissingStepIds: ['resource', 'respiration', 'energy'],
-		checklist: [
-			{
-				id: 'blocked-supply',
-				text: 'Say the blockage stops oxygenated blood reaching part of the heart muscle.',
-				stepId: 'resource'
-			},
-			{
-				id: 'cannot-respire',
-				text: 'Link oxygen shortage to less aerobic respiration.',
-				stepId: 'respiration'
-			},
-			{
-				id: 'not-enough-energy',
-				text: 'Say less energy is released for contraction or cell survival.',
-				stepId: 'energy'
-			},
-			{
-				id: 'tissue-damage',
-				text: 'Finish with heart muscle cells being damaged or dying.',
-				stepId: 'effect'
-			}
-		],
-		repairChain: [
-			{ id: 'blocked-artery-node', label: 'blocked artery', stepId: null, icon: 'target' },
-			{
-				id: 'oxygenated-blood-node',
-				label: 'oxygenated blood',
-				stepId: 'resource',
-				icon: 'oxygen'
-			},
-			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
-			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
-			{ id: 'damage-node', label: 'tissue damage', stepId: 'effect', icon: 'target' }
-		],
-		practiceDraft: 'The artery is blocked so blood and oxygen cannot get to the heart muscle.',
-		whyThisFits:
-			'The exam-transfer version keeps the same ordered chain but asks for damage rather than pain.'
-	}
-];
-
-const constellation: Constellation = {
-	id: 'biology-respiration-energy',
-	title: 'Blood Flow & Respiration',
-	summary:
-		'Six GCSE Biology questions that look different but reward the same supply, respiration, energy, effect reasoning.',
-	chainId: chain.id,
-	questionIds: questions.map((question) => question.id)
+type ChainStepRow = {
+	id: string;
+	display_order: number;
+	step_text: string;
+	step_role: ChainStep['role'];
+	explanation: string | null;
+	common_omission: string | null;
+	evidence_json: string;
 };
 
-const memoryEntries: MemoryEntry[] = [
-	{
-		id: 'memory-respiration-energy',
-		chainId: chain.id,
-		savedFromQuestionId: 'blood-flow-chest-pain',
-		lastPractisedQuestionId: 'heart-rate-exercise',
-		nextReviewQuestionId: 'root-hair-active-transport',
-		mastery: 'building',
-		lastSavedLabel: 'Saved after 2 repaired attempts',
-		reviewLabel: 'Review today',
-		attemptedQuestionIds: ['blood-flow-chest-pain', 'heart-rate-exercise'],
-		recurringMissingStepId: 'respiration'
+type MembershipRow = {
+	answer_chain_id: string;
+	transfer_distance: string;
+	display_order: number | null;
+	fit_confidence: number | null;
+	fit_notes: string | null;
+	needs_human_review: number;
+};
+
+type AssetRow = {
+	id: string;
+	asset_type: string;
+	source_label: string | null;
+	public_path: string | null;
+	alt_text: string | null;
+	required: number;
+	role: string | null;
+};
+
+type ChecklistRow = {
+	id: string;
+	text: string;
+	display_order: number;
+};
+
+type ModelAnswerRow = {
+	answer_text: string;
+};
+
+type WeakAnswerRow = {
+	weak_answer_text: string;
+	missing_chain_step_ids_json: string;
+};
+
+type ConstellationRow = {
+	id: string;
+	title: string;
+	summary: string | null;
+	answer_chain_id: string;
+};
+
+function parseJson<T>(raw: string | null | undefined, fallback: T): T {
+	if (!raw) return fallback;
+	try {
+		return JSON.parse(raw) as T;
+	} catch {
+		return fallback;
 	}
-];
-
-function findQuestion(questionId: string): Question {
-	const question = questions.find((item) => item.id === questionId);
-
-	if (!question) {
-		throw new Error(`Question not found: ${questionId}`);
-	}
-
-	return question;
 }
 
-function findChain(chainId: string): AnswerChain {
-	if (chain.id !== chainId) {
-		throw new Error(`Answer chain not found: ${chainId}`);
-	}
-
-	return chain;
+function distanceFromDb(value: string | null | undefined): TransferDistance {
+	if (value === 'exam_transfer' || value === 'exam-transfer') return 'exam-transfer';
+	if (value === 'start' || value === 'near' || value === 'stretch') return value;
+	return 'unclassified';
 }
 
-function getQuestionsForChain(chainId: string): Question[] {
-	findChain(chainId);
-	return constellation.questionIds.map(findQuestion);
+function distanceLabel(distance: TransferDistance): string {
+	if (distance === 'exam-transfer') return 'exam transfer';
+	if (distance === 'unclassified') return 'practice';
+	return distance;
 }
 
-function findMemoryEntry(entryId = memoryEntries[0].id): MemoryEntry {
-	const entry = memoryEntries.find((item) => item.id === entryId);
-
-	if (!entry) {
-		throw new Error(`Memory entry not found: ${entryId}`);
-	}
-
-	return entry;
+function constellationRole(distance: TransferDistance): string {
+	if (distance === 'start') return 'First question';
+	if (distance === 'near') return 'Nearby practice';
+	if (distance === 'stretch') return 'Less obvious transfer';
+	if (distance === 'exam-transfer') return 'Exam transfer';
+	return 'Practice';
 }
 
-function hydrateMemoryEntry(entry: MemoryEntry) {
-	const hydratedChain = findChain(entry.chainId);
-	const recurringMissingStep = hydratedChain.steps.find(
-		(step) => step.id === entry.recurringMissingStepId
+function shortStepText(text: string): string {
+	return text.replace(/\.$/, '').replace(/^The /, '').replace(/^A /, '').replace(/^An /, '');
+}
+
+function iconForStep(text: string, role: string): RepairChainNode['icon'] {
+	const lower = `${text} ${role}`.toLowerCase();
+	if (lower.includes('oxygen') || lower.includes('potential difference')) return 'oxygen';
+	if (lower.includes('water') || lower.includes('blood') || lower.includes('solution'))
+		return 'droplet';
+	if (lower.includes('energy') || lower.includes('heating') || lower.includes('power'))
+		return 'zap';
+	if (lower.includes('respiration') || lower.includes('enzyme') || lower.includes('atom'))
+		return 'atom';
+	return 'target';
+}
+
+function titleFromQuestion(row: QuestionRow): string {
+	const metadata = parseJson<{ title?: string }>(row.metadata_json, {});
+	if (metadata.title) return metadata.title;
+	const line = row.prompt_text
+		.split('\n')
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.at(-1);
+	return line ?? row.id;
+}
+
+function topicFromRow(row: QuestionRow): string {
+	const topicPath = parseJson<string[]>(row.topic_path_json, []);
+	if (topicPath.length > 0) return topicPath.join(': ');
+	return row.subject_area ?? row.paper ?? 'GCSE science';
+}
+
+function markEvidenceFromStep(row: ChainStepRow): string {
+	const evidence = parseJson<Array<Record<string, unknown>>>(row.evidence_json, []);
+	const firstEvidence = evidence[0];
+	const summary =
+		(firstEvidence?.evidence_summary as string | undefined) ??
+		(firstEvidence?.evidence_excerpt as string | undefined);
+	return summary ?? 'Supported by the extracted mark-scheme evidence for this chain.';
+}
+
+async function getChainSteps(chainId: string): Promise<ChainStep[]> {
+	const rows = await queryRows<ChainStepRow>(
+		`SELECT id, display_order, step_text, step_role, explanation, common_omission, evidence_json
+		 FROM answer_chain_steps
+		 WHERE answer_chain_id = ?
+		 ORDER BY display_order`,
+		[chainId]
 	);
 
-	if (!recurringMissingStep) {
-		throw new Error(`Missing chain step: ${entry.recurringMissingStepId}`);
+	return rows.map((row) => ({
+		id: row.id,
+		short: shortStepText(row.step_text),
+		label: row.step_text,
+		role: row.step_role,
+		explanation: row.explanation ?? row.step_text,
+		markEvidence: markEvidenceFromStep(row),
+		commonOmission: row.common_omission ?? 'This link is easy to skip in a short answer.'
+	}));
+}
+
+async function getChain(chainId: string): Promise<AnswerChain> {
+	const row = await queryFirst<ChainRow>(
+		`SELECT id, title, canonical_chain_text, summary, subject_area, broad_topic, metadata_json
+		 FROM answer_chains
+		 WHERE id = ? OR slug = ?`,
+		[chainId, chainId]
+	);
+	if (!row) throw new Error(`Answer chain not found: ${chainId}`);
+
+	const steps = await getChainSteps(row.id);
+	const commonMissingLink =
+		steps.find((step) => step.commonOmission)?.commonOmission ??
+		'Students often name the topic but miss one of the middle reasoning links.';
+
+	return {
+		id: row.id,
+		title: row.title,
+		canonicalText: row.canonical_chain_text,
+		concreteText: row.canonical_chain_text,
+		pageTitle: 'Same answer chain',
+		summary:
+			row.summary ??
+			`Use this chain when a ${row.subject_area ?? 'science'} question asks for the same ordered reasoning links.`,
+		steps,
+		commonMissingLink,
+		modelAnswer: steps.map((step) => step.short).join(' -> ')
+	};
+}
+
+async function getPrimaryMembership(questionId: string): Promise<MembershipRow> {
+	const row = await queryFirst<MembershipRow>(
+		`SELECT answer_chain_id, transfer_distance, display_order, fit_confidence, fit_notes, needs_human_review
+		 FROM question_answer_chains
+		 WHERE question_id = ?
+		 ORDER BY is_primary DESC, COALESCE(fit_confidence, 0) DESC
+		 LIMIT 1`,
+		[questionId]
+	);
+	if (!row) throw new Error(`Question has no answer chain: ${questionId}`);
+	return row;
+}
+
+async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
+	const rows = await queryRows<AssetRow>(
+		`SELECT id, asset_type, source_label, public_path, alt_text, required, role
+		 FROM question_assets
+		 WHERE question_id = ?
+		 ORDER BY required DESC, source_label, id`,
+		[questionId]
+	);
+
+	return rows
+		.filter((row) => row.public_path)
+		.map((row) => ({
+			id: row.id,
+			assetType: row.asset_type,
+			sourceLabel: row.source_label ?? 'Source image',
+			publicPath: row.public_path ?? '',
+			altText: row.alt_text ?? row.source_label ?? 'Question paper image',
+			required: Boolean(row.required),
+			role: row.role
+		}));
+}
+
+async function getModelAnswer(questionId: string, chain: AnswerChain): Promise<string> {
+	const row = await queryFirst<ModelAnswerRow>(
+		`SELECT answer_text
+		 FROM model_answers
+		 WHERE question_id = ?
+		 ORDER BY confidence DESC
+		 LIMIT 1`,
+		[questionId]
+	);
+
+	return row?.answer_text ?? chain.modelAnswer;
+}
+
+function checklistFromSteps(chain: AnswerChain): MarkChecklistItem[] {
+	return chain.steps.map((step) => ({
+		id: `${step.id}-check`,
+		text: step.label,
+		stepId: step.id
+	}));
+}
+
+async function getStoredChecklist(questionId: string): Promise<ChecklistRow[]> {
+	return await queryRows<ChecklistRow>(
+		`SELECT id, text, display_order
+		 FROM mark_checklist_items
+		 WHERE question_id = ?
+		 ORDER BY display_order`,
+		[questionId]
+	);
+}
+
+function checklistLooksUseful(rows: ChecklistRow[]): boolean {
+	return rows.length > 1 && rows.every((row) => !/\bAO\d\b/.test(row.text));
+}
+
+async function getChecklist(questionId: string, chain: AnswerChain): Promise<MarkChecklistItem[]> {
+	const rows = await getStoredChecklist(questionId);
+	if (!checklistLooksUseful(rows)) return checklistFromSteps(chain);
+
+	return rows.map((row, index) => ({
+		id: row.id,
+		text: row.text,
+		stepId: chain.steps[Math.min(index, chain.steps.length - 1)]?.id ?? chain.steps[0]?.id ?? row.id
+	}));
+}
+
+async function getWeakAnswer(
+	questionId: string,
+	chain: AnswerChain
+): Promise<{
+	text: string;
+	missingStepIds: string[];
+}> {
+	const row = await queryFirst<WeakAnswerRow>(
+		`SELECT weak_answer_text, missing_chain_step_ids_json
+		 FROM common_weak_answers
+		 WHERE question_id = ?
+		 ORDER BY confidence DESC
+		 LIMIT 1`,
+		[questionId]
+	);
+
+	if (row) {
+		const rawMissing = parseJson<Array<string | number>>(row.missing_chain_step_ids_json, []);
+		const missingStepIds = rawMissing
+			.map((item) =>
+				typeof item === 'number'
+					? chain.steps[item]?.id
+					: chain.steps.find((step) => step.id === item)?.id
+			)
+			.filter((item): item is string => Boolean(item));
+
+		return {
+			text: row.weak_answer_text,
+			missingStepIds:
+				missingStepIds.length > 0 ? missingStepIds : chain.steps.slice(1).map((step) => step.id)
+		};
 	}
 
+	const missingStepIds = chain.steps
+		.slice(Math.max(1, chain.steps.length - 2))
+		.map((step) => step.id);
 	return {
-		...entry,
-		chain: hydratedChain,
-		savedFromQuestion: findQuestion(entry.savedFromQuestionId),
-		lastPractisedQuestion: findQuestion(entry.lastPractisedQuestionId),
-		nextReviewQuestion: findQuestion(entry.nextReviewQuestionId),
-		recurringMissingStep
+		text: 'Names the topic but skips the middle reasoning links.',
+		missingStepIds
 	};
 }
 
-export function getNavigationData(): NavigationData {
+function repairChainFromSteps(chain: AnswerChain): RepairChainNode[] {
+	return chain.steps.map((step) => ({
+		id: `${step.id}-node`,
+		label: step.short,
+		stepId: step.id,
+		icon: iconForStep(step.label, step.role)
+	}));
+}
+
+async function hydrateQuestion(
+	row: QuestionRow,
+	chain: AnswerChain,
+	membership: MembershipRow
+): Promise<Question> {
+	const transferDistance = distanceFromDb(membership.transfer_distance);
+	const checklist = await getChecklist(row.id, chain);
+	const weakAnswer = await getWeakAnswer(row.id, chain);
+
 	return {
-		primaryQuestionId: questions[0].id,
-		primaryChainId: chain.id,
-		primaryPracticeQuestionId: questions[1].id
+		id: row.id,
+		sourceRef: `Q${row.source_question_ref}`,
+		title: titleFromQuestion(row),
+		prompt: row.prompt_text,
+		context: row.context_text ?? '',
+		assets: await getQuestionAssets(row.id),
+		meta: {
+			qualification: row.qualification ?? 'GCSE',
+			board: row.board ?? 'AQA',
+			subject: row.subject ?? 'Combined Science',
+			tier: row.tier ?? 'Higher',
+			paper: row.paper ?? 'Question paper',
+			topic: topicFromRow(row),
+			questionType: row.command_word ?? 'Question',
+			marks: row.marks ?? checklist.length
+		},
+		transferDistance,
+		distanceLabel: distanceLabel(transferDistance),
+		constellationRole: constellationRole(transferDistance),
+		modelAnswer: await getModelAnswer(row.id, chain),
+		commonWeakAnswer: weakAnswer.text,
+		weakAnswerMissingStepIds: weakAnswer.missingStepIds,
+		checklist,
+		repairChain: repairChainFromSteps(chain),
+		practiceDraft: weakAnswer.text,
+		whyThisFits: membership.fit_notes ?? chain.summary
 	};
 }
 
-export function getPublicQuestionData(questionId = questions[0].id): PublicQuestionData {
-	const question = findQuestion(questionId);
-	const questionIndex = questions.findIndex((item) => item.id === question.id);
-	const nextQuestion = questions[(questionIndex + 1) % questions.length];
+async function getQuestionRow(questionId: string): Promise<QuestionRow> {
+	const row = await queryFirst<QuestionRow>(
+		`SELECT id, source_question_ref, prompt_text, context_text, command_word, marks, board,
+		        qualification, subject, subject_area, tier, paper, topic_path_json, metadata_json
+		 FROM questions
+		 WHERE id = ? OR slug = ?`,
+		[questionId, questionId]
+	);
+	if (!row) throw new Error(`Question not found: ${questionId}`);
+	return row;
+}
+
+async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
+	const rows = await queryRows<QuestionRow & MembershipRow>(
+		`SELECT q.id, q.source_question_ref, q.prompt_text, q.context_text, q.command_word, q.marks,
+		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
+		        q.topic_path_json, q.metadata_json,
+		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
+		        qac.fit_notes, qac.needs_human_review
+		 FROM question_answer_chains qac
+		 JOIN questions q ON q.id = qac.question_id
+		 WHERE qac.answer_chain_id = ?
+		 ORDER BY CASE qac.transfer_distance
+			WHEN 'start' THEN 0
+			WHEN 'near' THEN 1
+			WHEN 'stretch' THEN 2
+			WHEN 'exam_transfer' THEN 3
+			ELSE 4
+		 END, COALESCE(qac.display_order, 999), q.year, q.source_question_ref`,
+		[chain.id]
+	);
+
+	return await Promise.all(rows.map((row) => hydrateQuestion(row, chain, row)));
+}
+
+async function getConstellationForChain(
+	chain: AnswerChain,
+	questions: Question[]
+): Promise<Constellation> {
+	const row = await queryFirst<ConstellationRow>(
+		`SELECT id, title, summary, answer_chain_id
+		 FROM constellations
+		 WHERE answer_chain_id = ?
+		 ORDER BY confidence DESC
+		 LIMIT 1`,
+		[chain.id]
+	);
+
+	return {
+		id: row?.id ?? chain.id,
+		title: row?.title ?? chain.title,
+		summary:
+			row?.summary ??
+			`${questions.length} chained questions that use the same answer-chain structure.`,
+		chainId: chain.id,
+		questionIds: questions.map((question) => question.id)
+	};
+}
+
+function nextQuestionAfter(questions: Question[], questionId: string): Question {
+	const index = questions.findIndex((question) => question.id === questionId);
+	return questions[(index + 1 + questions.length) % questions.length] ?? questions[0];
+}
+
+export async function getNavigationData(): Promise<NavigationData> {
+	const row = await queryFirst<{
+		primaryQuestionId: string;
+		primaryChainId: string;
+		primaryPracticeQuestionId: string;
+	}>(
+		`WITH primary_question AS (
+			SELECT q.id AS question_id, qac.answer_chain_id
+			FROM question_answer_chains qac
+			JOIN questions q ON q.id = qac.question_id
+			WHERE qac.transfer_distance = 'start'
+			ORDER BY qac.needs_human_review ASC, COALESCE(qac.fit_confidence, 0) DESC, q.id
+			LIMIT 1
+		)
+		SELECT
+			pq.question_id AS primaryQuestionId,
+			pq.answer_chain_id AS primaryChainId,
+			COALESCE((
+				SELECT q2.id
+				FROM question_answer_chains qac2
+				JOIN questions q2 ON q2.id = qac2.question_id
+				WHERE qac2.answer_chain_id = pq.answer_chain_id AND q2.id != pq.question_id
+				ORDER BY CASE qac2.transfer_distance WHEN 'near' THEN 0 WHEN 'stretch' THEN 1 ELSE 2 END,
+				         COALESCE(qac2.display_order, 999)
+				LIMIT 1
+			), pq.question_id) AS primaryPracticeQuestionId
+		FROM primary_question pq`
+	);
+
+	if (!row) {
+		throw new Error('No chained questions have been imported into D1.');
+	}
+
+	return row;
+}
+
+export async function getPublicQuestionData(questionId: string): Promise<PublicQuestionData> {
+	const row = await getQuestionRow(questionId);
+	const membership = await getPrimaryMembership(row.id);
+	const chain = await getChain(membership.answer_chain_id);
+	const questions = await getQuestionsForChain(chain);
+	const question = await hydrateQuestion(row, chain, membership);
+	const constellation = await getConstellationForChain(chain, questions);
 
 	return {
 		question,
 		chain,
 		constellation,
-		nextQuestion
+		nextQuestion: nextQuestionAfter(questions, question.id)
 	};
 }
 
-export function getAnswerChainPageData(chainId: string): AnswerChainPageData {
+export async function getAnswerChainPageData(chainId: string): Promise<AnswerChainPageData> {
+	const chain = await getChain(chainId);
+	const questions = await getQuestionsForChain(chain);
+	if (questions.length === 0) throw new Error(`No questions for chain: ${chainId}`);
+	const constellation = await getConstellationForChain(chain, questions);
+
 	return {
-		chain: findChain(chainId),
+		chain,
 		startQuestion: questions[0],
-		questions: getQuestionsForChain(chainId),
+		questions,
 		constellation
 	};
 }
 
-export function getQuestionChainPageData(questionId: string): QuestionChainPageData {
-	const question = findQuestion(questionId);
-	const questionIndex = questions.findIndex((item) => item.id === question.id);
-	const practiceQuestion = questions[(questionIndex + 1) % questions.length];
+export async function getQuestionChainPageData(questionId: string): Promise<QuestionChainPageData> {
+	const publicData = await getPublicQuestionData(questionId);
+	const questions = await getQuestionsForChain(publicData.chain);
 
 	return {
-		...getAnswerChainPageData(chain.id),
-		question,
-		practiceQuestion
+		chain: publicData.chain,
+		startQuestion: questions[0],
+		questions,
+		constellation: publicData.constellation,
+		question: publicData.question,
+		practiceQuestion: publicData.nextQuestion
 	};
 }
 
-export function getConstellationPageData(chainId: string): ConstellationPageData {
+export async function getConstellationPageData(chainId: string): Promise<ConstellationPageData> {
+	const data = await getAnswerChainPageData(chainId);
 	return {
-		...getAnswerChainPageData(chainId),
-		practiceQuestion: questions[1]
+		...data,
+		practiceQuestion: data.questions[1] ?? data.questions[0]
 	};
 }
 
-export function getPracticePageData(questionId: string): PracticePageData {
-	const question = findQuestion(questionId);
-	const questionIndex = questions.findIndex((item) => item.id === question.id);
-	const nextQuestion = questions[(questionIndex + 1) % questions.length];
+export async function getPracticePageData(questionId: string): Promise<PracticePageData> {
+	const publicData = await getPublicQuestionData(questionId);
+	const questions = await getQuestionsForChain(publicData.chain);
+	const nextQuestion = nextQuestionAfter(questions, publicData.question.id);
 
 	return {
-		question,
-		chain,
-		constellation,
+		question: publicData.question,
+		chain: publicData.chain,
+		constellation: publicData.constellation,
 		questions,
 		nextQuestion,
-		memoryEntry: findMemoryEntry()
+		memoryEntry: {
+			id: `memory-${publicData.chain.id}`,
+			chainId: publicData.chain.id,
+			savedFromQuestionId: publicData.question.id,
+			lastPractisedQuestionId: publicData.question.id,
+			nextReviewQuestionId: nextQuestion.id,
+			mastery: 'building',
+			lastSavedLabel: 'Ready to save after repair',
+			reviewLabel: 'Review next',
+			attemptedQuestionIds: [publicData.question.id],
+			recurringMissingStepId: publicData.chain.steps[1]?.id ?? publicData.chain.steps[0]?.id
+		}
 	};
 }
 
-export function getThinkingMemoryPageData(): ThinkingMemoryPageData {
-	const entries = memoryEntries.map(hydrateMemoryEntry);
+async function hydrateMemoryEntry(entry: MemoryEntry) {
+	const chain = await getChain(entry.chainId);
+	const recurringMissingStep =
+		chain.steps.find((step) => step.id === entry.recurringMissingStepId) ?? chain.steps[0];
+
+	return {
+		...entry,
+		chain,
+		savedFromQuestion: (await getPublicQuestionData(entry.savedFromQuestionId)).question,
+		lastPractisedQuestion: (await getPublicQuestionData(entry.lastPractisedQuestionId)).question,
+		nextReviewQuestion: (await getPublicQuestionData(entry.nextReviewQuestionId)).question,
+		recurringMissingStep
+	};
+}
+
+export async function getThinkingMemoryPageData(): Promise<ThinkingMemoryPageData> {
+	const rows = await queryRows<{
+		chain_id: string;
+		start_question_id: string;
+		next_question_id: string;
+		recurring_step_id: string;
+	}>(
+		`SELECT ac.id AS chain_id,
+		        MIN(CASE WHEN qac.transfer_distance = 'start' THEN qac.question_id ELSE NULL END) AS start_question_id,
+		        MIN(CASE WHEN qac.transfer_distance != 'start' THEN qac.question_id ELSE NULL END) AS next_question_id,
+		        MIN(acs.id) AS recurring_step_id
+		 FROM answer_chains ac
+		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
+		 JOIN answer_chain_steps acs ON acs.answer_chain_id = ac.id
+		 GROUP BY ac.id
+		 ORDER BY COALESCE(ac.confidence, 0) DESC, ac.id
+		 LIMIT 8`
+	);
+
+	const entries = await Promise.all(
+		rows
+			.filter((row) => row.start_question_id)
+			.map((row, index): MemoryEntry => {
+				const nextQuestionId = row.next_question_id ?? row.start_question_id;
+				return {
+					id: `memory-${row.chain_id}`,
+					chainId: row.chain_id,
+					savedFromQuestionId: row.start_question_id,
+					lastPractisedQuestionId: row.start_question_id,
+					nextReviewQuestionId: nextQuestionId,
+					mastery: index % 3 === 0 ? 'building' : index % 3 === 1 ? 'new' : 'secure',
+					lastSavedLabel: 'Available chain',
+					reviewLabel: index === 0 ? 'Review today' : 'Practice transfer',
+					attemptedQuestionIds: [row.start_question_id],
+					recurringMissingStepId: row.recurring_step_id
+				};
+			})
+			.map(hydrateMemoryEntry)
+	);
+
+	if (entries.length === 0) {
+		throw new Error('No answer chains have been imported into D1.');
+	}
 
 	return {
 		entries,
 		selected: entries[0],
-		questions
+		questions: entries.map((entry) => entry.nextReviewQuestion)
 	};
 }

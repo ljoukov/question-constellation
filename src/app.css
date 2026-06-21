@@ -56,6 +56,41 @@ a {
 	background: #eef2f5;
 }
 
+.route-loading {
+	position: fixed;
+	top: 0.75rem;
+	left: 50%;
+	z-index: 50;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
+	min-height: 2.35rem;
+	padding: 0.45rem 0.8rem;
+	border: 1px solid #c9d6e8;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.96);
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+	color: #0b1020;
+	font-size: 0.88rem;
+	font-weight: 820;
+	transform: translateX(-50%);
+}
+
+.loading-spinner {
+	width: 1rem;
+	height: 1rem;
+	border: 2px solid #c8d5e7;
+	border-top-color: #0b57eb;
+	border-radius: 50%;
+	animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 .phone-page {
 	width: min(100%, 430px);
 	min-height: var(--app-viewport-height, 100vh);
@@ -158,9 +193,13 @@ a {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr);
 	gap: 1rem;
-	align-items: center;
+	align-items: start;
 	margin: 0 0 1rem;
 	padding: 1.1rem;
+}
+
+.question-content {
+	min-width: 0;
 }
 
 .exam-question-card h2,
@@ -179,6 +218,70 @@ a {
 .exam-question-card h2 {
 	font-size: 1.32rem;
 	line-height: 1.25;
+	white-space: pre-wrap;
+}
+
+.question-context,
+.question-context-card p {
+	margin: 0 0 0.95rem;
+	color: #334155;
+	font-size: 0.95rem;
+	font-weight: 620;
+	line-height: 1.45;
+	white-space: pre-wrap;
+}
+
+.question-context-card {
+	margin: 0 0 1rem;
+	padding: 1rem;
+	border: 1px solid #d9e0ea;
+	border-radius: 0.55rem;
+	background: #f8fafc;
+}
+
+.question-context-card p {
+	margin: 0;
+}
+
+.question-assets {
+	display: grid;
+	gap: 0.8rem;
+	margin-top: 1rem;
+}
+
+.question-assets figure {
+	margin: 0;
+	border: 1px solid #d9e0ea;
+	border-radius: 0.45rem;
+	background: #f8fafc;
+	overflow: hidden;
+}
+
+.question-assets img {
+	display: block;
+	width: 100%;
+	max-height: 34rem;
+	object-fit: contain;
+	background: #ffffff;
+}
+
+.question-assets figcaption {
+	padding: 0.5rem 0.7rem;
+	color: #475569;
+	font-size: 0.82rem;
+	font-weight: 760;
+}
+
+.compact-assets {
+	margin-top: 0.65rem;
+}
+
+.compact-assets img {
+	max-height: 15rem;
+}
+
+.practice-assets {
+	margin: 0 0 1rem;
 }
 
 .teaching-card {
@@ -323,6 +426,7 @@ a {
 	margin: 0;
 	color: #0b1020;
 	font-weight: 760;
+	white-space: pre-wrap;
 }
 
 .mark-list {
@@ -553,6 +657,7 @@ a {
 
 .header-title {
 	justify-self: center;
+	width: 100%;
 	min-width: 0;
 	color: #075323;
 	font-size: 1rem;
@@ -1011,6 +1116,7 @@ a {
 	font-weight: 880;
 	line-height: 1.32;
 	letter-spacing: 0;
+	white-space: pre-wrap;
 }
 
 .accordion-card {

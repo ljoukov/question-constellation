@@ -2,165 +2,130 @@
 	import { resolve } from '$app/paths';
 	import {
 		ArrowRight,
-		Atom,
 		Bookmark,
-		Droplet,
-		Info,
-		Leaf,
-		Link2,
-		Lock,
+		Brain,
+		CheckCircle2,
+		ChevronRight,
 		Network,
 		RefreshCcw,
-		Target,
-		TriangleAlert,
-		Zap
+		Route
 	} from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	const selectedQuestionHref = $derived(
+		resolve('/questions/[questionId]', { questionId: data.selected.savedFromQuestion.id })
+	);
+	const selectedPracticeHref = $derived(
+		resolve('/questions/[questionId]/practice', { questionId: data.selected.nextReviewQuestion.id })
+	);
 </script>
 
 <svelte:head>
 	<title>Thinking Memory | Question Constellation</title>
 	<meta
 		name="description"
-		content="Saved GCSE answer chains for retrieval, review, and transfer practice."
+		content="A public preview of earned GCSE answer chains from the question bank."
 	/>
 </svelte:head>
 
-<main class="flow-page memory-page">
+<main class="flow-page thinking-memory-page">
 	<header class="app-header">
-		<a
-			class="brand-lockup"
-			href={resolve('/questions/[questionId]', { questionId: data.selected.savedFromQuestion.id })}
-		>
+		<a class="brand-lockup" href={selectedQuestionHref}>
 			<Network size={30} strokeWidth={1.9} />
 			<strong>Question Constellation</strong>
 		</a>
-		<strong class="header-title desktop-centered">Thinking Memory</strong>
-		<Bookmark class="bookmark" size={24} strokeWidth={2.1} />
+		<nav class="desktop-nav" aria-label="Main navigation">
+			<a href={selectedQuestionHref}>Question</a>
+			<a href={selectedPracticeHref}>Practice</a>
+		</nav>
+		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
 	</header>
 
-	<div class="memory-grid">
-		<aside class="memory-library">
-			<h1>Earned chains</h1>
-			<div class="subject-row">
-				<Leaf size={22} />
-				<span>Biology</span>
-			</div>
-			<a class="memory-entry active" href={resolve('/thinking-memory')}>
-				<span class="icon-tile"><Atom size={23} /></span>
-				<span>
-					<strong>Respiration -> energy</strong>
-					<small>{data.selected.lastSavedLabel.toLowerCase()}</small>
-				</span>
-				<ArrowRight size={22} />
-			</a>
-			<div class="memory-entry locked">
-				<span class="icon-tile muted"><Lock size={23} /></span>
-				<span>More chains appear after practice</span>
-			</div>
-			<section class="bottom-note library-note">
-				<Info size={19} color="#0b57eb" />
-				<span>You only see chains you have earned through practice.</span>
-			</section>
-		</aside>
+	<div class="flow-grid memory-grid">
+		<section class="flow-main">
+			<p class="breadcrumb">Thinking Memory / earned answer chains</p>
+			<h1 class="desktop-title">{data.selected.chain.title}</h1>
+			<p class="workspace-subtitle">{data.selected.chain.summary}</p>
 
-		<section class="memory-detail">
-			<h1 class="saved-title">Respiration -> energy</h1>
-			<p class="saved-subtitle">Saved to Thinking Memory</p>
-
-			<section class="chain-card" aria-label={data.selected.chain.concreteText}>
-				<div class="chain-icons compact">
-					<div class="chain-node">
-						<span class="chain-node-icon"><Droplet size={24} strokeWidth={2.2} /></span>
-						<span>blood flow</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><strong>O₂</strong></span>
-						<span>oxygen</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><Atom size={24} strokeWidth={2.2} /></span>
-						<span>respiration</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><Zap size={24} strokeWidth={2.2} /></span>
-						<span>energy</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><Target size={24} strokeWidth={2.2} /></span>
-						<span>effect</span>
-					</div>
+			<section class="answer-panel">
+				<div class="side-title-row">
+					<h2>Selected chain</h2>
+					<Brain size={24} />
+				</div>
+				<div class="chain-line">
+					{#each data.selected.chain.steps as step, index (step.id)}
+						<span>{step.short}</span>
+						{#if index < data.selected.chain.steps.length - 1}
+							<ChevronRight size={18} />
+						{/if}
+					{/each}
+				</div>
+				<p>
+					<strong>Recurring missing link:</strong>
+					{data.selected.recurringMissingStep.commonOmission}
+				</p>
+				<div class="desktop-action-row">
+					<a class="primary-button" href={selectedPracticeHref}>
+						<RefreshCcw size={22} />
+						Review this chain
+					</a>
+					<a class="secondary-button" href={selectedQuestionHref}>
+						<Route size={22} />
+						Original question
+					</a>
 				</div>
 			</section>
 
-			<section class="stat-card">
-				<span class="icon-tile"><Link2 size={22} /></span>
-				<span>
-					<strong>Used in {data.selected.attemptedQuestionIds.length} questions</strong>
-					You applied this chain twice.
-				</span>
-			</section>
-
-			<section class="warning-card">
-				<span class="icon-tile warning"><TriangleAlert size={22} /></span>
-				<span>
-					<strong>Often skips: respiration</strong>
-					This link is commonly missing.
-				</span>
-			</section>
-
-			<section class="bottom-note">
-				<Info size={19} color="#0b57eb" />
-				<span>Your memory grows after practice, not before.</span>
+			<section class="memory-library">
+				<h2>Available chains</h2>
+				<div class="linked-list">
+					{#each data.entries as entry (entry.id)}
+						<a class="mini-row" href={resolve('/chains/[chainId]', { chainId: entry.chain.id })}>
+							<Brain size={19} />
+							<span>
+								<strong>{entry.chain.title}</strong><br />
+								<small
+									>{entry.savedFromQuestion.meta.subject} - {entry.savedFromQuestion.meta
+										.topic}</small
+								>
+							</span>
+							<ChevronRight size={17} />
+						</a>
+					{/each}
+				</div>
 			</section>
 		</section>
 
-		<aside class="review-plan">
-			<h2>Next retrieval</h2>
-			<a
-				class="question-row review-question"
-				href={resolve('/questions/[questionId]/practice', {
-					questionId: data.selected.nextReviewQuestion.id
-				})}
-			>
-				<span class="number-dot">5</span>
-				<h3>{data.selected.nextReviewQuestion.title}</h3>
-				<span class={['tag', data.selected.nextReviewQuestion.transferDistance]}>
-					{data.selected.nextReviewQuestion.distanceLabel}
-				</span>
-			</a>
-			<p>Same chain, less obvious topic.</p>
-			<div class="button-stack">
-				<a
-					class="green-button"
-					href={resolve('/questions/[questionId]/practice', {
-						questionId: data.selected.nextReviewQuestion.id
-					})}
-				>
-					Review this chain
+		<aside class="flow-sidebar">
+			<section class="side-card">
+				<div class="side-title-row">
+					<h2>Next review</h2>
+					<CheckCircle2 size={22} />
+				</div>
+				<p>{data.selected.nextReviewQuestion.title}</p>
+				<a class="open-link" href={selectedPracticeHref}>
+					Open practice <ArrowRight size={17} />
 				</a>
-				<a
-					class="secondary-button"
-					href={resolve('/questions/[questionId]/practice', { questionId: data.questions[2].id })}
-				>
-					<ArrowRight size={21} />
-					Continue to question 3
-				</a>
-				<a
-					class="secondary-button success"
-					href={resolve('/questions/[questionId]', {
-						questionId: data.selected.savedFromQuestion.id
-					})}
-				>
-					<RefreshCcw size={21} />
-					Reset / relearn
-				</a>
-			</div>
-			<section class="helper-line">
-				<Info size={19} />
-				Model answers stay behind each reviewed question.
+			</section>
+
+			<section class="side-card">
+				<h2>Transfer questions</h2>
+				<div class="linked-list">
+					{#each data.questions as question (question.id)}
+						<a
+							class="mini-row"
+							href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
+						>
+							<span>
+								<strong>{question.title}</strong><br />
+								<small>{question.distanceLabel} - {question.meta.marks} marks</small>
+							</span>
+							<ChevronRight size={17} />
+						</a>
+					{/each}
+				</div>
 			</section>
 		</aside>
 	</div>

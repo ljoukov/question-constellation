@@ -309,7 +309,7 @@ start_session() {
 
   session_name="$(session_name_for_port "${port}")"
   log_file="$(log_file_for_port "${port}")"
-  command="$(printf 'cd %q && pnpm run dev -- --host localhost --port %q 2>&1 | tee %q' "${ROOT_DIR}" "${port}" "${log_file}")"
+  command="$(printf 'cd %q && pnpm run dev --host 127.0.0.1 --port %q 2>&1 | tee %q' "${ROOT_DIR}" "${port}" "${log_file}")"
   tmux new-session -d -s "${session_name}" "${command}"
 
   echo "Started ${session_name}"

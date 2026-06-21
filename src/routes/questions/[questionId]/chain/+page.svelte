@@ -24,6 +24,9 @@
 	const practiceHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.practiceQuestion.id })
 	);
+	const constellationHref = $derived(
+		resolve('/constellations/[chainId]', { chainId: data.chain.id })
+	);
 </script>
 
 <svelte:head>
@@ -83,7 +86,22 @@
 						<h2>Current question</h2>
 						<div class="compact-question">
 							<span class="question-letter">Q</span>
-							<p>{data.question.prompt}</p>
+							<div class="question-content compact">
+								{#if data.question.context}
+									<p class="question-context">{data.question.context}</p>
+								{/if}
+								<p>{data.question.prompt}</p>
+								{#if data.question.assets.length > 0}
+									<div class="question-assets compact-assets" aria-label="Question source images">
+										{#each data.question.assets as asset (asset.id)}
+											<figure>
+												<img src={asset.publicPath} alt={asset.altText} loading="lazy" />
+												<figcaption>{asset.sourceLabel}</figcaption>
+											</figure>
+										{/each}
+									</div>
+								{/if}
+							</div>
 						</div>
 					</section>
 
@@ -148,7 +166,11 @@
 					</a>
 				{/each}
 			</section>
-			<a class="primary-button" href={practiceHref}>
+			<a class="primary-button" href={constellationHref}>
+				<ClipboardList size={23} />
+				Open constellation
+			</a>
+			<a class="secondary-button" href={practiceHref}>
 				<ArrowRight size={23} />
 				Start question 2
 			</a>

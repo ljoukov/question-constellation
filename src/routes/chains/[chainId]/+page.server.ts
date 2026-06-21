@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	let data;
 
 	try {
-		data = getAnswerChainPageData(params.chainId);
+		data = await getAnswerChainPageData(params.chainId);
 	} catch {
 		throw error(404, 'Answer chain not found.');
 	}

@@ -16,9 +16,11 @@ scripts/dev-server.sh start
 ```
 
 There is no login flow in the current UI pass. The D1 database is bound in `wrangler.jsonc`
-as `QUESTION_DB`, but the app currently uses generated server-side mock data only.
+as `QUESTION_DB`; deployed Workers use the native binding, while local Vite development uses
+Cloudflare REST credentials from `.env.local`.
 Question-paper image assets are stored in the `question-constellation` R2 bucket through the
-`QUESTION_R2` binding and served by the app from `/images/papers/...`.
+`QUESTION_R2` binding and served by the app from `/images/papers/...`. Local Vite uses the same
+route with Cloudflare R2 REST fallback.
 
 ## Validation
 
@@ -26,6 +28,12 @@ Question-paper image assets are stored in the `question-constellation` R2 bucket
 pnpm run check
 pnpm run test
 pnpm run build
+```
+
+To import the currently chained question set into D1:
+
+```sh
+pnpm run import:chained
 ```
 
 To refresh extracted paper images in R2 after running `pnpm run extract:aqa`:
@@ -59,4 +67,5 @@ pnpm run build
 pnpm wrangler deploy
 ```
 
-No Worker runtime secrets are required for the current mocked UI.
+No Worker runtime secrets are required for the current UI. Local Cloudflare operator credentials
+belong only in `.env.local`.

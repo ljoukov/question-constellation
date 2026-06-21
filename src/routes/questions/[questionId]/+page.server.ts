@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
-		return getPublicQuestionData(params.questionId);
+		return await getPublicQuestionData(params.questionId);
 	} catch {
 		throw error(404, 'Question not found.');
 	}

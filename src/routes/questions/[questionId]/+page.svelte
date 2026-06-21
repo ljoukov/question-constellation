@@ -70,8 +70,35 @@
 
 			<section class="exam-question-card">
 				<div class="question-letter">Q</div>
-				<h2>{data.question.prompt}</h2>
+				<div class="question-content">
+					{#if data.question.context}
+						<p class="question-context">{data.question.context}</p>
+					{/if}
+					<h2>{data.question.prompt}</h2>
+				</div>
 			</section>
+
+			<div class="desktop-action-row">
+				<a class="primary-button" href={chainHref}>
+					<Link2 size={23} />
+					Show answer chain
+				</a>
+				<a class="secondary-button" href={practiceHref}>
+					<PenLine size={23} />
+					Try without hints
+				</a>
+			</div>
+
+			{#if data.question.assets.length > 0}
+				<div class="question-assets public-question-assets" aria-label="Question source images">
+					{#each data.question.assets as asset (asset.id)}
+						<figure>
+							<img src={asset.publicPath} alt={asset.altText} loading="eager" />
+							<figcaption>{asset.sourceLabel}</figcaption>
+						</figure>
+					{/each}
+				</div>
+			{/if}
 
 			<section class="teaching-card">
 				<span class="icon-tile success"><Target size={28} /></span>
@@ -80,17 +107,6 @@
 					<p>Build a cause-and-effect explanation from the given change to the final symptom.</p>
 				</div>
 			</section>
-
-			<div class="desktop-action-row">
-				<a class="primary-button" href={practiceHref}>
-					<PenLine size={23} />
-					Try it first
-				</a>
-				<a class="secondary-button" href={chainHref}>
-					<Link2 size={23} />
-					Reveal answer chain
-				</a>
-			</div>
 
 			<p class="helper-line">
 				<Info size={18} />

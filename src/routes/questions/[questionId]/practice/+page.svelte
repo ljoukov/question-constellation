@@ -135,6 +135,12 @@
 			</aside>
 
 			<section class="flow-main practice-workspace">
+				{#if data.question.context}
+					<section class="question-context-card">
+						<p>{data.question.context}</p>
+					</section>
+				{/if}
+
 				<h1 class="attempt-question">{data.question.prompt}</h1>
 
 				<section class="memory-first-card">
@@ -163,6 +169,17 @@
 						Use mark checklist
 					</button>
 				</div>
+
+				{#if data.question.assets.length > 0}
+					<div class="question-assets practice-assets" aria-label="Question source images">
+						{#each data.question.assets as asset (asset.id)}
+							<figure>
+								<img src={asset.publicPath} alt={asset.altText} loading="lazy" />
+								<figcaption>{asset.sourceLabel}</figcaption>
+							</figure>
+						{/each}
+					</div>
+				{/if}
 			</section>
 		</div>
 	{:else}
@@ -240,7 +257,7 @@
 				<div class="button-stack">
 					<a class="primary-button" href={resolve('/thinking-memory')}>
 						<Save size={22} />
-						Save repaired chain
+						View in Thinking Memory
 					</a>
 					<a
 						class="secondary-button"
@@ -248,9 +265,12 @@
 					>
 						Show model answer
 					</a>
-					<button class="text-button" type="button" onclick={() => (checked = false)}>
-						Continue without saving
-					</button>
+					<a
+						class="text-button"
+						href={resolve('/questions/[questionId]/practice', { questionId: data.nextQuestion.id })}
+					>
+						Next question
+					</a>
 				</div>
 			</section>
 		</div>
