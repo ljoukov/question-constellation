@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
 	import {
 		ArrowLeft,
@@ -76,7 +77,7 @@
 	const statusText = $derived(`${gradePhase}...`);
 	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
 	const streamedThoughtPreview = $derived(lastMarkdownParagraph(streamedThought));
-	const feedbackItems = $derived(markdownListItems(gradeResult?.feedbackMarkdown ?? ''));
+	const feedbackMarkdown = $derived((gradeResult?.feedbackMarkdown ?? '').trim());
 	const hasMissingLinks = $derived(missingItems.length > 0);
 
 	async function checkAnswer() {
@@ -146,13 +147,6 @@
 			.map((paragraph) => paragraph.trim())
 			.filter(Boolean);
 		return paragraphs.at(-1) ?? '';
-	}
-
-	function markdownListItems(markdown: string) {
-		return markdown
-			.split(/\n+/)
-			.map((line) => line.trim().replace(/^[-*]\s+/, ''))
-			.filter(Boolean);
 	}
 
 	function parseSseBlock(block: string): SseMessage | null {
@@ -441,21 +435,10 @@
 					</section>
 				{/if}
 
-				{#if feedbackItems.length > 0}
+				{#if feedbackMarkdown}
 					<section class="result-card feedback-card">
 						<h2>Feedback</h2>
-						<ul class="feedback-list">
-							{#each feedbackItems as item, index (index)}
-								<li>{item}</li>
-							{/each}
-						</ul>
-					</section>
-				{/if}
-
-				{#if gradeResult?.thinkingMarkdown}
-					<section class="result-card thinking-card">
-						<h2>Grading notes</h2>
-						<p>{gradeResult.thinkingMarkdown}</p>
+						<MarkdownContent markdown={feedbackMarkdown} class="feedback-markdown" />
 					</section>
 				{/if}
 
