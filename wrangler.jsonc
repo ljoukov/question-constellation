@@ -11,7 +11,8 @@
 		"run_worker_first": true
 	},
 	"vars": {
-		"CHATGPT_RESPONSES_WEBSOCKET_MODE": "off"
+		"CHATGPT_RESPONSES_WEBSOCKET_MODE": "off",
+		"OPENAI_RESPONSES_WEBSOCKET_MODE": "off"
 	},
 	"d1_databases": [
 		{

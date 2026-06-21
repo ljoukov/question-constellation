@@ -62,15 +62,20 @@ function gradingRuntimeDiagnostics(platformEnv: unknown) {
 	const envRecord =
 		platformEnv && typeof platformEnv === 'object' ? (platformEnv as Record<string, unknown>) : {};
 	return {
+		hasOpenAiApiKey: typeof envRecord.OPENAI_API_KEY === 'string',
 		hasTokenProviderUrl: typeof envRecord.CHATGPT_AUTH_TOKEN_PROVIDER_URL === 'string',
 		hasTokenProviderApiKey:
 			typeof envRecord.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY === 'string' ||
 			typeof envRecord.CHATGPT_AUTH_API_KEY === 'string',
 		hasLegacyApiKey: typeof envRecord.CHATGPT_AUTH_API_KEY === 'string',
 		hasTokenProviderStore: typeof envRecord.CHATGPT_AUTH_TOKEN_PROVIDER_STORE === 'string',
-		websocketMode:
+		chatGptWebsocketMode:
 			typeof envRecord.CHATGPT_RESPONSES_WEBSOCKET_MODE === 'string'
 				? envRecord.CHATGPT_RESPONSES_WEBSOCKET_MODE
+				: 'off',
+		openAiWebsocketMode:
+			typeof envRecord.OPENAI_RESPONSES_WEBSOCKET_MODE === 'string'
+				? envRecord.OPENAI_RESPONSES_WEBSOCKET_MODE
 				: 'off'
 	};
 }

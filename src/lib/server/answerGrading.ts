@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/private';
 import { getPracticePageData, type PracticePageData } from '$lib/server/questionData';
 import type { LlmStreamEvent, LlmTextModelId } from '@ljoukov/llm';
 
-const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
+const GRADING_MODEL: LlmTextModelId = 'gpt-5.5-fast';
 const GRADING_THINKING_LEVEL = 'medium';
 const NONE = 'none';
 
@@ -65,6 +65,10 @@ export function configureLlmProcessEnv(platformEnv?: unknown): void {
 	const tokenProviderStore =
 		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_STORE') ??
 		env.CHATGPT_AUTH_TOKEN_PROVIDER_STORE;
+	const openAiApiKey = getPlatformEnvValue(platformEnv, 'OPENAI_API_KEY') ?? env.OPENAI_API_KEY;
+	if (openAiApiKey) {
+		process.env.OPENAI_API_KEY = openAiApiKey;
+	}
 	if (tokenProviderUrl) {
 		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_URL = tokenProviderUrl;
 	}
@@ -76,6 +80,7 @@ export function configureLlmProcessEnv(platformEnv?: unknown): void {
 		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_STORE = tokenProviderStore;
 	}
 	process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE = 'off';
+	process.env.OPENAI_RESPONSES_WEBSOCKET_MODE = 'off';
 }
 
 function clampMark(value: number, maxMarks: number): number {

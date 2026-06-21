@@ -12,6 +12,8 @@ declare global {
 				CHATGPT_AUTH_API_KEY?: string;
 				CHATGPT_AUTH_TOKEN_PROVIDER_STORE?: string;
 				CHATGPT_RESPONSES_WEBSOCKET_MODE?: string;
+				OPENAI_RESPONSES_WEBSOCKET_MODE?: string;
+				OPENAI_API_KEY?: string;
 				QUESTION_DB?: D1Database;
 				QUESTION_R2?: R2Bucket;
 				[key: string]: unknown;
