@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Question Constellation</title>
+	<title>Constellation | Question Constellation</title>
 </svelte:head>
 
 <main class="flow-page">

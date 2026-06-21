@@ -1,0 +1,157 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import {
+		ArrowLeft,
+		ArrowRight,
+		Atom,
+		BookOpen,
+		Bookmark,
+		ChevronRight,
+		ClipboardList,
+		Droplet,
+		Lightbulb,
+		Target,
+		TriangleAlert,
+		Zap
+	} from '@lucide/svelte';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
+
+	const questionHref = $derived(
+		resolve('/questions/[questionId]', { questionId: data.question.id })
+	);
+	const practiceHref = $derived(
+		resolve('/questions/[questionId]/practice', { questionId: data.practiceQuestion.id })
+	);
+</script>
+
+<svelte:head>
+	<title>Same answer chain | Question Constellation</title>
+	<meta
+		name="description"
+		content="Reveal the answer chain and see how it transfers to related GCSE questions."
+	/>
+</svelte:head>
+
+<main class="flow-page chain-reveal-page">
+	<header class="app-header compact-header">
+		<a class="icon-button" href={questionHref} aria-label="Back to question">
+			<ArrowLeft size={25} strokeWidth={2.1} />
+		</a>
+		<a class="brand-lockup" href={questionHref}>
+			<strong>Question Constellation</strong>
+		</a>
+		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
+	</header>
+
+	<div class="flow-grid chain-grid">
+		<section class="flow-main">
+			<div class="section-intro">
+				<h1 class="desktop-title">Same answer chain</h1>
+				<p>Use this to explain how a supply change becomes a symptom.</p>
+			</div>
+
+			<section class="chain-card large-chain" aria-label={data.chain.concreteText}>
+				<div class="chain-icons">
+					<div class="chain-node">
+						<span class="chain-node-icon"><Droplet size={25} strokeWidth={2.2} /></span>
+						<span>blood flow</span>
+					</div>
+					<div class="chain-node">
+						<span class="chain-node-icon"><strong>O₂</strong></span>
+						<span>oxygen</span>
+					</div>
+					<div class="chain-node">
+						<span class="chain-node-icon"><Atom size={25} strokeWidth={2.2} /></span>
+						<span>respiration</span>
+					</div>
+					<div class="chain-node">
+						<span class="chain-node-icon"><Zap size={25} strokeWidth={2.2} /></span>
+						<span>energy</span>
+					</div>
+					<div class="chain-node">
+						<span class="chain-node-icon"><Target size={25} strokeWidth={2.2} /></span>
+						<span>pain</span>
+					</div>
+				</div>
+			</section>
+
+			<div class="chain-teaching-grid">
+				<div class="answer-stack">
+					<section class="answer-panel">
+						<h2>Current question</h2>
+						<div class="compact-question">
+							<span class="question-letter">Q</span>
+							<p>{data.question.prompt}</p>
+						</div>
+					</section>
+
+					<section class="answer-panel resources-panel">
+						<h2>Use after you understand the chain</h2>
+						<p>
+							These resources explain how the links cause the effect and how examiners award marks.
+						</p>
+						<a class="resource-row" href={questionHref}>
+							<BookOpen size={23} />
+							Show model answer
+							<ChevronRight size={22} />
+						</a>
+						<a
+							class="resource-row"
+							href={resolve('/questions/[questionId]/practice', { questionId: data.question.id })}
+						>
+							<ClipboardList size={23} />
+							Open mark checklist
+							<ChevronRight size={22} />
+						</a>
+						<div class="hint-card compact-hint">
+							<Lightbulb size={21} />
+							Try writing an answer using the chain first, then check it against the model and checklist.
+						</div>
+					</section>
+				</div>
+
+				<section class="answer-panel">
+					<h2>Why this earns marks</h2>
+					<ol class="mark-list">
+						{#each data.question.checklist as item, index (item.id)}
+							<li>
+								<span>{index + 1}</span>
+								{item.text}
+							</li>
+						{/each}
+					</ol>
+					<div class="inline-warning">
+						<TriangleAlert size={20} />
+						Common weak answer: {data.question.commonWeakAnswer}
+					</div>
+				</section>
+			</div>
+		</section>
+
+		<aside class="flow-sidebar practice-transfer">
+			<h2>Practice transfer</h2>
+			<p>These look different, but use the same chain.</p>
+			<section class="constellation-list" aria-label="Questions using this chain">
+				{#each data.questions as question, index (question.id)}
+					<a
+						class="question-row"
+						href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
+					>
+						<span class="number-dot">{index + 1}</span>
+						<h3>{question.title}</h3>
+						<span class="row-end">
+							<span class={['tag', question.transferDistance]}>{question.distanceLabel}</span>
+							<ChevronRight size={22} />
+						</span>
+					</a>
+				{/each}
+			</section>
+			<a class="primary-button" href={practiceHref}>
+				<ArrowRight size={23} />
+				Start question 2
+			</a>
+		</aside>
+	</div>
+</main>

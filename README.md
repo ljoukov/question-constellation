@@ -15,12 +15,8 @@ pnpm install
 scripts/dev-server.sh start
 ```
 
-Local auth uses the same server-side Firebase redirect/session shape as `the-observatory-admin`.
-In development, `/auth/relogin` also allows a local email shortcut.
-
-Required local env values are listed in `.env.example`. Any verified Google/Firebase user can enter.
-The D1 database is bound in `wrangler.jsonc`
-as `QUESTION_DB`, but the app currently uses generated server-side data only.
+There is no login flow in the current UI pass. The D1 database is bound in `wrangler.jsonc`
+as `QUESTION_DB`, but the app currently uses generated server-side mock data only.
 Question-paper image assets are stored in the `question-constellation` R2 bucket through the
 `QUESTION_R2` binding and served by the app from `/images/papers/...`.
 
@@ -63,8 +59,4 @@ pnpm run build
 pnpm wrangler deploy
 ```
 
-The Worker runtime needs these Cloudflare secrets:
-
-- `GOOGLE_SERVICE_ACCOUNT_JSON`
-- `GOOGLE_API_KEY`
-- `AUTH_COOKIE_SECRET`
+No Worker runtime secrets are required for the current mocked UI.

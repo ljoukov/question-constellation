@@ -1,11 +1,6 @@
-import { getPracticeData } from '$lib/server/questionData';
-import { error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	try {
-		return getPracticeData(params.familyId);
-	} catch {
-		throw error(404, 'Question family not found.');
-	}
+	throw redirect(307, `/questions/${params.familyId}/practice`);
 };

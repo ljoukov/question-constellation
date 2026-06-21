@@ -1,1036 +1,703 @@
-export type SubjectId = 'biology' | 'chemistry' | 'physics' | 'english' | 'history';
+export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer';
 
-export type Subject = {
-	id: SubjectId;
-	name: string;
-	shortName: string;
-	description: string;
-	tone: 'green' | 'blue' | 'violet' | 'orange' | 'gold';
-	icon: 'leaf' | 'flask' | 'atom' | 'book' | 'crown';
-};
-
-export type Pattern = {
-	id: string;
-	subjectId: SubjectId;
-	title: string;
-	parts: string[];
-	icon: 'link' | 'cycle' | 'network' | 'quote' | 'line' | 'nodes';
-	discoveredFromFamilyId: string;
-	mastery: number;
-	usedCount: number;
-	savedAt: string;
-	summary: string;
-	topics: string[];
-	questionFamilies: string[];
-};
-
-export type TransferDistance = 'near' | 'stretch' | 'exam-transfer';
-
-export type QuestionFamily = {
-	id: string;
-	subjectId: SubjectId;
+export type ExamMeta = {
+	qualification: string;
+	board: string;
+	subject: string;
+	tier: string;
+	paper: string;
 	topic: string;
+	questionType: string;
+	marks: number;
+};
+
+export type ChainStep = {
+	id: string;
+	short: string;
+	label: string;
+	role: 'given' | 'link' | 'process' | 'effect';
+	explanation: string;
+	markEvidence: string;
+	commonOmission: string;
+};
+
+export type MarkChecklistItem = {
+	id: string;
+	text: string;
+	stepId: string;
+};
+
+export type RepairChainNode = {
+	id: string;
+	label: string;
+	stepId: string | null;
+	icon: 'target' | 'droplet' | 'oxygen' | 'atom' | 'zap';
+};
+
+export type Question = {
+	id: string;
+	sourceRef: string;
 	title: string;
 	prompt: string;
-	meta: string;
 	context: string;
-	checks: string[];
-	practiceSteps: Array<{
-		id: string;
-		label: string;
-		question: string;
-		hint: string;
-		repair: string;
-		answerFragment: string;
-	}>;
-	revealedPatternId: string;
-	transferQuestions: Array<{
-		id: string;
-		subjectId: SubjectId;
-		topic: string;
-		title: string;
-		distance: TransferDistance;
-		description: string;
-	}>;
+	meta: ExamMeta;
+	transferDistance: TransferDistance;
+	distanceLabel: string;
+	constellationRole: string;
+	modelAnswer: string;
+	commonWeakAnswer: string;
+	weakAnswerMissingStepIds: string[];
+	checklist: MarkChecklistItem[];
+	repairChain: RepairChainNode[];
+	practiceDraft: string;
+	whyThisFits: string;
 };
 
-export type ProgressSummary = {
-	questionsPractised: number;
-	patternsSaved: number;
-	topicsExplored: number;
-	dayStreak: number;
+export type AnswerChain = {
+	id: string;
+	title: string;
+	canonicalText: string;
+	concreteText: string;
+	pageTitle: string;
+	summary: string;
+	steps: ChainStep[];
+	commonMissingLink: string;
+	modelAnswer: string;
 };
 
-export type HomeData = {
-	subjects: Subject[];
-	suggestedSubject: Subject;
-	suggestedFamily: QuestionFamily;
-	subjectFamilyLinks: Record<SubjectId, string>;
-	featuredPatterns: Pattern[];
-	progress: ProgressSummary;
+export type Constellation = {
+	id: string;
+	title: string;
+	summary: string;
+	chainId: string;
+	questionIds: string[];
 };
 
-export type PracticeData = {
-	subjects: Subject[];
-	subject: Subject;
-	family: QuestionFamily;
-	revealedPattern: Pattern;
-	relatedFamilies: QuestionFamily[];
+export type MemoryEntry = {
+	id: string;
+	chainId: string;
+	savedFromQuestionId: string;
+	lastPractisedQuestionId: string;
+	nextReviewQuestionId: string;
+	mastery: 'new' | 'building' | 'secure';
+	lastSavedLabel: string;
+	reviewLabel: string;
+	attemptedQuestionIds: string[];
+	recurringMissingStepId: string;
 };
 
-export type ThinkingMemoryData = {
-	subjects: Subject[];
-	patterns: Pattern[];
-	groupedPatterns: Array<{
-		subject: Subject;
-		patterns: Pattern[];
-	}>;
-	selectedPattern: Pattern;
-	sourceFamily: QuestionFamily;
-	recentlySaved: Pattern[];
-	recentlyUsed: Pattern[];
-	crossSubjectLinks: Array<{
-		from: Pattern;
-		to: Pattern;
-		reason: string;
-	}>;
+export type NavigationData = {
+	primaryQuestionId: string;
+	primaryChainId: string;
+	primaryPracticeQuestionId: string;
 };
 
-const subjects: Subject[] = [
-	{
-		id: 'biology',
-		name: 'Biology',
-		shortName: 'Biology',
-		description: 'Life processes, cells and living systems.',
-		tone: 'green',
-		icon: 'leaf'
-	},
-	{
-		id: 'chemistry',
-		name: 'Chemistry',
-		shortName: 'Chemistry',
-		description: 'Atoms, reactions and everyday materials.',
-		tone: 'blue',
-		icon: 'flask'
-	},
-	{
-		id: 'physics',
-		name: 'Physics',
-		shortName: 'Physics',
-		description: 'Energy, forces and how the world works.',
-		tone: 'violet',
-		icon: 'atom'
-	},
-	{
-		id: 'english',
-		name: 'English',
-		shortName: 'English',
-		description: 'Texts, ideas and how meaning is created.',
-		tone: 'orange',
-		icon: 'book'
-	},
-	{
-		id: 'history',
-		name: 'History',
-		shortName: 'History',
-		description: 'Events, change and historical interpretations.',
-		tone: 'gold',
-		icon: 'crown'
-	}
-];
+export type PublicQuestionData = {
+	question: Question;
+	chain: AnswerChain;
+	constellation: Constellation;
+	nextQuestion: Question;
+};
 
-const patterns: Pattern[] = [
-	{
-		id: 'cause-process-effect',
-		subjectId: 'biology',
-		title: 'Cause -> process -> effect',
-		parts: ['Cause', 'process', 'effect'],
-		icon: 'link',
-		discoveredFromFamilyId: 'blood-flow-heart',
-		mastery: 4,
-		usedCount: 8,
-		savedAt: '2h ago',
-		summary:
-			'Use this when one change leads to another through a biological or scientific process.',
-		topics: ['Circulation', 'Respiration', 'Photosynthesis', 'Enzymes'],
-		questionFamilies: [
-			'Blood flow and the heart',
-			'Gas exchange in lungs',
-			'How plants make food',
-			'Enzyme control reactions'
-		]
-	},
-	{
-		id: 'change-response',
-		subjectId: 'biology',
-		title: 'Change -> response',
-		parts: ['Change', 'response'],
-		icon: 'cycle',
-		discoveredFromFamilyId: 'blood-glucose-control',
-		mastery: 4,
-		usedCount: 3,
-		savedAt: '4h ago',
-		summary: 'Use this when a stimulus, condition or variable changes and the system responds.',
-		topics: ['Homeostasis', 'Hormones', 'Plant responses'],
-		questionFamilies: ['Blood glucose control', 'Temperature regulation', 'Phototropism']
-	},
-	{
-		id: 'substance-cell-energy-effect',
-		subjectId: 'biology',
-		title: 'Substance -> cell process -> energy -> effect',
-		parts: ['Substance', 'cell process', 'energy', 'effect'],
-		icon: 'network',
-		discoveredFromFamilyId: 'exercise-respiration',
-		mastery: 3,
-		usedCount: 3,
-		savedAt: 'Yesterday',
-		summary: 'Trace a substance into a cell-level process before explaining the visible outcome.',
-		topics: ['Glucose', 'Mitochondria', 'Respiration'],
-		questionFamilies: ['Exercise and respiration', 'Photosynthesis products', 'Cell metabolism']
-	},
-	{
-		id: 'structure-property',
-		subjectId: 'chemistry',
-		title: 'Structure -> property',
-		parts: ['Structure', 'property'],
-		icon: 'line',
-		discoveredFromFamilyId: 'giant-covalent-hardness',
-		mastery: 4,
-		usedCount: 6,
-		savedAt: 'Yesterday',
-		summary: 'Connect the arrangement of particles or bonds to an observable material property.',
-		topics: ['Bonding', 'Polymers', 'States of matter'],
-		questionFamilies: [
-			'Giant covalent structures',
-			'Simple molecular substances',
-			'Metal properties'
-		]
-	},
-	{
-		id: 'particle-movement-property',
-		subjectId: 'chemistry',
-		title: 'Particle arrangement -> movement -> property',
-		parts: ['Particle arrangement', 'movement', 'property'],
-		icon: 'nodes',
-		discoveredFromFamilyId: 'melting-boiling-points',
-		mastery: 3,
-		usedCount: 3,
-		savedAt: '2 days ago',
-		summary: 'Explain a bulk property by first describing how particles are arranged and move.',
-		topics: ['Solids', 'Liquids', 'Gases'],
-		questionFamilies: ['Melting and boiling points', 'Diffusion', 'Density']
-	},
-	{
-		id: 'evidence-method-effect',
-		subjectId: 'english',
-		title: 'Evidence -> method -> effect',
-		parts: ['Evidence', 'method', 'effect'],
-		icon: 'network',
-		discoveredFromFamilyId: 'macbeth-tension',
-		mastery: 3,
-		usedCount: 7,
-		savedAt: '2 days ago',
-		summary: 'Move from a quotation to the writer method and then to the reader or meaning effect.',
-		topics: ['Language analysis', 'Character', 'Theme'],
-		questionFamilies: ['Analysing imagery', 'Narrative voice', 'Tension in extracts']
-	},
-	{
-		id: 'quote-inference-judgement',
-		subjectId: 'english',
-		title: 'Quote -> inference -> judgement',
-		parts: ['Quote', 'inference', 'judgement'],
-		icon: 'quote',
-		discoveredFromFamilyId: 'character-motivation',
-		mastery: 3,
-		usedCount: 5,
-		savedAt: '3 days ago',
-		summary: 'Use a short quotation to support an inference before making a precise judgement.',
-		topics: ['Essay paragraphs', 'Evaluation', 'Context'],
-		questionFamilies: ['Character motivation', 'Theme comparison', 'Writer intention']
-	},
-	{
-		id: 'evidence-inference-judgement',
-		subjectId: 'physics',
-		title: 'Evidence -> inference -> judgement',
-		parts: ['Evidence', 'inference', 'judgement'],
-		icon: 'nodes',
-		discoveredFromFamilyId: 'force-extension-graph',
-		mastery: 3,
-		usedCount: 6,
-		savedAt: '3 days ago',
-		summary:
-			'Start with measured evidence, infer what it shows, then choose the strongest conclusion.',
-		topics: ['Practical skills', 'Graphs', 'Forces'],
-		questionFamilies: ['Interpreting graphs', 'Required practicals', 'Uncertainty']
-	},
-	{
-		id: 'event-change-consequence',
-		subjectId: 'history',
-		title: 'Event -> change -> consequence',
-		parts: ['Event', 'change', 'consequence'],
-		icon: 'cycle',
-		discoveredFromFamilyId: 'treaty-versailles-impact',
-		mastery: 3,
-		usedCount: 4,
-		savedAt: '4 days ago',
-		summary:
-			'Use this when an event changes conditions and creates short or long-term consequences.',
-		topics: ['Peace treaties', 'Inter-war Europe', 'Causes of conflict'],
-		questionFamilies: ['Treaty of Versailles', 'League of Nations', 'Road to war']
-	}
-];
+export type AnswerChainPageData = {
+	chain: AnswerChain;
+	startQuestion: Question;
+	questions: Question[];
+	constellation: Constellation;
+};
 
-const questionFamilies: QuestionFamily[] = [
+export type QuestionChainPageData = AnswerChainPageData & {
+	question: Question;
+	practiceQuestion: Question;
+};
+
+export type ConstellationPageData = AnswerChainPageData & {
+	practiceQuestion: Question;
+};
+
+export type PracticePageData = {
+	question: Question;
+	chain: AnswerChain;
+	constellation: Constellation;
+	questions: Question[];
+	nextQuestion: Question;
+	memoryEntry: MemoryEntry;
+};
+
+export type ThinkingMemoryPageData = {
+	entries: Array<
+		MemoryEntry & {
+			chain: AnswerChain;
+			savedFromQuestion: Question;
+			lastPractisedQuestion: Question;
+			nextReviewQuestion: Question;
+			recurringMissingStep: ChainStep;
+		}
+	>;
+	selected: MemoryEntry & {
+		chain: AnswerChain;
+		savedFromQuestion: Question;
+		lastPractisedQuestion: Question;
+		nextReviewQuestion: Question;
+		recurringMissingStep: ChainStep;
+	};
+	questions: Question[];
+};
+
+const chain: AnswerChain = {
+	id: 'supply-respiration-energy-effect',
+	title: 'Supply -> respiration -> energy -> effect',
+	canonicalText: 'supply -> oxygen/glucose -> respiration -> energy -> effect',
+	concreteText: 'blood flow -> oxygen -> respiration -> energy -> pain',
+	pageTitle: 'Same answer chain',
+	summary:
+		'Use this when a question asks how a change in supply affects cell respiration, energy release, and the final visible effect.',
+	commonMissingLink:
+		'Students often jump from blood or oxygen straight to the symptom and miss respiration or energy.',
+	modelAnswer:
+		'Reduced blood flow means less oxygen reaches heart muscle cells. The cells carry out less aerobic respiration, so less energy is released for contraction. This can cause chest pain because the muscle cannot work normally.',
+	steps: [
+		{
+			id: 'supply',
+			short: 'Supply changes',
+			label: 'Start with the concrete supply change',
+			role: 'given',
+			explanation:
+				'Name the change in blood flow, oxygen, glucose, or another useful supply before explaining the symptom.',
+			markEvidence: 'Mark schemes usually credit the reduced supply before downstream effects.',
+			commonOmission:
+				'Starting with pain, tiredness, or poor growth without naming what changed first.'
+		},
+		{
+			id: 'resource',
+			short: 'Useful substance reaches cells',
+			label: 'Say what reaches the cells',
+			role: 'link',
+			explanation:
+				'Connect the supply change to oxygen or glucose reaching the cells that need to work.',
+			markEvidence:
+				'Mark schemes usually require oxygen, glucose, or named reactant reaching cells.',
+			commonOmission: 'Saying "less blood" or "less food" without the useful substance.'
+		},
+		{
+			id: 'respiration',
+			short: 'Respiration changes',
+			label: 'Connect the substance to respiration',
+			role: 'process',
+			explanation:
+				'State how the change affects aerobic respiration or respiration rate inside the cells.',
+			markEvidence: 'The respiration link is normally the hidden mark students miss.',
+			commonOmission: 'Mentioning oxygen but not saying what oxygen is used for.'
+		},
+		{
+			id: 'energy',
+			short: 'Energy release changes',
+			label: 'Name the energy consequence',
+			role: 'link',
+			explanation:
+				'Show that less respiration means less energy released for the cell or tissue job.',
+			markEvidence: 'Mark schemes often credit energy release separately from respiration.',
+			commonOmission: 'Saying cells are "weaker" without explaining energy release.'
+		},
+		{
+			id: 'effect',
+			short: 'Final effect',
+			label: 'Finish with the effect asked for',
+			role: 'effect',
+			explanation:
+				'Return to the exact outcome in the prompt: pain, movement, active transport, contraction, or growth.',
+			markEvidence:
+				'The final mark usually depends on answering the symptom or outcome in the question.',
+			commonOmission: 'Writing a good process chain but not answering the actual question.'
+		}
+	]
+};
+
+const baseMeta: Omit<ExamMeta, 'topic' | 'questionType' | 'marks'> = {
+	qualification: 'GCSE',
+	board: 'AQA',
+	subject: 'Combined Science',
+	tier: 'Higher',
+	paper: 'Biology Paper 1'
+};
+
+const questions: Question[] = [
 	{
-		id: 'blood-flow-heart',
-		subjectId: 'biology',
-		topic: 'Circulation',
-		title: 'Blood flow and the heart',
+		id: 'blood-flow-chest-pain',
+		sourceRef: 'Q01.2',
+		title: 'Chest pain from reduced blood flow',
 		prompt: 'Explain why reduced blood flow to the heart can cause chest pain.',
-		meta: 'Exam style - 6 marks',
 		context:
-			'A coronary artery can become narrowed. Less oxygenated blood reaches part of the heart muscle during exercise.',
-		checks: [
-			'Real GCSE question',
-			'Guided reasoning repair',
-			'Pattern revealed after practice',
-			'Transfer to nearby and harder examples'
-		],
-		practiceSteps: [
+			'A coronary artery becomes narrowed. During exercise, the heart muscle needs more oxygen for aerobic respiration and contraction.',
+		meta: {
+			...baseMeta,
+			topic: 'Organisation: the heart and blood vessels',
+			questionType: 'Explain',
+			marks: 4
+		},
+		transferDistance: 'start',
+		distanceLabel: 'start',
+		constellationRole: 'First question',
+		modelAnswer: chain.modelAnswer,
+		commonWeakAnswer: 'Less blood gets to the heart, so it hurts.',
+		weakAnswerMissingStepIds: ['respiration', 'energy'],
+		checklist: [
 			{
-				id: 'cause',
-				label: 'Find the concrete cause',
-				question: 'What is the first concrete change in the question?',
-				hint: 'Do not start with pain. Start with the physical change in blood supply.',
-				repair: 'Reduced blood flow means less oxygen reaches the heart muscle cells.',
-				answerFragment: 'Reduced blood flow lowers oxygen supply to heart muscle cells.'
+				id: 'blood-flow',
+				text: 'Say that reduced blood flow lowers oxygen supply to heart muscle cells.',
+				stepId: 'resource'
 			},
 			{
-				id: 'process',
-				label: 'Build the process chain',
-				question: 'What process inside the cells is affected by less oxygen?',
-				hint: 'Connect oxygen to aerobic respiration and energy release.',
-				repair:
-					'Less oxygen reduces aerobic respiration, so less energy is released for contraction.',
-				answerFragment: 'Less oxygen means less aerobic respiration and less energy release.'
+				id: 'less-respiration',
+				text: 'Link less oxygen to less aerobic respiration.',
+				stepId: 'respiration'
 			},
 			{
-				id: 'effect',
-				label: 'Name the final effect',
-				question: 'How does that process explain the symptom?',
-				hint: 'Finish with the visible effect asked for in the question.',
-				repair:
-					'The heart muscle cannot contract normally and waste products may build up, causing chest pain.',
-				answerFragment:
-					'The muscle cannot work normally and pain is felt because the tissue is under stress.'
+				id: 'less-energy',
+				text: 'Say that less respiration releases less energy for contraction.',
+				stepId: 'energy'
+			},
+			{
+				id: 'pain-effect',
+				text: 'Finish by explaining chest pain or the heart muscle not working normally.',
+				stepId: 'effect'
 			}
 		],
-		revealedPatternId: 'cause-process-effect',
-		transferQuestions: [
-			{
-				id: 'gas-exchange-lungs',
-				subjectId: 'biology',
-				topic: 'Respiration',
-				title: 'Explain how reduced gas exchange affects exercise.',
-				distance: 'near',
-				description: 'Same cause-process-effect chain, still in Biology and respiration.'
-			},
-			{
-				id: 'photosynthesis-light',
-				subjectId: 'biology',
-				topic: 'Photosynthesis',
-				title: 'Explain why lower light intensity reduces plant growth.',
-				distance: 'stretch',
-				description: 'Same hidden logic, but the process is photosynthesis rather than respiration.'
-			},
-			{
-				id: 'reaction-rate-temperature',
-				subjectId: 'chemistry',
-				topic: 'Rates of reaction',
-				title: 'Explain why a lower temperature slows a reaction.',
-				distance: 'exam-transfer',
-				description: 'Harder transfer: a different subject, but still cause -> process -> effect.'
-			}
-		]
+		repairChain: [
+			{ id: 'blood-flow-node', label: 'blood flow', stepId: null, icon: 'droplet' },
+			{ id: 'oxygen-node', label: 'oxygen', stepId: 'resource', icon: 'oxygen' },
+			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
+			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
+			{ id: 'pain-node', label: 'pain', stepId: 'effect', icon: 'target' }
+		],
+		practiceDraft:
+			'Less blood gets to the heart during exercise so the heart muscle does not get enough oxygen.',
+		whyThisFits:
+			'The mark-scoring answer must connect blood flow to oxygen, respiration, energy release, and pain.'
 	},
 	{
-		id: 'blood-glucose-control',
-		subjectId: 'biology',
-		topic: 'Homeostasis',
-		title: 'Blood glucose control',
-		prompt: 'Explain how the body responds when blood glucose concentration rises after a meal.',
-		meta: 'Exam style - 5 marks',
-		context: 'After eating, glucose from digested carbohydrate is absorbed into the blood.',
-		checks: [
-			'Start with the change',
-			'Name the body response',
-			'Explain how conditions return to normal',
-			'Reveal the response pattern'
-		],
-		practiceSteps: [
-			{
-				id: 'change',
-				label: 'Spot the change',
-				question: 'What variable has changed in the question?',
-				hint: 'Look for the thing the body needs to control.',
-				repair: 'Blood glucose concentration has risen above its normal level.',
-				answerFragment: 'After the meal, blood glucose concentration increases.'
-			},
-			{
-				id: 'detect',
-				label: 'Find the response',
-				question: 'Which organ and hormone respond to this change?',
-				hint: 'The pancreas detects the change and releases a hormone.',
-				repair: 'The pancreas releases insulin in response to the higher blood glucose.',
-				answerFragment: 'The pancreas responds by releasing insulin.'
-			},
-			{
-				id: 'restore',
-				label: 'Restore the level',
-				question: 'How does that response bring the condition back towards normal?',
-				hint: 'Connect insulin to glucose moving into cells or storage.',
-				repair:
-					'Insulin causes cells to take up glucose and the liver to store glucose as glycogen.',
-				answerFragment: 'Cells take in more glucose, so blood glucose falls back towards normal.'
-			}
-		],
-		revealedPatternId: 'change-response',
-		transferQuestions: [
-			{
-				id: 'temperature-sweating',
-				subjectId: 'biology',
-				topic: 'Homeostasis',
-				title: 'Explain why sweating increases when body temperature rises.',
-				distance: 'near',
-				description: 'Same change -> response structure inside Biology.'
-			},
-			{
-				id: 'plant-phototropism',
-				subjectId: 'biology',
-				topic: 'Plant responses',
-				title: 'Explain how shoots respond to light from one side.',
-				distance: 'stretch',
-				description: 'Still Biology, but the response is growth rather than hormone control.'
-			},
-			{
-				id: 'rate-equilibrium',
-				subjectId: 'chemistry',
-				topic: 'Equilibrium',
-				title: 'Explain how a reversible reaction responds to a condition change.',
-				distance: 'exam-transfer',
-				description: 'Different subject, but the reasoning still starts with a change and response.'
-			}
-		]
-	},
-	{
-		id: 'exercise-respiration',
-		subjectId: 'biology',
-		topic: 'Respiration',
-		title: 'Exercise and respiration',
-		prompt: 'Explain why muscles need more glucose during exercise.',
-		meta: 'Exam style - 4 marks',
-		context: 'During exercise, muscle cells contract more often and need more energy.',
-		checks: [
-			'Trace the substance',
-			'Connect it to a cell process',
-			'Explain energy release',
-			'Finish with the effect'
-		],
-		practiceSteps: [
-			{
-				id: 'substance',
-				label: 'Trace the substance',
-				question: 'Which substance does the muscle need more of?',
-				hint: 'Start with the named fuel in the question.',
-				repair: 'Muscle cells need more glucose.',
-				answerFragment: 'More glucose is supplied to muscle cells.'
-			},
-			{
-				id: 'cell-process',
-				label: 'Link to cell process',
-				question: 'What process uses glucose inside cells?',
-				hint: 'Name the process that releases energy from glucose.',
-				repair: 'Glucose is used in respiration inside the muscle cells.',
-				answerFragment: 'Glucose is used for respiration.'
-			},
-			{
-				id: 'energy-effect',
-				label: 'Explain the effect',
-				question: 'How does that help the muscles during exercise?',
-				hint: 'Finish by connecting energy release to contraction.',
-				repair: 'Respiration releases energy so muscles can keep contracting.',
-				answerFragment: 'More energy is released, allowing muscles to contract repeatedly.'
-			}
-		],
-		revealedPatternId: 'substance-cell-energy-effect',
-		transferQuestions: [
-			{
-				id: 'photosynthesis-glucose',
-				subjectId: 'biology',
-				topic: 'Photosynthesis',
-				title: 'Explain why glucose made in photosynthesis is useful to a plant.',
-				distance: 'near',
-				description: 'Same substance -> cell process -> effect chain.'
-			},
-			{
-				id: 'fermentation-yeast',
-				subjectId: 'biology',
-				topic: 'Microbiology',
-				title: 'Explain how yeast uses sugar during fermentation.',
-				distance: 'stretch',
-				description: 'Still cell-level reasoning, but a different organism and process.'
-			},
-			{
-				id: 'battery-reactants',
-				subjectId: 'chemistry',
-				topic: 'Electrochemistry',
-				title: 'Explain why changing reactants changes a cell voltage.',
-				distance: 'exam-transfer',
-				description: 'Hard transfer from cell biology into chemical energy reasoning.'
-			}
-		]
-	},
-	{
-		id: 'giant-covalent-hardness',
-		subjectId: 'chemistry',
-		topic: 'Bonding',
-		title: 'Giant covalent structures',
-		prompt: 'Explain why diamond has a very high melting point.',
-		meta: 'Exam style - 4 marks',
-		context: 'Diamond is made of carbon atoms arranged in a giant covalent structure.',
-		checks: [
-			'Concrete material first',
-			'Guided structure reasoning',
-			'Property pattern revealed',
-			'Transfer to other materials'
-		],
-		practiceSteps: [
-			{
-				id: 'structure',
-				label: 'Describe the structure',
-				question: 'What is the arrangement of atoms and bonds in diamond?',
-				hint: 'Start with the structure, not the melting point.',
-				repair: 'Each carbon atom forms strong covalent bonds in a giant lattice.',
-				answerFragment: 'Diamond has a giant covalent lattice with many strong covalent bonds.'
-			},
-			{
-				id: 'energy',
-				label: 'Connect structure to energy',
-				question: 'What must happen to melt the substance?',
-				hint: 'Melting requires overcoming bonds or forces.',
-				repair: 'A lot of energy is needed to break the many strong covalent bonds.',
-				answerFragment: 'A large amount of energy is needed to overcome those bonds.'
-			},
-			{
-				id: 'property',
-				label: 'State the property',
-				question: 'How does that explain the high melting point?',
-				hint: 'Now name the property asked about.',
-				repair: 'Because so much energy is needed, diamond has a very high melting point.',
-				answerFragment: 'This gives diamond a very high melting point.'
-			}
-		],
-		revealedPatternId: 'structure-property',
-		transferQuestions: [
-			{
-				id: 'graphite-conductivity',
-				subjectId: 'chemistry',
-				topic: 'Bonding',
-				title: 'Explain why graphite conducts electricity.',
-				distance: 'near',
-				description: 'Same structure -> property reasoning in the same topic.'
-			},
-			{
-				id: 'polymers-flexible',
-				subjectId: 'chemistry',
-				topic: 'Polymers',
-				title: 'Explain why some polymers are flexible.',
-				distance: 'stretch',
-				description: 'Still Chemistry, but the structure is chains rather than a lattice.'
-			},
-			{
-				id: 'alveoli-surface-area',
-				subjectId: 'biology',
-				topic: 'Gas exchange',
-				title: 'Explain how alveoli are adapted for gas exchange.',
-				distance: 'exam-transfer',
-				description: 'Different subject, same move: structure explains function or property.'
-			}
-		]
-	},
-	{
-		id: 'melting-boiling-points',
-		subjectId: 'chemistry',
-		topic: 'States of matter',
-		title: 'Melting and boiling points',
-		prompt: 'Explain why a simple molecular substance has a low boiling point.',
-		meta: 'Exam style - 4 marks',
+		id: 'heart-rate-exercise',
+		sourceRef: 'Q03.4',
+		title: 'Heart rate during exercise',
+		prompt:
+			'Explain why heart rate increases during vigorous exercise. Refer to muscle cells in your answer.',
 		context:
-			'Simple molecular substances are made of small molecules with weak forces between them.',
-		checks: [
-			'Describe particle arrangement',
-			'Connect movement or separation',
-			'Explain the observed property',
-			'Transfer to other particle models'
-		],
-		practiceSteps: [
+			'Muscle cells contract more during vigorous exercise, so their demand for respiration increases.',
+		meta: {
+			...baseMeta,
+			topic: 'Bioenergetics: aerobic respiration',
+			questionType: 'Explain',
+			marks: 4
+		},
+		transferDistance: 'near',
+		distanceLabel: 'near',
+		constellationRole: 'Nearby practice',
+		modelAnswer:
+			'During vigorous exercise, muscle cells need more energy for contraction. They respire faster, so they need more oxygen and glucose delivered in the blood. A higher heart rate increases blood flow to the muscles.',
+		commonWeakAnswer: 'The heart beats faster because the muscles are working harder.',
+		weakAnswerMissingStepIds: ['resource', 'respiration', 'energy'],
+		checklist: [
 			{
-				id: 'arrangement',
-				label: 'Describe arrangement',
-				question: 'What particles or forces should you describe first?',
-				hint: 'Focus on what is between molecules, not the bonds inside them.',
-				repair: 'There are weak intermolecular forces between small molecules.',
-				answerFragment: 'The substance has weak forces between molecules.'
+				id: 'muscle-energy',
+				text: 'Say that muscle cells need more energy for contraction.',
+				stepId: 'energy'
+			},
+			{
+				id: 'faster-respiration',
+				text: 'Link this to a higher rate of respiration.',
+				stepId: 'respiration'
+			},
+			{
+				id: 'deliver-substances',
+				text: 'Mention oxygen and/or glucose being delivered in the blood.',
+				stepId: 'resource'
+			},
+			{
+				id: 'heart-rate-effect',
+				text: 'Explain that increased heart rate raises blood flow to muscles.',
+				stepId: 'effect'
+			}
+		],
+		repairChain: [
+			{ id: 'heart-rate-node', label: 'heart rate', stepId: null, icon: 'target' },
+			{ id: 'blood-flow-node', label: 'blood flow', stepId: 'effect', icon: 'droplet' },
+			{ id: 'oxygen-glucose-node', label: 'oxygen/glucose', stepId: 'resource', icon: 'oxygen' },
+			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
+			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
+			{
+				id: 'contraction-node',
+				label: 'muscle contraction',
+				stepId: 'energy',
+				icon: 'target'
+			}
+		],
+		practiceDraft:
+			'The heart rate increases because the muscles need more oxygen while they are working hard.',
+		whyThisFits:
+			'It uses the same supply, respiration, energy, effect links but starts from increased demand.'
+	},
+	{
+		id: 'muscle-fatigue-respiration',
+		sourceRef: 'Q04.1',
+		title: 'Muscle fatigue in vigorous exercise',
+		prompt:
+			'During vigorous exercise, oxygen supply may not meet demand. Explain why muscles can become fatigued.',
+		context:
+			'The question asks for the chain from limited oxygen to reduced aerobic respiration and muscle performance.',
+		meta: {
+			...baseMeta,
+			topic: 'Bioenergetics: exercise',
+			questionType: 'Explain',
+			marks: 4
+		},
+		transferDistance: 'near',
+		distanceLabel: 'near',
+		constellationRole: 'Nearby practice',
+		modelAnswer:
+			'If not enough oxygen reaches muscle cells, aerobic respiration cannot release energy fast enough. The cells rely more on anaerobic respiration, lactic acid builds up, and the muscles fatigue.',
+		commonWeakAnswer: 'The muscles get tired because there is not enough oxygen.',
+		weakAnswerMissingStepIds: ['respiration', 'energy', 'effect'],
+		checklist: [
+			{
+				id: 'oxygen-demand',
+				text: 'Say oxygen supply does not meet the demand of muscle cells.',
+				stepId: 'resource'
+			},
+			{
+				id: 'aerobic-rate',
+				text: 'Connect low oxygen to less aerobic respiration.',
+				stepId: 'respiration'
+			},
+			{
+				id: 'energy-rate',
+				text: 'Explain that energy is released too slowly for contraction.',
+				stepId: 'energy'
+			},
+			{
+				id: 'fatigue-effect',
+				text: 'Finish with fatigue or lactic acid build-up affecting contraction.',
+				stepId: 'effect'
+			}
+		],
+		repairChain: [
+			{ id: 'oxygen-supply-node', label: 'oxygen supply', stepId: 'resource', icon: 'oxygen' },
+			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
+			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
+			{ id: 'fatigue-node', label: 'fatigue', stepId: 'effect', icon: 'target' }
+		],
+		practiceDraft: 'The muscles fatigue because oxygen cannot get to them quickly enough.',
+		whyThisFits:
+			'The same respiration and energy links explain the final effect, even though the symptom is fatigue rather than chest pain.'
+	},
+	{
+		id: 'sperm-mitochondria',
+		sourceRef: 'Q05.3',
+		title: 'Sperm cells and mitochondria',
+		prompt: 'Explain why sperm cells contain many mitochondria.',
+		context:
+			'This question looks like cell structure, but the marks come from connecting mitochondria to respiration, energy, and movement.',
+		meta: {
+			...baseMeta,
+			topic: 'Cell biology: specialised cells',
+			questionType: 'Explain',
+			marks: 3
+		},
+		transferDistance: 'stretch',
+		distanceLabel: 'stretch',
+		constellationRole: 'Less obvious topic',
+		modelAnswer:
+			'Mitochondria are the site of aerobic respiration. Respiration releases energy, which sperm cells need to swim towards the egg.',
+		commonWeakAnswer: 'Sperm cells have mitochondria so they can swim.',
+		weakAnswerMissingStepIds: ['respiration', 'energy'],
+		checklist: [
+			{
+				id: 'mitochondria-site',
+				text: 'Say mitochondria are where aerobic respiration happens.',
+				stepId: 'respiration'
+			},
+			{
+				id: 'release-energy',
+				text: 'Say respiration releases energy.',
+				stepId: 'energy'
 			},
 			{
 				id: 'movement',
-				label: 'Connect movement',
-				question: 'What must particles do when the substance boils?',
-				hint: 'Boiling separates molecules from each other.',
-				repair: 'Only a small amount of energy is needed to overcome the weak forces.',
-				answerFragment: 'The molecules can separate easily because the forces are weak.'
-			},
-			{
-				id: 'property',
-				label: 'State the property',
-				question: 'How does that explain the low boiling point?',
-				hint: 'End with the property named in the question.',
-				repair: 'Because little energy is needed, the substance has a low boiling point.',
-				answerFragment: 'This means it boils at a low temperature.'
+				text: 'Use the energy to explain sperm movement towards the egg.',
+				stepId: 'effect'
 			}
 		],
-		revealedPatternId: 'particle-movement-property',
-		transferQuestions: [
-			{
-				id: 'diffusion-gases',
-				subjectId: 'chemistry',
-				topic: 'Particles',
-				title: 'Explain why gases diffuse faster at higher temperatures.',
-				distance: 'near',
-				description: 'Same particle movement reasoning in Chemistry.'
-			},
-			{
-				id: 'density-solids-liquids',
-				subjectId: 'chemistry',
-				topic: 'Density',
-				title: 'Explain why particle spacing affects density.',
-				distance: 'stretch',
-				description: 'Same model, but the property is density rather than boiling point.'
-			},
-			{
-				id: 'osmosis-water-potential',
-				subjectId: 'biology',
-				topic: 'Transport in cells',
-				title: 'Explain why water moves into a cell by osmosis.',
-				distance: 'exam-transfer',
-				description: 'Harder transfer from particle movement into a Biology transport question.'
-			}
-		]
+		repairChain: [
+			{ id: 'mitochondria-node', label: 'mitochondria', stepId: null, icon: 'atom' },
+			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
+			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
+			{ id: 'movement-node', label: 'movement to egg', stepId: 'effect', icon: 'target' }
+		],
+		practiceDraft: 'They have mitochondria because they need energy to swim.',
+		whyThisFits:
+			'The context changes to cell structure, but full marks still depend on respiration -> energy -> effect.'
 	},
 	{
-		id: 'force-extension-graph',
-		subjectId: 'physics',
-		topic: 'Forces',
-		title: 'Force and extension graphs',
-		prompt: 'Use the graph to decide whether the spring obeys Hooke’s law.',
-		meta: 'Required practical - 4 marks',
-		context: 'A student records extension as different forces are added to a spring.',
-		checks: [
-			'Start with graph evidence',
-			'Make the inference explicit',
-			'Finish with a justified judgement',
-			'Transfer to practical questions'
-		],
-		practiceSteps: [
+		id: 'root-hair-active-transport',
+		sourceRef: 'Q06.2',
+		title: 'Root hair cells and active transport',
+		prompt:
+			'Explain why root hair cells need energy for active transport of mineral ions from the soil.',
+		context:
+			'The visible topic is plants, but the reasoning chain still runs through respiration and energy release.',
+		meta: {
+			...baseMeta,
+			topic: 'Transport in cells: active transport',
+			questionType: 'Explain',
+			marks: 4
+		},
+		transferDistance: 'stretch',
+		distanceLabel: 'stretch',
+		constellationRole: 'Less obvious topic',
+		modelAnswer:
+			'Active transport moves mineral ions from a lower concentration in the soil to a higher concentration in the root hair cell. This movement is against the concentration gradient, so it requires energy released by respiration.',
+		commonWeakAnswer: 'Root hair cells need energy to take in minerals.',
+		weakAnswerMissingStepIds: ['respiration', 'effect'],
+		checklist: [
 			{
-				id: 'evidence',
-				label: 'Quote the evidence',
-				question: 'What graph feature should you use first?',
-				hint: 'Look for proportionality: straight line through the origin.',
-				repair: 'The graph is a straight line through the origin for the first part.',
-				answerFragment: 'The first part is a straight line through the origin.'
+				id: 'against-gradient',
+				text: 'Say active transport moves ions against the concentration gradient.',
+				stepId: 'effect'
 			},
 			{
-				id: 'inference',
-				label: 'Make the inference',
-				question: 'What does that evidence show about force and extension?',
-				hint: 'Say how the variables are related.',
-				repair: 'Extension is proportional to force while the graph stays straight.',
-				answerFragment: 'Extension is proportional to force in that region.'
+				id: 'energy-needed',
+				text: 'Say this process requires energy.',
+				stepId: 'energy'
 			},
 			{
-				id: 'judgement',
-				label: 'Make the judgement',
-				question: 'So does the spring obey Hooke’s law?',
-				hint: 'Limit your judgement to the region supported by the evidence.',
-				repair: 'It obeys Hooke’s law only up to the limit of proportionality.',
-				answerFragment: 'It obeys Hooke’s law up to the limit of proportionality.'
+				id: 'respiration-source',
+				text: 'Link that energy to respiration.',
+				stepId: 'respiration'
+			},
+			{
+				id: 'mineral-uptake',
+				text: 'Return to mineral ions being taken into root hair cells.',
+				stepId: 'effect'
 			}
 		],
-		revealedPatternId: 'evidence-inference-judgement',
-		transferQuestions: [
-			{
-				id: 'cooling-curve',
-				subjectId: 'physics',
-				topic: 'Energy',
-				title: 'Use a cooling curve to identify a change of state.',
-				distance: 'near',
-				description: 'Same graph-evidence move in Physics.'
-			},
-			{
-				id: 'enzyme-graph',
-				subjectId: 'biology',
-				topic: 'Enzymes',
-				title: 'Use an enzyme graph to judge the optimum temperature.',
-				distance: 'stretch',
-				description: 'Different topic, same evidence -> inference -> judgement structure.'
-			},
-			{
-				id: 'english-evidence-judgement',
-				subjectId: 'english',
-				topic: 'Language analysis',
-				title: 'Use evidence to judge how a writer creates tension.',
-				distance: 'exam-transfer',
-				description: 'Hard transfer into written analysis using the same reasoning shape.'
-			}
-		]
+		repairChain: [
+			{ id: 'root-hair-node', label: 'root hair cell', stepId: null, icon: 'target' },
+			{ id: 'active-transport-node', label: 'active transport', stepId: 'effect', icon: 'target' },
+			{ id: 'gradient-node', label: 'against gradient', stepId: 'effect', icon: 'droplet' },
+			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
+			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' }
+		],
+		practiceDraft: 'They need energy because minerals are moved into the cell by active transport.',
+		whyThisFits:
+			'The answer still has to explain how a cell process depends on energy released by respiration.'
 	},
 	{
-		id: 'macbeth-tension',
-		subjectId: 'english',
-		topic: 'Language analysis',
-		title: 'How writers create tension',
-		prompt: 'Explain how the writer creates tension in this extract.',
-		meta: 'Exam style - 8 marks',
-		context: 'The extract uses short sentences, violent imagery, and a shift in pace.',
-		checks: [
-			'Concrete evidence first',
-			'Method named after evidence',
-			'Effect explained',
-			'Transfer to unseen extracts'
-		],
-		practiceSteps: [
+		id: 'blocked-artery-heart-muscle',
+		sourceRef: 'Q08.5',
+		title: 'Blocked arteries and heart muscle',
+		prompt:
+			'A blood clot blocks a coronary artery. Explain how this can damage part of the heart muscle.',
+		context:
+			'This is the harder transfer because the final effect is tissue damage rather than pain.',
+		meta: {
+			...baseMeta,
+			topic: 'Organisation: coronary heart disease',
+			questionType: 'Explain',
+			marks: 5
+		},
+		transferDistance: 'exam-transfer',
+		distanceLabel: 'exam transfer',
+		constellationRole: 'Exam transfer',
+		modelAnswer:
+			'The blocked artery stops oxygenated blood reaching part of the heart muscle. Without oxygen, the cells cannot carry out enough aerobic respiration, so not enough energy is released. The cells cannot contract or stay alive and the tissue can be damaged.',
+		commonWeakAnswer: 'The blockage stops blood getting to the heart and damages it.',
+		weakAnswerMissingStepIds: ['resource', 'respiration', 'energy'],
+		checklist: [
 			{
-				id: 'evidence',
-				label: 'Choose evidence',
-				question: 'Which detail from the text should you start with?',
-				hint: 'Pick a short quotation or precise textual detail.',
-				repair: 'The short sentence creates a sudden pause in the action.',
-				answerFragment: 'The writer uses a short sentence at a tense moment.'
+				id: 'blocked-supply',
+				text: 'Say the blockage stops oxygenated blood reaching part of the heart muscle.',
+				stepId: 'resource'
 			},
 			{
-				id: 'method',
-				label: 'Name the method',
-				question: 'What method is the writer using?',
-				hint: 'Move from what you noticed to the writer’s technique.',
-				repair: 'The method is sentence structure and pacing.',
-				answerFragment: 'This use of sentence structure changes the pace.'
+				id: 'cannot-respire',
+				text: 'Link oxygen shortage to less aerobic respiration.',
+				stepId: 'respiration'
 			},
 			{
-				id: 'effect',
-				label: 'Explain the effect',
-				question: 'What does this make the reader feel or understand?',
-				hint: 'Finish with the reader effect or meaning.',
-				repair: 'The pause makes the moment feel more dramatic and uncertain.',
-				answerFragment: 'The reader feels suspense because the action briefly stops.'
+				id: 'not-enough-energy',
+				text: 'Say less energy is released for contraction or cell survival.',
+				stepId: 'energy'
+			},
+			{
+				id: 'tissue-damage',
+				text: 'Finish with heart muscle cells being damaged or dying.',
+				stepId: 'effect'
 			}
 		],
-		revealedPatternId: 'evidence-method-effect',
-		transferQuestions: [
+		repairChain: [
+			{ id: 'blocked-artery-node', label: 'blocked artery', stepId: null, icon: 'target' },
 			{
-				id: 'poetry-imagery',
-				subjectId: 'english',
-				topic: 'Poetry',
-				title: 'Explain how imagery shapes mood in a poem.',
-				distance: 'near',
-				description: 'Same evidence -> method -> effect pattern in English.'
+				id: 'oxygenated-blood-node',
+				label: 'oxygenated blood',
+				stepId: 'resource',
+				icon: 'oxygen'
 			},
-			{
-				id: 'history-source-tone',
-				subjectId: 'history',
-				topic: 'Source analysis',
-				title: 'Explain how a source’s wording reveals attitude.',
-				distance: 'stretch',
-				description: 'Different subject, but still evidence, method and effect.'
-			},
-			{
-				id: 'biology-adaptation-effect',
-				subjectId: 'biology',
-				topic: 'Adaptations',
-				title: 'Explain how a feature helps an organism survive.',
-				distance: 'exam-transfer',
-				description:
-					'Harder transfer: evidence becomes a feature, effect becomes survival advantage.'
-			}
-		]
-	},
-	{
-		id: 'character-motivation',
-		subjectId: 'english',
-		topic: 'Character analysis',
-		title: 'Character motivation',
-		prompt: 'Use a quotation to judge what motivates a character in this extract.',
-		meta: 'Exam style - 6 marks',
-		context: 'The character speaks politely but repeats words that reveal anxiety and ambition.',
-		checks: [
-			'Choose a precise quote',
-			'Make an inference',
-			'Build a judgement',
-			'Transfer to essay paragraphs'
+			{ id: 'respiration-node', label: 'respiration', stepId: 'respiration', icon: 'atom' },
+			{ id: 'energy-node', label: 'energy', stepId: 'energy', icon: 'zap' },
+			{ id: 'damage-node', label: 'tissue damage', stepId: 'effect', icon: 'target' }
 		],
-		practiceSteps: [
-			{
-				id: 'quote',
-				label: 'Choose the quote',
-				question: 'Which textual detail should anchor the answer?',
-				hint: 'Use a short phrase that can support a clear inference.',
-				repair: 'The repeated phrase suggests the character is trying to convince themselves.',
-				answerFragment: 'The repeated phrase shows the idea matters to the character.'
-			},
-			{
-				id: 'inference',
-				label: 'Make the inference',
-				question: 'What does that quotation suggest about motivation?',
-				hint: 'Move beyond spotting language into what it reveals.',
-				repair: 'It suggests the character is anxious but determined to gain status.',
-				answerFragment: 'This suggests ambition is mixed with insecurity.'
-			},
-			{
-				id: 'judgement',
-				label: 'Make the judgement',
-				question: 'What overall judgement can you make?',
-				hint: 'Use the inference to answer the exam question directly.',
-				repair:
-					'The character is motivated by ambition, but the language shows that confidence is fragile.',
-				answerFragment: 'Overall, the character is driven by ambition but not fully confident.'
-			}
-		],
-		revealedPatternId: 'quote-inference-judgement',
-		transferQuestions: [
-			{
-				id: 'theme-comparison',
-				subjectId: 'english',
-				topic: 'Theme',
-				title: 'Use a quotation to compare how two texts present power.',
-				distance: 'near',
-				description: 'Same quote -> inference -> judgement structure in English.'
-			},
-			{
-				id: 'history-source-motive',
-				subjectId: 'history',
-				topic: 'Source analysis',
-				title: 'Use a source detail to judge the author’s motive.',
-				distance: 'stretch',
-				description: 'Different subject, but a quote still supports an inference and judgement.'
-			},
-			{
-				id: 'physics-practical-conclusion',
-				subjectId: 'physics',
-				topic: 'Required practicals',
-				title: 'Use a result to judge whether a method is reliable.',
-				distance: 'exam-transfer',
-				description: 'Hard transfer from literary evidence into scientific evaluation.'
-			}
-		]
-	},
-	{
-		id: 'treaty-versailles-impact',
-		subjectId: 'history',
-		topic: 'Peace treaties',
-		title: 'Consequences of the Treaty of Versailles',
-		prompt: 'Explain one way the Treaty of Versailles affected Germany.',
-		meta: 'Exam style - 6 marks',
-		context: 'The treaty imposed reparations, territorial losses, and military restrictions.',
-		checks: [
-			'Start with a concrete event',
-			'Describe the change it caused',
-			'Explain the consequence',
-			'Transfer to other cause questions'
-		],
-		practiceSteps: [
-			{
-				id: 'event',
-				label: 'Name the event',
-				question: 'Which treaty term will you use as the concrete starting point?',
-				hint: 'Choose one term rather than listing all of them.',
-				repair: 'Germany had to pay reparations after the treaty.',
-				answerFragment: 'The treaty required Germany to pay reparations.'
-			},
-			{
-				id: 'change',
-				label: 'Explain the change',
-				question: 'What did that term change inside Germany?',
-				hint: 'Describe the pressure it created.',
-				repair: 'The payments put economic pressure on the government and people.',
-				answerFragment: 'This created economic pressure and resentment.'
-			},
-			{
-				id: 'consequence',
-				label: 'State the consequence',
-				question: 'What was the historical consequence?',
-				hint: 'Connect the change to political or social impact.',
-				repair: 'It increased resentment towards the treaty and weakened trust in the government.',
-				answerFragment: 'This helped create resentment and political instability.'
-			}
-		],
-		revealedPatternId: 'event-change-consequence',
-		transferQuestions: [
-			{
-				id: 'league-failure',
-				subjectId: 'history',
-				topic: 'League of Nations',
-				title: 'Explain one consequence of the League failing to act.',
-				distance: 'near',
-				description: 'Same event -> change -> consequence move in History.'
-			},
-			{
-				id: 'industrial-revolution',
-				subjectId: 'history',
-				topic: 'Industrial change',
-				title: 'Explain how industrialisation changed working lives.',
-				distance: 'stretch',
-				description: 'Same pattern, but a broader change over time.'
-			},
-			{
-				id: 'biology-antibiotic-resistance',
-				subjectId: 'biology',
-				topic: 'Natural selection',
-				title: 'Explain how antibiotic use can lead to resistant bacteria.',
-				distance: 'exam-transfer',
-				description: 'Different subject, same chain from event to change to consequence.'
-			}
-		]
+		practiceDraft: 'The artery is blocked so blood and oxygen cannot get to the heart muscle.',
+		whyThisFits:
+			'The exam-transfer version keeps the same ordered chain but asks for damage rather than pain.'
 	}
 ];
 
-const progress: ProgressSummary = {
-	questionsPractised: 0,
-	patternsSaved: 0,
-	topicsExplored: 0,
-	dayStreak: 0
+const constellation: Constellation = {
+	id: 'biology-respiration-energy',
+	title: 'Blood Flow & Respiration',
+	summary:
+		'Six GCSE Biology questions that look different but reward the same supply, respiration, energy, effect reasoning.',
+	chainId: chain.id,
+	questionIds: questions.map((question) => question.id)
 };
 
-function subjectById(subjectId: SubjectId): Subject {
-	const subject = subjects.find((item) => item.id === subjectId);
-	if (!subject) {
-		throw new Error(`Unknown subject: ${subjectId}`);
+const memoryEntries: MemoryEntry[] = [
+	{
+		id: 'memory-respiration-energy',
+		chainId: chain.id,
+		savedFromQuestionId: 'blood-flow-chest-pain',
+		lastPractisedQuestionId: 'heart-rate-exercise',
+		nextReviewQuestionId: 'root-hair-active-transport',
+		mastery: 'building',
+		lastSavedLabel: 'Saved after 2 repaired attempts',
+		reviewLabel: 'Review today',
+		attemptedQuestionIds: ['blood-flow-chest-pain', 'heart-rate-exercise'],
+		recurringMissingStepId: 'respiration'
 	}
-	return subject;
-}
+];
 
-function patternById(patternId: string): Pattern {
-	const pattern = patterns.find((item) => item.id === patternId);
-	if (!pattern) {
-		throw new Error(`Unknown pattern: ${patternId}`);
+function findQuestion(questionId: string): Question {
+	const question = questions.find((item) => item.id === questionId);
+
+	if (!question) {
+		throw new Error(`Question not found: ${questionId}`);
 	}
-	return pattern;
+
+	return question;
 }
 
-function familyById(familyId: string): QuestionFamily {
-	const family = questionFamilies.find((item) => item.id === familyId);
-	if (!family) {
-		throw new Error(`Unknown question family: ${familyId}`);
+function findChain(chainId: string): AnswerChain {
+	if (chain.id !== chainId) {
+		throw new Error(`Answer chain not found: ${chainId}`);
 	}
-	return family;
+
+	return chain;
 }
 
-function firstFamilyForSubject(subjectId: SubjectId): QuestionFamily {
-	const family = questionFamilies.find((item) => item.subjectId === subjectId);
-	if (!family) {
-		throw new Error(`No starter family for subject: ${subjectId}`);
+function getQuestionsForChain(chainId: string): Question[] {
+	findChain(chainId);
+	return constellation.questionIds.map(findQuestion);
+}
+
+function findMemoryEntry(entryId = memoryEntries[0].id): MemoryEntry {
+	const entry = memoryEntries.find((item) => item.id === entryId);
+
+	if (!entry) {
+		throw new Error(`Memory entry not found: ${entryId}`);
 	}
-	return family;
+
+	return entry;
 }
 
-function subjectFamilyLinks(): Record<SubjectId, string> {
-	return Object.fromEntries(
-		subjects.map((subject) => [subject.id, firstFamilyForSubject(subject.id).id])
-	) as Record<SubjectId, string>;
-}
+function hydrateMemoryEntry(entry: MemoryEntry) {
+	const hydratedChain = findChain(entry.chainId);
+	const recurringMissingStep = hydratedChain.steps.find(
+		(step) => step.id === entry.recurringMissingStepId
+	);
 
-function familySubjectMap(): Record<string, SubjectId> {
-	return Object.fromEntries(
-		questionFamilies.map((family) => [family.id, family.subjectId])
-	) as Record<string, SubjectId>;
-}
+	if (!recurringMissingStep) {
+		throw new Error(`Missing chain step: ${entry.recurringMissingStepId}`);
+	}
 
-export function getSubjects(): Subject[] {
-	return subjects;
-}
-
-export function getSubjectFamilyLinks(): Record<SubjectId, string> {
-	return subjectFamilyLinks();
-}
-
-export function getFamilySubjectMap(): Record<string, SubjectId> {
-	return familySubjectMap();
-}
-
-export function getHomeData(): HomeData {
 	return {
-		subjects,
-		suggestedSubject: subjectById('biology'),
-		suggestedFamily: familyById('blood-flow-heart'),
-		subjectFamilyLinks: subjectFamilyLinks(),
-		featuredPatterns: [
-			patterns.find((pattern) => pattern.id === 'cause-process-effect'),
-			patterns.find((pattern) => pattern.id === 'structure-property'),
-			patterns.find((pattern) => pattern.id === 'evidence-inference-judgement')
-		].filter(Boolean) as Pattern[],
-		progress
+		...entry,
+		chain: hydratedChain,
+		savedFromQuestion: findQuestion(entry.savedFromQuestionId),
+		lastPractisedQuestion: findQuestion(entry.lastPractisedQuestionId),
+		nextReviewQuestion: findQuestion(entry.nextReviewQuestionId),
+		recurringMissingStep
 	};
 }
 
-export function getPracticeData(familyId: string): PracticeData {
-	const family = familyById(familyId);
-	const revealedPattern = patternById(family.revealedPatternId);
+export function getNavigationData(): NavigationData {
 	return {
-		subjects,
-		subject: subjectById(family.subjectId),
-		family,
-		revealedPattern,
-		relatedFamilies: questionFamilies.filter(
-			(item) => item.subjectId === family.subjectId && item.id !== family.id
-		)
+		primaryQuestionId: questions[0].id,
+		primaryChainId: chain.id,
+		primaryPracticeQuestionId: questions[1].id
 	};
 }
 
-export function getThinkingMemoryData(): ThinkingMemoryData {
-	const visibleSubjectIds: SubjectId[] = ['biology', 'chemistry', 'physics', 'english', 'history'];
-	const groupedPatterns = visibleSubjectIds.map((subjectId) => {
-		return {
-			subject: subjectById(subjectId),
-			patterns: patterns.filter((pattern) => pattern.subjectId === subjectId)
-		};
-	});
-	const selectedPattern =
-		patterns.find((pattern) => pattern.id === 'cause-process-effect') ?? patterns[0];
-	const sourceFamily = familyById(selectedPattern.discoveredFromFamilyId);
+export function getPublicQuestionData(questionId = questions[0].id): PublicQuestionData {
+	const question = findQuestion(questionId);
+	const questionIndex = questions.findIndex((item) => item.id === question.id);
+	const nextQuestion = questions[(questionIndex + 1) % questions.length];
 
 	return {
-		subjects,
-		patterns,
-		groupedPatterns,
-		selectedPattern,
-		sourceFamily,
-		recentlySaved: patterns.slice(0, 4),
-		recentlyUsed: [
-			selectedPattern,
-			patterns.find((pattern) => pattern.id === 'structure-property'),
-			patterns.find((pattern) => pattern.id === 'evidence-inference-judgement'),
-			patterns.find((pattern) => pattern.id === 'change-response')
-		].filter(Boolean) as Pattern[],
-		crossSubjectLinks: [
-			{
-				from: selectedPattern,
-				to: patterns.find((pattern) => pattern.id === 'structure-property') ?? selectedPattern,
-				reason: 'Same reasoning pattern. Different examples.'
-			},
-			{
-				from: patterns.find((pattern) => pattern.id === 'structure-property') ?? selectedPattern,
-				to: patterns.find((pattern) => pattern.id === 'evidence-method-effect') ?? selectedPattern,
-				reason: 'Transfer your thinking across subjects.'
-			}
-		]
+		question,
+		chain,
+		constellation,
+		nextQuestion
+	};
+}
+
+export function getAnswerChainPageData(chainId: string): AnswerChainPageData {
+	return {
+		chain: findChain(chainId),
+		startQuestion: questions[0],
+		questions: getQuestionsForChain(chainId),
+		constellation
+	};
+}
+
+export function getQuestionChainPageData(questionId: string): QuestionChainPageData {
+	const question = findQuestion(questionId);
+	const questionIndex = questions.findIndex((item) => item.id === question.id);
+	const practiceQuestion = questions[(questionIndex + 1) % questions.length];
+
+	return {
+		...getAnswerChainPageData(chain.id),
+		question,
+		practiceQuestion
+	};
+}
+
+export function getConstellationPageData(chainId: string): ConstellationPageData {
+	return {
+		...getAnswerChainPageData(chainId),
+		practiceQuestion: questions[1]
+	};
+}
+
+export function getPracticePageData(questionId: string): PracticePageData {
+	const question = findQuestion(questionId);
+	const questionIndex = questions.findIndex((item) => item.id === question.id);
+	const nextQuestion = questions[(questionIndex + 1) % questions.length];
+
+	return {
+		question,
+		chain,
+		constellation,
+		questions,
+		nextQuestion,
+		memoryEntry: findMemoryEntry()
+	};
+}
+
+export function getThinkingMemoryPageData(): ThinkingMemoryPageData {
+	const entries = memoryEntries.map(hydrateMemoryEntry);
+
+	return {
+		entries,
+		selected: entries[0],
+		questions
 	};
 }

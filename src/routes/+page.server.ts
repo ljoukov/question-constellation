@@ -1,6 +1,6 @@
-import { getHomeData } from '$lib/server/questionData';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	return getHomeData();
+	throw redirect(307, '/questions/blood-flow-chest-pain');
 };
