@@ -3,16 +3,13 @@
 	import {
 		ArrowLeft,
 		ArrowRight,
-		Atom,
 		BookOpen,
 		Bookmark,
 		ChevronRight,
 		ClipboardList,
-		Droplet,
 		Lightbulb,
-		Target,
-		TriangleAlert,
-		Zap
+		Route,
+		TriangleAlert
 	} from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -52,31 +49,17 @@
 		<section class="flow-main">
 			<div class="section-intro">
 				<h1 class="desktop-title">Same answer chain</h1>
-				<p>Use this to explain how a supply change becomes a symptom.</p>
+				<p>Use this to connect the question's starting point to the final result.</p>
 			</div>
 
 			<section class="chain-card large-chain" aria-label={data.chain.concreteText}>
 				<div class="chain-icons">
-					<div class="chain-node">
-						<span class="chain-node-icon"><Droplet size={25} strokeWidth={2.2} /></span>
-						<span>blood flow</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><strong>O₂</strong></span>
-						<span>oxygen</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><Atom size={25} strokeWidth={2.2} /></span>
-						<span>respiration</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><Zap size={25} strokeWidth={2.2} /></span>
-						<span>energy</span>
-					</div>
-					<div class="chain-node">
-						<span class="chain-node-icon"><Target size={25} strokeWidth={2.2} /></span>
-						<span>pain</span>
-					</div>
+					{#each data.chain.steps as step (step.id)}
+						<div class="chain-node">
+							<span class="chain-node-icon"><Route size={25} strokeWidth={2.2} /></span>
+							<span>{step.short}</span>
+						</div>
+					{/each}
 				</div>
 			</section>
 

@@ -175,6 +175,18 @@ a {
 	letter-spacing: 0;
 }
 
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .exam-question-card,
 .teaching-card,
 .side-card,
@@ -202,6 +214,7 @@ a {
 	min-width: 0;
 }
 
+.exam-question-card h1,
 .exam-question-card h2,
 .teaching-card h2,
 .side-card h2,
@@ -215,10 +228,30 @@ a {
 	line-height: 1.22;
 }
 
+.exam-question-card h1,
 .exam-question-card h2 {
 	font-size: 1.32rem;
 	line-height: 1.25;
 	white-space: pre-wrap;
+}
+
+.question-prompt-multiline {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	color: #0b1020;
+	font-size: 1.06rem;
+	font-weight: 740;
+	line-height: 1.34;
+}
+
+.question-prompt-multiline p {
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+.question-prompt-multiline p:first-child {
+	font-weight: 820;
 }
 
 .question-context,
@@ -1372,6 +1405,7 @@ textarea::placeholder {
 		width: 100%;
 		max-width: none;
 		padding: 0 2rem 2rem;
+		--flow-sidebar-width: 22rem;
 	}
 
 	.phone-page {
@@ -1406,33 +1440,40 @@ textarea::placeholder {
 		align-items: start;
 	}
 
-	.public-grid {
-		grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.52fr);
-		gap: 3rem;
+	.public-grid,
+	.chain-grid,
+	.practice-attempt-grid,
+	.checklist-rewrite-grid,
+	.memory-grid {
+		grid-template-columns: var(--flow-sidebar-width) minmax(0, 1fr);
+		gap: 2rem;
 		max-width: 1480px;
 		margin: 0 auto;
 	}
 
-	.chain-grid {
-		grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.42fr);
-		gap: 2.2rem;
-		max-width: 1560px;
-		margin: 0 auto;
-	}
-
+	.chain-grid,
 	.practice-attempt-grid,
-	.checklist-rewrite-grid {
-		grid-template-columns: minmax(20rem, 0.42fr) minmax(0, 1fr);
-		gap: 1.9rem;
+	.checklist-rewrite-grid,
+	.memory-grid {
 		max-width: 1560px;
-		margin: 0 auto;
 	}
 
-	.memory-grid {
-		grid-template-columns: minmax(17rem, 0.64fr) minmax(0, 1.05fr) minmax(20rem, 0.72fr);
-		gap: 1.25rem;
-		max-width: 1560px;
-		margin: 0 auto;
+	.public-grid > .flow-sidebar,
+	.chain-grid > .flow-sidebar,
+	.memory-grid > .flow-sidebar,
+	.practice-rail,
+	.feedback-rail {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.public-grid > .flow-main,
+	.chain-grid > .flow-main,
+	.memory-grid > .flow-main,
+	.practice-workspace,
+	.rewrite-workspace {
+		grid-column: 2;
+		grid-row: 1;
 	}
 
 	.breadcrumb {
@@ -1454,8 +1495,8 @@ textarea::placeholder {
 	}
 
 	.practice-progress-strip {
-		grid-template-columns: minmax(20rem, 0.42fr) minmax(0, 1fr);
-		gap: 1.9rem;
+		grid-template-columns: var(--flow-sidebar-width) minmax(0, 1fr);
+		gap: 2rem;
 		max-width: 1560px;
 		margin: 0 auto 1.15rem;
 	}
@@ -1480,8 +1521,14 @@ textarea::placeholder {
 		font-size: 4.1rem;
 	}
 
+	.exam-question-card h1,
 	.exam-question-card h2 {
 		font-size: clamp(1.45rem, 2.1vw, 2rem);
+	}
+
+	.question-prompt-multiline {
+		gap: 0.55rem;
+		font-size: clamp(1.08rem, 1.25vw, 1.28rem);
 	}
 
 	.teaching-card {
@@ -1518,16 +1565,8 @@ textarea::placeholder {
 		padding: 1.35rem;
 	}
 
-	.practice-rail {
-		order: 0;
-		grid-column: 1;
-		grid-row: 1;
-	}
-
 	.practice-workspace {
 		order: 0;
-		grid-column: 2;
-		grid-row: 1;
 		padding-top: 2rem;
 	}
 

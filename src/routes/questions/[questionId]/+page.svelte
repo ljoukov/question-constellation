@@ -25,6 +25,14 @@
 		resolve('/questions/[questionId]/practice', { questionId: data.question.id })
 	);
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
+	const navSubjectLabel = $derived(topicLabel || data.question.meta.paper);
+	const promptLines = $derived(
+		data.question.prompt
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter(Boolean)
+	);
+	const promptIsSingleLine = $derived(promptLines.length <= 1);
 </script>
 
 <svelte:head>
@@ -46,7 +54,7 @@
 			<strong>Question Constellation</strong>
 		</a>
 		<nav class="desktop-nav" aria-label="Main navigation">
-			<a href={questionHref}>Biology</a>
+			<a href={questionHref}>{navSubjectLabel}</a>
 			<a href={practiceHref}>Practice</a>
 		</nav>
 		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
@@ -60,7 +68,7 @@
 				{data.question.meta.tier} /
 				{data.question.meta.paper}
 			</p>
-			<h1 class="desktop-title">{data.question.title}</h1>
+			<h1 class="sr-only">{data.question.title}</h1>
 
 			<section class="meta-pills" aria-label="Exam metadata">
 				<span class="pill">{data.question.meta.marks} marks</span>
@@ -74,7 +82,25 @@
 					{#if data.question.context}
 						<p class="question-context">{data.question.context}</p>
 					{/if}
-					<h2>{data.question.prompt}</h2>
+					{#if data.question.assets.length > 0}
+						<div class="question-assets question-card-assets" aria-label="Question source images">
+							{#each data.question.assets as asset (asset.id)}
+								<figure>
+									<img src={asset.publicPath} alt={asset.altText} loading="eager" />
+									<figcaption>{asset.sourceLabel}</figcaption>
+								</figure>
+							{/each}
+						</div>
+					{/if}
+					{#if promptIsSingleLine}
+						<h2 class="question-heading">{promptLines[0] ?? data.question.prompt}</h2>
+					{:else}
+						<div class="question-prompt-multiline">
+							{#each promptLines as line}
+								<p>{line}</p>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			</section>
 
@@ -89,22 +115,11 @@
 				</a>
 			</div>
 
-			{#if data.question.assets.length > 0}
-				<div class="question-assets public-question-assets" aria-label="Question source images">
-					{#each data.question.assets as asset (asset.id)}
-						<figure>
-							<img src={asset.publicPath} alt={asset.altText} loading="eager" />
-							<figcaption>{asset.sourceLabel}</figcaption>
-						</figure>
-					{/each}
-				</div>
-			{/if}
-
 			<section class="teaching-card">
 				<span class="icon-tile success"><Target size={28} /></span>
 				<div>
 					<h2>Learning goal</h2>
-					<p>Build a cause-and-effect explanation from the given change to the final symptom.</p>
+					<p>Build a step-by-step explanation from the given change to the final result.</p>
 				</div>
 			</section>
 
@@ -118,9 +133,9 @@
 			<section class="side-card prompt-card">
 				<h2>Before you reveal</h2>
 				<ul class="prompt-list">
-					<li><Circle size={21} /> What changes first?</li>
-					<li><Circle size={21} /> What happens inside the cells?</li>
-					<li><Circle size={21} /> How does that cause pain?</li>
+					<li><Circle size={21} /> What is the first change?</li>
+					<li><Circle size={21} /> What does that change affect next?</li>
+					<li><Circle size={21} /> What final result must be explained?</li>
 				</ul>
 			</section>
 
@@ -139,7 +154,7 @@
 				<span class="icon-tile warning"><TriangleAlert size={24} /></span>
 				<div>
 					<h2>Common trap</h2>
-					<p>Jumping straight from the given change to the final symptom.</p>
+					<p>Jumping straight from the given change to the final result.</p>
 				</div>
 			</section>
 		</aside>

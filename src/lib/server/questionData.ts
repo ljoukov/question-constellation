@@ -180,6 +180,7 @@ type QuestionRow = {
 	tier: string | null;
 	paper: string | null;
 	topic_path_json: string;
+	self_containment_json: string;
 	metadata_json: string;
 };
 
@@ -292,18 +293,60 @@ function iconForStep(text: string, role: string): RepairChainNode['icon'] {
 function titleFromQuestion(row: QuestionRow): string {
 	const metadata = parseJson<{ title?: string }>(row.metadata_json, {});
 	if (metadata.title) return metadata.title;
-	const line = row.prompt_text
+
+	const lines = cleanPromptText(row.prompt_text)
 		.split('\n')
-		.map((part) => part.trim())
+		.map((part) => part.replace(/\s+/g, ' ').trim())
 		.filter(Boolean)
-		.at(-1);
-	return line ?? row.id;
+		.filter(
+			(line) => !/^(?:choose (?:the )?answers? from the box|complete the sentence)\.?$/i.test(line)
+		);
+
+	const questionLine = lines.find((line) => line.endsWith('?'));
+	const commandLine = lines.find((line) =>
+		/^(?:explain|describe|give|state|calculate|determine|compare|name|suggest|evaluate|use|write|draw|measure|identify|what|which|why|how)\b/i.test(
+			line
+		)
+	);
+	const title = questionLine ?? commandLine ?? lines.at(-1) ?? row.id;
+	return title.length > 120 ? `${title.slice(0, 117).trim()}...` : title;
 }
 
 function topicFromRow(row: QuestionRow): string {
 	const topicPath = parseJson<string[]>(row.topic_path_json, []);
 	if (topicPath.length > 0) return topicPath.join(': ');
 	return row.subject_area ?? row.paper ?? 'GCSE science';
+}
+
+function cleanPromptText(text: string): string {
+	return text
+		.split(/\r?\n/)
+		.filter((line) => !/^\s*\[\s*\d+\s*marks?\s*\]\s*$/i.test(line))
+		.filter((line) => !/^\s*(?:figure|table)\s+\d+\s*$/i.test(line))
+		.join('\n')
+		.trim();
+}
+
+function questionReferencesSourceAsset(text: string): boolean {
+	return /\b(?:figure|table)\s+\d+\b/i.test(text);
+}
+
+function displayContextFromRow(row: QuestionRow): string {
+	const context = row.context_text?.trim();
+	if (!context) return '';
+
+	const selfContainment = parseJson<{
+		is_self_contained?: boolean;
+		requires_context?: boolean;
+		requires_assets?: boolean;
+	}>(row.self_containment_json, {});
+
+	const displayContext = cleanPromptText(context);
+
+	if (selfContainment.requires_context || selfContainment.requires_assets) return displayContext;
+	if (questionReferencesSourceAsset(row.prompt_text)) return displayContext;
+
+	return selfContainment.is_self_contained ? '' : displayContext;
 }
 
 function markEvidenceFromStep(row: ChainStepRow): string {
@@ -509,8 +552,8 @@ async function hydrateQuestion(
 		id: row.id,
 		sourceRef: `Q${row.source_question_ref}`,
 		title: titleFromQuestion(row),
-		prompt: row.prompt_text,
-		context: row.context_text ?? '',
+		prompt: cleanPromptText(row.prompt_text),
+		context: displayContextFromRow(row),
 		assets: await getQuestionAssets(row.id),
 		meta: {
 			qualification: row.qualification ?? 'GCSE',
@@ -538,7 +581,8 @@ async function hydrateQuestion(
 async function getQuestionRow(questionId: string): Promise<QuestionRow> {
 	const row = await queryFirst<QuestionRow>(
 		`SELECT id, source_question_ref, prompt_text, context_text, command_word, marks, board,
-		        qualification, subject, subject_area, tier, paper, topic_path_json, metadata_json
+		        qualification, subject, subject_area, tier, paper, topic_path_json,
+		        self_containment_json, metadata_json
 		 FROM questions
 		 WHERE id = ? OR slug = ?`,
 		[questionId, questionId]
@@ -551,7 +595,7 @@ async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
 	const rows = await queryRows<QuestionRow & MembershipRow>(
 		`SELECT q.id, q.source_question_ref, q.prompt_text, q.context_text, q.command_word, q.marks,
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
-		        q.topic_path_json, q.metadata_json,
+		        q.topic_path_json, q.self_containment_json, q.metadata_json,
 		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
 		        qac.fit_notes, qac.needs_human_review
 		 FROM question_answer_chains qac
