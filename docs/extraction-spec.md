@@ -154,6 +154,10 @@ For each question or subquestion, extract:
 - Parent reference if it is part of a multipart question.
 - Display order.
 - Prompt text.
+- Self-contained prompt text: the practice-ready formulation with any required parent stem,
+  scenario, method, source text, or figure/table reference carried forward.
+- Self-containment metadata: whether the printed atomic prompt is already self-contained, requires
+  prior context, requires assets, or requires both.
 - Command word, such as `explain`, `describe`, `calculate`, `evaluate`, or `state`.
 - Mark value.
 - Answer lines or expected response format when visible.
@@ -162,6 +166,8 @@ For each question or subquestion, extract:
 - Specification reference if stated or confidently inferable.
 - Page number range.
 - Required diagrams, tables, graphs, equations, images, or source text.
+- Asset dependencies, including source label, role, local file path, public path or storage key,
+  extraction confidence, and whether the mapping needs human review.
 - Any visible constraints, such as `use Figure 2`, `give your answer to 2 significant figures`, or `do not refer to...`.
 
 Do not merge marked subparts into one practice question unless the mark scheme treats them as one answer. For example, `01.1`, `01.2`, and `01.3` should normally become separate question rows under the same parent.
@@ -273,6 +279,7 @@ The extraction agent should emit structured JSON before database insertion. The 
 
 Minimum shape:
 
+<!-- prettier-ignore -->
 ```json
 {
   "extraction_run": {
@@ -304,6 +311,17 @@ Minimum shape:
       "parent_source_question_ref": "01",
       "display_order": 12,
       "prompt_text": "Explain why reduced blood flow to the heart can cause chest pain.",
+      "self_contained_prompt_text": "Explain why reduced blood flow to the heart can cause chest pain.",
+      "self_containment": {
+        "status": "self_contained",
+        "is_self_contained": true,
+        "requires_context": false,
+        "requires_assets": false,
+        "added_context": null,
+        "required_asset_labels": [],
+        "rationale": "Prompt can be practised without prior paper context.",
+        "confidence": 0.9
+      },
       "command_word": "Explain",
       "marks": 4,
       "topic_path": ["Biology", "Organisation", "Heart and blood vessels"],
@@ -508,11 +526,16 @@ CREATE TABLE question_assets (
   id TEXT PRIMARY KEY,
   question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
   asset_type TEXT NOT NULL CHECK (asset_type IN ('diagram', 'table', 'graph', 'image', 'equation', 'source_text', 'other')),
+  source_label TEXT,
+  required INTEGER NOT NULL DEFAULT 0,
+  role TEXT CHECK (role IN ('context', 'read_data', 'identify_label', 'answer_canvas', 'source_text')),
   page_number INTEGER,
   bbox_json TEXT,
   alt_text TEXT,
   extracted_text TEXT,
   file_path TEXT,
+  storage_key TEXT,
+  public_path TEXT,
   extraction_confidence REAL,
   needs_human_review INTEGER NOT NULL DEFAULT 0,
   metadata_json TEXT NOT NULL DEFAULT '{}'

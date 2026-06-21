@@ -8,6 +8,7 @@ function isPublicPath(pathname: string): boolean {
 	return (
 		pathname.startsWith('/auth/') ||
 		pathname.startsWith('/_app/') ||
+		pathname.startsWith('/images/') ||
 		pathname.startsWith('/favicon') ||
 		PUBLIC_PATHS.has(pathname)
 	);

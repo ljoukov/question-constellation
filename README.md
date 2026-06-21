@@ -21,6 +21,8 @@ In development, `/auth/relogin` also allows a local email shortcut.
 Required local env values are listed in `.env.example`. Any verified Google/Firebase user can enter.
 The D1 database is bound in `wrangler.jsonc`
 as `QUESTION_DB`, but the app currently uses generated server-side data only.
+Question-paper image assets are stored in the `question-constellation` R2 bucket through the
+`QUESTION_R2` binding and served by the app from `/images/papers/...`.
 
 ## Validation
 
@@ -29,6 +31,24 @@ pnpm run check
 pnpm run test
 pnpm run build
 ```
+
+To refresh extracted paper images in R2 after running `pnpm run extract:aqa`:
+
+```sh
+CLOUDFLARE_API_TOKEN=... pnpm run upload:r2-images
+```
+
+or, with the token already exported:
+
+```sh
+pnpm run upload:r2-images
+```
+
+`extract:aqa` expects the ignored local `data/aqa-combined-science-trilogy-higher/`
+corpus and Poppler tools (`pdfinfo` and `pdfimages`) to be present.
+This uploads local files from `data/aqa-combined-science-trilogy-higher/assets/question-papers/`
+to R2 keys under `images/papers/`, matching the public route path without exposing the local
+`data/` prefix.
 
 ## Deployment
 
