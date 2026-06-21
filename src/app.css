@@ -526,7 +526,7 @@ a {
 	color: #08602c;
 }
 
-.compact-hint {
+.hint-card.compact-hint {
 	margin-top: 1rem;
 	margin-bottom: 0;
 }
@@ -904,6 +904,21 @@ a {
 .secondary-button.success {
 	border-color: #08773b;
 	color: #05642f;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.green-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.58;
+	box-shadow: none;
+}
+
+.button-spinner {
+	width: 1.1rem;
+	height: 1.1rem;
+	border-color: rgba(255, 255, 255, 0.45);
+	border-top-color: #ffffff;
 }
 
 .missed-link {
@@ -1318,6 +1333,70 @@ textarea::placeholder {
 	color: #a75a00;
 }
 
+.grading-status-card {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.85rem;
+	align-items: start;
+	margin-top: 1rem;
+	padding: 0.95rem;
+	border: 1px solid #d8e6fb;
+	border-radius: 0.55rem;
+	background: #f3f7ff;
+	color: #0b1020;
+}
+
+.grading-status-card.error {
+	border-color: #f3c883;
+	background: #fff8e8;
+}
+
+.grading-status-card h2 {
+	margin: 0 0 0.2rem;
+	font-size: 1rem;
+	font-weight: 860;
+	line-height: 1.2;
+	text-transform: lowercase;
+}
+
+.grading-status-card p {
+	margin: 0;
+	color: #344054;
+	line-height: 1.45;
+}
+
+.thinking-preview {
+	margin-top: 0.85rem;
+	padding-top: 0.8rem;
+	border-top: 1px solid #d8e3f5;
+	font-size: 0.88rem;
+}
+
+.thinking-preview strong {
+	display: block;
+	margin-bottom: 0.25rem;
+	color: #0b45d9;
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0;
+}
+
+.feedback-list {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	padding-left: 1.15rem;
+	color: #172033;
+	line-height: 1.4;
+}
+
+.thinking-card p {
+	margin: 0;
+	color: #475569;
+	font-size: 0.88rem;
+	line-height: 1.45;
+}
+
 .repair-card {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr);
@@ -1350,6 +1429,28 @@ textarea::placeholder {
 .workspace-subtitle {
 	margin: 0.45rem 0 1rem;
 	color: #475569;
+}
+
+.completion-card {
+	margin: 1rem 0 0.2rem;
+	padding: 1rem;
+	border: 1px solid #cfe7d5;
+	border-radius: 0.55rem;
+	background: #f5fbf7;
+}
+
+.completion-card h2 {
+	margin: 0 0 0.45rem;
+	color: #075323;
+	font-size: 1rem;
+	font-weight: 860;
+	line-height: 1.2;
+}
+
+.completion-card p {
+	margin: 0;
+	color: #172033;
+	line-height: 1.5;
 }
 
 .saved-title {

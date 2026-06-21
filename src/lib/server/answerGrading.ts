@@ -1,0 +1,277 @@
+import { env } from '$env/dynamic/private';
+import { getPracticePageData, type PracticePageData } from '$lib/server/questionData';
+import type { LlmStreamEvent, LlmTextModelId } from '@ljoukov/llm';
+
+const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
+const GRADING_THINKING_LEVEL = 'medium';
+const NONE = 'none';
+
+export type GradeStreamDelta =
+	| { type: 'status'; phase: 'calling' | 'thinking' | 'grading' }
+	| { type: 'thought'; delta: string }
+	| { type: 'text'; delta: string };
+
+export type QuestionGradeResult = {
+	status: 'ok';
+	result: 'correct' | 'partial' | 'incorrect';
+	awardedMarks: number;
+	maxMarks: number;
+	presentStepIds: string[];
+	missingStepIds: string[];
+	feedbackMarkdown: string;
+	thinkingMarkdown: string | null;
+	model: string;
+	modelVersion: string;
+};
+
+function getPlatformEnvValue(platformEnv: unknown, key: string): string | undefined {
+	if (!platformEnv || typeof platformEnv !== 'object') return undefined;
+	const value = (platformEnv as Record<string, unknown>)[key];
+	return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+export function configureLlmProcessEnv(platformEnv?: unknown): void {
+	const tokenProviderUrl =
+		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_URL') ??
+		env.CHATGPT_AUTH_TOKEN_PROVIDER_URL;
+	const tokenProviderApiKey =
+		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY') ??
+		env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY;
+
+	if (tokenProviderUrl) {
+		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_URL = tokenProviderUrl;
+	}
+	if (tokenProviderApiKey) {
+		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY = tokenProviderApiKey;
+	}
+}
+
+function clampMark(value: number, maxMarks: number): number {
+	if (!Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(maxMarks, Math.round(value)));
+}
+
+function normalizeListField(value: string | undefined, allowedIds: Set<string>): string[] {
+	if (!value) return [];
+	const trimmed = value.trim();
+	if (!trimmed || trimmed.toLowerCase() === NONE) return [];
+
+	const seen = new Set<string>();
+	const selected: string[] = [];
+	for (const item of trimmed.split(/[,\n]/)) {
+		const id = item.trim();
+		if (!allowedIds.has(id) || seen.has(id)) continue;
+		seen.add(id);
+		selected.push(id);
+	}
+	return selected;
+}
+
+function readField(rawText: string, field: string): string | undefined {
+	const match = rawText.match(new RegExp(`^%${field}%:\\s*(.*)$`, 'im'));
+	return match?.[1]?.trim();
+}
+
+function readFeedback(rawText: string): string {
+	const match = rawText.match(/^%FEEDBACK%:\s*([\s\S]*)$/im);
+	const feedback = match?.[1]?.trim();
+	if (feedback) return feedback;
+
+	const fallback = rawText
+		.replace(/^%RESULT%:.*$/gim, '')
+		.replace(/^%AWARDED_MARKS%:.*$/gim, '')
+		.replace(/^%MAX_MARKS%:.*$/gim, '')
+		.replace(/^%PRESENT_STEP_IDS%:.*$/gim, '')
+		.replace(/^%MISSING_STEP_IDS%:.*$/gim, '')
+		.replace(/^%FEEDBACK%:/gim, '')
+		.trim();
+	return fallback || 'Your answer has been checked against the answer chain.';
+}
+
+function lastMarkdownParagraph(value: string): string | null {
+	const paragraphs = value
+		.split(/\n\s*\n/)
+		.map((paragraph) => paragraph.trim())
+		.filter(Boolean);
+	return paragraphs.at(-1) ?? null;
+}
+
+export function parseGradeResponse(rawText: string, data: PracticePageData): QuestionGradeResult {
+	const allowedIds = new Set(data.chain.steps.map((step) => step.id));
+	const maxMarks = data.question.meta.marks;
+	const awardedMarks = clampMark(
+		Number.parseInt(readField(rawText, 'AWARDED_MARKS') ?? '', 10),
+		maxMarks
+	);
+	let presentStepIds = normalizeListField(readField(rawText, 'PRESENT_STEP_IDS'), allowedIds);
+	let missingStepIds = normalizeListField(readField(rawText, 'MISSING_STEP_IDS'), allowedIds);
+
+	if (presentStepIds.length === 0 && missingStepIds.length === 0) {
+		missingStepIds = data.chain.steps.map((step) => step.id);
+	}
+	if (missingStepIds.length === 0 && presentStepIds.length > 0) {
+		const present = new Set(presentStepIds);
+		missingStepIds = data.chain.steps.map((step) => step.id).filter((id) => !present.has(id));
+	}
+	if (presentStepIds.length === 0 && missingStepIds.length > 0) {
+		const missing = new Set(missingStepIds);
+		presentStepIds = data.chain.steps.map((step) => step.id).filter((id) => !missing.has(id));
+	}
+
+	const explicitResult = readField(rawText, 'RESULT')?.toLowerCase();
+	const result: QuestionGradeResult['result'] =
+		explicitResult === 'correct' || explicitResult === 'partial' || explicitResult === 'incorrect'
+			? explicitResult
+			: awardedMarks >= maxMarks
+				? 'correct'
+				: awardedMarks === 0
+					? 'incorrect'
+					: 'partial';
+
+	return {
+		status: 'ok',
+		result,
+		awardedMarks,
+		maxMarks,
+		presentStepIds,
+		missingStepIds,
+		feedbackMarkdown: readFeedback(rawText),
+		thinkingMarkdown: null,
+		model: GRADING_MODEL,
+		modelVersion: GRADING_MODEL
+	};
+}
+
+function stepSelectionList(data: PracticePageData): string {
+	return data.chain.steps
+		.map((step, index) => {
+			const checklistItem = data.question.checklist.find((item) => item.stepId === step.id);
+			return [
+				`${index + 1}. id: ${step.id}`,
+				`   chain link: ${step.label}`,
+				`   mark/checklist point: ${checklistItem?.text ?? step.markEvidence}`
+			].join('\n');
+		})
+		.join('\n');
+}
+
+function buildQuestionContext(data: PracticePageData): string {
+	const parts = [
+		data.question.context ? `Question context:\n${data.question.context}` : '',
+		`Question prompt:\n${data.question.prompt}`,
+		`Model answer:\n${data.question.modelAnswer}`,
+		`Common weak answer:\n${data.question.commonWeakAnswer}`
+	].filter(Boolean);
+	return parts.join('\n\n');
+}
+
+export function buildGradePrompt(data: PracticePageData, studentAnswer: string): string {
+	return [
+		'You are grading one GCSE science free-text answer for an online practice question.',
+		'Use the exact answer-chain step ids listed below. Do not invent ids.',
+		'Select which listed steps are clearly present in the student answer and which are missing.',
+		'Award marks for correct science ideas, not for exact wording. Keep feedback short and student-facing.',
+		'',
+		'Return plain text only, exactly in this field format:',
+		'%RESULT%: correct|partial|incorrect',
+		`%AWARDED_MARKS%: integer from 0 to ${data.question.meta.marks}`,
+		`%MAX_MARKS%: ${data.question.meta.marks}`,
+		`%PRESENT_STEP_IDS%: comma-separated exact ids from the list, or ${NONE}`,
+		`%MISSING_STEP_IDS%: comma-separated exact ids from the list, or ${NONE}`,
+		'%FEEDBACK%:',
+		'Short Markdown feedback in 2-5 bullets. Mention what was present and the next repair move.',
+		'',
+		'Exam metadata:',
+		`${data.question.meta.board} ${data.question.meta.qualification} ${data.question.meta.subject} ${data.question.meta.tier}`,
+		`${data.question.meta.paper}; topic: ${data.question.meta.topic}; marks: ${data.question.meta.marks}`,
+		'',
+		buildQuestionContext(data),
+		'',
+		'Answer-chain steps to select from:',
+		stepSelectionList(data),
+		'',
+		'Student answer:',
+		studentAnswer
+	].join('\n');
+}
+
+export async function loadQuestionForGrading(questionId: string): Promise<PracticePageData> {
+	return await getPracticePageData(questionId);
+}
+
+export async function gradeQuestionAnswerStreaming({
+	questionId,
+	studentAnswer,
+	platformEnv,
+	signal,
+	onDelta
+}: {
+	questionId: string;
+	studentAnswer: string;
+	platformEnv?: unknown;
+	signal?: AbortSignal;
+	onDelta?: (delta: GradeStreamDelta) => void;
+}): Promise<QuestionGradeResult> {
+	const data = await loadQuestionForGrading(questionId);
+	const prompt = buildGradePrompt(data, studentAnswer);
+	configureLlmProcessEnv(platformEnv);
+	onDelta?.({ type: 'status', phase: 'calling' });
+
+	const { streamText } = await import('@ljoukov/llm');
+	const call = streamText({
+		model: GRADING_MODEL,
+		input: prompt,
+		thinkingLevel: GRADING_THINKING_LEVEL,
+		signal,
+		telemetry: false
+	});
+
+	let rawText = '';
+	let thoughtText = '';
+	let sawThought = false;
+	let sawResponse = false;
+
+	for await (const event of call.events) {
+		handleStreamEvent(event, {
+			onThought(text) {
+				thoughtText += text;
+				if (!sawThought) {
+					sawThought = true;
+					onDelta?.({ type: 'status', phase: 'thinking' });
+				}
+				onDelta?.({ type: 'thought', delta: text });
+			},
+			onResponse(text) {
+				rawText += text;
+				if (!sawResponse) {
+					sawResponse = true;
+					onDelta?.({ type: 'status', phase: 'grading' });
+				}
+				onDelta?.({ type: 'text', delta: text });
+			}
+		});
+	}
+
+	const llmResult = await call.result;
+	const finalText = rawText.trim() ? rawText : llmResult.text;
+	const finalThoughts = thoughtText.trim() ? thoughtText : llmResult.thoughts;
+	return {
+		...parseGradeResponse(finalText, data),
+		thinkingMarkdown: lastMarkdownParagraph(finalThoughts),
+		modelVersion: llmResult.modelVersion
+	};
+}
+
+function handleStreamEvent(
+	event: LlmStreamEvent,
+	handlers: { onThought: (text: string) => void; onResponse: (text: string) => void }
+): void {
+	if (event.type !== 'delta') return;
+	if (event.channel === 'thought') {
+		handlers.onThought(event.text);
+		return;
+	}
+	if (event.channel === 'response') {
+		handlers.onResponse(event.text);
+	}
+}

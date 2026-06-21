@@ -96,7 +96,7 @@
 						<h2 class="question-heading">{promptLines[0] ?? data.question.prompt}</h2>
 					{:else}
 						<div class="question-prompt-multiline">
-							{#each promptLines as line}
+							{#each promptLines as line, index (index)}
 								<p>{line}</p>
 							{/each}
 						</div>

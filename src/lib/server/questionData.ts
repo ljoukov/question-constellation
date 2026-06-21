@@ -280,10 +280,16 @@ function shortStepText(text: string): string {
 
 function iconForStep(text: string, role: string): RepairChainNode['icon'] {
 	const lower = `${text} ${role}`.toLowerCase();
-	if (lower.includes('oxygen') || lower.includes('potential difference')) return 'oxygen';
+	if (lower.includes('oxygen')) return 'oxygen';
 	if (lower.includes('water') || lower.includes('blood') || lower.includes('solution'))
 		return 'droplet';
-	if (lower.includes('energy') || lower.includes('heating') || lower.includes('power'))
+	if (
+		lower.includes('energy') ||
+		lower.includes('heating') ||
+		lower.includes('power') ||
+		lower.includes('potential difference') ||
+		lower.includes('current')
+	)
 		return 'zap';
 	if (lower.includes('respiration') || lower.includes('enzyme') || lower.includes('atom'))
 		return 'atom';
