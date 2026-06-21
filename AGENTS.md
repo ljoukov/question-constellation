@@ -1,8 +1,11 @@
 ## Local Guidance
 
-- Read `docs/product-methodology.md` before changing navigation, data models, onboarding, or Thinking Memory behavior.
-- First-use flows should start with subject -> concrete question family/topic -> practice. Do not expose thinking patterns as the main starting taxonomy.
-- Thinking Memory is a post-practice retrieval surface. Keep it as one unified library organized by subject, with transfer across topics and subjects still visible.
+- Read `docs/product-methodology.md` before changing product direction, navigation, data models, onboarding, question-bank surfaces, or Thinking Memory behavior.
+- Read `docs/product-flows.md` before changing acquisition paths, public question pages, answer-chain pages, constellation pages, practice/check flows, or mobile UX.
+- Question Constellation should currently feel like a lightweight public GCSE question bank / exam-question atlas organized by answer chains, not a generic chatbot, full GCSE workspace, or dashboard-first revision app.
+- First-use flows should start with a concrete public exam question -> answer chain -> constellation -> practice. Do not expose abstract thinking patterns as the main starting taxonomy.
+- Runtime model use should be optional and lightweight; curated questions, model answers, mark checklists, common weak answers, and static answer-chain structure should carry most product value.
+- Thinking Memory is a post-practice retrieval surface. Keep it as one unified library of earned answer chains organized by subject filters only for navigation, with transfer across topics and subjects still visible.
 - The D1 database is bound as `QUESTION_DB` for future use, but the current app intentionally uses generated server-side data only.
 - Use `scripts/dev-server.sh start|stop|restart|logs [port]` for local development. It follows the Spark tmux/log pattern but serves plain HTTP on localhost.
 - Auth follows the server-side Firebase redirect/session pattern from `~/projects/the-observatory-admin/src/routes/auth`. This repo is a separate Firebase project; do not reuse Observatory Firebase project identity or API keys. Unlike Observatory Admin, Question Constellation should allow every verified Google/Firebase user to enter; do not add an admin allow-list gate.
