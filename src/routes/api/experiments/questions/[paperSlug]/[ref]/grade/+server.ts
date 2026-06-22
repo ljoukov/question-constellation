@@ -16,12 +16,7 @@ const requestSchema = z.object({
 function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: GradeStreamDelta) {
 	if (delta.type === 'status') {
 		send({ event: 'status', data: JSON.stringify({ phase: delta.phase }) });
-		return;
 	}
-	send({
-		event: delta.type === 'thought' ? 'thought' : 'text',
-		data: delta.delta
-	});
 }
 
 function errorResponse(error: unknown, paperSlug: string, ref: string) {

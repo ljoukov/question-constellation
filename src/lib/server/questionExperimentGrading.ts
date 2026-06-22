@@ -1140,6 +1140,8 @@ export async function gradeExperimentQuestionAnswers({
 		} catch (error) {
 			throw new QuestionGradeRuntimeError('stream_events', error);
 		}
+	} else if (answered.length > 0) {
+		onDelta?.({ type: 'status', phase: 'grading' });
 	}
 
 	const modelByQuestion = new Map(
