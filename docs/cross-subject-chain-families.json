@@ -1,0 +1,499 @@
+{
+  "schema_version": 1,
+  "status": "draft",
+  "taxonomy_type": "cross_subject_chain_family_overlay",
+  "description": "Draft cross-subject chain families across Biology, Chemistry, and Physics. These are overlay tags, not a strict parent hierarchy.",
+  "source_files": [
+    "docs/physics-chain-family-taxonomy.md",
+    "docs/chemistry-chain-family-taxonomy.md",
+    "docs/biology-chain-family-taxonomy.md"
+  ],
+  "design_principles": [
+    "Prefer deep scientific thinking moves over topics.",
+    "Allow a chain to have multiple cross-subject tags.",
+    "Keep exact answer chains and subject families visible underneath.",
+    "Use recall as a utility family, not as the main product value."
+  ],
+  "family_count": 13,
+  "families": [
+    {
+      "id": "cross-sci-relationship-convert-calculate",
+      "name": "Relationship -> Rearrange/Convert -> Calculate",
+      "method_pattern": "identify quantities -> choose relationship -> convert/rearrange -> calculate",
+      "description": "Use a quantitative relationship to compute an unknown value after unit conversion, scaling, rearrangement, or comparison.",
+      "depth": "strong",
+      "presentation_priority": 1,
+      "subject_family_sources": {
+        "physics": [
+          "Pick The Relationship -> Rearrange -> Calculate"
+        ],
+        "chemistry": [
+          "Amount Relationship -> Convert, Scale, Or Calculate"
+        ],
+        "biology": [
+          "Quantitative Relationship -> Convert, Compare, Or Calculate"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-ohms-law-calculation",
+          "physics-chain-specific-heat-capacity-calculation",
+          "physics-chain-weight-mass-gravitational-field-strength"
+        ],
+        "chemistry": [
+          "chem-chain-stoichiometric-mass-from-moles-and-ratio",
+          "chem-chain-concentration-mass-volume-unit-conversion",
+          "chem-chain-compound-mass-mr-to-moles"
+        ],
+        "biology": [
+          "bio-chain-magnification-equation-unit-conversion",
+          "bio-chain-percentage-change-original-difference",
+          "bio-chain-quadrat-sample-area-scale-count"
+        ]
+      },
+      "review_notes": "Broad but useful. Keep exact chains separate because unit traps and relationship choice differ by subject."
+    },
+    {
+      "id": "cross-sci-rate-time-gradient-fraction-change",
+      "name": "Time/Rate/Gradient/Fraction -> Change",
+      "method_pattern": "read time/rate/gradient/area/fraction relation -> apply to quantity -> state change",
+      "description": "Interpret rates, time intervals, gradients, areas, or repeated fractions to explain or calculate change.",
+      "depth": "strong",
+      "presentation_priority": 2,
+      "subject_family_sources": {
+        "physics": [
+          "Use Rate, Time, Area, Gradient, Or Repeated Fraction"
+        ],
+        "chemistry": [
+          "Data, Graph, Or Practical Variable -> Valid Interpretation",
+          "Condition Change -> Collision, Energy, Or Equilibrium Effect"
+        ],
+        "biology": [
+          "Quantitative Relationship -> Convert, Compare, Or Calculate",
+          "Data Pattern -> Supported Biological Conclusion"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-half-life-activity-change",
+          "physics-chain-braking-distance-velocity-time-area",
+          "physics-chain-graph-gradient-represents-rate"
+        ],
+        "chemistry": [
+          "chem-chain-rate-from-graph-gradient-tangent",
+          "chem-chain-rate-decreases-as-reaction-progresses-graph"
+        ],
+        "biology": [
+          "bio-chain-rate-from-graph-change-over-time",
+          "bio-chain-photosynthesis-rate-gas-per-time"
+        ]
+      },
+      "review_notes": "Overlaps with calculation, but the hidden link is interpreting change over time or from a graph."
+    },
+    {
+      "id": "cross-sci-condition-input-mechanism-output",
+      "name": "Change Condition/Input -> Mechanism Changes -> Output Changes",
+      "method_pattern": "change condition/input/property -> mechanism changes -> output/effect changes",
+      "description": "Predict an outcome by tracing how a changed input alters the underlying mechanism.",
+      "depth": "strong",
+      "presentation_priority": 3,
+      "subject_family_sources": {
+        "physics": [
+          "Change An Input Or Property -> Predict The Output Or Effect"
+        ],
+        "chemistry": [
+          "Condition Change -> Collision, Energy, Or Equilibrium Effect"
+        ],
+        "biology": [
+          "Condition Or Resource Change -> Rate, Growth, Or Population Effect"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-resistance-decreases-current-increases",
+          "physics-chain-motor-effect-force-change",
+          "physics-chain-gas-temperature-collisions-pressure"
+        ],
+        "chemistry": [
+          "chem-chain-temperature-rate-particle-collisions",
+          "chem-chain-equilibrium-concentration-shift-to-oppose-change",
+          "chem-chain-catalyst-lower-activation-energy"
+        ],
+        "biology": [
+          "bio-chain-enzyme-condition-active-site-substrate-rate",
+          "bio-chain-plant-resource-competition-growth-yield",
+          "bio-chain-fermentation-temperature-enzyme-gas-rate"
+        ]
+      },
+      "review_notes": "One of the deepest cross-subject families. It should be visible to learners."
+    },
+    {
+      "id": "cross-sci-structure-arrangement-property-function",
+      "name": "Structure/Arrangement -> Property/Function",
+      "method_pattern": "structure or arrangement feature -> mechanism -> property/function",
+      "description": "Explain properties or functions by connecting structure, arrangement, or molecular detail to effect.",
+      "depth": "strong",
+      "presentation_priority": 4,
+      "subject_family_sources": {
+        "physics": [
+          "Change An Input Or Property -> Predict The Output Or Effect"
+        ],
+        "chemistry": [
+          "Particle Structure Or Bonding -> Macroscopic Property"
+        ],
+        "biology": [
+          "Genetic Information -> Inheritance, Variation, Or Evolution Outcome",
+          "Substance Or Energy Movement -> Process -> Biological Effect"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-high-thermal-conductivity-faster-transfer"
+        ],
+        "chemistry": [
+          "chem-chain-alloy-hardness-distorted-layers",
+          "chem-chain-delocalised-electrons-electrical-conduction",
+          "chem-chain-ionic-lattice-high-melting-point"
+        ],
+        "biology": [
+          "bio-chain-mutation-code-amino-acids-protein-function",
+          "bio-chain-transport-tissue-openings-flow",
+          "bio-chain-prokaryotic-cell-differences-recall"
+        ]
+      },
+      "review_notes": "Strong in Chemistry and Biology. Physics coverage is currently thinner but present through material property chains."
+    },
+    {
+      "id": "cross-sci-pathway-system-transfer-loss-effect",
+      "name": "Trace A Pathway/System -> Transfer, Loss, Safety, Or Effect",
+      "method_pattern": "follow path through system -> locate transfer/loss/protection/process -> explain outcome",
+      "description": "Follow movement through a system to explain where transfer, loss, protection, separation, or biological effect occurs.",
+      "depth": "strong",
+      "presentation_priority": 5,
+      "subject_family_sources": {
+        "physics": [
+          "Trace A Path Through A System -> Explain Transfer, Loss, Or Safety"
+        ],
+        "chemistry": [
+          "Practical Sequence -> Separate, Purify, Extract, Or Prepare"
+        ],
+        "biology": [
+          "Substance Or Energy Movement -> Process -> Biological Effect"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-grid-transformer-efficiency",
+          "physics-chain-earth-wire-fault-current-safety",
+          "physics-chain-radio-wave-signal-transfer"
+        ],
+        "chemistry": [
+          "chem-chain-crude-oil-fractional-distillation",
+          "chem-chain-groundwater-filter-sterilise-potable",
+          "chem-chain-filter-then-crystallise-soluble-salt"
+        ],
+        "biology": [
+          "bio-chain-carbon-cycle-decomposition-respiration-photosynthesis",
+          "bio-chain-starch-large-digestion-absorption",
+          "bio-chain-delivery-oxygen-respiration-energy-symptom"
+        ]
+      },
+      "review_notes": "A good cross-subject transfer family. It pulls from systems, practical processes, and biological pathways."
+    },
+    {
+      "id": "cross-sci-evidence-test-observation-inference",
+      "name": "Evidence/Test/Observation -> Inference",
+      "method_pattern": "observe result/evidence -> map to known behaviour -> infer identity/process/property",
+      "description": "Use a test result, observation, or evidence pattern to infer what is present, what happened, or what property applies.",
+      "depth": "strong",
+      "presentation_priority": 6,
+      "subject_family_sources": {
+        "physics": [
+          "Test, Configuration, Or Result -> Infer Behaviour Or Identity"
+        ],
+        "chemistry": [
+          "Evidence, Test, Or Observation -> Identify Substance Or Class"
+        ],
+        "biology": [
+          "Exposure, Intervention, Or Evidence -> Disease/Immunity Outcome"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-radiation-absorber-inference",
+          "physics-chain-permanent-magnet-repulsion-test",
+          "physics-chain-reverse-connections-negative-current-pd"
+        ],
+        "chemistry": [
+          "chem-chain-alkene-bromine-water-test",
+          "chem-chain-carbon-dioxide-limewater-presence-absence",
+          "chem-chain-chromatography-identify-by-known-rf"
+        ],
+        "biology": [
+          "bio-chain-antibiotic-clear-zone-kill-evidence",
+          "bio-chain-active-transport-energy-evidence",
+          "bio-chain-osmosis-line-best-fit-read-concentration"
+        ]
+      },
+      "review_notes": "Very strong and easy for learners to recognize across subjects."
+    },
+    {
+      "id": "cross-sci-conserve-balance-counted-quantities",
+      "name": "Conserve/Balance Counted Things -> Complete Outcome",
+      "method_pattern": "count before/after -> conserve or balance -> complete outcome",
+      "description": "Use conservation or counted ratios to complete an equation, outcome, inheritance probability, charge balance, or motion result.",
+      "depth": "strong",
+      "presentation_priority": 7,
+      "subject_family_sources": {
+        "physics": [
+          "Balance Or Conserve Counted Quantities"
+        ],
+        "chemistry": [
+          "Formula, Equation, Or Symbol Representation -> Complete Correct Form"
+        ],
+        "biology": [
+          "Genetic Information -> Inheritance, Variation, Or Evolution Outcome"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-collision-momentum-conservation-qualitative",
+          "physics-chain-beta-emission-nuclear-equation-balancing",
+          "physics-chain-parallel-current-sharing-addition"
+        ],
+        "chemistry": [
+          "chem-chain-complete-symbol-equation-product-formulae-then-balance",
+          "chem-chain-ion-charges-neutral-formula",
+          "chem-chain-cracking-equation-atom-balance"
+        ],
+        "biology": [
+          "bio-chain-punnett-gametes-offspring-phenotype-probability",
+          "bio-chain-sex-chromosome-gametes-offspring-probability",
+          "bio-chain-pedigree-recessive-carrier-inference"
+        ]
+      },
+      "review_notes": "Deep connection across subjects. This should not be treated as only equation balancing."
+    },
+    {
+      "id": "cross-sci-representation-real-meaning",
+      "name": "Representation -> Real Meaning",
+      "method_pattern": "read representation -> decode meaning -> state physical/chemical/biological implication",
+      "description": "Translate graphs, diagrams, state symbols, formulae, molecular drawings, or plotted lines into real meaning.",
+      "depth": "strong",
+      "presentation_priority": 8,
+      "subject_family_sources": {
+        "physics": [
+          "Use Rate, Time, Area, Gradient, Or Repeated Fraction",
+          "Measurement, Error, Or Control Choice -> Valid Result"
+        ],
+        "chemistry": [
+          "Formula, Equation, Or Symbol Representation -> Complete Correct Form",
+          "Data, Graph, Or Practical Variable -> Valid Interpretation"
+        ],
+        "biology": [
+          "Data Pattern -> Supported Biological Conclusion"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-graph-gradient-represents-rate",
+          "physics-chain-plot-data-line-best-fit"
+        ],
+        "chemistry": [
+          "chem-chain-covalent-dot-cross-shared-and-nonbonding-electrons",
+          "chem-chain-non-aqueous-state-symbol-from-physical-state",
+          "chem-chain-exothermic-reaction-profile-products-lower"
+        ],
+        "biology": [
+          "bio-chain-graph-scale-plot-line-best-fit",
+          "bio-chain-osmosis-line-best-fit-read-concentration",
+          "bio-chain-data-two-conclusions-comparison"
+        ]
+      },
+      "review_notes": "Useful cross-subject family. It overlaps with data and calculation but emphasizes decoding representation."
+    },
+    {
+      "id": "cross-sci-measurement-error-control-validity",
+      "name": "Measurement/Error/Control -> Valid Result",
+      "method_pattern": "choose measurement/control/correction -> reduce bias/error -> valid result",
+      "description": "Explain or choose practical steps that make measurement, comparison, sampling, or conclusion valid.",
+      "depth": "strong",
+      "presentation_priority": 9,
+      "subject_family_sources": {
+        "physics": [
+          "Measurement, Error, Or Control Choice -> Valid Result"
+        ],
+        "chemistry": [
+          "Data, Graph, Or Practical Variable -> Valid Interpretation"
+        ],
+        "biology": [
+          "Practical Choice, Control, Or Sampling Method -> Valid Result"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-half-range-uncertainty-calculation",
+          "physics-chain-zero-offset-correction",
+          "physics-chain-control-variable-valid-comparison"
+        ],
+        "chemistry": [
+          "chem-chain-smaller-reading-larger-percentage-uncertainty",
+          "chem-chain-acid-carbonate-gas-collection-method",
+          "chem-chain-dependent-variable-temperature-change"
+        ],
+        "biology": [
+          "bio-chain-random-quadrat-less-bias-representative",
+          "bio-chain-reaction-time-control-variables",
+          "bio-chain-ruler-drop-reaction-time-method"
+        ]
+      },
+      "review_notes": "Strong cross-subject family. Some chains may also tag into condition-change or evidence-inference."
+    },
+    {
+      "id": "cross-sci-opposing-process-feedback-balance",
+      "name": "Opposing Processes/Feedback -> Stability Or Balance",
+      "method_pattern": "opposing processes or feedback -> balance/restoration -> stable state",
+      "description": "Explain constant states, equilibrium, homeostasis, or unchanged positions by tracing opposing processes or feedback.",
+      "depth": "strong",
+      "presentation_priority": 10,
+      "subject_family_sources": {
+        "physics": [
+          "Resultant Interaction -> Motion Outcome",
+          "Trace A Path Through A System -> Explain Transfer, Loss, Or Safety"
+        ],
+        "chemistry": [
+          "Condition Change -> Collision, Energy, Or Equilibrium Effect"
+        ],
+        "biology": [
+          "Condition Or Signal -> Body Response -> Restored Function Or Symptom"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-steady-temperature-rate-balance",
+          "physics-chain-zero-resultant-force-constant-motion"
+        ],
+        "chemistry": [
+          "chem-chain-equilibrium-closed-system-equal-rates",
+          "chem-chain-catalyst-no-equilibrium-position-change"
+        ],
+        "biology": [
+          "bio-chain-blood-glucose-feedback-insulin-glucagon",
+          "bio-chain-homeostasis-maintain-optimum-enzyme-function"
+        ]
+      },
+      "review_notes": "Deep but currently smaller than some families. Worth keeping because it connects equilibrium, homeostasis, and physical balance."
+    },
+    {
+      "id": "cross-sci-energy-availability-barrier-process-rate",
+      "name": "Energy Availability/Barrier -> Process Feasibility Or Rate",
+      "method_pattern": "energy supply/barrier/store changes -> process feasibility or rate changes -> outcome",
+      "description": "Connect energy availability, activation barrier, transfer, or stores to whether a process happens, how fast it happens, or what outcome follows.",
+      "depth": "strong",
+      "presentation_priority": 11,
+      "subject_family_sources": {
+        "physics": [
+          "Trace A Path Through A System -> Explain Transfer, Loss, Or Safety"
+        ],
+        "chemistry": [
+          "Condition Change -> Collision, Energy, Or Equilibrium Effect",
+          "Data, Graph, Or Practical Variable -> Valid Interpretation"
+        ],
+        "biology": [
+          "Condition Or Signal -> Body Response -> Restored Function Or Symptom",
+          "Condition Or Resource Change -> Rate, Growth, Or Population Effect"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-fuel-heating-energy-store-changes",
+          "physics-chain-spring-elastic-energy-to-height"
+        ],
+        "chemistry": [
+          "chem-chain-catalyst-lower-activation-energy",
+          "chem-chain-exothermic-reaction-profile-products-lower",
+          "chem-chain-temperature-returns-by-energy-transfer-surroundings"
+        ],
+        "biology": [
+          "bio-chain-delivery-oxygen-respiration-energy-symptom",
+          "bio-chain-photosynthesis-limitation-glucose-protein-growth",
+          "bio-chain-active-transport-energy-evidence"
+        ]
+      },
+      "review_notes": "Deep cross-subject connection. It should not replace the more general condition-change family; it is specifically about energy."
+    },
+    {
+      "id": "cross-sci-exposure-selection-intervention-risk-population",
+      "name": "Exposure/Selection/Intervention -> Risk Or Population Outcome",
+      "method_pattern": "exposure/intervention/selection pressure -> mechanism -> risk or population outcome",
+      "description": "Explain how exposure, intervention, or selection changes risk, survival, spread, population frequency, or environmental consequence.",
+      "depth": "medium",
+      "presentation_priority": 12,
+      "subject_family_sources": {
+        "physics": [
+          "Change An Input Or Property -> Predict The Output Or Effect"
+        ],
+        "chemistry": [
+          "Reaction Description -> Products, Observations, Or Consequences"
+        ],
+        "biology": [
+          "Exposure, Intervention, Or Evidence -> Disease/Immunity Outcome",
+          "Genetic Information -> Inheritance, Variation, Or Evolution Outcome"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-radiation-dose-reduction-risk"
+        ],
+        "chemistry": [
+          "chem-chain-greenhouse-effect-radiation-trapping",
+          "chem-chain-pollutant-gases-acid-rain-respiratory-problems",
+          "chem-chain-sulfur-in-fuel-sulfur-dioxide-acid-rain"
+        ],
+        "biology": [
+          "bio-chain-natural-selection-variation-survival-inheritance-frequency",
+          "bio-chain-antibiotic-use-exposure-resistance-selection",
+          "bio-chain-vaccine-antigen-antibodies-memory-immunity"
+        ]
+      },
+      "review_notes": "Medium depth. Strong in Biology and Chemistry; Physics coverage currently comes mainly through radiation-risk chains."
+    },
+    {
+      "id": "cross-sci-cue-exact-recall",
+      "name": "Cue -> Exact Name/Category/Recall",
+      "method_pattern": "identify cue -> recall exact term/category/rule -> state answer",
+      "description": "Use a prompt cue to recall a required name, category, formula, location, or accepted fact.",
+      "depth": "utility",
+      "presentation_priority": 13,
+      "subject_family_sources": {
+        "physics": [
+          "Recall Or Name The Rule, Object, Category, Or Relationship"
+        ],
+        "chemistry": [
+          "Recall Or Name A Category, Formula Family, Or Accepted Effect"
+        ],
+        "biology": [
+          "Cue -> Recall Name, Location, Category, Or Structural Difference"
+        ]
+      },
+      "example_chain_ids": {
+        "physics": [
+          "physics-chain-thermistor-component-recall",
+          "physics-chain-alpha-particle-composition-recall",
+          "physics-chain-peer-review-name-recall"
+        ],
+        "chemistry": [
+          "chem-chain-biological-catalyst-enzyme-name",
+          "chem-chain-hydrocarbon-carbon-hydrogen-only",
+          "chem-chain-three-carbon-alkane-propane"
+        ],
+        "biology": [
+          "bio-chain-amylase-digests-starch-recall",
+          "bio-chain-binomial-genus-name-recall",
+          "bio-chain-heart-pacemaker-right-atrium-recall"
+        ]
+      },
+      "review_notes": "Necessary for coverage, but not a deep transfer family. De-emphasize in learner-facing maps."
+    }
+  ]
+}
