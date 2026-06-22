@@ -10,6 +10,7 @@ const practiceData: PracticePageData = {
 		prompt: 'Explain how using step-up transformers makes the network efficient.',
 		context: 'Figure 1 shows some of the energy resources used to meet demand.',
 		assets: [],
+		renderingOverlay: null,
 		meta: {
 			qualification: 'GCSE',
 			board: 'AQA',

@@ -161,6 +161,9 @@ For each question or subquestion, extract:
 - Command word, such as `explain`, `describe`, `calculate`, `evaluate`, or `state`.
 - Mark value.
 - Answer lines or expected response format when visible.
+- Render-ready question body blocks for exam-sheet display when available. Text inside blocks may
+  use plain Markdown bold (`**text**`) for source boldface and inline TeX math delimited with
+  `$...$`; do not store formatting as character-offset ranges.
 - Board, qualification, subject, tier, paper, and series inherited from the source.
 - Topic path if stated or confidently inferable.
 - Specification reference if stated or confidently inferable.
@@ -168,6 +171,9 @@ For each question or subquestion, extract:
 - Required diagrams, tables, graphs, equations, images, or source text.
 - Asset dependencies, including source label, role, local file path, public path or storage key,
   extraction confidence, and whether the mapping needs human review.
+- Interactive response structure when visible, such as answer-line counts, tick-one/tick-many
+  choices, matching columns, fill-in blanks, graph/image canvases, image label zones, and table
+  answer layouts. Store these as explicit objects with provenance, not as inferred text snippets.
 - Any visible constraints, such as `use Figure 2`, `give your answer to 2 significant figures`, or `do not refer to...`.
 
 Do not merge marked subparts into one practice question unless the mark scheme treats them as one answer. For example, `01.1`, `01.2`, and `01.3` should normally become separate question rows under the same parent.

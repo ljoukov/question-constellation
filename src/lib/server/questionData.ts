@@ -57,6 +57,21 @@ export type QuestionAsset = {
 	paperHeightPx: number | null;
 };
 
+export type QuestionRenderingOverlay = {
+	id: string;
+	version: string;
+	provenance: string;
+	confidence: number | null;
+	needsHumanReview: boolean;
+	stemBlocks: Array<Record<string, unknown>>;
+	promptBlocks: Array<Record<string, unknown>>;
+	responseInteraction: Record<string, unknown>;
+	afterResponseBlocks: Array<Record<string, unknown>>;
+	assets: Array<Record<string, unknown>>;
+	layout: Record<string, unknown>;
+	metadata: Record<string, unknown>;
+};
+
 export type Question = {
 	id: string;
 	sourceRef: string;
@@ -64,6 +79,7 @@ export type Question = {
 	prompt: string;
 	context: string;
 	assets: QuestionAsset[];
+	renderingOverlay: QuestionRenderingOverlay | null;
 	meta: ExamMeta;
 	transferDistance: TransferDistance;
 	distanceLabel: string;
@@ -224,6 +240,15 @@ type AssetRow = {
 	required: number;
 	role: string | null;
 	metadata_json: string;
+};
+
+type RenderingOverlayRow = {
+	id: string;
+	overlay_version: string;
+	provenance: string;
+	confidence: number | null;
+	needs_human_review: number;
+	render_json: string;
 };
 
 type AssetMetadata = {
@@ -493,6 +518,53 @@ async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
 		});
 }
 
+export async function getQuestionRenderingOverlay(
+	questionId: string
+): Promise<QuestionRenderingOverlay | null> {
+	const row = await queryFirst<RenderingOverlayRow>(
+		`SELECT id, overlay_version, provenance, confidence, needs_human_review,
+		        render_json
+		 FROM question_rendering_overlays
+		 WHERE question_id = ?
+		 ORDER BY CASE provenance
+			WHEN 'manual' THEN 0
+			WHEN 'pdf-geometry' THEN 1
+			WHEN 'vision-extracted' THEN 2
+			ELSE 3
+		 END, overlay_version DESC
+		 LIMIT 1`,
+		[questionId]
+	);
+	if (!row) return null;
+	const renderObject = parseJson<Record<string, unknown>>(row.render_json, {});
+
+	return {
+		id: row.id,
+		version: row.overlay_version,
+		provenance: row.provenance,
+		confidence: row.confidence,
+		needsHumanReview: Boolean(row.needs_human_review),
+		stemBlocks: Array.isArray(renderObject.stemBlocks) ? renderObject.stemBlocks : [],
+		promptBlocks: Array.isArray(renderObject.promptBlocks) ? renderObject.promptBlocks : [],
+		responseInteraction:
+			renderObject.response && typeof renderObject.response === 'object'
+				? (renderObject.response as Record<string, unknown>)
+				: { kind: 'lines', count: 1 },
+		afterResponseBlocks: Array.isArray(renderObject.afterResponseBlocks)
+			? renderObject.afterResponseBlocks
+			: [],
+		assets: Array.isArray(renderObject.assets) ? renderObject.assets : [],
+		layout:
+			renderObject.layout && typeof renderObject.layout === 'object'
+				? (renderObject.layout as Record<string, unknown>)
+				: {},
+		metadata:
+			renderObject.metadata && typeof renderObject.metadata === 'object'
+				? (renderObject.metadata as Record<string, unknown>)
+				: {}
+	};
+}
+
 async function getModelAnswer(questionId: string, chain: AnswerChain): Promise<string> {
 	const row = await queryFirst<ModelAnswerRow>(
 		`SELECT answer_text
@@ -606,6 +678,7 @@ async function hydrateQuestion(
 		prompt: cleanPromptText(row.prompt_text),
 		context: displayContextFromRow(row),
 		assets: await getQuestionAssets(row.id),
+		renderingOverlay: await getQuestionRenderingOverlay(row.id),
 		meta: {
 			qualification: row.qualification ?? 'GCSE',
 			board: row.board ?? 'AQA',
