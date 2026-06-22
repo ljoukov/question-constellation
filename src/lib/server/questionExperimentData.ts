@@ -248,6 +248,10 @@ function responseFromValue(raw: unknown): ExamResponse {
 			assetId: value.assetId,
 			labels: value.labels as string[],
 			allowRepeats: value.allowRepeats === true,
+			correctAnswers:
+				value.correctAnswers && typeof value.correctAnswers === 'object'
+					? (value.correctAnswers as Record<string, string>)
+					: undefined,
 			zones: value.zones as Array<{
 				id: string;
 				label: string;
@@ -332,7 +336,7 @@ async function getFullExperimentPaperIds() {
 	return new Set(metadata.experiment_source_document_ids);
 }
 
-async function sourceDocumentIdForSlug(slug: string) {
+export async function sourceDocumentIdForSlug(slug: string) {
 	const summaries = await paperSummaries();
 	return summaries.find((paper) => paper.slug === slug)?.id ?? null;
 }
@@ -409,6 +413,7 @@ function buildQuestions(rows: QuestionRenderingRow[]) {
 		}
 
 		const part: ExamQuestionPart = {
+			questionId: row.id,
 			ref: row.source_question_ref,
 			marks: row.marks ?? 0,
 			leadBlocks: blocksFromValue(render.leadBlocks ?? [], `${row.id} lead blocks`),

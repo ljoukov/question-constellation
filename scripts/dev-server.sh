@@ -85,6 +85,14 @@ log_file_for_port() {
   echo "/tmp/${SESSION_PREFIX}-${port}.log"
 }
 
+package_runner() {
+  if command -v pnpm >/dev/null 2>&1; then
+    echo "pnpm"
+    return 0
+  fi
+  echo "npm"
+}
+
 list_managed_sessions() {
   tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -E "^${SESSION_PREFIX}-[0-9]+$" || true
 }
@@ -309,7 +317,7 @@ start_session() {
 
   session_name="$(session_name_for_port "${port}")"
   log_file="$(log_file_for_port "${port}")"
-  command="$(printf 'cd %q && pnpm run dev --host 127.0.0.1 --port %q 2>&1 | tee %q' "${ROOT_DIR}" "${port}" "${log_file}")"
+  command="$(printf 'cd %q && %q run dev -- --host 127.0.0.1 --port %q 2>&1 | tee %q' "${ROOT_DIR}" "$(package_runner)" "${port}" "${log_file}")"
   tmux new-session -d -s "${session_name}" "${command}"
 
   echo "Started ${session_name}"

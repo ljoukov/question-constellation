@@ -126,6 +126,7 @@ export type ExamResponse =
 			assetId: string;
 			labels: string[];
 			allowRepeats?: boolean;
+			correctAnswers?: Record<string, string>;
 			zones: {
 				id: string;
 				label: string;
@@ -138,6 +139,7 @@ export type ExamResponse =
 	  };
 
 export type ExamQuestionPart = {
+	questionId?: string;
 	ref: string;
 	marks: number;
 	leadBlocks?: ExamQuestionBlock[];

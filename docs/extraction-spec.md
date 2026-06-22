@@ -257,6 +257,12 @@ They should not share a chain when:
 
 A model answer should be source-derived and concise. It should include enough detail to satisfy the mark checklist, not a full textbook explanation.
 
+Generate and store model answers only for written-response questions, such as free-text answer lines or labelled written answer spaces. Do not create model-answer rows for fixed-answer interactions such as multiple choice, image labels, matching, equation blanks, number-line answers, or any response where the UI can deterministically check a fixed key. For those questions, store the answer key in the response schema or `question_response_answer_keys` instead.
+
+For written-response questions, the model answer must be student-facing answer text. It must never be a raw mark-scheme row, assessment objective, specification reference, examiner instruction, or truncated scoring fragment. Bad model answers include strings such as `01.2 positive charge is provided by 1 AO1; protons 6.4.1.2`, `4.4.1.1`, `A bold and is used...`, or any wording copied from generic mark-scheme guidance. The importer should reject or regenerate these rather than storing them.
+
+When a paper importer has enough mark-scheme evidence, it should generate the written-response model answer during import and store it in D1, so runtime grading can display the stored answer without spending another model call. Runtime grading may still use a model to evaluate a student's free-text response, but it should treat the stored model answer as source-grounded evidence, not ask the grading model to invent a fresh model answer.
+
 Set derivation as:
 
 - `source` when the answer is directly provided.

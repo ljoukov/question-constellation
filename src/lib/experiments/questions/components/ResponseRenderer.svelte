@@ -17,10 +17,14 @@
 
 	let {
 		response,
-		assets = {}
+		assets = {},
+		answer = '',
+		onAnswerChange
 	}: {
 		response: ExamResponse;
 		assets?: Record<string, ExamPaperAsset>;
+		answer?: string;
+		onAnswerChange?: (answer: string) => void;
 	} = $props();
 
 	let textAnswer = $state('');
@@ -35,16 +39,80 @@
 	let activeGraphicLabel = $state('');
 	let graphicAnswers = $state<Record<string, string>>({});
 
+	$effect(() => {
+		if (answer !== textAnswer) textAnswer = answer;
+	});
+
+	function emitAnswer(value: string) {
+		onAnswerChange?.(value);
+	}
+
+	function serializeLabeledAnswers(nextAnswers = labeledAnswers) {
+		return response.kind === 'labeled-lines'
+			? response.labels
+					.map((label) => `${label}: ${nextAnswers[label] ?? ''}`.trim())
+					.filter(Boolean)
+					.join('\n')
+			: '';
+	}
+
+	function serializeMatchingAnswers(nextAnswers = matchingAnswers) {
+		return response.kind === 'matching'
+			? response.left
+					.map((left) => `${left} -> ${nextAnswers[left] ?? ''}`.trim())
+					.filter(Boolean)
+					.join('\n')
+			: '';
+	}
+
+	function serializeEquationAnswers(nextAnswers = equationBlankAnswers) {
+		return response.kind === 'equation-blanks'
+			? response.segments
+					.filter((segment) => segment.kind === 'blank')
+					.map((segment) => `${segment.label}: ${nextAnswers[segment.id] ?? ''}`.trim())
+					.filter(Boolean)
+					.join('\n')
+			: '';
+	}
+
+	function serializeGraphicAnswers(nextAnswers = graphicAnswers) {
+		if (response.kind !== 'image-label-zones') return '';
+		return response.zones
+			.map((zone) => `${zone.id}: ${nextAnswers[zone.id] ?? ''}`.trim())
+			.filter(Boolean)
+			.join('\n');
+	}
+
+	function setTextAnswer(value: string) {
+		textAnswer = value;
+		emitAnswer(value);
+	}
+
+	function setNumberAnswer(value: string) {
+		numberAnswer = value;
+		emitAnswer(value);
+	}
+
 	function setLabeledAnswer(label: string, value: string) {
-		labeledAnswers = { ...labeledAnswers, [label]: value };
+		const nextAnswers = { ...labeledAnswers, [label]: value };
+		labeledAnswers = nextAnswers;
+		emitAnswer(serializeLabeledAnswers(nextAnswers));
 	}
 
 	function toggleChoice(index: number) {
 		selectedChoice = selectedChoice === index ? null : index;
+		emitAnswer(
+			selectedChoice === null ? '' : response.kind === 'choice' ? response.options[index] : ''
+		);
 	}
 
 	function toggleChoiceTableRow(index: number) {
 		selectedChoiceTableRow = selectedChoiceTableRow === index ? null : index;
+		emitAnswer(
+			selectedChoiceTableRow === null || response.kind !== 'choice-table'
+				? ''
+				: (response.rows[index]?.join(' | ') ?? '')
+		);
 	}
 
 	function matchingRowCount(left: string[], right: string[]) {
@@ -101,6 +169,7 @@
 		}
 
 		matchingAnswers = nextAnswers;
+		emitAnswer(serializeMatchingAnswers(nextAnswers));
 		clearSelectedMatch();
 	}
 
@@ -142,6 +211,7 @@
 		const nextAnswers = { ...matchingAnswers };
 		delete nextAnswers[left];
 		matchingAnswers = nextAnswers;
+		emitAnswer(serializeMatchingAnswers(nextAnswers));
 
 		if (
 			(selectedMatchSide === 'left' && selectedMatchValue === left) ||
@@ -172,7 +242,9 @@
 	}
 
 	function setEquationBlank(id: string, value: string) {
-		equationBlankAnswers = { ...equationBlankAnswers, [id]: value };
+		const nextAnswers = { ...equationBlankAnswers, [id]: value };
+		equationBlankAnswers = nextAnswers;
+		emitAnswer(serializeEquationAnswers(nextAnswers));
 	}
 
 	function usedGraphicLabels() {
@@ -202,6 +274,7 @@
 		}
 		nextAnswers[zoneId] = activeGraphicLabel;
 		graphicAnswers = nextAnswers;
+		emitAnswer(serializeGraphicAnswers(nextAnswers));
 		activeGraphicLabel = '';
 	}
 </script>
@@ -212,7 +285,8 @@
 		rows={response.count}
 		style={`--answer-line-count: ${response.count}`}
 		aria-label={`${response.count} line answer`}
-		bind:value={textAnswer}
+		value={textAnswer}
+		oninput={(event) => setTextAnswer(event.currentTarget.value)}
 	></textarea>
 {:else if response.kind === 'labeled-lines'}
 	<div class="labeled-lines">
@@ -248,7 +322,12 @@
 		{#if response.prefix}
 			<span><MathText text={response.prefix} /></span>
 		{/if}
-		<input class="line-input" bind:value={numberAnswer} aria-label={`${response.label} answer`} />
+		<input
+			class="line-input"
+			value={numberAnswer}
+			aria-label={`${response.label} answer`}
+			oninput={(event) => setNumberAnswer(event.currentTarget.value)}
+		/>
 		{#if response.unit}
 			<span><MathText text={response.unit} /></span>
 		{/if}

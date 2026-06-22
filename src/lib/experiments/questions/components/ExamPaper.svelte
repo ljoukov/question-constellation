@@ -2,9 +2,43 @@
 	import BlockRenderer from './BlockRenderer.svelte';
 	import QuestionNumber from './QuestionNumber.svelte';
 	import ResponseRenderer from './ResponseRenderer.svelte';
+	import { Check, X } from '@lucide/svelte';
+	import type { ExperimentQuestionGradeResult } from '../gradingTypes';
 	import type { ExamPaper } from '../types';
 
-	let { paper }: { paper: ExamPaper } = $props();
+	let {
+		paper,
+		answers = {},
+		gradingResults = {},
+		canSubmit = false,
+		isSubmitting = false,
+		submitLabel = 'Submit',
+		submitError = '',
+		onAnswerChange,
+		onDismissGrade,
+		onSubmitGrade
+	}: {
+		paper: ExamPaper;
+		answers?: Record<string, string>;
+		gradingResults?: Record<string, ExperimentQuestionGradeResult>;
+		canSubmit?: boolean;
+		isSubmitting?: boolean;
+		submitLabel?: string;
+		submitError?: string;
+		onAnswerChange?: (ref: string, answer: string) => void;
+		onDismissGrade?: (ref: string) => void;
+		onSubmitGrade?: () => void;
+	} = $props();
+
+	function marksLabel(result: ExperimentQuestionGradeResult) {
+		if (result.status === 'not_gradeable') return "Can't check";
+		if (result.status === 'unanswered') return 'No answer';
+		return `${result.awardedMarks ?? 0}/${result.maxMarks} marks`;
+	}
+
+	const showSubmit = $derived(
+		isSubmitting || Boolean(submitError) || Object.keys(gradingResults).length === 0
+	);
 </script>
 
 <div class="question-experiment-page">
@@ -49,7 +83,73 @@
 								<BlockRenderer {block} assets={paper.assets} />
 							{/each}
 							<p class="marks">[{part.marks} {part.marks === 1 ? 'mark' : 'marks'}]</p>
-							<ResponseRenderer response={part.response} assets={paper.assets} />
+							<ResponseRenderer
+								response={part.response}
+								assets={paper.assets}
+								answer={answers[part.ref] ?? ''}
+								onAnswerChange={(answer) => onAnswerChange?.(part.ref, answer)}
+							/>
+							{#if gradingResults[part.ref]}
+								{@const grade = gradingResults[part.ref]}
+								<section
+									class="experiment-grade-card"
+									class:correct={grade.result === 'correct'}
+									class:partial={grade.result === 'partial'}
+									class:incorrect={grade.result === 'incorrect'}
+									class:ungraded={grade.status === 'not_gradeable' || grade.status === 'unanswered'}
+									aria-label={`Feedback for question ${part.ref}`}
+								>
+									<header class="grade-card-header">
+										{#if grade.checklist.length}
+											<p class="grade-mark-total">{marksLabel(grade)}</p>
+										{:else}
+											<h3>{grade.summary}</h3>
+										{/if}
+										<button
+											type="button"
+											class="grade-close-button"
+											aria-label={`Close feedback for question ${part.ref}`}
+											onclick={() => onDismissGrade?.(part.ref)}
+										>
+											<X size={18} strokeWidth={2.4} aria-hidden="true" />
+										</button>
+									</header>
+
+									{#if grade.checklist.length}
+										<ul
+											class="grade-mark-list"
+											aria-label={`Mark breakdown for question ${part.ref}`}
+										>
+											{#each grade.checklist as item}
+												<li class={item.verdict}>
+													<span class="grade-mark-icon" aria-hidden="true">
+														{#if item.verdict === 'credited'}
+															<Check size={14} strokeWidth={2.6} />
+														{:else}
+															<X size={14} strokeWidth={2.6} />
+														{/if}
+													</span>
+													<span>
+														<span class="grade-mark-text">{item.text}</span>
+														{#if item.explanation && item.explanation !== item.text}
+															<span class="grade-mark-note">{item.explanation}</span>
+														{/if}
+													</span>
+												</li>
+											{/each}
+										</ul>
+									{:else if grade.nextStep && grade.result !== 'incorrect'}
+										<p class="grade-next-step">{grade.nextStep}</p>
+									{/if}
+
+									{#if grade.modelAnswer}
+										<div class="grade-model-answer">
+											<p class="grade-model-answer-label">Model answer</p>
+											<p>{grade.modelAnswer}</p>
+										</div>
+									{/if}
+								</section>
+							{/if}
 							{#if part.afterResponseBlocks?.length}
 								<div class="after-response-blocks">
 									{#each part.afterResponseBlocks as block}
@@ -62,6 +162,22 @@
 				{/each}
 			</section>
 		{/each}
+
+		{#if showSubmit}
+			<section class="grading-shell" aria-label="Question grading controls">
+				<button
+					type="button"
+					class="submit-grade-button"
+					disabled={!canSubmit}
+					onclick={() => onSubmitGrade?.()}
+				>
+					{submitLabel}
+				</button>
+				{#if submitError}
+					<p class="submit-error">{submitError}</p>
+				{/if}
+			</section>
+		{/if}
 	</article>
 </div>
 
@@ -70,8 +186,7 @@
 		flex: 0 0 100%;
 		box-sizing: border-box;
 		width: 100%;
-		min-height: var(--app-viewport-height, 100vh);
-		padding: 1.5rem 1rem 3rem;
+		padding: 1.5rem 1rem 0.75rem;
 		background: #ffffff;
 		color: #000000;
 	}
@@ -79,7 +194,7 @@
 	.paper-sheet {
 		width: min(100%, 900px);
 		margin: 0 auto;
-		padding: 2.2rem 2rem 3rem;
+		padding: 2.2rem 2rem 1.25rem;
 		background: #ffffff;
 		color: #000000;
 		font-family: Arial, Helvetica, sans-serif;
@@ -111,7 +226,7 @@
 	}
 
 	.main-question {
-		margin: 0 0 2.4rem;
+		margin: 0 0 1.1rem;
 		break-inside: avoid;
 	}
 
@@ -156,6 +271,224 @@
 
 	.after-response-blocks {
 		margin-top: 1.35rem;
+	}
+
+	.grading-shell {
+		display: flex;
+		gap: 0.7rem;
+		align-items: center;
+		justify-content: flex-end;
+		margin: 0.25rem 0 1.25rem;
+		background: #ffffff;
+		color: #172033;
+		font-family:
+			Inter,
+			ui-sans-serif,
+			system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			sans-serif;
+	}
+
+	.submit-grade-button {
+		min-width: 7.5rem;
+		border: 0;
+		border-radius: 7px;
+		padding: 0.62rem 0.95rem;
+		background: #1f63ed;
+		color: #ffffff;
+		font: inherit;
+		font-weight: 850;
+		cursor: pointer;
+		box-shadow: 0 8px 18px rgb(31 99 237 / 24%);
+	}
+
+	.submit-grade-button:disabled {
+		background: #a8b5ca;
+		cursor: not-allowed;
+		box-shadow: none;
+	}
+
+	.submit-error {
+		margin: 0;
+		color: #b42318;
+		text-align: right;
+		font-size: 0.82rem;
+	}
+
+	.experiment-grade-card {
+		position: relative;
+		margin: 1rem 0 0.35rem;
+		padding: 1rem 1.25rem 1rem 1rem;
+		border: 1px solid #9bb8ff;
+		border-left: 0.42rem solid #356ff2;
+		border-radius: 8px;
+		background: #f6f9ff;
+		color: #10213f;
+		font-family:
+			Inter,
+			ui-sans-serif,
+			system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			sans-serif;
+		box-shadow: 0 10px 24px rgb(21 47 100 / 10%);
+	}
+
+	.experiment-grade-card.correct {
+		border-color: #7bc99b;
+		border-left-color: #15884f;
+		background: #f3fbf6;
+	}
+
+	.experiment-grade-card.partial {
+		border-color: #f0bf69;
+		border-left-color: #b66d09;
+		background: #fff8eb;
+	}
+
+	.experiment-grade-card.incorrect {
+		border-color: #ee9a9a;
+		border-left-color: #c03434;
+		background: #fff5f5;
+	}
+
+	.experiment-grade-card.ungraded {
+		border-color: #c6cbd5;
+		border-left-color: #697386;
+		background: #f8f9fb;
+		color: #293142;
+	}
+
+	.grade-card-header {
+		display: block;
+		padding-right: 1rem;
+	}
+
+	.grade-card-header h3,
+	.grade-mark-total,
+	.grade-next-step {
+		margin: 0;
+	}
+
+	.grade-mark-total {
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.3;
+	}
+
+	.grade-card-header h3 {
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.3;
+	}
+
+	.grade-close-button {
+		position: absolute;
+		top: -0.85rem;
+		right: -0.85rem;
+		display: inline-grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border: 1px solid rgb(16 33 63 / 18%);
+		border-radius: 50%;
+		background: #ffffff;
+		color: #10213f;
+		font: inherit;
+		font-size: 1.25rem;
+		font-weight: 400;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow: 0 6px 14px rgb(16 33 63 / 16%);
+		transition:
+			background-color 140ms ease,
+			box-shadow 140ms ease,
+			transform 140ms ease;
+	}
+
+	.grade-close-button:hover,
+	.grade-close-button:focus-visible {
+		background: #f8fafc;
+		box-shadow: 0 8px 18px rgb(16 33 63 / 22%);
+		transform: translateY(-1px);
+	}
+
+	.grade-next-step {
+		margin-top: 0.65rem;
+		font-size: 0.93rem;
+	}
+
+	.grade-mark-list {
+		display: grid;
+		gap: 0.35rem;
+		margin: 0.75rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.grade-mark-list li {
+		display: grid;
+		grid-template-columns: 1.35rem minmax(0, 1fr);
+		gap: 0.45rem;
+		align-items: start;
+		font-size: 0.92rem;
+		line-height: 1.35;
+		font-weight: 400;
+	}
+
+	.grade-mark-icon {
+		display: inline-grid;
+		place-items: center;
+		width: 1rem;
+		height: 1rem;
+		margin-top: 0.08rem;
+		border-radius: 50%;
+	}
+
+	.grade-mark-list li.credited .grade-mark-icon {
+		color: #15884f;
+	}
+
+	.grade-mark-list li.missed .grade-mark-icon,
+	.grade-mark-list li.uncertain .grade-mark-icon {
+		color: #c03434;
+	}
+
+	.grade-mark-text,
+	.grade-mark-note {
+		display: block;
+	}
+
+	.grade-mark-note {
+		margin-top: 0.12rem;
+		color: #556276;
+		font-size: 0.86rem;
+	}
+
+	.grade-model-answer {
+		margin-top: 0.85rem;
+		border-top: 1px solid rgb(16 33 63 / 14%);
+		padding-top: 0.72rem;
+		font-size: 0.92rem;
+		line-height: 1.42;
+	}
+
+	.grade-model-answer p {
+		margin: 0;
+	}
+
+	.grade-model-answer p + p {
+		margin-top: 0.3rem;
+	}
+
+	.grade-model-answer-label {
+		color: #556276;
+		font-size: 0.78rem;
+		letter-spacing: 0;
+		text-transform: uppercase;
 	}
 
 	.sr-only {

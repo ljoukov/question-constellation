@@ -13,6 +13,10 @@ const baselinePath = path.join(extractionRoot, 'baseline/all-papers.json');
 const semanticDir = path.join(extractionRoot, 'semantic-chains');
 const migrationPath = path.join(rootDir, 'migrations/0001_public_content.sql');
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
+const experimentModelAnswersPath = path.join(
+	rootDir,
+	'data/model-answers/experiment-written-model-answers.json'
+);
 const experimentSourceDocumentIds = new Set([
 	'aqa-8464b1h-qp-jun18',
 	'aqa-8464b1h-qp-jun19',
@@ -64,6 +68,10 @@ loadDotEnvFile(path.join(rootDir, '.env.local'));
 
 function readJson(filePath) {
 	return JSON.parse(readFileSync(filePath, 'utf8'));
+}
+
+function readOptionalJson(filePath, fallback) {
+	return existsSync(filePath) ? readJson(filePath) : fallback;
 }
 
 function readWranglerConfig() {
@@ -118,6 +126,64 @@ function extractMarks(text) {
 	return match ? Number(match[1]) : null;
 }
 
+const reviewedExperimentModelAnswers = new Map(
+	(readOptionalJson(experimentModelAnswersPath, { answers: [] }).answers ?? []).map((answer) => [
+		answer.questionId,
+		answer
+	])
+);
+
+function studentFacingModelAnswer(text) {
+	const value = String(text ?? '')
+		.replace(/\s+/g, ' ')
+		.trim();
+	if (!value) return null;
+	if (
+		[
+			/^\d+(?:\.\d+)+$/,
+			/\bAO[123](?:\/\d+)?\b/i,
+			/\bSpec\.?\s*Ref\b/i,
+			/\bQuestion\s+Answers\s+Extra information\b/i,
+			/\bA bold and is used\b/i,
+			/\bAlternative answers acceptable\b/i,
+			/\bMarking procedure\b/i,
+			/\bMarking of lists\b/i,
+			/\bErrors carried forward\b/i
+		].some((pattern) => pattern.test(value))
+	) {
+		return null;
+	}
+	return value;
+}
+
+function modelAnswerForImport(question, renderingOverlay) {
+	const reviewed = reviewedExperimentModelAnswers.get(question.id);
+	if (reviewed?.answerText) {
+		return {
+			answer_text: reviewed.answerText,
+			derivation: reviewed.derivation ?? 'generated_from_mark_scheme',
+			confidence: reviewed.confidence ?? 0.86,
+			needs_human_review: false,
+			supporting_mark_scheme_item_ids: []
+		};
+	}
+
+	const responseKind = renderingOverlay?.response?.kind;
+	if (responseKind && responseKind !== 'lines' && responseKind !== 'labeled-lines') {
+		return null;
+	}
+	if (!question.marks || question.marks <= 0) return null;
+
+	const answerText = studentFacingModelAnswer(question.model_answer?.answer_text);
+	if (!answerText) return null;
+
+	return {
+		...question.model_answer,
+		answer_text: answerText,
+		derivation: question.model_answer?.derivation ?? 'generated_from_mark_scheme'
+	};
+}
+
 function titleFromQuestion(question) {
 	const text =
 		firstText(question.prompt_text, question.self_contained_prompt_text, question.id) ??
@@ -166,9 +232,7 @@ function stripNonQuestionBoilerplate(text) {
 function formulaPartToTex(formula) {
 	const parts = Array.from(formula.matchAll(/([A-Z][a-z]?)(\d*)/g));
 	if (parts.length === 0) return formula;
-	return parts
-		.map(([, element, count]) => `${element}${count ? `_{${count}}` : ''}`)
-		.join('');
+	return parts.map(([, element, count]) => `${element}${count ? `_{${count}}` : ''}`).join('');
 }
 
 function formulaTokenToTex(token) {
@@ -395,7 +459,8 @@ function assetByLabel(question, label) {
 	if (!/^Figure\s+\d+$/i.test(label)) return null;
 	const pages = [question.page_start, question.page_end].filter(Number.isFinite);
 	for (const page of pages) {
-		const pageAssets = sourceDocumentAssetsByPage.get(`${question.source_document_id}:${page}`) ?? [];
+		const pageAssets =
+			sourceDocumentAssetsByPage.get(`${question.source_document_id}:${page}`) ?? [];
 		const image = pageAssets.find((asset) => asset.public_path && asset.asset_type !== 'graph');
 		if (image) return image;
 	}
@@ -677,7 +742,9 @@ function promptSourceText(question) {
 	const selfContained = firstText(question.self_contained_prompt_markdown);
 	if (prompt && extractMarks(prompt) !== null) return prompt;
 	if (selfContained && extractMarks(selfContained) !== null) return selfContained;
-	return firstText(prompt, question.self_contained_prompt_text, question.full_prompt_text) ?? question.id;
+	return (
+		firstText(prompt, question.self_contained_prompt_text, question.full_prompt_text) ?? question.id
+	);
 }
 
 function removeParentStemPrefix(text, question) {
@@ -711,16 +778,16 @@ function removeResponseLinesFromPrompt(text, response) {
 	}
 
 	if (response.kind === 'number-line' || response.kind === 'equation-blanks') {
-		return lines
-			.filter((line) => !isAnswerLine(line))
-			.join('\n');
+		return lines.filter((line) => !isAnswerLine(line)).join('\n');
 	}
 
 	return lines.join('\n');
 }
 
 function isAnswerLine(line) {
-	return /_{3,}/.test(line) || /^[A-Z][A-Za-z0-9 ()/%µ-]{0,40}\s*=\s*(?:×|x)?\s*[\w/%µ]*$/i.test(line);
+	return (
+		/_{3,}/.test(line) || /^[A-Z][A-Za-z0-9 ()/%µ-]{0,40}\s*=\s*(?:×|x)?\s*[\w/%µ]*$/i.test(line)
+	);
 }
 
 function extractChoiceInteraction(question, sourceText) {
@@ -777,9 +844,7 @@ function extractMatchingInteraction(question, sourceText) {
 	if (!/\bdraw\s+(?:one\s+)?lines?\s+from\b/i.test(prompt)) return null;
 
 	const optionLines = promptLinesAfterInstruction(prompt, /\bdraw\s+(?:one\s+)?lines?\s+from\b/i);
-	const rows = optionLines
-		.map(splitPaperColumns)
-		.filter((parts) => parts.length >= 2);
+	const rows = optionLines.map(splitPaperColumns).filter((parts) => parts.length >= 2);
 
 	if (rows.length < 2) {
 		return {
@@ -792,7 +857,10 @@ function extractMatchingInteraction(question, sourceText) {
 		};
 	}
 
-	const left = rows.map((parts) => parts[0]).filter(Boolean).map(withInlineMath);
+	const left = rows
+		.map((parts) => parts[0])
+		.filter(Boolean)
+		.map(withInlineMath);
 	const right = rows
 		.map((parts) => parts.at(-1))
 		.filter(Boolean)
@@ -938,10 +1006,13 @@ function extractImageLabelZonesInteraction(question, sourceText) {
 	const prompt = sourceText ?? question.prompt_text ?? '';
 	if (!/\bwrite\s+the\s+labels?\s+on\s+figure\b/i.test(prompt)) return null;
 	const figureLabel = prompt.match(/\b(Figure\s+\d+)\b/i)?.[1];
-	const asset = figureLabel ? assetByLabel(question, figureLabel) : question.assets?.find((item) => item.public_path);
+	const asset = figureLabel
+		? assetByLabel(question, figureLabel)
+		: question.assets?.find((item) => item.public_path);
 	if (!asset?.id || !asset.public_path) return null;
 	const zones = detectHorizontalAnswerLineZones(asset);
 	if (!zones.length) return null;
+	const correctAnswers = knownImageLabelZoneAnswers(question.id);
 	return {
 		kind: 'image-label-zones',
 		assetId: asset.id,
@@ -949,8 +1020,21 @@ function extractImageLabelZonesInteraction(question, sourceText) {
 		zones,
 		width: assetImageWidth(asset),
 		allowRepeats: true,
+		...(correctAnswers ? { correctAnswers } : {}),
 		provenance: 'image-line-detection'
 	};
+}
+
+function knownImageLabelZoneAnswers(questionId) {
+	const keys = {
+		'8464p1h-jun18-01-1': {
+			'blank-1': 'nucleus',
+			'blank-2': 'electron',
+			'blank-3': 'orbit',
+			'blank-4': 'atom'
+		}
+	};
+	return keys[questionId] ?? null;
 }
 
 function extractAssetCanvasInteraction(question, sourceText) {
@@ -1021,7 +1105,10 @@ function extractLabeledLinesInteraction(question, sourceText) {
 			provenance: 'prompt-text-heuristic'
 		};
 	}
-	if (/one advantage and one disadvantage/i.test(text) || /advantage\s*\n\s*disadvantage/i.test(text)) {
+	if (
+		/one advantage and one disadvantage/i.test(text) ||
+		/advantage\s*\n\s*disadvantage/i.test(text)
+	) {
 		return {
 			kind: 'labeled-lines',
 			labels: ['Advantage', 'Disadvantage'],
@@ -1286,6 +1373,7 @@ async function clearPublicTables() {
 		'model_answers',
 		'mark_checklist_items',
 		'mark_scheme_items',
+		'question_response_answer_keys',
 		'question_rendering_overlays',
 		'question_assets',
 		'questions',
@@ -1304,6 +1392,56 @@ function insertStatement(table, columns, values) {
 		sql: `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`,
 		params: values
 	};
+}
+
+function stableSqlId(value) {
+	return String(value)
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
+function insertResponseAnswerKeyStatements(insertStatements, question, renderingOverlay) {
+	const response = renderingOverlay?.response;
+	if (
+		!response ||
+		response.kind !== 'image-label-zones' ||
+		!response.correctAnswers ||
+		typeof response.correctAnswers !== 'object'
+	) {
+		return;
+	}
+
+	const targetOrder = new Map((response.zones ?? []).map((zone, index) => [zone.id, index + 1]));
+
+	for (const [targetId, correctAnswer] of Object.entries(response.correctAnswers)) {
+		if (!targetId || typeof correctAnswer !== 'string' || !correctAnswer.trim()) continue;
+		insertStatements.push(
+			insertStatement(
+				'question_response_answer_keys',
+				[
+					'id',
+					'question_id',
+					'response_kind',
+					'target_id',
+					'correct_answer',
+					'display_order',
+					'aliases_json',
+					'metadata_json'
+				],
+				[
+					`${question.id}-response-key-${stableSqlId(targetId)}`,
+					question.id,
+					response.kind,
+					targetId,
+					correctAnswer.trim(),
+					targetOrder.get(targetId) ?? 0,
+					json([], []),
+					json({ source: 'rendering_overlay_correct_answers' }, {})
+				]
+			)
+		);
+	}
 }
 
 function semanticChainIdForConstellation(constellation) {
@@ -1572,6 +1710,7 @@ if (!schemaOnly) {
 				]
 			)
 		);
+		insertResponseAnswerKeyStatements(insertStatements, question, renderingOverlay);
 
 		for (const [index, asset] of (question.assets ?? []).entries()) {
 			insertStatements.push(
@@ -1680,7 +1819,8 @@ if (!schemaOnly) {
 			);
 		}
 
-		if (question.model_answer?.answer_text) {
+		const modelAnswer = modelAnswerForImport(question, renderingOverlay);
+		if (modelAnswer?.answer_text) {
 			insertStatements.push(
 				insertStatement(
 					'model_answers',
@@ -1696,11 +1836,11 @@ if (!schemaOnly) {
 					[
 						`${question.id}-model-answer`,
 						question.id,
-						question.model_answer.answer_text,
-						question.model_answer.derivation ?? 'generated_from_mark_scheme',
-						json(question.model_answer.supporting_mark_scheme_item_ids, []),
-						question.model_answer.confidence ?? null,
-						bool(question.model_answer.needs_human_review)
+						modelAnswer.answer_text,
+						modelAnswer.derivation ?? 'generated_from_mark_scheme',
+						json(modelAnswer.supporting_mark_scheme_item_ids, []),
+						modelAnswer.confidence ?? null,
+						bool(modelAnswer.needs_human_review)
 					]
 				)
 			);

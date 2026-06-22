@@ -1,0 +1,151 @@
+[
+	{
+		"name": "physics-01-2-partial-free-text",
+		"paperSlug": "aqa-8464p1h-jun18",
+		"ref": "01.2",
+		"answers": {
+			"01.2": "proton is in the middle and its positive, and theres same number of electrons per atom"
+		},
+		"model": "llm",
+		"totals": {
+			"awardedMarks": 1,
+			"maxMarks": 2,
+			"gradeableMarks": 2,
+			"ungradedMarks": 0
+		},
+		"result": "partial",
+		"checklistLength": 2,
+		"modelAnswerIncludes": ["positive charge", "protons", "same number of protons"],
+		"streamPhases": ["thinking", "grading"],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["positive", "protons"]
+			},
+			{
+				"verdict": "missed",
+				"textIncludes": ["same", "number", "protons"]
+			}
+		],
+		"forbidText": [
+			"expected marking point",
+			"credit is given",
+			"no credit awarded",
+			"your answer",
+			"you should",
+			"AO1",
+			"AO2",
+			"AO3"
+		]
+	},
+	{
+		"name": "physics-01-2-full-free-text",
+		"paperSlug": "aqa-8464p1h-jun18",
+		"ref": "01.2",
+		"answers": {
+			"01.2": "positive charge comes from protons, and atoms of the same element always have the same number of protons"
+		},
+		"model": "llm",
+		"totals": {
+			"awardedMarks": 2,
+			"maxMarks": 2,
+			"gradeableMarks": 2,
+			"ungradedMarks": 0
+		},
+		"result": "correct",
+		"checklistLength": 2,
+		"modelAnswerIncludes": ["positive charge", "protons", "same number of protons"],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["positive", "protons"]
+			},
+			{
+				"verdict": "credited",
+				"textIncludes": ["same", "number", "protons"]
+			}
+		],
+		"forbidText": [
+			"expected marking point",
+			"credit is given",
+			"no credit awarded",
+			"AO1",
+			"AO2",
+			"AO3"
+		]
+	},
+	{
+		"name": "physics-01-1-labels-partial",
+		"paperSlug": "aqa-8464p1h-jun18",
+		"ref": "01.1",
+		"answers": {
+			"01.1": "blank-1: proton\nblank-2: atom\nblank-3: orbit\nblank-4: orbit"
+		},
+		"model": "deterministic",
+		"totals": {
+			"awardedMarks": 1,
+			"maxMarks": 4,
+			"gradeableMarks": 4,
+			"ungradedMarks": 0
+		},
+		"result": "partial",
+		"checklistLength": 4,
+		"modelAnswerIncludes": [],
+		"checklist": [
+			{
+				"verdict": "missed",
+				"textIncludes": ["nucleus"]
+			},
+			{
+				"verdict": "missed",
+				"textIncludes": ["electron"]
+			},
+			{
+				"verdict": "credited",
+				"textIncludes": ["orbit"]
+			},
+			{
+				"verdict": "missed",
+				"textIncludes": ["atom"]
+			}
+		],
+		"forbidText": ["fixed-answer", "expected marking point", "AO1", "AO2", "AO3"]
+	},
+	{
+		"name": "physics-01-1-labels-full",
+		"paperSlug": "aqa-8464p1h-jun18",
+		"ref": "01.1",
+		"answers": {
+			"01.1": "blank-1: nucleus\nblank-2: electron\nblank-3: orbit\nblank-4: atom"
+		},
+		"model": "deterministic",
+		"totals": {
+			"awardedMarks": 4,
+			"maxMarks": 4,
+			"gradeableMarks": 4,
+			"ungradedMarks": 0
+		},
+		"result": "correct",
+		"checklistLength": 4,
+		"modelAnswerIncludes": [],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["nucleus"]
+			},
+			{
+				"verdict": "credited",
+				"textIncludes": ["electron"]
+			},
+			{
+				"verdict": "credited",
+				"textIncludes": ["orbit"]
+			},
+			{
+				"verdict": "credited",
+				"textIncludes": ["atom"]
+			}
+		],
+		"forbidText": ["fixed-answer", "expected marking point", "AO1", "AO2", "AO3"]
+	}
+]

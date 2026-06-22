@@ -104,6 +104,20 @@ CREATE TABLE question_rendering_overlays (
   UNIQUE (source_document_id, source_question_ref, overlay_version)
 );
 
+CREATE TABLE IF NOT EXISTS question_response_answer_keys (
+  id TEXT PRIMARY KEY,
+  question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+  response_kind TEXT NOT NULL,
+  target_id TEXT NOT NULL,
+  correct_answer TEXT NOT NULL,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  aliases_json TEXT NOT NULL DEFAULT '[]',
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (question_id, response_kind, target_id)
+);
+
 CREATE TABLE IF NOT EXISTS mark_scheme_items (
   id TEXT PRIMARY KEY,
   question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
@@ -299,6 +313,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_subject_area ON questions (subject_area
 CREATE INDEX IF NOT EXISTS idx_question_assets_question ON question_assets (question_id);
 CREATE INDEX IF NOT EXISTS idx_question_rendering_overlays_question ON question_rendering_overlays (question_id, overlay_version);
 CREATE INDEX IF NOT EXISTS idx_question_rendering_overlays_source ON question_rendering_overlays (source_document_id, source_question_ref);
+CREATE INDEX IF NOT EXISTS idx_question_response_answer_keys_question ON question_response_answer_keys (question_id, response_kind, display_order);
 CREATE INDEX IF NOT EXISTS idx_chain_families_subject ON chain_families (subject_area, family_scope);
 CREATE INDEX IF NOT EXISTS idx_chain_family_members_family ON chain_family_members (chain_family_id, display_order);
 CREATE INDEX IF NOT EXISTS idx_chain_family_members_chain ON chain_family_members (answer_chain_id);
