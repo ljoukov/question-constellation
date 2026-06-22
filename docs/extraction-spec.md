@@ -279,6 +279,144 @@ This is useful because it can be mapped to missing links such as `oxygen`, `resp
 
 Do not invent a weak answer if the mark scheme gives no clear basis and the agent cannot identify a plausible missing link.
 
+## Render Extraction Methodology
+
+Question rendering extraction is LLM-assisted. It should not be treated as a plain PDF-to-text
+conversion task. The extractor should use the model's visual judgement, page images, rendered
+assets, and small geometry scripts together.
+
+Recommended process:
+
+1. Extract the semantic baseline: question references, prompt text, marks, parent context, assets,
+   tables, and mark-scheme alignment.
+2. Build a first render overlay from structured blocks and response interactions.
+3. Render the source PDF page or cropped figure to an image.
+4. Render the app view for the same question.
+5. Use `view_image` or an equivalent browser screenshot inspection step to compare the PDF image
+   and the app render visually. Look for missing figures, duplicated text, broken tables, bad
+   formulae, wrong answer-line counts, and interaction controls that do not match the paper.
+6. Use scripts only to propose geometry or repetitive structure. The LLM must still inspect and
+   accept, adjust, or reject the result.
+7. Store render interactions as explicit objects with provenance such as `llm-visual-review`,
+   `pdf-geometry`, `vision-extracted`, or `script-candidate`. Do not hide important rendering
+   structure in flat prompt text.
+
+The practical rule is: if the question relies on visual layout, the agent should look. Text
+extraction alone is not enough for exam papers.
+
+### Visual Review Loop
+
+During the experiment pass, the useful loop was:
+
+1. Generate or import the D1 render overlay.
+2. Open `/experiments/questions/<paper>` or `/experiments/questions/<paper>/<ref>`.
+3. Compare the rendered question against a PDF page image using `view_image` or browser
+   screenshots.
+4. Fix the render overlay schema or extraction heuristic.
+5. Re-import the affected paper and inspect again.
+
+This found issues that text extraction missed:
+
+- Figure references where the figure image was not rendered.
+- Repeated options where MCQ or matching choices appeared once as dead text and again as
+  interactive controls.
+- Tables flattened into ordinary text.
+- Chemical and physics formulae losing TeX structure.
+- Mark brackets duplicated because one copy came from prompt text and one from the marks field.
+- Copyright/footer text accidentally included in the question prompt.
+- Image-label blanks that needed positioned targets on top of a figure.
+
+### Answer-Line And Image-Label Geometry
+
+For image-label questions, scripts can identify candidate answer lines in a figure. These are only
+candidates. The LLM still needs to inspect the rendered result, because answer lines, table borders,
+circuit wires, figure callout lines, and page rules can look similar to simple image processing.
+
+The experiment used this kind of script to find long dark horizontal segments and convert them into
+normalized target boxes:
+
+```python
+import json
+import sys
+from PIL import Image
+
+img = Image.open(sys.argv[1]).convert("L")
+w, h = img.size
+pix = img.load()
+segments = []
+
+for y in range(h):
+    x = 0
+    while x < w:
+        while x < w and pix[x, y] >= 80:
+            x += 1
+        start = x
+        while x < w and pix[x, y] < 80:
+            x += 1
+        end = x
+        if end - start >= max(180, int(w * 0.13)):
+            segments.append((y, start, end))
+
+clusters = []
+for y, start, end in segments:
+    for cluster in clusters:
+        same_band = abs(cluster["y"] - y) <= 4
+        overlaps = not (end < cluster["start"] - 20 or start > cluster["end"] + 20)
+        if same_band and overlaps:
+            cluster["ys"].append(y)
+            cluster["start"] = min(cluster["start"], start)
+            cluster["end"] = max(cluster["end"], end)
+            cluster["y"] = sum(cluster["ys"]) / len(cluster["ys"])
+            break
+    else:
+        clusters.append({"ys": [y], "y": y, "start": start, "end": end})
+
+zones = []
+for cluster in sorted(clusters, key=lambda item: (item["y"], item["start"])):
+    line_width = cluster["end"] - cluster["start"]
+    line_height = max(cluster["ys"]) - min(cluster["ys"]) + 1
+    if line_width < max(180, int(w * 0.13)) or line_height > 8:
+        continue
+
+    zone_height = max(36, int(h * 0.075))
+
+    # The printed line is a writing baseline, not the top of an input box.
+    # Place the box mostly above the detected line so centered text reads naturally.
+    y0 = int(cluster["y"] - zone_height * 1.05)
+
+    zones.append(
+        {
+            "id": f"blank-{len(zones) + 1}",
+            "label": f"Blank {len(zones) + 1}",
+            "x": round(cluster["start"] / w, 4),
+            "y": round(y0 / h, 4),
+            "width": round(line_width / w, 4),
+            "height": round(zone_height / h, 4),
+        }
+    )
+
+print(json.dumps({"width": w, "height": h, "zones": zones}))
+```
+
+Known quirks:
+
+- The detected line is often a text baseline. If an empty target box is placed directly on that
+  line, the box looks too low and the eventual text baseline feels wrong.
+- A target box should usually be opaque white so the original paper line does not show through the
+  dashed box or filled answer.
+- The vertical offset is empirical. The `1.05` factor above worked for one AQA atom-label figure,
+  but it is not a general truth.
+- Normalized `y` can be negative when the line is close to the top of the cropped asset. The
+  renderer or extractor should clamp or review this depending on the asset crop.
+- Horizontal-line detection may pick up unrelated figure geometry. Reject false positives during
+  visual review instead of treating the script output as authoritative.
+- If an answer target should be a label box rather than free text, the response object should
+  represent that explicitly, for example as `image-label-zones` with a label bank.
+
+Scripts like this are useful because they reduce manual coordinate entry. They are unsafe if used
+alone. The extraction workflow should combine script candidates, LLM visual inspection with
+`view_image`, and explicit provenance so questionable geometry can be reviewed later.
+
 ## Output Contract
 
 The extraction agent should emit structured JSON before database insertion. The database importer can then normalize this JSON into rows.
