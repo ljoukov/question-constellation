@@ -416,6 +416,7 @@ function buildQuestions(rows: QuestionRenderingRow[]) {
 			questionId: row.id,
 			ref: row.source_question_ref,
 			marks: row.marks ?? 0,
+			stemBlocks: blocksFromValue(render.stemBlocks ?? [], `${row.id} stem blocks`),
 			leadBlocks: blocksFromValue(render.leadBlocks ?? [], `${row.id} lead blocks`),
 			blocks: blocksFromValue(render.promptBlocks ?? [], `${row.id} prompt blocks`),
 			response: responseFromValue(render.response ?? { kind: 'lines', count: 1 }),
@@ -438,6 +439,7 @@ function referencedAssetIds(questions: ExamQuestion[]) {
 		}
 		for (const part of question.parts) {
 			for (const block of [
+				...(part.stemBlocks ?? []),
 				...(part.leadBlocks ?? []),
 				...part.blocks,
 				...(part.afterResponseBlocks ?? [])

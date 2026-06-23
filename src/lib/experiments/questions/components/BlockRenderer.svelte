@@ -103,6 +103,7 @@
 	.exam-paragraph {
 		margin: 0 0 0.85rem;
 		white-space: pre-wrap;
+		overflow-wrap: anywhere;
 	}
 
 	.exam-figure {
@@ -210,6 +211,14 @@
 	}
 
 	@media (max-width: 720px) {
+		.exam-figure,
+		.exam-table-wrap,
+		.exam-table-wrap.compact,
+		.exam-table-wrap.wide {
+			width: min(100%, calc(100vw - 8rem)) !important;
+			max-width: min(100%, calc(100vw - 8rem)) !important;
+		}
+
 		table {
 			table-layout: fixed;
 			font-size: 0.84em;

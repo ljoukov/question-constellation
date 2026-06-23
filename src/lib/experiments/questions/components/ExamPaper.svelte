@@ -3,6 +3,7 @@
 	import QuestionNumber from './QuestionNumber.svelte';
 	import ResponseRenderer from './ResponseRenderer.svelte';
 	import { Check, X } from '@lucide/svelte';
+	import { resolvePaperDependencies } from '../paperUtils';
 	import type { ExperimentQuestionGradeResult } from '../gradingTypes';
 	import type { ExamPaper } from '../types';
 
@@ -39,17 +40,32 @@
 	const showSubmit = $derived(
 		isSubmitting || Boolean(submitError) || Object.keys(gradingResults).length === 0
 	);
+	const displayPaper = $derived(resolvePaperDependencies(paper));
+	const hasHeader = $derived(
+		Boolean(displayPaper.subtitle.trim() || displayPaper.title.trim() || displayPaper.source.trim())
+	);
 </script>
 
 <div class="question-experiment-page">
-	<article class="paper-sheet" aria-label={paper.title}>
-		<header class="paper-header">
-			<p>{paper.subtitle}</p>
-			<h1>{paper.title}</h1>
-			<p class="source-note">{paper.source}</p>
-		</header>
+	<article
+		class="paper-sheet"
+		aria-label={displayPaper.title || displayPaper.subtitle || 'Exam question'}
+	>
+		{#if hasHeader}
+			<header class="paper-header">
+				{#if displayPaper.subtitle}
+					<p>{displayPaper.subtitle}</p>
+				{/if}
+				{#if displayPaper.title}
+					<h1>{displayPaper.title}</h1>
+				{/if}
+				{#if displayPaper.source}
+					<p class="source-note">{displayPaper.source}</p>
+				{/if}
+			</header>
+		{/if}
 
-		{#each paper.questions as question (question.ref)}
+		{#each displayPaper.questions as question (question.ref)}
 			<section class="main-question" aria-labelledby={`question-${question.ref}`}>
 				<div class="exam-question-row exam-main-row">
 					<div class="exam-number-cell">
@@ -58,7 +74,7 @@
 					<div class="exam-question-body">
 						<h2 id={`question-${question.ref}`} class="sr-only">Question {question.ref}</h2>
 						{#each question.blocks as block (block)}
-							<BlockRenderer {block} assets={paper.assets} />
+							<BlockRenderer {block} assets={displayPaper.assets} />
 						{/each}
 					</div>
 				</div>
@@ -69,7 +85,7 @@
 							<div class="exam-number-cell"></div>
 							<div class="exam-question-body">
 								{#each part.leadBlocks as block (block)}
-									<BlockRenderer {block} assets={paper.assets} />
+									<BlockRenderer {block} assets={displayPaper.assets} />
 								{/each}
 							</div>
 						</div>
@@ -80,12 +96,12 @@
 						</div>
 						<div class="exam-question-body">
 							{#each part.blocks as block (block)}
-								<BlockRenderer {block} assets={paper.assets} />
+								<BlockRenderer {block} assets={displayPaper.assets} />
 							{/each}
 							<p class="marks">[{part.marks} {part.marks === 1 ? 'mark' : 'marks'}]</p>
 							<ResponseRenderer
 								response={part.response}
-								assets={paper.assets}
+								assets={displayPaper.assets}
 								answer={answers[part.ref] ?? ''}
 								onAnswerChange={(answer) => onAnswerChange?.(part.ref, answer)}
 							/>
@@ -111,7 +127,7 @@
 											aria-label={`Close feedback for question ${part.ref}`}
 											onclick={() => onDismissGrade?.(part.ref)}
 										>
-											<X size={18} strokeWidth={2.4} aria-hidden="true" />
+											Hide
 										</button>
 									</header>
 
@@ -153,7 +169,7 @@
 							{#if part.afterResponseBlocks?.length}
 								<div class="after-response-blocks">
 									{#each part.afterResponseBlocks as block (block)}
-										<BlockRenderer {block} assets={paper.assets} />
+										<BlockRenderer {block} assets={displayPaper.assets} />
 									{/each}
 								</div>
 							{/if}
@@ -363,8 +379,10 @@
 	}
 
 	.grade-card-header {
-		display: block;
-		padding-right: 1rem;
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		justify-content: space-between;
 	}
 
 	.grade-card-header h3,
@@ -386,34 +404,25 @@
 	}
 
 	.grade-close-button {
-		position: absolute;
-		top: -0.85rem;
-		right: -0.85rem;
-		display: inline-grid;
-		place-items: center;
-		width: 2rem;
-		height: 2rem;
-		border: 1px solid rgb(16 33 63 / 18%);
-		border-radius: 50%;
-		background: #ffffff;
-		color: #10213f;
+		flex: 0 0 auto;
+		border: 0;
+		border-bottom: 1px dotted currentColor;
+		border-radius: 0;
+		background: transparent;
+		color: #556276;
 		font: inherit;
-		font-size: 1.25rem;
+		font-size: 0.82rem;
 		font-weight: 400;
-		line-height: 1;
+		line-height: 1.2;
 		cursor: pointer;
-		box-shadow: 0 6px 14px rgb(16 33 63 / 16%);
 		transition:
-			background-color 140ms ease,
-			box-shadow 140ms ease,
-			transform 140ms ease;
+			color 140ms ease,
+			border-color 140ms ease;
 	}
 
 	.grade-close-button:hover,
 	.grade-close-button:focus-visible {
-		background: #f8fafc;
-		box-shadow: 0 8px 18px rgb(16 33 63 / 22%);
-		transform: translateY(-1px);
+		color: #10213f;
 	}
 
 	.grade-next-step {
@@ -526,10 +535,16 @@
 	@media (max-width: 520px) {
 		.question-experiment-page {
 			padding: 0.55rem 0.4rem 1.8rem;
+			width: 100%;
+			max-width: 100%;
+			min-width: 0;
 		}
 
 		.paper-sheet {
-			padding: 0.9rem 0.45rem 1.8rem;
+			width: min(100%, calc(100vw - 4rem)) !important;
+			max-width: calc(100vw - 4rem) !important;
+			padding: 0.9rem 0.65rem 1.8rem;
+			overflow: hidden;
 		}
 
 		.paper-header {
@@ -537,8 +552,18 @@
 		}
 
 		.exam-question-row {
+			width: 100%;
+			max-width: 100%;
 			grid-template-columns: minmax(0, 1fr);
 			gap: 0.45rem;
+		}
+
+		.main-question,
+		.exam-question-body {
+			width: 100%;
+			max-width: 100%;
+			min-width: 0;
+			overflow-wrap: anywhere;
 		}
 
 		.exam-main-row {
@@ -560,13 +585,6 @@
 		.experiment-grade-card {
 			margin-right: 0.15rem;
 			padding-right: 0.85rem;
-		}
-
-		.grade-close-button {
-			top: -0.72rem;
-			right: -0.32rem;
-			width: 1.8rem;
-			height: 1.8rem;
 		}
 	}
 </style>

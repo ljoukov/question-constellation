@@ -1,15 +1,9 @@
-import { getNavigationData } from '$lib/server/questionData';
-import { error, redirect } from '@sveltejs/kit';
+import { getQuestionExperimentPaper } from '$lib/server/questionExperimentData';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	let navigation;
+const paperSlug = 'aqa-8464p1h-jun18';
 
-	try {
-		navigation = await getNavigationData();
-	} catch {
-		throw error(503, 'No chained questions are available yet.');
-	}
-
-	throw redirect(307, `/questions/${navigation.primaryQuestionId}`);
-};
+export const load: PageServerLoad = async () => ({
+	paper: await getQuestionExperimentPaper(paperSlug),
+	initialRef: '03.3'
+});

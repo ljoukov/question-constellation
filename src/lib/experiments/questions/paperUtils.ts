@@ -1,4 +1,10 @@
-import type { ExamPaper, ExamQuestion, ExamQuestionBlock, ExamQuestionPart } from './types';
+import type {
+	ExamPaper,
+	ExamQuestion,
+	ExamQuestionBlock,
+	ExamQuestionPart,
+	ExamResponse
+} from './types';
 
 export function questionRefs(paper: ExamPaper) {
 	return paper.questions.flatMap((question) => [
@@ -42,8 +48,45 @@ function blockVisualLabel(block: ExamQuestionBlock) {
 	return block.label ? normalizeVisualLabel(block.label) : null;
 }
 
+function blockKey(block: ExamQuestionBlock) {
+	if (block.kind === 'figure') return `figure:${block.label ?? block.assetId}`;
+	if (block.kind === 'table' || block.kind === 'structured-table') {
+		return `${block.kind}:${block.label ?? ''}:${JSON.stringify(block)}`;
+	}
+	return `${block.kind}:${JSON.stringify(block)}`;
+}
+
+function responseAssetKey(response: ExamResponse) {
+	if (response.kind === 'asset-canvas' || response.kind === 'image-label-zones') {
+		return `asset:${response.assetId}`;
+	}
+	return null;
+}
+
+function uniqueBlocks(blocks: ExamQuestionBlock[]) {
+	const seen = new Set<string>();
+	return blocks.filter((block) => {
+		const key = blockKey(block);
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
+function mergeBlocks(base: ExamQuestionBlock[], extra: ExamQuestionBlock[]) {
+	return uniqueBlocks([...base, ...extra]);
+}
+
 function partBlocks(part: ExamQuestionPart) {
 	return [...(part.leadBlocks ?? []), ...part.blocks, ...(part.afterResponseBlocks ?? [])];
+}
+
+function addRenderedPartKeys(seen: Set<string>, part: ExamQuestionPart) {
+	for (const block of partBlocks(part)) {
+		seen.add(blockKey(block));
+	}
+	const assetKey = responseAssetKey(part.response);
+	if (assetKey) seen.add(assetKey);
 }
 
 function visualDependencyBlocks(question: ExamQuestion, selectedPart: ExamQuestionPart) {
@@ -71,12 +114,41 @@ function visualDependencyBlocks(question: ExamQuestion, selectedPart: ExamQuesti
 	return dependencies;
 }
 
-function focusPartWithDependencies(question: ExamQuestion, part: ExamQuestionPart) {
+function resolvePartDependencies(
+	question: ExamQuestion,
+	part: ExamQuestionPart,
+	seen: Set<string>
+) {
 	const dependencies = visualDependencyBlocks(question, part);
-	if (dependencies.length === 0) return part;
+	const supportBlocks = [...dependencies, ...(part.stemBlocks ?? [])].filter((block) => {
+		const key = blockKey(block);
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+
+	const resolvedPart = supportBlocks.length
+		? {
+				...part,
+				leadBlocks: [...supportBlocks, ...(part.leadBlocks ?? [])]
+			}
+		: part;
+	addRenderedPartKeys(seen, resolvedPart);
+	return resolvedPart;
+}
+
+function resolveQuestionDependencies(question: ExamQuestion): ExamQuestion {
+	const seen = new Set(question.blocks.map(blockKey));
 	return {
-		...part,
-		leadBlocks: [...dependencies, ...(part.leadBlocks ?? [])]
+		...question,
+		parts: question.parts.map((part) => resolvePartDependencies(question, part, seen))
+	};
+}
+
+export function resolvePaperDependencies(paper: ExamPaper): ExamPaper {
+	return {
+		...paper,
+		questions: paper.questions.map(resolveQuestionDependencies)
 	};
 }
 
@@ -86,21 +158,21 @@ export function focusPaperByRef(paper: ExamPaper, ref: string): ExamPaper | null
 			return {
 				...paper,
 				title: `${paper.title} Question ${question.ref}`,
-				questions: [question]
+				questions: [resolveQuestionDependencies(question)]
 			};
 		}
 
 		const part = question.parts.find((candidate) => candidate.ref === ref);
 		if (part) {
+			const focusedQuestion = resolveQuestionDependencies({
+				...question,
+				blocks: mergeBlocks(question.blocks, part.stemBlocks ?? []),
+				parts: [part]
+			});
 			return {
 				...paper,
 				title: `${paper.title} Question ${part.ref}`,
-				questions: [
-					{
-						...question,
-						parts: [focusPartWithDependencies(question, part)]
-					}
-				]
+				questions: [focusedQuestion]
 			};
 		}
 	}

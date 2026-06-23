@@ -142,6 +142,7 @@ export type ExamQuestionPart = {
 	questionId?: string;
 	ref: string;
 	marks: number;
+	stemBlocks?: ExamQuestionBlock[];
 	leadBlocks?: ExamQuestionBlock[];
 	blocks: ExamQuestionBlock[];
 	response: ExamResponse;
