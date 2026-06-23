@@ -46,4 +46,5 @@ export type ExperimentGradeResponse = {
 		ungradedMarks: number;
 	};
 	results: ExperimentQuestionGradeResult[];
+	debugPrompt?: string;
 };

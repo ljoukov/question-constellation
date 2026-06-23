@@ -271,6 +271,64 @@ Set derivation as:
 
 Generated model answers should not be published without either high mark-scheme alignment confidence or human review.
 
+### Fixed-Response Answer Keys
+
+Fixed-response questions still need student-facing feedback. Prefer deterministic checking when the
+correct response can be extracted confidently, but the runtime grader may fall back to the supplied
+mark scheme and response format when the structured key is missing.
+
+For every fixed-response interaction, store the visible response format in the render overlay and
+store the correct answer key either in `response.correctAnswers` or in
+`question_response_answer_keys`:
+
+- `choice`: use target id `answer`; store the correct option text or the printed letter when the
+  paper only gives A/B/C/D choices.
+- `choice-table`: use target id `answer`; store the selected row as the same `|`-joined text the
+  UI emits.
+- `matching`: use each left-side value or stable left-side id as the target id; store the matching
+  right-side value.
+- `equation-blanks`: use each blank id as the target id; store the correct value or expression for
+  that blank.
+- `number-line`: use target id `answer`; include unit, rounding, tolerance, or significant-figure
+  requirements in `metadata_json` when exact string matching would be unsafe.
+- `image-label-zones`: use each zone id as the target id; store the correct label.
+
+Do not store a raw mark-scheme row such as `01.1 B 1 AO1` as a model answer. For fixed-response
+questions, the model answer column should normally be empty; the answer key and mark scheme carry
+the grading evidence.
+
+### Paper Import Workflow For Codex Agents
+
+Use this checklist when importing another full paper into D1:
+
+1. Pair the question paper and mark scheme, then extract source metadata and atomic question rows.
+2. Extract the render overlay for each atomic question, including blocks, assets, marks, and the
+   exact interactive response object.
+3. Extract mark-scheme rows and split them into usable marking points. Keep `allow`, `reject`, and
+   examiner guidance as guidance, not as positive checklist rows.
+4. For written-response questions, generate a concise model answer from the mark-scheme evidence and
+   reject answers that contain AO codes, spec codes, row numbers, or generic marking instructions.
+5. For fixed-response questions, extract `correctAnswers` and insert rows into
+   `question_response_answer_keys`; do not generate model answers for these unless the fixed response
+   is actually a written answer in disguise.
+6. Derive answer chains only when the marks depend on reusable reasoning, not for pure recall or
+   single-step key selection.
+7. Import to D1, then run validation queries for question counts, render-overlay coverage,
+   mark-scheme coverage, model-answer coverage, and fixed-response answer-key coverage.
+8. Open `/experiments/questions/<paper>` and a sample of single-question routes on desktop and
+   mobile; inspect the rendered paper against the source and submit representative written and
+   fixed-response answers through the real grading endpoint.
+
+For extraction agents that generate import JSON, include this instruction in the task prompt:
+
+```text
+For each rendered response object, emit the exact user-facing response format and, when the correct
+answer is known from the mark scheme, emit response.correctAnswers. Use target id "answer" for a
+single selected choice, each left-side id for matching, each blank id for equation blanks, and each
+image-label zone id for labels. Written-response model answers must be clean student answer text,
+not raw mark-scheme rows or AO/spec notation.
+```
+
 ### Common Weak Answers
 
 Common weak answers should represent a realistic partial answer that misses one or more chain links.

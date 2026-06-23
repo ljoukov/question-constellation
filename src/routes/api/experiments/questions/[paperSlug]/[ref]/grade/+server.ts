@@ -1,5 +1,6 @@
 import { gradeExperimentQuestionAnswers } from '$lib/server/questionExperimentGrading';
 import { createSseStream, sseResponse } from '$lib/server/sse';
+import { dev } from '$app/environment';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import type { GradeStreamDelta } from '$lib/server/answerGrading';
 import { z } from 'zod';
@@ -10,7 +11,8 @@ const paramsSchema = z.object({
 });
 
 const requestSchema = z.object({
-	answers: z.record(z.string().trim().min(1), z.string().max(5000))
+	answers: z.record(z.string().trim().min(1), z.string().max(5000)),
+	includeDebugPrompt: z.boolean().optional()
 });
 
 function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: GradeStreamDelta) {
@@ -94,7 +96,10 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 			ref: parsedParams.data.ref,
 			answers: body.answers,
 			platformEnv: platform?.env,
-			signal: request.signal
+			signal: request.signal,
+			includeDebugPrompt:
+				body.includeDebugPrompt === true &&
+				(dev || platform?.env?.EXPERIMENT_GRADING_DEBUG_PROMPTS === '1')
 		});
 		return json(result);
 	} catch (error) {

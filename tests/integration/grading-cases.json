@@ -1,5 +1,80 @@
 [
 	{
+		"name": "physics-04-2-choice-full",
+		"paperSlug": "aqa-8464p1h-jun18",
+		"ref": "04.2",
+		"answers": {
+			"04.2": "It is the type of radiation with a negative charge."
+		},
+		"model": "llm",
+		"totals": {
+			"awardedMarks": 1,
+			"maxMarks": 1,
+			"gradeableMarks": 1,
+			"ungradedMarks": 0
+		},
+		"result": "correct",
+		"checklistLength": 1,
+		"modelAnswerIncludes": [],
+		"promptIncludes": [
+			"RESPONSE_FORMAT",
+			"Options:",
+			"It is the type of radiation with a negative charge.",
+			"MARK_SCHEME_ITEMS"
+		],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["negative", "charge"]
+			}
+		],
+		"forbidText": [
+			"expected marking point",
+			"credit is given",
+			"no credit awarded",
+			"your answer",
+			"you should",
+			"AO1",
+			"AO2",
+			"AO3"
+		]
+	},
+	{
+		"name": "biology-01-1-letter-choice-full",
+		"paperSlug": "aqa-8464b1h-jun19",
+		"ref": "01.1",
+		"answers": {
+			"01.1": "B"
+		},
+		"model": "llm",
+		"totals": {
+			"awardedMarks": 1,
+			"maxMarks": 1,
+			"gradeableMarks": 1,
+			"ungradedMarks": 0
+		},
+		"result": "correct",
+		"checklistLength": 1,
+		"modelAnswerIncludes": [],
+		"promptIncludes": ["Which blood vessel", "RESPONSE_FORMAT", "Options:", "- A", "- B"],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["B"]
+			}
+		],
+		"forbidText": [
+			"expected marking point",
+			"credit is given",
+			"no credit awarded",
+			"your answer",
+			"you should",
+			"AO1",
+			"AO2",
+			"AO3"
+		]
+	},
+	{
 		"name": "physics-01-2-partial-free-text",
 		"paperSlug": "aqa-8464p1h-jun18",
 		"ref": "01.2",

@@ -39,13 +39,16 @@
 	const focusedParts = $derived(
 		focusedPaper?.questions.flatMap((question) => question.parts) ?? []
 	);
+	const focusedPartRefs = $derived(new Set(focusedParts.map((part) => part.ref)));
 	const answeredParts = $derived(
 		focusedParts.filter((part) => (answers[part.ref] ?? '').trim().length > 0)
 	);
 	const canSubmit = $derived(Boolean(focusedPaper && answeredParts.length > 0 && !isSubmitting));
 	const gradeResultsByRef = $derived<Record<string, ExperimentQuestionGradeResult>>(
 		Object.fromEntries(
-			(gradeResponse?.results ?? []).map((result) => [result.ref, result])
+			(gradeResponse?.results ?? [])
+				.filter((result) => focusedPartRefs.has(result.ref))
+				.map((result) => [result.ref, result])
 		) as Record<string, ExperimentQuestionGradeResult>
 	);
 

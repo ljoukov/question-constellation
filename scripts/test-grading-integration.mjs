@@ -11,6 +11,7 @@ const baseUrl = (process.env.GRADING_INTEGRATION_BASE_URL ?? 'http://127.0.0.1:5
 	''
 );
 const cases = JSON.parse(readFileSync(casesPath, 'utf8'));
+const printPrompts = process.env.GRADING_INTEGRATION_PRINT_PROMPTS === '1';
 
 function assert(condition, message) {
 	if (!condition) throw new Error(message);
@@ -214,6 +215,35 @@ function assertForbiddenText(testCase, response) {
 	}
 }
 
+function assertPrompt(testCase, response) {
+	const expectedFragments = testCase.promptIncludes ?? [];
+	if (expectedFragments.length === 0 && !printPrompts) return;
+	if (response.model === 'deterministic' && expectedFragments.length === 0) {
+		if (printPrompts) {
+			console.log(
+				`\n--- PROMPT ${testCase.name} ---\nNo LLM prompt; deterministic grading.\n--- END PROMPT ---\n`
+			);
+		}
+		return;
+	}
+
+	assert(
+		typeof response.debugPrompt === 'string' && response.debugPrompt.trim().length > 0,
+		`${testCase.name}: expected debugPrompt from dev grading endpoint`
+	);
+
+	if (expectedFragments.length > 0) {
+		assert(
+			includesAll(response.debugPrompt, expectedFragments),
+			`${testCase.name}: prompt did not contain ${expectedFragments.join(', ')}`
+		);
+	}
+
+	if (printPrompts) {
+		console.log(`\n--- PROMPT ${testCase.name} ---\n${response.debugPrompt}\n--- END PROMPT ---\n`);
+	}
+}
+
 async function assertStreaming(testCase, url) {
 	if (!testCase.streamPhases?.length) return;
 	const events = await postSse(url, { answers: testCase.answers });
@@ -242,10 +272,14 @@ async function runCase(testCase) {
 	const url = `${baseUrl}/api/experiments/questions/${testCase.paperSlug}/${encodeURIComponent(
 		testCase.ref
 	)}/grade`;
-	const response = await postJson(url, { answers: testCase.answers });
+	const response = await postJson(url, {
+		answers: testCase.answers,
+		includeDebugPrompt: printPrompts || Boolean(testCase.promptIncludes?.length)
+	});
 	const result = response.results.find((candidate) => candidate.ref === testCase.ref);
 
 	assert(result, `${testCase.name}: no result for ${testCase.ref}`);
+	assertPrompt(testCase, response);
 	assertModel(testCase, response);
 	assertTotals(testCase, response);
 	assert(

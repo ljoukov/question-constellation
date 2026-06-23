@@ -1401,20 +1401,40 @@ function stableSqlId(value) {
 		.replace(/^-+|-+$/g, '');
 }
 
+function responseAnswerKeyOrder(response, targetId, fallbackOrder) {
+	if (response.kind === 'image-label-zones') {
+		const zoneIndex = (response.zones ?? []).findIndex((zone) => zone.id === targetId);
+		return zoneIndex >= 0 ? zoneIndex + 1 : fallbackOrder;
+	}
+
+	if (response.kind === 'matching') {
+		const leftIndex = (response.left ?? []).findIndex((left) => left === targetId);
+		return leftIndex >= 0 ? leftIndex + 1 : fallbackOrder;
+	}
+
+	if (response.kind === 'equation-blanks') {
+		const blankIndex = (response.segments ?? []).findIndex(
+			(segment) => segment?.kind === 'blank' && segment.id === targetId
+		);
+		return blankIndex >= 0 ? blankIndex + 1 : fallbackOrder;
+	}
+
+	if (response.kind === 'choice' || response.kind === 'choice-table') {
+		return targetId === 'answer' ? 1 : fallbackOrder;
+	}
+
+	return fallbackOrder;
+}
+
 function insertResponseAnswerKeyStatements(insertStatements, question, renderingOverlay) {
 	const response = renderingOverlay?.response;
-	if (
-		!response ||
-		response.kind !== 'image-label-zones' ||
-		!response.correctAnswers ||
-		typeof response.correctAnswers !== 'object'
-	) {
+	if (!response || !response.correctAnswers || typeof response.correctAnswers !== 'object') {
 		return;
 	}
 
-	const targetOrder = new Map((response.zones ?? []).map((zone, index) => [zone.id, index + 1]));
-
-	for (const [targetId, correctAnswer] of Object.entries(response.correctAnswers)) {
+	for (const [index, [targetId, correctAnswer]] of Object.entries(
+		response.correctAnswers
+	).entries()) {
 		if (!targetId || typeof correctAnswer !== 'string' || !correctAnswer.trim()) continue;
 		insertStatements.push(
 			insertStatement(
@@ -1435,7 +1455,7 @@ function insertResponseAnswerKeyStatements(insertStatements, question, rendering
 					response.kind,
 					targetId,
 					correctAnswer.trim(),
-					targetOrder.get(targetId) ?? 0,
+					responseAnswerKeyOrder(response, targetId, index + 1),
 					json([], []),
 					json({ source: 'rendering_overlay_correct_answers' }, {})
 				]

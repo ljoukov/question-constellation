@@ -87,6 +87,7 @@ type ResponseAnswerKeyRow = {
 type GradeableQuestionContext = {
 	question: QuestionRow;
 	response: FixedResponse | null;
+	responsePromptDetails: string | null;
 	markScheme: MarkSchemeRow[];
 	checklist: ChecklistRow[];
 	modelAnswer: string | null;
@@ -116,7 +117,30 @@ type FixedResponse =
 			correctAnswers: Record<string, string>;
 	  }
 	| {
-			kind: 'choice' | 'choice-table' | 'matching' | 'equation-blanks';
+			kind: 'choice';
+			options: string[];
+	  }
+	| {
+			kind: 'choice-table';
+			columns: string[];
+			rows: string[][];
+	  }
+	| {
+			kind: 'matching';
+			leftTitle: string | null;
+			rightTitle: string | null;
+			left: string[];
+			right: string[];
+	  }
+	| {
+			kind: 'equation-blanks';
+			blanks: Array<{ id: string; label: string }>;
+	  }
+	| {
+			kind: 'number-line';
+			label: string;
+			prefix: string | null;
+			unit: string | null;
 	  };
 
 type ModelGradePayload = {
@@ -220,6 +244,8 @@ function usefulText(text: string) {
 function cleanMarkText(text: string) {
 	return text
 		.replace(/\b\d{1,2}\.\d+\b/g, '')
+		.replace(/\b\d+\b\s*(?=AO[123]\b)/gi, '')
+		.replace(/\b\d+\b\s*(?=\d(?:\.\d+){2,}\b)/g, '')
 		.replace(/\bAO[123]\b/gi, '')
 		.replace(/\b\d(?:\.\d+){2,}\b/g, '')
 		.replace(/\b\d+\s*(?=;|$)/g, '')
@@ -285,13 +311,57 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 		};
 	}
 
-	if (
-		value.kind === 'choice' ||
-		value.kind === 'choice-table' ||
-		value.kind === 'matching' ||
-		value.kind === 'equation-blanks'
-	) {
-		return { kind: value.kind };
+	if (value.kind === 'choice' && Array.isArray(value.options)) {
+		return {
+			kind: 'choice',
+			options: value.options.filter((option): option is string => typeof option === 'string')
+		};
+	}
+
+	if (value.kind === 'choice-table' && Array.isArray(value.columns) && Array.isArray(value.rows)) {
+		return {
+			kind: 'choice-table',
+			columns: value.columns.filter((column): column is string => typeof column === 'string'),
+			rows: value.rows
+				.filter((row): row is unknown[] => Array.isArray(row))
+				.map((row) => row.filter((cell): cell is string => typeof cell === 'string'))
+		};
+	}
+
+	if (value.kind === 'matching' && Array.isArray(value.left) && Array.isArray(value.right)) {
+		return {
+			kind: 'matching',
+			leftTitle: typeof value.leftTitle === 'string' ? value.leftTitle : null,
+			rightTitle: typeof value.rightTitle === 'string' ? value.rightTitle : null,
+			left: value.left.filter((item): item is string => typeof item === 'string'),
+			right: value.right.filter((item): item is string => typeof item === 'string')
+		};
+	}
+
+	if (value.kind === 'equation-blanks' && Array.isArray(value.segments)) {
+		return {
+			kind: 'equation-blanks',
+			blanks: value.segments
+				.map((segment) => {
+					if (!segment || typeof segment !== 'object') return null;
+					const candidate = segment as Record<string, unknown>;
+					return candidate.kind === 'blank' &&
+						typeof candidate.id === 'string' &&
+						typeof candidate.label === 'string'
+						? { id: candidate.id, label: candidate.label }
+						: null;
+				})
+				.filter((blank): blank is { id: string; label: string } => Boolean(blank))
+		};
+	}
+
+	if (value.kind === 'number-line' && typeof value.label === 'string') {
+		return {
+			kind: 'number-line',
+			label: value.label,
+			prefix: typeof value.prefix === 'string' ? value.prefix : null,
+			unit: typeof value.unit === 'string' ? value.unit : null
+		};
 	}
 
 	return null;
@@ -318,13 +388,68 @@ function mergeResponseAnswerKey(
 	};
 }
 
-function fixedResponseNeedsAnswerKey(response: FixedResponse | null) {
-	if (!response) return false;
-	if (response.kind !== 'image-label-zones') return true;
+function imageLabelResponseNeedsAnswerKey(response: FixedResponse | null) {
+	if (response?.kind !== 'image-label-zones') return false;
 	return (
 		response.zones.length === 0 ||
 		response.zones.some((zone) => !response.correctAnswers[zone.id]?.trim())
 	);
+}
+
+function canGradeDeterministically(
+	response: FixedResponse | null
+): response is Extract<FixedResponse, { kind: 'image-label-zones' }> {
+	return response?.kind === 'image-label-zones' && !imageLabelResponseNeedsAnswerKey(response);
+}
+
+function responsePromptDetails(response: FixedResponse | null) {
+	if (!response) return null;
+	if (response.kind === 'choice') {
+		return [
+			'The learner selects one option.',
+			'Options:',
+			...response.options.map((option) => `- ${option}`)
+		]
+			.filter(Boolean)
+			.join('\n');
+	}
+	if (response.kind === 'choice-table') {
+		return [
+			'The learner selects one row from this table.',
+			`Columns: ${response.columns.join(' | ')}`,
+			'Rows:',
+			...response.rows.map((row) => `- ${row.join(' | ')}`)
+		].join('\n');
+	}
+	if (response.kind === 'matching') {
+		return [
+			'The learner matches items from left to right.',
+			`Left${response.leftTitle ? ` (${response.leftTitle})` : ''}: ${response.left.join(' | ')}`,
+			`Right${response.rightTitle ? ` (${response.rightTitle})` : ''}: ${response.right.join(' | ')}`
+		].join('\n');
+	}
+	if (response.kind === 'equation-blanks') {
+		return [
+			'The learner fills equation blanks.',
+			'Blanks:',
+			...response.blanks.map((blank) => `- ${blank.id}: ${blank.label}`)
+		].join('\n');
+	}
+	if (response.kind === 'number-line') {
+		return [
+			'The learner enters a number.',
+			`Label: ${response.label}`,
+			response.prefix ? `Prefix: ${response.prefix}` : null,
+			response.unit ? `Unit: ${response.unit}` : null
+		]
+			.filter(Boolean)
+			.join('\n');
+	}
+	return [
+		'The learner places labels on image targets.',
+		'Targets:',
+		...response.zones.map((zone) => `- ${zone.id}: ${zone.label}`)
+	].join('\n');
 }
 
 function evidenceSummary(raw: string) {
@@ -430,7 +555,6 @@ async function getQuestionEvidence(questionId: string) {
 				`SELECT target_id, correct_answer, display_order
 			 FROM question_response_answer_keys
 			 WHERE question_id = ?
-			   AND response_kind = 'image-label-zones'
 			 ORDER BY display_order, target_id`,
 				[questionId]
 			)
@@ -508,22 +632,30 @@ async function getGradeContexts(
 			if (!evidence.chain) {
 				warnings.push('No answer chain is linked to this subpart in D1 yet.');
 			}
-			if (fixedResponseNeedsAnswerKey(response)) {
+			if (imageLabelResponseNeedsAnswerKey(response)) {
 				warnings.push(
-					'This is a fixed-answer question, but D1 does not contain a complete imported answer key for its response targets.'
+					'This label question is missing a complete imported answer key, so it will be checked from mark-scheme evidence.'
 				);
+			} else if (
+				response &&
+				!canGradeDeterministically(response) &&
+				evidence.responseAnswerKeys.length === 0
+			) {
+				warnings.push('No structured response answer key is stored for this interaction yet.');
 			}
 
+			const hasEvidence =
+				evidence.markScheme.length > 0 ||
+				evidence.checklist.length > 0 ||
+				Boolean(evidence.modelAnswer) ||
+				Boolean(evidence.chain?.steps.length);
 			const gradeable =
-				!fixedResponseNeedsAnswerKey(response) &&
-				(evidence.markScheme.length > 0 ||
-					evidence.checklist.length > 0 ||
-					Boolean(evidence.modelAnswer) ||
-					Boolean(evidence.chain?.steps.length) ||
-					Boolean(response));
+				hasEvidence ||
+				canGradeDeterministically(response) ||
+				(Boolean(response) && evidence.responseAnswerKeys.length > 0);
 			const maxMarks = question.marks ?? 0;
 			const gradeableMarks = gradeable
-				? response?.kind === 'image-label-zones'
+				? canGradeDeterministically(response)
 					? Math.min(maxMarks, response.zones.length)
 					: maxMarks ||
 						estimateGradeableMarks({
@@ -544,6 +676,7 @@ async function getGradeContexts(
 			return {
 				question,
 				response,
+				responsePromptDetails: responsePromptDetails(response),
 				markScheme: evidence.markScheme,
 				checklist: evidence.checklist,
 				modelAnswer: evidence.modelAnswer,
@@ -567,7 +700,8 @@ function contextPrompt(context: GradeableQuestionContext) {
 		`COMMAND: ${q.command_word ?? 'question'}`,
 		`PAPER: ${q.board ?? 'AQA'} ${q.qualification ?? 'GCSE'} ${q.subject ?? 'Combined Science'} ${q.tier ?? 'Higher'} ${q.paper ?? ''} ${q.series ?? ''}`,
 		q.context_text ? `CONTEXT:\n${q.context_text}` : null,
-		`PROMPT:\n${q.self_contained_prompt_text ?? q.prompt_text}`
+		`PROMPT:\n${q.self_contained_prompt_text ?? q.prompt_text}`,
+		context.responsePromptDetails ? `RESPONSE_FORMAT:\n${context.responsePromptDetails}` : null
 	].filter(Boolean);
 
 	if (context.markScheme.length) {
@@ -629,6 +763,8 @@ function buildPrompt(contexts: GradeableQuestionContext[], answers: Record<strin
 		'If supplied extracted evidence has fewer rows than PAPER_MARKS, infer the remaining mark rows from the question wording and supplied mark-scheme meaning. Do not omit a missed mark row.',
 		'Checklist item text must be a clean marking point, without question numbers, AO codes, spec codes, or examiner notation.',
 		'Checklist explanations should be short plain-English reasons, at most one sentence.',
+		'For selected-response questions, use RESPONSE_FORMAT to understand what the submitted answer means.',
+		'If a mark-scheme item is only a letter such as A, B, C, or D, grade by the selected option exactly. Do not invent a scientific explanation for a letter-only key; a checklist row such as "Correct option: B" is enough.',
 		'',
 		'Return valid JSON only. No Markdown fences.',
 		'Shape:',
@@ -854,7 +990,6 @@ function completeChecklistRows({
 
 function notGradeableResult(context: GradeableQuestionContext): ExperimentQuestionGradeResult {
 	const marks = context.question.marks ?? 0;
-	const isFixedAnswer = Boolean(context.response);
 	return {
 		questionId: context.question.id,
 		ref: context.question.source_question_ref,
@@ -864,12 +999,9 @@ function notGradeableResult(context: GradeableQuestionContext): ExperimentQuesti
 		maxMarks: marks,
 		gradeableMarks: 0,
 		confidence: 'low',
-		summary: isFixedAnswer
-			? 'I cannot check this one yet.'
-			: 'This subpart is not ready for automatic grading because D1 does not contain usable mark-scheme or answer-chain evidence yet.',
-		nextStep: isFixedAnswer
-			? 'Try another question for now.'
-			: 'Use the printed mark scheme for now, or re-import this subpart with corrected mark-scheme extraction.',
+		summary: 'This subpart is missing the mark-scheme evidence needed for automatic checking.',
+		nextStep:
+			'Use the printed mark scheme for now, or re-import this subpart with corrected mark-scheme extraction.',
 		checklist: [],
 		chain: null,
 		modelAnswer: null,
@@ -897,7 +1029,7 @@ function deterministicFixedAnswerResult(
 ): ExperimentQuestionGradeResult | null {
 	const response = context.response;
 	if (response?.kind !== 'image-label-zones') return null;
-	if (fixedResponseNeedsAnswerKey(response)) return notGradeableResult(context);
+	if (imageLabelResponseNeedsAnswerKey(response)) return notGradeableResult(context);
 
 	const answers = answerMap(rawAnswer);
 	const maxMarks = context.question.marks ?? 0;
@@ -1062,7 +1194,8 @@ export async function gradeExperimentQuestionAnswers({
 	answers,
 	platformEnv,
 	signal,
-	onDelta
+	onDelta,
+	includeDebugPrompt = false
 }: {
 	paperSlug: string;
 	ref: string;
@@ -1070,6 +1203,7 @@ export async function gradeExperimentQuestionAnswers({
 	platformEnv?: unknown;
 	signal?: AbortSignal;
 	onDelta?: (delta: GradeStreamDelta) => void;
+	includeDebugPrompt?: boolean;
 }): Promise<ExperimentGradeResponse> {
 	const contexts = await getGradeContexts(paperSlug, ref);
 	const answered = contexts.filter((context) =>
@@ -1084,17 +1218,22 @@ export async function gradeExperimentQuestionAnswers({
 	let modelResults: ModelGradePayload['results'] = [];
 	let modelName = 'deterministic';
 	let modelVersion = 'deterministic';
+	let debugPrompt: string | undefined;
 	const deterministicResults = new Map<string, ExperimentQuestionGradeResult>();
-	const fixedAnswered = answered.filter((context) => context.response);
+	const fixedAnswered = answered.filter((context) => canGradeDeterministically(context.response));
 	for (const context of fixedAnswered) {
 		const fixedResult = deterministicFixedAnswerResult(
 			context,
 			answers[context.question.source_question_ref]?.trim() ?? ''
 		);
-		deterministicResults.set(context.question.id, fixedResult ?? notGradeableResult(context));
+		if (fixedResult) {
+			deterministicResults.set(context.question.id, fixedResult);
+		}
 	}
 
-	const llmGradeable = gradeable.filter((context) => !context.response);
+	const llmGradeable = gradeable.filter(
+		(context) => !deterministicResults.has(context.question.id)
+	);
 
 	if (llmGradeable.length > 0) {
 		try {
@@ -1103,9 +1242,11 @@ export async function gradeExperimentQuestionAnswers({
 			configureLlmProcessEnv(platformEnv);
 			onDelta?.({ type: 'status', phase: 'calling' });
 			const { streamText } = await import('@ljoukov/llm');
+			const prompt = buildPrompt(llmGradeable, answers);
+			if (includeDebugPrompt) debugPrompt = prompt;
 			const call = streamText({
 				model: gradingModel(),
-				input: buildPrompt(llmGradeable, answers),
+				input: prompt,
 				thinkingLevel: thinkingLevel(),
 				signal,
 				telemetry: false
@@ -1193,6 +1334,7 @@ export async function gradeExperimentQuestionAnswers({
 		model: modelName,
 		modelVersion,
 		totals,
-		results
+		results,
+		...(debugPrompt ? { debugPrompt } : {})
 	};
 }
