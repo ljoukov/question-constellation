@@ -297,6 +297,64 @@ Do not store a raw mark-scheme row such as `01.1 B 1 AO1` as a model answer. For
 questions, the model answer column should normally be empty; the answer key and mark scheme carry
 the grading evidence.
 
+Every fixed-response key should be student-checkable:
+
+- Matching questions must store one key per left-side item and include any combined scoring rule in
+  `metadata_json`, for example `2 marks for all three correct links; 1 mark for one or two correct
+links`.
+- Choice tables must store the selected row in exactly the same serialized form emitted by the UI,
+  for example `Vacuole | Ribosome | Cell wall`.
+- Numeric entries must store acceptable aliases and unit/tolerance notes in `aliases_json` and
+  `metadata_json`; do not rely on exact string matching when scientific notation, Unicode minus
+  signs, or units may vary.
+- If the paper asks for more than one fixed written field, the render overlay must expose each field.
+  Do not render a formula-plus-equation answer as a single `number-line`.
+
+### Grading Evidence Audit
+
+A paper import is incomplete until every published atomic question has at least one usable grading
+evidence source:
+
+- positive mark-scheme items,
+- student-facing checklist items,
+- a clean stored model answer for written-response questions,
+- structured fixed-response answer keys, or
+- reviewed answer-chain evidence.
+
+Do not ship a paper with a fallback message such as "missing mark-scheme evidence". Missing rows must
+be repaired from the official mark scheme, or the question must be held out of the public experiment.
+
+Run a database audit after every import or repair. For the current experiment papers, use the same
+shape as:
+
+```sql
+SELECT q.source_document_id, q.source_question_ref, q.id, q.marks,
+       COALESCE(json_extract(qro.render_json, '$.response.kind'), 'missing') AS response_kind,
+       COUNT(DISTINCT m.id) AS mark_rows,
+       COUNT(DISTINCT c.id) AS checklist_rows,
+       COUNT(DISTINCT ma.id) AS model_answers,
+       COUNT(DISTINCT k.id) AS answer_keys
+FROM questions q
+LEFT JOIN question_rendering_overlays qro ON qro.question_id = q.id
+LEFT JOIN mark_scheme_items m ON m.question_id = q.id
+LEFT JOIN mark_checklist_items c ON c.question_id = q.id
+LEFT JOIN model_answers ma ON ma.question_id = q.id
+LEFT JOIN question_response_answer_keys k ON k.question_id = q.id
+WHERE q.source_document_id IN (
+  'aqa-8464b1h-qp-jun18',
+  'aqa-8464p1h-qp-jun18',
+  'aqa-8464b1h-qp-jun19',
+  'aqa-8464c1h-qp-nov21'
+)
+GROUP BY q.id
+ORDER BY q.source_document_id, q.display_order;
+```
+
+Treat any row with zero `mark_rows`, zero `checklist_rows`, zero `model_answers`, and zero
+`answer_keys` as a blocking import defect. For fixed-response rows, also inspect that the answer-key
+targets match the UI serialization. For written-response rows, inspect the stored model answer as a
+human would; heuristic checks alone are not enough.
+
 ### Paper Import Workflow For Codex Agents
 
 Use this checklist when importing another full paper into D1:
@@ -314,10 +372,13 @@ Use this checklist when importing another full paper into D1:
 6. Derive answer chains only when the marks depend on reusable reasoning, not for pure recall or
    single-step key selection.
 7. Import to D1, then run validation queries for question counts, render-overlay coverage,
-   mark-scheme coverage, model-answer coverage, and fixed-response answer-key coverage.
+   mark-scheme coverage, model-answer coverage, fixed-response answer-key coverage, and zero
+   published questions with no usable grading evidence.
 8. Open `/experiments/questions/<paper>` and a sample of single-question routes on desktop and
    mobile; inspect the rendered paper against the source and submit representative written and
    fixed-response answers through the real grading endpoint.
+9. For any route that returns missing-evidence feedback, repair the D1 evidence from the official
+   source or remove the question from the published experiment before handing the import off.
 
 For extraction agents that generate import JSON, include this instruction in the task prompt:
 

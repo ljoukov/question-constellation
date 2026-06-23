@@ -49,7 +49,7 @@
 			<p class="source-note">{paper.source}</p>
 		</header>
 
-		{#each paper.questions as question}
+		{#each paper.questions as question (question.ref)}
 			<section class="main-question" aria-labelledby={`question-${question.ref}`}>
 				<div class="exam-question-row exam-main-row">
 					<div class="exam-number-cell">
@@ -57,18 +57,18 @@
 					</div>
 					<div class="exam-question-body">
 						<h2 id={`question-${question.ref}`} class="sr-only">Question {question.ref}</h2>
-						{#each question.blocks as block}
+						{#each question.blocks as block (block)}
 							<BlockRenderer {block} assets={paper.assets} />
 						{/each}
 					</div>
 				</div>
 
-				{#each question.parts as part}
+				{#each question.parts as part (part.ref)}
 					{#if part.leadBlocks?.length}
 						<div class="exam-question-row exam-lead-row">
 							<div class="exam-number-cell"></div>
 							<div class="exam-question-body">
-								{#each part.leadBlocks as block}
+								{#each part.leadBlocks as block (block)}
 									<BlockRenderer {block} assets={paper.assets} />
 								{/each}
 							</div>
@@ -79,7 +79,7 @@
 							<QuestionNumber ref={part.ref} />
 						</div>
 						<div class="exam-question-body">
-							{#each part.blocks as block}
+							{#each part.blocks as block (block)}
 								<BlockRenderer {block} assets={paper.assets} />
 							{/each}
 							<p class="marks">[{part.marks} {part.marks === 1 ? 'mark' : 'marks'}]</p>
@@ -120,7 +120,7 @@
 											class="grade-mark-list"
 											aria-label={`Mark breakdown for question ${part.ref}`}
 										>
-											{#each grade.checklist as item}
+											{#each grade.checklist as item (item.id)}
 												<li class={item.verdict}>
 													<span class="grade-mark-icon" aria-hidden="true">
 														{#if item.verdict === 'credited'}
@@ -152,7 +152,7 @@
 							{/if}
 							{#if part.afterResponseBlocks?.length}
 								<div class="after-response-blocks">
-									{#each part.afterResponseBlocks as block}
+									{#each part.afterResponseBlocks as block (block)}
 										<BlockRenderer {block} assets={paper.assets} />
 									{/each}
 								</div>
@@ -555,6 +555,18 @@
 
 		.exam-number-cell {
 			padding-top: 0;
+		}
+
+		.experiment-grade-card {
+			margin-right: 0.15rem;
+			padding-right: 0.85rem;
+		}
+
+		.grade-close-button {
+			top: -0.72rem;
+			right: -0.32rem;
+			width: 1.8rem;
+			height: 1.8rem;
 		}
 	}
 </style>

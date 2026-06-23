@@ -1,5 +1,98 @@
 [
 	{
+		"name": "biology-2018-01-1-matching-full",
+		"paperSlug": "aqa-8464b1h-jun18",
+		"ref": "01.1",
+		"answers": {
+			"01.1": "Nucleus -> Eukaryotic cells\nPermanent vacuole -> Plant cells only\nPlasmid -> Prokaryotic cells"
+		},
+		"model": "llm",
+		"totals": {
+			"awardedMarks": 2,
+			"maxMarks": 2,
+			"gradeableMarks": 2,
+			"ungradedMarks": 0
+		},
+		"result": "correct",
+		"modelAnswerIncludes": [],
+		"promptIncludes": [
+			"STRUCTURED_ANSWER_KEYS",
+			"Nucleus",
+			"Eukaryotic cells",
+			"Permanent vacuole",
+			"Plant cells only",
+			"Plasmid",
+			"Prokaryotic cells"
+		],
+		"responseTextIncludes": [
+			"Nucleus",
+			"eukaryotic",
+			"Permanent vacuole",
+			"plant",
+			"Plasmid",
+			"prokaryotic"
+		],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["correct"]
+			}
+		],
+		"forbidText": [
+			"missing the mark-scheme evidence",
+			"printed mark scheme",
+			"expected marking point",
+			"credit is given",
+			"no credit awarded",
+			"your answer",
+			"you should",
+			"AO1",
+			"AO2",
+			"AO3"
+		]
+	},
+	{
+		"name": "biology-2018-01-2-choice-table-full",
+		"paperSlug": "aqa-8464b1h-jun18",
+		"ref": "01.2",
+		"answers": {
+			"01.2": "Vacuole | Ribosome | Cell wall"
+		},
+		"model": "llm",
+		"totals": {
+			"awardedMarks": 1,
+			"maxMarks": 1,
+			"gradeableMarks": 1,
+			"ungradedMarks": 0
+		},
+		"result": "correct",
+		"checklistLength": 1,
+		"modelAnswerIncludes": [],
+		"promptIncludes": [
+			"STRUCTURED_ANSWER_KEYS",
+			"Vacuole | Ribosome | Cell wall",
+			"RESPONSE_FORMAT"
+		],
+		"checklist": [
+			{
+				"verdict": "credited",
+				"textIncludes": ["vacuole", "ribosome", "cell wall"]
+			}
+		],
+		"forbidText": [
+			"missing the mark-scheme evidence",
+			"printed mark scheme",
+			"expected marking point",
+			"credit is given",
+			"no credit awarded",
+			"your answer",
+			"you should",
+			"AO1",
+			"AO2",
+			"AO3"
+		]
+	},
+	{
 		"name": "physics-04-2-choice-full",
 		"paperSlug": "aqa-8464p1h-jun18",
 		"ref": "04.2",

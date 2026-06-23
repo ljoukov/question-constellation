@@ -215,6 +215,16 @@ function assertForbiddenText(testCase, response) {
 	}
 }
 
+function assertResponseText(testCase, response) {
+	const expectedFragments = testCase.responseTextIncludes ?? [];
+	if (expectedFragments.length === 0) return;
+	const text = flattenText(response.results);
+	assert(
+		includesAll(text, expectedFragments),
+		`${testCase.name}: response text did not contain ${expectedFragments.join(', ')}. Got ${text}`
+	);
+}
+
 function assertPrompt(testCase, response) {
 	const expectedFragments = testCase.promptIncludes ?? [];
 	if (expectedFragments.length === 0 && !printPrompts) return;
@@ -265,6 +275,7 @@ async function assertStreaming(testCase, url) {
 	assertChecklist(testCase, result);
 	assertModelAnswer(testCase, result);
 	assertForbiddenText(testCase, response);
+	assertResponseText(testCase, response);
 	console.log(`PASS ${testCase.name} stream: ${phases.join(' -> ')}`);
 }
 
@@ -289,6 +300,7 @@ async function runCase(testCase) {
 	assertChecklist(testCase, result);
 	assertModelAnswer(testCase, result);
 	assertForbiddenText(testCase, response);
+	assertResponseText(testCase, response);
 	await assertStreaming(testCase, url);
 
 	console.log(

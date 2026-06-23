@@ -11,6 +11,7 @@
 		"extract:aqa": "node scripts/extract-aqa-data.mjs",
 		"import:chained": "node scripts/import-chained-questions.mjs",
 		"backfill:model-answers": "node scripts/backfill-experiment-model-answers.mjs",
+		"repair:experiment-grading": "node scripts/repair-experiment-grading-evidence.mjs",
 		"upload:r2-images": "node scripts/upload-r2-images.mjs",
 		"deploy": "wrangler deploy",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",

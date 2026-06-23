@@ -79,15 +79,19 @@ type ChainStepRow = {
 };
 
 type ResponseAnswerKeyRow = {
+	response_kind: string;
 	target_id: string;
 	correct_answer: string;
 	display_order: number;
+	aliases_json: string;
+	metadata_json: string;
 };
 
 type GradeableQuestionContext = {
 	question: QuestionRow;
 	response: FixedResponse | null;
 	responsePromptDetails: string | null;
+	answerKeys: ResponseAnswerKeyRow[];
 	markScheme: MarkSchemeRow[];
 	checklist: ChecklistRow[];
 	modelAnswer: string | null;
@@ -141,6 +145,11 @@ type FixedResponse =
 			label: string;
 			prefix: string | null;
 			unit: string | null;
+	  }
+	| {
+			kind: 'labeled-lines';
+			labels: string[];
+			lineCount: number | null;
 	  };
 
 type ModelGradePayload = {
@@ -364,6 +373,14 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 		};
 	}
 
+	if (value.kind === 'labeled-lines' && Array.isArray(value.labels)) {
+		return {
+			kind: 'labeled-lines',
+			labels: value.labels.filter((label): label is string => typeof label === 'string'),
+			lineCount: typeof value.lineCount === 'number' ? value.lineCount : null
+		};
+	}
+
 	return null;
 }
 
@@ -445,6 +462,13 @@ function responsePromptDetails(response: FixedResponse | null) {
 			.filter(Boolean)
 			.join('\n');
 	}
+	if (response.kind === 'labeled-lines') {
+		return [
+			'The learner fills labelled written answer fields.',
+			'Fields:',
+			...response.labels.map((label) => `- ${label}`)
+		].join('\n');
+	}
 	return [
 		'The learner places labels on image targets.',
 		'Targets:',
@@ -466,13 +490,15 @@ function estimateGradeableMarks({
 	markScheme,
 	checklist,
 	modelAnswer,
-	chain
+	chain,
+	answerKeys
 }: {
 	maxMarks: number;
 	markScheme: MarkSchemeRow[];
 	checklist: ChecklistRow[];
 	modelAnswer: string | null;
 	chain: GradeableQuestionContext['chain'];
+	answerKeys: ResponseAnswerKeyRow[];
 }) {
 	if (maxMarks <= 0) return 0;
 
@@ -490,6 +516,10 @@ function estimateGradeableMarks({
 	if (markScheme.length > 0) {
 		const explicitMarkTotal = markScheme.reduce((sum, item) => sum + (item.marks ?? 0), 0);
 		evidenceMarks = Math.max(evidenceMarks, explicitMarkTotal || markScheme.length);
+	}
+
+	if (answerKeys.length > 0) {
+		evidenceMarks = Math.max(evidenceMarks, maxMarks);
 	}
 
 	return Math.min(maxMarks, evidenceMarks);
@@ -552,7 +582,7 @@ async function getQuestionEvidence(questionId: string) {
 				[questionId]
 			),
 			queryRows<ResponseAnswerKeyRow>(
-				`SELECT target_id, correct_answer, display_order
+				`SELECT response_kind, target_id, correct_answer, display_order, aliases_json, metadata_json
 			 FROM question_response_answer_keys
 			 WHERE question_id = ?
 			 ORDER BY display_order, target_id`,
@@ -663,7 +693,8 @@ async function getGradeContexts(
 							markScheme: evidence.markScheme,
 							checklist: evidence.checklist,
 							modelAnswer: evidence.modelAnswer,
-							chain: evidence.chain
+							chain: evidence.chain,
+							answerKeys: evidence.responseAnswerKeys
 						})
 				: 0;
 
@@ -677,6 +708,7 @@ async function getGradeContexts(
 				question,
 				response,
 				responsePromptDetails: responsePromptDetails(response),
+				answerKeys: evidence.responseAnswerKeys,
 				markScheme: evidence.markScheme,
 				checklist: evidence.checklist,
 				modelAnswer: evidence.modelAnswer,
@@ -689,8 +721,26 @@ async function getGradeContexts(
 	);
 }
 
+function structuredAnswerKeyPromptDetails(rows: ResponseAnswerKeyRow[]) {
+	if (rows.length === 0) return null;
+	return rows
+		.map((row) => {
+			const aliases = parseJson<string[]>(row.aliases_json, []).filter(Boolean);
+			const metadata = parseJson<Record<string, unknown>>(row.metadata_json, {});
+			const parts = [
+				`target=${row.target_id}`,
+				`correct=${row.correct_answer}`,
+				aliases.length ? `aliases=${aliases.join(' | ')}` : null,
+				Object.keys(metadata).length ? `notes=${JSON.stringify(metadata)}` : null
+			].filter(Boolean);
+			return `- ${parts.join('; ')}`;
+		})
+		.join('\n');
+}
+
 function contextPrompt(context: GradeableQuestionContext) {
 	const q = context.question;
+	const answerKeyDetails = structuredAnswerKeyPromptDetails(context.answerKeys);
 	const lines = [
 		`REF: ${q.source_question_ref}`,
 		`QUESTION_ID: ${q.id}`,
@@ -701,7 +751,8 @@ function contextPrompt(context: GradeableQuestionContext) {
 		`PAPER: ${q.board ?? 'AQA'} ${q.qualification ?? 'GCSE'} ${q.subject ?? 'Combined Science'} ${q.tier ?? 'Higher'} ${q.paper ?? ''} ${q.series ?? ''}`,
 		q.context_text ? `CONTEXT:\n${q.context_text}` : null,
 		`PROMPT:\n${q.self_contained_prompt_text ?? q.prompt_text}`,
-		context.responsePromptDetails ? `RESPONSE_FORMAT:\n${context.responsePromptDetails}` : null
+		context.responsePromptDetails ? `RESPONSE_FORMAT:\n${context.responsePromptDetails}` : null,
+		answerKeyDetails ? `STRUCTURED_ANSWER_KEYS:\n${answerKeyDetails}` : null
 	].filter(Boolean);
 
 	if (context.markScheme.length) {
@@ -749,7 +800,7 @@ function contextPrompt(context: GradeableQuestionContext) {
 function buildPrompt(contexts: GradeableQuestionContext[], answers: Record<string, string>) {
 	return [
 		'You are grading GCSE Combined Science answers for Question Constellation.',
-		'Grade only from the supplied D1 mark scheme, checklist, model answer, and answer-chain evidence.',
+		'Grade only from the supplied D1 mark scheme, checklist, model answer, structured answer keys, and answer-chain evidence.',
 		'Never award more than GRADEABLE_MARKS_FROM_SUPPLIED_EVIDENCE for a question.',
 		'Do not use generic textbook expectations unless they are needed to interpret a supplied marking point.',
 		'Award credit for scientifically equivalent wording, but do not credit missing causal links.',
@@ -764,13 +815,15 @@ function buildPrompt(contexts: GradeableQuestionContext[], answers: Record<strin
 		'Checklist item text must be a clean marking point, without question numbers, AO codes, spec codes, or examiner notation.',
 		'Checklist explanations should be short plain-English reasons, at most one sentence.',
 		'For selected-response questions, use RESPONSE_FORMAT to understand what the submitted answer means.',
+		'For fixed-response questions, STRUCTURED_ANSWER_KEYS are source-grounded correct answers. Use aliases and notes when supplied.',
+		'If the number of structured answer keys differs from the marks, return one readable row per answer key when that is clearer, but awardedMarks must follow the mark scheme.',
 		'If a mark-scheme item is only a letter such as A, B, C, or D, grade by the selected option exactly. Do not invent a scientific explanation for a letter-only key; a checklist row such as "Correct option: B" is enough.',
 		'',
 		'Return valid JSON only. No Markdown fences.',
 		'Shape:',
 		'{ "results": [ { "ref": string, "questionId": string, "result": "correct|partial|incorrect", "awardedMarks": number, "confidence": "high|medium|low", "summary": string, "nextStep": string, "checklist": [ { "id": string, "text": string, "verdict": "credited|missed|uncertain", "explanation": string } ], "chainSteps": [ { "id": string, "verdict": "credited|missed|uncertain", "explanation": string } ] } ] }',
 		'For 2-mark explanation questions, checklist should contain two short rows: the gained marking point and the missing marking point.',
-		'awardedMarks must equal the count of credited checklist rows unless the supplied mark scheme explicitly says otherwise.',
+		'awardedMarks must equal the count of credited checklist rows unless the supplied mark scheme explicitly says otherwise or fixed-response keys combine into fewer marks.',
 		'',
 		'QUESTIONS:',
 		contexts.map(contextPrompt).join('\n\n---\n\n'),
@@ -901,8 +954,9 @@ function completeChecklistRows({
 	gradeableMarks: number;
 	nextStep: string;
 }): GradeChecklistItem[] {
-	const cleanedRows = rows.filter((row) => row.text.trim()).slice(0, gradeableMarks);
-	const modelRows = modelAnswerMarkRows(context.modelAnswer, gradeableMarks);
+	const expectedRowCount = Math.max(gradeableMarks, context.answerKeys.length);
+	const cleanedRows = rows.filter((row) => row.text.trim()).slice(0, expectedRowCount);
+	const modelRows = modelAnswerMarkRows(context.modelAnswer, expectedRowCount);
 	if (modelRows.length < gradeableMarks) return cleanedRows;
 
 	const usedRows = new Set<number>();
@@ -937,8 +991,8 @@ function completeChecklistRows({
 		};
 	});
 
-	const targetCredited = Math.min(awardedMarks, gradeableMarks);
-	const targetMissed = Math.max(0, gradeableMarks - targetCredited);
+	const targetCredited = Math.min(awardedMarks, expectedRowCount);
+	const targetMissed = Math.max(0, expectedRowCount - targetCredited);
 	let credited = provisional.filter((row) => row.verdict === 'credited').length;
 	let missed = provisional.filter((row) => row.verdict === 'missed').length;
 

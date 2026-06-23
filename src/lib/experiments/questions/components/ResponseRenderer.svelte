@@ -290,7 +290,7 @@
 	></textarea>
 {:else if response.kind === 'labeled-lines'}
 	<div class="labeled-lines">
-		{#each response.labels as label}
+		{#each response.labels as label (label)}
 			<label
 				class="labeled-line"
 				class:multiline={Boolean(response.lineCount && response.lineCount > 1)}
@@ -339,7 +339,7 @@
 		role="radiogroup"
 		aria-label="Multiple choice options"
 	>
-		{#each response.options as option, index}
+		{#each response.options as option, index (`${option}-${index}`)}
 			<button
 				type="button"
 				class="choice-row"
@@ -362,7 +362,7 @@
 		aria-label="Tick one table row"
 		style={`grid-template-columns: repeat(${response.columns.length}, minmax(0, 1fr)) var(--choice-table-gap) var(--choice-table-tick-width)`}
 	>
-		{#each response.columns as column, columnIndex}
+		{#each response.columns as column, columnIndex (`${column}-${columnIndex}`)}
 			<div
 				class="choice-grid-cell choice-grid-heading"
 				class:first-column={columnIndex === 0}
@@ -371,8 +371,8 @@
 				<MathText text={column} />
 			</div>
 		{/each}
-		{#each response.rows as row, rowIndex}
-			{#each row as cell, columnIndex}
+		{#each response.rows as row, rowIndex (rowIndex)}
+			{#each row as cell, columnIndex (`${rowIndex}-${columnIndex}`)}
 				<div
 					class="choice-grid-cell choice-grid-data"
 					class:first-column={columnIndex === 0}
@@ -411,7 +411,7 @@
 					preserveAspectRatio="none"
 					aria-hidden="true"
 				>
-					{#each response.left as left, leftIndex}
+					{#each response.left as left, leftIndex (`line-${left}-${leftIndex}`)}
 						{@const right = matchingAnswers[left]}
 						{@const rightIndex = response.right.indexOf(right)}
 						{#if rightIndex >= 0}
@@ -419,7 +419,7 @@
 						{/if}
 					{/each}
 				</svg>
-				{#each response.left as left, leftIndex}
+				{#each response.left as left, leftIndex (`end-${left}-${leftIndex}`)}
 					{@const right = matchingAnswers[left]}
 					{@const rightIndex = response.right.indexOf(right)}
 					{#if rightIndex >= 0}
@@ -440,7 +440,7 @@
 					{/if}
 				{/each}
 			</div>
-			{#each response.left as left, rowIndex}
+			{#each response.left as left, rowIndex (`left-${left}-${rowIndex}`)}
 				<button
 					type="button"
 					class="match-option match-option-left"
@@ -456,7 +456,7 @@
 					<MathText text={left} />
 				</button>
 			{/each}
-			{#each response.right as right, rowIndex}
+			{#each response.right as right, rowIndex (`right-${right}-${rowIndex}`)}
 				{@const matchedLeft = leftForRight(right)}
 				<button
 					type="button"
@@ -480,7 +480,7 @@
 	{#if asset}
 		{#if response.labelBank?.length}
 			<div class="graphic-label-bank" aria-label="Label choices">
-				{#each response.labelBank as label}
+				{#each response.labelBank as label (label)}
 					<button
 						type="button"
 						class="graphic-label-chip"
@@ -506,7 +506,7 @@
 	{/if}
 {:else if response.kind === 'equation-blanks'}
 	<div class="equation-blanks" aria-label="Equation answer">
-		{#each response.segments as segment}
+		{#each response.segments as segment, index (segment.kind === 'blank' ? segment.id : `${segment.kind}-${index}`)}
 			{#if segment.kind === 'blank'}
 				<input
 					class="equation-blank-input"
@@ -527,7 +527,7 @@
 	{#if asset}
 		<div class="graphic-label-response">
 			<div class="graphic-label-bank" aria-label="Label choices">
-				{#each response.labels as label}
+				{#each response.labels as label (label)}
 					<button
 						type="button"
 						class="graphic-label-chip"
@@ -547,7 +547,7 @@
 				<figcaption>{asset.label}</figcaption>
 				<div class="graphic-label-image-wrap">
 					<img src={asset.src} alt={asset.alt} />
-					{#each response.zones as zone}
+					{#each response.zones as zone (zone.id)}
 						<button
 							type="button"
 							class="graphic-label-zone"
@@ -1088,13 +1088,19 @@
 		}
 
 		.matching-connectors {
-			--match-connector-width: 3.35rem;
-			--match-row-step: 3.75rem;
+			--match-connector-width: 2.7rem;
+			--match-row-step: 3.35rem;
+			--match-option-height: 2.25rem;
 			font-size: 0.86em;
 		}
 
 		.matching-connectors-heading {
-			font-size: 0.92em;
+			font-size: 0.82em;
+			line-height: 1.25;
+		}
+
+		.match-option {
+			padding: 0.28rem 0.32rem;
 		}
 
 		.match-end {

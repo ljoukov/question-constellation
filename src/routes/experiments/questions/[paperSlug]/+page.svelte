@@ -10,13 +10,11 @@
 			paper: ExamPaperData;
 		};
 	} = $props();
-
-	const basePath = $derived(`/experiments/questions/${data.paper.id}`);
 </script>
 
 <svelte:head>
 	<title>{data.paper.title} | Question rendering experiment</title>
 </svelte:head>
 
-<QuestionExperimentToolbar paper={data.paper} {basePath} />
+<QuestionExperimentToolbar paper={data.paper} />
 <ExamPaper paper={data.paper} />

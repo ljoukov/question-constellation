@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExamPaper from '$lib/experiments/questions/components/ExamPaper.svelte';
 	import QuestionExperimentToolbar from '$lib/experiments/questions/components/QuestionExperimentToolbar.svelte';
+	import { resolve } from '$app/paths';
 	import { focusPaperByRef } from '$lib/experiments/questions/paperUtils';
 	import type {
 		ExperimentGradeResponse,
@@ -19,7 +20,6 @@
 		};
 	} = $props();
 
-	const basePath = $derived(`/experiments/questions/${data.paper.id}`);
 	let answers = $state<Record<string, string>>({});
 	let submitPhase = $state<SubmitPhase>('idle');
 	let submitError = $state('');
@@ -171,7 +171,7 @@
 	<title>{data.paper.title} {data.ref} | Question rendering experiment</title>
 </svelte:head>
 
-<QuestionExperimentToolbar paper={data.paper} {basePath} currentRef={data.ref} />
+<QuestionExperimentToolbar paper={data.paper} currentRef={data.ref} />
 
 {#if focusedPaper}
 	<ExamPaper
@@ -189,7 +189,9 @@
 {:else}
 	<main class="missing-question">
 		<h1>Question not found</h1>
-		<a href={basePath}>Back to paper</a>
+		<a href={resolve('/experiments/questions/[paperSlug]', { paperSlug: data.paper.id })}
+			>Back to paper</a
+		>
 	</main>
 {/if}
 

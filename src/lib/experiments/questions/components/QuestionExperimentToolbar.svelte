@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { questionRefs } from '../paperUtils';
 	import type { ExamPaper } from '../types';
 
 	let {
 		paper,
-		basePath,
 		currentRef = ''
 	}: {
 		paper: ExamPaper;
-		basePath: string;
 		currentRef?: string;
 	} = $props();
 
@@ -17,17 +16,24 @@
 
 	function openRef(event: Event) {
 		const value = (event.currentTarget as HTMLSelectElement).value;
-		void goto(value ? `${basePath}/${encodeURIComponent(value)}` : basePath);
+		void goto(
+			value
+				? resolve('/experiments/questions/[paperSlug]/[ref]', { paperSlug: paper.id, ref: value })
+				: resolve('/experiments/questions/[paperSlug]', { paperSlug: paper.id })
+		);
 	}
 </script>
 
 <nav class="experiment-toolbar" aria-label="Question experiment views">
-	<a href={basePath} aria-current={currentRef ? undefined : 'page'}>Full paper</a>
+	<a
+		href={resolve('/experiments/questions/[paperSlug]', { paperSlug: paper.id })}
+		aria-current={currentRef ? undefined : 'page'}>Full paper</a
+	>
 	<label>
 		<span>Single question</span>
 		<select onchange={openRef} value={currentRef}>
 			<option value="">Choose</option>
-			{#each refs as ref}
+			{#each refs as ref (ref)}
 				<option value={ref}>{ref}</option>
 			{/each}
 		</select>
@@ -93,7 +99,7 @@
 		}
 
 		select {
-			max-width: 12rem;
+			max-width: min(8rem, 45vw);
 		}
 	}
 </style>
