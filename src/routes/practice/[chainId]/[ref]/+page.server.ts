@@ -1,10 +1,10 @@
-import { getLearningChain, getQuestionTeaser } from '$lib/learningChains';
+import { getExplorableLearningChain, getQuestionTeaser } from '$lib/server/learningChainData';
 import { getQuestionExperimentPaper } from '$lib/server/questionExperimentData';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const chain = getLearningChain(params.chainId);
+	const chain = await getExplorableLearningChain(params.chainId);
 	if (!chain) {
 		throw error(404, 'Question chain not found.');
 	}
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		chain,
-		initialRef: question.ref,
-		paper: await getQuestionExperimentPaper(chain.paperSlug)
+		initialRef: question.sourceRef ?? question.ref,
+		paper: await getQuestionExperimentPaper(question.paperSlug ?? chain.paperSlug)
 	};
 };

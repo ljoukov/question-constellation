@@ -27,6 +27,13 @@
 
 	const firstQuestion = $derived(chain.questions[0]!);
 	const chainHref = $derived(resolve('/chains/[chainId]', { chainId: chain.id }));
+	const questionRoute = (question: LearningChain['questions'][number]) =>
+		resolve('/practice/[chainId]/[ref]', {
+			chainId: chain.id,
+			ref: question.id ?? question.ref
+		});
+	const questionSourceRef = (question: LearningChain['questions'][number]) =>
+		question.sourceRef ?? question.ref;
 
 	let selectedRef = $state('');
 	let answers = $state<Record<string, string>>({});
@@ -37,12 +44,12 @@
 	let patternOpen = $state(false);
 
 	const activeQuestion = $derived(
-		chain.questions.find((question) => question.ref === selectedRef) ?? firstQuestion
+		chain.questions.find((question) => questionSourceRef(question) === selectedRef) ?? firstQuestion
 	);
 	const selectedIndex = $derived(
 		Math.max(
 			0,
-			chain.questions.findIndex((question) => question.ref === selectedRef)
+			chain.questions.findIndex((question) => questionSourceRef(question) === selectedRef)
 		)
 	);
 	const nextQuestion = $derived(
@@ -89,16 +96,6 @@
 	$effect(() => {
 		if (!selectedRef) selectedRef = initialRef;
 	});
-
-	function selectQuestion(ref: string) {
-		selectedRef = ref;
-		answers = {};
-		submitPhase = 'idle';
-		submitError = '';
-		gradeResponse = null;
-		hintOpen = false;
-		patternOpen = false;
-	}
 
 	function setAnswer(ref: string, answer: string) {
 		answers = { ...answers, [ref]: answer };
@@ -226,17 +223,16 @@
 			<h1>{chain.title}</h1>
 
 			<nav class="qc-real-chain-list" aria-label="Related questions">
-				{#each chain.questions as question, index (question.ref)}
-					<button
-						type="button"
-						class:active={question.ref === selectedRef}
-						aria-current={question.ref === selectedRef ? 'page' : undefined}
-						onclick={() => selectQuestion(question.ref)}
+				{#each chain.questions as question, index (question.id ?? question.ref)}
+					<a
+						href={questionRoute(question)}
+						class:active={questionSourceRef(question) === selectedRef}
+						aria-current={questionSourceRef(question) === selectedRef ? 'page' : undefined}
 					>
 						<span>{index + 1}</span>
 						<span>{question.title}</span>
 						<small>{question.label} · {question.marks ?? '?'} marks</small>
-					</button>
+					</a>
 				{/each}
 			</nav>
 
@@ -294,10 +290,10 @@
 				/>
 			{/if}
 
-			{#if hasGrade && nextQuestion && nextQuestion.ref !== selectedRef}
+			{#if hasGrade && nextQuestion && questionSourceRef(nextQuestion) !== selectedRef}
 				<div class="qc-real-next">
 					<span>Next related question: {nextQuestion.title}</span>
-					<button type="button" onclick={() => selectQuestion(nextQuestion.ref)}>Continue</button>
+					<a href={questionRoute(nextQuestion)}>Continue</a>
 				</div>
 			{/if}
 		</section>

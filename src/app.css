@@ -1788,6 +1788,14 @@ textarea::placeholder {
 	line-height: 1.2;
 }
 
+.qc-browse-heading p {
+	margin: 0;
+	color: #526778;
+	font-size: 0.9rem;
+	font-weight: 400;
+	line-height: 1.35;
+}
+
 .qc-browse-chain {
 	display: grid;
 	gap: 0.95rem;
@@ -1997,6 +2005,7 @@ textarea::placeholder {
 	margin-top: 0.25rem;
 }
 
+.qc-real-chain-list a,
 .qc-real-chain-list button {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr);
@@ -2010,16 +2019,19 @@ textarea::placeholder {
 	border-radius: 0.74rem;
 	background: rgba(255, 255, 255, 0.74);
 	color: #17283a;
+	text-decoration: none;
 	text-align: left;
 	box-shadow: 0 8px 18px rgba(18, 47, 57, 0.035);
 	cursor: pointer;
 }
 
+.qc-real-chain-list a.active,
 .qc-real-chain-list button.active {
 	border-color: rgba(22, 132, 88, 0.72);
 	background: rgba(237, 250, 243, 0.92);
 }
 
+.qc-real-chain-list a > span:first-child,
 .qc-real-chain-list button > span:first-child {
 	grid-row: 1 / 3;
 	display: inline-grid;
@@ -2033,23 +2045,28 @@ textarea::placeholder {
 	font-weight: 560;
 }
 
+.qc-real-chain-list a.active > span:first-child,
 .qc-real-chain-list button.active > span:first-child {
 	background: var(--qc-real-green);
 	color: #ffffff;
 }
 
+.qc-real-chain-list a > span:nth-child(2),
 .qc-real-chain-list button > span:nth-child(2),
+.qc-real-chain-list a small,
 .qc-real-chain-list button small {
 	grid-column: 2;
 	min-width: 0;
 }
 
+.qc-real-chain-list a > span:nth-child(2),
 .qc-real-chain-list button > span:nth-child(2) {
 	font-size: 0.96rem;
 	font-weight: 420;
 	line-height: 1.26;
 }
 
+.qc-real-chain-list a small,
 .qc-real-chain-list button small {
 	color: #6c7a88;
 	font-size: 0.76rem;
@@ -2442,6 +2459,7 @@ textarea::placeholder {
 		scroll-snap-type: x proximity;
 	}
 
+	.qc-real-chain-list a,
 	.qc-real-chain-list button {
 		flex: 0 0 min(82vw, 17rem);
 		scroll-snap-align: start;
@@ -4517,7 +4535,7 @@ textarea::placeholder {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
-	min-width: 7.1rem;
+	min-width: 8.25rem;
 	height: 2.3rem;
 	border: 1px solid rgba(22, 132, 88, 0.18);
 	border-radius: 999px;
@@ -4566,6 +4584,13 @@ textarea::placeholder {
 	cursor: pointer;
 }
 
+.qc-avatar-pixel,
+.qc-avatar-pixel svg {
+	display: block;
+	width: 1.8rem;
+	height: 1.8rem;
+}
+
 .qc-avatar-menu summary::-webkit-details-marker {
 	display: none;
 }
@@ -4574,23 +4599,63 @@ textarea::placeholder {
 	position: absolute;
 	top: calc(100% + 0.45rem);
 	right: 0;
-	width: 10rem;
-	padding: 0.45rem;
+	width: 13.25rem;
+	padding: 0.5rem;
 	border: 1px solid rgba(92, 118, 130, 0.22);
 	border-radius: 0.35rem;
 	background: #ffffff;
 	box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
 }
 
+.qc-avatar-menu:not([open]) .qc-avatar-popover {
+	display: none;
+}
+
+.qc-avatar-popover-title {
+	margin: 0 0 0.35rem;
+	padding: 0 0.15rem;
+	color: #526778;
+	font-size: 0.78rem;
+	font-weight: 440;
+	line-height: 1.25;
+}
+
+.qc-theme-options {
+	display: grid;
+	gap: 0.18rem;
+	padding-bottom: 0.45rem;
+	border-bottom: 1px solid rgba(92, 118, 130, 0.16);
+}
+
 .qc-avatar-popover button {
 	width: 100%;
 	padding: 0.55rem 0.65rem;
-	border: 1px solid #102033;
+	border: 1px solid transparent;
 	border-radius: 0;
 	background: #ffffff;
 	color: #102033;
+	font: inherit;
+	font-size: 0.88rem;
+	font-weight: 420;
 	text-align: left;
 	cursor: pointer;
+}
+
+.qc-theme-options button {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.qc-avatar-popover button:hover,
+.qc-avatar-popover button.active {
+	border-color: rgba(22, 132, 88, 0.22);
+	background: rgba(237, 250, 243, 0.92);
+}
+
+.qc-login-button {
+	margin-top: 0.45rem;
+	border-color: #102033 !important;
 }
 
 .qc-chain-back {
@@ -4750,6 +4815,20 @@ textarea::placeholder {
 	font-size: 0.8rem;
 }
 
+.qc-show-more-chains {
+	justify-self: start;
+	min-height: 2.35rem;
+	padding: 0.48rem 0.72rem;
+	border: 1px solid #102033;
+	border-radius: 0;
+	background: #ffffff;
+	color: #102033;
+	font: inherit;
+	font-size: 0.9rem;
+	font-weight: 430;
+	cursor: pointer;
+}
+
 .qc-thinking-chain {
 	border: 1px solid #102033;
 	border-radius: 0;
@@ -4782,17 +4861,24 @@ textarea::placeholder {
 
 .qc-chain-side .qc-thinking-chain li:not(:last-child)::after {
 	content: "↓";
-	top: calc(100% + 0.28rem);
-	left: 0.92rem;
-	transform: none;
+	top: 100%;
+	left: 1.3rem;
+	display: grid;
+	width: 1rem;
+	height: 1.05rem;
+	place-items: center;
+	transform: translateX(-50%);
 	background: none;
+	line-height: 1;
 }
 
+.qc-real-chain-list a,
 .qc-real-chain-list button {
 	border-radius: 0;
 	box-shadow: none;
 }
 
+.qc-real-chain-list a > span:first-child,
 .qc-real-chain-list button > span:first-child {
 	border-radius: 50%;
 }
@@ -4854,7 +4940,7 @@ textarea::placeholder {
 	}
 
 	.qc-topbar-subject {
-		min-width: 6.15rem;
+		min-width: 7.2rem;
 		height: 2.2rem;
 	}
 
@@ -4875,9 +4961,13 @@ textarea::placeholder {
 	.qc-browse-pattern li:not(:last-child)::after,
 	.qc-thinking-chain li:not(:last-child)::after {
 		content: "↓";
-		top: calc(100% + 0.28rem);
-		left: 0.82rem;
-		transform: none;
+		top: 100%;
+		left: 1.3rem;
+		display: grid;
+		width: 1rem;
+		height: 1.05rem;
+		place-items: center;
+		transform: translateX(-50%);
 	}
 
 	.qc-question-card-grid {
@@ -4908,12 +4998,238 @@ textarea::placeholder {
 	}
 
 	.qc-topbar-subject {
-		min-width: 5.7rem;
+		min-width: 6.8rem;
 	}
 
 	.qc-topbar-subject select {
 		padding-left: 0.72rem;
 	}
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	background: #020617;
+}
+
+html[data-theme='dark'],
+html[data-theme='dark'] body,
+html[data-theme='dark'] .app-shell {
+	background: #020617;
+}
+
+:root[data-theme='dark'] .qc-real-app {
+	--qc-real-ink: #eef6ff;
+	--qc-real-muted: #9fb2c7;
+	--qc-real-green: #56d894;
+	background:
+		linear-gradient(90deg, rgba(4, 18, 29, 0.96) 0, rgba(5, 25, 31, 0.92) 24rem),
+		#020617;
+	color: var(--qc-real-ink);
+}
+
+:root[data-theme='dark'] .qc-topbar {
+	border-bottom-color: rgba(148, 163, 184, 0.18);
+	background: rgba(2, 6, 23, 0.9);
+}
+
+:root[data-theme='dark'] .qc-topbar-brand,
+:root[data-theme='dark'] .qc-browse-intro h1,
+:root[data-theme='dark'] .qc-chain-side h1,
+:root[data-theme='dark'] .qc-real-rail h1,
+:root[data-theme='dark'] .qc-browse-heading h2,
+:root[data-theme='dark'] .qc-chain-heading h2,
+:root[data-theme='dark'] .qc-real-question-top h2 {
+	color: #eff6ff;
+}
+
+:root[data-theme='dark'] .qc-topbar-search,
+:root[data-theme='dark'] .qc-topbar-search-button,
+:root[data-theme='dark'] .qc-avatar-menu summary,
+:root[data-theme='dark'] .qc-avatar-popover {
+	border-color: rgba(148, 163, 184, 0.28);
+	background: #071426;
+	color: #d9e6f5;
+}
+
+:root[data-theme='dark'] .qc-topbar-search input {
+	color: #f8fafc;
+}
+
+:root[data-theme='dark'] .qc-topbar-search input::placeholder {
+	color: #8da2ba;
+}
+
+:root[data-theme='dark'] .qc-topbar-subject {
+	border-color: rgba(86, 216, 148, 0.28);
+	background: rgba(14, 83, 63, 0.42);
+	color: #b8f7d5;
+}
+
+:root[data-theme='dark'] .qc-avatar-popover-title,
+:root[data-theme='dark'] .qc-browse-intro p,
+:root[data-theme='dark'] .qc-browse-heading p,
+:root[data-theme='dark'] .qc-chain-side p,
+:root[data-theme='dark'] .qc-real-kicker,
+:root[data-theme='dark'] .qc-real-question-top p {
+	color: #a9bbcc;
+}
+
+:root[data-theme='dark'] .qc-theme-options {
+	border-bottom-color: rgba(148, 163, 184, 0.18);
+}
+
+:root[data-theme='dark'] .qc-avatar-popover button,
+:root[data-theme='dark'] .qc-chain-back {
+	background: #071426;
+	color: #f8fafc;
+}
+
+:root[data-theme='dark'] .qc-avatar-popover button:hover,
+:root[data-theme='dark'] .qc-avatar-popover button.active {
+	border-color: rgba(86, 216, 148, 0.32);
+	background: rgba(20, 83, 63, 0.42);
+}
+
+:root[data-theme='dark'] .qc-login-button {
+	border-color: rgba(226, 232, 240, 0.72) !important;
+}
+
+:root[data-theme='dark'] .qc-browse-intro,
+:root[data-theme='dark'] .qc-chain-side,
+:root[data-theme='dark'] .qc-real-rail {
+	border-color: rgba(148, 163, 184, 0.16);
+	background: rgba(7, 20, 31, 0.7);
+}
+
+:root[data-theme='dark'] .qc-real-link-button,
+:root[data-theme='dark'] .qc-real-quiet-link {
+	color: #98f0c5;
+}
+
+:root[data-theme='dark'] .qc-real-chain-list a,
+:root[data-theme='dark'] .qc-real-chain-list button {
+	border-color: rgba(148, 163, 184, 0.24);
+	background: #071426;
+	color: #eaf4ff;
+}
+
+:root[data-theme='dark'] .qc-real-chain-list a > span:first-child,
+:root[data-theme='dark'] .qc-real-chain-list button > span:first-child {
+	background: rgba(86, 216, 148, 0.12);
+	color: #b8f7d5;
+}
+
+:root[data-theme='dark'] .qc-real-chain-list a small,
+:root[data-theme='dark'] .qc-real-chain-list button small {
+	color: #9fb2c7;
+}
+
+:root[data-theme='dark'] .qc-real-chain-list a.active,
+:root[data-theme='dark'] .qc-real-chain-list button.active {
+	border-color: rgba(86, 216, 148, 0.86);
+	background: rgba(20, 83, 63, 0.42);
+}
+
+:root[data-theme='dark'] .qc-real-chain-list a.active > span:first-child,
+:root[data-theme='dark'] .qc-real-chain-list button.active > span:first-child {
+	background: #56d894;
+	color: #052d1c;
+}
+
+:root[data-theme='dark'] .qc-browse-chain,
+:root[data-theme='dark'] .qc-browse-pattern li,
+:root[data-theme='dark'] .qc-question-card,
+:root[data-theme='dark'] .qc-show-more-chains,
+:root[data-theme='dark'] .qc-thinking-chain,
+:root[data-theme='dark'] .qc-thinking-chain li,
+:root[data-theme='dark'] .qc-thinking-step-number {
+	border-color: #0b1020;
+	background: #ffffff;
+	color: #0b1020;
+}
+
+:root[data-theme='dark'] .qc-chain-title,
+:root[data-theme='dark'] .qc-question-title,
+:root[data-theme='dark'] .qc-thinking-chain header p,
+:root[data-theme='dark'] .qc-thinking-step-text {
+	color: #0b1020;
+}
+
+:root[data-theme='dark'] .qc-chain-topic,
+:root[data-theme='dark'] .qc-question-label,
+:root[data-theme='dark'] .qc-question-preview,
+:root[data-theme='dark'] .qc-question-meta,
+:root[data-theme='dark'] .qc-thinking-chain header span {
+	color: #405465;
+}
+
+:root[data-theme='dark'] .qc-real-main .question-experiment-page,
+:root[data-theme='dark'] .qc-real-main .question-experiment-page .paper-sheet {
+	background: #050505;
+	color: #f8f8f2;
+}
+
+:root[data-theme='dark'] .qc-real-main .paper-header,
+:root[data-theme='dark'] .qc-real-main .digit-box,
+:root[data-theme='dark'] .qc-real-main th,
+:root[data-theme='dark'] .qc-real-main td {
+	border-color: #f8f8f2;
+}
+
+:root[data-theme='dark'] .qc-real-main .digit-box,
+:root[data-theme='dark'] .qc-real-main table,
+:root[data-theme='dark'] .qc-real-main .exam-figure figcaption,
+:root[data-theme='dark'] .qc-real-main .exam-table-wrap figcaption,
+:root[data-theme='dark'] .qc-real-main .question-number {
+	background: #050505;
+	color: #f8f8f2;
+}
+
+:root[data-theme='dark'] .qc-real-main .lined-textarea {
+	color: #f8f8f2;
+	background-color: #050505;
+	background-image: repeating-linear-gradient(
+		to bottom,
+		transparent 0,
+		transparent calc(var(--line-height) - 1px),
+		rgba(248, 248, 242, 0.72) calc(var(--line-height) - 1px),
+		rgba(248, 248, 242, 0.72) var(--line-height)
+	);
+}
+
+:root[data-theme='dark'] .qc-real-main .line-input,
+:root[data-theme='dark'] .qc-real-main .choice-row,
+:root[data-theme='dark'] .qc-real-main .choice-grid-cell,
+:root[data-theme='dark'] .qc-real-main .table-tick-button,
+:root[data-theme='dark'] .qc-real-main .match-option,
+:root[data-theme='dark'] .qc-real-main .equation-blank-input,
+:root[data-theme='dark'] .qc-real-main .graphic-label-chip,
+:root[data-theme='dark'] .qc-real-main .drawing-box canvas {
+	border-color: #f8f8f2;
+	background: #050505;
+	color: #f8f8f2;
+}
+
+:root[data-theme='dark'] .qc-real-main .choice-row.selected,
+:root[data-theme='dark'] .qc-real-main .choice-grid-cell.selected,
+:root[data-theme='dark'] .qc-real-main .table-tick-button.selected,
+:root[data-theme='dark'] .qc-real-main .match-option.active,
+:root[data-theme='dark'] .qc-real-main .match-option.connected,
+:root[data-theme='dark'] .qc-real-main .graphic-label-chip.active,
+:root[data-theme='dark'] .qc-real-main .graphic-label-chip.used {
+	background: #111827;
+	color: #f8f8f2;
+}
+
+:root[data-theme='dark'] .qc-real-main .submit-grade-button:disabled {
+	background: #334155;
+	color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .qc-real-main .exam-figure img,
+:root[data-theme='dark'] .qc-real-main .graphic-label-image-wrap img,
+:root[data-theme='dark'] .qc-real-main .answer-canvas img {
+	filter: invert(1) hue-rotate(180deg) contrast(1.08) brightness(0.95);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -4998,6 +5314,7 @@ textarea::placeholder {
 	}
 
 	:root:not([data-theme='light']) .qc-browse-intro p,
+	:root:not([data-theme='light']) .qc-browse-heading p,
 	:root:not([data-theme='light']) .qc-chain-side p,
 	:root:not([data-theme='light']) .qc-real-kicker,
 	:root:not([data-theme='light']) .qc-real-question-top p {
@@ -5009,26 +5326,31 @@ textarea::placeholder {
 		color: #98f0c5;
 	}
 
+	:root:not([data-theme='light']) .qc-real-chain-list a,
 	:root:not([data-theme='light']) .qc-real-chain-list button {
 		border-color: rgba(148, 163, 184, 0.24);
 		background: #071426;
 		color: #eaf4ff;
 	}
 
+	:root:not([data-theme='light']) .qc-real-chain-list a > span:first-child,
 	:root:not([data-theme='light']) .qc-real-chain-list button > span:first-child {
 		background: rgba(86, 216, 148, 0.12);
 		color: #b8f7d5;
 	}
 
+	:root:not([data-theme='light']) .qc-real-chain-list a small,
 	:root:not([data-theme='light']) .qc-real-chain-list button small {
 		color: #9fb2c7;
 	}
 
+	:root:not([data-theme='light']) .qc-real-chain-list a.active,
 	:root:not([data-theme='light']) .qc-real-chain-list button.active {
 		border-color: rgba(86, 216, 148, 0.86);
 		background: rgba(20, 83, 63, 0.42);
 	}
 
+	:root:not([data-theme='light']) .qc-real-chain-list a.active > span:first-child,
 	:root:not([data-theme='light']) .qc-real-chain-list button.active > span:first-child {
 		background: #56d894;
 		color: #052d1c;
@@ -5037,6 +5359,7 @@ textarea::placeholder {
 	:root:not([data-theme='light']) .qc-browse-chain,
 	:root:not([data-theme='light']) .qc-browse-pattern li,
 	:root:not([data-theme='light']) .qc-question-card,
+	:root:not([data-theme='light']) .qc-show-more-chains,
 	:root:not([data-theme='light']) .qc-thinking-chain,
 	:root:not([data-theme='light']) .qc-thinking-chain li,
 	:root:not([data-theme='light']) .qc-thinking-step-number {
@@ -5062,11 +5385,70 @@ textarea::placeholder {
 
 	:root:not([data-theme='light']) .qc-real-main .question-experiment-page,
 	:root:not([data-theme='light']) .qc-real-main .question-experiment-page .paper-sheet {
-		background: #ffffff;
-		color: #000000;
+		background: #050505;
+		color: #f8f8f2;
 	}
 
-	:root:not([data-theme='light']) .qc-real-main img {
-		filter: none;
+	:root:not([data-theme='light']) .qc-real-main .paper-header,
+	:root:not([data-theme='light']) .qc-real-main .digit-box,
+	:root:not([data-theme='light']) .qc-real-main th,
+	:root:not([data-theme='light']) .qc-real-main td {
+		border-color: #f8f8f2;
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .digit-box,
+	:root:not([data-theme='light']) .qc-real-main table,
+	:root:not([data-theme='light']) .qc-real-main .exam-figure figcaption,
+	:root:not([data-theme='light']) .qc-real-main .exam-table-wrap figcaption,
+	:root:not([data-theme='light']) .qc-real-main .question-number {
+		background: #050505;
+		color: #f8f8f2;
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .lined-textarea {
+		color: #f8f8f2;
+		background-color: #050505;
+		background-image: repeating-linear-gradient(
+			to bottom,
+			transparent 0,
+			transparent calc(var(--line-height) - 1px),
+			rgba(248, 248, 242, 0.72) calc(var(--line-height) - 1px),
+			rgba(248, 248, 242, 0.72) var(--line-height)
+		);
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .line-input,
+	:root:not([data-theme='light']) .qc-real-main .choice-row,
+	:root:not([data-theme='light']) .qc-real-main .choice-grid-cell,
+	:root:not([data-theme='light']) .qc-real-main .table-tick-button,
+	:root:not([data-theme='light']) .qc-real-main .match-option,
+	:root:not([data-theme='light']) .qc-real-main .equation-blank-input,
+	:root:not([data-theme='light']) .qc-real-main .graphic-label-chip,
+	:root:not([data-theme='light']) .qc-real-main .drawing-box canvas {
+		border-color: #f8f8f2;
+		background: #050505;
+		color: #f8f8f2;
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .choice-row.selected,
+	:root:not([data-theme='light']) .qc-real-main .choice-grid-cell.selected,
+	:root:not([data-theme='light']) .qc-real-main .table-tick-button.selected,
+	:root:not([data-theme='light']) .qc-real-main .match-option.active,
+	:root:not([data-theme='light']) .qc-real-main .match-option.connected,
+	:root:not([data-theme='light']) .qc-real-main .graphic-label-chip.active,
+	:root:not([data-theme='light']) .qc-real-main .graphic-label-chip.used {
+		background: #111827;
+		color: #f8f8f2;
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .submit-grade-button:disabled {
+		background: #334155;
+		color: #cbd5e1;
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .exam-figure img,
+	:root:not([data-theme='light']) .qc-real-main .graphic-label-image-wrap img,
+	:root:not([data-theme='light']) .qc-real-main .answer-canvas img {
+		filter: invert(1) hue-rotate(180deg) contrast(1.08) brightness(0.95);
 	}
 }

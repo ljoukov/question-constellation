@@ -13,7 +13,7 @@ import type {
 } from '$lib/experiments/questions/gradingTypes';
 import type { LlmTextModelId, LlmThinkingLevel } from '@ljoukov/llm';
 
-const DEFAULT_MODEL = 'gpt-5.5-fast';
+const DEFAULT_MODEL = 'chatgpt-gpt-5.5-fast';
 const DEFAULT_THINKING_LEVEL = 'medium';
 
 type QuestionRow = {

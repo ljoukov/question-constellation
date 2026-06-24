@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const rootDir = process.cwd();
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
-const DEFAULT_MODEL = 'gpt-5.5-fast';
+const DEFAULT_MODEL = 'chatgpt-gpt-5.5-fast';
 const DEFAULT_THINKING_LEVEL = 'medium';
 const experimentSourceDocumentIds = [
 	'aqa-8464b1h-qp-jun18',

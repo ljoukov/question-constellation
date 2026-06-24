@@ -1,10 +1,35 @@
 <script lang="ts">
 	import '../app.css';
 	import { navigating } from '$app/state';
+	import { onMount } from 'svelte';
+	import {
+		applyDocumentTheme,
+		startAutomaticThemeSync,
+		themePreference,
+		type ThemePreference
+	} from '$lib/themePreference';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
 	let showRouteLoading = $state(false);
+
+	onMount(() => {
+		let stopAutomaticThemeSync = () => {};
+		const unsubscribe = themePreference.subscribe((preference: ThemePreference) => {
+			stopAutomaticThemeSync();
+			if (preference === 'auto') {
+				stopAutomaticThemeSync = startAutomaticThemeSync();
+			} else {
+				applyDocumentTheme(preference);
+				stopAutomaticThemeSync = () => {};
+			}
+		});
+
+		return () => {
+			unsubscribe();
+			stopAutomaticThemeSync();
+		};
+	});
 
 	$effect(() => {
 		if (navigating.to) {

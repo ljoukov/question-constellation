@@ -8,7 +8,7 @@ import type {
 	ExamResponse,
 	ExamTableCell
 } from '$lib/experiments/questions/types';
-import { queryRows } from './db';
+import { queryFirst, queryRows } from './db';
 
 type PaperSummaryRow = {
 	id: string;
@@ -40,10 +40,6 @@ type AssetRow = {
 	source_label: string | null;
 	public_path: string | null;
 	alt_text: string | null;
-	metadata_json: string;
-};
-
-type ContentImportRow = {
 	metadata_json: string;
 };
 
@@ -283,7 +279,6 @@ function renderObjectFromJson(raw: string, questionId: string): RenderObject {
 }
 
 async function paperSummaries() {
-	const fullPaperIds = await getFullExperimentPaperIds();
 	const rows = await queryRows<PaperSummaryRow>(
 		`SELECT sd.id, sd.title, sd.board, sd.qualification, sd.subject, sd.subject_area,
 		        sd.tier, sd.paper, sd.series, sd.year, sd.component_code, sd.metadata_json,
@@ -296,49 +291,39 @@ async function paperSummaries() {
 		 ORDER BY sd.year, sd.subject_area, sd.paper, sd.component_code`
 	);
 
-	return rows
-		.filter((row) => fullPaperIds.has(row.id))
-		.map((row): QuestionExperimentPaperSummary => {
-			const slug = sourceDocumentSlug(row.id);
-			return {
-				id: row.id,
-				slug,
-				href: `/experiments/questions/${slug}`,
-				title: paperTitle(row),
-				subtitle: paperSubtitle(row),
-				questionCount: row.question_count
-			};
-		});
+	return rows.map((row): QuestionExperimentPaperSummary => {
+		const slug = sourceDocumentSlug(row.id);
+		return {
+			id: row.id,
+			slug,
+			href: `/experiments/questions/${slug}`,
+			title: paperTitle(row),
+			subtitle: paperSubtitle(row),
+			questionCount: row.question_count
+		};
+	});
 }
 
 export async function getQuestionExperimentPapers() {
 	return paperSummaries();
 }
 
-async function getFullExperimentPaperIds() {
-	const rows = await queryRows<ContentImportRow>(
-		`SELECT metadata_json
-		 FROM content_imports
-		 ORDER BY imported_at DESC
-		 LIMIT 1`
-	);
-	const row = rows[0];
-	if (!row) {
-		throw new Error('No content import metadata is available for question experiment papers.');
-	}
-	const metadata = parseJson<{ experiment_source_document_ids?: string[] }>(
-		row.metadata_json,
-		'content import metadata'
-	);
-	if (!metadata.experiment_source_document_ids?.length) {
-		throw new Error('Latest content import does not declare full experiment papers.');
-	}
-	return new Set(metadata.experiment_source_document_ids);
-}
-
 export async function sourceDocumentIdForSlug(slug: string) {
-	const summaries = await paperSummaries();
-	return summaries.find((paper) => paper.slug === slug)?.id ?? null;
+	const sourceDocumentId = slug.includes('-qp-') ? slug : slug.replace(/-(jun|nov)(\d{2})$/, '-qp-$1$2');
+	const row = await queryFirst<{ id: string }>(
+		`SELECT sd.id
+		 FROM source_documents sd
+		 WHERE sd.id = ?
+		   AND EXISTS (
+			SELECT 1
+			FROM questions q
+			JOIN question_rendering_overlays qro ON qro.question_id = q.id
+			WHERE q.source_document_id = sd.id
+		   )
+		 LIMIT 1`,
+		[sourceDocumentId]
+	);
+	return row?.id ?? null;
 }
 
 async function getPaperSummary(sourceDocumentId: string) {

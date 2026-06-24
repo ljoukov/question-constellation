@@ -1,0 +1,328 @@
+import {
+	getQuestionTeaser,
+	learningChains,
+	type ChainQuestionLabel,
+	type ChainQuestionTeaser,
+	type LearningChain
+} from '$lib/learningChains';
+import { sourceDocumentSlug } from './questionExperimentData';
+import { queryRows } from './db';
+
+type ChainRow = {
+	id: string;
+	title: string;
+	canonical_chain_text: string;
+	subject: string | null;
+	subject_area: string | null;
+	broad_topic: string | null;
+	summary: string | null;
+	confidence: number | null;
+	needs_human_review: number;
+	question_count: number;
+};
+
+type ChainStepRow = {
+	answer_chain_id: string;
+	display_order: number;
+	step_text: string;
+	common_omission: string | null;
+};
+
+type QuestionMembershipRow = {
+	answer_chain_id: string;
+	transfer_distance: string;
+	display_order: number | null;
+	id: string;
+	source_document_id: string;
+	source_question_ref: string;
+	prompt_text: string;
+	command_word: string | null;
+	marks: number | null;
+	subject: string | null;
+	subject_area: string | null;
+	paper: string | null;
+	series: string | null;
+	year: number | null;
+	topic_path_json: string;
+	metadata_json: string;
+	source_board: string | null;
+	source_qualification: string | null;
+	source_subject: string | null;
+	source_tier: string | null;
+	source_paper: string | null;
+	source_series: string | null;
+	source_year: number | null;
+	source_component_code: string | null;
+};
+
+function parseJson<T>(raw: string | null | undefined, fallback: T): T {
+	if (!raw) return fallback;
+	try {
+		return JSON.parse(raw) as T;
+	} catch {
+		return fallback;
+	}
+}
+
+function cleanPromptText(text: string): string {
+	return text
+		.replace(/\*\*/g, '')
+		.split(/\r?\n/)
+		.map((line) => line.replace(/\s+/g, ' ').trim())
+		.filter(Boolean)
+		.filter((line) => !/^\[\s*\d+\s*marks?\s*\]$/i.test(line))
+		.filter((line) => !/^(?:figure|table)\s+\d+$/i.test(line))
+		.join(' ')
+		.trim();
+}
+
+function sentenceTitle(text: string, fallback: string) {
+	const cleaned = cleanPromptText(text);
+	const sentence =
+		cleaned.match(/(?:Explain|Calculate|Determine|Describe|Give|State|What|Which|Why|How|Name|Suggest|Compare|Draw|Complete|Use)\b[^.?!]*(?:[.?!]|$)/i)?.[0] ??
+		cleaned.split(/(?<=[.?!])\s+/)[0] ??
+		fallback;
+	const normalized = sentence.replace(/\s+/g, ' ').trim() || fallback;
+	return normalized.length > 74 ? `${normalized.slice(0, 71).trim()}...` : normalized;
+}
+
+function teaserFromPrompt(text: string) {
+	const cleaned = cleanPromptText(text);
+	return cleaned.length > 132 ? `${cleaned.slice(0, 129).trim()}...` : cleaned;
+}
+
+function titleFromQuestion(row: QuestionMembershipRow) {
+	const metadata = parseJson<{ title?: string }>(row.metadata_json, {});
+	if (metadata.title) return metadata.title;
+	return sentenceTitle(row.prompt_text, row.source_question_ref);
+}
+
+function topicFromRow(row: QuestionMembershipRow) {
+	const topicPath = parseJson<string[]>(row.topic_path_json, []);
+	return topicPath.at(-1) ?? row.subject_area ?? row.paper ?? 'GCSE science';
+}
+
+function subjectName(row: Pick<ChainRow, 'subject' | 'subject_area'>) {
+	return row.subject_area ?? row.subject ?? 'Science';
+}
+
+function subjectSymbol(subject: string) {
+	const lower = subject.toLowerCase();
+	if (lower.includes('biology')) return '🧬';
+	if (lower.includes('chemistry')) return '⚗️';
+	if (lower.includes('physics')) return '⚛️';
+	return '✦';
+}
+
+function subjectAccent(subject: string): LearningChain['accent'] {
+	const lower = subject.toLowerCase();
+	if (lower.includes('chemistry')) return 'amber';
+	if (lower.includes('physics')) return 'blue';
+	return 'green';
+}
+
+function distanceLabel(value: string): ChainQuestionLabel {
+	if (value === 'start') return 'Start here';
+	if (value === 'near') return 'Similar';
+	if (value === 'stretch') return 'Challenge';
+	if (value === 'exam_transfer' || value === 'exam-transfer') return 'New context';
+	return 'Small change';
+}
+
+function paperLabel(row: QuestionMembershipRow) {
+	return [
+		row.source_board ?? 'AQA',
+		row.source_qualification ?? row.subject ?? 'GCSE',
+		row.source_subject ?? row.subject_area ?? row.subject ?? 'Science',
+		row.source_tier ? `${row.source_tier} Tier` : null,
+		row.source_paper ?? row.source_component_code ?? row.paper,
+		row.source_series ?? (row.source_year ? String(row.source_year) : null)
+	]
+		.filter(Boolean)
+		.join(' · ');
+}
+
+function fallbackSteps(canonicalText: string) {
+	const parts = canonicalText
+		.split(/\s*(?:->|→|⇒|➜)\s*/u)
+		.map((part) => part.trim())
+		.filter(Boolean);
+	return parts.length > 1 ? parts : [canonicalText];
+}
+
+function questionSortRank(value: string) {
+	if (value === 'start') return 0;
+	if (value === 'near') return 1;
+	if (value === 'stretch') return 2;
+	if (value === 'exam_transfer' || value === 'exam-transfer') return 3;
+	return 4;
+}
+
+function sortQuestions(a: QuestionMembershipRow, b: QuestionMembershipRow) {
+	return (
+		questionSortRank(a.transfer_distance) - questionSortRank(b.transfer_distance) ||
+		(a.display_order ?? 9999) - (b.display_order ?? 9999) ||
+		(a.year ?? 0) - (b.year ?? 0) ||
+		a.source_question_ref.localeCompare(b.source_question_ref)
+	);
+}
+
+function groupBy<T, K extends string>(items: T[], keyFor: (item: T) => K) {
+	const groups = new Map<K, T[]>();
+	for (const item of items) {
+		const key = keyFor(item);
+		const existing = groups.get(key);
+		if (existing) {
+			existing.push(item);
+		} else {
+			groups.set(key, [item]);
+		}
+	}
+	return groups;
+}
+
+function toQuestionTeaser(row: QuestionMembershipRow): ChainQuestionTeaser {
+	return {
+		id: row.id,
+		ref: row.source_question_ref,
+		sourceRef: row.source_question_ref,
+		paperSlug: sourceDocumentSlug(row.source_document_id),
+		paperLabel: paperLabel(row),
+		title: titleFromQuestion(row),
+		teaser: teaserFromPrompt(row.prompt_text),
+		label: distanceLabel(row.transfer_distance),
+		marks: row.marks,
+		command: row.command_word ?? 'Question'
+	};
+}
+
+function buildLearningChain(
+	row: ChainRow,
+	steps: ChainStepRow[],
+	questions: QuestionMembershipRow[]
+): LearningChain | null {
+	const sortedQuestions = [...questions].sort(sortQuestions);
+	const firstQuestion = sortedQuestions[0];
+	if (!firstQuestion) return null;
+
+	const subject = subjectName(row);
+	const stepTexts = steps.length
+		? steps
+				.sort((a, b) => a.display_order - b.display_order)
+				.map((step) => step.step_text.replace(/\.$/, ''))
+		: fallbackSteps(row.canonical_chain_text);
+
+	return {
+		id: row.id,
+		title: row.title,
+		subject,
+		topic: row.broad_topic ?? topicFromRow(firstQuestion),
+		symbol: subjectSymbol(subject),
+		paperSlug: sourceDocumentSlug(firstQuestion.source_document_id),
+		paperLabel: `${subject} · ${row.question_count} questions`,
+		summary:
+			row.summary ??
+			`Practise ${sortedQuestions.length} questions that use the same thinking chain.`,
+		steps: stepTexts,
+		weakLink:
+			steps.find((step) => step.common_omission)?.common_omission ??
+			'Use each link in the chain before jumping to the final answer.',
+		primaryRef: firstQuestion.id,
+		accent: subjectAccent(subject),
+		questions: sortedQuestions.map(toQuestionTeaser)
+	};
+}
+
+async function fetchChainRows() {
+	return queryRows<ChainRow>(
+		`SELECT ac.id, ac.title, ac.canonical_chain_text, ac.subject, ac.subject_area,
+		        ac.broad_topic, ac.summary, ac.confidence, ac.needs_human_review,
+		        COUNT(DISTINCT q.id) AS question_count
+		 FROM answer_chains ac
+		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
+		 JOIN questions q ON q.id = qac.question_id
+		 WHERE EXISTS (
+			SELECT 1
+			FROM question_rendering_overlays qro
+			WHERE qro.question_id = q.id
+		 )
+		 GROUP BY ac.id
+		 HAVING question_count > 0
+		 ORDER BY ac.needs_human_review ASC,
+		          CASE WHEN question_count > 1 THEN 0 ELSE 1 END,
+		          COALESCE(ac.confidence, 0) DESC,
+		          question_count DESC,
+		          ac.subject_area,
+		          ac.title`
+	);
+}
+
+async function fetchStepRows() {
+	return queryRows<ChainStepRow>(
+		`SELECT answer_chain_id, display_order, step_text, common_omission
+		 FROM answer_chain_steps
+		 ORDER BY answer_chain_id, display_order`
+	);
+}
+
+async function fetchQuestionRows() {
+	return queryRows<QuestionMembershipRow>(
+		`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order,
+		        q.id, q.source_document_id, q.source_question_ref, q.prompt_text,
+		        q.command_word, q.marks, q.subject, q.subject_area, q.paper,
+		        q.series, q.year, q.topic_path_json, q.metadata_json,
+		        sd.board AS source_board, sd.qualification AS source_qualification,
+		        sd.subject AS source_subject, sd.tier AS source_tier,
+		        sd.paper AS source_paper, sd.series AS source_series,
+		        sd.year AS source_year, sd.component_code AS source_component_code
+		 FROM question_answer_chains qac
+		 JOIN questions q ON q.id = qac.question_id
+		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
+		 WHERE EXISTS (
+			SELECT 1
+			FROM question_rendering_overlays qro
+			WHERE qro.question_id = q.id
+		 )
+		 ORDER BY qac.answer_chain_id,
+		          CASE qac.transfer_distance
+		            WHEN 'start' THEN 0
+		            WHEN 'near' THEN 1
+		            WHEN 'stretch' THEN 2
+		            WHEN 'exam_transfer' THEN 3
+		            ELSE 4
+		          END,
+		          COALESCE(qac.display_order, 9999),
+		          q.year,
+		          q.source_question_ref`
+	);
+}
+
+export async function getExplorableLearningChains(): Promise<LearningChain[]> {
+	try {
+		const [chains, steps, questions] = await Promise.all([
+			fetchChainRows(),
+			fetchStepRows(),
+			fetchQuestionRows()
+		]);
+
+		const stepsByChain = groupBy(steps, (step) => step.answer_chain_id);
+		const questionsByChain = groupBy(questions, (question) => question.answer_chain_id);
+		const result = chains
+			.map((chain) =>
+				buildLearningChain(chain, stepsByChain.get(chain.id) ?? [], questionsByChain.get(chain.id) ?? [])
+			)
+			.filter((chain): chain is LearningChain => Boolean(chain));
+
+		return result.length > 0 ? result : learningChains;
+	} catch (error) {
+		console.error('[learningChainData] falling back to static chains', error);
+		return learningChains;
+	}
+}
+
+export async function getExplorableLearningChain(chainId: string): Promise<LearningChain | null> {
+	const chains = await getExplorableLearningChains();
+	return chains.find((chain) => chain.id === chainId) ?? null;
+}
+
+export { getQuestionTeaser };

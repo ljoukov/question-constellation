@@ -6,7 +6,11 @@ export type ChainQuestionLabel =
 	| 'Challenge';
 
 export type ChainQuestionTeaser = {
+	id?: string;
 	ref: string;
+	sourceRef?: string;
+	paperSlug?: string;
+	paperLabel?: string;
 	title: string;
 	teaser: string;
 	label: ChainQuestionLabel;
@@ -158,5 +162,9 @@ export function getLearningChain(chainId: string) {
 }
 
 export function getQuestionTeaser(chain: LearningChain, ref: string) {
-	return chain.questions.find((question) => question.ref === ref) ?? null;
+	return (
+		chain.questions.find(
+			(question) => question.id === ref || question.ref === ref || question.sourceRef === ref
+		) ?? null
+	);
 }
