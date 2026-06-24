@@ -56,11 +56,26 @@ function blockKey(block: ExamQuestionBlock) {
 	return `${block.kind}:${JSON.stringify(block)}`;
 }
 
+function blockAssetKey(block: ExamQuestionBlock) {
+	if (block.kind === 'figure') return `asset:${block.assetId}`;
+	return null;
+}
+
 function responseAssetKey(response: ExamResponse) {
 	if (response.kind === 'asset-canvas' || response.kind === 'image-label-zones') {
 		return `asset:${response.assetId}`;
 	}
 	return null;
+}
+
+function addBlockKeys(seen: Set<string>, block: ExamQuestionBlock) {
+	seen.add(blockKey(block));
+	const assetKey = blockAssetKey(block);
+	if (assetKey) seen.add(assetKey);
+}
+
+function hasBlockKeys(seen: Set<string>, block: ExamQuestionBlock) {
+	return seen.has(blockKey(block)) || Boolean(blockAssetKey(block) && seen.has(blockAssetKey(block)!));
 }
 
 function uniqueBlocks(blocks: ExamQuestionBlock[]) {
@@ -73,17 +88,13 @@ function uniqueBlocks(blocks: ExamQuestionBlock[]) {
 	});
 }
 
-function mergeBlocks(base: ExamQuestionBlock[], extra: ExamQuestionBlock[]) {
-	return uniqueBlocks([...base, ...extra]);
-}
-
 function partBlocks(part: ExamQuestionPart) {
 	return [...(part.leadBlocks ?? []), ...part.blocks, ...(part.afterResponseBlocks ?? [])];
 }
 
 function addRenderedPartKeys(seen: Set<string>, part: ExamQuestionPart) {
 	for (const block of partBlocks(part)) {
-		seen.add(blockKey(block));
+		addBlockKeys(seen, block);
 	}
 	const assetKey = responseAssetKey(part.response);
 	if (assetKey) seen.add(assetKey);
@@ -120,10 +131,12 @@ function resolvePartDependencies(
 	seen: Set<string>
 ) {
 	const dependencies = visualDependencyBlocks(question, part);
+	const partResponseAssetKey = responseAssetKey(part.response);
+	if (partResponseAssetKey) seen.add(partResponseAssetKey);
+
 	const supportBlocks = [...dependencies, ...(part.stemBlocks ?? [])].filter((block) => {
-		const key = blockKey(block);
-		if (seen.has(key)) return false;
-		seen.add(key);
+		if (hasBlockKeys(seen, block)) return false;
+		addBlockKeys(seen, block);
 		return true;
 	});
 
@@ -138,7 +151,10 @@ function resolvePartDependencies(
 }
 
 function resolveQuestionDependencies(question: ExamQuestion): ExamQuestion {
-	const seen = new Set(question.blocks.map(blockKey));
+	const seen = new Set<string>();
+	for (const block of question.blocks) {
+		addBlockKeys(seen, block);
+	}
 	return {
 		...question,
 		parts: question.parts.map((part) => resolvePartDependencies(question, part, seen))
@@ -152,6 +168,14 @@ export function resolvePaperDependencies(paper: ExamPaper): ExamPaper {
 	};
 }
 
+function inheritedStemBlocks(question: ExamQuestion, partIndex: number) {
+	return uniqueBlocks(
+		question.parts
+			.slice(0, partIndex)
+			.flatMap((part) => part.stemBlocks ?? [])
+	);
+}
+
 export function focusPaperByRef(paper: ExamPaper, ref: string): ExamPaper | null {
 	for (const question of paper.questions) {
 		if (question.ref === ref) {
@@ -162,17 +186,31 @@ export function focusPaperByRef(paper: ExamPaper, ref: string): ExamPaper | null
 			};
 		}
 
-		const part = question.parts.find((candidate) => candidate.ref === ref);
+		const partIndex = question.parts.findIndex((candidate) => candidate.ref === ref);
+		const part = partIndex >= 0 ? question.parts[partIndex] : undefined;
 		if (part) {
-			const focusedQuestion = resolveQuestionDependencies({
+			const responseKey = responseAssetKey(part.response);
+			const sharedStemBlocks =
+				(part.stemBlocks ?? []).length > 0 ? [] : inheritedStemBlocks(question, partIndex);
+			const stemBlocks = responseKey
+				? [...sharedStemBlocks, ...(part.stemBlocks ?? [])].filter(
+						(block) => blockAssetKey(block) !== responseKey
+					)
+				: [...sharedStemBlocks, ...(part.stemBlocks ?? [])];
+			const focusedQuestionBase = {
 				...question,
-				blocks: mergeBlocks(question.blocks, part.stemBlocks ?? []),
+				blocks: uniqueBlocks(stemBlocks),
 				parts: [part]
-			});
+			};
+			const seen = new Set<string>();
+			for (const block of focusedQuestionBase.blocks) {
+				addBlockKeys(seen, block);
+			}
+			const resolvedPart = resolvePartDependencies(question, part, seen);
 			return {
 				...paper,
 				title: `${paper.title} Question ${part.ref}`,
-				questions: [focusedQuestion]
+				questions: [{ ...focusedQuestionBase, parts: [resolvedPart] }]
 			};
 		}
 	}

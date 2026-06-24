@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import { navigating } from '$app/state';
-	import favicon from '$lib/assets/favicon.svg';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -26,7 +25,12 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+	<link rel="manifest" href="/site.webmanifest" />
+	<meta name="theme-color" content="#eff8f8" media="(prefers-color-scheme: light)" />
+	<meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
 </svelte:head>
 
 <div class="app-shell">
