@@ -136,14 +136,14 @@ function assertModel(testCase, response) {
 	}
 
 	const isProductionModel = (value) =>
-		typeof value === 'string' && (value.startsWith('gpt-') || value.startsWith('chatgpt-gpt-'));
+		typeof value === 'string' && value.startsWith('chatgpt-gpt-');
 	assert(
 		response.model !== 'deterministic' && isProductionModel(response.model),
-		`${testCase.name}: expected production GPT model, got ${response.model}`
+		`${testCase.name}: expected production ChatGPT model, got ${response.model}`
 	);
 	assert(
 		isProductionModel(response.modelVersion),
-		`${testCase.name}: expected GPT model version, got ${response.modelVersion}`
+		`${testCase.name}: expected ChatGPT model version, got ${response.modelVersion}`
 	);
 }
 

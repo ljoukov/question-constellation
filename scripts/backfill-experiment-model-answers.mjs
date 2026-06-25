@@ -102,10 +102,9 @@ const databaseId = requiredEnv('QUESTION_DB_DATABASE_ID', databaseConfig?.databa
 const d1QueryUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
 
 function configureModelEnv() {
-	process.env.OPENAI_RESPONSES_WEBSOCKET_MODE = 'off';
 	process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE = 'off';
-	if (!process.env.OPENAI_API_KEY && model.startsWith('gpt-')) {
-		throw new Error('OPENAI_API_KEY is required to generate model answers.');
+	if (model.startsWith('gpt-')) {
+		throw new Error('Use a chatgpt-* model to generate model answers.');
 	}
 }
 

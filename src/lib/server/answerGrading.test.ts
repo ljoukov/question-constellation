@@ -1,4 +1,5 @@
-import { buildGradePrompt, parseGradeResponse } from './answerGrading';
+import { buildGradePrompt, configureLlmProcessEnv, parseGradeResponse } from './answerGrading';
+import { env as privateEnv } from '$env/dynamic/private';
 import type { PracticePageData } from './questionData';
 import { describe, expect, it } from 'vitest';
 
@@ -127,5 +128,110 @@ describe('answer grading prompt and parser', () => {
 		expect(result.presentStepIds).toEqual(['pd', 'current']);
 		expect(result.missingStepIds).toEqual(['heating-loss']);
 		expect(result.feedbackMarkdown).toContain('heating-loss');
+	});
+});
+
+describe('configureLlmProcessEnv', () => {
+	const trackedKeys = [
+		'CHATGPT_CODEX_PROXY_URL',
+		'CHATGPT_CODEX_PROXY_API_KEY',
+		'CHATGPT_RESPONSES_WEBSOCKET_MODE'
+	] as const;
+
+	type TrackedKey = (typeof trackedKeys)[number];
+	type EnvSnapshot = {
+		private: Record<TrackedKey, string | undefined>;
+		process: Record<TrackedKey, string | undefined>;
+	};
+
+	function snapshotEnv(): EnvSnapshot {
+		const mutableEnv = process.env as Record<string, string | undefined>;
+		const mutablePrivateEnv = privateEnv as Record<string, string | undefined>;
+		return {
+			private: Object.fromEntries(
+				trackedKeys.map((key) => [key, mutablePrivateEnv[key]])
+			) as Record<TrackedKey, string | undefined>,
+			process: Object.fromEntries(trackedKeys.map((key) => [key, mutableEnv[key]])) as Record<
+				TrackedKey,
+				string | undefined
+			>
+		};
+	}
+
+	function restoreEnv(snapshot: EnvSnapshot) {
+		const mutableEnv = process.env as Record<string, string | undefined>;
+		const mutablePrivateEnv = privateEnv as Record<string, string | undefined>;
+		for (const key of trackedKeys) {
+			const processValue = snapshot.process[key];
+			if (processValue === undefined) {
+				delete mutableEnv[key];
+			} else {
+				mutableEnv[key] = processValue;
+			}
+
+			const privateValue = snapshot.private[key];
+			if (privateValue === undefined) {
+				delete mutablePrivateEnv[key];
+			} else {
+				mutablePrivateEnv[key] = privateValue;
+			}
+		}
+	}
+
+	function clearEnv(key: TrackedKey) {
+		delete (process.env as Record<string, string | undefined>)[key];
+		delete (privateEnv as Record<string, string | undefined>)[key];
+	}
+
+	it('copies explicit ChatGPT Codex proxy env for ChatGPT models', () => {
+		const snapshot = snapshotEnv();
+		try {
+			configureLlmProcessEnv(
+				{
+					CHATGPT_CODEX_PROXY_URL: 'https://codex-proxy.example.test',
+					CHATGPT_CODEX_PROXY_API_KEY: 'chatgpt-proxy-key'
+				},
+				'chatgpt-gpt-5.5-fast'
+			);
+
+			expect(process.env.CHATGPT_CODEX_PROXY_URL).toBe('https://codex-proxy.example.test');
+			expect(process.env.CHATGPT_CODEX_PROXY_API_KEY).toBe('chatgpt-proxy-key');
+			expect(process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE).toBe('off');
+		} finally {
+			restoreEnv(snapshot);
+		}
+	});
+
+	it('throws when ChatGPT Codex proxy env is incomplete', () => {
+		const snapshot = snapshotEnv();
+		try {
+			clearEnv('CHATGPT_CODEX_PROXY_URL');
+			clearEnv('CHATGPT_CODEX_PROXY_API_KEY');
+
+			expect(() =>
+				configureLlmProcessEnv(
+					{ CHATGPT_CODEX_PROXY_URL: 'https://codex-proxy.example.test' },
+					'chatgpt-gpt-5.5-fast'
+				)
+			).toThrow('Vercel Codex proxy credentials are required for ChatGPT grading.');
+		} finally {
+			restoreEnv(snapshot);
+		}
+	});
+
+	it('does not require ChatGPT Codex proxy env for other model families', () => {
+		const snapshot = snapshotEnv();
+		try {
+			clearEnv('CHATGPT_CODEX_PROXY_URL');
+			clearEnv('CHATGPT_CODEX_PROXY_API_KEY');
+
+			configureLlmProcessEnv(undefined, 'local-test-model');
+
+			expect(process.env.CHATGPT_CODEX_PROXY_URL).toBeUndefined();
+			expect(process.env.CHATGPT_CODEX_PROXY_API_KEY).toBeUndefined();
+			expect(process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE).toBe('off');
+		} finally {
+			restoreEnv(snapshot);
+		}
 	});
 });

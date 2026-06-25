@@ -24,7 +24,7 @@ function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: Grad
 function errorResponse(error: unknown, paperSlug: string, ref: string) {
 	const message = error instanceof Error ? error.message : String(error);
 	const isConfigurationError =
-		message.includes('OPENAI_API_KEY') || message.includes('token-provider credentials');
+		message.includes('Use chatgpt-* models') || message.includes('Codex proxy credentials');
 	console.error('[experiment-question-grade] failed', {
 		error:
 			error instanceof Error

@@ -15,6 +15,8 @@ import type { LlmTextModelId, LlmThinkingLevel } from '@ljoukov/llm';
 
 const DEFAULT_MODEL = 'chatgpt-gpt-5.5-fast';
 const DEFAULT_THINKING_LEVEL = 'medium';
+const CHATGPT_CODEX_PROXY_URL = 'CHATGPT_CODEX_PROXY_URL';
+const CHATGPT_CODEX_PROXY_API_KEY = 'CHATGPT_CODEX_PROXY_API_KEY';
 
 type QuestionRow = {
 	id: string;
@@ -208,25 +210,25 @@ function platformEnvValue(platformEnv: unknown, key: string): string | undefined
 }
 
 function hasEnvValue(platformEnv: unknown, key: string) {
-	return Boolean(platformEnvValue(platformEnv, key) ?? env[key as keyof typeof env]);
+	return Boolean(
+		platformEnvValue(platformEnv, key) ?? env[key as keyof typeof env] ?? process.env[key]
+	);
 }
 
 function assertModelCredentialsAvailable(platformEnv: unknown, model: string) {
 	if (model.startsWith('gpt-')) {
-		if (hasEnvValue(platformEnv, 'OPENAI_API_KEY')) return;
-		throw new Error('OPENAI_API_KEY is required for experiment grading with OpenAI API models.');
+		throw new Error('Use chatgpt-* models for experiment grading.');
 	}
 
 	if (model.startsWith('chatgpt-') || model.startsWith('experimental-chatgpt-')) {
 		if (
-			hasEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_URL') &&
-			(hasEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY') ||
-				hasEnvValue(platformEnv, 'CHATGPT_AUTH_API_KEY'))
+			hasEnvValue(platformEnv, CHATGPT_CODEX_PROXY_URL) &&
+			hasEnvValue(platformEnv, CHATGPT_CODEX_PROXY_API_KEY)
 		) {
 			return;
 		}
 		throw new Error(
-			'ChatGPT token-provider credentials are required for experiment grading with ChatGPT models.'
+			'Vercel Codex proxy credentials are required for experiment grading with ChatGPT models.'
 		);
 	}
 }
@@ -1291,15 +1293,16 @@ export async function gradeExperimentQuestionAnswers({
 
 	if (llmGradeable.length > 0) {
 		try {
-			modelName = gradingModel();
-			assertModelCredentialsAvailable(platformEnv, gradingModel());
-			configureLlmProcessEnv(platformEnv);
+			const model = gradingModel();
+			modelName = model;
+			assertModelCredentialsAvailable(platformEnv, model);
+			configureLlmProcessEnv(platformEnv, model);
 			onDelta?.({ type: 'status', phase: 'calling' });
 			const { streamText } = await import('@ljoukov/llm');
 			const prompt = buildPrompt(llmGradeable, answers);
 			if (includeDebugPrompt) debugPrompt = prompt;
 			const call = streamText({
-				model: gradingModel(),
+				model,
 				input: prompt,
 				thinkingLevel: thinkingLevel(),
 				signal,

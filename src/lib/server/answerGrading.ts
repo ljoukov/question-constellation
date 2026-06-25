@@ -5,6 +5,10 @@ import type { LlmStreamEvent, LlmTextModelId } from '@ljoukov/llm';
 const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
 const GRADING_THINKING_LEVEL = 'medium';
 const NONE = 'none';
+const CHATGPT_CODEX_PROXY_ENV_KEYS = [
+	'CHATGPT_CODEX_PROXY_URL',
+	'CHATGPT_CODEX_PROXY_API_KEY'
+] as const;
 
 export type QuestionGradeStage =
 	| 'load_question'
@@ -53,34 +57,35 @@ function getPlatformEnvValue(platformEnv: unknown, key: string): string | undefi
 	return typeof value === 'string' && value.trim() ? value : undefined;
 }
 
-export function configureLlmProcessEnv(platformEnv?: unknown): void {
-	const tokenProviderUrl =
-		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_URL') ??
-		env.CHATGPT_AUTH_TOKEN_PROVIDER_URL;
-	const tokenProviderApiKey =
-		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY') ??
-		env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY ??
-		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_API_KEY') ??
-		env.CHATGPT_AUTH_API_KEY;
-	const tokenProviderStore =
-		getPlatformEnvValue(platformEnv, 'CHATGPT_AUTH_TOKEN_PROVIDER_STORE') ??
-		env.CHATGPT_AUTH_TOKEN_PROVIDER_STORE;
-	const openAiApiKey = getPlatformEnvValue(platformEnv, 'OPENAI_API_KEY') ?? env.OPENAI_API_KEY;
-	if (openAiApiKey) {
-		process.env.OPENAI_API_KEY = openAiApiKey;
-	}
-	if (tokenProviderUrl) {
-		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_URL = tokenProviderUrl;
-	}
-	if (tokenProviderApiKey) {
-		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_API_KEY = tokenProviderApiKey;
-		process.env.CHATGPT_AUTH_API_KEY = tokenProviderApiKey;
-	}
-	if (tokenProviderStore) {
-		process.env.CHATGPT_AUTH_TOKEN_PROVIDER_STORE = tokenProviderStore;
+function modelUsesCodexProxy(model: string): boolean {
+	return model.startsWith('chatgpt-') || model.startsWith('experimental-chatgpt-');
+}
+
+function getRuntimeEnvValue(platformEnv: unknown, key: string): string | undefined {
+	return getPlatformEnvValue(platformEnv, key) ?? env[key as keyof typeof env] ?? process.env[key];
+}
+
+function setProcessEnvFromRuntime(platformEnv: unknown, key: string): void {
+	const value = getRuntimeEnvValue(platformEnv, key);
+	if (value) process.env[key] = value;
+}
+
+function hasCodexProxyConfig(platformEnv?: unknown): boolean {
+	const hasUrl = Boolean(getRuntimeEnvValue(platformEnv, 'CHATGPT_CODEX_PROXY_URL'));
+	const hasKey = Boolean(getRuntimeEnvValue(platformEnv, 'CHATGPT_CODEX_PROXY_API_KEY'));
+	return hasUrl && hasKey;
+}
+
+export function configureLlmProcessEnv(platformEnv?: unknown, model: string = GRADING_MODEL): void {
+	if (modelUsesCodexProxy(model)) {
+		if (!hasCodexProxyConfig(platformEnv)) {
+			throw new Error('Vercel Codex proxy credentials are required for ChatGPT grading.');
+		}
+		for (const key of CHATGPT_CODEX_PROXY_ENV_KEYS) {
+			setProcessEnvFromRuntime(platformEnv, key);
+		}
 	}
 	process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE = 'off';
-	process.env.OPENAI_RESPONSES_WEBSOCKET_MODE = 'off';
 }
 
 function clampMark(value: number, maxMarks: number): number {
@@ -255,7 +260,7 @@ export async function gradeQuestionAnswerStreaming({
 		stage = 'build_prompt';
 		const prompt = buildGradePrompt(data, studentAnswer);
 		stage = 'configure_llm_env';
-		configureLlmProcessEnv(platformEnv);
+		configureLlmProcessEnv(platformEnv, GRADING_MODEL);
 		onDelta?.({ type: 'status', phase: 'calling' });
 
 		stage = 'import_llm';

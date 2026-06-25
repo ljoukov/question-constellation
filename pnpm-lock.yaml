@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@ljoukov/llm':
-        specifier: 7.0.11
-        version: 7.0.11
+        specifier: 7.0.20
+        version: 7.0.20
       '@lucide/svelte':
         specifier: ^1.16.0
         version: 1.16.0(svelte@5.56.3(@typescript-eslint/types@8.59.4))
@@ -556,8 +556,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@ljoukov/llm@7.0.11':
-    resolution: {integrity: sha512-nU7RvmcH5HkbpdS7hF2qVKwAYhftpxU52hfrW+BA8hyW2fyZvYlyywgi/6FkcuVK+rxKyyX1EP/twWisgx2ArQ==}
+  '@ljoukov/llm@7.0.20':
+    resolution: {integrity: sha512-A7xUmkeyYUx3aKoDf5P8TsIlCJE+Iitl5AACBexClqIJ0d9hqDUtFqUm25jN8bRrlwXz8G527gRCtwPBMVFpuw==}
     engines: {node: '>=22'}
 
   '@lucide/svelte@1.16.0':
@@ -2407,7 +2407,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@ljoukov/llm@7.0.11':
+  '@ljoukov/llm@7.0.20':
     dependencies:
       '@alcyone-labs/zod-to-json-schema': 4.0.10(zod@4.4.3)
       '@google-cloud/storage': 7.21.0
