@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { getPracticePageData, type PracticePageData } from '$lib/server/questionData';
-import type { LlmStreamEvent, LlmTextModelId } from '@ljoukov/llm';
+import { configureChatGptCodexProxy, type LlmStreamEvent, type LlmTextModelId } from '@ljoukov/llm';
 
 const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
 const GRADING_THINKING_LEVEL = 'medium';
@@ -81,6 +81,10 @@ export function configureLlmProcessEnv(platformEnv?: unknown, model: string = GR
 		if (!hasCodexProxyConfig(platformEnv)) {
 			throw new Error('Vercel Codex proxy credentials are required for ChatGPT grading.');
 		}
+		configureChatGptCodexProxy({
+			url: getRuntimeEnvValue(platformEnv, 'CHATGPT_CODEX_PROXY_URL') ?? '',
+			apiKey: getRuntimeEnvValue(platformEnv, 'CHATGPT_CODEX_PROXY_API_KEY') ?? ''
+		});
 		for (const key of CHATGPT_CODEX_PROXY_ENV_KEYS) {
 			setProcessEnvFromRuntime(platformEnv, key);
 		}
