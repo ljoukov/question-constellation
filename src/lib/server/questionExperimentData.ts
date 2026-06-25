@@ -38,6 +38,7 @@ type QuestionRenderingRow = {
 type AssetRow = {
 	id: string;
 	source_label: string | null;
+	r2_key: string | null;
 	public_path: string | null;
 	alt_text: string | null;
 	metadata_json: string;
@@ -102,6 +103,29 @@ function assetWidth(metadataJson: string) {
 	);
 	if (!candidate?.width || !candidate.x_ppi) return undefined;
 	return Math.round((candidate.width / candidate.x_ppi) * 96);
+}
+
+function assetSrc(publicPath: string | null, r2Key: string | null) {
+	const rawPath = publicPath || (r2Key ? `/${r2Key}` : '');
+	if (!rawPath) return '';
+	if (/^(?:https?:|data:|blob:)/i.test(rawPath)) return rawPath;
+	if (rawPath.startsWith('/images/')) return rawPath;
+	if (rawPath.startsWith('images/')) return `/${rawPath}`;
+	if (rawPath.startsWith('/papers/')) return `/images${rawPath}`;
+	if (rawPath.startsWith('papers/')) return `/images/${rawPath}`;
+
+	const localAssetPrefix = 'data/aqa-combined-science-trilogy-higher/assets/question-papers/';
+	const normalizedPath = rawPath.replace(/^\//, '');
+	if (normalizedPath.startsWith(localAssetPrefix)) {
+		return `/images/papers/${normalizedPath.slice(localAssetPrefix.length)}`;
+	}
+
+	return rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+}
+
+function fallbackLineCount(marks: number | null) {
+	if (!marks || marks < 1) return 1;
+	return Math.min(6, Math.max(1, Math.ceil(marks)));
 }
 
 function assertNever(value: never): never {
@@ -183,6 +207,12 @@ function responseFromValue(raw: unknown): ExamResponse {
 		return { kind: 'lines', count: value.count };
 	}
 	if (value.kind === 'labeled-lines' && Array.isArray(value.labels)) {
+		if (value.labels.length === 0) {
+			return {
+				kind: 'lines',
+				count: typeof value.lineCount === 'number' ? value.lineCount : 1
+			};
+		}
 		return {
 			kind: 'labeled-lines',
 			labels: value.labels as string[],
@@ -280,6 +310,14 @@ function responseFromValue(raw: unknown): ExamResponse {
 	return assertNever(value as never);
 }
 
+function responseForPart(raw: unknown, marks: number | null): ExamResponse {
+	const response = responseFromValue(raw ?? { kind: 'lines', count: fallbackLineCount(marks) });
+	if (response.kind === 'none' && (marks ?? 0) > 0) {
+		return { kind: 'lines', count: fallbackLineCount(marks) };
+	}
+	return response;
+}
+
 type RenderObject = {
 	stemBlocks?: unknown;
 	leadBlocks?: unknown;
@@ -327,7 +365,9 @@ export async function getQuestionExperimentPapers() {
 }
 
 export async function sourceDocumentIdForSlug(slug: string) {
-	const sourceDocumentId = slug.includes('-qp-') ? slug : slug.replace(/-(jun|nov)(\d{2})$/, '-qp-$1$2');
+	const sourceDocumentId = slug.includes('-qp-')
+		? slug
+		: slug.replace(/-(jun|nov)(\d{2})$/, '-qp-$1$2');
 	const row = await queryFirst<{ id: string }>(
 		`SELECT sd.id
 		 FROM source_documents sd
@@ -361,11 +401,11 @@ async function getPaperSummary(sourceDocumentId: string) {
 
 async function getPaperAssets(sourceDocumentId: string) {
 	const rows = await queryRows<AssetRow>(
-		`SELECT qa.id, qa.source_label, qa.public_path, qa.alt_text, qa.metadata_json
+		`SELECT qa.id, qa.source_label, qa.r2_key, qa.public_path, qa.alt_text, qa.metadata_json
 		 FROM question_assets qa
 		 JOIN questions q ON q.id = qa.question_id
 		 WHERE q.source_document_id = ?
-		   AND qa.public_path IS NOT NULL
+		   AND (qa.public_path IS NOT NULL OR qa.r2_key IS NOT NULL)
 		 ORDER BY qa.source_label, qa.id`,
 		[sourceDocumentId]
 	);
@@ -375,7 +415,7 @@ async function getPaperAssets(sourceDocumentId: string) {
 		assets[row.id] = {
 			id: row.id,
 			label: row.source_label ?? 'Source image',
-			src: row.public_path ?? '',
+			src: assetSrc(row.public_path, row.r2_key),
 			alt: row.alt_text ?? row.source_label ?? 'Question image',
 			width: assetWidth(row.metadata_json)
 		};
@@ -422,7 +462,7 @@ function buildQuestions(rows: QuestionRenderingRow[]) {
 			stemBlocks: blocksFromValue(render.stemBlocks ?? [], `${row.id} stem blocks`),
 			leadBlocks: blocksFromValue(render.leadBlocks ?? [], `${row.id} lead blocks`),
 			blocks: blocksFromValue(render.promptBlocks ?? [], `${row.id} prompt blocks`),
-			response: responseFromValue(render.response ?? { kind: 'lines', count: 1 }),
+			response: responseForPart(render.response, row.marks),
 			afterResponseBlocks: blocksFromValue(
 				render.afterResponseBlocks ?? [],
 				`${row.id} after-response blocks`

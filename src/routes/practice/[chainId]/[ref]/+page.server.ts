@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		chain,
-		initialRef: question.sourceRef ?? question.ref,
+		initialRef: question.id ?? question.ref,
 		paper: await getQuestionExperimentPaper(question.paperSlug ?? chain.paperSlug)
 	};
 };

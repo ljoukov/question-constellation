@@ -74,6 +74,8 @@
 
 	function cleanText(value: string) {
 		return value
+			.replace(/[\uF0FC\uF050]/g, '✓')
+			.replace(/[\uF0FB\uF051]/g, '✗')
 			.replace(/\s*<=>\s*/g, ' ⇌ ')
 			.replace(/\s*(?:->|⟶|⇒|)\s*/g, ' → ')
 			.replace(/\$(\(?\s*)\\([A-Za-z]{2,})(?:\.{3}|…)/g, (_, prefix, command) => {
@@ -104,7 +106,11 @@
 			let shouldWrap = false;
 			const previous = joined[joined.length - 1];
 
-			if (previous?.kind === 'text' && previous.strong === segment.strong && /\S$/.test(previous.text)) {
+			if (
+				previous?.kind === 'text' &&
+				previous.strong === segment.strong &&
+				/\S$/.test(previous.text)
+			) {
 				const trailingToken = previous.text.match(/(\S+)$/)?.[0] ?? '';
 				previous.text = previous.text.slice(0, -trailingToken.length);
 				if (!previous.text) joined.pop();
@@ -161,7 +167,9 @@
 			segments.push({ kind: 'text', text: cleanText(value.slice(cursor)), strong });
 		}
 
-		return joinAdjacentMathRuns(segments.length ? segments : [{ kind: 'text', text: value, strong }]);
+		return joinAdjacentMathRuns(
+			segments.length ? segments : [{ kind: 'text', text: cleanText(value), strong }]
+		);
 	}
 
 	const displayHtml = $derived(renderMath(stripMathDelimiters(text), true));

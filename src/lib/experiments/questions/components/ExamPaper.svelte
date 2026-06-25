@@ -237,7 +237,7 @@
 	}
 
 	.source-note {
-		margin-top: 0.4rem !important;
+		margin-top: 0.4rem;
 		font-size: 0.86rem;
 	}
 
@@ -541,8 +541,8 @@
 		}
 
 		.paper-sheet {
-			width: min(100%, calc(100vw - 4rem)) !important;
-			max-width: calc(100vw - 4rem) !important;
+			width: min(100%, calc(100vw - 4rem));
+			max-width: calc(100vw - 4rem);
 			padding: 0.9rem 0.65rem 1.8rem;
 			overflow: hidden;
 		}

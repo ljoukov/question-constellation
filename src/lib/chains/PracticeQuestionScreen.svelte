@@ -9,9 +9,7 @@
 		ExperimentGradeResponse,
 		ExperimentQuestionGradeResult
 	} from '$lib/experiments/questions/gradingTypes';
-	import type {
-		ExamPaper as ExamPaperData,
-	} from '$lib/experiments/questions/types';
+	import type { ExamPaper as ExamPaperData } from '$lib/experiments/questions/types';
 	import type { LearningChain } from '$lib/learningChains';
 
 	type SubmitPhase = 'idle' | 'submitting' | 'thinking' | 'grading';
@@ -35,29 +33,32 @@
 		});
 	const questionSourceRef = (question: LearningChain['questions'][number]) =>
 		question.sourceRef ?? question.ref;
+	const questionMatchesRef = (question: LearningChain['questions'][number], ref: string) =>
+		question.id === ref || question.ref === ref || question.sourceRef === ref;
 
-	let selectedRef = $state('');
+	const selectedRef = $derived(initialRef);
 	let answers = $state<Record<string, string>>({});
 	let submitPhase = $state<SubmitPhase>('idle');
 	let submitError = $state('');
 	let gradeResponse = $state<ExperimentGradeResponse | null>(null);
 	let hintOpen = $state(false);
 	let patternOpen = $state(false);
-	let lastInitialRef = $state('');
+	let lastInitialRef = $state<string | null>(null);
 
 	const activeQuestion = $derived(
-		chain.questions.find((question) => questionSourceRef(question) === selectedRef) ?? firstQuestion
+		chain.questions.find((question) => questionMatchesRef(question, selectedRef)) ?? firstQuestion
 	);
 	const selectedIndex = $derived(
 		Math.max(
 			0,
-			chain.questions.findIndex((question) => questionSourceRef(question) === selectedRef)
+			chain.questions.findIndex((question) => questionMatchesRef(question, selectedRef))
 		)
 	);
 	const nextQuestion = $derived(
 		chain.questions[Math.min(selectedIndex + 1, chain.questions.length - 1)]
 	);
-	const focusedPaper = $derived(focusPaperByRef(paper, selectedRef));
+	const focusedRef = $derived(questionSourceRef(activeQuestion));
+	const focusedPaper = $derived(focusPaperByRef(paper, focusedRef));
 	const displayPaper = $derived(
 		focusedPaper
 			? {
@@ -96,8 +97,11 @@
 	const hasGrade = $derived(Object.keys(gradeResultsByRef).length > 0);
 
 	$effect(() => {
+		if (lastInitialRef === null) {
+			lastInitialRef = initialRef;
+			return;
+		}
 		if (lastInitialRef === initialRef) return;
-		selectedRef = initialRef;
 		answers = {};
 		submitPhase = 'idle';
 		submitError = '';
@@ -202,7 +206,7 @@
 
 		try {
 			const response = await fetch(
-				`/api/experiments/questions/${paper.id}/${encodeURIComponent(selectedRef)}/grade`,
+				`/api/experiments/questions/${paper.id}/${encodeURIComponent(focusedRef)}/grade`,
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
@@ -236,8 +240,8 @@
 				{#each chain.questions as question, index (question.id ?? question.ref)}
 					<a
 						href={questionRoute(question)}
-						class:active={questionSourceRef(question) === selectedRef}
-						aria-current={questionSourceRef(question) === selectedRef ? 'page' : undefined}
+						class:active={questionMatchesRef(question, selectedRef)}
+						aria-current={questionMatchesRef(question, selectedRef) ? 'page' : undefined}
 					>
 						<span>{index + 1}</span>
 						<span><MathText text={question.title} /></span>
@@ -252,7 +256,7 @@
 		<section class="qc-real-main" aria-label="Current question">
 			<div class="qc-real-question-top">
 				<div>
-					<p>{paper.subtitle || chain.paperLabel} · Question {selectedRef}</p>
+					<p>{paper.subtitle || chain.paperLabel} · Question {focusedRef}</p>
 					<h2><MathText text={activeQuestion.title} /></h2>
 				</div>
 				<button
@@ -293,14 +297,10 @@
 			{/if}
 
 			{#if patternOpen}
-				<ThinkingChain
-					steps={chain.steps}
-					label="Thinking chain"
-					note="Use the links in order."
-				/>
+				<ThinkingChain steps={chain.steps} label="Thinking chain" note="Use the links in order." />
 			{/if}
 
-			{#if hasGrade && nextQuestion && questionSourceRef(nextQuestion) !== selectedRef}
+			{#if hasGrade && nextQuestion && !questionMatchesRef(nextQuestion, selectedRef)}
 				<div class="qc-real-next">
 					<span>Next related question: <MathText text={nextQuestion.title} /></span>
 					<a href={questionRoute(nextQuestion)}>Continue</a>

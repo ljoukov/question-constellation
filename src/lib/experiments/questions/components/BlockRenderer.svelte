@@ -9,19 +9,29 @@
 		block: ExamQuestionBlock;
 		assets: Record<string, ExamPaperAsset>;
 	} = $props();
+
+	let failedAssetIds = $state<Set<string>>(new Set());
+
+	function markImageFailed(assetId: string) {
+		failedAssetIds = new Set([...failedAssetIds, assetId]);
+	}
 </script>
 
 {#if block.kind === 'paragraph'}
 	<p class="exam-paragraph"><MathText text={block.text} /></p>
 {:else if block.kind === 'figure'}
 	{@const asset = assets[block.assetId]}
-	{#if asset}
+	{#if asset && !failedAssetIds.has(block.assetId)}
 		<figure class="exam-figure" style={`--figure-width: ${block.width ?? asset.width ?? 360}px`}>
 			<figcaption>{block.label ?? asset.label}</figcaption>
-			<img src={asset.src} alt={asset.alt} />
+			<img src={asset.src} alt={asset.alt} onerror={() => markImageFailed(block.assetId)} />
 		</figure>
 	{:else}
-		<p class="missing-asset">Missing asset: {block.assetId}</p>
+		<p class="missing-asset">
+			{asset
+				? `Image unavailable: ${block.label ?? asset.label}`
+				: `Missing asset: ${block.assetId}`}
+		</p>
 	{/if}
 {:else if block.kind === 'table'}
 	<figure class="exam-table-wrap" class:compact={block.compact}>
@@ -215,8 +225,8 @@
 		.exam-table-wrap,
 		.exam-table-wrap.compact,
 		.exam-table-wrap.wide {
-			width: min(100%, calc(100vw - 8rem)) !important;
-			max-width: min(100%, calc(100vw - 8rem)) !important;
+			width: min(100%, calc(100vw - 8rem));
+			max-width: min(100%, calc(100vw - 8rem));
 		}
 
 		table {

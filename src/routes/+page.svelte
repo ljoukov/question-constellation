@@ -37,17 +37,22 @@
 	}
 
 	let searchQuery = $state(untrack(() => data.initialSearch));
-	let selectedSubject = $state(untrack(() => canonicalSubject(data.initialSubject) ?? 'All subjects'));
+	let selectedSubject = $state(
+		untrack(() => canonicalSubject(data.initialSubject) ?? 'All subjects')
+	);
 	let visibleCount = $state(12);
 
 	const subjects = $derived([
 		'All subjects',
-		...subjectOrder.filter((subject) => data.chains.some((chain) => chainSubject(chain) === subject))
+		...subjectOrder.filter((subject) =>
+			data.chains.some((chain) => chainSubject(chain) === subject)
+		)
 	]);
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
 	const filteredChains = $derived(
 		data.chains.filter((chain) => {
-			if (selectedSubject !== 'All subjects' && chainSubject(chain) !== selectedSubject) return false;
+			if (selectedSubject !== 'All subjects' && chainSubject(chain) !== selectedSubject)
+				return false;
 			if (!normalizedSearch) return true;
 
 			const haystack = [
@@ -71,9 +76,7 @@
 			]
 				.join(' ')
 				.toLowerCase();
-			return normalizedSearch
-				.split(/\s+/)
-				.every((term) => haystack.includes(term));
+			return normalizedSearch.split(/\s+/).every((term) => haystack.includes(term));
 		})
 	);
 	const firstChain = $derived(filteredChains[0] ?? null);
@@ -88,6 +91,27 @@
 
 	function chainHref(chain: LearningChain) {
 		return resolve('/chains/[chainId]', { chainId: chain.id });
+	}
+
+	function syncBrowseUrl(nextSearch: string, nextSubject: string) {
+		if (typeof window === 'undefined') return;
+		const params = new URLSearchParams();
+		const trimmedSearch = nextSearch.trim();
+		if (trimmedSearch) params.set('q', trimmedSearch);
+		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
+		const query = params.toString();
+		const nextUrl = `${resolve('/')}${query ? `?${query}` : ''}`;
+		window.history.replaceState(window.history.state, '', nextUrl);
+	}
+
+	function updateSearch(value: string) {
+		searchQuery = value;
+		syncBrowseUrl(value, selectedSubject);
+	}
+
+	function updateSubject(value: string) {
+		selectedSubject = value;
+		syncBrowseUrl(searchQuery, value);
 	}
 
 	function accessibleText(value: string) {
@@ -109,18 +133,15 @@
 		{subjects}
 		searchValue={searchQuery}
 		searchPlaceholder="Search chains or questions"
-		onSearchChange={(value) => (searchQuery = value)}
-		onSubjectChange={(value) => (selectedSubject = value)}
+		onSearchChange={updateSearch}
+		onSubjectChange={updateSubject}
 	/>
 
 	<div class="qc-browse-layout">
 		<aside class="qc-browse-intro">
 			<p class="qc-real-kicker">GCSE Science</p>
 			<h1>Choose a question chain.</h1>
-			<p>
-				Pick a real exam question, then practise the same thinking chain in nearby
-				questions.
-			</p>
+			<p>Pick a real exam question, then practise the same thinking chain in nearby questions.</p>
 			{#if firstChain}
 				<a class="qc-browse-start" href={chainHref(firstChain)}>Start with a chain</a>
 			{/if}
@@ -148,7 +169,10 @@
 						</span>
 					</a>
 
-					<ol class="qc-browse-pattern" aria-label={`${accessibleText(chain.title)} reasoning steps`}>
+					<ol
+						class="qc-browse-pattern"
+						aria-label={`${accessibleText(chain.title)} reasoning steps`}
+					>
 						{#each chain.steps as step}
 							<li><MathText text={step} /></li>
 						{/each}

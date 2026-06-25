@@ -50,6 +50,24 @@
 </script>
 
 <svelte:head>
+	<script>
+		(() => {
+			try {
+				const preference = window.localStorage.getItem('question-constellation-theme');
+				const mode =
+					preference === 'light' || preference === 'dark'
+						? preference
+						: window.matchMedia('(prefers-color-scheme: dark)').matches
+							? 'dark'
+							: 'light';
+				document.documentElement.dataset.theme = mode;
+				document.documentElement.classList.toggle('dark', mode === 'dark');
+				document.documentElement.style.colorScheme = mode;
+			} catch {
+				// Keep the server-rendered default if browser storage is unavailable.
+			}
+		})();
+	</script>
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
