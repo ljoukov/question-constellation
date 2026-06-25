@@ -125,6 +125,7 @@ type FixedResponse =
 	| {
 			kind: 'choice';
 			options: string[];
+			maxSelections: number;
 	  }
 	| {
 			kind: 'choice-table';
@@ -291,6 +292,13 @@ function imageLabelAnswerKeyForQuestion(questionId: string) {
 	return keys[questionId] ?? {};
 }
 
+function choiceMaxSelections(value: Record<string, unknown>, optionCount: number) {
+	const explicit = value.maxSelections;
+	if (typeof explicit !== 'number' || explicit < 1) return 1;
+	if (optionCount > 1 && explicit >= optionCount) return 1;
+	return explicit;
+}
+
 function responseFromRenderJson(raw: string | null): FixedResponse | null {
 	const render = parseJson<{ response?: unknown }>(raw, {});
 	const response = render.response;
@@ -323,9 +331,11 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 	}
 
 	if (value.kind === 'choice' && Array.isArray(value.options)) {
+		const options = value.options.filter((option): option is string => typeof option === 'string');
 		return {
 			kind: 'choice',
-			options: value.options.filter((option): option is string => typeof option === 'string')
+			options,
+			maxSelections: choiceMaxSelections(value, options.length)
 		};
 	}
 
@@ -425,7 +435,9 @@ function responsePromptDetails(response: FixedResponse | null) {
 	if (!response) return null;
 	if (response.kind === 'choice') {
 		return [
-			'The learner selects one option.',
+			response.maxSelections === 1
+				? 'The learner selects one option.'
+				: `The learner selects ${response.maxSelections} options.`,
 			'Options:',
 			...response.options.map((option) => `- ${option}`)
 		]

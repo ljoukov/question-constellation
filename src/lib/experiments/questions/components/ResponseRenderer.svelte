@@ -30,7 +30,7 @@
 	let textAnswer = $state('');
 	let labeledAnswers = $state<Record<string, string>>({});
 	let numberAnswer = $state('');
-	let selectedChoice = $state<number | null>(null);
+	let selectedChoices = $state<number[]>([]);
 	let selectedChoiceTableRow = $state<number | null>(null);
 	let matchingAnswers = $state<Record<string, string>>({});
 	let selectedMatchSide = $state<MatchSide | ''>('');
@@ -38,9 +38,45 @@
 	let equationBlankAnswers = $state<Record<string, string>>({});
 	let activeGraphicLabel = $state('');
 	let graphicAnswers = $state<Record<string, string>>({});
+	let drawingCanvas = $state<HTMLCanvasElement | null>(null);
+	let drawingActive = $state(false);
 
 	$effect(() => {
-		if (answer !== textAnswer) textAnswer = answer;
+		if (response.kind === 'lines' && answer !== textAnswer) {
+			textAnswer = answer;
+		}
+		if (response.kind === 'number-line' && answer !== numberAnswer) {
+			numberAnswer = answer;
+		}
+		if (response.kind === 'choice') {
+			const allowedCount = choiceMaxSelections();
+			const selectedAnswers = answer
+				.split(/\r?\n/)
+				.map((item) => item.trim())
+				.filter(Boolean);
+			const nextChoices = response.options
+				.map((option, index) =>
+					selectedAnswers.some((selected) => selected === option.trim()) ? index : -1
+				)
+				.filter((index) => index >= 0)
+				.slice(0, allowedCount);
+			if (nextChoices.join(',') !== selectedChoices.join(',')) {
+				selectedChoices = nextChoices;
+			}
+		} else if (selectedChoices.length > 0) {
+			selectedChoices = [];
+		}
+		if (response.kind === 'choice-table') {
+			const trimmedAnswer = answer.trim();
+			const nextRow =
+				trimmedAnswer.length === 0
+					? null
+					: response.rows.findIndex((row) => row.join(' | ') === trimmedAnswer);
+			const normalizedRow = nextRow === -1 ? null : nextRow;
+			if (selectedChoiceTableRow !== normalizedRow) selectedChoiceTableRow = normalizedRow;
+		} else if (selectedChoiceTableRow !== null) {
+			selectedChoiceTableRow = null;
+		}
 	});
 
 	function emitAnswer(value: string) {
@@ -83,6 +119,23 @@
 			.join('\n');
 	}
 
+	function serializeChoiceAnswers(nextChoices = selectedChoices) {
+		if (response.kind !== 'choice') return '';
+		return nextChoices
+			.map((index) => response.options[index])
+			.filter(Boolean)
+			.join('\n');
+	}
+
+	function choiceMaxSelections() {
+		if (response.kind !== 'choice') return 1;
+		const optionCount = response.options.length;
+		const explicit = response.maxSelections;
+		if (!explicit || explicit < 1) return 1;
+		if (optionCount > 1 && explicit >= optionCount) return 1;
+		return explicit;
+	}
+
 	function setTextAnswer(value: string) {
 		textAnswer = value;
 		emitAnswer(value);
@@ -100,10 +153,70 @@
 	}
 
 	function toggleChoice(index: number) {
-		selectedChoice = selectedChoice === index ? null : index;
-		emitAnswer(
-			selectedChoice === null ? '' : response.kind === 'choice' ? response.options[index] : ''
-		);
+		if (response.kind !== 'choice') return;
+		const maxSelections = choiceMaxSelections();
+		let nextChoices: number[];
+		if (selectedChoices.includes(index)) {
+			nextChoices = selectedChoices.filter((choice) => choice !== index);
+		} else if (maxSelections === 1) {
+			nextChoices = [index];
+		} else if (selectedChoices.length >= maxSelections) {
+			nextChoices = selectedChoices;
+		} else {
+			nextChoices = [...selectedChoices, index];
+		}
+		selectedChoices = nextChoices;
+		emitAnswer(serializeChoiceAnswers(nextChoices));
+	}
+
+	function drawingPoint(event: PointerEvent) {
+		if (!drawingCanvas) return null;
+		const rect = drawingCanvas.getBoundingClientRect();
+		return {
+			x: ((event.clientX - rect.left) / rect.width) * drawingCanvas.width,
+			y: ((event.clientY - rect.top) / rect.height) * drawingCanvas.height
+		};
+	}
+
+	function drawingContext() {
+		const context = drawingCanvas?.getContext('2d') ?? null;
+		if (!context) return null;
+		context.lineWidth = 3;
+		context.lineCap = 'round';
+		context.lineJoin = 'round';
+		context.strokeStyle = '#000000';
+		return context;
+	}
+
+	function startDrawing(event: PointerEvent) {
+		const point = drawingPoint(event);
+		const context = drawingContext();
+		if (!point || !context || !drawingCanvas) return;
+		drawingActive = true;
+		drawingCanvas.setPointerCapture(event.pointerId);
+		context.beginPath();
+		context.moveTo(point.x, point.y);
+	}
+
+	function continueDrawing(event: PointerEvent) {
+		if (!drawingActive) return;
+		const point = drawingPoint(event);
+		const context = drawingContext();
+		if (!point || !context) return;
+		context.lineTo(point.x, point.y);
+		context.stroke();
+	}
+
+	function endDrawing() {
+		if (!drawingActive || !drawingCanvas) return;
+		drawingActive = false;
+		emitAnswer(drawingCanvas.toDataURL('image/png'));
+	}
+
+	function clearDrawing() {
+		if (!drawingCanvas) return;
+		drawingCanvas.getContext('2d')?.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+		emitAnswer('');
 	}
 
 	function toggleChoiceTableRow(index: number) {
@@ -333,24 +446,26 @@
 		{/if}
 	</label>
 {:else if response.kind === 'choice'}
+	{@const maxSelections = choiceMaxSelections()}
 	<div
 		class="choice-list"
 		class:horizontal={response.layout === 'horizontal'}
-		role="radiogroup"
-		aria-label="Multiple choice options"
+		role={maxSelections === 1 ? 'radiogroup' : 'group'}
+		aria-label={maxSelections === 1 ? 'Tick one option' : `Tick ${maxSelections} options`}
 	>
 		{#each response.options as option, index (`${option}-${index}`)}
+			{@const selected = selectedChoices.includes(index)}
 			<button
 				type="button"
 				class="choice-row"
-				class:selected={selectedChoice === index}
-				role="radio"
-				aria-checked={selectedChoice === index}
+				class:selected
+				role={maxSelections === 1 ? 'radio' : 'checkbox'}
+				aria-checked={selected}
 				onclick={() => toggleChoice(index)}
 			>
 				<span class="choice-label"><MathText text={option} /></span>
 				<span class="tick-cell" aria-hidden="true">
-					<span class="tick-mark">{selectedChoice === index ? '✓' : ''}</span>
+					<span class="tick-mark">{selected ? '✓' : ''}</span>
 				</span>
 			</button>
 		{/each}
@@ -504,6 +619,27 @@
 	{:else}
 		<p class="missing-asset">Missing answer canvas: {response.assetId}</p>
 	{/if}
+{:else if response.kind === 'drawing-box'}
+	<figure
+		class="drawing-box"
+		style={`--drawing-width: ${response.width ?? 420}px; --drawing-height: ${response.height ?? 180}px`}
+	>
+		{#if response.label}
+			<figcaption>{response.label}</figcaption>
+		{/if}
+		<canvas
+			bind:this={drawingCanvas}
+			width={response.width ?? 420}
+			height={response.height ?? 180}
+			aria-label={response.label ?? 'Drawing answer'}
+			onpointerdown={startDrawing}
+			onpointermove={continueDrawing}
+			onpointerup={endDrawing}
+			onpointercancel={endDrawing}
+			onpointerleave={endDrawing}
+		></canvas>
+		<button type="button" class="clear-drawing-button" onclick={clearDrawing}>Clear</button>
+	</figure>
 {:else if response.kind === 'equation-blanks'}
 	<div class="equation-blanks" aria-label="Equation answer">
 		{#each response.segments as segment, index (segment.kind === 'blank' ? segment.id : `${segment.kind}-${index}`)}
@@ -916,6 +1052,38 @@
 		display: block;
 		width: 100%;
 		height: auto;
+	}
+
+	.drawing-box {
+		width: min(100%, var(--drawing-width));
+		margin: 0.85rem auto 0.35rem;
+		text-align: center;
+	}
+
+	.drawing-box figcaption {
+		margin-bottom: 0.4rem;
+		font-weight: 700;
+	}
+
+	.drawing-box canvas {
+		display: block;
+		width: 100%;
+		height: var(--drawing-height);
+		border: 1.5px solid #000000;
+		background: #ffffff;
+		touch-action: none;
+		cursor: crosshair;
+	}
+
+	.clear-drawing-button {
+		margin-top: 0.45rem;
+		border: 1px solid #000000;
+		border-radius: 0;
+		background: #ffffff;
+		color: #000000;
+		font: inherit;
+		font-size: 0.86rem;
+		cursor: pointer;
 	}
 
 	.equation-blanks {

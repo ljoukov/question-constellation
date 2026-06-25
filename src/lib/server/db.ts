@@ -35,6 +35,24 @@ function getLocalD1Config() {
 	return { accountId, apiToken, databaseId };
 }
 
+function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchD1WithRetry(url: string, init: RequestInit) {
+	const maxAttempts = 4;
+	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+		try {
+			const response = await fetch(url, init);
+			if (response.status < 500 || attempt === maxAttempts) return response;
+		} catch (error) {
+			if (attempt === maxAttempts) throw error;
+		}
+		await sleep(600 * attempt);
+	}
+	throw new Error('D1 REST query failed after retries.');
+}
+
 function normalizeD1Results<T>(response: D1RestResponse<T>): T[] {
 	if (!response.success) {
 		throw new Error(`D1 REST query failed: ${JSON.stringify(response.errors ?? response)}`);
@@ -64,7 +82,7 @@ export async function queryRows<T extends Record<string, unknown>>(
 	}
 
 	const { accountId, apiToken, databaseId } = getLocalD1Config();
-	const response = await fetch(
+	const response = await fetchD1WithRetry(
 		`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
 		{
 			method: 'POST',

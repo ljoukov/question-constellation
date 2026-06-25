@@ -1,4 +1,6 @@
 <script lang="ts">
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+
 	let {
 		steps,
 		label = 'Thinking chain',
@@ -24,7 +26,7 @@
 		{#each steps as step, index}
 			<li style={`--chain-accent: ${accents[index % accents.length]}`}>
 				<span class="qc-thinking-step-number">{index + 1}</span>
-				<span class="qc-thinking-step-text">{step}</span>
+				<span class="qc-thinking-step-text"><MathText text={step} /></span>
 			</li>
 		{/each}
 	</ol>

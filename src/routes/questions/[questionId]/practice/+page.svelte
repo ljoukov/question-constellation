@@ -66,7 +66,6 @@
 	const previousHref = $derived(
 		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
 	);
-	const chainReminder = $derived(data.question.repairChain.map((node) => node.label).join(' → '));
 	const isChecking = $derived(
 		gradePhase === 'connecting' ||
 			gradePhase === 'calling' ||
@@ -74,11 +73,11 @@
 			gradePhase === 'grading'
 	);
 	const canCheck = $derived(answerText.trim().length > 0 && !isChecking);
-	const statusText = $derived(`${gradePhase}...`);
+	const statusText = $derived(statusLabelForPhase(gradePhase));
 	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
-	const streamedThoughtPreview = $derived(lastMarkdownParagraph(streamedThought));
 	const feedbackMarkdown = $derived((gradeResult?.feedbackMarkdown ?? '').trim());
 	const hasMissingLinks = $derived(missingItems.length > 0);
+	let showHint = $state(false);
 
 	async function checkAnswer() {
 		if (!canCheck) return;
@@ -133,20 +132,22 @@
 	}
 
 	function statusDescriptionForPhase(phase: GradePhase) {
-		if (phase === 'connecting') return 'Connecting your browser to the grading endpoint.';
-		if (phase === 'calling') return 'The server is calling the model.';
-		if (phase === 'thinking') return 'The model is working through the answer chain.';
-		if (phase === 'grading') return 'The grade and feedback are streaming back.';
+		if (phase === 'connecting') return 'Starting the answer check.';
+		if (phase === 'calling') return 'Looking for the links you included.';
+		if (phase === 'thinking') return 'Comparing your answer with the chain.';
+		if (phase === 'grading') return 'Preparing feedback.';
 		if (phase === 'error') return 'The check could not finish.';
 		return '';
 	}
 
-	function lastMarkdownParagraph(value: string) {
-		const paragraphs = value
-			.split(/\n\s*\n/)
-			.map((paragraph) => paragraph.trim())
-			.filter(Boolean);
-		return paragraphs.at(-1) ?? '';
+	function statusLabelForPhase(phase: GradePhase) {
+		if (phase === 'connecting') return 'Starting check';
+		if (phase === 'calling') return 'Checking answer';
+		if (phase === 'thinking') return 'Checking answer';
+		if (phase === 'grading') return 'Preparing feedback';
+		if (phase === 'done') return 'Checked';
+		if (phase === 'error') return 'Could not check';
+		return 'Check answer';
 	}
 
 	function parseSseBlock(block: string): SseMessage | null {
@@ -242,6 +243,7 @@
 		gradeError = '';
 		gradeResult = null;
 		streamedThought = '';
+		showHint = false;
 	});
 </script>
 
@@ -296,8 +298,8 @@
 				<section class="side-card compare-card">
 					<span class="icon-tile info"><Lock size={22} /></span>
 					<div>
-						<h2>Compare after checking</h2>
-						<p>The chain appears after your attempt so you practise retrieval first.</p>
+						<h2>Chain hidden</h2>
+						<p>Chain reveals after you check your answer.</p>
 					</div>
 				</section>
 			</aside>
@@ -320,10 +322,14 @@
 				<h1 class="attempt-question">{data.question.prompt}</h1>
 
 				<section class="memory-first-card">
-					<span class="icon-tile info"><Lightbulb size={22} /></span>
+							<span class="icon-tile info"><Lightbulb size={22} /></span>
 					<div>
-						<h2>Try from memory first</h2>
-						<p>Compare with the chain after you check.</p>
+						<h2>Hint available</h2>
+						<p>
+							{showHint
+								? 'Name the resistive force, explain how it changes, then say how the resultant force changes before the final motion.'
+								: 'Start with the force that opposes the motion.'}
+						</p>
 					</div>
 				</section>
 
@@ -345,9 +351,9 @@
 							Check answer
 						{/if}
 					</button>
-					<button class="secondary-button" type="button" onclick={checkAnswer} disabled={!canCheck}>
+					<button class="secondary-button" type="button" onclick={() => (showHint = true)}>
 						<ListChecks size={22} />
-						Use mark checklist
+						Show one hint
 					</button>
 				</div>
 
@@ -357,12 +363,6 @@
 						<div>
 							<h2>{statusText}</h2>
 							<p>{statusDescription}</p>
-							{#if streamedThoughtPreview}
-								<div class="thinking-preview">
-									<strong>Thinking</strong>
-									<p>{streamedThoughtPreview}</p>
-								</div>
-							{/if}
 						</div>
 					</section>
 				{/if}
@@ -459,7 +459,11 @@
 						? 'Use the feedback to repair your answer.'
 						: 'Save this chain or try the next transfer question.'}
 				</p>
-				<div class="chain-reminder">{chainReminder}</div>
+				<div class="chain-reminder" aria-label="Answer chain reminder">
+					{#each data.question.repairChain as node (node.id)}
+						<span>{node.label}</span>
+					{/each}
+				</div>
 				{#if hasMissingLinks}
 					<textarea
 						bind:value={rewriteText}

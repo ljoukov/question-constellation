@@ -82,6 +82,7 @@ export type ExamResponse =
 			kind: 'choice';
 			options: string[];
 			layout?: 'vertical' | 'horizontal';
+			maxSelections?: number;
 	  }
 	| {
 			kind: 'choice-table';
@@ -101,6 +102,12 @@ export type ExamResponse =
 			label?: string;
 			width?: number;
 			labelBank?: string[];
+	  }
+	| {
+			kind: 'drawing-box';
+			label?: string;
+			width?: number;
+			height?: number;
 	  }
 	| {
 			kind: 'equation-blanks';

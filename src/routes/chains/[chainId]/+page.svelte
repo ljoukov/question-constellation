@@ -2,6 +2,7 @@
 	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 
 	let {
@@ -29,15 +30,15 @@
 	<div class="qc-chain-layout">
 		<aside class="qc-chain-side" aria-label="Question chain summary">
 			<a class="qc-chain-back" href="/" aria-label="Back to chains">←</a>
-			<p class="qc-real-kicker">{chain.topic}</p>
-			<h1>{chain.title}</h1>
-			<p>{chain.summary}</p>
+			<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
+			<h1><MathText text={chain.title} /></h1>
+			<p><MathText text={chain.summary} /></p>
 			<ThinkingChain steps={chain.steps} label="Thinking chain" />
 		</aside>
 
 		<section class="qc-chain-main" aria-label="Questions in this chain">
 			<div class="qc-chain-heading">
-				<p class="qc-real-kicker">{chain.topic}</p>
+				<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
 				<h2>Questions in this chain</h2>
 			</div>
 

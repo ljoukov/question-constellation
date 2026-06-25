@@ -169,6 +169,13 @@ function blocksFromValue(value: unknown, label: string) {
 	return value.map((block) => blockFromJson(block as Record<string, unknown>));
 }
 
+function choiceMaxSelections(value: Record<string, unknown>, optionCount: number) {
+	const explicit = value.maxSelections;
+	if (typeof explicit !== 'number' || explicit < 1) return undefined;
+	if (optionCount > 1 && explicit >= optionCount) return undefined;
+	return explicit;
+}
+
 function responseFromValue(raw: unknown): ExamResponse {
 	const value = raw as Record<string, unknown>;
 	if (value.kind === 'none') return { kind: 'none' };
@@ -183,10 +190,13 @@ function responseFromValue(raw: unknown): ExamResponse {
 		};
 	}
 	if (value.kind === 'choice' && Array.isArray(value.options)) {
+		const options = value.options as string[];
+		const maxSelections = choiceMaxSelections(value, options.length);
 		return {
 			kind: 'choice',
-			options: value.options as string[],
-			layout: value.layout === 'horizontal' ? 'horizontal' : 'vertical'
+			options,
+			layout: value.layout === 'horizontal' ? 'horizontal' : 'vertical',
+			...(maxSelections ? { maxSelections } : {})
 		};
 	}
 	if (value.kind === 'choice-table' && Array.isArray(value.columns) && Array.isArray(value.rows)) {
@@ -231,6 +241,14 @@ function responseFromValue(raw: unknown): ExamResponse {
 			label: typeof value.label === 'string' ? value.label : undefined,
 			width: typeof value.width === 'number' ? value.width : undefined,
 			labelBank: Array.isArray(value.labelBank) ? (value.labelBank as string[]) : undefined
+		};
+	}
+	if (value.kind === 'drawing-box') {
+		return {
+			kind: 'drawing-box',
+			label: typeof value.label === 'string' ? value.label : undefined,
+			width: typeof value.width === 'number' ? value.width : undefined,
+			height: typeof value.height === 'number' ? value.height : undefined
 		};
 	}
 	if (

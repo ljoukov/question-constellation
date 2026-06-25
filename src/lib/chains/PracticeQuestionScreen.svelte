@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamPaper from '$lib/experiments/questions/components/ExamPaper.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { focusPaperByRef } from '$lib/experiments/questions/paperUtils';
 	import ThinkingChain from './ThinkingChain.svelte';
 	import type {
@@ -42,6 +43,7 @@
 	let gradeResponse = $state<ExperimentGradeResponse | null>(null);
 	let hintOpen = $state(false);
 	let patternOpen = $state(false);
+	let lastInitialRef = $state('');
 
 	const activeQuestion = $derived(
 		chain.questions.find((question) => questionSourceRef(question) === selectedRef) ?? firstQuestion
@@ -94,7 +96,15 @@
 	const hasGrade = $derived(Object.keys(gradeResultsByRef).length > 0);
 
 	$effect(() => {
-		if (!selectedRef) selectedRef = initialRef;
+		if (lastInitialRef === initialRef) return;
+		selectedRef = initialRef;
+		answers = {};
+		submitPhase = 'idle';
+		submitError = '';
+		gradeResponse = null;
+		hintOpen = false;
+		patternOpen = false;
+		lastInitialRef = initialRef;
 	});
 
 	function setAnswer(ref: string, answer: string) {
@@ -220,7 +230,7 @@
 	<div class="qc-real-layout">
 		<aside class="qc-real-rail" aria-label="Related practice sequence">
 			<p class="qc-real-kicker">{chain.paperLabel}</p>
-			<h1>{chain.title}</h1>
+			<h1><MathText text={chain.title} /></h1>
 
 			<nav class="qc-real-chain-list" aria-label="Related questions">
 				{#each chain.questions as question, index (question.id ?? question.ref)}
@@ -230,8 +240,8 @@
 						aria-current={questionSourceRef(question) === selectedRef ? 'page' : undefined}
 					>
 						<span>{index + 1}</span>
-						<span>{question.title}</span>
-						<small>{question.label} · {question.marks ?? '?'} marks</small>
+						<span><MathText text={question.title} /></span>
+						<small><MathText text={`${question.label} · ${question.marks ?? '?'} marks`} /></small>
 					</a>
 				{/each}
 			</nav>
@@ -243,7 +253,7 @@
 			<div class="qc-real-question-top">
 				<div>
 					<p>{paper.subtitle || chain.paperLabel} · Question {selectedRef}</p>
-					<h2>{activeQuestion.title}</h2>
+					<h2><MathText text={activeQuestion.title} /></h2>
 				</div>
 				<button
 					type="button"
@@ -261,7 +271,7 @@
 			{#if hintOpen && !hasGrade}
 				<section class="qc-real-hint" aria-label="Hint">
 					<p>Hint</p>
-					<span>{chain.weakLink}</span>
+					<span><MathText text={chain.weakLink} /></span>
 				</section>
 			{/if}
 
@@ -292,7 +302,7 @@
 
 			{#if hasGrade && nextQuestion && questionSourceRef(nextQuestion) !== selectedRef}
 				<div class="qc-real-next">
-					<span>Next related question: {nextQuestion.title}</span>
+					<span>Next related question: <MathText text={nextQuestion.title} /></span>
 					<a href={questionRoute(nextQuestion)}>Continue</a>
 				</div>
 			{/if}

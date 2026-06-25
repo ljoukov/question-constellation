@@ -2,23 +2,96 @@
 	import { resolve } from '$app/paths';
 	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
+	import { untrack } from 'svelte';
 
 	let {
 		data
 	}: {
 		data: {
 			chains: LearningChain[];
+			initialSearch: string;
+			initialSubject: string;
 		};
 	} = $props();
 
-	const firstChain = $derived(data.chains[0] ?? null);
+	const subjectOrder = ['Biology', 'Chemistry', 'Physics'];
+
+	function canonicalSubject(value: string | null | undefined) {
+		const lower = (value ?? '').toLowerCase();
+		if (lower.includes('biology')) return 'Biology';
+		if (lower.includes('chemistry')) return 'Chemistry';
+		if (lower.includes('physics')) return 'Physics';
+		return null;
+	}
+
+	function chainSubject(chain: LearningChain) {
+		return (
+			canonicalSubject(chain.subject) ??
+			canonicalSubject(chain.paperLabel) ??
+			canonicalSubject(chain.topic) ??
+			canonicalSubject(chain.title) ??
+			'Science'
+		);
+	}
+
+	let searchQuery = $state(untrack(() => data.initialSearch));
+	let selectedSubject = $state(untrack(() => canonicalSubject(data.initialSubject) ?? 'All subjects'));
 	let visibleCount = $state(12);
-	const visibleChains = $derived(data.chains.slice(0, visibleCount));
-	const remainingCount = $derived(Math.max(0, data.chains.length - visibleChains.length));
+
+	const subjects = $derived([
+		'All subjects',
+		...subjectOrder.filter((subject) => data.chains.some((chain) => chainSubject(chain) === subject))
+	]);
+	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
+	const filteredChains = $derived(
+		data.chains.filter((chain) => {
+			if (selectedSubject !== 'All subjects' && chainSubject(chain) !== selectedSubject) return false;
+			if (!normalizedSearch) return true;
+
+			const haystack = [
+				chain.title,
+				chain.subject,
+				chainSubject(chain),
+				chain.topic,
+				chain.summary,
+				chain.steps.join(' '),
+				chain.questions
+					.map((question) =>
+						[
+							question.title,
+							question.teaser,
+							question.label,
+							question.command,
+							question.paperLabel
+						].join(' ')
+					)
+					.join(' ')
+			]
+				.join(' ')
+				.toLowerCase();
+			return normalizedSearch
+				.split(/\s+/)
+				.every((term) => haystack.includes(term));
+		})
+	);
+	const firstChain = $derived(filteredChains[0] ?? null);
+	const visibleChains = $derived(filteredChains.slice(0, visibleCount));
+	const remainingCount = $derived(Math.max(0, filteredChains.length - visibleChains.length));
+
+	$effect(() => {
+		searchQuery;
+		selectedSubject;
+		visibleCount = 12;
+	});
 
 	function chainHref(chain: LearningChain) {
 		return resolve('/chains/[chainId]', { chainId: chain.id });
+	}
+
+	function accessibleText(value: string) {
+		return value.replace(/\s*<=>\s*/g, ' ⇌ ').replace(/\s*(?:->|⟶|⇒|)\s*/g, ' → ');
 	}
 </script>
 
@@ -31,7 +104,14 @@
 </svelte:head>
 
 <main class="qc-real-app qc-browse-app">
-	<AppTopbar subject="All subjects" />
+	<AppTopbar
+		subject={selectedSubject}
+		{subjects}
+		searchValue={searchQuery}
+		searchPlaceholder="Search chains or questions"
+		onSearchChange={(value) => (searchQuery = value)}
+		onSubjectChange={(value) => (selectedSubject = value)}
+	/>
 
 	<div class="qc-browse-layout">
 		<aside class="qc-browse-intro">
@@ -49,7 +129,13 @@
 		<section class="qc-browse-feed" aria-label="Question chains">
 			<div class="qc-browse-heading">
 				<h2>Question chains</h2>
-				<p>{data.chains.length} chains in the database</p>
+				<p>
+					{#if filteredChains.length === data.chains.length}
+						{data.chains.length} chains in the database
+					{:else}
+						{filteredChains.length} of {data.chains.length} chains
+					{/if}
+				</p>
 			</div>
 
 			{#each visibleChains as chain (chain.id)}
@@ -57,20 +143,24 @@
 					<a class="qc-chain-title-link" href={chainHref(chain)}>
 						<span class="qc-chain-symbol" aria-hidden="true">{chain.symbol}</span>
 						<span>
-							<span class="qc-chain-topic">{chain.topic}</span>
-							<span class="qc-chain-title">{chain.title}</span>
+							<span class="qc-chain-topic"><MathText text={chain.topic} /></span>
+							<span class="qc-chain-title"><MathText text={chain.title} /></span>
 						</span>
 					</a>
 
-					<ol class="qc-browse-pattern" aria-label={`${chain.title} reasoning steps`}>
+					<ol class="qc-browse-pattern" aria-label={`${accessibleText(chain.title)} reasoning steps`}>
 						{#each chain.steps as step}
-							<li>{step}</li>
+							<li><MathText text={step} /></li>
 						{/each}
 					</ol>
 
 					<QuestionTeaserGrid {chain} />
 				</article>
 			{/each}
+
+			{#if visibleChains.length === 0}
+				<p class="qc-empty-search">No chains match that search.</p>
+			{/if}
 
 			{#if remainingCount > 0}
 				<button
