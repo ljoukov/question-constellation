@@ -38,6 +38,11 @@ function normalizeNumberToken(value) {
 
 function textForNumberAudit(text) {
 	return String(text ?? '')
+		.replace(
+			/\bE_\{?e\}?\s*=\s*(?:\\frac\{1\}\{2\}|1\/2|0\.5)\s*k\s*e\^?2\b/gi,
+			'E_e = half k e squared'
+		)
+		.replace(/\bE\s*=\s*(?:\\frac\{1\}\{2\}|1\/2|0\.5)\s*m\s*v\^?2\b/gi, 'E = half m v squared')
 		.replace(/_\{?[A-Za-z]?\d+\}?/g, '_n')
 		.replace(/\b([A-Za-z])(\d+)\b/g, '$1_n');
 }
@@ -74,6 +79,8 @@ function isCalculationLike(chain, context = {}) {
 function chainFields(chain) {
 	const fields = [];
 	for (const [name, value] of [
+		['id', chain?.id],
+		['title', chain?.title],
 		['canonical_chain_text', firstPresent(chain, FIELD_ALIASES.canonicalChainText)],
 		['summary', chain?.summary]
 	]) {
@@ -101,10 +108,11 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 	const calculationLike = isCalculationLike(chain, context);
 
 	for (const field of chainFields(chain)) {
-		const numbers = concreteNumbers(field.text);
+		const auditText = textForNumberAudit(field.text);
+		const numbers = concreteNumbers(auditText);
 		const hasSubstitution =
-			SUBSTITUTION_PATTERN.test(field.text) || VARIABLE_ASSIGNMENT_PATTERN.test(field.text);
-		const hasConcreteUnit = CONCRETE_UNIT_PATTERN.test(field.text);
+			SUBSTITUTION_PATTERN.test(auditText) || VARIABLE_ASSIGNMENT_PATTERN.test(auditText);
+		const hasConcreteUnit = CONCRETE_UNIT_PATTERN.test(auditText);
 
 		if (hasSubstitution) {
 			issues.push({

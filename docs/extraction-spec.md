@@ -85,7 +85,11 @@ Bad answer chains are:
 - Too broad, such as `cause and effect`.
 - Invented without mark-scheme support.
 
-If a question is pure recall, a single formula substitution, or too ambiguous, the extraction agent should not force it into a rich answer chain. Mark it as `no_chain_candidate` or `needs_human_review`.
+Every published marked question should have an answer-chain link so the product can organize
+practice consistently. Pure recall, fixed-response, and single-step selection questions should use a
+compact generic recall/discrimination chain, not a rich causal chain and not a new exact-answer fact
+chain. If no reusable chain can be stated without copying the one-question answer, mark the question
+`needs_human_review` and hold it out rather than inventing a brittle chain.
 
 ### Answer Chain Step
 
@@ -364,9 +368,10 @@ There are two kinds of tests:
 
 The production output shape is the import-shaped JSON used by `import:vision`: `sourceDocument`,
 `markSchemeDocument`, optional `supportingDocuments`, atomic `questions`, render blocks, response
-objects, assets, mark-scheme items, checklist items, model answers, answer chains, common weak
-answers, review flags, and local asset manifest. A compact extraction schema may be used only inside
-small golden fixtures; it is not the production artifact.
+objects, assets, mark-scheme items, checklist items, written-response model answers,
+fixed-response answer keys, answer chains, common weak answers, review flags, and local asset
+manifest. A compact extraction schema may be used only inside small golden fixtures; it is not the
+production artifact.
 
 When `--existing-chains` is supplied, the extractor must compare each chain to existing chain ids. It
 should reuse an id when the ordered method is the same, keep the old id when clarifying wording for a
@@ -562,9 +567,11 @@ Use this checklist when extracting another full paper and importing it into D1:
 5. For fixed-response questions, extract `correctAnswers` and insert rows into
    `question_response_answer_keys`; do not generate model answers for these unless the fixed response
    is actually a written answer in disguise.
-6. Derive answer chains only when the marks depend on reusable reasoning, not for pure recall or
-   single-step key selection. For calculation chains, reject chain text that includes prompt-specific
-   numeric substitutions or final numeric answers; those belong in model answers and checklist rows.
+6. Derive an answer chain for every published marked question. For pure recall or single-step fixed
+   responses, use a compact generic recall/discrimination chain and keep the exact answer only in the
+   answer key, mark-scheme rows, and checklist. For calculation chains, reject chain text that includes
+   prompt-specific numeric substitutions or final numeric answers; those belong in written-response
+   model answers, answer keys, and checklist rows.
 7. Import to D1, then run validation queries for question counts, render-overlay coverage,
    mark-scheme coverage, model-answer coverage, fixed-response answer-key coverage, and zero
    published questions with no usable grading evidence.
@@ -581,8 +588,9 @@ prompt:
 For each rendered response object, emit the exact user-facing response format and, when the correct
 answer is known from the mark scheme, emit response.correctAnswers. Use target id "answer" for a
 single selected choice, each left-side id for matching, each blank id for equation blanks, and each
-image-label zone id for labels. Written-response model answers must be clean student answer text,
-not raw mark-scheme rows or AO/spec notation.
+image-label zone id for labels. Fixed-response questions should normally set modelAnswer to null;
+written-response model answers must be clean student answer text, not raw mark-scheme rows or
+AO/spec notation.
 ```
 
 ### Common Weak Answers

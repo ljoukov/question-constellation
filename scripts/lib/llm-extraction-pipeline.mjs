@@ -14,6 +14,7 @@ export const DEFAULT_THINKING_LEVEL = 'xhigh';
 export const DEFAULT_LLM_TIMEOUT_MS = Number(
 	process.env.EXTRACTION_LLM_TIMEOUT_MS ?? 10 * 60 * 1000
 );
+export const DEFAULT_LLM_MAX_ATTEMPTS = Number(process.env.EXTRACTION_LLM_MAX_ATTEMPTS ?? 1);
 
 const StepRoleSchema = z.enum([
 	'given',
@@ -26,6 +27,25 @@ const StepRoleSchema = z.enum([
 	'calculation',
 	'conclusion'
 ]);
+
+const PRODUCTION_EXTRACTION_CONTRACT = [
+	'Production extraction contract:',
+	'- Return import-shaped JSON with sourceDocument, markSchemeDocument, supportingDocuments, questions, render blocks, response objects, assets, markSchemeItems, markChecklist, written-response modelAnswer, answerChain, commonWeakAnswers, and review flags.',
+	'- Extract every independently marked subquestion. Do not create question rows for unmarked parent stems.',
+	'- Preserve render structure in stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Use response objects for choices, tick boxes, matching, equation blanks, image labels, and drawing boxes.',
+	'- Use only app-supported response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.',
+	'- Every marked question must have a reusable answerChain, including simple recall and fixed-response questions.',
+	'- An answerChain is a reusable reasoning or method pattern across questions, not a worked solution to this one question.',
+	'- For simple recall and fixed-response questions, use a generic recall/discrimination chain. Do not put the exact answer or one-question fact as the chain id, title, or summary.',
+	'- For fixed-response questions, put exact answers in response.correctAnswers, markSchemeItems, and markChecklist. Set modelAnswer to null unless the response is genuinely written prose.',
+	'- Keep chain steps tightly mark-supported. Do not add biologically plausible or explanatory tail steps unless the mark scheme requires them.',
+	'- Link answerChain step markSchemeItemIndexes only to positive marking points. Do not use ignore, reject, or do_not_accept guidance as step support.',
+	'- Keep prompt-specific numbers, substitutions, intermediate values, final numeric answers, and one-question units out of answerChain title, canonicalChainText, summary, stepText, explanation, and commonOmission.',
+	'- Put worked values in markSchemeItems, markChecklist, written-response modelAnswer, or response.correctAnswers only.',
+	'- Formula constants and symbolic formulae are allowed in answerChain text when they are part of the reusable method.',
+	'- Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion.',
+	'- For existing-chain compatibility, reuse an id when the ordered method is the same, keep the old id when clarifying wording for a compatible chain, and create a new id only for genuinely new mark-scoring reasoning.'
+].join('\n');
 
 export const StepSchema = z.object({
 	stepText: z.string(),
@@ -333,6 +353,50 @@ export function createFullResponseSchema() {
 	});
 }
 
+function createLooseRenderBlockSchema() {
+	return z
+		.object({
+			kind: z.string()
+		})
+		.passthrough();
+}
+
+function createLooseResponseSchema() {
+	const correctAnswers = () =>
+		z.array(z.object({ targetId: z.string(), correctAnswer: z.string() }));
+	return z.discriminatedUnion('kind', [
+		z.object({ kind: z.literal('none') }).passthrough(),
+		z.object({ kind: z.literal('lines') }).passthrough(),
+		z.object({ kind: z.literal('labeled-lines') }).passthrough(),
+		z.object({ kind: z.literal('drawing-box') }).passthrough(),
+		z.object({ kind: z.literal('asset-canvas') }).passthrough(),
+		z
+			.object({
+				kind: z.literal('choice'),
+				options: z.array(z.string()),
+				correctAnswers: correctAnswers()
+			})
+			.passthrough(),
+		z.object({ kind: z.literal('choice-table'), correctAnswers: correctAnswers() }).passthrough(),
+		z.object({ kind: z.literal('matching'), correctAnswers: correctAnswers() }).passthrough(),
+		z
+			.object({ kind: z.literal('equation-blanks'), correctAnswers: correctAnswers() })
+			.passthrough(),
+		z.object({ kind: z.literal('number-line'), correctAnswers: correctAnswers() }).passthrough(),
+		z
+			.object({ kind: z.literal('image-label-zones'), correctAnswers: correctAnswers() })
+			.passthrough()
+	]);
+}
+
+function createLooseAssetSchema() {
+	return z
+		.object({
+			sourceLabel: z.string()
+		})
+		.passthrough();
+}
+
 export const FullPaperExtractionSchema = z.object({
 	sourceDocumentId: z.string().nullable().optional(),
 	extractionRun: z.object({
@@ -426,25 +490,12 @@ export const FullPaperExtractionSchema = z.object({
 			pageEnd: z.number(),
 			topicPath: z.array(z.string()),
 			specRef: z.string().nullable(),
-			stemBlocks: z.array(createRenderBlockSchema()),
-			leadBlocks: z.array(createRenderBlockSchema()),
-			promptBlocks: z.array(createRenderBlockSchema()),
-			response: createFullResponseSchema(),
-			afterResponseBlocks: z.array(createRenderBlockSchema()),
-			assets: z.array(
-				z.object({
-					sourceLabel: z.string(),
-					assetType: z.string(),
-					role: z.string(),
-					pageNumber: z.number().nullable(),
-					localAssetFileName: z.string().nullable(),
-					publicPath: z.string().nullable(),
-					altText: z.string(),
-					required: z.boolean(),
-					needsHumanReview: z.boolean(),
-					reviewNotes: z.array(z.string())
-				})
-			),
+			stemBlocks: z.array(createLooseRenderBlockSchema()),
+			leadBlocks: z.array(createLooseRenderBlockSchema()),
+			promptBlocks: z.array(createLooseRenderBlockSchema()),
+			response: createLooseResponseSchema(),
+			afterResponseBlocks: z.array(createLooseRenderBlockSchema()),
+			assets: z.array(createLooseAssetSchema()),
 			markSchemeItems: z.array(
 				z.object({
 					itemType: z.string(),
@@ -540,25 +591,12 @@ export const LlmFullPaperExtractionSchema = z.object({
 			pageEnd: z.number(),
 			topicPath: z.array(z.string()),
 			specRef: z.string().nullable(),
-			stemBlocks: z.array(createRenderBlockSchema()),
-			leadBlocks: z.array(createRenderBlockSchema()),
-			promptBlocks: z.array(createRenderBlockSchema()),
-			response: createFullResponseSchema(),
-			afterResponseBlocks: z.array(createRenderBlockSchema()),
-			assets: z.array(
-				z.object({
-					sourceLabel: z.string(),
-					assetType: z.string(),
-					role: z.string(),
-					pageNumber: z.number().nullable(),
-					localAssetFileName: z.string().nullable(),
-					publicPath: z.string().nullable(),
-					altText: z.string(),
-					required: z.boolean(),
-					needsHumanReview: z.boolean(),
-					reviewNotes: z.array(z.string())
-				})
-			),
+			stemBlocks: z.array(createLooseRenderBlockSchema()),
+			leadBlocks: z.array(createLooseRenderBlockSchema()),
+			promptBlocks: z.array(createLooseRenderBlockSchema()),
+			response: createLooseResponseSchema(),
+			afterResponseBlocks: z.array(createLooseRenderBlockSchema()),
+			assets: z.array(createLooseAssetSchema()),
 			markSchemeItems: z.array(
 				z.object({
 					itemType: z.string(),
@@ -629,7 +667,11 @@ async function generateJsonWithTimeout(
 		controller.abort(new Error(`${label} timed out after ${timeoutMs}ms.`));
 	}, timeoutMs);
 	try {
-		return await generateJson({ ...options, signal: controller.signal });
+		return await generateJson({
+			maxAttempts: DEFAULT_LLM_MAX_ATTEMPTS,
+			...options,
+			signal: controller.signal
+		});
 	} finally {
 		clearTimeout(timeout);
 	}
@@ -798,10 +840,10 @@ export function buildExtractionPrompt({
 		'Use the question paper images and mark scheme images as the source of truth.',
 		`Use sourceDocumentId: ${sourceDocumentId}`,
 		expectedQuestionCount ? `Return exactly ${expectedQuestionCount} atomic question(s).` : '',
-		'For each atomic question, align mark-scheme evidence, a student-facing checklist, a concise model answer, and a reusable answerChain.',
+		'For each atomic question, align mark-scheme evidence, a student-facing checklist, a written-response model answer or fixed-response answer key, and a reusable answerChain.',
 		'Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion.',
 		'The answerChain is a reusable reasoning or method pattern across questions. It is not a worked solution to this one question.',
-		'For calculation questions, keep prompt-specific numbers, substitutions, intermediate values, final numeric answers, and one-question units in modelAnswer, markChecklist, and markSchemeItems only. Do not put them in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
+		'For calculation questions, keep prompt-specific numbers, substitutions, intermediate values, final numeric answers, and one-question units in written-response modelAnswer, response.correctAnswers, markChecklist, and markSchemeItems only. Do not put them in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
 		'Formula constants and symbolic formulae are allowed in answerChain text when they are part of the reusable method.',
 		extraInstructions,
 		'',
@@ -855,6 +897,7 @@ export function normalizeCandidate(candidate, { sourceDocumentId, model = null }
 export async function extractCandidateFromImages({
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	mediaResolution = 'auto',
 	sourceDocumentId,
 	questionImages,
 	markSchemeImages,
@@ -871,6 +914,7 @@ export async function extractCandidateFromImages({
 	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
+		mediaResolution,
 		telemetry: false,
 		input: [
 			{
@@ -902,6 +946,7 @@ export async function extractCandidateFromPdfPair({
 	outputRoot = path.join(rootDir, 'tmp/llm-extraction-pipeline'),
 	dpi = 160,
 	forceRender = false,
+	forceChunkCache = false,
 	questionPages = [],
 	markSchemePages = [],
 	model = DEFAULT_EXTRACTION_MODEL,
@@ -998,6 +1043,26 @@ function sourceDocumentPrompt(doc) {
 		.join('; ');
 }
 
+function extractionSpecPrompt(extractionSpec) {
+	const relevantHeadings = [
+		'The reusable extraction entry points are scripts and library functions',
+		'For normal PDFs, the CLI runs an independent rubric judge',
+		'The production output shape is the import-shaped JSON',
+		'When `--existing-chains` is supplied',
+		'Thinking Chain Extraction Rules'
+	];
+	const snippets = [];
+	for (const heading of relevantHeadings) {
+		const index = extractionSpec.indexOf(heading);
+		if (index < 0) continue;
+		snippets.push(extractionSpec.slice(index, index + 1400));
+	}
+	const excerpt = snippets.join('\n\n---\n\n').slice(0, 7000);
+	return [PRODUCTION_EXTRACTION_CONTRACT, excerpt ? `\nSpec excerpts:\n${excerpt}` : '']
+		.filter(Boolean)
+		.join('\n');
+}
+
 export function buildFullPaperPrompt({
 	sourceDocumentId,
 	markSchemeDocumentId,
@@ -1013,7 +1078,7 @@ export function buildFullPaperPrompt({
 }) {
 	return [
 		'Extract this GCSE exam paper into the full Question Constellation import JSON schema.',
-		'This is the production extraction path. The output must be suitable for the D1 import path: source documents, atomic questions, render blocks, response schema, assets, mark scheme items, checklist, model answers, answer chains, weak answers, and review flags.',
+		'This is the production extraction path. The output must be suitable for the D1 import path: source documents, atomic questions, render blocks, response schema, assets, mark scheme items, checklist, written-response model answers, fixed-response answer keys, answer chains, weak answers, and review flags.',
 		'Use the exact camelCase field names from the schema. Do not return snake_case aliases.',
 		`Use sourceDocument.id: ${sourceDocumentId}`,
 		`Use markSchemeDocument.id: ${markSchemeDocumentId}`,
@@ -1024,9 +1089,13 @@ export function buildFullPaperPrompt({
 		'Use the question paper page images and mark scheme text as source of truth. If mark scheme page images are supplied, use them to resolve tables or layout that text extraction may have flattened. Use supporting documents only to clarify examiner guidance, accepted alternatives, common mistakes, and review flags; never let them override the official question paper or mark scheme.',
 		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into stemBlocks/selfContainedPromptText where needed.',
 		'Render fields matter: preserve visual question structure using stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Represent MCQ/tick boxes/matching/equation blanks/image labels as response objects rather than duplicated dead text.',
+		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
 		'Every marked question must have an answerChain, including simple recall or fixed-response questions. For those, use a compact single-step chain that states the reusable discrimination or fact family.',
 		'Answer chains are reusable reasoning or method patterns, not worked solutions. Do not put prompt-specific values, substitutions, intermediate calculations, final numeric answers, or one-question units in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
-		'For calculation questions, worked values belong in markSchemeItems, markChecklist, and modelAnswer only.',
+		'For simple recall and fixed-response questions, the answerChain must be generic. Do not name the exact correct answer or this one prompt-specific fact in any answerChain field. Put the exact answer in response.correctAnswers, markSchemeItems, and markChecklist. Set modelAnswer to null unless the student must write prose.',
+		'Each non-given answerChain step must be directly supported by positive mark-scheme evidence. Do not add extra scientific tail steps that are true but not required by the mark scheme.',
+		'Use markSchemeItemIndexes on answerChain steps only for positive marking points. Do not point chain steps at ignore, reject, do_not_accept, or do-not-credit guidance; use that guidance only for checklist cautions, weak answers, or review notes.',
+		'For calculation questions, worked values belong in markSchemeItems, markChecklist, written-response modelAnswer, or response.correctAnswers only.',
 		'Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion.',
 		'Chain compatibility: compare each proposed chain with existing chains. If the same ordered method already exists, reuse its id exactly and set chainResolution.action="reuse_existing". If the existing id is conceptually the same but needs clearer generic wording, keep the existing id, set action="update_existing", identityStable=true, and explain the compatibility. Use action="create_new" only when the mark-scoring reasoning is genuinely new. Use action="needs_review" for uncertainty.',
 		'',
@@ -1044,7 +1113,7 @@ export function buildFullPaperPrompt({
 		extraInstructions,
 		'',
 		'Project extraction contract:',
-		extractionSpec
+		extractionSpecPrompt(extractionSpec)
 	]
 		.filter(Boolean)
 		.join('\n');
@@ -1053,6 +1122,7 @@ export function buildFullPaperPrompt({
 export async function extractFullPaperChunk({
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	mediaResolution = 'auto',
 	sourceDocumentId,
 	markSchemeDocumentId,
 	questionPaper,
@@ -1105,6 +1175,7 @@ export async function extractFullPaperChunk({
 	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
+		mediaResolution,
 		telemetry: false,
 		input: [
 			{
@@ -1152,7 +1223,7 @@ export function validateReusableAnswerChains(candidate) {
 	const blocking = blockingIssues(deterministicCandidateIssues(candidate));
 	if (blocking.length > 0) {
 		throw new Error(
-			`Extracted answer chains include prompt-specific numeric solution wording (${blocking.length}). ` +
+			`Extracted answer chains failed reusable-chain quality checks (${blocking.length}). ` +
 				chainSpecificityIssueSummary(blocking, 8)
 		);
 	}
@@ -1164,6 +1235,21 @@ function relativePath(rootDir, filePath) {
 
 function sha256WithPrefix(filePath) {
 	return `sha256:${fileHash(filePath)}`;
+}
+
+function sourceDocumentMetadata(doc) {
+	return {
+		board: doc.board ?? null,
+		qualification: doc.qualification ?? null,
+		subject: doc.subject ?? null,
+		subjectArea: doc.subjectArea ?? null,
+		tier: doc.tier ?? null,
+		paper: doc.paper ?? null,
+		componentCode: doc.componentCode ?? null,
+		series: doc.series ?? null,
+		year: doc.year ?? null,
+		sourceUrl: doc.sourceUrl ?? null
+	};
 }
 
 export function enrichFullPaperExtraction({
@@ -1192,6 +1278,7 @@ export function enrichFullPaperExtraction({
 			docType: 'question_paper',
 			title: questionPaper.title,
 			pageCount: questionPaper.pageCount,
+			...sourceDocumentMetadata(questionPaper),
 			filePath: relativePath(rootDir, questionPaper.path),
 			fileHash: sha256WithPrefix(questionPaper.path),
 			metadata: { originalFilename: path.basename(questionPaper.path), notes: [] }
@@ -1202,6 +1289,7 @@ export function enrichFullPaperExtraction({
 			docType: 'mark_scheme',
 			title: markScheme.title,
 			pageCount: markScheme.pageCount,
+			...sourceDocumentMetadata(markScheme),
 			filePath: relativePath(rootDir, markScheme.path),
 			fileHash: sha256WithPrefix(markScheme.path),
 			metadata: { originalFilename: path.basename(markScheme.path), notes: [] }
@@ -1211,13 +1299,13 @@ export function enrichFullPaperExtraction({
 			docType: doc.docType,
 			title: doc.title,
 			pageCount: doc.pageCount,
+			...sourceDocumentMetadata(doc),
 			filePath: relativePath(rootDir, doc.path),
 			fileHash: sha256WithPrefix(doc.path),
 			metadata: { originalFilename: path.basename(doc.path), notes: [] }
 		})),
 		localAssetManifest: assetManifest
 	};
-	validateReusableAnswerChains(enriched);
 	return FullPaperExtractionSchema.parse(enriched);
 }
 
@@ -1231,12 +1319,14 @@ export async function extractFullPaperFromPdfSet({
 	outputRoot = path.join(rootDir, 'tmp/llm-extraction-pipeline'),
 	dpi = 160,
 	forceRender = false,
+	forceChunkCache = false,
 	questionPages = [],
 	markSchemePages = [],
 	chunkPages = 6,
 	markSchemeImageMode = 'none',
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	mediaResolution = 'auto',
 	extractionSpec,
 	existingChainsText = '',
 	extraInstructions = '',
@@ -1245,7 +1335,20 @@ export async function extractFullPaperFromPdfSet({
 	assetManifestText = '',
 	documentMetadata = {}
 }) {
+	const sharedDocumentMetadata = {
+		board: documentMetadata.board ?? null,
+		qualification: documentMetadata.qualification ?? null,
+		subject: documentMetadata.subject ?? null,
+		subjectArea: documentMetadata.subjectArea ?? null,
+		tier: documentMetadata.tier ?? null,
+		paper: documentMetadata.paper ?? null,
+		componentCode: documentMetadata.componentCode ?? null,
+		series: documentMetadata.series ?? null,
+		year: documentMetadata.year ?? null
+	};
 	const questionPaper = {
+		...sharedDocumentMetadata,
+		...(documentMetadata.questionPaper ?? {}),
 		id: sourceDocumentId,
 		docType: 'question_paper',
 		path: questionPaperPath,
@@ -1254,6 +1357,8 @@ export async function extractFullPaperFromPdfSet({
 		pageCount: pdfPageCount(questionPaperPath)
 	};
 	const markScheme = {
+		...sharedDocumentMetadata,
+		...(documentMetadata.markScheme ?? {}),
 		id: markSchemeDocumentId,
 		docType: 'mark_scheme',
 		path: markSchemePath,
@@ -1262,8 +1367,10 @@ export async function extractFullPaperFromPdfSet({
 		pageCount: pdfPageCount(markSchemePath)
 	};
 	const supportingDocuments = supportingDocumentPaths.map((filePath, index) => ({
+		...sharedDocumentMetadata,
+		...(documentMetadata.supportingDocuments?.[index] ?? {}),
 		id: `${sourceDocumentId}-support-${index + 1}`,
-		docType: 'supporting_document',
+		docType: documentMetadata.supportingDocuments?.[index]?.docType ?? 'supporting_document',
 		path: filePath,
 		title: path.basename(filePath),
 		fileName: path.basename(filePath),
@@ -1310,39 +1417,52 @@ export async function extractFullPaperFromPdfSet({
 		throw new Error('No mark-scheme images or text selected.');
 	}
 	const chunks = chunkImages(questionImages, chunkPages);
+	const chunkCacheDir = path.join(outputRoot, sourceDocumentId, 'chunks');
 	console.error(
 		`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} chunks=${chunks.length}`
 	);
 	const values = [];
 	for (const chunk of chunks) {
+		const chunkCachePath = path.join(
+			chunkCacheDir,
+			`chunk-${String(chunk.index + 1).padStart(3, '0')}.json`
+		);
+		if (!forceChunkCache && existsSync(chunkCachePath)) {
+			console.error(
+				`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} using cache ${relativePath(rootDir, chunkCachePath)}`
+			);
+			values.push(LlmFullPaperExtractionSchema.parse(readJson(chunkCachePath)));
+			continue;
+		}
 		console.error(
 			`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')}`
 		);
-		values.push(
-			await extractFullPaperChunk({
-				model,
-				thinkingLevel,
-				sourceDocumentId,
-				markSchemeDocumentId,
-				questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
-				markScheme: {
-					...markScheme,
-					pages: markSchemeImages.length
-						? markSchemeImages.map(pageNumberFromRenderedPath)
-						: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
-				},
-				supportingDocuments,
-				chunk,
-				markSchemeImages,
-				markSchemeText,
-				supportingImages,
-				extractionSpec,
-				existingChainsText,
-				extraInstructions,
-				expectedQuestionCount,
-				assetManifestText
-			})
-		);
+		const value = await extractFullPaperChunk({
+			model,
+			thinkingLevel,
+			mediaResolution,
+			sourceDocumentId,
+			markSchemeDocumentId,
+			questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
+			markScheme: {
+				...markScheme,
+				pages: markSchemeImages.length
+					? markSchemeImages.map(pageNumberFromRenderedPath)
+					: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
+			},
+			supportingDocuments,
+			chunk,
+			markSchemeImages,
+			markSchemeText,
+			supportingImages,
+			extractionSpec,
+			existingChainsText,
+			extraInstructions,
+			expectedQuestionCount,
+			assetManifestText
+		});
+		writeJson(chunkCachePath, value);
+		values.push(value);
 	}
 	return enrichFullPaperExtraction({
 		value: mergeFullPaperChunks(values),
@@ -1359,9 +1479,15 @@ export async function extractFullPaperFromPdfSet({
 export function deterministicCandidateIssues(candidate) {
 	const findings = [];
 	for (const question of candidate.questions ?? []) {
-		const issues = answerChainSpecificityIssues(question.answerChain, {
-			commandWord: question.commandWord
-		});
+		const issues = [
+			...answerChainSpecificityIssues(question.answerChain, {
+				commandWord: question.commandWord
+			}),
+			...answerChainEvidenceIssues(question),
+			...fixedResponseChainSpecificityIssues(question),
+			...fixedResponseModelAnswerIssues(question),
+			...responseKeyIssues(question)
+		];
 		if (!issues.length) continue;
 		findings.push({
 			sourceQuestionRef: question.sourceQuestionRef,
@@ -1370,6 +1496,210 @@ export function deterministicCandidateIssues(candidate) {
 		});
 	}
 	return findings;
+}
+
+function normalizedForExactMatch(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function normalizedSlugForExactMatch(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
+function chainIdentityFields(chain) {
+	return [
+		['answerChain.id', chain?.id],
+		['answerChain.title', chain?.title],
+		['answerChain.canonicalChainText', chain?.canonicalChainText],
+		['answerChain.summary', chain?.summary]
+	].filter(([, value]) => typeof value === 'string' && value.trim());
+}
+
+function reusableChainTextFields(chain) {
+	return [
+		...chainIdentityFields(chain),
+		...(chain?.steps ?? []).flatMap((step, index) => [
+			[`answerChain.steps[${index}].stepText`, step?.stepText],
+			[`answerChain.steps[${index}].explanation`, step?.explanation],
+			[`answerChain.steps[${index}].commonOmission`, step?.commonOmission]
+		])
+	].filter(([, value]) => typeof value === 'string' && value.trim());
+}
+
+function responseCorrectAnswerTexts(response) {
+	const answers = response?.correctAnswers;
+	if (!answers) return [];
+	if (Array.isArray(answers)) {
+		return answers
+			.map((answer) => answer?.correctAnswer)
+			.filter((answer) => typeof answer === 'string' && answer.trim());
+	}
+	if (typeof answers === 'object') {
+		return Object.values(answers)
+			.flatMap((answer) => (Array.isArray(answer) ? answer : [answer]))
+			.filter((answer) => typeof answer === 'string' && answer.trim());
+	}
+	return [];
+}
+
+function exactFixedAnswerTexts(question) {
+	const responseKind = question.response?.kind;
+	if (!fixedResponseKinds().has(responseKind)) {
+		return [];
+	}
+	const values = [
+		...responseCorrectAnswerTexts(question.response),
+		question.modelAnswer?.answerText
+	].filter((value) => typeof value === 'string' && value.trim());
+	return [...new Set(values.map((value) => value.trim()))].filter((value) => {
+		const normalized = normalizedForExactMatch(value);
+		return normalized.length >= 4 && normalized.split(' ').length <= 6;
+	});
+}
+
+function fixedResponseChainSpecificityIssues(question) {
+	const chain = question.answerChain;
+	if (!chain) return [];
+	const issues = [];
+	for (const answer of exactFixedAnswerTexts(question)) {
+		const normalizedAnswer = normalizedForExactMatch(answer);
+		const answerSlug = normalizedSlugForExactMatch(answer);
+		for (const [field, value] of reusableChainTextFields(chain)) {
+			const normalizedField = normalizedForExactMatch(value);
+			const fieldSlug = normalizedSlugForExactMatch(value);
+			if (
+				normalizedField.includes(normalizedAnswer) ||
+				(answerSlug && fieldSlug.includes(answerSlug))
+			) {
+				issues.push({
+					severity: 'error',
+					code: 'chain_exact_fixed_answer_text',
+					field,
+					evidence: value,
+					message:
+						'Fixed-response answer-chain text includes the exact correct answer. Use a generic recall/discrimination chain and keep exact answers in grading fields.'
+				});
+			}
+		}
+	}
+	return issues;
+}
+
+function fixedResponseModelAnswerIssues(question) {
+	if (exactFixedAnswerTexts(question).length === 0 || !question.modelAnswer?.answerText) return [];
+	return [
+		{
+			severity: 'warning',
+			code: 'fixed_response_model_answer_review',
+			field: 'modelAnswer.answerText',
+			evidence: question.modelAnswer.answerText,
+			message:
+				'Fixed-response questions should usually store correctAnswers/answer keys rather than a modelAnswer row.'
+		}
+	];
+}
+
+function supportedResponseKinds() {
+	return new Set([
+		'none',
+		'lines',
+		'labeled-lines',
+		'number-line',
+		'choice',
+		'choice-table',
+		'matching',
+		'equation-blanks',
+		'asset-canvas',
+		'image-label-zones',
+		'drawing-box'
+	]);
+}
+
+function fixedResponseKinds() {
+	return new Set([
+		'choice',
+		'choice-table',
+		'matching',
+		'equation-blanks',
+		'number-line',
+		'image-label-zones'
+	]);
+}
+
+function responseKeyIssues(question) {
+	const kind = question.response?.kind;
+	const issues = [];
+	if (!supportedResponseKinds().has(kind)) {
+		issues.push({
+			severity: 'error',
+			code: 'unsupported_response_kind',
+			field: 'response.kind',
+			evidence: kind ?? 'missing',
+			message:
+				'Response kind is not one of the app-supported interaction types. Use choice, matching, equation-blanks, number-line, image-label-zones, lines, labeled-lines, drawing-box, asset-canvas, or none.'
+		});
+	}
+	if (
+		fixedResponseKinds().has(kind) &&
+		responseCorrectAnswerTexts(question.response).length === 0
+	) {
+		issues.push({
+			severity: 'error',
+			code: 'fixed_response_missing_answer_key',
+			field: 'response.correctAnswers',
+			evidence: kind,
+			message:
+				'Fixed-response questions need response.correctAnswers so the UI/import path can store a deterministic answer key.'
+		});
+	}
+	return issues;
+}
+
+function positiveMarkSchemeItem(item) {
+	return !/\b(ignore|reject|do[_ -]?not[_ -]?accept|do[_ -]?not[_ -]?credit)\b/i.test(
+		String(item?.itemType ?? '')
+	);
+}
+
+function answerChainEvidenceIssues(question) {
+	const chain = question.answerChain;
+	if (!chain) return [];
+	const issues = [];
+	const markSchemeItems = question.markSchemeItems ?? [];
+	for (const [stepIndex, step] of (chain.steps ?? []).entries()) {
+		const field = `answerChain.steps[${stepIndex}].markSchemeItemIndexes`;
+		const indexes = step.markSchemeItemIndexes ?? [];
+		if (step.stepRole !== 'given' && indexes.length === 0) {
+			issues.push({
+				severity: 'error',
+				code: 'chain_step_missing_positive_evidence',
+				field,
+				evidence: step.stepText,
+				message:
+					'A non-given answer-chain step has no positive mark-scheme support. Remove unsupported tail steps or link the step to a positive marking point.'
+			});
+		}
+		for (const itemIndex of indexes) {
+			const item = markSchemeItems[itemIndex];
+			if (!item || positiveMarkSchemeItem(item)) continue;
+			issues.push({
+				severity: 'error',
+				code: 'chain_step_non_positive_evidence',
+				field,
+				evidence: `${step.stepText} -> ${item.itemType}: ${item.text}`,
+				message:
+					'Answer-chain steps must not use ignore, reject, or do-not-accept guidance as support.'
+			});
+		}
+	}
+	return issues;
 }
 
 export function blockingIssues(findings) {

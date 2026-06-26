@@ -42,8 +42,10 @@ Optional:
   --skip-judge
   --dry-run
   --force
+  --force-chunks
   --force-render
   --mark-scheme-image-mode=none|all
+  --media-resolution=auto|low|medium|high|original
   --write-eval=<evaluation.json>
   --model=chatgpt-gpt-5.5-fast
   --thinking-level=xhigh`;
@@ -66,10 +68,15 @@ const dpi = integerArg('dpi', 160, 90);
 const chunkPages = integerArg('chunk-pages', 6, 1);
 const forceRender = hasArg('force-render') || hasArg('force');
 const forceOutput = hasArg('force');
+const forceChunkCache = hasArg('force-chunks');
 const dryRun = hasArg('dry-run');
 const markSchemeImageMode = stringArg('mark-scheme-image-mode', 'none');
 if (!['none', 'all'].includes(markSchemeImageMode)) {
 	throw new Error('--mark-scheme-image-mode must be none or all.');
+}
+const mediaResolution = stringArg('media-resolution', 'auto');
+if (!['auto', 'low', 'medium', 'high', 'original'].includes(mediaResolution)) {
+	throw new Error('--media-resolution must be auto, low, medium, high, or original.');
 }
 const questionPages = parsePageSelection(stringArg('question-pages', ''));
 const markSchemePages = parsePageSelection(stringArg('mark-scheme-pages', ''));
@@ -242,6 +249,15 @@ async function runAqaPhysicsPreset() {
 			assetManifest: assetManifest(paper.sourceDocumentId),
 			assetManifestText: compactAssetManifestText(assetManifest(paper.sourceDocumentId)),
 			documentMetadata: {
+				board: 'AQA',
+				qualification: 'GCSE',
+				subject: 'Combined Science',
+				subjectArea: 'Physics',
+				tier: 'Higher',
+				paper: paper.paper,
+				componentCode: paper.componentCode,
+				series: paper.series,
+				year: paper.year,
 				questionPaperTitle: titleForQuestionPaper(paper.componentCode, paper.series),
 				markSchemeTitle: titleForMarkScheme(paper.componentCode, paper.series)
 			}
@@ -298,8 +314,20 @@ async function runAqaSeparateSciencePreset() {
 				'This is AQA Separate Science, not Combined Science Trilogy.'
 			].join('\n'),
 			documentMetadata: {
+				board: 'AQA',
+				qualification: 'GCSE',
+				subject: paper.subject,
+				subjectArea: paper.subjectArea,
+				tier: 'Higher',
+				paper: paper.paper,
+				componentCode: paper.componentCode,
+				series: paper.series,
+				year: paper.year,
 				questionPaperTitle: paper.questionPaperTitle,
-				markSchemeTitle: paper.markSchemeTitle
+				markSchemeTitle: paper.markSchemeTitle,
+				questionPaper: { sourceUrl: paper.questionPaperUrl },
+				markScheme: { sourceUrl: paper.markSchemeUrl },
+				supportingDocuments: paper.supportingDocuments
 			}
 		});
 	}
@@ -357,12 +385,14 @@ async function runOne({
 		outputRoot,
 		dpi,
 		forceRender,
+		forceChunkCache,
 		questionPages,
 		markSchemePages,
 		chunkPages,
 		model,
 		thinkingLevel,
 		markSchemeImageMode,
+		mediaResolution,
 		extractionSpec,
 		existingChainsText,
 		extraInstructions: [presetInstructions, extraInstructions].filter(Boolean).join('\n\n'),
@@ -523,7 +553,14 @@ function discoverAqaSeparateSciencePapers() {
 		series: row.series,
 		year: row.year,
 		questionPaperTitle: row.question_paper.title,
-		markSchemeTitle: row.mark_scheme.title
+		markSchemeTitle: row.mark_scheme.title,
+		questionPaperUrl: row.question_paper.url,
+		markSchemeUrl: row.mark_scheme.url,
+		supportingDocuments: (row.supporting_documents ?? []).map((document) => ({
+			docType: document.filename.includes('-INS-') ? 'insert' : 'supporting_document',
+			title: document.title,
+			sourceUrl: document.url
+		}))
 	}));
 }
 

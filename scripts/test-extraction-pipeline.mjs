@@ -191,6 +191,154 @@ for (const exportName of [
 	}
 }
 
+const numericTitleIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			commandWord: 'Calculate',
+			response: { kind: 'lines' },
+			markSchemeItems: [{ itemType: 'mark', text: 'Use the correct equation.' }],
+			answerChain: {
+				id: 'physics-chain-calculate-3-2-j',
+				title: 'Calculate 3.2 J',
+				canonicalChainText: 'Select the correct equation and calculate the energy.',
+				summary: 'Use a reusable calculation method.',
+				steps: [
+					{
+						stepText: 'Use the correct equation.',
+						stepRole: 'calculation',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!numericTitleIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' &&
+				issue.code === 'chain_prompt_specific_number' &&
+				['id', 'title'].includes(issue.field)
+		)
+	)
+) {
+	fail('Deterministic checks did not flag prompt-specific numbers in chain id/title.');
+}
+
+const fixedAnswerStepIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			commandWord: null,
+			response: {
+				kind: 'choice',
+				correctAnswers: [{ targetId: 'answer', correctAnswer: 'Arteries' }]
+			},
+			markSchemeItems: [{ itemType: 'answer', text: 'Arteries.' }],
+			modelAnswer: null,
+			answerChain: {
+				id: 'bio-chain-disease-cue-structure-category',
+				title: 'Use a disease cue to identify the affected structure category',
+				canonicalChainText: 'Use the condition cue to select the affected structure category.',
+				summary: 'A generic recall/discrimination chain.',
+				steps: [
+					{
+						stepText: 'Select Arteries.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!fixedAnswerStepIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' &&
+				issue.code === 'chain_exact_fixed_answer_text' &&
+				issue.field === 'answerChain.steps[0].stepText'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag exact fixed-response answers in chain step text.');
+}
+
+const unsupportedResponseIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			commandWord: null,
+			response: { kind: 'single_choice_tick_box' },
+			markSchemeItems: [{ itemType: 'answer', text: 'Arteries.' }],
+			modelAnswer: null,
+			answerChain: {
+				id: 'bio-chain-disease-cue-structure-category',
+				title: 'Use a disease cue to identify the affected structure category',
+				canonicalChainText: 'Use the condition cue to select the affected structure category.',
+				summary: 'A generic recall/discrimination chain.',
+				steps: [
+					{
+						stepText: 'Select the affected structure category.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!unsupportedResponseIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'error' && issue.code === 'unsupported_response_kind'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag unsupported response.kind values.');
+}
+
+const missingAnswerKeyIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			commandWord: null,
+			response: { kind: 'choice', options: ['Arteries', 'Capillaries', 'Veins'] },
+			markSchemeItems: [{ itemType: 'answer', text: 'Arteries.' }],
+			modelAnswer: null,
+			answerChain: {
+				id: 'bio-chain-disease-cue-structure-category',
+				title: 'Use a disease cue to identify the affected structure category',
+				canonicalChainText: 'Use the condition cue to select the affected structure category.',
+				summary: 'A generic recall/discrimination chain.',
+				steps: [
+					{
+						stepText: 'Select the affected structure category.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingAnswerKeyIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'error' && issue.code === 'fixed_response_missing_answer_key'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag missing fixed-response answer keys.');
+}
+
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');
 mkdirSync(tmpDir, { recursive: true });
 const pdfPath = path.join(tmpDir, 'one-page.pdf');
