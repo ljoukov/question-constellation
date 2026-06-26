@@ -169,16 +169,28 @@
 						</span>
 					</a>
 
-					<ol
-						class="qc-browse-pattern"
-						aria-label={`${accessibleText(chain.title)} reasoning steps`}
+					<section
+						class="qc-browse-chain-steps"
+						aria-label={`${accessibleText(chain.title)} thinking chain`}
 					>
-						{#each chain.steps as step}
-							<li><MathText text={step} /></li>
-						{/each}
-					</ol>
+						<h3>Thinking chain</h3>
+						<ol class="qc-browse-pattern">
+							{#each chain.steps as step}
+								<li><MathText text={step} /></li>
+							{/each}
+						</ol>
+					</section>
 
-					<QuestionTeaserGrid {chain} />
+					<section
+						class="qc-browse-question-set"
+						aria-label={`${accessibleText(chain.title)} questions`}
+					>
+						<div class="qc-browse-question-set-head">
+							<h3>Practice questions</h3>
+							<span>{chain.questions.length} questions</span>
+						</div>
+						<QuestionTeaserGrid {chain} />
+					</section>
 				</article>
 			{/each}
 

@@ -76,19 +76,82 @@ function cleanPromptText(text: string): string {
 		.trim();
 }
 
+function mathOpenerAt(value: string, index: number): { open: string; close: string } | null {
+	if (value.startsWith('$$', index)) return { open: '$$', close: '$$' };
+	if (value.startsWith('\\[', index)) return { open: '\\[', close: '\\]' };
+	if (value.startsWith('\\(', index)) return { open: '\\(', close: '\\)' };
+	if (value[index] === '$' && value[index - 1] !== '\\') return { open: '$', close: '$' };
+	return null;
+}
+
+function mathAwareCutIndex(value: string, limit: number) {
+	let activeMath: { close: string; start: number } | null = null;
+	let lastSafeBoundary = -1;
+	let index = 0;
+
+	while (index < limit) {
+		if (activeMath) {
+			if (value.startsWith(activeMath.close, index)) {
+				index += activeMath.close.length;
+				activeMath = null;
+				continue;
+			}
+			index += 1;
+			continue;
+		}
+
+		const opener = mathOpenerAt(value, index);
+		if (opener) {
+			activeMath = { close: opener.close, start: index };
+			index += opener.open.length;
+			continue;
+		}
+
+		if (/[\s,.;:!?)]/.test(value[index])) {
+			lastSafeBoundary = index;
+		}
+		index += 1;
+	}
+
+	if (activeMath) return activeMath.start;
+	return lastSafeBoundary > Math.floor(limit * 0.55) ? lastSafeBoundary : limit;
+}
+
+function truncateRichText(text: string, maxLength: number) {
+	const normalized = text.replace(/\s+/g, ' ').trim();
+	if (normalized.length <= maxLength) return normalized;
+
+	const limit = Math.max(1, maxLength - 3);
+	const cutIndex = mathAwareCutIndex(normalized, limit);
+	const snippet =
+		normalized
+			.slice(0, cutIndex)
+			.trimEnd()
+			.replace(/[,:;([{]+$/, '')
+			.trimEnd() ||
+		normalized
+			.slice(0, limit)
+			.replace(/\s+\S*$/, '')
+			.trimEnd();
+
+	return `${snippet}...`;
+}
+
 function sentenceTitle(text: string, fallback: string) {
 	const cleaned = cleanPromptText(text);
 	const sentence =
-		cleaned.match(/(?:Explain|Calculate|Determine|Describe|Give|State|What|Which|Why|How|Name|Suggest|Compare|Draw|Complete|Use)\b[^.?!]*(?:[.?!]|$)/i)?.[0] ??
+		cleaned.match(
+			/(?:Explain|Calculate|Determine|Describe|Give|State|What|Which|Why|How|Name|Suggest|Compare|Draw|Complete|Use)\b[^.?!]*(?:[.?!]|$)/i
+		)?.[0] ??
 		cleaned.split(/(?<=[.?!])\s+/)[0] ??
 		fallback;
 	const normalized = sentence.replace(/\s+/g, ' ').trim() || fallback;
-	return normalized.length > 74 ? `${normalized.slice(0, 71).trim()}...` : normalized;
+	return truncateRichText(normalized, 74);
 }
 
 function teaserFromPrompt(text: string) {
 	const cleaned = cleanPromptText(text);
-	return cleaned.length > 132 ? `${cleaned.slice(0, 129).trim()}...` : cleaned;
+	return truncateRichText(cleaned, 132);
 }
 
 function titleFromQuestion(row: QuestionMembershipRow) {
@@ -309,7 +372,11 @@ export async function getExplorableLearningChains(): Promise<LearningChain[]> {
 		const questionsByChain = groupBy(questions, (question) => question.answer_chain_id);
 		const result = chains
 			.map((chain) =>
-				buildLearningChain(chain, stepsByChain.get(chain.id) ?? [], questionsByChain.get(chain.id) ?? [])
+				buildLearningChain(
+					chain,
+					stepsByChain.get(chain.id) ?? [],
+					questionsByChain.get(chain.id) ?? []
+				)
 			)
 			.filter((chain): chain is LearningChain => Boolean(chain));
 

@@ -78,9 +78,14 @@
 			.replace(/[\uF0FB\uF051]/g, '✗')
 			.replace(/\s*<=>\s*/g, ' ⇌ ')
 			.replace(/\s*(?:->|⟶|⇒|)\s*/g, ' → ')
+			.replace(/\\mathrm\{([^}]*)\}/g, '$1')
+			.replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2')
+			.replace(/\\frac\{([^}]*)\}\{([^}]*)$/g, '$1/$2')
+			.replace(/\\([A-Za-z]{2,})/g, (_, command) => latexSymbol(command))
 			.replace(/\$(\(?\s*)\\([A-Za-z]{2,})(?:\.{3}|…)/g, (_, prefix, command) => {
 				return `${prefix}${latexSymbol(command)}...`;
-			});
+			})
+			.replace(/\$/g, '');
 	}
 
 	function renderMath(tex: string, displayMode: boolean) {

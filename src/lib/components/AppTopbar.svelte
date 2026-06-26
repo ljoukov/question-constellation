@@ -23,10 +23,18 @@
 
 	let theme = $state<ThemePreference>('auto');
 	let mobileSearchOpen = $state(false);
+	let accountMenuOpen = $state(false);
+	let appearanceMenuOpen = $state(false);
+	let appearancePinnedByClick = $state(false);
+	let accountMenuRoot: HTMLDivElement | null = null;
+	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
 		theme = value;
 	});
-	onDestroy(unsubscribe);
+	onDestroy(() => {
+		unsubscribe();
+		clearAppearanceCloseTimer();
+	});
 
 	const themeOptions: Array<{ value: ThemePreference; label: string }> = [
 		{ value: 'auto', label: 'Automatic' },
@@ -34,17 +42,70 @@
 		{ value: 'dark', label: 'Dark' }
 	];
 
-	function closeAccountMenu(target: EventTarget | null) {
-		if (target instanceof HTMLElement) {
-			const menu = target.closest('.qc-avatar-menu');
-			menu?.querySelector('.qc-menu-submenu')?.removeAttribute('open');
-			menu?.removeAttribute('open');
+	function clearAppearanceCloseTimer() {
+		if (!appearanceCloseTimer) return;
+		clearTimeout(appearanceCloseTimer);
+		appearanceCloseTimer = null;
+	}
+
+	function closeAccountMenu() {
+		clearAppearanceCloseTimer();
+		accountMenuOpen = false;
+		appearanceMenuOpen = false;
+		appearancePinnedByClick = false;
+	}
+
+	function toggleAccountMenu() {
+		clearAppearanceCloseTimer();
+		accountMenuOpen = !accountMenuOpen;
+		if (!accountMenuOpen) {
+			appearanceMenuOpen = false;
+			appearancePinnedByClick = false;
 		}
 	}
 
-	function chooseTheme(event: MouseEvent, value: ThemePreference) {
+	function chooseTheme(value: ThemePreference) {
 		setThemePreference(value);
-		closeAccountMenu(event.currentTarget);
+		closeAccountMenu();
+	}
+
+	function pointerSupportsHover(event: PointerEvent) {
+		return event.pointerType === 'mouse' || event.pointerType === 'pen';
+	}
+
+	function openAppearanceMenu(event: PointerEvent) {
+		if (!pointerSupportsHover(event)) return;
+		clearAppearanceCloseTimer();
+		appearanceMenuOpen = true;
+	}
+
+	function closeAppearanceMenu(event: PointerEvent) {
+		if (!pointerSupportsHover(event)) return;
+		if (appearancePinnedByClick) return;
+		clearAppearanceCloseTimer();
+		appearanceCloseTimer = setTimeout(() => {
+			appearanceMenuOpen = false;
+			appearanceCloseTimer = null;
+		}, 260);
+	}
+
+	function closeAppearanceFromOtherItem(event: PointerEvent) {
+		if (!pointerSupportsHover(event)) return;
+		clearAppearanceCloseTimer();
+		appearanceMenuOpen = false;
+		appearancePinnedByClick = false;
+	}
+
+	function toggleAppearanceMenu(event: MouseEvent) {
+		event.stopPropagation();
+		clearAppearanceCloseTimer();
+		if (appearanceMenuOpen && !appearancePinnedByClick) {
+			appearancePinnedByClick = true;
+			return;
+		}
+		const nextOpen = !appearanceMenuOpen;
+		appearanceMenuOpen = nextOpen;
+		appearancePinnedByClick = nextOpen;
 	}
 
 	function updateSearch(event: Event) {
@@ -77,7 +138,19 @@
 		const input = form.elements.namedItem('q') as HTMLInputElement | null;
 		navigateToBrowse({ q: input?.value ?? '', subject });
 	}
+
+	function handleWindowClick(event: MouseEvent) {
+		if (!accountMenuOpen) return;
+		if (event.target instanceof Node && accountMenuRoot?.contains(event.target)) return;
+		closeAccountMenu();
+	}
+
+	function handleWindowKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') closeAccountMenu();
+	}
 </script>
+
+<svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
 
 <header class="qc-topbar" class:search-open={mobileSearchOpen} aria-label="Site header">
 	<a href="/" class="qc-topbar-brand" aria-label="Question Constellation home">
@@ -117,62 +190,73 @@
 		<ChevronDown size={15} aria-hidden="true" strokeWidth={2.4} />
 	</label>
 
-	<details class="qc-avatar-menu">
-		<summary aria-label="Account menu">
+	<div class="qc-avatar-menu" bind:this={accountMenuRoot}>
+		<button
+			type="button"
+			class="qc-avatar-trigger"
+			aria-label="Account menu"
+			aria-haspopup="menu"
+			aria-expanded={accountMenuOpen}
+			onclick={toggleAccountMenu}
+		>
 			<span class="qc-avatar-pixel" aria-hidden="true">
-				<svg viewBox="0 0 32 32" role="img">
-					<rect width="32" height="32" rx="9" fill="#102033" />
-					<path
-						d="M16 4l2.1 7.5L26 10l-5.8 5.5L24 23l-8-3.6L8 23l3.8-7.5L6 10l7.9 1.5L16 4z"
-						fill="#f7c24d"
-					/>
-					<path
-						d="M16 9l1.1 4 4.1-.8-3 3 2 3.8-4.2-1.9-4.2 1.9 2-3.8-3-3 4.1.8L16 9z"
-						fill="#ffffff"
-						opacity="0.92"
-					/>
-					<rect x="6" y="25" width="4" height="3" fill="#48c78e" />
-					<rect x="22" y="25" width="4" height="3" fill="#48c78e" />
-				</svg>
+				<img src="/brand/avatar-bottts.svg" alt="" width="32" height="32" />
 			</span>
-		</summary>
-		<div class="qc-avatar-popover" role="menu">
-			<p class="qc-avatar-popover-title">Account</p>
-			<button
-				type="button"
-				class="qc-menu-item"
-				role="menuitem"
-				onclick={(event) => closeAccountMenu(event.currentTarget)}
-			>
-				Log in...
-			</button>
-			<div class="qc-menu-separator" role="separator"></div>
-			<details class="qc-menu-submenu">
-				<summary class="qc-menu-item" role="menuitem" aria-haspopup="menu">
-					<span>Appearance</span>
-					<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
-				</summary>
-				<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
-					{#each themeOptions as option}
-						<button
-							type="button"
-							class="qc-menu-item qc-appearance-item"
-							class:active={theme === option.value}
-							role="menuitemradio"
-							aria-checked={theme === option.value}
-							onclick={(event) => chooseTheme(event, option.value)}
-						>
-							<Check
-								size={15}
-								aria-hidden="true"
-								strokeWidth={2.3}
-								class={theme === option.value ? 'visible' : undefined}
-							/>
-							<span>{option.label}</span>
-						</button>
-					{/each}
+		</button>
+		{#if accountMenuOpen}
+			<div class="qc-avatar-popover" role="menu" aria-label="Account">
+				<p class="qc-avatar-popover-title">Account</p>
+				<button
+					type="button"
+					class="qc-menu-item"
+					role="menuitem"
+					onclick={closeAccountMenu}
+					onpointerenter={closeAppearanceFromOtherItem}
+				>
+					Log in...
+				</button>
+				<div class="qc-menu-separator" role="separator"></div>
+				<div
+					class="qc-menu-submenu"
+					role="none"
+					onpointerenter={openAppearanceMenu}
+					onpointerleave={closeAppearanceMenu}
+				>
+					<button
+						type="button"
+						class="qc-menu-item qc-menu-submenu-trigger"
+						role="menuitem"
+						aria-haspopup="menu"
+						aria-expanded={appearanceMenuOpen}
+						onclick={toggleAppearanceMenu}
+					>
+						<span>Appearance</span>
+						<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
+					</button>
+					{#if appearanceMenuOpen}
+						<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
+							{#each themeOptions as option}
+								<button
+									type="button"
+									class="qc-menu-item qc-appearance-item"
+									class:active={theme === option.value}
+									role="menuitemradio"
+									aria-checked={theme === option.value}
+									onclick={() => chooseTheme(option.value)}
+								>
+									<Check
+										size={15}
+										aria-hidden="true"
+										strokeWidth={2.3}
+										class={theme === option.value ? 'visible' : undefined}
+									/>
+									<span>{option.label}</span>
+								</button>
+							{/each}
+						</div>
+					{/if}
 				</div>
-			</details>
-		</div>
-	</details>
+			</div>
+		{/if}
+	</div>
 </header>

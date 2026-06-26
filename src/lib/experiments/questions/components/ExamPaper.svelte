@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BlockRenderer from './BlockRenderer.svelte';
+	import MathText from './MathText.svelte';
 	import QuestionNumber from './QuestionNumber.svelte';
 	import ResponseRenderer from './ResponseRenderer.svelte';
 	import { Check, X } from '@lucide/svelte';
@@ -119,7 +120,7 @@
 										{#if grade.checklist.length}
 											<p class="grade-mark-total">{marksLabel(grade)}</p>
 										{:else}
-											<h3>{grade.summary}</h3>
+											<h3><MathText text={grade.summary} /></h3>
 										{/if}
 										<button
 											type="button"
@@ -146,22 +147,24 @@
 														{/if}
 													</span>
 													<span>
-														<span class="grade-mark-text">{item.text}</span>
+														<span class="grade-mark-text"><MathText text={item.text} /></span>
 														{#if item.explanation && item.explanation !== item.text}
-															<span class="grade-mark-note">{item.explanation}</span>
+															<span class="grade-mark-note"
+																><MathText text={item.explanation} /></span
+															>
 														{/if}
 													</span>
 												</li>
 											{/each}
 										</ul>
 									{:else if grade.nextStep && grade.result !== 'incorrect'}
-										<p class="grade-next-step">{grade.nextStep}</p>
+										<p class="grade-next-step"><MathText text={grade.nextStep} /></p>
 									{/if}
 
 									{#if grade.modelAnswer}
 										<div class="grade-model-answer">
 											<p class="grade-model-answer-label">Model answer</p>
-											<p>{grade.modelAnswer}</p>
+											<p><MathText text={grade.modelAnswer} /></p>
 										</div>
 									{/if}
 								</section>
