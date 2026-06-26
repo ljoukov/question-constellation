@@ -1,0 +1,162 @@
+{
+	"schemaVersion": 1,
+	"description": "Golden examples for answer-chain extraction quality. Numeric worked values may appear in model answers/checklists, but not reusable answerChain text.",
+	"cases": [
+		{
+			"name": "generic spring elastic energy chain is reusable",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-spring-elastic-potential-energy-calculation",
+				"title": "Calculate elastic potential energy in a spring",
+				"canonicalChainText": "Convert the extension or compression into metres, use $E_e=\\frac{1}{2}ke^2$, substitute the spring constant and extension or compression, calculate the energy, and give the unit.",
+				"summary": "Convert the extension or compression to metres, substitute into $E_e=\\frac{1}{2}ke^2$, square the extension or compression, and give an energy unit.",
+				"steps": [
+					{
+						"stepText": "Convert the extension or compression into metres.",
+						"stepRole": "unit-conversion",
+						"explanation": "The equation uses metres for extension or compression.",
+						"commonOmission": "Using the centimetre value directly as metres."
+					},
+					{
+						"stepText": "Use $E_e=\\frac{1}{2}ke^2$.",
+						"stepRole": "select-equation",
+						"explanation": "This equation links elastic potential energy, spring constant and extension or compression.",
+						"commonOmission": "Using $E=ke$ or forgetting the square."
+					},
+					{
+						"stepText": "Substitute the spring constant and extension or compression into the equation.",
+						"stepRole": "substitute-values",
+						"explanation": "The extension or compression must be squared after substitution.",
+						"commonOmission": "Multiplying by the extension or compression instead of squaring it."
+					},
+					{
+						"stepText": "Calculate the elastic potential energy.",
+						"stepRole": "calculate-answer",
+						"explanation": "This gives the energy stored elastically in the spring.",
+						"commonOmission": "Rounding too early or omitting the factor of one half."
+					},
+					{
+						"stepText": "Give the unit as J or joule.",
+						"stepRole": "unit",
+						"explanation": "Energy is measured in joules.",
+						"commonOmission": "Giving N/m or N as the unit."
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "worked spring solution is rejected as a chain",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-spring-elastic-potential-energy-calculation",
+				"title": "Calculate elastic potential energy in a spring",
+				"canonicalChainText": "Convert the extension or compression into metres, use $E_e=\\frac{1}{2}ke^2$, substitute the spring constant and extension/compression, calculate the energy, and give the unit joule.",
+				"summary": "Convert cm to m, substitute into $E_e=\\frac{1}{2}ke^2$, square the compression, and give J.",
+				"steps": [
+					{
+						"stepText": "Convert $1.2\\ \\mathrm{cm}$ to $0.012\\ \\mathrm{m}$.",
+						"stepRole": "unit-conversion",
+						"explanation": "The equation uses metres for extension or compression.",
+						"commonOmission": "Using 1.2 directly as metres."
+					},
+					{
+						"stepText": "Use $E_e=\\frac{1}{2}ke^2$.",
+						"stepRole": "select-equation",
+						"explanation": "This equation links elastic potential energy, spring constant and extension or compression.",
+						"commonOmission": "Using $E=ke$ or forgetting the square."
+					},
+					{
+						"stepText": "Substitute $k=8500$ and $e=0.012$ to get $E_e=0.5\\times8500\\times0.012^2$.",
+						"stepRole": "substitute-values",
+						"explanation": "The compression must be squared after substitution.",
+						"commonOmission": "Multiplying by $0.012$ instead of $0.012^2$."
+					},
+					{
+						"stepText": "Calculate $E_e=0.612$.",
+						"stepRole": "calculate-answer",
+						"explanation": "This is the numerical elastic potential energy stored.",
+						"commonOmission": "Rounding too early or omitting the factor of one half."
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": ["chain_numeric_substitution", "chain_prompt_specific_number"],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "numeric model answer is allowed when chain is generic",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"modelAnswer": {
+				"answerText": "$1.2\\ \\mathrm{cm}=0.012\\ \\mathrm{m}$. Using $E_e=\\frac{1}{2}ke^2$, $E_e=0.5\\times8500\\times0.012^2=0.612\\ \\mathrm{J}$."
+			},
+			"markChecklist": [
+				{
+					"text": "Convert 1.2 cm to 0.012 m."
+				},
+				{
+					"text": "Substitute correctly into $E_e=\\frac{1}{2}ke^2$."
+				},
+				{
+					"text": "Calculate $E_e=0.612$ or $0.61$."
+				}
+			],
+			"answerChain": {
+				"id": "physics-chain-spring-elastic-potential-energy-calculation",
+				"title": "Calculate elastic potential energy in a spring",
+				"canonicalChainText": "Convert the extension or compression into metres, use $E_e=\\frac{1}{2}ke^2$, substitute the spring constant and extension or compression, calculate the energy, and give the unit.",
+				"summary": "Use the elastic potential energy equation with consistent units.",
+				"steps": [
+					{
+						"stepText": "Convert the extension or compression into metres.",
+						"stepRole": "unit-conversion"
+					},
+					{
+						"stepText": "Substitute the known values into $E_e=\\frac{1}{2}ke^2$.",
+						"stepRole": "substitute-values"
+					},
+					{
+						"stepText": "Calculate the energy and give an energy unit.",
+						"stepRole": "calculate-answer"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "known numeric recall is review-only, not blocking",
+			"context": {
+				"commandWord": "State"
+			},
+			"answerChain": {
+				"id": "physics-chain-mains-potential-difference-recall",
+				"title": "Recall UK mains potential difference",
+				"canonicalChainText": "Recall that UK mains electricity has a potential difference of 230 V.",
+				"summary": "Use the standard UK mains potential difference.",
+				"steps": [
+					{
+						"stepText": "State that UK mains potential difference is 230 V.",
+						"stepRole": "recall"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": ["chain_numeric_review"]
+			}
+		}
+	]
+}

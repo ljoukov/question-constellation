@@ -275,6 +275,35 @@ node scripts/audit-answer-chain-specificity.mjs --fail-on-blocking
 If the audit flags a chain, regenerate or edit the chain to describe the reusable move. Do not delete
 the numeric model answer or checklist evidence; those fields are supposed to stay source-specific.
 
+### Golden Checks And Independent Review
+
+Extraction quality should be checked in two layers:
+
+1. Deterministic golden checks and audits.
+2. A separate Codex reviewer thread that did not generate the extraction.
+
+The golden fixture is:
+
+```text
+tests/golden/answer-chain-quality.json
+```
+
+Run it with:
+
+```sh
+node scripts/test-answer-chain-golden.mjs
+```
+
+The fixture should contain minimal examples of allowed generic chains, rejected worked-solution
+chains, and warning-only numeric recall cases. When a new failure mode appears, add or update a
+golden example before changing the audit rule.
+
+After extraction or repair, start a separate reviewer thread or sub-agent. The reviewer should run
+the golden test and audit, sample blocking findings, warning findings, and passing calculation
+chains, then report `accept`, `repair`, or `uncertain` for each sample. The reviewer should not edit
+files or import to D1. The main extraction thread applies repairs, reruns the checks, and imports only
+after the review is clean.
+
 ### Chain Reuse Decision
 
 Two questions can share an answer chain when:

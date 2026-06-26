@@ -24,6 +24,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:grading:integration": "node scripts/test-grading-integration.mjs",
+		"test:chain-golden": "node scripts/test-answer-chain-golden.mjs",
 		"test:unit": "vitest",
 		"test": "vitest --run",
 		"gen": "npm run clean:adapter && wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts"
