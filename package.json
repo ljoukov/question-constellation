@@ -25,6 +25,7 @@
 		"format": "prettier --write .",
 		"test:grading:integration": "node scripts/test-grading-integration.mjs",
 		"test:chain-golden": "node scripts/test-answer-chain-golden.mjs",
+		"test:extraction-skill": "node scripts/test-extraction-skill.mjs",
 		"test:unit": "vitest",
 		"test": "vitest --run",
 		"gen": "npm run clean:adapter && wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts"
