@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import {
+	blockingAnswerChainSpecificityIssues,
+	chainSpecificityIssueSummary
+} from './answer-chain-specificity.mjs';
 
 const rootDir = process.cwd();
 const extractionRoot = path.join(
@@ -447,8 +451,19 @@ function sourceDocumentAssetByLabel(question, label) {
 	return sourceDocumentAssetsByLabel.get(key) ?? null;
 }
 
+function isRenderableQuestionAsset(asset) {
+	return asset.asset_type !== 'table';
+}
+
+function questionAssets(question) {
+	return (
+		augmentedQuestionAssetsByQuestionId.get(question.id) ??
+		(question.assets ?? []).filter(isRenderableQuestionAsset)
+	);
+}
+
 function assetByLabel(question, label) {
-	const fromQuestion = (question.assets ?? []).find(
+	const fromQuestion = questionAssets(question).find(
 		(asset) => asset.source_label?.toLowerCase() === label.toLowerCase() && asset.public_path
 	);
 	if (fromQuestion) return fromQuestion;
@@ -456,14 +471,6 @@ function assetByLabel(question, label) {
 	const fromSourceDocument = sourceDocumentAssetByLabel(question, label);
 	if (fromSourceDocument) return fromSourceDocument;
 
-	if (!/^Figure\s+\d+$/i.test(label)) return null;
-	const pages = [question.page_start, question.page_end].filter(Number.isFinite);
-	for (const page of pages) {
-		const pageAssets =
-			sourceDocumentAssetsByPage.get(`${question.source_document_id}:${page}`) ?? [];
-		const image = pageAssets.find((asset) => asset.public_path && asset.asset_type !== 'graph');
-		if (image) return image;
-	}
 	return null;
 }
 
@@ -518,17 +525,25 @@ function numericTableCell(value) {
 function splitFlatTableDataRow(line) {
 	const parts = splitPaperColumns(line);
 	if (parts.length < 2) return null;
-	if (!numericTableCell(parts[0]) || !numericTableCell(parts.at(-1) ?? '')) return null;
+	if (!numericTableCell(parts.at(-1) ?? '')) return null;
 	return parts;
 }
 
-function tableColumnsFromFlatHeader(headerLines, width) {
+function isNumericSequenceColumn(rows) {
+	return rows.every((row, index) => String(row[0] ?? '').trim() === String(index + 1));
+}
+
+function tableColumnsFromFlatHeader(headerLines, width, dataRows = []) {
 	const lines = headerLines.map((line) => line.trim()).filter(Boolean);
 	if (!lines.length) {
 		return Array.from({ length: width }, (_value, index) => `Column ${index + 1}`);
 	}
 
 	if (width === 2) {
+		if (lines.length === 1 && splitPaperColumns(lines[0]).length === 1 && isNumericSequenceColumn(dataRows)) {
+			return ['', withInlineMath(lines[0])];
+		}
+
 		const firstParts = splitPaperColumns(lines[0]);
 		if (firstParts.length === 2) {
 			const columns = [...firstParts];
@@ -607,7 +622,7 @@ function parseFlatTableAfterLabel(label, lines, startIndex) {
 		block: {
 			kind: 'table',
 			label,
-			columns: tableColumnsFromFlatHeader(headerLines, width),
+			columns: tableColumnsFromFlatHeader(headerLines, width, dataRows),
 			rows: dataRows.map((row) => normalizeFlatTableRow(row, width).map(withInlineMath)),
 			compact: dataRows.length <= 5
 		},
@@ -636,6 +651,10 @@ function tableBlockAtLine(question, line, lines, index) {
 	}
 
 	return parseFlatTableAfterLabel(label, lines, index);
+}
+
+function isStandaloneSourceLabel(line) {
+	return /^(?:Figure|Table)\s+\d+$/i.test(line);
 }
 
 function inverseSquareEquationBlock(lines, index) {
@@ -683,6 +702,10 @@ function blocksFromSourceText(text, question) {
 			flushParagraph(blocks, paragraphLines);
 			blocks.push(table.block);
 			index += table.consumed - 1;
+			continue;
+		}
+
+		if (isStandaloneSourceLabel(line)) {
 			continue;
 		}
 
@@ -1008,7 +1031,7 @@ function extractImageLabelZonesInteraction(question, sourceText) {
 	const figureLabel = prompt.match(/\b(Figure\s+\d+)\b/i)?.[1];
 	const asset = figureLabel
 		? assetByLabel(question, figureLabel)
-		: question.assets?.find((item) => item.public_path);
+		: questionAssets(question).find((item) => item.public_path);
 	if (!asset?.id || !asset.public_path) return null;
 	const zones = detectHorizontalAnswerLineZones(asset);
 	if (!zones.length) return null;
@@ -1041,18 +1064,18 @@ function extractAssetCanvasInteraction(question, sourceText) {
 	const labels = extractLabelBank(question);
 	const prompt = sourceText ?? question.prompt_text ?? '';
 	const answerCanvas =
-		(question.assets ?? []).find(
+		questionAssets(question).find(
 			(candidate) =>
 				candidate.public_path &&
 				candidate.role === 'answer_canvas' &&
 				candidate.asset_type !== 'table'
 		) ??
-		(question.assets ?? []).find(
+		questionAssets(question).find(
 			(candidate) => candidate.public_path && candidate.role === 'answer_canvas'
 		);
 	const labelAsset =
-		(question.assets ?? []).find((candidate) => candidate.public_path && candidate.required) ??
-		question.assets?.find((candidate) => candidate.public_path);
+		questionAssets(question).find((candidate) => candidate.public_path && candidate.required) ??
+		questionAssets(question).find((candidate) => candidate.public_path);
 	const asset = labels.length > 0 ? labelAsset : answerCanvas;
 	if (!asset?.public_path) return null;
 	if (!/\b(?:write|label|complete|draw|plot)\b[\s\S]{0,80}\b(?:figure|graph)\b/i.test(prompt)) {
@@ -1156,7 +1179,7 @@ function removeResponseOwnedFigures(blocks, response) {
 }
 
 function renderingOverlayForQuestion(question) {
-	const requiredAssets = (question.assets ?? [])
+	const requiredAssets = questionAssets(question)
 		.filter((asset) => asset.required)
 		.map((asset) => ({
 			id: asset.id,
@@ -1350,6 +1373,41 @@ async function executeBatch(statements, label) {
 	}
 }
 
+async function executeSequential(statements, label) {
+	if (statements.length === 0 || dryRun) return;
+
+	for (const [index, statement] of statements.entries()) {
+		const response = await fetch(d1QueryUrl, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${apiToken}`,
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			},
+			body: JSON.stringify(statement)
+		});
+		const bodyText = await response.text();
+		if (!response.ok) {
+			throw new Error(
+				`D1 statement failed (${label} ${index + 1}/${statements.length}): ${response.status} ${response.statusText}: ${bodyText}`
+			);
+		}
+		const body = JSON.parse(bodyText);
+		if (!body.success) {
+			throw new Error(
+				`D1 statement failed (${label} ${index + 1}/${statements.length}): ${JSON.stringify(body.errors ?? body)}`
+			);
+		}
+		const result = Array.isArray(body.result) ? body.result[0] : body.result;
+		if (result?.success === false) {
+			throw new Error(
+				`D1 statement failed (${label} ${index + 1}/${statements.length}): ${JSON.stringify(result)}`
+			);
+		}
+		console.log(`${label}: ${index + 1}/${statements.length}`);
+	}
+}
+
 async function applySchema() {
 	const sql = readFileSync(migrationPath, 'utf8');
 	await executeBatch(
@@ -1380,7 +1438,7 @@ async function clearPublicTables() {
 		'source_documents',
 		'content_imports'
 	];
-	await executeBatch(
+	await executeSequential(
 		tables.map((table) => ({ sql: `DELETE FROM ${table}` })),
 		'clear'
 	);
@@ -1479,6 +1537,21 @@ const semanticFiles = ['biology', 'chemistry', 'physics'].map((subject) =>
 const allQuestions = new Map((baseline.questions ?? []).map((question) => [question.id, question]));
 const sourceDocuments = new Map((baseline.source_documents ?? []).map((doc) => [doc.id, doc]));
 const chains = semanticFiles.flatMap((semantic) => semantic.answer_chain_candidates ?? []);
+const promptSpecificSemanticChains = chains
+	.map((chain) => ({
+		chain,
+		issues: blockingAnswerChainSpecificityIssues(chain)
+	}))
+	.filter((entry) => entry.issues.length > 0);
+if (promptSpecificSemanticChains.length > 0) {
+	throw new Error(
+		`Semantic chain import has ${promptSpecificSemanticChains.length} answer chains with prompt-specific numeric solution steps. ` +
+			`Repair the semantic-chain JSON before import. Examples: ${promptSpecificSemanticChains
+				.slice(0, 8)
+				.map((entry) => `${entry.chain.id}: ${chainSpecificityIssueSummary(entry.issues, 3)}`)
+				.join(' | ')}`
+	);
+}
 const chainIds = new Set(chains.map((chain) => chain.id));
 const constellations = semanticFiles.flatMap((semantic) => semantic.constellation_candidates ?? []);
 const memberships = collectQuestionMemberships(semanticFiles).filter(
@@ -1505,26 +1578,214 @@ const importedQuestionIds = new Set(
 const importedQuestions = (baseline.questions ?? []).filter((question) =>
 	importedQuestionIds.has(question.id)
 );
-const sourceDocumentAssetsByLabel = new Map();
-const sourceDocumentAssetsByPage = new Map();
+const neededSourceDocumentIds = new Set(
+	importedQuestions.map((question) => question.source_document_id).filter(Boolean)
+);
+
+function sourceDocumentAssetDir(sourceDocumentId) {
+	return path.join(
+		rootDir,
+		'data/aqa-combined-science-trilogy-higher/assets/question-papers',
+		sourceDocumentId
+	);
+}
+
+const localImageMetadataCache = new Map();
+
+function localImageMetadata(filePath) {
+	const absolutePath = path.isAbsolute(filePath) ? filePath : path.join(rootDir, filePath);
+	if (localImageMetadataCache.has(absolutePath)) return localImageMetadataCache.get(absolutePath);
+	if (!existsSync(absolutePath)) return null;
+
+	try {
+		const raw = execFileSync(
+			'python3',
+			[
+				'-c',
+				`
+import json
+import sys
+from PIL import Image
+img = Image.open(sys.argv[1])
+dpi = img.info.get("dpi") or (300, 300)
+print(json.dumps({
+    "width": img.width,
+    "height": img.height,
+    "x_ppi": dpi[0] if dpi[0] else 300,
+    "y_ppi": dpi[1] if dpi[1] else 300
+}))
+`,
+				absolutePath
+			],
+			{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+		);
+		const metadata = JSON.parse(raw);
+		localImageMetadataCache.set(absolutePath, metadata);
+		return metadata;
+	} catch {
+		return null;
+	}
+}
+
+function localEmbeddedImagesForSourceDocument(sourceDocumentId) {
+	const assetDir = sourceDocumentAssetDir(sourceDocumentId);
+	if (!existsSync(assetDir)) return new Map();
+
+	const byPage = new Map();
+	for (const fileName of readdirSync(assetDir)) {
+		const match = fileName.match(/^image-(\d{3})-\d+\.(?:jpe?g|png)$/i);
+		if (!match) continue;
+		const pageNumber = Number(match[1]);
+		const pageImages = byPage.get(pageNumber) ?? [];
+		const relativePath = path
+			.relative(rootDir, path.join(assetDir, fileName))
+			.split(path.sep)
+			.join('/');
+		pageImages.push({
+			fileName,
+			pageNumber,
+			file_path: relativePath,
+			r2_key: `images/papers/${sourceDocumentId}/${fileName}`,
+			public_path: `/images/papers/${sourceDocumentId}/${fileName}`,
+			image_metadata: localImageMetadata(relativePath)
+		});
+		byPage.set(pageNumber, pageImages);
+	}
+	return byPage;
+}
+
+const localEmbeddedImagesByDocument = new Map(
+	Array.from(neededSourceDocumentIds).map((sourceDocumentId) => [
+		sourceDocumentId,
+		localEmbeddedImagesForSourceDocument(sourceDocumentId)
+	])
+);
+
+const importedQuestionsBySourceAndGroup = new Map();
 for (const question of importedQuestions) {
-	for (const asset of question.assets ?? []) {
+	const groupRef = question.parent_source_question_ref ?? question.source_question_ref.split('.')[0];
+	const key = `${question.source_document_id}:${groupRef}`;
+	const group = importedQuestionsBySourceAndGroup.get(key) ?? [];
+	group.push(question);
+	importedQuestionsBySourceAndGroup.set(key, group);
+}
+for (const group of importedQuestionsBySourceAndGroup.values()) {
+	group.sort((left, right) => (left.display_order ?? 0) - (right.display_order ?? 0));
+}
+
+function standaloneFigureLabels(text) {
+	return cleanPromptLines(text ?? '')
+		.map((line) => line.match(/^(Figure\s+\d+)$/i)?.[1] ?? null)
+		.filter(Boolean);
+}
+
+function sourceQuestionRefSlug(ref) {
+	return String(ref ?? 'question').replace(/[^0-9A-Za-z]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function pageNumbersForInferredFigure(question, label, sourceTextKind) {
+	const pages = new Set();
+	if (sourceTextKind === 'parent_stem' && question.parent_source_question_ref) {
+		const groupRef = question.parent_source_question_ref;
+		const group =
+			importedQuestionsBySourceAndGroup.get(`${question.source_document_id}:${groupRef}`) ?? [];
+		const firstQuestionWithParentStem = group.find((candidate) =>
+			standaloneFigureLabels(candidate.parent_stem).some(
+				(candidateLabel) => candidateLabel.toLowerCase() === label.toLowerCase()
+			)
+		);
+		const sourceQuestion = firstQuestionWithParentStem ?? group[0];
+		if (Number.isFinite(sourceQuestion?.page_start)) pages.add(sourceQuestion.page_start);
+		if (Number.isFinite(sourceQuestion?.page_end)) pages.add(sourceQuestion.page_end);
+		return pages;
+	}
+
+	if (Number.isFinite(question.page_start)) pages.add(question.page_start);
+	if (Number.isFinite(question.page_end)) pages.add(question.page_end);
+	return pages;
+}
+
+function inferredFigureAsset(question, label, sourceTextKind) {
+	const pages = pageNumbersForInferredFigure(question, label, sourceTextKind);
+	const candidates = [];
+	const byPage = localEmbeddedImagesByDocument.get(question.source_document_id);
+	for (const page of pages) {
+		candidates.push(...(byPage?.get(page) ?? []));
+	}
+	if (candidates.length !== 1) return null;
+
+	const figureNumber = label.match(/\d+/)?.[0] ?? 'unknown';
+	const id = `${question.source_document_id}-${sourceQuestionRefSlug(question.source_question_ref)}-figure-${figureNumber}-inferred`;
+	const image = candidates[0];
+	return {
+		id,
+		asset_type: 'diagram',
+		source_label: label,
+		required: true,
+		role: 'context',
+		page_number: image.pageNumber,
+		file_path: image.file_path,
+		r2_key: image.r2_key,
+		public_path: image.public_path,
+		alt_text: `${label} from the source question paper.`,
+		extracted_text: null,
+		extraction_confidence: 0.62,
+		needs_human_review: true,
+		metadata: {
+			mapping: 'inferred_single_embedded_image_on_context_page',
+			source_text_kind: sourceTextKind,
+			image_candidates: image.image_metadata
+				? [
+						{
+							page_number: image.pageNumber,
+							file_path: image.file_path,
+							...image.image_metadata
+						}
+					]
+				: [],
+			note: 'Inferred because a standalone figure label appeared in context and the source page had exactly one embedded image.'
+		}
+	};
+}
+
+function inferredAssetsForQuestion(question) {
+	const existingLabels = new Set(
+		(question.assets ?? []).map((asset) => asset.source_label?.toLowerCase()).filter(Boolean)
+	);
+	const inferred = [];
+	const seenLabels = new Set();
+	for (const [sourceTextKind, text] of [
+		['parent_stem', question.parent_stem],
+		['prompt_text', question.prompt_text]
+	]) {
+		for (const label of standaloneFigureLabels(text)) {
+			const normalized = label.toLowerCase();
+			if (existingLabels.has(normalized) || seenLabels.has(normalized)) continue;
+			const asset = inferredFigureAsset(question, label, sourceTextKind);
+			if (asset) inferred.push(asset);
+			seenLabels.add(normalized);
+		}
+	}
+	return inferred;
+}
+
+const augmentedQuestionAssetsByQuestionId = new Map(
+	importedQuestions.map((question) => [
+		question.id,
+		[...(question.assets ?? []).filter(isRenderableQuestionAsset), ...inferredAssetsForQuestion(question)]
+	])
+);
+
+const sourceDocumentAssetsByLabel = new Map();
+for (const question of importedQuestions) {
+	for (const asset of questionAssets(question)) {
 		if (!asset.source_label || !asset.public_path) continue;
 		const key = `${question.source_document_id}:${asset.source_label.toLowerCase()}`;
 		if (!sourceDocumentAssetsByLabel.has(key)) sourceDocumentAssetsByLabel.set(key, asset);
-		if (Number.isFinite(asset.page_number)) {
-			const pageKey = `${question.source_document_id}:${asset.page_number}`;
-			const assets = sourceDocumentAssetsByPage.get(pageKey) ?? [];
-			if (!assets.some((existing) => existing.id === asset.id)) assets.push(asset);
-			sourceDocumentAssetsByPage.set(pageKey, assets);
-		}
 	}
 }
 const importedMemberships = memberships.filter((membership) =>
 	importedQuestionIds.has(membership.question_id)
-);
-const neededSourceDocumentIds = new Set(
-	importedQuestions.map((question) => question.source_document_id).filter(Boolean)
 );
 const importedConstellations = constellations.filter((constellation) =>
 	chains.some((chain) => chain.id === semanticChainIdForConstellation(constellation))
@@ -1547,7 +1808,7 @@ console.log(
 			imported_memberships: importedMemberships.length,
 			rendering_overlays: importedQuestionIds.size,
 			question_assets: importedQuestions.reduce(
-				(count, question) => count + (question.assets?.length ?? 0),
+				(count, question) => count + questionAssets(question).length,
 				0
 			)
 		},
@@ -1732,7 +1993,7 @@ if (!schemaOnly) {
 		);
 		insertResponseAnswerKeyStatements(insertStatements, question, renderingOverlay);
 
-		for (const [index, asset] of (question.assets ?? []).entries()) {
+		for (const [index, asset] of questionAssets(question).entries()) {
 			insertStatements.push(
 				insertStatement(
 					'question_assets',

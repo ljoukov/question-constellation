@@ -2,6 +2,7 @@ node_modules
 
 # Output
 data/
+tmp/
 .output
 .vercel
 .netlify

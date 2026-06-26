@@ -238,6 +238,43 @@ Recommended process:
 
 Do not use the subject topic tree as the main chain. The topic path remains metadata; the chain is the reasoning structure.
 
+### Numeric Specificity Guardrail
+
+An answer chain is a reusable reasoning or method pattern. It must not become a worked solution to
+one question.
+
+For calculation questions, keep prompt-specific arithmetic in the model answer, mark checklist, and
+mark-scheme evidence. Do not put given values, substitutions, intermediate values, final numeric
+answers, or one-question units inside `canonical_chain_text`, `summary`, `step_text`,
+`explanation`, or `common_omission`.
+
+Bad chain step text:
+
+```text
+Substitute k=8500 and e=0.012 to get E_e=0.5 x 8500 x 0.012^2.
+Calculate E_e=0.612.
+```
+
+Good chain step text:
+
+```text
+Convert the extension or compression into metres.
+Substitute the known values into E_e = 1/2 ke^2.
+Calculate the elastic potential energy and give the correct unit.
+```
+
+Formula constants such as the `1/2` in `E_e = 1/2 ke^2` are allowed. The problem is the one-question
+numeric substitution, not the formula.
+
+For extraction and repair scripts, run the answer-chain specificity audit before importing:
+
+```sh
+node scripts/audit-answer-chain-specificity.mjs --fail-on-blocking
+```
+
+If the audit flags a chain, regenerate or edit the chain to describe the reusable move. Do not delete
+the numeric model answer or checklist evidence; those fields are supposed to stay source-specific.
+
 ### Chain Reuse Decision
 
 Two questions can share an answer chain when:
@@ -370,7 +407,8 @@ Use this checklist when importing another full paper into D1:
    `question_response_answer_keys`; do not generate model answers for these unless the fixed response
    is actually a written answer in disguise.
 6. Derive answer chains only when the marks depend on reusable reasoning, not for pure recall or
-   single-step key selection.
+   single-step key selection. For calculation chains, reject chain text that includes prompt-specific
+   numeric substitutions or final numeric answers; those belong in model answers and checklist rows.
 7. Import to D1, then run validation queries for question counts, render-overlay coverage,
    mark-scheme coverage, model-answer coverage, fixed-response answer-key coverage, and zero
    published questions with no usable grading evidence.
@@ -450,6 +488,56 @@ This found issues that text extraction missed:
 - Mark brackets duplicated because one copy came from prompt text and one from the marks field.
 - Copyright/footer text accidentally included in the question prompt.
 - Image-label blanks that needed positioned targets on top of a figure.
+
+### Dependency And Asset Guardrails
+
+Single-question mode must render all dependencies needed by that question, including parent stems,
+figures, tables, and graph canvases that were printed before the atomic subquestion. Whole-question
+mode, such as `02`, should include the shared dependency once and then render each subquestion below
+it. Do not solve this with route-specific hard-coding; store dependency blocks in the render object
+and dedupe by rendered figure/table identity.
+
+Standalone source labels need special handling:
+
+- If a line is only `Figure N` or `Table N` and a figure/table block is generated for it, render the
+  structured block and its caption.
+- If no structured block is generated, drop the standalone label from paragraph text rather than
+  merging it into a sentence. A common bad render is `shown in Figure 3 Figure 3`.
+- It is acceptable for the visible page to show a sentence ending in `Figure 3` followed by a
+  separate `Figure 3` caption and the actual image. That mirrors the paper; the problem is flattening
+  the label into prose without the figure/table.
+
+Missing figure assets can sometimes be inferred from local embedded PDF images, but only with a
+review flag. The safe heuristic is narrow:
+
+1. A standalone `Figure N` label appears in the relevant parent stem or prompt.
+2. The baseline extraction has no asset with that label.
+3. The relevant source page has exactly one embedded image candidate.
+4. The importer creates a synthetic asset with `needs_human_review: true` and provenance such as
+   `inferred_single_embedded_image_on_context_page`.
+5. The visual reviewer confirms the app render against the PDF page image.
+
+Do not keep a broad fallback that maps any referenced figure to any image on the same page. That
+caused the wrong image to be used when a table or later graph shared the page. Also verify that the
+chosen local image is available from R2; a correct D1 object still renders broken if the R2 key is
+missing.
+
+### Table Extraction Guardrails
+
+Exam tables often arrive from PDF text extraction as flat lines. The importer can use scripts to
+recover obvious tables, but the extracted table object should be visually checked:
+
+- Support numeric-first rows such as `0.0 +24` and text-first rows such as `Acrylic 1200`.
+- Support numbered trial rows where the first column is `1`, `2`, `3` and the printed header only
+  names the measured value. Store this as a blank first heading plus the value heading, not as
+  `Column 2`.
+- Preserve units as inline TeX, for example `Density in $\\mathrm{kg/m^3}$`, and keep unit formulae
+  non-wrappable in the renderer.
+- If a table is successfully converted into a structured table, do not also render the same rows as
+  ordinary prompt text.
+- Validate both `/experiments/questions/<paper>/<subquestion>` and
+  `/experiments/questions/<paper>/<parent-question>`, because single-subquestion focus can expose
+  missing dependencies and parent-question focus can expose duplicate shared dependencies.
 
 ### Answer-Line And Image-Label Geometry
 
