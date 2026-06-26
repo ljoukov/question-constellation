@@ -1,0 +1,42 @@
+{
+	"schemaVersion": 1,
+	"name": "synthetic spring elastic potential energy extraction",
+	"sourceDocumentId": "golden-physics-spring-energy",
+	"questionPaper": {
+		"title": "Synthetic GCSE Physics Question Paper",
+		"lines": [
+			"Question 01.1",
+			"When a gymnast lands on the floor, one of the springs compresses by 1.2 cm.",
+			"spring constant = 8500 N/m",
+			"Calculate the elastic potential energy stored in the spring.",
+			"Use the equation E_e = 1/2 k e^2.",
+			"Give the unit."
+		]
+	},
+	"markScheme": {
+		"title": "Synthetic GCSE Physics Mark Scheme",
+		"lines": [
+			"01.1",
+			"1.2 cm = 0.012 m",
+			"E_e = 0.5 x 8500 x 0.012^2",
+			"E_e = 0.612",
+			"unit J or joule"
+		]
+	},
+	"expected": {
+		"sourceQuestionRef": "01.1",
+		"chainId": "physics-chain-spring-elastic-potential-energy-calculation",
+		"answerChainMustIncludeConcepts": [
+			"convert extension or compression to metres",
+			"use elastic potential energy equation",
+			"substitute spring constant and extension or compression",
+			"square the extension or compression",
+			"calculate elastic potential energy",
+			"give joule or J as the unit"
+		],
+		"answerChainForbiddenValues": ["1.2", "0.012", "8500", "0.612"],
+		"answerChainAllowedFormulae": ["E_e = 1/2 k e^2"],
+		"modelAnswerShouldIncludeValues": ["1.2", "0.012", "8500", "0.612", "J"],
+		"checklistShouldIncludeValues": ["0.012", "0.612", "J"]
+	}
+}

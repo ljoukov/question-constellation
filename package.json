@@ -10,6 +10,7 @@
 		"build": "npm run gen && vite build",
 		"extract:aqa": "node scripts/extract-aqa-data.mjs",
 		"extract:physics-vision": "node scripts/extract-physics-paper-vision.mjs",
+		"extract:paper-llm": "node scripts/extract-paper-llm.mjs",
 		"import:chained": "node scripts/import-chained-questions.mjs",
 		"import:physics-vision": "node scripts/import-physics-vision.mjs",
 		"repair:physics-vision-chains": "node scripts/repair-physics-vision-chains.mjs",
@@ -25,7 +26,8 @@
 		"format": "prettier --write .",
 		"test:grading:integration": "node scripts/test-grading-integration.mjs",
 		"test:chain-golden": "node scripts/test-answer-chain-golden.mjs",
-		"test:extraction-skill": "node scripts/test-extraction-skill.mjs",
+		"test:extraction-pipeline": "node scripts/test-extraction-pipeline.mjs",
+		"eval:extraction-pipeline-llm": "node scripts/eval-extraction-pipeline-llm.mjs --run-llm",
 		"test:unit": "vitest",
 		"test": "vitest --run",
 		"gen": "npm run clean:adapter && wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts"

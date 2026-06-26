@@ -6,7 +6,8 @@ The existing product docs explain the human-facing product direction. This docum
 
 ## LLM Extraction Prompt
 
-Use this section as the top-level prompt when a Codex or other LLM agent extracts questions from papers and mark schemes.
+Use this section as the top-level prompt when an LLM extraction script or review agent extracts
+questions from papers and mark schemes.
 
 Use this document as the contract for output shape, provenance, confidence, review flags, and D1/SQLite storage. Do not treat it as a request for keyword classification.
 
@@ -275,14 +276,53 @@ node scripts/audit-answer-chain-specificity.mjs --fail-on-blocking
 If the audit flags a chain, regenerate or edit the chain to describe the reusable move. Do not delete
 the numeric model answer or checklist evidence; those fields are supposed to stay source-specific.
 
-### Golden Checks And Independent Review
+### Scripted Pipeline, Golden Checks, And Independent Review
 
-Extraction quality should be checked in two layers:
+Extraction quality should be checked in three layers:
 
 1. Deterministic golden checks and audits.
-2. A separate Codex reviewer thread that did not generate the extraction.
+2. An LLM integration eval that runs the extraction pipeline against a small source fixture and
+   judges the output.
+3. An independent reviewer pass that did not generate the extraction.
 
-The golden fixture is:
+The reusable extraction entry points are scripts and library functions, not a Codex skill:
+
+```text
+scripts/lib/llm-extraction-pipeline.mjs
+scripts/extract-paper-llm.mjs
+scripts/eval-extraction-pipeline-llm.mjs
+```
+
+The CLI accepts PDFs and writes extracted JSON:
+
+```sh
+node scripts/extract-paper-llm.mjs \
+  --question-paper=<question-paper.pdf> \
+  --mark-scheme=<mark-scheme.pdf> \
+  --source-document-id=<stable-source-id> \
+  --output=<candidate.json> \
+  --write-eval=<evaluation.json>
+```
+
+Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. The library exports
+`extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`, and
+`runGoldenPdfEval` so batch jobs can run many chunks or papers in parallel under their own
+concurrency control.
+
+The script owns PDF processing. The model should not be asked to discover files or run shell
+commands. Required local tools are:
+
+- `pdfinfo` to count/inspect pages.
+- `pdftoppm` to render pages to PNG images.
+- `@ljoukov/llm` to call `chatgpt-gpt-5.5-fast` or another configured model with structured JSON
+  output.
+
+For normal PDFs, the CLI runs an independent rubric judge by default after extraction. The judge sees
+candidate JSON and deterministic findings, not the extractor's private context, and must score from
+0 to 1. Use `--skip-judge` only for local debugging when you explicitly want deterministic checks
+without another LLM call.
+
+The deterministic golden fixture is:
 
 ```text
 tests/golden/answer-chain-quality.json
@@ -298,11 +338,46 @@ The fixture should contain minimal examples of allowed generic chains, rejected 
 chains, and warning-only numeric recall cases. When a new failure mode appears, add or update a
 golden example before changing the audit rule.
 
-After extraction or repair, start a separate reviewer thread or sub-agent. The reviewer should run
-the golden test and audit, sample blocking findings, warning findings, and passing calculation
-chains, then report `accept`, `repair`, or `uncertain` for each sample. The reviewer should not edit
-files or import to D1. The main extraction thread applies repairs, reruns the checks, and imports only
-after the review is clean.
+The pipeline-level LLM golden fixture is:
+
+```text
+tests/golden/extraction-pipeline-spring-energy.json
+```
+
+Run the full extractor-plus-judge eval with:
+
+```sh
+node scripts/eval-extraction-pipeline-llm.mjs --run-llm \
+  --write-candidate=tmp/extraction-pipeline-candidate.json \
+  --write-result=tmp/extraction-pipeline-result.json
+```
+
+This eval creates a tiny synthetic question-paper PDF and mark-scheme PDF, renders them to images,
+passes those images plus this extraction spec to the extractor model, then runs:
+
+- schema validation,
+- mechanical golden checks for forbidden chain values and required model/checklist values,
+- the answer-chain specificity audit, and
+- an independent LLM judge over the candidate JSON and golden fixture.
+
+Use `--candidate=<json>` to judge an existing extractor output without rerunning extraction. A pass
+requires both the mechanical checks and the semantic judge to pass. The judge should focus on
+conceptual equivalence, not exact wording: the chain must capture the reusable method, while worked
+numbers stay in model/checklist evidence.
+
+The extraction pipeline may run a bounded repair loop with `--repair-attempts=<n>`. This is the only
+agentic loop needed for the current chain-quality problem: the script gives the model deterministic
+findings and judge feedback, then asks it to return repaired JSON. The model does not get filesystem
+write tools. If later PDF/layout work needs model-controlled tools, expose narrow runtime tools
+inside `@ljoukov/llm.runToolLoop()` or `runAgentLoop()` such as `render_pdf_page`,
+`read_page_image_metadata`, and `compare_candidate_to_golden`; do not expose arbitrary shell or D1
+write access to the extractor.
+
+After extraction or repair, run an independent reviewer pass. The reviewer can be a second scripted
+LLM judge or a separate fresh-context agent, but it should see only candidate JSON, the golden fixture
+or rubric, and deterministic findings. It should not see the extractor's private context. It should
+report `accept`, `repair`, or `uncertain`; it should not edit files or import to D1. The import step
+only runs after the main process applies repairs and reruns the checks.
 
 ### Chain Reuse Decision
 
@@ -421,9 +496,9 @@ Treat any row with zero `mark_rows`, zero `checklist_rows`, zero `model_answers`
 targets match the UI serialization. For written-response rows, inspect the stored model answer as a
 human would; heuristic checks alone are not enough.
 
-### Paper Import Workflow For Codex Agents
+### Paper Import Workflow
 
-Use this checklist when importing another full paper into D1:
+Use this checklist when extracting another full paper and importing it into D1:
 
 1. Pair the question paper and mark scheme, then extract source metadata and atomic question rows.
 2. Extract the render overlay for each atomic question, including blocks, assets, marks, and the
@@ -447,7 +522,8 @@ Use this checklist when importing another full paper into D1:
 9. For any route that returns missing-evidence feedback, repair the D1 evidence from the official
    source or remove the question from the published experiment before handing the import off.
 
-For extraction agents that generate import JSON, include this instruction in the task prompt:
+For extraction scripts or agents that generate import JSON, include this instruction in the task
+prompt:
 
 ```text
 For each rendered response object, emit the exact user-facing response format and, when the correct
