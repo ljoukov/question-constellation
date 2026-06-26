@@ -300,11 +300,43 @@ node scripts/extract-paper-llm.mjs \
   --question-paper=<question-paper.pdf> \
   --mark-scheme=<mark-scheme.pdf> \
   --source-document-id=<stable-source-id> \
+  --supporting-document=<examiner-report-or-insert.pdf> \
+  --existing-chains=<existing-chain-context.json-or-md> \
   --output=<candidate.json> \
   --write-eval=<evaluation.json>
 ```
 
-Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. The library exports
+For the current AQA Physics data layout, use the preset:
+
+```sh
+pnpm run extract:physics-vision -- --paper=aqa-8464p1h-qp-jun18 --force
+pnpm run extract:physics-vision -- --all --force
+```
+
+`extract:physics-vision` is a compatibility command for the same script-first pipeline; there should
+not be a second Physics-specific extractor.
+
+For AQA Separate Science Higher, first download the official assessment resources into `data/`, then
+extract/import from that manifest:
+
+```sh
+pnpm run download:aqa-separate-science
+pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
+pnpm run extract:aqa-separate-science -- --all --force
+pnpm run import:aqa-separate-science -- --all --replace-all-subject
+```
+
+The downloader scrapes the official AQA assessment-resource pages for GCSE Biology 8461, Chemistry
+8462, and Physics 8463. It keeps standard Higher question papers in
+`data/aqa-separate-science-higher/question-papers/`, mark schemes in
+`data/aqa-separate-science-higher/mark-schemes/`, standard inserts in
+`data/aqa-separate-science-higher/supporting-documents/`, and writes
+`data/aqa-separate-science-higher/manifest.json`. Modified-print variants and examiner reports are
+excluded unless a future importer explicitly needs them.
+
+Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. Use
+`--chunk-pages=<n>` to control page batching. Mark schemes are passed as extracted text by default;
+use `--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
 `extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`, and
 `runGoldenPdfEval` so batch jobs can run many chunks or papers in parallel under their own
 concurrency control.
@@ -321,6 +353,26 @@ For normal PDFs, the CLI runs an independent rubric judge by default after extra
 candidate JSON and deterministic findings, not the extractor's private context, and must score from
 0 to 1. Use `--skip-judge` only for local debugging when you explicitly want deterministic checks
 without another LLM call.
+
+There are two kinds of tests:
+
+- Mechanical tests such as `pnpm run test:extraction-pipeline` check schemas, script wiring, prompt
+  guardrails, and deterministic chain-specificity rules.
+- The LLM integration test `pnpm run eval:extraction-pipeline-llm` renders a golden PDF/mark-scheme
+  pair, runs the extractor with the configured model, and then asks a separate judge call to compare
+  the output semantically against golden concepts and forbidden chain values.
+
+The production output shape is the import-shaped JSON used by `import:vision`: `sourceDocument`,
+`markSchemeDocument`, optional `supportingDocuments`, atomic `questions`, render blocks, response
+objects, assets, mark-scheme items, checklist items, model answers, answer chains, common weak
+answers, review flags, and local asset manifest. A compact extraction schema may be used only inside
+small golden fixtures; it is not the production artifact.
+
+When `--existing-chains` is supplied, the extractor must compare each chain to existing chain ids. It
+should reuse an id when the ordered method is the same, keep the old id when clarifying wording for a
+compatible chain, and create a new id only for genuinely new mark-scoring reasoning. The optional
+`chainResolution` field records `reuse_existing`, `update_existing`, `create_new`, or `needs_review`
+for audit.
 
 The deterministic golden fixture is:
 

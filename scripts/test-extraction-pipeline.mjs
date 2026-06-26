@@ -43,13 +43,17 @@ const packageJson = JSON.parse(readText(packagePath));
 const extractionSpec = readText(path.join(rootDir, 'docs/extraction-spec.md'));
 const pipelineSource = readText(path.join(rootDir, 'scripts/lib/llm-extraction-pipeline.mjs'));
 const cliSource = readText(path.join(rootDir, 'scripts/extract-paper-llm.mjs'));
+const downloaderSource = readText(path.join(rootDir, 'scripts/download-aqa-separate-science.mjs'));
+const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.mjs'));
 
 for (const filePath of [
 	'docs/product-methodology.md',
 	'docs/product-flows.md',
 	'docs/extraction-spec.md',
 	'scripts/lib/llm-extraction-pipeline.mjs',
+	'scripts/download-aqa-separate-science.mjs',
 	'scripts/extract-paper-llm.mjs',
+	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
 	'scripts/test-answer-chain-golden.mjs',
 	'scripts/audit-answer-chain-specificity.mjs',
@@ -65,9 +69,12 @@ requireIncludes(
 	[
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
 		'node scripts/extract-paper-llm.mjs',
+		'pnpm run download:aqa-separate-science',
+		'pnpm run import:aqa-separate-science',
 		'@ljoukov/llm',
 		'pdfinfo',
 		'pdftoppm',
+		'--mark-scheme-image-mode=all',
 		'reusable reasoning or method pattern'
 	],
 	'Extraction spec'
@@ -77,10 +84,15 @@ requireIncludes(
 	pipelineSource,
 	[
 		'export async function extractCandidateFromPdfPair',
+		'export async function extractFullPaperFromPdfSet',
 		'export async function evaluateCandidate',
 		'export async function runGoldenPdfEval',
+		'export async function repairFullPaperAnswerChains',
+		'export const FullPaperExtractionSchema',
+		'export const LlmFullPaperExtractionSchema',
 		'export async function judgeCandidateAgainstRubric',
 		'export function pdfPageCount',
+		'export function pdfText',
 		'chatgpt-gpt-5.5-fast',
 		'xhigh',
 		'answerChainSpecificityIssues'
@@ -95,15 +107,49 @@ requireIncludes(
 		'--mark-scheme',
 		'--source-document-id',
 		'--output',
+		'--preset=aqa-physics',
+		'--preset=aqa-separate-science',
+		'--supporting-document',
+		'--existing-chains',
+		'--mark-scheme-image-mode',
 		'--repair-attempts',
 		'--skip-judge',
-		'extractCandidateFromPdfPair'
+		'extractFullPaperFromPdfSet'
 	],
 	'Pipeline CLI'
 );
 
+requireIncludes(
+	downloaderSource,
+	[
+		'GCSE Biology 8461',
+		'chemistry-8462/assessment-resources',
+		'physics-8463/assessment-resources',
+		'data/aqa-separate-science-higher',
+		'sha1 mismatch'
+	],
+	'AQA Separate Science downloader'
+);
+
+requireIncludes(
+	importSource,
+	[
+		'input-root',
+		'--recursive',
+		'--replace-all-subject',
+		'subjectAreaForPaper',
+		'chainPrefixForSubject'
+	],
+	'Vision importer'
+);
+
 for (const scriptName of [
+	'download:aqa-separate-science',
+	'extract:physics-vision',
+	'extract:aqa-separate-science',
 	'extract:paper-llm',
+	'import:vision',
+	'import:aqa-separate-science',
 	'eval:extraction-pipeline-llm',
 	'test:chain-golden',
 	'test:extraction-pipeline'
@@ -118,7 +164,9 @@ if (goldenOutput.status !== 'passed' || goldenOutput.cases < 4) {
 
 for (const scriptPath of [
 	'scripts/lib/llm-extraction-pipeline.mjs',
+	'scripts/download-aqa-separate-science.mjs',
 	'scripts/extract-paper-llm.mjs',
+	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
 ]) {
 	runNodeCheck(scriptPath);
@@ -130,10 +178,13 @@ const pipelineModule = await import(
 for (const exportName of [
 	'extractCandidateFromPdfPair',
 	'extractCandidateFromImages',
+	'extractFullPaperFromPdfSet',
 	'evaluateCandidate',
 	'runGoldenPdfEval',
 	'repairCandidateAnswerChains',
-	'judgeCandidateAgainstRubric'
+	'repairFullPaperAnswerChains',
+	'judgeCandidateAgainstRubric',
+	'pdfText'
 ]) {
 	if (typeof pipelineModule[exportName] !== 'function') {
 		fail(`Missing library export: ${exportName}`);

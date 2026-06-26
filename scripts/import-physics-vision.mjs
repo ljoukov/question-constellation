@@ -10,9 +10,9 @@ import {
 
 const rootDir = process.cwd();
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
-const extractionRoot = path.join(
+const extractionRoot = path.resolve(
 	rootDir,
-	'data/vision-extracted/aqa-combined-science-trilogy-higher/physics'
+	stringArg('input-root', 'data/vision-extracted/aqa-combined-science-trilogy-higher/physics')
 );
 const migrationPath = path.join(rootDir, 'migrations/0001_public_content.sql');
 
@@ -21,7 +21,9 @@ const paperArg = stringArg('paper', '');
 const allPapers = args.has('--all');
 const dryRun = args.has('--dry-run');
 const applySchemaFlag = args.has('--apply-schema');
-const replaceAllPhysics = args.has('--replace-all-physics') || allPapers;
+const recursive = args.has('--recursive');
+const replaceAllSubject =
+	args.has('--replace-all-subject') || args.has('--replace-all-physics') || allPapers;
 const batchSize = integerArg('batch-size', 50, 1);
 const maxSqlParams = 80;
 
@@ -142,7 +144,10 @@ function slugify(value) {
 }
 
 function shortHash(value) {
-	return createHash('sha256').update(String(value ?? '')).digest('hex').slice(0, 8);
+	return createHash('sha256')
+		.update(String(value ?? ''))
+		.digest('hex')
+		.slice(0, 8);
 }
 
 function paramChunks(values) {
@@ -174,6 +179,22 @@ function stableQuestionId(sourceDocumentId, sourceQuestionRef) {
 	return `${paperSlug}-${slugify(sourceQuestionRef)}`;
 }
 
+function subjectAreaForPaper(paper) {
+	return paper.sourceDocument?.subjectArea ?? paper.sourceDocument?.subject ?? 'Physics';
+}
+
+function subjectForPaper(paper) {
+	return paper.sourceDocument?.subject ?? subjectAreaForPaper(paper);
+}
+
+function chainPrefixForSubject(subjectArea) {
+	const slug = slugify(subjectArea || 'physics');
+	if (slug === 'biology') return 'biology-chain';
+	if (slug === 'chemistry') return 'chemistry-chain';
+	if (slug === 'physics') return 'physics-chain';
+	return `${slug}-chain`;
+}
+
 function normalizeTransferDistance(value) {
 	const normalized = String(value ?? 'unclassified').replaceAll('-', '_');
 	if (['start', 'near', 'stretch', 'exam_transfer', 'unclassified'].includes(normalized)) {
@@ -188,14 +209,14 @@ function correctAnswersObject(value) {
 	if (Array.isArray(value)) {
 		entries.push(
 			...value
-			.filter(
-				(item) =>
-					item &&
-					typeof item.targetId === 'string' &&
-					typeof item.correctAnswer === 'string' &&
-					item.correctAnswer.trim()
-			)
-			.map((item) => [item.targetId, item.correctAnswer.trim()])
+				.filter(
+					(item) =>
+						item &&
+						typeof item.targetId === 'string' &&
+						typeof item.correctAnswer === 'string' &&
+						item.correctAnswer.trim()
+				)
+				.map((item) => [item.targetId, item.correctAnswer.trim()])
 		);
 	}
 	if (!Array.isArray(value) && typeof value === 'object') {
@@ -274,7 +295,9 @@ async function executeBatch(statements, label) {
 				throw new Error(`${label} statement failed: ${JSON.stringify(result)}`);
 			}
 		}
-		console.log(`${label}: ${Math.min(index + chunk.length, statements.length)}/${statements.length}`);
+		console.log(
+			`${label}: ${Math.min(index + chunk.length, statements.length)}/${statements.length}`
+		);
 	}
 }
 
@@ -320,7 +343,10 @@ async function applySchema() {
 
 function insertStatement(table, columns, values) {
 	const placeholders = columns.map(() => '?').join(', ');
-	return { sql: `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`, params: values };
+	return {
+		sql: `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`,
+		params: values
+	};
 }
 
 function upsertStatement(table, columns, values, conflictColumn = 'id') {
@@ -362,8 +388,8 @@ function sourceDocumentStatement(doc) {
 			doc.docType,
 			doc.board ?? 'AQA',
 			doc.qualification ?? 'GCSE',
-			doc.subject ?? 'Combined Science',
-			doc.subjectArea ?? 'Physics',
+			doc.subject ?? doc.subjectArea ?? null,
+			doc.subjectArea ?? doc.subject ?? null,
 			doc.tier ?? 'Higher',
 			doc.paper ?? null,
 			doc.componentCode ?? null,
@@ -423,7 +449,11 @@ function normalizeBlock(block, assetIdsByLabel, reviewNotes) {
 			assetIdsByLabel.get(String(visibleLabel ?? '').toLowerCase());
 		if (!assetId) {
 			reviewNotes.push(`Missing asset mapping for ${label ?? 'unlabelled figure'}.`);
-			return { kind: 'figure', assetId: `missing-${slugify(label ?? 'figure')}`, label: label ?? 'Figure' };
+			return {
+				kind: 'figure',
+				assetId: `missing-${slugify(label ?? 'figure')}`,
+				label: label ?? 'Figure'
+			};
 		}
 		return { kind: 'figure', assetId, label: visibleLabel ?? undefined };
 	}
@@ -465,7 +495,11 @@ function removeRedundantResponseBankBlocks(blocks, response) {
 	const bank = responseBankItems(response);
 	if (bank.length === 0) return blocks;
 	return blocks.filter((block) => {
-		if (block.kind === 'key') return !sameTextSet(block.items.map((item) => item.text), bank);
+		if (block.kind === 'key')
+			return !sameTextSet(
+				block.items.map((item) => item.text),
+				bank
+			);
 		if (block.kind === 'bullet-list' || block.kind === 'ordered-list') {
 			return !sameTextSet(block.items, bank);
 		}
@@ -476,7 +510,8 @@ function removeRedundantResponseBankBlocks(blocks, response) {
 function normalizeResponse(response, assetIdsByLabel, reviewNotes) {
 	if (!response?.kind) return { kind: 'none' };
 	const correctAnswers = correctAnswersObject(response.correctAnswers);
-	if (response.kind === 'lines') return { kind: 'lines', count: response.count ?? response.lineCount ?? 1 };
+	if (response.kind === 'lines')
+		return { kind: 'lines', count: response.count ?? response.lineCount ?? 1 };
 	if (response.kind === 'labeled-lines') {
 		return {
 			kind: 'labeled-lines',
@@ -580,9 +615,11 @@ function assetStatements(question, questionId, sourceDocumentId) {
 		const label = asset.sourceLabel || `Asset ${index + 1}`;
 		const id = `${questionId}-asset-${slugify(label) || index + 1}`;
 		const localFileName = asset.localAssetFileName;
-		const filePath = localFileName
-			? `data/aqa-combined-science-trilogy-higher/assets/question-papers/${sourceDocumentId}/${localFileName}`
-			: null;
+		const filePath =
+			asset.filePath ??
+			(localFileName
+				? `data/aqa-combined-science-trilogy-higher/assets/question-papers/${sourceDocumentId}/${localFileName}`
+				: null);
 		const publicPath =
 			asset.publicPath ??
 			(localFileName ? `/images/papers/${sourceDocumentId}/${localFileName}` : null);
@@ -620,7 +657,8 @@ function assetStatements(question, questionId, sourceDocumentId) {
 					asset.altText ?? label,
 					null,
 					filePath,
-					localFileName ? `images/papers/${sourceDocumentId}/${localFileName}` : null,
+					asset.r2Key ??
+						(localFileName ? `images/papers/${sourceDocumentId}/${localFileName}` : null),
 					publicPath,
 					asset.needsHumanReview ? 0.72 : 0.9,
 					bool(asset.needsHumanReview),
@@ -675,42 +713,42 @@ function responseAnswerKeyStatements(questionId, response) {
 		const seenCount = (seenTargets.get(targetId) ?? 0) + 1;
 		seenTargets.set(targetId, seenCount);
 		const storedTargetId = targetCounts.get(targetId) > 1 ? `${targetId}-${seenCount}` : targetId;
-		return (
-			insertStatement(
-				'question_response_answer_keys',
-				[
-					'id',
-					'question_id',
-					'response_kind',
-					'target_id',
-					'correct_answer',
-					'display_order',
-					'aliases_json',
-					'metadata_json'
-				],
-				[
-					`${questionId}-response-key-${slugify(storedTargetId)}`,
-					questionId,
-					response.kind,
-					storedTargetId,
-					answer,
-					responseAnswerKeyOrder(response, targetId, index + 1),
-					json([], []),
-					json({ source: 'llm-vision-extracted' }, {})
-				]
-			)
+		return insertStatement(
+			'question_response_answer_keys',
+			[
+				'id',
+				'question_id',
+				'response_kind',
+				'target_id',
+				'correct_answer',
+				'display_order',
+				'aliases_json',
+				'metadata_json'
+			],
+			[
+				`${questionId}-response-key-${slugify(storedTargetId)}`,
+				questionId,
+				response.kind,
+				storedTargetId,
+				answer,
+				responseAnswerKeyOrder(response, targetId, index + 1),
+				json([], []),
+				json({ source: 'llm-vision-extracted' }, {})
+			]
 		);
 	});
 }
 
-function chainIdFor(answerChain) {
+function chainIdFor(answerChain, subjectArea = null) {
 	if (answerChain.id) return answerChain.id;
 	const base = slugify(answerChain.title || answerChain.canonicalChainText).slice(0, 70);
-	return `physics-chain-${base}-${shortHash(answerChain.canonicalChainText)}`;
+	return `${chainPrefixForSubject(subjectArea)}-${base}-${shortHash(answerChain.canonicalChainText)}`;
 }
 
 function addQuestionStatements(statements, paper, question, chainUseCount) {
 	const sourceDocumentId = paper.sourceDocument.id;
+	const subjectArea = subjectAreaForPaper(paper);
+	const subject = subjectForPaper(paper);
 	const questionId = question.id || stableQuestionId(sourceDocumentId, question.sourceQuestionRef);
 	const reviewNotes = [...(question.reviewNotes ?? [])];
 	const { statements: assetRows, assetIdsByLabel } = assetStatements(
@@ -769,8 +807,8 @@ function addQuestionStatements(statements, paper, question, chainUseCount) {
 				question.marks ?? null,
 				paper.sourceDocument.board ?? 'AQA',
 				paper.sourceDocument.qualification ?? 'GCSE',
-				paper.sourceDocument.subject ?? 'Combined Science',
-				'Physics',
+				subject,
+				subjectArea,
 				paper.sourceDocument.tier ?? 'Higher',
 				paper.sourceDocument.paper ?? null,
 				paper.sourceDocument.componentCode ?? null,
@@ -967,7 +1005,7 @@ function addQuestionStatements(statements, paper, question, chainUseCount) {
 
 	if (question.answerChain) {
 		const chain = question.answerChain;
-		const chainId = chainIdFor(chain);
+		const chainId = chainIdFor(chain, subjectArea);
 		const currentUseCount = chainUseCount.get(chainId) ?? 0;
 		chainUseCount.set(chainId, currentUseCount + 1);
 		statements.push(
@@ -994,8 +1032,8 @@ function addQuestionStatements(statements, paper, question, chainUseCount) {
 					chainId,
 					chain.title,
 					chain.canonicalChainText,
-					'Combined Science',
-					'Physics',
+					subject,
+					subjectArea,
 					chain.broadTopic ?? null,
 					chain.summary ?? null,
 					'extraction_agent',
@@ -1120,16 +1158,37 @@ function addQuestionStatements(statements, paper, question, chainUseCount) {
 
 function loadPapers() {
 	if (!existsSync(extractionRoot)) {
-		throw new Error(`No vision extraction directory found at ${path.relative(rootDir, extractionRoot)}.`);
+		throw new Error(
+			`No vision extraction directory found at ${path.relative(rootDir, extractionRoot)}.`
+		);
 	}
-	const files = readdirSync(extractionRoot)
+	const files = listExtractionFiles(extractionRoot, recursive)
 		.filter((fileName) => fileName.endsWith('.json'))
 		.sort();
 	const selected = allPapers
 		? files
-		: files.filter((fileName) => fileName === `${paperArg}.json` || fileName.startsWith(`${paperArg}.`));
-	if (!selected.length) throw new Error(`No extracted Physics paper matched ${paperArg}.`);
+		: files.filter(
+				(fileName) =>
+					path.basename(fileName) === `${paperArg}.json` ||
+					path.basename(fileName).startsWith(`${paperArg}.`) ||
+					fileName === `${paperArg}.json`
+			);
+	if (!selected.length) throw new Error(`No extracted paper matched ${paperArg}.`);
 	return selected.map((fileName) => readJson(path.join(extractionRoot, fileName)));
+}
+
+function listExtractionFiles(dir, includeNested) {
+	const entries = readdirSync(dir, { withFileTypes: true });
+	const files = [];
+	for (const entry of entries) {
+		if (entry.isFile()) files.push(entry.name);
+		if (includeNested && entry.isDirectory()) {
+			for (const nested of listExtractionFiles(path.join(dir, entry.name), true)) {
+				files.push(path.join(entry.name, nested));
+			}
+		}
+	}
+	return files;
 }
 
 function validateExtractedPapers(papers) {
@@ -1153,7 +1212,7 @@ function validateExtractedPapers(papers) {
 	if (missingChains.length > 0) {
 		throw new Error(
 			`Vision extraction is missing answer chains for ${missingChains.length} marked questions. ` +
-				`Run pnpm run repair:physics-vision-chains -- --all, then import again. Examples: ${missingChains
+				`Re-run extraction with repair attempts, then import again. Examples: ${missingChains
 					.slice(0, 12)
 					.join(', ')}`
 		);
@@ -1161,7 +1220,7 @@ function validateExtractedPapers(papers) {
 	if (promptSpecificChains.length > 0) {
 		throw new Error(
 			`Vision extraction has ${promptSpecificChains.length} answer chains with prompt-specific numeric solution steps. ` +
-				`Run pnpm run repair:physics-vision-chains -- --all --specificity, then import again. Examples: ${promptSpecificChains
+				`Re-run extraction with repair attempts, then import again. Examples: ${promptSpecificChains
 					.slice(0, 8)
 					.join(' | ')}`
 		);
@@ -1180,6 +1239,8 @@ async function questionIdsForSourceDocuments(sourceDocumentIds) {
 
 async function clearRowsForPapers(papers) {
 	const sourceDocumentIds = papers.map((paper) => paper.sourceDocument.id);
+	const subjectAreas = [...new Set(papers.map(subjectAreaForPaper).filter(Boolean))];
+	const chainPrefixes = subjectAreas.map(chainPrefixForSubject);
 	const questionIds = await questionIdsForSourceDocuments(sourceDocumentIds);
 	const extractedChainIds = [
 		...new Set(
@@ -1187,13 +1248,19 @@ async function clearRowsForPapers(papers) {
 				(paper.questions ?? [])
 					.map((question) => question.answerChain)
 					.filter(Boolean)
-					.map(chainIdFor)
+					.map((chain) => chainIdFor(chain, subjectAreaForPaper(paper)))
 			)
 		)
 	];
-	const chainIds = replaceAllPhysics
+	const chainIds = replaceAllSubject
 		? (
-				await d1Query(`SELECT id FROM answer_chains WHERE subject_area = 'Physics' OR id LIKE 'physics-chain-%'`)
+				await d1Query(
+					[
+						`SELECT id FROM answer_chains WHERE subject_area IN (${subjectAreas.map(() => '?').join(', ')})`,
+						...chainPrefixes.map(() => `id LIKE ?`)
+					].join(' OR '),
+					[...subjectAreas, ...chainPrefixes.map((prefix) => `${prefix}-%`)]
+				)
 			).map((row) => row.id)
 		: [];
 	const statements = [];
@@ -1211,12 +1278,15 @@ async function clearRowsForPapers(papers) {
 				'question_rendering_overlays',
 				'question_assets'
 			]) {
-				statements.push({ sql: `DELETE FROM ${table} WHERE question_id IN (${quoted})`, params: ids });
+				statements.push({
+					sql: `DELETE FROM ${table} WHERE question_id IN (${quoted})`,
+					params: ids
+				});
 			}
 			statements.push({ sql: `DELETE FROM questions WHERE id IN (${quoted})`, params: ids });
 		}
 	}
-	if (!replaceAllPhysics && extractedChainIds.length) {
+	if (!replaceAllSubject && extractedChainIds.length) {
 		for (const ids of paramChunks(extractedChainIds)) {
 			const quoted = ids.map(() => '?').join(', ');
 			statements.push({
@@ -1225,28 +1295,43 @@ async function clearRowsForPapers(papers) {
 			});
 		}
 	}
-	if (replaceAllPhysics && chainIds.length) {
+	if (replaceAllSubject && chainIds.length) {
 		for (const ids of paramChunks(chainIds)) {
 			const quoted = ids.map(() => '?').join(', ');
 			statements.push(
-				{ sql: `DELETE FROM constellation_questions WHERE constellation_id IN (SELECT id FROM constellations WHERE answer_chain_id IN (${quoted}))`, params: ids },
+				{
+					sql: `DELETE FROM constellation_questions WHERE constellation_id IN (SELECT id FROM constellations WHERE answer_chain_id IN (${quoted}))`,
+					params: ids
+				},
 				{ sql: `DELETE FROM constellations WHERE answer_chain_id IN (${quoted})`, params: ids },
-				{ sql: `DELETE FROM chain_family_members WHERE answer_chain_id IN (${quoted})`, params: ids },
+				{
+					sql: `DELETE FROM chain_family_members WHERE answer_chain_id IN (${quoted})`,
+					params: ids
+				},
 				{ sql: `DELETE FROM answer_chain_steps WHERE answer_chain_id IN (${quoted})`, params: ids },
-				{ sql: `DELETE FROM common_weak_answers WHERE answer_chain_id IN (${quoted})`, params: ids },
-				{ sql: `DELETE FROM question_answer_chains WHERE answer_chain_id IN (${quoted})`, params: ids },
+				{
+					sql: `DELETE FROM common_weak_answers WHERE answer_chain_id IN (${quoted})`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM question_answer_chains WHERE answer_chain_id IN (${quoted})`,
+					params: ids
+				},
 				{ sql: `DELETE FROM answer_chains WHERE id IN (${quoted})`, params: ids }
 			);
 		}
 		statements.push({
-			sql: `DELETE FROM chain_families WHERE subject_area = 'Physics' OR id LIKE 'physics-chain-%'`,
-			params: []
+			sql: [
+				`DELETE FROM chain_families WHERE subject_area IN (${subjectAreas.map(() => '?').join(', ')})`,
+				...chainPrefixes.map(() => `id LIKE ?`)
+			].join(' OR '),
+			params: [...subjectAreas, ...chainPrefixes.map((prefix) => `${prefix}-%`)]
 		});
 	}
-	if (replaceAllPhysics) {
+	if (replaceAllSubject) {
 		statements.push({
-			sql: `DELETE FROM source_documents WHERE subject_area = 'Physics' AND doc_type = 'mark_scheme'`,
-			params: []
+			sql: `DELETE FROM source_documents WHERE subject_area IN (${subjectAreas.map(() => '?').join(', ')}) AND doc_type IN ('mark_scheme', 'supporting_document', 'examiner_report', 'insert')`,
+			params: subjectAreas
 		});
 	}
 	await executeBatch(statements, 'clear');
@@ -1305,6 +1390,7 @@ async function audit(papers) {
 
 const papers = loadPapers();
 validateExtractedPapers(papers);
+const importedSubjectAreas = [...new Set(papers.map(subjectAreaForPaper).filter(Boolean))];
 
 console.log(
 	JSON.stringify(
@@ -1312,8 +1398,9 @@ console.log(
 			database_id: databaseId,
 			source: path.relative(rootDir, extractionRoot),
 			papers: papers.map((paper) => paper.sourceDocument.id),
+			subject_areas: importedSubjectAreas,
 			questions: papers.reduce((sum, paper) => sum + paper.questions.length, 0),
-			replace_all_physics: replaceAllPhysics,
+			replace_all_subject: replaceAllSubject,
 			dry_run: dryRun
 		},
 		null,
@@ -1329,6 +1416,9 @@ const chainUseCount = new Map();
 for (const paper of papers) {
 	statements.push(sourceDocumentStatement(paper.sourceDocument));
 	statements.push(sourceDocumentStatement(paper.markSchemeDocument));
+	for (const supportingDocument of paper.supportingDocuments ?? []) {
+		statements.push(sourceDocumentStatement(supportingDocument));
+	}
 	const questions = [...paper.questions]
 		.sort((a, b) => compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef))
 		.map((question, index) => ({ ...question, displayOrder: index + 1 }));
@@ -1342,8 +1432,8 @@ statements.push(
 		'content_imports',
 		['id', 'source', 'question_count', 'chain_count', 'constellation_count', 'metadata_json'],
 		[
-			`physics-vision-${new Date().toISOString()}`,
-			'data/vision-extracted/aqa-combined-science-trilogy-higher/physics',
+			`vision-extracted-${new Date().toISOString()}`,
+			path.relative(rootDir, extractionRoot),
 			papers.reduce((sum, paper) => sum + paper.questions.length, 0),
 			chainUseCount.size,
 			0,
@@ -1352,8 +1442,9 @@ statements.push(
 					vision_extracted: true,
 					source_document_ids: papers.map((paper) => paper.sourceDocument.id),
 					experiment_source_document_ids: papers.map((paper) => paper.sourceDocument.id),
+					subject_areas: importedSubjectAreas,
 					imported_at: new Date().toISOString(),
-					replace_all_physics: replaceAllPhysics
+					replace_all_subject: replaceAllSubject
 				},
 				{}
 			)
@@ -1364,4 +1455,4 @@ statements.push(
 await executeBatch(statements, 'insert');
 if (!dryRun) await audit(papers);
 
-console.log('Physics vision import complete.');
+console.log('Vision extraction import complete.');

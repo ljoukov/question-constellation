@@ -11,6 +11,9 @@ import {
 
 export const DEFAULT_EXTRACTION_MODEL = 'chatgpt-gpt-5.5-fast';
 export const DEFAULT_THINKING_LEVEL = 'xhigh';
+export const DEFAULT_LLM_TIMEOUT_MS = Number(
+	process.env.EXTRACTION_LLM_TIMEOUT_MS ?? 10 * 60 * 1000
+);
 
 const StepRoleSchema = z.enum([
 	'given',
@@ -203,14 +206,433 @@ export const JudgeSchema = z.object({
 	requiredRepairs: z.array(z.string())
 });
 
+export const ChainResolutionSchema = z.object({
+	action: z.enum(['reuse_existing', 'update_existing', 'create_new', 'needs_review']),
+	existingChainId: z.string().nullable(),
+	compatibilityRationale: z.string(),
+	identityStable: z.boolean()
+});
+
 export const RepairSchema = z.object({
 	questions: LlmExtractionCandidateSchema.shape.questions
+});
+
+const FullChainRepairSchema = z.object({
+	repairs: z.array(
+		z.object({
+			sourceQuestionRef: z.string(),
+			answerChain: z.object({
+				id: z.string().nullable(),
+				title: z.string(),
+				canonicalChainText: z.string(),
+				summary: z.string(),
+				broadTopic: z.string().nullable(),
+				chainFamilyId: z.string().nullable(),
+				steps: z.array(StepSchema),
+				confidence: z.number(),
+				needsHumanReview: z.boolean(),
+				reviewNotes: z.array(z.string())
+			}),
+			chainResolution: ChainResolutionSchema.optional(),
+			commonWeakAnswers: z
+				.array(
+					z.object({
+						weakAnswerText: z.string(),
+						missingStepIndexes: z.array(z.number()),
+						explanation: z.string(),
+						confidence: z.number()
+					})
+				)
+				.optional()
+		})
+	)
+});
+
+export function createRenderBlockSchema() {
+	return z.object({
+		kind: z.enum([
+			'paragraph',
+			'equation',
+			'figure',
+			'table',
+			'structured-table',
+			'ordered-list',
+			'bullet-list',
+			'key'
+		]),
+		text: z.string().nullable(),
+		label: z.string().nullable(),
+		assetLabel: z.string().nullable(),
+		columns: z.array(z.string()).nullable(),
+		rows: z.array(z.array(z.string())).nullable(),
+		items: z.array(z.string()).nullable(),
+		keyItems: z.array(z.object({ marker: z.string(), text: z.string() })).nullable(),
+		compact: z.boolean().nullable(),
+		wide: z.boolean().nullable()
+	});
+}
+
+export function createFullResponseSchema() {
+	return z.object({
+		kind: z.enum([
+			'none',
+			'lines',
+			'labeled-lines',
+			'number-line',
+			'choice',
+			'choice-table',
+			'matching',
+			'asset-canvas',
+			'drawing-box',
+			'equation-blanks',
+			'image-label-zones'
+		]),
+		count: z.number().nullable(),
+		lineCount: z.number().nullable(),
+		labels: z.array(z.string()).nullable(),
+		label: z.string().nullable(),
+		prefix: z.string().nullable(),
+		unit: z.string().nullable(),
+		options: z.array(z.string()).nullable(),
+		layout: z.enum(['vertical', 'horizontal']).nullable(),
+		columns: z.array(z.string()).nullable(),
+		rows: z.array(z.array(z.string())).nullable(),
+		leftTitle: z.string().nullable(),
+		rightTitle: z.string().nullable(),
+		left: z.array(z.string()).nullable(),
+		right: z.array(z.string()).nullable(),
+		assetLabel: z.string().nullable(),
+		labelBank: z.array(z.string()).nullable(),
+		segments: z
+			.array(
+				z.object({
+					kind: z.enum(['text', 'math', 'blank']),
+					text: z.string().nullable(),
+					id: z.string().nullable(),
+					label: z.string().nullable(),
+					width: z.number().nullable()
+				})
+			)
+			.nullable(),
+		zones: z
+			.array(
+				z.object({
+					id: z.string(),
+					label: z.string(),
+					x: z.number(),
+					y: z.number(),
+					width: z.number(),
+					height: z.number()
+				})
+			)
+			.nullable(),
+		allowRepeats: z.boolean().nullable(),
+		correctAnswers: z
+			.array(z.object({ targetId: z.string(), correctAnswer: z.string() }))
+			.nullable()
+	});
+}
+
+export const FullPaperExtractionSchema = z.object({
+	sourceDocumentId: z.string().nullable().optional(),
+	extractionRun: z.object({
+		agentVersion: z.string(),
+		needsHumanReview: z.boolean(),
+		reviewNotes: z.array(z.string()),
+		source: z.string().nullable().optional(),
+		model: z.string().nullable().optional(),
+		dpi: z.number().nullable().optional(),
+		extractedAt: z.string().nullable().optional()
+	}),
+	sourceDocument: z.object({
+		id: z.string(),
+		title: z.string(),
+		pageCount: z.number(),
+		docType: z.string().nullable().optional(),
+		board: z.string().nullable().optional(),
+		qualification: z.string().nullable().optional(),
+		subject: z.string().nullable().optional(),
+		subjectArea: z.string().nullable().optional(),
+		tier: z.string().nullable().optional(),
+		paper: z.string().nullable().optional(),
+		componentCode: z.string().nullable().optional(),
+		series: z.string().nullable().optional(),
+		year: z.number().nullable().optional(),
+		filePath: z.string().nullable().optional(),
+		fileHash: z.string().nullable().optional(),
+		metadata: z
+			.object({
+				originalFilename: z.string().nullable().optional(),
+				notes: z.array(z.string()).optional()
+			})
+			.nullable()
+			.optional()
+	}),
+	markSchemeDocument: z.object({
+		id: z.string(),
+		title: z.string(),
+		pageCount: z.number(),
+		docType: z.string().nullable().optional(),
+		board: z.string().nullable().optional(),
+		qualification: z.string().nullable().optional(),
+		subject: z.string().nullable().optional(),
+		subjectArea: z.string().nullable().optional(),
+		tier: z.string().nullable().optional(),
+		paper: z.string().nullable().optional(),
+		componentCode: z.string().nullable().optional(),
+		series: z.string().nullable().optional(),
+		year: z.number().nullable().optional(),
+		filePath: z.string().nullable().optional(),
+		fileHash: z.string().nullable().optional(),
+		metadata: z
+			.object({
+				originalFilename: z.string().nullable().optional(),
+				notes: z.array(z.string()).optional()
+			})
+			.nullable()
+			.optional()
+	}),
+	supportingDocuments: z
+		.array(
+			z.object({
+				id: z.string(),
+				docType: z.string(),
+				title: z.string(),
+				pageCount: z.number(),
+				filePath: z.string().nullable(),
+				fileHash: z.string().nullable(),
+				metadata: z
+					.object({
+						originalFilename: z.string().nullable().optional(),
+						notes: z.array(z.string()).optional()
+					})
+					.nullable()
+					.optional()
+			})
+		)
+		.optional(),
+	questions: z.array(
+		z.object({
+			id: z.string().nullable(),
+			sourceQuestionRef: z.string(),
+			parentSourceQuestionRef: z.string().nullable(),
+			displayOrder: z.number(),
+			promptText: z.string(),
+			selfContainedPromptText: z.string().nullable(),
+			contextText: z.string().nullable(),
+			commandWord: z.string().nullable(),
+			marks: z.number().nullable(),
+			pageStart: z.number(),
+			pageEnd: z.number(),
+			topicPath: z.array(z.string()),
+			specRef: z.string().nullable(),
+			stemBlocks: z.array(createRenderBlockSchema()),
+			leadBlocks: z.array(createRenderBlockSchema()),
+			promptBlocks: z.array(createRenderBlockSchema()),
+			response: createFullResponseSchema(),
+			afterResponseBlocks: z.array(createRenderBlockSchema()),
+			assets: z.array(
+				z.object({
+					sourceLabel: z.string(),
+					assetType: z.string(),
+					role: z.string(),
+					pageNumber: z.number().nullable(),
+					localAssetFileName: z.string().nullable(),
+					publicPath: z.string().nullable(),
+					altText: z.string(),
+					required: z.boolean(),
+					needsHumanReview: z.boolean(),
+					reviewNotes: z.array(z.string())
+				})
+			),
+			markSchemeItems: z.array(
+				z.object({
+					itemType: z.string(),
+					text: z.string(),
+					marks: z.number().nullable(),
+					sourceRef: z.string(),
+					confidence: z.number().nullable()
+				})
+			),
+			markChecklist: z.array(
+				z.object({
+					text: z.string(),
+					required: z.boolean(),
+					markSchemeItemIndexes: z.array(z.number()),
+					confidence: z.number().nullable(),
+					needsHumanReview: z.boolean()
+				})
+			),
+			modelAnswer: z
+				.object({
+					answerText: z.string(),
+					confidence: z.number(),
+					needsHumanReview: z.boolean()
+				})
+				.nullable(),
+			answerChain: z.object({
+				id: z.string().nullable(),
+				title: z.string(),
+				canonicalChainText: z.string(),
+				summary: z.string(),
+				broadTopic: z.string().nullable(),
+				chainFamilyId: z.string().nullable(),
+				steps: z.array(StepSchema),
+				confidence: z.number(),
+				needsHumanReview: z.boolean(),
+				reviewNotes: z.array(z.string())
+			}),
+			chainResolution: ChainResolutionSchema.optional(),
+			commonWeakAnswers: z.array(
+				z.object({
+					weakAnswerText: z.string(),
+					missingStepIndexes: z.array(z.number()),
+					explanation: z.string(),
+					confidence: z.number()
+				})
+			),
+			extractionConfidence: z.number(),
+			needsHumanReview: z.boolean(),
+			reviewNotes: z.array(z.string())
+		})
+	),
+	localAssetManifest: z
+		.array(
+			z.object({
+				page: z.number().nullable(),
+				fileName: z.string(),
+				filePath: z.string(),
+				publicPath: z.string(),
+				r2Key: z.string()
+			})
+		)
+		.optional()
+});
+
+export const LlmFullPaperExtractionSchema = z.object({
+	extractionRun: z.object({
+		agentVersion: z.string(),
+		needsHumanReview: z.boolean(),
+		reviewNotes: z.array(z.string())
+	}),
+	sourceDocument: z.object({
+		id: z.string(),
+		title: z.string(),
+		pageCount: z.number()
+	}),
+	markSchemeDocument: z.object({
+		id: z.string(),
+		title: z.string(),
+		pageCount: z.number()
+	}),
+	questions: z.array(
+		z.object({
+			id: z.string().nullable(),
+			sourceQuestionRef: z.string(),
+			parentSourceQuestionRef: z.string().nullable(),
+			displayOrder: z.number(),
+			promptText: z.string(),
+			selfContainedPromptText: z.string().nullable(),
+			contextText: z.string().nullable(),
+			commandWord: z.string().nullable(),
+			marks: z.number().nullable(),
+			pageStart: z.number(),
+			pageEnd: z.number(),
+			topicPath: z.array(z.string()),
+			specRef: z.string().nullable(),
+			stemBlocks: z.array(createRenderBlockSchema()),
+			leadBlocks: z.array(createRenderBlockSchema()),
+			promptBlocks: z.array(createRenderBlockSchema()),
+			response: createFullResponseSchema(),
+			afterResponseBlocks: z.array(createRenderBlockSchema()),
+			assets: z.array(
+				z.object({
+					sourceLabel: z.string(),
+					assetType: z.string(),
+					role: z.string(),
+					pageNumber: z.number().nullable(),
+					localAssetFileName: z.string().nullable(),
+					publicPath: z.string().nullable(),
+					altText: z.string(),
+					required: z.boolean(),
+					needsHumanReview: z.boolean(),
+					reviewNotes: z.array(z.string())
+				})
+			),
+			markSchemeItems: z.array(
+				z.object({
+					itemType: z.string(),
+					text: z.string(),
+					marks: z.number().nullable(),
+					sourceRef: z.string(),
+					confidence: z.number().nullable()
+				})
+			),
+			markChecklist: z.array(
+				z.object({
+					text: z.string(),
+					required: z.boolean(),
+					markSchemeItemIndexes: z.array(z.number()),
+					confidence: z.number().nullable(),
+					needsHumanReview: z.boolean()
+				})
+			),
+			modelAnswer: z
+				.object({
+					answerText: z.string(),
+					confidence: z.number(),
+					needsHumanReview: z.boolean()
+				})
+				.nullable(),
+			answerChain: z.object({
+				id: z.string().nullable(),
+				title: z.string(),
+				canonicalChainText: z.string(),
+				summary: z.string(),
+				broadTopic: z.string().nullable(),
+				chainFamilyId: z.string().nullable(),
+				steps: z.array(StepSchema),
+				confidence: z.number(),
+				needsHumanReview: z.boolean(),
+				reviewNotes: z.array(z.string())
+			}),
+			chainResolution: ChainResolutionSchema.optional(),
+			commonWeakAnswers: z.array(
+				z.object({
+					weakAnswerText: z.string(),
+					missingStepIndexes: z.array(z.number()),
+					explanation: z.string(),
+					confidence: z.number()
+				})
+			),
+			extractionConfidence: z.number(),
+			needsHumanReview: z.boolean(),
+			reviewNotes: z.array(z.string())
+		})
+	)
 });
 
 export function setupLlmEnv() {
 	loadLocalEnv();
 	process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE = 'off';
 	process.env.CHATGPT_RESPONSES_EXPERIMENTAL_HEADER = 'off';
+}
+
+async function generateJsonWithTimeout(
+	options,
+	label = 'LLM call',
+	timeoutMs = DEFAULT_LLM_TIMEOUT_MS
+) {
+	if (!timeoutMs || timeoutMs <= 0) return generateJson(options);
+	const controller = new AbortController();
+	const timeout = setTimeout(() => {
+		controller.abort(new Error(`${label} timed out after ${timeoutMs}ms.`));
+	}, timeoutMs);
+	try {
+		return await generateJson({ ...options, signal: controller.signal });
+	} finally {
+		clearTimeout(timeout);
+	}
 }
 
 export function readJson(filePath) {
@@ -227,6 +649,26 @@ export function pdfPageCount(filePath) {
 	const match = raw.match(/^Pages:\s+(\d+)/m);
 	if (!match) throw new Error(`Could not read PDF page count from ${filePath}.`);
 	return Number(match[1]);
+}
+
+export function pdfText(filePath, maxChars = 140000, pages = []) {
+	try {
+		const args = ['-layout', '-nopgbrk'];
+		if (pages.length) {
+			args.push('-f', String(Math.min(...pages)), '-l', String(Math.max(...pages)));
+		}
+		args.push(filePath, '-');
+		const raw = execFileSync('pdftotext', args, {
+			encoding: 'utf8',
+			maxBuffer: 32 * 1024 * 1024
+		});
+		return raw
+			.replace(/\r/g, '')
+			.replace(/[ \t]+\n/g, '\n')
+			.slice(0, maxChars);
+	} catch {
+		return '';
+	}
 }
 
 export function fileHash(filePath) {
@@ -426,7 +868,7 @@ export async function extractCandidateFromImages({
 		extraInstructions,
 		expectedQuestionCount
 	});
-	const { value } = await generateJson({
+	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
 		telemetry: false,
@@ -499,6 +941,418 @@ export async function extractCandidateFromPdfPair({
 		extractionSpec,
 		extraInstructions,
 		expectedQuestionCount
+	});
+}
+
+export function compareQuestionRefs(left, right) {
+	const leftParts = String(left ?? '')
+		.split('.')
+		.map((part) => Number(part));
+	const rightParts = String(right ?? '')
+		.split('.')
+		.map((part) => Number(part));
+	const length = Math.max(leftParts.length, rightParts.length);
+	for (let index = 0; index < length; index += 1) {
+		const leftPart = leftParts[index] ?? -1;
+		const rightPart = rightParts[index] ?? -1;
+		if (leftPart !== rightPart) return leftPart - rightPart;
+	}
+	return String(left ?? '').localeCompare(String(right ?? ''));
+}
+
+export function pageNumberFromRenderedPath(filePath) {
+	const match = path.basename(filePath).match(/-(\d+)\.png$/);
+	return match ? Number(match[1]) : null;
+}
+
+export function chunkImages(images, chunkPages = 6) {
+	const chunks = [];
+	for (let start = 0; start < images.length; start += chunkPages) {
+		const coreImages = images.slice(start, Math.min(start + chunkPages, images.length));
+		const lookaheadImages =
+			start + chunkPages < images.length
+				? images.slice(start + chunkPages, start + chunkPages + 1)
+				: [];
+		chunks.push({
+			index: chunks.length,
+			total: 0,
+			coreImages,
+			lookaheadImages,
+			images: [...coreImages, ...lookaheadImages],
+			corePages: coreImages.map(pageNumberFromRenderedPath),
+			lookaheadPages: lookaheadImages.map(pageNumberFromRenderedPath)
+		});
+	}
+	return chunks.map((chunk) => ({ ...chunk, total: chunks.length }));
+}
+
+function sourceDocumentPrompt(doc) {
+	return [
+		`id: ${doc.id}`,
+		`type: ${doc.docType}`,
+		`title: ${doc.title}`,
+		`file: ${doc.fileName ?? path.basename(doc.path)}`,
+		doc.pages?.length ? `pages included: ${doc.pages.join(', ')}` : null
+	]
+		.filter(Boolean)
+		.join('; ');
+}
+
+export function buildFullPaperPrompt({
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme,
+	supportingDocuments = [],
+	chunk,
+	extractionSpec,
+	existingChainsText = '',
+	extraInstructions = '',
+	expectedQuestionCount = null,
+	assetManifestText = ''
+}) {
+	return [
+		'Extract this GCSE exam paper into the full Question Constellation import JSON schema.',
+		'This is the production extraction path. The output must be suitable for the D1 import path: source documents, atomic questions, render blocks, response schema, assets, mark scheme items, checklist, model answers, answer chains, weak answers, and review flags.',
+		'Use the exact camelCase field names from the schema. Do not return snake_case aliases.',
+		`Use sourceDocument.id: ${sourceDocumentId}`,
+		`Use markSchemeDocument.id: ${markSchemeDocumentId}`,
+		expectedQuestionCount ? `Return exactly ${expectedQuestionCount} atomic question(s).` : '',
+		chunk
+			? `This is chunk ${chunk.index + 1} of ${chunk.total}. Extract only atomic marked questions whose question/subquestion number begins on core question-paper pages ${chunk.corePages.join(', ')}. Use lookahead pages only to complete a question that started on a core page.`
+			: null,
+		'Use the question paper page images and mark scheme text as source of truth. If mark scheme page images are supplied, use them to resolve tables or layout that text extraction may have flattened. Use supporting documents only to clarify examiner guidance, accepted alternatives, common mistakes, and review flags; never let them override the official question paper or mark scheme.',
+		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into stemBlocks/selfContainedPromptText where needed.',
+		'Render fields matter: preserve visual question structure using stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Represent MCQ/tick boxes/matching/equation blanks/image labels as response objects rather than duplicated dead text.',
+		'Every marked question must have an answerChain, including simple recall or fixed-response questions. For those, use a compact single-step chain that states the reusable discrimination or fact family.',
+		'Answer chains are reusable reasoning or method patterns, not worked solutions. Do not put prompt-specific values, substitutions, intermediate calculations, final numeric answers, or one-question units in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
+		'For calculation questions, worked values belong in markSchemeItems, markChecklist, and modelAnswer only.',
+		'Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion.',
+		'Chain compatibility: compare each proposed chain with existing chains. If the same ordered method already exists, reuse its id exactly and set chainResolution.action="reuse_existing". If the existing id is conceptually the same but needs clearer generic wording, keep the existing id, set action="update_existing", identityStable=true, and explain the compatibility. Use action="create_new" only when the mark-scoring reasoning is genuinely new. Use action="needs_review" for uncertainty.',
+		'',
+		'Question paper:',
+		sourceDocumentPrompt(questionPaper),
+		'Mark scheme:',
+		sourceDocumentPrompt(markScheme),
+		supportingDocuments.length
+			? ['Supporting documents:', ...supportingDocuments.map(sourceDocumentPrompt)].join('\n')
+			: 'Supporting documents: none',
+		assetManifestText ? ['Local asset manifest:', assetManifestText].join('\n') : null,
+		existingChainsText
+			? ['Existing answer chains for compatibility decisions:', existingChainsText].join('\n')
+			: 'Existing answer chains: none supplied; create stable ids for genuinely new chains.',
+		extraInstructions,
+		'',
+		'Project extraction contract:',
+		extractionSpec
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+export async function extractFullPaperChunk({
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme,
+	supportingDocuments = [],
+	chunk,
+	markSchemeImages,
+	markSchemeText = '',
+	supportingImages = [],
+	extractionSpec,
+	existingChainsText = '',
+	extraInstructions = '',
+	expectedQuestionCount = null,
+	assetManifestText = ''
+}) {
+	const prompt = buildFullPaperPrompt({
+		sourceDocumentId,
+		markSchemeDocumentId,
+		questionPaper,
+		markScheme,
+		supportingDocuments,
+		chunk,
+		extractionSpec,
+		existingChainsText,
+		extraInstructions,
+		expectedQuestionCount,
+		assetManifestText
+	});
+	const content = [
+		{ type: 'text', text: prompt },
+		{ type: 'text', text: 'QUESTION PAPER PAGE IMAGES FOLLOW, IN ORDER.' },
+		...chunk.images.map(imagePart),
+		{
+			type: 'text',
+			text: `MARK SCHEME TEXT FOLLOWS, EXTRACTED FROM THE OFFICIAL MARK SCHEME PDF.\n\n${markSchemeText || 'No mark scheme text was extracted; use any supplied mark scheme page images.'}`
+		}
+	];
+	if (markSchemeImages.length) {
+		content.push(
+			{ type: 'text', text: 'MARK SCHEME PAGE IMAGES FOLLOW, IN ORDER.' },
+			...markSchemeImages.map(imagePart)
+		);
+	}
+	if (supportingImages.length) {
+		content.push(
+			{ type: 'text', text: 'SUPPORTING DOCUMENT PAGE IMAGES FOLLOW, GROUPED BY FILENAME.' },
+			...supportingImages
+		);
+	}
+	const { value } = await generateJsonWithTimeout({
+		model,
+		thinkingLevel,
+		telemetry: false,
+		input: [
+			{
+				role: 'system',
+				content:
+					'You are a careful GCSE exam extraction engine. Return complete, source-grounded JSON for rendering, grading, import, and answer-chain practice.'
+			},
+			{ role: 'user', content }
+		],
+		schema: LlmFullPaperExtractionSchema
+	});
+	return value;
+}
+
+export function mergeFullPaperChunks(values) {
+	if (values.length === 0) throw new Error('No extraction chunks to merge.');
+	const questionsByRef = new Map();
+	for (const value of values) {
+		for (const question of value.questions ?? []) {
+			if (!question.sourceQuestionRef) continue;
+			const existing = questionsByRef.get(question.sourceQuestionRef);
+			if (
+				!existing ||
+				(question.extractionConfidence ?? 0) > (existing.extractionConfidence ?? 0)
+			) {
+				questionsByRef.set(question.sourceQuestionRef, question);
+			}
+		}
+	}
+	return {
+		...values[0],
+		questions: Array.from(questionsByRef.values())
+			.sort((a, b) => compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef))
+			.map((question, index) => ({ ...question, displayOrder: index + 1 })),
+		extractionRun: {
+			...values[0].extractionRun,
+			needsHumanReview: values.some((value) => value.extractionRun?.needsHumanReview),
+			reviewNotes: values.flatMap((value) => value.extractionRun?.reviewNotes ?? []),
+			chunkCount: values.length
+		}
+	};
+}
+
+export function validateReusableAnswerChains(candidate) {
+	const blocking = blockingIssues(deterministicCandidateIssues(candidate));
+	if (blocking.length > 0) {
+		throw new Error(
+			`Extracted answer chains include prompt-specific numeric solution wording (${blocking.length}). ` +
+				chainSpecificityIssueSummary(blocking, 8)
+		);
+	}
+}
+
+function relativePath(rootDir, filePath) {
+	return path.relative(rootDir, filePath).split(path.sep).join('/');
+}
+
+function sha256WithPrefix(filePath) {
+	return `sha256:${fileHash(filePath)}`;
+}
+
+export function enrichFullPaperExtraction({
+	value,
+	rootDir = process.cwd(),
+	model,
+	dpi,
+	questionPaper,
+	markScheme,
+	supportingDocuments = [],
+	assetManifest = []
+}) {
+	const enriched = {
+		...value,
+		sourceDocumentId: questionPaper.id,
+		extractionRun: {
+			...value.extractionRun,
+			source: 'llm-scripted-pdf-page-images',
+			model,
+			dpi,
+			extractedAt: new Date().toISOString()
+		},
+		sourceDocument: {
+			...value.sourceDocument,
+			id: questionPaper.id,
+			docType: 'question_paper',
+			title: questionPaper.title,
+			pageCount: questionPaper.pageCount,
+			filePath: relativePath(rootDir, questionPaper.path),
+			fileHash: sha256WithPrefix(questionPaper.path),
+			metadata: { originalFilename: path.basename(questionPaper.path), notes: [] }
+		},
+		markSchemeDocument: {
+			...value.markSchemeDocument,
+			id: markScheme.id,
+			docType: 'mark_scheme',
+			title: markScheme.title,
+			pageCount: markScheme.pageCount,
+			filePath: relativePath(rootDir, markScheme.path),
+			fileHash: sha256WithPrefix(markScheme.path),
+			metadata: { originalFilename: path.basename(markScheme.path), notes: [] }
+		},
+		supportingDocuments: supportingDocuments.map((doc) => ({
+			id: doc.id,
+			docType: doc.docType,
+			title: doc.title,
+			pageCount: doc.pageCount,
+			filePath: relativePath(rootDir, doc.path),
+			fileHash: sha256WithPrefix(doc.path),
+			metadata: { originalFilename: path.basename(doc.path), notes: [] }
+		})),
+		localAssetManifest: assetManifest
+	};
+	validateReusableAnswerChains(enriched);
+	return FullPaperExtractionSchema.parse(enriched);
+}
+
+export async function extractFullPaperFromPdfSet({
+	rootDir = process.cwd(),
+	questionPaperPath,
+	markSchemePath,
+	supportingDocumentPaths = [],
+	sourceDocumentId,
+	markSchemeDocumentId = `${sourceDocumentId}-mark-scheme`,
+	outputRoot = path.join(rootDir, 'tmp/llm-extraction-pipeline'),
+	dpi = 160,
+	forceRender = false,
+	questionPages = [],
+	markSchemePages = [],
+	chunkPages = 6,
+	markSchemeImageMode = 'none',
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	extractionSpec,
+	existingChainsText = '',
+	extraInstructions = '',
+	expectedQuestionCount = null,
+	assetManifest = [],
+	assetManifestText = '',
+	documentMetadata = {}
+}) {
+	const questionPaper = {
+		id: sourceDocumentId,
+		docType: 'question_paper',
+		path: questionPaperPath,
+		title: documentMetadata.questionPaperTitle ?? path.basename(questionPaperPath),
+		fileName: path.basename(questionPaperPath),
+		pageCount: pdfPageCount(questionPaperPath)
+	};
+	const markScheme = {
+		id: markSchemeDocumentId,
+		docType: 'mark_scheme',
+		path: markSchemePath,
+		title: documentMetadata.markSchemeTitle ?? path.basename(markSchemePath),
+		fileName: path.basename(markSchemePath),
+		pageCount: pdfPageCount(markSchemePath)
+	};
+	const supportingDocuments = supportingDocumentPaths.map((filePath, index) => ({
+		id: `${sourceDocumentId}-support-${index + 1}`,
+		docType: 'supporting_document',
+		path: filePath,
+		title: path.basename(filePath),
+		fileName: path.basename(filePath),
+		pageCount: pdfPageCount(filePath)
+	}));
+	const questionImages = selectPages(
+		renderPdfPages({
+			pdfPath: questionPaperPath,
+			outputDir: path.join(outputRoot, sourceDocumentId, 'question-paper'),
+			prefix: 'question-paper',
+			dpi,
+			force: forceRender
+		}),
+		questionPages
+	);
+	const markSchemeText = pdfText(markSchemePath, 140000, markSchemePages);
+	const includeMarkSchemeImages = markSchemeImageMode === 'all' || !markSchemeText.trim();
+	const markSchemeImages = includeMarkSchemeImages
+		? selectPages(
+				renderPdfPages({
+					pdfPath: markSchemePath,
+					outputDir: path.join(outputRoot, sourceDocumentId, 'mark-scheme'),
+					prefix: 'mark-scheme',
+					dpi,
+					force: forceRender
+				}),
+				markSchemePages
+			)
+		: [];
+	const supportingImages = [];
+	for (const doc of supportingDocuments) {
+		const images = renderPdfPages({
+			pdfPath: doc.path,
+			outputDir: path.join(outputRoot, sourceDocumentId, doc.id),
+			prefix: doc.id,
+			dpi,
+			force: forceRender
+		});
+		supportingImages.push({ type: 'text', text: `SUPPORTING DOCUMENT ${doc.fileName}` });
+		supportingImages.push(...images.map(imagePart));
+	}
+	if (!questionImages.length) throw new Error('No question-paper images selected.');
+	if (!markSchemeImages.length && !markSchemeText.trim()) {
+		throw new Error('No mark-scheme images or text selected.');
+	}
+	const chunks = chunkImages(questionImages, chunkPages);
+	console.error(
+		`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} chunks=${chunks.length}`
+	);
+	const values = [];
+	for (const chunk of chunks) {
+		console.error(
+			`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')}`
+		);
+		values.push(
+			await extractFullPaperChunk({
+				model,
+				thinkingLevel,
+				sourceDocumentId,
+				markSchemeDocumentId,
+				questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
+				markScheme: {
+					...markScheme,
+					pages: markSchemeImages.length
+						? markSchemeImages.map(pageNumberFromRenderedPath)
+						: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
+				},
+				supportingDocuments,
+				chunk,
+				markSchemeImages,
+				markSchemeText,
+				supportingImages,
+				extractionSpec,
+				existingChainsText,
+				extraInstructions,
+				expectedQuestionCount,
+				assetManifestText
+			})
+		);
+	}
+	return enrichFullPaperExtraction({
+		value: mergeFullPaperChunks(values),
+		rootDir,
+		model,
+		dpi,
+		questionPaper,
+		markScheme,
+		supportingDocuments,
+		assetManifest
 	});
 }
 
@@ -592,7 +1446,7 @@ export async function judgeCandidate({
 	candidate,
 	deterministicIssues
 }) {
-	const { value } = await generateJson({
+	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
 		telemetry: false,
@@ -629,7 +1483,7 @@ export async function judgeCandidateAgainstRubric({
 	candidate,
 	deterministicIssues
 }) {
-	const { value } = await generateJson({
+	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
 		telemetry: false,
@@ -666,7 +1520,7 @@ export async function repairCandidateAnswerChains({
 	deterministicIssues,
 	judge = null
 }) {
-	const { value } = await generateJson({
+	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
 		telemetry: false,
@@ -695,6 +1549,73 @@ export async function repairCandidateAnswerChains({
 		schema: RepairSchema
 	});
 	return { ...candidate, questions: value.questions };
+}
+
+export async function repairFullPaperAnswerChains({
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	candidate,
+	deterministicIssues,
+	judge = null,
+	existingChainsText = ''
+}) {
+	const repairTasks = (candidate.questions ?? []).map((question) => ({
+		sourceQuestionRef: question.sourceQuestionRef,
+		commandWord: question.commandWord,
+		marks: question.marks,
+		promptText: question.promptText,
+		markSchemeItems: question.markSchemeItems,
+		markChecklist: question.markChecklist,
+		modelAnswer: question.modelAnswer,
+		currentAnswerChain: question.answerChain,
+		currentChainResolution: question.chainResolution ?? null,
+		commonWeakAnswers: question.commonWeakAnswers ?? []
+	}));
+	const { value } = await generateJsonWithTimeout({
+		model,
+		thinkingLevel,
+		telemetry: false,
+		input: [
+			{
+				role: 'system',
+				content:
+					'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only chain repairs keyed by sourceQuestionRef.'
+			},
+			{
+				role: 'user',
+				content: [
+					'Existing chain compatibility context:',
+					existingChainsText || 'None supplied.',
+					'',
+					'Questions and current chains:',
+					JSON.stringify(repairTasks, null, 2),
+					'',
+					'Deterministic specificity issues:',
+					JSON.stringify(deterministicIssues, null, 2),
+					'',
+					'Judge feedback:',
+					JSON.stringify(judge, null, 2),
+					'',
+					'Repair every chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. If an existing chain id remains compatible, keep that id for compatibility.'
+				].join('\n')
+			}
+		],
+		schema: FullChainRepairSchema
+	});
+	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
+	return {
+		...candidate,
+		questions: candidate.questions.map((question) => {
+			const repair = repairsByRef.get(question.sourceQuestionRef);
+			if (!repair) return question;
+			return {
+				...question,
+				answerChain: repair.answerChain,
+				chainResolution: repair.chainResolution ?? question.chainResolution,
+				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers
+			};
+		})
+	};
 }
 
 export async function evaluateCandidate({
@@ -759,17 +1680,22 @@ export async function runGoldenPdfEval({
 	writeSimplePdf(questionPdf, fixture.questionPaper.title, fixture.questionPaper.lines);
 	writeSimplePdf(markSchemePdf, fixture.markScheme.title, fixture.markScheme.lines);
 	const extractionSpec = readFileSync(path.join(rootDir, 'docs/extraction-spec.md'), 'utf8');
-	let candidate = await extractCandidateFromPdfPair({
+	let candidate = await extractFullPaperFromPdfSet({
 		rootDir,
 		questionPaperPath: questionPdf,
 		markSchemePath: markSchemePdf,
 		sourceDocumentId: fixture.sourceDocumentId,
+		markSchemeDocumentId: `${fixture.sourceDocumentId}-mark-scheme`,
 		outputRoot: workDir,
 		forceRender: true,
 		model,
 		thinkingLevel,
 		extractionSpec,
-		expectedQuestionCount: 1
+		expectedQuestionCount: 1,
+		documentMetadata: {
+			questionPaperTitle: fixture.questionPaper.title,
+			markSchemeTitle: fixture.markScheme.title
+		}
 	});
 	let evaluation = await evaluateCandidate({
 		candidate,
@@ -779,7 +1705,7 @@ export async function runGoldenPdfEval({
 		minJudgeScore
 	});
 	for (let attempt = 0; evaluation.status !== 'passed' && attempt < repairAttempts; attempt += 1) {
-		candidate = await repairCandidateAnswerChains({
+		candidate = await repairFullPaperAnswerChains({
 			model,
 			thinkingLevel,
 			candidate,
@@ -794,5 +1720,5 @@ export async function runGoldenPdfEval({
 			minJudgeScore
 		});
 	}
-	return { fixture, candidate: ExtractionCandidateSchema.parse(candidate), evaluation };
+	return { fixture, candidate: FullPaperExtractionSchema.parse(candidate), evaluation };
 }
