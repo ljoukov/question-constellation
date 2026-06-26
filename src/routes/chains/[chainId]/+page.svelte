@@ -1,5 +1,5 @@
 <script lang="ts">
-	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
+	import ChainQuestionList from '$lib/chains/ChainQuestionList.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
@@ -42,7 +42,7 @@
 				<h2>Questions in this chain</h2>
 			</div>
 
-			<QuestionTeaserGrid {chain} />
+			<ChainQuestionList {chain} />
 		</section>
 	</div>
 </main>

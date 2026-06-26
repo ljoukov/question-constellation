@@ -3,7 +3,11 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 
-	let { chain }: { chain: LearningChain } = $props();
+	let { chain, limit = null }: { chain: LearningChain; limit?: number | null } = $props();
+
+	const visibleQuestions = $derived(
+		limit === null ? chain.questions : chain.questions.slice(0, limit)
+	);
 
 	function practiceHref(ref = chain.primaryRef) {
 		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref });
@@ -19,7 +23,7 @@
 </script>
 
 <div class="qc-question-card-grid" aria-label={`${accessibleText(chain.title)} question teasers`}>
-	{#each chain.questions as question (question.id ?? question.ref)}
+	{#each visibleQuestions as question (question.id ?? question.ref)}
 		<a class="qc-question-card" href={practiceHref(questionRouteRef(question))}>
 			<span class="qc-question-label"><MathText text={question.label} /></span>
 			<span class="qc-question-title"><MathText text={question.title} /></span>

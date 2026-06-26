@@ -41,6 +41,7 @@
 		untrack(() => canonicalSubject(data.initialSubject) ?? 'All subjects')
 	);
 	let visibleCount = $state(12);
+	const previewQuestionLimit = 3;
 
 	const subjects = $derived([
 		'All subjects',
@@ -187,9 +188,14 @@
 					>
 						<div class="qc-browse-question-set-head">
 							<h3>Practice questions</h3>
-							<span>{chain.questions.length} questions</span>
+							<span>
+								{chain.questions.length} questions
+								{#if chain.questions.length > previewQuestionLimit}
+									<a href={chainHref(chain)}>More</a>
+								{/if}
+							</span>
 						</div>
-						<QuestionTeaserGrid {chain} />
+						<QuestionTeaserGrid {chain} limit={previewQuestionLimit} />
 					</section>
 				</article>
 			{/each}
