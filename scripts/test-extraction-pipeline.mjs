@@ -43,6 +43,7 @@ const packageJson = JSON.parse(readText(packagePath));
 const extractionSpec = readText(path.join(rootDir, 'docs/extraction-spec.md'));
 const pipelineSource = readText(path.join(rootDir, 'scripts/lib/llm-extraction-pipeline.mjs'));
 const cliSource = readText(path.join(rootDir, 'scripts/extract-paper-llm.mjs'));
+const batchSource = readText(path.join(rootDir, 'scripts/extract-aqa-separate-science-batch.mjs'));
 const downloaderSource = readText(path.join(rootDir, 'scripts/download-aqa-separate-science.mjs'));
 const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.mjs'));
 
@@ -71,10 +72,11 @@ requireIncludes(
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
-		'pnpm run extract:aqa-separate-science:batch',
-		'pnpm run import:aqa-separate-science',
-		'@ljoukov/llm',
-		'pdfinfo',
+			'pnpm run extract:aqa-separate-science:batch',
+			'pnpm run import:aqa-separate-science',
+			'--concurrency',
+			'@ljoukov/llm',
+			'pdfinfo',
 		'pdftoppm',
 		'--mark-scheme-image-mode=all',
 		'reusable reasoning or method pattern'
@@ -92,12 +94,17 @@ requireIncludes(
 		'export async function repairFullPaperAnswerChains',
 		'export const FullPaperExtractionSchema',
 		'export const LlmFullPaperExtractionSchema',
+		'export const LlmCompactFullPaperExtractionSchema',
 		'export async function judgeCandidateAgainstRubric',
 		'export function pdfPageCount',
 		'export function pdfText',
-		'chatgpt-gpt-5.5-fast',
+		'chatgpt-gpt-5.5',
 		'xhigh',
-		'answerChainSpecificityIssues'
+		'answerChainSpecificityIssues',
+		'expandCompactFullPaperExtraction',
+		'LOOKAHEAD QUESTION PAPER PAGE',
+		'Do not start or extract sibling subquestions',
+		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk'
 	],
 	'Pipeline library'
 );
@@ -115,10 +122,24 @@ requireIncludes(
 		'--existing-chains',
 		'--mark-scheme-image-mode',
 		'--repair-attempts',
+		'--repair-batch-size',
+		'--llm-timeout-ms',
+		'--llm-max-attempts',
 		'--skip-judge',
 		'extractFullPaperFromPdfSet'
 	],
 	'Pipeline CLI'
+);
+
+requireIncludes(
+	batchSource,
+	[
+		'concurrency',
+		'processSelectedPapers',
+		'Promise.all',
+		'--thinking-level=${thinkingLevel}'
+	],
+	'AQA Separate Science batch extractor'
 );
 
 requireIncludes(
@@ -186,10 +207,13 @@ for (const exportName of [
 	'extractFullPaperFromPdfSet',
 	'evaluateCandidate',
 	'runGoldenPdfEval',
+	'expandCompactFullPaperExtraction',
 	'repairCandidateAnswerChains',
 	'repairFullPaperAnswerChains',
 	'repairFullPaperQuestionQuality',
 	'sanitizeAnswerChainEvidenceIndexes',
+	'questionRefsFromText',
+	'markSchemeTextExcerptForRefs',
 	'judgeCandidateAgainstRubric',
 	'pdfText'
 ]) {
@@ -222,6 +246,19 @@ const numericTitleIssues = pipelineModule.deterministicCandidateIssues({
 		}
 	]
 });
+
+const parsedRefs = pipelineModule.questionRefsFromText('0 1 . 1 Complete\n01.2 Describe\n10.12 Explain');
+if (parsedRefs.join(',') !== '01.1,01.2,10.12') {
+	fail('questionRefsFromText did not parse spaced and compact question refs.', parsedRefs);
+}
+const markSchemeExcerpt = pipelineModule.markSchemeTextExcerptForRefs(
+	['header', '01.1 first answer', 'nearby guidance', '02.1 second answer'].join('\n'),
+	['01.1'],
+	2
+);
+if (!markSchemeExcerpt.includes('01.1 first answer') || markSchemeExcerpt.includes('02.1 second answer')) {
+	fail('markSchemeTextExcerptForRefs did not isolate nearby mark-scheme rows.');
+}
 if (
 	!numericTitleIssues.some((finding) =>
 		finding.issues.some(

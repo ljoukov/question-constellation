@@ -9,7 +9,7 @@ import {
 	chainSpecificityIssueSummary
 } from '../answer-chain-specificity.mjs';
 
-export const DEFAULT_EXTRACTION_MODEL = 'chatgpt-gpt-5.5-fast';
+export const DEFAULT_EXTRACTION_MODEL = 'chatgpt-gpt-5.5';
 export const DEFAULT_THINKING_LEVEL = 'xhigh';
 export const DEFAULT_LLM_TIMEOUT_MS = Number(
 	process.env.EXTRACTION_LLM_TIMEOUT_MS ?? 10 * 60 * 1000
@@ -700,6 +700,56 @@ export const LlmFullPaperExtractionSchema = z.object({
 			needsHumanReview: z.boolean(),
 			reviewNotes: z.array(z.string())
 		})
+		)
+	});
+
+const CompactMarkSchemeItemSchema = z.object({
+	itemType: z.string(),
+	text: z.string(),
+	marks: z.number().nullable(),
+	sourceRef: z.string().nullable(),
+	confidence: z.number().nullable()
+});
+
+const CompactMarkChecklistItemSchema = z.object({
+	text: z.string(),
+	required: z.boolean(),
+	markSchemeItemIndexes: z.array(z.number()),
+	confidence: z.number().nullable(),
+	needsHumanReview: z.boolean()
+});
+
+const CompactModelAnswerSchema = z
+	.object({
+		answerText: z.string(),
+		confidence: z.number().nullable(),
+		needsHumanReview: z.boolean()
+	})
+	.nullable();
+
+export const LlmCompactFullPaperExtractionSchema = z.object({
+	questions: z.array(
+		z.object({
+			id: z.string().nullable(),
+			sourceQuestionRef: z.string(),
+			parentSourceQuestionRef: z.string().nullable(),
+			promptText: z.string(),
+			selfContainedPromptText: z.string().nullable(),
+			contextText: z.string().nullable(),
+			commandWord: z.string().nullable(),
+			marks: z.number().nullable(),
+			pageStart: z.number().nullable(),
+			pageEnd: z.number().nullable(),
+			topicPath: z.array(z.string()),
+			specRef: z.string().nullable(),
+			response: createFullResponseSchema(),
+			markSchemeItems: z.array(CompactMarkSchemeItemSchema),
+			markChecklist: z.array(CompactMarkChecklistItemSchema),
+			modelAnswer: CompactModelAnswerSchema,
+			extractionConfidence: z.number().nullable(),
+			needsHumanReview: z.boolean(),
+			reviewNotes: z.array(z.string())
+		})
 	)
 });
 
@@ -1061,6 +1111,43 @@ export function compareQuestionRefs(left, right) {
 	return String(left ?? '').localeCompare(String(right ?? ''));
 }
 
+export function questionRefsFromText(text) {
+	const refs = new Set();
+	const raw = String(text ?? '');
+	for (const line of raw.split(/\r?\n/)) {
+		const compact = line.match(/^\s*(\d{2})\s*\.\s*(\d{1,2})\b/);
+		if (compact) {
+			refs.add(`${compact[1]}.${compact[2]}`);
+			continue;
+		}
+		const spaced = line.match(/^\s*(\d)\s+(\d)\s*\.\s*(\d{1,2})\b/);
+		if (spaced) refs.add(`${spaced[1]}${spaced[2]}.${spaced[3]}`);
+	}
+	return [...refs].sort(compareQuestionRefs);
+}
+
+export function markSchemeTextExcerptForRefs(markSchemeText, refs, windowLines = 55) {
+	const wantedRefs = [...new Set(refs ?? [])];
+	const text = String(markSchemeText ?? '');
+	if (wantedRefs.length === 0) return text.slice(0, 30000);
+	const lines = text.split(/\r?\n/);
+	const wanted = new Set(wantedRefs);
+	const selected = new Set();
+	for (const [index, line] of lines.entries()) {
+		const lineRefs = questionRefsFromText(line);
+		if (!lineRefs.some((ref) => wanted.has(ref))) continue;
+		const start = Math.max(0, index - 8);
+		const end = Math.min(lines.length, index + windowLines);
+		for (let lineIndex = start; lineIndex < end; lineIndex += 1) selected.add(lineIndex);
+	}
+	if (selected.size === 0) return text.slice(0, 30000);
+	return [...selected]
+		.sort((a, b) => a - b)
+		.map((index) => lines[index])
+		.join('\n')
+		.slice(0, 30000);
+}
+
 export function pageNumberFromRenderedPath(filePath) {
 	const match = path.basename(filePath).match(/-(\d+)\.png$/);
 	return match ? Number(match[1]) : null;
@@ -1099,13 +1186,183 @@ function sourceDocumentPrompt(doc) {
 		.join('; ');
 }
 
+function questionPaperImageParts(chunk) {
+	if (!chunk) return [];
+	const parts = [];
+	for (const image of chunk.coreImages ?? chunk.images ?? []) {
+		parts.push({
+			type: 'text',
+			text: `CORE QUESTION PAPER PAGE ${pageNumberFromRenderedPath(image)}. Extract atomic subquestions whose own number/prompt starts on this page.`
+		});
+		parts.push(imagePart(image));
+	}
+	for (const image of chunk.lookaheadImages ?? []) {
+		parts.push({
+			type: 'text',
+			text: `LOOKAHEAD QUESTION PAPER PAGE ${pageNumberFromRenderedPath(image)}. Use only to finish an atomic subquestion that started on a core page. Do not start or extract sibling subquestions from this page.`
+		});
+		parts.push(imagePart(image));
+	}
+	return parts;
+}
+
+function compactNumber(value, fallback = null) {
+	return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function compactConfidence(value, fallback = 0.82) {
+	const numeric = compactNumber(value, fallback);
+	return Math.max(0, Math.min(1, numeric));
+}
+
+function compactResponse(response, marks) {
+	const kind = response?.kind ?? (marks ? 'lines' : 'none');
+	const output = { kind };
+	for (const [key, value] of Object.entries(response ?? {})) {
+		if (key === 'kind' || value === null || value === undefined) continue;
+		if (Array.isArray(value) && value.length === 0) continue;
+		output[key] = value;
+	}
+	if (kind === 'lines' && output.count === undefined && output.lineCount === undefined) {
+		output.count = Math.max(1, marks ?? 1);
+	}
+	if (kind === 'choice') {
+		output.options ??= [];
+		output.correctAnswers ??= [];
+	}
+	if (
+		['choice-table', 'matching', 'equation-blanks', 'number-line', 'image-label-zones'].includes(kind)
+	) {
+		output.correctAnswers ??= [];
+	}
+	return output;
+}
+
+function paragraphBlock(text) {
+	const normalized = String(text ?? '').trim();
+	return normalized ? [{ kind: 'paragraph', text: normalized }] : [];
+}
+
+function placeholderAnswerChain(question) {
+	return {
+		id: null,
+		title: 'Reusable chain pending repair',
+		canonicalChainText:
+			'Create a reusable reasoning or method pattern from the positive mark-scheme evidence.',
+		summary: 'Temporary chain placeholder for text-only repair.',
+		broadTopic: question.topicPath?.[0] ?? null,
+		chainFamilyId: null,
+		steps: [
+			{
+				stepText: 'Create a reusable answer-chain step from positive mark-scheme evidence.',
+				stepRole: 'method',
+				explanation: null,
+				commonOmission: null,
+				markSchemeItemIndexes: []
+			}
+		],
+		confidence: 0.1,
+		needsHumanReview: true,
+		reviewNotes: ['Placeholder generated by factual vision extraction; run text-only chain repair.']
+	};
+}
+
+function compactQuestionToFull(question, index, chunk) {
+	const promptText = question.promptText || question.selfContainedPromptText || question.sourceQuestionRef;
+	const pageStart = compactNumber(question.pageStart, chunk?.corePages?.[0] ?? 1);
+	const pageEnd = compactNumber(question.pageEnd, pageStart);
+	const markSchemeItems = (question.markSchemeItems ?? []).map((item) => ({
+		itemType: item.itemType || 'mark',
+		text: item.text,
+		marks: compactNumber(item.marks, null),
+		sourceRef: item.sourceRef || question.sourceQuestionRef,
+		confidence: compactConfidence(item.confidence)
+	}));
+	return {
+		id: question.id ?? null,
+		sourceQuestionRef: question.sourceQuestionRef,
+		parentSourceQuestionRef: question.parentSourceQuestionRef ?? null,
+		displayOrder: index + 1,
+		promptText,
+		selfContainedPromptText: question.selfContainedPromptText || promptText,
+		contextText: question.contextText ?? null,
+		commandWord: question.commandWord ?? null,
+		marks: compactNumber(question.marks, null),
+		pageStart,
+		pageEnd,
+		topicPath: question.topicPath ?? [],
+		specRef: question.specRef ?? null,
+		stemBlocks: paragraphBlock(question.contextText),
+		leadBlocks: [],
+		promptBlocks: paragraphBlock(promptText),
+		response: compactResponse(question.response, compactNumber(question.marks, null)),
+		afterResponseBlocks: [],
+		assets: [],
+		markSchemeItems,
+		markChecklist: (question.markChecklist ?? []).map((item) => ({
+			text: item.text,
+			required: item.required !== false,
+			markSchemeItemIndexes: item.markSchemeItemIndexes ?? [],
+			confidence: compactConfidence(item.confidence),
+			needsHumanReview: item.needsHumanReview === true
+		})),
+		modelAnswer: question.modelAnswer?.answerText
+			? {
+					answerText: question.modelAnswer.answerText,
+					confidence: compactConfidence(question.modelAnswer.confidence),
+					needsHumanReview: question.modelAnswer.needsHumanReview === true
+				}
+			: null,
+		answerChain: placeholderAnswerChain(question),
+		chainResolution: {
+			action: 'needs_review',
+			existingChainId: null,
+			compatibilityRationale:
+				'Vision extraction intentionally defers answer-chain creation to text-only repair.',
+			identityStable: false
+		},
+		commonWeakAnswers: [],
+		extractionConfidence: compactConfidence(question.extractionConfidence),
+		needsHumanReview: question.needsHumanReview === true,
+		reviewNotes: question.reviewNotes ?? []
+	};
+}
+
+export function expandCompactFullPaperExtraction({
+	value,
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme,
+	chunk
+}) {
+	return LlmFullPaperExtractionSchema.parse({
+		extractionRun: {
+			agentVersion: 'llm-extraction-pipeline-v2-compact',
+			needsHumanReview: (value.questions ?? []).some((question) => question.needsHumanReview),
+			reviewNotes: []
+		},
+		sourceDocument: {
+			id: sourceDocumentId,
+			title: questionPaper.title,
+			pageCount: questionPaper.pageCount
+		},
+		markSchemeDocument: {
+			id: markSchemeDocumentId,
+			title: markScheme.title,
+			pageCount: markScheme.pageCount
+		},
+		questions: (value.questions ?? []).map((question, index) =>
+			compactQuestionToFull(question, index, chunk)
+		)
+	});
+}
+
 function extractionSpecPrompt(extractionSpec) {
 	const relevantHeadings = [
 		'The reusable extraction entry points are scripts and library functions',
 		'For normal PDFs, the CLI runs an independent rubric judge',
-		'The production output shape is the import-shaped JSON',
-		'When `--existing-chains` is supplied',
-		'Thinking Chain Extraction Rules'
+		'The production output shape is the import-shaped JSON'
 	];
 	const snippets = [];
 	for (const heading of relevantHeadings) {
@@ -1113,8 +1370,11 @@ function extractionSpecPrompt(extractionSpec) {
 		if (index < 0) continue;
 		snippets.push(extractionSpec.slice(index, index + 1400));
 	}
-	const excerpt = snippets.join('\n\n---\n\n').slice(0, 7000);
-	return [PRODUCTION_EXTRACTION_CONTRACT, excerpt ? `\nSpec excerpts:\n${excerpt}` : '']
+	const excerpt = snippets.join('\n\n---\n\n').slice(0, 3500);
+	return [
+		'Vision-stage extraction contract: extract factual source evidence only. Do not generate answerChain fields in this stage.',
+		excerpt ? `\nSpec excerpts:\n${excerpt}` : ''
+	]
 		.filter(Boolean)
 		.join('\n');
 }
@@ -1126,6 +1386,7 @@ export function buildFullPaperPrompt({
 	markScheme,
 	supportingDocuments = [],
 	chunk,
+	targetQuestionRef = null,
 	extractionSpec,
 	existingChainsText = '',
 	extraInstructions = '',
@@ -1133,27 +1394,29 @@ export function buildFullPaperPrompt({
 	assetManifestText = ''
 }) {
 	return [
-		'Extract this GCSE exam paper into the full Question Constellation import JSON schema.',
-		'This is the production extraction path. The output must be suitable for the D1 import path: source documents, atomic questions, render blocks, response schema, assets, mark scheme items, checklist, written-response model answers, fixed-response answer keys, answer chains, weak answers, and review flags.',
+		'Extract this GCSE exam paper into the compact Question Constellation extraction JSON schema.',
+		'Return source-grounded atomic question data: prompt, response shape, mark scheme items, checklist, written-response model answers or fixed-response answer keys, and review flags. Do not generate answerChain fields in this vision stage; the script creates placeholders and runs text-only chain repair from your evidence.',
 		'Use the exact camelCase field names from the schema. Do not return snake_case aliases.',
 		`Use sourceDocument.id: ${sourceDocumentId}`,
 		`Use markSchemeDocument.id: ${markSchemeDocumentId}`,
 		expectedQuestionCount ? `Return exactly ${expectedQuestionCount} atomic question(s).` : '',
 		chunk
-			? `This is chunk ${chunk.index + 1} of ${chunk.total}. Extract only atomic marked questions whose question/subquestion number begins on core question-paper pages ${chunk.corePages.join(', ')}. Use lookahead pages only to complete a question that started on a core page.`
+			? [
+					`This is chunk ${chunk.index + 1} of ${chunk.total}. Extract only atomic marked questions whose own question/subquestion number and prompt begin on core question-paper pages ${chunk.corePages.join(', ')}.`,
+					chunk.lookaheadPages.length ?
+						`Lookahead pages ${chunk.lookaheadPages.join(', ')} are context only. Use them only to finish the same atomic subquestion that began on a core page. Do not extract sibling subquestions, later subquestion numbers, or a whole parent question merely because the parent stem began on a core page.`
+					:	'No lookahead pages are supplied for this chunk.',
+					'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk; it belongs to the next chunk.'
+				].join(' ')
+			: null,
+		targetQuestionRef
+			? `Target question: extract exactly sourceQuestionRef ${targetQuestionRef}. Do not extract any other subquestion from these pages.`
 			: null,
 		'Use the question paper page images and mark scheme text as source of truth. If mark scheme page images are supplied, use them to resolve tables or layout that text extraction may have flattened. Use supporting documents only to clarify examiner guidance, accepted alternatives, common mistakes, and review flags; never let them override the official question paper or mark scheme.',
-		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into stemBlocks/selfContainedPromptText where needed.',
-		'Render fields matter: preserve visual question structure using stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Represent MCQ/tick boxes/matching/equation blanks/image labels as response objects rather than duplicated dead text.',
+		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into contextText/selfContainedPromptText where needed.',
+		'Return compact source-grounded question data. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use response objects for MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
-		'Every marked question must have an answerChain, including simple recall or fixed-response questions. For those, use a compact single-step chain that states the reusable discrimination or fact family.',
-		'Answer chains are reusable reasoning or method patterns, not worked solutions. Do not put prompt-specific values, substitutions, intermediate calculations, final numeric answers, or one-question units in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
-		'For simple recall and fixed-response questions, the answerChain must be generic. Do not name the exact correct answer or this one prompt-specific fact in any answerChain field. Put the exact answer in response.correctAnswers, markSchemeItems, and markChecklist. Set modelAnswer to null unless the student must write prose.',
-		'Each non-given answerChain step must be directly supported by positive mark-scheme evidence. Do not add extra scientific tail steps that are true but not required by the mark scheme.',
-		'Use markSchemeItemIndexes on answerChain steps only for positive marking points. Do not point chain steps at ignore, reject, do_not_accept, or do-not-credit guidance; use that guidance only for checklist cautions, weak answers, or review notes.',
-		'For calculation questions, worked values belong in markSchemeItems, markChecklist, written-response modelAnswer, or response.correctAnswers only.',
-		'Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion.',
-		'Chain compatibility: compare each proposed chain with existing chains. If the same ordered method already exists, reuse its id exactly and set chainResolution.action="reuse_existing". If the existing id is conceptually the same but needs clearer generic wording, keep the existing id, set action="update_existing", identityStable=true, and explain the compatibility. Use action="create_new" only when the mark-scoring reasoning is genuinely new. Use action="needs_review" for uncertainty.',
+		'Preserve exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer. Text-only chain repair depends on this evidence to create reusable answer chains later.',
 		'',
 		'Question paper:',
 		sourceDocumentPrompt(questionPaper),
@@ -1192,7 +1455,8 @@ export async function extractFullPaperChunk({
 	existingChainsText = '',
 	extraInstructions = '',
 	expectedQuestionCount = null,
-	assetManifestText = ''
+	assetManifestText = '',
+	targetQuestionRef = null
 }) {
 	const prompt = buildFullPaperPrompt({
 		sourceDocumentId,
@@ -1201,6 +1465,7 @@ export async function extractFullPaperChunk({
 		markScheme,
 		supportingDocuments,
 		chunk,
+		targetQuestionRef,
 		extractionSpec,
 		existingChainsText,
 		extraInstructions,
@@ -1210,7 +1475,7 @@ export async function extractFullPaperChunk({
 	const content = [
 		{ type: 'text', text: prompt },
 		{ type: 'text', text: 'QUESTION PAPER PAGE IMAGES FOLLOW, IN ORDER.' },
-		...chunk.images.map(imagePart),
+		...questionPaperImageParts(chunk),
 		{
 			type: 'text',
 			text: `MARK SCHEME TEXT FOLLOWS, EXTRACTED FROM THE OFFICIAL MARK SCHEME PDF.\n\n${markSchemeText || 'No mark scheme text was extracted; use any supplied mark scheme page images.'}`
@@ -1234,17 +1499,24 @@ export async function extractFullPaperChunk({
 		mediaResolution,
 		telemetry: false,
 		input: [
-			{
-				role: 'system',
-				content:
-					'You are a careful GCSE exam extraction engine. Return complete, source-grounded JSON for rendering, grading, import, and answer-chain practice.'
-			},
-			{ role: 'user', content }
-		],
-		schema: LlmFullPaperExtractionSchema
-	});
-	return value;
-}
+				{
+					role: 'system',
+					content:
+						'You are a careful GCSE exam extraction engine. Return compact, source-grounded JSON for grading, import, and answer-chain practice.'
+				},
+				{ role: 'user', content }
+			],
+			schema: LlmCompactFullPaperExtractionSchema
+		});
+		return expandCompactFullPaperExtraction({
+			value,
+			sourceDocumentId,
+			markSchemeDocumentId,
+			questionPaper,
+			markScheme,
+			chunk
+		});
+	}
 
 export function mergeFullPaperChunks(values) {
 	if (values.length === 0) throw new Error('No extraction chunks to merge.');
@@ -1287,6 +1559,13 @@ export function validateReusableAnswerChains(candidate) {
 
 function relativePath(rootDir, filePath) {
 	return path.relative(rootDir, filePath).split(path.sep).join('/');
+}
+
+function cacheSafeName(value) {
+	return String(value ?? 'all')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
 }
 
 function sha256WithPrefix(filePath) {
@@ -1491,36 +1770,64 @@ export async function extractFullPaperFromPdfSet({
 			values.push(LlmFullPaperExtractionSchema.parse(readJson(chunkCachePath)));
 			continue;
 		}
-		console.error(
-			`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')}`
-		);
-		const value = await extractFullPaperChunk({
-			model,
-			thinkingLevel,
-			mediaResolution,
-			sourceDocumentId,
-			markSchemeDocumentId,
-			questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
-			markScheme: {
-				...markScheme,
-				pages: markSchemeImages.length
-					? markSchemeImages.map(pageNumberFromRenderedPath)
-					: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
-			},
-			supportingDocuments,
-			chunk,
-			markSchemeImages,
-			markSchemeText,
-			supportingImages,
-			extractionSpec,
-			existingChainsText,
-			extraInstructions,
-			expectedQuestionCount,
-			assetManifestText
-		});
-		writeJson(chunkCachePath, value);
-		values.push(value);
-	}
+			const coreQuestionText = pdfText(questionPaper.path, 20000, chunk.corePages);
+			const coreQuestionRefs = questionRefsFromText(coreQuestionText);
+			const chunkMarkSchemeText = markSchemeTextExcerptForRefs(markSchemeText, coreQuestionRefs);
+			console.error(
+				`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')} core_refs=${coreQuestionRefs.join(',') || 'none'} mark_scheme_text_chars=${chunkMarkSchemeText.length}`
+			);
+			const targetQuestionRefs = coreQuestionRefs.length ? coreQuestionRefs : [null];
+			const chunkValues = [];
+			for (const targetQuestionRef of targetQuestionRefs) {
+				const targetCachePath = path.join(
+					chunkCacheDir,
+					`chunk-${String(chunk.index + 1).padStart(3, '0')}-pages-${pageKey}-target-${cacheSafeName(targetQuestionRef)}.json`
+				);
+				if (!forceChunkCache && existsSync(targetCachePath)) {
+					console.error(
+						`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} target_ref=${targetQuestionRef ?? 'all'} using cache ${relativePath(rootDir, targetCachePath)}`
+					);
+					chunkValues.push(LlmFullPaperExtractionSchema.parse(readJson(targetCachePath)));
+					continue;
+				}
+				const targetMarkSchemeText = targetQuestionRef
+					? markSchemeTextExcerptForRefs(markSchemeText, [targetQuestionRef])
+					: chunkMarkSchemeText;
+				console.error(
+					`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} target_ref=${targetQuestionRef ?? 'all'} mark_scheme_text_chars=${targetMarkSchemeText.length}`
+				);
+				const targetValue = await extractFullPaperChunk({
+						model,
+						thinkingLevel,
+						mediaResolution,
+						sourceDocumentId,
+						markSchemeDocumentId,
+						questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
+						markScheme: {
+							...markScheme,
+							pages: markSchemeImages.length
+								? markSchemeImages.map(pageNumberFromRenderedPath)
+								: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
+						},
+						supportingDocuments,
+						chunk,
+						markSchemeImages,
+						markSchemeText: targetMarkSchemeText,
+						supportingImages,
+						extractionSpec,
+						existingChainsText,
+						extraInstructions,
+						expectedQuestionCount: targetQuestionRef ? 1 : expectedQuestionCount,
+						assetManifestText,
+						targetQuestionRef
+					});
+				writeJson(targetCachePath, targetValue);
+				chunkValues.push(targetValue);
+			}
+			const value = mergeFullPaperChunks(chunkValues);
+			writeJson(chunkCachePath, value);
+			values.push(value);
+		}
 	return enrichFullPaperExtraction({
 		value: mergeFullPaperChunks(values),
 		rootDir,
@@ -1919,8 +2226,8 @@ export async function judgeCandidate({
 					'Candidate extraction:',
 					JSON.stringify(candidate, null, 2),
 					'',
-					'Deterministic specificity issues:',
-					JSON.stringify(deterministicIssues, null, 2),
+						'Deterministic specificity issues:',
+						JSON.stringify(deterministicIssues, null, 2),
 					'',
 					'Pass only if the answerChain is reusable method wording, covers the expected concepts, avoids forbidden worked values in chain fields, and keeps worked values in model/checklist evidence.'
 				].join('\n')
@@ -2055,9 +2362,10 @@ export async function repairFullPaperAnswerChains({
 					'Judge feedback:',
 					JSON.stringify(judge, null, 2),
 					'',
-					'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.'
-				].join('\n')
-			}
+						'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
+						'If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from every answerChain field, including title, canonicalChainText, summary, stepText, explanation, and commonOmission. For fixed-response recall, write a generic chain such as identifying the required category of term, placing it in the correct response position, and checking it matches the source cue; keep the actual answer words only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
+					].join('\n')
+				}
 		],
 		schema: FullChainRepairSchema
 	});

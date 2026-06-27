@@ -3,6 +3,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import {
+	blockingIssues,
 	DEFAULT_EXTRACTION_MODEL,
 	DEFAULT_THINKING_LEVEL,
 	deterministicCandidateIssues,
@@ -47,8 +48,11 @@ Optional:
   --mark-scheme-image-mode=none|all
   --media-resolution=auto|low|medium|high|original
   --write-eval=<evaluation.json>
-  --model=chatgpt-gpt-5.5-fast
-  --thinking-level=xhigh`;
+  --model=chatgpt-gpt-5.5
+  --thinking-level=xhigh
+  --repair-batch-size=1
+  --llm-timeout-ms=600000
+  --llm-max-attempts=2`;
 
 if (hasArg('help')) {
 	console.log(usage);
@@ -82,6 +86,9 @@ const questionPages = parsePageSelection(stringArg('question-pages', ''));
 const markSchemePages = parsePageSelection(stringArg('mark-scheme-pages', ''));
 const expectedQuestionCount = optionalIntegerArg('expected-question-count');
 const repairAttempts = integerArg('repair-attempts', 0, 0);
+const repairBatchSize = integerArg('repair-batch-size', 1, 1);
+const llmTimeoutMs = optionalIntegerArg('llm-timeout-ms');
+const llmMaxAttempts = optionalIntegerArg('llm-max-attempts');
 const judgeFixturePath = stringArg('judge-fixture', '');
 const writeEvalPath = stringArg('write-eval', '');
 const extraInstructionsPath = stringArg('instructions', '');
@@ -93,6 +100,9 @@ const extraInstructions = extraInstructionsPath ? readFileSync(extraInstructions
 const explicitExistingChainsText = existingChainsPath
 	? readExistingChainsText(existingChainsPath)
 	: '';
+
+if (llmTimeoutMs) process.env.EXTRACTION_LLM_TIMEOUT_MS = String(llmTimeoutMs);
+if (llmMaxAttempts) process.env.EXTRACTION_LLM_MAX_ATTEMPTS = String(llmMaxAttempts);
 
 if (preset) {
 	await runPreset(preset);
@@ -205,6 +215,99 @@ async function runPreset(name) {
 		return;
 	}
 	throw new Error(`Unknown preset: ${name}`);
+}
+
+function refsNeedingRepair(candidate, evaluation) {
+	const deterministic = deterministicCandidateIssues(candidate);
+	const blocking = blockingIssues(deterministic);
+	const refs = new Set(blocking.map((issue) => issue.sourceQuestionRef).filter(Boolean));
+	if (refs.size > 0) return [...refs];
+	const judgeRepairs = JSON.stringify(evaluation?.judge?.requiredRepairs ?? []);
+	for (const question of candidate.questions ?? []) {
+		if (judgeRepairs.includes(question.sourceQuestionRef)) refs.add(question.sourceQuestionRef);
+	}
+	if (refs.size > 0) return [...refs];
+	return (candidate.questions ?? []).map((question) => question.sourceQuestionRef).filter(Boolean);
+}
+
+function chunks(values, size) {
+	const result = [];
+	for (let index = 0; index < values.length; index += size) {
+		result.push(values.slice(index, index + size));
+	}
+	return result;
+}
+
+function filterDeterministicIssuesForRefs(deterministicIssues, refs) {
+	const allowed = new Set(refs);
+	return (deterministicIssues ?? []).filter((finding) => allowed.has(finding.sourceQuestionRef));
+}
+
+async function repairFailedQuestionBatches({
+	model,
+	thinkingLevel,
+	candidate,
+	evaluation,
+	judge,
+	existingChainsText,
+	repairCacheDir
+}) {
+	let repaired = candidate;
+	const refs = refsNeedingRepair(candidate, evaluation);
+	for (const batchRefs of chunks(refs, repairBatchSize)) {
+		const refsToRepair = [];
+		for (const ref of batchRefs) {
+			const cachePath = path.join(repairCacheDir, `repair-${slugify(ref)}.json`);
+			if (existsSync(cachePath)) {
+				console.error(`[extract-cli] repair cache ${ref}`);
+				repaired = applyQuestionRepair(repaired, readJson(cachePath));
+			} else {
+				refsToRepair.push(ref);
+			}
+		}
+		if (refsToRepair.length === 0) continue;
+		console.error(`[extract-cli] repairing refs ${refsToRepair.join(', ')}`);
+		repaired = await repairFullPaperAnswerChains({
+			model,
+			thinkingLevel,
+			candidate: repaired,
+			deterministicIssues: filterDeterministicIssuesForRefs(
+				deterministicCandidateIssues(repaired),
+				refsToRepair
+			),
+			judge,
+			existingChainsText,
+			sourceQuestionRefs: refsToRepair
+		});
+		for (const ref of refsToRepair) {
+			const question = repaired.questions.find(
+				(candidateQuestion) => candidateQuestion.sourceQuestionRef === ref
+			);
+			if (!question) continue;
+			writeJson(path.join(repairCacheDir, `repair-${slugify(ref)}.json`), {
+				sourceQuestionRef: ref,
+				answerChain: question.answerChain,
+				chainResolution: question.chainResolution ?? null,
+				commonWeakAnswers: question.commonWeakAnswers ?? []
+			});
+		}
+	}
+	return repaired;
+}
+
+function applyQuestionRepair(candidate, repair) {
+	return {
+		...candidate,
+		questions: candidate.questions.map((question) => {
+			if (question.sourceQuestionRef !== repair.sourceQuestionRef) return question;
+			return {
+				...question,
+				answerChain: repair.answerChain ?? question.answerChain,
+				chainResolution: repair.chainResolution ?? question.chainResolution,
+				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers
+			};
+		})
+	};
 }
 
 async function runAqaPhysicsPreset() {
@@ -414,14 +517,15 @@ async function runOne({
 	});
 	for (let attempt = 0; evaluation.status !== 'passed' && attempt < repairAttempts; attempt += 1) {
 		console.error(`[extract-cli] ${sourceDocumentId}: repairing attempt ${attempt + 1}`);
-		candidate = await repairFullPaperAnswerChains({
+		candidate = await repairFailedQuestionBatches({
 			model,
 			thinkingLevel,
 			candidate,
-			deterministicIssues: deterministicCandidateIssues(candidate),
-			judge: evaluation.judge,
-			existingChainsText
-		});
+				evaluation,
+				judge: evaluation.judge,
+				existingChainsText,
+				repairCacheDir: path.join(outputRoot, sourceDocumentId, 'repairs')
+			});
 		evaluation = await evaluateCandidate({
 			candidate,
 			fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,

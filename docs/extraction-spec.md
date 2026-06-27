@@ -327,7 +327,7 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
-pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --repair-attempts=1 --judge-repair-attempts=2
+pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2
 pnpm run import:aqa-separate-science -- --all --replace-all-subject
 ```
 
@@ -340,12 +340,13 @@ The downloader scrapes the official AQA assessment-resource pages for GCSE Biolo
 excluded unless a future importer explicitly needs them.
 
 Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. Use
-`--chunk-pages=<n>` to control page batching. For unattended AQA Separate Science batch work, prefer
-`extract:aqa-separate-science:batch` with `--chunk-pages=1`; it writes per-paper evaluation JSON,
+`--chunk-pages=<n>` to control page batching and `--concurrency=<n>` to run multiple papers in
+parallel after single-paper extraction is stable. For unattended AQA Separate Science batch work,
+prefer `extract:aqa-separate-science:batch` with `--chunk-pages=1`; it writes per-paper evaluation JSON,
 resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
-the deterministic gate, runs an independent question-batch LLM judge, and can run the importer with
-`--import` only after selected papers pass. Use `--rejudge` after prompt or repair-code changes to
-force evaluation of existing JSON. Mark schemes are passed as extracted text by default; use
+the deterministic gate, runs text-only chain repair in small `--repair-batch-size` groups, runs an
+independent question-batch LLM judge, and can run the importer with `--import` only after selected
+papers pass. Use `--rejudge` after prompt or repair-code changes to force evaluation of existing JSON. Mark schemes are passed as extracted text by default; use
 `--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
 `extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`, and
 `runGoldenPdfEval` so batch jobs can run many chunks or papers in parallel under their own
@@ -356,7 +357,7 @@ commands. Required local tools are:
 
 - `pdfinfo` to count/inspect pages.
 - `pdftoppm` to render pages to PNG images.
-- `@ljoukov/llm` to call `chatgpt-gpt-5.5-fast` or another configured model with structured JSON
+- `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
   output.
 
 For normal PDFs, the CLI runs an independent rubric judge by default after extraction. The judge sees

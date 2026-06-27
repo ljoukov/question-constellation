@@ -37,17 +37,19 @@ const replaceAllSubject = hasArg('replace-all-subject');
 const paperArg = stringArg('paper', '');
 const subjectArg = stringArg('subject', 'all').toLowerCase();
 const maxPapers = optionalIntegerArg('max-papers');
+const concurrency = integerArg('concurrency', 1, 1);
 
 const chunkPages = integerArg('chunk-pages', 1, 1);
 const dpi = integerArg('dpi', 90, 72);
 const repairAttempts = integerArg('repair-attempts', 1, 0);
+const repairBatchSize = integerArg('repair-batch-size', 1, 1);
 const judgeRepairAttempts = integerArg('judge-repair-attempts', 1, 0);
 const llmTimeoutMs = integerArg('llm-timeout-ms', 240000, 1);
-const llmMaxAttempts = integerArg('llm-max-attempts', 1, 1);
+const llmMaxAttempts = integerArg('llm-max-attempts', 2, 1);
 const judgeBatchSize = integerArg('judge-batch-size', 5, 1);
 const minJudgeScore = numberArg('min-judge-score', 0.8);
 const mediaResolution = stringArg('media-resolution', 'low');
-const thinkingLevel = stringArg('thinking-level', 'low');
+const thinkingLevel = stringArg('thinking-level', 'xhigh');
 const model = stringArg('model', '');
 const judgeModel = stringArg('judge-model', '');
 const markSchemeImageMode = stringArg('mark-scheme-image-mode', 'none');
@@ -81,28 +83,7 @@ mkdirSync(evalRoot, { recursive: true });
 mkdirSync(path.dirname(summaryPath), { recursive: true });
 
 writeSummary('running');
-for (const row of selected) {
-	const paper = paperInfo(row);
-	try {
-		const result = await processPaper(paper);
-		results.push(result);
-		writeSummary('running');
-	} catch (error) {
-		const result = {
-			sourceDocumentId: paper.sourceDocumentId,
-			subject: paper.subject,
-			outputPath: relative(paper.outputPath),
-			status: 'failed',
-			error: error instanceof Error ? error.message : String(error)
-		};
-		results.push(result);
-		writeSummary('failed');
-		if (!continueOnError) {
-			console.error(JSON.stringify(result, null, 2));
-			process.exit(1);
-		}
-	}
-}
+await processSelectedPapers();
 
 const failed = results.filter((result) => result.status === 'failed');
 const finalStatus = failed.length ? 'failed' : 'passed';
@@ -173,6 +154,37 @@ function selectRows(rows) {
 	return maxPapers ? filtered.slice(0, maxPapers) : filtered;
 }
 
+async function processSelectedPapers() {
+	let nextIndex = 0;
+	let stopRequested = false;
+	const workerCount = Math.min(concurrency, selected.length);
+	async function worker() {
+		while (!stopRequested) {
+			const row = selected[nextIndex];
+			nextIndex += 1;
+			if (!row) return;
+			const paper = paperInfo(row);
+			try {
+				const result = await processPaper(paper);
+				results.push(result);
+				writeSummary('running');
+			} catch (error) {
+				const result = {
+					sourceDocumentId: paper.sourceDocumentId,
+					subject: paper.subject,
+					outputPath: relative(paper.outputPath),
+					status: 'failed',
+					error: error instanceof Error ? error.message : String(error)
+				};
+				results.push(result);
+				writeSummary('failed');
+				if (!continueOnError) stopRequested = true;
+			}
+		}
+	}
+	await Promise.all(Array.from({ length: workerCount }, () => worker()));
+}
+
 function paperInfo(row) {
 	const subject = row.subject_area ?? row.subject;
 	const subjectSlug = slugify(subject);
@@ -218,9 +230,10 @@ async function processPaper(paper) {
 		`--chunk-pages=${chunkPages}`,
 		`--dpi=${dpi}`,
 		`--media-resolution=${mediaResolution}`,
-		`--thinking-level=${thinkingLevel}`,
-		`--repair-attempts=${repairAttempts}`,
-		`--mark-scheme-image-mode=${markSchemeImageMode}`,
+			`--thinking-level=${thinkingLevel}`,
+			`--repair-attempts=${repairAttempts}`,
+			`--repair-batch-size=${repairBatchSize}`,
+			`--mark-scheme-image-mode=${markSchemeImageMode}`,
 		`--output=${paper.outputPath}`,
 		`--write-eval=${paper.evalPath}`
 	];
@@ -505,17 +518,18 @@ function runCommand(command, args, extraEnv = {}) {
 }
 
 function summary(status) {
-	return {
-		status,
-		selected: selected.length,
-		extracted: results.filter((result) => result.status === 'extracted').length,
-		skipped: results.filter((result) => result.status === 'skipped').length,
-		failed: results.filter((result) => result.status === 'failed').length,
-		dryRun: results.filter((result) => result.status === 'dry-run').length,
-		judgeMode,
-		judgeRepairAttempts,
-		outputRoot: relative(outputRoot),
-		evalRoot: relative(evalRoot),
+		return {
+			status,
+			selected: selected.length,
+			extracted: results.filter((result) => result.status === 'extracted').length,
+			skipped: results.filter((result) => result.status === 'skipped').length,
+			failed: results.filter((result) => result.status === 'failed').length,
+			dryRun: results.filter((result) => result.status === 'dry-run').length,
+			concurrency,
+			judgeMode,
+			judgeRepairAttempts,
+			outputRoot: relative(outputRoot),
+			evalRoot: relative(evalRoot),
 		results
 	};
 }
