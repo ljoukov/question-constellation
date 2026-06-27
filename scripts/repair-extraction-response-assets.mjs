@@ -116,10 +116,11 @@ function selectInputFiles() {
 	});
 }
 
-function responseAssetLabels(response) {
+function responseAssetLabels(question) {
+	const response = question.response;
 	if (!response || typeof response !== 'object') return [];
 	if (!['asset-canvas', 'image-label-zones'].includes(response.kind)) return [];
-	return [
+	const explicit = [
 		response.assetLabel,
 		response.label,
 		response.assetId,
@@ -128,6 +129,35 @@ function responseAssetLabels(response) {
 	]
 		.filter((value) => typeof value === 'string' && value.trim())
 		.map((value) => value.trim());
+	if (explicit.length > 0) return explicit;
+	const inferred = inferInteractiveAssetLabel(question);
+	return inferred ? [inferred] : [];
+}
+
+function ensureResponseAssetLabel(response, fallbackLabel) {
+	if (!response || typeof response !== 'object' || !fallbackLabel) return response;
+	if (response.assetLabel || response.label || response.assetId || response.sourceLabel)
+		return response;
+	return { ...response, assetLabel: fallbackLabel };
+}
+
+function inferInteractiveAssetLabel(question) {
+	const labels = [
+		...(question.assets ?? []).map(
+			(asset) => asset?.sourceLabel ?? asset?.label ?? asset?.assetLabel
+		),
+		...[
+			...(question.stemBlocks ?? []),
+			...(question.leadBlocks ?? []),
+			...(question.promptBlocks ?? []),
+			...(question.afterResponseBlocks ?? [])
+		].map((block) => block?.label ?? block?.sourceLabel ?? block?.assetLabel ?? block?.assetId)
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.map((value) => value.trim());
+	const figureLabel = labels.find((label) => /\b(figure|graph|diagram|image)\b/i.test(label));
+	if (figureLabel) return figureLabel;
+	return labels.length === 1 ? labels[0] : null;
 }
 
 function normalizeAssetKey(value) {
@@ -194,7 +224,7 @@ function repairFile(filePath) {
 		let assetsCreated = 0;
 		let questionsRepaired = 0;
 		const questions = (paper.questions ?? []).map((question) => {
-			const labels = responseAssetLabels(question.response);
+			const labels = responseAssetLabels(question);
 			const missingLabels = labels.filter((label) => {
 				const asset = (question.assets ?? []).find((candidate) =>
 					assetMatchesLabel(candidate, label)
@@ -233,6 +263,7 @@ function repairFile(filePath) {
 			}
 			return {
 				...question,
+				response: ensureResponseAssetLabel(question.response, missingLabels[0]),
 				assets: questionAssets,
 				needsHumanReview: true,
 				reviewNotes: [

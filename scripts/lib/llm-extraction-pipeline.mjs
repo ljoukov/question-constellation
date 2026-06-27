@@ -2424,7 +2424,11 @@ function responseAssetCompletenessIssues(question) {
 	}
 	const issues = [];
 	for (const label of labels) {
-		const asset = (question.assets ?? []).find((candidate) => assetMatchesLabel(candidate, label));
+		const matchingAssets = (question.assets ?? []).filter((candidate) =>
+			assetMatchesLabel(candidate, label)
+		);
+		const asset =
+			matchingAssets.find((candidate) => assetHasUsableReference(candidate)) ?? matchingAssets[0];
 		if (!asset) {
 			issues.push({
 				severity: 'error',
@@ -2435,16 +2439,7 @@ function responseAssetCompletenessIssues(question) {
 			});
 			continue;
 		}
-		const hasUsableReference =
-			Boolean(
-				asset.filePath ||
-				asset.sourcePath ||
-				asset.localPath ||
-				asset.path ||
-				asset.publicPath ||
-				asset.r2Key
-			) || pathCandidatesForAsset(asset).some((candidatePath) => existsSync(candidatePath));
-		if (!hasUsableReference) {
+		if (!assetHasUsableReference(asset)) {
 			issues.push({
 				severity: 'error',
 				code: 'response_asset_label_only',
@@ -3150,6 +3145,19 @@ function assetMatchesLabel(asset, label) {
 	});
 }
 
+function assetHasUsableReference(asset) {
+	return (
+		Boolean(
+			asset?.filePath ||
+			asset?.sourcePath ||
+			asset?.localPath ||
+			asset?.path ||
+			asset?.publicPath ||
+			asset?.r2Key
+		) || pathCandidatesForAsset(asset).some((candidatePath) => existsSync(candidatePath))
+	);
+}
+
 function pathCandidatesForAsset(asset) {
 	const rawValues = [
 		asset?.filePath,
@@ -3236,7 +3244,9 @@ export function buildLearnerVisibleQuestionContext(candidate, sourceQuestionRef,
 	const media = [];
 	const inlineImages = [];
 	for (const label of requiredAssetLabels) {
-		const matchingAsset = assets.find((asset) => assetMatchesLabel(asset, label));
+		const matchingAsset =
+			assets.find((asset) => assetMatchesLabel(asset, label) && assetHasUsableReference(asset)) ??
+			assets.find((asset) => assetMatchesLabel(asset, label));
 		const inlineData =
 			attachImages && matchingAsset && inlineImages.length < maxImages
 				? inlineDataForAsset(matchingAsset, label)
