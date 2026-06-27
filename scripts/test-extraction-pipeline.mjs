@@ -59,6 +59,7 @@ for (const filePath of [
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
 	'scripts/evaluate-question-solvability.mjs',
+	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/test-answer-chain-golden.mjs',
 	'scripts/audit-answer-chain-specificity.mjs',
 	'tests/golden/answer-chain-quality.json',
@@ -73,6 +74,7 @@ requireIncludes(
 	[
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
 		'pnpm run eval:question-solvability',
+		'pnpm run repair:extraction-response-assets',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
 		'pnpm run extract:aqa-separate-science:batch',
@@ -202,6 +204,7 @@ for (const scriptName of [
 	'extract:paper-llm',
 	'summarize:llm-extraction-logs',
 	'eval:question-solvability',
+	'repair:extraction-response-assets',
 	'import:vision',
 	'import:aqa-separate-science',
 	'eval:extraction-pipeline-llm',
@@ -224,6 +227,7 @@ for (const scriptPath of [
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/evaluate-question-solvability.mjs',
+	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
 ]) {
 	runNodeCheck(scriptPath);

@@ -439,6 +439,19 @@ Label-only media is not a valid published extraction for interactive media. When
 `{"sourceLabel":"Figure 1"}` is only a note that the asset exists in the source PDF; it is not enough
 for the learner-facing renderer or the solvability judge.
 
+For existing extracted JSONs that predate this rule, run the deterministic response-asset repair
+before judging/importing:
+
+```sh
+pnpm run repair:extraction-response-assets -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --recursive --paper=aqa-84611h-qp-nov20
+```
+
+The repair renders the official question-paper page and attaches it as a review-marked fallback asset
+when an interactive response only had a label. Prefer a precise crop when available, but a concrete
+page image is better than a broken learner-facing asset reference.
+
 The production output shape is the import-shaped JSON used by `import:vision`: `sourceDocument`,
 `markSchemeDocument`, optional `supportingDocuments`, atomic `questions`, render blocks, response
 objects, assets, mark-scheme items, checklist items, written-response model answers,
