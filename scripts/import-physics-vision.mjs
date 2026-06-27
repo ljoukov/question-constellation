@@ -3,10 +3,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import {
-	blockingAnswerChainSpecificityIssues,
-	chainSpecificityIssueSummary
-} from './answer-chain-specificity.mjs';
+import { blockingIssues, deterministicCandidateIssues } from './lib/llm-extraction-pipeline.mjs';
 
 const rootDir = process.cwd();
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
@@ -86,12 +83,17 @@ function requiredEnv(name, fallback = null) {
 
 const wranglerConfig = readWranglerConfig();
 const databaseConfig = wranglerConfig.d1_databases?.find((db) => db.binding === 'QUESTION_DB');
-const accountId = requiredEnv('CLOUDFLARE_ACCOUNT_ID');
-const apiToken = requiredEnv(
-	'CLOUDFLARE_API_TOKEN',
-	process.env.CLOUDFLARE_ACCOUNT_ACCESS_TOKEN ?? null
-);
-const databaseId = requiredEnv('QUESTION_DB_DATABASE_ID', databaseConfig?.database_id ?? null);
+const accountId = dryRun
+	? (process.env.CLOUDFLARE_ACCOUNT_ID ?? 'dry-run-account')
+	: requiredEnv('CLOUDFLARE_ACCOUNT_ID');
+const apiToken = dryRun
+	? (process.env.CLOUDFLARE_API_TOKEN ??
+		process.env.CLOUDFLARE_ACCOUNT_ACCESS_TOKEN ??
+		'dry-run-token')
+	: requiredEnv('CLOUDFLARE_API_TOKEN', process.env.CLOUDFLARE_ACCOUNT_ACCESS_TOKEN ?? null);
+const databaseId = dryRun
+	? (process.env.QUESTION_DB_DATABASE_ID ?? databaseConfig?.database_id ?? 'dry-run-database')
+	: requiredEnv('QUESTION_DB_DATABASE_ID', databaseConfig?.database_id ?? null);
 const d1QueryUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
 
 function sleep(ms) {
@@ -1193,20 +1195,17 @@ function listExtractionFiles(dir, includeNested) {
 
 function validateExtractedPapers(papers) {
 	const missingChains = [];
-	const promptSpecificChains = [];
+	const qualityIssues = [];
 	for (const paper of papers) {
 		for (const question of paper.questions ?? []) {
 			if (question.marks !== null && question.marks !== undefined && !question.answerChain) {
 				missingChains.push(`${paper.sourceDocument.id} ${question.sourceQuestionRef}`);
 			}
-			const chainIssues = blockingAnswerChainSpecificityIssues(question.answerChain, {
-				commandWord: question.commandWord
-			});
-			if (chainIssues.length > 0) {
-				promptSpecificChains.push(
-					`${paper.sourceDocument.id} ${question.sourceQuestionRef} ${question.answerChain?.id ?? 'no-chain-id'}: ${chainSpecificityIssueSummary(chainIssues, 3)}`
-				);
-			}
+		}
+		for (const issue of blockingIssues(deterministicCandidateIssues(paper))) {
+			qualityIssues.push(
+				`${paper.sourceDocument.id} ${issue.sourceQuestionRef ?? 'unknown-ref'}: ${issue.code} at ${issue.field}: ${issue.evidence}`
+			);
 		}
 	}
 	if (missingChains.length > 0) {
@@ -1217,10 +1216,10 @@ function validateExtractedPapers(papers) {
 					.join(', ')}`
 		);
 	}
-	if (promptSpecificChains.length > 0) {
+	if (qualityIssues.length > 0) {
 		throw new Error(
-			`Vision extraction has ${promptSpecificChains.length} answer chains with prompt-specific numeric solution steps. ` +
-				`Re-run extraction with repair attempts, then import again. Examples: ${promptSpecificChains
+			`Vision extraction has ${qualityIssues.length} blocking reusable-chain or response-key quality issues. ` +
+				`Re-run extraction with repair attempts, then import again. Examples: ${qualityIssues
 					.slice(0, 8)
 					.join(' | ')}`
 		);
@@ -1409,7 +1408,11 @@ console.log(
 );
 
 if (applySchemaFlag) await applySchema();
-await clearRowsForPapers(papers);
+if (dryRun) {
+	console.log('clear: dry run, skipped database deletes');
+} else {
+	await clearRowsForPapers(papers);
+}
 
 const statements = [];
 const chainUseCount = new Map();

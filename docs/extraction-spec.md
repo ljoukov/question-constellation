@@ -327,6 +327,7 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
+pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --repair-attempts=1 --judge-repair-attempts=2
 pnpm run import:aqa-separate-science -- --all --replace-all-subject
 ```
 
@@ -339,8 +340,13 @@ The downloader scrapes the official AQA assessment-resource pages for GCSE Biolo
 excluded unless a future importer explicitly needs them.
 
 Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. Use
-`--chunk-pages=<n>` to control page batching. Mark schemes are passed as extracted text by default;
-use `--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
+`--chunk-pages=<n>` to control page batching. For unattended AQA Separate Science batch work, prefer
+`extract:aqa-separate-science:batch` with `--chunk-pages=1`; it writes per-paper evaluation JSON,
+resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
+the deterministic gate, runs an independent question-batch LLM judge, and can run the importer with
+`--import` only after selected papers pass. Use `--rejudge` after prompt or repair-code changes to
+force evaluation of existing JSON. Mark schemes are passed as extracted text by default; use
+`--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
 `extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`, and
 `runGoldenPdfEval` so batch jobs can run many chunks or papers in parallel under their own
 concurrency control.
@@ -459,6 +465,13 @@ Generate and store model answers only for written-response questions, such as fr
 
 For written-response questions, the model answer must be student-facing answer text. It must never be a raw mark-scheme row, assessment objective, specification reference, examiner instruction, or truncated scoring fragment. Bad model answers include strings such as `01.2 positive charge is provided by 1 AO1; protons 6.4.1.2`, `4.4.1.1`, `A bold and is used...`, or any wording copied from generic mark-scheme guidance. The importer should reject or regenerate these rather than storing them.
 
+For answer-chain step evidence, use only direct positive mark rows such as `mark`, `answer`,
+`marking_point`, or `alternative_marking_point`. Do not point chain steps at `allow`, `accept`,
+`guidance`, `ignore`, `reject`, `do_not_accept`, or `alternative` rows. When a source mark scheme
+uses an `allow` row as a complete alternative answer, normalize that row to
+`alternative_marking_point` before linking it from the chain; otherwise keep it as checklist guidance
+only.
+
 When a paper importer has enough mark-scheme evidence, it should generate the written-response model answer during import and store it in D1, so runtime grading can display the stored answer without spending another model call. Runtime grading may still use a model to evaluate a student's free-text response, but it should treat the stored model answer as source-grounded evidence, not ask the grading model to invent a fresh model answer.
 
 Set derivation as:
@@ -560,10 +573,13 @@ Use this checklist when extracting another full paper and importing it into D1:
 1. Pair the question paper and mark scheme, then extract source metadata and atomic question rows.
 2. Extract the render overlay for each atomic question, including blocks, assets, marks, and the
    exact interactive response object.
-3. Extract mark-scheme rows and split them into usable marking points. Keep `allow`, `reject`, and
-   examiner guidance as guidance, not as positive checklist rows.
-4. For written-response questions, generate a concise model answer from the mark-scheme evidence and
-   reject answers that contain AO codes, spec codes, row numbers, or generic marking instructions.
+3. Extract mark-scheme rows and split them into usable marking points. Keep `reject`, `ignore`, and
+   examiner guidance as guidance, not as positive checklist rows. If an AQA `allow` or `accept` row is
+   only a wording tolerance, keep it as guidance. If it is a complete independently credited answer
+   route, normalize it as `alternative_marking_point` so answer-chain evidence can cover that route.
+4. For written-response questions (`lines` or `labeled-lines`), generate a concise model answer from
+   the mark-scheme evidence and reject answers that contain AO codes, spec codes, row numbers, or
+   generic marking instructions.
 5. For fixed-response questions, extract `correctAnswers` and insert rows into
    `question_response_answer_keys`; do not generate model answers for these unless the fixed response
    is actually a written answer in disguise.

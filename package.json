@@ -10,6 +10,7 @@
 		"build": "npm run gen && vite build",
 		"extract:aqa": "node scripts/extract-aqa-data.mjs",
 		"download:aqa-separate-science": "node scripts/download-aqa-separate-science.mjs",
+		"extract:aqa-separate-science:batch": "node scripts/extract-aqa-separate-science-batch.mjs",
 		"extract:physics-vision": "node scripts/extract-paper-llm.mjs --preset=aqa-physics",
 		"extract:aqa-separate-science": "node scripts/extract-paper-llm.mjs --preset=aqa-separate-science",
 		"extract:paper-llm": "node scripts/extract-paper-llm.mjs",

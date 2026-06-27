@@ -52,6 +52,7 @@ for (const filePath of [
 	'docs/extraction-spec.md',
 	'scripts/lib/llm-extraction-pipeline.mjs',
 	'scripts/download-aqa-separate-science.mjs',
+	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
@@ -70,6 +71,7 @@ requireIncludes(
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
+		'pnpm run extract:aqa-separate-science:batch',
 		'pnpm run import:aqa-separate-science',
 		'@ljoukov/llm',
 		'pdfinfo',
@@ -138,13 +140,15 @@ requireIncludes(
 		'--recursive',
 		'--replace-all-subject',
 		'subjectAreaForPaper',
-		'chainPrefixForSubject'
+		'chainPrefixForSubject',
+		'deterministicCandidateIssues'
 	],
 	'Vision importer'
 );
 
 for (const scriptName of [
 	'download:aqa-separate-science',
+	'extract:aqa-separate-science:batch',
 	'extract:physics-vision',
 	'extract:aqa-separate-science',
 	'extract:paper-llm',
@@ -165,6 +169,7 @@ if (goldenOutput.status !== 'passed' || goldenOutput.cases < 4) {
 for (const scriptPath of [
 	'scripts/lib/llm-extraction-pipeline.mjs',
 	'scripts/download-aqa-separate-science.mjs',
+	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
@@ -183,6 +188,8 @@ for (const exportName of [
 	'runGoldenPdfEval',
 	'repairCandidateAnswerChains',
 	'repairFullPaperAnswerChains',
+	'repairFullPaperQuestionQuality',
+	'sanitizeAnswerChainEvidenceIndexes',
 	'judgeCandidateAgainstRubric',
 	'pdfText'
 ]) {
@@ -337,6 +344,92 @@ if (
 	)
 ) {
 	fail('Deterministic checks did not flag missing fixed-response answer keys.');
+}
+
+const missingWrittenModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.2',
+			commandWord: 'Name',
+			marks: 1,
+			response: { kind: 'lines' },
+			markSchemeItems: [{ itemType: 'answer', text: 'Cell membrane.' }],
+			modelAnswer: null,
+			answerChain: {
+				id: 'bio-chain-boundary-cue-recall',
+				title: 'Recall a named boundary structure from a cue',
+				canonicalChainText: 'Use the boundary cue to recall the accepted structure name.',
+				summary: 'A reusable recall chain for structure names.',
+				steps: [
+					{
+						stepText: 'Use the cue to recall the accepted structure name.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingWrittenModelAnswerIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' && issue.code === 'written_response_missing_model_answer'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag missing modelAnswer for written response.');
+}
+
+const evidenceIndexCandidate = {
+	questions: [
+		{
+			sourceQuestionRef: '01.1',
+			commandWord: null,
+			response: { kind: 'lines' },
+			markSchemeItems: [
+				{ itemType: 'mark', text: 'States a valid lifestyle factor.' },
+				{ itemType: 'ignore', text: 'Ignore obesity.' },
+				{ itemType: 'guidance', text: 'Allow qualified diet examples.' }
+			],
+			answerChain: {
+				id: 'bio-chain-valid-risk-factor-recall',
+				title: 'Recall a valid risk factor',
+				canonicalChainText: 'Use the risk-factor cue to recall a valid credited example.',
+				summary: 'A reusable recall chain for credited risk-factor examples.',
+				steps: [
+					{
+						stepText: 'Recall a valid credited factor.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0, 1, 2, 99]
+					}
+				]
+			}
+		}
+	]
+};
+const evidenceIssues = pipelineModule.deterministicCandidateIssues(evidenceIndexCandidate);
+if (
+	!evidenceIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' && issue.code === 'chain_step_non_positive_evidence'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag non-positive chain evidence links.');
+}
+const sanitizedEvidenceCandidate =
+	pipelineModule.sanitizeAnswerChainEvidenceIndexes(evidenceIndexCandidate);
+const sanitizedIndexes =
+	sanitizedEvidenceCandidate.questions[0].answerChain.steps[0].markSchemeItemIndexes;
+if (sanitizedIndexes.join(',') !== '0') {
+	fail('sanitizeAnswerChainEvidenceIndexes did not keep only positive existing mark rows.');
 }
 
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');

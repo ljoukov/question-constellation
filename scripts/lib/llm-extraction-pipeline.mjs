@@ -268,6 +268,59 @@ const FullChainRepairSchema = z.object({
 	)
 });
 
+const FullQuestionQualityRepairSchema = z.object({
+	repairs: z.array(
+		z.object({
+			sourceQuestionRef: z.string(),
+			markSchemeItems: z
+				.array(
+					z.object({
+						itemType: z.string(),
+						text: z.string(),
+						marks: z.number().nullable(),
+						sourceRef: z.string(),
+						confidence: z.number().nullable()
+					})
+				)
+				.nullable()
+				.optional(),
+			answerChain: AnswerChainSchema.nullable().optional(),
+			chainResolution: ChainResolutionSchema.nullable().optional(),
+			markChecklist: z
+				.array(
+					z.object({
+						text: z.string(),
+						required: z.boolean(),
+						markSchemeItemIndexes: z.array(z.number()),
+						confidence: z.number().nullable(),
+						needsHumanReview: z.boolean()
+					})
+				)
+				.nullable()
+				.optional(),
+			modelAnswer: z
+				.object({
+					answerText: z.string(),
+					confidence: z.number(),
+					needsHumanReview: z.boolean()
+				})
+				.nullable()
+				.optional(),
+			commonWeakAnswers: z
+				.array(
+					z.object({
+						weakAnswerText: z.string(),
+						missingStepIndexes: z.array(z.number()),
+						explanation: z.string(),
+						confidence: z.number()
+					})
+				)
+				.nullable()
+				.optional()
+		})
+	)
+});
+
 export function createRenderBlockSchema() {
 	return z.object({
 		kind: z.enum([
@@ -656,19 +709,22 @@ export function setupLlmEnv() {
 	process.env.CHATGPT_RESPONSES_EXPERIMENTAL_HEADER = 'off';
 }
 
-async function generateJsonWithTimeout(
-	options,
-	label = 'LLM call',
-	timeoutMs = DEFAULT_LLM_TIMEOUT_MS
-) {
-	if (!timeoutMs || timeoutMs <= 0) return generateJson(options);
+async function generateJsonWithTimeout(options, label = 'LLM call', timeoutMs = null) {
+	const resolvedTimeoutMs = Number(process.env.EXTRACTION_LLM_TIMEOUT_MS ?? DEFAULT_LLM_TIMEOUT_MS);
+	const resolvedMaxAttempts = Number(
+		process.env.EXTRACTION_LLM_MAX_ATTEMPTS ?? DEFAULT_LLM_MAX_ATTEMPTS
+	);
+	const activeTimeoutMs = timeoutMs ?? resolvedTimeoutMs;
+	if (!activeTimeoutMs || activeTimeoutMs <= 0) {
+		return generateJson({ maxAttempts: resolvedMaxAttempts, ...options });
+	}
 	const controller = new AbortController();
 	const timeout = setTimeout(() => {
-		controller.abort(new Error(`${label} timed out after ${timeoutMs}ms.`));
-	}, timeoutMs);
+		controller.abort(new Error(`${label} timed out after ${activeTimeoutMs}ms.`));
+	}, activeTimeoutMs);
 	try {
 		return await generateJson({
-			maxAttempts: DEFAULT_LLM_MAX_ATTEMPTS,
+			maxAttempts: resolvedMaxAttempts,
 			...options,
 			signal: controller.signal
 		});
@@ -1306,7 +1362,7 @@ export function enrichFullPaperExtraction({
 		})),
 		localAssetManifest: assetManifest
 	};
-	return FullPaperExtractionSchema.parse(enriched);
+	return FullPaperExtractionSchema.parse(sanitizeAnswerChainEvidenceIndexes(enriched));
 }
 
 export async function extractFullPaperFromPdfSet({
@@ -1423,9 +1479,10 @@ export async function extractFullPaperFromPdfSet({
 	);
 	const values = [];
 	for (const chunk of chunks) {
+		const pageKey = chunk.corePages.length ? chunk.corePages.join('-') : `index-${chunk.index + 1}`;
 		const chunkCachePath = path.join(
 			chunkCacheDir,
-			`chunk-${String(chunk.index + 1).padStart(3, '0')}.json`
+			`chunk-${String(chunk.index + 1).padStart(3, '0')}-pages-${pageKey}.json`
 		);
 		if (!forceChunkCache && existsSync(chunkCachePath)) {
 			console.error(
@@ -1486,6 +1543,7 @@ export function deterministicCandidateIssues(candidate) {
 			...answerChainEvidenceIssues(question),
 			...fixedResponseChainSpecificityIssues(question),
 			...fixedResponseModelAnswerIssues(question),
+			...writtenResponseModelAnswerIssues(question),
 			...responseKeyIssues(question)
 		];
 		if (!issues.length) continue;
@@ -1606,6 +1664,28 @@ function fixedResponseModelAnswerIssues(question) {
 	];
 }
 
+function writtenResponseModelAnswerIssues(question) {
+	const kind = question.response?.kind;
+	if (
+		question.marks === null ||
+		question.marks === undefined ||
+		!['lines', 'labeled-lines'].includes(kind) ||
+		String(question.modelAnswer?.answerText ?? '').trim()
+	) {
+		return [];
+	}
+	return [
+		{
+			severity: 'error',
+			code: 'written_response_missing_model_answer',
+			field: 'modelAnswer.answerText',
+			evidence: kind,
+			message:
+				'Written-response questions need a source-grounded modelAnswer. Fixed-response questions should keep exact answers in response.correctAnswers instead.'
+		}
+	];
+}
+
 function supportedResponseKinds() {
 	return new Set([
 		'none',
@@ -1663,9 +1743,42 @@ function responseKeyIssues(question) {
 }
 
 function positiveMarkSchemeItem(item) {
-	return !/\b(ignore|reject|do[_ -]?not[_ -]?accept|do[_ -]?not[_ -]?credit)\b/i.test(
+	return !/\b(allow|accept|guidance|alternative|ignore|reject|do[_ -]?not[_ -]?accept|do[_ -]?not[_ -]?credit)\b/i.test(
 		String(item?.itemType ?? '')
 	);
+}
+
+export function sanitizeAnswerChainEvidenceIndexes(candidate) {
+	let changed = false;
+	const questions = (candidate.questions ?? []).map((question) => {
+		if (!question.answerChain) return question;
+		const markSchemeItems = question.markSchemeItems ?? [];
+		let questionChanged = false;
+		const steps = (question.answerChain.steps ?? []).map((step) => {
+			const originalIndexes = step.markSchemeItemIndexes ?? [];
+			const filteredIndexes = originalIndexes.filter((itemIndex) => {
+				const item = markSchemeItems[itemIndex];
+				return item && positiveMarkSchemeItem(item);
+			});
+			if (
+				filteredIndexes.length !== originalIndexes.length ||
+				filteredIndexes.some((itemIndex, index) => itemIndex !== originalIndexes[index])
+			) {
+				questionChanged = true;
+			}
+			return questionChanged ? { ...step, markSchemeItemIndexes: filteredIndexes } : step;
+		});
+		if (!questionChanged) return question;
+		changed = true;
+		return {
+			...question,
+			answerChain: {
+				...question.answerChain,
+				steps
+			}
+		};
+	});
+	return changed ? { ...candidate, questions } : candidate;
 }
 
 function answerChainEvidenceIssues(question) {
@@ -1688,14 +1801,25 @@ function answerChainEvidenceIssues(question) {
 		}
 		for (const itemIndex of indexes) {
 			const item = markSchemeItems[itemIndex];
-			if (!item || positiveMarkSchemeItem(item)) continue;
+			if (!item) {
+				issues.push({
+					severity: 'error',
+					code: 'chain_step_missing_mark_scheme_item',
+					field,
+					evidence: `${step.stepText} -> markSchemeItems[${itemIndex}]`,
+					message:
+						'Answer-chain steps must reference existing positive mark-scheme items only.'
+				});
+				continue;
+			}
+			if (positiveMarkSchemeItem(item)) continue;
 			issues.push({
 				severity: 'error',
 				code: 'chain_step_non_positive_evidence',
 				field,
 				evidence: `${step.stepText} -> ${item.itemType}: ${item.text}`,
 				message:
-					'Answer-chain steps must not use ignore, reject, or do-not-accept guidance as support.'
+					'Answer-chain steps must not use allow, accept, guidance, ignore, reject, or do-not-accept rows as positive support.'
 			});
 		}
 	}
@@ -1833,7 +1957,7 @@ export async function judgeCandidateAgainstRubric({
 					JSON.stringify(deterministicIssues, null, 2),
 					'',
 					'Judge every question. Pass only if each answerChain is source-grounded, reusable across changed numbers or nearby contexts, aligned to markSchemeItems and markChecklist, and not just a topic label or worked numeric solution.',
-					'Also check that modelAnswer and markChecklist keep the source-specific worked values needed to answer the question.',
+					'Also check that markChecklist and the relevant answer field keep the source-specific values needed to answer the question. For fixed-response kinds with response.correctAnswers, do not fail merely because modelAnswer is null. For written-response kinds such as lines or labeled-lines, modelAnswer must be non-null and source-grounded.',
 					'Use score from 0 to 1. Return requiredRepairs for any chain that is too broad, too topic-like, too numeric, unsupported by mark evidence, or missing important method links.'
 				].join('\n')
 			}
@@ -1878,7 +2002,7 @@ export async function repairCandidateAnswerChains({
 		],
 		schema: RepairSchema
 	});
-	return { ...candidate, questions: value.questions };
+	return sanitizeAnswerChainEvidenceIndexes({ ...candidate, questions: value.questions });
 }
 
 export async function repairFullPaperAnswerChains({
@@ -1887,20 +2011,25 @@ export async function repairFullPaperAnswerChains({
 	candidate,
 	deterministicIssues,
 	judge = null,
-	existingChainsText = ''
+	existingChainsText = '',
+	sourceQuestionRefs = null
 }) {
-	const repairTasks = (candidate.questions ?? []).map((question) => ({
-		sourceQuestionRef: question.sourceQuestionRef,
-		commandWord: question.commandWord,
-		marks: question.marks,
-		promptText: question.promptText,
-		markSchemeItems: question.markSchemeItems,
-		markChecklist: question.markChecklist,
-		modelAnswer: question.modelAnswer,
-		currentAnswerChain: question.answerChain,
-		currentChainResolution: question.chainResolution ?? null,
-		commonWeakAnswers: question.commonWeakAnswers ?? []
-	}));
+	const allowedRefs = sourceQuestionRefs ? new Set(sourceQuestionRefs) : null;
+	const repairTasks = (candidate.questions ?? [])
+		.filter((question) => !allowedRefs || allowedRefs.has(question.sourceQuestionRef))
+		.map((question) => ({
+			sourceQuestionRef: question.sourceQuestionRef,
+			commandWord: question.commandWord,
+			marks: question.marks,
+			promptText: question.promptText,
+			markSchemeItems: question.markSchemeItems,
+			markChecklist: question.markChecklist,
+			modelAnswer: question.modelAnswer,
+			currentAnswerChain: question.answerChain,
+			currentChainResolution: question.chainResolution ?? null,
+			commonWeakAnswers: question.commonWeakAnswers ?? []
+		}));
+	if (repairTasks.length === 0) return sanitizeAnswerChainEvidenceIndexes(candidate);
 	const { value } = await generateJsonWithTimeout({
 		model,
 		thinkingLevel,
@@ -1926,14 +2055,14 @@ export async function repairFullPaperAnswerChains({
 					'Judge feedback:',
 					JSON.stringify(judge, null, 2),
 					'',
-					'Repair every chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. If an existing chain id remains compatible, keep that id for compatibility.'
+					'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.'
 				].join('\n')
 			}
 		],
 		schema: FullChainRepairSchema
 	});
 	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
-	return {
+	return sanitizeAnswerChainEvidenceIndexes({
 		...candidate,
 		questions: candidate.questions.map((question) => {
 			const repair = repairsByRef.get(question.sourceQuestionRef);
@@ -1945,7 +2074,89 @@ export async function repairFullPaperAnswerChains({
 				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers
 			};
 		})
-	};
+	});
+}
+
+export async function repairFullPaperQuestionQuality({
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	candidate,
+	deterministicIssues,
+	judge = null,
+	existingChainsText = '',
+	sourceQuestionRefs = null
+}) {
+	const allowedRefs = sourceQuestionRefs ? new Set(sourceQuestionRefs) : null;
+	const repairTasks = (candidate.questions ?? [])
+		.filter((question) => !allowedRefs || allowedRefs.has(question.sourceQuestionRef))
+		.map((question) => ({
+			sourceQuestionRef: question.sourceQuestionRef,
+			commandWord: question.commandWord,
+			marks: question.marks,
+			promptText: question.promptText,
+			response: question.response,
+			markSchemeItems: question.markSchemeItems,
+			markChecklist: question.markChecklist,
+			modelAnswer: question.modelAnswer,
+			currentAnswerChain: question.answerChain,
+			currentChainResolution: question.chainResolution ?? null,
+			commonWeakAnswers: question.commonWeakAnswers ?? []
+		}));
+	if (repairTasks.length === 0) return sanitizeAnswerChainEvidenceIndexes(candidate);
+	const { value } = await generateJsonWithTimeout({
+		model,
+		thinkingLevel,
+		telemetry: false,
+		input: [
+			{
+				role: 'system',
+				content:
+					'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets. Return only changed grading, model-answer, weak-answer, and answer-chain fields keyed by sourceQuestionRef.'
+			},
+			{
+				role: 'user',
+				content: [
+					PRODUCTION_EXTRACTION_CONTRACT,
+					'',
+					'Existing chain compatibility context:',
+					existingChainsText || 'None supplied.',
+					'',
+					'Failed questions and current extraction fields:',
+					JSON.stringify(repairTasks, null, 2),
+					'',
+					'Deterministic issues:',
+					JSON.stringify(deterministicIssues, null, 2),
+					'',
+					'Judge feedback:',
+					JSON.stringify(judge, null, 2),
+					'',
+					'Repair only fields that are actually defective. If answerChain evidence points at allow, accept, guidance, ignore, reject, alternative, or do-not-credit rows, remove those indexes or re-map to positive marking points only.',
+					'Positive marking points are markSchemeItems whose itemType is a direct mark/answer/marking_point. Rows labelled allow, accept, guidance, alternative, ignore, reject, or do-not-credit are not positive step evidence. If judge feedback suggests using one of those rows as answerChain evidence, ignore that part of the feedback and merge, delete, or remap the step to a direct positive mark row instead.',
+					'If a row labelled allow/accept actually contains a complete independently credited alternative answer route, you may repair only its itemType to alternative_marking_point while preserving text, marks, sourceRef, and confidence.',
+					'If a checklist item describes one option among accepted alternatives, do not mark every alternative required=true as though all must be present. Represent alternatives with required=false wording that says any one accepted route earns credit.',
+					'Keep exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer, not in answerChain fields.'
+				].join('\n')
+			}
+		],
+		schema: FullQuestionQualityRepairSchema
+	});
+	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
+	return sanitizeAnswerChainEvidenceIndexes({
+		...candidate,
+		questions: candidate.questions.map((question) => {
+			const repair = repairsByRef.get(question.sourceQuestionRef);
+			if (!repair) return question;
+			return {
+				...question,
+				markSchemeItems: repair.markSchemeItems ?? question.markSchemeItems,
+				answerChain: repair.answerChain ?? question.answerChain,
+				chainResolution: repair.chainResolution ?? question.chainResolution,
+				markChecklist: repair.markChecklist ?? question.markChecklist,
+				modelAnswer: repair.modelAnswer ?? question.modelAnswer,
+				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers
+			};
+		})
+	});
 }
 
 export async function evaluateCandidate({
