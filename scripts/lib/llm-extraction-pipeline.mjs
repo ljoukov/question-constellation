@@ -710,51 +710,54 @@ export const LlmFullPaperExtractionSchema = z.object({
 	});
 
 const CompactMarkSchemeItemSchema = z.object({
-	itemType: z.string(),
+	itemType: z.string().nullable().optional(),
 	text: z.string(),
-	marks: z.number().nullable(),
-	sourceRef: z.string().nullable(),
-	confidence: z.number().nullable()
+	marks: z.number().nullable().optional(),
+	sourceRef: z.string().nullable().optional(),
+	confidence: z.number().nullable().optional()
 });
 
 const CompactMarkChecklistItemSchema = z.object({
 	text: z.string(),
-	required: z.boolean(),
-	markSchemeItemIndexes: z.array(z.number()),
-	confidence: z.number().nullable(),
-	needsHumanReview: z.boolean()
+	required: z.boolean().nullable().optional(),
+	markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
+	confidence: z.number().nullable().optional(),
+	needsHumanReview: z.boolean().nullable().optional()
 });
 
-const CompactModelAnswerSchema = z
-	.object({
-		answerText: z.string(),
-		confidence: z.number().nullable(),
-		needsHumanReview: z.boolean()
-	})
-	.nullable();
+const CompactModelAnswerSchema = z.union([
+	z
+		.object({
+			answerText: z.string(),
+			confidence: z.number().nullable().optional(),
+			needsHumanReview: z.boolean().nullable().optional()
+		})
+		.nullable(),
+	z.string()
+]);
 
 export const LlmCompactFullPaperExtractionSchema = z.object({
 	questions: z.array(
 		z.object({
-			id: z.string().nullable(),
+			id: z.string().nullable().optional(),
 			sourceQuestionRef: z.string(),
-			parentSourceQuestionRef: z.string().nullable(),
+			parentSourceQuestionRef: z.string().nullable().optional(),
 			promptText: z.string(),
-			selfContainedPromptText: z.string().nullable(),
-			contextText: z.string().nullable(),
-			commandWord: z.string().nullable(),
-			marks: z.number().nullable(),
-			pageStart: z.number().nullable(),
-			pageEnd: z.number().nullable(),
-			topicPath: z.array(z.string()),
-			specRef: z.string().nullable(),
-			response: createFullResponseSchema(),
+			selfContainedPromptText: z.string().nullable().optional(),
+			contextText: z.string().nullable().optional(),
+			commandWord: z.string().nullable().optional(),
+			marks: z.number().nullable().optional(),
+			pageStart: z.number().nullable().optional(),
+			pageEnd: z.number().nullable().optional(),
+			topicPath: z.array(z.string()).nullable().optional(),
+			specRef: z.string().nullable().optional(),
+			response: createLooseResponseSchema().optional(),
 			markSchemeItems: z.array(CompactMarkSchemeItemSchema),
 			markChecklist: z.array(CompactMarkChecklistItemSchema),
-			modelAnswer: CompactModelAnswerSchema,
-			extractionConfidence: z.number().nullable(),
-			needsHumanReview: z.boolean(),
-			reviewNotes: z.array(z.string())
+			modelAnswer: CompactModelAnswerSchema.optional(),
+			extractionConfidence: z.number().nullable().optional(),
+			needsHumanReview: z.boolean().nullable().optional(),
+			reviewNotes: z.array(z.string()).nullable().optional()
 		})
 	)
 });
@@ -1516,7 +1519,32 @@ function compactResponse(response, marks) {
 	) {
 		output.correctAnswers ??= [];
 	}
+	if (Array.isArray(output.correctAnswers)) {
+		output.correctAnswers = output.correctAnswers.map((answer) =>
+			typeof answer === 'string' ? { targetId: 'answer', correctAnswer: answer } : answer
+		);
+	}
 	return output;
+}
+
+function compactModelAnswer(value) {
+	if (!value) return null;
+	if (typeof value === 'string') {
+		const answerText = value.trim();
+		return answerText
+			? {
+					answerText,
+					confidence: 0.8,
+					needsHumanReview: false
+				}
+			: null;
+	}
+	if (!value.answerText) return null;
+	return {
+		answerText: value.answerText,
+		confidence: compactConfidence(value.confidence),
+		needsHumanReview: value.needsHumanReview === true
+	};
 }
 
 function paragraphBlock(text) {
@@ -1587,13 +1615,7 @@ function compactQuestionToFull(question, index, chunk) {
 			confidence: compactConfidence(item.confidence),
 			needsHumanReview: item.needsHumanReview === true
 		})),
-		modelAnswer: question.modelAnswer?.answerText
-			? {
-					answerText: question.modelAnswer.answerText,
-					confidence: compactConfidence(question.modelAnswer.confidence),
-					needsHumanReview: question.modelAnswer.needsHumanReview === true
-				}
-			: null,
+		modelAnswer: compactModelAnswer(question.modelAnswer),
 		answerChain: placeholderAnswerChain(question),
 		chainResolution: {
 			action: 'needs_review',
