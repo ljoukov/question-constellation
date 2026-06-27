@@ -58,6 +58,7 @@ for (const filePath of [
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
+	'scripts/evaluate-question-solvability.mjs',
 	'scripts/test-answer-chain-golden.mjs',
 	'scripts/audit-answer-chain-specificity.mjs',
 	'tests/golden/answer-chain-quality.json',
@@ -71,20 +72,22 @@ requireIncludes(
 	extractionSpec,
 	[
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
+		'pnpm run eval:question-solvability',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
-			'pnpm run extract:aqa-separate-science:batch',
-			'pnpm run import:aqa-separate-science',
-			'--concurrency',
-			'--force-chunks',
-			'@ljoukov/llm',
-			'tmp/llm-extraction-logs',
-			'pnpm run summarize:llm-extraction-logs',
-			'--run-id',
-			'costUsd',
-			'pdfinfo',
+		'pnpm run extract:aqa-separate-science:batch',
+		'pnpm run import:aqa-separate-science',
+		'--concurrency',
+		'--force-chunks',
+		'@ljoukov/llm',
+		'tmp/llm-extraction-logs',
+		'pnpm run summarize:llm-extraction-logs',
+		'--run-id',
+		'costUsd',
+		'pdfinfo',
 		'pdftoppm',
 		'--mark-scheme-image-mode=all',
+		'learner-facing solvability judge',
 		'reusable reasoning or method pattern'
 	],
 	'Extraction spec'
@@ -97,6 +100,9 @@ requireIncludes(
 		'export async function extractFullPaperFromPdfSet',
 		'export async function evaluateCandidate',
 		'export async function runGoldenPdfEval',
+		'export async function judgeQuestionSolvability',
+		'export function buildLearnerVisibleQuestionContext',
+		'export const SolvabilityJudgeSchema',
 		'export async function repairFullPaperAnswerChains',
 		'export const FullPaperExtractionSchema',
 		'export const LlmFullPaperExtractionSchema',
@@ -155,6 +161,8 @@ requireIncludes(
 		'--thinking-level=${thinkingLevel}',
 		"integerArg('llm-max-attempts', 3, 1)",
 		"integerArg('judge-batch-size', 1, 1)",
+		'solvabilityMode',
+		'evaluateSolvabilityForPaper',
 		"status: 'running'",
 		'completedBatches'
 	],
@@ -193,6 +201,7 @@ for (const scriptName of [
 	'extract:aqa-separate-science',
 	'extract:paper-llm',
 	'summarize:llm-extraction-logs',
+	'eval:question-solvability',
 	'import:vision',
 	'import:aqa-separate-science',
 	'eval:extraction-pipeline-llm',
@@ -214,6 +223,7 @@ for (const scriptPath of [
 	'scripts/extract-paper-llm.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
+	'scripts/evaluate-question-solvability.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
 ]) {
 	runNodeCheck(scriptPath);
@@ -288,6 +298,8 @@ for (const exportName of [
 	'repairFullPaperAnswerChains',
 	'repairFullPaperQuestionQuality',
 	'sanitizeAnswerChainEvidenceIndexes',
+	'buildLearnerVisibleQuestionContext',
+	'judgeQuestionSolvability',
 	'questionRefsFromText',
 	'markSchemeTextExcerptForRefs',
 	'judgeCandidateAgainstRubric',
@@ -323,7 +335,9 @@ const numericTitleIssues = pipelineModule.deterministicCandidateIssues({
 	]
 });
 
-const parsedRefs = pipelineModule.questionRefsFromText('0 1 . 1 Complete\n01.2 Describe\n10.12 Explain');
+const parsedRefs = pipelineModule.questionRefsFromText(
+	'0 1 . 1 Complete\n01.2 Describe\n10.12 Explain'
+);
 if (parsedRefs.join(',') !== '01.1,01.2,10.12') {
 	fail('questionRefsFromText did not parse spaced and compact question refs.', parsedRefs);
 }
@@ -332,7 +346,10 @@ const markSchemeExcerpt = pipelineModule.markSchemeTextExcerptForRefs(
 	['01.1'],
 	2
 );
-if (!markSchemeExcerpt.includes('01.1 first answer') || markSchemeExcerpt.includes('02.1 second answer')) {
+if (
+	!markSchemeExcerpt.includes('01.1 first answer') ||
+	markSchemeExcerpt.includes('02.1 second answer')
+) {
 	fail('markSchemeTextExcerptForRefs did not isolate nearby mark-scheme rows.');
 }
 if (
@@ -459,6 +476,44 @@ if (
 	fail('Deterministic checks did not flag missing fixed-response answer keys.');
 }
 
+const missingResponseAssetIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.9',
+			commandWord: 'Complete',
+			response: { kind: 'asset-canvas', assetLabel: 'Figure 1 blank graph grid' },
+			assets: [{ sourceLabel: 'Figure 1 blank graph grid' }],
+			markSchemeItems: [{ itemType: 'mark', text: 'Plots all points accurately.' }],
+			modelAnswer: { answerText: 'Completed graph.' },
+			answerChain: {
+				id: 'bio-chain-complete-graph-from-table',
+				title: 'Complete a graph from table data',
+				canonicalChainText:
+					'Read table values, set up graph axes, plot points, and draw a best-fit line.',
+				summary: 'Reusable graph completion method.',
+				steps: [
+					{
+						stepText: 'Read the values from the table.',
+						stepRole: 'method',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingResponseAssetIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'error' && issue.code === 'response_asset_label_only'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag label-only response assets.');
+}
+
 const missingWrittenModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
 	questions: [
 		{
@@ -530,8 +585,7 @@ const evidenceIssues = pipelineModule.deterministicCandidateIssues(evidenceIndex
 if (
 	!evidenceIssues.some((finding) =>
 		finding.issues.some(
-			(issue) =>
-				issue.severity === 'error' && issue.code === 'chain_step_non_positive_evidence'
+			(issue) => issue.severity === 'error' && issue.code === 'chain_step_non_positive_evidence'
 		)
 	)
 ) {
@@ -543,6 +597,68 @@ const sanitizedIndexes =
 	sanitizedEvidenceCandidate.questions[0].answerChain.steps[0].markSchemeItemIndexes;
 if (sanitizedIndexes.join(',') !== '0') {
 	fail('sanitizeAnswerChainEvidenceIndexes did not keep only positive existing mark rows.');
+}
+
+const solvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		sourceDocument: { id: 'test-paper' },
+		markSchemeDocument: { id: 'test-ms' },
+		questions: [
+			{
+				sourceQuestionRef: '05.5',
+				parentSourceQuestionRef: '05',
+				displayOrder: 5,
+				promptText: 'Use Table 1 to calculate the mean.',
+				contextText: 'Table 1 shows values 2, 4 and 6.',
+				stemBlocks: [
+					{
+						kind: 'table',
+						label: 'Table 1',
+						columns: ['Trial', 'Value'],
+						rows: [
+							['1', '2'],
+							['2', '4'],
+							['3', '6']
+						]
+					}
+				],
+				promptBlocks: [{ kind: 'text', text: 'Calculate the mean value.' }],
+				response: { kind: 'lines', count: 1 },
+				assets: [],
+				markSchemeItems: [{ itemType: 'mark', text: 'Mean = 4.' }]
+			},
+			{
+				sourceQuestionRef: '05.7',
+				parentSourceQuestionRef: '05',
+				displayOrder: 7,
+				promptText: 'Explain how the mean from 05.5 supports the conclusion.',
+				contextText: 'Use your answer to 05.5.',
+				stemBlocks: [{ kind: 'text', text: 'Use your answer to 05.5.' }],
+				promptBlocks: [{ kind: 'text', text: 'Explain how the mean supports the conclusion.' }],
+				response: { kind: 'lines', count: 3 },
+				assets: [{ sourceLabel: 'Figure 5' }],
+				markSchemeItems: [{ itemType: 'mark', text: 'Uses the mean value of 4.' }],
+				markChecklist: [{ text: 'Refers to mean value 4.', markSchemeItemIndexes: [0] }],
+				modelAnswer: { answerText: 'The mean value is 4, so it supports the conclusion.' }
+			}
+		]
+	},
+	'05.7'
+);
+if (solvabilityContext.includedSourceQuestionRefs.join(',') !== '05.5,05.7') {
+	fail(
+		'Solvability context did not include prior parent-group subpart context.',
+		solvabilityContext
+	);
+}
+if (
+	!JSON.stringify(solvabilityContext.studentVisibleContext.sections).includes('Table 1') ||
+	!JSON.stringify(solvabilityContext.targetAnswerKey).includes('mean value of 4')
+) {
+	fail(
+		'Solvability context omitted visible table or target answer-key evidence.',
+		solvabilityContext
+	);
 }
 
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');

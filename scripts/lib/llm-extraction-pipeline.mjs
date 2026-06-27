@@ -37,6 +37,7 @@ const PRODUCTION_EXTRACTION_CONTRACT = [
 	'- Extract every independently marked subquestion. Do not create question rows for unmarked parent stems.',
 	'- Preserve render structure in stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Use response objects for choices, tick boxes, matching, equation blanks, image labels, and drawing boxes.',
 	'- Use only app-supported response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.',
+	'- If response.kind is asset-canvas or image-label-zones, the referenced asset must exist in assets with a usable local file path, public path, or R2 key. Label-only assets are not enough for learner-facing rendering.',
 	'- Every marked question must have a reusable answerChain, including simple recall and fixed-response questions.',
 	'- An answerChain is a reusable reasoning or method pattern across questions, not a worked solution to this one question.',
 	'- For simple recall and fixed-response questions, use a generic recall/discrimination chain. Do not put the exact answer or one-question fact as the chain id, title, or summary.',
@@ -225,6 +226,46 @@ export const JudgeSchema = z.object({
 	),
 	modelAnswerValueMatches: z.array(
 		z.object({ value: z.string(), matched: z.boolean(), note: z.string() })
+	),
+	requiredRepairs: z.array(z.string())
+});
+
+export const SolvabilityJudgeSchema = z.object({
+	verdict: z.enum(['pass', 'fail']),
+	score: z.number().min(0).max(1),
+	sourceQuestionRef: z.string(),
+	studentVisibleSolvable: z.boolean(),
+	attemptedAnswerFromVisibleContext: z.string(),
+	markSchemeAlignment: z.enum(['matches', 'partially_matches', 'mismatch', 'not_applicable']),
+	rationale: z.string(),
+	missingContext: z.array(
+		z.object({
+			kind: z.enum([
+				'text',
+				'table',
+				'image',
+				'diagram',
+				'previous_part',
+				'response_area',
+				'other'
+			]),
+			severity: z.enum(['blocking', 'warning']),
+			description: z.string()
+		})
+	),
+	mediaFindings: z.array(
+		z.object({
+			label: z.string(),
+			status: z.enum(['present', 'missing', 'not_needed', 'unclear']),
+			note: z.string()
+		})
+	),
+	renderFindings: z.array(
+		z.object({
+			field: z.string(),
+			severity: z.enum(['blocking', 'warning']),
+			note: z.string()
+		})
 	),
 	requiredRepairs: z.array(z.string())
 });
@@ -706,8 +747,8 @@ export const LlmFullPaperExtractionSchema = z.object({
 			needsHumanReview: z.boolean(),
 			reviewNotes: z.array(z.string())
 		})
-		)
-	});
+	)
+});
 
 const CompactMarkSchemeItemSchema = z.object({
 	itemType: z.string().nullable().optional(),
@@ -875,7 +916,10 @@ function summarizeOutputValue(value) {
 			.filter(Boolean)
 			.slice(0, 80),
 		repairCount: repairs?.length ?? null,
-		repairRefs: repairs?.map((repair) => repair?.sourceQuestionRef).filter(Boolean).slice(0, 80)
+		repairRefs: repairs
+			?.map((repair) => repair?.sourceQuestionRef)
+			.filter(Boolean)
+			.slice(0, 80)
 	};
 }
 
@@ -1301,30 +1345,33 @@ export async function extractCandidateFromImages({
 		extraInstructions,
 		expectedQuestionCount
 	});
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		mediaResolution,
-		telemetry: false,
-		input: [
-			{
-				role: 'system',
-				content:
-					'You are a careful GCSE science extraction engine. Return source-grounded JSON only.'
-			},
-			{
-				role: 'user',
-				content: [
-					{ type: 'text', text: prompt },
-					{ type: 'text', text: 'QUESTION PAPER PAGE IMAGES FOLLOW, IN ORDER.' },
-					...questionImages.map(imagePart),
-					{ type: 'text', text: 'MARK SCHEME PAGE IMAGES FOLLOW, IN ORDER.' },
-					...markSchemeImages.map(imagePart)
-				]
-			}
-		],
-		schema: LlmExtractionCandidateSchema
-	}, `extract-candidate:${sourceDocumentId}`);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			mediaResolution,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You are a careful GCSE science extraction engine. Return source-grounded JSON only.'
+				},
+				{
+					role: 'user',
+					content: [
+						{ type: 'text', text: prompt },
+						{ type: 'text', text: 'QUESTION PAPER PAGE IMAGES FOLLOW, IN ORDER.' },
+						...questionImages.map(imagePart),
+						{ type: 'text', text: 'MARK SCHEME PAGE IMAGES FOLLOW, IN ORDER.' },
+						...markSchemeImages.map(imagePart)
+					]
+				}
+			],
+			schema: LlmExtractionCandidateSchema
+		},
+		`extract-candidate:${sourceDocumentId}`
+	);
 	return normalizeCandidate(value, { sourceDocumentId, model });
 }
 
@@ -1515,7 +1562,9 @@ function compactResponse(response, marks) {
 		output.correctAnswers ??= [];
 	}
 	if (
-		['choice-table', 'matching', 'equation-blanks', 'number-line', 'image-label-zones'].includes(kind)
+		['choice-table', 'matching', 'equation-blanks', 'number-line', 'image-label-zones'].includes(
+			kind
+		)
 	) {
 		output.correctAnswers ??= [];
 	}
@@ -1577,7 +1626,8 @@ function placeholderAnswerChain(question) {
 }
 
 function compactQuestionToFull(question, index, chunk) {
-	const promptText = question.promptText || question.selfContainedPromptText || question.sourceQuestionRef;
+	const promptText =
+		question.promptText || question.selfContainedPromptText || question.sourceQuestionRef;
 	const pageStart = compactNumber(question.pageStart, chunk?.corePages?.[0] ?? 1);
 	const pageEnd = compactNumber(question.pageEnd, pageStart);
 	const markSchemeItems = (question.markSchemeItems ?? []).map((item) => ({
@@ -1706,9 +1756,9 @@ export function buildFullPaperPrompt({
 		chunk
 			? [
 					`This is chunk ${chunk.index + 1} of ${chunk.total}. Extract only atomic marked questions whose own question/subquestion number and prompt begin on core question-paper pages ${chunk.corePages.join(', ')}.`,
-					chunk.lookaheadPages.length ?
-						`Lookahead pages ${chunk.lookaheadPages.join(', ')} are context only. Use them only to finish the same atomic subquestion that began on a core page. Do not extract sibling subquestions, later subquestion numbers, or a whole parent question merely because the parent stem began on a core page.`
-					:	'No lookahead pages are supplied for this chunk.',
+					chunk.lookaheadPages.length
+						? `Lookahead pages ${chunk.lookaheadPages.join(', ')} are context only. Use them only to finish the same atomic subquestion that began on a core page. Do not extract sibling subquestions, later subquestion numbers, or a whole parent question merely because the parent stem began on a core page.`
+						: 'No lookahead pages are supplied for this chunk.',
 					'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk; it belongs to the next chunk.'
 				].join(' ')
 			: null,
@@ -1719,6 +1769,7 @@ export function buildFullPaperPrompt({
 		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into contextText/selfContainedPromptText where needed.',
 		'Return compact source-grounded question data. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use response objects for MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
+		'For asset-canvas and image-label-zones responses, do not return label-only assets. The referenced graph, diagram, or image must be present in assets with a usable filePath, publicPath, or r2Key from the local asset manifest. If no usable asset exists, mark the question needsHumanReview and include a blocking review note.',
 		'Preserve exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer. Text-only chain repair depends on this evidence to create reusable answer chains later.',
 		'',
 		'Question paper:',
@@ -1796,12 +1847,13 @@ export async function extractFullPaperChunk({
 			...supportingImages
 		);
 	}
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		mediaResolution,
-		telemetry: false,
-		input: [
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			mediaResolution,
+			telemetry: false,
+			input: [
 				{
 					role: 'system',
 					content:
@@ -1810,16 +1862,18 @@ export async function extractFullPaperChunk({
 				{ role: 'user', content }
 			],
 			schema: LlmCompactFullPaperExtractionSchema
-		}, `extract-full-paper:${sourceDocumentId}:${targetQuestionRef ?? 'all'}`);
-		return expandCompactFullPaperExtraction({
-			value,
-			sourceDocumentId,
-			markSchemeDocumentId,
-			questionPaper,
-			markScheme,
-			chunk
-		});
-	}
+		},
+		`extract-full-paper:${sourceDocumentId}:${targetQuestionRef ?? 'all'}`
+	);
+	return expandCompactFullPaperExtraction({
+		value,
+		sourceDocumentId,
+		markSchemeDocumentId,
+		questionPaper,
+		markScheme,
+		chunk
+	});
+}
 
 export function mergeFullPaperChunks(values) {
 	if (values.length === 0) throw new Error('No extraction chunks to merge.');
@@ -2073,64 +2127,64 @@ export async function extractFullPaperFromPdfSet({
 			values.push(LlmFullPaperExtractionSchema.parse(readJson(chunkCachePath)));
 			continue;
 		}
-			const coreQuestionText = pdfText(questionPaper.path, 20000, chunk.corePages);
-			const coreQuestionRefs = questionRefsFromText(coreQuestionText);
-			const chunkMarkSchemeText = markSchemeTextExcerptForRefs(markSchemeText, coreQuestionRefs);
-			console.error(
-				`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')} core_refs=${coreQuestionRefs.join(',') || 'none'} mark_scheme_text_chars=${chunkMarkSchemeText.length}`
+		const coreQuestionText = pdfText(questionPaper.path, 20000, chunk.corePages);
+		const coreQuestionRefs = questionRefsFromText(coreQuestionText);
+		const chunkMarkSchemeText = markSchemeTextExcerptForRefs(markSchemeText, coreQuestionRefs);
+		console.error(
+			`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')} core_refs=${coreQuestionRefs.join(',') || 'none'} mark_scheme_text_chars=${chunkMarkSchemeText.length}`
+		);
+		const targetQuestionRefs = coreQuestionRefs.length ? coreQuestionRefs : [null];
+		const chunkValues = [];
+		for (const targetQuestionRef of targetQuestionRefs) {
+			const targetCachePath = path.join(
+				chunkCacheDir,
+				`chunk-${String(chunk.index + 1).padStart(3, '0')}-pages-${pageKey}-target-${cacheSafeName(targetQuestionRef)}.json`
 			);
-			const targetQuestionRefs = coreQuestionRefs.length ? coreQuestionRefs : [null];
-			const chunkValues = [];
-			for (const targetQuestionRef of targetQuestionRefs) {
-				const targetCachePath = path.join(
-					chunkCacheDir,
-					`chunk-${String(chunk.index + 1).padStart(3, '0')}-pages-${pageKey}-target-${cacheSafeName(targetQuestionRef)}.json`
-				);
-				if (!forceChunkCache && existsSync(targetCachePath)) {
-					console.error(
-						`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} target_ref=${targetQuestionRef ?? 'all'} using cache ${relativePath(rootDir, targetCachePath)}`
-					);
-					chunkValues.push(LlmFullPaperExtractionSchema.parse(readJson(targetCachePath)));
-					continue;
-				}
-				const targetMarkSchemeText = targetQuestionRef
-					? markSchemeTextExcerptForRefs(markSchemeText, [targetQuestionRef])
-					: chunkMarkSchemeText;
+			if (!forceChunkCache && existsSync(targetCachePath)) {
 				console.error(
-					`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} target_ref=${targetQuestionRef ?? 'all'} mark_scheme_text_chars=${targetMarkSchemeText.length}`
+					`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} target_ref=${targetQuestionRef ?? 'all'} using cache ${relativePath(rootDir, targetCachePath)}`
 				);
-				const targetValue = await extractFullPaperChunk({
-						model,
-						thinkingLevel,
-						mediaResolution,
-						sourceDocumentId,
-						markSchemeDocumentId,
-						questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
-						markScheme: {
-							...markScheme,
-							pages: markSchemeImages.length
-								? markSchemeImages.map(pageNumberFromRenderedPath)
-								: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
-						},
-						supportingDocuments,
-						chunk,
-						markSchemeImages,
-						markSchemeText: targetMarkSchemeText,
-						supportingImages,
-						extractionSpec,
-						existingChainsText,
-						extraInstructions,
-						expectedQuestionCount: targetQuestionRef ? 1 : expectedQuestionCount,
-						assetManifestText,
-						targetQuestionRef
-					});
-				writeJson(targetCachePath, targetValue);
-				chunkValues.push(targetValue);
+				chunkValues.push(LlmFullPaperExtractionSchema.parse(readJson(targetCachePath)));
+				continue;
 			}
-			const value = mergeFullPaperChunks(chunkValues);
-			writeJson(chunkCachePath, value);
-			values.push(value);
+			const targetMarkSchemeText = targetQuestionRef
+				? markSchemeTextExcerptForRefs(markSchemeText, [targetQuestionRef])
+				: chunkMarkSchemeText;
+			console.error(
+				`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} target_ref=${targetQuestionRef ?? 'all'} mark_scheme_text_chars=${targetMarkSchemeText.length}`
+			);
+			const targetValue = await extractFullPaperChunk({
+				model,
+				thinkingLevel,
+				mediaResolution,
+				sourceDocumentId,
+				markSchemeDocumentId,
+				questionPaper: { ...questionPaper, pages: chunk.images.map(pageNumberFromRenderedPath) },
+				markScheme: {
+					...markScheme,
+					pages: markSchemeImages.length
+						? markSchemeImages.map(pageNumberFromRenderedPath)
+						: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
+				},
+				supportingDocuments,
+				chunk,
+				markSchemeImages,
+				markSchemeText: targetMarkSchemeText,
+				supportingImages,
+				extractionSpec,
+				existingChainsText,
+				extraInstructions,
+				expectedQuestionCount: targetQuestionRef ? 1 : expectedQuestionCount,
+				assetManifestText,
+				targetQuestionRef
+			});
+			writeJson(targetCachePath, targetValue);
+			chunkValues.push(targetValue);
 		}
+		const value = mergeFullPaperChunks(chunkValues);
+		writeJson(chunkCachePath, value);
+		values.push(value);
+	}
 	return enrichFullPaperExtraction({
 		value: mergeFullPaperChunks(values),
 		rootDir,
@@ -2154,7 +2208,8 @@ export function deterministicCandidateIssues(candidate) {
 			...fixedResponseChainSpecificityIssues(question),
 			...fixedResponseModelAnswerIssues(question),
 			...writtenResponseModelAnswerIssues(question),
-			...responseKeyIssues(question)
+			...responseKeyIssues(question),
+			...responseAssetCompletenessIssues(question)
 		];
 		if (!issues.length) continue;
 		findings.push({
@@ -2352,6 +2407,56 @@ function responseKeyIssues(question) {
 	return issues;
 }
 
+function responseAssetCompletenessIssues(question) {
+	const kind = question.response?.kind;
+	if (!['asset-canvas', 'image-label-zones'].includes(kind)) return [];
+	const labels = [...collectResponseAssetLabels(question.response)];
+	if (labels.length === 0) {
+		return [
+			{
+				severity: 'error',
+				code: 'response_asset_missing_label',
+				field: 'response',
+				evidence: kind,
+				message: `${kind} response must identify the graph, diagram, or image asset it renders.`
+			}
+		];
+	}
+	const issues = [];
+	for (const label of labels) {
+		const asset = (question.assets ?? []).find((candidate) => assetMatchesLabel(candidate, label));
+		if (!asset) {
+			issues.push({
+				severity: 'error',
+				code: 'response_asset_missing_asset',
+				field: 'assets',
+				evidence: label,
+				message: `${kind} response references ${label}, but no matching question asset was extracted.`
+			});
+			continue;
+		}
+		const hasUsableReference =
+			Boolean(
+				asset.filePath ||
+				asset.sourcePath ||
+				asset.localPath ||
+				asset.path ||
+				asset.publicPath ||
+				asset.r2Key
+			) || pathCandidatesForAsset(asset).some((candidatePath) => existsSync(candidatePath));
+		if (!hasUsableReference) {
+			issues.push({
+				severity: 'error',
+				code: 'response_asset_label_only',
+				field: 'assets',
+				evidence: label,
+				message: `${kind} response asset ${label} is label-only. It needs a filePath, publicPath, or r2Key so the learner can see the required media.`
+			});
+		}
+	}
+	return issues;
+}
+
 function positiveMarkSchemeItem(item) {
 	return !/\b(allow|accept|guidance|alternative|ignore|reject|do[_ -]?not[_ -]?accept|do[_ -]?not[_ -]?credit)\b/i.test(
 		String(item?.itemType ?? '')
@@ -2417,8 +2522,7 @@ function answerChainEvidenceIssues(question) {
 					code: 'chain_step_missing_mark_scheme_item',
 					field,
 					evidence: `${step.stepText} -> markSchemeItems[${itemIndex}]`,
-					message:
-						'Answer-chain steps must reference existing positive mark-scheme items only.'
+					message: 'Answer-chain steps must reference existing positive mark-scheme items only.'
 				});
 				continue;
 			}
@@ -2510,34 +2614,37 @@ export async function judgeCandidate({
 	candidate,
 	deterministicIssues
 }) {
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		telemetry: false,
-		input: [
-			{
-				role: 'system',
-				content:
-					'You are an independent verifier for GCSE answer-chain extraction quality. You did not generate the candidate. Judge conceptual correctness against the golden specification.'
-			},
-			{
-				role: 'user',
-				content: [
-					'Golden fixture:',
-					JSON.stringify(fixture, null, 2),
-					'',
-					'Candidate extraction:',
-					JSON.stringify(candidate, null, 2),
-					'',
-					'Deterministic specificity issues:',
-					JSON.stringify(deterministicIssues, null, 2),
-					'',
-					'Pass only if the answerChain is reusable method wording, covers the expected concepts, avoids forbidden worked values in chain fields, and keeps worked values in model/checklist evidence.'
-				].join('\n')
-			}
-		],
-		schema: JudgeSchema
-	}, `judge-golden:${fixture?.sourceDocumentId ?? candidate?.sourceDocumentId ?? 'candidate'}`);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You are an independent verifier for GCSE answer-chain extraction quality. You did not generate the candidate. Judge conceptual correctness against the golden specification.'
+				},
+				{
+					role: 'user',
+					content: [
+						'Golden fixture:',
+						JSON.stringify(fixture, null, 2),
+						'',
+						'Candidate extraction:',
+						JSON.stringify(candidate, null, 2),
+						'',
+						'Deterministic specificity issues:',
+						JSON.stringify(deterministicIssues, null, 2),
+						'',
+						'Pass only if the answerChain is reusable method wording, covers the expected concepts, avoids forbidden worked values in chain fields, and keeps worked values in model/checklist evidence.'
+					].join('\n')
+				}
+			],
+			schema: JudgeSchema
+		},
+		`judge-golden:${fixture?.sourceDocumentId ?? candidate?.sourceDocumentId ?? 'candidate'}`
+	);
 	return value;
 }
 
@@ -2547,34 +2654,37 @@ export async function judgeCandidateAgainstRubric({
 	candidate,
 	deterministicIssues
 }) {
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		telemetry: false,
-		input: [
-			{
-				role: 'system',
-				content:
-					'You are an independent verifier for GCSE question extraction quality. You did not generate the candidate. Judge the candidate against the product rule that answer chains are reusable reasoning or method patterns, not one-question worked solutions.'
-			},
-			{
-				role: 'user',
-				content: [
-					'Candidate extraction:',
-					JSON.stringify(candidate, null, 2),
-					'',
-					'Deterministic specificity issues:',
-					JSON.stringify(deterministicIssues, null, 2),
-					'',
-					'Judge every question. Pass only if each answerChain is source-grounded, reusable across changed numbers or nearby contexts, aligned to markSchemeItems and markChecklist, and not just a topic label or worked numeric solution.',
-					'Also check that markChecklist and the relevant answer field keep the source-specific values needed to answer the question. For fixed-response kinds with response.correctAnswers, do not fail merely because modelAnswer is null. For written-response kinds such as lines or labeled-lines, modelAnswer must be non-null and source-grounded.',
-					'Use score from 0 to 1. Return requiredRepairs for any chain that is too broad, too topic-like, too numeric, unsupported by mark evidence, or missing important method links.',
-					'Return exactly the requested JSON object shape with only these top-level keys: verdict, score, rationale, conceptMatches, forbiddenValueFindings, modelAnswerValueMatches, requiredRepairs. Do not return overallPass, perQuestionJudgement, questionJudgements, summary, markdown, or nested alternate judge formats.'
-				].join('\n')
-			}
-		],
-		schema: JudgeSchema
-	}, `judge-rubric:${candidate?.sourceDocumentId ?? 'candidate'}`);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You are an independent verifier for GCSE question extraction quality. You did not generate the candidate. Judge the candidate against the product rule that answer chains are reusable reasoning or method patterns, not one-question worked solutions.'
+				},
+				{
+					role: 'user',
+					content: [
+						'Candidate extraction:',
+						JSON.stringify(candidate, null, 2),
+						'',
+						'Deterministic specificity issues:',
+						JSON.stringify(deterministicIssues, null, 2),
+						'',
+						'Judge every question. Pass only if each answerChain is source-grounded, reusable across changed numbers or nearby contexts, aligned to markSchemeItems and markChecklist, and not just a topic label or worked numeric solution.',
+						'Also check that markChecklist and the relevant answer field keep the source-specific values needed to answer the question. For fixed-response kinds with response.correctAnswers, do not fail merely because modelAnswer is null. For written-response kinds such as lines or labeled-lines, modelAnswer must be non-null and source-grounded.',
+						'Use score from 0 to 1. Return requiredRepairs for any chain that is too broad, too topic-like, too numeric, unsupported by mark evidence, or missing important method links.',
+						'Return exactly the requested JSON object shape with only these top-level keys: verdict, score, rationale, conceptMatches, forbiddenValueFindings, modelAnswerValueMatches, requiredRepairs. Do not return overallPass, perQuestionJudgement, questionJudgements, summary, markdown, or nested alternate judge formats.'
+					].join('\n')
+				}
+			],
+			schema: JudgeSchema
+		},
+		`judge-rubric:${candidate?.sourceDocumentId ?? 'candidate'}`
+	);
 	return value;
 }
 
@@ -2585,34 +2695,37 @@ export async function repairCandidateAnswerChains({
 	deterministicIssues,
 	judge = null
 }) {
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		telemetry: false,
-		input: [
-			{
-				role: 'system',
-				content:
-					'You repair GCSE extraction JSON. Preserve source-grounded prompt, mark scheme, checklist, and model answer evidence. Only rewrite answerChain fields unless a checklist/model answer value is clearly missing from the provided mark scheme.'
-			},
-			{
-				role: 'user',
-				content: [
-					'Candidate extraction:',
-					JSON.stringify(candidate, null, 2),
-					'',
-					'Deterministic specificity issues:',
-					JSON.stringify(deterministicIssues, null, 2),
-					'',
-					'Judge feedback:',
-					JSON.stringify(judge, null, 2),
-					'',
-					'Return the repaired questions array. The repaired answerChain text must be reusable method wording and must not include prompt-specific numeric values.'
-				].join('\n')
-			}
-		],
-		schema: RepairSchema
-	}, `repair-candidate-chains:${candidate?.sourceDocumentId ?? 'candidate'}`);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You repair GCSE extraction JSON. Preserve source-grounded prompt, mark scheme, checklist, and model answer evidence. Only rewrite answerChain fields unless a checklist/model answer value is clearly missing from the provided mark scheme.'
+				},
+				{
+					role: 'user',
+					content: [
+						'Candidate extraction:',
+						JSON.stringify(candidate, null, 2),
+						'',
+						'Deterministic specificity issues:',
+						JSON.stringify(deterministicIssues, null, 2),
+						'',
+						'Judge feedback:',
+						JSON.stringify(judge, null, 2),
+						'',
+						'Return the repaired questions array. The repaired answerChain text must be reusable method wording and must not include prompt-specific numeric values.'
+					].join('\n')
+				}
+			],
+			schema: RepairSchema
+		},
+		`repair-candidate-chains:${candidate?.sourceDocumentId ?? 'candidate'}`
+	);
 	return sanitizeAnswerChainEvidenceIndexes({ ...candidate, questions: value.questions });
 }
 
@@ -2641,38 +2754,41 @@ export async function repairFullPaperAnswerChains({
 			commonWeakAnswers: question.commonWeakAnswers ?? []
 		}));
 	if (repairTasks.length === 0) return sanitizeAnswerChainEvidenceIndexes(candidate);
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		telemetry: false,
-		input: [
-			{
-				role: 'system',
-				content:
-					'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only chain repairs keyed by sourceQuestionRef.'
-			},
-			{
-				role: 'user',
-				content: [
-					'Existing chain compatibility context:',
-					existingChainsText || 'None supplied.',
-					'',
-					'Questions and current chains:',
-					JSON.stringify(repairTasks, null, 2),
-					'',
-					'Deterministic specificity issues:',
-					JSON.stringify(deterministicIssues, null, 2),
-					'',
-					'Judge feedback:',
-					JSON.stringify(judge, null, 2),
-					'',
-					'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
-					'If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from every answerChain field, including title, canonicalChainText, summary, stepText, explanation, and commonOmission. For fixed-response recall, write a generic chain such as identifying the required category of term, placing it in the correct response position, and checking it matches the source cue; keep the actual answer words only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
-				].join('\n')
-			}
-		],
-		schema: FullChainRepairSchema
-	}, `repair-full-paper-chains:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only chain repairs keyed by sourceQuestionRef.'
+				},
+				{
+					role: 'user',
+					content: [
+						'Existing chain compatibility context:',
+						existingChainsText || 'None supplied.',
+						'',
+						'Questions and current chains:',
+						JSON.stringify(repairTasks, null, 2),
+						'',
+						'Deterministic specificity issues:',
+						JSON.stringify(deterministicIssues, null, 2),
+						'',
+						'Judge feedback:',
+						JSON.stringify(judge, null, 2),
+						'',
+						'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
+						'If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from every answerChain field, including title, canonicalChainText, summary, stepText, explanation, and commonOmission. For fixed-response recall, write a generic chain such as identifying the required category of term, placing it in the correct response position, and checking it matches the source cue; keep the actual answer words only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
+					].join('\n')
+				}
+			],
+			schema: FullChainRepairSchema
+		},
+		`repair-full-paper-chains:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`
+	);
 	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
 	return sanitizeAnswerChainEvidenceIndexes({
 		...candidate,
@@ -2718,45 +2834,48 @@ export async function repairFullPaperQuestionQuality({
 			commonWeakAnswers: question.commonWeakAnswers ?? []
 		}));
 	if (repairTasks.length === 0) return sanitizeAnswerChainEvidenceIndexes(candidate);
-	const { value } = await generateJsonWithTimeout({
-		model,
-		thinkingLevel,
-		telemetry: false,
-		input: [
-			{
-				role: 'system',
-				content:
-					'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets. Return only changed grading, model-answer, weak-answer, and answer-chain fields keyed by sourceQuestionRef.'
-			},
-			{
-				role: 'user',
-				content: [
-					PRODUCTION_EXTRACTION_CONTRACT,
-					'',
-					'Existing chain compatibility context:',
-					existingChainsText || 'None supplied.',
-					'',
-					'Failed questions and current extraction fields:',
-					JSON.stringify(repairTasks, null, 2),
-					'',
-					'Deterministic issues:',
-					JSON.stringify(deterministicIssues, null, 2),
-					'',
-					'Judge feedback:',
-					JSON.stringify(judge, null, 2),
-					'',
-					'Repair only fields that are actually defective. You may update selfContainedPromptText, contextText, response.correctAnswers, markChecklist, modelAnswer, commonWeakAnswers, and answerChain when judge feedback shows missing source-specific grading evidence or a bad chain.',
-					'When a question depends on a table, graph, source image, or earlier context, keep the exact one-question values in selfContainedPromptText, contextText, response.correctAnswers, markChecklist, or modelAnswer. Do not put those values in answerChain fields.',
-					'If answerChain evidence points at allow, accept, guidance, ignore, reject, alternative, or do-not-credit rows, remove those indexes or re-map to positive marking points only.',
-					'Positive marking points are markSchemeItems whose itemType is a direct mark/answer/marking_point. Rows labelled allow, accept, guidance, alternative, ignore, reject, or do-not-credit are not positive step evidence. If judge feedback suggests using one of those rows as answerChain evidence, ignore that part of the feedback and merge, delete, or remap the step to a direct positive mark row instead.',
-					'If a row labelled allow/accept actually contains a complete independently credited alternative answer route, you may repair only its itemType to alternative_marking_point while preserving text, marks, sourceRef, and confidence.',
-					'If a checklist item describes one option among accepted alternatives, do not mark every alternative required=true as though all must be present. Represent alternatives with required=false wording that says any one accepted route earns credit.',
-					'Keep exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer, not in answerChain fields.'
-				].join('\n')
-			}
-		],
-		schema: FullQuestionQualityRepairSchema
-	}, `repair-full-paper-quality:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets. Return only changed grading, model-answer, weak-answer, and answer-chain fields keyed by sourceQuestionRef.'
+				},
+				{
+					role: 'user',
+					content: [
+						PRODUCTION_EXTRACTION_CONTRACT,
+						'',
+						'Existing chain compatibility context:',
+						existingChainsText || 'None supplied.',
+						'',
+						'Failed questions and current extraction fields:',
+						JSON.stringify(repairTasks, null, 2),
+						'',
+						'Deterministic issues:',
+						JSON.stringify(deterministicIssues, null, 2),
+						'',
+						'Judge feedback:',
+						JSON.stringify(judge, null, 2),
+						'',
+						'Repair only fields that are actually defective. You may update selfContainedPromptText, contextText, response.correctAnswers, markChecklist, modelAnswer, commonWeakAnswers, and answerChain when judge feedback shows missing source-specific grading evidence or a bad chain.',
+						'When a question depends on a table, graph, source image, or earlier context, keep the exact one-question values in selfContainedPromptText, contextText, response.correctAnswers, markChecklist, or modelAnswer. Do not put those values in answerChain fields.',
+						'If answerChain evidence points at allow, accept, guidance, ignore, reject, alternative, or do-not-credit rows, remove those indexes or re-map to positive marking points only.',
+						'Positive marking points are markSchemeItems whose itemType is a direct mark/answer/marking_point. Rows labelled allow, accept, guidance, alternative, ignore, reject, or do-not-credit are not positive step evidence. If judge feedback suggests using one of those rows as answerChain evidence, ignore that part of the feedback and merge, delete, or remap the step to a direct positive mark row instead.',
+						'If a row labelled allow/accept actually contains a complete independently credited alternative answer route, you may repair only its itemType to alternative_marking_point while preserving text, marks, sourceRef, and confidence.',
+						'If a checklist item describes one option among accepted alternatives, do not mark every alternative required=true as though all must be present. Represent alternatives with required=false wording that says any one accepted route earns credit.',
+						'Keep exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer, not in answerChain fields.'
+					].join('\n')
+				}
+			],
+			schema: FullQuestionQualityRepairSchema
+		},
+		`repair-full-paper-quality:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`
+	);
 	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
 	return sanitizeAnswerChainEvidenceIndexes({
 		...candidate,
@@ -2780,6 +2899,458 @@ export async function repairFullPaperQuestionQuality({
 			};
 		})
 	});
+}
+
+function sourceQuestionGroupRef(question) {
+	const ref = question?.sourceQuestionRef ?? '';
+	return (
+		question?.parentSourceQuestionRef ?? question?.parentQuestionRef ?? ref.split('.')[0] ?? ref
+	);
+}
+
+function orderQuestionsForRendering(questions) {
+	return [...questions].sort((a, b) => {
+		const displayDiff = (a.displayOrder ?? 999999) - (b.displayOrder ?? 999999);
+		if (displayDiff !== 0) return displayDiff;
+		return compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef);
+	});
+}
+
+function stripHtml(value) {
+	return String(value ?? '')
+		.replace(/<br\s*\/?>/gi, '\n')
+		.replace(/<\/(?:p|div|li|tr|h[1-6])>/gi, '\n')
+		.replace(/<[^>]+>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/\n{3,}/g, '\n\n')
+		.trim();
+}
+
+function compactUnknown(value, depth = 0) {
+	if (value == null || typeof value === 'number' || typeof value === 'boolean') return value;
+	if (typeof value === 'string') return value.length > 800 ? `${value.slice(0, 800)}...` : value;
+	if (Array.isArray(value)) {
+		if (depth > 2) return `[array length ${value.length}]`;
+		return value.slice(0, 20).map((entry) => compactUnknown(entry, depth + 1));
+	}
+	if (typeof value !== 'object') return String(value);
+	if (depth > 2) return '[object]';
+	return Object.fromEntries(
+		Object.entries(value)
+			.filter(([key]) => key !== 'data')
+			.slice(0, 25)
+			.map(([key, entry]) => [key, compactUnknown(entry, depth + 1)])
+	);
+}
+
+function tableRowsToText(rows) {
+	return (rows ?? [])
+		.map((row) => {
+			if (!Array.isArray(row)) return String(row ?? '');
+			return row
+				.map((cell) => {
+					if (cell && typeof cell === 'object') {
+						return stripHtml(
+							cell.text ?? cell.html ?? cell.value ?? JSON.stringify(compactUnknown(cell))
+						);
+					}
+					return stripHtml(cell);
+				})
+				.join(' | ');
+		})
+		.join('\n');
+}
+
+function blockLabel(block) {
+	return (
+		block?.label ??
+		block?.sourceLabel ??
+		block?.assetLabel ??
+		block?.assetId ??
+		block?.id ??
+		block?.altText ??
+		null
+	);
+}
+
+function blockToLearnerText(block) {
+	if (!block || typeof block !== 'object') return String(block ?? '');
+	const kind = block.kind ?? 'unknown';
+	if (['paragraph', 'text', 'textBlock', 'textBlockHtml'].includes(kind)) {
+		return stripHtml(block.text ?? block.html ?? block.value ?? '');
+	}
+	if (kind === 'equation') return `Equation: ${stripHtml(block.text ?? block.html ?? '')}`;
+	if (kind === 'bullet-list' || kind === 'bulletList') {
+		return (block.items ?? []).map((item) => `- ${stripHtml(item)}`).join('\n');
+	}
+	if (kind === 'ordered-list' || kind === 'orderedList') {
+		return (block.items ?? []).map((item, index) => `${index + 1}. ${stripHtml(item)}`).join('\n');
+	}
+	if (kind === 'key') {
+		return (block.items ?? [])
+			.map(
+				(item) => `${item.marker ?? item.label ?? ''}: ${stripHtml(item.text ?? item.value ?? '')}`
+			)
+			.join('\n');
+	}
+	if (kind === 'table' || kind === 'structured-table') {
+		const label = block.label ? `${block.label}\n` : '';
+		const columns = Array.isArray(block.columns) ? `${block.columns.join(' | ')}\n` : '';
+		return `${label}${columns}${tableRowsToText(block.rows)}`.trim();
+	}
+	if (['figure', 'image', 'assetRef'].includes(kind)) {
+		const label = blockLabel(block) ?? 'unlabelled media';
+		const alt = stripHtml(block.altText ?? block.caption ?? block.text ?? '');
+		return `[${kind}: ${label}${alt ? ` - ${alt}` : ''}]`;
+	}
+	return `[unsupported block ${kind}: ${JSON.stringify(compactUnknown(block))}]`;
+}
+
+function responseToLearnerText(response) {
+	if (!response || typeof response !== 'object') return 'No response control extracted.';
+	const kind = response.kind ?? 'unknown';
+	if (kind === 'none') return 'No student response field.';
+	if (kind === 'lines') return `Answer lines: ${response.count ?? 'unspecified'} line(s).`;
+	if (kind === 'labeled-lines') {
+		return `Labelled answer lines: ${(response.labels ?? []).join(', ') || 'no labels'}.`;
+	}
+	if (kind === 'choice') {
+		return `Choice options:\n${(response.options ?? []).map((option) => `- ${option}`).join('\n')}`;
+	}
+	if (kind === 'choice-table') {
+		return `Choice table:\n${tableRowsToText([response.columns ?? [], ...(response.rows ?? [])])}`;
+	}
+	if (kind === 'matching') {
+		return [
+			`Matching response.`,
+			`Left: ${(response.left ?? []).join(', ')}`,
+			`Right: ${(response.right ?? []).join(', ')}`
+		].join('\n');
+	}
+	if (kind === 'equation-blanks') {
+		return `Equation blanks: ${(response.segments ?? [])
+			.map((segment) =>
+				segment.kind === 'blank' ? `[blank:${segment.id ?? segment.label ?? ''}]` : segment.text
+			)
+			.join('')}`;
+	}
+	if (kind === 'number-line') return `Number-line response: ${response.label ?? ''}`;
+	if (kind === 'asset-canvas') {
+		return `Student draws or annotates on asset canvas: ${
+			response.assetLabel ?? response.label ?? response.assetId ?? 'unlabelled asset'
+		}.`;
+	}
+	if (kind === 'image-label-zones') {
+		return `Image label zones on ${response.assetLabel ?? response.label ?? response.assetId ?? 'image'} using labels ${(response.labels ?? []).join(', ')}.`;
+	}
+	if (kind === 'drawing-box') return `Drawing box: ${response.label ?? 'unlabelled'}.`;
+	return `Response control ${kind}: ${JSON.stringify(compactUnknown(response))}`;
+}
+
+function assetLabel(asset) {
+	return (
+		asset?.sourceLabel ??
+		asset?.label ??
+		asset?.assetLabel ??
+		asset?.altText ??
+		asset?.id ??
+		asset?.assetId ??
+		asset?.filePath ??
+		asset?.publicPath ??
+		null
+	);
+}
+
+function collectBlockAssetLabels(blocks) {
+	const labels = new Set();
+	for (const block of blocks ?? []) {
+		if (!block || typeof block !== 'object') continue;
+		if (['figure', 'image', 'assetRef'].includes(block.kind)) {
+			const label = blockLabel(block);
+			if (label) labels.add(String(label));
+		}
+	}
+	return labels;
+}
+
+function collectResponseAssetLabels(response) {
+	const labels = new Set();
+	if (!response || typeof response !== 'object') return labels;
+	if (['asset-canvas', 'image-label-zones'].includes(response.kind)) {
+		for (const value of [
+			response.assetLabel,
+			response.label,
+			response.assetId,
+			response.sourceLabel
+		]) {
+			if (value) labels.add(String(value));
+		}
+	}
+	return labels;
+}
+
+function questionLearnerSection(question, targetRef) {
+	const stemBlocks =
+		question.stemBlocks ?? question.render?.stemBlocks ?? question.render?.blocks ?? [];
+	const leadBlocks = question.leadBlocks ?? question.render?.leadBlocks ?? [];
+	const promptBlocks = question.promptBlocks ?? question.render?.promptBlocks ?? [];
+	const afterResponseBlocks =
+		question.afterResponseBlocks ?? question.render?.afterResponseBlocks ?? [];
+	const response = question.response ?? question.render?.response ?? null;
+	const allBlocks = [...stemBlocks, ...leadBlocks, ...promptBlocks, ...afterResponseBlocks];
+	const referencedAssets = new Set([
+		...collectBlockAssetLabels(allBlocks),
+		...collectResponseAssetLabels(response),
+		...(question.assets ?? []).map(assetLabel).filter(Boolean).map(String)
+	]);
+	return {
+		sourceQuestionRef: question.sourceQuestionRef,
+		role: question.sourceQuestionRef === targetRef ? 'target' : 'prior_context',
+		marks: question.marks ?? null,
+		commandWord: question.commandWord ?? null,
+		promptText: question.promptText ?? '',
+		selfContainedPromptText: question.selfContainedPromptText ?? null,
+		contextText: question.contextText ?? null,
+		blocks: {
+			stem: stemBlocks.map(blockToLearnerText).filter(Boolean),
+			lead: leadBlocks.map(blockToLearnerText).filter(Boolean),
+			prompt: promptBlocks.map(blockToLearnerText).filter(Boolean),
+			afterResponse: afterResponseBlocks.map(blockToLearnerText).filter(Boolean)
+		},
+		response: responseToLearnerText(response),
+		referencedAssets: [...referencedAssets]
+	};
+}
+
+function normalizeAssetKey(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, ' ')
+		.trim();
+}
+
+function assetMatchesLabel(asset, label) {
+	const wanted = normalizeAssetKey(label);
+	if (!wanted) return false;
+	return [
+		asset?.sourceLabel,
+		asset?.label,
+		asset?.assetLabel,
+		asset?.altText,
+		asset?.id,
+		asset?.assetId,
+		asset?.filePath,
+		asset?.publicPath
+	].some((value) => {
+		const normalized = normalizeAssetKey(value);
+		return normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized);
+	});
+}
+
+function pathCandidatesForAsset(asset) {
+	const rawValues = [
+		asset?.filePath,
+		asset?.sourcePath,
+		asset?.localPath,
+		asset?.path,
+		asset?.publicPath,
+		asset?.r2Key
+	].filter(Boolean);
+	const candidates = [];
+	for (const rawValue of rawValues) {
+		const value = String(rawValue);
+		if (/^(?:https?:|data:|blob:)/i.test(value)) continue;
+		const withoutSlash = value.replace(/^\//, '');
+		candidates.push(path.resolve(process.cwd(), value));
+		candidates.push(path.resolve(process.cwd(), withoutSlash));
+		if (withoutSlash.startsWith('images/')) {
+			candidates.push(path.resolve(process.cwd(), 'data', withoutSlash));
+		}
+		if (withoutSlash.startsWith('papers/')) {
+			candidates.push(
+				path.resolve(
+					process.cwd(),
+					'data',
+					'aqa-combined-science-trilogy-higher',
+					'assets',
+					withoutSlash
+				)
+			);
+		}
+	}
+	return [...new Set(candidates)];
+}
+
+function mimeTypeForFile(filePath) {
+	const ext = path.extname(filePath).toLowerCase();
+	if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+	if (ext === '.webp') return 'image/webp';
+	if (ext === '.gif') return 'image/gif';
+	return 'image/png';
+}
+
+function inlineDataForAsset(asset, label) {
+	for (const filePath of pathCandidatesForAsset(asset)) {
+		if (!existsSync(filePath)) continue;
+		return {
+			type: 'inlineData',
+			mimeType: mimeTypeForFile(filePath),
+			filename: path.basename(filePath),
+			data: readFileSync(filePath).toString('base64'),
+			_label: label
+		};
+	}
+	return null;
+}
+
+function markEvidenceForQuestion(question) {
+	return {
+		markSchemeItems: question.markSchemeItems ?? [],
+		markChecklist: question.markChecklist ?? [],
+		modelAnswer: question.modelAnswer ?? null,
+		responseCorrectAnswers: question.response?.correctAnswers ?? []
+	};
+}
+
+export function buildLearnerVisibleQuestionContext(candidate, sourceQuestionRef, options = {}) {
+	const includePriorContext = options.includePriorContext !== false;
+	const attachImages = options.attachImages !== false;
+	const maxImages = options.maxImages ?? 6;
+	const questions = orderQuestionsForRendering(candidate.questions ?? []);
+	const target = questions.find((question) => question.sourceQuestionRef === sourceQuestionRef);
+	if (!target) throw new Error(`Question ${sourceQuestionRef} not found in candidate.`);
+	const groupRef = sourceQuestionGroupRef(target);
+	const grouped = questions.filter((question) => sourceQuestionGroupRef(question) === groupRef);
+	const targetIndex = grouped.findIndex(
+		(question) => question.sourceQuestionRef === sourceQuestionRef
+	);
+	const visibleQuestions = includePriorContext ? grouped.slice(0, targetIndex + 1) : [target];
+	const sections = visibleQuestions.map((question) =>
+		questionLearnerSection(question, sourceQuestionRef)
+	);
+	const assets = visibleQuestions.flatMap((question) => question.assets ?? []);
+	const requiredAssetLabels = [...new Set(sections.flatMap((section) => section.referencedAssets))];
+	const media = [];
+	const inlineImages = [];
+	for (const label of requiredAssetLabels) {
+		const matchingAsset = assets.find((asset) => assetMatchesLabel(asset, label));
+		const inlineData =
+			attachImages && matchingAsset && inlineImages.length < maxImages
+				? inlineDataForAsset(matchingAsset, label)
+				: null;
+		if (inlineData) {
+			inlineImages.push(inlineData);
+		}
+		media.push({
+			label,
+			present: Boolean(matchingAsset),
+			hasInlineImage: Boolean(inlineData),
+			asset: matchingAsset ? compactUnknown(matchingAsset) : null
+		});
+	}
+	return {
+		sourceDocument: candidate.sourceDocument ?? {
+			id: candidate.sourceDocumentId ?? null
+		},
+		markSchemeDocument: candidate.markSchemeDocument ?? null,
+		targetRef: sourceQuestionRef,
+		parentGroupRef: groupRef,
+		includedSourceQuestionRefs: visibleQuestions.map((question) => question.sourceQuestionRef),
+		targetQuestion: {
+			sourceQuestionRef: target.sourceQuestionRef,
+			promptText: target.promptText ?? '',
+			selfContainedPromptText: target.selfContainedPromptText ?? null,
+			contextText: target.contextText ?? null,
+			marks: target.marks ?? null,
+			commandWord: target.commandWord ?? null,
+			pageStart: target.pageStart ?? null,
+			pageEnd: target.pageEnd ?? null
+		},
+		studentVisibleContext: {
+			sections,
+			media
+		},
+		targetAnswerKey: markEvidenceForQuestion(target),
+		inlineImages
+	};
+}
+
+export async function judgeQuestionSolvability({
+	candidate,
+	sourceQuestionRef,
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	minJudgeScore = 0.8,
+	attachImages = true,
+	includePriorContext = true
+}) {
+	const context = buildLearnerVisibleQuestionContext(candidate, sourceQuestionRef, {
+		attachImages,
+		includePriorContext
+	});
+	const contextForJson = { ...context, inlineImages: undefined };
+	const content = [
+		{
+			type: 'text',
+			text: [
+				'Assembled learner-visible extraction context:',
+				JSON.stringify(contextForJson, null, 2),
+				'',
+				'Task:',
+				'1. Decide whether a student can answer the target question from the assembled learner-visible context alone.',
+				'2. Treat previous subparts in the same parent group as visible context, but do not use the answer key to decide solvability.',
+				'3. If the target refers to a figure, table, diagram, graph, answer space, or previous subpart and that information is absent or only a label with no usable content, fail with blocking missingContext.',
+				'4. If attached images are provided, inspect them as part of the learner-visible context. If an image is needed but not attached or not described in text/tables, fail.',
+				'5. After forming an attempted answer from visible context, compare it with targetAnswerKey and report whether the mark scheme fits the extracted question.',
+				'6. This is an end-user extraction/rendering validation. Do not judge answer-chain reusability here except where it affects the visible question.'
+			].join('\n')
+		},
+		...context.inlineImages.map((image) => ({
+			type: 'text',
+			text: `Attached learner-visible image for ${image._label ?? image.filename}.`
+		})),
+		...context.inlineImages.map(({ _label, ...image }) => image)
+	];
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You are an independent GCSE question extraction verifier. You did not generate the extraction. Judge whether the learner-facing assembled question is complete and answerable, including parent context, prior subparts, tables, diagrams, images, and response controls.'
+				},
+				{
+					role: 'user',
+					content
+				}
+			],
+			schema: SolvabilityJudgeSchema
+		},
+		`judge-solvability:${candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRef}`
+	);
+	const blockingFindings = [
+		...(value.missingContext ?? []),
+		...(value.renderFindings ?? [])
+	].filter((finding) => finding.severity === 'blocking');
+	const passed =
+		value.verdict === 'pass' &&
+		value.score >= minJudgeScore &&
+		value.studentVisibleSolvable &&
+		blockingFindings.length === 0;
+	return {
+		status: passed ? 'passed' : 'failed',
+		sourceQuestionRef,
+		minJudgeScore,
+		includedSourceQuestionRefs: context.includedSourceQuestionRefs,
+		media: context.studentVisibleContext.media,
+		judge: value
+	};
 }
 
 export async function evaluateCandidate({

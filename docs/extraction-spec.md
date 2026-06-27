@@ -408,6 +408,37 @@ There are two kinds of tests:
   pair, runs the extractor with the configured model, and then asks a separate judge call to compare
   the output semantically against golden concepts and forbidden chain values.
 
+Production paper runs also need a learner-facing solvability judge. This is separate from the
+answer-chain judge. It assembles the same extracted learner-visible bundle a student should see for a
+target ref such as `05.7`: parent group context, all earlier subparts in that group, the target
+prompt, tables, media references, response controls, and any attached local image assets. A separate
+LLM then tries to answer using only that visible bundle and compares the attempted answer against the
+target mark-scheme evidence. It must fail when the answer depends on a missing table, graph, figure,
+diagram, previous-part value, or response control.
+
+Run it against already extracted JSON with:
+
+```sh
+pnpm run eval:question-solvability -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --recursive --paper=aqa-84611h-qp-nov20 \
+  --question=01.9 \
+  --output=tmp/aqa-84611h-qp-nov20.solvability.eval.json \
+  --model=chatgpt-gpt-5.5 --thinking-level=xhigh
+```
+
+Use `--all` or omit `--question` for a full audit. The AQA batch runner runs this gate by default
+with `--solvability-mode=question-batches`; use `--skip-solvability-judge` only for debugging. The
+result is written separately from the chain judge, under `tmp/aqa-separate-science-solvability-evals`
+by default, so a paper can be blocked for a learner-visible rendering defect even when its chain
+quality is acceptable.
+
+Label-only media is not a valid published extraction for interactive media. When `response.kind` is
+`asset-canvas` or `image-label-zones`, the referenced graph, diagram, or image must appear in
+`assets` with a usable `filePath`, `publicPath`, or `r2Key`. A row such as
+`{"sourceLabel":"Figure 1"}` is only a note that the asset exists in the source PDF; it is not enough
+for the learner-facing renderer or the solvability judge.
+
 The production output shape is the import-shaped JSON used by `import:vision`: `sourceDocument`,
 `markSchemeDocument`, optional `supportingDocuments`, atomic `questions`, render blocks, response
 objects, assets, mark-scheme items, checklist items, written-response model answers,
@@ -631,14 +662,18 @@ Use this checklist when extracting another full paper and importing it into D1:
    answer key, mark-scheme rows, and checklist. For calculation chains, reject chain text that includes
    prompt-specific numeric substitutions or final numeric answers; those belong in written-response
    model answers, answer keys, and checklist rows.
-7. Import to D1, then run validation queries for question counts, render-overlay coverage,
+7. Run the learner-facing solvability judge on the extracted artifact before import. It should include
+   earlier subparts in the same parent group as visible context and attach local image assets when
+   available. Treat missing required media, tables, parent context, response controls, or previous-part
+   information as blocking extraction/render defects.
+8. Import to D1, then run validation queries for question counts, render-overlay coverage,
    mark-scheme coverage, model-answer coverage, fixed-response answer-key coverage, and zero
    published questions with no usable grading evidence.
-8. Open `/experiments/questions/<paper>` and a sample of single-question routes on desktop and
+9. Open `/experiments/questions/<paper>` and a sample of single-question routes on desktop and
    mobile; inspect the rendered paper against the source and submit representative written and
    fixed-response answers through the real grading endpoint.
-9. For any route that returns missing-evidence feedback, repair the D1 evidence from the official
-   source or remove the question from the published experiment before handing the import off.
+10. For any route that returns missing-evidence feedback, repair the D1 evidence from the official
+    source or remove the question from the published experiment before handing the import off.
 
 For extraction scripts or agents that generate import JSON, include this instruction in the task
 prompt:

@@ -7,6 +7,7 @@ import {
 	blockingIssues,
 	deterministicCandidateIssues,
 	evaluateCandidate,
+	judgeQuestionSolvability,
 	readJson,
 	repairFullPaperQuestionQuality,
 	sanitizeAnswerChainEvidenceIndexes,
@@ -19,6 +20,10 @@ const dataRoot = path.join(rootDir, 'data/aqa-separate-science-higher');
 const manifestPath = path.join(dataRoot, 'manifest.json');
 const outputRoot = path.join(rootDir, 'data/vision-extracted/aqa-separate-science-higher');
 const evalRoot = path.resolve(rootDir, stringArg('eval-root', 'tmp/aqa-separate-science-evals'));
+const solvabilityEvalRoot = path.resolve(
+	rootDir,
+	stringArg('solvability-eval-root', 'tmp/aqa-separate-science-solvability-evals')
+);
 const summaryPath = path.resolve(
 	rootDir,
 	stringArg('summary', 'tmp/aqa-separate-science-batch-summary.json')
@@ -30,6 +35,7 @@ const force = hasArg('force');
 const forceChunks = hasArg('force-chunks');
 const continueOnError = hasArg('continue-on-error');
 const skipJudge = hasArg('skip-judge');
+const skipSolvabilityJudge = hasArg('skip-solvability-judge');
 const rejudge = hasArg('rejudge');
 const runImport = hasArg('import');
 const importDryRun = hasArg('import-dry-run');
@@ -48,12 +54,16 @@ const llmTimeoutMs = integerArg('llm-timeout-ms', 240000, 1);
 const llmMaxAttempts = integerArg('llm-max-attempts', 3, 1);
 const judgeBatchSize = integerArg('judge-batch-size', 1, 1);
 const minJudgeScore = numberArg('min-judge-score', 0.8);
+const minSolvabilityScore = numberArg('min-solvability-score', 0.8);
 const mediaResolution = stringArg('media-resolution', 'low');
 const thinkingLevel = stringArg('thinking-level', 'xhigh');
 const model = stringArg('model', '');
 const judgeModel = stringArg('judge-model', '');
 const markSchemeImageMode = stringArg('mark-scheme-image-mode', 'none');
 const judgeMode = skipJudge ? 'none' : stringArg('judge-mode', 'question-batches');
+const solvabilityMode = skipSolvabilityJudge
+	? 'none'
+	: stringArg('solvability-mode', 'question-batches');
 
 if (!existsSync(manifestPath)) {
 	throw new Error(
@@ -69,10 +79,15 @@ if (!['none', 'all'].includes(markSchemeImageMode)) {
 if (!['paper', 'question-batches', 'none'].includes(judgeMode)) {
 	throw new Error('--judge-mode must be paper, question-batches, or none.');
 }
+if (!['question-batches', 'none'].includes(solvabilityMode)) {
+	throw new Error('--solvability-mode must be question-batches or none.');
+}
 
 process.env.EXTRACTION_LLM_TIMEOUT_MS = String(llmTimeoutMs);
 process.env.EXTRACTION_LLM_MAX_ATTEMPTS = String(llmMaxAttempts);
-if (!dryRun && judgeMode === 'question-batches') setupLlmEnv();
+if (!dryRun && (judgeMode === 'question-batches' || solvabilityMode === 'question-batches')) {
+	setupLlmEnv();
+}
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const selected = selectRows(manifest.rows ?? []);
@@ -80,6 +95,7 @@ if (selected.length === 0) throw new Error('No AQA Separate Science papers match
 
 const results = [];
 mkdirSync(evalRoot, { recursive: true });
+mkdirSync(solvabilityEvalRoot, { recursive: true });
 mkdirSync(path.dirname(summaryPath), { recursive: true });
 
 writeSummary('running');
@@ -194,7 +210,11 @@ function paperInfo(row) {
 		component: row.component,
 		subject,
 		outputPath: path.join(outputRoot, subjectSlug, `${row.source_document_id}.json`),
-		evalPath: path.join(evalRoot, `${row.source_document_id}.eval.json`)
+		evalPath: path.join(evalRoot, `${row.source_document_id}.eval.json`),
+		solvabilityEvalPath: path.join(
+			solvabilityEvalRoot,
+			`${row.source_document_id}.solvability.eval.json`
+		)
 	};
 }
 
@@ -202,24 +222,36 @@ async function processPaper(paper) {
 	if (existsSync(paper.outputPath) && !force) {
 		let validation = validateExtractionOutput(paper.outputPath);
 		let evalResult = existsSync(paper.evalPath) ? readJson(paper.evalPath) : null;
+		let solvabilityResult = existsSync(paper.solvabilityEvalPath)
+			? readJson(paper.solvabilityEvalPath)
+			: null;
 		if (judgeMode === 'question-batches' && (!evalResult || rejudge)) {
 			evalResult = await evaluateAndRepairQuestionBatches(paper);
 			validation = validateExtractionOutput(paper.outputPath);
+		}
+		if (solvabilityMode === 'question-batches' && (!solvabilityResult || rejudge)) {
+			solvabilityResult = await evaluateSolvabilityForPaper(paper);
 		}
 		return {
 			sourceDocumentId: paper.sourceDocumentId,
 			subject: paper.subject,
 			outputPath: relative(paper.outputPath),
 			evalPath: existsSync(paper.evalPath) ? relative(paper.evalPath) : null,
+			solvabilityEvalPath: existsSync(paper.solvabilityEvalPath)
+				? relative(paper.solvabilityEvalPath)
+				: null,
 			status:
 				validation.blockingIssues.length ||
-				(judgeMode !== 'none' && evalResult?.status !== 'passed')
+				(judgeMode !== 'none' && evalResult?.status !== 'passed') ||
+				(solvabilityMode !== 'none' && solvabilityResult?.status !== 'passed')
 					? 'failed'
 					: 'skipped',
 			questions: validation.questions,
 			blockingIssues: validation.blockingIssues,
 			judgeMode,
-			judgeStatus: evalResult?.status ?? null
+			judgeStatus: evalResult?.status ?? null,
+			solvabilityMode,
+			solvabilityStatus: solvabilityResult?.status ?? null
 		};
 	}
 
@@ -230,10 +262,10 @@ async function processPaper(paper) {
 		`--chunk-pages=${chunkPages}`,
 		`--dpi=${dpi}`,
 		`--media-resolution=${mediaResolution}`,
-			`--thinking-level=${thinkingLevel}`,
-			`--repair-attempts=${repairAttempts}`,
-			`--repair-batch-size=${repairBatchSize}`,
-			`--mark-scheme-image-mode=${markSchemeImageMode}`,
+		`--thinking-level=${thinkingLevel}`,
+		`--repair-attempts=${repairAttempts}`,
+		`--repair-batch-size=${repairBatchSize}`,
+		`--mark-scheme-image-mode=${markSchemeImageMode}`,
 		`--output=${paper.outputPath}`,
 		`--write-eval=${paper.evalPath}`
 	];
@@ -249,6 +281,7 @@ async function processPaper(paper) {
 			subject: paper.subject,
 			outputPath: relative(paper.outputPath),
 			evalPath: relative(paper.evalPath),
+			solvabilityEvalPath: relative(paper.solvabilityEvalPath),
 			status: 'dry-run',
 			command: [process.execPath, ...args]
 		};
@@ -266,6 +299,8 @@ async function processPaper(paper) {
 		evalResult = await evaluateAndRepairQuestionBatches(paper);
 		validation = validateExtractionOutput(paper.outputPath);
 	}
+	const solvabilityResult =
+		solvabilityMode === 'question-batches' ? await evaluateSolvabilityForPaper(paper) : null;
 	if (validation.blockingIssues.length > 0) {
 		throw new Error(
 			`Extraction failed deterministic gates: ${validation.blockingIssues
@@ -277,15 +312,21 @@ async function processPaper(paper) {
 	if (judgeMode !== 'none' && evalResult?.status !== 'passed') {
 		throw new Error(`Extraction judge status was ${evalResult?.status ?? 'missing'}.`);
 	}
+	if (solvabilityMode !== 'none' && solvabilityResult?.status !== 'passed') {
+		throw new Error(`Solvability judge status was ${solvabilityResult?.status ?? 'missing'}.`);
+	}
 	return {
 		sourceDocumentId: paper.sourceDocumentId,
 		subject: paper.subject,
 		outputPath: relative(paper.outputPath),
 		evalPath: relative(paper.evalPath),
+		solvabilityEvalPath: solvabilityMode === 'none' ? null : relative(paper.solvabilityEvalPath),
 		status: 'extracted',
 		questions: validation.questions,
 		judgeMode,
-		judgeScore: evalResult?.judge?.score ?? null
+		judgeScore: evalResult?.judge?.score ?? null,
+		solvabilityMode,
+		solvabilityStatus: solvabilityResult?.status ?? null
 	};
 }
 
@@ -410,6 +451,60 @@ async function evaluateAndRepairQuestionBatches(paper) {
 		evaluation = await evaluateQuestionBatches(candidate, paper.evalPath);
 	}
 	return evaluation;
+}
+
+async function evaluateSolvabilityForPaper(paper) {
+	const candidate = readSanitizedExtractionOutput(paper.outputPath);
+	const results = [];
+	const questions = candidate.questions ?? [];
+	for (const question of questions) {
+		console.error(
+			`[batch] solvability judging ${paper.sourceDocumentId} ${question.sourceQuestionRef}`
+		);
+		const evaluation = await judgeQuestionSolvability({
+			candidate,
+			sourceQuestionRef: question.sourceQuestionRef,
+			model: judgeModel || model || undefined,
+			thinkingLevel,
+			minJudgeScore: minSolvabilityScore
+		});
+		results.push({
+			sourceQuestionRef: question.sourceQuestionRef,
+			status: evaluation.status,
+			includedSourceQuestionRefs: evaluation.includedSourceQuestionRefs,
+			media: evaluation.media,
+			judge: {
+				verdict: evaluation.judge.verdict,
+				score: evaluation.judge.score,
+				studentVisibleSolvable: evaluation.judge.studentVisibleSolvable,
+				markSchemeAlignment: evaluation.judge.markSchemeAlignment,
+				rationale: evaluation.judge.rationale,
+				missingContext: evaluation.judge.missingContext,
+				mediaFindings: evaluation.judge.mediaFindings,
+				renderFindings: evaluation.judge.renderFindings,
+				requiredRepairs: evaluation.judge.requiredRepairs
+			}
+		});
+		writeJson(paper.solvabilityEvalPath, {
+			status: 'running',
+			judgeMode: 'solvability-question-batches',
+			minSolvabilityScore,
+			questionCount: questions.length,
+			completedQuestions: results.length,
+			results
+		});
+	}
+	const failed = results.filter((result) => result.status !== 'passed');
+	const output = {
+		status: failed.length ? 'failed' : 'passed',
+		judgeMode: 'solvability-question-batches',
+		minSolvabilityScore,
+		questionCount: questions.length,
+		completedQuestions: results.length,
+		results
+	};
+	writeJson(paper.solvabilityEvalPath, output);
+	return output;
 }
 
 function deterministicRepairEvaluation(blocking) {
@@ -543,18 +638,20 @@ function runCommand(command, args, extraEnv = {}) {
 }
 
 function summary(status) {
-		return {
-			status,
-			selected: selected.length,
-			extracted: results.filter((result) => result.status === 'extracted').length,
-			skipped: results.filter((result) => result.status === 'skipped').length,
-			failed: results.filter((result) => result.status === 'failed').length,
-			dryRun: results.filter((result) => result.status === 'dry-run').length,
-			concurrency,
-			judgeMode,
-			judgeRepairAttempts,
-			outputRoot: relative(outputRoot),
-			evalRoot: relative(evalRoot),
+	return {
+		status,
+		selected: selected.length,
+		extracted: results.filter((result) => result.status === 'extracted').length,
+		skipped: results.filter((result) => result.status === 'skipped').length,
+		failed: results.filter((result) => result.status === 'failed').length,
+		dryRun: results.filter((result) => result.status === 'dry-run').length,
+		concurrency,
+		judgeMode,
+		solvabilityMode,
+		judgeRepairAttempts,
+		outputRoot: relative(outputRoot),
+		evalRoot: relative(evalRoot),
+		solvabilityEvalRoot: relative(solvabilityEvalRoot),
 		results
 	};
 }

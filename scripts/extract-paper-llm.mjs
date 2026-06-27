@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import {
 	blockingIssues,
@@ -12,6 +12,7 @@ import {
 	parsePageSelection,
 	readJson,
 	repairFullPaperAnswerChains,
+	renderPdfPages,
 	setupLlmEnv,
 	writeJson
 } from './lib/llm-extraction-pipeline.mjs';
@@ -431,7 +432,9 @@ async function runAqaSeparateSciencePreset() {
 				questionPaper: { sourceUrl: paper.questionPaperUrl },
 				markScheme: { sourceUrl: paper.markSchemeUrl },
 				supportingDocuments: paper.supportingDocuments
-			}
+			},
+			assetManifest: assetManifest(paper.sourceDocumentId, outputRoot),
+			assetManifestText: compactAssetManifestText(assetManifest(paper.sourceDocumentId, outputRoot))
 		});
 	}
 }
@@ -507,6 +510,12 @@ async function runOne({
 	console.error(
 		`[extract-cli] ${sourceDocumentId}: extracted ${candidate.questions.length} questions`
 	);
+	candidate = materializeFallbackResponseAssets(candidate, {
+		questionPaperPath,
+		sourceDocumentId,
+		outputPath,
+		dpi
+	});
 	console.error(`[extract-cli] ${sourceDocumentId}: evaluating`);
 	let evaluation = await evaluateCandidate({
 		candidate,
@@ -521,11 +530,11 @@ async function runOne({
 			model,
 			thinkingLevel,
 			candidate,
-				evaluation,
-				judge: evaluation.judge,
-				existingChainsText,
-				repairCacheDir: path.join(outputRoot, sourceDocumentId, 'repairs')
-			});
+			evaluation,
+			judge: evaluation.judge,
+			existingChainsText,
+			repairCacheDir: path.join(outputRoot, sourceDocumentId, 'repairs')
+		});
 		evaluation = await evaluateCandidate({
 			candidate,
 			fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
@@ -560,6 +569,147 @@ async function runOne({
 		)
 	);
 	if (evaluation.status !== 'passed') process.exit(1);
+}
+
+function materializeFallbackResponseAssets(
+	candidate,
+	{ questionPaperPath, sourceDocumentId, outputPath, dpi }
+) {
+	const missing = [];
+	for (const question of candidate.questions ?? []) {
+		const labels = responseAssetLabels(question.response);
+		for (const label of labels) {
+			const asset = (question.assets ?? []).find((candidateAsset) =>
+				assetMatchesLabel(candidateAsset, label)
+			);
+			if (!asset || !assetHasUsableReference(asset)) {
+				missing.push({ question, label });
+			}
+		}
+	}
+	if (!missing.length) return candidate;
+	const assetDir = extractedAssetDir(outputPath, sourceDocumentId);
+	mkdirSync(assetDir, { recursive: true });
+	const pageRenderDir = path.join(rootDir, 'tmp/llm-extraction-fallback-assets', sourceDocumentId);
+	const renderedPages = renderPdfPages({
+		pdfPath: questionPaperPath,
+		outputDir: pageRenderDir,
+		prefix: 'question-page',
+		dpi,
+		force: false
+	});
+	const renderedByPage = new Map(
+		renderedPages.map((filePath) => [renderedPageNumber(filePath), filePath])
+	);
+	const questions = candidate.questions.map((question) => {
+		const questionMissing = missing.filter(
+			(item) => item.question.sourceQuestionRef === question.sourceQuestionRef
+		);
+		if (!questionMissing.length) return question;
+		const assets = [...(question.assets ?? [])];
+		for (const { label } of questionMissing) {
+			const pageNumber = question.pageStart ?? question.pageEnd ?? 1;
+			const renderedPage = renderedByPage.get(pageNumber);
+			if (!renderedPage) continue;
+			const fileName = `page-${String(pageNumber).padStart(3, '0')}-${slugify(question.sourceQuestionRef)}-${slugify(label) || 'asset'}.png`;
+			const destPath = path.join(assetDir, fileName);
+			copyFileSync(renderedPage, destPath);
+			assets.push({
+				sourceLabel: label,
+				assetType: 'image',
+				role: 'response-canvas',
+				pageNumber,
+				required: true,
+				filePath: relativePath(destPath),
+				publicPath: `/images/papers/${sourceDocumentId}/${fileName}`,
+				r2Key: `images/papers/${sourceDocumentId}/${fileName}`,
+				altText: `${label} rendered from source paper page ${pageNumber}.`,
+				extractionConfidence: 0.72,
+				needsHumanReview: true,
+				reviewNotes: [
+					'Fallback full-page asset generated because the extraction referenced interactive media without a usable asset file. Review and crop if needed before publishing.'
+				]
+			});
+		}
+		return {
+			...question,
+			assets,
+			needsHumanReview: true,
+			reviewNotes: [
+				...(question.reviewNotes ?? []),
+				'Generated fallback page image for missing interactive media asset.'
+			]
+		};
+	});
+	console.error(
+		`[extract-cli] ${sourceDocumentId}: materialized ${missing.length} fallback response asset(s)`
+	);
+	return { ...candidate, questions };
+}
+
+function responseAssetLabels(response) {
+	if (!response || typeof response !== 'object') return [];
+	if (!['asset-canvas', 'image-label-zones'].includes(response.kind)) return [];
+	return [
+		response.assetLabel,
+		response.label,
+		response.assetId,
+		response.sourceLabel,
+		...(Array.isArray(response.assets) ? response.assets : [])
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.map((value) => value.trim());
+}
+
+function normalizeAssetKey(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, ' ')
+		.trim();
+}
+
+function assetMatchesLabel(asset, label) {
+	const wanted = normalizeAssetKey(label);
+	if (!wanted) return false;
+	return [
+		asset?.sourceLabel,
+		asset?.label,
+		asset?.assetLabel,
+		asset?.altText,
+		asset?.id,
+		asset?.assetId,
+		asset?.filePath,
+		asset?.publicPath
+	].some((value) => {
+		const normalized = normalizeAssetKey(value);
+		return normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized);
+	});
+}
+
+function assetHasUsableReference(asset) {
+	return Boolean(
+		asset?.filePath ||
+		asset?.sourcePath ||
+		asset?.localPath ||
+		asset?.path ||
+		asset?.publicPath ||
+		asset?.r2Key
+	);
+}
+
+function extractedAssetDir(outputPath, sourceDocumentId) {
+	const subjectDir = path.dirname(outputPath);
+	const extractionRoot = path.dirname(subjectDir);
+	return path.join(extractionRoot, 'assets/question-papers', sourceDocumentId);
+}
+
+function renderedPageNumber(filePath) {
+	const match = path.basename(filePath).match(/-(\d+)\.png$/);
+	return match ? Number(match[1]) : null;
+}
+
+function relativePath(filePath) {
+	return path.relative(rootDir, filePath).split(path.sep).join('/');
 }
 
 function parsePaperFilename(fileName) {
@@ -674,27 +824,55 @@ function taxonomyForSubject(subjectArea) {
 	return existsSync(filePath) ? readFileSync(filePath, 'utf8') : '';
 }
 
-function assetManifest(sourceDocumentId) {
-	const dir = path.join(
-		rootDir,
-		'data/aqa-combined-science-trilogy-higher/assets/question-papers',
-		sourceDocumentId
-	);
-	if (!existsSync(dir)) return [];
-	return readdirSync(dir)
-		.filter((fileName) => /\.(png|jpe?g|webp)$/i.test(fileName))
-		.sort()
-		.map((fileName) => {
-			const page = Number(fileName.match(/^image-(\d{3})-/i)?.[1] ?? 0) || null;
+function assetManifest(sourceDocumentId, outputRoot = null) {
+	const candidateDirs = [
+		path.join(
+			rootDir,
+			'data/aqa-combined-science-trilogy-higher/assets/question-papers',
+			sourceDocumentId
+		),
+		path.join(
+			rootDir,
+			'data/vision-extracted/aqa-combined-science-trilogy-higher/assets/question-papers',
+			sourceDocumentId
+		),
+		path.join(
+			rootDir,
+			'data/vision-extracted/aqa-separate-science-higher/assets/question-papers',
+			sourceDocumentId
+		)
+	];
+	if (outputRoot) {
+		candidateDirs.push(path.join(outputRoot, 'assets/question-papers', sourceDocumentId));
+		candidateDirs.push(
+			path.join(path.dirname(outputRoot), 'assets/question-papers', sourceDocumentId)
+		);
+	}
+	const byPath = new Map();
+	for (const dir of candidateDirs) {
+		if (!existsSync(dir)) continue;
+		for (const fileName of readdirSync(dir)
+			.filter((candidate) => /\.(png|jpe?g|webp)$/i.test(candidate))
+			.sort()) {
 			const filePath = path.join(dir, fileName);
-			return {
-				page,
+			byPath.set(filePath, {
+				page: pageNumberFromAssetFile(fileName),
 				fileName,
-				filePath: path.relative(rootDir, filePath).split(path.sep).join('/'),
+				filePath: relativePath(filePath),
 				publicPath: `/images/papers/${sourceDocumentId}/${fileName}`,
 				r2Key: `images/papers/${sourceDocumentId}/${fileName}`
-			};
-		});
+			});
+		}
+	}
+	return [...byPath.values()].sort((a, b) => (a.page ?? 9999) - (b.page ?? 9999));
+}
+
+function pageNumberFromAssetFile(fileName) {
+	return (
+		Number(fileName.match(/^image-(\d{3})-/i)?.[1] ?? 0) ||
+		Number(fileName.match(/^page-(\d{3})-/i)?.[1] ?? 0) ||
+		null
+	);
 }
 
 function compactAssetManifestText(assets) {

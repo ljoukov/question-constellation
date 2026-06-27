@@ -11,6 +11,7 @@
 		"extract:aqa": "node scripts/extract-aqa-data.mjs",
 		"download:aqa-separate-science": "node scripts/download-aqa-separate-science.mjs",
 		"extract:aqa-separate-science:batch": "node scripts/extract-aqa-separate-science-batch.mjs",
+		"eval:question-solvability": "node scripts/evaluate-question-solvability.mjs",
 		"summarize:llm-extraction-logs": "node scripts/summarize-llm-extraction-logs.mjs",
 		"extract:physics-vision": "node scripts/extract-paper-llm.mjs --preset=aqa-physics",
 		"extract:aqa-separate-science": "node scripts/extract-paper-llm.mjs --preset=aqa-separate-science",
