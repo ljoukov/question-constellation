@@ -52,7 +52,7 @@ Optional:
   --thinking-level=xhigh
   --repair-batch-size=1
   --llm-timeout-ms=600000
-  --llm-max-attempts=2`;
+  --llm-max-attempts=3`;
 
 if (hasArg('help')) {
 	console.log(usage);

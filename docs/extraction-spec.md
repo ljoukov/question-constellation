@@ -346,7 +346,14 @@ prefer `extract:aqa-separate-science:batch` with `--chunk-pages=1`; it writes pe
 resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
 the deterministic gate, runs text-only chain repair in small `--repair-batch-size` groups, runs an
 independent question-batch LLM judge, and can run the importer with `--import` only after selected
-papers pass. Use `--rejudge` after prompt or repair-code changes to force evaluation of existing JSON. Mark schemes are passed as extracted text by default; use
+papers pass. Use `--force` to overwrite output files and rendered page images. Use
+`--force-chunks` when prompt, logging, schema, or model changes mean cached LLM chunk outputs must be
+regenerated; `--force` alone intentionally does not spend new LLM calls for existing chunk caches.
+The default semantic judge batch size is one question; larger `--judge-batch-size` values are only
+for exploratory speedups after the one-question judge has passed on representative papers, because
+batched judging can make the model invent alternate JSON shapes or blur per-question chain feedback.
+Use `--rejudge` after prompt or repair-code changes to force evaluation of existing JSON. Mark
+schemes are passed as extracted text by default; use
 `--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
 `extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`, and
 `runGoldenPdfEval` so batch jobs can run many chunks or papers in parallel under their own
@@ -359,6 +366,34 @@ commands. Required local tools are:
 - `pdftoppm` to render pages to PNG images.
 - `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
   output.
+
+Every `@ljoukov/llm.generateJson()` extractor, judge, and repair call must be durably logged. By
+default, `scripts/lib/llm-extraction-pipeline.mjs` writes JSONL records to
+`tmp/llm-extraction-logs/<run-id>.jsonl`. Set `EXTRACTION_LLM_LOG_DIR=<dir>` to redirect logs or
+`EXTRACTION_LLM_LOG=0` to disable them only for local debugging. Log records must include:
+
+- `llm_call_started` with call label, model, thinking level, media resolution, timeout, attempt
+  limit, text character count, and image count/byte estimates.
+- `llm_call_event` for the library-emitted stream events, including `thought` deltas, response
+  deltas, model-version events, blocked events, and usage events. If the provider exposes only
+  reasoning summaries, the log contains those summaries, not hidden internal state.
+- `llm_call_completed` with success/failure, duration, model version, token usage, `costUsd`, raw
+  text size, output text size, thought text size, and compact output counts such as question refs or
+  repaired refs.
+
+Use the summary command to inspect accounting and stuck/active calls:
+
+```sh
+pnpm run summarize:llm-extraction-logs
+pnpm run summarize:llm-extraction-logs -- --log-dir=tmp/llm-extraction-logs --since=2026-06-27
+pnpm run summarize:llm-extraction-logs -- --run-id=aqa-84611h-qp-nov20-full-logged-20260627004414
+```
+
+Cost is observability only. It can help estimate a run, detect runaway retries, or compare prompt
+changes, but it must not drive production extraction quality decisions. Keep the configured model
+and `xhigh` reasoning level unless a quality eval and human review justify a change. Production LLM
+JSON calls default to three attempts so transient malformed JSON, truncated output, or network
+timeouts do not stop a paper after one provider failure.
 
 For normal PDFs, the CLI runs an independent rubric judge by default after extraction. The judge sees
 candidate JSON and deterministic findings, not the extractor's private context, and must score from
@@ -379,6 +414,13 @@ objects, assets, mark-scheme items, checklist items, written-response model answ
 fixed-response answer keys, answer chains, common weak answers, review flags, and local asset
 manifest. A compact extraction schema may be used only inside small golden fixtures; it is not the
 production artifact.
+
+Source provenance is required, not optional. Each production artifact must preserve stable
+`sourceDocument.id`, `markSchemeDocument.id`, source URLs when available, local file paths, file
+hashes, per-question `sourceQuestionRef`, `pageStart`, `pageEnd`, and mark-scheme `sourceRef`
+values. The importer persists these to `source_documents`, `questions`, and mark-scheme rows so a
+future UI can link back to the official question formulation, paper page span, or mark-scheme
+evidence without re-extracting PDFs.
 
 When `--existing-chains` is supplied, the extractor must compare each chain to existing chain ids. It
 should reuse an id when the ordered method is the same, keep the old id when clarifying wording for a

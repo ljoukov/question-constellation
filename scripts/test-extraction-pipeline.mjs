@@ -55,6 +55,7 @@ for (const filePath of [
 	'scripts/download-aqa-separate-science.mjs',
 	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
+	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
 	'scripts/test-answer-chain-golden.mjs',
@@ -75,7 +76,12 @@ requireIncludes(
 			'pnpm run extract:aqa-separate-science:batch',
 			'pnpm run import:aqa-separate-science',
 			'--concurrency',
+			'--force-chunks',
 			'@ljoukov/llm',
+			'tmp/llm-extraction-logs',
+			'pnpm run summarize:llm-extraction-logs',
+			'--run-id',
+			'costUsd',
 			'pdfinfo',
 		'pdftoppm',
 		'--mark-scheme-image-mode=all',
@@ -100,6 +106,14 @@ requireIncludes(
 		'export function pdfText',
 		'chatgpt-gpt-5.5',
 		'xhigh',
+		'appendLlmLog',
+		'llm_call_started',
+		'llm_call_event',
+		'llm_call_completed',
+		'summarizeLlmInput',
+		'EXTRACTION_LLM_MAX_ATTEMPTS ?? 3',
+		'Return exactly the requested JSON object shape',
+		'summarizeLlmError',
 		'answerChainSpecificityIssues',
 		'expandCompactFullPaperExtraction',
 		'LOOKAHEAD QUESTION PAPER PAGE',
@@ -125,6 +139,7 @@ requireIncludes(
 		'--repair-batch-size',
 		'--llm-timeout-ms',
 		'--llm-max-attempts',
+		'--llm-max-attempts=3',
 		'--skip-judge',
 		'extractFullPaperFromPdfSet'
 	],
@@ -137,7 +152,11 @@ requireIncludes(
 		'concurrency',
 		'processSelectedPapers',
 		'Promise.all',
-		'--thinking-level=${thinkingLevel}'
+		'--thinking-level=${thinkingLevel}',
+		"integerArg('llm-max-attempts', 3, 1)",
+		"integerArg('judge-batch-size', 1, 1)",
+		"status: 'running'",
+		'completedBatches'
 	],
 	'AQA Separate Science batch extractor'
 );
@@ -173,6 +192,7 @@ for (const scriptName of [
 	'extract:physics-vision',
 	'extract:aqa-separate-science',
 	'extract:paper-llm',
+	'summarize:llm-extraction-logs',
 	'import:vision',
 	'import:aqa-separate-science',
 	'eval:extraction-pipeline-llm',
@@ -192,10 +212,66 @@ for (const scriptPath of [
 	'scripts/download-aqa-separate-science.mjs',
 	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
+	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
 ]) {
 	runNodeCheck(scriptPath);
+}
+
+const fakeLogDir = path.join(rootDir, 'tmp/test-llm-extraction-logs');
+mkdirSync(fakeLogDir, { recursive: true });
+writeFileSync(
+	path.join(fakeLogDir, 'sample.jsonl'),
+	[
+		{
+			timestamp: '2026-06-27T00:00:00.000Z',
+			runId: 'test-run',
+			type: 'llm_call_started',
+			callId: '0001-test',
+			label: 'extract-full-paper:test-paper:01.1',
+			model: 'chatgpt-gpt-5.5'
+		},
+		{
+			timestamp: '2026-06-27T00:00:02.000Z',
+			runId: 'test-run',
+			type: 'llm_call_started',
+			callId: '0002-active',
+			label: 'judge-rubric:test-paper',
+			model: 'chatgpt-gpt-5.5'
+		},
+		{
+			timestamp: '2026-06-27T00:00:01.000Z',
+			runId: 'test-run',
+			type: 'llm_call_completed',
+			callId: '0001-test',
+			label: 'extract-full-paper:test-paper:01.1',
+			ok: true,
+			model: 'chatgpt-gpt-5.5',
+			usage: { promptTokens: 10, responseTokens: 5, thinkingTokens: 3, totalTokens: 18 },
+			costUsd: 0.012345,
+			thoughtChars: 20,
+			outputTextChars: 40
+		}
+	]
+		.map((record) => JSON.stringify(record))
+		.join('\n') + '\n'
+);
+const logSummary = JSON.parse(
+	runNodeScript('scripts/summarize-llm-extraction-logs.mjs', [
+		`--log-dir=${fakeLogDir}`,
+		'--run-id=test-run'
+	])
+);
+if (
+	logSummary.status !== 'running' ||
+	logSummary.completed !== 1 ||
+	logSummary.activeCallIds.length !== 1 ||
+	logSummary.costUsd !== 0.012345 ||
+	logSummary.usage.totalTokens !== 18 ||
+	logSummary.byLabelPrefix['extract-full-paper']?.completed !== 1
+) {
+	fail('LLM extraction log summarizer did not aggregate sample JSONL correctly.', logSummary);
 }
 
 const pipelineModule = await import(

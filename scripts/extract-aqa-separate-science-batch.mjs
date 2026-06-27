@@ -45,8 +45,8 @@ const repairAttempts = integerArg('repair-attempts', 1, 0);
 const repairBatchSize = integerArg('repair-batch-size', 1, 1);
 const judgeRepairAttempts = integerArg('judge-repair-attempts', 1, 0);
 const llmTimeoutMs = integerArg('llm-timeout-ms', 240000, 1);
-const llmMaxAttempts = integerArg('llm-max-attempts', 2, 1);
-const judgeBatchSize = integerArg('judge-batch-size', 5, 1);
+const llmMaxAttempts = integerArg('llm-max-attempts', 3, 1);
+const judgeBatchSize = integerArg('judge-batch-size', 1, 1);
 const minJudgeScore = numberArg('min-judge-score', 0.8);
 const mediaResolution = stringArg('media-resolution', 'low');
 const thinkingLevel = stringArg('thinking-level', 'xhigh');
@@ -320,6 +320,15 @@ async function evaluateQuestionBatches(candidate, evalPath) {
 					}
 				: null
 		});
+		writeJson(evalPath, {
+			status: 'running',
+			judgeMode: 'question-batches',
+			judgeBatchSize,
+			minJudgeScore,
+			questionCount: questions.length,
+			completedBatches: batches.length,
+			batches
+		});
 	}
 	const failed = batches.filter((batch) => batch.status !== 'passed');
 	const result = {
@@ -328,6 +337,7 @@ async function evaluateQuestionBatches(candidate, evalPath) {
 		judgeBatchSize,
 		minJudgeScore,
 		questionCount: questions.length,
+		completedBatches: batches.length,
 		batches
 	};
 	writeJson(evalPath, result);
@@ -367,14 +377,21 @@ async function evaluateAndRepairQuestionBatches(paper) {
 		console.error(
 			`[batch] repairing ${paper.sourceDocumentId} from batched judge feedback, attempt ${attempt + 1}`
 		);
-		candidate = await repairFullPaperQuestionQuality({
-			model: model || undefined,
-			thinkingLevel,
-			candidate,
-			deterministicIssues: deterministicCandidateIssues(candidate),
-			judge: aggregateJudge,
-			sourceQuestionRefs: failedRefs
-		});
+		for (const refs of chunksOf(failedRefs, repairBatchSize)) {
+			candidate = await repairFullPaperQuestionQuality({
+				model: model || undefined,
+				thinkingLevel,
+				candidate,
+				deterministicIssues: deterministicCandidateIssues(candidate),
+				judge: {
+					...aggregateJudge,
+					requiredRepairs: aggregateJudge.requiredRepairs.filter((line) =>
+						refs.some((ref) => line.includes(ref))
+					)
+				},
+				sourceQuestionRefs: refs
+			});
+		}
 		writeJson(paper.outputPath, candidate);
 		const blocking = blockingIssues(deterministicCandidateIssues(candidate));
 		if (blocking.length > 0) {
@@ -455,6 +472,14 @@ function repairRefsFromFailedBatches(failedBatches) {
 	}
 	if (refs.size > 0) return [...refs];
 	return [...new Set(failedBatches.flatMap((batch) => batch.sourceQuestionRefs ?? []))];
+}
+
+function chunksOf(values, size) {
+	const chunks = [];
+	for (let index = 0; index < values.length; index += size) {
+		chunks.push(values.slice(index, index + size));
+	}
+	return chunks;
 }
 
 function actionableRepairLines(batch) {

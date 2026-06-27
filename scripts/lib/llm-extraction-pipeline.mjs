@@ -14,7 +14,10 @@ export const DEFAULT_THINKING_LEVEL = 'xhigh';
 export const DEFAULT_LLM_TIMEOUT_MS = Number(
 	process.env.EXTRACTION_LLM_TIMEOUT_MS ?? 10 * 60 * 1000
 );
-export const DEFAULT_LLM_MAX_ATTEMPTS = Number(process.env.EXTRACTION_LLM_MAX_ATTEMPTS ?? 1);
+export const DEFAULT_LLM_MAX_ATTEMPTS = Number(process.env.EXTRACTION_LLM_MAX_ATTEMPTS ?? 3);
+const LLM_LOG_RUN_ID = `${new Date().toISOString().replace(/[:.]/g, '-')}-pid${process.pid}`;
+const LLM_LOG_TEXT_LIMIT = 8000;
+let llmCallCounter = 0;
 
 const StepRoleSchema = z.enum([
 	'given',
@@ -272,6 +275,9 @@ const FullQuestionQualityRepairSchema = z.object({
 	repairs: z.array(
 		z.object({
 			sourceQuestionRef: z.string(),
+			selfContainedPromptText: z.string().nullable().optional(),
+			contextText: z.string().nullable().optional(),
+			response: createFullResponseSchema().nullable().optional(),
 			markSchemeItems: z
 				.array(
 					z.object({
@@ -753,6 +759,193 @@ export const LlmCompactFullPaperExtractionSchema = z.object({
 	)
 });
 
+function llmLoggingEnabled() {
+	return !['0', 'false', 'off', 'no'].includes(
+		String(process.env.EXTRACTION_LLM_LOG ?? '1').toLowerCase()
+	);
+}
+
+function llmLogDir() {
+	return process.env.EXTRACTION_LLM_LOG_DIR || path.join(process.cwd(), 'tmp/llm-extraction-logs');
+}
+
+function llmLogPath() {
+	return path.join(llmLogDir(), `${process.env.EXTRACTION_RUN_ID || LLM_LOG_RUN_ID}.jsonl`);
+}
+
+function truncateForLog(text, limit = LLM_LOG_TEXT_LIMIT) {
+	const value = String(text ?? '');
+	if (value.length <= limit) return value;
+	return `${value.slice(0, limit)}...[truncated ${value.length - limit} chars]`;
+}
+
+function appendLlmLog(record) {
+	if (!llmLoggingEnabled()) return;
+	const filePath = llmLogPath();
+	mkdirSync(path.dirname(filePath), { recursive: true });
+	writeFileSync(
+		filePath,
+		`${JSON.stringify({ timestamp: new Date().toISOString(), runId: process.env.EXTRACTION_RUN_ID || LLM_LOG_RUN_ID, ...record })}\n`,
+		{ flag: 'a' }
+	);
+}
+
+function estimateBase64Bytes(value) {
+	if (typeof value !== 'string') return null;
+	return Math.floor((value.length * 3) / 4);
+}
+
+function summarizeLlmInput(input) {
+	const summary = {
+		mode: typeof input === 'string' ? 'string' : 'messages',
+		messageCount: Array.isArray(input) ? input.length : null,
+		textChars: 0,
+		textPreviews: [],
+		imageCount: 0,
+		inlineDataBytes: 0,
+		images: [],
+		partTypes: {}
+	};
+
+	function countPartType(type) {
+		const key = type || 'unknown';
+		summary.partTypes[key] = (summary.partTypes[key] ?? 0) + 1;
+	}
+
+	function addText(role, text) {
+		const value = String(text ?? '');
+		summary.textChars += value.length;
+		if (summary.textPreviews.length < 12 && value.trim()) {
+			summary.textPreviews.push({
+				role: role ?? null,
+				chars: value.length,
+				text: truncateForLog(value.replace(/\s+/g, ' ').trim(), 500)
+			});
+		}
+	}
+
+	function addImage(part) {
+		summary.imageCount += 1;
+		const base64Chars = typeof part.data === 'string' ? part.data.length : null;
+		const byteEstimate = estimateBase64Bytes(part.data);
+		if (byteEstimate) summary.inlineDataBytes += byteEstimate;
+		if (summary.images.length < 80) {
+			summary.images.push({
+				filename: part.filename ?? null,
+				mimeType: part.mimeType ?? null,
+				base64Chars,
+				byteEstimate
+			});
+		}
+	}
+
+	function visitContent(content, role = null) {
+		if (typeof content === 'string') {
+			addText(role, content);
+			return;
+		}
+		if (!Array.isArray(content)) return;
+		for (const part of content) {
+			if (!part || typeof part !== 'object') continue;
+			countPartType(part.type);
+			if (part.type === 'text') addText(role, part.text);
+			else if (part.type === 'inlineData') addImage(part);
+		}
+	}
+
+	if (typeof input === 'string') addText(null, input);
+	else if (Array.isArray(input)) {
+		for (const message of input) visitContent(message?.content, message?.role);
+	}
+	return summary;
+}
+
+function summarizeOutputValue(value) {
+	if (!value || typeof value !== 'object') return { type: typeof value };
+	const questions = Array.isArray(value.questions) ? value.questions : null;
+	const repairs = Array.isArray(value.repairs) ? value.repairs : null;
+	return {
+		keys: Object.keys(value).slice(0, 30),
+		questionCount: questions?.length ?? null,
+		sourceQuestionRefs: questions
+			?.map((question) => question?.sourceQuestionRef)
+			.filter(Boolean)
+			.slice(0, 80),
+		repairCount: repairs?.length ?? null,
+		repairRefs: repairs?.map((repair) => repair?.sourceQuestionRef).filter(Boolean).slice(0, 80)
+	};
+}
+
+function sanitizeUnknownForLog(value, depth = 0) {
+	if (value == null || typeof value === 'number' || typeof value === 'boolean') return value;
+	if (typeof value === 'string') return truncateForLog(value, depth === 0 ? 4000 : 1200);
+	if (Array.isArray(value)) {
+		if (depth > 3) return `[array length ${value.length}]`;
+		return value.slice(0, 30).map((entry) => sanitizeUnknownForLog(entry, depth + 1));
+	}
+	if (typeof value !== 'object') return String(value);
+	if (depth > 3) return '[object]';
+	const output = {};
+	for (const [key, entry] of Object.entries(value).slice(0, 40)) {
+		if (key === 'data' && typeof entry === 'string') {
+			output[key] = `[omitted base64 ${entry.length} chars]`;
+		} else {
+			output[key] = sanitizeUnknownForLog(entry, depth + 1);
+		}
+	}
+	return output;
+}
+
+function sanitizeLlmEvent(event) {
+	if (!event || typeof event !== 'object') return event;
+	if (event.type === 'delta') {
+		return {
+			type: 'delta',
+			channel: event.channel,
+			textChars: typeof event.text === 'string' ? event.text.length : null,
+			text: truncateForLog(event.text)
+		};
+	}
+	if (event.type === 'usage') {
+		return {
+			type: 'usage',
+			usage: event.usage,
+			costUsd: event.costUsd,
+			modelVersion: event.modelVersion
+		};
+	}
+	if (event.type === 'model') return event;
+	if (event.type === 'blocked') return event;
+	if (event.type === 'tool_call') {
+		return {
+			...event,
+			input: sanitizeUnknownForLog(event.input),
+			output: sanitizeUnknownForLog(event.output)
+		};
+	}
+	return sanitizeUnknownForLog(event);
+}
+
+function summarizeLlmError(error) {
+	if (!error || typeof error !== 'object') return String(error);
+	const attempts = Array.isArray(error.attempts)
+		? error.attempts.map((attempt) => ({
+				attempt: attempt.attempt ?? null,
+				rawTextChars: typeof attempt.rawText === 'string' ? attempt.rawText.length : null,
+				rawTextPreview: truncateForLog(attempt.rawText, 2000),
+				error:
+					attempt.error instanceof Error
+						? { name: attempt.error.name, message: attempt.error.message }
+						: sanitizeUnknownForLog(attempt.error)
+			}))
+		: null;
+	return {
+		name: error.name ?? 'Error',
+		message: error.message ?? String(error),
+		attempts
+	};
+}
+
 export function setupLlmEnv() {
 	loadLocalEnv();
 	process.env.CHATGPT_RESPONSES_WEBSOCKET_MODE = 'off';
@@ -765,21 +958,109 @@ async function generateJsonWithTimeout(options, label = 'LLM call', timeoutMs = 
 		process.env.EXTRACTION_LLM_MAX_ATTEMPTS ?? DEFAULT_LLM_MAX_ATTEMPTS
 	);
 	const activeTimeoutMs = timeoutMs ?? resolvedTimeoutMs;
-	if (!activeTimeoutMs || activeTimeoutMs <= 0) {
-		return generateJson({ maxAttempts: resolvedMaxAttempts, ...options });
-	}
-	const controller = new AbortController();
-	const timeout = setTimeout(() => {
-		controller.abort(new Error(`${label} timed out after ${activeTimeoutMs}ms.`));
-	}, activeTimeoutMs);
-	try {
-		return await generateJson({
-			maxAttempts: resolvedMaxAttempts,
-			...options,
-			signal: controller.signal
+	const sourceOnEvent = options.onEvent;
+	const callId = `${String(++llmCallCounter).padStart(4, '0')}-${label
+		.replace(/[^a-zA-Z0-9_.:-]+/g, '-')
+		.slice(0, 100)}`;
+	const startedAtMs = Date.now();
+	const eventTotals = {
+		thoughtChars: 0,
+		responseChars: 0,
+		streamEventCount: 0,
+		usage: null,
+		costUsd: null,
+		modelVersion: null,
+		blocked: false
+	};
+	const onEvent = (event) => {
+		eventTotals.streamEventCount += 1;
+		if (event?.type === 'delta' && event.channel === 'thought') {
+			eventTotals.thoughtChars += event.text?.length ?? 0;
+		} else if (event?.type === 'delta' && event.channel === 'response') {
+			eventTotals.responseChars += event.text?.length ?? 0;
+		} else if (event?.type === 'usage') {
+			eventTotals.usage = event.usage ?? null;
+			eventTotals.costUsd = event.costUsd ?? null;
+			eventTotals.modelVersion = event.modelVersion ?? eventTotals.modelVersion;
+		} else if (event?.type === 'model') {
+			eventTotals.modelVersion = event.modelVersion ?? eventTotals.modelVersion;
+		} else if (event?.type === 'blocked') {
+			eventTotals.blocked = true;
+		}
+		appendLlmLog({
+			type: 'llm_call_event',
+			callId,
+			label,
+			event: sanitizeLlmEvent(event)
 		});
+		sourceOnEvent?.(event);
+	};
+	const request = {
+		maxAttempts: resolvedMaxAttempts,
+		...options,
+		onEvent
+	};
+	appendLlmLog({
+		type: 'llm_call_started',
+		callId,
+		label,
+		model: request.model,
+		thinkingLevel: request.thinkingLevel ?? null,
+		mediaResolution: request.mediaResolution ?? null,
+		timeoutMs: activeTimeoutMs,
+		maxAttempts: request.maxAttempts,
+		telemetry: request.telemetry ?? null,
+		input: summarizeLlmInput(request.input)
+	});
+	let controller = null;
+	let timeout = null;
+	if (activeTimeoutMs && activeTimeoutMs > 0) {
+		controller = new AbortController();
+		timeout = setTimeout(() => {
+			controller.abort(new Error(`${label} timed out after ${activeTimeoutMs}ms.`));
+		}, activeTimeoutMs);
+		request.signal = controller.signal;
+	}
+	try {
+		const result = await generateJson(request);
+		appendLlmLog({
+			type: 'llm_call_completed',
+			callId,
+			label,
+			ok: true,
+			durationMs: Date.now() - startedAtMs,
+			model: result.result?.model ?? request.model,
+			provider: result.result?.provider ?? null,
+			modelVersion: result.result?.modelVersion ?? eventTotals.modelVersion,
+			blocked: result.result?.blocked ?? eventTotals.blocked,
+			usage: result.result?.usage ?? eventTotals.usage,
+			costUsd: result.result?.costUsd ?? eventTotals.costUsd,
+			rawTextChars: result.rawText?.length ?? null,
+			outputTextChars: result.result?.text?.length ?? eventTotals.responseChars,
+			thoughtChars: result.result?.thoughts?.length ?? eventTotals.thoughtChars,
+			streamEventCount: eventTotals.streamEventCount,
+			value: summarizeOutputValue(result.value)
+		});
+		return result;
+	} catch (error) {
+		appendLlmLog({
+			type: 'llm_call_completed',
+			callId,
+			label,
+			ok: false,
+			durationMs: Date.now() - startedAtMs,
+			model: request.model,
+			modelVersion: eventTotals.modelVersion,
+			usage: eventTotals.usage,
+			costUsd: eventTotals.costUsd,
+			thoughtChars: eventTotals.thoughtChars,
+			outputTextChars: eventTotals.responseChars,
+			streamEventCount: eventTotals.streamEventCount,
+			error: summarizeLlmError(error)
+		});
+		throw error;
 	} finally {
-		clearTimeout(timeout);
+		if (timeout) clearTimeout(timeout);
 	}
 }
 
@@ -1040,7 +1321,7 @@ export async function extractCandidateFromImages({
 			}
 		],
 		schema: LlmExtractionCandidateSchema
-	});
+	}, `extract-candidate:${sourceDocumentId}`);
 	return normalizeCandidate(value, { sourceDocumentId, model });
 }
 
@@ -1507,7 +1788,7 @@ export async function extractFullPaperChunk({
 				{ role: 'user', content }
 			],
 			schema: LlmCompactFullPaperExtractionSchema
-		});
+		}, `extract-full-paper:${sourceDocumentId}:${targetQuestionRef ?? 'all'}`);
 		return expandCompactFullPaperExtraction({
 			value,
 			sourceDocumentId,
@@ -2226,15 +2507,15 @@ export async function judgeCandidate({
 					'Candidate extraction:',
 					JSON.stringify(candidate, null, 2),
 					'',
-						'Deterministic specificity issues:',
-						JSON.stringify(deterministicIssues, null, 2),
+					'Deterministic specificity issues:',
+					JSON.stringify(deterministicIssues, null, 2),
 					'',
 					'Pass only if the answerChain is reusable method wording, covers the expected concepts, avoids forbidden worked values in chain fields, and keeps worked values in model/checklist evidence.'
 				].join('\n')
 			}
 		],
 		schema: JudgeSchema
-	});
+	}, `judge-golden:${fixture?.sourceDocumentId ?? candidate?.sourceDocumentId ?? 'candidate'}`);
 	return value;
 }
 
@@ -2265,12 +2546,13 @@ export async function judgeCandidateAgainstRubric({
 					'',
 					'Judge every question. Pass only if each answerChain is source-grounded, reusable across changed numbers or nearby contexts, aligned to markSchemeItems and markChecklist, and not just a topic label or worked numeric solution.',
 					'Also check that markChecklist and the relevant answer field keep the source-specific values needed to answer the question. For fixed-response kinds with response.correctAnswers, do not fail merely because modelAnswer is null. For written-response kinds such as lines or labeled-lines, modelAnswer must be non-null and source-grounded.',
-					'Use score from 0 to 1. Return requiredRepairs for any chain that is too broad, too topic-like, too numeric, unsupported by mark evidence, or missing important method links.'
+					'Use score from 0 to 1. Return requiredRepairs for any chain that is too broad, too topic-like, too numeric, unsupported by mark evidence, or missing important method links.',
+					'Return exactly the requested JSON object shape with only these top-level keys: verdict, score, rationale, conceptMatches, forbiddenValueFindings, modelAnswerValueMatches, requiredRepairs. Do not return overallPass, perQuestionJudgement, questionJudgements, summary, markdown, or nested alternate judge formats.'
 				].join('\n')
 			}
 		],
 		schema: JudgeSchema
-	});
+	}, `judge-rubric:${candidate?.sourceDocumentId ?? 'candidate'}`);
 	return value;
 }
 
@@ -2308,7 +2590,7 @@ export async function repairCandidateAnswerChains({
 			}
 		],
 		schema: RepairSchema
-	});
+	}, `repair-candidate-chains:${candidate?.sourceDocumentId ?? 'candidate'}`);
 	return sanitizeAnswerChainEvidenceIndexes({ ...candidate, questions: value.questions });
 }
 
@@ -2362,13 +2644,13 @@ export async function repairFullPaperAnswerChains({
 					'Judge feedback:',
 					JSON.stringify(judge, null, 2),
 					'',
-						'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
-						'If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from every answerChain field, including title, canonicalChainText, summary, stepText, explanation, and commonOmission. For fixed-response recall, write a generic chain such as identifying the required category of term, placing it in the correct response position, and checking it matches the source cue; keep the actual answer words only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
-					].join('\n')
-				}
+					'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
+					'If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from every answerChain field, including title, canonicalChainText, summary, stepText, explanation, and commonOmission. For fixed-response recall, write a generic chain such as identifying the required category of term, placing it in the correct response position, and checking it matches the source cue; keep the actual answer words only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
+				].join('\n')
+			}
 		],
 		schema: FullChainRepairSchema
-	});
+	}, `repair-full-paper-chains:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`);
 	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
 	return sanitizeAnswerChainEvidenceIndexes({
 		...candidate,
@@ -2402,7 +2684,10 @@ export async function repairFullPaperQuestionQuality({
 			commandWord: question.commandWord,
 			marks: question.marks,
 			promptText: question.promptText,
+			selfContainedPromptText: question.selfContainedPromptText,
+			contextText: question.contextText,
 			response: question.response,
+			render: question.render,
 			markSchemeItems: question.markSchemeItems,
 			markChecklist: question.markChecklist,
 			modelAnswer: question.modelAnswer,
@@ -2438,7 +2723,9 @@ export async function repairFullPaperQuestionQuality({
 					'Judge feedback:',
 					JSON.stringify(judge, null, 2),
 					'',
-					'Repair only fields that are actually defective. If answerChain evidence points at allow, accept, guidance, ignore, reject, alternative, or do-not-credit rows, remove those indexes or re-map to positive marking points only.',
+					'Repair only fields that are actually defective. You may update selfContainedPromptText, contextText, response.correctAnswers, markChecklist, modelAnswer, commonWeakAnswers, and answerChain when judge feedback shows missing source-specific grading evidence or a bad chain.',
+					'When a question depends on a table, graph, source image, or earlier context, keep the exact one-question values in selfContainedPromptText, contextText, response.correctAnswers, markChecklist, or modelAnswer. Do not put those values in answerChain fields.',
+					'If answerChain evidence points at allow, accept, guidance, ignore, reject, alternative, or do-not-credit rows, remove those indexes or re-map to positive marking points only.',
 					'Positive marking points are markSchemeItems whose itemType is a direct mark/answer/marking_point. Rows labelled allow, accept, guidance, alternative, ignore, reject, or do-not-credit are not positive step evidence. If judge feedback suggests using one of those rows as answerChain evidence, ignore that part of the feedback and merge, delete, or remap the step to a direct positive mark row instead.',
 					'If a row labelled allow/accept actually contains a complete independently credited alternative answer route, you may repair only its itemType to alternative_marking_point while preserving text, marks, sourceRef, and confidence.',
 					'If a checklist item describes one option among accepted alternatives, do not mark every alternative required=true as though all must be present. Represent alternatives with required=false wording that says any one accepted route earns credit.',
@@ -2447,7 +2734,7 @@ export async function repairFullPaperQuestionQuality({
 			}
 		],
 		schema: FullQuestionQualityRepairSchema
-	});
+	}, `repair-full-paper-quality:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`);
 	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
 	return sanitizeAnswerChainEvidenceIndexes({
 		...candidate,
@@ -2456,6 +2743,12 @@ export async function repairFullPaperQuestionQuality({
 			if (!repair) return question;
 			return {
 				...question,
+				selfContainedPromptText:
+					repair.selfContainedPromptText !== undefined
+						? repair.selfContainedPromptText
+						: question.selfContainedPromptText,
+				contextText: repair.contextText !== undefined ? repair.contextText : question.contextText,
+				response: repair.response ?? question.response,
 				markSchemeItems: repair.markSchemeItems ?? question.markSchemeItems,
 				answerChain: repair.answerChain ?? question.answerChain,
 				chainResolution: repair.chainResolution ?? question.chainResolution,
