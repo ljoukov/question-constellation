@@ -225,6 +225,20 @@ function paperInfo(row) {
 }
 
 async function processPaper(paper) {
+	const args = extractionCommandArgs(paper);
+	if (dryRun) {
+		return {
+			sourceDocumentId: paper.sourceDocumentId,
+			subject: paper.subject,
+			outputPath: relative(paper.outputPath),
+			evalPath: relative(paper.evalPath),
+			solvabilityEvalPath: relative(paper.solvabilityEvalPath),
+			status: 'dry-run',
+			existingOutput: existsSync(paper.outputPath),
+			command: [process.execPath, ...args]
+		};
+	}
+
 	if (existsSync(paper.outputPath) && !force) {
 		let validation = validateExtractionOutput(paper.outputPath);
 		let evalResult = existsSync(paper.evalPath) ? readJson(paper.evalPath) : null;
@@ -260,39 +274,6 @@ async function processPaper(paper) {
 			solvabilityStatus: solvabilityResult?.status ?? null
 		};
 	}
-
-	const args = [
-		'scripts/extract-paper-llm.mjs',
-		'--preset=aqa-separate-science',
-		`--paper=${paper.sourceDocumentId}`,
-		`--chunk-pages=${chunkPages}`,
-		`--dpi=${dpi}`,
-		`--media-resolution=${mediaResolution}`,
-		`--thinking-level=${thinkingLevel}`,
-		`--repair-attempts=${repairAttempts}`,
-		`--repair-batch-size=${repairBatchSize}`,
-		`--mark-scheme-image-mode=${markSchemeImageMode}`,
-		`--output=${paper.outputPath}`,
-		`--write-eval=${paper.evalPath}`
-	];
-	if (model) args.push(`--model=${model}`);
-	if (judgeModel) args.push(`--judge-model=${judgeModel}`);
-	if (judgeMode !== 'paper') args.push('--skip-judge');
-	if (force) args.push('--force');
-	if (forceChunks) args.push('--force-chunks');
-
-	if (dryRun) {
-		return {
-			sourceDocumentId: paper.sourceDocumentId,
-			subject: paper.subject,
-			outputPath: relative(paper.outputPath),
-			evalPath: relative(paper.evalPath),
-			solvabilityEvalPath: relative(paper.solvabilityEvalPath),
-			status: 'dry-run',
-			command: [process.execPath, ...args]
-		};
-	}
-
 	console.error(`[batch] extracting ${paper.sourceDocumentId} -> ${relative(paper.outputPath)}`);
 	await runExtractionCommandWithRetry(args, {
 		EXTRACTION_LLM_TIMEOUT_MS: String(llmTimeoutMs),
@@ -334,6 +315,29 @@ async function processPaper(paper) {
 		solvabilityMode,
 		solvabilityStatus: solvabilityResult?.status ?? null
 	};
+}
+
+function extractionCommandArgs(paper) {
+	const args = [
+		'scripts/extract-paper-llm.mjs',
+		'--preset=aqa-separate-science',
+		`--paper=${paper.sourceDocumentId}`,
+		`--chunk-pages=${chunkPages}`,
+		`--dpi=${dpi}`,
+		`--media-resolution=${mediaResolution}`,
+		`--thinking-level=${thinkingLevel}`,
+		`--repair-attempts=${repairAttempts}`,
+		`--repair-batch-size=${repairBatchSize}`,
+		`--mark-scheme-image-mode=${markSchemeImageMode}`,
+		`--output=${paper.outputPath}`,
+		`--write-eval=${paper.evalPath}`
+	];
+	if (model) args.push(`--model=${model}`);
+	if (judgeModel) args.push(`--judge-model=${judgeModel}`);
+	if (judgeMode !== 'paper') args.push('--skip-judge');
+	if (force) args.push('--force');
+	if (forceChunks) args.push('--force-chunks');
+	return args;
 }
 
 async function runExtractionCommandWithRetry(args, extraEnv) {
