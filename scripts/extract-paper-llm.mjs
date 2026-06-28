@@ -294,30 +294,47 @@ async function repairFailedQuestionBatches({
 		}
 		if (refsToRepair.length === 0) continue;
 		console.error(`[extract-cli] repairing refs ${refsToRepair.join(', ')}`);
-		repaired = await repairFullPaperQuestionQuality({
-			model,
-			thinkingLevel,
-			candidate: repaired,
-			deterministicIssues: filterDeterministicIssuesForRefs(
-				deterministicCandidateIssues(repaired),
-				refsToRepair
-			),
-			judge,
-			existingChainsText,
-			sourceQuestionRefs: refsToRepair
-		});
-		repaired = await repairFullPaperAnswerChains({
-			model,
-			thinkingLevel,
-			candidate: repaired,
-			deterministicIssues: filterDeterministicIssuesForRefs(
-				deterministicCandidateIssues(repaired),
-				refsToRepair
-			),
-			judge,
-			existingChainsText,
-			sourceQuestionRefs: refsToRepair
-		});
+		try {
+			repaired = await repairFullPaperQuestionQuality({
+				model,
+				thinkingLevel,
+				candidate: repaired,
+				deterministicIssues: filterDeterministicIssuesForRefs(
+					deterministicCandidateIssues(repaired),
+					refsToRepair
+				),
+				judge,
+				existingChainsText,
+				sourceQuestionRefs: refsToRepair
+			});
+			repaired = await repairFullPaperAnswerChains({
+				model,
+				thinkingLevel,
+				candidate: repaired,
+				deterministicIssues: filterDeterministicIssuesForRefs(
+					deterministicCandidateIssues(repaired),
+					refsToRepair
+				),
+				judge,
+				existingChainsText,
+				sourceQuestionRefs: refsToRepair
+			});
+		} catch (error) {
+			const errorSummary = summarizeRepairError(error);
+			console.error(
+				`[extract-cli] repair failed for refs ${refsToRepair.join(', ')}: ${errorSummary}`
+			);
+			repaired = markRepairFailureForRefs(repaired, refsToRepair, errorSummary);
+			for (const ref of refsToRepair) {
+				writeJson(path.join(repairCacheDir, `repair-failed-v2-${slugify(ref)}.json`), {
+					repairVersion: 2,
+					sourceQuestionRef: ref,
+					failedAt: new Date().toISOString(),
+					error: errorSummary
+				});
+			}
+			continue;
+		}
 		for (const ref of refsToRepair) {
 			const question = repaired.questions.find(
 				(candidateQuestion) => candidateQuestion.sourceQuestionRef === ref
@@ -342,6 +359,54 @@ async function repairFailedQuestionBatches({
 		}
 	}
 	return repaired;
+}
+
+function summarizeRepairError(error) {
+	const pieces = [];
+	if (error?.name) pieces.push(error.name);
+	if (error?.message) pieces.push(error.message);
+	if (Array.isArray(error?.attempts)) {
+		const attemptSummaries = error.attempts
+			.slice(-3)
+			.map((attempt) => {
+				const message = attempt?.error?.message ?? String(attempt?.error ?? '');
+				return `attempt ${attempt?.attempt ?? '?'}: ${message}`;
+			})
+			.filter(Boolean);
+		if (attemptSummaries.length) pieces.push(attemptSummaries.join('; '));
+	}
+	return pieces.join(' - ').slice(0, 900);
+}
+
+function uniqueStrings(values) {
+	return [...new Set((values ?? []).filter(Boolean))];
+}
+
+function markRepairFailureForRefs(candidate, refs, errorSummary) {
+	const failedRefs = new Set(refs);
+	const note = `Automated LLM repair failed: ${errorSummary}. Review this question before import.`;
+	const chainNote = 'Automated LLM repair failed; review this answer chain before import.';
+	return {
+		...candidate,
+		questions: candidate.questions.map((question) => {
+			if (!failedRefs.has(question.sourceQuestionRef)) return question;
+			return {
+				...question,
+				needsHumanReview: true,
+				reviewNotes: uniqueStrings([...(question.reviewNotes ?? []), note]),
+				answerChain: question.answerChain
+					? {
+							...question.answerChain,
+							needsHumanReview: true,
+							reviewNotes: uniqueStrings([
+								...(question.answerChain.reviewNotes ?? []),
+								chainNote
+							])
+						}
+					: question.answerChain
+			};
+		})
+	};
 }
 
 function applyQuestionRepair(candidate, repair) {
