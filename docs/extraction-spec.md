@@ -327,7 +327,9 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
-pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2
+pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2
+pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
+pnpm run audit:current-exported-data
 pnpm run import:aqa-separate-science -- --all --replace-all-subject
 ```
 
@@ -349,6 +351,9 @@ independent question-batch LLM judge, and can run the importer with `--import` o
 papers pass. Use `--force` to overwrite output files and rendered page images. Use
 `--force-chunks` when prompt, logging, schema, or model changes mean cached LLM chunk outputs must be
 regenerated; `--force` alone intentionally does not spend new LLM calls for existing chunk caches.
+Set `--paper-attempts=<n>` to retry a paper after transient provider timeouts; retries reuse
+per-target caches even when the first attempt used `--force-chunks`, so a single timed-out question
+does not force the whole paper to restart from page 1.
 The default semantic judge batch size is one question; larger `--judge-batch-size` values are only
 for exploratory speedups after the one-question judge has passed on representative papers, because
 batched judging can make the model invent alternate JSON shapes or blur per-question chain feedback.
@@ -445,12 +450,61 @@ before judging/importing:
 ```sh
 pnpm run repair:extraction-response-assets -- \
   --input-root=data/vision-extracted/aqa-separate-science-higher \
-  --recursive --paper=aqa-84611h-qp-nov20
+  --recursive --paper=aqa-84611h-qp-nov20 \
+  --repair-text-references
 ```
 
 The repair renders the official question-paper page and attaches it as a review-marked fallback asset
 when an interactive response only had a label. Prefer a precise crop when available, but a concrete
-page image is better than a broken learner-facing asset reference.
+page image is better than a broken learner-facing asset reference. Pass
+`--repair-text-references` when the audit reports learner-visible text such as "Use Figure 2" but no
+asset was attached; the generated asset is still marked `needsHumanReview`.
+
+Before importing existing exported artifacts, run the aggregate extracted-data audit:
+
+```sh
+pnpm run audit:current-exported-data
+
+pnpm run repair:extracted-data -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --recursive --write
+
+pnpm run audit:extracted-data -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --recursive --run-solvability \
+  --concurrency=4 \
+  --fail-on-warnings \
+  --output=tmp/aqa-separate-science-extracted-data-audit.json \
+  --model=chatgpt-gpt-5.5 --thinking-level=xhigh
+```
+
+Without `--run-solvability`, the audit is a cheap mechanical gate over current JSON files: schema
+validity, reusable answer-chain specificity, fixed-response answer keys, written-response model
+answers, response-control slots, positive chain evidence, source provenance, grading evidence, and
+concrete media file references. It also flags learner-visible questions that say to use a figure,
+graph, diagram, or image without attaching a concrete media asset, and rejects public-paper
+copyright placeholders as valid substitutes for the original stimulus. With `--run-solvability`, it
+then runs the
+learner-facing LLM judge only for artifacts that passed the mechanical gate, unless
+`--include-mechanical-failures` is set. Use this command as the catch-up audit for already
+exported/import-ready problems, not only for new extraction runs.
+The command prints a compact terminal summary and writes the full JSON report to `--output`; pass
+`--format=json` when another script needs the complete report on stdout.
+Use `--fail-on-warnings` for an import-ready gate. Warnings include `needsHumanReview`; those outputs
+may be useful for debugging and repair, but they should not be imported until a human has reviewed
+the flagged source/media and cleared the flag.
+
+Withdrawn questions, replacement notices, statistics-only rows, and mean-mark/max-mark lines are not
+learner-facing questions. If the source materials do not contain the original prompt plus positive
+marking criteria, the extractor must omit that subquestion. The deterministic gate treats withdrawal
+notes and statistics as non-positive evidence, so those rows cannot justify a placeholder answer
+chain.
+
+For existing exports that already contain those rows, use `repair:extracted-data` as a mechanical
+patch before import. It is a dry-run unless `--write` is passed. The repair only drops
+withdrawn/statistics-only question rows and removes unsupported answer-chain tail steps; it does not
+invent missing source text, media, answer keys, or new chain content. Run `repair:extraction-response-assets`
+separately for interactive media that needs a concrete page image or crop.
 
 The production output shape is the import-shaped JSON used by `import:vision`: `sourceDocument`,
 `markSchemeDocument`, optional `supportingDocuments`, atomic `questions`, render blocks, response

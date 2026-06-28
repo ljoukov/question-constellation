@@ -44,6 +44,7 @@ const paperArg = stringArg('paper', '');
 const subjectArg = stringArg('subject', 'all').toLowerCase();
 const maxPapers = optionalIntegerArg('max-papers');
 const concurrency = integerArg('concurrency', 1, 1);
+const paperAttempts = integerArg('paper-attempts', 2, 1);
 
 const chunkPages = integerArg('chunk-pages', 1, 1);
 const dpi = integerArg('dpi', 90, 72);
@@ -288,7 +289,7 @@ async function processPaper(paper) {
 	}
 
 	console.error(`[batch] extracting ${paper.sourceDocumentId} -> ${relative(paper.outputPath)}`);
-	await runCommand(process.execPath, args, {
+	await runExtractionCommandWithRetry(args, {
 		EXTRACTION_LLM_TIMEOUT_MS: String(llmTimeoutMs),
 		EXTRACTION_LLM_MAX_ATTEMPTS: String(llmMaxAttempts)
 	});
@@ -328,6 +329,27 @@ async function processPaper(paper) {
 		solvabilityMode,
 		solvabilityStatus: solvabilityResult?.status ?? null
 	};
+}
+
+async function runExtractionCommandWithRetry(args, extraEnv) {
+	let lastError = null;
+	for (let attempt = 1; attempt <= paperAttempts; attempt += 1) {
+		const attemptArgs = attempt === 1 ? args : args.filter((arg) => arg !== '--force-chunks');
+		try {
+			if (attempt > 1) {
+				console.error(
+					`[batch] retrying extraction attempt ${attempt}/${paperAttempts} using existing target caches`
+				);
+			}
+			await runCommand(process.execPath, attemptArgs, extraEnv);
+			return;
+		} catch (error) {
+			lastError = error;
+			if (attempt < paperAttempts) continue;
+			break;
+		}
+	}
+	throw lastError ?? new Error('Extraction command failed.');
 }
 
 async function evaluateQuestionBatches(candidate, evalPath) {
@@ -645,11 +667,12 @@ function summary(status) {
 		skipped: results.filter((result) => result.status === 'skipped').length,
 		failed: results.filter((result) => result.status === 'failed').length,
 		dryRun: results.filter((result) => result.status === 'dry-run').length,
-		concurrency,
-		judgeMode,
-		solvabilityMode,
-		judgeRepairAttempts,
-		outputRoot: relative(outputRoot),
+			concurrency,
+			judgeMode,
+			solvabilityMode,
+			judgeRepairAttempts,
+			paperAttempts,
+			outputRoot: relative(outputRoot),
 		evalRoot: relative(evalRoot),
 		solvabilityEvalRoot: relative(solvabilityEvalRoot),
 		results

@@ -58,7 +58,9 @@ for (const filePath of [
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
+	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
+	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/test-answer-chain-golden.mjs',
 	'scripts/audit-answer-chain-specificity.mjs',
@@ -74,6 +76,7 @@ requireIncludes(
 	[
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
 		'pnpm run eval:question-solvability',
+		'pnpm run repair:extracted-data',
 		'pnpm run repair:extraction-response-assets',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
@@ -84,7 +87,13 @@ requireIncludes(
 		'@ljoukov/llm',
 		'tmp/llm-extraction-logs',
 		'pnpm run summarize:llm-extraction-logs',
+		'pnpm run audit:extracted-data',
+		'pnpm run audit:current-exported-data',
+		'--fail-on-warnings',
+		'--concurrency=4',
+		'--repair-text-references',
 		'--run-id',
+		'--paper-attempts',
 		'costUsd',
 		'pdfinfo',
 		'pdftoppm',
@@ -126,7 +135,8 @@ requireIncludes(
 		'expandCompactFullPaperExtraction',
 		'LOOKAHEAD QUESTION PAPER PAGE',
 		'Do not start or extract sibling subquestions',
-		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk'
+		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk',
+		'withdrawn questions, replacement notices, statistics-only rows'
 	],
 	'Pipeline library'
 );
@@ -162,7 +172,9 @@ requireIncludes(
 		'Promise.all',
 		'--thinking-level=${thinkingLevel}',
 		"integerArg('llm-max-attempts', 3, 1)",
+		"integerArg('paper-attempts', 2, 1)",
 		"integerArg('judge-batch-size', 1, 1)",
+		'runExtractionCommandWithRetry',
 		'solvabilityMode',
 		'evaluateSolvabilityForPaper',
 		"status: 'running'",
@@ -191,7 +203,8 @@ requireIncludes(
 		'--replace-all-subject',
 		'subjectAreaForPaper',
 		'chainPrefixForSubject',
-		'deterministicCandidateIssues'
+		'deterministicCandidateIssues',
+		'needsHumanReview'
 	],
 	'Vision importer'
 );
@@ -204,6 +217,9 @@ for (const scriptName of [
 	'extract:paper-llm',
 	'summarize:llm-extraction-logs',
 	'eval:question-solvability',
+	'audit:extracted-data',
+	'audit:current-exported-data',
+	'repair:extracted-data',
 	'repair:extraction-response-assets',
 	'import:vision',
 	'import:aqa-separate-science',
@@ -226,7 +242,9 @@ for (const scriptPath of [
 	'scripts/extract-paper-llm.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
+	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
+	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
 ]) {
@@ -369,6 +387,246 @@ if (
 	fail('Deterministic checks did not flag prompt-specific numbers in chain id/title.');
 }
 
+const withdrawnStatisticsIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '06.2',
+			commandWord: null,
+			marks: 1,
+			response: { kind: 'none' },
+			markSchemeItems: [
+				{
+					itemType: 'withdrawal-note',
+					text: 'Question 6 was withdrawn and no replacement question was provided.',
+					marks: null
+				},
+				{
+					itemType: 'max-mark-statistic',
+					text: 'Mean mark (max mark): 06.2 0.65 (1).',
+					marks: 1
+				}
+			],
+			answerChain: {
+				id: null,
+				title: 'No reusable chain',
+				canonicalChainText: 'No chain can be extracted.',
+				summary: 'No chain can be extracted.',
+				steps: []
+			}
+		}
+	]
+});
+if (
+	!withdrawnStatisticsIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'question_withdrawn_or_statistics_only')
+	)
+) {
+	fail('Deterministic checks accepted a withdrawn/statistics-only row as learner-facing.');
+}
+
+const missingNormalMediaIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '02.1',
+			commandWord: 'Describe',
+			marks: 1,
+			response: { kind: 'lines' },
+			stemBlocks: [{ kind: 'figure', label: 'Figure 1' }],
+			leadBlocks: [],
+			promptBlocks: [],
+			afterResponseBlocks: [],
+			assets: [],
+			markSchemeItems: [{ itemType: 'mark', text: 'Correct statement.', marks: 1 }],
+			modelAnswer: { answerText: 'Correct statement.' },
+			answerChain: {
+				id: 'bio-chain-use-figure-evidence',
+				title: 'Use figure evidence to support a statement',
+				canonicalChainText: 'Use the relevant figure to identify the visible evidence needed by the prompt.',
+				summary: 'Use source media evidence before writing the answer.',
+				steps: [
+					{
+						stepText: 'Read the relevant feature from the figure.',
+						stepRole: 'evidence',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingNormalMediaIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'media_block_missing_asset')
+	)
+) {
+	fail('Deterministic checks did not flag a normal figure block with no concrete asset.');
+}
+
+const conditionalAlternativeIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '03.5',
+			commandWord: 'Compare',
+			marks: 1,
+			response: { kind: 'lines' },
+			markSchemeItems: [
+				{
+					itemType: 'conditional-alternative-credit',
+					text: 'If neither precise comparison is used, allow a general wall-thickness comparison.',
+					marks: 1
+				}
+			],
+			modelAnswer: { answerText: 'A valid general comparison can earn the fallback mark.' },
+			answerChain: {
+				id: 'bio-chain-conditional-alternative',
+				title: 'Use an accepted fallback comparison only when precise points are absent',
+				canonicalChainText:
+					'When a mark scheme gives a credited fallback route, use it as an alternative route rather than as an extra mark after the precise route.',
+				summary: 'Treat credited fallback routes as alternatives, not additional independent points.',
+				steps: [
+					{
+						stepText: 'Apply the credited fallback route only when the preferred precise route has not already been used.',
+						stepRole: 'method',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	conditionalAlternativeIssues.some((finding) =>
+		finding.issues.some((issue) =>
+			['chain_step_missing_positive_evidence', 'chain_step_non_positive_evidence'].includes(
+				issue.code
+			)
+		)
+	)
+) {
+	fail('Deterministic checks rejected a credited conditional alternative as non-positive evidence.');
+}
+
+const auditFixturePath = path.join(fakeLogDir, 'bad-numeric-chain-extraction.json');
+const auditResultPath = path.join(fakeLogDir, 'bad-numeric-chain-audit.json');
+writeFileSync(
+	auditFixturePath,
+	JSON.stringify(
+		{
+			sourceDocumentId: 'test-paper',
+			extractionRun: {
+				agentVersion: 'test',
+				needsHumanReview: false,
+				reviewNotes: []
+			},
+			sourceDocument: {
+				id: 'test-paper',
+				title: 'Test Question Paper',
+				pageCount: 1,
+				filePath: 'package.json',
+				fileHash: 'sha256:test'
+			},
+			markSchemeDocument: {
+				id: 'test-mark-scheme',
+				title: 'Test Mark Scheme',
+				pageCount: 1,
+				filePath: 'package.json',
+				fileHash: 'sha256:test'
+			},
+			questions: [
+				{
+					id: null,
+					sourceQuestionRef: '01.1',
+					parentSourceQuestionRef: '01',
+					displayOrder: 1,
+					promptText: 'Calculate the elastic potential energy.',
+					selfContainedPromptText: null,
+					contextText: null,
+					commandWord: 'Calculate',
+					marks: 2,
+					pageStart: 1,
+					pageEnd: 1,
+					topicPath: ['Physics', 'Energy'],
+					specRef: null,
+					stemBlocks: [],
+					leadBlocks: [],
+					promptBlocks: [{ kind: 'text', text: 'Calculate the elastic potential energy.' }],
+					response: { kind: 'lines', count: 2 },
+					afterResponseBlocks: [],
+					assets: [],
+					markSchemeItems: [
+						{
+							itemType: 'mark',
+							text: 'Correct substitution and final answer.',
+							marks: 2,
+							sourceRef: 'MS 01.1',
+							confidence: 1
+						}
+					],
+					markChecklist: [
+						{
+							text: 'Uses the correct equation and calculates the final energy.',
+							required: true,
+							markSchemeItemIndexes: [0],
+							confidence: 1,
+							needsHumanReview: false
+						}
+					],
+					modelAnswer: {
+						answerText: 'E_e = 0.612 J',
+						confidence: 1,
+						needsHumanReview: false
+					},
+					answerChain: {
+						id: 'physics-chain-calculate-0-612-j',
+						title: 'Calculate 0.612 J',
+						canonicalChainText: 'Substitute the given values and calculate E_e = 0.612 J.',
+						summary: 'Calculate the specific final energy value.',
+						broadTopic: 'Energy',
+						chainFamilyId: null,
+						steps: [
+							{
+								stepText: 'Calculate E_e = 0.612 J.',
+								stepRole: 'calculation',
+								explanation: null,
+								commonOmission: null,
+								markSchemeItemIndexes: [0]
+							}
+						],
+						confidence: 0.9,
+						needsHumanReview: false,
+						reviewNotes: []
+					},
+					commonWeakAnswers: [],
+					extractionConfidence: 1,
+					needsHumanReview: false,
+					reviewNotes: []
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+try {
+	runNodeScript('scripts/audit-extracted-question-data.mjs', [
+		`--input=${auditFixturePath}`,
+		`--output=${auditResultPath}`
+	]);
+	fail('Extracted-data audit accepted a prompt-specific numeric answer chain.');
+} catch {
+	const auditResult = JSON.parse(readText(auditResultPath));
+	if (
+		auditResult.status !== 'failed' ||
+		!auditResult.failures.some((failure) => failure.code === 'chain_prompt_specific_number')
+	) {
+		fail('Extracted-data audit did not report the numeric chain specificity defect.', auditResult);
+	}
+}
+
 const fixedAnswerStepIssues = pipelineModule.deterministicCandidateIssues({
 	questions: [
 		{
@@ -480,6 +738,50 @@ if (
 	fail('Deterministic checks did not flag missing fixed-response answer keys.');
 }
 
+const missingResponseSlotsIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '07.2',
+			commandWord: 'Complete',
+			response: {
+				kind: 'equation-blanks',
+				correctAnswers: [
+					{ targetId: 'table4-green-result', correctAnswer: 'starch present' },
+					{ targetId: 'table4-white-result', correctAnswer: 'no starch' }
+				]
+			},
+			assets: [],
+			markSchemeItems: [{ itemType: 'mark', text: 'Both table entries correct.' }],
+			modelAnswer: { answerText: 'Green: starch present. White: no starch.' },
+			answerChain: {
+				id: 'bio-chain-complete-results-table',
+				title: 'Complete a results table from the stimulus',
+				canonicalChainText:
+					'Use the stimulus condition to infer each expected table result.',
+				summary: 'Reusable table-completion reasoning chain.',
+				steps: [
+					{
+						stepText: 'Infer each expected result from the stimulus condition.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingResponseSlotsIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'warning' && issue.code === 'response_control_missing_slots'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag equation-blanks with no visible slots.');
+}
+
 const missingResponseAssetIssues = pipelineModule.deterministicCandidateIssues({
 	questions: [
 		{
@@ -516,6 +818,141 @@ if (
 	)
 ) {
 	fail('Deterministic checks did not flag label-only response assets.');
+}
+
+const missingReferencedMediaIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '04.6',
+			commandWord: 'Describe',
+			marks: 1,
+			promptText:
+				'Describe one change in structure that occurs when an unspecialised cell differentiates to form a phloem cell. Use Figure 3.',
+			response: { kind: 'lines' },
+			assets: [],
+			markSchemeItems: [{ itemType: 'marking_point', text: 'Loss of nucleus.' }],
+			modelAnswer: { answerText: 'The nucleus is lost.' },
+			answerChain: {
+				id: 'bio-chain-compare-visible-structure-change',
+				title: 'Use visual evidence to describe a structure change',
+				canonicalChainText:
+					'Identify the relevant visible structure and describe the credited structural change.',
+				summary: 'Reusable visual-evidence description chain.',
+				steps: [
+					{
+						stepText: 'Use the visible structure cue to describe the accepted change.',
+						stepRole: 'evidence',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingReferencedMediaIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'warning' && issue.code === 'referenced_media_missing_asset'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag missing media referenced by learner text for review.');
+}
+
+const copyrightPlaceholderMediaIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '04.4',
+			commandWord: 'Name',
+			marks: 1,
+			promptText: 'Name part Y in Figure 3.',
+			contextText:
+				'Figure 3 shows two plant cells. Figure 3 cannot be reproduced here due to third-party copyright restrictions.',
+			response: { kind: 'lines' },
+			assets: [{ sourceLabel: 'Figure 3', filePath: 'tmp/source-page-016.png' }],
+			markSchemeItems: [{ itemType: 'answer', text: 'Vacuole.' }],
+			modelAnswer: { answerText: 'Part Y is the vacuole.' },
+			answerChain: {
+				id: 'bio-chain-name-labelled-part',
+				title: 'Use a label to name the visible part',
+				canonicalChainText:
+					'Match the label on the stimulus to the accepted biological structure name.',
+				summary: 'Reusable labelled-structure recall chain.',
+				steps: [
+					{
+						stepText: 'Match the label to the accepted structure name.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!copyrightPlaceholderMediaIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'error' && issue.code === 'media_copyright_placeholder'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag copyright-placeholder media.');
+}
+
+const labelledTableMediaIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.9',
+			commandWord: 'Complete',
+			marks: 4,
+			promptText: 'Complete Figure 1 using data from Table 1.',
+			response: { kind: 'asset-canvas', assetLabel: 'Figure 1 blank graph grid' },
+			stemBlocks: [
+				{
+					kind: 'table',
+					label: 'Table 1 mean data for Figure 1',
+					columns: ['Temperature', 'Mean rate'],
+					rows: [['25', '33.2']]
+				},
+				{ kind: 'figure', label: 'Figure 1', assetLabel: 'Figure 1 blank graph grid' }
+			],
+			assets: [
+				{
+					sourceLabel: 'Figure 1 blank graph grid',
+					filePath: 'tmp/figure-1-blank-graph-grid.png'
+				}
+			],
+			markSchemeItems: [{ itemType: 'marking_point', text: 'Correct graph completion.' }],
+			modelAnswer: { answerText: 'Completed graph.' },
+			answerChain: {
+				id: 'bio-chain-graph-scale-plot-line-best-fit',
+				title: 'Complete a graph from table data',
+				canonicalChainText:
+					'Read table values, choose suitable axes, plot the points, and draw a best-fit line.',
+				summary: 'Reusable graph completion chain.',
+				steps: [
+					{
+						stepText: 'Use table data to complete the graph.',
+						stepRole: 'method',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	labelledTableMediaIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'media_block_missing_asset')
+	)
+) {
+	fail('Deterministic checks treated a labelled table as a missing media block.');
 }
 
 const missingWrittenModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
@@ -663,6 +1100,44 @@ if (
 		'Solvability context omitted visible table or target answer-key evidence.',
 		solvabilityContext
 	);
+}
+
+const numberedFigureContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		sourceDocument: { id: 'test-paper' },
+		markSchemeDocument: { id: 'test-ms' },
+		questions: [
+			{
+				sourceQuestionRef: '01.6',
+				parentSourceQuestionRef: '01',
+				displayOrder: 6,
+				promptText: 'Use Figure 1.',
+				contextText: 'Figure 1 shows earlier results.',
+				stemBlocks: [{ kind: 'figure', label: 'Figure 1', assetLabel: 'Figure 1' }],
+				response: { kind: 'lines', count: 1 },
+				assets: [{ sourceLabel: 'Figure 1', filePath: 'tmp/figure-1.png' }],
+				markSchemeItems: [{ itemType: 'mark', text: 'Earlier answer.' }]
+			},
+			{
+				sourceQuestionRef: '01.7',
+				parentSourceQuestionRef: '01',
+				displayOrder: 7,
+				promptText: 'Use Figure 2.',
+				contextText: 'Figure 2 shows the target setup.',
+				stemBlocks: [{ kind: 'figure', label: 'Figure 2', assetLabel: 'Figure 2' }],
+				response: { kind: 'lines', count: 1 },
+				assets: [{ sourceLabel: 'Figure 2', filePath: 'tmp/figure-2.png' }],
+				markSchemeItems: [{ itemType: 'mark', text: 'Target answer.' }]
+			}
+		]
+	},
+	'01.7'
+);
+const figureTwoMedia = numberedFigureContext.studentVisibleContext.media.find(
+	(media) => media.label === 'Figure 2'
+);
+if (figureTwoMedia?.asset?.sourceLabel !== 'Figure 2') {
+	fail('Solvability media selection cross-matched numbered figure assets.', figureTwoMedia);
 }
 
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');

@@ -713,7 +713,10 @@ function assetMatchesLabel(asset, label) {
 		asset?.publicPath
 	].some((value) => {
 		const normalized = normalizeAssetKey(value);
-		return normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized);
+		return (
+			normalized.length > 0 &&
+			(normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized))
+		);
 	});
 }
 

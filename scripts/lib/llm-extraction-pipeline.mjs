@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import { generateJson, loadLocalEnv } from '@ljoukov/llm';
@@ -35,6 +35,7 @@ const PRODUCTION_EXTRACTION_CONTRACT = [
 	'Production extraction contract:',
 	'- Return import-shaped JSON with sourceDocument, markSchemeDocument, supportingDocuments, questions, render blocks, response objects, assets, markSchemeItems, markChecklist, written-response modelAnswer, answerChain, commonWeakAnswers, and review flags.',
 	'- Extract every independently marked subquestion. Do not create question rows for unmarked parent stems.',
+	'- Do not create learner-facing question rows for withdrawn questions, replacement notices, statistics-only rows, or source entries that lack the original prompt and positive marking criteria.',
 	'- Preserve render structure in stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Use response objects for choices, tick boxes, matching, equation blanks, image labels, and drawing boxes.',
 	'- Use only app-supported response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.',
 	'- If response.kind is asset-canvas or image-label-zones, the referenced asset must exist in assets with a usable local file path, public path, or R2 key. Label-only assets are not enough for learner-facing rendering.',
@@ -274,7 +275,7 @@ export const ChainResolutionSchema = z.object({
 	action: z.enum(['reuse_existing', 'update_existing', 'create_new', 'needs_review']),
 	existingChainId: z.string().nullable(),
 	compatibilityRationale: z.string(),
-	identityStable: z.boolean()
+	identityStable: z.boolean().optional().default(false)
 });
 
 export const RepairSchema = z.object({
@@ -307,6 +308,7 @@ const FullChainRepairSchema = z.object({
 						confidence: z.number()
 					})
 				)
+				.nullable()
 				.optional()
 		})
 	)
@@ -759,12 +761,26 @@ const CompactMarkSchemeItemSchema = z.object({
 });
 
 const CompactMarkChecklistItemSchema = z.object({
-	text: z.string(),
+	text: z.string().nullable().optional(),
+	item: z.string().nullable().optional(),
+	description: z.string().nullable().optional(),
 	required: z.boolean().nullable().optional(),
 	markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
 	confidence: z.number().nullable().optional(),
 	needsHumanReview: z.boolean().nullable().optional()
-});
+}).passthrough();
+
+const CompactReviewNoteSchema = z.union([
+	z.string(),
+	z
+		.object({
+			text: z.string().nullable().optional(),
+			description: z.string().nullable().optional(),
+			note: z.string().nullable().optional(),
+			severity: z.string().nullable().optional()
+		})
+		.passthrough()
+]);
 
 const CompactModelAnswerSchema = z.union([
 	z
@@ -798,7 +814,7 @@ export const LlmCompactFullPaperExtractionSchema = z.object({
 			modelAnswer: CompactModelAnswerSchema.optional(),
 			extractionConfidence: z.number().nullable().optional(),
 			needsHumanReview: z.boolean().nullable().optional(),
-			reviewNotes: z.array(z.string()).nullable().optional()
+			reviewNotes: z.array(CompactReviewNoteSchema).nullable().optional()
 		})
 	)
 });
@@ -1596,6 +1612,21 @@ function compactModelAnswer(value) {
 	};
 }
 
+function compactChecklistText(item) {
+	return String(item?.text ?? item?.item ?? item?.description ?? '').trim();
+}
+
+function compactReviewNotes(notes) {
+	return (notes ?? [])
+		.map((note) => {
+			if (typeof note === 'string') return note.trim();
+			const text = String(note?.text ?? note?.description ?? note?.note ?? '').trim();
+			if (text && note?.severity) return `${note.severity}: ${text}`;
+			return text;
+		})
+		.filter(Boolean);
+}
+
 function paragraphBlock(text) {
 	const normalized = String(text ?? '').trim();
 	return normalized ? [{ kind: 'paragraph', text: normalized }] : [];
@@ -1659,7 +1690,7 @@ function compactQuestionToFull(question, index, chunk) {
 		assets: [],
 		markSchemeItems,
 		markChecklist: (question.markChecklist ?? []).map((item) => ({
-			text: item.text,
+			text: compactChecklistText(item),
 			required: item.required !== false,
 			markSchemeItemIndexes: item.markSchemeItemIndexes ?? [],
 			confidence: compactConfidence(item.confidence),
@@ -1677,7 +1708,7 @@ function compactQuestionToFull(question, index, chunk) {
 		commonWeakAnswers: [],
 		extractionConfidence: compactConfidence(question.extractionConfidence),
 		needsHumanReview: question.needsHumanReview === true,
-		reviewNotes: question.reviewNotes ?? []
+		reviewNotes: compactReviewNotes(question.reviewNotes)
 	};
 }
 
@@ -1767,6 +1798,7 @@ export function buildFullPaperPrompt({
 			: null,
 		'Use the question paper page images and mark scheme text as source of truth. If mark scheme page images are supplied, use them to resolve tables or layout that text extraction may have flattened. Use supporting documents only to clarify examiner guidance, accepted alternatives, common mistakes, and review flags; never let them override the official question paper or mark scheme.',
 		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into contextText/selfContainedPromptText where needed.',
+		'Do not extract withdrawn questions, replacement notices, statistics-only rows, or mean-mark/max-mark lines as learner-facing questions. If the official materials do not include the original prompt and positive marking criteria, omit that subquestion rather than inventing a placeholder prompt, response, or answer chain.',
 		'Return compact source-grounded question data. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use response objects for MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
 		'For asset-canvas and image-label-zones responses, do not return label-only assets. The referenced graph, diagram, or image must be present in assets with a usable filePath, publicPath, or r2Key from the local asset manifest. If no usable asset exists, mark the question needsHumanReview and include a blocking review note.',
@@ -2113,6 +2145,9 @@ export async function extractFullPaperFromPdfSet({
 	console.error(
 		`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} chunks=${chunks.length}`
 	);
+	if (forceChunkCache && existsSync(chunkCacheDir)) {
+		rmSync(chunkCacheDir, { recursive: true, force: true });
+	}
 	const values = [];
 	for (const chunk of chunks) {
 		const pageKey = chunk.corePages.length ? chunk.corePages.join('-') : `index-${chunk.index + 1}`;
@@ -2209,7 +2244,13 @@ export function deterministicCandidateIssues(candidate) {
 			...fixedResponseModelAnswerIssues(question),
 			...writtenResponseModelAnswerIssues(question),
 			...responseKeyIssues(question),
-			...responseAssetCompletenessIssues(question)
+			...responseControlCompletenessIssues(question),
+			...responseAssetCompletenessIssues(question),
+			...renderBlockAssetCompletenessIssues(question),
+			...referencedMediaCompletenessIssues(question),
+			...copyrightPlaceholderMediaIssues(question),
+			...withdrawnOrStatisticsOnlyQuestionIssues(question),
+			...questionGradingEvidenceIssues(question)
 		];
 		if (!issues.length) continue;
 		findings.push({
@@ -2407,6 +2448,27 @@ function responseKeyIssues(question) {
 	return issues;
 }
 
+function responseControlCompletenessIssues(question) {
+	const response = question.response;
+	if (!response || response.kind !== 'equation-blanks') return [];
+	const segments = Array.isArray(response.segments) ? response.segments : [];
+	const hasBlankSegment = segments.some((segment) => segment?.kind === 'blank' && segment?.id);
+	const hasStructuredSlots = ['blanks', 'fields', 'items', 'zones'].some(
+		(key) => Array.isArray(response[key]) && response[key].length > 0
+	);
+	if (hasBlankSegment || hasStructuredSlots) return [];
+	return [
+		{
+			severity: 'warning',
+			code: 'response_control_missing_slots',
+			field: 'response',
+			evidence: question.sourceQuestionRef,
+			message:
+				'equation-blanks responses need visible blank segments or structured slot definitions. Treat as import-blocking with --fail-on-warnings until the learner can enter answers in the intended places.'
+		}
+	];
+}
+
 function responseAssetCompletenessIssues(question) {
 	const kind = question.response?.kind;
 	if (!['asset-canvas', 'image-label-zones'].includes(kind)) return [];
@@ -2452,10 +2514,309 @@ function responseAssetCompletenessIssues(question) {
 	return issues;
 }
 
-function positiveMarkSchemeItem(item) {
-	return !/\b(allow|accept|guidance|alternative|ignore|reject|do[_ -]?not[_ -]?accept|do[_ -]?not[_ -]?credit)\b/i.test(
-		String(item?.itemType ?? '')
+function renderBlockAssetCompletenessIssues(question) {
+	const issues = [];
+	for (const { field, block } of questionRenderBlocks(question)) {
+		if (!isMediaRenderBlock(block)) continue;
+		if (assetHasUsableReference(block)) continue;
+		const label = renderBlockAssetLabel(block) ?? inferMediaLabelFromQuestionText(question);
+		if (!label) {
+			issues.push({
+				severity: 'error',
+				code: 'media_block_missing_label',
+				field,
+				evidence: block?.kind ?? 'media',
+				message:
+					'Figure, image, and assetRef render blocks need an asset label or concrete file reference. Remove empty placeholder media blocks or attach the source asset.'
+			});
+			continue;
+		}
+		const matchingAssets = (question.assets ?? []).filter((candidate) =>
+			assetMatchesLabel(candidate, label)
+		);
+		const asset =
+			matchingAssets.find((candidate) => assetHasUsableReference(candidate)) ?? matchingAssets[0];
+		if (!asset) {
+			issues.push({
+				severity: 'error',
+				code: 'media_block_missing_asset',
+				field,
+				evidence: label,
+				message: `Render block references ${label}, but no matching question asset was extracted.`
+			});
+			continue;
+		}
+		if (!assetHasUsableReference(asset)) {
+			issues.push({
+				severity: 'error',
+				code: 'media_block_label_only',
+				field,
+				evidence: label,
+				message: `Render block asset ${label} is label-only. It needs a filePath, publicPath, or r2Key so the learner can see the media.`
+			});
+		}
+	}
+	return issues;
+}
+
+function referencedMediaCompletenessIssues(question) {
+	const labels = referencedMediaLabelsFromQuestion(question);
+	if (labels.length === 0) return [];
+	const issues = [];
+	for (const label of labels) {
+		if (questionHasConcreteMediaAsset(question, label)) continue;
+		if (!mediaReferenceNeedsVisualContext(question, label)) continue;
+		issues.push({
+			severity: 'warning',
+			code: 'referenced_media_missing_asset',
+			field: 'questions.assets',
+			evidence: label,
+			message:
+				'Learner-facing question text references a figure, graph, diagram, or image without a concrete media asset. Treat as import-blocking with --fail-on-warnings unless a reviewer verifies the text is a complete substitute.'
+		});
+	}
+	return issues;
+}
+
+function copyrightPlaceholderMediaIssues(question) {
+	const text = learnerFacingQuestionText(question);
+	if (
+		!/\b(?:cannot be reproduced|not reproduced|third[- ]party copyright|copyright restrictions?)\b/i.test(
+			text
+		)
+	) {
+		return [];
+	}
+	const labels = referencedMediaLabelsFromQuestion(question);
+	return [
+		{
+			severity: 'error',
+			code: 'media_copyright_placeholder',
+			field: 'questions.contextText',
+			evidence: labels.join(', ') || text.slice(0, 160),
+			message:
+				'The learner-facing extraction references media that the public paper replaces with a copyright placeholder. Exclude the question or provide a legitimate usable substitute before import.'
+		}
+	];
+}
+
+function questionRenderBlocks(question) {
+	return ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks'].flatMap((field) =>
+		(question[field] ?? []).map((block, index) => ({
+			field: `${field}[${index}]`,
+			block
+		}))
 	);
+}
+
+function isMediaRenderBlock(block) {
+	if (!block || typeof block !== 'object') return false;
+	const kind = String(block.kind ?? '');
+	return [
+		'figure',
+		'image',
+		'assetRef',
+		'assetReference',
+		'imageFigure',
+		'imageBlock',
+		'figure-placeholder',
+		'figure-reference'
+	].includes(kind);
+}
+
+function renderBlockAssetLabel(block) {
+	const value =
+		block?.assetLabel ??
+		block?.sourceLabel ??
+		block?.label ??
+		block?.assetId ??
+		block?.id ??
+		block?.altText;
+	return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function inferMediaLabelFromQuestionText(question) {
+	const text = [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.reviewNotes ?? [])
+	]
+		.filter(Boolean)
+		.join('\n');
+	const match = text.match(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/i);
+	return match ? `Figure ${match[1]}` : null;
+}
+
+function learnerFacingQuestionText(question) {
+	return [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.stemBlocks ?? []).map(blockText),
+		...(question.leadBlocks ?? []).map(blockText),
+		...(question.promptBlocks ?? []).map(blockText),
+		...(question.afterResponseBlocks ?? []).map(blockText)
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+function blockText(block) {
+	if (!block || typeof block !== 'object') return '';
+	return [
+		block.text,
+		block.html,
+		block.caption,
+		block.label,
+		block.altText,
+		block.title,
+		block.description
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.join('\n');
+}
+
+function referencedMediaLabelsFromQuestion(question) {
+	const labels = new Set();
+	const text = learnerFacingQuestionText(question);
+	for (const match of text.matchAll(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi)) {
+		labels.add(`Figure ${match[1]}`);
+	}
+	for (const { block } of questionRenderBlocks(question)) {
+		if (!isMediaRenderBlock(block)) continue;
+		const label = renderBlockAssetLabel(block);
+		if (label) labels.add(label);
+	}
+	for (const label of collectResponseAssetLabels(question.response)) labels.add(label);
+	return [...labels];
+}
+
+function questionHasConcreteMediaAsset(question, label) {
+	if (
+		(question.assets ?? []).some(
+			(asset) => assetMatchesLabel(asset, label) && assetHasUsableReference(asset)
+		)
+	) {
+		return true;
+	}
+	return questionRenderBlocks(question).some(
+		({ block }) =>
+			assetMatchesLabel(block, label) &&
+			(assetHasUsableReference(block) || assetHasUsableReference(block?.asset))
+	);
+}
+
+function mediaReferenceNeedsVisualContext(question, label) {
+	const text = learnerFacingQuestionText(question);
+	const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const labelPattern = escapedLabel.replace(/figure/i, '(?:figure|fig\\.?|graph|diagram|image)');
+	const aroundLabel = new RegExp(
+		`(?:use|using|in|from|shown? in|shows?|complete|label|plot|draw|name|identify|results? in|part)\\b[^.\\n]{0,100}\\b${labelPattern}\\b|\\b${labelPattern}\\b[^.\\n]{0,100}\\b(?:shows?|complete|label|plot|draw|name|identify|results?|part)`,
+		'i'
+	);
+	return (
+		['asset-canvas', 'image-label-zones'].includes(question.response?.kind) ||
+		aroundLabel.test(text)
+	);
+}
+
+function positiveMarkSchemeItem(item) {
+	const itemType = String(item?.itemType ?? '')
+		.replace(/([a-z])([A-Z])/g, '$1 $2')
+		.toLowerCase()
+		.replace(/[_-]+/g, ' ');
+	const text = String(item?.text ?? '').toLowerCase();
+	const source = `${itemType}\n${text}`;
+	if (
+		/\b(?:withdraw|withdrawn|statistics?|mean mark|max(?:imum)? mark|notice)\b/.test(source) ||
+		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(
+			itemType
+		)
+	) {
+		return false;
+	}
+	if (
+		/\b(?:allow|accept|alternative)\b/.test(itemType) &&
+		!/\b(?:credit|marking point|answer|alternative marking point|allowance|acceptable|award|positive)\b/.test(
+			itemType
+		)
+	) {
+		return false;
+	}
+	return /\b(?:marking point|answer|credit|mark|method|calculation|point|indicative content|level|max|allowance|acceptable|award|positive)\b/.test(
+		itemType
+	);
+}
+
+function hasUsableGradingEvidence(question) {
+	const markSchemeItems = question.markSchemeItems ?? [];
+	const hasPositiveMarkRows = markSchemeItems.some(positiveMarkSchemeItem);
+	const hasChecklist = (question.markChecklist ?? []).some((item) => String(item?.text ?? '').trim());
+	const hasModelAnswer = String(question.modelAnswer?.answerText ?? '').trim().length > 0;
+	const hasAnswerKeys = responseCorrectAnswerTexts(question.response).length > 0;
+	const hasChainEvidence = (question.answerChain?.steps ?? []).some((step) =>
+		(step.markSchemeItemIndexes ?? []).some((itemIndex) =>
+			positiveMarkSchemeItem(markSchemeItems[itemIndex])
+		)
+	);
+	return hasPositiveMarkRows || hasChecklist || hasModelAnswer || hasAnswerKeys || hasChainEvidence;
+}
+
+function questionGradingEvidenceIssues(question) {
+	if (question.marks === null || question.marks === undefined || Number(question.marks) <= 0) {
+		return [];
+	}
+	if (hasUsableGradingEvidence(question)) return [];
+	return [
+		{
+			severity: 'error',
+			code: 'question_missing_grading_evidence',
+			field:
+				'questions.markSchemeItems/markChecklist/modelAnswer/response.correctAnswers/answerChain',
+			evidence: question.sourceQuestionRef,
+			message:
+				'Marked learner-facing questions need positive marking evidence. Omit withdrawn/statistics-only rows or recover the original prompt and mark scheme before import.'
+		}
+	];
+}
+
+function withdrawnOrStatisticsOnlyQuestionIssues(question) {
+	const markSchemeItems = question.markSchemeItems ?? [];
+	if (markSchemeItems.some(positiveMarkSchemeItem)) return [];
+	const text = [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.reviewNotes ?? []),
+		...(question.markChecklist ?? []).map((item) => item?.text),
+		question.modelAnswer?.answerText,
+		question.answerChain?.title,
+		question.answerChain?.canonicalChainText,
+		question.answerChain?.summary,
+		...(question.answerChain?.reviewNotes ?? []),
+		...markSchemeItems.flatMap((item) => [item?.itemType, item?.text, item?.sourceRef])
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	if (
+		!/\b(?:withdrawn?|no replacement|statistics?|mean mark|maximum mark|max mark|no official marking criterion|no positive marking criterion)\b/.test(
+			text
+		)
+	) {
+		return [];
+	}
+	return [
+		{
+			severity: 'error',
+			code: 'question_withdrawn_or_statistics_only',
+			field: 'questions',
+			evidence: question.sourceQuestionRef,
+			message:
+				'Withdrawn questions, replacement notices, and statistics-only rows are not learner-facing extracted questions. Omit the row or recover the original prompt and positive marking criteria.'
+		}
+	];
 }
 
 export function sanitizeAnswerChainEvidenceIndexes(candidate) {
@@ -3141,7 +3502,10 @@ function assetMatchesLabel(asset, label) {
 		asset?.publicPath
 	].some((value) => {
 		const normalized = normalizeAssetKey(value);
-		return normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized);
+		return (
+			normalized.length > 0 &&
+			(normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized))
+		);
 	});
 }
 

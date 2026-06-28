@@ -30,6 +30,7 @@ const dpi = integerArg('dpi', 120, 72);
 const all = hasArg('all');
 const recursive = hasArg('recursive') || all;
 const dryRun = hasArg('dry-run');
+const repairTextReferences = hasArg('repair-text-references');
 
 if (!all && !paperArg) throw new Error('Pass --all or --paper=<source-document-id>.');
 if (!existsSync(manifestPath)) throw new Error(`Missing manifest ${relative(manifestPath)}.`);
@@ -57,6 +58,8 @@ const summary = {
 	files: results.length,
 	questionsRepaired: results.reduce((sum, result) => sum + result.questionsRepaired, 0),
 	assetsCreated: results.reduce((sum, result) => sum + result.assetsCreated, 0),
+	blocksRemoved: results.reduce((sum, result) => sum + result.blocksRemoved, 0),
+	repairTextReferences,
 	results
 };
 console.log(JSON.stringify(summary, null, 2));
@@ -142,6 +145,8 @@ function ensureResponseAssetLabel(response, fallbackLabel) {
 }
 
 function inferInteractiveAssetLabel(question) {
+	const textLabel = inferInteractiveAssetLabelFromText(question);
+	if (textLabel) return textLabel;
 	const labels = [
 		...(question.assets ?? []).map(
 			(asset) => asset?.sourceLabel ?? asset?.label ?? asset?.assetLabel
@@ -158,6 +163,42 @@ function inferInteractiveAssetLabel(question) {
 	const figureLabel = labels.find((label) => /\b(figure|graph|diagram|image)\b/i.test(label));
 	if (figureLabel) return figureLabel;
 	return labels.length === 1 ? labels[0] : null;
+}
+
+function inferInteractiveAssetLabelFromText(question) {
+	const text = [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.reviewNotes ?? []),
+		...[
+			...(question.stemBlocks ?? []),
+			...(question.leadBlocks ?? []),
+			...(question.promptBlocks ?? []),
+			...(question.afterResponseBlocks ?? [])
+		].flatMap(blockText)
+	]
+		.filter(Boolean)
+		.join('\n');
+	const match = text.match(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/i);
+	return match ? `Figure ${match[1]}` : null;
+}
+
+function blockText(block) {
+	if (!block || typeof block !== 'object') return [];
+	const values = [block.text, block.caption, block.label, block.altText].filter(
+		(value) => typeof value === 'string' && value.trim()
+	);
+	if (Array.isArray(block.rows)) {
+		values.push(
+			...block.rows.flatMap((row) =>
+				(Array.isArray(row) ? row : Object.values(row ?? {})).filter(
+					(value) => typeof value === 'string' && value.trim()
+				)
+			)
+		);
+	}
+	return values;
 }
 
 function normalizeAssetKey(value) {
@@ -181,7 +222,10 @@ function assetMatchesLabel(asset, label) {
 		asset?.publicPath
 	].some((value) => {
 		const normalized = normalizeAssetKey(value);
-		return normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized);
+		return (
+			normalized.length > 0 &&
+			(normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized))
+		);
 	});
 }
 
@@ -190,10 +234,114 @@ function assetHasUsableReference(asset) {
 		asset?.filePath ||
 		asset?.sourcePath ||
 		asset?.localPath ||
-		asset?.path ||
-		asset?.publicPath ||
-		asset?.r2Key
+		asset?.path
 	);
+}
+
+function questionRenderBlocks(question) {
+	return ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks'].flatMap((field) =>
+		(question[field] ?? []).map((block, index) => ({ field, index, block }))
+	);
+}
+
+function mediaBlockKinds() {
+	return new Set([
+		'figure',
+		'image',
+		'assetRef',
+		'assetReference',
+		'imageFigure',
+		'imageBlock',
+		'figure-placeholder',
+		'figure-reference'
+	]);
+}
+
+function renderBlockAssetLabel(block) {
+	const value =
+		block?.assetLabel ??
+		block?.sourceLabel ??
+		block?.label ??
+		block?.assetId ??
+		block?.id ??
+		block?.altText;
+	return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function isMediaRenderBlock(block) {
+	return Boolean(
+		block &&
+			typeof block === 'object' &&
+			mediaBlockKinds().has(String(block.kind ?? ''))
+	);
+}
+
+function mediaBlockAssetLabels(question) {
+	const labels = [];
+	for (const { block } of questionRenderBlocks(question)) {
+		if (!isMediaRenderBlock(block)) continue;
+		if (assetHasUsableReference(block)) continue;
+		const label = renderBlockAssetLabel(block) ?? inferInteractiveAssetLabelFromText(question);
+		if (label) labels.push(label);
+	}
+	return labels;
+}
+
+function referencedMediaAssetLabels(question) {
+	if (!repairTextReferences) return [];
+	const labels = [];
+	const text = learnerFacingQuestionText(question);
+	for (const match of text.matchAll(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi)) {
+		const label = `Figure ${match[1]}`;
+		if (mediaReferenceNeedsVisualContext(text, label, question.response?.kind)) labels.push(label);
+	}
+	return labels;
+}
+
+function learnerFacingQuestionText(question) {
+	return [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.reviewNotes ?? []),
+		...[
+			...(question.stemBlocks ?? []),
+			...(question.leadBlocks ?? []),
+			...(question.promptBlocks ?? []),
+			...(question.afterResponseBlocks ?? [])
+		].flatMap(blockText)
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+function mediaReferenceNeedsVisualContext(text, label, responseKind) {
+	const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const labelPattern = escapedLabel.replace(/figure/i, '(?:figure|fig\\.?|graph|diagram|image)');
+	const aroundLabel = new RegExp(
+		`(?:use|using|in|from|shown? in|shows?|complete|label|plot|draw|name|identify|results? in|part|set up)\\b[^.\\n]{0,100}\\b${labelPattern}\\b|\\b${labelPattern}\\b[^.\\n]{0,100}\\b(?:shows?|complete|label|plot|draw|name|identify|results?|part|set up)`,
+		'i'
+	);
+	return ['asset-canvas', 'image-label-zones'].includes(responseKind) || aroundLabel.test(text);
+}
+
+function pruneEmptyMediaBlocks(question) {
+	let removed = 0;
+	const updates = {};
+	for (const field of ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks']) {
+		const blocks = question[field] ?? [];
+		const nextBlocks = blocks.filter((block) => {
+			if (!isMediaRenderBlock(block)) return true;
+			if (assetHasUsableReference(block)) return true;
+			if (renderBlockAssetLabel(block) || inferInteractiveAssetLabelFromText(question)) return true;
+			const hasDescriptiveText = blockText(block).some((value) => String(value ?? '').trim());
+			if (hasDescriptiveText) return true;
+			removed += 1;
+			return false;
+		});
+		if (nextBlocks.length !== blocks.length) updates[field] = nextBlocks;
+	}
+	return { question: Object.keys(updates).length ? { ...question, ...updates } : question, removed };
 }
 
 function renderedPageNumber(filePath) {
@@ -223,23 +371,44 @@ function repairFile(filePath) {
 		const pageImages = renderedPagesByNumber(sourceDocumentId, questionPaperPath);
 		let assetsCreated = 0;
 		let questionsRepaired = 0;
+		let blocksRemoved = 0;
 		const questions = (paper.questions ?? []).map((question) => {
-			const labels = responseAssetLabels(question);
+			const pruned = pruneEmptyMediaBlocks(question);
+			question = pruned.question;
+			blocksRemoved += pruned.removed;
+			const labels = [
+				...new Set([
+					...responseAssetLabels(question),
+					...mediaBlockAssetLabels(question),
+					...referencedMediaAssetLabels(question)
+				])
+			];
 			const missingLabels = labels.filter((label) => {
-				const asset = (question.assets ?? []).find((candidate) =>
+				const matchingAssets = (question.assets ?? []).filter((candidate) =>
 					assetMatchesLabel(candidate, label)
 				);
-				return !asset || !assetHasUsableReference(asset);
+				return !matchingAssets.some(assetHasUsableReference);
 			});
-			if (!missingLabels.length) return question;
+			if (!missingLabels.length) {
+				if (pruned.removed === 0) return question;
+				questionsRepaired += 1;
+				return {
+					...question,
+					needsHumanReview: true,
+					reviewNotes: [
+						...(question.reviewNotes ?? []),
+						'Removed empty unlabelled media placeholder block.'
+					]
+				};
+			}
 			questionsRepaired += 1;
-			const pageNumber = question.pageStart ?? question.pageEnd ?? 1;
-			const pageImage = pageImages.get(pageNumber);
-			if (!pageImage) return question;
 			const questionAssets = [...(question.assets ?? [])];
 			const outputDir = path.join(assetRoot, sourceDocumentId);
 			if (!dryRun) mkdirSync(outputDir, { recursive: true });
 			for (const label of missingLabels) {
+				const pageNumber = pageNumberForMissingAsset(question, label);
+				const pageImage = pageImages.get(pageNumber);
+				if (!pageImage) continue;
 				const fileName = `page-${String(pageNumber).padStart(3, '0')}-${slugify(question.sourceQuestionRef)}-${slugify(label) || 'asset'}.png`;
 				const destPath = path.join(outputDir, fileName);
 				if (!dryRun) copyFileSync(pageImage, destPath);
@@ -272,21 +441,59 @@ function repairFile(filePath) {
 				]
 			};
 		});
-		if (!dryRun && assetsCreated > 0) writeJson(filePath, { ...paper, questions });
+		if (!dryRun && (assetsCreated > 0 || blocksRemoved > 0)) writeJson(filePath, { ...paper, questions });
 		return {
 			file: relative(filePath),
 			sourceDocumentId,
 			questionsRepaired,
-			assetsCreated
+			assetsCreated,
+			blocksRemoved
 		};
 	} catch (error) {
 		return {
 			file: relative(filePath),
 			error: error instanceof Error ? error.message : String(error),
 			questionsRepaired: 0,
-			assetsCreated: 0
+			assetsCreated: 0,
+			blocksRemoved: 0
 		};
 	}
+}
+
+function pageNumberForMissingAsset(question, label) {
+	const text = [
+		question.contextText,
+		question.promptText,
+		question.selfContainedPromptText,
+		...(question.reviewNotes ?? [])
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	const labelText = String(label ?? '').toLowerCase();
+	const explicitPage = explicitPageReference(text, labelText);
+	if (explicitPage) return explicitPage;
+	const referencesPreviousPage =
+		/\bprevious page\b|\bpreceding page\b/.test(text) &&
+		(!labelText || text.includes(labelText) || /\bfigure|graph|diagram|image\b/.test(labelText));
+	if (referencesPreviousPage && Number(question.pageStart) > 1) return Number(question.pageStart) - 1;
+	if (
+		Number(question.pageEnd) > Number(question.pageStart) &&
+		/\b(?:figure|fig|graph|diagram|image|grid)\b/.test(labelText)
+	) {
+		return Number(question.pageEnd);
+	}
+	return Number(question.pageStart ?? question.pageEnd ?? 1);
+}
+
+function explicitPageReference(text, labelText) {
+	const escapedLabel = labelText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	if (escapedLabel) {
+		const labelMatch = text.match(new RegExp(`${escapedLabel}[\\s\\S]{0,80}\\bon page\\s+(\\d+)`, 'i'));
+		if (labelMatch) return Number(labelMatch[1]);
+	}
+	const nearbyMatch = text.match(/\b(?:figure|fig\.?|graph|diagram|image)\s+\d+[a-z]?[\s\S]{0,80}\bon page\s+(\d+)/i);
+	return nearbyMatch ? Number(nearbyMatch[1]) : null;
 }
 
 function slugify(value) {

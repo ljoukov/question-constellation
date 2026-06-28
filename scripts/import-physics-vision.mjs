@@ -1196,10 +1196,21 @@ function listExtractionFiles(dir, includeNested) {
 function validateExtractedPapers(papers) {
 	const missingChains = [];
 	const qualityIssues = [];
+	const humanReviewIssues = [];
 	for (const paper of papers) {
 		for (const question of paper.questions ?? []) {
 			if (question.marks !== null && question.marks !== undefined && !question.answerChain) {
 				missingChains.push(`${paper.sourceDocument.id} ${question.sourceQuestionRef}`);
+			}
+			if (question.needsHumanReview || question.answerChain?.needsHumanReview) {
+				humanReviewIssues.push(`${paper.sourceDocument.id} ${question.sourceQuestionRef}`);
+			}
+			for (const asset of question.assets ?? []) {
+				if (asset?.needsHumanReview) {
+					humanReviewIssues.push(
+						`${paper.sourceDocument.id} ${question.sourceQuestionRef} asset ${asset.sourceLabel ?? asset.label ?? asset.assetId ?? 'unknown'}`
+					);
+				}
 			}
 		}
 		for (const issue of blockingIssues(deterministicCandidateIssues(paper))) {
@@ -1222,6 +1233,14 @@ function validateExtractedPapers(papers) {
 				`Re-run extraction with repair attempts, then import again. Examples: ${qualityIssues
 					.slice(0, 8)
 					.join(' | ')}`
+		);
+	}
+	if (humanReviewIssues.length > 0) {
+		throw new Error(
+			`Vision extraction has ${humanReviewIssues.length} questions or assets marked needsHumanReview. ` +
+				`Review and clear those flags before import. Examples: ${humanReviewIssues
+					.slice(0, 12)
+					.join(', ')}`
 		);
 	}
 }
