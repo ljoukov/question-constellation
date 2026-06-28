@@ -71,6 +71,7 @@ const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.
 const repairAssetSource = readText(
 	path.join(rootDir, 'scripts/repair-extraction-response-assets.mjs')
 );
+const cropPdfFigureSource = readText(path.join(rootDir, 'scripts/crop-pdf-figure.py'));
 const repairChainSpecificitySource = readText(
 	path.join(rootDir, 'scripts/repair-answer-chain-specificity.mjs')
 );
@@ -104,6 +105,7 @@ for (const filePath of [
 	'scripts/run-production-extraction-batch.mjs',
 	'scripts/verify-production-extraction-run.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
+	'scripts/crop-pdf-figure.py',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
 	'scripts/audit-extracted-question-data.mjs',
@@ -163,7 +165,9 @@ requireIncludes(
 		'pdftoppm',
 		'pdftotext',
 		'Codex CLI is useful only as a benchmark',
+		'Whole-paper Codex CLI baseline',
 		'core-page text and detected refs',
+		'Crop referenced figure',
 		'phase-specific model and reasoning overrides',
 		'PDF-to-question extraction in 41.56 seconds',
 		'--mark-scheme-image-mode=all',
@@ -216,6 +220,8 @@ requireIncludes(
 		'deterministic question-paper text scout',
 		'The script detected these sourceQuestionRef values from core-page text',
 		'For calculation questions with visible working lines',
+		'For markChecklist.required, true means every full-credit response',
+		'level-response indicative content must be required=false',
 		'Do not use asset-canvas for a table that can be represented structurally',
 		'LOOKAHEAD QUESTION PAPER PAGE',
 		'PRIOR CONTEXT QUESTION PAPER PAGE',
@@ -231,6 +237,33 @@ requireIncludes(
 		'withdrawn questions, replacement notices, statistics-only rows'
 	],
 	'Pipeline library'
+);
+
+requireIncludes(
+	cliSource,
+	[
+		'materializeQuestionMediaAssets',
+		'crop-pdf-figure.py',
+		'normalizeQuestionExtractionCandidate',
+		'normalizeAllowedAlternativeAnswerEvidence',
+		'Accept also:',
+		'Give ${numberWord(requiredCount)} distinct credited',
+		'isOptionalChecklistText',
+		'indicative'
+	],
+	'Extraction CLI'
+);
+
+requireIncludes(
+	cropPdfFigureSource,
+	[
+		'pdftotext',
+		'-bbox-layout',
+		'Figure',
+		'choose_vertical_crop',
+		'bboxNormalized'
+	],
+	'PDF figure cropper'
 );
 
 requireIncludes(

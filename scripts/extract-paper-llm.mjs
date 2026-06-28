@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import {
@@ -791,12 +792,13 @@ async function runOne({
 	console.error(
 		`[extract-cli] ${sourceDocumentId}: extracted ${candidate.questions.length} questions`
 	);
-	candidate = materializeFallbackResponseAssets(candidate, {
+	candidate = materializeQuestionMediaAssets(candidate, {
 		questionPaperPath,
 		sourceDocumentId,
 		outputPath,
 		dpi
 	});
+	candidate = normalizeQuestionExtractionCandidate(candidate);
 	console.error(
 		`[extract-cli] ${sourceDocumentId}: writing pre-judge candidate ${path.relative(rootDir, outputPath)}`
 	);
@@ -818,6 +820,7 @@ async function runOne({
 			evaluationMode,
 			repairAnswerChains
 		});
+		candidate = normalizeQuestionExtractionCandidate(candidate);
 		writeJson(outputPath, candidate);
 		evaluation = await evaluateExtractedCandidate(candidate);
 	}
@@ -889,13 +892,20 @@ async function evaluateExtractedCandidate(candidate) {
 	});
 }
 
-function materializeFallbackResponseAssets(
+function materializeQuestionMediaAssets(
 	candidate,
 	{ questionPaperPath, sourceDocumentId, outputPath, dpi }
 ) {
 	const missing = [];
 	for (const question of candidate.questions ?? []) {
-		const labels = [...new Set(responseAssetLabels(question))];
+		const responseLabels = new Set(responseAssetLabels(question));
+		const labels = [
+			...new Set([
+				...responseLabels,
+				...mediaBlockAssetLabels(question),
+				...referencedMediaAssetLabels(question)
+			])
+		];
 		for (const label of labels) {
 			const asset = (question.assets ?? []).find((candidateAsset) =>
 				assetMatchesLabel(candidateAsset, label)
@@ -911,7 +921,7 @@ function materializeFallbackResponseAssets(
 	if (!missing.length) return candidate;
 	const assetDir = extractedAssetDir(outputPath, sourceDocumentId);
 	mkdirSync(assetDir, { recursive: true });
-	const pageRenderDir = path.join(rootDir, 'tmp/llm-extraction-fallback-assets', sourceDocumentId);
+	const pageRenderDir = path.join(rootDir, 'tmp/llm-extraction-media-assets', sourceDocumentId);
 	const renderedPages = renderPdfPages({
 		pdfPath: questionPaperPath,
 		outputDir: pageRenderDir,
@@ -922,23 +932,48 @@ function materializeFallbackResponseAssets(
 	const renderedByPage = new Map(
 		renderedPages.map((filePath) => [renderedPageNumber(filePath), filePath])
 	);
+	let croppedAssets = 0;
+	let fallbackAssets = 0;
 	const questions = candidate.questions.map((question) => {
 		const questionMissing = missing.filter(
 			(item) => item.question.sourceQuestionRef === question.sourceQuestionRef
 		);
 		if (!questionMissing.length) return question;
 		const assets = [...(question.assets ?? [])];
+		let nextQuestion = question;
+		let requiresReview = false;
+		let resolvedByCrop = false;
+		const reviewNotesBeforeCrop = question.reviewNotes ?? [];
+		const responseLabels = new Set(responseAssetLabels(question));
 		for (const { label } of questionMissing) {
-			const pageNumber = question.pageStart ?? question.pageEnd ?? 1;
+			const crop = cropReferencedMediaAsset({
+				questionPaperPath,
+				renderedByPage,
+				assetDir,
+				sourceDocumentId,
+				question,
+				label
+			});
+			if (crop) {
+				croppedAssets += 1;
+				resolvedByCrop = true;
+				assets.push(crop.asset);
+				nextQuestion = replaceMediaSummaryBlocksWithFigure(nextQuestion, label);
+				continue;
+			}
+			const pageNumber = pageNumberForMissingAsset(question, label);
 			const renderedPage = renderedByPage.get(pageNumber);
 			if (!renderedPage) continue;
 			const fileName = `page-${String(pageNumber).padStart(3, '0')}-${slugify(question.sourceQuestionRef)}-${slugify(label) || 'asset'}.png`;
 			const destPath = path.join(assetDir, fileName);
 			copyFileSync(renderedPage, destPath);
+			fallbackAssets += 1;
+			requiresReview = true;
+			const isResponseAsset = responseLabels.has(label);
 			assets.push({
 				sourceLabel: label,
 				assetType: 'image',
-				role: 'response-canvas',
+				role: isResponseAsset ? 'response-canvas' : 'question-context',
 				pageNumber,
 				required: true,
 				filePath: relativePath(destPath),
@@ -952,21 +987,769 @@ function materializeFallbackResponseAssets(
 				]
 			});
 		}
+		const strippedReviewNotes = resolvedByCrop
+			? stripResolvedMediaReviewNotes(nextQuestion.reviewNotes ?? [])
+			: (nextQuestion.reviewNotes ?? []);
+		const reviewNotes = requiresReview
+			? [
+					...strippedReviewNotes,
+					'Generated fallback page image for missing interactive media asset.'
+				]
+			: strippedReviewNotes;
+		const modelAnswer = clearResolvedMediaModelAnswer({
+			modelAnswer: nextQuestion.modelAnswer,
+			response: nextQuestion.response,
+			resolvedByCrop,
+			requiresReview
+		});
+		const clearedResolvedMediaReview =
+			resolvedByCrop && reviewNotesBeforeCrop.length > 0 && reviewNotes.length === 0;
 		return {
-			...question,
-			response: ensureResponseAssetLabel(question.response, questionMissing[0]?.label),
+			...nextQuestion,
+			response: ensureResponseAssetLabel(nextQuestion.response, questionMissing[0]?.label),
 			assets,
-			needsHumanReview: true,
-			reviewNotes: [
-				...(question.reviewNotes ?? []),
-				'Generated fallback page image for missing interactive media asset.'
-			]
+			modelAnswer,
+			needsHumanReview: requiresReview
+				? true
+				: clearedResolvedMediaReview
+					? false
+					: nextQuestion.needsHumanReview,
+			reviewNotes
 		};
 	});
 	console.error(
-		`[extract-cli] ${sourceDocumentId}: materialized ${missing.length} fallback response asset(s)`
+		`[extract-cli] ${sourceDocumentId}: materialized ${croppedAssets} cropped media asset(s), ${fallbackAssets} fallback page asset(s)`
 	);
-	return { ...candidate, questions };
+	return recomputeExtractionRunReviewState({ ...candidate, questions });
+}
+
+function normalizeQuestionExtractionCandidate(candidate) {
+	const questions = (candidate.questions ?? []).map(normalizeQuestionExtractionQuality);
+	return recomputeExtractionRunReviewState({ ...candidate, questions });
+}
+
+function normalizeQuestionExtractionQuality(question) {
+	const markSchemeItems = normalizeLevelMarkSchemeItems(question);
+	const normalized = {
+		...question,
+		selfContainedPromptText: stripDerivedMediaReadingContext(question.selfContainedPromptText),
+		contextText: stripDerivedMediaReadingContext(question.contextText),
+		stemBlocks: normalizeStemBlocks(question.stemBlocks, question.contextText),
+		promptBlocks:
+			Array.isArray(question.promptBlocks) && question.promptBlocks.length
+				? question.promptBlocks
+				: paragraphBlocksFromText(question.promptText),
+		markSchemeItems,
+		markChecklist: normalizeMarkChecklistItems({ ...question, markSchemeItems })
+	};
+	return normalizeAllowedAlternativeAnswerEvidence(normalized);
+}
+
+function paragraphBlocksFromText(text) {
+	return String(text ?? '')
+		.split(/\n{2,}/)
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.map((part) => ({ kind: 'paragraph', text: part }));
+}
+
+function normalizeStemBlocks(blocks, contextText) {
+	const source = Array.isArray(blocks) ? blocks : [];
+	const context = normalizeText(contextText);
+	let next = source;
+	if (context && source.length > 1) {
+		next = source.filter((block) => {
+			if (String(block?.kind ?? '') !== 'paragraph') return true;
+			return normalizeText(block.text) !== context;
+		});
+		if (!next.length) next = source;
+	}
+	const seen = new Set();
+	return next.filter((block) => {
+		const key = `${block?.kind ?? ''}:${normalizeText(block?.text ?? JSON.stringify(block ?? {}))}`;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
+function stripDerivedMediaReadingContext(text) {
+	const value = String(text ?? '').trim();
+	if (!value) return text ?? null;
+	const parts = value
+		.split(/\n{2,}/)
+		.map((part) => part.trim())
+		.filter((part) => !isDerivedMediaReadingParagraph(part));
+	const stripped = parts.join('\n\n').trim();
+	return stripped || null;
+}
+
+function isDerivedMediaReadingParagraph(text) {
+	return /^\s*(?:using|from|reading)\s+(?:figure|fig\.?|table|graph)\s+\d+[A-Za-z]?\s*:/i.test(
+		String(text ?? '')
+	);
+}
+
+function normalizeText(text) {
+	return String(text ?? '')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function normalizeLevelMarkSchemeItems(question) {
+	const items = question.markSchemeItems ?? [];
+	const levels = items.map((item) => checklistLevelNumber(item)).filter(Boolean);
+	const maxLevel = Math.max(0, ...levels);
+	const maxMarks = Number(question.marks);
+	if (!maxLevel || !Number.isFinite(maxMarks) || maxMarks <= 1) return items;
+	return items.map((item) => {
+		const level = checklistLevelNumber(item);
+		if (!level || level > maxLevel) return item;
+		const text = String(item.text ?? '');
+		if (/\b\d+\s*(?:-|–|to)\s*\d+\s*marks?\b/i.test(text)) return item;
+		const low = Math.floor(((level - 1) * maxMarks) / maxLevel) + 1;
+		const high = Math.floor((level * maxMarks) / maxLevel);
+		const replacement = `Level ${level} (${low}-${high} marks)`;
+		return {
+			...item,
+			text: text.replace(new RegExp(`\\bLevel\\s+${level}\\b\\s*[:,]?`, 'i'), `${replacement}:`)
+		};
+	});
+}
+
+function normalizeMarkChecklistItems(question) {
+	const items = (question.markChecklist ?? []).map((item) => {
+		const text = String(item.text ?? '').trim();
+		const references = checklistReferencedMarkSchemeItems(question, item);
+		let required = item.required !== false;
+		if (references.length && references.every(isIndicativeMarkSchemeItem)) required = false;
+		else if (references.length && references.some(isLevelMarkSchemeItem)) required = true;
+		else if (isOptionalChecklistText(text) || isNegativeGuidanceChecklistText(text)) {
+			required = false;
+		}
+		return { ...item, text, required };
+	});
+	return normalizeLevelResponseChecklist(question, normalizeSelectionChecklist(question, items));
+}
+
+function normalizeLevelResponseChecklist(question, items) {
+	if (!(question.markSchemeItems ?? []).some(isLevelMarkSchemeItem)) return items;
+	const levelIndexes = (question.markSchemeItems ?? [])
+		.map((item, index) => (isLevelMarkSchemeItem(item) ? index : null))
+		.filter((index) => index !== null);
+	const next = items.map((item) => {
+		const references = checklistReferencedMarkSchemeItems(question, item);
+		if (!references.some((ref) => isLevelMarkSchemeItem(ref) || isIndicativeMarkSchemeItem(ref))) {
+			return item;
+		}
+		return { ...item, required: false };
+	});
+	if (next.some((item) => /appropriate level of response|level-of-response/i.test(item.text))) {
+		return next;
+	}
+	return [
+		{
+			text: 'Provide enough scientifically relevant detail for the appropriate level of response.',
+			required: true,
+			markSchemeItemIndexes: levelIndexes,
+			confidence: 0.9,
+			needsHumanReview: false
+		},
+		...next
+	];
+}
+
+function normalizeSelectionChecklist(question, items) {
+	const requiredCount = inferRequiredChecklistSelectionCount(question, items);
+	if (!requiredCount) return items;
+	const optionIndexes = items
+		.map((item, index) => ({ item, index }))
+		.filter(({ item }) => isChecklistSelectionAlternative(question, item))
+		.map(({ index }) => index);
+	if (optionIndexes.length <= requiredCount) {
+		if (items.some((item) => item.required)) return items;
+		return [
+			{
+				text: normalizeSelectionUmbrellaText(question, requiredCount, ''),
+				required: true,
+				markSchemeItemIndexes: uniqueNumbers(
+					items.flatMap((item) => item.markSchemeItemIndexes ?? [])
+				),
+				confidence: 0.9,
+				needsHumanReview: false
+			},
+			...items
+		];
+	}
+	const optionMarkIndexes = uniqueNumbers(
+		optionIndexes.flatMap((index) => items[index]?.markSchemeItemIndexes ?? [])
+	);
+	const next = items.map((item, index) =>
+		optionIndexes.includes(index) ? { ...item, required: false } : item
+	);
+	const allMarkIndexes = uniqueNumbers(
+		next.flatMap((item) => item.markSchemeItemIndexes ?? [])
+	);
+	if (!next.some((item) => item.required)) {
+		return [
+			{
+				text: normalizeSelectionUmbrellaText(question, requiredCount, ''),
+				required: true,
+				markSchemeItemIndexes: optionMarkIndexes.length ? optionMarkIndexes : allMarkIndexes,
+				confidence: 0.9,
+				needsHumanReview: false
+			},
+			...next
+		];
+	}
+	const existingUmbrellaIndex = next.findIndex((item) =>
+		isSelectionUmbrellaChecklistItem(item, requiredCount)
+	);
+	if (existingUmbrellaIndex >= 0) {
+		const item = next[existingUmbrellaIndex];
+		next[existingUmbrellaIndex] = {
+			...item,
+			text: normalizeSelectionUmbrellaText(question, requiredCount, item.text),
+			required: true,
+			markSchemeItemIndexes: item.markSchemeItemIndexes?.length
+				? item.markSchemeItemIndexes
+				: optionMarkIndexes
+		};
+		return next;
+	}
+	return [
+		{
+			text: normalizeSelectionUmbrellaText(question, requiredCount, ''),
+			required: true,
+			markSchemeItemIndexes: optionMarkIndexes,
+			confidence: 0.9,
+			needsHumanReview: false
+		},
+		...next
+	];
+}
+
+function checklistReferencedMarkSchemeItems(question, item) {
+	return (item.markSchemeItemIndexes ?? [])
+		.map((index) => question.markSchemeItems?.[index])
+		.filter(Boolean);
+}
+
+function isOptionalChecklistText(text) {
+	return /^(?:may|can include|could include|acceptable alternatives?|examples? include)\b/i.test(
+		String(text ?? '').trim()
+	);
+}
+
+function isNegativeGuidanceChecklistText(text) {
+	return /^(?:do not credit|do not accept|reject|ignore)\b/i.test(String(text ?? '').trim());
+}
+
+function isIndicativeMarkSchemeItem(item) {
+	const text = `${item?.itemType ?? ''} ${item?.text ?? ''}`;
+	return /\bindicative\b/i.test(text);
+}
+
+function isLevelMarkSchemeItem(item) {
+	const itemType = String(item?.itemType ?? '');
+	const text = String(item?.text ?? '');
+	return /\blevel\b/i.test(itemType) || /^\s*Level\s+\d+\b/i.test(text);
+}
+
+function checklistLevelNumber(item) {
+	if (!isLevelMarkSchemeItem(item)) return null;
+	const match = String(item?.text ?? item?.itemType ?? '').match(/\blevel\s+(\d+)\b/i);
+	return match ? Number(match[1]) : null;
+}
+
+function inferRequiredChecklistSelectionCount(question, items) {
+	const text = [
+		question.promptText,
+		question.selfContainedPromptText,
+		...items.map((item) => item.text),
+		...(question.markSchemeItems ?? []).map((item) => item.text)
+	]
+		.filter(Boolean)
+		.join('\n');
+	const explicit =
+		text.match(/\b(?:give|suggest|state|name|identify|write)\s+(one|two|three|four|five|\d+)\b/i) ??
+		text.match(/\bmaximum of\s+(one|two|three|four|five|\d+)\b/i) ??
+		text.match(/\bany\s+(one|two|three|four|five|\d+)\s+(?:from|of)\b/i);
+	if (explicit) return wordNumber(explicit[1]);
+	const marks = Number(question.marks);
+	const positiveOneMarkItems = (question.markSchemeItems ?? []).filter(
+		(item) => !isLevelMarkSchemeItem(item) && !isIndicativeMarkSchemeItem(item) && Number(item.marks) === 1
+	);
+	if (Number.isInteger(marks) && marks > 0 && positiveOneMarkItems.length > marks) return marks;
+	return null;
+}
+
+function wordNumber(value) {
+	const normalized = String(value ?? '').toLowerCase();
+	const words = { one: 1, two: 2, three: 3, four: 4, five: 5 };
+	const parsed = words[normalized] ?? Number(normalized);
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function isChecklistSelectionAlternative(question, item) {
+	if (isNegativeGuidanceChecklistText(item.text)) return false;
+	const references = checklistReferencedMarkSchemeItems(question, item);
+	if (references.length !== 1) return false;
+	if (references.some((ref) => isLevelMarkSchemeItem(ref) || isIndicativeMarkSchemeItem(ref))) {
+		return false;
+	}
+	if (item.markSchemeItemIndexes?.length !== 1) return false;
+	const ref = references[0];
+	return (
+		Number(ref.marks) === 1 ||
+		/^(?:may|credits?|states?|gives?|identifies?|describes?)\b/i.test(String(item.text ?? '')) ||
+		/\b(?:reason|conclusion|aspect|limitation|validity|point)\b/i.test(
+			`${ref.itemType ?? ''} ${ref.text ?? ''}`
+		)
+	);
+}
+
+function isSelectionUmbrellaChecklistItem(item, requiredCount) {
+	const text = String(item.text ?? '');
+	return (
+		(item.markSchemeItemIndexes?.length ?? 0) > 1 ||
+		new RegExp(`\\b(?:any|maximum of|give|suggest|state)\\s+${numberWord(requiredCount)}\\b`, 'i').test(
+			text
+		) ||
+		/\bdistinct credited\b/i.test(text)
+	);
+}
+
+function normalizeSelectionUmbrellaText(question, requiredCount, existingText) {
+	const text = String(existingText ?? '').trim();
+	if (/\bmaximum of\b/i.test(text) || !text) {
+		return `Give ${numberWord(requiredCount)} distinct credited ${selectionNoun(question, requiredCount)}.`;
+	}
+	return text;
+}
+
+function selectionNoun(question, requiredCount) {
+	const prompt = String(question.promptText ?? question.selfContainedPromptText ?? '').toLowerCase();
+	if (/\breasons?\b/.test(prompt)) return requiredCount === 1 ? 'reason' : 'reasons';
+	if (/\bconclusions?\b/.test(prompt)) return requiredCount === 1 ? 'conclusion' : 'conclusions';
+	if (/\baspects?\b/.test(prompt)) return requiredCount === 1 ? 'aspect' : 'aspects';
+	if (/\bfactors?\b/.test(prompt)) return requiredCount === 1 ? 'factor' : 'factors';
+	if (/\bpoints?\b/.test(prompt)) return requiredCount === 1 ? 'point' : 'points';
+	return requiredCount === 1 ? 'point' : 'points';
+}
+
+function numberWord(value) {
+	const words = { 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five' };
+	return words[value] ?? String(value);
+}
+
+function uniqueNumbers(values) {
+	return [...new Set(values.map((value) => Number(value)).filter((value) => Number.isInteger(value)))];
+}
+
+function normalizeAllowedAlternativeAnswerEvidence(question) {
+	if (Number(question.marks) !== 1) return question;
+	const alternatives = (question.markSchemeItems ?? [])
+		.map((item, index) => ({ item, index, alternative: allowedAlternativeText(item) }))
+		.filter(({ alternative }) => alternative);
+	if (!alternatives.length) return question;
+	let changed = false;
+	const markChecklist = (question.markChecklist ?? []).map((item) => {
+		const match = alternatives.find(({ index }) => (item.markSchemeItemIndexes ?? []).includes(index));
+		if (!match || textMentions(item.text, match.alternative)) return item;
+		changed = true;
+		return {
+			...item,
+			text: appendSentence(item.text, `Accept also: ${match.alternative}.`)
+		};
+	});
+	const acceptedAlternatives = alternatives.map(({ alternative }) => alternative);
+	const modelAnswer =
+		question.modelAnswer && !acceptedAlternatives.every((answer) => textMentions(question.modelAnswer.answerText, answer))
+			? {
+					...question.modelAnswer,
+					answerText: appendSentence(
+						question.modelAnswer.answerText,
+						`Accept ${acceptedAlternatives.join(' or ')}.`
+					)
+				}
+			: question.modelAnswer;
+	const response =
+		question.response && Array.isArray(question.response.correctAnswers)
+			? {
+					...question.response,
+					correctAnswers: uniqueStrings([
+						...(question.response.correctAnswers ?? []),
+						...acceptedAlternatives
+					])
+				}
+			: question.response;
+	return changed || modelAnswer !== question.modelAnswer || response !== question.response
+		? { ...question, markChecklist, modelAnswer, response }
+		: question;
+}
+
+function allowedAlternativeText(item) {
+	const text = String(item?.text ?? '');
+	if (text.length > 160 || !/\bis also allowed\b/i.test(text)) return null;
+	const match = text.match(/;\s*([^.;]+?)\s+is also allowed\b/i);
+	return match ? match[1].trim().replace(/^["']|["']$/g, '') : null;
+}
+
+function appendSentence(text, sentence) {
+	const base = String(text ?? '').trim();
+	const addition = String(sentence ?? '').trim();
+	if (!addition) return base;
+	if (!base) return addition;
+	if (textMentions(base, addition)) return base;
+	return `${base.replace(/\s+$/g, '')}${/[.!?]$/.test(base) ? '' : '.'} ${addition}`;
+}
+
+function textMentions(text, value) {
+	return String(text ?? '').toLowerCase().includes(String(value ?? '').toLowerCase());
+}
+
+function cropReferencedMediaAsset({
+	questionPaperPath,
+	renderedByPage,
+	assetDir,
+	sourceDocumentId,
+	question,
+	label
+}) {
+	if (!canCropMediaLabel(label)) return null;
+	for (const pageNumber of candidateAssetPages(question)) {
+		const renderedPage = renderedByPage.get(pageNumber);
+		if (!renderedPage) continue;
+		const fileName = `page-${String(pageNumber).padStart(3, '0')}-${slugify(question.sourceQuestionRef)}-${slugify(label) || 'asset'}-crop.png`;
+		const destPath = path.join(assetDir, fileName);
+		const crop = runFigureCrop({
+			questionPaperPath,
+			pageNumber,
+			label,
+			renderedPage,
+			destPath
+		});
+		if (!crop) continue;
+		const responseLabels = new Set(responseAssetLabels(question));
+		const isResponseAsset = responseLabels.has(label);
+		return {
+			crop,
+			asset: {
+				sourceLabel: label,
+				assetType: 'image',
+				role: isResponseAsset ? 'response-canvas' : 'question-context',
+				pageNumber,
+				required: isResponseAsset || referencedMediaAssetLabels(question).includes(label),
+				filePath: relativePath(destPath),
+				publicPath: `/images/papers/${sourceDocumentId}/${fileName}`,
+				r2Key: `images/papers/${sourceDocumentId}/${fileName}`,
+				altText: `${label} cropped from source paper page ${pageNumber}.`,
+				extractionConfidence: crop.extractionConfidence ?? 0.86,
+				needsHumanReview: crop.needsHumanReview === true,
+				reviewNotes: [],
+				crop: {
+					method: crop.method,
+					bboxPixels: crop.bboxPixels,
+					bboxNormalized: crop.bboxNormalized
+				}
+			}
+		};
+	}
+	return null;
+}
+
+function runFigureCrop({ questionPaperPath, pageNumber, label, renderedPage, destPath }) {
+	try {
+		const raw = execFileSync(
+			'python3',
+			[
+				path.join(rootDir, 'scripts/crop-pdf-figure.py'),
+				'--pdf',
+				questionPaperPath,
+				'--page',
+				String(pageNumber),
+				'--label',
+				label,
+				'--image',
+				renderedPage,
+				'--output',
+				destPath
+			],
+			{ cwd: rootDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+		);
+		const parsed = JSON.parse(raw);
+		return parsed.status === 'passed' ? parsed : null;
+	} catch {
+		return null;
+	}
+}
+
+function canCropMediaLabel(label) {
+	return /\b(?:figure|fig\.?|graph|diagram|image)\s+\d+[A-Za-z]?\b/i.test(String(label ?? ''));
+}
+
+function candidateAssetPages(question) {
+	const pages = [
+		question.pageStart,
+		question.pageEnd,
+		Number(question.pageStart) - 1,
+		Number(question.pageStart) - 2,
+		Number(question.pageEnd) + 1
+	]
+		.map(Number)
+		.filter((value) => Number.isInteger(value) && value > 0);
+	return [...new Set(pages)];
+}
+
+function mediaBlockAssetLabels(question) {
+	const labels = [];
+	for (const { block } of questionRenderBlocks(question)) {
+		if (!isMediaRenderBlock(block)) continue;
+		if (assetHasUsableReference(block)) continue;
+		const label = renderBlockAssetLabel(block) ?? inferInteractiveAssetLabelFromText(question);
+		if (label) labels.push(label);
+	}
+	return labels;
+}
+
+function referencedMediaAssetLabels(question) {
+	const labels = [];
+	const text = learnerFacingQuestionText(question);
+	for (const match of text.matchAll(
+		/\b(figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi
+	)) {
+		const prefix = /^fig/i.test(match[1]) ? 'Figure' : titleCase(match[1]);
+		const label = `${prefix} ${match[2]}`;
+		if (mediaReferenceNeedsVisualContext(text, label, question.response?.kind)) labels.push(label);
+	}
+	return [...new Set(labels)];
+}
+
+function learnerFacingQuestionText(question) {
+	return [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.reviewNotes ?? []),
+		...questionRenderBlocks(question).flatMap(({ block }) => blockText(block))
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+function mediaReferenceNeedsVisualContext(text, label, responseKind) {
+	const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const labelPattern = escapedLabel
+		.replace(/figure/i, '(?:figure|fig\\.?)')
+		.replace(/graph/i, 'graph')
+		.replace(/diagram/i, 'diagram')
+		.replace(/image/i, 'image');
+	const aroundLabel = new RegExp(
+		`(?:use|using|in|from|shown? in|shows?|complete|label|plot|draw|name|identify|results? in|part|set up|data from)\\b[^.\\n]{0,100}\\b${labelPattern}\\b|\\b${labelPattern}\\b[^.\\n]{0,100}\\b(?:shows?|complete|label|plot|draw|name|identify|results?|part|set up|data)`,
+		'i'
+	);
+	return ['asset-canvas', 'image-label-zones'].includes(responseKind) || aroundLabel.test(text);
+}
+
+function questionRenderBlocks(question) {
+	return ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks'].flatMap((field) =>
+		(question[field] ?? []).map((block, index) => ({ field, index, block }))
+	);
+}
+
+function mediaBlockKinds() {
+	return new Set([
+		'figure',
+		'image',
+		'assetRef',
+		'assetReference',
+		'imageFigure',
+		'imageBlock',
+		'figure-placeholder',
+		'figure-reference'
+	]);
+}
+
+function isMediaRenderBlock(block) {
+	return Boolean(
+		block && typeof block === 'object' && mediaBlockKinds().has(String(block.kind ?? ''))
+	);
+}
+
+function renderBlockAssetLabel(block) {
+	const value =
+		block?.assetLabel ??
+		block?.sourceLabel ??
+		block?.label ??
+		block?.assetId ??
+		block?.id ??
+		block?.altText;
+	return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function blockText(block) {
+	if (!block || typeof block !== 'object') return [];
+	const values = [block.text, block.caption, block.label, block.altText].filter(
+		(value) => typeof value === 'string' && value.trim()
+	);
+	if (Array.isArray(block.keyItems)) {
+		values.push(
+			...block.keyItems
+				.map((item) => item?.text)
+				.filter((value) => typeof value === 'string' && value.trim())
+		);
+	}
+	if (Array.isArray(block.rows)) {
+		values.push(
+			...block.rows.flatMap((row) =>
+				(Array.isArray(row) ? row : Object.values(row ?? {})).filter(
+					(value) => typeof value === 'string' && value.trim()
+				)
+			)
+		);
+	}
+	return values;
+}
+
+function replaceMediaSummaryBlocksWithFigure(question, label) {
+	let replaced = false;
+	const updates = {};
+	for (const field of ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks']) {
+		const blocks = question[field] ?? [];
+		const nextBlocks = [];
+		for (const block of blocks) {
+			if (!isReplaceableMediaSummaryBlock(block, label)) {
+				nextBlocks.push(block);
+				continue;
+			}
+			if (!replaced) {
+				nextBlocks.push({ kind: 'figure', label, assetLabel: label });
+				replaced = true;
+			}
+		}
+		if (nextBlocks.length !== blocks.length || nextBlocks.some((block, index) => block !== blocks[index])) {
+			updates[field] = nextBlocks;
+		}
+	}
+	if (!Object.keys(updates).length) return question;
+	return {
+		...question,
+		...updates,
+		reviewNotes: stripResolvedMediaReviewNotes(question.reviewNotes ?? [])
+	};
+}
+
+function isReplaceableMediaSummaryBlock(block, label) {
+	if (!block || typeof block !== 'object') return false;
+	if (['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
+	if (isMediaRenderBlock(block) && assetHasUsableReference(block)) return false;
+	if (!blockMentionsLabel(block, label)) return false;
+	return ['paragraph', 'key', 'figure-placeholder', 'figure-reference'].includes(
+		String(block.kind ?? 'paragraph')
+	);
+}
+
+function blockMentionsLabel(block, label) {
+	const wanted = normalizeAssetKey(label);
+	if (!wanted) return false;
+	return [
+		block?.label,
+		block?.assetLabel,
+		block?.sourceLabel,
+		block?.altText,
+		block?.text,
+		block?.caption
+	].some((value) => normalizeAssetKey(value).includes(wanted));
+}
+
+function stripResolvedMediaReviewNotes(notes) {
+	return notes.filter(
+		(note) =>
+			!/fallback (?:full-)?page asset|missing interactive media asset|missing media asset|no separate local asset manifest/i.test(
+				String(note ?? '')
+			)
+	);
+}
+
+function clearResolvedMediaModelAnswer({ modelAnswer, response, resolvedByCrop, requiresReview }) {
+	if (!modelAnswer || !resolvedByCrop || requiresReview) return modelAnswer;
+	if (!['asset-canvas', 'image-label-zones'].includes(response?.kind)) return modelAnswer;
+	const reviewNotes = stripResolvedMediaReviewNotes(modelAnswer.reviewNotes ?? []);
+	if (modelAnswer.needsHumanReview !== true && reviewNotes.length === (modelAnswer.reviewNotes ?? []).length) {
+		return modelAnswer;
+	}
+	return {
+		...modelAnswer,
+		needsHumanReview: reviewNotes.length > 0,
+		reviewNotes
+	};
+}
+
+function recomputeExtractionRunReviewState(candidate) {
+	const reviewNotes = (candidate.extractionRun?.reviewNotes ?? []).filter(Boolean);
+	return {
+		...candidate,
+		extractionRun: {
+			...(candidate.extractionRun ?? {}),
+			needsHumanReview: (candidate.questions ?? []).some(questionHasHumanReviewFlag) || reviewNotes.length > 0,
+			reviewNotes
+		}
+	};
+}
+
+function questionHasHumanReviewFlag(question) {
+	if (question.needsHumanReview) return true;
+	if (question.modelAnswer?.needsHumanReview) return true;
+	if ((question.assets ?? []).some((asset) => asset?.needsHumanReview)) return true;
+	if ((question.markChecklist ?? []).some((item) => item?.needsHumanReview)) return true;
+	return false;
+}
+
+function pageNumberForMissingAsset(question, label) {
+	const text = [
+		question.contextText,
+		question.promptText,
+		question.selfContainedPromptText,
+		...(question.reviewNotes ?? [])
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	const labelText = String(label ?? '').toLowerCase();
+	const explicitPage = explicitPageReference(text, labelText);
+	if (explicitPage) return explicitPage;
+	const referencesPreviousPage =
+		/\bprevious page\b|\bpreceding page\b/.test(text) &&
+		(!labelText || text.includes(labelText) || /\bfigure|graph|diagram|image\b/.test(labelText));
+	if (referencesPreviousPage && Number(question.pageStart) > 1)
+		return Number(question.pageStart) - 1;
+	if (
+		Number(question.pageEnd) > Number(question.pageStart) &&
+		/\b(?:figure|fig|graph|diagram|image|grid)\b/.test(labelText)
+	) {
+		return Number(question.pageEnd);
+	}
+	return Number(question.pageStart ?? question.pageEnd ?? 1);
+}
+
+function explicitPageReference(text, labelText) {
+	const escapedLabel = labelText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	if (escapedLabel) {
+		const labelMatch = text.match(
+			new RegExp(`${escapedLabel}[\\s\\S]{0,80}\\bon page\\s+(\\d+)`, 'i')
+		);
+		if (labelMatch) return Number(labelMatch[1]);
+	}
+	const nearbyMatch = text.match(
+		/\b(?:figure|fig\.?|graph|diagram|image)\s+\d+[a-z]?[\s\S]{0,80}\bon page\s+(\d+)/i
+	);
+	return nearbyMatch ? Number(nearbyMatch[1]) : null;
+}
+
+function titleCase(value) {
+	const text = String(value ?? '').toLowerCase();
+	return text ? text[0].toUpperCase() + text.slice(1) : text;
 }
 
 function responseAssetLabels(question) {

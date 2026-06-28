@@ -528,6 +528,10 @@ do the deterministic preparation first:
 - Pass the core-page text and detected refs into the extractor prompt before page images.
 - Render question-paper pages for layout, response controls, figures, answer lines, and tables that
   text extraction flattened.
+- Crop referenced figure, graph, and diagram assets deterministically before review. The current
+  cropper uses `pdftotext -bbox-layout` to find standalone figure labels, then a rendered-page
+  row-projection pass to isolate the visual region. A fallback full-page image is allowed only as a
+  review-blocking artifact, not as an import-ready asset.
 - Isolate mark-scheme text to the detected refs before the LLM call, falling back to mark-scheme
   images only when text extraction is insufficient.
 - Validate parseable JSON and deterministic import gates after the model returns.
@@ -536,7 +540,8 @@ Required local tools are:
 
 - `pdfinfo` to count/inspect pages.
 - `pdftoppm` to render pages to PNG images.
-- `pdftotext` to provide the model with deterministic text/ref scouts before visual inspection.
+- `pdftotext` to provide the model with deterministic text/ref scouts before visual inspection and
+  bounding boxes for deterministic figure cropping.
 - `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
   output.
 
@@ -548,6 +553,25 @@ by this local Codex CLI; Codex uses the native `gpt-5.5` name. Treat Codex parit
 target: if Codex succeeds faster or with better quality, inspect its observable trace and move the
 deterministic tool steps into these scripts rather than replacing the production importer with a
 manual Codex workflow.
+
+Whole-paper Codex CLI baseline: on 2026-06-28, an isolated `codex exec` run using `gpt-5.5`,
+medium reasoning, all 36 rendered question-paper pages, `question-paper.txt`, and `mark-scheme.txt`
+extracted the full AQA Biology Paper 1 November 2020 paper in `523.00` seconds. It produced valid
+JSON with 46 independently marked subquestions (`01.1` through `07.4`), no duplicate refs, no empty
+prompt blocks, no empty checklists, and no missing response kinds in a mechanical scan. Its JSONL
+trace showed 22 command-execution events, no web search, and only local file/text reads plus JSON
+validation. A clean isolated parent-question slice for `06.1` to `06.7` took `151.24` seconds with
+14 command-execution events and no web search. A repo-context slice took `202.46` seconds but read
+repo docs/old repair files and used web search, so treat it as a context-assisted comparison rather
+than a blind baseline.
+
+The whole-paper Codex result is a quality target, not a replacement importer. It handled
+mark-checklist semantics well, especially any-two alternatives and level-of-response descriptors,
+but emitted page-image asset references rather than cropped production assets. The script harness
+must keep deterministic media cropping and import-shape validation while adopting the Codex-style
+prompt rule that `markChecklist.required` means "required in every full-credit answer." Accepted
+alternatives from any-one/any-two/max-two lists and level-response indicative content must be
+`required=false` under a required umbrella criterion such as "Give two distinct credited reasons."
 
 Use phase-specific model and reasoning overrides when benchmarking. On the same 2026-06-28 page-2
 fixture, the script-side text/ref scout plus `chatgpt-gpt-5.5-fast` at `medium` reasoning completed

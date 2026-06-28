@@ -1621,6 +1621,7 @@ export function buildExtractionPrompt({
 		'Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion.',
 		'The answerChain is a reusable reasoning or method pattern across questions. It is not a worked solution to this one question.',
 		'For calculation questions, keep prompt-specific numbers, substitutions, intermediate values, final numeric answers, and one-question units in written-response modelAnswer, response.correctAnswers, markChecklist, and markSchemeItems only. Do not put them in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
+		'For markChecklist.required, true means every full-credit response must satisfy that criterion. Accepted alternatives from any-one/any-two/max-two lists must be required=false under a required umbrella criterion; level-response indicative content must also be required=false.',
 		'Formula constants and symbolic formulae are allowed in answerChain text when they are part of the reusable method.',
 		extraInstructions,
 		'',
@@ -2439,7 +2440,8 @@ function extractionSpecPrompt(extractionSpec) {
 		'Vision-stage extraction contract: extract factual source evidence only. Do not generate answerChain fields in this stage.',
 		'Recover learner-visible prompt/context, response controls, required images/tables/graphs, positive mark-scheme evidence, checklist items, answer keys or model answers, provenance, confidence, and review flags.',
 		'Do not return specification references, assessment objectives, or topic taxonomy; the script sets topicPath to [] and specRef to null in this phase.',
-		'Keep exact values, table entries, answer keys, and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
+		'Keep exact values, table entries, answer keys, and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.',
+		'Checklist required=true means every full-credit response needs that criterion; alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.'
 	].join('\n');
 }
 
@@ -2495,6 +2497,9 @@ export function buildFullPaperPrompt({
 		'For source tables needed by a core question, include a contextBlocks item with kind "structured-table", label such as "Table 1", columns, and rows. Include the full table when the learner must inspect, calculate from, compare, or mark a value in it.',
 		'For table selection or ring-the-value responses, keep the source table in contextBlocks and use response.kind "choice-table" with selectable rows for the relevant source-table cells. Set response.correctAnswers targetId "answer" to the exact selected row string joined with " | ". Do not use asset-canvas for a table that can be represented structurally.',
 		'For graph drawing, label-on-image, diagram marking, or any response where the answer surface is a source visual that cannot be represented as a structured table, use asset-canvas or image-label-zones with compact correctAnswers and a usable asset from the local asset manifest. If no usable asset exists, mark the question needsHumanReview and include a blocking review note.',
+		'For markChecklist.required, true means every full-credit response must satisfy that criterion. If the mark scheme says any one, any two, max two, or gives alternative accepted routes, do not mark every alternative required=true. Add one required umbrella criterion such as "Give two distinct credited reasons" and mark the individual accepted alternatives required=false.',
+		'For level-of-response questions, preserve the level descriptor mark ranges such as Level 2 (3-4 marks) or Level 1 (1-2 marks). Treat indicative-content examples as optional checklist evidence with required=false; do not require every possible indicative point.',
+		'If promptText is non-empty, promptBlocks must contain the learner-visible printed question instruction as renderable paragraph blocks. Do not leave promptBlocks empty for a marked question.',
 		'Preserve exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer. Text-only chain repair depends on this evidence to create reusable answer chains later.',
 		'For markSchemeItems, include the positive credit/marking rows only. Do not create separate markSchemeItems for ignore, reject, do-not-accept, guidance, or allowance text unless the row is itself a positive alternative answer route. Fold essential allowances into the checklist text if needed.',
 		'Keep contextText minimal. Do not copy a whole table into contextText; use a structured-table contextBlocks item instead. Include only values needed to answer a text-only subquestion; for table/graph response surfaces, use an asset-style response and concise correctAnswers.',
