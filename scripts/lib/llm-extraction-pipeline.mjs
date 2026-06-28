@@ -283,96 +283,118 @@ export const RepairSchema = z.object({
 	questions: LlmExtractionCandidateSchema.shape.questions
 });
 
-const FullChainRepairSchema = z.object({
-	repairs: z.array(
-		z.object({
-			sourceQuestionRef: z.string(),
-			answerChain: z.object({
-				id: z.string().nullable(),
-				title: z.string(),
-				canonicalChainText: z.string(),
-				summary: z.string(),
-				broadTopic: z.string().nullable(),
-				chainFamilyId: z.string().nullable(),
-				steps: z.array(StepSchema),
-				confidence: z.number(),
-				needsHumanReview: z.boolean(),
-				reviewNotes: z.array(z.string())
-			}),
-			chainResolution: ChainResolutionSchema.optional(),
-			commonWeakAnswers: z
-				.array(
-					z.object({
-						weakAnswerText: z.string(),
-						missingStepIndexes: z.array(z.number()),
-						explanation: z.string(),
-						confidence: z.number()
-					})
-				)
-				.nullable()
-				.optional()
-		})
-	)
+export function normalizeRepairEnvelope(value) {
+	if (Array.isArray(value)) return { repairs: value };
+	if (!value || typeof value !== 'object' || Array.isArray(value.repairs)) return value;
+	const repairs = [];
+	for (const [sourceQuestionRef, repair] of Object.entries(value)) {
+		if (!/^\d{2}\.\d{1,2}$/.test(sourceQuestionRef)) continue;
+		if (!repair || typeof repair !== 'object' || Array.isArray(repair)) continue;
+		repairs.push({
+			...repair,
+			sourceQuestionRef: String(repair.sourceQuestionRef ?? sourceQuestionRef)
+		});
+	}
+	if (repairs.length === 0) return value;
+	return { ...value, repairs };
+}
+
+const FullChainRepairItemSchema = z.object({
+	sourceQuestionRef: z.string(),
+	answerChain: z.object({
+		id: z.string().nullable(),
+		title: z.string(),
+		canonicalChainText: z.string(),
+		summary: z.string(),
+		broadTopic: z.string().nullable(),
+		chainFamilyId: z.string().nullable(),
+		steps: z.array(StepSchema),
+		confidence: z.number(),
+		needsHumanReview: z.boolean(),
+		reviewNotes: z.array(z.string())
+	}),
+	chainResolution: ChainResolutionSchema.optional(),
+	commonWeakAnswers: z
+		.array(
+			z.object({
+				weakAnswerText: z.string(),
+				missingStepIndexes: z.array(z.number()),
+				explanation: z.string(),
+				confidence: z.number()
+			})
+		)
+		.nullable()
+		.optional()
 });
 
-const FullQuestionQualityRepairSchema = z.object({
-	repairs: z.array(
-		z.object({
-			sourceQuestionRef: z.string(),
-			selfContainedPromptText: z.string().nullable().optional(),
-			contextText: z.string().nullable().optional(),
-			response: createFullResponseSchema().nullable().optional(),
-			assets: z.array(createLooseAssetSchema()).nullable().optional(),
-			markSchemeItems: z
-				.array(
-					z.object({
-						itemType: z.string(),
-						text: z.string(),
-						marks: z.number().nullable(),
-						sourceRef: z.string(),
-						confidence: z.number().nullable()
-					})
-				)
-				.nullable()
-				.optional(),
-			needsHumanReview: z.boolean().nullable().optional(),
-			reviewNotes: z.array(z.string()).nullable().optional(),
-			answerChain: AnswerChainSchema.nullable().optional(),
-			chainResolution: ChainResolutionSchema.nullable().optional(),
-			markChecklist: z
-				.array(
-					z.object({
-						text: z.string(),
-						required: z.boolean(),
-						markSchemeItemIndexes: z.array(z.number()),
-						confidence: z.number().nullable(),
-						needsHumanReview: z.boolean()
-					})
-				)
-				.nullable()
-				.optional(),
-			modelAnswer: z
-				.object({
-					answerText: z.string(),
-					confidence: z.number(),
-					needsHumanReview: z.boolean()
-				})
-				.nullable()
-				.optional(),
-			commonWeakAnswers: z
-				.array(
-					z.object({
-						weakAnswerText: z.string(),
-						missingStepIndexes: z.array(z.number()),
-						explanation: z.string(),
-						confidence: z.number()
-					})
-				)
-				.nullable()
-				.optional()
+const FullChainRepairSchema = z.preprocess(
+	normalizeRepairEnvelope,
+	z.object({
+		repairs: z.array(FullChainRepairItemSchema)
+	})
+);
+
+const FullQuestionQualityRepairItemSchema = z.object({
+	sourceQuestionRef: z.string(),
+	selfContainedPromptText: z.string().nullable().optional(),
+	contextText: z.string().nullable().optional(),
+	response: createFullResponseSchema().nullable().optional(),
+	assets: z.array(createLooseAssetSchema()).nullable().optional(),
+	markSchemeItems: z
+		.array(
+			z.object({
+				itemType: z.string(),
+				text: z.string(),
+				marks: z.number().nullable(),
+				sourceRef: z.string(),
+				confidence: z.number().nullable()
+			})
+		)
+		.nullable()
+		.optional(),
+	needsHumanReview: z.boolean().nullable().optional(),
+	reviewNotes: z.array(z.string()).nullable().optional(),
+	answerChain: AnswerChainSchema.nullable().optional(),
+	chainResolution: ChainResolutionSchema.nullable().optional(),
+	markChecklist: z
+		.array(
+			z.object({
+				text: z.string(),
+				required: z.boolean(),
+				markSchemeItemIndexes: z.array(z.number()),
+				confidence: z.number().nullable(),
+				needsHumanReview: z.boolean()
+			})
+		)
+		.nullable()
+		.optional(),
+	modelAnswer: z
+		.object({
+			answerText: z.string(),
+			confidence: z.number(),
+			needsHumanReview: z.boolean()
 		})
-	)
+		.nullable()
+		.optional(),
+	commonWeakAnswers: z
+		.array(
+			z.object({
+				weakAnswerText: z.string(),
+				missingStepIndexes: z.array(z.number()),
+				explanation: z.string(),
+				confidence: z.number()
+			})
+		)
+		.nullable()
+		.optional()
 });
+
+const FullQuestionQualityRepairSchema = z.preprocess(
+	normalizeRepairEnvelope,
+	z.object({
+		repairs: z.array(FullQuestionQualityRepairItemSchema)
+	})
+);
 
 export function createRenderBlockSchema() {
 	return z.object({
@@ -3371,7 +3393,7 @@ export async function repairFullPaperAnswerChains({
 				{
 					role: 'system',
 					content:
-						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only chain repairs keyed by sourceQuestionRef.'
+						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only JSON with a repairs array; each repair must include sourceQuestionRef.'
 				},
 				{
 					role: 'user',
@@ -3454,7 +3476,7 @@ export async function repairFullPaperQuestionQuality({
 				{
 					role: 'system',
 					content:
-						'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets unless the supplied evidence clearly shows a repair. Return only changed question-quality, grading, model-answer, weak-answer, review-flag, and answer-chain fields keyed by sourceQuestionRef.'
+						'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets unless the supplied evidence clearly shows a repair. Return only JSON with a repairs array; each repair must include sourceQuestionRef and only changed question-quality, grading, model-answer, weak-answer, review-flag, and answer-chain fields.'
 				},
 				{
 					role: 'user',

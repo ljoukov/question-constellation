@@ -508,6 +508,7 @@ for (const exportName of [
 	'judgeQuestionSolvability',
 	'questionRefsFromText',
 	'markSchemeTextExcerptForRefs',
+	'normalizeRepairEnvelope',
 	'judgeCandidateAgainstRubric',
 	'pdfText'
 ]) {
@@ -609,6 +610,22 @@ const parsedRefs = pipelineModule.questionRefsFromText(
 );
 if (parsedRefs.join(',') !== '01.1,01.2,10.12') {
 	fail('questionRefsFromText did not parse spaced and compact question refs.', parsedRefs);
+}
+const normalizedRepairEnvelope = pipelineModule.normalizeRepairEnvelope({
+	'02.3': {
+		answerChain: {
+			id: 'chem-chain-recall-comparative-property-differences',
+			title: 'Recall and state comparative property differences'
+		}
+	}
+});
+if (
+	!Array.isArray(normalizedRepairEnvelope.repairs) ||
+	normalizedRepairEnvelope.repairs[0]?.sourceQuestionRef !== '02.3' ||
+	normalizedRepairEnvelope.repairs[0]?.answerChain?.title !==
+		'Recall and state comparative property differences'
+) {
+	fail('normalizeRepairEnvelope did not accept sourceQuestionRef-keyed repair JSON.', normalizedRepairEnvelope);
 }
 const markSchemeExcerpt = pipelineModule.markSchemeTextExcerptForRefs(
 	['header', '01.1 first answer', 'nearby guidance', '02.1 second answer'].join('\n'),
