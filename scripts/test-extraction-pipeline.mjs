@@ -196,6 +196,7 @@ requireIncludes(
 		'processSelectedPapers',
 		'Promise.all',
 		'--thinking-level=${thinkingLevel}',
+		"integerArg('llm-timeout-ms', 600000, 1)",
 		"integerArg('llm-max-attempts', 3, 1)",
 		"integerArg('paper-attempts', 2, 1)",
 		"integerArg('judge-batch-size', 1, 1)",

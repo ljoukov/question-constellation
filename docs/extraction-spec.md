@@ -327,7 +327,7 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
-pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2
+pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2 --llm-timeout-ms=600000
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
 pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
