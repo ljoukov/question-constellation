@@ -18,6 +18,7 @@ export const DEFAULT_LLM_MAX_ATTEMPTS = Number(process.env.EXTRACTION_LLM_MAX_AT
 const LLM_LOG_RUN_ID = `${new Date().toISOString().replace(/[:.]/g, '-')}-pid${process.pid}`;
 const LLM_LOG_TEXT_LIMIT = 8000;
 let llmCallCounter = 0;
+const sourcePdfPageTextCache = new Map();
 
 const StepRoleSchema = z.enum([
 	'given',
@@ -2247,6 +2248,8 @@ export function deterministicCandidateIssues(candidate) {
 			...responseControlCompletenessIssues(question),
 			...responseAssetCompletenessIssues(question),
 			...renderBlockAssetCompletenessIssues(question),
+			...referencedMediaAssetConsistencyIssues(question),
+			...sourceDocumentMediaAssetConsistencyIssues(question, candidate.sourceDocument),
 			...referencedMediaCompletenessIssues(question),
 			...copyrightPlaceholderMediaIssues(question),
 			...withdrawnOrStatisticsOnlyQuestionIssues(question),
@@ -2358,6 +2361,7 @@ function fixedResponseChainSpecificityIssues(question) {
 
 function fixedResponseModelAnswerIssues(question) {
 	if (exactFixedAnswerTexts(question).length === 0 || !question.modelAnswer?.answerText) return [];
+	if (fixedResponseModelAnswerDuplicatesAnswerKey(question)) return [];
 	return [
 		{
 			severity: 'warning',
@@ -2368,6 +2372,42 @@ function fixedResponseModelAnswerIssues(question) {
 				'Fixed-response questions should usually store correctAnswers/answer keys rather than a modelAnswer row.'
 		}
 	];
+}
+
+function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
+	const modelAnswer = normalizedForExactMatch(question.modelAnswer?.answerText);
+	if (!modelAnswer) return false;
+	const answers = responseCorrectAnswerTexts(question.response).map(normalizedForExactMatch).filter(Boolean);
+	if (answers.length === 0) return false;
+	if (answers.some((answer) => modelAnswer === answer)) return true;
+	const joinedAnswers = normalizedForExactMatch(answers.join(' '));
+	if (joinedAnswers && (modelAnswer === joinedAnswers || modelAnswer.includes(joinedAnswers))) {
+		return true;
+	}
+	const longEnoughAnswers = answers.filter((answer) => answer.length >= 2);
+	if (
+		longEnoughAnswers.length > 0 &&
+		modelAnswer.length <= 160 &&
+		longEnoughAnswers.every((answer) => modelAnswer.includes(answer) || answer.includes(modelAnswer))
+	) {
+		return true;
+	}
+	const coreAnswers = responseCorrectAnswerTexts(question.response)
+		.map(normalizedCoreFixedAnswerText)
+		.filter((answer) => answer.length >= 2);
+	return (
+		coreAnswers.length > 0 &&
+		modelAnswer.length <= 200 &&
+		coreAnswers.every((answer) => modelAnswer.includes(answer) || answer.includes(modelAnswer))
+	);
+}
+
+function normalizedCoreFixedAnswerText(value) {
+	return normalizedForExactMatch(
+		String(value ?? '')
+			.replace(/\([^)]*\)/g, ' ')
+			.replace(/\b(?:or|allow|accept|ignore|do not accept)\b.*$/i, ' ')
+	);
 }
 
 function writtenResponseModelAnswerIssues(question) {
@@ -2509,7 +2549,10 @@ function responseAssetCompletenessIssues(question) {
 				evidence: label,
 				message: `${kind} response asset ${label} is label-only. It needs a filePath, publicPath, or r2Key so the learner can see the required media.`
 			});
+			continue;
 		}
+		const mismatch = mediaAssetPageLabelMismatch(asset, label);
+		if (mismatch) issues.push(mismatch);
 	}
 	return issues;
 }
@@ -2554,7 +2597,10 @@ function renderBlockAssetCompletenessIssues(question) {
 				evidence: label,
 				message: `Render block asset ${label} is label-only. It needs a filePath, publicPath, or r2Key so the learner can see the media.`
 			});
+			continue;
 		}
+		const mismatch = mediaAssetPageLabelMismatch(asset, label, field);
+		if (mismatch) issues.push(mismatch);
 	}
 	return issues;
 }
@@ -2576,6 +2622,72 @@ function referencedMediaCompletenessIssues(question) {
 		});
 	}
 	return issues;
+}
+
+function referencedMediaAssetConsistencyIssues(question) {
+	const issues = [];
+	for (const label of referencedMediaLabelsFromQuestion(question)) {
+		for (const asset of question.assets ?? []) {
+			if (!assetMatchesLabel(asset, label) || !assetHasUsableReference(asset)) continue;
+			const mismatch = mediaAssetPageLabelMismatch(asset, label);
+			if (mismatch) issues.push(mismatch);
+		}
+	}
+	return issues;
+}
+
+function sourceDocumentMediaAssetConsistencyIssues(question, sourceDocument) {
+	const issues = [];
+	for (const [index, asset] of (question.assets ?? []).entries()) {
+		const mismatch = mediaAssetSourcePageMismatch({
+			sourceDocument,
+			asset,
+			field: `assets[${index}]`
+		});
+		if (mismatch) issues.push(mismatch);
+	}
+	return issues;
+}
+
+function mediaAssetSourcePageMismatch({ sourceDocument, asset, field }) {
+	const label = renderBlockAssetLabel(asset);
+	const expected = figureNumber(label);
+	const pageNumber = Number(asset?.pageNumber);
+	if (!expected || !Number.isInteger(pageNumber) || pageNumber < 1) return null;
+	const sourcePath = sourceDocument?.filePath;
+	if (!sourcePath || !sourcePathExists(sourcePath)) return null;
+	const text = sourcePdfPageText(sourcePath, pageNumber);
+	if (!text) return null;
+	const expectedPattern = new RegExp(`\\b(?:figure|fig\\.?)\\s*${escapeRegExp(expected)}\\b`, 'i');
+	if (expectedPattern.test(text)) return null;
+	return {
+		severity: 'error',
+		code: 'media_asset_page_label_mismatch',
+		field,
+		evidence: `${label} page ${pageNumber}`,
+		message:
+			'Media asset pageNumber does not appear to contain the referenced figure label in the source PDF.'
+	};
+}
+
+function sourcePathExists(sourcePath) {
+	const resolved = path.isAbsolute(sourcePath) ? sourcePath : path.resolve(process.cwd(), sourcePath);
+	return existsSync(sourcePath) || existsSync(resolved);
+}
+
+function sourcePdfPageText(sourcePath, pageNumber) {
+	const resolved = path.isAbsolute(sourcePath) ? sourcePath : path.resolve(process.cwd(), sourcePath);
+	const actualPath = existsSync(sourcePath) ? sourcePath : resolved;
+	const key = `${actualPath}:${pageNumber}`;
+	if (sourcePdfPageTextCache.has(key)) return sourcePdfPageTextCache.get(key);
+	let text = '';
+	try {
+		text = pdfText(actualPath, 20000, [pageNumber]);
+	} catch {
+		text = '';
+	}
+	sourcePdfPageTextCache.set(key, text);
+	return text;
 }
 
 function copyrightPlaceholderMediaIssues(question) {
@@ -2695,7 +2807,10 @@ function referencedMediaLabelsFromQuestion(question) {
 function questionHasConcreteMediaAsset(question, label) {
 	if (
 		(question.assets ?? []).some(
-			(asset) => assetMatchesLabel(asset, label) && assetHasUsableReference(asset)
+			(asset) =>
+				assetMatchesLabel(asset, label) &&
+				assetHasUsableReference(asset) &&
+				!mediaAssetPageLabelMismatch(asset, label)
 		)
 	) {
 		return true;
@@ -2703,8 +2818,50 @@ function questionHasConcreteMediaAsset(question, label) {
 	return questionRenderBlocks(question).some(
 		({ block }) =>
 			assetMatchesLabel(block, label) &&
-			(assetHasUsableReference(block) || assetHasUsableReference(block?.asset))
+			(assetHasUsableReference(block) || assetHasUsableReference(block?.asset)) &&
+			!mediaAssetPageLabelMismatch(block, label) &&
+			!mediaAssetPageLabelMismatch(block?.asset, label)
 	);
+}
+
+function mediaAssetPageLabelMismatch(asset, label, field = 'assets') {
+	if (!asset || !label) return null;
+	const expected = figureNumber(label);
+	if (!expected) return null;
+	const values = [
+		asset.sourceLabel,
+		asset.label,
+		asset.assetLabel,
+		asset.altText,
+		asset.id,
+		asset.assetId,
+		asset.filePath,
+		asset.publicPath,
+		asset.r2Key
+	].filter((value) => typeof value === 'string' && value.trim());
+	for (const value of values) {
+		const actual = figureNumber(value);
+		if (actual && actual !== expected) {
+			return {
+				severity: 'error',
+				code: 'media_asset_label_mismatch',
+				field,
+				evidence: `${label} -> ${value}`,
+				message:
+					'Media asset metadata or path appears to point to a different numbered figure than the learner-facing reference.'
+			};
+		}
+	}
+	return null;
+}
+
+function figureNumber(value) {
+	const match = String(value ?? '').match(/\b(?:figure|fig\.?)\s*[-_ ]*(\d+[A-Za-z]?)\b/i);
+	return match ? match[1].toLowerCase() : null;
+}
+
+function escapeRegExp(value) {
+	return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function mediaReferenceNeedsVisualContext(question, label) {

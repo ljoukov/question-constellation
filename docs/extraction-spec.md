@@ -460,6 +460,15 @@ page image is better than a broken learner-facing asset reference. Pass
 `--repair-text-references` when the audit reports learner-visible text such as "Use Figure 2" but no
 asset was attached; the generated asset is still marked `needsHumanReview`.
 
+`needsHumanReview` means the extractor or repair script could not prove the row is publishable. Treat
+it as an import blocker, not as a vague warning. Common causes are full-page fallback assets that need
+cropping/confirmation, source-page figure mismatches, copyright placeholder media, unsupported response
+controls, or chain text that still looks prompt-specific. Do not clear the flag by prompt instruction
+alone: clear it only after the source asset/render control has been fixed and the mechanical audit plus
+learner-facing solvability judge pass. A reviewed asset must also point to the correct numbered source
+PDF page; for example, an asset labelled `Figure 4` with `pageNumber: 19` is invalid if the source page
+text does not contain `Figure 4`.
+
 Before importing existing exported artifacts, run the aggregate extracted-data audit:
 
 ```sh
@@ -493,6 +502,25 @@ The command prints a compact terminal summary and writes the full JSON report to
 Use `--fail-on-warnings` for an import-ready gate. Warnings include `needsHumanReview`; those outputs
 may be useful for debugging and repair, but they should not be imported until a human has reviewed
 the flagged source/media and cleared the flag.
+
+If a full paper is partially blocked by unpublishable or unreviewed questions, build an import-ready
+subset instead of weakening the importer:
+
+```sh
+pnpm run build:import-ready-extracted-subset -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --output-root=tmp/import-ready-extracted/aqa-separate-science-higher \
+  --recursive
+
+pnpm run audit:extracted-data -- \
+  --input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
+  --recursive --fail-on-warnings
+```
+
+The subset builder drops questions with deterministic errors, warnings, `needsHumanReview` flags, or
+review-marked assets/chains. It does not clear review flags, invent replacement figures, or modify
+the source extraction. Use it for progressive imports only when publishing a clean subset is better
+than blocking all clean questions behind one copyright placeholder or review-only repair.
 
 Withdrawn questions, replacement notices, statistics-only rows, and mean-mark/max-mark lines are not
 learner-facing questions. If the source materials do not contain the original prompt plus positive

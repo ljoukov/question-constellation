@@ -615,6 +615,8 @@ function auditMessage(code) {
 			'Extracted media assets need a local filePath/localPath/path/sourcePath before import or upload.',
 		asset_label_only_duplicate_review:
 			'A label-only media asset is backed by another concrete asset; review and remove stale duplicates when cleaning data.',
+		media_asset_page_label_mismatch:
+			'Media asset pageNumber does not appear to contain the referenced figure label in the source PDF.',
 		media_block_missing_local_file: 'A render block media file path points to a missing local file.',
 		question_missing_grading_evidence:
 			'Published marked questions need mark rows, checklist rows, a model answer, answer keys, or reviewed chain evidence.',

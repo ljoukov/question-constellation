@@ -46,6 +46,9 @@ const cliSource = readText(path.join(rootDir, 'scripts/extract-paper-llm.mjs'));
 const batchSource = readText(path.join(rootDir, 'scripts/extract-aqa-separate-science-batch.mjs'));
 const downloaderSource = readText(path.join(rootDir, 'scripts/download-aqa-separate-science.mjs'));
 const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.mjs'));
+const repairAssetSource = readText(
+	path.join(rootDir, 'scripts/repair-extraction-response-assets.mjs')
+);
 
 for (const filePath of [
 	'docs/product-methodology.md',
@@ -60,6 +63,7 @@ for (const filePath of [
 	'scripts/eval-extraction-pipeline-llm.mjs',
 	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
+	'scripts/build-import-ready-extracted-subset.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/test-answer-chain-golden.mjs',
@@ -89,6 +93,7 @@ requireIncludes(
 		'pnpm run summarize:llm-extraction-logs',
 		'pnpm run audit:extracted-data',
 		'pnpm run audit:current-exported-data',
+		'pnpm run build:import-ready-extracted-subset',
 		'--fail-on-warnings',
 		'--concurrency=4',
 		'--repair-text-references',
@@ -153,16 +158,17 @@ requireIncludes(
 		'--supporting-document',
 		'--existing-chains',
 		'--mark-scheme-image-mode',
-		'--repair-attempts',
-		'--repair-batch-size',
-		'--llm-timeout-ms',
-		'--llm-max-attempts',
-		'--llm-max-attempts=3',
-		'--skip-judge',
-		'extractFullPaperFromPdfSet'
-	],
-	'Pipeline CLI'
-);
+			'--repair-attempts',
+			'--repair-batch-size',
+			'--llm-timeout-ms',
+			'--llm-max-attempts',
+			'--llm-max-attempts=3',
+			'--skip-judge',
+			"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
+			'extractFullPaperFromPdfSet'
+		],
+		'Pipeline CLI'
+	);
 
 requireIncludes(
 	batchSource,
@@ -209,6 +215,16 @@ requireIncludes(
 	'Vision importer'
 );
 
+requireIncludes(
+	repairAssetSource,
+	[
+		"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
+		"role: isResponseAsset ? 'response-canvas' : 'question-context'",
+		'repairTextReferences'
+	],
+	'Response asset repair script'
+);
+
 for (const scriptName of [
 	'download:aqa-separate-science',
 	'extract:aqa-separate-science:batch',
@@ -219,6 +235,7 @@ for (const scriptName of [
 	'eval:question-solvability',
 	'audit:extracted-data',
 	'audit:current-exported-data',
+	'build:import-ready-extracted-subset',
 	'repair:extracted-data',
 	'repair:extraction-response-assets',
 	'import:vision',
@@ -953,6 +970,208 @@ if (
 	)
 ) {
 	fail('Deterministic checks treated a labelled table as a missing media block.');
+}
+
+const duplicateFixedModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.1',
+			commandWord: 'Complete',
+			marks: 1,
+			response: {
+				kind: 'equation-blanks',
+				segments: [{ kind: 'blank', id: 'blank1', label: 'product' }],
+				correctAnswers: [{ targetId: 'blank1', correctAnswer: 'glucose' }]
+			},
+			markSchemeItems: [{ itemType: 'answer', text: 'glucose' }],
+			modelAnswer: { answerText: 'glucose' },
+			answerChain: {
+				id: 'bio-chain-equation-product-recall',
+				title: 'Recall a product from an equation cue',
+				canonicalChainText: 'Use the equation cue to recall the credited product.',
+				summary: 'Reusable equation-completion recall chain.',
+				steps: [
+					{
+						stepText: 'Recall the credited product for the blank.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	duplicateFixedModelAnswerIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'fixed_response_model_answer_review')
+	)
+) {
+	fail('Deterministic checks warned when a fixed-response model answer only duplicates the answer key.');
+}
+
+const duplicateEquationModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.1',
+			commandWord: 'Complete',
+			marks: 2,
+			response: {
+				kind: 'equation-blanks',
+				segments: [
+					{ kind: 'blank', id: 'blank1', label: 'reactant before arrow 1' },
+					{ kind: 'text', text: ' + ' },
+					{ kind: 'blank', id: 'blank2', label: 'reactant before arrow 2' },
+					{ kind: 'text', text: ' -> ' },
+					{ kind: 'blank', id: 'blank3', label: 'product after arrow' },
+					{ kind: 'text', text: ' + oxygen' }
+				],
+				correctAnswers: [
+					{
+						targetId: 'blank1',
+						correctAnswer: 'carbon dioxide (or water, in either order with blank2)'
+					},
+					{
+						targetId: 'blank2',
+						correctAnswer: 'water (or carbon dioxide, in either order with blank1)'
+					},
+					{ targetId: 'blank3', correctAnswer: 'glucose' }
+				]
+			},
+			markSchemeItems: [
+				{ itemType: 'mark', text: 'Before arrow: carbon dioxide and water; either order.' },
+				{ itemType: 'mark', text: 'After arrow: glucose.' }
+			],
+			modelAnswer: { answerText: 'carbon dioxide + water -> glucose + oxygen' },
+			answerChain: {
+				id: 'bio-chain-equation-term-placement',
+				title: 'Place recalled terms in a process word equation',
+				canonicalChainText:
+					'Use the process cue to recall the input and output terms, then place each term on the correct side of the equation.',
+				summary: 'Reusable word-equation completion chain.',
+				steps: [
+					{
+						stepText: 'Recall and place the required equation terms.',
+						stepRole: 'method',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0, 1]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	duplicateEquationModelAnswerIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'fixed_response_model_answer_review')
+	)
+) {
+	fail(
+		'Deterministic checks warned when a fixed-response model answer only repeats a completed equation.'
+	);
+}
+
+const mismatchedMediaAssetIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '05.2',
+			commandWord: 'Calculate',
+			marks: 2,
+			promptText: 'Use Figure 4 to calculate the change.',
+			response: { kind: 'lines' },
+			assets: [
+				{
+					sourceLabel: 'Figure 4',
+					filePath: 'data/vision-extracted/example/page-019-05-2-figure-5.png',
+					altText: 'Figure 5 rendered from source paper page 19.'
+				}
+			],
+			markSchemeItems: [{ itemType: 'marking_point', text: 'Correct calculation.' }],
+			modelAnswer: { answerText: 'The change is calculated from the graph.' },
+			answerChain: {
+				id: 'bio-chain-graph-read-calculate-change',
+				title: 'Read a graph value and calculate a change',
+				canonicalChainText:
+					'Identify the graph values, subtract to find the change, and give the result.',
+				summary: 'Reusable graph-reading calculation chain.',
+				steps: [
+					{
+						stepText: 'Read the graph values and calculate the change.',
+						stepRole: 'calculation',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!mismatchedMediaAssetIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'media_asset_label_mismatch')
+	)
+) {
+	fail('Deterministic checks did not flag a numbered media asset label/path mismatch.');
+}
+
+const localSourcePageFixture = path.join(
+	rootDir,
+	'data/aqa-separate-science-higher/question-papers/AQA-84611H-QP-JUN24-CR.PDF'
+);
+if (existsSync(localSourcePageFixture)) {
+	const wrongSourcePageIssues = pipelineModule.deterministicCandidateIssues({
+		sourceDocument: {
+			filePath: path.relative(rootDir, localSourcePageFixture)
+		},
+		questions: [
+			{
+				sourceQuestionRef: '05.2',
+				commandWord: 'Explain',
+				marks: 3,
+				promptText: 'Explain the result using Figure 4.',
+				contextText: 'Figure 4 shows the results.',
+				response: { kind: 'lines', count: 3 },
+				assets: [
+					{
+						sourceLabel: 'Figure 4',
+						assetType: 'image',
+						pageNumber: 19,
+						filePath: 'tmp/figure-4-page-19.png'
+					}
+				],
+				markSchemeItems: [{ itemType: 'marking_point', text: 'Accept osmosis explanation.' }],
+				modelAnswer: { answerText: 'Water leaves the potato by osmosis.' },
+				answerChain: {
+					id: 'biology-chain-explain-result-from-condition',
+					title: 'Explain a result from the changed condition',
+					canonicalChainText:
+						'Use the changed condition to explain the observed result through the relevant process.',
+					summary: 'Connect the condition to the process and outcome.',
+					steps: [
+						{
+							stepText: 'Connect the condition to the process and outcome.',
+							stepRole: 'link',
+							explanation: null,
+							commonOmission: null,
+							markSchemeItemIndexes: [0]
+						}
+					]
+				}
+			}
+		]
+	});
+	if (
+		!wrongSourcePageIssues.some((finding) =>
+			finding.issues.some(
+				(issue) => issue.severity === 'error' && issue.code === 'media_asset_page_label_mismatch'
+			)
+		)
+	) {
+		fail('Deterministic checks did not flag a numbered media asset assigned to the wrong source PDF page.');
+	}
 }
 
 const missingWrittenModelAnswerIssues = pipelineModule.deterministicCandidateIssues({

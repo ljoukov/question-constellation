@@ -139,6 +139,7 @@ function responseAssetLabels(question) {
 
 function ensureResponseAssetLabel(response, fallbackLabel) {
 	if (!response || typeof response !== 'object' || !fallbackLabel) return response;
+	if (!['asset-canvas', 'image-label-zones'].includes(response.kind)) return response;
 	if (response.assetLabel || response.label || response.assetId || response.sourceLabel)
 		return response;
 	return { ...response, assetLabel: fallbackLabel };
@@ -376,9 +377,10 @@ function repairFile(filePath) {
 			const pruned = pruneEmptyMediaBlocks(question);
 			question = pruned.question;
 			blocksRemoved += pruned.removed;
+			const responseLabels = new Set(responseAssetLabels(question));
 			const labels = [
 				...new Set([
-					...responseAssetLabels(question),
+					...responseLabels,
 					...mediaBlockAssetLabels(question),
 					...referencedMediaAssetLabels(question)
 				])
@@ -413,12 +415,13 @@ function repairFile(filePath) {
 				const destPath = path.join(outputDir, fileName);
 				if (!dryRun) copyFileSync(pageImage, destPath);
 				assetsCreated += 1;
+				const isResponseAsset = responseLabels.has(label);
 				questionAssets.push({
 					sourceLabel: label,
 					assetType: 'image',
-					role: 'response-canvas',
+					role: isResponseAsset ? 'response-canvas' : 'question-context',
 					pageNumber,
-					required: true,
+					required: isResponseAsset,
 					filePath: relative(destPath),
 					publicPath: `/images/papers/${sourceDocumentId}/${fileName}`,
 					r2Key: `images/papers/${sourceDocumentId}/${fileName}`,

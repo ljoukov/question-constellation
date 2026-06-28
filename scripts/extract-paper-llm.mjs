@@ -668,6 +668,7 @@ function responseAssetLabels(question) {
 
 function ensureResponseAssetLabel(response, fallbackLabel) {
 	if (!response || typeof response !== 'object' || !fallbackLabel) return response;
+	if (!['asset-canvas', 'image-label-zones'].includes(response.kind)) return response;
 	if (response.assetLabel || response.label || response.assetId || response.sourceLabel)
 		return response;
 	return { ...response, assetLabel: fallbackLabel };
