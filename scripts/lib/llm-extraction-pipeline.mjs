@@ -2237,6 +2237,7 @@ export function deterministicCandidateIssues(candidate) {
 	const findings = [];
 	for (const question of candidate.questions ?? []) {
 		const issues = [
+			...answerChainIdentityIssues(question),
 			...answerChainSpecificityIssues(question.answerChain, {
 				commandWord: question.commandWord
 			}),
@@ -2263,6 +2264,23 @@ export function deterministicCandidateIssues(candidate) {
 		});
 	}
 	return findings;
+}
+
+function answerChainIdentityIssues(question) {
+	if (question.marks === null || question.marks === undefined || Number(question.marks) <= 0) {
+		return [];
+	}
+	if (String(question.answerChain?.id ?? '').trim()) return [];
+	return [
+		{
+			severity: 'error',
+			code: 'answer_chain_missing_stable_id',
+			field: 'answerChain.id',
+			evidence: question.sourceQuestionRef,
+			message:
+				'Every published marked question needs a stable answerChain.id so extraction can reuse, update, and preserve chain identity across papers.'
+		}
+	];
 }
 
 function normalizedForExactMatch(value) {

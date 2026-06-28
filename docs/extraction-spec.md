@@ -331,6 +331,7 @@ pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurren
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
 pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
+pnpm run build:existing-chain-context -- --input-root=tmp/import-ready-extracted/aqa-separate-science-higher --output=tmp/existing-chain-context.json
 ```
 
 The downloader scrapes the official AQA assessment-resource pages for GCSE Biology 8461, Chemistry
@@ -563,7 +564,29 @@ When `--existing-chains` is supplied, the extractor must compare each chain to e
 should reuse an id when the ordered method is the same, keep the old id when clarifying wording for a
 compatible chain, and create a new id only for genuinely new mark-scoring reasoning. The optional
 `chainResolution` field records `reuse_existing`, `update_existing`, `create_new`, or `needs_review`
-for audit.
+for audit. A marked question with `answerChain.id: null` is not publishable: hold or repair it before
+building an import-ready subset, because downstream chain memory and compatibility depend on stable
+chain identity.
+
+Build the compatibility context from already-audited extracted JSON, preferably the import-ready
+subset rather than raw review-marked outputs:
+
+```sh
+pnpm run build:existing-chain-context -- \
+  --input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
+  --output=tmp/existing-chain-context.json
+
+pnpm run extract:paper-llm -- \
+  --question-paper=<next-paper.pdf> \
+  --mark-scheme=<next-mark-scheme.pdf> \
+  --source-document-id=<stable-source-id> \
+  --existing-chains=tmp/existing-chain-context.json \
+  --output=<candidate.json>
+```
+
+The context builder deduplicates by `answerChain.id`, keeps representative question refs, and omits
+questions or chains still marked `needsHumanReview`. This makes the model's compatibility decision
+source-backed without exposing an unbounded dump of all prior questions.
 
 The deterministic golden fixture is:
 

@@ -52,6 +52,9 @@ const repairAssetSource = readText(
 const prepareImportReadySource = readText(
 	path.join(rootDir, 'scripts/prepare-import-ready-extraction.mjs')
 );
+const existingChainContextSource = readText(
+	path.join(rootDir, 'scripts/build-existing-chain-context.mjs')
+);
 
 for (const filePath of [
 	'docs/product-methodology.md',
@@ -67,6 +70,7 @@ for (const filePath of [
 	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
 	'scripts/build-import-ready-extracted-subset.mjs',
+	'scripts/build-existing-chain-context.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
@@ -97,6 +101,7 @@ requireIncludes(
 		'pnpm run audit:extracted-data',
 		'pnpm run audit:current-exported-data',
 		'pnpm run build:import-ready-extracted-subset',
+		'pnpm run build:existing-chain-context',
 		'pnpm run prepare:import-ready-extraction',
 		'--import-raw-output',
 		'--fail-on-warnings',
@@ -246,6 +251,18 @@ requireIncludes(
 	'Import-ready extraction preparation script'
 );
 
+requireIncludes(
+	existingChainContextSource,
+	[
+		'answerChains',
+		'exampleQuestionRefs',
+		'needs_human_review',
+		'questionCount',
+		'max-question-refs'
+	],
+	'Existing chain context builder'
+);
+
 for (const scriptName of [
 	'download:aqa-separate-science',
 	'extract:aqa-separate-science:batch',
@@ -257,6 +274,7 @@ for (const scriptName of [
 	'audit:extracted-data',
 	'audit:current-exported-data',
 	'build:import-ready-extracted-subset',
+	'build:existing-chain-context',
 	'prepare:import-ready-extraction',
 	'repair:extracted-data',
 	'repair:extraction-response-assets',
@@ -284,6 +302,7 @@ for (const scriptPath of [
 	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
 	'scripts/build-import-ready-extracted-subset.mjs',
+	'scripts/build-existing-chain-context.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
@@ -345,6 +364,86 @@ if (
 	logSummary.byLabelPrefix['extract-full-paper']?.completed !== 1
 ) {
 	fail('LLM extraction log summarizer did not aggregate sample JSONL correctly.', logSummary);
+}
+
+const chainContextDir = path.join(rootDir, 'tmp/test-existing-chain-context');
+mkdirSync(chainContextDir, { recursive: true });
+const chainContextInput = path.join(chainContextDir, 'paper.json');
+const chainContextOutput = path.join(chainContextDir, 'context.json');
+const reusableChain = {
+	id: 'bio-chain-process-cause-effect',
+	title: 'Explain a process cause and effect',
+	canonicalChainText: 'Identify the process, connect the cause to the effect, and state the outcome.',
+	summary: 'Reusable cause-effect explanation chain.',
+	broadTopic: 'Biology',
+	chainFamilyId: 'process-cause-effect',
+	steps: [
+		{
+			stepText: 'Connect the cause to the process and outcome.',
+			stepRole: 'link',
+			explanation: null,
+			commonOmission: null,
+			markSchemeItemIndexes: [0]
+		}
+	],
+	confidence: 0.9,
+	needsHumanReview: false,
+	reviewNotes: []
+};
+writeFileSync(
+	chainContextInput,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', subjectArea: 'Biology' },
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					marks: 2,
+					topicPath: ['Biology', 'Cells'],
+					answerChain: reusableChain,
+					needsHumanReview: false
+				},
+				{
+					sourceQuestionRef: '01.2',
+					marks: 3,
+					topicPath: ['Biology', 'Cells'],
+					answerChain: reusableChain,
+					needsHumanReview: false
+				},
+				{
+					sourceQuestionRef: '01.3',
+					marks: 1,
+					answerChain: {
+						...reusableChain,
+						id: 'bio-chain-review-only',
+						needsHumanReview: true
+					},
+					needsHumanReview: false
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const chainContextSummary = JSON.parse(
+	runNodeScript('scripts/build-existing-chain-context.mjs', [
+		`--input=${chainContextInput}`,
+		`--output=${chainContextOutput}`
+	])
+);
+const chainContext = JSON.parse(readText(chainContextOutput));
+if (
+	chainContextSummary.answerChains !== 1 ||
+	chainContext.answerChains.length !== 1 ||
+	chainContext.answerChains[0].questionCount !== 2 ||
+	chainContext.answerChains[0].exampleQuestionRefs.length !== 2 ||
+	chainContext.skipped.length !== 1
+) {
+	fail('Existing chain context builder did not dedupe chains or skip review-marked chains.', {
+		chainContextSummary,
+		chainContext
+	});
 }
 
 const pipelineModule = await import(
@@ -666,6 +765,45 @@ try {
 	) {
 		fail('Extracted-data audit did not report the numeric chain specificity defect.', auditResult);
 	}
+}
+
+const missingChainIdIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '05.7',
+			commandWord: 'Which',
+			marks: 1,
+			response: {
+				kind: 'choice',
+				correctAnswers: [{ targetId: 'choice', correctAnswer: 'Willow bark' }]
+			},
+			markSchemeItems: [{ itemType: 'answer', text: 'willow bark' }],
+			answerChain: {
+				id: null,
+				title: 'Fixed-response cue recall',
+				canonicalChainText: 'Use the cue to select the matching option.',
+				summary: 'Reusable fixed-response recall chain.',
+				steps: [
+					{
+						stepText: 'Select the matching option.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	!missingChainIdIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.severity === 'error' && issue.code === 'answer_chain_missing_stable_id'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag a marked question with a missing answerChain.id.');
 }
 
 const fixedAnswerStepIssues = pipelineModule.deterministicCandidateIssues({

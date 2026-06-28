@@ -42,11 +42,13 @@ For the script-first AQA Separate Science extraction/import pipeline:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science:batch -- --paper=aqa-84611h-qp-jun24 --chunk-pages=1
 pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
+pnpm run build:existing-chain-context -- --input-root=tmp/import-ready-extracted/aqa-separate-science-higher --output=tmp/existing-chain-context.json
 ```
 
 `prepare:import-ready-extraction` builds a clean subset, audits it with warnings treated as blockers,
 and runs per-paper import dry-runs by default. Add `--import` only when the vetted subset should write
-to D1.
+to D1. `build:existing-chain-context` emits the compact chain catalog to pass back into later
+extraction runs with `--existing-chains`.
 
 To refresh legacy extracted paper images in R2 after running `pnpm run extract:aqa`:
 
