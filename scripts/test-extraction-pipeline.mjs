@@ -58,6 +58,9 @@ const prepareImportReadySource = readText(
 const existingChainContextSource = readText(
 	path.join(rootDir, 'scripts/build-existing-chain-context.mjs')
 );
+const reconcileAnswerChainsSource = readText(
+	path.join(rootDir, 'scripts/reconcile-answer-chains.mjs')
+);
 const chainSpecificityAuditSource = readText(
 	path.join(rootDir, 'scripts/audit-answer-chain-specificity.mjs')
 );
@@ -82,6 +85,7 @@ for (const filePath of [
 	'scripts/evaluate-question-solvability.mjs',
 	'scripts/build-import-ready-extracted-subset.mjs',
 	'scripts/build-existing-chain-context.mjs',
+	'scripts/reconcile-answer-chains.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-answer-chain-specificity.mjs',
@@ -115,6 +119,7 @@ requireIncludes(
 		'pnpm run audit:current-exported-data',
 		'pnpm run build:import-ready-extracted-subset',
 		'pnpm run build:existing-chain-context',
+		'pnpm run reconcile:answer-chains',
 		'pnpm run prepare:import-ready-extraction',
 		'pnpm run audit:answer-chain-specificity',
 		'--import-raw-output',
@@ -165,6 +170,8 @@ requireIncludes(
 		'Return exactly the requested JSON object shape',
 		'summarizeLlmError',
 		'answerChainSpecificityIssues',
+		'text-only answer-chain grouping and reconciliation phase',
+		'Some current chains may be placeholders with id null',
 		'expandCompactFullPaperExtraction',
 		'normalizeQuestionResponseForExtraction',
 		'unorderedGroups',
@@ -358,6 +365,22 @@ requireIncludes(
 );
 
 requireIncludes(
+	reconcileAnswerChainsSource,
+	[
+		'repairFullPaperAnswerChains',
+		'evaluateCandidate',
+		'chainResolution',
+		'--existing-chains',
+		'--skip-judge',
+		'--fail-on-blocking',
+		'answer_chain_missing_stable_id',
+		'tmp/answer-chain-reconcile-summary.json',
+		'refsFromJudge'
+	],
+	'Answer-chain reconciliation script'
+);
+
+requireIncludes(
 	chainSpecificityAuditSource,
 	[
 		'input-root',
@@ -385,6 +408,7 @@ for (const scriptName of [
 	'audit:answer-chain-specificity',
 	'build:import-ready-extracted-subset',
 	'build:existing-chain-context',
+	'reconcile:answer-chains',
 	'prepare:import-ready-extraction',
 	'repair:extracted-data',
 	'repair:answer-chain-specificity',
@@ -441,6 +465,7 @@ for (const scriptPath of [
 	'scripts/evaluate-question-solvability.mjs',
 	'scripts/build-import-ready-extracted-subset.mjs',
 	'scripts/build-existing-chain-context.mjs',
+	'scripts/reconcile-answer-chains.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',

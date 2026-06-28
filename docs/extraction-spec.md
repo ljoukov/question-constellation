@@ -393,11 +393,12 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
-pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --chunk-concurrency=2 --extraction-granularity=chunk --evaluation-mode=extraction --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=4 --judge-mode=paper --judge-repair-attempts=1 --llm-timeout-ms=600000 --llm-max-calls=48
+pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=2 --chunk-concurrency=2 --extraction-granularity=chunk --evaluation-mode=extraction --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=4 --judge-mode=paper --judge-repair-attempts=1 --llm-timeout-ms=600000 --llm-max-calls=48
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
-pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
 pnpm run build:existing-chain-context -- --input-root=tmp/import-ready-extracted/aqa-separate-science-higher --output=tmp/existing-chain-context.json
+pnpm run reconcile:answer-chains -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/chain-reconciled/aqa-separate-science-higher --existing-chains=tmp/existing-chain-context.json --model=chatgpt-gpt-5.5 --thinking-level=xhigh --fail-on-blocking
+pnpm run prepare:import-ready-extraction -- --input-root=tmp/chain-reconciled/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
 ```
 
 The downloader scrapes the official AQA assessment-resource pages for GCSE Biology 8461, Chemistry
@@ -430,7 +431,9 @@ does not force the whole paper to restart from page 1.
 Use `--extraction-granularity=question` only as a focused repair/debug mode for hard page layouts.
 It runs one extraction call per detected sourceQuestionRef and can turn one paper into dozens of LLM
 calls. The default `chunk` mode extracts all subquestions that begin in each page chunk in one call.
-Dense GCSE pages with tables/graphs should use `--chunk-pages=1` or `2`; use
+Dense GCSE pages with tables/graphs should usually start at `--chunk-pages=2`. Drop to
+`--chunk-pages=1` only when a page is too visually dense for one call; one-page chunks can duplicate
+prior/lookahead context images and double cost on two-page question clusters. Use
 `--chunk-concurrency` to recover wall-clock speed without forcing oversized prompts.
 Use `--llm-max-calls=<n>` on benchmark and batch runs so a call-count regression fails early instead
 of silently running for hours.
@@ -697,17 +700,24 @@ pnpm run build:existing-chain-context -- \
   --input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
   --output=tmp/existing-chain-context.json
 
-pnpm run extract:paper-llm -- \
-  --question-paper=<next-paper.pdf> \
-  --mark-scheme=<next-mark-scheme.pdf> \
-  --source-document-id=<stable-source-id> \
+pnpm run reconcile:answer-chains -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --output-root=tmp/chain-reconciled/aqa-separate-science-higher \
   --existing-chains=tmp/existing-chain-context.json \
-  --output=<candidate.json>
+  --model=chatgpt-gpt-5.5 \
+  --thinking-level=xhigh \
+  --fail-on-blocking
 ```
 
 The context builder deduplicates by `answerChain.id`, keeps representative question refs, and omits
 questions or chains still marked `needsHumanReview`. This makes the model's compatibility decision
-source-backed without exposing an unbounded dump of all prior questions.
+source-backed without exposing an unbounded dump of all prior questions. The reconciliation script is
+the production text-only chain phase: it reads extraction-complete JSON, repairs placeholder or bad
+chain fields with `repairFullPaperAnswerChains`, records `chainResolution`, runs the independent
+answer-chain judge unless `--skip-judge` is passed for local debugging, and writes a separate
+reconciled tree for the import-ready subset builder. It should not re-render PDFs or modify prompt,
+response, mark-scheme, checklist, model-answer, or asset fields except through the dedicated
+question-quality repair path.
 
 The deterministic golden fixture is:
 
