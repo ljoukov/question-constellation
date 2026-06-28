@@ -778,25 +778,61 @@ export const LlmFullPaperExtractionSchema = z.object({
 	)
 });
 
-const CompactMarkSchemeItemSchema = z.object({
-	itemType: z.string().nullable().optional(),
-	text: z.string(),
-	marks: z.number().nullable().optional(),
-	sourceRef: z.string().nullable().optional(),
-	confidence: z.number().nullable().optional()
-});
+function normalizeCompactMarkSchemeItem(value) {
+	if (!value || typeof value !== 'object') return value;
+	const text = value.text ?? value.criterion ?? value.description ?? value.answer ?? value.markingPoint;
+	const marks = value.marks ?? value.mark;
+	const itemType = value.itemType ?? value.kind ?? null;
+	const sourceRef = value.sourceRef ?? value.ref ?? value.source ?? null;
+	const output = {
+		...value,
+		itemType,
+		text,
+		marks,
+		sourceRef
+	};
+	if (value.markSchemeNote && text) output.text = `${text} ${value.markSchemeNote}`;
+	return output;
+}
 
-const CompactMarkChecklistItemSchema = z
-	.object({
-		text: z.string().nullable().optional(),
-		item: z.string().nullable().optional(),
-		description: z.string().nullable().optional(),
-		required: z.boolean().nullable().optional(),
-		markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
-		confidence: z.number().nullable().optional(),
-		needsHumanReview: z.boolean().nullable().optional()
+const CompactMarkSchemeItemSchema = z.preprocess(
+	normalizeCompactMarkSchemeItem,
+	z.object({
+		itemType: z.string().nullable().optional(),
+		text: z.string(),
+		marks: z.number().nullable().optional(),
+		sourceRef: z.string().nullable().optional(),
+		confidence: z.number().nullable().optional()
 	})
-	.passthrough();
+);
+
+function normalizeCompactChecklistItem(value) {
+	if (typeof value === 'string') {
+		return {
+			text: value,
+			required: true,
+			markSchemeItemIndexes: [],
+			confidence: 0.8,
+			needsHumanReview: false
+		};
+	}
+	return value;
+}
+
+const CompactMarkChecklistItemSchema = z.preprocess(
+	normalizeCompactChecklistItem,
+	z
+		.object({
+			text: z.string().nullable().optional(),
+			item: z.string().nullable().optional(),
+			description: z.string().nullable().optional(),
+			required: z.boolean().nullable().optional(),
+			markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
+			confidence: z.number().nullable().optional(),
+			needsHumanReview: z.boolean().nullable().optional()
+		})
+		.passthrough()
+);
 
 const CompactReviewNoteSchema = z.union([
 	z.string(),
@@ -1772,10 +1808,11 @@ export function expandCompactFullPaperExtraction({
 	markScheme,
 	chunk
 }) {
+	const parsedValue = LlmCompactFullPaperExtractionSchema.parse(value);
 	return LlmFullPaperExtractionSchema.parse({
 		extractionRun: {
 			agentVersion: 'llm-extraction-pipeline-v2-compact',
-			needsHumanReview: (value.questions ?? []).some((question) => question.needsHumanReview),
+			needsHumanReview: (parsedValue.questions ?? []).some((question) => question.needsHumanReview),
 			reviewNotes: []
 		},
 		sourceDocument: {
@@ -1788,7 +1825,7 @@ export function expandCompactFullPaperExtraction({
 			title: markScheme.title,
 			pageCount: markScheme.pageCount
 		},
-		questions: (value.questions ?? []).map((question, index) =>
+		questions: (parsedValue.questions ?? []).map((question, index) =>
 			compactQuestionToFull(question, index, chunk)
 		)
 	});

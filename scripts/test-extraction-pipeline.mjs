@@ -627,6 +627,36 @@ if (
 ) {
 	fail('normalizeRepairEnvelope did not accept sourceQuestionRef-keyed repair JSON.', normalizedRepairEnvelope);
 }
+const compactAliasExpansion = pipelineModule.expandCompactFullPaperExtraction({
+	value: {
+		questions: [
+			{
+				sourceQuestionRef: '09.5',
+				promptText: 'Calculate the concentration.',
+				marks: 6,
+				markSchemeItems: [{ mark: 1, criterion: 'Calculate the amount of sulfuric acid.' }],
+				markChecklist: ['Calculate the amount of sulfuric acid.'],
+				modelAnswer: 'Use concentration times volume to calculate moles.'
+			}
+		]
+	},
+	sourceDocumentId: 'aqa-84621h-qp-jun19',
+	markSchemeDocumentId: 'aqa-84621h-ms-jun19',
+	questionPaper: { title: 'Question paper', pageCount: 32 },
+	markScheme: { title: 'Mark scheme', pageCount: 26 },
+	chunk: { corePages: [32] }
+});
+if (
+	compactAliasExpansion.questions[0]?.markSchemeItems[0]?.text !==
+		'Calculate the amount of sulfuric acid.' ||
+	compactAliasExpansion.questions[0]?.markSchemeItems[0]?.marks !== 1 ||
+	compactAliasExpansion.questions[0]?.markChecklist[0]?.text !==
+		'Calculate the amount of sulfuric acid.' ||
+	compactAliasExpansion.questions[0]?.modelAnswer?.answerText !==
+		'Use concentration times volume to calculate moles.'
+) {
+	fail('Compact extraction alias normalization failed.', compactAliasExpansion.questions[0]);
+}
 const markSchemeExcerpt = pipelineModule.markSchemeTextExcerptForRefs(
 	['header', '01.1 first answer', 'nearby guidance', '02.1 second answer'].join('\n'),
 	['01.1'],
