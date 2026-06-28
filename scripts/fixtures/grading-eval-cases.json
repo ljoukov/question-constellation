@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "description": "Free-text grading regression cases using real imported question refs. These are for measuring grading latency, token use, model quality, and thinking-level changes.",
+  "cases": [
+    {
+      "id": "physics-swimmer-drag-empty",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "Force B changes and then he moves faster.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 1,
+        "notes": "Very weak: mentions change and faster movement but misses acceleration, drag increase, balance, and higher constant velocity."
+      }
+    },
+    {
+      "id": "physics-swimmer-drag-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "When Force A increases, the man accelerates. Force B gets bigger because he is moving faster.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets acceleration and drag/Force B increase but not the final force balance or higher constant velocity."
+      }
+    },
+    {
+      "id": "physics-swimmer-drag-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A increases. As his speed increases, Force B also increases. Force B rises until it equals Force A, so the resultant force is zero.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Gets the force-balance chain but omits explicitly saying higher constant velocity."
+      }
+    },
+    {
+      "id": "physics-swimmer-drag-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A is increased. As speed increases, Force B increases. Force B increases until it equals Force A, so the resultant force becomes zero. The man then moves at a higher constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: acceleration, drag increase, forces balance, higher constant velocity."
+      }
+    },
+    {
+      "id": "physics-stone-water-weak",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The water pushes against the stone so it slows down and then travels at terminal velocity.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Mentions resistance and constant/terminal velocity but misses drag greater than weight, resultant force, and drag decrease."
+      }
+    },
+    {
+      "id": "physics-stone-water-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "Drag acts upwards on the stone and is greater than its weight at first, so the stone decelerates.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Covers initial drag greater than weight and deceleration but not the later drag decrease/balance."
+      }
+    },
+    {
+      "id": "physics-stone-water-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The drag is initially greater than the weight, so there is a resultant force upwards and the stone decelerates. As it slows, the drag decreases.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Covers the middle chain but omits final equality of drag and weight giving constant velocity."
+      }
+    },
+    {
+      "id": "physics-stone-water-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "At first the drag force from the water is greater than the stone's weight. This gives a resultant force opposite to the velocity, so the stone decelerates. As the stone slows, drag decreases until drag equals weight. The resultant force is then zero, so the stone moves at a constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: drag greater than weight, resultant force/deceleration, drag decreases, drag equals weight."
+      }
+    },
+    {
+      "id": "biology-amylase-ph-weak",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "The amylase would not work very well because the pH is wrong.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Weak: recognises enzyme does not work but gives no denaturation/active-site/result detail."
+      }
+    },
+    {
+      "id": "biology-amylase-ph-partial",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the enzyme is denatured, so the shape of the active site changes.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 2,
+        "notes": "Gets denaturation/active site but not starch digestion or light percentage result."
+      }
+    },
+    {
+      "id": "biology-amylase-ph-near-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 amylase is denatured and the active site changes shape. Starch is not broken down, so iodine would stay dark.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 3,
+        "notes": "Nearly complete; mentions no starch digestion but may not clearly state the percentage stays about 10%."
+      }
+    },
+    {
+      "id": "biology-amylase-ph-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the amylase is denatured and the active site changes shape. Starch is not digested, so the mixture stays dark with iodine and the percentage of light passing through stays about 10% instead of increasing.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: active site changed/denatured, starch not digested, percentage light stays around 10%."
+      }
+    },
+    {
+      "id": "chem-nanotube-conducts-weak",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes conduct because they are made of carbon and are strong.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 0,
+        "notes": "Incorrect: strength/carbon alone does not explain electrical conduction."
+      }
+    },
+    {
+      "id": "chem-nanotube-conducts-partial",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes have delocalised electrons.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Only identifies delocalised electrons."
+      }
+    },
+    {
+      "id": "chem-nanotube-conducts-near-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron delocalised.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets bonding and delocalised electron but not that electrons move/carry charge."
+      }
+    },
+    {
+      "id": "chem-nanotube-conducts-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron from each carbon atom delocalised. These delocalised electrons can move through the nanotube and carry electrical charge.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: three covalent bonds, one delocalised electron per carbon, electrons move/carry charge."
+      }
+    }
+  ]
+}

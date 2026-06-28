@@ -14,9 +14,11 @@ import type {
 import type { LlmTextModelId, LlmThinkingLevel } from '@ljoukov/llm';
 
 const DEFAULT_MODEL = 'chatgpt-gpt-5.5-fast';
-const DEFAULT_THINKING_LEVEL = 'medium';
+const DEFAULT_THINKING_LEVEL = 'low';
 const CHATGPT_CODEX_PROXY_URL = 'CHATGPT_CODEX_PROXY_URL';
 const CHATGPT_CODEX_PROXY_API_KEY = 'CHATGPT_CODEX_PROXY_API_KEY';
+const DETERMINISTIC_WARNING =
+	'Checked deterministically from the imported response answer key; no LLM was used.';
 
 type QuestionRow = {
 	id: string;
@@ -116,21 +118,32 @@ type GradeableQuestionContext = {
 	warnings: string[];
 };
 
+type ParsedAnswerKey = {
+	targetId: string;
+	correctAnswer: string;
+	aliases: string[];
+	metadata: Record<string, unknown>;
+	displayOrder: number;
+};
+
 type FixedResponse =
 	| {
 			kind: 'image-label-zones';
 			zones: Array<{ id: string; label: string }>;
 			correctAnswers: Record<string, string>;
+			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
 			kind: 'choice';
 			options: string[];
 			maxSelections: number;
+			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
 			kind: 'choice-table';
 			columns: string[];
 			rows: string[][];
+			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
 			kind: 'matching';
@@ -138,22 +151,28 @@ type FixedResponse =
 			rightTitle: string | null;
 			left: string[];
 			right: string[];
+			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
 			kind: 'equation-blanks';
 			blanks: Array<{ id: string; label: string }>;
+			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
 			kind: 'number-line';
 			label: string;
 			prefix: string | null;
 			unit: string | null;
+			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
 			kind: 'labeled-lines';
 			labels: string[];
 			lineCount: number | null;
+			answerKeys: ParsedAnswerKey[];
 	  };
+
+type ExperimentThinkingLevel = LlmThinkingLevel | 'none';
 
 type ModelGradePayload = {
 	results?: Array<{
@@ -196,12 +215,13 @@ function normalizeRef(ref: string) {
 	return subpart ? `${paddedMain}.${subpart}` : paddedMain;
 }
 
-function gradingModel(): LlmTextModelId {
-	return (env.EXPERIMENT_GRADING_MODEL || DEFAULT_MODEL) as LlmTextModelId;
+function gradingModel(modelOverride?: string): LlmTextModelId {
+	return (modelOverride || env.EXPERIMENT_GRADING_MODEL || DEFAULT_MODEL) as LlmTextModelId;
 }
 
-function thinkingLevel(): LlmThinkingLevel {
-	return (env.EXPERIMENT_GRADING_THINKING_LEVEL || DEFAULT_THINKING_LEVEL) as LlmThinkingLevel;
+function selectedThinkingLevel(thinkingOverride?: ExperimentThinkingLevel): LlmThinkingLevel | undefined {
+	const value = thinkingOverride || env.EXPERIMENT_GRADING_THINKING_LEVEL || DEFAULT_THINKING_LEVEL;
+	return value === 'none' ? undefined : (value as LlmThinkingLevel);
 }
 
 function platformEnvValue(platformEnv: unknown, key: string): string | undefined {
@@ -299,11 +319,157 @@ function choiceMaxSelections(value: Record<string, unknown>, optionCount: number
 	return explicit;
 }
 
+function stringValues(value: unknown) {
+	if (typeof value === 'string' || typeof value === 'number') return [String(value)];
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((item) => (typeof item === 'string' || typeof item === 'number' ? String(item) : null))
+		.filter((item): item is string => Boolean(item?.trim()));
+}
+
+function cleanAnswerKeyText(value: unknown) {
+	if (typeof value === 'string' || typeof value === 'number') return String(value).trim();
+	return '';
+}
+
+function parseAliases(value: unknown): string[] {
+	if (typeof value === 'string') {
+		return value
+			.split(/\s*(?:\||;|\n)\s*/)
+			.map((alias) => alias.trim())
+			.filter(Boolean);
+	}
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((item) => (typeof item === 'string' || typeof item === 'number' ? String(item).trim() : ''))
+		.filter(Boolean);
+}
+
+function parseMetadata(value: unknown): Record<string, unknown> {
+	return value && typeof value === 'object' && !Array.isArray(value)
+		? (value as Record<string, unknown>)
+		: {};
+}
+
+function answerKeyFromObject(
+	targetId: string,
+	value: Record<string, unknown>,
+	displayOrder: number
+): ParsedAnswerKey | null {
+	const correctAnswer =
+		cleanAnswerKeyText(value.correctAnswer) ||
+		cleanAnswerKeyText(value.answer) ||
+		cleanAnswerKeyText(value.value);
+	if (!targetId.trim() || !correctAnswer) return null;
+	return {
+		targetId: targetId.trim(),
+		correctAnswer,
+		aliases: parseAliases(value.aliases),
+		metadata: parseMetadata(value.metadata),
+		displayOrder
+	};
+}
+
+function parseCorrectAnswers(value: unknown): ParsedAnswerKey[] {
+	if (!value) return [];
+	if (typeof value === 'string' || typeof value === 'number') {
+		const correctAnswer = String(value).trim();
+		return correctAnswer
+			? [{ targetId: 'answer', correctAnswer, aliases: [], metadata: {}, displayOrder: 0 }]
+			: [];
+	}
+	if (Array.isArray(value)) {
+		return value
+			.map((item, index) => {
+				if (typeof item === 'string' || typeof item === 'number') {
+					const correctAnswer = String(item).trim();
+					return correctAnswer
+						? {
+								targetId: index === 0 ? 'answer' : `answer-${index + 1}`,
+								correctAnswer,
+								aliases: [],
+								metadata: {},
+								displayOrder: index
+							}
+						: null;
+				}
+				if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+				const candidate = item as Record<string, unknown>;
+				const targetId =
+					cleanAnswerKeyText(candidate.targetId) ||
+					cleanAnswerKeyText(candidate.target_id) ||
+					cleanAnswerKeyText(candidate.id) ||
+					(index === 0 ? 'answer' : `answer-${index + 1}`);
+				return answerKeyFromObject(targetId, candidate, index);
+			})
+			.filter((key): key is ParsedAnswerKey => Boolean(key));
+	}
+	if (typeof value === 'object') {
+		return Object.entries(value as Record<string, unknown>)
+			.flatMap(([targetId, rawValue], index) => {
+				if (targetId === 'aliases' || targetId === 'metadata') return [];
+				if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+					const candidate = answerKeyFromObject(
+						targetId,
+						rawValue as Record<string, unknown>,
+						index
+					);
+					return candidate ? [candidate] : [];
+				}
+				const answers = stringValues(rawValue);
+				if (answers.length === 0) return [];
+				return answers.map((correctAnswer, answerIndex) => ({
+					targetId:
+						answers.length === 1
+							? targetId.trim()
+							: `${targetId.trim() || 'answer'}-${answerIndex + 1}`,
+					correctAnswer,
+					aliases: [],
+					metadata: {},
+					displayOrder: index + answerIndex
+				}));
+			})
+			.filter((key) => key.targetId && key.correctAnswer);
+	}
+	return [];
+}
+
+function answerKeyRows(rows: ResponseAnswerKeyRow[]): ParsedAnswerKey[] {
+	return rows
+		.map((row) => ({
+			targetId: row.target_id.trim(),
+			correctAnswer: row.correct_answer.trim(),
+			aliases: parseJson<string[]>(row.aliases_json, []).filter(
+				(alias) => typeof alias === 'string' && alias.trim()
+			),
+			metadata: parseJson<Record<string, unknown>>(row.metadata_json, {}),
+			displayOrder: row.display_order
+		}))
+		.filter((row) => row.targetId && row.correctAnswer);
+}
+
+function mergeAnswerKeys(...groups: ParsedAnswerKey[][]) {
+	const merged = new Map<string, ParsedAnswerKey>();
+	for (const key of groups.flat()) {
+		const previous = merged.get(key.targetId);
+		merged.set(key.targetId, {
+			...key,
+			aliases: Array.from(new Set([...(previous?.aliases ?? []), ...key.aliases])),
+			metadata: { ...(previous?.metadata ?? {}), ...key.metadata },
+			displayOrder: previous ? Math.min(previous.displayOrder, key.displayOrder) : key.displayOrder
+		});
+	}
+	return Array.from(merged.values()).sort(
+		(left, right) => left.displayOrder - right.displayOrder || left.targetId.localeCompare(right.targetId)
+	);
+}
+
 function responseFromRenderJson(raw: string | null): FixedResponse | null {
 	const render = parseJson<{ response?: unknown }>(raw, {});
 	const response = render.response;
 	if (!response || typeof response !== 'object') return null;
 	const value = response as Record<string, unknown>;
+	const answerKeys = parseCorrectAnswers(value.correctAnswers);
 
 	if (value.kind === 'image-label-zones' && Array.isArray(value.zones)) {
 		const correctAnswers =
@@ -318,6 +484,7 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 						typeof entry[0] === 'string' && typeof entry[1] === 'string'
 				)
 			),
+			answerKeys,
 			zones: value.zones
 				.map((zone) => {
 					if (!zone || typeof zone !== 'object') return null;
@@ -335,7 +502,8 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 		return {
 			kind: 'choice',
 			options,
-			maxSelections: choiceMaxSelections(value, options.length)
+			maxSelections: choiceMaxSelections(value, options.length),
+			answerKeys
 		};
 	}
 
@@ -345,7 +513,8 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 			columns: value.columns.filter((column): column is string => typeof column === 'string'),
 			rows: value.rows
 				.filter((row): row is unknown[] => Array.isArray(row))
-				.map((row) => row.filter((cell): cell is string => typeof cell === 'string'))
+				.map((row) => row.filter((cell): cell is string => typeof cell === 'string')),
+			answerKeys
 		};
 	}
 
@@ -355,7 +524,8 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 			leftTitle: typeof value.leftTitle === 'string' ? value.leftTitle : null,
 			rightTitle: typeof value.rightTitle === 'string' ? value.rightTitle : null,
 			left: value.left.filter((item): item is string => typeof item === 'string'),
-			right: value.right.filter((item): item is string => typeof item === 'string')
+			right: value.right.filter((item): item is string => typeof item === 'string'),
+			answerKeys
 		};
 	}
 
@@ -369,10 +539,11 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 					return candidate.kind === 'blank' &&
 						typeof candidate.id === 'string' &&
 						typeof candidate.label === 'string'
-						? { id: candidate.id, label: candidate.label }
-						: null;
+					? { id: candidate.id, label: candidate.label }
+					: null;
 				})
-				.filter((blank): blank is { id: string; label: string } => Boolean(blank))
+				.filter((blank): blank is { id: string; label: string } => Boolean(blank)),
+			answerKeys
 		};
 	}
 
@@ -381,7 +552,8 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 			kind: 'number-line',
 			label: value.label,
 			prefix: typeof value.prefix === 'string' ? value.prefix : null,
-			unit: typeof value.unit === 'string' ? value.unit : null
+			unit: typeof value.unit === 'string' ? value.unit : null,
+			answerKeys
 		};
 	}
 
@@ -389,7 +561,8 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 		return {
 			kind: 'labeled-lines',
 			labels: value.labels.filter((label): label is string => typeof label === 'string'),
-			lineCount: typeof value.lineCount === 'number' ? value.lineCount : null
+			lineCount: typeof value.lineCount === 'number' ? value.lineCount : null,
+			answerKeys
 		};
 	}
 
@@ -401,17 +574,26 @@ function mergeResponseAnswerKey(
 	response: FixedResponse | null,
 	rows: ResponseAnswerKeyRow[]
 ): FixedResponse | null {
-	if (response?.kind !== 'image-label-zones') return response;
-	const rowAnswers = Object.fromEntries(
-		rows
-			.filter((row) => row.correct_answer.trim())
-			.map((row) => [row.target_id, row.correct_answer.trim()])
+	if (!response) return response;
+	const rowKeys = answerKeyRows(rows);
+	const answerKeys = mergeAnswerKeys(response.answerKeys, rowKeys);
+	if (response.kind !== 'image-label-zones') {
+		return {
+			...response,
+			answerKeys
+		};
+	}
+	const rowAnswers = Object.fromEntries(rowKeys.map((row) => [row.targetId, row.correctAnswer]));
+	const embeddedAnswers = Object.fromEntries(
+		response.answerKeys.map((row) => [row.targetId, row.correctAnswer])
 	);
 	return {
 		...response,
+		answerKeys,
 		correctAnswers: {
 			...imageLabelAnswerKeyForQuestion(questionId),
 			...response.correctAnswers,
+			...embeddedAnswers,
 			...rowAnswers
 		}
 	};
@@ -427,8 +609,24 @@ function imageLabelResponseNeedsAnswerKey(response: FixedResponse | null) {
 
 function canGradeDeterministically(
 	response: FixedResponse | null
-): response is Extract<FixedResponse, { kind: 'image-label-zones' }> {
-	return response?.kind === 'image-label-zones' && !imageLabelResponseNeedsAnswerKey(response);
+): response is FixedResponse {
+	if (!response) return false;
+	if (response.kind === 'image-label-zones') return !imageLabelResponseNeedsAnswerKey(response);
+	return response.answerKeys.length > 0;
+}
+
+function responseNeedsDeterministicAnswerKey(response: FixedResponse | null) {
+	if (!response) return false;
+	if (response.kind === 'labeled-lines') return false;
+	if (response.kind === 'image-label-zones') return imageLabelResponseNeedsAnswerKey(response);
+	return response.answerKeys.length === 0;
+}
+
+function shouldUseLlmGrading(context: GradeableQuestionContext) {
+	return (
+		context.response === null ||
+		(context.response.kind === 'labeled-lines' && context.response.answerKeys.length === 0)
+	);
 }
 
 function responsePromptDetails(response: FixedResponse | null) {
@@ -678,14 +876,12 @@ async function getGradeContexts(
 			}
 			if (imageLabelResponseNeedsAnswerKey(response)) {
 				warnings.push(
-					'This label question is missing a complete imported answer key, so it will be checked from mark-scheme evidence.'
+					'This label question is missing a complete imported answer key, so it cannot be checked automatically yet.'
 				);
-			} else if (
-				response &&
-				!canGradeDeterministically(response) &&
-				evidence.responseAnswerKeys.length === 0
-			) {
-				warnings.push('No structured response answer key is stored for this interaction yet.');
+			} else if (responseNeedsDeterministicAnswerKey(response)) {
+				warnings.push(
+					'No structured response answer key is stored for this fixed-response interaction yet.'
+				);
 			}
 
 			const hasEvidence =
@@ -700,7 +896,12 @@ async function getGradeContexts(
 			const maxMarks = question.marks ?? 0;
 			const gradeableMarks = gradeable
 				? canGradeDeterministically(response)
-					? Math.min(maxMarks, response.zones.length)
+					? Math.min(
+							maxMarks,
+							response.kind === 'image-label-zones'
+								? response.zones.length
+								: Math.max(1, response.answerKeys.length)
+						)
 					: maxMarks ||
 						estimateGradeableMarks({
 							maxMarks,
@@ -1082,13 +1283,199 @@ function answerMap(rawAnswer: string) {
 	for (const line of rawAnswer.split(/\r?\n/)) {
 		const match = /^([^:]+):\s*(.*)$/.exec(line.trim());
 		if (!match) continue;
-		entries.set(match[1].trim().toLowerCase(), match[2].trim());
+		entries.set(normalizedAnswer(match[1]), match[2].trim());
+	}
+	return entries;
+}
+
+function arrowAnswerMap(rawAnswer: string) {
+	const entries = new Map<string, string>();
+	for (const line of rawAnswer.split(/\r?\n/)) {
+		const match = /^(.+?)\s*->\s*(.*)$/.exec(line.trim());
+		if (!match) continue;
+		entries.set(normalizedAnswer(match[1]), match[2].trim());
 	}
 	return entries;
 }
 
 function normalizedAnswer(value: string) {
-	return value.replace(/\s+/g, ' ').trim().toLowerCase();
+	return value
+		.normalize('NFKC')
+		.replace(/[“”]/g, '"')
+		.replace(/[‘’]/g, "'")
+		.replace(/\\mathrm\{([^}]*)\}/g, '$1')
+		.replace(/\\text\{([^}]*)\}/g, '$1')
+		.replace(/\\times/g, '×')
+		.replace(/\s+/g, ' ')
+		.trim()
+		.toLowerCase();
+}
+
+function normalizedTableRow(value: string) {
+	return normalizedAnswer(value).replace(/\s*\|\s*/g, ' | ');
+}
+
+function splitSubmittedLines(rawAnswer: string) {
+	return rawAnswer
+		.split(/\r?\n/)
+		.map((item) => item.trim())
+		.filter(Boolean);
+}
+
+function splitExpectedFixedAnswers(rawAnswer: string) {
+	return rawAnswer
+		.split(/\r?\n|;/)
+		.map((item) => item.trim())
+		.filter(Boolean);
+}
+
+function numberFromUnknown(value: unknown) {
+	if (typeof value === 'number' && Number.isFinite(value)) return value;
+	if (typeof value !== 'string') return null;
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function metadataNumber(metadata: Record<string, unknown>, names: string[]) {
+	for (const name of names) {
+		const value = numberFromUnknown(metadata[name]);
+		if (value !== null) return value;
+	}
+	return null;
+}
+
+function numericValue(value: string) {
+	const normalized = value
+		.normalize('NFKC')
+		.replace(/,/g, '')
+		.replace(/−/g, '-')
+		.replace(/\\times|×|x/g, 'e')
+		.replace(/\s*10\s*\^\s*\{?\s*([+-]?\d+)\s*\}?/gi, '$1')
+		.replace(/\s+/g, '');
+	const scientific = normalized.match(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/i);
+	if (!scientific) return null;
+	const parsed = Number(scientific[0]);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function textMatchesWithNumericTolerance(
+	submitted: string,
+	expected: string,
+	metadata: Record<string, unknown>
+) {
+	if (normalizedAnswer(submitted) === normalizedAnswer(expected)) return true;
+	const submittedNumber = numericValue(submitted);
+	const expectedNumber = numericValue(expected);
+	if (submittedNumber === null || expectedNumber === null) return false;
+	const absoluteTolerance =
+		metadataNumber(metadata, ['absoluteTolerance', 'absTolerance', 'tolerance']) ?? 0;
+	const relativeTolerance = metadataNumber(metadata, ['relativeTolerance', 'relTolerance']) ?? 0;
+	const allowed =
+		absoluteTolerance ||
+		Math.abs(expectedNumber) * relativeTolerance ||
+		Math.max(1, Math.abs(expectedNumber)) * 1e-9;
+	return Math.abs(submittedNumber - expectedNumber) <= allowed;
+}
+
+function optionTextForLetter(answer: string, options: string[]) {
+	const normalized = answer.trim().replace(/[\).:]/g, '').toUpperCase();
+	if (!/^[A-Z]$/.test(normalized)) return null;
+	const index = normalized.charCodeAt(0) - 65;
+	return options[index] ?? null;
+}
+
+function answerMatchesKey(
+	submitted: string,
+	key: ParsedAnswerKey,
+	options: string[] | null = null,
+	tableRow = false
+) {
+	const candidates = [key.correctAnswer, ...key.aliases].filter(Boolean);
+	for (const candidate of candidates) {
+		const optionCandidate = options ? optionTextForLetter(candidate, options) : null;
+		const expectedValues = optionCandidate ? [candidate, optionCandidate] : [candidate];
+		if (
+			expectedValues.some((expected) =>
+				tableRow
+					? normalizedTableRow(submitted) === normalizedTableRow(expected)
+					: textMatchesWithNumericTolerance(submitted, expected, key.metadata)
+			)
+		) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function deterministicChecklistResult({
+	context,
+	items,
+	summaryNoun,
+	nextStep
+}: {
+	context: GradeableQuestionContext;
+	items: Array<{ id: string; text: string; credited: boolean; explanation: string }>;
+	summaryNoun: string;
+	nextStep: string;
+}): ExperimentQuestionGradeResult {
+	const maxMarks = context.question.marks ?? 0;
+	const gradeableMarks = Math.min(maxMarks, Math.max(1, items.length));
+	const creditedCount = items.filter((item) => item.credited).length;
+	const awardedMarks =
+		items.length === 0
+			? 0
+			: items.length === gradeableMarks
+				? creditedCount
+				: Math.round((creditedCount / items.length) * gradeableMarks);
+	const checklist = items.map((item) => ({
+		id: item.id,
+		text: item.text,
+		verdict: item.credited ? ('credited' as const) : ('missed' as const),
+		explanation: item.explanation
+	}));
+
+	return {
+		questionId: context.question.id,
+		ref: context.question.source_question_ref,
+		status: 'graded',
+		result: resultFromMarks(awardedMarks, gradeableMarks),
+		awardedMarks,
+		maxMarks,
+		gradeableMarks,
+		confidence: 'high',
+		summary:
+			awardedMarks === gradeableMarks
+				? `All ${summaryNoun} are correct.`
+				: awardedMarks === 0
+					? `No ${summaryNoun} were credited.`
+					: `${awardedMarks} of ${gradeableMarks} mark${gradeableMarks === 1 ? '' : 's'} credited.`,
+		nextStep: awardedMarks === gradeableMarks ? 'No changes needed.' : nextStep,
+		checklist,
+		chain: null,
+		modelAnswer: null,
+		warnings: [DETERMINISTIC_WARNING, ...context.warnings]
+	};
+}
+
+function matchingKeyItems(response: Extract<FixedResponse, { kind: 'matching' }>) {
+	const directKeys = response.answerKeys.filter(
+		(key) => normalizedAnswer(key.targetId) !== 'answer'
+	);
+	if (directKeys.length > 0) return directKeys;
+	return response.answerKeys.flatMap((key) => {
+		const entries = Array.from(arrowAnswerMap(key.correctAnswer));
+		return entries.map(([targetId, correctAnswer], index) => ({
+			...key,
+			targetId,
+			correctAnswer,
+			displayOrder: index
+		}));
+	});
+}
+
+function keyForTarget(keys: ParsedAnswerKey[], targetIds: string[]) {
+	const normalizedTargets = new Set(targetIds.map(normalizedAnswer));
+	return keys.find((key) => normalizedTargets.has(normalizedAnswer(key.targetId))) ?? null;
 }
 
 function deterministicFixedAnswerResult(
@@ -1096,8 +1483,167 @@ function deterministicFixedAnswerResult(
 	rawAnswer: string
 ): ExperimentQuestionGradeResult | null {
 	const response = context.response;
-	if (response?.kind !== 'image-label-zones') return null;
-	if (imageLabelResponseNeedsAnswerKey(response)) return notGradeableResult(context);
+	if (!response) return null;
+	if (!canGradeDeterministically(response)) return notGradeableResult(context);
+
+	if (response.kind === 'choice') {
+		const expectedKeys =
+			response.maxSelections > 1 && response.answerKeys.length === 1
+				? response.answerKeys.flatMap((key) =>
+						splitExpectedFixedAnswers(key.correctAnswer).map((correctAnswer, index) => ({
+							...key,
+							targetId: `${key.targetId}-${index + 1}`,
+							correctAnswer,
+							displayOrder: key.displayOrder + index
+						}))
+					)
+				: response.answerKeys;
+		const selected = splitSubmittedLines(rawAnswer);
+		const items = expectedKeys.map((key, index) => {
+			const credited = selected.some((answer) => answerMatchesKey(answer, key, response.options));
+			return {
+				id: key.targetId || `choice-${index + 1}`,
+				text: key.correctAnswer,
+				credited,
+				explanation: credited
+					? 'This selected option matches the answer key.'
+					: `The expected option is ${key.correctAnswer}.`
+			};
+		});
+		return deterministicChecklistResult({
+			context,
+			items,
+			summaryNoun: 'selected options',
+			nextStep: 'Check the selected option against the question.'
+		});
+	}
+
+	if (response.kind === 'choice-table') {
+		const key = response.answerKeys[0];
+		const items = [
+			{
+				id: key.targetId,
+				text: key.correctAnswer,
+				credited: answerMatchesKey(rawAnswer, key, null, true),
+				explanation: answerMatchesKey(rawAnswer, key, null, true)
+					? 'This selected row matches the answer key.'
+					: `The expected row is ${key.correctAnswer}.`
+			}
+		];
+		return deterministicChecklistResult({
+			context,
+			items,
+			summaryNoun: 'selected rows',
+			nextStep: 'Check the selected row against the table headings.'
+		});
+	}
+
+	if (response.kind === 'matching') {
+		const submitted = arrowAnswerMap(rawAnswer);
+		const items = matchingKeyItems(response).map((key) => {
+			const submittedAnswer = submitted.get(normalizedAnswer(key.targetId)) ?? '';
+			const credited = answerMatchesKey(submittedAnswer, key, response.right);
+			return {
+				id: key.targetId,
+				text: `${key.targetId} -> ${key.correctAnswer}`,
+				credited,
+				explanation: credited
+					? 'This match is correct.'
+					: `${key.targetId} should match ${key.correctAnswer}.`
+			};
+		});
+		return deterministicChecklistResult({
+			context,
+			items,
+			summaryNoun: 'matches',
+			nextStep: 'Check the missed links in the matching question.'
+		});
+	}
+
+	if (response.kind === 'equation-blanks') {
+		const submitted = answerMap(rawAnswer);
+		const items = response.blanks
+			.map((blank) => {
+				const key = keyForTarget(response.answerKeys, [blank.id, blank.label]);
+				if (!key) return null;
+				const submittedAnswer =
+					submitted.get(normalizedAnswer(blank.id)) ?? submitted.get(normalizedAnswer(blank.label)) ?? '';
+				const credited = answerMatchesKey(submittedAnswer, key);
+				return {
+					id: blank.id,
+					text: key.correctAnswer,
+					credited,
+					explanation: credited
+						? 'This blank matches the answer key.'
+						: `${blank.label} should be ${key.correctAnswer}.`
+				};
+			})
+			.filter((item): item is NonNullable<typeof item> => Boolean(item));
+		return deterministicChecklistResult({
+			context,
+			items,
+			summaryNoun: 'blanks',
+			nextStep: 'Check the missed blank values.'
+		});
+	}
+
+	if (response.kind === 'number-line') {
+		const key = keyForTarget(response.answerKeys, ['answer', response.label]) ?? response.answerKeys[0];
+		const credited = answerMatchesKey(rawAnswer, key);
+		return deterministicChecklistResult({
+			context,
+			items: [
+				{
+					id: key.targetId,
+					text: key.correctAnswer,
+					credited,
+					explanation: credited
+						? 'This number matches the answer key.'
+						: `The expected answer is ${key.correctAnswer}.`
+				}
+			],
+			summaryNoun: 'answers',
+			nextStep: 'Check the value, unit, and rounding.'
+		});
+	}
+
+	if (response.kind === 'labeled-lines') {
+		const submitted = answerMap(rawAnswer);
+		const directAnswerKey = keyForTarget(response.answerKeys, ['answer']);
+		const items = directAnswerKey
+			? [
+					{
+						id: directAnswerKey.targetId,
+						text: directAnswerKey.correctAnswer,
+						credited: answerMatchesKey(rawAnswer, directAnswerKey),
+						explanation: answerMatchesKey(rawAnswer, directAnswerKey)
+							? 'This answer matches the answer key.'
+							: `The expected answer is ${directAnswerKey.correctAnswer}.`
+					}
+				]
+			: response.labels
+					.map((label) => {
+						const key = keyForTarget(response.answerKeys, [label]);
+						if (!key) return null;
+						const submittedAnswer = submitted.get(normalizedAnswer(label)) ?? '';
+						const credited = answerMatchesKey(submittedAnswer, key);
+						return {
+							id: label,
+							text: key.correctAnswer,
+							credited,
+							explanation: credited
+								? 'This labelled answer matches the key.'
+								: `${label} should be ${key.correctAnswer}.`
+						};
+					})
+					.filter((item): item is NonNullable<typeof item> => Boolean(item));
+		return deterministicChecklistResult({
+			context,
+			items,
+			summaryNoun: 'answers',
+			nextStep: 'Check the missed labelled answer values.'
+		});
+	}
 
 	const answers = answerMap(rawAnswer);
 	const maxMarks = context.question.marks ?? 0;
@@ -1142,7 +1688,7 @@ function deterministicFixedAnswerResult(
 		checklist,
 		chain: null,
 		modelAnswer: null,
-		warnings: ['Checked deterministically from the imported response answer key; no LLM was used.']
+		warnings: [DETERMINISTIC_WARNING, ...context.warnings]
 	};
 }
 
@@ -1263,7 +1809,9 @@ export async function gradeExperimentQuestionAnswers({
 	platformEnv,
 	signal,
 	onDelta,
-	includeDebugPrompt = false
+	includeDebugPrompt = false,
+	modelOverride,
+	thinkingLevelOverride
 }: {
 	paperSlug: string;
 	ref: string;
@@ -1272,6 +1820,8 @@ export async function gradeExperimentQuestionAnswers({
 	signal?: AbortSignal;
 	onDelta?: (delta: GradeStreamDelta) => void;
 	includeDebugPrompt?: boolean;
+	modelOverride?: string;
+	thinkingLevelOverride?: ExperimentThinkingLevel;
 }): Promise<ExperimentGradeResponse> {
 	const contexts = await getGradeContexts(paperSlug, ref);
 	const answered = contexts.filter((context) =>
@@ -1286,10 +1836,12 @@ export async function gradeExperimentQuestionAnswers({
 	let modelResults: ModelGradePayload['results'] = [];
 	let modelName = 'deterministic';
 	let modelVersion = 'deterministic';
+	let modelThinkingLevel: string | undefined;
+	let modelUsage: ExperimentGradeResponse['usage'] | undefined;
+	let modelCostUsd: number | undefined;
 	let debugPrompt: string | undefined;
 	const deterministicResults = new Map<string, ExperimentQuestionGradeResult>();
-	const fixedAnswered = answered.filter((context) => canGradeDeterministically(context.response));
-	for (const context of fixedAnswered) {
+	for (const context of answered) {
 		const fixedResult = deterministicFixedAnswerResult(
 			context,
 			answers[context.question.source_question_ref]?.trim() ?? ''
@@ -1300,13 +1852,16 @@ export async function gradeExperimentQuestionAnswers({
 	}
 
 	const llmGradeable = gradeable.filter(
-		(context) => !deterministicResults.has(context.question.id)
+		(context) =>
+			!deterministicResults.has(context.question.id) && shouldUseLlmGrading(context)
 	);
 
 	if (llmGradeable.length > 0) {
 		try {
-			const model = gradingModel();
+			const model = gradingModel(modelOverride);
+			const thinking = selectedThinkingLevel(thinkingLevelOverride);
 			modelName = model;
+			modelThinkingLevel = thinking ?? 'none';
 			assertModelCredentialsAvailable(platformEnv, model);
 			configureLlmProcessEnv(platformEnv, model);
 			onDelta?.({ type: 'status', phase: 'calling' });
@@ -1316,7 +1871,7 @@ export async function gradeExperimentQuestionAnswers({
 			const call = streamText({
 				model,
 				input: prompt,
-				thinkingLevel: thinkingLevel(),
+				...(thinking ? { thinkingLevel: thinking } : {}),
 				signal,
 				telemetry: false
 			});
@@ -1346,6 +1901,8 @@ export async function gradeExperimentQuestionAnswers({
 			}
 			const result = await call.result;
 			modelVersion = result.modelVersion;
+			modelUsage = result.usage;
+			modelCostUsd = result.costUsd;
 			modelResults = parseModelJson(rawText.trim() || result.text).results ?? [];
 		} catch (error) {
 			throw new QuestionGradeRuntimeError('stream_events', error);
@@ -1362,6 +1919,7 @@ export async function gradeExperimentQuestionAnswers({
 		...gradeable.map((context) => {
 			const deterministicResult = deterministicResults.get(context.question.id);
 			if (deterministicResult) return deterministicResult;
+			if (!shouldUseLlmGrading(context)) return notGradeableResult(context);
 			return mergeModelResult(
 				context,
 				modelByQuestion.get(context.question.id) ??
@@ -1402,6 +1960,9 @@ export async function gradeExperimentQuestionAnswers({
 		ref,
 		model: modelName,
 		modelVersion,
+		...(modelThinkingLevel ? { thinkingLevel: modelThinkingLevel } : {}),
+		...(modelUsage ? { usage: modelUsage } : {}),
+		...(typeof modelCostUsd === 'number' ? { costUsd: modelCostUsd } : {}),
 		totals,
 		results,
 		...(debugPrompt ? { debugPrompt } : {})

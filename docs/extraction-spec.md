@@ -716,8 +716,10 @@ Generated model answers should not be published without either high mark-scheme 
 ### Fixed-Response Answer Keys
 
 Fixed-response questions still need student-facing feedback. Prefer deterministic checking when the
-correct response can be extracted confidently, but the runtime grader may fall back to the supplied
-mark scheme and response format when the structured key is missing.
+correct response can be extracted confidently. Runtime grading must not spend an LLM call on fixed
+interactions such as choices, choice tables, matching, equation blanks, number-line answers, or image
+labels. If the structured key is missing, treat that as an import defect and leave the subpart
+ungraded until `response.correctAnswers` or `question_response_answer_keys` is repaired.
 
 For every fixed-response interaction, store the visible response format in the render overlay and
 store the correct answer key either in `response.correctAnswers` or in

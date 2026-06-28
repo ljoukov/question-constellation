@@ -39,6 +39,20 @@ export type ExperimentGradeResponse = {
 	ref: string;
 	model: string;
 	modelVersion: string;
+	thinkingLevel?: string;
+	usage?: {
+		promptTokens?: number;
+		promptTextTokens?: number;
+		promptImageTokens?: number;
+		cachedTokens?: number;
+		responseTokens?: number;
+		responseTextTokens?: number;
+		responseImageTokens?: number;
+		thinkingTokens?: number;
+		totalTokens?: number;
+		toolUsePromptTokens?: number;
+	};
+	costUsd?: number;
 	totals: {
 		awardedMarks: number;
 		maxMarks: number;

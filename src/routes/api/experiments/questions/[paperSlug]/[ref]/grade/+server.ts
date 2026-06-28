@@ -12,7 +12,9 @@ const paramsSchema = z.object({
 
 const requestSchema = z.object({
 	answers: z.record(z.string().trim().min(1), z.string().max(5000)),
-	includeDebugPrompt: z.boolean().optional()
+	includeDebugPrompt: z.boolean().optional(),
+	model: z.string().trim().min(1).optional(),
+	thinkingLevel: z.enum(['low', 'medium', 'high', 'xhigh', 'none']).optional()
 });
 
 function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: GradeStreamDelta) {
@@ -64,6 +66,7 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 	if (request.headers.get('accept')?.includes('text/event-stream')) {
 		const { stream, send, close } = createSseStream({ signal: request.signal });
 		const response = sseResponse(stream);
+		const allowOverrides = dev || platform?.env?.EXPERIMENT_GRADING_DEBUG_PROMPTS === '1';
 
 		void (async () => {
 			try {
@@ -73,7 +76,9 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 					answers: body.answers,
 					platformEnv: platform?.env,
 					signal: request.signal,
-					onDelta: (delta) => sendDelta(send, delta)
+					onDelta: (delta) => sendDelta(send, delta),
+					modelOverride: allowOverrides ? body.model : undefined,
+					thinkingLevelOverride: allowOverrides ? body.thinkingLevel : undefined
 				});
 				send({ event: 'done', data: JSON.stringify(result) });
 			} catch (error) {
@@ -91,6 +96,7 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 	}
 
 	try {
+		const allowOverrides = dev || platform?.env?.EXPERIMENT_GRADING_DEBUG_PROMPTS === '1';
 		const result = await gradeExperimentQuestionAnswers({
 			paperSlug: parsedParams.data.paperSlug,
 			ref: parsedParams.data.ref,
@@ -99,7 +105,9 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 			signal: request.signal,
 			includeDebugPrompt:
 				body.includeDebugPrompt === true &&
-				(dev || platform?.env?.EXPERIMENT_GRADING_DEBUG_PROMPTS === '1')
+				allowOverrides,
+			modelOverride: allowOverrides ? body.model : undefined,
+			thinkingLevelOverride: allowOverrides ? body.thinkingLevel : undefined
 		});
 		return json(result);
 	} catch (error) {
