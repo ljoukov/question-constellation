@@ -19,6 +19,9 @@ const model = stringArg('model', '');
 const thinkingLevel = stringArg('thinking-level', '');
 const concurrency = stringArg('concurrency', '');
 const minSolvabilityScore = stringArg('min-solvability-score', '');
+const runId = stringArg('run-id', '');
+
+if (runId) process.env.EXTRACTION_RUN_ID = runId;
 
 const buildSummary = buildImportReadySubset();
 auditImportReadySubset();
@@ -74,14 +77,10 @@ function runCapture(args, label) {
 	return result.stdout;
 }
 
-function runInherited(args, label) {
-	const result = spawnSync(process.execPath, args, {
-		cwd: rootDir,
-		stdio: 'inherit'
-	});
-	if (result.status !== 0) {
-		throw new Error(`${label} failed with exit code ${result.status ?? result.signal}.`);
-	}
+function runCapturedLog(args, label) {
+	const output = runCapture(args, label);
+	if (output.trim()) process.stderr.write(output);
+	return output;
 }
 
 function buildImportReadySubset() {
@@ -124,7 +123,7 @@ function auditImportReadySubset() {
 		if (concurrency) args.push(`--concurrency=${concurrency}`);
 		if (minSolvabilityScore) args.push(`--min-solvability-score=${minSolvabilityScore}`);
 	}
-	runInherited(args, 'strict import-ready audit');
+	runCapturedLog(args, 'strict import-ready audit');
 }
 
 function runImportChecks(summary) {
@@ -142,7 +141,7 @@ function runImportChecks(summary) {
 			`--paper=${sourceDocumentId}`
 		];
 		if (!importToD1) args.push('--dry-run');
-		runInherited(args, `${importToD1 ? 'import' : 'import dry-run'} ${sourceDocumentId}`);
+		runCapturedLog(args, `${importToD1 ? 'import' : 'import dry-run'} ${sourceDocumentId}`);
 		return {
 			sourceDocumentId,
 			mode: importToD1 ? 'write' : 'dry-run',

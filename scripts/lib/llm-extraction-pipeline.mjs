@@ -2066,6 +2066,50 @@ function compactRenderBlocks(blocks) {
 		.filter(Boolean);
 }
 
+function adjacentTextBlockDedupeKey(block) {
+	if (!block || typeof block !== 'object') return '';
+	const kind = String(block.kind ?? '').toLowerCase();
+	if (!['paragraph', 'text', 'plain-text'].includes(kind)) return '';
+	if (
+		block.label ||
+		block.assetLabel ||
+		block.columns ||
+		block.rows ||
+		block.items ||
+		block.keyItems
+	) {
+		return '';
+	}
+	const text = typeof block.text === 'string' ? block.text.trim() : '';
+	return text ? `${kind}:${normalizedForExactMatch(text)}` : '';
+}
+
+function dedupeAdjacentTextRenderBlocks(blocks) {
+	const output = [];
+	let previousKey = '';
+	for (const block of blocks ?? []) {
+		const key = adjacentTextBlockDedupeKey(block);
+		if (key && key === previousKey) continue;
+		output.push(block);
+		previousKey = key;
+	}
+	return output;
+}
+
+function normalizeQuestionRenderBlocks(question) {
+	let changed = false;
+	const updates = {};
+	for (const field of ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks']) {
+		if (!Array.isArray(question[field])) continue;
+		const normalized = dedupeAdjacentTextRenderBlocks(question[field]);
+		if (normalized.length !== question[field].length) {
+			updates[field] = normalized;
+			changed = true;
+		}
+	}
+	return changed ? { ...question, ...updates } : question;
+}
+
 function normalizeStructuredTableSelectionResponse(response, stemBlocks) {
 	if (!response || response.kind !== 'asset-canvas') return response;
 	const labels = [
@@ -2264,10 +2308,10 @@ function compactQuestionToFull(question, index, chunk) {
 		sourceRef: item.sourceRef || question.sourceQuestionRef,
 		confidence: compactConfidence(item.confidence)
 	}));
-	const stemBlocks = [
+	const stemBlocks = dedupeAdjacentTextRenderBlocks([
 		...paragraphBlock(question.contextText),
 		...compactRenderBlocks(question.contextBlocks)
-	];
+	]);
 	const response = normalizeQuestionResponseForExtraction({
 		...question,
 		marks: compactNumber(question.marks, null),
@@ -2573,9 +2617,14 @@ function chunkWindowReviewNote(note) {
 	);
 }
 
-function normalizeExtractedQuestionResponse(question) {
+export function normalizeExtractedQuestionForImport(question) {
 	const response = normalizeQuestionResponseForExtraction(question);
-	return response === question.response ? question : { ...question, response };
+	const normalizedQuestion = response === question.response ? question : { ...question, response };
+	return normalizeQuestionRenderBlocks(normalizedQuestion);
+}
+
+function normalizeExtractedQuestionResponse(question) {
+	return normalizeExtractedQuestionForImport(question);
 }
 
 function questionHasHumanReviewFlag(question) {
@@ -4655,7 +4704,9 @@ function markEvidenceForQuestion(question) {
 		markSchemeItems: question.markSchemeItems ?? [],
 		markChecklist: question.markChecklist ?? [],
 		modelAnswer: question.modelAnswer ?? null,
-		responseCorrectAnswers: question.response?.correctAnswers ?? []
+		responseKind: question.response?.kind ?? null,
+		responseCorrectAnswers: question.response?.correctAnswers ?? [],
+		responseUnorderedGroups: question.response?.unorderedGroups ?? []
 	};
 }
 
@@ -4751,7 +4802,8 @@ export async function judgeQuestionSolvability({
 				'3. If the target refers to a figure, table, diagram, graph, answer space, or previous subpart and that information is absent or only a label with no usable content, fail with blocking missingContext.',
 				'4. If attached images are provided, inspect them as part of the learner-visible context. If an image is needed but not attached or not described in text/tables, fail.',
 				'5. After forming an attempted answer from visible context, compare it with targetAnswerKey and report whether the mark scheme fits the extracted question.',
-				'6. This is an end-user extraction/rendering validation. Do not judge answer-chain reusability here except where it affects the visible question.'
+				'6. Treat targetAnswerKey.responseUnorderedGroups as part of the grading semantics; do not require fixed per-blank order when an unordered group covers those targetIds.',
+				'7. This is an end-user extraction/rendering validation. Do not judge answer-chain reusability here except where it affects the visible question.'
 			].join('\n')
 		},
 		...context.inlineImages.map((image) => ({

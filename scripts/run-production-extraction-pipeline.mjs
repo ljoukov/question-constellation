@@ -101,6 +101,9 @@ const noImportCheck = hasArg('no-import-check');
 const dryRun = hasArg('dry-run');
 const skipExtractionJudge = hasArg('skip-extraction-judge');
 const skipChainJudge = hasArg('skip-chain-judge');
+const runId = stringArg('run-id', '');
+
+if (runId) process.env.EXTRACTION_RUN_ID = runId;
 
 for (const filePath of [questionPaperPath, markSchemePath, ...supportingDocumentPaths]) {
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
@@ -290,6 +293,7 @@ function prepareImportReadyCommand() {
 		forwardString(args, 'min-solvability-score');
 		forwardString(args, 'concurrency');
 	}
+	forwardString(args, 'run-id');
 	if (noImportCheck) args.push('--no-import-check');
 	if (importToD1) args.push('--import');
 	return args;

@@ -2,7 +2,12 @@
 
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { deterministicCandidateIssues, readJson, writeJson } from './lib/llm-extraction-pipeline.mjs';
+import {
+	deterministicCandidateIssues,
+	normalizeExtractedQuestionForImport,
+	readJson,
+	writeJson
+} from './lib/llm-extraction-pipeline.mjs';
 
 const rootDir = process.cwd();
 const inputPath = stringArg('input', '');
@@ -121,7 +126,7 @@ function buildSubsetForFile(filePath) {
 			} else {
 				const pruned = pruneLabelOnlyAssets(question);
 				prunedAssets += pruned.prunedAssets;
-				keptQuestions.push(pruned.question);
+				keptQuestions.push(normalizeExtractedQuestionForImport(pruned.question));
 			}
 		}
 		const outPath = outputPathFor(filePath);

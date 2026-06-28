@@ -319,6 +319,8 @@ requireIncludes(
 		"forwardPhaseString(args, 'chain-model', 'model')",
 		"forwardPhaseString(args, 'chain-thinking-level', 'thinking-level')",
 		"forwardPhaseString(args, 'solvability-thinking-level', 'thinking-level')",
+		'process.env.EXTRACTION_RUN_ID = runId',
+		"forwardString(args, 'run-id')",
 		"forwardString(args, 'question-paper-title')"
 	],
 	'Production extraction orchestrator'
@@ -406,7 +408,10 @@ requireIncludes(
 		'--fail-on-warnings',
 		'scripts/import-physics-vision.mjs',
 		'importMode',
-		'--run-solvability'
+		'--run-solvability',
+		'runCapturedLog',
+		'process.stderr.write(output)',
+		'process.env.EXTRACTION_RUN_ID = runId'
 	],
 	'Import-ready extraction preparation script'
 );
@@ -689,6 +694,7 @@ for (const exportName of [
 	'chunkImages',
 	'chunkImagesByParentQuestion',
 	'mergeFullPaperChunks',
+	'normalizeExtractedQuestionForImport',
 	'judgeQuestionSolvability',
 	'questionRefsFromText',
 	'markSchemeTextExcerptForRefs',
@@ -889,6 +895,14 @@ const compactAliasExpansion = pipelineModule.expandCompactFullPaperExtraction({
 			{
 				sourceQuestionRef: '09.5',
 				promptText: 'Calculate the concentration.',
+				contextText: 'Use the information about the solution.',
+				contextBlocks: [
+					{
+						kind: 'paragraph',
+						text: 'Use the information about the solution.',
+						compact: true
+					}
+				],
 				marks: 6,
 				markSchemeItems: [{ mark: 1, criterion: 'Calculate the amount of sulfuric acid.' }],
 				markChecklist: ['Calculate the amount of sulfuric acid.'],
@@ -912,6 +926,16 @@ if (
 		'Use concentration times volume to calculate moles.'
 ) {
 	fail('Compact extraction alias normalization failed.', compactAliasExpansion.questions[0]);
+}
+if (
+	compactAliasExpansion.questions[0]?.stemBlocks?.length !== 1 ||
+	compactAliasExpansion.questions[0]?.stemBlocks?.[0]?.text !==
+		'Use the information about the solution.'
+) {
+	fail(
+		'Compact extraction expansion did not remove adjacent duplicate text context blocks.',
+		compactAliasExpansion.questions[0]?.stemBlocks
+	);
 }
 const markSchemeExcerpt = pipelineModule.markSchemeTextExcerptForRefs(
 	['header', '01.1 first answer', 'nearby guidance', '02.1 second answer'].join('\n'),
@@ -1973,6 +1997,38 @@ if (
 		'Solvability context omitted visible table or target answer-key evidence.',
 		solvabilityContext
 	);
+}
+
+const unorderedAnswerKeyContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '01.1',
+				promptText: 'Complete the word equation.',
+				stemBlocks: [],
+				promptBlocks: [{ kind: 'text', text: 'Complete the word equation.' }],
+				response: {
+					kind: 'equation-blanks',
+					correctAnswers: [
+						{ targetId: 'b1', correctAnswer: 'carbon dioxide' },
+						{ targetId: 'b2', correctAnswer: 'water' }
+					],
+					unorderedGroups: [{ targetIds: ['b1', 'b2'], answers: ['carbon dioxide', 'water'] }]
+				},
+				markSchemeItems: [
+					{ itemType: 'mark', text: 'carbon dioxide and water in either order' }
+				]
+			}
+		]
+	},
+	'01.1',
+	{ attachImages: false }
+);
+if (
+	unorderedAnswerKeyContext.targetAnswerKey.responseUnorderedGroups?.[0]?.targetIds?.join(',') !==
+	'b1,b2'
+) {
+	fail('Solvability answer key omitted unordered response groups.', unorderedAnswerKeyContext);
 }
 
 const numberedFigureContext = pipelineModule.buildLearnerVisibleQuestionContext(
