@@ -36,7 +36,19 @@ To import the currently chained question set into D1:
 pnpm run import:chained
 ```
 
-To refresh extracted paper images in R2 after running `pnpm run extract:aqa`:
+For the script-first AQA Separate Science extraction/import pipeline:
+
+```sh
+pnpm run download:aqa-separate-science
+pnpm run extract:aqa-separate-science:batch -- --paper=aqa-84611h-qp-jun24 --chunk-pages=1
+pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
+```
+
+`prepare:import-ready-extraction` builds a clean subset, audits it with warnings treated as blockers,
+and runs per-paper import dry-runs by default. Add `--import` only when the vetted subset should write
+to D1.
+
+To refresh legacy extracted paper images in R2 after running `pnpm run extract:aqa`:
 
 ```sh
 CLOUDFLARE_API_TOKEN=... pnpm run upload:r2-images
@@ -48,7 +60,7 @@ or, with the token already exported:
 pnpm run upload:r2-images
 ```
 
-`extract:aqa` expects the ignored local `data/aqa-combined-science-trilogy-higher/`
+The legacy `extract:aqa` command expects the ignored local `data/aqa-combined-science-trilogy-higher/`
 corpus and Poppler tools (`pdfinfo` and `pdfimages`) to be present.
 This uploads local files from `data/aqa-combined-science-trilogy-higher/assets/question-papers/`
 to R2 keys under `images/papers/`, matching the public route path without exposing the local

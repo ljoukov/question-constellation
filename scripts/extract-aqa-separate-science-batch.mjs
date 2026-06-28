@@ -24,6 +24,10 @@ const solvabilityEvalRoot = path.resolve(
 	rootDir,
 	stringArg('solvability-eval-root', 'tmp/aqa-separate-science-solvability-evals')
 );
+const importReadyOutputRoot = path.resolve(
+	rootDir,
+	stringArg('import-ready-output-root', 'tmp/import-ready-extracted/aqa-separate-science-higher')
+);
 const summaryPath = path.resolve(
 	rootDir,
 	stringArg('summary', 'tmp/aqa-separate-science-batch-summary.json')
@@ -39,6 +43,7 @@ const skipSolvabilityJudge = hasArg('skip-solvability-judge');
 const rejudge = hasArg('rejudge');
 const runImport = hasArg('import');
 const importDryRun = hasArg('import-dry-run');
+const importRawOutput = hasArg('import-raw-output');
 const replaceAllSubject = hasArg('replace-all-subject');
 const paperArg = stringArg('paper', '');
 const subjectArg = stringArg('subject', 'all').toLowerCase();
@@ -613,6 +618,30 @@ function actionableRepairLines(batch) {
 }
 
 async function runImportStep() {
+	if (!importRawOutput) {
+		if (replaceAllSubject) {
+			throw new Error(
+				'--replace-all-subject is not supported by the safe import-ready subset path. ' +
+					'Use the default per-paper import, or pass --import-raw-output only after a complete strict audit.'
+			);
+		}
+		for (const row of selected) {
+			const paper = paperInfo(row);
+			const perPaperOutputRoot = path.join(importReadyOutputRoot, row.source_document_id);
+			const args = [
+				'scripts/prepare-import-ready-extraction.mjs',
+				`--input=${paper.outputPath}`,
+				`--output-root=${perPaperOutputRoot}`,
+				`--audit-output=${path.join(perPaperOutputRoot, 'audit.json')}`,
+				`--paper=${row.source_document_id}`
+			];
+			if (!importDryRun) args.push('--import');
+			console.error(`[batch] preparing import-ready subset for ${row.source_document_id}`);
+			await runCommand(process.execPath, args);
+		}
+		return;
+	}
+
 	if (all && !paperArg) {
 		const args = [
 			'scripts/import-physics-vision.mjs',
@@ -667,12 +696,14 @@ function summary(status) {
 		skipped: results.filter((result) => result.status === 'skipped').length,
 		failed: results.filter((result) => result.status === 'failed').length,
 		dryRun: results.filter((result) => result.status === 'dry-run').length,
-			concurrency,
-			judgeMode,
-			solvabilityMode,
-			judgeRepairAttempts,
-			paperAttempts,
-			outputRoot: relative(outputRoot),
+		concurrency,
+		judgeMode,
+		solvabilityMode,
+		judgeRepairAttempts,
+		paperAttempts,
+		outputRoot: relative(outputRoot),
+		importRawOutput,
+		importReadyOutputRoot: relative(importReadyOutputRoot),
 		evalRoot: relative(evalRoot),
 		solvabilityEvalRoot: relative(solvabilityEvalRoot),
 		results

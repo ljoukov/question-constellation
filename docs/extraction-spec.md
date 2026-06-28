@@ -330,7 +330,7 @@ pnpm run extract:aqa-separate-science -- --all --force
 pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
-pnpm run import:aqa-separate-science -- --all --replace-all-subject
+pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
 ```
 
 The downloader scrapes the official AQA assessment-resource pages for GCSE Biology 8461, Chemistry
@@ -347,8 +347,12 @@ parallel after single-paper extraction is stable. For unattended AQA Separate Sc
 prefer `extract:aqa-separate-science:batch` with `--chunk-pages=1`; it writes per-paper evaluation JSON,
 resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
 the deterministic gate, runs text-only chain repair in small `--repair-batch-size` groups, runs an
-independent question-batch LLM judge, and can run the importer with `--import` only after selected
-papers pass. Use `--force` to overwrite output files and rendered page images. Use
+independent question-batch LLM judge, and can run the import-ready subset gate with `--import` only
+after selected papers pass. The safe `--import` path builds a clean subset, runs
+`audit:extracted-data --fail-on-warnings`, then imports each vetted paper from that subset. Use
+`--import-dry-run` to exercise the same path without writing to D1. `--import-raw-output` is a
+compatibility escape hatch for already audited complete outputs; do not use it for normal production
+runs. Use `--force` to overwrite output files and rendered page images. Use
 `--force-chunks` when prompt, logging, schema, or model changes mean cached LLM chunk outputs must be
 regenerated; `--force` alone intentionally does not spend new LLM calls for existing chunk caches.
 Set `--paper-attempts=<n>` to retry a paper after transient provider timeouts; retries reuse
@@ -515,12 +519,19 @@ pnpm run build:import-ready-extracted-subset -- \
 pnpm run audit:extracted-data -- \
   --input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
   --recursive --fail-on-warnings
+
+pnpm run prepare:import-ready-extraction -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
 ```
 
 The subset builder drops questions with deterministic errors, warnings, `needsHumanReview` flags, or
 review-marked assets/chains. It does not clear review flags, invent replacement figures, or modify
 the source extraction. Use it for progressive imports only when publishing a clean subset is better
 than blocking all clean questions behind one copyright placeholder or review-only repair.
+`prepare:import-ready-extraction` is the production gate around that subset: by default it builds the
+subset, audits it strictly, and runs per-paper import dry-runs. Add `--import` only when those dry-runs
+should write to D1.
 
 Withdrawn questions, replacement notices, statistics-only rows, and mean-mark/max-mark lines are not
 learner-facing questions. If the source materials do not contain the original prompt plus positive

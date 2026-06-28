@@ -14,6 +14,7 @@
 		"audit:extracted-data": "node scripts/audit-extracted-question-data.mjs",
 		"audit:current-exported-data": "node scripts/audit-extracted-question-data.mjs --input-root=data/vision-extracted --recursive --output=tmp/current-exported-data-audit.json",
 		"build:import-ready-extracted-subset": "node scripts/build-import-ready-extracted-subset.mjs",
+		"prepare:import-ready-extraction": "node scripts/prepare-import-ready-extraction.mjs",
 		"eval:question-solvability": "node scripts/evaluate-question-solvability.mjs",
 		"summarize:llm-extraction-logs": "node scripts/summarize-llm-extraction-logs.mjs",
 		"extract:physics-vision": "node scripts/extract-paper-llm.mjs --preset=aqa-physics",

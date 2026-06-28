@@ -49,6 +49,9 @@ const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.
 const repairAssetSource = readText(
 	path.join(rootDir, 'scripts/repair-extraction-response-assets.mjs')
 );
+const prepareImportReadySource = readText(
+	path.join(rootDir, 'scripts/prepare-import-ready-extraction.mjs')
+);
 
 for (const filePath of [
 	'docs/product-methodology.md',
@@ -64,6 +67,7 @@ for (const filePath of [
 	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
 	'scripts/build-import-ready-extracted-subset.mjs',
+	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/test-answer-chain-golden.mjs',
@@ -85,7 +89,6 @@ requireIncludes(
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
 		'pnpm run extract:aqa-separate-science:batch',
-		'pnpm run import:aqa-separate-science',
 		'--concurrency',
 		'--force-chunks',
 		'@ljoukov/llm',
@@ -94,6 +97,8 @@ requireIncludes(
 		'pnpm run audit:extracted-data',
 		'pnpm run audit:current-exported-data',
 		'pnpm run build:import-ready-extracted-subset',
+		'pnpm run prepare:import-ready-extraction',
+		'--import-raw-output',
 		'--fail-on-warnings',
 		'--concurrency=4',
 		'--repair-text-references',
@@ -183,6 +188,9 @@ requireIncludes(
 		'runExtractionCommandWithRetry',
 		'solvabilityMode',
 		'evaluateSolvabilityForPaper',
+		'scripts/prepare-import-ready-extraction.mjs',
+		'importRawOutput',
+		'importReadyOutputRoot',
 		"status: 'running'",
 		'completedBatches'
 	],
@@ -225,6 +233,19 @@ requireIncludes(
 	'Response asset repair script'
 );
 
+requireIncludes(
+	prepareImportReadySource,
+	[
+		'scripts/build-import-ready-extracted-subset.mjs',
+		'scripts/audit-extracted-question-data.mjs',
+		'--fail-on-warnings',
+		'scripts/import-physics-vision.mjs',
+		'importMode',
+		'--run-solvability'
+	],
+	'Import-ready extraction preparation script'
+);
+
 for (const scriptName of [
 	'download:aqa-separate-science',
 	'extract:aqa-separate-science:batch',
@@ -236,6 +257,7 @@ for (const scriptName of [
 	'audit:extracted-data',
 	'audit:current-exported-data',
 	'build:import-ready-extracted-subset',
+	'prepare:import-ready-extraction',
 	'repair:extracted-data',
 	'repair:extraction-response-assets',
 	'import:vision',
@@ -261,6 +283,8 @@ for (const scriptPath of [
 	'scripts/import-physics-vision.mjs',
 	'scripts/audit-extracted-question-data.mjs',
 	'scripts/evaluate-question-solvability.mjs',
+	'scripts/build-import-ready-extracted-subset.mjs',
+	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs'
