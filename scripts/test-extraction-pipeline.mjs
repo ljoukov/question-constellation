@@ -31,6 +31,19 @@ function runNodeScript(scriptPath, args = []) {
 	});
 }
 
+function runNodeScriptExpectFailure(scriptPath, args = []) {
+	try {
+		execFileSync(process.execPath, [scriptPath, ...args], {
+			cwd: rootDir,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe']
+		});
+		fail(`Expected ${scriptPath} to fail.`);
+	} catch (error) {
+		return String(error.stdout ?? '') + String(error.stderr ?? '');
+	}
+}
+
 function runNodeCheck(scriptPath) {
 	return execFileSync(process.execPath, ['--check', scriptPath], {
 		cwd: rootDir,
@@ -49,6 +62,9 @@ const productionPipelineSource = readText(
 );
 const productionBatchSource = readText(
 	path.join(rootDir, 'scripts/run-production-extraction-batch.mjs')
+);
+const productionVerifierSource = readText(
+	path.join(rootDir, 'scripts/verify-production-extraction-run.mjs')
 );
 const downloaderSource = readText(path.join(rootDir, 'scripts/download-aqa-separate-science.mjs'));
 const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.mjs'));
@@ -86,6 +102,7 @@ for (const filePath of [
 	'scripts/extract-paper-llm.mjs',
 	'scripts/run-production-extraction-pipeline.mjs',
 	'scripts/run-production-extraction-batch.mjs',
+	'scripts/verify-production-extraction-run.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
@@ -118,6 +135,7 @@ requireIncludes(
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run extract:production',
 		'pnpm run extract:production:batch',
+		'pnpm run verify:production-extraction',
 		'pnpm run download:aqa-separate-science',
 		'pnpm run extract:aqa-separate-science:batch',
 		'--concurrency',
@@ -346,6 +364,18 @@ requireIncludes(
 );
 
 requireIncludes(
+	productionVerifierSource,
+	[
+		'production-extraction-summary.json',
+		'judge-solvability',
+		'requiredRepairs',
+		'allow-dropped-questions',
+		'LLM log must include'
+	],
+	'Production extraction verifier'
+);
+
+requireIncludes(
 	downloaderSource,
 	[
 		'GCSE Biology 8461',
@@ -486,6 +516,7 @@ for (const scriptName of [
 	'extract:paper-llm',
 	'extract:production',
 	'extract:production:batch',
+	'verify:production-extraction',
 	'summarize:llm-extraction-logs',
 	'eval:question-solvability',
 	'audit:extracted-data',
@@ -2089,6 +2120,268 @@ if (figureTwoMedia?.asset?.sourceLabel !== 'Figure 2') {
 
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');
 mkdirSync(tmpDir, { recursive: true });
+function writeSyntheticProductionRun({ runRoot, runId, solvabilityRequiredRepairs = [] }) {
+	const sourceDocumentId = path.basename(runRoot);
+	const rawPath = path.join(runRoot, 'raw', `${sourceDocumentId}.json`);
+	const evalPath = path.join(runRoot, 'eval', `${sourceDocumentId}.extraction.eval.json`);
+	const reconciledPath = path.join(runRoot, 'chain-reconciled', `${sourceDocumentId}.json`);
+	const reconcileSummaryPath = path.join(runRoot, 'chain-reconcile-summary.json');
+	const importReadyRoot = path.join(runRoot, 'import-ready');
+	const importReadyPath = path.join(importReadyRoot, `${sourceDocumentId}.json`);
+	const importReadyAuditPath = path.join(runRoot, 'import-ready-audit.json');
+	const summaryPath = path.join(runRoot, 'production-extraction-summary.json');
+	for (const dir of [
+		path.dirname(rawPath),
+		path.dirname(evalPath),
+		path.dirname(reconciledPath),
+		importReadyRoot
+	]) {
+		mkdirSync(dir, { recursive: true });
+	}
+	const candidate = {
+		sourceDocumentId,
+		sourceDocument: { id: sourceDocumentId, subject: 'Biology', subjectArea: 'Biology' },
+		markSchemeDocument: { id: `${sourceDocumentId}-ms` },
+		questions: [
+			{
+				sourceQuestionRef: '01.1',
+				promptText: 'State the energy source.',
+				stemBlocks: [{ kind: 'paragraph', text: 'This question is about photosynthesis.' }],
+				promptBlocks: [{ kind: 'paragraph', text: 'State the energy source.' }],
+				response: { kind: 'lines', count: 1 },
+				markSchemeItems: [{ itemType: 'mark', text: 'Light.', marks: 1 }],
+				markChecklist: [
+					{
+						text: 'States light.',
+						required: true,
+						markSchemeItemIndexes: [0],
+						needsHumanReview: false
+					}
+				],
+				modelAnswer: {
+					answerText: 'Light.',
+					needsHumanReview: false,
+					confidence: 0.95
+				},
+				answerChain: {
+					id: 'bio-chain-identify-energy-source',
+					title: 'Identify the required source from a science cue',
+					canonicalChainText: 'Read the question cue and state the accepted source or category.',
+					summary: 'Reusable source-identification chain.',
+					steps: [
+						{
+							stepText: 'Identify the accepted source from the cue.',
+							stepRole: 'conclusion',
+							markSchemeItemIndexes: [0]
+						}
+					],
+					needsHumanReview: false
+				},
+				chainResolution: {
+					action: 'create_new',
+					existingChainId: null,
+					compatibilityRationale: 'New reusable chain.',
+					identityStable: true
+				},
+				assets: [],
+				needsHumanReview: false
+			}
+		]
+	};
+	const summaryPlan = {
+		sourceDocumentId,
+		rawOutputPath: path.relative(rootDir, rawPath),
+		extractionEvalPath: path.relative(rootDir, evalPath),
+		reconciledOutputPath: path.relative(rootDir, reconciledPath),
+		reconcileSummaryPath: path.relative(rootDir, reconcileSummaryPath),
+		importReadyRoot: path.relative(rootDir, importReadyRoot),
+		importReadyAuditPath: path.relative(rootDir, importReadyAuditPath),
+		summaryPath: path.relative(rootDir, summaryPath),
+		runId,
+		runSolvability: true,
+		skipExtractionJudge: false,
+		skipChainJudge: false,
+		importMode: 'dry-run'
+	};
+	writeFileSync(rawPath, JSON.stringify(candidate, null, 2));
+	writeFileSync(reconciledPath, JSON.stringify(candidate, null, 2));
+	writeFileSync(importReadyPath, JSON.stringify(candidate, null, 2));
+	writeFileSync(
+		evalPath,
+		JSON.stringify(
+			{
+				status: 'passed',
+				mechanicalErrors: [],
+				deterministicBlockingIssues: [],
+				judge: { verdict: 'pass', score: 0.91, requiredRepairs: [] }
+			},
+			null,
+			2
+		)
+	);
+	writeFileSync(
+		reconcileSummaryPath,
+		JSON.stringify(
+			{
+				status: 'passed',
+				finalBlockingRefs: 0,
+				finalWarningRefs: 0,
+				files: [
+					{
+						file: path.relative(rootDir, rawPath),
+						status: 'passed',
+						judge: {
+							status: 'passed',
+							judgeVerdict: 'pass',
+							judgeScore: 0.92,
+							requiredRepairs: []
+						}
+					}
+				]
+			},
+			null,
+			2
+		)
+	);
+	writeFileSync(
+		importReadyAuditPath,
+		JSON.stringify(
+			{
+				status: 'passed',
+				mechanical: {
+					status: 'passed',
+					fileCount: 1,
+					questionCount: 1,
+					errorCount: 0,
+					warningCount: 0,
+					files: [
+						{
+							file: path.relative(rootDir, importReadyPath),
+							sourceDocumentId,
+							questionCount: 1,
+							status: 'passed',
+							errors: [],
+							warnings: []
+						}
+					]
+				},
+				solvability: {
+					enabled: true,
+					status: 'passed',
+					planned: 1,
+					completed: 1,
+					passed: 1,
+					failed: 0,
+					results: [
+						{
+							sourceQuestionRef: '01.1',
+							status: 'passed',
+							judge: {
+								score: 0.94,
+								requiredRepairs: solvabilityRequiredRepairs,
+								missingContext: [],
+								renderFindings: []
+							}
+						}
+					]
+				}
+			},
+			null,
+			2
+		)
+	);
+	writeFileSync(
+		summaryPath,
+		JSON.stringify(
+			{
+				status: 'passed',
+				plan: summaryPlan,
+				steps: [
+					{ label: 'PDF extraction', status: 'passed' },
+					{ label: 'answer-chain reconciliation', status: 'passed' },
+					{ label: 'strict import-ready preparation', status: 'passed' }
+				],
+				importReady: {
+					status: 'passed',
+					outputRoot: path.relative(rootDir, importReadyRoot),
+					auditOutput: path.relative(rootDir, importReadyAuditPath),
+					runSolvability: true,
+					importMode: 'dry-run',
+					keptQuestions: 1,
+					droppedQuestions: 0,
+					importResults: [{ sourceDocumentId, mode: 'dry-run', questions: 1 }]
+				}
+			},
+			null,
+			2
+		)
+	);
+	return { summaryPath };
+}
+const productionVerifierLogDir = path.join(tmpDir, 'production-verifier-logs');
+mkdirSync(productionVerifierLogDir, { recursive: true });
+function writeVerifierLlmLog(runId) {
+	const records = [];
+	for (const label of [
+		'extract-full-paper:test-paper:all',
+		'judge-extraction:test-paper',
+		'judge-rubric:test-paper',
+		'judge-solvability:test-paper:01.1'
+	]) {
+		const callId = `${records.length + 1}-${label}`;
+		records.push({ type: 'llm_call_started', runId, callId, label, model: 'test-model' });
+		records.push({
+			type: 'llm_call_completed',
+			runId,
+			callId,
+			label,
+			model: 'test-model',
+			ok: true,
+			costUsd: 0.001,
+			usage: { totalTokens: 10 }
+		});
+	}
+	writeFileSync(
+		path.join(productionVerifierLogDir, `${runId}.jsonl`),
+		records.map((record) => JSON.stringify(record)).join('\n')
+	);
+}
+const validProductionRunId = 'test-production-run-valid';
+writeVerifierLlmLog(validProductionRunId);
+const validProductionRun = writeSyntheticProductionRun({
+	runRoot: path.join(tmpDir, 'production-run-valid'),
+	runId: validProductionRunId
+});
+const verifierResult = JSON.parse(
+	runNodeScript('scripts/verify-production-extraction-run.mjs', [
+		`--summary=${validProductionRun.summaryPath}`,
+		`--log-dir=${productionVerifierLogDir}`
+	])
+);
+if (
+	verifierResult.status !== 'passed' ||
+	verifierResult.questionCounts.importReady !== 1 ||
+	!verifierResult.llmLog?.labelPrefixes?.includes('judge-solvability')
+) {
+	fail('Production extraction verifier did not pass a complete synthetic run.', verifierResult);
+}
+const staleProductionRunId = 'test-production-run-stale';
+writeVerifierLlmLog(staleProductionRunId);
+const staleProductionRun = writeSyntheticProductionRun({
+	runRoot: path.join(tmpDir, 'production-run-stale'),
+	runId: staleProductionRunId,
+	solvabilityRequiredRepairs: ['Remove duplicated learner-visible context.']
+});
+const staleVerifierOutput = runNodeScriptExpectFailure(
+	'scripts/verify-production-extraction-run.mjs',
+	[`--summary=${staleProductionRun.summaryPath}`, `--log-dir=${productionVerifierLogDir}`]
+);
+if (!staleVerifierOutput.includes('solvability judge must not request required repairs')) {
+	fail(
+		'Production verifier did not reject stale solvability required repairs.',
+		staleVerifierOutput
+	);
+}
 const productionBatchDataRoot = path.join(tmpDir, 'production-batch-data');
 mkdirSync(path.join(productionBatchDataRoot, 'question-papers'), { recursive: true });
 mkdirSync(path.join(productionBatchDataRoot, 'mark-schemes'), { recursive: true });

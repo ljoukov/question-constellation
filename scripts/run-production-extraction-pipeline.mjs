@@ -128,7 +128,10 @@ const plan = {
 	existingChainInputRoot: existingChainInputRoot
 		? relative(path.resolve(rootDir, existingChainInputRoot))
 		: null,
+	runId: runId || null,
 	runSolvability,
+	skipExtractionJudge,
+	skipChainJudge,
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run'
 };
 

@@ -409,6 +409,20 @@ an import dry-run; add `--import` only after reviewing the summary and strict au
 `--skip-solvability` only for local debugging because the solvability judge is the end-user
 renderability gate.
 
+After a production run, verify the run artifact before treating it as import-ready:
+
+```sh
+pnpm run verify:production-extraction -- \
+  --work-root=tmp/production-extraction/aqa-84611h-qp-nov20
+```
+
+The verifier reads the top-level production summary, extraction judge report, chain reconciliation
+summary, strict import-ready audit, import-ready JSON files, and the LLM log for the run id. It
+fails if any step only appears to have passed while a lower-level judge still requested repairs,
+including stale learner-facing solvability findings such as duplicated context blocks or missing
+unordered answer-key semantics. Use `--allow-dropped-questions` only for deliberate partial imports
+where the dropped questions are separately tracked for repair.
+
 For the current AQA Physics data layout, use the preset:
 
 ```sh
