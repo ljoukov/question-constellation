@@ -322,6 +322,7 @@ const FullQuestionQualityRepairSchema = z.object({
 			selfContainedPromptText: z.string().nullable().optional(),
 			contextText: z.string().nullable().optional(),
 			response: createFullResponseSchema().nullable().optional(),
+			assets: z.array(createLooseAssetSchema()).nullable().optional(),
 			markSchemeItems: z
 				.array(
 					z.object({
@@ -334,6 +335,8 @@ const FullQuestionQualityRepairSchema = z.object({
 				)
 				.nullable()
 				.optional(),
+			needsHumanReview: z.boolean().nullable().optional(),
+			reviewNotes: z.array(z.string()).nullable().optional(),
 			answerChain: AnswerChainSchema.nullable().optional(),
 			chainResolution: ChainResolutionSchema.nullable().optional(),
 			markChecklist: z
@@ -761,15 +764,17 @@ const CompactMarkSchemeItemSchema = z.object({
 	confidence: z.number().nullable().optional()
 });
 
-const CompactMarkChecklistItemSchema = z.object({
-	text: z.string().nullable().optional(),
-	item: z.string().nullable().optional(),
-	description: z.string().nullable().optional(),
-	required: z.boolean().nullable().optional(),
-	markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
-	confidence: z.number().nullable().optional(),
-	needsHumanReview: z.boolean().nullable().optional()
-}).passthrough();
+const CompactMarkChecklistItemSchema = z
+	.object({
+		text: z.string().nullable().optional(),
+		item: z.string().nullable().optional(),
+		description: z.string().nullable().optional(),
+		required: z.boolean().nullable().optional(),
+		markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
+		confidence: z.number().nullable().optional(),
+		needsHumanReview: z.boolean().nullable().optional()
+	})
+	.passthrough();
 
 const CompactReviewNoteSchema = z.union([
 	z.string(),
@@ -1501,9 +1506,11 @@ export function pageNumberFromRenderedPath(filePath) {
 	return match ? Number(match[1]) : null;
 }
 
-export function chunkImages(images, chunkPages = 6) {
+export function chunkImages(images, chunkPages = 6, contextPages = 2) {
 	const chunks = [];
 	for (let start = 0; start < images.length; start += chunkPages) {
+		const priorContextImages =
+			contextPages > 0 ? images.slice(Math.max(0, start - contextPages), start) : [];
 		const coreImages = images.slice(start, Math.min(start + chunkPages, images.length));
 		const lookaheadImages =
 			start + chunkPages < images.length
@@ -1512,9 +1519,11 @@ export function chunkImages(images, chunkPages = 6) {
 		chunks.push({
 			index: chunks.length,
 			total: 0,
+			priorContextImages,
 			coreImages,
 			lookaheadImages,
-			images: [...coreImages, ...lookaheadImages],
+			images: [...priorContextImages, ...coreImages, ...lookaheadImages],
+			priorContextPages: priorContextImages.map(pageNumberFromRenderedPath),
 			corePages: coreImages.map(pageNumberFromRenderedPath),
 			lookaheadPages: lookaheadImages.map(pageNumberFromRenderedPath)
 		});
@@ -1537,6 +1546,13 @@ function sourceDocumentPrompt(doc) {
 function questionPaperImageParts(chunk) {
 	if (!chunk) return [];
 	const parts = [];
+	for (const image of chunk.priorContextImages ?? []) {
+		parts.push({
+			type: 'text',
+			text: `PRIOR CONTEXT QUESTION PAPER PAGE ${pageNumberFromRenderedPath(image)}. Use only for parent stems, previous subpart values, tables, figures, and diagrams needed by core-page questions. Do not start or extract any question whose own number/prompt begins on this page.`
+		});
+		parts.push(imagePart(image));
+	}
 	for (const image of chunk.coreImages ?? chunk.images ?? []) {
 		parts.push({
 			type: 'text',
@@ -1788,6 +1804,9 @@ export function buildFullPaperPrompt({
 		chunk
 			? [
 					`This is chunk ${chunk.index + 1} of ${chunk.total}. Extract only atomic marked questions whose own question/subquestion number and prompt begin on core question-paper pages ${chunk.corePages.join(', ')}.`,
+					chunk.priorContextPages?.length
+						? `Prior context pages ${chunk.priorContextPages.join(', ')} are context only. Use them to recover parent stems, previous subpart values, tables, figures, and diagrams required to make core-page questions learner-visible and self-contained. Do not extract questions whose own number/prompt begins on a prior context page.`
+						: 'No prior context pages are supplied for this chunk.',
 					chunk.lookaheadPages.length
 						? `Lookahead pages ${chunk.lookaheadPages.join(', ')} are context only. Use them only to finish the same atomic subquestion that began on a core page. Do not extract sibling subquestions, later subquestion numbers, or a whole parent question merely because the parent stem began on a core page.`
 						: 'No lookahead pages are supplied for this chunk.',
@@ -2048,6 +2067,7 @@ export async function extractFullPaperFromPdfSet({
 	questionPages = [],
 	markSchemePages = [],
 	chunkPages = 6,
+	contextPages = 2,
 	markSchemeImageMode = 'none',
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
@@ -2141,7 +2161,7 @@ export async function extractFullPaperFromPdfSet({
 	if (!markSchemeImages.length && !markSchemeText.trim()) {
 		throw new Error('No mark-scheme images or text selected.');
 	}
-	const chunks = chunkImages(questionImages, chunkPages);
+	const chunks = chunkImages(questionImages, chunkPages, contextPages);
 	const chunkCacheDir = path.join(outputRoot, sourceDocumentId, 'chunks');
 	console.error(
 		`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} chunks=${chunks.length}`
@@ -2151,7 +2171,12 @@ export async function extractFullPaperFromPdfSet({
 	}
 	const values = [];
 	for (const chunk of chunks) {
-		const pageKey = chunk.corePages.length ? chunk.corePages.join('-') : `index-${chunk.index + 1}`;
+		const contextKey = chunk.priorContextPages.length
+			? `ctx-${chunk.priorContextPages.join('-')}`
+			: 'ctx-none';
+		const pageKey = chunk.corePages.length
+			? `${contextKey}-core-${chunk.corePages.join('-')}`
+			: `${contextKey}-index-${chunk.index + 1}`;
 		const chunkCachePath = path.join(
 			chunkCacheDir,
 			`chunk-${String(chunk.index + 1).padStart(3, '0')}-pages-${pageKey}.json`
@@ -2395,7 +2420,9 @@ function fixedResponseModelAnswerIssues(question) {
 function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 	const modelAnswer = normalizedForExactMatch(question.modelAnswer?.answerText);
 	if (!modelAnswer) return false;
-	const answers = responseCorrectAnswerTexts(question.response).map(normalizedForExactMatch).filter(Boolean);
+	const answers = responseCorrectAnswerTexts(question.response)
+		.map(normalizedForExactMatch)
+		.filter(Boolean);
 	if (answers.length === 0) return false;
 	if (answers.some((answer) => modelAnswer === answer)) return true;
 	const joinedAnswers = normalizedForExactMatch(answers.join(' '));
@@ -2406,7 +2433,9 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 	if (
 		longEnoughAnswers.length > 0 &&
 		modelAnswer.length <= 160 &&
-		longEnoughAnswers.every((answer) => modelAnswer.includes(answer) || answer.includes(modelAnswer))
+		longEnoughAnswers.every(
+			(answer) => modelAnswer.includes(answer) || answer.includes(modelAnswer)
+		)
 	) {
 		return true;
 	}
@@ -2689,12 +2718,16 @@ function mediaAssetSourcePageMismatch({ sourceDocument, asset, field }) {
 }
 
 function sourcePathExists(sourcePath) {
-	const resolved = path.isAbsolute(sourcePath) ? sourcePath : path.resolve(process.cwd(), sourcePath);
+	const resolved = path.isAbsolute(sourcePath)
+		? sourcePath
+		: path.resolve(process.cwd(), sourcePath);
 	return existsSync(sourcePath) || existsSync(resolved);
 }
 
 function sourcePdfPageText(sourcePath, pageNumber) {
-	const resolved = path.isAbsolute(sourcePath) ? sourcePath : path.resolve(process.cwd(), sourcePath);
+	const resolved = path.isAbsolute(sourcePath)
+		? sourcePath
+		: path.resolve(process.cwd(), sourcePath);
 	const actualPath = existsSync(sourcePath) ? sourcePath : resolved;
 	const key = `${actualPath}:${pageNumber}`;
 	if (sourcePdfPageTextCache.has(key)) return sourcePdfPageTextCache.get(key);
@@ -2810,7 +2843,9 @@ function blockText(block) {
 function referencedMediaLabelsFromQuestion(question) {
 	const labels = new Set();
 	const text = learnerFacingQuestionText(question);
-	for (const match of text.matchAll(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi)) {
+	for (const match of text.matchAll(
+		/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi
+	)) {
 		labels.add(`Figure ${match[1]}`);
 	}
 	for (const { block } of questionRenderBlocks(question)) {
@@ -2905,9 +2940,7 @@ function positiveMarkSchemeItem(item) {
 	const source = `${itemType}\n${text}`;
 	if (
 		/\b(?:withdraw|withdrawn|statistics?|mean mark|max(?:imum)? mark|notice)\b/.test(source) ||
-		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(
-			itemType
-		)
+		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(itemType)
 	) {
 		return false;
 	}
@@ -2927,7 +2960,9 @@ function positiveMarkSchemeItem(item) {
 function hasUsableGradingEvidence(question) {
 	const markSchemeItems = question.markSchemeItems ?? [];
 	const hasPositiveMarkRows = markSchemeItems.some(positiveMarkSchemeItem);
-	const hasChecklist = (question.markChecklist ?? []).some((item) => String(item?.text ?? '').trim());
+	const hasChecklist = (question.markChecklist ?? []).some((item) =>
+		String(item?.text ?? '').trim()
+	);
 	const hasModelAnswer = String(question.modelAnswer?.answerText ?? '').trim().length > 0;
 	const hasAnswerKeys = responseCorrectAnswerTexts(question.response).length > 0;
 	const hasChainEvidence = (question.answerChain?.steps ?? []).some((step) =>
@@ -3357,12 +3392,15 @@ export async function repairFullPaperQuestionQuality({
 			contextText: question.contextText,
 			response: question.response,
 			render: question.render,
+			assets: question.assets,
 			markSchemeItems: question.markSchemeItems,
 			markChecklist: question.markChecklist,
 			modelAnswer: question.modelAnswer,
 			currentAnswerChain: question.answerChain,
 			currentChainResolution: question.chainResolution ?? null,
-			commonWeakAnswers: question.commonWeakAnswers ?? []
+			commonWeakAnswers: question.commonWeakAnswers ?? [],
+			needsHumanReview: question.needsHumanReview,
+			reviewNotes: question.reviewNotes ?? []
 		}));
 	if (repairTasks.length === 0) return sanitizeAnswerChainEvidenceIndexes(candidate);
 	const { value } = await generateJsonWithTimeout(
@@ -3374,7 +3412,7 @@ export async function repairFullPaperQuestionQuality({
 				{
 					role: 'system',
 					content:
-						'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets. Return only changed grading, model-answer, weak-answer, and answer-chain fields keyed by sourceQuestionRef.'
+						'You repair GCSE extraction quality for a small set of failed questions. Preserve source prompt, response schema, mark-scheme rows, source refs, and assets unless the supplied evidence clearly shows a repair. Return only changed question-quality, grading, model-answer, weak-answer, review-flag, and answer-chain fields keyed by sourceQuestionRef.'
 				},
 				{
 					role: 'user',
@@ -3399,7 +3437,9 @@ export async function repairFullPaperQuestionQuality({
 						'Positive marking points are markSchemeItems whose itemType is a direct mark/answer/marking_point. Rows labelled allow, accept, guidance, alternative, ignore, reject, or do-not-credit are not positive step evidence. If judge feedback suggests using one of those rows as answerChain evidence, ignore that part of the feedback and merge, delete, or remap the step to a direct positive mark row instead.',
 						'If a row labelled allow/accept actually contains a complete independently credited alternative answer route, you may repair only its itemType to alternative_marking_point while preserving text, marks, sourceRef, and confidence.',
 						'If a checklist item describes one option among accepted alternatives, do not mark every alternative required=true as though all must be present. Represent alternatives with required=false wording that says any one accepted route earns credit.',
-						'Keep exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer, not in answerChain fields.'
+						'Keep exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer, not in answerChain fields.',
+						'You may clear needsHumanReview only when every previous review note is resolved by concrete fields in the repaired extraction and no required media/context/copyright/response-control uncertainty remains. If any source figure, crop, table, graph, earlier context, answer area, or copyright placeholder is still uncertain, keep needsHumanReview true and keep a concise blocking review note.',
+						'If you clear needsHumanReview, replace reviewNotes with only unresolved non-blocking notes, or [] when there are none. Do not clear review-marked fallback full-page assets unless the full page is intentionally the learner-visible asset and deterministic media checks can still pass.'
 					].join('\n')
 				}
 			],
@@ -3421,12 +3461,21 @@ export async function repairFullPaperQuestionQuality({
 						: question.selfContainedPromptText,
 				contextText: repair.contextText !== undefined ? repair.contextText : question.contextText,
 				response: repair.response ?? question.response,
+				assets: repair.assets ?? question.assets,
 				markSchemeItems: repair.markSchemeItems ?? question.markSchemeItems,
 				answerChain: repair.answerChain ?? question.answerChain,
 				chainResolution: repair.chainResolution ?? question.chainResolution,
 				markChecklist: repair.markChecklist ?? question.markChecklist,
 				modelAnswer: repair.modelAnswer ?? question.modelAnswer,
-				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers
+				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers,
+				needsHumanReview:
+					repair.needsHumanReview !== undefined && repair.needsHumanReview !== null
+						? repair.needsHumanReview
+						: question.needsHumanReview,
+				reviewNotes:
+					repair.reviewNotes !== undefined && repair.reviewNotes !== null
+						? repair.reviewNotes
+						: question.reviewNotes
 			};
 		})
 	});

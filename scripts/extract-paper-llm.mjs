@@ -12,6 +12,7 @@ import {
 	parsePageSelection,
 	readJson,
 	repairFullPaperAnswerChains,
+	repairFullPaperQuestionQuality,
 	renderPdfPages,
 	setupLlmEnv,
 	writeJson
@@ -38,6 +39,7 @@ Optional:
   --supporting-document=<examiner-report-or-insert.pdf>
   --existing-chains=<json-or-md>
   --chunk-pages=6
+  --context-pages=2
   --expected-question-count=1
   --repair-attempts=1
   --judge-fixture=<golden-fixture.json>
@@ -71,6 +73,7 @@ const thinkingLevel = stringArg(
 );
 const dpi = integerArg('dpi', 160, 90);
 const chunkPages = integerArg('chunk-pages', 6, 1);
+const contextPages = integerArg('context-pages', 2, 0);
 const forceRender = hasArg('force-render') || hasArg('force');
 const forceOutput = hasArg('force');
 const forceChunkCache = hasArg('force-chunks');
@@ -222,13 +225,36 @@ function refsNeedingRepair(candidate, evaluation) {
 	const deterministic = deterministicCandidateIssues(candidate);
 	const blocking = blockingIssues(deterministic);
 	const refs = new Set(blocking.map((issue) => issue.sourceQuestionRef).filter(Boolean));
-	if (refs.size > 0) return [...refs];
+	for (const ref of questionHumanReviewRefs(candidate)) refs.add(ref);
 	const judgeRepairs = JSON.stringify(evaluation?.judge?.requiredRepairs ?? []);
 	for (const question of candidate.questions ?? []) {
 		if (judgeRepairs.includes(question.sourceQuestionRef)) refs.add(question.sourceQuestionRef);
 	}
 	if (refs.size > 0) return [...refs];
 	return (candidate.questions ?? []).map((question) => question.sourceQuestionRef).filter(Boolean);
+}
+
+function questionHumanReviewRefs(candidate) {
+	const refs = new Set();
+	for (const question of candidate.questions ?? []) {
+		if (!question.sourceQuestionRef) continue;
+		if (question.needsHumanReview || question.answerChain?.needsHumanReview) {
+			refs.add(question.sourceQuestionRef);
+			continue;
+		}
+		if (question.modelAnswer?.needsHumanReview) {
+			refs.add(question.sourceQuestionRef);
+			continue;
+		}
+		if ((question.assets ?? []).some((asset) => asset?.needsHumanReview)) {
+			refs.add(question.sourceQuestionRef);
+			continue;
+		}
+		if ((question.markChecklist ?? []).some((item) => item?.needsHumanReview)) {
+			refs.add(question.sourceQuestionRef);
+		}
+	}
+	return [...refs];
 }
 
 function chunks(values, size) {
@@ -258,7 +284,7 @@ async function repairFailedQuestionBatches({
 	for (const batchRefs of chunks(refs, repairBatchSize)) {
 		const refsToRepair = [];
 		for (const ref of batchRefs) {
-			const cachePath = path.join(repairCacheDir, `repair-${slugify(ref)}.json`);
+			const cachePath = path.join(repairCacheDir, `repair-v2-${slugify(ref)}.json`);
 			if (existsSync(cachePath)) {
 				console.error(`[extract-cli] repair cache ${ref}`);
 				repaired = applyQuestionRepair(repaired, readJson(cachePath));
@@ -268,6 +294,18 @@ async function repairFailedQuestionBatches({
 		}
 		if (refsToRepair.length === 0) continue;
 		console.error(`[extract-cli] repairing refs ${refsToRepair.join(', ')}`);
+		repaired = await repairFullPaperQuestionQuality({
+			model,
+			thinkingLevel,
+			candidate: repaired,
+			deterministicIssues: filterDeterministicIssuesForRefs(
+				deterministicCandidateIssues(repaired),
+				refsToRepair
+			),
+			judge,
+			existingChainsText,
+			sourceQuestionRefs: refsToRepair
+		});
 		repaired = await repairFullPaperAnswerChains({
 			model,
 			thinkingLevel,
@@ -285,11 +323,21 @@ async function repairFailedQuestionBatches({
 				(candidateQuestion) => candidateQuestion.sourceQuestionRef === ref
 			);
 			if (!question) continue;
-			writeJson(path.join(repairCacheDir, `repair-${slugify(ref)}.json`), {
+			writeJson(path.join(repairCacheDir, `repair-v2-${slugify(ref)}.json`), {
+				repairVersion: 2,
 				sourceQuestionRef: ref,
+				selfContainedPromptText: question.selfContainedPromptText,
+				contextText: question.contextText,
+				response: question.response,
+				assets: question.assets,
+				markSchemeItems: question.markSchemeItems,
 				answerChain: question.answerChain,
 				chainResolution: question.chainResolution ?? null,
-				commonWeakAnswers: question.commonWeakAnswers ?? []
+				markChecklist: question.markChecklist,
+				modelAnswer: question.modelAnswer,
+				commonWeakAnswers: question.commonWeakAnswers ?? [],
+				needsHumanReview: question.needsHumanReview,
+				reviewNotes: question.reviewNotes ?? []
 			});
 		}
 	}
@@ -303,9 +351,24 @@ function applyQuestionRepair(candidate, repair) {
 			if (question.sourceQuestionRef !== repair.sourceQuestionRef) return question;
 			return {
 				...question,
+				selfContainedPromptText:
+					repair.selfContainedPromptText !== undefined
+						? repair.selfContainedPromptText
+						: question.selfContainedPromptText,
+				contextText: repair.contextText !== undefined ? repair.contextText : question.contextText,
+				response: repair.response ?? question.response,
+				assets: repair.assets ?? question.assets,
+				markSchemeItems: repair.markSchemeItems ?? question.markSchemeItems,
 				answerChain: repair.answerChain ?? question.answerChain,
 				chainResolution: repair.chainResolution ?? question.chainResolution,
-				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers
+				markChecklist: repair.markChecklist ?? question.markChecklist,
+				modelAnswer: repair.modelAnswer ?? question.modelAnswer,
+				commonWeakAnswers: repair.commonWeakAnswers ?? question.commonWeakAnswers,
+				needsHumanReview:
+					repair.needsHumanReview !== undefined
+						? repair.needsHumanReview
+						: question.needsHumanReview,
+				reviewNotes: repair.reviewNotes ?? question.reviewNotes
 			};
 		})
 	};
@@ -495,6 +558,7 @@ async function runOne({
 		questionPages,
 		markSchemePages,
 		chunkPages,
+		contextPages,
 		model,
 		thinkingLevel,
 		markSchemeImageMode,

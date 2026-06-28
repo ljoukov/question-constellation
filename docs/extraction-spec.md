@@ -410,6 +410,20 @@ candidate JSON and deterministic findings, not the extractor's private context, 
 0 to 1. Use `--skip-judge` only for local debugging when you explicitly want deterministic checks
 without another LLM call.
 
+Automatic repair attempts must include unresolved `needsHumanReview` rows, not only failed reusable-chain
+checks. The CLI first runs a question-quality repair pass for flagged refs, then a text-only answer-chain
+repair pass. A repair model may clear `needsHumanReview` only when it has returned concrete repaired
+fields and removed or narrowed the review notes; deterministic audit and the learner-facing solvability
+judge still decide import readiness. Do not use repair attempts to auto-approve copyright-placeholder
+media, unknown figure crops, missing parent context, or fallback full-page assets that have not been made
+intentionally learner-visible.
+
+Extraction chunks must include prior context pages as well as lookahead pages. Prior context is how the
+extractor recovers parent stems, previous subpart values, tables, figures, and diagrams for questions
+such as `05.7` whose own prompt begins after the source context. The default CLI window is
+`--context-pages=2`; increase it for papers where a parent question spans more pages. Prior context
+pages are never extraction starts: they are visible evidence only for core-page target questions.
+
 There are two kinds of tests:
 
 - Mechanical tests such as `pnpm run test:extraction-pipeline` check schemas, script wiring, prompt

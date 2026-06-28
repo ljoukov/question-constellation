@@ -142,6 +142,8 @@ requireIncludes(
 		'llm_call_started',
 		'llm_call_event',
 		'llm_call_completed',
+		'clear needsHumanReview only when every previous review note is resolved',
+		'Do not clear review-marked fallback full-page assets',
 		'summarizeLlmInput',
 		'EXTRACTION_LLM_MAX_ATTEMPTS ?? 3',
 		'Return exactly the requested JSON object shape',
@@ -149,6 +151,9 @@ requireIncludes(
 		'answerChainSpecificityIssues',
 		'expandCompactFullPaperExtraction',
 		'LOOKAHEAD QUESTION PAPER PAGE',
+		'PRIOR CONTEXT QUESTION PAPER PAGE',
+		'priorContextPages',
+		'contextPages = 2',
 		'Do not start or extract sibling subquestions',
 		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk',
 		'withdrawn questions, replacement notices, statistics-only rows'
@@ -167,18 +172,22 @@ requireIncludes(
 		'--preset=aqa-separate-science',
 		'--supporting-document',
 		'--existing-chains',
+		'--context-pages=2',
 		'--mark-scheme-image-mode',
-			'--repair-attempts',
-			'--repair-batch-size',
-			'--llm-timeout-ms',
-			'--llm-max-attempts',
-			'--llm-max-attempts=3',
-			'--skip-judge',
-			"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
-			'extractFullPaperFromPdfSet'
-		],
-		'Pipeline CLI'
-	);
+		'--repair-attempts',
+		'--repair-batch-size',
+		'--llm-timeout-ms',
+		'--llm-max-attempts',
+		'--llm-max-attempts=3',
+		'--skip-judge',
+		"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
+		'extractFullPaperFromPdfSet',
+		'repairFullPaperQuestionQuality',
+		'questionHumanReviewRefs',
+		'repair-v2-'
+	],
+	'Pipeline CLI'
+);
 
 requireIncludes(
 	batchSource,
@@ -373,7 +382,8 @@ const chainContextOutput = path.join(chainContextDir, 'context.json');
 const reusableChain = {
 	id: 'bio-chain-process-cause-effect',
 	title: 'Explain a process cause and effect',
-	canonicalChainText: 'Identify the process, connect the cause to the effect, and state the outcome.',
+	canonicalChainText:
+		'Identify the process, connect the cause to the effect, and state the outcome.',
 	summary: 'Reusable cause-effect explanation chain.',
 	broadTopic: 'Biology',
 	chainFamilyId: 'process-cause-effect',
@@ -461,6 +471,7 @@ for (const exportName of [
 	'repairFullPaperQuestionQuality',
 	'sanitizeAnswerChainEvidenceIndexes',
 	'buildLearnerVisibleQuestionContext',
+	'chunkImages',
 	'judgeQuestionSolvability',
 	'questionRefsFromText',
 	'markSchemeTextExcerptForRefs',
@@ -470,6 +481,31 @@ for (const exportName of [
 	if (typeof pipelineModule[exportName] !== 'function') {
 		fail(`Missing library export: ${exportName}`);
 	}
+}
+
+const contextWindowChunks = pipelineModule.chunkImages(
+	[
+		'/tmp/question-paper-001.png',
+		'/tmp/question-paper-002.png',
+		'/tmp/question-paper-003.png',
+		'/tmp/question-paper-004.png',
+		'/tmp/question-paper-005.png'
+	],
+	2,
+	1
+);
+if (
+	contextWindowChunks.length !== 3 ||
+	contextWindowChunks[0].priorContextPages.length !== 0 ||
+	contextWindowChunks[0].corePages.join(',') !== '1,2' ||
+	contextWindowChunks[0].lookaheadPages.join(',') !== '3' ||
+	contextWindowChunks[1].priorContextPages.join(',') !== '2' ||
+	contextWindowChunks[1].corePages.join(',') !== '3,4' ||
+	contextWindowChunks[1].lookaheadPages.join(',') !== '5'
+) {
+	fail('Chunking did not include prior context, core, and lookahead pages as expected.', {
+		contextWindowChunks
+	});
 }
 
 const numericTitleIssues = pipelineModule.deterministicCandidateIssues({
@@ -581,7 +617,8 @@ const missingNormalMediaIssues = pipelineModule.deterministicCandidateIssues({
 			answerChain: {
 				id: 'bio-chain-use-figure-evidence',
 				title: 'Use figure evidence to support a statement',
-				canonicalChainText: 'Use the relevant figure to identify the visible evidence needed by the prompt.',
+				canonicalChainText:
+					'Use the relevant figure to identify the visible evidence needed by the prompt.',
 				summary: 'Use source media evidence before writing the answer.',
 				steps: [
 					{
@@ -624,10 +661,12 @@ const conditionalAlternativeIssues = pipelineModule.deterministicCandidateIssues
 				title: 'Use an accepted fallback comparison only when precise points are absent',
 				canonicalChainText:
 					'When a mark scheme gives a credited fallback route, use it as an alternative route rather than as an extra mark after the precise route.',
-				summary: 'Treat credited fallback routes as alternatives, not additional independent points.',
+				summary:
+					'Treat credited fallback routes as alternatives, not additional independent points.',
 				steps: [
 					{
-						stepText: 'Apply the credited fallback route only when the preferred precise route has not already been used.',
+						stepText:
+							'Apply the credited fallback route only when the preferred precise route has not already been used.',
 						stepRole: 'method',
 						explanation: null,
 						commonOmission: null,
@@ -647,7 +686,9 @@ if (
 		)
 	)
 ) {
-	fail('Deterministic checks rejected a credited conditional alternative as non-positive evidence.');
+	fail(
+		'Deterministic checks rejected a credited conditional alternative as non-positive evidence.'
+	);
 }
 
 const auditFixturePath = path.join(fakeLogDir, 'bad-numeric-chain-extraction.json');
@@ -935,8 +976,7 @@ const missingResponseSlotsIssues = pipelineModule.deterministicCandidateIssues({
 			answerChain: {
 				id: 'bio-chain-complete-results-table',
 				title: 'Complete a results table from the stimulus',
-				canonicalChainText:
-					'Use the stimulus condition to infer each expected table result.',
+				canonicalChainText: 'Use the stimulus condition to infer each expected table result.',
 				summary: 'Reusable table-completion reasoning chain.',
 				steps: [
 					{
@@ -1170,7 +1210,9 @@ if (
 		finding.issues.some((issue) => issue.code === 'fixed_response_model_answer_review')
 	)
 ) {
-	fail('Deterministic checks warned when a fixed-response model answer only duplicates the answer key.');
+	fail(
+		'Deterministic checks warned when a fixed-response model answer only duplicates the answer key.'
+	);
 }
 
 const duplicateEquationModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
@@ -1332,7 +1374,9 @@ if (existsSync(localSourcePageFixture)) {
 			)
 		)
 	) {
-		fail('Deterministic checks did not flag a numbered media asset assigned to the wrong source PDF page.');
+		fail(
+			'Deterministic checks did not flag a numbered media asset assigned to the wrong source PDF page.'
+		);
 	}
 }
 
