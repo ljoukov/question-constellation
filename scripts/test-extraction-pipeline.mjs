@@ -47,6 +47,9 @@ const batchSource = readText(path.join(rootDir, 'scripts/extract-aqa-separate-sc
 const productionPipelineSource = readText(
 	path.join(rootDir, 'scripts/run-production-extraction-pipeline.mjs')
 );
+const productionBatchSource = readText(
+	path.join(rootDir, 'scripts/run-production-extraction-batch.mjs')
+);
 const downloaderSource = readText(path.join(rootDir, 'scripts/download-aqa-separate-science.mjs'));
 const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.mjs'));
 const repairAssetSource = readText(
@@ -82,6 +85,7 @@ for (const filePath of [
 	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
 	'scripts/run-production-extraction-pipeline.mjs',
+	'scripts/run-production-extraction-batch.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
@@ -113,6 +117,7 @@ requireIncludes(
 		'pnpm run repair:extraction-response-assets',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run extract:production',
+		'pnpm run extract:production:batch',
 		'pnpm run download:aqa-separate-science',
 		'pnpm run extract:aqa-separate-science:batch',
 		'--concurrency',
@@ -327,6 +332,20 @@ requireIncludes(
 );
 
 requireIncludes(
+	productionBatchSource,
+	[
+		'scripts/run-production-extraction-pipeline.mjs',
+		'--run-id-prefix',
+		'--solvability-concurrency',
+		'supporting_documents',
+		'--concurrency',
+		'--paper-attempts',
+		'--dry-run'
+	],
+	'Production extraction batch orchestrator'
+);
+
+requireIncludes(
 	downloaderSource,
 	[
 		'GCSE Biology 8461',
@@ -466,6 +485,7 @@ for (const scriptName of [
 	'extract:aqa-separate-science',
 	'extract:paper-llm',
 	'extract:production',
+	'extract:production:batch',
 	'summarize:llm-extraction-logs',
 	'eval:question-solvability',
 	'audit:extracted-data',
@@ -2015,9 +2035,7 @@ const unorderedAnswerKeyContext = pipelineModule.buildLearnerVisibleQuestionCont
 					],
 					unorderedGroups: [{ targetIds: ['b1', 'b2'], answers: ['carbon dioxide', 'water'] }]
 				},
-				markSchemeItems: [
-					{ itemType: 'mark', text: 'carbon dioxide and water in either order' }
-				]
+				markSchemeItems: [{ itemType: 'mark', text: 'carbon dioxide and water in either order' }]
 			}
 		]
 	},
@@ -2071,6 +2089,81 @@ if (figureTwoMedia?.asset?.sourceLabel !== 'Figure 2') {
 
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');
 mkdirSync(tmpDir, { recursive: true });
+const productionBatchDataRoot = path.join(tmpDir, 'production-batch-data');
+mkdirSync(path.join(productionBatchDataRoot, 'question-papers'), { recursive: true });
+mkdirSync(path.join(productionBatchDataRoot, 'mark-schemes'), { recursive: true });
+mkdirSync(path.join(productionBatchDataRoot, 'supporting-documents'), { recursive: true });
+writeFileSync(path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF'), 'fake qp');
+writeFileSync(path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF'), 'fake ms');
+writeFileSync(path.join(productionBatchDataRoot, 'supporting-documents', 'INS.PDF'), 'fake insert');
+const productionBatchManifestPath = path.join(tmpDir, 'production-batch-manifest.json');
+writeFileSync(
+	productionBatchManifestPath,
+	JSON.stringify(
+		{
+			board: 'AQA',
+			qualification: 'GCSE',
+			tier: 'Higher',
+			rows: [
+				{
+					series: 'June 2026',
+					year: 2026,
+					board: 'AQA',
+					qualification: 'GCSE',
+					subject: 'Biology',
+					subject_area: 'Biology',
+					tier: 'Higher',
+					paper: 'Biology Paper 1',
+					component: '84611H',
+					source_document_id: 'aqa-test-qp-jun26',
+					mark_scheme_document_id: 'aqa-test-ms-jun26',
+					question_paper: {
+						filename: 'QP.PDF',
+						title: 'Question paper test',
+						url: 'https://example.test/qp.pdf'
+					},
+					mark_scheme: {
+						filename: 'MS.PDF',
+						title: 'Mark scheme test',
+						url: 'https://example.test/ms.pdf'
+					},
+					supporting_documents: [{ filename: 'INS.PDF' }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const productionBatchDryRun = JSON.parse(
+	runNodeScript('scripts/run-production-extraction-batch.mjs', [
+		`--manifest=${productionBatchManifestPath}`,
+		`--data-root=${productionBatchDataRoot}`,
+		'--all',
+		'--dry-run',
+		'--concurrency=2',
+		'--paper-attempts=2',
+		'--solvability-concurrency=3',
+		'--run-id-prefix=test-production-batch',
+		'--chunk-pages=2',
+		'--existing-chain-input-root=tmp/import-ready-existing'
+	])
+);
+const productionBatchCommand = productionBatchDryRun.planned?.[0]?.command?.join('\n') ?? '';
+if (
+	productionBatchDryRun.status !== 'dry-run' ||
+	productionBatchDryRun.selected !== 1 ||
+	!productionBatchCommand.includes('scripts/run-production-extraction-pipeline.mjs') ||
+	!productionBatchCommand.includes('--supporting-document=') ||
+	!productionBatchCommand.includes('--concurrency=3') ||
+	!productionBatchCommand.includes('--run-id=test-production-batch-aqa-test-qp-jun26') ||
+	!productionBatchCommand.includes('--existing-chain-input-root=tmp/import-ready-existing')
+) {
+	fail('Production batch dry-run did not plan a full per-paper production command.', {
+		productionBatchDryRun,
+		productionBatchCommand
+	});
+}
 const pdfPath = path.join(tmpDir, 'one-page.pdf');
 pipelineModule.writeSimplePdf(pdfPath, 'Test PDF', ['Question 01.1', 'Calculate something.']);
 if (pipelineModule.pdfPageCount(pdfPath) !== 1) fail('pdfPageCount did not read synthetic PDF.');

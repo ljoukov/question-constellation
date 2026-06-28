@@ -426,6 +426,7 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
+pnpm run extract:production:batch -- --all --concurrency=3 --paper-attempts=2 --chunk-pages=2 --chunk-concurrency=2 --extraction-model=chatgpt-gpt-5.5 --extraction-thinking-level=medium --chain-model=chatgpt-gpt-5.5 --chain-thinking-level=xhigh --solvability-model=chatgpt-gpt-5.5 --solvability-thinking-level=xhigh --llm-timeout-ms=600000 --llm-max-attempts=3 --llm-max-calls=48 --run-id-prefix=aqa-separate-production
 pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=2 --chunk-concurrency=2 --extraction-granularity=chunk --evaluation-mode=extraction --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=4 --judge-mode=paper --judge-repair-attempts=1 --llm-timeout-ms=600000 --llm-max-calls=48
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
@@ -442,25 +443,30 @@ The downloader scrapes the official AQA assessment-resource pages for GCSE Biolo
 `data/aqa-separate-science-higher/manifest.json`. Modified-print variants and examiner reports are
 excluded unless a future importer explicitly needs them.
 
+Use `extract:production:batch` for unattended parallel production imports from the AQA Separate
+Science manifest. It runs the same per-paper orchestrator as `extract:production`, so every paper
+goes through PDF-to-question extraction, independent extraction judge, answer-chain reconciliation,
+answer-chain judge, strict import-ready subset, learner-facing solvability judge, and import dry-run
+or write. Use `--dry-run` first to inspect the exact per-paper commands. Batch `--concurrency`
+controls the number of papers running at once; `--solvability-concurrency` is forwarded to the
+per-paper learner-facing solvability gate. Use `--run-id-prefix=<id>` so every paper gets a stable
+LLM log file such as `tmp/llm-extraction-logs/<id>-aqa-84611h-qp-nov20.jsonl`.
+Use `--paper-attempts=<n>` for unattended runs; retries reuse existing chunk caches instead of
+starting the whole paper from page 1 again.
+
 Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. The script first
 does a cheap deterministic scout over question-paper text to find visible source question refs by
 page. The default `--chunk-strategy=parent-question` then merges adjacent pages from the same parent
 question, so a page window does not split `05.7` away from the `05` stem, tables, figures, or earlier
 subparts it needs. Use `--chunk-strategy=fixed-pages` only for benchmark reproduction or debugging a
 specific page-window failure. Use `--chunk-pages=<n>` as the initial target batch size, and
-`--concurrency=<n>` to run multiple papers in parallel after single-paper extraction is stable. For
-unattended AQA Separate Science batch work, prefer `extract:aqa-separate-science:batch` with
-parent-question chunks, `--chunk-concurrency=<n>`, and `--extraction-granularity=chunk`; it writes
-per-paper extraction evaluation JSON,
-resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
-the deterministic extraction gate, runs an independent extraction LLM judge, and can run the
-import-ready subset gate with `--import` only after selected papers pass. It does not derive answer
-chains by default; pass `--evaluation-mode=full --repair-answer-chains` only for legacy full-chain
-repair/debug runs. The safe `--import` path builds a clean subset, runs
-`audit:extracted-data --fail-on-warnings`, then imports each vetted paper from that subset. Use
-`--import-dry-run` to exercise the same path without writing to D1. `--import-raw-output` is a
-compatibility escape hatch for already audited complete outputs; do not use it for normal production
-runs. Use `--force` to overwrite output files and rendered page images. Use
+`--concurrency=<n>` to run multiple papers in parallel after single-paper extraction is stable.
+`extract:aqa-separate-science:batch` remains available for legacy extraction-only debugging and
+cache repair. Do not use it as the normal production import path because it predates the
+chain-reconciliation/import-ready orchestrator and does not derive reusable answer chains by default.
+Its `--import-raw-output` flag is a compatibility escape hatch for already audited complete outputs,
+not a production shortcut.
+Use `--force` to overwrite output files and rendered page images. Use
 `--force-chunks` when prompt, logging, schema, or model changes mean cached LLM chunk outputs must be
 regenerated; `--force` alone intentionally does not spend new LLM calls for existing chunk caches.
 Set `--paper-attempts=<n>` to retry a paper after transient provider timeouts; retries reuse

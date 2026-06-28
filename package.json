@@ -22,6 +22,7 @@
 		"extract:aqa-separate-science": "node scripts/extract-paper-llm.mjs --preset=aqa-separate-science",
 		"extract:paper-llm": "node scripts/extract-paper-llm.mjs",
 		"extract:production": "node scripts/run-production-extraction-pipeline.mjs",
+		"extract:production:batch": "node scripts/run-production-extraction-batch.mjs",
 		"import:chained": "node scripts/import-chained-questions.mjs",
 		"import:vision": "node scripts/import-physics-vision.mjs",
 		"import:physics-vision": "node scripts/import-physics-vision.mjs",
