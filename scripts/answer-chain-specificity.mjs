@@ -5,7 +5,22 @@ const FIELD_ALIASES = {
 	commonOmission: ['commonOmission', 'common_omission']
 };
 
-const GENERIC_NUMBERS = new Set(['0', '1', '2', '0.5', '.5', '10', '100', '1000']);
+const GENERIC_NUMBERS = new Set([
+	'0',
+	'1',
+	'2',
+	'0.5',
+	'.5',
+	'10',
+	'100',
+	'1000',
+	'10^3',
+	'10^6',
+	'10^9',
+	'10^-3',
+	'10^-6',
+	'10^-9'
+]);
 const NUMBER_PATTERN =
 	/(?<![A-Za-z\\])(?:\d+(?:[.,]\d+)?|\.\d+)(?:\s*(?:\\times|x|\*|\u00d7)\s*10\s*\^?\s*[-+]?\d+)?/g;
 const CALCULATION_WORD_PATTERN =
@@ -47,10 +62,30 @@ function textForNumberAudit(text) {
 		.replace(/\b([A-Za-z])(\d+)\b/g, '$1_n');
 }
 
-function concreteNumbers(text) {
+function textForFieldAudit(field) {
+	const text = textForNumberAudit(field.text);
+	if (field.path === 'id') return text.replace(/-[0-9a-f]{8,}$/i, '');
+	return text;
+}
+
+function reusableNumericFactOnly(text, numbers) {
+	if (
+		!/\balpha(?:\s+particle|\s+decay)?\b[\s\S]{0,120}\b(?:mass\s+number\s+)?4\b/i.test(
+			text
+		)
+	) {
+		return false;
+	}
+	return numbers.every((token) => normalizeNumberToken(token) === '4');
+}
+
+function numberTokens(text) {
 	return Array.from(textForNumberAudit(text).matchAll(NUMBER_PATTERN))
-		.map((match) => match[0])
-		.filter((token) => !GENERIC_NUMBERS.has(normalizeNumberToken(token)));
+		.map((match) => match[0]);
+}
+
+function concreteNumbers(text) {
+	return numberTokens(text).filter((token) => !GENERIC_NUMBERS.has(normalizeNumberToken(token)));
 }
 
 function chainTextForClassification(chain, context = {}) {
@@ -108,11 +143,14 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 	const calculationLike = isCalculationLike(chain, context);
 
 	for (const field of chainFields(chain)) {
-		const auditText = textForNumberAudit(field.text);
+		const auditText = textForFieldAudit(field);
 		const numbers = concreteNumbers(auditText);
-		const hasSubstitution =
-			SUBSTITUTION_PATTERN.test(auditText) || VARIABLE_ASSIGNMENT_PATTERN.test(auditText);
 		const hasConcreteUnit = CONCRETE_UNIT_PATTERN.test(auditText);
+		const hasVariableAssignment = VARIABLE_ASSIGNMENT_PATTERN.test(auditText);
+		const hasSubstitution =
+			hasVariableAssignment ||
+			(SUBSTITUTION_PATTERN.test(auditText) && (numbers.length > 0 || hasConcreteUnit));
+		const shouldWarnForReusableFact = reusableNumericFactOnly(auditText, numbers);
 
 		if (hasSubstitution) {
 			issues.push({
@@ -126,7 +164,7 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			continue;
 		}
 
-		if (numbers.length > 0 && calculationLike && field.core) {
+		if (numbers.length > 0 && calculationLike && field.core && !shouldWarnForReusableFact) {
 			issues.push({
 				severity: 'error',
 				code: 'chain_prompt_specific_number',

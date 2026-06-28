@@ -274,11 +274,30 @@ numeric substitution, not the formula.
 For extraction and repair scripts, run the answer-chain specificity audit before importing:
 
 ```sh
-node scripts/audit-answer-chain-specificity.mjs --fail-on-blocking
+pnpm run audit:answer-chain-specificity -- --fail-on-blocking
 ```
 
 If the audit flags a chain, regenerate or edit the chain to describe the reusable move. Do not delete
 the numeric model answer or checklist evidence; those fields are supposed to stay source-specific.
+
+The audit scans all exported extraction JSON under `data/vision-extracted` by default, plus legacy
+semantic-chain candidate files under `data/extracted-questions`. To inspect already-imported D1
+content, run:
+
+```sh
+pnpm run audit:answer-chain-specificity -- --d1 --no-json --no-semantic --output=tmp/d1-answer-chain-specificity-audit.json
+```
+
+If imported chains contain prompt-specific numeric solution text, do not try to hide the problem in
+UI code or by deleting source evidence. Mark those D1 chains and memberships as review-only, then
+repair or re-import from a clean import-ready subset:
+
+```sh
+pnpm run audit:answer-chain-specificity -- --d1 --no-json --no-semantic --mark-review
+```
+
+Review-marked chains must not be shown on public chain, constellation, practice, or Thinking Memory
+surfaces. They are data repair work items, not learner-facing content.
 
 ### Scripted Pipeline, Golden Checks, And Independent Review
 

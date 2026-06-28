@@ -157,6 +157,128 @@
 				"blockingCodes": [],
 				"warningCodes": ["chain_numeric_review"]
 			}
+		},
+		{
+			"name": "stable hash suffix in chain id is ignored",
+			"context": {
+				"commandWord": "Explain"
+			},
+			"answerChain": {
+				"id": "biology-chain-exchange-surface-adaptations-increase-diffusion-efficiency-0c9825de",
+				"title": "Exchange surface adaptations increase diffusion efficiency",
+				"canonicalChainText": "Identify the adaptation, connect it to diffusion distance or surface area, and state how exchange becomes more efficient.",
+				"summary": "Use structure to explain faster exchange.",
+				"steps": [
+					{
+						"stepText": "Name the adaptation.",
+						"stepRole": "evidence"
+					},
+					{
+						"stepText": "Link the adaptation to the diffusion pathway or surface area.",
+						"stepRole": "link"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "algebraic formula constant is not a worked substitution",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-constant-acceleration-v2-u2-velocity-calculation",
+				"title": "Calculate final velocity using $v^2-u^2=2as$",
+				"canonicalChainText": "Convert units if needed, select $v^2-u^2=2as$, substitute the known quantities, then square-root to find the final velocity.",
+				"summary": "Use a constant-acceleration equation when distance and acceleration are known.",
+				"steps": [
+					{
+						"stepText": "Select $v^2-u^2=2as$.",
+						"stepRole": "select-equation"
+					},
+					{
+						"stepText": "Rearrange to make the unknown velocity the subject.",
+						"stepRole": "rearrange"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "generic-looking variable assignments are still worked substitutions",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-force-mass-acceleration-calculation",
+				"title": "Calculate force from mass and acceleration",
+				"canonicalChainText": "Select $F=ma$, substitute the mass and acceleration, and calculate the force.",
+				"summary": "Use Newton's second law with the known values.",
+				"steps": [
+					{
+						"stepText": "Substitute $m=2$ and $a=10$ into $F=ma$.",
+						"stepRole": "substitute-values"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": ["chain_numeric_substitution"],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "alpha particle constants are review-only unless a daughter-specific substitution appears",
+			"context": {
+				"commandWord": "Complete"
+			},
+			"answerChain": {
+				"id": "physics-chain-alpha-decay-equation-balancing",
+				"title": "Balance an alpha decay nuclear equation",
+				"canonicalChainText": "In alpha decay, the emitted alpha particle has mass number 4 and atomic number 2. Balance the equation by conserving total mass number and total atomic number.",
+				"summary": "Use the alpha particle constants to balance the nuclear equation.",
+				"steps": [
+					{
+						"stepText": "Recall that an alpha particle is $^{4}_{2}\\alpha$ or $^{4}_{2}\\mathrm{He}$.",
+						"stepRole": "recall"
+					},
+					{
+						"stepText": "Use conservation of mass number and atomic number to find the missing nucleus.",
+						"stepRole": "method"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": ["chain_numeric_review"]
+			}
+		},
+		{
+			"name": "alpha decay daughter-specific arithmetic is rejected",
+			"context": {
+				"commandWord": "Complete"
+			},
+			"answerChain": {
+				"id": "physics-chain-alpha-decay-equation-balancing",
+				"title": "Balance an alpha decay nuclear equation",
+				"canonicalChainText": "In alpha decay, the emitted alpha particle has mass number 4 and atomic number 2. Balance the equation by conserving total mass number and total atomic number.",
+				"summary": "Use the alpha particle constants to balance the nuclear equation.",
+				"steps": [
+					{
+						"stepText": "Subtract 4 from 239 to get 235 for the daughter mass number.",
+						"stepRole": "calculation"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": ["chain_prompt_specific_number"],
+				"warningCodes": ["chain_numeric_review"]
+			}
 		}
 	]
 }

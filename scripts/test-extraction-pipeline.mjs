@@ -55,6 +55,9 @@ const prepareImportReadySource = readText(
 const existingChainContextSource = readText(
 	path.join(rootDir, 'scripts/build-existing-chain-context.mjs')
 );
+const chainSpecificityAuditSource = readText(
+	path.join(rootDir, 'scripts/audit-answer-chain-specificity.mjs')
+);
 
 for (const filePath of [
 	'docs/product-methodology.md',
@@ -103,6 +106,7 @@ requireIncludes(
 		'pnpm run build:import-ready-extracted-subset',
 		'pnpm run build:existing-chain-context',
 		'pnpm run prepare:import-ready-extraction',
+		'pnpm run audit:answer-chain-specificity',
 		'--import-raw-output',
 		'--fail-on-warnings',
 		'--concurrency=4',
@@ -277,6 +281,21 @@ requireIncludes(
 	'Existing chain context builder'
 );
 
+requireIncludes(
+	chainSpecificityAuditSource,
+	[
+		'input-root',
+		'semantic-root',
+		'--d1',
+		'--mark-review',
+		'answer_chains',
+		'question_answer_chains',
+		"status = 'draft'",
+		'chain contains prompt-specific numeric solution text'
+	],
+	'Answer-chain specificity audit'
+);
+
 for (const scriptName of [
 	'download:aqa-separate-science',
 	'extract:aqa-separate-science:batch',
@@ -287,6 +306,7 @@ for (const scriptName of [
 	'eval:question-solvability',
 	'audit:extracted-data',
 	'audit:current-exported-data',
+	'audit:answer-chain-specificity',
 	'build:import-ready-extracted-subset',
 	'build:existing-chain-context',
 	'prepare:import-ready-extraction',
@@ -924,6 +944,26 @@ try {
 	) {
 		fail('Extracted-data audit did not report the numeric chain specificity defect.', auditResult);
 	}
+}
+
+const chainAuditResult = JSON.parse(
+	runNodeScript('scripts/audit-answer-chain-specificity.mjs', [
+		`--input=${auditFixturePath}`,
+		'--json',
+		'--no-semantic'
+	])
+);
+if (
+	chainAuditResult.files_scanned !== 1 ||
+	chainAuditResult.blocking_findings !== 1 ||
+	chainAuditResult.blocking_chains !== 1 ||
+	!chainAuditResult.blocking_examples.some(
+		(example) => example.chainId === 'physics-chain-calculate-0-612-j'
+	)
+) {
+	fail('Answer-chain specificity audit did not scan an arbitrary extracted JSON input.', {
+		chainAuditResult
+	});
 }
 
 const missingChainIdIssues = pipelineModule.deterministicCandidateIssues({

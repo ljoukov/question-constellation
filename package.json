@@ -24,6 +24,7 @@
 		"import:vision": "node scripts/import-physics-vision.mjs",
 		"import:physics-vision": "node scripts/import-physics-vision.mjs",
 		"import:aqa-separate-science": "node scripts/import-physics-vision.mjs --input-root=data/vision-extracted/aqa-separate-science-higher --recursive",
+		"audit:answer-chain-specificity": "node scripts/audit-answer-chain-specificity.mjs",
 		"repair:extracted-data": "node scripts/repair-extracted-question-data.mjs",
 		"repair:extraction-response-assets": "node scripts/repair-extraction-response-assets.mjs",
 		"backfill:model-answers": "node scripts/backfill-experiment-model-answers.mjs",

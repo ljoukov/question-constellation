@@ -792,6 +792,9 @@ async function getQuestionEvidence(questionId: string) {
 			 FROM question_answer_chains qac
 			 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 			 WHERE qac.question_id = ?
+			   AND qac.needs_human_review = 0
+			   AND ac.needs_human_review = 0
+			   AND ac.status = 'published'
 			 ORDER BY qac.is_primary DESC, COALESCE(qac.fit_confidence, 0) DESC
 			 LIMIT 1`,
 				[questionId]

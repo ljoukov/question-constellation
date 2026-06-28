@@ -453,7 +453,9 @@ async function getChain(chainId: string): Promise<AnswerChain> {
 	const row = await queryFirst<ChainRow>(
 		`SELECT id, title, canonical_chain_text, summary, subject_area, broad_topic, metadata_json
 		 FROM answer_chains
-		 WHERE id = ? OR slug = ?`,
+		 WHERE (id = ? OR slug = ?)
+		   AND needs_human_review = 0
+		   AND status = 'published'`,
 		[chainId, chainId]
 	);
 	if (!row) throw new Error(`Answer chain not found: ${chainId}`);
@@ -480,9 +482,14 @@ async function getChain(chainId: string): Promise<AnswerChain> {
 
 async function getPrimaryMembership(questionId: string): Promise<MembershipRow> {
 	const row = await queryFirst<MembershipRow>(
-		`SELECT answer_chain_id, transfer_distance, display_order, fit_confidence, fit_notes, needs_human_review
-		 FROM question_answer_chains
+		`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
+		        qac.fit_notes, qac.needs_human_review
+		 FROM question_answer_chains qac
+		 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 		 WHERE question_id = ?
+		   AND qac.needs_human_review = 0
+		   AND ac.needs_human_review = 0
+		   AND ac.status = 'published'
 		 ORDER BY is_primary DESC, COALESCE(fit_confidence, 0) DESC
 		 LIMIT 1`,
 		[questionId]
@@ -708,7 +715,9 @@ async function getQuestionRow(questionId: string): Promise<QuestionRow> {
 		        qualification, subject, subject_area, tier, paper, topic_path_json,
 		        self_containment_json, metadata_json
 		 FROM questions
-		 WHERE id = ? OR slug = ?`,
+		 WHERE (id = ? OR slug = ?)
+		   AND needs_human_review = 0
+		   AND status = 'published'`,
 		[questionId, questionId]
 	);
 	if (!row) throw new Error(`Question not found: ${questionId}`);
@@ -725,6 +734,9 @@ async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
 		 FROM question_answer_chains qac
 		 JOIN questions q ON q.id = qac.question_id
 		 WHERE qac.answer_chain_id = ?
+		   AND qac.needs_human_review = 0
+		   AND q.needs_human_review = 0
+		   AND q.status = 'published'
 		 ORDER BY CASE qac.transfer_distance
 			WHEN 'start' THEN 0
 			WHEN 'near' THEN 1
@@ -777,7 +789,13 @@ export async function getNavigationData(): Promise<NavigationData> {
 			SELECT q.id AS question_id, qac.answer_chain_id
 			FROM question_answer_chains qac
 			JOIN questions q ON q.id = qac.question_id
+			JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 			WHERE qac.transfer_distance = 'start'
+			  AND qac.needs_human_review = 0
+			  AND q.needs_human_review = 0
+			  AND q.status = 'published'
+			  AND ac.needs_human_review = 0
+			  AND ac.status = 'published'
 			ORDER BY qac.needs_human_review ASC, COALESCE(qac.fit_confidence, 0) DESC, q.id
 			LIMIT 1
 		)
@@ -788,7 +806,11 @@ export async function getNavigationData(): Promise<NavigationData> {
 				SELECT q2.id
 				FROM question_answer_chains qac2
 				JOIN questions q2 ON q2.id = qac2.question_id
-				WHERE qac2.answer_chain_id = pq.answer_chain_id AND q2.id != pq.question_id
+				WHERE qac2.answer_chain_id = pq.answer_chain_id
+				  AND q2.id != pq.question_id
+				  AND qac2.needs_human_review = 0
+				  AND q2.needs_human_review = 0
+				  AND q2.status = 'published'
 				ORDER BY CASE qac2.transfer_distance WHEN 'near' THEN 0 WHEN 'stretch' THEN 1 ELSE 2 END,
 				         COALESCE(qac2.display_order, 999)
 				LIMIT 1
@@ -910,6 +932,12 @@ export async function getThinkingMemoryPageData(): Promise<ThinkingMemoryPageDat
 		 FROM answer_chains ac
 		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
 		 JOIN answer_chain_steps acs ON acs.answer_chain_id = ac.id
+		 JOIN questions q ON q.id = qac.question_id
+		 WHERE ac.needs_human_review = 0
+		   AND ac.status = 'published'
+		   AND qac.needs_human_review = 0
+		   AND q.needs_human_review = 0
+		   AND q.status = 'published'
 		 GROUP BY ac.id
 		 ORDER BY COALESCE(ac.confidence, 0) DESC, ac.id
 		 LIMIT 8`

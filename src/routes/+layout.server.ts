@@ -30,7 +30,13 @@ async function getSubjectNavigation(): Promise<SubjectNavigationItem[]> {
 				) AS rowNumber
 			FROM question_answer_chains qac
 			JOIN questions q ON q.id = qac.question_id
+			JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 			WHERE q.subject_area IS NOT NULL AND q.subject_area != ''
+			  AND qac.needs_human_review = 0
+			  AND q.needs_human_review = 0
+			  AND q.status = 'published'
+			  AND ac.needs_human_review = 0
+			  AND ac.status = 'published'
 		)
 		SELECT subject, questionId, questionCount
 		FROM ranked_subject_questions

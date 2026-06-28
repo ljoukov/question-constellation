@@ -304,7 +304,12 @@ async function fetchChainRows() {
 		 FROM answer_chains ac
 		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
 		 JOIN questions q ON q.id = qac.question_id
-		 WHERE EXISTS (
+		 WHERE ac.needs_human_review = 0
+		   AND ac.status = 'published'
+		   AND qac.needs_human_review = 0
+		   AND q.needs_human_review = 0
+		   AND q.status = 'published'
+		   AND EXISTS (
 			SELECT 1
 			FROM question_rendering_overlays qro
 			WHERE qro.question_id = q.id
@@ -341,7 +346,10 @@ async function fetchQuestionRows() {
 		 FROM question_answer_chains qac
 		 JOIN questions q ON q.id = qac.question_id
 		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
-		 WHERE EXISTS (
+		 WHERE qac.needs_human_review = 0
+		   AND q.needs_human_review = 0
+		   AND q.status = 'published'
+		   AND EXISTS (
 			SELECT 1
 			FROM question_rendering_overlays qro
 			WHERE qro.question_id = q.id
