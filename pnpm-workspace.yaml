@@ -7,3 +7,6 @@ allowBuilds:
   esbuild: true
   '@google/genai': false
   protobufjs: false
+
+minimumReleaseAgeExclude:
+  - '@ljoukov/llm@7.0.23'

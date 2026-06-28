@@ -66,7 +66,7 @@
 		"wrangler": "^4.81.0"
 	},
 	"dependencies": {
-		"@ljoukov/llm": "7.0.22",
+		"@ljoukov/llm": "7.0.23",
 		"@lucide/svelte": "^1.16.0",
 		"jose": "^6.2.3",
 		"katex": "^0.16.27",

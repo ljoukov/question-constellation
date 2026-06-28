@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/private';
 import { getPracticePageData, type PracticePageData } from '$lib/server/questionData';
 import { configureChatGptCodexProxy, type LlmStreamEvent, type LlmTextModelId } from '@ljoukov/llm';
 
-const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
+const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.3-codex-spark';
 const GRADING_THINKING_LEVEL = 'medium';
 const NONE = 'none';
 const CHATGPT_CODEX_PROXY_ENV_KEYS = [

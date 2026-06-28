@@ -7,9 +7,10 @@ import { z } from 'zod';
 const DEFAULT_BASE_URL = 'http://localhost:5173';
 const DEFAULT_FIXTURE = 'scripts/fixtures/grading-eval-cases.json';
 const DEFAULT_OUTPUT = 'tmp/grading-eval/results.json';
-const DEFAULT_MODELS = ['chatgpt-gpt-5.5-fast'];
+const DEFAULT_MODELS = ['chatgpt-gpt-5.3-codex-spark'];
 const DEFAULT_THINKING_LEVELS = ['medium'];
 const COMPARISON_MODELS = [
+	'chatgpt-gpt-5.3-codex-spark',
 	'chatgpt-gpt-5.5-fast',
 	'chatgpt-gpt-5.4-fast',
 	'chatgpt-gpt-5.4-mini'
@@ -31,13 +32,13 @@ function usage() {
 		'Usage:',
 		'  node scripts/eval-experiment-grading.mjs [options]',
 		'',
-		'Defaults start with chatgpt-gpt-5.5-fast / medium.',
+		'Defaults start with chatgpt-gpt-5.3-codex-spark / medium.',
 		'',
 		'Options:',
 		'  --base-url=http://localhost:5173',
 		'  --fixture=scripts/fixtures/grading-eval-cases.json',
 		'  --output=tmp/grading-eval/results.json',
-		'  --model=chatgpt-gpt-5.5-fast[,chatgpt-gpt-5.4-mini]',
+		'  --model=chatgpt-gpt-5.3-codex-spark[,chatgpt-gpt-5.4-mini]',
 		'  --thinking-level=medium[,low,none]',
 		'  --preset=comparison',
 		'  --case=physics-swimmer-drag-full[,biology-amylase-ph-full]',
@@ -48,8 +49,7 @@ function usage() {
 		'  --include-prompts',
 		'  --fail-on-judge',
 		'',
-		'The installed LLM wrapper currently exposes chatgpt-gpt-5.4-fast and chatgpt-gpt-5.4-mini.',
-		'If chatgpt-gpt-5.4-spark is added later, pass it explicitly with --model.',
+		'The installed LLM wrapper currently exposes chatgpt-gpt-5.3-codex-spark, chatgpt-gpt-5.4-fast, and chatgpt-gpt-5.4-mini.',
 		'Production deployments ignore model/thinking overrides unless EXPERIMENT_GRADING_DEBUG_PROMPTS=1.'
 	].join('\n');
 }
@@ -143,7 +143,8 @@ function parseArgs(argv) {
 	}
 
 	if (options.models.length === 0) throw new Error('At least one model is required.');
-	if (options.thinkingLevels.length === 0) throw new Error('At least one thinking level is required.');
+	if (options.thinkingLevels.length === 0)
+		throw new Error('At least one thinking level is required.');
 	return options;
 }
 
@@ -234,7 +235,9 @@ async function gradeCase({ baseUrl, testCase, model, thinkingLevel, includePromp
 		};
 	}
 	const questionResult =
-		payload.results?.find((candidate) => candidate.ref === testCase.ref) ?? payload.results?.[0] ?? null;
+		payload.results?.find((candidate) => candidate.ref === testCase.ref) ??
+		payload.results?.[0] ??
+		null;
 	const debugPrompt = typeof payload.debugPrompt === 'string' ? payload.debugPrompt : null;
 	return {
 		ok: true,

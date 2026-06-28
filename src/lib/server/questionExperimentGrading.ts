@@ -13,8 +13,8 @@ import type {
 } from '$lib/experiments/questions/gradingTypes';
 import type { LlmTextModelId, LlmThinkingLevel } from '@ljoukov/llm';
 
-const DEFAULT_MODEL = 'chatgpt-gpt-5.5-fast';
-const DEFAULT_THINKING_LEVEL = 'low';
+const DEFAULT_MODEL = 'chatgpt-gpt-5.3-codex-spark';
+const DEFAULT_THINKING_LEVEL = 'medium';
 const CHATGPT_CODEX_PROXY_URL = 'CHATGPT_CODEX_PROXY_URL';
 const CHATGPT_CODEX_PROXY_API_KEY = 'CHATGPT_CODEX_PROXY_API_KEY';
 const DETERMINISTIC_WARNING =
@@ -219,7 +219,9 @@ function gradingModel(modelOverride?: string): LlmTextModelId {
 	return (modelOverride || env.EXPERIMENT_GRADING_MODEL || DEFAULT_MODEL) as LlmTextModelId;
 }
 
-function selectedThinkingLevel(thinkingOverride?: ExperimentThinkingLevel): LlmThinkingLevel | undefined {
+function selectedThinkingLevel(
+	thinkingOverride?: ExperimentThinkingLevel
+): LlmThinkingLevel | undefined {
 	const value = thinkingOverride || env.EXPERIMENT_GRADING_THINKING_LEVEL || DEFAULT_THINKING_LEVEL;
 	return value === 'none' ? undefined : (value as LlmThinkingLevel);
 }
@@ -341,7 +343,9 @@ function parseAliases(value: unknown): string[] {
 	}
 	if (!Array.isArray(value)) return [];
 	return value
-		.map((item) => (typeof item === 'string' || typeof item === 'number' ? String(item).trim() : ''))
+		.map((item) =>
+			typeof item === 'string' || typeof item === 'number' ? String(item).trim() : ''
+		)
 		.filter(Boolean);
 }
 
@@ -460,7 +464,8 @@ function mergeAnswerKeys(...groups: ParsedAnswerKey[][]) {
 		});
 	}
 	return Array.from(merged.values()).sort(
-		(left, right) => left.displayOrder - right.displayOrder || left.targetId.localeCompare(right.targetId)
+		(left, right) =>
+			left.displayOrder - right.displayOrder || left.targetId.localeCompare(right.targetId)
 	);
 }
 
@@ -539,8 +544,8 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 					return candidate.kind === 'blank' &&
 						typeof candidate.id === 'string' &&
 						typeof candidate.label === 'string'
-					? { id: candidate.id, label: candidate.label }
-					: null;
+						? { id: candidate.id, label: candidate.label }
+						: null;
 				})
 				.filter((blank): blank is { id: string; label: string } => Boolean(blank)),
 			answerKeys
@@ -607,9 +612,7 @@ function imageLabelResponseNeedsAnswerKey(response: FixedResponse | null) {
 	);
 }
 
-function canGradeDeterministically(
-	response: FixedResponse | null
-): response is FixedResponse {
+function canGradeDeterministically(response: FixedResponse | null): response is FixedResponse {
 	if (!response) return false;
 	if (response.kind === 'image-label-zones') return !imageLabelResponseNeedsAnswerKey(response);
 	return response.answerKeys.length > 0;
@@ -1378,7 +1381,7 @@ function textMatchesWithNumericTolerance(
 }
 
 function optionTextForLetter(answer: string, options: string[]) {
-	const normalized = answer.trim().replace(/[\).:]/g, '').toUpperCase();
+	const normalized = answer.trim().replace(/[).:]/g, '').toUpperCase();
 	if (!/^[A-Z]$/.test(normalized)) return null;
 	const index = normalized.charCodeAt(0) - 65;
 	return options[index] ?? null;
@@ -1567,7 +1570,9 @@ function deterministicFixedAnswerResult(
 				const key = keyForTarget(response.answerKeys, [blank.id, blank.label]);
 				if (!key) return null;
 				const submittedAnswer =
-					submitted.get(normalizedAnswer(blank.id)) ?? submitted.get(normalizedAnswer(blank.label)) ?? '';
+					submitted.get(normalizedAnswer(blank.id)) ??
+					submitted.get(normalizedAnswer(blank.label)) ??
+					'';
 				const credited = answerMatchesKey(submittedAnswer, key);
 				return {
 					id: blank.id,
@@ -1588,7 +1593,8 @@ function deterministicFixedAnswerResult(
 	}
 
 	if (response.kind === 'number-line') {
-		const key = keyForTarget(response.answerKeys, ['answer', response.label]) ?? response.answerKeys[0];
+		const key =
+			keyForTarget(response.answerKeys, ['answer', response.label]) ?? response.answerKeys[0];
 		const credited = answerMatchesKey(rawAnswer, key);
 		return deterministicChecklistResult({
 			context,
@@ -1852,8 +1858,7 @@ export async function gradeExperimentQuestionAnswers({
 	}
 
 	const llmGradeable = gradeable.filter(
-		(context) =>
-			!deterministicResults.has(context.question.id) && shouldUseLlmGrading(context)
+		(context) => !deterministicResults.has(context.question.id) && shouldUseLlmGrading(context)
 	);
 
 	if (llmGradeable.length > 0) {
