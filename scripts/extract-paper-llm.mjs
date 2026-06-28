@@ -54,6 +54,8 @@ Optional:
   --model=chatgpt-gpt-5.5
   --thinking-level=xhigh
   --repair-batch-size=1
+  --repair-llm-timeout-ms=180000
+  --repair-llm-max-attempts=1
   --llm-timeout-ms=600000
   --llm-max-attempts=3`;
 
@@ -93,6 +95,8 @@ const repairAttempts = integerArg('repair-attempts', 0, 0);
 const repairBatchSize = integerArg('repair-batch-size', 1, 1);
 const llmTimeoutMs = optionalIntegerArg('llm-timeout-ms');
 const llmMaxAttempts = optionalIntegerArg('llm-max-attempts');
+const repairLlmTimeoutMs = optionalIntegerArg('repair-llm-timeout-ms');
+const repairLlmMaxAttempts = optionalIntegerArg('repair-llm-max-attempts');
 const judgeFixturePath = stringArg('judge-fixture', '');
 const writeEvalPath = stringArg('write-eval', '');
 const extraInstructionsPath = stringArg('instructions', '');
@@ -277,7 +281,9 @@ async function repairFailedQuestionBatches({
 	evaluation,
 	judge,
 	existingChainsText,
-	repairCacheDir
+	repairCacheDir,
+	repairLlmTimeoutMs,
+	repairLlmMaxAttempts
 }) {
 	let repaired = candidate;
 	const refs = refsNeedingRepair(candidate, evaluation);
@@ -295,29 +301,35 @@ async function repairFailedQuestionBatches({
 		if (refsToRepair.length === 0) continue;
 		console.error(`[extract-cli] repairing refs ${refsToRepair.join(', ')}`);
 		try {
-			repaired = await repairFullPaperQuestionQuality({
-				model,
-				thinkingLevel,
-				candidate: repaired,
-				deterministicIssues: filterDeterministicIssuesForRefs(
-					deterministicCandidateIssues(repaired),
-					refsToRepair
-				),
-				judge,
-				existingChainsText,
-				sourceQuestionRefs: refsToRepair
-			});
-			repaired = await repairFullPaperAnswerChains({
-				model,
-				thinkingLevel,
-				candidate: repaired,
-				deterministicIssues: filterDeterministicIssuesForRefs(
-					deterministicCandidateIssues(repaired),
-					refsToRepair
-				),
-				judge,
-				existingChainsText,
-				sourceQuestionRefs: refsToRepair
+			repaired = await withTemporaryLlmRepairEnv({
+				timeoutMs: repairLlmTimeoutMs,
+				maxAttempts: repairLlmMaxAttempts
+			}, async () => {
+				let next = await repairFullPaperQuestionQuality({
+					model,
+					thinkingLevel,
+					candidate: repaired,
+					deterministicIssues: filterDeterministicIssuesForRefs(
+						deterministicCandidateIssues(repaired),
+						refsToRepair
+					),
+					judge,
+					existingChainsText,
+					sourceQuestionRefs: refsToRepair
+				});
+				next = await repairFullPaperAnswerChains({
+					model,
+					thinkingLevel,
+					candidate: next,
+					deterministicIssues: filterDeterministicIssuesForRefs(
+						deterministicCandidateIssues(next),
+						refsToRepair
+					),
+					judge,
+					existingChainsText,
+					sourceQuestionRefs: refsToRepair
+				});
+				return next;
 			});
 		} catch (error) {
 			const errorSummary = summarizeRepairError(error);
@@ -359,6 +371,30 @@ async function repairFailedQuestionBatches({
 		}
 	}
 	return repaired;
+}
+
+async function withTemporaryLlmRepairEnv({ timeoutMs, maxAttempts }, callback) {
+	const updates = {};
+	if (timeoutMs !== null && timeoutMs !== undefined) {
+		updates.EXTRACTION_LLM_TIMEOUT_MS = String(timeoutMs);
+	}
+	if (maxAttempts !== null && maxAttempts !== undefined) {
+		updates.EXTRACTION_LLM_MAX_ATTEMPTS = String(maxAttempts);
+	}
+	if (Object.keys(updates).length === 0) return callback();
+	const previous = new Map();
+	for (const [key, value] of Object.entries(updates)) {
+		previous.set(key, process.env[key]);
+		process.env[key] = value;
+	}
+	try {
+		return await callback();
+	} finally {
+		for (const [key, value] of previous.entries()) {
+			if (value === undefined) delete process.env[key];
+			else process.env[key] = value;
+		}
+	}
 }
 
 function summarizeRepairError(error) {
@@ -662,7 +698,9 @@ async function runOne({
 			evaluation,
 			judge: evaluation.judge,
 			existingChainsText,
-			repairCacheDir: path.join(outputRoot, sourceDocumentId, 'repairs')
+			repairCacheDir: path.join(outputRoot, sourceDocumentId, 'repairs'),
+			repairLlmTimeoutMs,
+			repairLlmMaxAttempts
 		});
 		evaluation = await evaluateCandidate({
 			candidate,

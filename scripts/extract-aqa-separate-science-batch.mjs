@@ -55,6 +55,8 @@ const chunkPages = integerArg('chunk-pages', 1, 1);
 const dpi = integerArg('dpi', 90, 72);
 const repairAttempts = integerArg('repair-attempts', 1, 0);
 const repairBatchSize = integerArg('repair-batch-size', 1, 1);
+const repairLlmTimeoutMs = optionalIntegerArg('repair-llm-timeout-ms');
+const repairLlmMaxAttempts = optionalIntegerArg('repair-llm-max-attempts');
 const judgeRepairAttempts = integerArg('judge-repair-attempts', 1, 0);
 const llmTimeoutMs = integerArg('llm-timeout-ms', 600000, 1);
 const llmMaxAttempts = integerArg('llm-max-attempts', 3, 1);
@@ -335,6 +337,12 @@ function extractionCommandArgs(paper) {
 		`--output=${paper.outputPath}`,
 		`--write-eval=${paper.evalPath}`
 	];
+	if (repairLlmTimeoutMs !== null && repairLlmTimeoutMs !== undefined) {
+		args.push(`--repair-llm-timeout-ms=${repairLlmTimeoutMs}`);
+	}
+	if (repairLlmMaxAttempts !== null && repairLlmMaxAttempts !== undefined) {
+		args.push(`--repair-llm-max-attempts=${repairLlmMaxAttempts}`);
+	}
 	if (model) args.push(`--model=${model}`);
 	if (judgeModel) args.push(`--judge-model=${judgeModel}`);
 	if (judgeMode !== 'paper') args.push('--skip-judge');
