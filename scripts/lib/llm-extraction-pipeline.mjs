@@ -2367,6 +2367,7 @@ export function buildFullPaperPrompt({
 	markScheme,
 	supportingDocuments = [],
 	chunk,
+	coreQuestionRefs = [],
 	targetQuestionRef = null,
 	extractionSpec,
 	extraInstructions = '',
@@ -2392,9 +2393,13 @@ export function buildFullPaperPrompt({
 					'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk; it belongs to the next chunk.'
 				].join(' ')
 			: null,
+		coreQuestionRefs.length
+			? `The script detected these sourceQuestionRef values from core-page text: ${coreQuestionRefs.join(', ')}. Return these refs unless the page images clearly show the text scout missed or misread a question number; explain any added or omitted ref in reviewNotes.`
+			: 'The script did not detect sourceQuestionRef values from core-page text; use the page images and mark-scheme evidence carefully.',
 		targetQuestionRef
 			? `Target question: extract exactly sourceQuestionRef ${targetQuestionRef}. Do not extract any other subquestion from these pages.`
 			: null,
+		'Use the deterministic question-paper text scout to anchor question refs, prompt text, marks, and visible table values before inspecting the page images. Use the page images to resolve layout, response controls, diagrams, answer lines, and anything the text extraction flattened or omitted.',
 		'Use the question paper page images and mark scheme text as source of truth. If mark scheme page images are supplied, use them to resolve tables or layout that text extraction may have flattened. Use supporting documents only to clarify examiner guidance, accepted alternatives, common mistakes, and review flags; never let them override the official question paper or mark scheme.',
 		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into contextText/selfContainedPromptText where needed.',
 		'Do not extract withdrawn questions, replacement notices, statistics-only rows, or mean-mark/max-mark lines as learner-facing questions. If the official materials do not include the original prompt and positive marking criteria, omit that subquestion rather than inventing a placeholder prompt, response, or answer chain.',
@@ -2439,6 +2444,8 @@ export async function extractFullPaperChunk({
 	markScheme,
 	supportingDocuments = [],
 	chunk,
+	questionPaperText = '',
+	coreQuestionRefs = [],
 	markSchemeImages,
 	markSchemeText = '',
 	supportingImages = [],
@@ -2455,6 +2462,7 @@ export async function extractFullPaperChunk({
 		markScheme,
 		supportingDocuments,
 		chunk,
+		coreQuestionRefs,
 		targetQuestionRef,
 		extractionSpec,
 		extraInstructions,
@@ -2463,6 +2471,10 @@ export async function extractFullPaperChunk({
 	});
 	const content = [
 		{ type: 'text', text: prompt },
+		{
+			type: 'text',
+			text: `QUESTION PAPER TEXT FOR CORE PAGES FOLLOWS, EXTRACTED FROM THE OFFICIAL QUESTION PAPER PDF.\n\n${questionPaperText || 'No question-paper text was extracted for the core pages; use the supplied page images.'}`
+		},
 		{ type: 'text', text: 'QUESTION PAPER PAGE IMAGES FOLLOW, IN ORDER.' },
 		...questionPaperImageParts(chunk),
 		{
@@ -2893,6 +2905,8 @@ export async function extractFullPaperFromPdfSet({
 				},
 				supportingDocuments,
 				chunk,
+				questionPaperText: coreQuestionText,
+				coreQuestionRefs,
 				markSchemeImages,
 				markSchemeText: targetMarkSchemeText,
 				supportingImages,

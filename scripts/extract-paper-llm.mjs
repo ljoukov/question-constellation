@@ -37,6 +37,19 @@ Optional:
   --question-pages=1-3
   --mark-scheme-pages=4-5
   --supporting-document=<examiner-report-or-insert.pdf>
+  --board=AQA
+  --qualification=GCSE
+  --subject=Biology
+  --subject-area=Biology
+  --tier=Higher
+  --paper-label="Biology Paper 1"
+  --component-code=84611H
+  --series="November 2020"
+  --year=2020
+  --question-paper-title="Question paper (Higher) : Paper 1 - November 2020"
+  --mark-scheme-title="Mark scheme (Higher) : Paper 1 - November 2020"
+  --question-paper-url=<official-source-url>
+  --mark-scheme-url=<official-source-url>
   --existing-chains=<json-or-md>
   --chunk-pages=6
   --context-pages=2
@@ -59,7 +72,9 @@ Optional:
   --write-eval=<evaluation.json>
   --run-id=<llm-log-run-id>
   --model=chatgpt-gpt-5.5
+  --judge-model=chatgpt-gpt-5.5
   --thinking-level=xhigh
+  --judge-thinking-level=xhigh
   --repair-batch-size=1
   --repair-llm-timeout-ms=180000
   --repair-llm-max-attempts=1
@@ -82,6 +97,10 @@ const judgeModel = stringArg('judge-model', process.env.EXTRACTION_PIPELINE_JUDG
 const thinkingLevel = stringArg(
 	'thinking-level',
 	process.env.EXTRACTION_PIPELINE_THINKING_LEVEL ?? DEFAULT_THINKING_LEVEL
+);
+const judgeThinkingLevel = stringArg(
+	'judge-thinking-level',
+	process.env.EXTRACTION_PIPELINE_JUDGE_THINKING_LEVEL ?? thinkingLevel
 );
 const dpi = integerArg('dpi', 160, 90);
 const chunkPages = integerArg('chunk-pages', 6, 1);
@@ -242,8 +261,39 @@ async function runGeneric() {
 			path.join(rootDir, 'tmp/llm-extraction-pipeline', sourceDocumentId)
 		),
 		existingChainsText: explicitExistingChainsText,
-		presetInstructions: ''
+		presetInstructions: '',
+		documentMetadata: genericDocumentMetadata()
 	});
+}
+
+function optionalMetadataString(name) {
+	const value = stringArg(name, '').trim();
+	return value || undefined;
+}
+
+function optionalMetadataYear() {
+	const value = optionalIntegerArg('year');
+	return value ?? undefined;
+}
+
+function genericDocumentMetadata() {
+	const questionPaperUrl = optionalMetadataString('question-paper-url');
+	const markSchemeUrl = optionalMetadataString('mark-scheme-url');
+	return {
+		board: optionalMetadataString('board'),
+		qualification: optionalMetadataString('qualification'),
+		subject: optionalMetadataString('subject'),
+		subjectArea: optionalMetadataString('subject-area'),
+		tier: optionalMetadataString('tier'),
+		paper: optionalMetadataString('paper-label'),
+		componentCode: optionalMetadataString('component-code'),
+		series: optionalMetadataString('series'),
+		year: optionalMetadataYear(),
+		questionPaperTitle: optionalMetadataString('question-paper-title'),
+		markSchemeTitle: optionalMetadataString('mark-scheme-title'),
+		questionPaper: questionPaperUrl ? { sourceUrl: questionPaperUrl } : undefined,
+		markScheme: markSchemeUrl ? { sourceUrl: markSchemeUrl } : undefined
+	};
 }
 
 async function runPreset(name) {
@@ -680,6 +730,7 @@ async function runOne({
 					model,
 					judgeModel,
 					thinkingLevel,
+					judgeThinkingLevel,
 					evaluationMode,
 					runJudge,
 					runId: process.env.EXTRACTION_RUN_ID ?? null
@@ -738,7 +789,7 @@ async function runOne({
 		candidate,
 		fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
 		judgeModel,
-		thinkingLevel,
+		thinkingLevel: judgeThinkingLevel,
 		runJudge,
 		evaluationMode
 	});
@@ -761,7 +812,7 @@ async function runOne({
 			candidate,
 			fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
 			judgeModel,
-			thinkingLevel,
+			thinkingLevel: judgeThinkingLevel,
 			runJudge,
 			evaluationMode
 		});
@@ -781,6 +832,7 @@ async function runOne({
 				model,
 				judgeModel,
 				thinkingLevel,
+				judgeThinkingLevel,
 				evaluationMode,
 				runJudge,
 				deterministicBlockingIssues: evaluation.deterministicBlockingIssues.length,

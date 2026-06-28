@@ -16,6 +16,19 @@ node scripts/run-production-extraction-pipeline.mjs \\
 Optional:
   --mark-scheme-document-id=<stable-mark-scheme-id>
   --supporting-document=<examiner-report-or-insert.pdf>
+  --board=AQA
+  --qualification=GCSE
+  --subject=Biology
+  --subject-area=Biology
+  --tier=Higher
+  --paper-label="Biology Paper 1"
+  --component-code=84611H
+  --series="November 2020"
+  --year=2020
+  --question-paper-title="Question paper (Higher) : Paper 1 - November 2020"
+  --mark-scheme-title="Mark scheme (Higher) : Paper 1 - November 2020"
+  --question-paper-url=<official-source-url>
+  --mark-scheme-url=<official-source-url>
   --existing-chains=<existing-chain-context.json>
   --existing-chain-input-root=<audited-json-root>
   --work-root=tmp/production-extraction/<source-id>
@@ -28,6 +41,13 @@ Optional:
   --model=chatgpt-gpt-5.5
   --judge-model=chatgpt-gpt-5.5
   --thinking-level=xhigh
+  --extraction-model=chatgpt-gpt-5.5-fast
+  --extraction-thinking-level=medium
+  --extraction-judge-thinking-level=xhigh
+  --chain-model=chatgpt-gpt-5.5
+  --chain-thinking-level=xhigh
+  --solvability-model=chatgpt-gpt-5.5
+  --solvability-thinking-level=xhigh
   --media-resolution=low|medium|high|original|auto
   --dpi=160
   --llm-timeout-ms=600000
@@ -192,15 +212,29 @@ function extractionCommand() {
 	for (const supportingDocumentPath of supportingDocumentPaths) {
 		args.push(`--supporting-document=${supportingDocumentPath}`);
 	}
+	forwardString(args, 'board');
+	forwardString(args, 'qualification');
+	forwardString(args, 'subject');
+	forwardString(args, 'subject-area');
+	forwardString(args, 'tier');
+	forwardString(args, 'paper-label');
+	forwardString(args, 'component-code');
+	forwardString(args, 'series');
+	forwardString(args, 'year');
+	forwardString(args, 'question-paper-title');
+	forwardString(args, 'mark-scheme-title');
+	forwardString(args, 'question-paper-url');
+	forwardString(args, 'mark-scheme-url');
 	forwardString(args, 'question-pages');
 	forwardString(args, 'mark-scheme-pages');
 	forwardString(args, 'chunk-pages');
 	forwardString(args, 'context-pages');
 	forwardString(args, 'chunk-concurrency');
 	forwardString(args, 'chunk-strategy');
-	forwardString(args, 'model');
+	forwardPhaseString(args, 'extraction-model', 'model');
 	forwardString(args, 'judge-model');
-	forwardString(args, 'thinking-level');
+	forwardPhaseString(args, 'extraction-thinking-level', 'thinking-level');
+	forwardPhaseString(args, 'extraction-judge-thinking-level', 'judge-thinking-level');
 	forwardString(args, 'media-resolution');
 	forwardString(args, 'dpi');
 	forwardString(args, 'llm-timeout-ms');
@@ -229,9 +263,9 @@ function reconcileCommand(chainContextPath) {
 		`--summary=${reconcileSummaryPath}`,
 		'--fail-on-blocking'
 	];
-	forwardString(args, 'model');
+	forwardPhaseString(args, 'chain-model', 'model');
 	forwardString(args, 'judge-model');
-	forwardString(args, 'thinking-level');
+	forwardPhaseString(args, 'chain-thinking-level', 'thinking-level');
 	forwardString(args, 'llm-timeout-ms');
 	forwardString(args, 'llm-max-attempts');
 	forwardString(args, 'run-id');
@@ -249,10 +283,10 @@ function prepareImportReadyCommand() {
 	];
 	if (runSolvability) {
 		args.push('--run-solvability');
-		const judgeModel = stringArg('judge-model', '');
-		const model = judgeModel || stringArg('model', '');
+		const model =
+			stringArg('solvability-model', '') || stringArg('judge-model', '') || stringArg('model', '');
 		if (model) args.push(`--model=${model}`);
-		forwardString(args, 'thinking-level');
+		forwardPhaseString(args, 'solvability-thinking-level', 'thinking-level');
 		forwardString(args, 'min-solvability-score');
 		forwardString(args, 'concurrency');
 	}
@@ -288,6 +322,11 @@ function runJson(args, label) {
 function forwardString(args, name) {
 	const value = stringArg(name, '');
 	if (value) args.push(`--${name}=${value}`);
+}
+
+function forwardPhaseString(args, phaseName, targetName) {
+	const value = stringArg(phaseName, '') || stringArg(targetName, '');
+	if (value) args.push(`--${targetName}=${value}`);
 }
 
 function hasArg(name) {

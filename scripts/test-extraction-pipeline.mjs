@@ -138,6 +138,11 @@ requireIncludes(
 		'costUsd',
 		'pdfinfo',
 		'pdftoppm',
+		'pdftotext',
+		'Codex CLI is useful only as a benchmark',
+		'core-page text and detected refs',
+		'phase-specific model and reasoning overrides',
+		'PDF-to-question extraction in 41.56 seconds',
 		'--mark-scheme-image-mode=all',
 		'learner-facing solvability judge',
 		'production-extraction-summary.json',
@@ -180,9 +185,13 @@ requireIncludes(
 		'text-only answer-chain grouping and reconciliation phase',
 		'Some current chains may be placeholders with id null',
 		'expandCompactFullPaperExtraction',
+		'buildFullPaperPrompt',
 		'normalizeQuestionResponseForExtraction',
 		'unorderedGroups',
 		'Source question-paper text for selected pages',
+		'QUESTION PAPER TEXT FOR CORE PAGES FOLLOWS',
+		'deterministic question-paper text scout',
+		'The script detected these sourceQuestionRef values from core-page text',
 		'For calculation questions with visible working lines',
 		'Do not use asset-canvas for a table that can be represented structurally',
 		'LOOKAHEAD QUESTION PAPER PAGE',
@@ -217,6 +226,10 @@ requireIncludes(
 		'--chunk-concurrency=1',
 		'--extraction-granularity=chunk|question',
 		'--allow-question-granularity',
+		'--subject=Biology',
+		'--subject-area=Biology',
+		'--component-code=84611H',
+		'genericDocumentMetadata',
 		'--mark-scheme-image-mode',
 		'--repair-attempts',
 		'--repair-answer-chains',
@@ -226,6 +239,7 @@ requireIncludes(
 		'--llm-max-attempts',
 		'--llm-max-attempts=3',
 		'--llm-max-calls=12',
+		'--judge-thinking-level',
 		'--skip-judge',
 		'process.env.EXTRACTION_RUN_ID = runId',
 		"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
@@ -291,7 +305,21 @@ requireIncludes(
 		'--skip-solvability',
 		'--import',
 		'production-extraction-summary.json',
-		'existing-chain-input-root'
+		'existing-chain-input-root',
+		'--subject=Biology',
+		'--subject-area=Biology',
+		'--component-code=84611H',
+		'--extraction-thinking-level=medium',
+		'--extraction-judge-thinking-level=xhigh',
+		'--chain-thinking-level=xhigh',
+		'--solvability-thinking-level=xhigh',
+		"forwardPhaseString(args, 'extraction-model', 'model')",
+		"forwardPhaseString(args, 'extraction-thinking-level', 'thinking-level')",
+		"forwardPhaseString(args, 'extraction-judge-thinking-level', 'judge-thinking-level')",
+		"forwardPhaseString(args, 'chain-model', 'model')",
+		"forwardPhaseString(args, 'chain-thinking-level', 'thinking-level')",
+		"forwardPhaseString(args, 'solvability-thinking-level', 'thinking-level')",
+		"forwardString(args, 'question-paper-title')"
 	],
 	'Production extraction orchestrator'
 );
@@ -652,6 +680,7 @@ for (const exportName of [
 	'evaluateCandidate',
 	'runGoldenPdfEval',
 	'expandCompactFullPaperExtraction',
+	'buildFullPaperPrompt',
 	'repairCandidateAnswerChains',
 	'repairFullPaperAnswerChains',
 	'repairFullPaperQuestionQuality',
@@ -797,6 +826,43 @@ const parsedRefs = pipelineModule.questionRefsFromText(
 );
 if (parsedRefs.join(',') !== '01.1,01.2,10.12') {
 	fail('questionRefsFromText did not parse spaced and compact question refs.', parsedRefs);
+}
+const extractionPromptWithTextScout = pipelineModule.buildFullPaperPrompt({
+	sourceDocumentId: 'aqa-84611h-qp-nov20',
+	markSchemeDocumentId: 'aqa-84611h-ms-nov20',
+	questionPaper: {
+		id: 'aqa-84611h-qp-nov20',
+		docType: 'question_paper',
+		title: 'Question paper',
+		fileName: 'qp.pdf',
+		pages: [2]
+	},
+	markScheme: {
+		id: 'aqa-84611h-ms-nov20',
+		docType: 'mark_scheme',
+		title: 'Mark scheme',
+		fileName: 'ms.pdf'
+	},
+	chunk: {
+		index: 0,
+		total: 1,
+		corePages: [2],
+		priorContextPages: [],
+		lookaheadPages: []
+	},
+	questionPaperText: '01.1 Complete the word equation.',
+	coreQuestionRefs: ['01.1', '01.2'],
+	extractionSpec: ''
+});
+if (
+	!extractionPromptWithTextScout.includes(
+		'The script detected these sourceQuestionRef values from core-page text: 01.1, 01.2'
+	) ||
+	!extractionPromptWithTextScout.includes('deterministic question-paper text scout')
+) {
+	fail('Full-paper extraction prompt does not anchor on deterministic text/ref scout.', {
+		extractionPromptWithTextScout
+	});
 }
 const normalizedRepairEnvelope = pipelineModule.normalizeRepairEnvelope({
 	'02.3': {

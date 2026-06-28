@@ -385,11 +385,21 @@ pnpm run extract:production -- \
   --question-paper=data/aqa-separate-science-higher/question-papers/AQA-84611H-QP-NOV20.PDF \
   --mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84611H-W-MS-NOV20.PDF \
   --source-document-id=aqa-84611h-qp-nov20 \
+  --subject=Biology \
+  --subject-area=Biology \
+  --paper-label="Biology Paper 1" \
+  --component-code=84611H \
+  --series="November 2020" \
+  --year=2020 \
   --existing-chain-input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
   --chunk-pages=2 \
   --chunk-concurrency=2 \
   --model=chatgpt-gpt-5.5 \
   --judge-model=chatgpt-gpt-5.5 \
+  --extraction-thinking-level=medium \
+  --extraction-judge-thinking-level=xhigh \
+  --chain-thinking-level=xhigh \
+  --solvability-thinking-level=xhigh \
   --thinking-level=xhigh
 ```
 
@@ -479,12 +489,43 @@ schemes are passed as extracted text by default; use
 concurrency control.
 
 The script owns PDF processing. The model should not be asked to discover files or run shell
-commands. Required local tools are:
+commands. To match Codex-quality extraction without depending on the Codex harness, the script must
+do the deterministic preparation first:
+
+- Extract core question-paper page text with `pdftotext -layout`.
+- Detect candidate `sourceQuestionRef` values from that text.
+- Pass the core-page text and detected refs into the extractor prompt before page images.
+- Render question-paper pages for layout, response controls, figures, answer lines, and tables that
+  text extraction flattened.
+- Isolate mark-scheme text to the detected refs before the LLM call, falling back to mark-scheme
+  images only when text extraction is insufficient.
+- Validate parseable JSON and deterministic import gates after the model returns.
+
+Required local tools are:
 
 - `pdfinfo` to count/inspect pages.
 - `pdftoppm` to render pages to PNG images.
+- `pdftotext` to provide the model with deterministic text/ref scouts before visual inspection.
 - `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
   output.
+
+Codex CLI is useful only as a benchmark and failure-analysis baseline. A 2026-06-28 baseline run on
+AQA Biology Paper 1 November 2020 page 2 (`gpt-5.5`, medium reasoning) completed in 137 seconds,
+used 22 shell tool calls, rendered the page, extracted question/mark-scheme text, validated JSON,
+and produced two refs (`01.1`, `01.2`). The same `chatgpt-gpt-5.5` model identifier is not accepted
+by this local Codex CLI; Codex uses the native `gpt-5.5` name. Treat Codex parity as an engineering
+target: if Codex succeeds faster or with better quality, inspect its observable trace and move the
+deterministic tool steps into these scripts rather than replacing the production importer with a
+manual Codex workflow.
+
+Use phase-specific model and reasoning overrides when benchmarking. On the same 2026-06-28 page-2
+fixture, the script-side text/ref scout plus `chatgpt-gpt-5.5-fast` at `medium` reasoning completed
+PDF-to-question extraction in 41.56 seconds, used 7,848 total tokens, cost about `$0.1571`, and then
+passed the independent extraction judge at score `0.98` in 42.76 seconds. The same scoped extraction
+call at `xhigh` reasoning timed out after 240 seconds with no JSON output. Do not assume higher
+reasoning is better for the PDF-to-question phase; require a deterministic pass and independent judge
+pass before changing production defaults. Chain reconciliation and semantic judges can still use
+`xhigh` when their own benchmarks justify it.
 
 Every `@ljoukov/llm.generateJson()` extractor, judge, and repair call must be durably logged. By
 default, `scripts/lib/llm-extraction-pipeline.mjs` writes JSONL records to
@@ -798,10 +839,11 @@ numbers stay in model/checklist evidence.
 The extraction pipeline may run a bounded repair loop with `--repair-attempts=<n>`. This is the only
 agentic loop needed for the current chain-quality problem: the script gives the model deterministic
 findings and judge feedback, then asks it to return repaired JSON. The model does not get filesystem
-write tools. If later PDF/layout work needs model-controlled tools, expose narrow runtime tools
-inside `@ljoukov/llm.runToolLoop()` or `runAgentLoop()` such as `render_pdf_page`,
-`read_page_image_metadata`, and `compare_candidate_to_golden`; do not expose arbitrary shell or D1
-write access to the extractor.
+write tools. For PDF/layout extraction, prefer deterministic script-side tools before the LLM call
+over a model-controlled shell loop. If a later benchmark proves model-controlled inspection is needed,
+expose narrow runtime tools inside `@ljoukov/llm.runToolLoop()` or `runAgentLoop()` such as
+`read_pdf_text`, `render_pdf_page`, `read_page_image_metadata`, and
+`compare_candidate_to_golden`; do not expose arbitrary shell or D1 write access to the extractor.
 
 After extraction or repair, run an independent reviewer pass. The reviewer can be a second scripted
 LLM judge or a separate fresh-context agent, but it should see only candidate JSON, the golden fixture
