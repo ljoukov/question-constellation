@@ -1488,6 +1488,7 @@ function normalizedQuestionRef(parent, child) {
 	const childNumber = Number(child);
 	if (!Number.isInteger(parentNumber) || parentNumber <= 0) return null;
 	if (!Number.isInteger(childNumber) || childNumber <= 0) return null;
+	if (childNumber > 20) return null;
 	return `${String(parentNumber).padStart(2, '0')}.${childNumber}`;
 }
 
