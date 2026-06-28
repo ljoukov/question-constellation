@@ -8,6 +8,7 @@ import {
 	DEFAULT_THINKING_LEVEL,
 	deterministicCandidateIssues,
 	evaluateCandidate,
+	evaluateCandidateQuestionBatches,
 	extractFullPaperFromPdfSet,
 	parsePageSelection,
 	readJson,
@@ -61,6 +62,9 @@ Optional:
   --repair-attempts=1
   --repair-answer-chains
   --evaluation-mode=extraction|full
+  --judge-mode=paper|question-batches
+  --judge-batch-size=8
+  --judge-concurrency=2
   --judge-fixture=<golden-fixture.json>
   --skip-judge
   --dry-run
@@ -143,6 +147,12 @@ const evaluationMode = stringArg('evaluation-mode', 'extraction');
 if (!['extraction', 'full'].includes(evaluationMode)) {
 	throw new Error('--evaluation-mode must be extraction or full.');
 }
+const judgeMode = stringArg('judge-mode', 'paper');
+if (!['paper', 'question-batches'].includes(judgeMode)) {
+	throw new Error('--judge-mode must be paper or question-batches.');
+}
+const judgeBatchSize = integerArg('judge-batch-size', 8, 1);
+const judgeConcurrency = integerArg('judge-concurrency', 2, 1);
 const llmTimeoutMs = optionalIntegerArg('llm-timeout-ms');
 const llmMaxAttempts = optionalIntegerArg('llm-max-attempts');
 const llmMaxCalls = optionalIntegerArg('llm-max-calls');
@@ -732,6 +742,9 @@ async function runOne({
 					thinkingLevel,
 					judgeThinkingLevel,
 					evaluationMode,
+					judgeMode,
+					judgeBatchSize,
+					judgeConcurrency,
 					runJudge,
 					runId: process.env.EXTRACTION_RUN_ID ?? null
 				},
@@ -784,15 +797,12 @@ async function runOne({
 		outputPath,
 		dpi
 	});
+	console.error(
+		`[extract-cli] ${sourceDocumentId}: writing pre-judge candidate ${path.relative(rootDir, outputPath)}`
+	);
+	writeJson(outputPath, candidate);
 	console.error(`[extract-cli] ${sourceDocumentId}: evaluating`);
-	let evaluation = await evaluateCandidate({
-		candidate,
-		fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
-		judgeModel,
-		thinkingLevel: judgeThinkingLevel,
-		runJudge,
-		evaluationMode
-	});
+	let evaluation = await evaluateExtractedCandidate(candidate);
 	for (let attempt = 0; evaluation.status !== 'passed' && attempt < repairAttempts; attempt += 1) {
 		console.error(`[extract-cli] ${sourceDocumentId}: repairing attempt ${attempt + 1}`);
 		candidate = await repairFailedQuestionBatches({
@@ -808,14 +818,8 @@ async function runOne({
 			evaluationMode,
 			repairAnswerChains
 		});
-		evaluation = await evaluateCandidate({
-			candidate,
-			fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
-			judgeModel,
-			thinkingLevel: judgeThinkingLevel,
-			runJudge,
-			evaluationMode
-		});
+		writeJson(outputPath, candidate);
+		evaluation = await evaluateExtractedCandidate(candidate);
 	}
 	console.error(`[extract-cli] ${sourceDocumentId}: writing ${path.relative(rootDir, outputPath)}`);
 	writeJson(outputPath, candidate);
@@ -834,6 +838,9 @@ async function runOne({
 				thinkingLevel,
 				judgeThinkingLevel,
 				evaluationMode,
+				judgeMode,
+				judgeBatchSize,
+				judgeConcurrency,
 				runJudge,
 				deterministicBlockingIssues: evaluation.deterministicBlockingIssues.length,
 				mechanicalErrors: evaluation.mechanicalErrors.length,
@@ -847,13 +854,48 @@ async function runOne({
 	if (evaluation.status !== 'passed') process.exit(1);
 }
 
+async function evaluateExtractedCandidate(candidate) {
+	if (judgeMode === 'question-batches' && !judgeFixturePath) {
+		return evaluateCandidateQuestionBatches({
+			candidate,
+			judgeModel,
+			thinkingLevel: judgeThinkingLevel,
+			runJudge,
+			evaluationMode,
+			judgeBatchSize,
+			judgeConcurrency,
+			onBatchResult: (batches) => {
+				if (!writeEvalPath) return;
+				writeJson(writeEvalPath, {
+					status: 'running',
+					evaluationMode,
+					judgeMode: 'question-batches',
+					judgeBatchSize,
+					judgeConcurrency,
+					questionCount: candidate.questions?.length ?? 0,
+					completedBatches: batches.length,
+					batches
+				});
+			}
+		});
+	}
+	return evaluateCandidate({
+		candidate,
+		fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
+		judgeModel,
+		thinkingLevel: judgeThinkingLevel,
+		runJudge,
+		evaluationMode
+	});
+}
+
 function materializeFallbackResponseAssets(
 	candidate,
 	{ questionPaperPath, sourceDocumentId, outputPath, dpi }
 ) {
 	const missing = [];
 	for (const question of candidate.questions ?? []) {
-		const labels = responseAssetLabels(question);
+		const labels = [...new Set(responseAssetLabels(question))];
 		for (const label of labels) {
 			const asset = (question.assets ?? []).find((candidateAsset) =>
 				assetMatchesLabel(candidateAsset, label)

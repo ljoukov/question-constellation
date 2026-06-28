@@ -1834,6 +1834,45 @@ export function markSchemeTextExcerptForRefs(markSchemeText, refs, windowLines =
 		.slice(0, 30000);
 }
 
+export function shouldSkipNoQuestionChunkText(text) {
+	const value = String(text ?? '');
+	if (questionRefsFromText(value).length > 0) return false;
+	if (/\bthere are no questions(?: printed)? on this page\b/i.test(value)) return true;
+	if (/\badditional page,\s*if required\b/i.test(value) && !/\[\s*\d+\s*marks?\s*\]/i.test(value)) {
+		return true;
+	}
+	if (/\bcopyright information\b/i.test(value) && !/\[\s*\d+\s*marks?\s*\]/i.test(value)) {
+		return true;
+	}
+	return false;
+}
+
+function emptyFullPaperChunkExtraction({
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme
+}) {
+	return LlmFullPaperExtractionSchema.parse({
+		extractionRun: {
+			agentVersion: 'llm-extraction-pipeline-v2-compact',
+			needsHumanReview: false,
+			reviewNotes: []
+		},
+		sourceDocument: {
+			id: sourceDocumentId,
+			title: questionPaper.title,
+			pageCount: questionPaper.pageCount
+		},
+		markSchemeDocument: {
+			id: markSchemeDocumentId,
+			title: markScheme.title,
+			pageCount: markScheme.pageCount
+		},
+		questions: []
+	});
+}
+
 export function pageNumberFromRenderedPath(filePath) {
 	const match = path.basename(filePath).match(/-(\d+)\.png$/);
 	return match ? Number(match[1]) : null;
@@ -2914,6 +2953,19 @@ export async function extractFullPaperFromPdfSet({
 		}
 		const coreQuestionText = pdfText(questionPaper.path, 20000, chunk.corePages);
 		const coreQuestionRefs = questionRefsFromText(coreQuestionText);
+		if (coreQuestionRefs.length === 0 && shouldSkipNoQuestionChunkText(coreQuestionText)) {
+			console.error(
+				`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} skipped no-question core pages=${chunk.corePages.join(',')}`
+			);
+			const emptyValue = emptyFullPaperChunkExtraction({
+				sourceDocumentId,
+				markSchemeDocumentId,
+				questionPaper,
+				markScheme
+			});
+			writeJson(chunkCachePath, emptyValue);
+			return emptyValue;
+		}
 		const chunkMarkSchemeText = markSchemeTextExcerptForRefs(markSchemeText, coreQuestionRefs);
 		console.error(
 			`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')} core_refs=${coreQuestionRefs.join(',') || 'none'} mark_scheme_text_chars=${chunkMarkSchemeText.length}`
@@ -4085,6 +4137,7 @@ export async function judgeExtractionAgainstRubric({
 								'Deterministic extraction issues:',
 								JSON.stringify(deterministicIssues, null, 2),
 								'',
+								'If candidate.extractionRun.evaluationQuestionRefs is present, judge only those listed candidate questions. The supplied source pages may include parent or neighboring context pages; do not fail the batch because another visible question on a context page is absent from this candidate subset.',
 								'If candidate.extractionRun.pageSelection.questionPages is present, judge completeness only for those selected question-paper pages. If pageSelection is absent, judge the whole source paper.',
 								'Use the supplied source page text and images as ground truth for learner-facing wording and visual context. Do not invent missing wording, figures, or instructions from answer formatting or mark-scheme expectations; fail only when the defect is visible in the supplied source evidence or candidate data.',
 								'Judge every question. Pass only if each extracted question has the required parent context, prompt text, response controls or answer space, required images/assets/tables/graphs, positive mark-scheme evidence, checklist or answer key/model answer, and source provenance needed for a student to answer it and for the app to render it.',
@@ -4911,6 +4964,222 @@ export async function evaluateCandidate({
 		})),
 		deterministicSummary: chainSpecificityIssueSummary(blocking, 6),
 		judge
+	};
+}
+
+function questionBatchParentKey(question, index) {
+	return (
+		question.parentSourceQuestionRef ||
+		questionParentRef(question.sourceQuestionRef) ||
+		question.sourceQuestionRef ||
+		`question-${index + 1}`
+	);
+}
+
+function questionPageSpan(question) {
+	const start = Number(question.pageStart);
+	const end = Number(question.pageEnd ?? question.pageStart);
+	if (!Number.isInteger(start) || start <= 0) return null;
+	if (!Number.isInteger(end) || end <= 0) return { start, end: start };
+	return { start: Math.min(start, end), end: Math.max(start, end) };
+}
+
+function selectedQuestionPages(candidate) {
+	return (candidate.extractionRun?.pageSelection?.questionPages ?? [])
+		.map((page) => Number(page))
+		.filter((page) => Number.isInteger(page) && page > 0)
+		.sort((left, right) => left - right);
+}
+
+function judgePagesForQuestions(candidate, questions, contextPages = null) {
+	const selectedPages = selectedQuestionPages(candidate);
+	const allowedPages = selectedPages.length ? new Set(selectedPages) : null;
+	const pageCount = Number(candidate.sourceDocument?.pageCount) || Math.max(...selectedPages, 0);
+	const spans = questions.map(questionPageSpan).filter(Boolean);
+	if (!spans.length) return selectedPages;
+	const context =
+		contextPages === null || contextPages === undefined
+			? Number(candidate.extractionRun?.pageSelection?.contextPages ?? 0)
+			: Number(contextPages);
+	const safeContext = Number.isFinite(context) && context > 0 ? Math.floor(context) : 0;
+	const start = Math.max(1, Math.min(...spans.map((span) => span.start)) - safeContext);
+	const end = Math.max(...spans.map((span) => span.end));
+	const lastPage = pageCount > 0 ? Math.min(pageCount, end) : end;
+	const pages = [];
+	for (let page = start; page <= lastPage; page += 1) {
+		if (!allowedPages || allowedPages.has(page)) pages.push(page);
+	}
+	return pages.length ? pages : selectedPages;
+}
+
+export function parentQuestionBatchesForEvaluation(
+	candidate,
+	{ judgeBatchSize = 8, contextPages = null } = {}
+) {
+	const sortedQuestions = [...(candidate.questions ?? [])].sort((left, right) =>
+		compareQuestionRefs(left.sourceQuestionRef, right.sourceQuestionRef)
+	);
+	const parentGroups = [];
+	const groupsByKey = new Map();
+	for (const [index, question] of sortedQuestions.entries()) {
+		const key = questionBatchParentKey(question, index);
+		let group = groupsByKey.get(key);
+		if (!group) {
+			group = { key, questions: [] };
+			groupsByKey.set(key, group);
+			parentGroups.push(group);
+		}
+		group.questions.push(question);
+	}
+
+	const batches = [];
+	let current = [];
+	const targetSize = Math.max(1, Math.floor(Number(judgeBatchSize) || 1));
+	for (const group of parentGroups) {
+		if (current.length > 0 && current.length + group.questions.length > targetSize) {
+			batches.push(current);
+			current = [];
+		}
+		current.push(...group.questions);
+	}
+	if (current.length > 0) batches.push(current);
+
+	return batches.map((questions, index) => ({
+		index: index + 1,
+		sourceQuestionRefs: questions
+			.map((question) => question.sourceQuestionRef)
+			.filter(Boolean)
+			.sort(compareQuestionRefs),
+		questionPages: judgePagesForQuestions(candidate, questions, contextPages),
+		questions
+	}));
+}
+
+function candidateForEvaluationBatch(candidate, batch) {
+	return {
+		...candidate,
+		questions: batch.questions,
+		extractionRun: {
+			...candidate.extractionRun,
+			evaluationQuestionRefs: batch.sourceQuestionRefs,
+			evaluationQuestionPages: batch.questionPages,
+			pageSelection: {
+				...(candidate.extractionRun?.pageSelection ?? {}),
+				questionPages: batch.questionPages
+			}
+		}
+	};
+}
+
+function compactBatchEvaluation(batch, evaluation) {
+	return {
+		index: batch.index,
+		sourceQuestionRefs: batch.sourceQuestionRefs,
+		questionPages: batch.questionPages,
+		status: evaluation.status,
+		deterministicBlockingIssues: evaluation.deterministicBlockingIssues,
+		mechanicalErrors: evaluation.mechanicalErrors,
+		judge: evaluation.judge
+			? {
+					verdict: evaluation.judge.verdict,
+					score: evaluation.judge.score,
+					rationale: evaluation.judge.rationale,
+					requiredRepairs: evaluation.judge.requiredRepairs ?? []
+				}
+			: null
+	};
+}
+
+function aggregateBatchJudge(batchResults, runJudge) {
+	if (!runJudge) return null;
+	const failed = batchResults.filter((batch) => batch.status !== 'passed');
+	const scores = batchResults
+		.map((batch) => batch.judge?.score)
+		.filter((score) => typeof score === 'number' && Number.isFinite(score));
+	const requiredRepairs = batchResults.flatMap((batch) =>
+		(batch.judge?.requiredRepairs ?? []).map((repair) =>
+			typeof repair === 'string'
+				? repair
+				: JSON.stringify({
+						sourceQuestionRefs: batch.sourceQuestionRefs,
+						repair
+					})
+		)
+	);
+	return {
+		verdict: failed.length ? 'fail' : 'pass',
+		score: scores.length ? Math.min(...scores) : failed.length ? 0 : 1,
+		rationale: failed.length
+			? failed
+					.map(
+						(batch) =>
+							`Batch ${batch.index} (${batch.sourceQuestionRefs.join(', ')}) failed: ${
+								batch.judge?.rationale ?? batch.status
+							}`
+					)
+					.join('\n')
+			: `All ${batchResults.length} parent-aware extraction judge batch(es) passed.`,
+		conceptMatches: [],
+		forbiddenValueFindings: [],
+		modelAnswerValueMatches: [],
+		requiredRepairs
+	};
+}
+
+export async function evaluateCandidateQuestionBatches({
+	candidate,
+	judgeModel = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	minJudgeScore = 0.8,
+	runJudge = true,
+	evaluationMode = 'extraction',
+	judgeBatchSize = 8,
+	judgeConcurrency = 1,
+	onBatchResult = null
+}) {
+	if (!['extraction', 'full'].includes(evaluationMode)) {
+		throw new Error('evaluationMode must be extraction or full.');
+	}
+	const batches = parentQuestionBatchesForEvaluation(candidate, { judgeBatchSize });
+	const batchResults = [];
+	await mapWithConcurrency(batches, judgeConcurrency, async (batch) => {
+		const evaluation = await evaluateCandidate({
+			candidate: candidateForEvaluationBatch(candidate, batch),
+			judgeModel,
+			thinkingLevel,
+			minJudgeScore,
+			runJudge,
+			evaluationMode
+		});
+		const compact = compactBatchEvaluation(batch, evaluation);
+		batchResults.push(compact);
+		batchResults.sort((left, right) => left.index - right.index);
+		onBatchResult?.([...batchResults]);
+	});
+	const deterministicBlockingIssues = batchResults.flatMap(
+		(batch) => batch.deterministicBlockingIssues ?? []
+	);
+	const mechanicalErrors = batchResults.flatMap((batch) => batch.mechanicalErrors ?? []);
+	const judge = aggregateBatchJudge(batchResults, runJudge);
+	const passed =
+		batchResults.every((batch) => batch.status === 'passed') &&
+		mechanicalErrors.length === 0 &&
+		deterministicBlockingIssues.length === 0 &&
+		(!judge || (judge.verdict === 'pass' && judge.score >= minJudgeScore));
+	return {
+		status: passed ? 'passed' : 'failed',
+		evaluationMode,
+		judgeMode: 'question-batches',
+		judgeBatchSize,
+		judgeConcurrency,
+		minJudgeScore,
+		questionCount: candidate.questions?.length ?? 0,
+		completedBatches: batchResults.length,
+		mechanicalErrors,
+		deterministicBlockingIssues,
+		deterministicSummary: chainSpecificityIssueSummary(deterministicBlockingIssues, 6),
+		judge,
+		batches: batchResults
 	};
 }
 

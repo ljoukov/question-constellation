@@ -43,7 +43,10 @@ Optional:
   --thinking-level=xhigh
   --extraction-model=chatgpt-gpt-5.5-fast
   --extraction-thinking-level=medium
-  --extraction-judge-thinking-level=xhigh
+  --extraction-judge-thinking-level=medium
+  --extraction-judge-mode=question-batches|paper
+  --extraction-judge-batch-size=8
+  --extraction-judge-concurrency=2
   --chain-model=chatgpt-gpt-5.5
   --chain-thinking-level=xhigh
   --solvability-model=chatgpt-gpt-5.5
@@ -102,6 +105,16 @@ const dryRun = hasArg('dry-run');
 const skipExtractionJudge = hasArg('skip-extraction-judge');
 const skipChainJudge = hasArg('skip-chain-judge');
 const runId = stringArg('run-id', '');
+const extractionJudgeMode = stringArg('extraction-judge-mode', 'question-batches');
+if (!['paper', 'question-batches'].includes(extractionJudgeMode)) {
+	throw new Error('--extraction-judge-mode must be paper or question-batches.');
+}
+const extractionJudgeBatchSize = integerArg('extraction-judge-batch-size', 8, 1);
+const extractionJudgeConcurrency = integerArg('extraction-judge-concurrency', 2, 1);
+const extractionJudgeThinkingLevel = stringArg(
+	'extraction-judge-thinking-level',
+	stringArg('judge-thinking-level', 'medium')
+);
 
 if (runId) process.env.EXTRACTION_RUN_ID = runId;
 
@@ -131,6 +144,10 @@ const plan = {
 	runId: runId || null,
 	runSolvability,
 	skipExtractionJudge,
+	extractionJudgeMode: skipExtractionJudge ? 'none' : extractionJudgeMode,
+	extractionJudgeBatchSize: skipExtractionJudge ? null : extractionJudgeBatchSize,
+	extractionJudgeConcurrency: skipExtractionJudge ? null : extractionJudgeConcurrency,
+	extractionJudgeThinkingLevel: skipExtractionJudge ? null : extractionJudgeThinkingLevel,
 	skipChainJudge,
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run'
 };
@@ -240,7 +257,7 @@ function extractionCommand() {
 	forwardPhaseString(args, 'extraction-model', 'model');
 	forwardString(args, 'judge-model');
 	forwardPhaseString(args, 'extraction-thinking-level', 'thinking-level');
-	forwardPhaseString(args, 'extraction-judge-thinking-level', 'judge-thinking-level');
+	args.push(`--judge-thinking-level=${extractionJudgeThinkingLevel}`);
 	forwardString(args, 'media-resolution');
 	forwardString(args, 'dpi');
 	forwardString(args, 'llm-timeout-ms');
@@ -249,7 +266,13 @@ function extractionCommand() {
 	forwardString(args, 'run-id');
 	if (hasArg('force')) args.push('--force');
 	if (hasArg('force-chunks')) args.push('--force-chunks');
-	if (skipExtractionJudge) args.push('--skip-judge');
+	if (skipExtractionJudge) {
+		args.push('--skip-judge');
+	} else {
+		args.push(`--judge-mode=${extractionJudgeMode}`);
+		args.push(`--judge-batch-size=${extractionJudgeBatchSize}`);
+		args.push(`--judge-concurrency=${extractionJudgeConcurrency}`);
+	}
 	return args;
 }
 
@@ -344,6 +367,16 @@ function stringArg(name, defaultValue) {
 	const prefix = `--${name}=`;
 	const arg = process.argv.find((candidate) => candidate.startsWith(prefix));
 	return arg ? arg.slice(prefix.length) : defaultValue;
+}
+
+function integerArg(name, defaultValue, minValue) {
+	const raw = stringArg(name, '');
+	if (!raw) return defaultValue;
+	const value = Number(raw);
+	if (!Number.isInteger(value) || value < minValue) {
+		throw new Error(`--${name} must be an integer >= ${minValue}.`);
+	}
+	return value;
 }
 
 function repeatedStringArg(name) {

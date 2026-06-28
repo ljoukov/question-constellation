@@ -231,6 +231,74 @@ function verifyExtractionEval(evaluation) {
 			{ requiredRepairs: evaluation.judge.requiredRepairs ?? [] }
 		);
 	}
+	if (evaluation?.judgeMode === 'question-batches') {
+		check(
+			(evaluation?.completedBatches ?? 0) > 0,
+			'batched extraction judge must complete batches',
+			{
+				completedBatches: evaluation?.completedBatches ?? null
+			}
+		);
+		check(
+			(evaluation?.batches ?? []).length === evaluation?.completedBatches,
+			'batched extraction judge completed count must match batch list',
+			{
+				completedBatches: evaluation?.completedBatches ?? null,
+				batchCount: (evaluation?.batches ?? []).length
+			}
+		);
+		for (const batch of evaluation?.batches ?? []) {
+			check(batch.status === 'passed', 'each extraction judge batch must pass', {
+				index: batch.index,
+				sourceQuestionRefs: batch.sourceQuestionRefs,
+				status: batch.status
+			});
+			check(
+				(batch.deterministicBlockingIssues ?? []).length === 0,
+				'extraction judge batch must have no deterministic blocking issues',
+				{
+					index: batch.index,
+					sourceQuestionRefs: batch.sourceQuestionRefs,
+					deterministicBlockingIssues: batch.deterministicBlockingIssues ?? []
+				}
+			);
+			check(
+				(batch.mechanicalErrors ?? []).length === 0,
+				'extraction judge batch must have no mechanical errors',
+				{
+					index: batch.index,
+					sourceQuestionRefs: batch.sourceQuestionRefs,
+					mechanicalErrors: batch.mechanicalErrors ?? []
+				}
+			);
+			if (batch.judge) {
+				check(batch.judge.verdict === 'pass', 'extraction judge batch verdict must be pass', {
+					index: batch.index,
+					sourceQuestionRefs: batch.sourceQuestionRefs,
+					verdict: batch.judge.verdict
+				});
+				check(
+					batch.judge.score >= minExtractionJudgeScore,
+					'extraction judge batch score is too low',
+					{
+						index: batch.index,
+						sourceQuestionRefs: batch.sourceQuestionRefs,
+						score: batch.judge.score,
+						minExtractionJudgeScore
+					}
+				);
+				check(
+					(batch.judge.requiredRepairs ?? []).length === 0,
+					'extraction judge batch must not request required repairs',
+					{
+						index: batch.index,
+						sourceQuestionRefs: batch.sourceQuestionRefs,
+						requiredRepairs: batch.judge.requiredRepairs ?? []
+					}
+				);
+			}
+		}
+	}
 }
 
 function verifyReconcileSummary(reconcile) {

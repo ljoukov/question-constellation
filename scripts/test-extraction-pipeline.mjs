@@ -257,6 +257,9 @@ requireIncludes(
 		'--repair-attempts',
 		'--repair-answer-chains',
 		'--evaluation-mode=extraction|full',
+		'--judge-mode=paper|question-batches',
+		'--judge-batch-size=8',
+		'--judge-concurrency=2',
 		'--repair-batch-size',
 		'--llm-timeout-ms',
 		'--llm-max-attempts',
@@ -267,6 +270,7 @@ requireIncludes(
 		'process.env.EXTRACTION_RUN_ID = runId',
 		"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
 		'extractFullPaperFromPdfSet',
+		'evaluateCandidateQuestionBatches',
 		'repairFullPaperQuestionQuality',
 		'questionHumanReviewRefs',
 		'repair-v2-'
@@ -333,12 +337,18 @@ requireIncludes(
 		'--subject-area=Biology',
 		'--component-code=84611H',
 		'--extraction-thinking-level=medium',
-		'--extraction-judge-thinking-level=xhigh',
+		'--extraction-judge-thinking-level=medium',
+		'--extraction-judge-mode=question-batches|paper',
+		'--extraction-judge-batch-size=8',
+		'--extraction-judge-concurrency=2',
 		'--chain-thinking-level=xhigh',
 		'--solvability-thinking-level=xhigh',
 		"forwardPhaseString(args, 'extraction-model', 'model')",
 		"forwardPhaseString(args, 'extraction-thinking-level', 'thinking-level')",
-		"forwardPhaseString(args, 'extraction-judge-thinking-level', 'judge-thinking-level')",
+		'--judge-thinking-level=${extractionJudgeThinkingLevel}',
+		'--judge-mode=${extractionJudgeMode}',
+		'--judge-batch-size=${extractionJudgeBatchSize}',
+		'--judge-concurrency=${extractionJudgeConcurrency}',
 		"forwardPhaseString(args, 'chain-model', 'model')",
 		"forwardPhaseString(args, 'chain-thinking-level', 'thinking-level')",
 		"forwardPhaseString(args, 'solvability-thinking-level', 'thinking-level')",
@@ -355,6 +365,9 @@ requireIncludes(
 		'scripts/run-production-extraction-pipeline.mjs',
 		'--run-id-prefix',
 		'--solvability-concurrency',
+		'extraction-judge-mode',
+		'extraction-judge-batch-size',
+		'extraction-judge-concurrency',
 		'supporting_documents',
 		'--concurrency',
 		'--paper-attempts',
@@ -368,6 +381,7 @@ requireIncludes(
 	[
 		'production-extraction-summary.json',
 		'judge-solvability',
+		"judgeMode === 'question-batches'",
 		'requiredRepairs',
 		'allow-dropped-questions',
 		'LLM log must include'
@@ -813,6 +827,64 @@ if (
 	fail('Parent-question chunk planning split a multi-page parent question.', {
 		parentQuestionChunks
 	});
+}
+
+const parentAwareJudgeBatches = pipelineModule.parentQuestionBatchesForEvaluation(
+	{
+		extractionRun: {
+			pageSelection: {
+				questionPages: [1, 2, 3, 4, 5, 6, 7],
+				contextPages: 1
+			}
+		},
+		sourceDocument: { pageCount: 7 },
+		questions: [
+			{
+				sourceQuestionRef: '05.1',
+				parentSourceQuestionRef: '05',
+				pageStart: 3,
+				pageEnd: 3
+			},
+			{
+				sourceQuestionRef: '05.7',
+				parentSourceQuestionRef: '05',
+				pageStart: 5,
+				pageEnd: 6
+			},
+			{
+				sourceQuestionRef: '06.1',
+				parentSourceQuestionRef: '06',
+				pageStart: 7,
+				pageEnd: 7
+			}
+		]
+	},
+	{ judgeBatchSize: 1 }
+);
+if (
+	parentAwareJudgeBatches.length !== 2 ||
+	parentAwareJudgeBatches[0].sourceQuestionRefs.join(',') !== '05.1,05.7' ||
+	parentAwareJudgeBatches[0].questionPages.join(',') !== '2,3,4,5,6'
+) {
+	fail('Parent-aware judge batching split a multi-subpart parent or dropped context pages.', {
+		parentAwareJudgeBatches
+	});
+}
+
+if (
+	!pipelineModule.shouldSkipNoQuestionChunkText(
+		'32 Do not write outside the box There are no questions printed on this page'
+	) ||
+	!pipelineModule.shouldSkipNoQuestionChunkText(
+		'Question Additional page, if required. number Write the question numbers in the left-hand margin.'
+	) ||
+	pipelineModule.shouldSkipNoQuestionChunkText(
+		'0 7 . 4 Explain the result shown in Figure 10. [4 marks]'
+	)
+) {
+	fail(
+		'No-question chunk skip heuristic did not distinguish blank/additional pages from questions.'
+	);
 }
 
 const mergedChunkReviewState = pipelineModule.mergeFullPaperChunks([
@@ -2211,9 +2283,25 @@ function writeSyntheticProductionRun({ runRoot, runId, solvabilityRequiredRepair
 		JSON.stringify(
 			{
 				status: 'passed',
+				judgeMode: 'question-batches',
+				judgeBatchSize: 8,
+				judgeConcurrency: 2,
+				questionCount: 1,
+				completedBatches: 1,
 				mechanicalErrors: [],
 				deterministicBlockingIssues: [],
-				judge: { verdict: 'pass', score: 0.91, requiredRepairs: [] }
+				judge: { verdict: 'pass', score: 0.91, requiredRepairs: [] },
+				batches: [
+					{
+						index: 1,
+						sourceQuestionRefs: ['01.1'],
+						questionPages: [1],
+						status: 'passed',
+						mechanicalErrors: [],
+						deterministicBlockingIssues: [],
+						judge: { verdict: 'pass', score: 0.91, requiredRepairs: [] }
+					}
+				]
 			},
 			null,
 			2

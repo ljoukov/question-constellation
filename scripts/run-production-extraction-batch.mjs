@@ -226,6 +226,9 @@ function productionCommand(row, paper) {
 	forwardString(args, 'extraction-model');
 	forwardString(args, 'extraction-thinking-level');
 	forwardString(args, 'extraction-judge-thinking-level');
+	forwardString(args, 'extraction-judge-mode');
+	forwardString(args, 'extraction-judge-batch-size');
+	forwardString(args, 'extraction-judge-concurrency');
 	forwardString(args, 'chain-model');
 	forwardString(args, 'chain-thinking-level');
 	forwardString(args, 'solvability-model');

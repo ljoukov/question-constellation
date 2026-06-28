@@ -397,7 +397,10 @@ pnpm run extract:production -- \
   --model=chatgpt-gpt-5.5 \
   --judge-model=chatgpt-gpt-5.5 \
   --extraction-thinking-level=medium \
-  --extraction-judge-thinking-level=xhigh \
+  --extraction-judge-thinking-level=medium \
+  --extraction-judge-mode=question-batches \
+  --extraction-judge-batch-size=8 \
+  --extraction-judge-concurrency=2 \
   --chain-thinking-level=xhigh \
   --solvability-thinking-level=xhigh \
   --thinking-level=xhigh
@@ -440,7 +443,7 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
-pnpm run extract:production:batch -- --all --concurrency=3 --paper-attempts=2 --chunk-pages=2 --chunk-concurrency=2 --extraction-model=chatgpt-gpt-5.5 --extraction-thinking-level=medium --chain-model=chatgpt-gpt-5.5 --chain-thinking-level=xhigh --solvability-model=chatgpt-gpt-5.5 --solvability-thinking-level=xhigh --llm-timeout-ms=600000 --llm-max-attempts=3 --llm-max-calls=48 --run-id-prefix=aqa-separate-production
+pnpm run extract:production:batch -- --all --concurrency=3 --paper-attempts=2 --chunk-pages=2 --chunk-concurrency=2 --extraction-model=chatgpt-gpt-5.5 --extraction-thinking-level=medium --extraction-judge-thinking-level=medium --extraction-judge-mode=question-batches --extraction-judge-batch-size=8 --extraction-judge-concurrency=2 --chain-model=chatgpt-gpt-5.5 --chain-thinking-level=xhigh --solvability-model=chatgpt-gpt-5.5 --solvability-thinking-level=xhigh --llm-timeout-ms=600000 --llm-max-attempts=3 --llm-max-calls=48 --run-id-prefix=aqa-separate-production
 pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=2 --chunk-concurrency=2 --extraction-granularity=chunk --evaluation-mode=extraction --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=4 --judge-mode=paper --judge-repair-attempts=1 --llm-timeout-ms=600000 --llm-max-calls=48
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
@@ -498,15 +501,23 @@ without forcing oversized prompts. Do not present page-by-page extraction as the
 it is only a diagnostic benchmark mode.
 Use `--llm-max-calls=<n>` on benchmark and batch runs so a call-count regression fails early instead
 of silently running for hours.
-Use `--judge-mode=question-batches` and `--judge-batch-size=<n>` only for a deep QA pass after the
-paper-level judge and deterministic checks pass; one-question batches maximize isolation but are
-not appropriate as the default import path.
+For full-paper production extraction, use `--extraction-judge-mode=question-batches` and
+`--extraction-judge-thinking-level=medium` unless a newer benchmark proves another setting is both
+faster and at least as strict. The judge batches must be parent-aware: a later subquestion such as
+`05.7` is judged with the rest of parent `05` and the bounded source pages needed for that parent
+context. The batch candidate includes `extractionRun.evaluationQuestionRefs`; source pages may
+include neighboring context pages, and the judge must not fail a batch just because a visible context
+page contains another question outside those target refs. Do not send a whole paper candidate plus
+all rendered page images to one judge call; a failed or slow judge must not force the expensive
+vision extraction to restart. The extraction CLI writes the raw pre-judge candidate before judging,
+then writes the final candidate again after any repair attempts. Use paper-level judging only for
+small scoped diagnostics where the candidate and page evidence are intentionally tiny.
 Use `--rejudge` after prompt or repair-code changes to force evaluation of existing JSON. Mark
 schemes are passed as extracted text by default; use
 `--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
-`extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`, and
-`runGoldenPdfEval` so batch jobs can run many chunks or papers in parallel under their own
-concurrency control.
+`extractCandidateFromPdfPair`, `extractCandidateFromImages`, `evaluateCandidate`,
+`evaluateCandidateQuestionBatches`, and `runGoldenPdfEval` so batch jobs can run many chunks,
+judge batches, or papers in parallel under their own concurrency control.
 
 The script owns PDF processing. The model should not be asked to discover files or run shell
 commands. To match Codex-quality extraction without depending on the Codex harness, the script must
@@ -573,9 +584,16 @@ pnpm run summarize:llm-extraction-logs -- --run-id=aqa-84611h-qp-nov20-full-logg
 
 Cost is observability only. It can help estimate a run, detect runaway retries, or compare prompt
 changes, but it must not drive production extraction quality decisions. Keep the configured model
-and `xhigh` reasoning level unless a quality eval and human review justify a change. Production LLM
-JSON calls default to three attempts so transient malformed JSON, truncated output, or network
-timeouts do not stop a paper after one provider failure.
+and phase-specific reasoning level unless a quality eval and human review justify a change.
+Production LLM JSON calls default to three attempts so transient malformed JSON, truncated output,
+or network timeouts do not stop a paper after one provider failure.
+
+On the full AQA Biology Paper 1 November 2020 cached extraction candidate, a monolithic extraction
+judge prompt with 46 questions and 36 images timed out after 600 seconds. The parent-aware batched
+judge at `medium` reasoning completed seven batches in 322.76 seconds, cost about `$1.0434`, and
+found real renderability defects such as missing/cropped figure assets and fallback graph-canvas
+assets. A comparable `xhigh` batch run had a single batch take 290 seconds, so do not use `xhigh` as
+the extraction-judge default without a newer benchmark.
 
 For normal PDFs, the CLI runs an independent rubric judge by default after extraction. The judge sees
 candidate JSON, deterministic findings, selected question-paper page text, and rendered selected
