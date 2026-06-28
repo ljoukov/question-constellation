@@ -20,6 +20,21 @@ const LLM_LOG_TEXT_LIMIT = 8000;
 let llmCallCounter = 0;
 const sourcePdfPageTextCache = new Map();
 
+async function mapWithConcurrency(values, limit, mapper) {
+	const resolvedLimit = Math.max(1, Math.floor(Number(limit) || 1));
+	const results = new Array(values.length);
+	let nextIndex = 0;
+	const workers = Array.from({ length: Math.min(resolvedLimit, values.length) }, async () => {
+		while (nextIndex < values.length) {
+			const currentIndex = nextIndex;
+			nextIndex += 1;
+			results[currentIndex] = await mapper(values[currentIndex], currentIndex);
+		}
+	});
+	await Promise.all(workers);
+	return results;
+}
+
 const StepRoleSchema = z.enum([
 	'given',
 	'cause',
@@ -216,18 +231,58 @@ export const ExtractionCandidateSchema = z.object({
 	)
 });
 
+function normalizeJudgeMatch(value) {
+	if (!value || typeof value !== 'object') return value;
+	return {
+		...value,
+		concept:
+			value.concept ?? value.sourceQuestionRef ?? value.questionRef ?? value.value ?? 'match',
+		matched: value.matched ?? value.match,
+		note: value.note ?? value.notes ?? value.rationale ?? ''
+	};
+}
+
+function normalizeJudgeValueMatch(value) {
+	if (!value || typeof value !== 'object') return value;
+	return {
+		...value,
+		value: value.value ?? value.sourceQuestionRef ?? value.questionRef ?? value.answer ?? 'value',
+		matched: value.matched ?? value.match,
+		note: value.note ?? value.notes ?? value.rationale ?? ''
+	};
+}
+
+function normalizeForbiddenValueFinding(value) {
+	if (!value || typeof value !== 'object') return value;
+	return {
+		...value,
+		value: value.value ?? value.finding ?? value.sourceQuestionRef ?? 'finding',
+		foundInAnswerChain: value.foundInAnswerChain ?? value.inAnswerChain ?? false,
+		note: value.note ?? value.notes ?? value.rationale ?? ''
+	};
+}
+
 export const JudgeSchema = z.object({
 	verdict: z.enum(['pass', 'fail']),
 	score: z.number().min(0).max(1),
 	rationale: z.string(),
 	conceptMatches: z.array(
-		z.object({ concept: z.string(), matched: z.boolean(), note: z.string() })
+		z.preprocess(
+			normalizeJudgeMatch,
+			z.object({ concept: z.string(), matched: z.boolean(), note: z.string() })
+		)
 	),
 	forbiddenValueFindings: z.array(
-		z.object({ value: z.string(), foundInAnswerChain: z.boolean(), note: z.string() })
+		z.preprocess(
+			normalizeForbiddenValueFinding,
+			z.object({ value: z.string(), foundInAnswerChain: z.boolean(), note: z.string() })
+		)
 	),
 	modelAnswerValueMatches: z.array(
-		z.object({ value: z.string(), matched: z.boolean(), note: z.string() })
+		z.preprocess(
+			normalizeJudgeValueMatch,
+			z.object({ value: z.string(), matched: z.boolean(), note: z.string() })
+		)
 	),
 	requiredRepairs: z.array(z.string())
 });
@@ -284,19 +339,41 @@ export const RepairSchema = z.object({
 });
 
 export function normalizeRepairEnvelope(value) {
+	if (value && typeof value === 'object' && Array.isArray(value.repairs)) {
+		return {
+			...value,
+			repairs: value.repairs.map(normalizeRepairItem)
+		};
+	}
 	if (Array.isArray(value)) return { repairs: value };
 	if (!value || typeof value !== 'object' || Array.isArray(value.repairs)) return value;
 	const repairs = [];
 	for (const [sourceQuestionRef, repair] of Object.entries(value)) {
 		if (!/^\d{2}\.\d{1,2}$/.test(sourceQuestionRef)) continue;
 		if (!repair || typeof repair !== 'object' || Array.isArray(repair)) continue;
-		repairs.push({
-			...repair,
-			sourceQuestionRef: String(repair.sourceQuestionRef ?? sourceQuestionRef)
-		});
+		repairs.push(
+			normalizeRepairItem({
+				...repair,
+				sourceQuestionRef: String(repair.sourceQuestionRef ?? sourceQuestionRef)
+			})
+		);
 	}
 	if (repairs.length === 0) return value;
 	return { ...value, repairs };
+}
+
+function normalizeRepairItem(repair) {
+	if (!repair || typeof repair !== 'object' || Array.isArray(repair)) return repair;
+	const normalized = { ...repair };
+	if (!normalized.answerChain && normalized.currentAnswerChain) {
+		normalized.answerChain = normalized.currentAnswerChain;
+	}
+	if (!normalized.chainResolution && normalized.currentChainResolution) {
+		normalized.chainResolution = normalized.currentChainResolution;
+	}
+	delete normalized.currentAnswerChain;
+	delete normalized.currentChainResolution;
+	return normalized;
 }
 
 const FullChainRepairItemSchema = z.object({
@@ -517,6 +594,153 @@ function createLooseResponseSchema() {
 	]);
 }
 
+function normalizeCompactCorrectAnswer(value) {
+	if (typeof value === 'string') {
+		return { targetId: 'answer', correctAnswer: value };
+	}
+	if (!value || typeof value !== 'object') return value;
+	const targetId =
+		value.targetId ??
+		value.id ??
+		(Array.isArray(value.targetIds) ? value.targetIds.join('|') : undefined) ??
+		'answer';
+	const correctAnswer =
+		value.correctAnswer ??
+		value.answer ??
+		value.text ??
+		(Array.isArray(value.answers) ? value.answers.join(' | ') : undefined);
+	return {
+		targetId: String(targetId),
+		correctAnswer: String(correctAnswer ?? '')
+	};
+}
+
+function compactCorrectAnswerSchema() {
+	return z.preprocess(
+		normalizeCompactCorrectAnswer,
+		z.object({ targetId: z.string(), correctAnswer: z.string() })
+	);
+}
+
+function compactAssetLabelFields() {
+	return {
+		assetLabel: z.string().nullable().optional(),
+		label: z.string().nullable().optional(),
+		sourceLabel: z.string().nullable().optional(),
+		instructions: z.string().nullable().optional()
+	};
+}
+
+function createCompactResponseSchema() {
+	const correctAnswers = () => z.array(compactCorrectAnswerSchema()).optional();
+	const equationSegment = z.discriminatedUnion('kind', [
+		z.object({ kind: z.literal('text'), text: z.string() }).strict(),
+		z.object({ kind: z.literal('math'), text: z.string() }).strict(),
+		z
+			.object({
+				kind: z.literal('blank'),
+				id: z.string(),
+				label: z.string().nullable().optional(),
+				width: z.number().nullable().optional()
+			})
+			.strict()
+	]);
+	return z.discriminatedUnion('kind', [
+		z.object({ kind: z.literal('none') }).strict(),
+		z
+			.object({
+				kind: z.literal('lines'),
+				count: z.number().nullable().optional(),
+				lineCount: z.number().nullable().optional()
+			})
+			.strict(),
+		z
+			.object({
+				kind: z.literal('labeled-lines'),
+				count: z.number().nullable().optional(),
+				lineCount: z.number().nullable().optional(),
+				labels: z.array(z.string()).nullable().optional()
+			})
+			.strict(),
+		z
+			.object({ kind: z.literal('drawing-box'), instructions: z.string().nullable().optional() })
+			.strict(),
+		z
+			.object({
+				kind: z.literal('asset-canvas'),
+				correctAnswers: correctAnswers(),
+				...compactAssetLabelFields()
+			})
+			.strict(),
+		z
+			.object({
+				kind: z.literal('choice'),
+				options: z.array(z.string()).max(8),
+				correctAnswers: correctAnswers()
+			})
+			.strict(),
+		z
+			.object({
+				kind: z.literal('choice-table'),
+				columns: z.array(z.string()).nullable().optional(),
+				rows: z.array(z.array(z.string())).nullable().optional(),
+				correctAnswers: correctAnswers()
+			})
+			.strict(),
+		z.object({ kind: z.literal('matching'), correctAnswers: correctAnswers() }).strict(),
+		z
+			.object({
+				kind: z.literal('equation-blanks'),
+				segments: z.array(equationSegment),
+				correctAnswers: correctAnswers(),
+				unorderedGroups: z
+					.array(
+						z.object({
+							targetIds: z.array(z.string()),
+							answers: z.array(z.string())
+						})
+					)
+					.nullable()
+					.optional()
+			})
+			.strict(),
+		z.object({ kind: z.literal('number-line'), correctAnswers: correctAnswers() }).strict(),
+		z
+			.object({
+				kind: z.literal('image-label-zones'),
+				correctAnswers: correctAnswers(),
+				...compactAssetLabelFields()
+			})
+			.strict()
+	]);
+}
+
+const CompactRenderBlockSchema = z
+	.object({
+		kind: z.enum([
+			'paragraph',
+			'equation',
+			'table',
+			'structured-table',
+			'ordered-list',
+			'bullet-list',
+			'key'
+		]),
+		text: z.string().nullable().optional(),
+		label: z.string().nullable().optional(),
+		assetLabel: z.string().nullable().optional(),
+		columns: z.array(z.string()).nullable().optional(),
+		rows: z.array(z.array(z.string())).nullable().optional(),
+		items: z.array(z.string()).nullable().optional(),
+		keyItems: z
+			.array(z.object({ marker: z.string(), text: z.string() }))
+			.nullable()
+			.optional(),
+		compact: z.boolean().nullable().optional(),
+		wide: z.boolean().nullable().optional()
+	})
+	.strict();
+
 function createLooseAssetSchema() {
 	return z
 		.object({
@@ -534,7 +758,17 @@ export const FullPaperExtractionSchema = z.object({
 		source: z.string().nullable().optional(),
 		model: z.string().nullable().optional(),
 		dpi: z.number().nullable().optional(),
-		extractedAt: z.string().nullable().optional()
+		extractedAt: z.string().nullable().optional(),
+		pageSelection: z
+			.object({
+				questionPages: z.array(z.number()).optional(),
+				markSchemePages: z.array(z.number()).optional(),
+				chunkPages: z.number().nullable().optional(),
+				contextPages: z.number().nullable().optional(),
+				chunkConcurrency: z.number().nullable().optional(),
+				extractionGranularity: z.string().nullable().optional()
+			})
+			.optional()
 	}),
 	sourceDocument: z.object({
 		id: z.string(),
@@ -780,7 +1014,8 @@ export const LlmFullPaperExtractionSchema = z.object({
 
 function normalizeCompactMarkSchemeItem(value) {
 	if (!value || typeof value !== 'object') return value;
-	const text = value.text ?? value.criterion ?? value.description ?? value.answer ?? value.markingPoint;
+	const text =
+		value.text ?? value.criterion ?? value.description ?? value.answer ?? value.markingPoint;
 	const marks = value.marks ?? value.mark;
 	const itemType = value.itemType ?? value.kind ?? null;
 	const sourceRef = value.sourceRef ?? value.ref ?? value.source ?? null;
@@ -824,14 +1059,12 @@ const CompactMarkChecklistItemSchema = z.preprocess(
 	z
 		.object({
 			text: z.string().nullable().optional(),
-			item: z.string().nullable().optional(),
-			description: z.string().nullable().optional(),
 			required: z.boolean().nullable().optional(),
 			markSchemeItemIndexes: z.array(z.number()).nullable().optional(),
 			confidence: z.number().nullable().optional(),
 			needsHumanReview: z.boolean().nullable().optional()
 		})
-		.passthrough()
+		.strict()
 );
 
 const CompactReviewNoteSchema = z.union([
@@ -857,30 +1090,52 @@ const CompactModelAnswerSchema = z.union([
 	z.string()
 ]);
 
+function normalizeCompactQuestion(value) {
+	if (!value || typeof value !== 'object') return value;
+	const sourceQuestionRef =
+		value.sourceQuestionRef ?? value.questionNumber ?? value.ref ?? value.sourceRef;
+	const sourcePages = Array.isArray(value.sourcePages) ? value.sourcePages : [];
+	const pageStart = value.pageStart ?? sourcePages[0];
+	const pageEnd = value.pageEnd ?? sourcePages[sourcePages.length - 1] ?? pageStart;
+	const reviewNotes = value.reviewNotes ?? value.reviewFlags ?? [];
+	return {
+		...value,
+		sourceQuestionRef,
+		parentSourceQuestionRef:
+			value.parentSourceQuestionRef ?? value.parentQuestionNumber ?? value.parentRef ?? null,
+		pageStart,
+		pageEnd,
+		extractionConfidence: value.extractionConfidence ?? value.confidence,
+		reviewNotes
+	};
+}
+
+const CompactQuestionSchema = z.preprocess(
+	normalizeCompactQuestion,
+	z.object({
+		id: z.string().nullable().optional(),
+		sourceQuestionRef: z.string(),
+		parentSourceQuestionRef: z.string().nullable().optional(),
+		promptText: z.string(),
+		selfContainedPromptText: z.string().nullable().optional(),
+		contextText: z.string().nullable().optional(),
+		contextBlocks: z.array(CompactRenderBlockSchema).nullable().optional(),
+		commandWord: z.string().nullable().optional(),
+		marks: z.number().nullable().optional(),
+		pageStart: z.number().nullable().optional(),
+		pageEnd: z.number().nullable().optional(),
+		response: createCompactResponseSchema().optional(),
+		markSchemeItems: z.array(CompactMarkSchemeItemSchema),
+		markChecklist: z.array(CompactMarkChecklistItemSchema),
+		modelAnswer: CompactModelAnswerSchema.optional(),
+		extractionConfidence: z.number().nullable().optional(),
+		needsHumanReview: z.boolean().nullable().optional(),
+		reviewNotes: z.array(CompactReviewNoteSchema).nullable().optional()
+	})
+);
+
 export const LlmCompactFullPaperExtractionSchema = z.object({
-	questions: z.array(
-		z.object({
-			id: z.string().nullable().optional(),
-			sourceQuestionRef: z.string(),
-			parentSourceQuestionRef: z.string().nullable().optional(),
-			promptText: z.string(),
-			selfContainedPromptText: z.string().nullable().optional(),
-			contextText: z.string().nullable().optional(),
-			commandWord: z.string().nullable().optional(),
-			marks: z.number().nullable().optional(),
-			pageStart: z.number().nullable().optional(),
-			pageEnd: z.number().nullable().optional(),
-			topicPath: z.array(z.string()).nullable().optional(),
-			specRef: z.string().nullable().optional(),
-			response: createLooseResponseSchema().optional(),
-			markSchemeItems: z.array(CompactMarkSchemeItemSchema),
-			markChecklist: z.array(CompactMarkChecklistItemSchema),
-			modelAnswer: CompactModelAnswerSchema.optional(),
-			extractionConfidence: z.number().nullable().optional(),
-			needsHumanReview: z.boolean().nullable().optional(),
-			reviewNotes: z.array(CompactReviewNoteSchema).nullable().optional()
-		})
-	)
+	questions: z.array(CompactQuestionSchema)
 });
 
 function llmLoggingEnabled() {
@@ -1086,6 +1341,12 @@ async function generateJsonWithTimeout(options, label = 'LLM call', timeoutMs = 
 	);
 	const activeTimeoutMs = timeoutMs ?? resolvedTimeoutMs;
 	const sourceOnEvent = options.onEvent;
+	const maxCalls = Number(process.env.EXTRACTION_LLM_MAX_CALLS ?? 0);
+	if (maxCalls > 0 && llmCallCounter >= maxCalls) {
+		throw new Error(
+			`LLM call budget exceeded before ${label}: ${llmCallCounter}/${maxCalls} calls already started.`
+		);
+	}
 	const callId = `${String(++llmCallCounter).padStart(4, '0')}-${label
 		.replace(/[^a-zA-Z0-9_.:-]+/g, '-')
 		.slice(0, 100)}`;
@@ -1463,7 +1724,6 @@ export async function extractCandidateFromPdfPair({
 	outputRoot = path.join(rootDir, 'tmp/llm-extraction-pipeline'),
 	dpi = 160,
 	forceRender = false,
-	forceChunkCache = false,
 	questionPages = [],
 	markSchemePages = [],
 	model = DEFAULT_EXTRACTION_MODEL,
@@ -1720,6 +1980,191 @@ function paragraphBlock(text) {
 	return normalized ? [{ kind: 'paragraph', text: normalized }] : [];
 }
 
+function compactRenderBlocks(blocks) {
+	return (blocks ?? [])
+		.map((block) => {
+			if (!block || typeof block !== 'object') return null;
+			const output = {
+				kind: block.kind,
+				text: block.text ?? null,
+				label: block.label ?? null,
+				assetLabel: block.assetLabel ?? null,
+				columns: block.columns ?? null,
+				rows: block.rows ?? null,
+				items: block.items ?? null,
+				keyItems: block.keyItems ?? null,
+				compact: block.compact ?? null,
+				wide: block.wide ?? null
+			};
+			return Object.fromEntries(
+				Object.entries(output).filter(([, value]) => value !== null && value !== undefined)
+			);
+		})
+		.filter(Boolean);
+}
+
+function normalizeStructuredTableSelectionResponse(response, stemBlocks) {
+	if (!response || response.kind !== 'asset-canvas') return response;
+	const labels = [
+		response.assetLabel,
+		response.sourceLabel,
+		response.assetId,
+		...(Array.isArray(response.assets) ? response.assets : [])
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.map((value) => value.trim());
+	const tableBlock = stemBlocks.find(
+		(block) =>
+			['table', 'structured-table'].includes(String(block?.kind ?? '')) &&
+			labels.some((label) => assetMatchesLabel(block, label))
+	);
+	if (!tableBlock) return response;
+	const tableRows = structuredTableSelectionRows(tableBlock);
+	if (!tableRows.length) return response;
+	const answerText = responseCorrectAnswerTexts(response)[0] ?? '';
+	const answerRow = tableRows.find((row) => tableSelectionRowMatchesAnswer(row, answerText));
+	if (!answerRow) return response;
+	return {
+		kind: 'choice-table',
+		columns: ['Source row', 'Source column', 'Value'],
+		rows: tableRows,
+		correctAnswers: [
+			{
+				targetId: 'answer',
+				correctAnswer: answerRow.join(' | ')
+			}
+		]
+	};
+}
+
+function normalizeEquationBlankOrderingResponse(response, markSchemeItems) {
+	if (!response || response.kind !== 'equation-blanks') return response;
+	if (Array.isArray(response.unorderedGroups) && response.unorderedGroups.length) return response;
+	const source = (markSchemeItems ?? []).map((item) => item.text).join('\n');
+	if (!/\b(?:either|any)\s+order\b/i.test(source)) return response;
+	const alternatives = (response.correctAnswers ?? [])
+		.map((answer) => ({
+			targetId: answer.targetId,
+			answers: splitAlternativeAnswer(answer.correctAnswer)
+		}))
+		.filter((item) => item.targetId && item.answers.length > 1);
+	for (let leftIndex = 0; leftIndex < alternatives.length; leftIndex += 1) {
+		for (let rightIndex = leftIndex + 1; rightIndex < alternatives.length; rightIndex += 1) {
+			const left = alternatives[leftIndex];
+			const right = alternatives[rightIndex];
+			if (!sameTextSet(left.answers, right.answers)) continue;
+			const answerByTargetId = new Map(
+				[left.targetId, right.targetId].map((targetId, index) => [
+					targetId,
+					left.answers[index] ?? left.answers[0]
+				])
+			);
+			return {
+				...response,
+				correctAnswers: (response.correctAnswers ?? []).map((answer) =>
+					answerByTargetId.has(answer.targetId)
+						? {
+								...answer,
+								correctAnswer: answerByTargetId.get(answer.targetId)
+							}
+						: answer
+				),
+				unorderedGroups: [
+					{
+						targetIds: [left.targetId, right.targetId],
+						answers: left.answers
+					}
+				]
+			};
+		}
+	}
+	return response;
+}
+
+function splitAlternativeAnswer(value) {
+	return String(value ?? '')
+		.split(/\s+(?:or|\/)\s+|\s*\|\s*/i)
+		.map((part) => part.trim())
+		.filter(Boolean);
+}
+
+function sameTextSet(left, right) {
+	const leftSet = new Set((left ?? []).map(normalizedForExactMatch).filter(Boolean));
+	const rightSet = new Set((right ?? []).map(normalizedForExactMatch).filter(Boolean));
+	if (leftSet.size !== rightSet.size) return false;
+	for (const value of leftSet) {
+		if (!rightSet.has(value)) return false;
+	}
+	return true;
+}
+
+function normalizeCalculationWorkingResponse(response, question) {
+	if (!response || response.kind !== 'equation-blanks') return response;
+	if (Number(question.marks ?? 0) < 2) return response;
+	const markText = (question.markSchemeItems ?? [])
+		.map((item) => `${item.itemType}\n${item.text}`)
+		.join('\n');
+	if (!/\b(?:method|calculation|divid|add|sum|substitut|working)\b/i.test(markText))
+		return response;
+	const finalLine = responseToFinalAnswerLabel(response);
+	return {
+		kind: 'labeled-lines',
+		count: 4,
+		labels: ['Working', 'Working', 'Working', finalLine].filter(Boolean)
+	};
+}
+
+function responseToFinalAnswerLabel(response) {
+	const text = (response.segments ?? [])
+		.map((segment) => {
+			if (segment.kind === 'blank') return '_____';
+			return segment.text ?? '';
+		})
+		.join('')
+		.trim();
+	return text || 'Final answer';
+}
+
+function normalizeQuestionResponseForExtraction(question) {
+	let response = question.response;
+	response = normalizeStructuredTableSelectionResponse(response, question.stemBlocks ?? []);
+	response = normalizeEquationBlankOrderingResponse(response, question.markSchemeItems ?? []);
+	response = normalizeCalculationWorkingResponse(response, question);
+	return response;
+}
+
+function structuredTableSelectionRows(block) {
+	const columns = Array.isArray(block?.columns) ? block.columns : [];
+	const rows = Array.isArray(block?.rows) ? block.rows : [];
+	if (columns.length < 2 || rows.length === 0) return [];
+	const rowHeader = columns[0] || 'Row';
+	return rows.flatMap((row) => {
+		if (!Array.isArray(row) || row.length < 2) return [];
+		const rowLabel = String(row[0] ?? '').trim();
+		return row.slice(1).flatMap((cell, index) => {
+			const value = String(cell ?? '').trim();
+			const column = String(columns[index + 1] ?? `Column ${index + 2}`).trim();
+			if (!rowLabel || !value || !column) return [];
+			return [[`${rowHeader}: ${rowLabel}`, column, value]];
+		});
+	});
+}
+
+function tableSelectionRowMatchesAnswer(row, answerText) {
+	const normalizedAnswer = normalizedForExactMatch(answerText);
+	const value = normalizedForExactMatch(row[2]);
+	if (value && normalizedAnswer.includes(value)) return true;
+	const rowValue = normalizedForExactMatch(
+		String(row[0] ?? '')
+			.split(':')
+			.pop()
+	);
+	const column = normalizedForExactMatch(row[1]);
+	return Boolean(
+		rowValue && column && normalizedAnswer.includes(rowValue) && normalizedAnswer.includes(column)
+	);
+}
+
 function placeholderAnswerChain(question) {
 	return {
 		id: null,
@@ -1756,6 +2201,17 @@ function compactQuestionToFull(question, index, chunk) {
 		sourceRef: item.sourceRef || question.sourceQuestionRef,
 		confidence: compactConfidence(item.confidence)
 	}));
+	const stemBlocks = [
+		...paragraphBlock(question.contextText),
+		...compactRenderBlocks(question.contextBlocks)
+	];
+	const response = normalizeQuestionResponseForExtraction({
+		...question,
+		marks: compactNumber(question.marks, null),
+		stemBlocks,
+		response: compactResponse(question.response, compactNumber(question.marks, null)),
+		markSchemeItems
+	});
 	return {
 		id: question.id ?? null,
 		sourceQuestionRef: question.sourceQuestionRef,
@@ -1770,10 +2226,10 @@ function compactQuestionToFull(question, index, chunk) {
 		pageEnd,
 		topicPath: question.topicPath ?? [],
 		specRef: question.specRef ?? null,
-		stemBlocks: paragraphBlock(question.contextText),
+		stemBlocks,
 		leadBlocks: [],
 		promptBlocks: paragraphBlock(promptText),
-		response: compactResponse(question.response, compactNumber(question.marks, null)),
+		response,
 		afterResponseBlocks: [],
 		assets: [],
 		markSchemeItems,
@@ -1832,24 +2288,13 @@ export function expandCompactFullPaperExtraction({
 }
 
 function extractionSpecPrompt(extractionSpec) {
-	const relevantHeadings = [
-		'The reusable extraction entry points are scripts and library functions',
-		'For normal PDFs, the CLI runs an independent rubric judge',
-		'The production output shape is the import-shaped JSON'
-	];
-	const snippets = [];
-	for (const heading of relevantHeadings) {
-		const index = extractionSpec.indexOf(heading);
-		if (index < 0) continue;
-		snippets.push(extractionSpec.slice(index, index + 1400));
-	}
-	const excerpt = snippets.join('\n\n---\n\n').slice(0, 3500);
+	void extractionSpec;
 	return [
 		'Vision-stage extraction contract: extract factual source evidence only. Do not generate answerChain fields in this stage.',
-		excerpt ? `\nSpec excerpts:\n${excerpt}` : ''
-	]
-		.filter(Boolean)
-		.join('\n');
+		'Recover learner-visible prompt/context, response controls, required images/tables/graphs, positive mark-scheme evidence, checklist items, answer keys or model answers, provenance, confidence, and review flags.',
+		'Do not return specification references, assessment objectives, or topic taxonomy; the script sets topicPath to [] and specRef to null in this phase.',
+		'Keep exact values, table entries, answer keys, and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
+	].join('\n');
 }
 
 export function buildFullPaperPrompt({
@@ -1861,7 +2306,6 @@ export function buildFullPaperPrompt({
 	chunk,
 	targetQuestionRef = null,
 	extractionSpec,
-	existingChainsText = '',
 	extraInstructions = '',
 	expectedQuestionCount = null,
 	assetManifestText = ''
@@ -1891,10 +2335,19 @@ export function buildFullPaperPrompt({
 		'Use the question paper page images and mark scheme text as source of truth. If mark scheme page images are supplied, use them to resolve tables or layout that text extraction may have flattened. Use supporting documents only to clarify examiner guidance, accepted alternatives, common mistakes, and review flags; never let them override the official question paper or mark scheme.',
 		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into contextText/selfContainedPromptText where needed.',
 		'Do not extract withdrawn questions, replacement notices, statistics-only rows, or mean-mark/max-mark lines as learner-facing questions. If the official materials do not include the original prompt and positive marking criteria, omit that subquestion rather than inventing a placeholder prompt, response, or answer chain.',
-		'Return compact source-grounded question data. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use response objects for MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
+		'Return compact source-grounded question data. No extra JSON keys. Checklist items should be one short sentence each. Mark-scheme items should be concise positive marking evidence, not long explanations. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use contextBlocks plus response objects for tables, MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
+		'Do not put answers from previous subquestions into learner-visible promptText or promptBlocks. If a later subquestion is ambiguous outside the original sequence, put resolved context only in selfContainedPromptText/contextText for standalone grading and keep promptBlocks faithful to the printed prompt.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
-		'For asset-canvas and image-label-zones responses, do not return label-only assets. The referenced graph, diagram, or image must be present in assets with a usable filePath, publicPath, or r2Key from the local asset manifest. If no usable asset exists, mark the question needsHumanReview and include a blocking review note.',
+		'For equation-blanks, always include response.segments with text/math/blank segments in visible order, and make each correctAnswers targetId match a blank segment id.',
+		'When two or more equation blanks accept a set of answers in any order, add response.unorderedGroups with targetIds and answers so the grader does not accept duplicate entries as correct.',
+		'For calculation questions with visible working lines and a final answer blank, use response.kind "labeled-lines" with labels for the working space and final answer line. Keep the exact calculation and final value in modelAnswer and markChecklist.',
+		'For source tables needed by a core question, include a contextBlocks item with kind "structured-table", label such as "Table 1", columns, and rows. Include the full table when the learner must inspect, calculate from, compare, or mark a value in it.',
+		'For table selection or ring-the-value responses, keep the source table in contextBlocks and use response.kind "choice-table" with selectable rows for the relevant source-table cells. Set response.correctAnswers targetId "answer" to the exact selected row string joined with " | ". Do not use asset-canvas for a table that can be represented structurally.',
+		'For graph drawing, label-on-image, diagram marking, or any response where the answer surface is a source visual that cannot be represented as a structured table, use asset-canvas or image-label-zones with compact correctAnswers and a usable asset from the local asset manifest. If no usable asset exists, mark the question needsHumanReview and include a blocking review note.',
 		'Preserve exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer. Text-only chain repair depends on this evidence to create reusable answer chains later.',
+		'For markSchemeItems, include the positive credit/marking rows only. Do not create separate markSchemeItems for ignore, reject, do-not-accept, guidance, or allowance text unless the row is itself a positive alternative answer route. Fold essential allowances into the checklist text if needed.',
+		'Keep contextText minimal. Do not copy a whole table into contextText; use a structured-table contextBlocks item instead. Include only values needed to answer a text-only subquestion; for table/graph response surfaces, use an asset-style response and concise correctAnswers.',
+		'Do not return assessment objectives, specification references, or topic taxonomy. The script sets topicPath [] and specRef null for PDF extraction.',
 		'',
 		'Question paper:',
 		sourceDocumentPrompt(questionPaper),
@@ -1904,9 +2357,6 @@ export function buildFullPaperPrompt({
 			? ['Supporting documents:', ...supportingDocuments.map(sourceDocumentPrompt)].join('\n')
 			: 'Supporting documents: none',
 		assetManifestText ? ['Local asset manifest:', assetManifestText].join('\n') : null,
-		existingChainsText
-			? ['Existing answer chains for compatibility decisions:', existingChainsText].join('\n')
-			: 'Existing answer chains: none supplied; create stable ids for genuinely new chains.',
 		extraInstructions,
 		'',
 		'Project extraction contract:',
@@ -1930,7 +2380,6 @@ export async function extractFullPaperChunk({
 	markSchemeText = '',
 	supportingImages = [],
 	extractionSpec,
-	existingChainsText = '',
 	extraInstructions = '',
 	expectedQuestionCount = null,
 	assetManifestText = '',
@@ -1945,7 +2394,6 @@ export async function extractFullPaperChunk({
 		chunk,
 		targetQuestionRef,
 		extractionSpec,
-		existingChainsText,
 		extraInstructions,
 		expectedQuestionCount,
 		assetManifestText
@@ -2005,12 +2453,13 @@ export function mergeFullPaperChunks(values) {
 	for (const value of values) {
 		for (const question of value.questions ?? []) {
 			if (!question.sourceQuestionRef) continue;
+			const normalizedQuestion = normalizeExtractedQuestionResponse(question);
 			const existing = questionsByRef.get(question.sourceQuestionRef);
 			if (
 				!existing ||
-				(question.extractionConfidence ?? 0) > (existing.extractionConfidence ?? 0)
+				(normalizedQuestion.extractionConfidence ?? 0) > (existing.extractionConfidence ?? 0)
 			) {
-				questionsByRef.set(question.sourceQuestionRef, question);
+				questionsByRef.set(question.sourceQuestionRef, normalizedQuestion);
 			}
 		}
 	}
@@ -2049,8 +2498,13 @@ function chunkWindowReviewNote(note) {
 	);
 }
 
+function normalizeExtractedQuestionResponse(question) {
+	const response = normalizeQuestionResponseForExtraction(question);
+	return response === question.response ? question : { ...question, response };
+}
+
 function questionHasHumanReviewFlag(question) {
-	if (question.needsHumanReview || question.answerChain?.needsHumanReview) return true;
+	if (question.needsHumanReview) return true;
 	if (question.modelAnswer?.needsHumanReview) return true;
 	if ((question.assets ?? []).some((asset) => asset?.needsHumanReview)) return true;
 	if ((question.markChecklist ?? []).some((item) => item?.needsHumanReview)) return true;
@@ -2102,6 +2556,7 @@ export function enrichFullPaperExtraction({
 	rootDir = process.cwd(),
 	model,
 	dpi,
+	pageSelection = null,
 	questionPaper,
 	markScheme,
 	supportingDocuments = [],
@@ -2115,6 +2570,7 @@ export function enrichFullPaperExtraction({
 			source: 'llm-scripted-pdf-page-images',
 			model,
 			dpi,
+			pageSelection,
 			extractedAt: new Date().toISOString()
 		},
 		sourceDocument: {
@@ -2149,9 +2605,30 @@ export function enrichFullPaperExtraction({
 			fileHash: sha256WithPrefix(doc.path),
 			metadata: { originalFilename: path.basename(doc.path), notes: [] }
 		})),
-		localAssetManifest: assetManifest
+		localAssetManifest: filterReferencedAssetManifest(assetManifest, value.questions)
 	};
 	return FullPaperExtractionSchema.parse(sanitizeAnswerChainEvidenceIndexes(enriched));
+}
+
+function filterReferencedAssetManifest(assetManifest, questions) {
+	const labels = new Set();
+	for (const question of questions ?? []) {
+		for (const label of collectResponseAssetLabels(question.response)) labels.add(label);
+		for (const asset of question.assets ?? []) {
+			const label = renderBlockAssetLabel(asset);
+			if (label) labels.add(label);
+		}
+		for (const { block } of questionRenderBlocks(question)) {
+			if (!isMediaRenderBlock(block)) continue;
+			const label = renderBlockAssetLabel(block);
+			if (label) labels.add(label);
+		}
+	}
+	const wanted = [...labels].filter(Boolean);
+	if (!wanted.length) return [];
+	return (assetManifest ?? []).filter((asset) =>
+		wanted.some((label) => assetMatchesLabel(asset, label))
+	);
 }
 
 export async function extractFullPaperFromPdfSet({
@@ -2169,12 +2646,13 @@ export async function extractFullPaperFromPdfSet({
 	markSchemePages = [],
 	chunkPages = 6,
 	contextPages = 2,
+	chunkConcurrency = 1,
+	extractionGranularity = 'chunk',
 	markSchemeImageMode = 'none',
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
 	mediaResolution = 'auto',
 	extractionSpec,
-	existingChainsText = '',
 	extraInstructions = '',
 	expectedQuestionCount = null,
 	assetManifest = [],
@@ -2262,6 +2740,9 @@ export async function extractFullPaperFromPdfSet({
 	if (!markSchemeImages.length && !markSchemeText.trim()) {
 		throw new Error('No mark-scheme images or text selected.');
 	}
+	if (!['chunk', 'question'].includes(extractionGranularity)) {
+		throw new Error('extractionGranularity must be chunk or question.');
+	}
 	const chunks = chunkImages(questionImages, chunkPages, contextPages);
 	const chunkCacheDir = path.join(outputRoot, sourceDocumentId, 'chunks');
 	console.error(
@@ -2270,8 +2751,7 @@ export async function extractFullPaperFromPdfSet({
 	if (forceChunkCache && existsSync(chunkCacheDir)) {
 		rmSync(chunkCacheDir, { recursive: true, force: true });
 	}
-	const values = [];
-	for (const chunk of chunks) {
+	const values = await mapWithConcurrency(chunks, chunkConcurrency, async (chunk) => {
 		const contextKey = chunk.priorContextPages.length
 			? `ctx-${chunk.priorContextPages.join('-')}`
 			: 'ctx-none';
@@ -2286,8 +2766,7 @@ export async function extractFullPaperFromPdfSet({
 			console.error(
 				`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} using cache ${relativePath(rootDir, chunkCachePath)}`
 			);
-			values.push(LlmFullPaperExtractionSchema.parse(readJson(chunkCachePath)));
-			continue;
+			return LlmFullPaperExtractionSchema.parse(readJson(chunkCachePath));
 		}
 		const coreQuestionText = pdfText(questionPaper.path, 20000, chunk.corePages);
 		const coreQuestionRefs = questionRefsFromText(coreQuestionText);
@@ -2295,7 +2774,8 @@ export async function extractFullPaperFromPdfSet({
 		console.error(
 			`[extract] ${sourceDocumentId}: chunk ${chunk.index + 1}/${chunk.total} question_pages=${chunk.images.map(pageNumberFromRenderedPath).join(',')} core_refs=${coreQuestionRefs.join(',') || 'none'} mark_scheme_text_chars=${chunkMarkSchemeText.length}`
 		);
-		const targetQuestionRefs = coreQuestionRefs.length ? coreQuestionRefs : [null];
+		const targetQuestionRefs =
+			extractionGranularity === 'question' && coreQuestionRefs.length ? coreQuestionRefs : [null];
 		const chunkValues = [];
 		for (const targetQuestionRef of targetQuestionRefs) {
 			const targetCachePath = path.join(
@@ -2334,9 +2814,12 @@ export async function extractFullPaperFromPdfSet({
 				markSchemeText: targetMarkSchemeText,
 				supportingImages,
 				extractionSpec,
-				existingChainsText,
 				extraInstructions,
-				expectedQuestionCount: targetQuestionRef ? 1 : expectedQuestionCount,
+				expectedQuestionCount: targetQuestionRef
+					? 1
+					: chunks.length === 1
+						? expectedQuestionCount
+						: null,
 				assetManifestText,
 				targetQuestionRef
 			});
@@ -2345,13 +2828,23 @@ export async function extractFullPaperFromPdfSet({
 		}
 		const value = mergeFullPaperChunks(chunkValues);
 		writeJson(chunkCachePath, value);
-		values.push(value);
-	}
+		return value;
+	});
 	return enrichFullPaperExtraction({
 		value: mergeFullPaperChunks(values),
 		rootDir,
 		model,
 		dpi,
+		pageSelection: {
+			questionPages: questionImages.map(pageNumberFromRenderedPath),
+			markSchemePages: markSchemePages.length
+				? markSchemePages
+				: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1),
+			chunkPages,
+			contextPages,
+			chunkConcurrency,
+			extractionGranularity
+		},
 		questionPaper,
 		markScheme,
 		supportingDocuments,
@@ -2359,16 +2852,21 @@ export async function extractFullPaperFromPdfSet({
 	});
 }
 
-export function deterministicCandidateIssues(candidate) {
+export function deterministicCandidateIssues(candidate, options = {}) {
+	const includeAnswerChainIssues = options.includeAnswerChainIssues !== false;
 	const findings = [];
 	for (const question of candidate.questions ?? []) {
 		const issues = [
-			...answerChainIdentityIssues(question),
-			...answerChainSpecificityIssues(question.answerChain, {
-				commandWord: question.commandWord
-			}),
-			...answerChainEvidenceIssues(question),
-			...fixedResponseChainSpecificityIssues(question),
+			...(includeAnswerChainIssues
+				? [
+						...answerChainIdentityIssues(question),
+						...answerChainSpecificityIssues(question.answerChain, {
+							commandWord: question.commandWord
+						}),
+						...answerChainEvidenceIssues(question),
+						...fixedResponseChainSpecificityIssues(question)
+					]
+				: []),
 			...fixedResponseModelAnswerIssues(question),
 			...writtenResponseModelAnswerIssues(question),
 			...responseKeyIssues(question),
@@ -2380,7 +2878,9 @@ export function deterministicCandidateIssues(candidate) {
 			...referencedMediaCompletenessIssues(question),
 			...copyrightPlaceholderMediaIssues(question),
 			...withdrawnOrStatisticsOnlyQuestionIssues(question),
-			...questionGradingEvidenceIssues(question)
+			...questionGradingEvidenceIssues(question, {
+				includeAnswerChainEvidence: includeAnswerChainIssues
+			})
 		];
 		if (!issues.length) continue;
 		findings.push({
@@ -2679,6 +3179,9 @@ function responseAssetCompletenessIssues(question) {
 		);
 		const asset =
 			matchingAssets.find((candidate) => assetHasUsableReference(candidate)) ?? matchingAssets[0];
+		if (!asset && questionHasStructuredTableSurface(question, label)) {
+			continue;
+		}
 		if (!asset) {
 			issues.push({
 				severity: 'error',
@@ -2832,7 +3335,7 @@ function sourcePdfPageText(sourcePath, pageNumber) {
 	const actualPath = existsSync(sourcePath) ? sourcePath : resolved;
 	const key = `${actualPath}:${pageNumber}`;
 	if (sourcePdfPageTextCache.has(key)) return sourcePdfPageTextCache.get(key);
-	let text = '';
+	let text;
 	try {
 		text = pdfText(actualPath, 20000, [pageNumber]);
 	} catch {
@@ -2908,8 +3411,10 @@ function inferMediaLabelFromQuestionText(question) {
 	]
 		.filter(Boolean)
 		.join('\n');
-	const match = text.match(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/i);
-	return match ? `Figure ${match[1]}` : null;
+	const match = text.match(/\b(figure|fig\.?|table|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/i);
+	if (!match) return null;
+	const prefix = /^fig/i.test(match[1]) ? 'Figure' : titleCase(match[1]);
+	return `${prefix} ${match[2]}`;
 }
 
 function learnerFacingQuestionText(question) {
@@ -2945,9 +3450,10 @@ function referencedMediaLabelsFromQuestion(question) {
 	const labels = new Set();
 	const text = learnerFacingQuestionText(question);
 	for (const match of text.matchAll(
-		/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi
+		/\b(figure|fig\.?|table|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi
 	)) {
-		labels.add(`Figure ${match[1]}`);
+		const prefix = /^fig/i.test(match[1]) ? 'Figure' : titleCase(match[1]);
+		labels.add(`${prefix} ${match[2]}`);
 	}
 	for (const { block } of questionRenderBlocks(question)) {
 		if (!isMediaRenderBlock(block)) continue;
@@ -2969,6 +3475,7 @@ function questionHasConcreteMediaAsset(question, label) {
 	) {
 		return true;
 	}
+	if (questionHasStructuredTableSurface(question, label)) return true;
 	return questionRenderBlocks(question).some(
 		({ block }) =>
 			assetMatchesLabel(block, label) &&
@@ -2976,6 +3483,27 @@ function questionHasConcreteMediaAsset(question, label) {
 			!mediaAssetPageLabelMismatch(block, label) &&
 			!mediaAssetPageLabelMismatch(block?.asset, label)
 	);
+}
+
+function questionHasStructuredTableSurface(question, label) {
+	if (!/\btable\b/i.test(String(label ?? ''))) return false;
+	return questionRenderBlocks(question).some(({ block }) =>
+		structuredTableBlockMatches(block, label)
+	);
+}
+
+function structuredTableBlockMatches(block, label) {
+	if (!block || typeof block !== 'object') return false;
+	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
+	if (!assetMatchesLabel(block, label)) return false;
+	const rows = Array.isArray(block.rows) ? block.rows : [];
+	const hasRows = rows.some(
+		(row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim())
+	);
+	const hasColumns = Array.isArray(block.columns)
+		? block.columns.some((column) => String(column ?? '').trim())
+		: false;
+	return hasRows && hasColumns;
 }
 
 function mediaAssetPageLabelMismatch(asset, label, field = 'assets') {
@@ -3021,7 +3549,9 @@ function escapeRegExp(value) {
 function mediaReferenceNeedsVisualContext(question, label) {
 	const text = learnerFacingQuestionText(question);
 	const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	const labelPattern = escapedLabel.replace(/figure/i, '(?:figure|fig\\.?|graph|diagram|image)');
+	const labelPattern = escapedLabel
+		.replace(/figure/i, '(?:figure|fig\\.?)')
+		.replace(/table/i, 'table');
 	const aroundLabel = new RegExp(
 		`(?:use|using|in|from|shown? in|shows?|complete|label|plot|draw|name|identify|results? in|part)\\b[^.\\n]{0,100}\\b${labelPattern}\\b|\\b${labelPattern}\\b[^.\\n]{0,100}\\b(?:shows?|complete|label|plot|draw|name|identify|results?|part)`,
 		'i'
@@ -3032,7 +3562,12 @@ function mediaReferenceNeedsVisualContext(question, label) {
 	);
 }
 
-function positiveMarkSchemeItem(item) {
+function titleCase(value) {
+	const text = String(value ?? '').toLowerCase();
+	return text ? text[0].toUpperCase() + text.slice(1) : text;
+}
+
+export function positiveMarkSchemeItem(item) {
 	const itemType = String(item?.itemType ?? '')
 		.replace(/([a-z])([A-Z])/g, '$1 $2')
 		.toLowerCase()
@@ -3053,12 +3588,13 @@ function positiveMarkSchemeItem(item) {
 	) {
 		return false;
 	}
-	return /\b(?:marking point|answer|credit|mark|method|calculation|point|indicative content|level|max|allowance|acceptable|award|positive)\b/.test(
+	return /\b(?:marking point|answer|credit|mark|method|calculation|point|indicative|indicative content|level|max|allowance|acceptable|award|positive)\b/.test(
 		itemType
 	);
 }
 
-function hasUsableGradingEvidence(question) {
+function hasUsableGradingEvidence(question, options = {}) {
+	const includeAnswerChainEvidence = options.includeAnswerChainEvidence !== false;
 	const markSchemeItems = question.markSchemeItems ?? [];
 	const hasPositiveMarkRows = markSchemeItems.some(positiveMarkSchemeItem);
 	const hasChecklist = (question.markChecklist ?? []).some((item) =>
@@ -3066,19 +3602,21 @@ function hasUsableGradingEvidence(question) {
 	);
 	const hasModelAnswer = String(question.modelAnswer?.answerText ?? '').trim().length > 0;
 	const hasAnswerKeys = responseCorrectAnswerTexts(question.response).length > 0;
-	const hasChainEvidence = (question.answerChain?.steps ?? []).some((step) =>
-		(step.markSchemeItemIndexes ?? []).some((itemIndex) =>
-			positiveMarkSchemeItem(markSchemeItems[itemIndex])
-		)
-	);
+	const hasChainEvidence =
+		includeAnswerChainEvidence &&
+		(question.answerChain?.steps ?? []).some((step) =>
+			(step.markSchemeItemIndexes ?? []).some((itemIndex) =>
+				positiveMarkSchemeItem(markSchemeItems[itemIndex])
+			)
+		);
 	return hasPositiveMarkRows || hasChecklist || hasModelAnswer || hasAnswerKeys || hasChainEvidence;
 }
 
-function questionGradingEvidenceIssues(question) {
+function questionGradingEvidenceIssues(question, options = {}) {
 	if (question.marks === null || question.marks === undefined || Number(question.marks) <= 0) {
 		return [];
 	}
-	if (hasUsableGradingEvidence(question)) return [];
+	if (hasUsableGradingEvidence(question, options)) return [];
 	return [
 		{
 			severity: 'error',
@@ -3355,6 +3893,97 @@ export async function judgeCandidateAgainstRubric({
 	return value;
 }
 
+export async function judgeExtractionAgainstRubric({
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	candidate,
+	deterministicIssues
+}) {
+	const sourceEvidenceParts = extractionJudgeSourceEvidenceParts(candidate);
+	const { value } = await generateJsonWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			telemetry: false,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You are an independent verifier for GCSE PDF-to-question extraction quality. You did not generate the candidate. Judge only whether the extracted learner-facing question data is complete, source-grounded, renderable, and gradable. Do not judge answer-chain quality in this pass.'
+				},
+				{
+					role: 'user',
+					content: [
+						{
+							type: 'text',
+							text: [
+								'Candidate extraction:',
+								JSON.stringify(candidate, null, 2),
+								'',
+								'Deterministic extraction issues:',
+								JSON.stringify(deterministicIssues, null, 2),
+								'',
+								'If candidate.extractionRun.pageSelection.questionPages is present, judge completeness only for those selected question-paper pages. If pageSelection is absent, judge the whole source paper.',
+								'Use the supplied source page text and images as ground truth for learner-facing wording and visual context. Do not invent missing wording, figures, or instructions from answer formatting or mark-scheme expectations; fail only when the defect is visible in the supplied source evidence or candidate data.',
+								'Judge every question. Pass only if each extracted question has the required parent context, prompt text, response controls or answer space, required images/assets/tables/graphs, positive mark-scheme evidence, checklist or answer key/model answer, and source provenance needed for a student to answer it and for the app to render it.',
+								'Ignore answerChain.id, answerChain.steps, chainResolution, and placeholder chain review notes. Chain grouping is a separate text-only phase after PDF extraction.',
+								'Fail if any question is missing a needed figure, table, graph, previous-part value, response control, correct answer key, written model answer, or positive mark-scheme evidence; if a copyright placeholder or fallback full-page asset makes the learner-facing item unpublishable; or if review flags indicate unresolved source/render uncertainty.',
+								'Return requiredRepairs for extraction defects only. Use score from 0 to 1. Return exactly the requested JSON object shape with only these top-level keys: verdict, score, rationale, conceptMatches, forbiddenValueFindings, modelAnswerValueMatches, requiredRepairs.'
+							].join('\n')
+						},
+						...sourceEvidenceParts
+					]
+				}
+			],
+			schema: JudgeSchema
+		},
+		`judge-extraction:${candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? 'candidate'}`
+	);
+	return value;
+}
+
+function extractionJudgeSourceEvidenceParts(candidate) {
+	const sourcePath = candidate?.sourceDocument?.filePath;
+	if (!sourcePath) return [];
+	const resolvedPath = path.isAbsolute(sourcePath)
+		? sourcePath
+		: path.resolve(process.cwd(), sourcePath);
+	if (!existsSync(resolvedPath)) return [];
+	const pages = candidate?.extractionRun?.pageSelection?.questionPages ?? [];
+	const sourceId = candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? 'source';
+	const parts = [
+		{
+			type: 'text',
+			text: [
+				'Source question-paper text for selected pages:',
+				pdfText(resolvedPath, 50000, pages)
+			].join('\n')
+		}
+	];
+	try {
+		const rendered = selectPages(
+			renderPdfPages({
+				pdfPath: resolvedPath,
+				outputDir: path.join(process.cwd(), 'tmp/llm-extraction-judge-pages', sourceId),
+				prefix: 'question-page',
+				dpi: 90,
+				force: false
+			}),
+			pages
+		);
+		if (rendered.length) {
+			parts.push({ type: 'text', text: 'Source question-paper page images for selected pages:' });
+			parts.push(...rendered.map(imagePart));
+		}
+	} catch {
+		parts.push({
+			type: 'text',
+			text: 'Source question-paper page images could not be rendered for this judge call.'
+		});
+	}
+	return parts;
+}
+
 export async function repairCandidateAnswerChains({
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
@@ -3430,7 +4059,7 @@ export async function repairFullPaperAnswerChains({
 				{
 					role: 'system',
 					content:
-						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only JSON with a repairs array; each repair must include sourceQuestionRef.'
+						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only JSON with a repairs array; each repair must include sourceQuestionRef and answerChain.'
 				},
 				{
 					role: 'user',
@@ -3448,13 +4077,14 @@ export async function repairFullPaperAnswerChains({
 						JSON.stringify(judge, null, 2),
 						'',
 						'Repair every listed chain that is too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
+						'Return shape exactly: {"repairs":[{"sourceQuestionRef":"...","answerChain":{...},"chainResolution":{... optional ...},"commonWeakAnswers":[... optional ...]}]}. Do not return currentAnswerChain or currentChainResolution.',
 						'If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from every answerChain field, including title, canonicalChainText, summary, stepText, explanation, and commonOmission. For fixed-response recall, write a generic chain such as identifying the required category of term, placing it in the correct response position, and checking it matches the source cue; keep the actual answer words only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.'
 					].join('\n')
 				}
 			],
 			schema: FullChainRepairSchema
 		},
-		`repair-full-paper-chains:${candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`
+		`repair-full-paper-chains:${candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? 'candidate'}:${sourceQuestionRefs?.join(',') ?? 'all'}`
 	);
 	const repairsByRef = new Map(value.repairs.map((repair) => [repair.sourceQuestionRef, repair]));
 	return sanitizeAnswerChainEvidenceIndexes({
@@ -3761,12 +4391,14 @@ function collectResponseAssetLabels(response) {
 	const labels = new Set();
 	if (!response || typeof response !== 'object') return labels;
 	if (['asset-canvas', 'image-label-zones'].includes(response.kind)) {
-		for (const value of [
+		const primaryLabels = [
 			response.assetLabel,
-			response.label,
 			response.assetId,
-			response.sourceLabel
-		]) {
+			response.sourceLabel,
+			...(Array.isArray(response.assets) ? response.assets : [])
+		].filter((value) => typeof value === 'string' && value.trim());
+		const values = primaryLabels.length ? primaryLabels : [response.label];
+		for (const value of values) {
 			if (value) labels.add(String(value));
 		}
 	}
@@ -4011,7 +4643,11 @@ export async function judgeQuestionSolvability({
 			type: 'text',
 			text: `Attached learner-visible image for ${image._label ?? image.filename}.`
 		})),
-		...context.inlineImages.map(({ _label, ...image }) => image)
+		...context.inlineImages.map((image) => {
+			const imagePart = { ...image };
+			delete imagePart._label;
+			return imagePart;
+		})
 	];
 	const { value } = await generateJsonWithTimeout(
 		{
@@ -4058,9 +4694,15 @@ export async function evaluateCandidate({
 	judgeModel = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
 	minJudgeScore = 0.8,
-	runJudge = true
+	runJudge = true,
+	evaluationMode = 'full'
 }) {
-	const deterministicIssues = deterministicCandidateIssues(candidate);
+	if (!['extraction', 'full'].includes(evaluationMode)) {
+		throw new Error('evaluationMode must be extraction or full.');
+	}
+	const deterministicIssues = deterministicCandidateIssues(candidate, {
+		includeAnswerChainIssues: evaluationMode !== 'extraction'
+	});
 	const blocking = blockingIssues(deterministicIssues);
 	const mechanicalErrors = fixture ? mechanicalGoldenChecks(fixture, candidate) : [];
 	const judge = runJudge
@@ -4072,12 +4714,19 @@ export async function evaluateCandidate({
 					candidate,
 					deterministicIssues
 				})
-			: await judgeCandidateAgainstRubric({
-					model: judgeModel,
-					thinkingLevel,
-					candidate,
-					deterministicIssues
-				})
+			: evaluationMode === 'extraction'
+				? await judgeExtractionAgainstRubric({
+						model: judgeModel,
+						thinkingLevel,
+						candidate,
+						deterministicIssues
+					})
+				: await judgeCandidateAgainstRubric({
+						model: judgeModel,
+						thinkingLevel,
+						candidate,
+						deterministicIssues
+					})
 		: null;
 	const passed =
 		blocking.length === 0 &&
@@ -4085,6 +4734,7 @@ export async function evaluateCandidate({
 		(!judge || (judge.verdict === 'pass' && judge.score >= minJudgeScore));
 	return {
 		status: passed ? 'passed' : 'failed',
+		evaluationMode,
 		mechanicalErrors,
 		deterministicBlockingIssues: blocking.map((issue) => ({
 			code: issue.code,

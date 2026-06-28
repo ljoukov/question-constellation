@@ -123,15 +123,19 @@ function responseAssetLabels(question) {
 	const response = question.response;
 	if (!response || typeof response !== 'object') return [];
 	if (!['asset-canvas', 'image-label-zones'].includes(response.kind)) return [];
-	const explicit = [
+	const primary = [
 		response.assetLabel,
-		response.label,
 		response.assetId,
 		response.sourceLabel,
 		...(Array.isArray(response.assets) ? response.assets : [])
 	]
 		.filter((value) => typeof value === 'string' && value.trim())
 		.map((value) => value.trim());
+	const explicit = primary.length
+		? primary
+		: [response.label]
+				.filter((value) => typeof value === 'string' && value.trim())
+				.map((value) => value.trim());
 	if (explicit.length > 0) return explicit;
 	const inferred = inferInteractiveAssetLabel(question);
 	return inferred ? [inferred] : [];
@@ -161,7 +165,7 @@ function inferInteractiveAssetLabel(question) {
 	]
 		.filter((value) => typeof value === 'string' && value.trim())
 		.map((value) => value.trim());
-	const figureLabel = labels.find((label) => /\b(figure|graph|diagram|image)\b/i.test(label));
+	const figureLabel = labels.find((label) => /\b(figure|table|graph|diagram|image)\b/i.test(label));
 	if (figureLabel) return figureLabel;
 	return labels.length === 1 ? labels[0] : null;
 }
@@ -171,6 +175,7 @@ function inferInteractiveAssetLabelFromText(question) {
 		question.promptText,
 		question.selfContainedPromptText,
 		question.contextText,
+		question.response?.instructions,
 		...(question.reviewNotes ?? []),
 		...[
 			...(question.stemBlocks ?? []),
@@ -181,8 +186,11 @@ function inferInteractiveAssetLabelFromText(question) {
 	]
 		.filter(Boolean)
 		.join('\n');
-	const match = text.match(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/i);
-	return match ? `Figure ${match[1]}` : null;
+	const match = text.match(/\b(?:figure|fig\.?|table|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/i);
+	if (!match) return null;
+	const prefix = match[0].match(/^\s*(fig\.?|figure|table|graph|diagram|image)/i)?.[1] ?? 'Figure';
+	const normalizedPrefix = /^fig/i.test(prefix) ? 'Figure' : titleCase(prefix);
+	return `${normalizedPrefix} ${match[1]}`;
 }
 
 function blockText(block) {
@@ -273,9 +281,7 @@ function renderBlockAssetLabel(block) {
 
 function isMediaRenderBlock(block) {
 	return Boolean(
-		block &&
-			typeof block === 'object' &&
-			mediaBlockKinds().has(String(block.kind ?? ''))
+		block && typeof block === 'object' && mediaBlockKinds().has(String(block.kind ?? ''))
 	);
 }
 
@@ -294,8 +300,11 @@ function referencedMediaAssetLabels(question) {
 	if (!repairTextReferences) return [];
 	const labels = [];
 	const text = learnerFacingQuestionText(question);
-	for (const match of text.matchAll(/\b(?:figure|fig\.?|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi)) {
-		const label = `Figure ${match[1]}`;
+	for (const match of text.matchAll(
+		/\b(figure|fig\.?|table|graph|diagram|image)\s+(\d+[A-Za-z]?)\b/gi
+	)) {
+		const prefix = /^fig/i.test(match[1]) ? 'Figure' : titleCase(match[1]);
+		const label = `${prefix} ${match[2]}`;
 		if (mediaReferenceNeedsVisualContext(text, label, question.response?.kind)) labels.push(label);
 	}
 	return labels;
@@ -320,7 +329,9 @@ function learnerFacingQuestionText(question) {
 
 function mediaReferenceNeedsVisualContext(text, label, responseKind) {
 	const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	const labelPattern = escapedLabel.replace(/figure/i, '(?:figure|fig\\.?|graph|diagram|image)');
+	const labelPattern = escapedLabel
+		.replace(/figure/i, '(?:figure|fig\\.?)')
+		.replace(/table/i, 'table');
 	const aroundLabel = new RegExp(
 		`(?:use|using|in|from|shown? in|shows?|complete|label|plot|draw|name|identify|results? in|part|set up)\\b[^.\\n]{0,100}\\b${labelPattern}\\b|\\b${labelPattern}\\b[^.\\n]{0,100}\\b(?:shows?|complete|label|plot|draw|name|identify|results?|part|set up)`,
 		'i'
@@ -344,7 +355,10 @@ function pruneEmptyMediaBlocks(question) {
 		});
 		if (nextBlocks.length !== blocks.length) updates[field] = nextBlocks;
 	}
-	return { question: Object.keys(updates).length ? { ...question, ...updates } : question, removed };
+	return {
+		question: Object.keys(updates).length ? { ...question, ...updates } : question,
+		removed
+	};
 }
 
 function renderedPageNumber(filePath) {
@@ -391,7 +405,10 @@ function repairFile(filePath) {
 				const matchingAssets = (question.assets ?? []).filter((candidate) =>
 					assetMatchesLabel(candidate, label)
 				);
-				return !matchingAssets.some(assetHasUsableReference);
+				return (
+					!matchingAssets.some(assetHasUsableReference) &&
+					!questionHasStructuredTableSurface(question, label)
+				);
 			});
 			if (!missingLabels.length) {
 				if (pruned.removed === 0) return question;
@@ -446,7 +463,8 @@ function repairFile(filePath) {
 				]
 			};
 		});
-		if (!dryRun && (assetsCreated > 0 || blocksRemoved > 0)) writeJson(filePath, { ...paper, questions });
+		if (!dryRun && (assetsCreated > 0 || blocksRemoved > 0))
+			writeJson(filePath, { ...paper, questions });
 		return {
 			file: relative(filePath),
 			sourceDocumentId,
@@ -481,7 +499,8 @@ function pageNumberForMissingAsset(question, label) {
 	const referencesPreviousPage =
 		/\bprevious page\b|\bpreceding page\b/.test(text) &&
 		(!labelText || text.includes(labelText) || /\bfigure|graph|diagram|image\b/.test(labelText));
-	if (referencesPreviousPage && Number(question.pageStart) > 1) return Number(question.pageStart) - 1;
+	if (referencesPreviousPage && Number(question.pageStart) > 1)
+		return Number(question.pageStart) - 1;
 	if (
 		Number(question.pageEnd) > Number(question.pageStart) &&
 		/\b(?:figure|fig|graph|diagram|image|grid)\b/.test(labelText)
@@ -494,10 +513,14 @@ function pageNumberForMissingAsset(question, label) {
 function explicitPageReference(text, labelText) {
 	const escapedLabel = labelText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	if (escapedLabel) {
-		const labelMatch = text.match(new RegExp(`${escapedLabel}[\\s\\S]{0,80}\\bon page\\s+(\\d+)`, 'i'));
+		const labelMatch = text.match(
+			new RegExp(`${escapedLabel}[\\s\\S]{0,80}\\bon page\\s+(\\d+)`, 'i')
+		);
 		if (labelMatch) return Number(labelMatch[1]);
 	}
-	const nearbyMatch = text.match(/\b(?:figure|fig\.?|graph|diagram|image)\s+\d+[a-z]?[\s\S]{0,80}\bon page\s+(\d+)/i);
+	const nearbyMatch = text.match(
+		/\b(?:figure|fig\.?|graph|diagram|image)\s+\d+[a-z]?[\s\S]{0,80}\bon page\s+(\d+)/i
+	);
 	return nearbyMatch ? Number(nearbyMatch[1]) : null;
 }
 
@@ -506,4 +529,30 @@ function slugify(value) {
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
+}
+
+function questionHasStructuredTableSurface(question, label) {
+	if (!/\btable\b/i.test(String(label ?? ''))) return false;
+	return ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks'].some((field) =>
+		(question[field] ?? []).some((block) => structuredTableBlockMatches(block, label))
+	);
+}
+
+function structuredTableBlockMatches(block, label) {
+	if (!block || typeof block !== 'object') return false;
+	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
+	if (!assetMatchesLabel(block, label)) return false;
+	const rows = Array.isArray(block.rows) ? block.rows : [];
+	const hasRows = rows.some(
+		(row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim())
+	);
+	const hasColumns = Array.isArray(block.columns)
+		? block.columns.some((column) => String(column ?? '').trim())
+		: false;
+	return hasRows && hasColumns;
+}
+
+function titleCase(value) {
+	const text = String(value ?? '').toLowerCase();
+	return text ? text[0].toUpperCase() + text.slice(1) : text;
 }

@@ -69,19 +69,14 @@ function textForFieldAudit(field) {
 }
 
 function reusableNumericFactOnly(text, numbers) {
-	if (
-		!/\balpha(?:\s+particle|\s+decay)?\b[\s\S]{0,120}\b(?:mass\s+number\s+)?4\b/i.test(
-			text
-		)
-	) {
+	if (!/\balpha(?:\s+particle|\s+decay)?\b[\s\S]{0,120}\b(?:mass\s+number\s+)?4\b/i.test(text)) {
 		return false;
 	}
 	return numbers.every((token) => normalizeNumberToken(token) === '4');
 }
 
 function numberTokens(text) {
-	return Array.from(textForNumberAudit(text).matchAll(NUMBER_PATTERN))
-		.map((match) => match[0]);
+	return Array.from(textForNumberAudit(text).matchAll(NUMBER_PATTERN)).map((match) => match[0]);
 }
 
 function concreteNumbers(text) {
@@ -164,7 +159,7 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			continue;
 		}
 
-		if (numbers.length > 0 && calculationLike && field.core && !shouldWarnForReusableFact) {
+		if (numbers.length > 0 && calculationLike && !shouldWarnForReusableFact) {
 			issues.push({
 				severity: 'error',
 				code: 'chain_prompt_specific_number',

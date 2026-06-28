@@ -6,7 +6,7 @@
 		"answers": {
 			"01.1": "Nucleus -> Eukaryotic cells\nPermanent vacuole -> Plant cells only\nPlasmid -> Prokaryotic cells"
 		},
-		"model": "llm",
+		"model": "deterministic",
 		"totals": {
 			"awardedMarks": 2,
 			"maxMarks": 2,
@@ -15,15 +15,6 @@
 		},
 		"result": "correct",
 		"modelAnswerIncludes": [],
-		"promptIncludes": [
-			"STRUCTURED_ANSWER_KEYS",
-			"Nucleus",
-			"Eukaryotic cells",
-			"Permanent vacuole",
-			"Plant cells only",
-			"Plasmid",
-			"Prokaryotic cells"
-		],
 		"responseTextIncludes": [
 			"Nucleus",
 			"eukaryotic",
@@ -58,7 +49,7 @@
 		"answers": {
 			"01.2": "Vacuole | Ribosome | Cell wall"
 		},
-		"model": "llm",
+		"model": "deterministic",
 		"totals": {
 			"awardedMarks": 1,
 			"maxMarks": 1,
@@ -68,11 +59,6 @@
 		"result": "correct",
 		"checklistLength": 1,
 		"modelAnswerIncludes": [],
-		"promptIncludes": [
-			"STRUCTURED_ANSWER_KEYS",
-			"Vacuole | Ribosome | Cell wall",
-			"RESPONSE_FORMAT"
-		],
 		"checklist": [
 			{
 				"verdict": "credited",
@@ -99,7 +85,7 @@
 		"answers": {
 			"04.2": "It is the type of radiation with a negative charge."
 		},
-		"model": "llm",
+		"model": "deterministic",
 		"totals": {
 			"awardedMarks": 1,
 			"maxMarks": 1,
@@ -109,12 +95,6 @@
 		"result": "correct",
 		"checklistLength": 1,
 		"modelAnswerIncludes": [],
-		"promptIncludes": [
-			"RESPONSE_FORMAT",
-			"Options:",
-			"It is the type of radiation with a negative charge.",
-			"MARK_SCHEME_ITEMS"
-		],
 		"checklist": [
 			{
 				"verdict": "credited",
@@ -133,29 +113,23 @@
 		]
 	},
 	{
-		"name": "biology-01-1-letter-choice-full",
+		"name": "biology-01-1-letter-choice-missing-key",
 		"paperSlug": "aqa-8464b1h-jun19",
 		"ref": "01.1",
 		"answers": {
 			"01.1": "B"
 		},
-		"model": "llm",
+		"model": "deterministic",
 		"totals": {
-			"awardedMarks": 1,
+			"awardedMarks": 0,
 			"maxMarks": 1,
-			"gradeableMarks": 1,
-			"ungradedMarks": 0
+			"gradeableMarks": 0,
+			"ungradedMarks": 1
 		},
-		"result": "correct",
-		"checklistLength": 1,
+		"result": "ungraded",
+		"checklistLength": 0,
 		"modelAnswerIncludes": [],
-		"promptIncludes": ["Which blood vessel", "RESPONSE_FORMAT", "Options:", "- A", "- B"],
-		"checklist": [
-			{
-				"verdict": "credited",
-				"textIncludes": ["B"]
-			}
-		],
+		"responseTextIncludes": ["missing the mark-scheme evidence"],
 		"forbidText": [
 			"expected marking point",
 			"credit is given",
@@ -251,7 +225,7 @@
 		},
 		"model": "deterministic",
 		"totals": {
-			"awardedMarks": 1,
+			"awardedMarks": 2,
 			"maxMarks": 4,
 			"gradeableMarks": 4,
 			"ungradedMarks": 0
@@ -262,11 +236,11 @@
 		"checklist": [
 			{
 				"verdict": "missed",
-				"textIncludes": ["nucleus"]
+				"textIncludes": ["electron"]
 			},
 			{
-				"verdict": "missed",
-				"textIncludes": ["electron"]
+				"verdict": "credited",
+				"textIncludes": ["atom"]
 			},
 			{
 				"verdict": "credited",
@@ -274,7 +248,7 @@
 			},
 			{
 				"verdict": "missed",
-				"textIncludes": ["atom"]
+				"textIncludes": ["nucleus"]
 			}
 		],
 		"forbidText": ["fixed-answer", "expected marking point", "AO1", "AO2", "AO3"]
@@ -284,7 +258,7 @@
 		"paperSlug": "aqa-8464p1h-jun18",
 		"ref": "01.1",
 		"answers": {
-			"01.1": "blank-1: nucleus\nblank-2: electron\nblank-3: orbit\nblank-4: atom"
+			"01.1": "blank-1: electron\nblank-2: atom\nblank-3: nucleus\nblank-4: orbit"
 		},
 		"model": "deterministic",
 		"totals": {

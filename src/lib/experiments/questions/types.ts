@@ -127,6 +127,10 @@ export type ExamResponse =
 						width?: number;
 				  }
 			)[];
+			unorderedGroups?: Array<{
+				targetIds: string[];
+				answers: string[];
+			}>;
 	  }
 	| {
 			kind: 'image-label-zones';

@@ -1,8 +1,22 @@
 # Extraction Specification
 
-This document defines what an extraction agent should recover from exam-paper and mark-scheme files, how those objects map to Question Constellation product concepts, and how they should be stored in a Cloudflare D1 database.
+This document defines what scripts should recover from exam-paper and mark-scheme files, how those objects map to Question Constellation product concepts, and how they should be stored in a Cloudflare D1 database.
 
 The existing product docs explain the human-facing product direction. This document is stricter: it is the contract for paper import, mark-scheme alignment, answer-chain derivation, review flags, and storage.
+
+## Pipeline Phases
+
+The production import is a two-phase pipeline:
+
+1. **PDF-to-question extraction** turns question papers, mark schemes, and optional supporting
+   documents into source-grounded, renderable, gradable question JSON. This phase owns page images,
+   parent context, response controls, required assets, mark-scheme evidence, checklists, answer keys,
+   model answers, provenance, and extraction review flags. It must not spend time deriving reusable
+   answer-chain groups.
+2. **Answer-chain grouping/reconciliation** is a separate text-only phase over already extracted
+   question data plus existing chain context. It decides whether questions reuse, update, or create
+   answer chains and constellations. It can batch many extracted questions together because it no
+   longer needs page images or PDF rendering.
 
 ## LLM Extraction Prompt
 
@@ -11,7 +25,17 @@ questions from papers and mark schemes.
 
 Use this document as the contract for output shape, provenance, confidence, review flags, and D1/SQLite storage. Do not treat it as a request for keyword classification.
 
-The core task is semantic answer-chain extraction. For each atomic question, read the question and the mark scheme together, then infer the ordered reasoning links that actually earn marks. A topic label, specification reference, command word, mark value, or repeated vocabulary is metadata only. These fields can help search, filtering, and audit, but they are not the grouping method.
+The core task for PDF-to-question extraction is faithful source recovery. For each atomic question,
+recover the learner-visible prompt, required parent context, response controls, required images or
+tables, positive mark-scheme evidence, checklist items, answer key or model answer, provenance,
+confidence, and review flags. Do not generate reusable answer chains in this phase; use placeholder
+chain fields only when needed for schema compatibility.
+
+The core task for the later chain phase is semantic answer-chain grouping. For each extracted atomic
+question, read the extracted prompt and mark-scheme evidence together, then infer the ordered
+reasoning links that actually earn marks. A topic label, specification reference, command word, mark
+value, or repeated vocabulary is metadata only. These fields can help search, filtering, and audit,
+but they are not the grouping method.
 
 For each question, decide:
 
@@ -45,9 +69,10 @@ Two questions belong in the same constellation only if the same ordered chain of
 When priorities conflict, follow this order:
 
 1. Preserve source evidence and provenance.
-2. Infer semantic mark-scoring reasoning chains.
-3. Use topic and keyword metadata only for search, filtering, and audit.
-4. Flag uncertain cases instead of creating weak chains or weak constellations.
+2. Make extracted questions renderable and gradable before deriving chains.
+3. Infer semantic mark-scoring reasoning chains only in the text-only chain phase.
+4. Use topic and keyword metadata only for search, filtering, and audit.
+5. Flag uncertain cases instead of creating weak chains or weak constellations.
 
 Output concise evidence rationales. Do not emit private reasoning traces; emit auditable claims tied to source text and mark-scheme items.
 
@@ -277,8 +302,29 @@ For extraction and repair scripts, run the answer-chain specificity audit before
 pnpm run audit:answer-chain-specificity -- --fail-on-blocking
 ```
 
-If the audit flags a chain, regenerate or edit the chain to describe the reusable move. Do not delete
-the numeric model answer or checklist evidence; those fields are supposed to stay source-specific.
+If the audit flags a chain, repair the chain text with the LLM repair command, then re-run the audit:
+
+```sh
+pnpm run repair:answer-chain-specificity -- \
+  --input-root=data/vision-extracted \
+  --write \
+  --model=chatgpt-gpt-5.5 --thinking-level=xhigh \
+  --concurrency=4 \
+  --fail-on-blocking
+
+pnpm run audit:answer-chain-specificity -- --fail-on-blocking
+```
+
+The repair command should rewrite only answer-chain fields unless a checklist/model-answer value is
+clearly missing from the mark scheme. Do not delete the numeric model answer or checklist evidence;
+those fields are supposed to stay source-specific.
+Pure PDF extraction outputs may contain schema-compatibility placeholder chains with no chain id; the
+repair command skips those placeholders by default because chain creation belongs to the separate
+text-only grouping/reconciliation phase.
+For existing exported JSON, leave `--max-existing-chains` at its default of `0`; the current chain id
+and text are already in each repair task, and sending the whole compatibility context makes the repair
+loop much slower and more expensive. Use a positive `--max-existing-chains` only when repairing a new
+extraction that genuinely needs cross-paper chain compatibility hints.
 
 The audit scans all exported extraction JSON under `data/vision-extracted` by default, plus legacy
 semantic-chain candidate files under `data/extracted-questions`. To inspect already-imported D1
@@ -289,7 +335,8 @@ pnpm run audit:answer-chain-specificity -- --d1 --no-json --no-semantic --output
 ```
 
 If imported chains contain prompt-specific numeric solution text, do not try to hide the problem in
-UI code or by deleting source evidence. Mark those D1 chains and memberships as review-only, then
+UI code or by deleting source evidence. First repair the source JSON and re-import. If repair cannot
+complete immediately, mark those D1 chains and memberships as review-only as a quarantine step, then
 repair or re-import from a clean import-ready subset:
 
 ```sh
@@ -297,7 +344,7 @@ pnpm run audit:answer-chain-specificity -- --d1 --no-json --no-semantic --mark-r
 ```
 
 Review-marked chains must not be shown on public chain, constellation, practice, or Thinking Memory
-surfaces. They are data repair work items, not learner-facing content.
+surfaces. They are data repair work items, not a completed extraction outcome.
 
 ### Scripted Pipeline, Golden Checks, And Independent Review
 
@@ -346,7 +393,7 @@ extract/import from that manifest:
 pnpm run download:aqa-separate-science
 pnpm run extract:aqa-separate-science -- --subject=biology --paper=aqa-84611h-qp-jun24 --force
 pnpm run extract:aqa-separate-science -- --all --force
-pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=1 --judge-repair-attempts=2 --llm-timeout-ms=600000
+pnpm run extract:aqa-separate-science:batch -- --all --chunk-pages=1 --chunk-concurrency=2 --extraction-granularity=chunk --evaluation-mode=extraction --concurrency=3 --paper-attempts=2 --repair-attempts=1 --repair-batch-size=4 --judge-mode=paper --judge-repair-attempts=1 --llm-timeout-ms=600000 --llm-max-calls=48
 pnpm run audit:extracted-data -- --input-root=data/vision-extracted/aqa-separate-science-higher --recursive --run-solvability
 pnpm run audit:current-exported-data
 pnpm run prepare:import-ready-extraction -- --input-root=data/vision-extracted/aqa-separate-science-higher --output-root=tmp/import-ready-extracted/aqa-separate-science-higher
@@ -364,11 +411,13 @@ excluded unless a future importer explicitly needs them.
 Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. Use
 `--chunk-pages=<n>` to control page batching and `--concurrency=<n>` to run multiple papers in
 parallel after single-paper extraction is stable. For unattended AQA Separate Science batch work,
-prefer `extract:aqa-separate-science:batch` with `--chunk-pages=1`; it writes per-paper evaluation JSON,
+prefer `extract:aqa-separate-science:batch` with small page chunks, `--chunk-concurrency=<n>`, and
+`--extraction-granularity=chunk`; it writes per-paper extraction evaluation JSON,
 resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
-the deterministic gate, runs text-only chain repair in small `--repair-batch-size` groups, runs an
-independent question-batch LLM judge, and can run the import-ready subset gate with `--import` only
-after selected papers pass. The safe `--import` path builds a clean subset, runs
+the deterministic extraction gate, runs an independent extraction LLM judge, and can run the
+import-ready subset gate with `--import` only after selected papers pass. It does not derive answer
+chains by default; pass `--evaluation-mode=full --repair-answer-chains` only for legacy full-chain
+repair/debug runs. The safe `--import` path builds a clean subset, runs
 `audit:extracted-data --fail-on-warnings`, then imports each vetted paper from that subset. Use
 `--import-dry-run` to exercise the same path without writing to D1. `--import-raw-output` is a
 compatibility escape hatch for already audited complete outputs; do not use it for normal production
@@ -378,9 +427,16 @@ regenerated; `--force` alone intentionally does not spend new LLM calls for exis
 Set `--paper-attempts=<n>` to retry a paper after transient provider timeouts; retries reuse
 per-target caches even when the first attempt used `--force-chunks`, so a single timed-out question
 does not force the whole paper to restart from page 1.
-The default semantic judge batch size is one question; larger `--judge-batch-size` values are only
-for exploratory speedups after the one-question judge has passed on representative papers, because
-batched judging can make the model invent alternate JSON shapes or blur per-question chain feedback.
+Use `--extraction-granularity=question` only as a focused repair/debug mode for hard page layouts.
+It runs one extraction call per detected sourceQuestionRef and can turn one paper into dozens of LLM
+calls. The default `chunk` mode extracts all subquestions that begin in each page chunk in one call.
+Dense GCSE pages with tables/graphs should use `--chunk-pages=1` or `2`; use
+`--chunk-concurrency` to recover wall-clock speed without forcing oversized prompts.
+Use `--llm-max-calls=<n>` on benchmark and batch runs so a call-count regression fails early instead
+of silently running for hours.
+Use `--judge-mode=question-batches` and `--judge-batch-size=<n>` only for a deep QA pass after the
+paper-level judge and deterministic checks pass; one-question batches maximize isolation but are
+not appropriate as the default import path.
 Use `--rejudge` after prompt or repair-code changes to force evaluation of existing JSON. Mark
 schemes are passed as extracted text by default; use
 `--mark-scheme-image-mode=all` only when layout/text extraction is not enough. The library exports `extractFullPaperFromPdfSet`,
@@ -398,8 +454,10 @@ commands. Required local tools are:
 
 Every `@ljoukov/llm.generateJson()` extractor, judge, and repair call must be durably logged. By
 default, `scripts/lib/llm-extraction-pipeline.mjs` writes JSONL records to
-`tmp/llm-extraction-logs/<run-id>.jsonl`. Set `EXTRACTION_LLM_LOG_DIR=<dir>` to redirect logs or
-`EXTRACTION_LLM_LOG=0` to disable them only for local debugging. Log records must include:
+`tmp/llm-extraction-logs/<run-id>.jsonl`; pass `--run-id=<stable-id>` to
+`scripts/extract-paper-llm.mjs` or set `EXTRACTION_RUN_ID=<stable-id>` for direct library/batch judge
+calls. Set `EXTRACTION_LLM_LOG_DIR=<dir>` to redirect logs or `EXTRACTION_LLM_LOG=0` to disable them
+only for local debugging. Log records must include:
 
 - `llm_call_started` with call label, model, thinking level, media resolution, timeout, attempt
   limit, text character count, and image count/byte estimates.
@@ -425,9 +483,11 @@ JSON calls default to three attempts so transient malformed JSON, truncated outp
 timeouts do not stop a paper after one provider failure.
 
 For normal PDFs, the CLI runs an independent rubric judge by default after extraction. The judge sees
-candidate JSON and deterministic findings, not the extractor's private context, and must score from
-0 to 1. Use `--skip-judge` only for local debugging when you explicitly want deterministic checks
-without another LLM call.
+candidate JSON, deterministic findings, selected question-paper page text, and rendered selected
+question-paper page images, not the extractor's private context, and must score from 0 to 1. It must
+ground missing-prompt or missing-figure claims in that supplied source evidence, not infer extra
+instructions from the numeric answer or mark scheme. Use `--skip-judge` only for local debugging when
+you explicitly want deterministic checks without another LLM call.
 
 Automatic repair attempts must include unresolved `needsHumanReview` rows, not only failed reusable-chain
 checks. The CLI first runs a question-quality repair pass for flagged refs, then a text-only answer-chain
@@ -480,11 +540,11 @@ pnpm run eval:question-solvability -- \
   --model=chatgpt-gpt-5.5 --thinking-level=xhigh
 ```
 
-Use `--all` or omit `--question` for a full audit. The AQA batch runner runs this gate by default
-with `--solvability-mode=question-batches`; use `--skip-solvability-judge` only for debugging. The
-result is written separately from the chain judge, under `tmp/aqa-separate-science-solvability-evals`
-by default, so a paper can be blocked for a learner-visible rendering defect even when its chain
-quality is acceptable.
+Use `--all` or omit `--question` for a full audit. The AQA batch runner can run this gate with
+`--solvability-mode=question-batches`; it is intentionally opt-in because it is one LLM call per
+rendered learner-visible question. The result is written separately from the chain judge, under
+`tmp/aqa-separate-science-solvability-evals` by default, so a paper can be blocked for a
+learner-visible rendering defect even when its chain quality is acceptable.
 
 Label-only media is not a valid published extraction for interactive media. When `response.kind` is
 `asset-canvas` or `image-label-zones`, the referenced graph, diagram, or image must appear in
@@ -513,13 +573,16 @@ page image is better than a broken learner-facing asset reference. Pass
 asset was attached; the generated asset is still marked `needsHumanReview`.
 
 `needsHumanReview` means the extractor or repair script could not prove the row is publishable. Treat
-it as an import blocker, not as a vague warning. Common causes are full-page fallback assets that need
-cropping/confirmation, source-page figure mismatches, copyright placeholder media, unsupported response
-controls, or chain text that still looks prompt-specific. Do not clear the flag by prompt instruction
-alone: clear it only after the source asset/render control has been fixed and the mechanical audit plus
-learner-facing solvability judge pass. A reviewed asset must also point to the correct numbered source
-PDF page; for example, an asset labelled `Figure 4` with `pageNumber: 19` is invalid if the source page
-text does not contain `Figure 4`.
+it as an import blocker, not as a vague warning or a normal end state. Common causes are full-page
+fallback assets that need cropping/confirmation, source-page figure mismatches, copyright placeholder
+media, unsupported response controls, or chain text that still looks prompt-specific. The normal
+workflow is to run the mechanical repair scripts, LLM repair, deterministic audits, and learner-facing
+solvability judge until the flag is cleared by evidence. Only source-ambiguous media or genuinely
+uncertain official-material cases should remain for manual review. Do not clear the flag by prompt
+instruction alone: clear it only after the source asset/render control has been fixed and the
+mechanical audit plus learner-facing solvability judge pass. A reviewed asset must also point to the
+correct numbered source PDF page; for example, an asset labelled `Figure 4` with `pageNumber: 19` is
+invalid if the source page text does not contain `Figure 4`.
 
 Before importing existing exported artifacts, run the aggregate extracted-data audit:
 
@@ -529,6 +592,13 @@ pnpm run audit:current-exported-data
 pnpm run repair:extracted-data -- \
   --input-root=data/vision-extracted/aqa-separate-science-higher \
   --recursive --write
+
+pnpm run repair:answer-chain-specificity -- \
+  --input-root=data/vision-extracted/aqa-separate-science-higher \
+  --recursive --write \
+  --model=chatgpt-gpt-5.5 --thinking-level=xhigh \
+  --concurrency=4 \
+  --fail-on-blocking
 
 pnpm run audit:extracted-data -- \
   --input-root=data/vision-extracted/aqa-separate-science-higher \
@@ -552,8 +622,9 @@ exported/import-ready problems, not only for new extraction runs.
 The command prints a compact terminal summary and writes the full JSON report to `--output`; pass
 `--format=json` when another script needs the complete report on stdout.
 Use `--fail-on-warnings` for an import-ready gate. Warnings include `needsHumanReview`; those outputs
-may be useful for debugging and repair, but they should not be imported until a human has reviewed
-the flagged source/media and cleared the flag.
+may be useful for debugging and repair, but they should not be imported until the repair loop and
+source/media checks clear the flag. Manual review is reserved for cases where the source documents are
+ambiguous after the automated repair and judge passes have been attempted.
 
 If a full paper is partially blocked by unpublishable or unreviewed questions, build an import-ready
 subset instead of weakening the importer:
@@ -591,7 +662,10 @@ For existing exports that already contain those rows, use `repair:extracted-data
 patch before import. It is a dry-run unless `--write` is passed. The repair only drops
 withdrawn/statistics-only question rows and removes unsupported answer-chain tail steps; it does not
 invent missing source text, media, answer keys, or new chain content. Run `repair:extraction-response-assets`
-separately for interactive media that needs a concrete page image or crop.
+separately for interactive media that needs a concrete page image or crop. Run the separate
+text-only chain grouping or `repair:answer-chain-specificity` phase for chains that still contain
+prompt-specific worked values; then the specificity audit verifies whether the repair actually
+removed blocked chain text.
 
 The production output shape is the import-shaped JSON used by `import:vision`: `sourceDocument`,
 `markSchemeDocument`, optional `supportingDocuments`, atomic `questions`, render blocks, response
@@ -607,13 +681,13 @@ values. The importer persists these to `source_documents`, `questions`, and mark
 future UI can link back to the official question formulation, paper page span, or mark-scheme
 evidence without re-extracting PDFs.
 
-When `--existing-chains` is supplied, the extractor must compare each chain to existing chain ids. It
-should reuse an id when the ordered method is the same, keep the old id when clarifying wording for a
-compatible chain, and create a new id only for genuinely new mark-scoring reasoning. The optional
-`chainResolution` field records `reuse_existing`, `update_existing`, `create_new`, or `needs_review`
-for audit. A marked question with `answerChain.id: null` is not publishable: hold or repair it before
-building an import-ready subset, because downstream chain memory and compatibility depend on stable
-chain identity.
+When existing chain context is supplied to the chain grouping phase, that phase must compare each
+candidate chain to existing chain ids. It should reuse an id when the ordered method is the same,
+keep the old id when clarifying wording for a compatible chain, and create a new id only for
+genuinely new mark-scoring reasoning. The optional `chainResolution` field records
+`reuse_existing`, `update_existing`, `create_new`, or `needs_review` for audit. A marked question
+with `answerChain.id: null` is extraction-complete but not publishable: hold it out of the import
+subset until the chain grouping phase assigns a stable compatible chain id.
 
 Build the compatibility context from already-audited extracted JSON, preferably the import-ready
 subset rather than raw review-marked outputs:
@@ -711,6 +785,14 @@ They should not share a chain when:
 
 A model answer should be source-derived and concise. It should include enough detail to satisfy the mark checklist, not a full textbook explanation.
 
+`promptText`, `promptBlocks`, `leadBlocks`, and rendered table/figure blocks are learner-visible and
+must stay faithful to the printed paper. Do not place answers from previous subquestions into those
+fields. If a later subquestion is ambiguous when extracted alone, put the resolved context in
+`selfContainedPromptText` or `contextText` for standalone grading/search, while keeping the rendered
+prompt as printed. Example: for "How did the students deal with the anomalous result?", the rendered
+prompt should not name the anomalous value, but `selfContainedPromptText` may identify it so a grading
+judge can evaluate the answer without replaying the previous subpart.
+
 Generate and store model answers only for written-response questions, such as free-text answer lines or labelled written answer spaces. Do not create model-answer rows for fixed-answer interactions such as multiple choice, image labels, matching, equation blanks, number-line answers, or any response where the UI can deterministically check a fixed key. For those questions, store the answer key in the response schema or `question_response_answer_keys` instead.
 
 For written-response questions, the model answer must be student-facing answer text. It must never be a raw mark-scheme row, assessment objective, specification reference, examiner instruction, or truncated scoring fragment. Bad model answers include strings such as `01.2 positive charge is provided by 1 AO1; protons 6.4.1.2`, `4.4.1.1`, `A bold and is used...`, or any wording copied from generic mark-scheme guidance. The importer should reject or regenerate these rather than storing them.
@@ -747,11 +829,16 @@ store the correct answer key either in `response.correctAnswers` or in
 - `choice`: use target id `answer`; store the correct option text or the printed letter when the
   paper only gives A/B/C/D choices.
 - `choice-table`: use target id `answer`; store the selected row as the same `|`-joined text the
-  UI emits.
+  UI emits. For "ring/select the value in Table N" prompts, keep the source table as a structured
+  table block and make the choice-table rows selectable source cells such as
+  `Temperature: 45 | Test 2 | 14.2`; do not use `asset-canvas` for a table that can be represented
+  structurally.
 - `matching`: use each left-side value or stable left-side id as the target id; store the matching
   right-side value.
 - `equation-blanks`: use each blank id as the target id; store the correct value or expression for
-  that blank.
+  that blank. When a set of blanks accepts values in any order, also store an `unorderedGroups` entry
+  with the target ids and allowed answer set so duplicate entries are not credited as a valid
+  permutation.
 - `number-line`: use target id `answer`; include unit, rounding, tolerance, or significant-figure
   requirements in `metadata_json` when exact string matching would be unsafe.
 - `image-label-zones`: use each zone id as the target id; store the correct label.
@@ -767,6 +854,10 @@ Every fixed-response key should be student-checkable:
 links`.
 - Choice tables must store the selected row in exactly the same serialized form emitted by the UI,
   for example `Vacuole | Ribosome | Cell wall`.
+- Calculation questions with visible working lines and a final answer blank should use a written
+  response shape such as `labeled-lines` for the working and final answer line, with the worked
+  calculation and final value in `modelAnswer` and `markChecklist`. Do not collapse a two-mark
+  method-plus-answer calculation to a single final-answer blank.
 - Numeric entries must store acceptable aliases and unit/tolerance notes in `aliases_json` and
   `metadata_json`; do not rely on exact string matching when scientific notation, Unicode minus
   signs, or units may vary.
@@ -972,6 +1063,10 @@ recover obvious tables, but the extracted table object should be visually checke
   non-wrappable in the renderer.
 - If a table is successfully converted into a structured table, do not also render the same rows as
   ordinary prompt text.
+- If a response asks the student to ring or identify a value in a table, represent the source table
+  once as `structured-table` and encode the interaction as a table-cell `choice-table`. Reserve
+  `asset-canvas` for graphs, diagrams, image marking, and other visual surfaces that cannot be
+  represented structurally.
 - Validate both `/experiments/questions/<paper>/<subquestion>` and
   `/experiments/questions/<paper>/<parent-question>`, because single-subquestion focus can expose
   missing dependencies and parent-question focus can expose duplicate shared dependencies.

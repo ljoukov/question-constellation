@@ -49,6 +49,9 @@ const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.
 const repairAssetSource = readText(
 	path.join(rootDir, 'scripts/repair-extraction-response-assets.mjs')
 );
+const repairChainSpecificitySource = readText(
+	path.join(rootDir, 'scripts/repair-answer-chain-specificity.mjs')
+);
 const prepareImportReadySource = readText(
 	path.join(rootDir, 'scripts/prepare-import-ready-extraction.mjs')
 );
@@ -57,6 +60,11 @@ const existingChainContextSource = readText(
 );
 const chainSpecificityAuditSource = readText(
 	path.join(rootDir, 'scripts/audit-answer-chain-specificity.mjs')
+);
+const questionTypesSource = readText(path.join(rootDir, 'src/lib/experiments/questions/types.ts'));
+const questionDataSource = readText(path.join(rootDir, 'src/lib/server/questionExperimentData.ts'));
+const questionGradingSource = readText(
+	path.join(rootDir, 'src/lib/server/questionExperimentGrading.ts')
 );
 
 for (const filePath of [
@@ -76,6 +84,7 @@ for (const filePath of [
 	'scripts/build-existing-chain-context.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
+	'scripts/repair-answer-chain-specificity.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
 	'scripts/test-answer-chain-golden.mjs',
 	'scripts/audit-answer-chain-specificity.mjs',
@@ -92,6 +101,7 @@ requireIncludes(
 		'node scripts/eval-extraction-pipeline-llm.mjs --run-llm',
 		'pnpm run eval:question-solvability',
 		'pnpm run repair:extracted-data',
+		'pnpm run repair:answer-chain-specificity',
 		'pnpm run repair:extraction-response-assets',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run download:aqa-separate-science',
@@ -109,6 +119,7 @@ requireIncludes(
 		'pnpm run audit:answer-chain-specificity',
 		'--import-raw-output',
 		'--fail-on-warnings',
+		'--extraction-granularity=chunk',
 		'--concurrency=4',
 		'--repair-text-references',
 		'--run-id',
@@ -131,6 +142,7 @@ requireIncludes(
 		'export async function evaluateCandidate',
 		'export async function runGoldenPdfEval',
 		'export async function judgeQuestionSolvability',
+		'export async function judgeExtractionAgainstRubric',
 		'export function buildLearnerVisibleQuestionContext',
 		'export const SolvabilityJudgeSchema',
 		'export async function repairFullPaperAnswerChains',
@@ -154,10 +166,17 @@ requireIncludes(
 		'summarizeLlmError',
 		'answerChainSpecificityIssues',
 		'expandCompactFullPaperExtraction',
+		'normalizeQuestionResponseForExtraction',
+		'unorderedGroups',
+		'Source question-paper text for selected pages',
+		'For calculation questions with visible working lines',
+		'Do not use asset-canvas for a table that can be represented structurally',
 		'LOOKAHEAD QUESTION PAPER PAGE',
 		'PRIOR CONTEXT QUESTION PAPER PAGE',
 		'priorContextPages',
 		'contextPages = 2',
+		"extractionGranularity = 'chunk'",
+		"extractionGranularity === 'question'",
 		'Do not start or extract sibling subquestions',
 		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk',
 		'withdrawn questions, replacement notices, statistics-only rows'
@@ -177,13 +196,19 @@ requireIncludes(
 		'--supporting-document',
 		'--existing-chains',
 		'--context-pages=2',
+		'--chunk-concurrency=1',
+		'--extraction-granularity=chunk|question',
 		'--mark-scheme-image-mode',
 		'--repair-attempts',
+		'--repair-answer-chains',
+		'--evaluation-mode=extraction|full',
 		'--repair-batch-size',
 		'--llm-timeout-ms',
 		'--llm-max-attempts',
 		'--llm-max-attempts=3',
+		'--llm-max-calls=12',
 		'--skip-judge',
+		'process.env.EXTRACTION_RUN_ID = runId',
 		"!['asset-canvas', 'image-label-zones'].includes(response.kind)",
 		'extractFullPaperFromPdfSet',
 		'repairFullPaperQuestionQuality',
@@ -203,7 +228,20 @@ requireIncludes(
 		"integerArg('llm-timeout-ms', 600000, 1)",
 		"integerArg('llm-max-attempts', 3, 1)",
 		"integerArg('paper-attempts', 2, 1)",
-		"integerArg('judge-batch-size', 1, 1)",
+		"integerArg('chunk-pages', 6, 1)",
+		"integerArg('chunk-concurrency', 2, 1)",
+		'--chunk-concurrency=${chunkConcurrency}',
+		'--run-id=aqa-separate-science-${paper.sourceDocumentId}',
+		"stringArg('extraction-granularity', 'chunk')",
+		'--extraction-granularity=${extractionGranularity}',
+		"integerArg('repair-batch-size', 4, 1)",
+		'--repair-answer-chains',
+		"const evaluationMode = stringArg('evaluation-mode', 'extraction')",
+		'--evaluation-mode=${evaluationMode}',
+		'--llm-max-calls=${llmMaxCalls}',
+		"integerArg('judge-batch-size', 4, 1)",
+		"stringArg('judge-mode', 'paper')",
+		"stringArg('solvability-mode', 'none')",
 		'runExtractionCommandWithRetry',
 		'solvabilityMode',
 		'evaluateSolvabilityForPaper',
@@ -241,9 +279,33 @@ requireIncludes(
 		'subjectAreaForPaper',
 		'chainPrefixForSubject',
 		'deterministicCandidateIssues',
-		'needsHumanReview'
+		'needsHumanReview',
+		'unorderedGroupsArray'
 	],
 	'Vision importer'
+);
+
+requireIncludes(
+	questionTypesSource,
+	['unorderedGroups?: Array<', 'targetIds: string[]', 'answers: string[]'],
+	'Question response types'
+);
+
+requireIncludes(
+	questionDataSource,
+	['equationBlankUnorderedGroups', 'unorderedGroups: equationBlankUnorderedGroups'],
+	'Question renderer data parser'
+);
+
+requireIncludes(
+	questionGradingSource,
+	[
+		'unorderedEquationBlankItems',
+		'equationBlankSubmittedAnswer',
+		'without reusing an answer',
+		'unorderedGroups: equationBlankUnorderedGroups'
+	],
+	'Question deterministic grading'
 );
 
 requireIncludes(
@@ -254,6 +316,20 @@ requireIncludes(
 		'repairTextReferences'
 	],
 	'Response asset repair script'
+);
+
+requireIncludes(
+	repairChainSpecificitySource,
+	[
+		'repairFullPaperAnswerChains',
+		'chain_numeric_substitution',
+		'chain_prompt_specific_number',
+		'chain_exact_fixed_answer_text',
+		'extractionPlaceholderChain',
+		'--concurrency',
+		'--fail-on-blocking'
+	],
+	'Answer-chain specificity repair script'
 );
 
 requireIncludes(
@@ -311,6 +387,7 @@ for (const scriptName of [
 	'build:existing-chain-context',
 	'prepare:import-ready-extraction',
 	'repair:extracted-data',
+	'repair:answer-chain-specificity',
 	'repair:extraction-response-assets',
 	'import:vision',
 	'import:aqa-separate-science',
@@ -645,7 +722,10 @@ if (
 	normalizedRepairEnvelope.repairs[0]?.answerChain?.title !==
 		'Recall and state comparative property differences'
 ) {
-	fail('normalizeRepairEnvelope did not accept sourceQuestionRef-keyed repair JSON.', normalizedRepairEnvelope);
+	fail(
+		'normalizeRepairEnvelope did not accept sourceQuestionRef-keyed repair JSON.',
+		normalizedRepairEnvelope
+	);
 }
 const compactAliasExpansion = pipelineModule.expandCompactFullPaperExtraction({
 	value: {

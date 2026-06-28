@@ -117,15 +117,6 @@ async function fetchD1WithRetry(options, label) {
 	throw lastError ?? new Error(`${label} failed.`);
 }
 
-function parseJson(raw, fallback) {
-	if (!raw) return fallback;
-	try {
-		return JSON.parse(raw);
-	} catch {
-		return fallback;
-	}
-}
-
 function readJson(filePath) {
 	return JSON.parse(readFileSync(filePath, 'utf8'));
 }
@@ -241,6 +232,23 @@ function correctAnswersObject(value) {
 		}
 	}
 	return answers;
+}
+
+function unorderedGroupsArray(value) {
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((group) => {
+			if (!group || typeof group !== 'object') return null;
+			const targetIds = Array.isArray(group.targetIds)
+				? group.targetIds.filter((item) => typeof item === 'string' && item.trim())
+				: [];
+			const answers = Array.isArray(group.answers)
+				? group.answers.filter((item) => typeof item === 'string' && item.trim())
+				: [];
+			if (targetIds.length < 2 || answers.length < 2) return null;
+			return { targetIds, answers };
+		})
+		.filter(Boolean);
 }
 
 async function d1Query(sql, params = []) {
@@ -560,6 +568,7 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes) {
 		};
 	}
 	if (response.kind === 'equation-blanks') {
+		const unorderedGroups = unorderedGroupsArray(response.unorderedGroups);
 		return {
 			kind: 'equation-blanks',
 			segments: (response.segments ?? []).map((segment) => ({
@@ -569,6 +578,7 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes) {
 				...(segment.label ? { label: segment.label } : {}),
 				...(segment.width ? { width: segment.width } : {})
 			})),
+			...(unorderedGroups.length ? { unorderedGroups } : {}),
 			...(correctAnswers ? { correctAnswers } : {})
 		};
 	}

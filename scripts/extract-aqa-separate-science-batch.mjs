@@ -51,16 +51,23 @@ const maxPapers = optionalIntegerArg('max-papers');
 const concurrency = integerArg('concurrency', 1, 1);
 const paperAttempts = integerArg('paper-attempts', 2, 1);
 
-const chunkPages = integerArg('chunk-pages', 1, 1);
+const chunkPages = integerArg('chunk-pages', 6, 1);
+const chunkConcurrency = integerArg('chunk-concurrency', 2, 1);
+const extractionGranularity = stringArg('extraction-granularity', 'chunk');
+if (!['chunk', 'question'].includes(extractionGranularity)) {
+	throw new Error('--extraction-granularity must be chunk or question.');
+}
 const dpi = integerArg('dpi', 90, 72);
 const repairAttempts = integerArg('repair-attempts', 1, 0);
-const repairBatchSize = integerArg('repair-batch-size', 1, 1);
+const repairBatchSize = integerArg('repair-batch-size', 4, 1);
+const repairAnswerChains = hasArg('repair-answer-chains');
 const repairLlmTimeoutMs = optionalIntegerArg('repair-llm-timeout-ms');
 const repairLlmMaxAttempts = optionalIntegerArg('repair-llm-max-attempts');
 const judgeRepairAttempts = integerArg('judge-repair-attempts', 1, 0);
 const llmTimeoutMs = integerArg('llm-timeout-ms', 600000, 1);
 const llmMaxAttempts = integerArg('llm-max-attempts', 3, 1);
-const judgeBatchSize = integerArg('judge-batch-size', 1, 1);
+const llmMaxCalls = optionalIntegerArg('llm-max-calls');
+const judgeBatchSize = integerArg('judge-batch-size', 4, 1);
 const minJudgeScore = numberArg('min-judge-score', 0.8);
 const minSolvabilityScore = numberArg('min-solvability-score', 0.8);
 const mediaResolution = stringArg('media-resolution', 'low');
@@ -68,10 +75,12 @@ const thinkingLevel = stringArg('thinking-level', 'xhigh');
 const model = stringArg('model', '');
 const judgeModel = stringArg('judge-model', '');
 const markSchemeImageMode = stringArg('mark-scheme-image-mode', 'none');
-const judgeMode = skipJudge ? 'none' : stringArg('judge-mode', 'question-batches');
-const solvabilityMode = skipSolvabilityJudge
-	? 'none'
-	: stringArg('solvability-mode', 'question-batches');
+const evaluationMode = stringArg('evaluation-mode', 'extraction');
+if (!['extraction', 'full'].includes(evaluationMode)) {
+	throw new Error('--evaluation-mode must be extraction or full.');
+}
+const judgeMode = skipJudge ? 'none' : stringArg('judge-mode', 'paper');
+const solvabilityMode = skipSolvabilityJudge ? 'none' : stringArg('solvability-mode', 'none');
 
 if (!existsSync(manifestPath)) {
 	throw new Error(
@@ -282,7 +291,8 @@ async function processPaper(paper) {
 	console.error(`[batch] extracting ${paper.sourceDocumentId} -> ${relative(paper.outputPath)}`);
 	await runExtractionCommandWithRetry(args, {
 		EXTRACTION_LLM_TIMEOUT_MS: String(llmTimeoutMs),
-		EXTRACTION_LLM_MAX_ATTEMPTS: String(llmMaxAttempts)
+		EXTRACTION_LLM_MAX_ATTEMPTS: String(llmMaxAttempts),
+		...(llmMaxCalls ? { EXTRACTION_LLM_MAX_CALLS: String(llmMaxCalls) } : {})
 	});
 
 	let validation = validateExtractionOutput(paper.outputPath);
@@ -328,12 +338,16 @@ function extractionCommandArgs(paper) {
 		'--preset=aqa-separate-science',
 		`--paper=${paper.sourceDocumentId}`,
 		`--chunk-pages=${chunkPages}`,
+		`--chunk-concurrency=${chunkConcurrency}`,
+		`--extraction-granularity=${extractionGranularity}`,
 		`--dpi=${dpi}`,
 		`--media-resolution=${mediaResolution}`,
 		`--thinking-level=${thinkingLevel}`,
+		`--evaluation-mode=${evaluationMode}`,
 		`--repair-attempts=${repairAttempts}`,
 		`--repair-batch-size=${repairBatchSize}`,
 		`--mark-scheme-image-mode=${markSchemeImageMode}`,
+		`--run-id=aqa-separate-science-${paper.sourceDocumentId}`,
 		`--output=${paper.outputPath}`,
 		`--write-eval=${paper.evalPath}`
 	];
@@ -343,6 +357,9 @@ function extractionCommandArgs(paper) {
 	if (repairLlmMaxAttempts !== null && repairLlmMaxAttempts !== undefined) {
 		args.push(`--repair-llm-max-attempts=${repairLlmMaxAttempts}`);
 	}
+	if (repairAnswerChains) args.push('--repair-answer-chains');
+	if (llmMaxCalls !== null && llmMaxCalls !== undefined)
+		args.push(`--llm-max-calls=${llmMaxCalls}`);
 	if (model) args.push(`--model=${model}`);
 	if (judgeModel) args.push(`--judge-model=${judgeModel}`);
 	if (judgeMode !== 'paper') args.push('--skip-judge');
@@ -386,7 +403,8 @@ async function evaluateQuestionBatches(candidate, evalPath) {
 			judgeModel: judgeModel || model || undefined,
 			thinkingLevel,
 			minJudgeScore,
-			runJudge: true
+			runJudge: true,
+			evaluationMode
 		});
 		batches.push({
 			index: batches.length + 1,
@@ -466,7 +484,9 @@ async function evaluateAndRepairQuestionBatches(paper) {
 				model: model || undefined,
 				thinkingLevel,
 				candidate,
-				deterministicIssues: deterministicCandidateIssues(candidate),
+				deterministicIssues: deterministicCandidateIssues(candidate, {
+					includeAnswerChainIssues: evaluationMode !== 'extraction'
+				}),
 				judge: {
 					...aggregateJudge,
 					requiredRepairs: aggregateJudge.requiredRepairs.filter((line) =>
@@ -477,7 +497,11 @@ async function evaluateAndRepairQuestionBatches(paper) {
 			});
 		}
 		writeJson(paper.outputPath, candidate);
-		const blocking = blockingIssues(deterministicCandidateIssues(candidate));
+		const blocking = blockingIssues(
+			deterministicCandidateIssues(candidate, {
+				includeAnswerChainIssues: evaluationMode !== 'extraction'
+			})
+		);
 		if (blocking.length > 0) {
 			if (attempt + 1 < judgeRepairAttempts) {
 				evaluation = deterministicRepairEvaluation(blocking);
@@ -501,9 +525,9 @@ async function repairPreJudgeValidationIssues(paper, initialCandidate) {
 	for (let attempt = 0; attempt < judgeRepairAttempts; attempt += 1) {
 		const validation = validateCandidate(candidate);
 		if (validation.blockingIssues.length === 0) return candidate;
-		const refs = [...new Set(validation.blockingIssues.map((issue) => issue.sourceQuestionRef))].filter(
-			Boolean
-		);
+		const refs = [
+			...new Set(validation.blockingIssues.map((issue) => issue.sourceQuestionRef))
+		].filter(Boolean);
 		if (refs.length === 0) return candidate;
 		const aggregateJudge = {
 			verdict: 'fail',
@@ -632,9 +656,14 @@ function validateExtractionOutput(filePath) {
 }
 
 function validateCandidate(candidate) {
-	const deterministicFindings = deterministicCandidateIssues(candidate);
+	const includeAnswerChainIssues = evaluationMode !== 'extraction';
+	const deterministicFindings = deterministicCandidateIssues(candidate, {
+		includeAnswerChainIssues
+	});
 	const deterministicBlockingIssues = blockingIssues(deterministicFindings);
-	const reviewFindings = humanReviewFindings(candidate);
+	const reviewFindings = humanReviewFindings(candidate, {
+		includeAnswerChainReview: includeAnswerChainIssues
+	});
 	const humanReviewIssues = reviewFindings.flatMap((finding) =>
 		finding.issues.map((issue) => ({ ...issue, sourceQuestionRef: finding.sourceQuestionRef }))
 	);
@@ -655,10 +684,10 @@ function validationFindingsForRefs(validation, refs) {
 	);
 }
 
-function humanReviewFindings(candidate) {
+function humanReviewFindings(candidate, options = {}) {
 	const findings = [];
 	for (const question of candidate.questions ?? []) {
-		const issues = humanReviewIssuesForQuestion(question);
+		const issues = humanReviewIssuesForQuestion(question, options);
 		if (!issues.length) continue;
 		findings.push({
 			sourceQuestionRef: question.sourceQuestionRef,
@@ -669,29 +698,40 @@ function humanReviewFindings(candidate) {
 	return findings;
 }
 
-function humanReviewIssuesForQuestion(question) {
+function humanReviewIssuesForQuestion(question, options = {}) {
+	const includeAnswerChainReview = options.includeAnswerChainReview !== false;
 	const issues = [];
 	if (question.needsHumanReview) {
 		issues.push(reviewIssue('question_needs_human_review', 'questions.needsHumanReview', question));
 	}
-	if (question.answerChain?.needsHumanReview) {
+	if (includeAnswerChainReview && question.answerChain?.needsHumanReview) {
 		issues.push(
 			reviewIssue('chain_needs_human_review', 'answerChain.needsHumanReview', question.answerChain)
 		);
 	}
 	if (question.modelAnswer?.needsHumanReview) {
 		issues.push(
-			reviewIssue('model_answer_needs_human_review', 'modelAnswer.needsHumanReview', question.modelAnswer)
+			reviewIssue(
+				'model_answer_needs_human_review',
+				'modelAnswer.needsHumanReview',
+				question.modelAnswer
+			)
 		);
 	}
 	for (const [index, asset] of (question.assets ?? []).entries()) {
 		if (!asset?.needsHumanReview) continue;
-		issues.push(reviewIssue('asset_needs_human_review', `assets[${index}].needsHumanReview`, asset));
+		issues.push(
+			reviewIssue('asset_needs_human_review', `assets[${index}].needsHumanReview`, asset)
+		);
 	}
 	for (const [index, item] of (question.markChecklist ?? []).entries()) {
 		if (!item?.needsHumanReview) continue;
 		issues.push(
-			reviewIssue('mark_checklist_needs_human_review', `markChecklist[${index}].needsHumanReview`, item)
+			reviewIssue(
+				'mark_checklist_needs_human_review',
+				`markChecklist[${index}].needsHumanReview`,
+				item
+			)
 		);
 	}
 	return issues;
@@ -712,7 +752,8 @@ function reviewIssueEvidence(value) {
 	const notes = value?.reviewNotes ?? value?.reviewFlags ?? [];
 	if (Array.isArray(notes) && notes.length > 0) return notes.join('; ').slice(0, 500);
 	for (const key of ['sourceLabel', 'label', 'answerText', 'title', 'text']) {
-		if (typeof value?.[key] === 'string' && value[key].trim()) return value[key].trim().slice(0, 500);
+		if (typeof value?.[key] === 'string' && value[key].trim())
+			return value[key].trim().slice(0, 500);
 	}
 	return 'needsHumanReview=true';
 }
@@ -838,7 +879,15 @@ function summary(status) {
 		failed: results.filter((result) => result.status === 'failed').length,
 		dryRun: results.filter((result) => result.status === 'dry-run').length,
 		concurrency,
+		chunkPages,
+		chunkConcurrency,
+		extractionGranularity,
+		repairBatchSize,
+		repairAnswerChains,
+		evaluationMode,
+		llmMaxCalls,
 		judgeMode,
+		judgeBatchSize,
 		solvabilityMode,
 		judgeRepairAttempts,
 		paperAttempts,

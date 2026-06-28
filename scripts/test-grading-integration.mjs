@@ -148,6 +148,7 @@ function assertModel(testCase, response) {
 }
 
 function assertChecklist(testCase, result) {
+	const expectedChecklist = testCase.checklist ?? [];
 	if (Number.isInteger(testCase.checklistLength)) {
 		assert(
 			result.checklist.length === testCase.checklistLength,
@@ -158,11 +159,11 @@ function assertChecklist(testCase, result) {
 	}
 
 	assert(
-		result.checklist.length >= testCase.checklist.length,
-		`${testCase.name}: expected at least ${testCase.checklist.length} checklist rows, got ${result.checklist.length}`
+		result.checklist.length >= expectedChecklist.length,
+		`${testCase.name}: expected at least ${expectedChecklist.length} checklist rows, got ${result.checklist.length}`
 	);
 
-	for (const expected of testCase.checklist) {
+	for (const expected of expectedChecklist) {
 		const match = result.checklist.find(
 			(item) =>
 				item.verdict === expected.verdict && includesAll(flattenText(item), expected.textIncludes)

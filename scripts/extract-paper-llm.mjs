@@ -40,8 +40,12 @@ Optional:
   --existing-chains=<json-or-md>
   --chunk-pages=6
   --context-pages=2
+  --chunk-concurrency=1
+  --extraction-granularity=chunk|question
   --expected-question-count=1
   --repair-attempts=1
+  --repair-answer-chains
+  --evaluation-mode=extraction|full
   --judge-fixture=<golden-fixture.json>
   --skip-judge
   --dry-run
@@ -51,13 +55,15 @@ Optional:
   --mark-scheme-image-mode=none|all
   --media-resolution=auto|low|medium|high|original
   --write-eval=<evaluation.json>
+  --run-id=<llm-log-run-id>
   --model=chatgpt-gpt-5.5
   --thinking-level=xhigh
   --repair-batch-size=1
   --repair-llm-timeout-ms=180000
   --repair-llm-max-attempts=1
   --llm-timeout-ms=600000
-  --llm-max-attempts=3`;
+  --llm-max-attempts=3
+  --llm-max-calls=12`;
 
 if (hasArg('help')) {
 	console.log(usage);
@@ -67,6 +73,8 @@ if (hasArg('help')) {
 setupLlmEnv();
 
 const preset = stringArg('preset', '');
+const runId = stringArg('run-id', process.env.EXTRACTION_RUN_ID ?? '');
+if (runId) process.env.EXTRACTION_RUN_ID = runId;
 const model = stringArg('model', process.env.EXTRACTION_PIPELINE_MODEL ?? DEFAULT_EXTRACTION_MODEL);
 const judgeModel = stringArg('judge-model', process.env.EXTRACTION_PIPELINE_JUDGE_MODEL ?? model);
 const thinkingLevel = stringArg(
@@ -76,6 +84,11 @@ const thinkingLevel = stringArg(
 const dpi = integerArg('dpi', 160, 90);
 const chunkPages = integerArg('chunk-pages', 6, 1);
 const contextPages = integerArg('context-pages', 2, 0);
+const chunkConcurrency = integerArg('chunk-concurrency', 1, 1);
+const extractionGranularity = stringArg('extraction-granularity', 'chunk');
+if (!['chunk', 'question'].includes(extractionGranularity)) {
+	throw new Error('--extraction-granularity must be chunk or question.');
+}
 const forceRender = hasArg('force-render') || hasArg('force');
 const forceOutput = hasArg('force');
 const forceChunkCache = hasArg('force-chunks');
@@ -93,8 +106,14 @@ const markSchemePages = parsePageSelection(stringArg('mark-scheme-pages', ''));
 const expectedQuestionCount = optionalIntegerArg('expected-question-count');
 const repairAttempts = integerArg('repair-attempts', 0, 0);
 const repairBatchSize = integerArg('repair-batch-size', 1, 1);
+const repairAnswerChains = hasArg('repair-answer-chains');
+const evaluationMode = stringArg('evaluation-mode', 'extraction');
+if (!['extraction', 'full'].includes(evaluationMode)) {
+	throw new Error('--evaluation-mode must be extraction or full.');
+}
 const llmTimeoutMs = optionalIntegerArg('llm-timeout-ms');
 const llmMaxAttempts = optionalIntegerArg('llm-max-attempts');
+const llmMaxCalls = optionalIntegerArg('llm-max-calls');
 const repairLlmTimeoutMs = optionalIntegerArg('repair-llm-timeout-ms');
 const repairLlmMaxAttempts = optionalIntegerArg('repair-llm-max-attempts');
 const judgeFixturePath = stringArg('judge-fixture', '');
@@ -111,6 +130,7 @@ const explicitExistingChainsText = existingChainsPath
 
 if (llmTimeoutMs) process.env.EXTRACTION_LLM_TIMEOUT_MS = String(llmTimeoutMs);
 if (llmMaxAttempts) process.env.EXTRACTION_LLM_MAX_ATTEMPTS = String(llmMaxAttempts);
+if (llmMaxCalls) process.env.EXTRACTION_LLM_MAX_CALLS = String(llmMaxCalls);
 
 if (preset) {
 	await runPreset(preset);
@@ -225,11 +245,17 @@ async function runPreset(name) {
 	throw new Error(`Unknown preset: ${name}`);
 }
 
-function refsNeedingRepair(candidate, evaluation) {
-	const deterministic = deterministicCandidateIssues(candidate);
+function refsNeedingRepair(candidate, evaluation, options = {}) {
+	const deterministic = deterministicCandidateIssues(candidate, {
+		includeAnswerChainIssues: options.evaluationMode !== 'extraction'
+	});
 	const blocking = blockingIssues(deterministic);
 	const refs = new Set(blocking.map((issue) => issue.sourceQuestionRef).filter(Boolean));
-	for (const ref of questionHumanReviewRefs(candidate)) refs.add(ref);
+	for (const ref of questionHumanReviewRefs(candidate, {
+		includeAnswerChainReview: options.evaluationMode !== 'extraction'
+	})) {
+		refs.add(ref);
+	}
 	const judgeRepairs = JSON.stringify(evaluation?.judge?.requiredRepairs ?? []);
 	for (const question of candidate.questions ?? []) {
 		if (judgeRepairs.includes(question.sourceQuestionRef)) refs.add(question.sourceQuestionRef);
@@ -238,11 +264,15 @@ function refsNeedingRepair(candidate, evaluation) {
 	return (candidate.questions ?? []).map((question) => question.sourceQuestionRef).filter(Boolean);
 }
 
-function questionHumanReviewRefs(candidate) {
+function questionHumanReviewRefs(candidate, options = {}) {
+	const includeAnswerChainReview = options.includeAnswerChainReview !== false;
 	const refs = new Set();
 	for (const question of candidate.questions ?? []) {
 		if (!question.sourceQuestionRef) continue;
-		if (question.needsHumanReview || question.answerChain?.needsHumanReview) {
+		if (
+			question.needsHumanReview ||
+			(includeAnswerChainReview && question.answerChain?.needsHumanReview)
+		) {
 			refs.add(question.sourceQuestionRef);
 			continue;
 		}
@@ -283,10 +313,12 @@ async function repairFailedQuestionBatches({
 	existingChainsText,
 	repairCacheDir,
 	repairLlmTimeoutMs,
-	repairLlmMaxAttempts
+	repairLlmMaxAttempts,
+	evaluationMode,
+	repairAnswerChains
 }) {
 	let repaired = candidate;
-	const refs = refsNeedingRepair(candidate, evaluation);
+	const refs = refsNeedingRepair(candidate, evaluation, { evaluationMode });
 	for (const batchRefs of chunks(refs, repairBatchSize)) {
 		const refsToRepair = [];
 		for (const ref of batchRefs) {
@@ -301,36 +333,43 @@ async function repairFailedQuestionBatches({
 		if (refsToRepair.length === 0) continue;
 		console.error(`[extract-cli] repairing refs ${refsToRepair.join(', ')}`);
 		try {
-			repaired = await withTemporaryLlmRepairEnv({
-				timeoutMs: repairLlmTimeoutMs,
-				maxAttempts: repairLlmMaxAttempts
-			}, async () => {
-				let next = await repairFullPaperQuestionQuality({
-					model,
-					thinkingLevel,
-					candidate: repaired,
-					deterministicIssues: filterDeterministicIssuesForRefs(
-						deterministicCandidateIssues(repaired),
-						refsToRepair
-					),
-					judge,
-					existingChainsText,
-					sourceQuestionRefs: refsToRepair
-				});
-				next = await repairFullPaperAnswerChains({
-					model,
-					thinkingLevel,
-					candidate: next,
-					deterministicIssues: filterDeterministicIssuesForRefs(
-						deterministicCandidateIssues(next),
-						refsToRepair
-					),
-					judge,
-					existingChainsText,
-					sourceQuestionRefs: refsToRepair
-				});
-				return next;
-			});
+			repaired = await withTemporaryLlmRepairEnv(
+				{
+					timeoutMs: repairLlmTimeoutMs,
+					maxAttempts: repairLlmMaxAttempts
+				},
+				async () => {
+					let next = await repairFullPaperQuestionQuality({
+						model,
+						thinkingLevel,
+						candidate: repaired,
+						deterministicIssues: filterDeterministicIssuesForRefs(
+							deterministicCandidateIssues(repaired, {
+								includeAnswerChainIssues: evaluationMode !== 'extraction'
+							}),
+							refsToRepair
+						),
+						judge,
+						existingChainsText,
+						sourceQuestionRefs: refsToRepair
+					});
+					if (repairAnswerChains) {
+						next = await repairFullPaperAnswerChains({
+							model,
+							thinkingLevel,
+							candidate: next,
+							deterministicIssues: filterDeterministicIssuesForRefs(
+								deterministicCandidateIssues(next),
+								refsToRepair
+							),
+							judge,
+							existingChainsText,
+							sourceQuestionRefs: refsToRepair
+						});
+					}
+					return next;
+				}
+			);
 		} catch (error) {
 			const errorSummary = summarizeRepairError(error);
 			console.error(
@@ -434,10 +473,7 @@ function markRepairFailureForRefs(candidate, refs, errorSummary) {
 					? {
 							...question.answerChain,
 							needsHumanReview: true,
-							reviewNotes: uniqueStrings([
-								...(question.answerChain.reviewNotes ?? []),
-								chainNote
-							])
+							reviewNotes: uniqueStrings([...(question.answerChain.reviewNotes ?? []), chainNote])
 						}
 					: question.answerChain
 			};
@@ -486,8 +522,6 @@ async function runAqaPhysicsPreset() {
 				(paper) => paper.sourceDocumentId === paperArg || paper.componentCode === paperArg
 			);
 	if (!selected.length) throw new Error(`No AQA Physics paper matched ${paperArg}.`);
-	const taxonomyPath = path.join(rootDir, 'docs/physics-chain-family-taxonomy.md');
-	const taxonomyText = existsSync(taxonomyPath) ? readFileSync(taxonomyPath, 'utf8') : '';
 	const outputRoot = stringArg(
 		'output-root',
 		path.join(rootDir, 'data/vision-extracted/aqa-combined-science-trilogy-higher/physics')
@@ -501,7 +535,7 @@ async function runAqaPhysicsPreset() {
 			markSchemeDocumentId: paper.markSchemeDocumentId,
 			outputPath: stringArg('output', path.join(outputRoot, `${paper.sourceDocumentId}.json`)),
 			outputRoot: path.join(rootDir, 'tmp/llm-extraction-pipeline/aqa-physics'),
-			existingChainsText: [taxonomyText, explicitExistingChainsText].filter(Boolean).join('\n\n'),
+			existingChainsText: explicitExistingChainsText,
 			presetInstructions: [
 				'Preset metadata:',
 				'Board: AQA',
@@ -554,7 +588,6 @@ async function runAqaSeparateSciencePreset() {
 		path.join(rootDir, 'data/vision-extracted/aqa-separate-science-higher')
 	);
 	for (const paper of selected) {
-		const taxonomyText = taxonomyForSubject(paper.subjectArea);
 		const subjectSlug = slugify(paper.subjectArea);
 		await runOne({
 			questionPaperPath: paper.questionPaperPath,
@@ -567,7 +600,7 @@ async function runAqaSeparateSciencePreset() {
 				path.join(outputRoot, subjectSlug, `${paper.sourceDocumentId}.json`)
 			),
 			outputRoot: path.join(rootDir, 'tmp/llm-extraction-pipeline/aqa-separate-science'),
-			existingChainsText: [taxonomyText, explicitExistingChainsText].filter(Boolean).join('\n\n'),
+			existingChainsText: explicitExistingChainsText,
 			presetInstructions: [
 				'Preset metadata:',
 				'Board: AQA',
@@ -634,7 +667,9 @@ async function runOne({
 					model,
 					judgeModel,
 					thinkingLevel,
-					runJudge
+					evaluationMode,
+					runJudge,
+					runId: process.env.EXTRACTION_RUN_ID ?? null
 				},
 				null,
 				2
@@ -660,6 +695,8 @@ async function runOne({
 		markSchemePages,
 		chunkPages,
 		contextPages,
+		chunkConcurrency,
+		extractionGranularity,
 		model,
 		thinkingLevel,
 		markSchemeImageMode,
@@ -687,7 +724,8 @@ async function runOne({
 		fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
 		judgeModel,
 		thinkingLevel,
-		runJudge
+		runJudge,
+		evaluationMode
 	});
 	for (let attempt = 0; evaluation.status !== 'passed' && attempt < repairAttempts; attempt += 1) {
 		console.error(`[extract-cli] ${sourceDocumentId}: repairing attempt ${attempt + 1}`);
@@ -700,14 +738,17 @@ async function runOne({
 			existingChainsText,
 			repairCacheDir: path.join(outputRoot, sourceDocumentId, 'repairs'),
 			repairLlmTimeoutMs,
-			repairLlmMaxAttempts
+			repairLlmMaxAttempts,
+			evaluationMode,
+			repairAnswerChains
 		});
 		evaluation = await evaluateCandidate({
 			candidate,
 			fixture: judgeFixturePath ? readJson(judgeFixturePath) : null,
 			judgeModel,
 			thinkingLevel,
-			runJudge
+			runJudge,
+			evaluationMode
 		});
 	}
 	console.error(`[extract-cli] ${sourceDocumentId}: writing ${path.relative(rootDir, outputPath)}`);
@@ -725,6 +766,7 @@ async function runOne({
 				model,
 				judgeModel,
 				thinkingLevel,
+				evaluationMode,
 				runJudge,
 				deterministicBlockingIssues: evaluation.deterministicBlockingIssues.length,
 				mechanicalErrors: evaluation.mechanicalErrors.length,
@@ -749,7 +791,10 @@ function materializeFallbackResponseAssets(
 			const asset = (question.assets ?? []).find((candidateAsset) =>
 				assetMatchesLabel(candidateAsset, label)
 			);
-			if (!asset || !assetHasUsableReference(asset)) {
+			if (
+				(!asset || !assetHasUsableReference(asset)) &&
+				!questionHasStructuredTableSurface(question, label)
+			) {
 				missing.push({ question, label });
 			}
 		}
@@ -819,15 +864,19 @@ function responseAssetLabels(question) {
 	const response = question.response;
 	if (!response || typeof response !== 'object') return [];
 	if (!['asset-canvas', 'image-label-zones'].includes(response.kind)) return [];
-	const explicit = [
+	const primary = [
 		response.assetLabel,
-		response.label,
 		response.assetId,
 		response.sourceLabel,
 		...(Array.isArray(response.assets) ? response.assets : [])
 	]
 		.filter((value) => typeof value === 'string' && value.trim())
 		.map((value) => value.trim());
+	const explicit = primary.length
+		? primary
+		: [response.label]
+				.filter((value) => typeof value === 'string' && value.trim())
+				.map((value) => value.trim());
 	if (explicit.length > 0) return explicit;
 	const inferred = inferInteractiveAssetLabel(question);
 	return inferred ? [inferred] : [];
@@ -842,6 +891,18 @@ function ensureResponseAssetLabel(response, fallbackLabel) {
 }
 
 function inferInteractiveAssetLabel(question) {
+	const sourceText = [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		question.response?.instructions
+	]
+		.filter(Boolean)
+		.join('\n');
+	const sourceLabelMatch = sourceText.match(
+		/\b(?:Figure|Fig\.?|Table|Graph|Diagram|Image)\s+\d+[A-Za-z]?\b/i
+	);
+	if (sourceLabelMatch) return sourceLabelMatch[0].replace(/^Fig\.?/i, 'Figure');
 	const labels = [
 		...(question.assets ?? []).map(
 			(asset) => asset?.sourceLabel ?? asset?.label ?? asset?.assetLabel
@@ -886,6 +947,27 @@ function assetMatchesLabel(asset, label) {
 			(normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized))
 		);
 	});
+}
+
+function questionHasStructuredTableSurface(question, label) {
+	if (!/\btable\b/i.test(String(label ?? ''))) return false;
+	return ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks'].some((field) =>
+		(question[field] ?? []).some((block) => structuredTableBlockMatches(block, label))
+	);
+}
+
+function structuredTableBlockMatches(block, label) {
+	if (!block || typeof block !== 'object') return false;
+	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
+	if (!assetMatchesLabel(block, label)) return false;
+	const rows = Array.isArray(block.rows) ? block.rows : [];
+	const hasRows = rows.some(
+		(row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim())
+	);
+	const hasColumns = Array.isArray(block.columns)
+		? block.columns.some((column) => String(column ?? '').trim())
+		: false;
+	return hasRows && hasColumns;
 }
 
 function assetHasUsableReference(asset) {
@@ -1018,12 +1100,6 @@ function discoverAqaSeparateSciencePapers() {
 			sourceUrl: document.url
 		}))
 	}));
-}
-
-function taxonomyForSubject(subjectArea) {
-	const fileName = `${slugify(subjectArea)}-chain-family-taxonomy.md`;
-	const filePath = path.join(rootDir, 'docs', fileName);
-	return existsSync(filePath) ? readFileSync(filePath, 'utf8') : '';
 }
 
 function assetManifest(sourceDocumentId, outputRoot = null) {

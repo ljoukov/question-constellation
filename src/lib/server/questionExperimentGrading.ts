@@ -156,6 +156,7 @@ type FixedResponse =
 	| {
 			kind: 'equation-blanks';
 			blanks: Array<{ id: string; label: string }>;
+			unorderedGroups: Array<{ targetIds: string[]; answers: string[] }>;
 			answerKeys: ParsedAnswerKey[];
 	  }
 	| {
@@ -469,6 +470,27 @@ function mergeAnswerKeys(...groups: ParsedAnswerKey[][]) {
 	);
 }
 
+function equationBlankUnorderedGroups(value: unknown) {
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((group) => {
+			if (!group || typeof group !== 'object') return null;
+			const candidate = group as Record<string, unknown>;
+			const targetIds = Array.isArray(candidate.targetIds)
+				? candidate.targetIds.filter(
+						(item): item is string => typeof item === 'string' && item.trim().length > 0
+					)
+				: [];
+			const answers = Array.isArray(candidate.answers)
+				? candidate.answers.filter(
+						(item): item is string => typeof item === 'string' && item.trim().length > 0
+					)
+				: [];
+			return targetIds.length >= 2 && answers.length >= 2 ? { targetIds, answers } : null;
+		})
+		.filter((group): group is { targetIds: string[]; answers: string[] } => Boolean(group));
+}
+
 function responseFromRenderJson(raw: string | null): FixedResponse | null {
 	const render = parseJson<{ response?: unknown }>(raw, {});
 	const response = render.response;
@@ -548,6 +570,7 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 						: null;
 				})
 				.filter((blank): blank is { id: string; label: string } => Boolean(blank)),
+			unorderedGroups: equationBlankUnorderedGroups(value.unorderedGroups),
 			answerKeys
 		};
 	}
@@ -1484,6 +1507,53 @@ function keyForTarget(keys: ParsedAnswerKey[], targetIds: string[]) {
 	return keys.find((key) => normalizedTargets.has(normalizedAnswer(key.targetId))) ?? null;
 }
 
+function equationBlankSubmittedAnswer(
+	submitted: Map<string, string>,
+	blank: { id: string; label: string }
+) {
+	return (
+		submitted.get(normalizedAnswer(blank.id)) ?? submitted.get(normalizedAnswer(blank.label)) ?? ''
+	);
+}
+
+function unorderedEquationBlankItems(
+	response: Extract<FixedResponse, { kind: 'equation-blanks' }>,
+	submitted: Map<string, string>
+) {
+	const items: Array<{ id: string; text: string; credited: boolean; explanation: string }> = [];
+	const groupedBlankIds = new Set<string>();
+	for (const group of response.unorderedGroups) {
+		const groupTargetIds = new Set(group.targetIds.map(normalizedAnswer));
+		const blanks = response.blanks.filter(
+			(blank) =>
+				groupTargetIds.has(normalizedAnswer(blank.id)) ||
+				groupTargetIds.has(normalizedAnswer(blank.label))
+		);
+		if (blanks.length < 2) continue;
+		const usedAnswerIndexes = new Set<number>();
+		for (const blank of blanks) {
+			groupedBlankIds.add(normalizedAnswer(blank.id));
+			const submittedAnswer = equationBlankSubmittedAnswer(submitted, blank);
+			const matchedIndex = group.answers.findIndex(
+				(answer, index) =>
+					!usedAnswerIndexes.has(index) &&
+					textMatchesWithNumericTolerance(submittedAnswer, answer, {})
+			);
+			const credited = matchedIndex >= 0;
+			if (credited) usedAnswerIndexes.add(matchedIndex);
+			items.push({
+				id: blank.id,
+				text: group.answers.join(' / '),
+				credited,
+				explanation: credited
+					? 'This blank matches one unused answer from the unordered answer group.'
+					: `${blank.label} should be one of ${group.answers.join(' / ')}, without reusing an answer.`
+			});
+		}
+	}
+	return { items, groupedBlankIds };
+}
+
 function deterministicFixedAnswerResult(
 	context: GradeableQuestionContext,
 	rawAnswer: string
@@ -1568,25 +1638,27 @@ function deterministicFixedAnswerResult(
 
 	if (response.kind === 'equation-blanks') {
 		const submitted = answerMap(rawAnswer);
-		const items = response.blanks
-			.map((blank) => {
-				const key = keyForTarget(response.answerKeys, [blank.id, blank.label]);
-				if (!key) return null;
-				const submittedAnswer =
-					submitted.get(normalizedAnswer(blank.id)) ??
-					submitted.get(normalizedAnswer(blank.label)) ??
-					'';
-				const credited = answerMatchesKey(submittedAnswer, key);
-				return {
-					id: blank.id,
-					text: key.correctAnswer,
-					credited,
-					explanation: credited
-						? 'This blank matches the answer key.'
-						: `${blank.label} should be ${key.correctAnswer}.`
-				};
-			})
-			.filter((item): item is NonNullable<typeof item> => Boolean(item));
+		const unordered = unorderedEquationBlankItems(response, submitted);
+		const items = [
+			...unordered.items,
+			...response.blanks
+				.filter((blank) => !unordered.groupedBlankIds.has(normalizedAnswer(blank.id)))
+				.map((blank) => {
+					const key = keyForTarget(response.answerKeys, [blank.id, blank.label]);
+					if (!key) return null;
+					const submittedAnswer = equationBlankSubmittedAnswer(submitted, blank);
+					const credited = answerMatchesKey(submittedAnswer, key);
+					return {
+						id: blank.id,
+						text: key.correctAnswer,
+						credited,
+						explanation: credited
+							? 'This blank matches the answer key.'
+							: `${blank.label} should be ${key.correctAnswer}.`
+					};
+				})
+				.filter((item): item is NonNullable<typeof item> => Boolean(item))
+		];
 		return deterministicChecklistResult({
 			context,
 			items,

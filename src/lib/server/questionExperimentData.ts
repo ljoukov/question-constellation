@@ -200,6 +200,28 @@ function choiceMaxSelections(value: Record<string, unknown>, optionCount: number
 	return explicit;
 }
 
+function equationBlankUnorderedGroups(value: unknown) {
+	if (!Array.isArray(value)) return undefined;
+	const groups = value
+		.map((group) => {
+			if (!group || typeof group !== 'object') return null;
+			const candidate = group as Record<string, unknown>;
+			const targetIds = Array.isArray(candidate.targetIds)
+				? candidate.targetIds.filter(
+						(item): item is string => typeof item === 'string' && item.trim().length > 0
+					)
+				: [];
+			const answers = Array.isArray(candidate.answers)
+				? candidate.answers.filter(
+						(item): item is string => typeof item === 'string' && item.trim().length > 0
+					)
+				: [];
+			return targetIds.length >= 2 && answers.length >= 2 ? { targetIds, answers } : null;
+		})
+		.filter((group): group is { targetIds: string[]; answers: string[] } => Boolean(group));
+	return groups.length ? groups : undefined;
+}
+
 function responseFromValue(raw: unknown): ExamResponse {
 	const value = raw as Record<string, unknown>;
 	if (value.kind === 'none') return { kind: 'none' };
@@ -261,7 +283,8 @@ function responseFromValue(raw: unknown): ExamResponse {
 				segments: infer S;
 			}
 				? S
-				: never
+				: never,
+			unorderedGroups: equationBlankUnorderedGroups(value.unorderedGroups)
 		};
 	}
 	if (value.kind === 'asset-canvas' && typeof value.assetId === 'string') {
