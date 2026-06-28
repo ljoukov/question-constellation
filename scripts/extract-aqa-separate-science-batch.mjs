@@ -61,6 +61,13 @@ const extractionGranularity = stringArg('extraction-granularity', 'chunk');
 if (!['chunk', 'question'].includes(extractionGranularity)) {
 	throw new Error('--extraction-granularity must be chunk or question.');
 }
+const allowQuestionGranularity = hasArg('allow-question-granularity');
+if (extractionGranularity === 'question' && !allowQuestionGranularity) {
+	throw new Error(
+		'--extraction-granularity=question runs one LLM extraction call per detected sourceQuestionRef. ' +
+			'Use the default chunk mode for production, or pass --allow-question-granularity for a focused diagnostic run.'
+	);
+}
 const dpi = integerArg('dpi', 90, 72);
 const repairAttempts = integerArg('repair-attempts', 1, 0);
 const repairBatchSize = integerArg('repair-batch-size', 4, 1);
@@ -365,6 +372,7 @@ function extractionCommandArgs(paper) {
 	if (repairAnswerChains) args.push('--repair-answer-chains');
 	if (llmMaxCalls !== null && llmMaxCalls !== undefined)
 		args.push(`--llm-max-calls=${llmMaxCalls}`);
+	if (allowQuestionGranularity) args.push('--allow-question-granularity');
 	if (model) args.push(`--model=${model}`);
 	if (judgeModel) args.push(`--judge-model=${judgeModel}`);
 	if (judgeMode !== 'paper') args.push('--skip-judge');
@@ -888,6 +896,7 @@ function summary(status) {
 		chunkStrategy,
 		chunkConcurrency,
 		extractionGranularity,
+		allowQuestionGranularity,
 		repairBatchSize,
 		repairAnswerChains,
 		evaluationMode,

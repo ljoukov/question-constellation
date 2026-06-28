@@ -433,15 +433,16 @@ regenerated; `--force` alone intentionally does not spend new LLM calls for exis
 Set `--paper-attempts=<n>` to retry a paper after transient provider timeouts; retries reuse
 per-target caches even when the first attempt used `--force-chunks`, so a single timed-out question
 does not force the whole paper to restart from page 1.
-Use `--extraction-granularity=question` only as a focused repair/debug mode for hard page layouts.
-It runs one extraction call per detected sourceQuestionRef and can turn one paper into dozens of LLM
-calls. The default `chunk` mode extracts all subquestions that begin in each planned parent-question
-chunk in one call. Dense GCSE papers with tables/graphs should usually start at `--chunk-pages=2`;
-the parent-question planner may extend that window when adjacent pages contain the same parent ref.
-Drop to `--chunk-pages=1` only when a page is too visually dense for one call; with the default
-parent-question strategy, adjacent pages from the same parent still stay together. Use
-`--chunk-concurrency` to recover wall-clock speed without forcing oversized prompts. Do not present
-page-by-page extraction as the production strategy; it is only a diagnostic benchmark mode.
+Use `--extraction-granularity=question` only as a focused repair/debug mode for hard page layouts,
+and pass `--allow-question-granularity` to acknowledge that cost. It runs one extraction call per
+detected sourceQuestionRef and can turn one paper into dozens of LLM calls. The default `chunk` mode
+extracts all subquestions that begin in each planned parent-question chunk in one call. Dense GCSE
+papers with tables/graphs should usually start at `--chunk-pages=2`; the parent-question planner may
+extend that window when adjacent pages contain the same parent ref. Drop to `--chunk-pages=1` only
+when a page is too visually dense for one call; with the default parent-question strategy, adjacent
+pages from the same parent still stay together. Use `--chunk-concurrency` to recover wall-clock speed
+without forcing oversized prompts. Do not present page-by-page extraction as the production strategy;
+it is only a diagnostic benchmark mode.
 Use `--llm-max-calls=<n>` on benchmark and batch runs so a call-count regression fails early instead
 of silently running for hours.
 Use `--judge-mode=question-batches` and `--judge-batch-size=<n>` only for a deep QA pass after the

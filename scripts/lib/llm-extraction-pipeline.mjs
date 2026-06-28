@@ -2712,6 +2712,7 @@ export async function extractFullPaperFromPdfSet({
 	chunkConcurrency = 1,
 	chunkStrategy = 'parent-question',
 	extractionGranularity = 'chunk',
+	allowQuestionGranularity = false,
 	markSchemeImageMode = 'none',
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
@@ -2806,6 +2807,12 @@ export async function extractFullPaperFromPdfSet({
 	}
 	if (!['chunk', 'question'].includes(extractionGranularity)) {
 		throw new Error('extractionGranularity must be chunk or question.');
+	}
+	if (extractionGranularity === 'question' && !allowQuestionGranularity) {
+		throw new Error(
+			'extractionGranularity=question runs one LLM extraction call per detected sourceQuestionRef. ' +
+				'Use chunk mode for production or pass allowQuestionGranularity=true for a focused diagnostic run.'
+		);
 	}
 	if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
 		throw new Error('chunkStrategy must be parent-question or fixed-pages.');

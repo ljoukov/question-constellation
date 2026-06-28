@@ -43,6 +43,7 @@ Optional:
   --chunk-strategy=parent-question|fixed-pages
   --chunk-concurrency=1
   --extraction-granularity=chunk|question
+  --allow-question-granularity
   --expected-question-count=1
   --repair-attempts=1
   --repair-answer-chains
@@ -93,6 +94,13 @@ const chunkConcurrency = integerArg('chunk-concurrency', 1, 1);
 const extractionGranularity = stringArg('extraction-granularity', 'chunk');
 if (!['chunk', 'question'].includes(extractionGranularity)) {
 	throw new Error('--extraction-granularity must be chunk or question.');
+}
+const allowQuestionGranularity = hasArg('allow-question-granularity');
+if (extractionGranularity === 'question' && !allowQuestionGranularity) {
+	throw new Error(
+		'--extraction-granularity=question runs one LLM extraction call per detected sourceQuestionRef. ' +
+			'Use the default chunk mode for production, or pass --allow-question-granularity for a focused diagnostic run.'
+	);
 }
 const forceRender = hasArg('force-render') || hasArg('force');
 const forceOutput = hasArg('force');
@@ -703,6 +711,7 @@ async function runOne({
 		chunkStrategy,
 		chunkConcurrency,
 		extractionGranularity,
+		allowQuestionGranularity,
 		model,
 		thinkingLevel,
 		markSchemeImageMode,
