@@ -1470,13 +1470,25 @@ export function questionRefsFromText(text) {
 	for (const line of raw.split(/\r?\n/)) {
 		const compact = line.match(/^\s*(\d{2})\s*\.\s*(\d{1,2})\b/);
 		if (compact) {
-			refs.add(`${compact[1]}.${compact[2]}`);
+			const ref = normalizedQuestionRef(compact[1], compact[2]);
+			if (ref) refs.add(ref);
 			continue;
 		}
 		const spaced = line.match(/^\s*(\d)\s+(\d)\s*\.\s*(\d{1,2})\b/);
-		if (spaced) refs.add(`${spaced[1]}${spaced[2]}.${spaced[3]}`);
+		if (spaced) {
+			const ref = normalizedQuestionRef(`${spaced[1]}${spaced[2]}`, spaced[3]);
+			if (ref) refs.add(ref);
+		}
 	}
 	return [...refs].sort(compareQuestionRefs);
+}
+
+function normalizedQuestionRef(parent, child) {
+	const parentNumber = Number(parent);
+	const childNumber = Number(child);
+	if (!Number.isInteger(parentNumber) || parentNumber <= 0) return null;
+	if (!Number.isInteger(childNumber) || childNumber <= 0) return null;
+	return `${String(parentNumber).padStart(2, '0')}.${childNumber}`;
 }
 
 export function markSchemeTextExcerptForRefs(markSchemeText, refs, windowLines = 55) {

@@ -605,7 +605,7 @@ const numericTitleIssues = pipelineModule.deterministicCandidateIssues({
 });
 
 const parsedRefs = pipelineModule.questionRefsFromText(
-	'0 1 . 1 Complete\n01.2 Describe\n10.12 Explain'
+	'0 1 . 1 Complete\n01.2 Describe\n10.12 Explain\n25.0'
 );
 if (parsedRefs.join(',') !== '01.1,01.2,10.12') {
 	fail('questionRefsFromText did not parse spaced and compact question refs.', parsedRefs);
