@@ -296,6 +296,33 @@ for (const scriptName of [
 	if (!packageJson.scripts?.[scriptName]) fail(`Missing package script: ${scriptName}`);
 }
 
+for (const obsoleteScriptName of ['extract:aqa', 'repair:physics-vision-chains']) {
+	if (packageJson.scripts?.[obsoleteScriptName]) {
+		fail(`Obsolete extraction script is still exposed in package.json: ${obsoleteScriptName}`);
+	}
+}
+
+for (const obsoletePath of [
+	'scripts/extract-aqa-data.mjs',
+	'scripts/repair-physics-vision-chains.mjs'
+]) {
+	if (existsSync(path.join(rootDir, obsoletePath))) {
+		fail(`Obsolete extraction path still exists: ${obsoletePath}`);
+	}
+}
+
+const uploadR2Source = readText(path.join(rootDir, 'scripts/upload-r2-images.mjs'));
+requireIncludes(
+	uploadR2Source,
+	[
+		'--asset-root=',
+		'--referenced-baseline=',
+		'data/vision-extracted/aqa-separate-science-higher/assets/question-papers',
+		'all_local_assets'
+	],
+	'R2 asset uploader'
+);
+
 const goldenOutput = JSON.parse(runNodeScript('scripts/test-answer-chain-golden.mjs'));
 if (goldenOutput.status !== 'passed' || goldenOutput.cases < 4) {
 	fail('Golden chain test did not pass through the pipeline contract test.', goldenOutput);

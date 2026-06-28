@@ -5,25 +5,41 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const rootDir = process.cwd();
-const localAssetRoot = path.join(
-	rootDir,
+const defaultAssetRoots = [
+	'data/vision-extracted/aqa-separate-science-higher/assets/question-papers',
+	'data/vision-extracted/aqa-combined-science-trilogy-higher/assets/question-papers',
 	'data/aqa-combined-science-trilogy-higher/assets/question-papers'
-);
-const baselinePath = path.join(
-	rootDir,
-	'data/extracted-questions/aqa-combined-science-trilogy-higher/baseline/all-papers.json'
-);
+];
 const bucketName = 'question-constellation';
 const r2Prefix = 'images/papers';
 const defaultConcurrency = 4;
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
-const uploadAllLocal = args.has('--all-local');
+const explicitAssetRoot = stringArg('asset-root', '');
+const baselinePath = stringArg('referenced-baseline', '');
+const localAssetRoot = resolveAssetRoot();
 const limit = integerArg('limit', null, 1);
 const offset = integerArg('offset', 0, 0);
 const concurrency = integerArg('concurrency', defaultConcurrency, 1);
 const maxRetries = integerArg('retries', 3, 0);
+
+const usage = `Usage:
+node scripts/upload-r2-images.mjs [--dry-run] [--asset-root=<dir>] [--referenced-baseline=<json>]
+
+Defaults to uploading all local assets from the first existing current extraction asset root.
+Use --referenced-baseline=<json> only to filter uploads to assets referenced by an existing extraction JSON.`;
+
+if (args.has('--help')) {
+	console.log(usage);
+	process.exit(0);
+}
+
+function stringArg(name, defaultValue) {
+	const arg = process.argv.find((candidate) => candidate.startsWith(`--${name}=`));
+	if (!arg) return defaultValue;
+	return arg.slice(name.length + 3);
+}
 
 function integerArg(name, defaultValue, minValue) {
 	const arg = process.argv.find((candidate) => candidate.startsWith(`--${name}=`));
@@ -34,6 +50,19 @@ function integerArg(name, defaultValue, minValue) {
 		throw new Error(`--${name} must be an integer greater than or equal to ${minValue}.`);
 	}
 	return value;
+}
+
+function resolveAssetRoot() {
+	if (explicitAssetRoot) {
+		return path.isAbsolute(explicitAssetRoot)
+			? explicitAssetRoot
+			: path.join(rootDir, explicitAssetRoot);
+	}
+	for (const candidate of defaultAssetRoots) {
+		const fullPath = path.join(rootDir, candidate);
+		if (existsSync(fullPath)) return fullPath;
+	}
+	return path.join(rootDir, defaultAssetRoots[0]);
 }
 
 function contentTypeForFile(filePath) {
@@ -63,6 +92,11 @@ function listFiles(dir) {
 
 function toUploadItem(filePath) {
 	const relativePath = path.relative(localAssetRoot, filePath).split(path.sep).join('/');
+	if (relativePath.startsWith('../') || relativePath === '..') {
+		throw new Error(
+			`Referenced asset ${path.relative(rootDir, filePath)} is outside --asset-root=${path.relative(rootDir, localAssetRoot)}.`
+		);
+	}
 	const key = `${r2Prefix}/${relativePath}`;
 	return {
 		filePath,
@@ -80,19 +114,26 @@ function assertPathExists(filePath, description) {
 
 function assertInputsAvailable() {
 	assertPathExists(localAssetRoot, 'Local question-paper asset directory');
-	if (!uploadAllLocal) {
-		assertPathExists(baselinePath, 'Baseline extraction JSON');
+	if (baselinePath) {
+		assertPathExists(
+			path.isAbsolute(baselinePath) ? baselinePath : path.join(rootDir, baselinePath),
+			'Referenced extraction JSON'
+		);
 	}
 }
 
 function referencedUploadItems() {
-	const baseline = JSON.parse(readFileSync(baselinePath, 'utf8'));
+	const resolvedBaselinePath = path.isAbsolute(baselinePath)
+		? baselinePath
+		: path.join(rootDir, baselinePath);
+	const baseline = JSON.parse(readFileSync(resolvedBaselinePath, 'utf8'));
 	const items = new Map();
 
 	for (const question of baseline.questions ?? []) {
 		for (const asset of question.assets ?? []) {
-			if (!asset.file_path) continue;
-			const filePath = path.join(rootDir, asset.file_path);
+			const assetPath = asset.file_path ?? asset.filePath ?? asset.localPath ?? asset.path;
+			if (!assetPath) continue;
+			const filePath = path.isAbsolute(assetPath) ? assetPath : path.join(rootDir, assetPath);
 			const item = toUploadItem(filePath);
 			items.set(item.key, item);
 		}
@@ -169,11 +210,11 @@ async function runQueue(items) {
 
 assertInputsAvailable();
 
-const allItems = uploadAllLocal
-	? listFiles(localAssetRoot)
+const allItems = baselinePath
+	? referencedUploadItems()
+	: listFiles(localAssetRoot)
 			.map(toUploadItem)
-			.sort((a, b) => a.key.localeCompare(b.key))
-	: referencedUploadItems();
+			.sort((a, b) => a.key.localeCompare(b.key));
 const items = allItems.slice(offset, limit ? offset + limit : undefined);
 
 console.log(
@@ -183,7 +224,8 @@ console.log(
 			bucket: bucketName,
 			r2_prefix: r2Prefix,
 			total_files: allItems.length,
-			source: uploadAllLocal ? 'all_local_assets' : 'referenced_baseline_assets',
+			source: baselinePath ? 'referenced_extraction_assets' : 'all_local_assets',
+			referenced_baseline: baselinePath || null,
 			offset,
 			selected_files: items.length,
 			total_selected_bytes: items.reduce((sum, item) => sum + item.size, 0),

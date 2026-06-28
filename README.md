@@ -50,23 +50,25 @@ and runs per-paper import dry-runs by default. Add `--import` only when the vett
 to D1. `build:existing-chain-context` emits the compact chain catalog to pass back into later
 extraction runs with `--existing-chains`.
 
-To refresh legacy extracted paper images in R2 after running `pnpm run extract:aqa`:
+To upload concrete extracted paper-image assets to R2:
 
 ```sh
+CLOUDFLARE_API_TOKEN=... pnpm run upload:r2-images -- --dry-run
 CLOUDFLARE_API_TOKEN=... pnpm run upload:r2-images
 ```
 
-or, with the token already exported:
+By default the uploader picks the first existing current extraction asset root under
+`data/vision-extracted/.../assets/question-papers`. Pass `--asset-root=<dir>` to target another
+question-paper asset tree, for example:
 
 ```sh
-pnpm run upload:r2-images
+pnpm run upload:r2-images -- --asset-root=data/vision-extracted/aqa-separate-science-higher/assets/question-papers
 ```
 
-The legacy `extract:aqa` command expects the ignored local `data/aqa-combined-science-trilogy-higher/`
-corpus and Poppler tools (`pdfinfo` and `pdfimages`) to be present.
-This uploads local files from `data/aqa-combined-science-trilogy-higher/assets/question-papers/`
-to R2 keys under `images/papers/`, matching the public route path without exposing the local
-`data/` prefix.
+The uploader maps files below `<asset-root>/<sourceDocumentId>/...` to R2 keys under
+`images/papers/<sourceDocumentId>/...`, matching the public route path without exposing the local
+`data/` prefix. Use `--referenced-baseline=<extraction.json>` only for legacy, already-generated
+artifacts where a specific JSON should filter the uploaded asset set.
 
 ## Deployment
 
