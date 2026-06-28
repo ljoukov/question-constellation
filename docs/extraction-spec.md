@@ -376,6 +376,29 @@ node scripts/extract-paper-llm.mjs \
   --write-eval=<evaluation.json>
 ```
 
+For production imports, prefer the orchestrated script. It runs the PDF extraction judge, optional
+existing-chain context build, answer-chain reconciliation and judge, strict import-ready subset
+audit, learner-facing solvability judge, and D1 import dry-run or write:
+
+```sh
+pnpm run extract:production -- \
+  --question-paper=data/aqa-separate-science-higher/question-papers/AQA-84611H-QP-NOV20.PDF \
+  --mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84611H-W-MS-NOV20.PDF \
+  --source-document-id=aqa-84611h-qp-nov20 \
+  --existing-chain-input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
+  --chunk-pages=2 \
+  --chunk-concurrency=2 \
+  --model=chatgpt-gpt-5.5 \
+  --judge-model=chatgpt-gpt-5.5 \
+  --thinking-level=xhigh
+```
+
+The orchestrator writes a summary under
+`tmp/production-extraction/<source-document-id>/production-extraction-summary.json`. It defaults to
+an import dry-run; add `--import` only after reviewing the summary and strict audit. Use
+`--skip-solvability` only for local debugging because the solvability judge is the end-user
+renderability gate.
+
 For the current AQA Physics data layout, use the preset:
 
 ```sh

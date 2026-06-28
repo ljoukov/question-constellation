@@ -44,6 +44,9 @@ const extractionSpec = readText(path.join(rootDir, 'docs/extraction-spec.md'));
 const pipelineSource = readText(path.join(rootDir, 'scripts/lib/llm-extraction-pipeline.mjs'));
 const cliSource = readText(path.join(rootDir, 'scripts/extract-paper-llm.mjs'));
 const batchSource = readText(path.join(rootDir, 'scripts/extract-aqa-separate-science-batch.mjs'));
+const productionPipelineSource = readText(
+	path.join(rootDir, 'scripts/run-production-extraction-pipeline.mjs')
+);
 const downloaderSource = readText(path.join(rootDir, 'scripts/download-aqa-separate-science.mjs'));
 const importSource = readText(path.join(rootDir, 'scripts/import-physics-vision.mjs'));
 const repairAssetSource = readText(
@@ -78,6 +81,7 @@ for (const filePath of [
 	'scripts/download-aqa-separate-science.mjs',
 	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
+	'scripts/run-production-extraction-pipeline.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
 	'scripts/import-physics-vision.mjs',
 	'scripts/eval-extraction-pipeline-llm.mjs',
@@ -108,6 +112,7 @@ requireIncludes(
 		'pnpm run repair:answer-chain-specificity',
 		'pnpm run repair:extraction-response-assets',
 		'node scripts/extract-paper-llm.mjs',
+		'pnpm run extract:production',
 		'pnpm run download:aqa-separate-science',
 		'pnpm run extract:aqa-separate-science:batch',
 		'--concurrency',
@@ -135,6 +140,7 @@ requireIncludes(
 		'pdftoppm',
 		'--mark-scheme-image-mode=all',
 		'learner-facing solvability judge',
+		'production-extraction-summary.json',
 		'reusable reasoning or method pattern'
 	],
 	'Extraction spec'
@@ -275,6 +281,22 @@ requireIncludes(
 );
 
 requireIncludes(
+	productionPipelineSource,
+	[
+		'scripts/extract-paper-llm.mjs',
+		'scripts/build-existing-chain-context.mjs',
+		'scripts/reconcile-answer-chains.mjs',
+		'scripts/prepare-import-ready-extraction.mjs',
+		'--run-solvability',
+		'--skip-solvability',
+		'--import',
+		'production-extraction-summary.json',
+		'existing-chain-input-root'
+	],
+	'Production extraction orchestrator'
+);
+
+requireIncludes(
 	downloaderSource,
 	[
 		'GCSE Biology 8461',
@@ -410,6 +432,7 @@ for (const scriptName of [
 	'extract:physics-vision',
 	'extract:aqa-separate-science',
 	'extract:paper-llm',
+	'extract:production',
 	'summarize:llm-extraction-logs',
 	'eval:question-solvability',
 	'audit:extracted-data',
