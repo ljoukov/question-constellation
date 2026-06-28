@@ -40,6 +40,7 @@ Optional:
   --existing-chains=<json-or-md>
   --chunk-pages=6
   --context-pages=2
+  --chunk-strategy=parent-question|fixed-pages
   --chunk-concurrency=1
   --extraction-granularity=chunk|question
   --expected-question-count=1
@@ -84,6 +85,10 @@ const thinkingLevel = stringArg(
 const dpi = integerArg('dpi', 160, 90);
 const chunkPages = integerArg('chunk-pages', 6, 1);
 const contextPages = integerArg('context-pages', 2, 0);
+const chunkStrategy = stringArg('chunk-strategy', 'parent-question');
+if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
+	throw new Error('--chunk-strategy must be parent-question or fixed-pages.');
+}
 const chunkConcurrency = integerArg('chunk-concurrency', 1, 1);
 const extractionGranularity = stringArg('extraction-granularity', 'chunk');
 if (!['chunk', 'question'].includes(extractionGranularity)) {
@@ -695,6 +700,7 @@ async function runOne({
 		markSchemePages,
 		chunkPages,
 		contextPages,
+		chunkStrategy,
 		chunkConcurrency,
 		extractionGranularity,
 		model,

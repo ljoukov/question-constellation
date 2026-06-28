@@ -766,7 +766,9 @@ export const FullPaperExtractionSchema = z.object({
 				chunkPages: z.number().nullable().optional(),
 				contextPages: z.number().nullable().optional(),
 				chunkConcurrency: z.number().nullable().optional(),
-				extractionGranularity: z.string().nullable().optional()
+				extractionGranularity: z.string().nullable().optional(),
+				chunkStrategy: z.string().nullable().optional(),
+				plannedChunkCorePages: z.array(z.array(z.number())).optional()
 			})
 			.optional()
 	}),
@@ -1840,26 +1842,87 @@ export function pageNumberFromRenderedPath(filePath) {
 export function chunkImages(images, chunkPages = 6, contextPages = 2) {
 	const chunks = [];
 	for (let start = 0; start < images.length; start += chunkPages) {
-		const priorContextImages =
-			contextPages > 0 ? images.slice(Math.max(0, start - contextPages), start) : [];
-		const coreImages = images.slice(start, Math.min(start + chunkPages, images.length));
-		const lookaheadImages =
-			start + chunkPages < images.length
-				? images.slice(start + chunkPages, start + chunkPages + 1)
-				: [];
-		chunks.push({
-			index: chunks.length,
-			total: 0,
-			priorContextImages,
-			coreImages,
-			lookaheadImages,
-			images: [...priorContextImages, ...coreImages, ...lookaheadImages],
-			priorContextPages: priorContextImages.map(pageNumberFromRenderedPath),
-			corePages: coreImages.map(pageNumberFromRenderedPath),
-			lookaheadPages: lookaheadImages.map(pageNumberFromRenderedPath)
-		});
+		chunks.push(
+			buildImageChunk(images, start, Math.min(start + chunkPages, images.length), contextPages)
+		);
 	}
 	return chunks.map((chunk) => ({ ...chunk, total: chunks.length }));
+}
+
+function buildImageChunk(images, start, end, contextPages = 2, chunkStrategy = 'fixed-pages') {
+	const priorContextImages =
+		contextPages > 0 ? images.slice(Math.max(0, start - contextPages), start) : [];
+	const coreImages = images.slice(start, end);
+	const lookaheadImages = end < images.length ? images.slice(end, end + 1) : [];
+	return {
+		index: 0,
+		total: 0,
+		chunkStrategy,
+		priorContextImages,
+		coreImages,
+		lookaheadImages,
+		images: [...priorContextImages, ...coreImages, ...lookaheadImages],
+		priorContextPages: priorContextImages.map(pageNumberFromRenderedPath),
+		corePages: coreImages.map(pageNumberFromRenderedPath),
+		lookaheadPages: lookaheadImages.map(pageNumberFromRenderedPath)
+	};
+}
+
+function questionParentRef(ref) {
+	const match = String(ref ?? '').match(/^(\d{2})\.\d{1,2}$/);
+	return match ? match[1] : null;
+}
+
+function normalizePageRefMap(pageRefsByPage = new Map()) {
+	if (pageRefsByPage instanceof Map) return pageRefsByPage;
+	return new Map(
+		Object.entries(pageRefsByPage ?? {}).map(([page, refs]) => [
+			Number(page),
+			Array.isArray(refs) ? refs : []
+		])
+	);
+}
+
+function refsForRenderedPage(pageRefsByPage, image) {
+	const page = pageNumberFromRenderedPath(image);
+	return pageRefsByPage.get(page) ?? pageRefsByPage.get(String(page)) ?? [];
+}
+
+function parentRefsForPage(pageRefsByPage, image) {
+	return [
+		...new Set(refsForRenderedPage(pageRefsByPage, image).map(questionParentRef).filter(Boolean))
+	];
+}
+
+export function chunkImagesByParentQuestion(
+	images,
+	pageRefsByPage = new Map(),
+	chunkPages = 6,
+	contextPages = 2
+) {
+	const refsByPage = normalizePageRefMap(pageRefsByPage);
+	const hasAnyRefs = images.some((image) => refsForRenderedPage(refsByPage, image).length > 0);
+	if (!hasAnyRefs) {
+		return chunkImages(images, chunkPages, contextPages);
+	}
+	const chunks = [];
+	let start = 0;
+	while (start < images.length) {
+		let end = Math.min(start + chunkPages, images.length);
+		const parents = new Set();
+		for (let index = start; index < end; index += 1) {
+			for (const parent of parentRefsForPage(refsByPage, images[index])) parents.add(parent);
+		}
+		while (parents.size > 0 && end < images.length) {
+			const nextParents = parentRefsForPage(refsByPage, images[end]);
+			if (!nextParents.some((parent) => parents.has(parent))) break;
+			for (const parent of nextParents) parents.add(parent);
+			end += 1;
+		}
+		chunks.push(buildImageChunk(images, start, end, contextPages, 'parent-question'));
+		start = end;
+	}
+	return chunks.map((chunk, index) => ({ ...chunk, index, total: chunks.length }));
 }
 
 function sourceDocumentPrompt(doc) {
@@ -2647,6 +2710,7 @@ export async function extractFullPaperFromPdfSet({
 	chunkPages = 6,
 	contextPages = 2,
 	chunkConcurrency = 1,
+	chunkStrategy = 'parent-question',
 	extractionGranularity = 'chunk',
 	markSchemeImageMode = 'none',
 	model = DEFAULT_EXTRACTION_MODEL,
@@ -2743,10 +2807,22 @@ export async function extractFullPaperFromPdfSet({
 	if (!['chunk', 'question'].includes(extractionGranularity)) {
 		throw new Error('extractionGranularity must be chunk or question.');
 	}
-	const chunks = chunkImages(questionImages, chunkPages, contextPages);
+	if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
+		throw new Error('chunkStrategy must be parent-question or fixed-pages.');
+	}
+	const pageRefsByPage = new Map(
+		questionImages.map((image) => {
+			const page = pageNumberFromRenderedPath(image);
+			return [page, questionRefsFromText(pdfText(questionPaper.path, 20000, [page]))];
+		})
+	);
+	const chunks =
+		chunkStrategy === 'parent-question'
+			? chunkImagesByParentQuestion(questionImages, pageRefsByPage, chunkPages, contextPages)
+			: chunkImages(questionImages, chunkPages, contextPages);
 	const chunkCacheDir = path.join(outputRoot, sourceDocumentId, 'chunks');
 	console.error(
-		`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} chunks=${chunks.length}`
+		`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} chunk_strategy=${chunkStrategy} chunks=${chunks.length} planned_core_pages=${chunks.map((chunk) => chunk.corePages.join('-')).join(',')}`
 	);
 	if (forceChunkCache && existsSync(chunkCacheDir)) {
 		rmSync(chunkCacheDir, { recursive: true, force: true });
@@ -2843,7 +2919,9 @@ export async function extractFullPaperFromPdfSet({
 			chunkPages,
 			contextPages,
 			chunkConcurrency,
-			extractionGranularity
+			extractionGranularity,
+			chunkStrategy,
+			plannedChunkCorePages: chunks.map((chunk) => chunk.corePages)
 		},
 		questionPaper,
 		markScheme,
@@ -3574,12 +3652,14 @@ export function positiveMarkSchemeItem(item) {
 		.replace(/[_-]+/g, ' ');
 	const text = String(item?.text ?? '').toLowerCase();
 	const source = `${itemType}\n${text}`;
+	const marks = Number(item?.marks);
 	if (
 		/\b(?:withdraw|withdrawn|statistics?|mean mark|max(?:imum)? mark|notice)\b/.test(source) ||
 		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(itemType)
 	) {
 		return false;
 	}
+	if (Number.isFinite(marks) && marks > 0) return true;
 	if (
 		/\b(?:allow|accept|alternative)\b/.test(itemType) &&
 		!/\b(?:credit|marking point|answer|alternative marking point|allowance|acceptable|award|positive)\b/.test(
@@ -3673,20 +3753,32 @@ export function sanitizeAnswerChainEvidenceIndexes(candidate) {
 	const questions = (candidate.questions ?? []).map((question) => {
 		if (!question.answerChain) return question;
 		const markSchemeItems = question.markSchemeItems ?? [];
+		const positiveIndexes = markSchemeItems.flatMap((item, index) =>
+			positiveMarkSchemeItem(item) ? [index] : []
+		);
+		const chainSteps = question.answerChain.steps ?? [];
 		let questionChanged = false;
-		const steps = (question.answerChain.steps ?? []).map((step) => {
+		const steps = chainSteps.map((step) => {
 			const originalIndexes = step.markSchemeItemIndexes ?? [];
-			const filteredIndexes = originalIndexes.filter((itemIndex) => {
+			let nextIndexes = originalIndexes.filter((itemIndex) => {
 				const item = markSchemeItems[itemIndex];
 				return item && positiveMarkSchemeItem(item);
 			});
 			if (
-				filteredIndexes.length !== originalIndexes.length ||
-				filteredIndexes.some((itemIndex, index) => itemIndex !== originalIndexes[index])
+				nextIndexes.length === 0 &&
+				positiveIndexes.length === 1 &&
+				chainSteps.length === 1 &&
+				step.stepRole !== 'given'
+			) {
+				nextIndexes = positiveIndexes;
+			}
+			if (
+				nextIndexes.length !== originalIndexes.length ||
+				nextIndexes.some((itemIndex, index) => itemIndex !== originalIndexes[index])
 			) {
 				questionChanged = true;
 			}
-			return questionChanged ? { ...step, markSchemeItemIndexes: filteredIndexes } : step;
+			return questionChanged ? { ...step, markSchemeItemIndexes: nextIndexes } : step;
 		});
 		if (!questionChanged) return question;
 		changed = true;

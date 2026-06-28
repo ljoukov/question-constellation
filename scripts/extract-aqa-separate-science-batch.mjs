@@ -53,6 +53,10 @@ const paperAttempts = integerArg('paper-attempts', 2, 1);
 
 const chunkPages = integerArg('chunk-pages', 6, 1);
 const chunkConcurrency = integerArg('chunk-concurrency', 2, 1);
+const chunkStrategy = stringArg('chunk-strategy', 'parent-question');
+if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
+	throw new Error('--chunk-strategy must be parent-question or fixed-pages.');
+}
 const extractionGranularity = stringArg('extraction-granularity', 'chunk');
 if (!['chunk', 'question'].includes(extractionGranularity)) {
 	throw new Error('--extraction-granularity must be chunk or question.');
@@ -338,6 +342,7 @@ function extractionCommandArgs(paper) {
 		'--preset=aqa-separate-science',
 		`--paper=${paper.sourceDocumentId}`,
 		`--chunk-pages=${chunkPages}`,
+		`--chunk-strategy=${chunkStrategy}`,
 		`--chunk-concurrency=${chunkConcurrency}`,
 		`--extraction-granularity=${extractionGranularity}`,
 		`--dpi=${dpi}`,
@@ -880,6 +885,7 @@ function summary(status) {
 		dryRun: results.filter((result) => result.status === 'dry-run').length,
 		concurrency,
 		chunkPages,
+		chunkStrategy,
 		chunkConcurrency,
 		extractionGranularity,
 		repairBatchSize,

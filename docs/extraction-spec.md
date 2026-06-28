@@ -409,11 +409,16 @@ The downloader scrapes the official AQA assessment-resource pages for GCSE Biolo
 `data/aqa-separate-science-higher/manifest.json`. Modified-print variants and examiner reports are
 excluded unless a future importer explicitly needs them.
 
-Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. Use
-`--chunk-pages=<n>` to control page batching and `--concurrency=<n>` to run multiple papers in
-parallel after single-paper extraction is stable. For unattended AQA Separate Science batch work,
-prefer `extract:aqa-separate-science:batch` with small page chunks, `--chunk-concurrency=<n>`, and
-`--extraction-granularity=chunk`; it writes per-paper extraction evaluation JSON,
+Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. The script first
+does a cheap deterministic scout over question-paper text to find visible source question refs by
+page. The default `--chunk-strategy=parent-question` then merges adjacent pages from the same parent
+question, so a page window does not split `05.7` away from the `05` stem, tables, figures, or earlier
+subparts it needs. Use `--chunk-strategy=fixed-pages` only for benchmark reproduction or debugging a
+specific page-window failure. Use `--chunk-pages=<n>` as the initial target batch size, and
+`--concurrency=<n>` to run multiple papers in parallel after single-paper extraction is stable. For
+unattended AQA Separate Science batch work, prefer `extract:aqa-separate-science:batch` with
+parent-question chunks, `--chunk-concurrency=<n>`, and `--extraction-granularity=chunk`; it writes
+per-paper extraction evaluation JSON,
 resumes from existing outputs, normalizes answer-chain evidence indexes, validates each output with
 the deterministic extraction gate, runs an independent extraction LLM judge, and can run the
 import-ready subset gate with `--import` only after selected papers pass. It does not derive answer
@@ -430,11 +435,13 @@ per-target caches even when the first attempt used `--force-chunks`, so a single
 does not force the whole paper to restart from page 1.
 Use `--extraction-granularity=question` only as a focused repair/debug mode for hard page layouts.
 It runs one extraction call per detected sourceQuestionRef and can turn one paper into dozens of LLM
-calls. The default `chunk` mode extracts all subquestions that begin in each page chunk in one call.
-Dense GCSE pages with tables/graphs should usually start at `--chunk-pages=2`. Drop to
-`--chunk-pages=1` only when a page is too visually dense for one call; one-page chunks can duplicate
-prior/lookahead context images and double cost on two-page question clusters. Use
-`--chunk-concurrency` to recover wall-clock speed without forcing oversized prompts.
+calls. The default `chunk` mode extracts all subquestions that begin in each planned parent-question
+chunk in one call. Dense GCSE papers with tables/graphs should usually start at `--chunk-pages=2`;
+the parent-question planner may extend that window when adjacent pages contain the same parent ref.
+Drop to `--chunk-pages=1` only when a page is too visually dense for one call; with the default
+parent-question strategy, adjacent pages from the same parent still stay together. Use
+`--chunk-concurrency` to recover wall-clock speed without forcing oversized prompts. Do not present
+page-by-page extraction as the production strategy; it is only a diagnostic benchmark mode.
 Use `--llm-max-calls=<n>` on benchmark and batch runs so a call-count regression fails early instead
 of silently running for hours.
 Use `--judge-mode=question-batches` and `--judge-batch-size=<n>` only for a deep QA pass after the
@@ -515,6 +522,8 @@ extractor recovers parent stems, previous subpart values, tables, figures, and d
 such as `05.7` whose own prompt begins after the source context. The default CLI window is
 `--context-pages=2`; increase it for papers where a parent question spans more pages. Prior context
 pages are never extraction starts: they are visible evidence only for core-page target questions.
+The planned core-page groups are recorded in `extractionRun.pageSelection.plannedChunkCorePages` so
+latency and quality audits can see whether a run used parent-question chunks or fixed page windows.
 
 There are two kinds of tests:
 

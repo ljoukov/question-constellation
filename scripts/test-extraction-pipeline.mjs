@@ -182,6 +182,8 @@ requireIncludes(
 		'PRIOR CONTEXT QUESTION PAPER PAGE',
 		'priorContextPages',
 		'contextPages = 2',
+		'chunkStrategy',
+		'chunkImagesByParentQuestion',
 		"extractionGranularity = 'chunk'",
 		"extractionGranularity === 'question'",
 		'Do not start or extract sibling subquestions',
@@ -203,6 +205,7 @@ requireIncludes(
 		'--supporting-document',
 		'--existing-chains',
 		'--context-pages=2',
+		'--chunk-strategy=parent-question|fixed-pages',
 		'--chunk-concurrency=1',
 		'--extraction-granularity=chunk|question',
 		'--mark-scheme-image-mode',
@@ -236,6 +239,8 @@ requireIncludes(
 		"integerArg('llm-max-attempts', 3, 1)",
 		"integerArg('paper-attempts', 2, 1)",
 		"integerArg('chunk-pages', 6, 1)",
+		"stringArg('chunk-strategy', 'parent-question')",
+		'--chunk-strategy=${chunkStrategy}',
 		"integerArg('chunk-concurrency', 2, 1)",
 		'--chunk-concurrency=${chunkConcurrency}',
 		'--run-id=aqa-separate-science-${paper.sourceDocumentId}',
@@ -626,12 +631,14 @@ for (const exportName of [
 	'sanitizeAnswerChainEvidenceIndexes',
 	'buildLearnerVisibleQuestionContext',
 	'chunkImages',
+	'chunkImagesByParentQuestion',
 	'mergeFullPaperChunks',
 	'judgeQuestionSolvability',
 	'questionRefsFromText',
 	'markSchemeTextExcerptForRefs',
 	'normalizeRepairEnvelope',
 	'judgeCandidateAgainstRubric',
+	'positiveMarkSchemeItem',
 	'pdfText'
 ]) {
 	if (typeof pipelineModule[exportName] !== 'function') {
@@ -661,6 +668,37 @@ if (
 ) {
 	fail('Chunking did not include prior context, core, and lookahead pages as expected.', {
 		contextWindowChunks
+	});
+}
+
+const parentQuestionChunks = pipelineModule.chunkImagesByParentQuestion(
+	[
+		'/tmp/question-paper-001.png',
+		'/tmp/question-paper-002.png',
+		'/tmp/question-paper-003.png',
+		'/tmp/question-paper-004.png',
+		'/tmp/question-paper-005.png'
+	],
+	new Map([
+		[1, ['01.1', '01.2']],
+		[2, ['01.3', '01.4']],
+		[3, ['02.1']],
+		[4, ['02.2']],
+		[5, ['03.1']]
+	]),
+	1,
+	1
+);
+if (
+	parentQuestionChunks.length !== 3 ||
+	parentQuestionChunks[0].corePages.join(',') !== '1,2' ||
+	parentQuestionChunks[1].priorContextPages.join(',') !== '2' ||
+	parentQuestionChunks[1].corePages.join(',') !== '3,4' ||
+	parentQuestionChunks[1].lookaheadPages.join(',') !== '5' ||
+	parentQuestionChunks[2].corePages.join(',') !== '5'
+) {
+	fail('Parent-question chunk planning split a multi-page parent question.', {
+		parentQuestionChunks
 	});
 }
 
@@ -1726,6 +1764,60 @@ const sanitizedIndexes =
 	sanitizedEvidenceCandidate.questions[0].answerChain.steps[0].markSchemeItemIndexes;
 if (sanitizedIndexes.join(',') !== '0') {
 	fail('sanitizeAnswerChainEvidenceIndexes did not keep only positive existing mark rows.');
+}
+
+if (
+	!pipelineModule.positiveMarkSchemeItem({
+		itemType: 'alternative',
+		marks: 1,
+		text: 'Any one valid cause from the listed alternatives.'
+	})
+) {
+	fail('Marked alternative mark-scheme rows should count as positive evidence.');
+}
+if (
+	pipelineModule.positiveMarkSchemeItem({
+		itemType: 'guidance',
+		marks: 1,
+		text: 'Ignore unqualified human error.'
+	})
+) {
+	fail('Guidance rows should not count as positive evidence even when marks are malformed.');
+}
+const singleStepEvidenceFill = pipelineModule.sanitizeAnswerChainEvidenceIndexes({
+	questions: [
+		{
+			sourceQuestionRef: '01.5',
+			markSchemeItems: [
+				{
+					itemType: 'alternative',
+					marks: 1,
+					text: 'Any one valid practical cause.'
+				}
+			],
+			answerChain: {
+				id: 'bio-chain-suggest-practical-cause',
+				title: 'Suggest a practical cause',
+				canonicalChainText:
+					'Use the investigation context to suggest one valid practical cause for the result.',
+				summary: 'Reusable practical-cause suggestion chain.',
+				steps: [
+					{
+						stepText: 'Suggest one valid practical cause.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: []
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	singleStepEvidenceFill.questions[0].answerChain.steps[0].markSchemeItemIndexes.join(',') !== '0'
+) {
+	fail('Single-step chains with one positive mark row should receive that evidence index.');
 }
 
 const solvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(

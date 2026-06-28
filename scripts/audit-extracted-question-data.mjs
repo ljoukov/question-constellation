@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import {
 	DEFAULT_EXTRACTION_MODEL,
@@ -275,16 +275,19 @@ function structuralIssues(candidate, filePath) {
 	for (const question of candidate.questions ?? []) {
 		const ref = question.sourceQuestionRef ?? '';
 		if (refs.has(ref)) {
-			issues.push(
-				error('duplicate_source_question_ref', 'questions.sourceQuestionRef', ref, ref)
-			);
+			issues.push(error('duplicate_source_question_ref', 'questions.sourceQuestionRef', ref, ref));
 		}
 		refs.set(ref, true);
 
 		const pageStart = Number(question.pageStart);
 		const pageEnd = Number(question.pageEnd);
 		const pageCount = Number(candidate.sourceDocument?.pageCount);
-		if (!Number.isFinite(pageStart) || !Number.isFinite(pageEnd) || pageStart < 1 || pageEnd < pageStart) {
+		if (
+			!Number.isFinite(pageStart) ||
+			!Number.isFinite(pageEnd) ||
+			pageStart < 1 ||
+			pageEnd < pageStart
+		) {
 			issues.push(
 				error(
 					'invalid_question_page_span',
@@ -322,7 +325,8 @@ function structuralIssues(candidate, filePath) {
 			if (!assetPath) {
 				const label = assetLabel(asset);
 				const requiredLabels = requiredAssetLabels(question);
-				const isRequired = label && requiredLabels.some((required) => assetMatchesLabel(asset, required));
+				const isRequired =
+					label && requiredLabels.some((required) => assetMatchesLabel(asset, required));
 				const issue = assetHasConcreteSibling(question.assets ?? [], asset)
 					? warning(
 							'asset_label_only_duplicate_review',
@@ -467,7 +471,9 @@ function responseAssetLabels(response) {
 		response.sourceLabel,
 		...(Array.isArray(response.assets) ? response.assets : [])
 	];
-	return labels.filter((value) => typeof value === 'string' && value.trim()).map((value) => value.trim());
+	return labels
+		.filter((value) => typeof value === 'string' && value.trim())
+		.map((value) => value.trim());
 }
 
 function mediaBlockLabels(question) {
@@ -523,14 +529,14 @@ function positiveMarkSchemeItem(item) {
 		.replace(/[_-]+/g, ' ');
 	const text = String(item?.text ?? '').toLowerCase();
 	const source = `${itemType}\n${text}`;
+	const marks = Number(item?.marks);
 	if (
 		/\b(?:withdraw|withdrawn|statistics?|mean mark|max(?:imum)? mark|notice)\b/.test(source) ||
-		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(
-			itemType
-		)
+		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(itemType)
 	) {
 		return false;
 	}
+	if (Number.isFinite(marks) && marks > 0) return true;
 	if (
 		/\b(?:allow|accept|alternative)\b/.test(itemType) &&
 		!/\b(?:credit|marking point|answer|alternative marking point|allowance|acceptable|award|positive)\b/.test(
@@ -561,7 +567,9 @@ function responseCorrectAnswerCount(response) {
 function hasUsableGradingEvidence(question) {
 	const markSchemeItems = question.markSchemeItems ?? [];
 	const hasPositiveMarkRows = markSchemeItems.some(positiveMarkSchemeItem);
-	const hasChecklist = (question.markChecklist ?? []).some((item) => String(item?.text ?? '').trim());
+	const hasChecklist = (question.markChecklist ?? []).some((item) =>
+		String(item?.text ?? '').trim()
+	);
 	const hasModelAnswer = String(question.modelAnswer?.answerText ?? '').trim().length > 0;
 	const hasAnswerKeys = responseCorrectAnswerCount(question.response) > 0;
 	const hasChainEvidence = (question.answerChain?.steps ?? []).some((step) =>
@@ -599,7 +607,8 @@ function auditMessage(code) {
 		source_document_missing_id: 'Extraction artifact is missing a stable source document id.',
 		source_document_id_mismatch:
 			'Top-level sourceDocumentId and sourceDocument.id disagree; imports need one stable id.',
-		sourceDocument_missing_file_path: 'Source question-paper provenance must include a local file path.',
+		sourceDocument_missing_file_path:
+			'Source question-paper provenance must include a local file path.',
 		markSchemeDocument_missing_file_path: 'Mark-scheme provenance must include a local file path.',
 		sourceDocument_missing_local_file: 'Source question-paper file path does not exist locally.',
 		markSchemeDocument_missing_local_file: 'Mark-scheme file path does not exist locally.',
@@ -617,7 +626,8 @@ function auditMessage(code) {
 			'A label-only media asset is backed by another concrete asset; review and remove stale duplicates when cleaning data.',
 		media_asset_page_label_mismatch:
 			'Media asset pageNumber does not appear to contain the referenced figure label in the source PDF.',
-		media_block_missing_local_file: 'A render block media file path points to a missing local file.',
+		media_block_missing_local_file:
+			'A render block media file path points to a missing local file.',
 		question_missing_grading_evidence:
 			'Published marked questions need mark rows, checklist rows, a model answer, answer keys, or reviewed chain evidence.',
 		question_needs_human_review: 'Question or chain is marked as needing human review.'
@@ -636,7 +646,7 @@ function planSolvabilityChecks() {
 		if (hasFileLevelErrors && !includeMechanicalFailures) continue;
 		const filePath = byFile.get(report.file);
 		if (!filePath) continue;
-		let candidate = null;
+		let candidate;
 		try {
 			candidate = readJson(filePath);
 		} catch {
@@ -644,10 +654,7 @@ function planSolvabilityChecks() {
 		}
 		for (const question of candidate.questions ?? []) {
 			if (questionArg && question.sourceQuestionRef !== questionArg) continue;
-			if (
-				!includeMechanicalFailures &&
-				questionErrorRefs.has(question.sourceQuestionRef)
-			) {
+			if (!includeMechanicalFailures && questionErrorRefs.has(question.sourceQuestionRef)) {
 				continue;
 			}
 			planned.push({
@@ -672,7 +679,9 @@ async function runSolvabilityChecks() {
 			nextIndex += 1;
 			if (!item) return;
 			try {
-				console.error(`[audit-solvability] judging ${relative(item.filePath)} ${item.sourceQuestionRef}`);
+				console.error(
+					`[audit-solvability] judging ${relative(item.filePath)} ${item.sourceQuestionRef}`
+				);
 				const evaluation = await judgeQuestionSolvability({
 					candidate: item.candidate,
 					sourceQuestionRef: item.sourceQuestionRef,
