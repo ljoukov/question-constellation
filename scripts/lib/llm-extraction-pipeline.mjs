@@ -1942,18 +1942,47 @@ export function mergeFullPaperChunks(values) {
 			}
 		}
 	}
+	const questions = Array.from(questionsByRef.values())
+		.sort((a, b) => compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef))
+		.map((question, index) => ({ ...question, displayOrder: index + 1 }));
+	const runReviewNotes = mergeRunReviewNotes(values);
 	return {
 		...values[0],
-		questions: Array.from(questionsByRef.values())
-			.sort((a, b) => compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef))
-			.map((question, index) => ({ ...question, displayOrder: index + 1 })),
+		questions,
 		extractionRun: {
 			...values[0].extractionRun,
-			needsHumanReview: values.some((value) => value.extractionRun?.needsHumanReview),
-			reviewNotes: values.flatMap((value) => value.extractionRun?.reviewNotes ?? []),
+			needsHumanReview: questions.some(questionHasHumanReviewFlag) || runReviewNotes.length > 0,
+			reviewNotes: runReviewNotes,
 			chunkCount: values.length
 		}
 	};
+}
+
+function mergeRunReviewNotes(values) {
+	return [
+		...new Set(
+			values
+				.flatMap((value) => value.extractionRun?.reviewNotes ?? [])
+				.map((note) => String(note ?? '').trim())
+				.filter(Boolean)
+				.filter((note) => !chunkWindowReviewNote(note))
+		)
+	];
+}
+
+function chunkWindowReviewNote(note) {
+	return (
+		/\bchunk\b/i.test(note) &&
+		/\b(?:core|lookahead|page|pages|extracted|extraction|atomic|subquestion)\b/i.test(note)
+	);
+}
+
+function questionHasHumanReviewFlag(question) {
+	if (question.needsHumanReview || question.answerChain?.needsHumanReview) return true;
+	if (question.modelAnswer?.needsHumanReview) return true;
+	if ((question.assets ?? []).some((asset) => asset?.needsHumanReview)) return true;
+	if ((question.markChecklist ?? []).some((item) => item?.needsHumanReview)) return true;
+	return false;
 }
 
 export function validateReusableAnswerChains(candidate) {

@@ -205,6 +205,10 @@ requireIncludes(
 		'scripts/prepare-import-ready-extraction.mjs',
 		'importRawOutput',
 		'importReadyOutputRoot',
+		'repairPreJudgeValidationIssues',
+		'humanReviewFindings',
+		'asset_needs_human_review',
+		'validation.blockingIssues.length > 0',
 		"status: 'running'",
 		'completedBatches'
 	],
@@ -499,6 +503,7 @@ for (const exportName of [
 	'sanitizeAnswerChainEvidenceIndexes',
 	'buildLearnerVisibleQuestionContext',
 	'chunkImages',
+	'mergeFullPaperChunks',
 	'judgeQuestionSolvability',
 	'questionRefsFromText',
 	'markSchemeTextExcerptForRefs',
@@ -532,6 +537,44 @@ if (
 ) {
 	fail('Chunking did not include prior context, core, and lookahead pages as expected.', {
 		contextWindowChunks
+	});
+}
+
+const mergedChunkReviewState = pipelineModule.mergeFullPaperChunks([
+	{
+		extractionRun: {
+			agentVersion: 'test',
+			needsHumanReview: true,
+			reviewNotes: [
+				'Chunk 1 extracted only atomic marked questions whose prompt begins on core pages; 02.1 begins on lookahead-only page 7.'
+			]
+		},
+		sourceDocument: { id: 'test-paper' },
+		questions: []
+	},
+	{
+		extractionRun: { agentVersion: 'test', needsHumanReview: false, reviewNotes: [] },
+		sourceDocument: { id: 'test-paper' },
+		questions: [
+			{
+				sourceQuestionRef: '02.1',
+				displayOrder: 1,
+				extractionConfidence: 0.9,
+				response: { kind: 'lines' },
+				assets: [],
+				markChecklist: [],
+				modelAnswer: { answerText: 'Use the supplied context.', needsHumanReview: false },
+				answerChain: { id: 'test-chain', needsHumanReview: false }
+			}
+		]
+	}
+]);
+if (
+	mergedChunkReviewState.extractionRun.needsHumanReview ||
+	mergedChunkReviewState.extractionRun.reviewNotes.length !== 0
+) {
+	fail('Chunk-window review notes survived full-paper merge as paper-level blockers.', {
+		extractionRun: mergedChunkReviewState.extractionRun
 	});
 }
 

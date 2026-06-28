@@ -235,7 +235,9 @@ function assetHasUsableReference(asset) {
 		asset?.filePath ||
 		asset?.sourcePath ||
 		asset?.localPath ||
-		asset?.path
+		asset?.path ||
+		asset?.publicPath ||
+		asset?.r2Key
 	);
 }
 

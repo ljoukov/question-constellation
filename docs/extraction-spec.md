@@ -418,6 +418,16 @@ judge still decide import readiness. Do not use repair attempts to auto-approve 
 media, unknown figure crops, missing parent context, or fallback full-page assets that have not been made
 intentionally learner-visible.
 
+The batch harness must treat unresolved `needsHumanReview` flags as raw-output blockers even when a
+previous rubric or solvability eval file says `passed`. Existing outputs with review flags must be sent
+through pre-judge repair again, or be excluded by the import-ready subset builder. A stale passing eval
+does not make a review-marked question publishable.
+
+When chunked extraction is merged, recompute run-level review state from unresolved child question,
+asset, checklist, model-answer, and chain flags plus durable document-level problems. Do not preserve
+chunk-window notes such as "question X began on a lookahead page" as paper-level review blockers after
+the later chunk has extracted that question.
+
 Extraction chunks must include prior context pages as well as lookahead pages. Prior context is how the
 extractor recovers parent stems, previous subpart values, tables, figures, and diagrams for questions
 such as `05.7` whose own prompt begins after the source context. The default CLI window is
@@ -462,6 +472,10 @@ Label-only media is not a valid published extraction for interactive media. When
 `assets` with a usable `filePath`, `publicPath`, or `r2Key`. A row such as
 `{"sourceLabel":"Figure 1"}` is only a note that the asset exists in the source PDF; it is not enough
 for the learner-facing renderer or the solvability judge.
+
+Repair scripts must use the same media-reference contract. A local `filePath` is ideal for mechanical
+inspection and upload, but `publicPath` or `r2Key` is still a concrete learner-visible reference; do not
+generate a duplicate full-page fallback only because a pre-uploaded asset lacks `filePath`.
 
 For existing extracted JSONs that predate this rule, run the deterministic response-asset repair
 before judging/importing:

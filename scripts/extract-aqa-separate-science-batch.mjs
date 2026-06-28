@@ -245,7 +245,10 @@ async function processPaper(paper) {
 		let solvabilityResult = existsSync(paper.solvabilityEvalPath)
 			? readJson(paper.solvabilityEvalPath)
 			: null;
-		if (judgeMode === 'question-batches' && (!evalResult || rejudge)) {
+		if (
+			judgeMode === 'question-batches' &&
+			(!evalResult || rejudge || validation.blockingIssues.length > 0)
+		) {
 			evalResult = await evaluateAndRepairQuestionBatches(paper);
 			validation = validateExtractionOutput(paper.outputPath);
 		}
@@ -418,6 +421,7 @@ async function evaluateQuestionBatches(candidate, evalPath) {
 
 async function evaluateAndRepairQuestionBatches(paper) {
 	let candidate = readSanitizedExtractionOutput(paper.outputPath);
+	candidate = await repairPreJudgeValidationIssues(paper, candidate);
 	let evaluation = await evaluateQuestionBatches(candidate, paper.evalPath);
 	for (
 		let attempt = 0;
@@ -482,6 +486,48 @@ async function evaluateAndRepairQuestionBatches(paper) {
 		evaluation = await evaluateQuestionBatches(candidate, paper.evalPath);
 	}
 	return evaluation;
+}
+
+async function repairPreJudgeValidationIssues(paper, initialCandidate) {
+	let candidate = initialCandidate;
+	for (let attempt = 0; attempt < judgeRepairAttempts; attempt += 1) {
+		const validation = validateCandidate(candidate);
+		if (validation.blockingIssues.length === 0) return candidate;
+		const refs = [...new Set(validation.blockingIssues.map((issue) => issue.sourceQuestionRef))].filter(
+			Boolean
+		);
+		if (refs.length === 0) return candidate;
+		const aggregateJudge = {
+			verdict: 'fail',
+			score: 0,
+			rationale:
+				'Pre-judge validation found deterministic blockers or unresolved needsHumanReview flags. Repair concrete extraction fields, or keep concise blocking review notes when the issue requires source media/context/manual review.',
+			requiredRepairs: validation.blockingIssues.map(
+				(issue) =>
+					`${issue.sourceQuestionRef}: ${issue.message} Field ${issue.field}. Evidence: ${issue.evidence}`
+			)
+		};
+		console.error(
+			`[batch] repairing ${paper.sourceDocumentId} from pre-judge validation, attempt ${attempt + 1}`
+		);
+		for (const refsChunk of chunksOf(refs, repairBatchSize)) {
+			candidate = await repairFullPaperQuestionQuality({
+				model: model || undefined,
+				thinkingLevel,
+				candidate,
+				deterministicIssues: validationFindingsForRefs(validation, refsChunk),
+				judge: {
+					...aggregateJudge,
+					requiredRepairs: aggregateJudge.requiredRepairs.filter((line) =>
+						refsChunk.some((ref) => line.includes(ref))
+					)
+				},
+				sourceQuestionRefs: refsChunk
+			});
+		}
+		writeJson(paper.outputPath, candidate);
+	}
+	return candidate;
 }
 
 async function evaluateSolvabilityForPaper(paper) {
@@ -574,10 +620,93 @@ function deterministicRepairEvaluation(blocking) {
 function validateExtractionOutput(filePath) {
 	if (!existsSync(filePath)) throw new Error(`Missing extraction output ${relative(filePath)}.`);
 	const candidate = readSanitizedExtractionOutput(filePath);
+	return validateCandidate(candidate);
+}
+
+function validateCandidate(candidate) {
+	const deterministicFindings = deterministicCandidateIssues(candidate);
+	const deterministicBlockingIssues = blockingIssues(deterministicFindings);
+	const reviewFindings = humanReviewFindings(candidate);
+	const humanReviewIssues = reviewFindings.flatMap((finding) =>
+		finding.issues.map((issue) => ({ ...issue, sourceQuestionRef: finding.sourceQuestionRef }))
+	);
 	return {
 		questions: candidate.questions?.length ?? 0,
-		blockingIssues: blockingIssues(deterministicCandidateIssues(candidate))
+		deterministicFindings,
+		reviewFindings,
+		deterministicBlockingIssues,
+		humanReviewIssues,
+		blockingIssues: [...deterministicBlockingIssues, ...humanReviewIssues]
 	};
+}
+
+function validationFindingsForRefs(validation, refs) {
+	const allowed = new Set(refs);
+	return [...(validation.deterministicFindings ?? []), ...(validation.reviewFindings ?? [])].filter(
+		(finding) => allowed.has(finding.sourceQuestionRef)
+	);
+}
+
+function humanReviewFindings(candidate) {
+	const findings = [];
+	for (const question of candidate.questions ?? []) {
+		const issues = humanReviewIssuesForQuestion(question);
+		if (!issues.length) continue;
+		findings.push({
+			sourceQuestionRef: question.sourceQuestionRef,
+			chainId: question.answerChain?.id ?? null,
+			issues
+		});
+	}
+	return findings;
+}
+
+function humanReviewIssuesForQuestion(question) {
+	const issues = [];
+	if (question.needsHumanReview) {
+		issues.push(reviewIssue('question_needs_human_review', 'questions.needsHumanReview', question));
+	}
+	if (question.answerChain?.needsHumanReview) {
+		issues.push(
+			reviewIssue('chain_needs_human_review', 'answerChain.needsHumanReview', question.answerChain)
+		);
+	}
+	if (question.modelAnswer?.needsHumanReview) {
+		issues.push(
+			reviewIssue('model_answer_needs_human_review', 'modelAnswer.needsHumanReview', question.modelAnswer)
+		);
+	}
+	for (const [index, asset] of (question.assets ?? []).entries()) {
+		if (!asset?.needsHumanReview) continue;
+		issues.push(reviewIssue('asset_needs_human_review', `assets[${index}].needsHumanReview`, asset));
+	}
+	for (const [index, item] of (question.markChecklist ?? []).entries()) {
+		if (!item?.needsHumanReview) continue;
+		issues.push(
+			reviewIssue('mark_checklist_needs_human_review', `markChecklist[${index}].needsHumanReview`, item)
+		);
+	}
+	return issues;
+}
+
+function reviewIssue(code, field, value) {
+	return {
+		severity: 'error',
+		code,
+		field,
+		evidence: reviewIssueEvidence(value),
+		message:
+			'Extraction output still has needsHumanReview=true. The batch harness must repair concrete fields or keep the row blocked from raw import.'
+	};
+}
+
+function reviewIssueEvidence(value) {
+	const notes = value?.reviewNotes ?? value?.reviewFlags ?? [];
+	if (Array.isArray(notes) && notes.length > 0) return notes.join('; ').slice(0, 500);
+	for (const key of ['sourceLabel', 'label', 'answerText', 'title', 'text']) {
+		if (typeof value?.[key] === 'string' && value[key].trim()) return value[key].trim().slice(0, 500);
+	}
+	return 'needsHumanReview=true';
 }
 
 function readSanitizedExtractionOutput(filePath) {
