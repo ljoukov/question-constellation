@@ -102,6 +102,8 @@ Good answer chains are:
 - General enough that several questions can share the chain.
 - Supported by mark-scheme evidence.
 - Written in plain student-facing language.
+- Short enough to work as a memory handle: titles are usually 1-3 words, and canonical chain text
+  is usually 2-5 tiny links joined by `->`, such as `low to high -> active transport -> energy needed`.
 
 Bad answer chains are:
 
@@ -109,6 +111,7 @@ Bad answer chains are:
 - Too narrow, such as the exact wording of one prompt.
 - Too broad, such as `cause and effect`.
 - Invented without mark-scheme support.
+- Paragraph-like explanations that belong in step explanations, not in the visible chain.
 
 Every published marked question should have an answer-chain link so the product can organize
 practice consistently. Pure recall, fixed-response, and single-step selection questions should use a
@@ -267,6 +270,25 @@ Recommended process:
 8. If the chain fit is uncertain, create a draft candidate and flag for review.
 
 Do not use the subject topic tree as the main chain. The topic path remains metadata; the chain is the reasoning structure.
+
+The student-visible chain must be compact. Write `title` as a 1-3 word label unless a longer title is
+absolutely necessary. Write `canonical_chain_text` / `canonicalChainText` as 2-5 short links joined
+by `->`. Each link should normally be 1-4 words. Keep step labels similarly short; one simple emoji
+per step is allowed if it helps memory, but is optional. `summary` should be a short memory cue or
+usage note, not a sentence-length repeat of the chain. Put teaching explanation in `explanation`,
+`common_omission`, checklist items, or model answers. For example:
+
+```text
+low to high -> active transport -> energy needed
+change -> original -> times 100
+reagent -> treatment -> colour
+```
+
+Do not create a new chain merely because the paper, organism, substance, command word, or source data
+format differs. First compare the ordered mark-scoring links with existing chains. Recurring method
+chains such as graph plotting, percentage change, clinical trials, food tests, cell cycle, diffusion
+or active transport, controlled variables, and practical validity should normally reuse or update an
+existing chain when the same links earn the marks.
 
 ### Numeric Specificity Guardrail
 
@@ -597,7 +619,10 @@ The helper canonicalizes common Codex draft response kinds (`tick_box`, `tick_bo
 validation. It still fails real defects such as duplicate refs, mark-total mismatch, unsupported
 response kinds, missing mark evidence, missing fixed-response answer keys, missing written
 modelAnswer rows, missing visual assets, unresolved review flags, and placeholder answer chains in
-the chain phase.
+the chain phase. `validate-chain` also rejects paragraph-like answer chains: titles must stay short,
+canonical chain text must be 2-5 compact `->` links, summaries must stay concise, and step labels
+must stay short. The prompt-based chain-style judge then checks whether the chain is actually a
+memorable learner-facing cue rather than a generic instruction.
 
 Answer chains are not produced during PDF extraction. `scripts/run-codex-answer-chains.mjs` runs
 after extraction and receives one normalized paper plus optional `existing-chain-context.json`.
@@ -614,6 +639,10 @@ default the Codex production pipeline runs solvability and D1 dry-run checks. Im
 reports existing source documents/questions, existing chain links for the target paper, incoming
 question ID collisions, and incoming chain IDs already attached to other papers. Shared-chain updates
 are blocked unless `--allow-shared-chain-updates` is passed after cross-paper chain validation.
+Pass `--refresh-shared-chain-definitions` only when the incoming shared-chain definitions have passed
+the prompt-based chain-style judge and should intentionally replace existing published chain titles,
+canonical text, and steps. Without this flag, safe `reuse_existing` chains preserve their existing D1
+definitions during a paper replacement.
 
 The older `@ljoukov/llm` chunk/agentic path is kept as a legacy diagnostic and repair harness under
 `scripts/extract-paper-llm.mjs`, `scripts/run-production-extraction-pipeline.mjs`, and
@@ -730,6 +759,40 @@ answer keys, 43 answer-chain links, and no questions missing grading evidence. C
 subscription-metered and the SDK does not emit dollar cost, so compare Codex approaches by wall time,
 actions, failed actions, and token counts. `@ljoukov/llm` judge phases still emit cost in their own
 logs; the v7 solvability audit logged 46 calls, 280,671 total tokens, and `$3.11163`.
+
+Follow-up chain-quality remediation for the same Biology P1 Nov20 import, 2026-06-29:
+
+- Reconciled artifact: `tmp/chain-prompt-validation/updated-chain-reconciled-concrete-v3.json`.
+- Deterministic chain validation:
+  `tmp/chain-prompt-validation/codex-work-concrete-v3/chain-validation-final-v11.json`, 46
+  questions, 0 blocking issues.
+- Prompt-based chain-style judge:
+  `tmp/chain-prompt-validation/codex-work-concrete-v3/chain-style-judge-final-v11.json`, 45
+  distinct chains, status `passed`, 0 issues, 83.790s, 23,833 prompt tokens, 83 response tokens,
+  2,136 reasoning tokens, 26,052 total tokens, `$0.185735`.
+- Negative prompt-judge fixtures explicitly failed the user-reported bad styles:
+  `tmp/chain-prompt-validation/bad-symbiosis-style-judge-rerun.json` caught the paragraph-like
+  symbiosis chain, and `tmp/chain-prompt-validation/bad-fixed-response-style-judge.json` caught a
+  fixed-response chain that copied `Willow bark` into visible chain fields.
+- Strict import-ready dry-run:
+  `tmp/chain-prompt-validation/prepare-import-ready-v4.out` and
+  `tmp/chain-prompt-validation/import-ready-audit-v4.json`, 46/46 questions kept, 0 dropped, strict
+  audit 0 errors/0 warnings, solvability 46/46 passed, D1 replacement plan `safeToReplace: true`,
+  incoming question count 46, incoming chain count 45, question ID collisions 0, one intentional
+  shared-chain update (`bio-chain-photosynthesis-limitation-glucose-protein-growth`).
+- D1 write artifact: `tmp/chain-prompt-validation/import-write-v4.out`, 18 clear statements, 576
+  insert/upsert statements, post-write coverage of 46 questions, 46 render overlays, 98 mark-scheme
+  rows, 96 checklist rows, 40 model answers, 9 fixed-response answer keys, 45 answer-chain links,
+  and no missing grading evidence.
+- D1 cleanup verified by query and live routes: old bad chains
+  `bio-chain-symbiosis-resource-gained-metabolic-use`,
+  `bio-chain-control-variable-kept-constant-valid-investigation`,
+  `bio-chain-thorns-mechanical-defence-recall`, and
+  `bio-chain-poison-chemical-defence-recall` were deleted or consolidated and return 404. Updated
+  shared chains such as `bio-chain-active-transport-energy-evidence`,
+  `bio-chain-food-test-reagent-treatment-colour`, and
+  `bio-chain-reaction-time-control-variables` return 200 and have compact step rows. Q07.1 and Q07.3
+  D1 render overlays store `lines` counts of 6 and 16 respectively.
 
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response

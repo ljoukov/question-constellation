@@ -19,6 +19,7 @@ const allPapers = args.has('--all');
 const dryRun = args.has('--dry-run');
 const checkExisting = args.has('--check-existing');
 const allowSharedChainUpdates = args.has('--allow-shared-chain-updates');
+const refreshSharedChainDefinitions = args.has('--refresh-shared-chain-definitions');
 const applySchemaFlag = args.has('--apply-schema');
 const recursive = args.has('--recursive');
 const replaceAllSubject =
@@ -1402,7 +1403,8 @@ function incomingChainActionsForPapers(papers) {
 	return actionsByChainId;
 }
 
-async function clearRowsForPapers(papers) {
+async function clearRowsForPapers(papers, options = {}) {
+	const reuseExistingChainIds = options.reuseExistingChainIds ?? new Set();
 	const sourceDocumentIds = papers.map((paper) => paper.sourceDocument.id);
 	const subjectAreas = [...new Set(papers.map(subjectAreaForPaper).filter(Boolean))];
 	const chainPrefixes = subjectAreas.map(chainPrefixForSubject);
@@ -1417,6 +1419,7 @@ async function clearRowsForPapers(papers) {
 					.map((question) => question.answerChain)
 					.filter(Boolean)
 					.map((chain) => chainIdFor(chain, subjectAreaForPaper(paper)))
+					.filter((chainId) => !reuseExistingChainIds.has(chainId))
 			)
 		)
 	];
@@ -1602,9 +1605,9 @@ if (replacementPlan && !replacementPlan.safeToReplace) {
 	);
 }
 const reuseExistingChainIds = new Set(
-	replacementPlan && !allowSharedChainUpdates
+	replacementPlan
 		? replacementPlan.sharedIncomingChains
-				.filter((chain) => chain.safe_reuse_only)
+				.filter((chain) => chain.safe_reuse_only && !refreshSharedChainDefinitions)
 				.map((chain) => chain.id)
 		: []
 );
@@ -1620,6 +1623,7 @@ console.log(
 			replace_all_subject: replaceAllSubject,
 			dry_run: dryRun,
 			check_existing: checkExisting,
+			refresh_shared_chain_definitions: refreshSharedChainDefinitions,
 			d1_existing_replacement_plan: replacementPlan
 		},
 		null,
@@ -1631,7 +1635,7 @@ if (applySchemaFlag) await applySchema();
 if (dryRun) {
 	console.log('clear: dry run, skipped database deletes');
 } else {
-	await clearRowsForPapers(papers);
+	await clearRowsForPapers(papers, { reuseExistingChainIds });
 }
 
 const statements = [];

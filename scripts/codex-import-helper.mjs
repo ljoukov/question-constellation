@@ -49,6 +49,32 @@ const allowedAnswerChainStepRoles = new Set([
 	'calculation',
 	'conclusion'
 ]);
+const maxCanonicalChainLinks = 5;
+const maxCanonicalChainLinkWords = 4;
+const maxAnswerChainTitleWords = 5;
+const maxAnswerChainStepWords = 5;
+const maxAnswerChainStepChars = 48;
+const maxAnswerChainSummaryWords = 16;
+const maxAnswerChainSummaryChars = 110;
+const forbiddenAnswerChainPlaceholderLabels = [
+	/\bresource gained\b/i,
+	/\bbiological use\b/i,
+	/\bproduct (?:one|two|three)\b/i,
+	/\bfirst (?:difference|cause|claim|feature)\b/i,
+	/\bsecond (?:difference|cause|claim|feature)\b/i,
+	/\bthird (?:difference|cause|claim|feature)\b/i,
+	/\bfunction cue\b/i,
+	/\bprocess name\b/i,
+	/\bprocess cue\b/i,
+	/\bsource material\b/i,
+	/\bcondition present\b/i,
+	/\bproduct made\b/i,
+	/\bsource absent\b/i,
+	/\bdefence cue\b/i,
+	/\bresponse category\b/i,
+	/\bnutrient gained\b/i,
+	/\bbiosynthesis need\b/i
+];
 
 try {
 	if (command === 'help' || hasArg('help')) printHelp();
@@ -966,6 +992,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 					evidence: ref
 				});
 			}
+			issues.push(...answerChainStyleIssues(question.answerChain, ref));
 			for (const [stepIndex, step] of (question.answerChain?.steps ?? []).entries()) {
 				if (!allowedAnswerChainStepRoles.has(step?.stepRole)) {
 					issues.push({
@@ -1011,6 +1038,96 @@ function deterministicIssuesFor(candidate, options = {}) {
 		if (issues.length) findings.push({ sourceQuestionRef: ref, issues });
 	}
 	return findings;
+}
+
+function answerChainStyleIssues(chain, ref) {
+	if (!chain) return [];
+	const issues = [];
+	const title = String(chain.title ?? '').trim();
+	if (title) {
+		const words = wordCount(title);
+		if (words > maxAnswerChainTitleWords) {
+			issues.push({
+				code: 'answer_chain_title_too_long',
+				field: 'answerChain.title',
+				severity: 'error',
+				evidence: `${ref}: ${words} words`
+			});
+		}
+	}
+	const canonical = String(chain.canonicalChainText ?? '').trim();
+	if (canonical) {
+		const links = canonical.split(/\s*->\s*/).map((part) => part.trim()).filter(Boolean);
+		if (!canonical.includes('->') || links.length < 2 || links.length > maxCanonicalChainLinks) {
+			issues.push({
+				code: 'answer_chain_canonical_not_memory_links',
+				field: 'answerChain.canonicalChainText',
+				severity: 'error',
+				evidence: `${ref}: write 2-${maxCanonicalChainLinks} compact links joined by ->`
+			});
+		}
+		for (const [index, link] of links.entries()) {
+			const words = wordCount(link);
+			if (words > maxCanonicalChainLinkWords) {
+				issues.push({
+					code: 'answer_chain_canonical_link_too_long',
+					field: 'answerChain.canonicalChainText',
+					severity: 'error',
+					evidence: `${ref}: link ${index + 1} has ${words} words`
+				});
+			}
+			if (isForbiddenAnswerChainPlaceholder(link)) {
+				issues.push({
+					code: 'answer_chain_placeholder_label',
+					field: 'answerChain.canonicalChainText',
+					severity: 'error',
+					evidence: `${ref}: "${link}"`
+				});
+			}
+		}
+	}
+	const summary = String(chain.summary ?? '').trim();
+	if (summary) {
+		const words = wordCount(summary);
+		if (words > maxAnswerChainSummaryWords || summary.length > maxAnswerChainSummaryChars) {
+			issues.push({
+				code: 'answer_chain_summary_too_long',
+				field: 'answerChain.summary',
+				severity: 'error',
+				evidence: `${ref}: ${words} words, ${summary.length} chars`
+			});
+		}
+	}
+	for (const [stepIndex, step] of (chain.steps ?? []).entries()) {
+		const stepText = String(step?.stepText ?? '').trim();
+		if (!stepText) continue;
+		const words = wordCount(stepText);
+		if (words > maxAnswerChainStepWords || stepText.length > maxAnswerChainStepChars) {
+			issues.push({
+				code: 'answer_chain_step_label_too_long',
+				field: `answerChain.steps[${stepIndex}].stepText`,
+				severity: 'error',
+				evidence: `${ref}: ${words} words, ${stepText.length} chars`
+			});
+		}
+		if (isForbiddenAnswerChainPlaceholder(stepText)) {
+			issues.push({
+				code: 'answer_chain_placeholder_label',
+				field: `answerChain.steps[${stepIndex}].stepText`,
+				severity: 'error',
+				evidence: `${ref}: "${stepText}"`
+			});
+		}
+	}
+	return issues;
+}
+
+function isForbiddenAnswerChainPlaceholder(text) {
+	return forbiddenAnswerChainPlaceholderLabels.some((pattern) => pattern.test(String(text ?? '')));
+}
+
+function wordCount(text) {
+	return String(text ?? '').match(/[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*/g)?.length ?? 0;
 }
 
 function isPositiveMarkSchemeItem(item) {

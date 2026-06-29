@@ -17,6 +17,7 @@ const importToD1 = hasArg('import');
 const noImportCheck = hasArg('no-import-check');
 const checkExisting = hasArg('check-existing');
 const allowSharedChainUpdates = hasArg('allow-shared-chain-updates');
+const refreshSharedChainDefinitions = hasArg('refresh-shared-chain-definitions');
 const keepWarnings = hasArg('keep-warnings');
 const model = stringArg('model', '');
 const thinkingLevel = stringArg('thinking-level', '');
@@ -45,6 +46,7 @@ console.log(
 			importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
 			checkExisting,
 			allowSharedChainUpdates,
+			refreshSharedChainDefinitions,
 			keptQuestions: buildSummary.keptQuestions,
 			droppedQuestions: buildSummary.droppedQuestions,
 			importedPapers: importResults.map((result) => result.sourceDocumentId),
@@ -156,6 +158,7 @@ function runImportChecks(summary) {
 		if (!importToD1) args.push('--dry-run');
 		if (checkExisting) args.push('--check-existing');
 		if (allowSharedChainUpdates) args.push('--allow-shared-chain-updates');
+		if (refreshSharedChainDefinitions) args.push('--refresh-shared-chain-definitions');
 		runCapturedLog(args, `${importToD1 ? 'import' : 'import dry-run'} ${sourceDocumentId}`);
 		return {
 			sourceDocumentId,

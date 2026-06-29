@@ -64,6 +64,7 @@ const codexImportHelperSource = readText(path.join(rootDir, 'scripts/codex-impor
 const codexSdkRunnerSource = readText(path.join(rootDir, 'scripts/lib/codex-sdk-runner.mjs'));
 const codexPdfExtractionSource = readText(path.join(rootDir, 'scripts/run-codex-pdf-extraction.mjs'));
 const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-answer-chains.mjs'));
+const chainStyleJudgeSource = readText(path.join(rootDir, 'scripts/judge-answer-chain-style.mjs'));
 const codexProductionImportSource = readText(
 	path.join(rootDir, 'scripts/run-codex-production-import-pipeline.mjs')
 );
@@ -433,7 +434,9 @@ requireIncludes(
 		'structured_fields',
 		'tick_box',
 		'equation_completion',
-		'fixed_response_missing_answer_key'
+		'fixed_response_missing_answer_key',
+		'answer_chain_canonical_not_memory_links',
+		'answer_chain_step_label_too_long'
 	],
 	'Codex import helper'
 );
@@ -484,12 +487,29 @@ requireIncludes(
 		'create_new',
 		'update_existing',
 		'Do not put worked numeric answers',
+		'memory handle',
+		'2 to 5 compact links',
+		'graph plotting, percentage change, clinical trials, food tests',
+		'chain-style-judge.json',
 		'validate-chain',
 		'chain-reconciled.json',
 		'events.jsonl',
 		'xhigh'
 	],
 	'Codex answer-chain runner'
+);
+
+requireIncludes(
+	chainStyleJudgeSource,
+	[
+		'answer-chain style validator',
+		'Titles should usually be 1-3 words',
+		'One simple emoji per step is allowed',
+		'Symbiosis benefit: resource gained then used',
+		'resource gained -> biological use',
+		'status must be failed if any issue has severity error'
+	],
+	'Answer-chain style judge'
 );
 
 requireIncludes(
@@ -719,6 +739,7 @@ for (const scriptName of [
 	'prepare:import-ready-extraction',
 	'codex:pdf-extract',
 	'codex:answer-chains',
+	'judge:answer-chain-style',
 	'codex:production-import',
 	'repair:extracted-data',
 	'repair:answer-chain-specificity',
@@ -946,6 +967,100 @@ if (
 	fail('Codex answer-chain dry-run did not expose the expected plan.', {
 		codexChainDryRun
 	});
+}
+
+const chainStyleDir = path.join(rootDir, 'tmp/test-codex-chain-style');
+mkdirSync(chainStyleDir, { recursive: true });
+const chainStyleInput = path.join(chainStyleDir, 'chain-reconciled.json');
+const chainStyleOutput = path.join(chainStyleDir, 'chain-validation.json');
+const chainStyleFixture = {
+	sourceDocument: { id: 'test-paper' },
+	markSchemeDocument: { id: 'test-ms' },
+	questions: [
+		{
+			sourceQuestionRef: '01.1',
+			promptText: 'Explain how nitrate ions enter the root hair cell.',
+			marks: 3,
+			pageStart: 1,
+			pageEnd: 1,
+			response: { kind: 'lines' },
+			assets: [],
+			markSchemeItems: [
+				{ itemType: 'mark', text: 'Moves from low concentration to high concentration.' },
+				{ itemType: 'mark', text: 'Process is active transport.' },
+				{ itemType: 'mark', text: 'Requires energy.' }
+			],
+			markChecklist: [{ text: 'Names active transport.', markSchemeItemIndexes: [1] }],
+			modelAnswer: { answerText: 'Active transport moves nitrate ions against the gradient using energy.' },
+			answerChain: {
+				id: 'bio-chain-active-transport-test',
+				title: 'Active transport',
+				canonicalChainText:
+					'When concentration evidence shows movement from low to high concentration, identify active transport and explain that energy is needed.',
+				summary: 'Active transport explanation.',
+				steps: [
+					{
+						stepText: 'Identify movement from a low concentration region to a high concentration region.',
+						stepRole: 'evidence',
+						markSchemeItemIndexes: [0]
+					},
+					{ stepText: 'Name active transport.', stepRole: 'process', markSchemeItemIndexes: [1] },
+					{ stepText: 'State energy is needed.', stepRole: 'cause', markSchemeItemIndexes: [2] }
+				],
+				needsHumanReview: false
+			},
+			needsHumanReview: false
+		}
+	]
+};
+writeFileSync(chainStyleInput, JSON.stringify(chainStyleFixture, null, 2));
+runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-chain',
+	`--input=${chainStyleInput}`,
+	`--output=${chainStyleOutput}`
+]);
+const chainStyleFailure = JSON.parse(readText(chainStyleOutput));
+if (
+	chainStyleFailure.status !== 'failed' ||
+	!chainStyleFailure.blockingIssues.some(
+		(issue) => issue.code === 'answer_chain_canonical_not_memory_links'
+	) ||
+	!chainStyleFailure.blockingIssues.some((issue) => issue.code === 'answer_chain_step_label_too_long')
+) {
+	fail('Codex chain validator did not reject paragraph-like answer-chain text.', chainStyleFailure);
+}
+chainStyleFixture.questions[0].answerChain.canonicalChainText = 'resource gained -> biological use';
+chainStyleFixture.questions[0].answerChain.steps[0].stepText = 'resource gained';
+chainStyleFixture.questions[0].answerChain.steps[1].stepText = 'biological use';
+writeFileSync(chainStyleInput, JSON.stringify(chainStyleFixture, null, 2));
+runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-chain',
+	`--input=${chainStyleInput}`,
+	`--output=${chainStyleOutput}`
+]);
+const placeholderChainFailure = JSON.parse(readText(chainStyleOutput));
+if (
+	placeholderChainFailure.status !== 'failed' ||
+	!placeholderChainFailure.blockingIssues.some(
+		(issue) => issue.code === 'answer_chain_placeholder_label'
+	)
+) {
+	fail('Codex chain validator did not reject placeholder answer-chain labels.', placeholderChainFailure);
+}
+chainStyleFixture.questions[0].answerChain.canonicalChainText =
+	'low to high -> active transport -> energy needed';
+chainStyleFixture.questions[0].answerChain.steps[0].stepText = 'low to high';
+chainStyleFixture.questions[0].answerChain.steps[1].stepText = 'active transport';
+writeFileSync(chainStyleInput, JSON.stringify(chainStyleFixture, null, 2));
+const chainStylePass = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
+		'validate-chain',
+		`--input=${chainStyleInput}`,
+		`--output=${chainStyleOutput}`
+	])
+);
+if (chainStylePass.status !== 'passed') {
+	fail('Codex chain validator rejected compact memory-link chain text.', chainStylePass);
 }
 
 const helperNormalizeDir = path.join(rootDir, 'tmp/test-codex-helper-normalize');

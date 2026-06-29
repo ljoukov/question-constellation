@@ -27,6 +27,13 @@ Optional:
   --summary=tmp/codex-answer-chains/<source-id>/codex-chain-summary.json
   --model=gpt-5.5
   --thinking-level=xhigh
+  --chain-style-judge-model=chatgpt-gpt-5.5
+  --chain-style-judge-thinking-level=medium
+  --chain-style-judge-batch-size=8
+  --chain-style-judge-max-existing-chains=16
+  --chain-style-judge-source-snippet-chars=360
+  --chain-style-repair-attempts=2
+  --skip-chain-style-judge
   --timeout-ms=7200000
   --force
   --dry-run`;
@@ -53,6 +60,13 @@ const existingChainsPath = stringArg('existing-chains', '');
 const existingChainInputRoot = stringArg('existing-chain-input-root', '');
 const model = stringArg('model', 'gpt-5.5');
 const thinkingLevel = stringArg('thinking-level', 'xhigh');
+const skipChainStyleJudge = hasArg('skip-chain-style-judge');
+const chainStyleJudgeModel = stringArg('chain-style-judge-model', 'chatgpt-gpt-5.5');
+const chainStyleJudgeThinkingLevel = stringArg('chain-style-judge-thinking-level', 'medium');
+const chainStyleJudgeBatchSize = integerArg('chain-style-judge-batch-size', 8, 1);
+const chainStyleJudgeMaxExistingChains = integerArg('chain-style-judge-max-existing-chains', 16, 0);
+const chainStyleJudgeSourceSnippetChars = integerArg('chain-style-judge-source-snippet-chars', 360, 80);
+const chainStyleRepairAttempts = integerArg('chain-style-repair-attempts', 2, 0);
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
@@ -77,6 +91,13 @@ const plan = {
 		: null,
 	model,
 	thinkingLevel,
+	skipChainStyleJudge,
+	chainStyleJudgeModel,
+	chainStyleJudgeThinkingLevel,
+	chainStyleJudgeBatchSize,
+	chainStyleJudgeMaxExistingChains,
+	chainStyleJudgeSourceSnippetChars,
+	chainStyleRepairAttempts,
 	questionCount: inputPaper.questions?.length ?? 0
 };
 
@@ -103,7 +124,39 @@ try {
 		timeoutMs
 	});
 	const chainPath = ensureChainOutput();
-	const validation = validateChain(chainPath);
+	let validation = validateChain(chainPath);
+	let styleJudge = judgeChainStyle(chainPath, { allowFailure: true });
+	const repairs = [];
+	for (
+		let attempt = 1;
+		!styleJudgePassed(styleJudge) && attempt <= chainStyleRepairAttempts;
+		attempt += 1
+	) {
+		const failedStylePath = path.join(workDir, `chain-style-judge-failed-${attempt}.json`);
+		if (existsSync(path.join(workDir, 'chain-style-judge.json'))) {
+			copyFileSync(path.join(workDir, 'chain-style-judge.json'), failedStylePath);
+		}
+		const repairPrompt = buildStyleRepairPrompt(attempt, failedStylePath);
+		const repairPromptPath = path.join(workDir, `style-repair-prompt-${attempt}.md`);
+		writeFileSync(repairPromptPath, repairPrompt);
+		const repairSummary = await runCodexSdkTurn({
+			prompt: repairPrompt,
+			workDir,
+			eventsPath: path.join(workDir, `style-repair-events-${attempt}.jsonl`),
+			lastMessagePath: path.join(workDir, `style-repair-last-message-${attempt}.txt`),
+			summaryPath: path.join(workDir, `style-repair-summary-${attempt}.json`),
+			model,
+			thinkingLevel,
+			timeoutMs
+		});
+		repairs.push(repairSummary);
+		ensureChainOutput();
+		validation = validateChain(chainPath);
+		styleJudge = judgeChainStyle(chainPath, { allowFailure: true });
+	}
+	if (!styleJudgePassed(styleJudge)) {
+		throw new Error('answer-chain style judge failed after repair attempts.');
+	}
 	mkdirSync(path.dirname(outputPath), { recursive: true });
 	copyFileSync(chainPath, outputPath);
 	const summary = {
@@ -112,7 +165,9 @@ try {
 		finishedAt: new Date().toISOString(),
 		plan,
 		codex: codexSummary,
+		repairs,
 		validation,
+		styleJudge,
 		artifacts: artifacts(chainPath)
 	};
 	writeJson(summaryPath, summary);
@@ -189,15 +244,39 @@ For every marked question decide one action:
 
 If updating/generalizing an existing published chain, inspect all available attached examples in existing-chain-context.json. If those examples do not provide enough evidence to prove the generalized chain still fits, do not update the existing chain; create a new chain or mark needs_review. Split rather than over-generalize.
 
-Answer-chain fields must describe reusable reasoning or method patterns. Do not put worked numeric answers, exact table values, exact tick-box letters, one-question facts, or final source-specific answers in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
+Answer-chain fields must describe reusable reasoning, method patterns, or compact recall handles. Do not put worked numeric answers, exact table values, exact tick-box letters, or one-off final data values in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
+
+Do include concrete GCSE biology terms when those terms are the mark-scoring idea. Compact does not mean abstract. For recall or explanation questions, a useful chain may name glucose, nitrate ions, fatty acids, glycerol, chlorophyll, active transport, osmosis, mitosis, thorns, or self-reporting if that is what learners must remember. Do not hide concrete accepted terms behind placeholders.
+
+Student-visible chain style is strict:
+- answerChain.title should usually be 1 to 3 words. Use more only when absolutely necessary, and never more than 5 words.
+- answerChain.canonicalChainText is the memory handle. Write it as 2 to 5 compact links joined by " -> ". Do not write a sentence or paragraph.
+- Each canonical link should usually be 1 to 4 words. Good: "low to high -> active transport -> energy needed", "change -> original -> times 100", "reagent -> treatment -> colour".
+- answerChain.steps[].stepText should be the compact link label, not a full instruction. Aim for 1 to 4 words, hard maximum 5 words. One simple emoji per step is allowed if it makes the step more memorable, but emojis are optional.
+- answerChain.summary should be one short memory cue or usage note. Do not repeat the canonical chain as a sentence.
+- Put longer teaching detail in explanation or commonOmission, not in title, canonicalChainText, summary, or stepText.
+
+Never use placeholder visible labels when concrete mark-scoring words are available. Bad labels include "resource gained", "biological use", "product one", "product two", "first difference", "second difference", "function cue", "process name", "source material", "condition present", "product made", "source absent", "defence cue", "response category", "cause", "first cause", and "second claim". Replace them with the real compact cue, for example "plant sugar -> respiration -> energy", "lipids broken -> fatty acids -> glycerol", "water entry -> osmosis", "growth/repair -> mitosis", or "self-report -> weak data".
+
+Common failure modes to avoid:
+- Do not put final numeric answers or worked table values in answer-chain fields. For calculations, write the method handle, such as "selected stages -> add -> total percent" or "convert units -> compare -> ratio".
+- For fixed-choice questions, visible links should usually be the markable selected ideas, not an extra unmarked outcome.
+- Keep canonicalChainText and steps aligned: each visible canonical link should normally have a matching compact stepText.
+- If the mark scheme gives alternative routes, do not turn alternatives into a false required sequence. Use one compact alternative link such as "self-report/change/binge" with branch detail in explanation/commonOmission, or split the chain if the alternatives are different skills.
+- For "any two", "any three", or "suggest one" questions, do not list all accepted alternatives as an ordered chain. Use a category/count handle such as "both shown -> shared structures -> choose two", "shown differences -> choose three", or "specific extension -> relevant outcome"; put examples in explanation/commonOmission.
+- For alternative one-mark science routes, use an alternative link instead of a forced sequence, for example "too hot -> denature/shape change".
+- For level-style questions, index positive indicative-content rows, not the generic level descriptor row.
+- Summaries should be short memory cues, not imperatives. Prefer "Grid marks separately", "No heat for iodine", or "Branch answers score" over "Label, scale, plot, then fit".
 
 Each marked question must have a stable answerChain.id. Reuse the existing id when the existing chain is genuinely reused; create a stable subject-prefixed id for new chains.
+
+Before creating a new chain, actively look for existing chains with the same mark-scoring method even if their title is broader, their examples are in a different paper, or their current canonical text is wordier than the target style. Prefer reuse_existing or update_existing over create_new for recurring method chains such as graph plotting, percentage change, clinical trials, food tests, cell cycle, diffusion/active transport, controlled variables, and practical validity. Do not split a chain just because the data source is a graph instead of a table, the command word differs, or the context organism/substance changes; split only when the ordered mark-scoring links differ.
 
 Allowed answerChain.steps[].stepRole values are exactly: given, cause, process, link, effect, evidence, method, calculation, conclusion.
 
 Every answerChain.steps[] entry must include a non-empty markSchemeItemIndexes array. These indexes are zero-based indexes into that same question's markSchemeItems array and must point only to positive marking points, not allow/accept/reject/ignore/guidance/alternative rows. If one reusable chain step is supported by several positive mark items, include all of those indexes. If one positive mark item supports several compact reusable steps, duplicate the index across those steps.
 
-Before finishing, run the validator. It rejects missing ids, non-canonical step roles, missing step evidence, placeholder/review chains, and invalid mark-scheme evidence indexes.
+Before finishing, run the validator. It rejects missing ids, paragraph-like canonical chains, overlong step labels, non-canonical step roles, missing step evidence, placeholder/review chains, and invalid mark-scheme evidence indexes.
 
 Write the full reconciled paper to chain-reconciled.json, preserving all questions. Then run:
 node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json
@@ -232,6 +311,91 @@ function validateChain(chainPath) {
 	return readJson(path.join(workDir, 'chain-validation.json'));
 }
 
+function judgeChainStyle(chainPath, { allowFailure = false } = {}) {
+	if (skipChainStyleJudge) {
+		return { status: 'skipped' };
+	}
+	const args = [
+		'scripts/judge-answer-chain-style.mjs',
+		`--input=${chainPath}`,
+		`--output=${path.join(workDir, 'chain-style-judge.json')}`,
+		`--model=${chainStyleJudgeModel}`,
+		`--thinking-level=${chainStyleJudgeThinkingLevel}`,
+		`--batch-size=${chainStyleJudgeBatchSize}`,
+		`--max-existing-chains-per-batch=${chainStyleJudgeMaxExistingChains}`,
+		`--source-snippet-chars=${chainStyleJudgeSourceSnippetChars}`
+	];
+	if (existsSync(path.join(workDir, 'existing-chain-context.json'))) {
+		args.push(`--existing-chains=${path.join(workDir, 'existing-chain-context.json')}`);
+	}
+	const result = spawnSync(process.execPath, args, {
+		cwd: rootDir,
+		encoding: 'utf8',
+		stdio: ['ignore', 'pipe', 'pipe'],
+		maxBuffer: 64 * 1024 * 1024
+	});
+	if (result.status !== 0) {
+		const failedReport = existsSync(path.join(workDir, 'chain-style-judge.json'))
+			? readJson(path.join(workDir, 'chain-style-judge.json'))
+			: null;
+		if (allowFailure) {
+			return {
+				...(failedReport ?? { status: 'failed', issues: [] }),
+				runnerExitStatus: result.status ?? null,
+				runnerSignal: result.signal ?? null,
+				runnerError: `answer-chain style judge failed with exit code ${result.status ?? result.signal}`,
+				stderr: result.stderr.trim() || null
+			};
+		}
+		throw new Error(
+			`answer-chain style judge failed with exit code ${result.status ?? result.signal}.\n${result.stdout}\n${result.stderr}`
+		);
+	}
+	if (result.stdout.trim()) process.stderr.write(result.stdout);
+	if (result.stderr.trim()) process.stderr.write(result.stderr);
+	return readJson(path.join(workDir, 'chain-style-judge.json'));
+}
+
+function styleJudgePassed(styleJudge) {
+	if (skipChainStyleJudge || styleJudge?.status === 'skipped') return true;
+	return (
+		styleJudge?.status === 'passed' &&
+		!(styleJudge.issues ?? []).some((issue) => issue.severity === 'error')
+	);
+}
+
+function buildStyleRepairPrompt(attempt, failedStylePath) {
+	const failedStyleName = path.basename(failedStylePath);
+	return `You are repairing answer-chain quality for the same extracted GCSE paper.
+
+Inputs in this directory:
+- chain-reconciled.json: current whole-paper chain reconciliation output to repair
+- ${failedStyleName}: independent prompt-based style judge report with errors/warnings
+- extraction.json: original extraction facts; use only as source evidence
+- existing-chain-context.json: existing chain ids and example refs, if present
+- helper.mjs: deterministic validator
+- docs/extraction-spec.md: product/schema contract
+
+Repair attempt: ${attempt}
+
+Task:
+1. Read ${failedStyleName}.
+2. Repair every real error in chain-reconciled.json by editing only answerChain and chainResolution fields.
+3. Consider warnings when they affect learner-facing clarity or duplicate chain consolidation.
+4. Preserve all extraction facts: prompts, response controls, correctAnswers, mark schemes, checklists, model answers, assets, page ranges, ids, and provenance.
+5. Do not put worked numeric answers, exact table values, tick-box letters, or final source-specific numeric results in answer-chain fields. Calculation chains should describe the method only.
+6. Keep concrete GCSE terms when they are the mark-scoring idea: glucose, nitrate ions, fatty acids, glycerol, chlorophyll, osmosis, mitosis, active transport, self-reporting, etc.
+7. Keep canonicalChainText and steps aligned. If canonicalChainText has a visible link, the steps should normally include the same compact link.
+8. Do not turn alternative mark routes into a false required sequence. Use a compact alternative link with branch detail in explanation/commonOmission, or split the chain if the skills are genuinely different.
+9. Use positive mark-scheme evidence indexes only. Avoid generic level descriptor rows.
+10. Keep titles short, summaries as distinct memory cues, and visible step labels compact.
+
+After repair, run:
+node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json
+
+If validation fails, repair and rerun it. Finish with a concise message listing what you changed and the artifact paths.`;
+}
+
 function artifacts(chainPath) {
 	return {
 		workDir: relative(workDir),
@@ -243,6 +407,14 @@ function artifacts(chainPath) {
 			: null,
 		chainReconciled: relative(chainPath),
 		chainValidation: relative(path.join(workDir, 'chain-validation.json')),
+		chainStyleJudge: skipChainStyleJudge
+			? null
+			: relative(path.join(workDir, 'chain-style-judge.json')),
+		styleRepairSummaries: Array.from({ length: chainStyleRepairAttempts }, (_, index) =>
+			path.join(workDir, `style-repair-summary-${index + 1}.json`)
+		)
+			.filter((filePath) => existsSync(filePath))
+			.map(relative),
 		output: relative(outputPath),
 		summary: relative(summaryPath)
 	};

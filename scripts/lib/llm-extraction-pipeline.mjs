@@ -287,7 +287,58 @@ export const JudgeSchema = z.object({
 	requiredRepairs: z.array(z.string())
 });
 
-export const SolvabilityJudgeSchema = z.object({
+function normalizeSolvabilityJudge(value) {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+	const contextAssessment = value.contextAssessment ?? {};
+	const markSchemeFit = value.markSchemeFit ?? {};
+	const issues = Array.isArray(value.issues) ? value.issues : [];
+	const verdict = value.verdict ?? (value.answerableFromVisibleContext ? 'pass' : 'fail');
+	const missingContext = Array.isArray(value.missingContext)
+		? value.missingContext.map((item) =>
+				typeof item === 'string'
+					? { kind: 'other', severity: 'blocking', description: item }
+					: {
+							kind: item?.kind ?? 'other',
+							severity: item?.severity ?? (value.blockingMissingContext ? 'blocking' : 'warning'),
+							description: item?.description ?? item?.note ?? JSON.stringify(item)
+						}
+			)
+		: [];
+	const markSchemeAlignment =
+		value.markSchemeAlignment ??
+		(markSchemeFit.fitsExtractedQuestion === false || markSchemeFit.fitsAttemptedAnswer === false
+			? 'mismatch'
+			: markSchemeFit.fitsExtractedQuestion === true || markSchemeFit.fitsAttemptedAnswer === true
+				? 'matches'
+				: 'not_applicable');
+	return {
+		...value,
+		verdict,
+		score: value.score ?? value.confidence ?? (verdict === 'pass' ? 0.9 : 0),
+		sourceQuestionRef: value.sourceQuestionRef ?? contextAssessment.targetRef ?? '',
+		studentVisibleSolvable:
+			value.studentVisibleSolvable ??
+			value.answerableFromVisibleContext ??
+			!value.blockingMissingContext,
+		attemptedAnswerFromVisibleContext: value.attemptedAnswerFromVisibleContext ?? '',
+		markSchemeAlignment,
+		rationale:
+			value.rationale ??
+			[contextAssessment.notes, markSchemeFit.notes, ...issues.map((issue) => issue?.note ?? issue)]
+				.filter(Boolean)
+				.join(' '),
+		missingContext,
+		mediaFindings: value.mediaFindings ?? [],
+		renderFindings: value.renderFindings ?? [],
+		requiredRepairs:
+			value.requiredRepairs ??
+			issues
+				.map((issue) => issue?.requiredRepair ?? issue?.repair ?? null)
+				.filter((item) => typeof item === 'string' && item.trim())
+	};
+}
+
+export const SolvabilityJudgeSchema = z.preprocess(normalizeSolvabilityJudge, z.object({
 	verdict: z.enum(['pass', 'fail']),
 	score: z.number().min(0).max(1),
 	sourceQuestionRef: z.string(),
@@ -325,7 +376,7 @@ export const SolvabilityJudgeSchema = z.object({
 		})
 	),
 	requiredRepairs: z.array(z.string())
-});
+}));
 
 export const ChainResolutionSchema = z.object({
 	action: z.enum(['reuse_existing', 'update_existing', 'create_new', 'needs_review']),
