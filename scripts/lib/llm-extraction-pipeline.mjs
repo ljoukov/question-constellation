@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
-import { generateJson, loadLocalEnv } from '@ljoukov/llm';
+import { generateJson, loadLocalEnv, runToolLoop, tool } from '@ljoukov/llm';
 import {
 	answerChainSpecificityIssues,
 	chainSpecificityIssueSummary
@@ -768,6 +768,8 @@ export const FullPaperExtractionSchema = z.object({
 				chunkConcurrency: z.number().nullable().optional(),
 				extractionGranularity: z.string().nullable().optional(),
 				chunkStrategy: z.string().nullable().optional(),
+				extractionStrategy: z.string().nullable().optional(),
+				agentMaxSteps: z.number().nullable().optional(),
 				plannedChunkCorePages: z.array(z.array(z.number())).optional()
 			})
 			.optional()
@@ -1260,6 +1262,38 @@ function summarizeOutputValue(value) {
 	};
 }
 
+function addUsageTotals(target, usage = null) {
+	if (!usage || typeof usage !== 'object') return;
+	for (const [key, value] of Object.entries(usage)) {
+		if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+		target[key] = (target[key] ?? 0) + value;
+	}
+}
+
+function summarizeToolLoopResult(result) {
+	const steps = Array.isArray(result?.steps) ? result.steps : [];
+	const usage = {};
+	let toolCallCount = 0;
+	let responseChars = 0;
+	let thoughtChars = 0;
+	for (const step of steps) {
+		addUsageTotals(usage, step?.usage);
+		toolCallCount += Array.isArray(step?.toolCalls) ? step.toolCalls.length : 0;
+		responseChars += typeof step?.text === 'string' ? step.text.length : 0;
+		thoughtChars += typeof step?.thoughts === 'string' ? step.thoughts.length : 0;
+	}
+	return {
+		keys: ['text', 'thoughts', 'steps', 'totalCostUsd'],
+		stepCount: steps.length,
+		toolCallCount,
+		usage,
+		costUsd: typeof result?.totalCostUsd === 'number' ? result.totalCostUsd : null,
+		responseChars,
+		thoughtChars,
+		finalTextChars: typeof result?.text === 'string' ? result.text.length : null
+	};
+}
+
 function sanitizeUnknownForLog(value, depth = 0) {
 	if (value == null || typeof value === 'number' || typeof value === 'boolean') return value;
 	if (typeof value === 'string') return truncateForLog(value, depth === 0 ? 4000 : 1200);
@@ -1454,6 +1488,134 @@ async function generateJsonWithTimeout(options, label = 'LLM call', timeoutMs = 
 	}
 }
 
+async function runToolLoopWithTimeout(options, label = 'LLM tool loop', timeoutMs = null) {
+	const resolvedTimeoutMs = Number(process.env.EXTRACTION_LLM_TIMEOUT_MS ?? DEFAULT_LLM_TIMEOUT_MS);
+	const activeTimeoutMs = timeoutMs ?? resolvedTimeoutMs;
+	const sourceOnEvent = options.onEvent;
+	const maxCalls = Number(process.env.EXTRACTION_LLM_MAX_CALLS ?? 0);
+	if (maxCalls > 0 && llmCallCounter >= maxCalls) {
+		throw new Error(
+			`LLM call budget exceeded before ${label}: ${llmCallCounter}/${maxCalls} calls already started.`
+		);
+	}
+	const callId = `${String(++llmCallCounter).padStart(4, '0')}-${label
+		.replace(/[^a-zA-Z0-9_.:-]+/g, '-')
+		.slice(0, 100)}`;
+	const startedAtMs = Date.now();
+	const eventTotals = {
+		thoughtChars: 0,
+		responseChars: 0,
+		streamEventCount: 0,
+		toolCallStarted: 0,
+		toolCallCompleted: 0,
+		usage: {},
+		costUsd: 0,
+		modelVersion: null,
+		blocked: false
+	};
+	const onEvent = (event) => {
+		eventTotals.streamEventCount += 1;
+		if (event?.type === 'delta' && event.channel === 'thought') {
+			eventTotals.thoughtChars += event.text?.length ?? 0;
+		} else if (event?.type === 'delta' && event.channel === 'response') {
+			eventTotals.responseChars += event.text?.length ?? 0;
+		} else if (event?.type === 'usage') {
+			addUsageTotals(eventTotals.usage, event.usage);
+			eventTotals.costUsd += typeof event.costUsd === 'number' ? event.costUsd : 0;
+			eventTotals.modelVersion = event.modelVersion ?? eventTotals.modelVersion;
+		} else if (event?.type === 'model') {
+			eventTotals.modelVersion = event.modelVersion ?? eventTotals.modelVersion;
+		} else if (event?.type === 'blocked') {
+			eventTotals.blocked = true;
+		} else if (event?.type === 'tool_call' && event.phase === 'started') {
+			eventTotals.toolCallStarted += 1;
+		} else if (event?.type === 'tool_call' && event.phase === 'completed') {
+			eventTotals.toolCallCompleted += 1;
+		}
+		appendLlmLog({
+			type: 'llm_call_event',
+			callId,
+			label,
+			event: sanitizeLlmEvent(event)
+		});
+		sourceOnEvent?.(event);
+	};
+	const request = {
+		...options,
+		onEvent
+	};
+	appendLlmLog({
+		type: 'llm_call_started',
+		callId,
+		label,
+		model: request.model,
+		thinkingLevel: request.thinkingLevel ?? null,
+		mediaResolution: request.mediaResolution ?? null,
+		timeoutMs: activeTimeoutMs,
+		maxAttempts: null,
+		maxSteps: request.maxSteps ?? null,
+		toolNames: Object.keys(request.tools ?? {}),
+		telemetry: request.telemetry ?? null,
+		input: summarizeLlmInput(request.input)
+	});
+	let controller = null;
+	let timeout = null;
+	if (activeTimeoutMs && activeTimeoutMs > 0) {
+		controller = new AbortController();
+		timeout = setTimeout(() => {
+			controller.abort(new Error(`${label} timed out after ${activeTimeoutMs}ms.`));
+		}, activeTimeoutMs);
+		request.signal = controller.signal;
+	}
+	try {
+		const result = await runToolLoop(request);
+		const summary = summarizeToolLoopResult(result);
+		appendLlmLog({
+			type: 'llm_call_completed',
+			callId,
+			label,
+			ok: true,
+			durationMs: Date.now() - startedAtMs,
+			model: request.model,
+			provider: null,
+			modelVersion:
+				result.steps?.[result.steps.length - 1]?.modelVersion ?? eventTotals.modelVersion,
+			blocked: eventTotals.blocked,
+			usage: Object.keys(summary.usage).length ? summary.usage : eventTotals.usage,
+			costUsd: typeof result.totalCostUsd === 'number' ? result.totalCostUsd : eventTotals.costUsd,
+			rawTextChars: null,
+			outputTextChars: summary.responseChars || eventTotals.responseChars,
+			thoughtChars: summary.thoughtChars || eventTotals.thoughtChars,
+			streamEventCount: eventTotals.streamEventCount,
+			toolCallStarted: eventTotals.toolCallStarted,
+			toolCallCompleted: eventTotals.toolCallCompleted,
+			value: summary
+		});
+		return result;
+	} catch (error) {
+		appendLlmLog({
+			type: 'llm_call_completed',
+			callId,
+			label,
+			ok: false,
+			durationMs: Date.now() - startedAtMs,
+			model: request.model,
+			modelVersion: eventTotals.modelVersion,
+			usage: Object.keys(eventTotals.usage).length ? eventTotals.usage : null,
+			costUsd: eventTotals.costUsd,
+			thoughtChars: eventTotals.thoughtChars,
+			outputTextChars: eventTotals.responseChars,
+			streamEventCount: eventTotals.streamEventCount,
+			toolCallStarted: eventTotals.toolCallStarted,
+			toolCallCompleted: eventTotals.toolCallCompleted,
+			error: summarizeLlmError(error)
+		});
+		throw error;
+	} finally {
+		if (timeout) clearTimeout(timeout);
+	}
+}
+
 export function readJson(filePath) {
 	return JSON.parse(readFileSync(filePath, 'utf8'));
 }
@@ -1534,6 +1696,282 @@ export function imagePart(filePath) {
 		data: readFileSync(filePath).toString('base64'),
 		filename: path.basename(filePath)
 	};
+}
+
+function imageDataUrlPart(filePath, detail = 'auto') {
+	const mimeType = imageMimeType(filePath);
+	return {
+		type: 'input_image',
+		image_url: `data:${mimeType};base64,${readFileSync(filePath).toString('base64')}`,
+		detail,
+		filename: path.basename(filePath)
+	};
+}
+
+function imageMimeType(filePath) {
+	const ext = path.extname(filePath).toLowerCase();
+	if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+	if (ext === '.webp') return 'image/webp';
+	return 'image/png';
+}
+
+function pngDimensions(filePath) {
+	const buffer = readFileSync(filePath);
+	if (
+		buffer.length < 24 ||
+		buffer.readUInt32BE(0) !== 0x89504e47 ||
+		buffer.readUInt32BE(4) !== 0x0d0a1a0a
+	) {
+		throw new Error(`Not a PNG file: ${filePath}`);
+	}
+	return {
+		width: buffer.readUInt32BE(16),
+		height: buffer.readUInt32BE(20)
+	};
+}
+
+function imageDimensions(filePath) {
+	if (path.extname(filePath).toLowerCase() === '.png') return pngDimensions(filePath);
+	const output = execFileSync('identify', ['-format', '%w %h', filePath], {
+		encoding: 'utf8'
+	}).trim();
+	const [width, height] = output.split(/\s+/).map(Number);
+	return { width, height };
+}
+
+function clampCropBox(box, dimensions) {
+	const x = Math.max(0, Math.floor(Number(box?.x) || 0));
+	const y = Math.max(0, Math.floor(Number(box?.y) || 0));
+	const width = Math.max(1, Math.floor(Number(box?.width) || dimensions.width - x));
+	const height = Math.max(1, Math.floor(Number(box?.height) || dimensions.height - y));
+	return {
+		x: Math.min(x, Math.max(0, dimensions.width - 1)),
+		y: Math.min(y, Math.max(0, dimensions.height - 1)),
+		width: Math.min(width, Math.max(1, dimensions.width - x)),
+		height: Math.min(height, Math.max(1, dimensions.height - y))
+	};
+}
+
+function renderPdfCrop({ pdfPath, outputDir, prefix, page, dpi, cropBox, format = 'png' }) {
+	mkdirSync(outputDir, { recursive: true });
+	const safePrefix = path.join(
+		outputDir,
+		`${prefix}-p${String(page).padStart(3, '0')}-x${cropBox.x}-y${cropBox.y}-w${cropBox.width}-h${cropBox.height}`
+	);
+	const ext = format === 'pgm' ? '.pgm' : '.png';
+	const outputPath = `${safePrefix}${ext}`;
+	if (existsSync(outputPath)) return outputPath;
+	const args = [
+		'-r',
+		String(dpi),
+		'-f',
+		String(page),
+		'-l',
+		String(page),
+		'-singlefile',
+		'-x',
+		String(cropBox.x),
+		'-y',
+		String(cropBox.y),
+		'-W',
+		String(cropBox.width),
+		'-H',
+		String(cropBox.height)
+	];
+	if (format === 'pgm') args.push('-gray');
+	else args.push('-png');
+	args.push(pdfPath, safePrefix);
+	execFileSync('pdftoppm', args, { stdio: ['ignore', 'pipe', 'pipe'] });
+	if (!existsSync(outputPath)) throw new Error(`Failed to render crop ${outputPath}`);
+	return outputPath;
+}
+
+function embeddedPdfImages(pdfPath) {
+	const output = execFileSync('pdfimages', ['-list', pdfPath], {
+		encoding: 'utf8',
+		maxBuffer: 1024 * 1024 * 4
+	});
+	const rows = [];
+	for (const line of output.split(/\r?\n/)) {
+		if (!/^\s*\d+\s+\d+\s+image\b/.test(line)) continue;
+		const parts = line.trim().split(/\s+/);
+		if (parts.length < 15) continue;
+		rows.push({
+			page: Number(parts[0]),
+			num: Number(parts[1]),
+			type: parts[2],
+			width: Number(parts[3]),
+			height: Number(parts[4]),
+			color: parts[5],
+			components: Number(parts[6]),
+			bitsPerComponent: Number(parts[7]),
+			encoding: parts[8],
+			interpolate: parts[9],
+			objectId: `${parts[10]} ${parts[11]} R`,
+			xPpi: Number(parts[12]),
+			yPpi: Number(parts[13]),
+			size: parts[14],
+			ratio: parts[15] ?? null
+		});
+	}
+	return rows;
+}
+
+function extractEmbeddedPdfImages({ pdfPath, outputDir, page, prefix = 'embedded-image' }) {
+	mkdirSync(outputDir, { recursive: true });
+	const safePrefix = path.join(outputDir, `${prefix}-p${String(page).padStart(3, '0')}`);
+	execFileSync('pdfimages', ['-f', String(page), '-l', String(page), '-png', pdfPath, safePrefix], {
+		stdio: ['ignore', 'pipe', 'pipe']
+	});
+	return readdirSync(outputDir)
+		.filter((fileName) => fileName.startsWith(path.basename(safePrefix)))
+		.filter((fileName) => /\.(?:png|jpg|jpeg|pbm|ppm)$/i.test(fileName))
+		.sort()
+		.map((fileName) => path.join(outputDir, fileName));
+}
+
+function parsePgm(filePath) {
+	const buffer = readFileSync(filePath);
+	let offset = 0;
+	function nextToken() {
+		while (offset < buffer.length) {
+			const char = String.fromCharCode(buffer[offset]);
+			if (/\s/.test(char)) {
+				offset += 1;
+				continue;
+			}
+			if (char === '#') {
+				while (offset < buffer.length && buffer[offset] !== 10) offset += 1;
+				continue;
+			}
+			break;
+		}
+		const start = offset;
+		while (offset < buffer.length && !/\s/.test(String.fromCharCode(buffer[offset]))) {
+			offset += 1;
+		}
+		return buffer.slice(start, offset).toString('ascii');
+	}
+	const magic = nextToken();
+	const width = Number(nextToken());
+	const height = Number(nextToken());
+	const maxValue = Number(nextToken());
+	while (offset < buffer.length && /\s/.test(String.fromCharCode(buffer[offset]))) offset += 1;
+	if (magic !== 'P5' || !Number.isInteger(width) || !Number.isInteger(height) || maxValue <= 0) {
+		throw new Error(`Unsupported PGM file: ${filePath}`);
+	}
+	return {
+		width,
+		height,
+		maxValue,
+		pixels: buffer.slice(offset, offset + width * height)
+	};
+}
+
+function longestDarkRun(rowOffset, width, pixels, threshold) {
+	let current = 0;
+	let longest = 0;
+	let darkCount = 0;
+	for (let x = 0; x < width; x += 1) {
+		if (pixels[rowOffset + x] <= threshold) {
+			current += 1;
+			darkCount += 1;
+			if (current > longest) longest = current;
+		} else {
+			current = 0;
+		}
+	}
+	return { longest, darkCount };
+}
+
+function detectHorizontalAnswerLines({
+	pgmPath,
+	darkThreshold = 150,
+	minRunRatio = 0.48,
+	minDarkRatio = 0.18
+}) {
+	const image = parsePgm(pgmPath);
+	const candidateRows = [];
+	for (let y = 0; y < image.height; y += 1) {
+		const { longest, darkCount } = longestDarkRun(
+			y * image.width,
+			image.width,
+			image.pixels,
+			darkThreshold
+		);
+		if (longest >= image.width * minRunRatio && darkCount >= image.width * minDarkRatio) {
+			candidateRows.push({ y, longest, darkCount });
+		}
+	}
+	const groups = [];
+	for (const row of candidateRows) {
+		const previous = groups[groups.length - 1];
+		if (previous && row.y <= previous.yEnd + 3) {
+			previous.yEnd = row.y;
+			previous.rows += 1;
+			previous.longest = Math.max(previous.longest, row.longest);
+			previous.darkCount = Math.max(previous.darkCount, row.darkCount);
+		} else {
+			groups.push({
+				yStart: row.y,
+				yEnd: row.y,
+				rows: 1,
+				longest: row.longest,
+				darkCount: row.darkCount
+			});
+		}
+	}
+	return {
+		width: image.width,
+		height: image.height,
+		lineCount: groups.length,
+		lines: groups.map((group) => ({
+			y: Math.round((group.yStart + group.yEnd) / 2),
+			yStart: group.yStart,
+			yEnd: group.yEnd,
+			thickness: group.rows,
+			longestDarkRun: group.longest,
+			darkPixelCount: group.darkCount
+		}))
+	};
+}
+
+function lineCountBoundaryWarnings(lineDetection) {
+	const lines = lineDetection?.lines ?? [];
+	if (lines.length < 2) return [];
+	const spacings = [];
+	for (let index = 1; index < lines.length; index += 1) {
+		const spacing = Number(lines[index]?.y) - Number(lines[index - 1]?.y);
+		if (Number.isFinite(spacing) && spacing > 0) spacings.push(spacing);
+	}
+	if (!spacings.length) return [];
+	const sorted = [...spacings].sort((left, right) => left - right);
+	const medianSpacing = sorted[Math.floor(sorted.length / 2)];
+	const warningMargin = Math.max(16, medianSpacing * 0.75);
+	const first = lines[0];
+	const last = lines[lines.length - 1];
+	const topGap = Number(first?.yStart ?? first?.y);
+	const bottomGap = Number(lineDetection.height) - Number(last?.yEnd ?? last?.y) - 1;
+	const warnings = [];
+	if (Number.isFinite(topGap) && topGap < warningMargin) {
+		warnings.push({
+			edge: 'top',
+			gapPx: Math.round(topGap),
+			medianLineSpacingPx: Math.round(medianSpacing),
+			message:
+				'The first detected line is close enough to the crop top that an earlier answer line may have been clipped.'
+		});
+	}
+	if (Number.isFinite(bottomGap) && bottomGap < warningMargin) {
+		warnings.push({
+			edge: 'bottom',
+			gapPx: Math.round(bottomGap),
+			medianLineSpacingPx: Math.round(medianSpacing),
+			message:
+				'The last detected line is close enough to the crop bottom that a later answer line may have been clipped.'
+		});
+	}
+	return warnings;
 }
 
 export function selectPages(files, pages = []) {
@@ -2490,6 +2928,7 @@ export function buildFullPaperPrompt({
 		'Do not extract withdrawn questions, replacement notices, statistics-only rows, or mean-mark/max-mark lines as learner-facing questions. If the official materials do not include the original prompt and positive marking criteria, omit that subquestion rather than inventing a placeholder prompt, response, or answer chain.',
 		'Return compact source-grounded question data. No extra JSON keys. Checklist items should be one short sentence each. Mark-scheme items should be concise positive marking evidence, not long explanations. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use contextBlocks plus response objects for tables, MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
 		'Do not put answers from previous subquestions into learner-visible promptText or promptBlocks. If a later subquestion is ambiguous outside the original sequence, put resolved context only in selfContainedPromptText/contextText for standalone grading and keep promptBlocks faithful to the printed prompt.',
+		'When a marked question has printed setup/context before the actual instruction, put that setup in contextText/contextBlocks and set promptText to only the marked instruction. selfContainedPromptText may combine context and instruction. The renderer shows contextBlocks/stemBlocks before promptBlocks, so do not duplicate the same sentence in both.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
 		'For equation-blanks, always include response.segments with text/math/blank segments in visible order, and make each correctAnswers targetId match a blank segment id.',
 		'When two or more equation blanks accept a set of answers in any order, add response.unorderedGroups with targetIds and answers so the grader does not accept duplicate entries as correct.',
@@ -2610,6 +3049,770 @@ export async function extractFullPaperChunk({
 	});
 }
 
+function rangeInclusive(start, end) {
+	const values = [];
+	for (let value = start; value <= end; value += 1) values.push(value);
+	return values;
+}
+
+function renderedImagesByPage(images) {
+	return new Map(images.map((image) => [pageNumberFromRenderedPath(image), image]));
+}
+
+function buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, contextPages = 2) {
+	const refsByPage = normalizePageRefMap(pageRefsByPage);
+	const imagesByPage = renderedImagesByPage(questionImages);
+	const selectedPages = questionImages.map(pageNumberFromRenderedPath).filter(Boolean);
+	const selectedPageSet = new Set(selectedPages);
+	const parents = new Map();
+	for (const page of selectedPages) {
+		for (const ref of refsByPage.get(page) ?? []) {
+			const parent = questionParentRef(ref);
+			if (!parent) continue;
+			if (!parents.has(parent)) parents.set(parent, { parentRef: parent, refs: new Set(), pages: new Set() });
+			parents.get(parent).refs.add(ref);
+			parents.get(parent).pages.add(page);
+		}
+	}
+	if (parents.size === 0) {
+		return [
+			{
+				index: 0,
+				total: 1,
+				chunkStrategy: 'agentic-parent-question',
+				parentRef: null,
+				targetRefs: [],
+				priorContextImages: [],
+				coreImages: questionImages,
+				lookaheadImages: [],
+				images: questionImages,
+				priorContextPages: [],
+				corePages: selectedPages,
+				lookaheadPages: []
+			}
+		];
+	}
+	const packets = [...parents.values()]
+		.sort((a, b) => compareQuestionRefs(`${a.parentRef}.1`, `${b.parentRef}.1`))
+		.map((entry) => {
+			const refPages = [...entry.pages].sort((a, b) => a - b);
+			const start = refPages[0];
+			const end = refPages[refPages.length - 1];
+			const corePages = rangeInclusive(start, end).filter((page) => selectedPageSet.has(page));
+			const priorContextPages = selectedPages.filter(
+				(page) => page < start && page >= start - contextPages
+			);
+			const lookaheadPages = selectedPages.filter((page) => page === end + 1);
+			const priorContextImages = priorContextPages.map((page) => imagesByPage.get(page)).filter(Boolean);
+			const coreImages = corePages.map((page) => imagesByPage.get(page)).filter(Boolean);
+			const lookaheadImages = lookaheadPages.map((page) => imagesByPage.get(page)).filter(Boolean);
+			return {
+				index: 0,
+				total: 0,
+				chunkStrategy: 'agentic-parent-question',
+				parentRef: entry.parentRef,
+				targetRefs: [...entry.refs].sort(compareQuestionRefs),
+				priorContextImages,
+				coreImages,
+				lookaheadImages,
+				images: [...priorContextImages, ...coreImages, ...lookaheadImages],
+				priorContextPages,
+				corePages,
+				lookaheadPages
+			};
+		});
+	return packets.map((packet, index) => ({ ...packet, index, total: packets.length }));
+}
+
+function compactAgenticPageRefSummary(packet, pageRefsByPage) {
+	const refsByPage = normalizePageRefMap(pageRefsByPage);
+	return [...(packet.corePages ?? []), ...(packet.priorContextPages ?? []), ...(packet.lookaheadPages ?? [])]
+		.sort((a, b) => a - b)
+		.map((page) => ({
+			page,
+			role: packet.corePages.includes(page)
+				? 'core'
+				: packet.priorContextPages.includes(page)
+					? 'prior_context'
+					: 'lookahead',
+			detectedRefs: refsByPage.get(page) ?? []
+		}));
+}
+
+function buildAgenticExtractionPrompt({
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme,
+	supportingDocuments = [],
+	packet,
+	pageRefsByPage,
+	extractionSpec,
+	extraInstructions = '',
+	expectedQuestionCount = null,
+	assetManifestText = ''
+}) {
+	return [
+		'Extract this GCSE parent-question packet into compact Question Constellation extraction JSON using the available tools.',
+		'This is a bounded PDF-backed agentic extraction loop. Do not ask for shell access, repo files, full OCR dumps, precomputed .txt files, or broad mark-scheme dumps.',
+		'Do not request git status, repository context, web search, or any source outside the official PDFs exposed by tools. This is not a repo-roaming Codex session.',
+		'Request only narrow observations through tools: selected page text, mark-scheme slices by refs, selected page images, cropped/zoomed images, response-line checks, and partial JSON validation.',
+		'Check embedded PDF images for pages with figures, diagrams, photos, graph surfaces, or visual answer options before treating rendered page screenshots as assets. Use rendered pages for layout and visual context.',
+		'Use targeted line-count checks on answer-area crops only, and cross-check with scan_question_page_horizontal_rules when a crop may clip the first or last answer line. Whole-page detection can count graph grids, table borders, and page rules, so use it as a y-coordinate guide rather than an automatic count.',
+		'When complete, call submit_extraction. Do not finish with free-form prose.',
+		`Use sourceDocument.id: ${sourceDocumentId}`,
+		`Use markSchemeDocument.id: ${markSchemeDocumentId}`,
+		`Packet ${packet.index + 1} of ${packet.total}; parent ref: ${packet.parentRef ?? 'unknown'}.`,
+		`Core question-paper pages: ${(packet.corePages ?? []).join(', ') || 'none'}.`,
+		packet.priorContextPages?.length
+			? `Prior context pages: ${packet.priorContextPages.join(', ')}. Use only for parent stems, earlier values, tables, figures, and diagrams needed by core targets.`
+			: 'Prior context pages: none.',
+		packet.lookaheadPages?.length
+			? `Lookahead pages: ${packet.lookaheadPages.join(', ')}. Use only to finish a core-page subquestion; do not extract new sibling refs that begin only on lookahead pages.`
+			: 'Lookahead pages: none.',
+		packet.targetRefs?.length
+			? `Detected target refs for this packet: ${packet.targetRefs.join(', ')}. Extract these refs unless a tool observation proves the scout missed or misread a ref.`
+			: 'No target refs were detected. Use tools carefully and submit an empty questions array if the selected pages contain no marked subquestion starts.',
+		expectedQuestionCount ? `Return exactly ${expectedQuestionCount} atomic question(s).` : '',
+		'Use read_question_page_text for prompt/ref/mark-value anchors, then use page images or crops for layout, response controls, tables, figures, diagrams, and answer spaces.',
+		'Use read_mark_scheme_for_refs with the target refs before writing markSchemeItems, markChecklist, modelAnswer, or answer keys.',
+		'Use check_response_line_counts with sourceQuestionRef on a bounded answer-area crop before finalizing lines/labeled-lines counts when the page has visible ruled answer lines. The crop must include the whole answer area; if the tool returns boundaryWarnings, or the first/last line may be outside the crop, or the count conflicts with the page image, run scan_question_page_horizontal_rules and rerun check_response_line_counts with a larger crop before submitting.',
+		'Extract every independently marked subquestion in the packet. Do not create rows for unmarked parent stems.',
+		'Do not generate answerChain fields; the script creates placeholders and a later text-only chain reconciliation phase assigns reusable chains.',
+		'For markChecklist.required, true means every full-credit response must satisfy that criterion. Alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.',
+		'For level-of-response questions, preserve level descriptor mark ranges and make indicative-content examples optional checklist evidence.',
+		'Use response.kind values only from: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.',
+		'Render formulae, equations, chemical equations, units, symbols, powers of ten, algebraic expressions, and substitutions as LaTeX strings where appropriate.',
+		'For source tables needed by a target question, use contextBlocks with kind "structured-table" when possible instead of requiring an image asset.',
+		'For graph drawing, label-on-image, or visual response surfaces, use asset-canvas or image-label-zones only when a concrete asset exists or mark needsHumanReview with a blocking review note.',
+		'Keep exact answers and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer only.',
+		'Split printed setup/context from the instruction: contextText/contextBlocks are rendered as stemBlocks, promptText is rendered as promptBlocks. If promptText repeats contextBlocks, students will see duplicated question text and validation should fail.',
+		'',
+		'Question paper:',
+		sourceDocumentPrompt(questionPaper),
+		'Mark scheme:',
+		sourceDocumentPrompt(markScheme),
+		supportingDocuments.length
+			? ['Supporting documents:', ...supportingDocuments.map(sourceDocumentPrompt)].join('\n')
+			: 'Supporting documents: none',
+		assetManifestText ? ['Local asset manifest:', assetManifestText].join('\n') : null,
+		'Page/ref scout summary:',
+		JSON.stringify(compactAgenticPageRefSummary(packet, pageRefsByPage), null, 2),
+		extraInstructions,
+		'',
+		'Project extraction contract:',
+		extractionSpecPrompt(extractionSpec)
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+function maxToolTextChars(value, maxChars = 14000) {
+	const text = String(value ?? '');
+	if (text.length <= maxChars) return text;
+	return `${text.slice(0, maxChars)}\n...[truncated ${text.length - maxChars} chars by tool limit]`;
+}
+
+function toolPageAllowed(packet, page) {
+	return [
+		...(packet.corePages ?? []),
+		...(packet.priorContextPages ?? []),
+		...(packet.lookaheadPages ?? [])
+	].includes(page);
+}
+
+function relativeToolPath(rootDir, filePath) {
+	return path.relative(rootDir, filePath).split(path.sep).join('/');
+}
+
+function normalizeLooseQuestionRef(value) {
+	const text = String(value ?? '').trim();
+	if (!text) return null;
+	const dotted = text.match(/\b(\d{1,2})\s*\.\s*(\d{1,2})\b/);
+	if (dotted) return normalizedQuestionRef(dotted[1], dotted[2]);
+	const spaced = text.match(/\b(\d)\s+(\d)\s*\.\s*(\d{1,2})\b/);
+	if (spaced) return normalizedQuestionRef(`${spaced[1]}${spaced[2]}`, spaced[3]);
+	return null;
+}
+
+function lineResponseCount(question) {
+	const response = question?.response;
+	if (!['lines', 'labeled-lines'].includes(response?.kind)) return null;
+	const count = response.lineCount ?? response.count;
+	if (!Number.isFinite(Number(count))) return null;
+	return Number(count);
+}
+
+function lineCountObservationFindings(candidate, observations) {
+	const latestByRef = new Map();
+	for (const observation of observations) {
+		if (!observation.sourceQuestionRef) continue;
+		latestByRef.set(observation.sourceQuestionRef, observation);
+	}
+	const findings = [];
+	for (const question of candidate.questions ?? []) {
+		const observed = latestByRef.get(question.sourceQuestionRef);
+		if (!observed) continue;
+		const submittedCount = lineResponseCount(question);
+		const issues = [];
+		if (submittedCount !== null && submittedCount !== observed.lineCount) {
+			issues.push({
+				severity: 'error',
+				code: 'response_line_count_conflicts_with_tool_observation',
+				field: 'response.lineCount',
+				evidence: JSON.stringify({
+					submittedCount,
+					observedCount: observed.lineCount,
+					page: observed.page,
+					cropBox: observed.cropBox,
+					purpose: observed.purpose
+				}),
+				message:
+					'Submitted response.lineCount must match the latest line-count tool observation for this sourceQuestionRef.'
+			});
+		}
+		for (const warning of observed.boundaryWarnings ?? []) {
+			issues.push({
+				severity: 'error',
+				code: 'response_line_count_crop_may_be_clipped',
+				field: 'response.lineCount',
+				evidence: JSON.stringify({
+					observedCount: observed.lineCount,
+					page: observed.page,
+					cropBox: observed.cropBox,
+					edge: warning.edge,
+					gapPx: warning.gapPx,
+					medianLineSpacingPx: warning.medianLineSpacingPx,
+					purpose: observed.purpose
+				}),
+				message:
+					'The latest line-count crop may have clipped the answer area. Rerun check_response_line_counts with a larger crop before submitting.'
+			});
+		}
+		if (!issues.length) continue;
+		findings.push({
+			sourceQuestionRef: question.sourceQuestionRef,
+			chainId: question.answerChain?.id ?? null,
+			issues
+		});
+	}
+	return findings;
+}
+
+function createAgenticExtractionTools({
+	rootDir,
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme,
+	packet,
+	pageRefsByPage,
+	markSchemeText,
+	dpi,
+	mediaResolution,
+	agentWorkDir
+}) {
+	let submittedValue = null;
+	const lineCountObservations = [];
+	const imageByPage = renderedImagesByPage(packet.images ?? []);
+	const toolContext = {
+		submittedValue: () => submittedValue
+	};
+	const pageSchema = z.number().int().min(1);
+	const cropSchema = z.object({
+		page: pageSchema,
+		x: z.number().min(0),
+		y: z.number().min(0),
+		width: z.number().min(1),
+		height: z.number().min(1),
+		purpose: z.string().max(240).optional()
+	});
+	const tools = {
+		read_question_page_text: tool({
+			description:
+				'Read deterministic pdftotext -layout output for one to four allowed packet pages. Use this for refs, prompt text, marks, and table values. This is not a full-paper OCR dump.',
+			inputSchema: z.object({
+				pages: z.array(pageSchema).min(1).max(4),
+				maxChars: z.number().int().min(1000).max(18000).optional()
+			}),
+			execute: ({ pages, maxChars = 12000 }) => {
+				for (const page of pages) {
+					if (!toolPageAllowed(packet, page)) {
+						throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+					}
+				}
+				const text = pdfText(questionPaper.path, maxChars, pages);
+				return {
+					source: 'pdftotext -layout',
+					pages,
+					detectedRefsByPage: Object.fromEntries(
+						pages.map((page) => [page, normalizePageRefMap(pageRefsByPage).get(page) ?? []])
+					),
+					text: maxToolTextChars(text, maxChars)
+				};
+			}
+		}),
+		read_mark_scheme_for_refs: tool({
+			description:
+				'Read a narrow mark-scheme text slice around specific sourceQuestionRef values. Use this before finalizing marking evidence. Do not request all refs unless this packet needs them.',
+			inputSchema: z.object({
+				refs: z.array(z.string()).min(1).max(12),
+				windowLines: z.number().int().min(12).max(90).optional(),
+				maxChars: z.number().int().min(2000).max(32000).optional()
+			}),
+			execute: ({ refs, windowLines = 55, maxChars = 24000 }) => {
+				const text = markSchemeTextExcerptForRefs(markSchemeText, refs, windowLines);
+				return {
+					source: 'pdftotext -layout mark-scheme slice',
+					refs,
+					windowLines,
+					text: maxToolTextChars(text, maxChars)
+				};
+			}
+		}),
+		list_embedded_question_images: tool({
+			description:
+				'List official embedded image objects on allowed packet pages. Use before treating rendered page screenshots as figure assets; many AQA figures are embedded directly in the PDF.',
+			inputSchema: z.object({
+				pages: z.array(pageSchema).min(1).max(6).optional()
+			}),
+			execute: ({ pages = packet.corePages ?? [] }) => {
+				for (const page of pages) {
+					if (!toolPageAllowed(packet, page)) {
+						throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+					}
+				}
+				const allowed = new Set(pages);
+				return {
+					source: 'pdfimages -list',
+					pages,
+					images: embeddedPdfImages(questionPaper.path).filter((image) => allowed.has(image.page))
+				};
+			}
+		}),
+		view_embedded_question_images: tool({
+			description:
+				'Extract and view official embedded image objects from one allowed question-paper page. Use for figures, diagrams, photos, graph surfaces, and answer-key visual choices embedded in the PDF.',
+			inputSchema: z.object({
+				page: pageSchema,
+				maxImages: z.number().int().min(1).max(6).optional(),
+				purpose: z.string().max(240).optional()
+			}),
+			execute: ({ page, maxImages = 4, purpose = '' }) => {
+				if (!toolPageAllowed(packet, page)) {
+					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+				}
+				const imageInfos = embeddedPdfImages(questionPaper.path).filter((image) => image.page === page);
+				const extracted = extractEmbeddedPdfImages({
+					pdfPath: questionPaper.path,
+					outputDir: path.join(agentWorkDir, 'embedded-images'),
+					page,
+					prefix: 'question-embedded'
+				}).slice(0, maxImages);
+				if (!extracted.length) {
+					return {
+						page,
+						purpose,
+						status: 'no_embedded_images',
+						images: imageInfos
+					};
+				}
+				return [
+					{
+						type: 'input_text',
+						text: JSON.stringify({
+							page,
+							purpose,
+							source: 'pdfimages -png',
+							availableImages: imageInfos,
+							returnedImages: extracted.map((filePath, index) => ({
+								index: index + 1,
+								imagePath: relativeToolPath(rootDir, filePath),
+								...imageDimensions(filePath)
+							}))
+						})
+					},
+					...extracted.map((filePath) => imageDataUrlPart(filePath, mediaResolution))
+				];
+			}
+		}),
+		read_question_page_image_metadata: tool({
+			description:
+				'Return rendered page image dimensions for an allowed packet page so crop boxes can be chosen precisely.',
+			inputSchema: z.object({ page: pageSchema }),
+			execute: ({ page }) => {
+				if (!toolPageAllowed(packet, page)) {
+					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+				}
+				const image = imageByPage.get(page);
+				if (!image) throw new Error(`No rendered image for page ${page}.`);
+				return {
+					page,
+					imagePath: relativeToolPath(rootDir, image),
+					dpi,
+					...pngDimensions(image)
+				};
+			}
+		}),
+		view_question_page_image: tool({
+			description:
+				'View one allowed rendered question-paper page image. Use this for layout, response controls, figures, answer lines, and page-level visual checks.',
+			inputSchema: z.object({
+				page: pageSchema,
+				purpose: z.string().max(240).optional()
+			}),
+			execute: ({ page, purpose = '' }) => {
+				if (!toolPageAllowed(packet, page)) {
+					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+				}
+				const image = imageByPage.get(page);
+				if (!image) throw new Error(`No rendered image for page ${page}.`);
+				const dimensions = pngDimensions(image);
+				return [
+					{
+						type: 'input_text',
+						text: JSON.stringify({
+							page,
+							purpose,
+							imagePath: relativeToolPath(rootDir, image),
+							dpi,
+							...dimensions
+						})
+					},
+					imageDataUrlPart(image, mediaResolution)
+				];
+			}
+		}),
+		crop_question_page_image: tool({
+			description:
+				'Render and view a bounded crop/zoom from one allowed question-paper page. Coordinates are pixels in the rendered page image from top-left.',
+			inputSchema: cropSchema,
+			execute: ({ page, x, y, width, height, purpose = '' }) => {
+				if (!toolPageAllowed(packet, page)) {
+					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+				}
+				const image = imageByPage.get(page);
+				if (!image) throw new Error(`No rendered image for page ${page}.`);
+				const dimensions = pngDimensions(image);
+				const cropBox = clampCropBox({ x, y, width, height }, dimensions);
+				if (cropBox.width * cropBox.height > dimensions.width * dimensions.height * 0.75) {
+					throw new Error('Crop is too broad. Use view_question_page_image or request a smaller crop.');
+				}
+				const cropPath = renderPdfCrop({
+					pdfPath: questionPaper.path,
+					outputDir: path.join(agentWorkDir, 'crops'),
+					prefix: 'question-page-crop',
+					page,
+					dpi,
+					cropBox,
+					format: 'png'
+				});
+				return [
+					{
+						type: 'input_text',
+						text: JSON.stringify({
+							page,
+							purpose,
+							cropBox,
+							imagePath: relativeToolPath(rootDir, cropPath),
+							dpi,
+							...pngDimensions(cropPath)
+						})
+					},
+					imageDataUrlPart(cropPath, mediaResolution)
+				];
+			}
+		}),
+		check_response_line_counts: tool({
+			description:
+				'Count horizontal ruled answer lines in a bounded answer-area crop for one sourceQuestionRef. Coordinates are pixels in the rendered page image from top-left. Use after viewing page metadata/image.',
+			inputSchema: cropSchema.extend({
+				sourceQuestionRef: z.string().optional(),
+				darkThreshold: z.number().int().min(40).max(230).optional(),
+				minRunRatio: z.number().min(0.2).max(0.9).optional(),
+				minDarkRatio: z.number().min(0.05).max(0.6).optional()
+			}),
+			execute: ({
+				page,
+				x,
+				y,
+				width,
+				height,
+				purpose = '',
+				sourceQuestionRef = '',
+				darkThreshold = 150,
+				minRunRatio = 0.48,
+				minDarkRatio = 0.18
+			}) => {
+				if (!toolPageAllowed(packet, page)) {
+					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+				}
+				const image = imageByPage.get(page);
+				if (!image) throw new Error(`No rendered image for page ${page}.`);
+				const dimensions = pngDimensions(image);
+				const cropBox = clampCropBox({ x, y, width, height }, dimensions);
+				if (cropBox.width * cropBox.height > dimensions.width * dimensions.height * 0.6) {
+					throw new Error('Line-count crop is too broad. Crop just the answer area.');
+				}
+				const pgmPath = renderPdfCrop({
+					pdfPath: questionPaper.path,
+					outputDir: path.join(agentWorkDir, 'line-counts'),
+					prefix: 'question-page-lines',
+					page,
+					dpi,
+					cropBox,
+					format: 'pgm'
+				});
+				const result = detectHorizontalAnswerLines({
+					pgmPath,
+					darkThreshold,
+					minRunRatio,
+					minDarkRatio
+				});
+				const boundaryWarnings = lineCountBoundaryWarnings(result);
+				const normalizedSourceQuestionRef =
+					normalizeLooseQuestionRef(sourceQuestionRef) ?? normalizeLooseQuestionRef(purpose);
+				if (normalizedSourceQuestionRef) {
+					lineCountObservations.push({
+						sourceQuestionRef: normalizedSourceQuestionRef,
+						page,
+						purpose,
+						cropBox,
+						lineCount: result.lineCount,
+						boundaryWarnings
+					});
+				}
+				return {
+					page,
+					purpose,
+					sourceQuestionRef: normalizedSourceQuestionRef,
+					cropBox,
+					pgmPath: relativeToolPath(rootDir, pgmPath),
+					dpi,
+					parameters: { darkThreshold, minRunRatio, minDarkRatio },
+					boundaryWarnings,
+					...result
+				};
+			}
+		}),
+		scan_question_page_horizontal_rules: tool({
+			description:
+				'Scan an allowed full rendered question-paper page for long horizontal rules and return y-coordinates. Use this to cross-check answer-line crops that might clip the first or last line. Full-page scans may include table borders, graph grids, page rules, and other non-answer lines.',
+			inputSchema: z.object({
+				page: pageSchema,
+				darkThreshold: z.number().int().min(40).max(240).optional(),
+				minRunRatio: z.number().min(0.2).max(0.9).optional(),
+				minDarkRatio: z.number().min(0.02).max(0.6).optional()
+			}),
+			execute: ({ page, darkThreshold = 150, minRunRatio = 0.45, minDarkRatio = 0.12 }) => {
+				if (!toolPageAllowed(packet, page)) {
+					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
+				}
+				const image = imageByPage.get(page);
+				if (!image) throw new Error(`No rendered image for page ${page}.`);
+				const dimensions = pngDimensions(image);
+				const pgmPath = renderPdfCrop({
+					pdfPath: questionPaper.path,
+					outputDir: path.join(agentWorkDir, 'horizontal-rules'),
+					prefix: 'question-page-horizontal-rules',
+					page,
+					dpi,
+					cropBox: { x: 0, y: 0, width: dimensions.width, height: dimensions.height },
+					format: 'pgm'
+				});
+				const result = detectHorizontalAnswerLines({
+					pgmPath,
+					darkThreshold,
+					minRunRatio,
+					minDarkRatio
+				});
+				return {
+					page,
+					pgmPath: relativeToolPath(rootDir, pgmPath),
+					dpi,
+					parameters: { darkThreshold, minRunRatio, minDarkRatio },
+					...result
+				};
+			}
+		}),
+		validate_partial_extraction: tool({
+			description:
+				'Validate compact extraction JSON for the current packet and run deterministic extraction checks excluding answer-chain checks. Use before submit_extraction.',
+			inputSchema: LlmCompactFullPaperExtractionSchema,
+			execute: (value) => {
+				const full = expandCompactFullPaperExtraction({
+					value,
+					sourceDocumentId,
+					markSchemeDocumentId,
+					questionPaper,
+					markScheme,
+					chunk: packet
+				});
+				const deterministicIssues = deterministicCandidateIssues(full, {
+					includeAnswerChainIssues: false
+				});
+				const observationIssues = lineCountObservationFindings(full, lineCountObservations);
+				const allIssues = [...deterministicIssues, ...observationIssues];
+				const blocking = blockingIssues(allIssues);
+				return {
+					status: blocking.length ? 'blocked' : 'valid',
+					questionCount: full.questions.length,
+					refs: full.questions.map((question) => question.sourceQuestionRef),
+					blockingIssueCount: blocking.length,
+					blockingIssues: blocking,
+					deterministicIssueCount: allIssues.length,
+					deterministicIssues: allIssues
+				};
+			}
+		}),
+		submit_extraction: tool({
+			description:
+				'Terminal tool. Submit final compact extraction JSON for this packet after using the source tools and partial validator.',
+			inputSchema: LlmCompactFullPaperExtractionSchema,
+			terminal: true,
+			execute: (value) => {
+				const full = expandCompactFullPaperExtraction({
+					value,
+					sourceDocumentId,
+					markSchemeDocumentId,
+					questionPaper,
+					markScheme,
+					chunk: packet
+				});
+				const blocking = blockingIssues(
+					[
+						...deterministicCandidateIssues(full, {
+							includeAnswerChainIssues: false
+						}),
+						...lineCountObservationFindings(full, lineCountObservations)
+					]
+				);
+				if (blocking.length) {
+					throw new Error(
+						`Submission has ${blocking.length} blocking extraction issue(s): ${JSON.stringify(blocking)}`
+					);
+				}
+				submittedValue = full;
+				return {
+					status: 'accepted',
+					summary: `accepted ${full.questions.length} question(s): ${full.questions
+						.map((question) => question.sourceQuestionRef)
+						.join(', ')}`,
+					questionCount: full.questions.length,
+					refs: full.questions.map((question) => question.sourceQuestionRef)
+				};
+			}
+		})
+	};
+	return { tools, toolContext };
+}
+
+function packetCacheSafeName(packet) {
+	const parent = packet.parentRef ? `parent-${packet.parentRef}` : `packet-${packet.index + 1}`;
+	const pages = packet.corePages?.length ? `pages-${packet.corePages.join('-')}` : 'pages-none';
+	return `${parent}-${pages}`.replace(/[^a-zA-Z0-9_.-]+/g, '-');
+}
+
+async function extractFullPaperAgenticPacket({
+	rootDir = process.cwd(),
+	model = DEFAULT_EXTRACTION_MODEL,
+	thinkingLevel = DEFAULT_THINKING_LEVEL,
+	mediaResolution = 'auto',
+	sourceDocumentId,
+	markSchemeDocumentId,
+	questionPaper,
+	markScheme,
+	supportingDocuments = [],
+	packet,
+	pageRefsByPage,
+	markSchemeText,
+	extractionSpec,
+	extraInstructions = '',
+	expectedQuestionCount = null,
+	assetManifestText = '',
+	dpi,
+	agentWorkDir,
+	agentMaxSteps = 8
+}) {
+	const prompt = buildAgenticExtractionPrompt({
+		sourceDocumentId,
+		markSchemeDocumentId,
+		questionPaper,
+		markScheme,
+		supportingDocuments,
+		packet,
+		pageRefsByPage,
+		extractionSpec,
+		extraInstructions,
+		expectedQuestionCount,
+		assetManifestText
+	});
+	const { tools, toolContext } = createAgenticExtractionTools({
+		rootDir,
+		sourceDocumentId,
+		markSchemeDocumentId,
+		questionPaper,
+		markScheme,
+		packet,
+		pageRefsByPage,
+		markSchemeText,
+		dpi,
+		mediaResolution,
+		agentWorkDir
+	});
+	const result = await runToolLoopWithTimeout(
+		{
+			model,
+			thinkingLevel,
+			mediaResolution,
+			maxSteps: agentMaxSteps,
+			input: [
+				{
+					role: 'system',
+					content:
+						'You are a careful GCSE exam PDF extraction agent. Use only the provided bounded tools, then submit compact source-grounded JSON.'
+				},
+				{ role: 'user', content: prompt }
+			],
+			tools
+		},
+		`agentic-extract:${sourceDocumentId}:${packet.parentRef ?? packet.index + 1}`
+	);
+	const submitted = toolContext.submittedValue();
+	const tracePath = path.join(agentWorkDir, 'tool-loop-summary.json');
+	writeJson(tracePath, {
+		sourceDocumentId,
+		parentRef: packet.parentRef,
+		targetRefs: packet.targetRefs,
+		corePages: packet.corePages,
+		priorContextPages: packet.priorContextPages,
+		lookaheadPages: packet.lookaheadPages,
+		model,
+		thinkingLevel,
+		mediaResolution,
+		agentMaxSteps,
+		result: sanitizeUnknownForLog(result)
+	});
+	if (submitted) return submitted;
+	if (result.text?.trim()) {
+		try {
+			return expandCompactFullPaperExtraction({
+				value: JSON.parse(result.text),
+				sourceDocumentId,
+				markSchemeDocumentId,
+				questionPaper,
+				markScheme,
+				chunk: packet
+			});
+		} catch (error) {
+			throw new Error(
+				`Agentic extraction ended without submit_extraction and final text was not compact JSON: ${error instanceof Error ? error.message : String(error)}`
+			);
+		}
+	}
+	throw new Error('Agentic extraction ended without submit_extraction.');
+}
+
 export function mergeFullPaperChunks(values) {
 	if (values.length === 0) throw new Error('No extraction chunks to merge.');
 	const questionsByRef = new Map();
@@ -2728,14 +3931,15 @@ export function enrichFullPaperExtraction({
 	questionPaper,
 	markScheme,
 	supportingDocuments = [],
-	assetManifest = []
+	assetManifest = [],
+	extractionSource = 'llm-scripted-pdf-page-images'
 }) {
 	const enriched = {
 		...value,
 		sourceDocumentId: questionPaper.id,
 		extractionRun: {
 			...value.extractionRun,
-			source: 'llm-scripted-pdf-page-images',
+			source: extractionSource,
 			model,
 			dpi,
 			pageSelection,
@@ -2818,6 +4022,8 @@ export async function extractFullPaperFromPdfSet({
 	chunkStrategy = 'parent-question',
 	extractionGranularity = 'chunk',
 	allowQuestionGranularity = false,
+	extractionStrategy = 'chunk',
+	agentMaxSteps = 8,
 	markSchemeImageMode = 'none',
 	model = DEFAULT_EXTRACTION_MODEL,
 	thinkingLevel = DEFAULT_THINKING_LEVEL,
@@ -2913,6 +4119,9 @@ export async function extractFullPaperFromPdfSet({
 	if (!['chunk', 'question'].includes(extractionGranularity)) {
 		throw new Error('extractionGranularity must be chunk or question.');
 	}
+	if (!['chunk', 'agentic'].includes(extractionStrategy)) {
+		throw new Error('extractionStrategy must be chunk or agentic.');
+	}
 	if (extractionGranularity === 'question' && !allowQuestionGranularity) {
 		throw new Error(
 			'extractionGranularity=question runs one LLM extraction call per detected sourceQuestionRef. ' +
@@ -2928,6 +4137,86 @@ export async function extractFullPaperFromPdfSet({
 			return [page, questionRefsFromText(pdfText(questionPaper.path, 20000, [page]))];
 		})
 	);
+	if (extractionStrategy === 'agentic') {
+		const packets = buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, contextPages);
+		const agentCacheDir = path.join(outputRoot, sourceDocumentId, 'agentic');
+		console.error(
+			`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} extraction_strategy=agentic packets=${packets.length} planned_core_pages=${packets.map((packet) => packet.corePages.join('-')).join(',')}`
+		);
+		if (forceChunkCache && existsSync(agentCacheDir)) {
+			rmSync(agentCacheDir, { recursive: true, force: true });
+		}
+		const values = [];
+		for (const packet of packets) {
+			const packetName = packetCacheSafeName(packet);
+			const packetDir = path.join(agentCacheDir, packetName);
+			const packetCachePath = path.join(packetDir, 'extraction.json');
+			if (!forceChunkCache && existsSync(packetCachePath)) {
+				console.error(
+					`[extract] ${sourceDocumentId}: agentic packet ${packet.index + 1}/${packet.total} parent=${packet.parentRef ?? 'unknown'} using cache ${relativePath(rootDir, packetCachePath)}`
+				);
+				values.push(LlmFullPaperExtractionSchema.parse(readJson(packetCachePath)));
+				continue;
+			}
+			console.error(
+				`[extract] ${sourceDocumentId}: agentic packet ${packet.index + 1}/${packet.total} parent=${packet.parentRef ?? 'unknown'} pages=${packet.images.map(pageNumberFromRenderedPath).join(',')} target_refs=${packet.targetRefs.join(',') || 'none'}`
+			);
+			const value = await extractFullPaperAgenticPacket({
+				rootDir,
+				model,
+				thinkingLevel,
+				mediaResolution,
+				sourceDocumentId,
+				markSchemeDocumentId,
+				questionPaper: { ...questionPaper, pages: packet.images.map(pageNumberFromRenderedPath) },
+				markScheme: {
+					...markScheme,
+					pages: markSchemeImages.length
+						? markSchemeImages.map(pageNumberFromRenderedPath)
+						: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1)
+				},
+				supportingDocuments,
+				packet,
+				pageRefsByPage,
+				markSchemeText,
+				extractionSpec,
+				extraInstructions,
+				expectedQuestionCount:
+					packets.length === 1 ? (expectedQuestionCount ?? packet.targetRefs.length) || null : null,
+				assetManifestText,
+				dpi,
+				agentWorkDir: packetDir,
+				agentMaxSteps
+			});
+			writeJson(packetCachePath, value);
+			values.push(value);
+		}
+		return enrichFullPaperExtraction({
+			value: mergeFullPaperChunks(values),
+			rootDir,
+			model,
+			dpi,
+			pageSelection: {
+				questionPages: questionImages.map(pageNumberFromRenderedPath),
+				markSchemePages: markSchemePages.length
+					? markSchemePages
+					: Array.from({ length: markScheme.pageCount }, (_, index) => index + 1),
+				chunkPages,
+				contextPages,
+				chunkConcurrency,
+				extractionGranularity,
+				chunkStrategy,
+				extractionStrategy,
+				agentMaxSteps,
+				plannedChunkCorePages: packets.map((packet) => packet.corePages)
+			},
+			questionPaper,
+			markScheme,
+			supportingDocuments,
+			assetManifest,
+			extractionSource: 'llm-agentic-pdf-tools'
+		});
+	}
 	const chunks =
 		chunkStrategy === 'parent-question'
 			? chunkImagesByParentQuestion(questionImages, pageRefsByPage, chunkPages, contextPages)
@@ -3048,6 +4337,8 @@ export async function extractFullPaperFromPdfSet({
 			chunkConcurrency,
 			extractionGranularity,
 			chunkStrategy,
+			extractionStrategy,
+			agentMaxSteps: null,
 			plannedChunkCorePages: chunks.map((chunk) => chunk.corePages)
 		},
 		questionPaper,
@@ -3077,6 +4368,7 @@ export function deterministicCandidateIssues(candidate, options = {}) {
 			...responseKeyIssues(question),
 			...responseControlCompletenessIssues(question),
 			...responseAssetCompletenessIssues(question),
+			...renderBlockDuplicateTextIssues(question),
 			...renderBlockAssetCompletenessIssues(question),
 			...referencedMediaAssetConsistencyIssues(question),
 			...sourceDocumentMediaAssetConsistencyIssues(question, candidate.sourceDocument),
@@ -3409,6 +4701,40 @@ function responseAssetCompletenessIssues(question) {
 		}
 		const mismatch = mediaAssetPageLabelMismatch(asset, label);
 		if (mismatch) issues.push(mismatch);
+	}
+	return issues;
+}
+
+function renderBlockDuplicateTextIssues(question) {
+	const promptText = (question.promptBlocks ?? [])
+		.map(blockToLearnerText)
+		.map(normalizedForExactMatch)
+		.filter(Boolean)
+		.join(' ');
+	if (!promptText) return [];
+	const priorBlocks = [
+		...(question.stemBlocks ?? []).map((block, index) => ({
+			field: `stemBlocks[${index}]`,
+			text: blockToLearnerText(block)
+		})),
+		...(question.leadBlocks ?? []).map((block, index) => ({
+			field: `leadBlocks[${index}]`,
+			text: blockToLearnerText(block)
+		}))
+	];
+	const issues = [];
+	for (const block of priorBlocks) {
+		const normalized = normalizedForExactMatch(block.text);
+		if (normalized.length < 32) continue;
+		if (!promptText.includes(normalized)) continue;
+		issues.push({
+			severity: 'error',
+			code: 'render_block_duplicate_text',
+			field: 'promptBlocks',
+			evidence: block.text.slice(0, 180),
+			message:
+				'promptBlocks repeat learner-facing setup already present in stemBlocks/leadBlocks. Put setup in contextBlocks/stemBlocks and only the marked instruction in promptText/promptBlocks.'
+		});
 	}
 	return issues;
 }
@@ -4279,7 +5605,7 @@ export async function repairFullPaperAnswerChains({
 				{
 					role: 'system',
 					content:
-						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only JSON with a repairs array; each repair must include sourceQuestionRef and answerChain.'
+						'You repair answer-chain fields inside a GCSE extraction. Preserve all source extraction, render, response, mark scheme, checklist, and model answer evidence. Return only compact valid JSON with a repairs array; each repair must include sourceQuestionRef and answerChain.'
 				},
 				{
 					role: 'user',
@@ -4297,6 +5623,8 @@ export async function repairFullPaperAnswerChains({
 						JSON.stringify(judge, null, 2),
 						'',
 						'This is the text-only answer-chain grouping and reconciliation phase after PDF extraction. Some current chains may be placeholders with id null; replace those placeholders with stable reusable answerChain ids and method wording.',
+						'Use only these answerChain stepRole values: given, cause, process, link, effect, evidence, method, calculation, conclusion. Do not use result, outcome, observation, reason, answer, or any other stepRole.',
+						'Keep chain text concise. Prefer 2 to 4 mark-supported steps per question unless the mark scheme clearly requires more.',
 						'For every listed question, decide whether the reusable mark-scoring method should reuse an existing chain id, update/clarify an existing compatible chain while keeping its id, create a genuinely new chain id, or remain needs_review when the source evidence is insufficient.',
 						'Repair every listed chain that is missing a stable id, too numeric, too topic-like, unsupported, or missing reusable method links. Keep prompt-specific worked values out of answerChain fields. Use markSchemeItemIndexes only for positive marking points; never point answer-chain steps at ignore, reject, do-not-accept, do-not-credit, or guidance rows. If an existing chain id remains compatible, keep that id for compatibility.',
 						'Return shape exactly: {"repairs":[{"sourceQuestionRef":"...","answerChain":{...},"chainResolution":{... optional ...},"commonWeakAnswers":[... optional ...]}]}. Do not return currentAnswerChain or currentChainResolution.',

@@ -220,6 +220,8 @@ function productionCommand(row, paper) {
 	forwardString(args, 'context-pages');
 	forwardString(args, 'chunk-concurrency');
 	forwardString(args, 'chunk-strategy');
+	forwardString(args, 'extraction-strategy');
+	forwardString(args, 'agent-max-steps');
 	forwardString(args, 'model');
 	forwardString(args, 'judge-model');
 	forwardString(args, 'thinking-level');

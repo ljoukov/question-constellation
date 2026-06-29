@@ -57,6 +57,8 @@ Optional:
   --context-pages=2
   --chunk-strategy=parent-question|fixed-pages
   --chunk-concurrency=1
+  --extraction-strategy=chunk|agentic
+  --agent-max-steps=8
   --extraction-granularity=chunk|question
   --allow-question-granularity
   --expected-question-count=1
@@ -115,6 +117,11 @@ if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
 	throw new Error('--chunk-strategy must be parent-question or fixed-pages.');
 }
 const chunkConcurrency = integerArg('chunk-concurrency', 1, 1);
+const extractionStrategy = stringArg('extraction-strategy', 'chunk');
+if (!['chunk', 'agentic'].includes(extractionStrategy)) {
+	throw new Error('--extraction-strategy must be chunk or agentic.');
+}
+const agentMaxSteps = integerArg('agent-max-steps', 8, 1);
 const extractionGranularity = stringArg('extraction-granularity', 'chunk');
 if (!['chunk', 'question'].includes(extractionGranularity)) {
 	throw new Error('--extraction-granularity must be chunk or question.');
@@ -743,6 +750,8 @@ async function runOne({
 					thinkingLevel,
 					judgeThinkingLevel,
 					evaluationMode,
+					extractionStrategy,
+					agentMaxSteps,
 					judgeMode,
 					judgeBatchSize,
 					judgeConcurrency,
@@ -775,6 +784,8 @@ async function runOne({
 		contextPages,
 		chunkStrategy,
 		chunkConcurrency,
+		extractionStrategy,
+		agentMaxSteps,
 		extractionGranularity,
 		allowQuestionGranularity,
 		model,
