@@ -24,15 +24,19 @@ Optional:
   --extraction-thinking-level=high
   --chain-model=gpt-5.5
   --chain-thinking-level=xhigh
+  --judge-model=gpt-5.5
+  --judge-thinking-level=high
   --solvability-model=gpt-5.5
   --solvability-thinking-level=xhigh
   --expected-marks=100
   --expected-questions=46
   --run-id=<stable-log-id>
   --skip-solvability
+  --skip-extraction-judge
   --no-import-check
   --skip-d1-conflict-check
   --allow-shared-chain-updates
+  --skip-r2-upload
   --import
   --force
   --dry-run
@@ -58,6 +62,8 @@ const workRoot = path.resolve(
 );
 const rawOutputPath = path.join(workRoot, 'raw', `${sourceDocumentId}.json`);
 const extractionSummaryPath = path.join(workRoot, 'codex-extraction-summary.json');
+const extractionJudgeOutputPath = path.join(workRoot, 'extraction-judge', 'judge-report.json');
+const extractionJudgeSummaryPath = path.join(workRoot, 'codex-extraction-judge-summary.json');
 const reconciledOutputPath = path.join(workRoot, 'chain-reconciled', `${sourceDocumentId}.json`);
 const chainSummaryPath = path.join(workRoot, 'codex-chain-summary.json');
 const importReadyRoot = path.join(workRoot, 'import-ready');
@@ -65,10 +71,12 @@ const importReadyAuditPath = path.join(workRoot, 'import-ready-audit.json');
 const summaryPath = path.join(workRoot, 'codex-production-import-summary.json');
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
+const runExtractionJudge = !hasArg('skip-extraction-judge');
 const runSolvability = !hasArg('skip-solvability');
 const noImportCheck = hasArg('no-import-check');
 const importToD1 = hasArg('import');
 const checkExisting = !noImportCheck && !hasArg('skip-d1-conflict-check');
+const uploadR2Assets = importToD1 && !hasArg('skip-r2-upload');
 
 for (const filePath of [questionPaperPath, markSchemePath, ...supportingDocumentPaths]) {
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
@@ -81,13 +89,16 @@ const plan = {
 	supportingDocumentPaths: supportingDocumentPaths.map(relative),
 	workRoot: relative(workRoot),
 	rawOutputPath: relative(rawOutputPath),
+	extractionJudgeOutputPath: relative(extractionJudgeOutputPath),
 	reconciledOutputPath: relative(reconciledOutputPath),
 	importReadyRoot: relative(importReadyRoot),
 	importReadyAuditPath: relative(importReadyAuditPath),
 	summaryPath: relative(summaryPath),
+	runExtractionJudge,
 	runSolvability,
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
-	checkExisting
+	checkExisting,
+	uploadR2Assets
 };
 
 if (dryRun) {
@@ -100,8 +111,15 @@ const startedAt = new Date().toISOString();
 const steps = [];
 try {
 	steps.push(runInherited(extractionCommand(), 'Codex PDF extraction'));
+	if (runExtractionJudge) {
+		steps.push(runInherited(extractionJudgeCommand(), 'independent Codex extraction judge'));
+	}
 	steps.push(runInherited(chainCommand(), 'Codex answer-chain reconciliation'));
-	const importReady = runJson(prepareImportReadyCommand(), 'strict audit / solvability / D1 dry-run');
+	if (uploadR2Assets) steps.push(runInherited(uploadAssetsCommand(), 'R2 asset upload'));
+	const importReady = runJson(
+		prepareImportReadyCommand(),
+		'strict audit / solvability / D1 dry-run'
+	);
 	steps.push({ label: 'strict audit / solvability / D1 dry-run', status: 'passed' });
 	const summary = {
 		status: 'passed',
@@ -111,6 +129,7 @@ try {
 		steps,
 		importReady,
 		extractionSummary: readJsonIfExists(extractionSummaryPath),
+		extractionJudgeSummary: readJsonIfExists(extractionJudgeSummaryPath),
 		chainSummary: readJsonIfExists(chainSummaryPath)
 	};
 	writeJson(summaryPath, summary);
@@ -124,6 +143,7 @@ try {
 		steps,
 		error: error instanceof Error ? error.message : String(error),
 		extractionSummary: readJsonIfExists(extractionSummaryPath),
+		extractionJudgeSummary: readJsonIfExists(extractionJudgeSummaryPath),
 		chainSummary: readJsonIfExists(chainSummaryPath)
 	};
 	writeJson(summaryPath, summary);
@@ -132,9 +152,13 @@ try {
 }
 
 function plannedCommands() {
-	return [extractionCommand(), chainCommand(), prepareImportReadyCommand()].map((command) =>
-		command.map(String)
-	);
+	return [
+		extractionCommand(),
+		...(runExtractionJudge ? [extractionJudgeCommand()] : []),
+		chainCommand(),
+		...(uploadR2Assets ? [uploadAssetsCommand()] : []),
+		prepareImportReadyCommand()
+	].map((command) => command.map(String));
 }
 
 function extractionCommand() {
@@ -155,6 +179,26 @@ function extractionCommand() {
 	return args;
 }
 
+function extractionJudgeCommand() {
+	const args = [
+		'scripts/run-codex-extraction-judge.mjs',
+		`--candidate=${rawOutputPath}`,
+		`--question-paper=${questionPaperPath}`,
+		`--mark-scheme=${markSchemePath}`,
+		`--source-document-id=${sourceDocumentId}`,
+		`--work-dir=${path.join(workRoot, 'extraction-judge')}`,
+		`--output=${extractionJudgeOutputPath}`,
+		`--summary=${extractionJudgeSummaryPath}`,
+		`--model=${stringArg('judge-model', stringArg('model', 'gpt-5.5'))}`,
+		`--thinking-level=${stringArg('judge-thinking-level', 'high')}`,
+		`--timeout-ms=${stringArg('judge-timeout-ms', stringArg('timeout-ms', '7200000'))}`
+	];
+	forwardString(args, 'expected-marks');
+	forwardString(args, 'expected-questions');
+	if (force) args.push('--force');
+	return args;
+}
+
 function chainCommand() {
 	const args = [
 		'scripts/run-codex-answer-chains.mjs',
@@ -170,6 +214,15 @@ function chainCommand() {
 	forwardString(args, 'existing-chain-input-root');
 	if (force) args.push('--force');
 	return args;
+}
+
+function uploadAssetsCommand() {
+	return [
+		'scripts/upload-r2-images.mjs',
+		`--asset-root=${path.join(workRoot, 'codex-extraction')}`,
+		`--referenced-baseline=${reconciledOutputPath}`,
+		`--source-document-id=${sourceDocumentId}`
+	];
 }
 
 function prepareImportReadyCommand() {

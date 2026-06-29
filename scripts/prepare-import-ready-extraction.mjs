@@ -26,6 +26,7 @@ const runId = stringArg('run-id', '');
 
 if (runId) process.env.EXTRACTION_RUN_ID = runId;
 
+clearOutputRoot();
 const buildSummary = buildImportReadySubset();
 auditImportReadySubset();
 const importResults = noImportCheck ? [] : runImportChecks(buildSummary);
@@ -67,6 +68,21 @@ function stringArg(name, defaultValue) {
 
 function relative(filePath) {
 	return path.relative(rootDir, filePath).split(path.sep).join('/');
+}
+
+function clearOutputRoot() {
+	const resolvedOutputRoot = path.resolve(rootDir, outputRoot);
+	const resolvedInputRoot = inputPath ? null : path.resolve(rootDir, inputRoot);
+	if (resolvedOutputRoot === rootDir || resolvedOutputRoot === path.dirname(rootDir)) {
+		throw new Error(`Refusing to clear unsafe output root: ${relative(resolvedOutputRoot)}`);
+	}
+	if (resolvedInputRoot && resolvedOutputRoot === resolvedInputRoot) {
+		throw new Error('Refusing to clear output root because it is the same as input root.');
+	}
+	if (inputPath && resolvedOutputRoot === path.dirname(path.resolve(rootDir, inputPath))) {
+		throw new Error('Refusing to clear output root because it is the input file directory.');
+	}
+	rmSync(resolvedOutputRoot, { recursive: true, force: true });
 }
 
 function runCapture(args, label) {
@@ -146,7 +162,8 @@ function runImportChecks(summary) {
 	}
 	return files.map((file) => {
 		const sourceDocumentId = file.sourceDocumentId;
-		if (!sourceDocumentId) throw new Error(`Missing sourceDocumentId in subset file ${file.output}.`);
+		if (!sourceDocumentId)
+			throw new Error(`Missing sourceDocumentId in subset file ${file.output}.`);
 		const args = [
 			'scripts/import-physics-vision.mjs',
 			`--input-root=${outputRoot}`,

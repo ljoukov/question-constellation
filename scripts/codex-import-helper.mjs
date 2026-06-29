@@ -58,6 +58,7 @@ try {
 	else if (command === 'extract-embedded-images') extractEmbeddedImagesCommand();
 	else if (command === 'contact-sheet') contactSheetCommand();
 	else if (command === 'line-count') lineCountCommand();
+	else if (command === 'detect-lines-from-pgm') detectLinesFromPgmCommand();
 	else if (command === 'normalize-extraction') normalizeExtractionCommand();
 	else if (command === 'validate-extraction') validateExtractionCommand();
 	else if (command === 'validate-chain') validateChainCommand();
@@ -76,6 +77,7 @@ node helper.mjs render-pages --pdf=question-paper.pdf --pages=1-4 --dpi=180 --ou
 node helper.mjs extract-embedded-images --pdf=question-paper.pdf --output-dir=qp-images --manifest=qp-images.json
 node helper.mjs contact-sheet --glob=qp-pages/*.png --output=qp-contact.jpg --thumb=220x310 --columns=4
 node helper.mjs line-count --image=qp-pages/page-03.png --crop=170,400,950,1100 --output=q01-lines.json
+node helper.mjs detect-lines-from-pgm --pgm=qp-pages/page-03-crop.pgm --output=q01-lines.json
 node helper.mjs normalize-extraction --input=extraction.json --output=normalized.json --metadata=metadata.json
 node helper.mjs validate-extraction --input=normalized.json --expected-marks=100 --output=validation.json
 node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json
@@ -165,7 +167,9 @@ function renderPagesCommand() {
 	const pdf = requiredArg('pdf');
 	const pageCount = pdfPageCount(pdf);
 	const pages = parsePages(stringArg('pages', ''), pageCount);
-	const selectedPages = pages.length ? pages : Array.from({ length: pageCount }, (_, index) => index + 1);
+	const selectedPages = pages.length
+		? pages
+		: Array.from({ length: pageCount }, (_, index) => index + 1);
 	const dpi = String(numberArg('dpi', 180));
 	const outputDir = requiredArg('output-dir');
 	const prefix = stringArg('prefix', 'page');
@@ -173,7 +177,17 @@ function renderPagesCommand() {
 	const files = [];
 	for (const page of selectedPages) {
 		const outputPrefix = path.join(outputDir, `${prefix}-${String(page).padStart(2, '0')}`);
-		execFileSync('pdftoppm', ['-png', '-r', dpi, '-f', String(page), '-l', String(page), pdf, outputPrefix]);
+		execFileSync('pdftoppm', [
+			'-png',
+			'-r',
+			dpi,
+			'-f',
+			String(page),
+			'-l',
+			String(page),
+			pdf,
+			outputPrefix
+		]);
 		const generated = `${outputPrefix}-1.png`;
 		const finalPath = `${outputPrefix}.png`;
 		if (existsSync(generated)) {
@@ -212,7 +226,10 @@ function contactSheetCommand() {
 	mkdirSync(path.dirname(path.resolve(output)), { recursive: true });
 	const result = spawnSync(
 		'bash',
-		['-lc', `montage ${shellQuote(pattern)} -thumbnail ${shellQuote(thumb)} -tile ${shellQuote(columns)}x -geometry +4+4 ${shellQuote(output)}`],
+		[
+			'-lc',
+			`montage ${shellQuote(pattern)} -thumbnail ${shellQuote(thumb)} -tile ${shellQuote(columns)}x -geometry +4+4 ${shellQuote(output)}`
+		],
 		{ encoding: 'utf8' }
 	);
 	if (result.status !== 0) {
@@ -242,6 +259,15 @@ function lineCountCommand() {
 	writeMaybe({ image, crop, pgm, parameters: { threshold, minRunRatio, minDarkRatio }, ...result });
 }
 
+function detectLinesFromPgmCommand() {
+	const pgm = requiredArg('pgm');
+	const threshold = Number(numberArg('threshold', 180));
+	const minRunRatio = Number(numberArg('min-run-ratio', 0.4));
+	const minDarkRatio = Number(numberArg('min-dark-ratio', 0.08));
+	const result = detectHorizontalLines(readPgm(pgm), { threshold, minRunRatio, minDarkRatio });
+	writeMaybe({ pgm, parameters: { threshold, minRunRatio, minDarkRatio }, ...result });
+}
+
 function normalizeExtractionCommand() {
 	const inputPath = requiredArg('input');
 	localPathBaseDir = path.dirname(path.resolve(inputPath));
@@ -256,6 +282,7 @@ function normalizeExtractionCommand() {
 
 function validateExtractionCommand() {
 	const inputPath = requiredArg('input');
+	localPathBaseDir = path.dirname(path.resolve(inputPath));
 	const candidate = readJson(inputPath);
 	const expectedMarks = numberArg('expected-marks', null);
 	const expectedQuestions = numberArg('expected-questions', null);
@@ -266,6 +293,7 @@ function validateExtractionCommand() {
 
 function validateChainCommand() {
 	const inputPath = requiredArg('input');
+	localPathBaseDir = path.dirname(path.resolve(inputPath));
 	const candidate = readJson(inputPath);
 	const deterministicIssues = deterministicIssuesFor(candidate, { includeAnswerChainIssues: true });
 	const blocking = blockingIssues(deterministicIssues);
@@ -301,7 +329,8 @@ function summarizeCodexEventsCommand() {
 	const fileChanges = events
 		.filter((event) => event.item?.type === 'file_change' && event.type === 'item.completed')
 		.flatMap((event) => event.item.changes ?? []);
-	const usage = events.filter((event) => event.type === 'turn.completed').slice(-1)[0]?.usage ?? null;
+	const usage =
+		events.filter((event) => event.type === 'turn.completed').slice(-1)[0]?.usage ?? null;
 	const summary = {
 		events: events.length,
 		commandActions: completedCommands.length,
@@ -344,7 +373,8 @@ function normalizeExtraction(input, metadata) {
 		extractionRun: {
 			agentVersion: 'codex-pdf-extraction-v1',
 			needsHumanReview:
-				(input.reviewNotes ?? []).length > 0 || questions.some((question) => question.needsHumanReview),
+				(input.reviewNotes ?? []).length > 0 ||
+				questions.some((question) => question.needsHumanReview),
 			reviewNotes: input.reviewNotes ?? [],
 			source: 'codex-official-pdf',
 			model: metadata.codexModel ?? null,
@@ -357,18 +387,22 @@ function normalizeExtraction(input, metadata) {
 				normalizeDocument(doc, metadata.supportingDocuments?.[index], {
 					id: doc?.id ?? `${sourceDocument.id}-support-${index + 1}`,
 					docType: doc?.docType ?? 'supporting_document',
-					title: doc?.title ?? path.basename(doc?.filePath ?? doc?.sourceFile ?? `support-${index + 1}`)
+					title:
+						doc?.title ?? path.basename(doc?.filePath ?? doc?.sourceFile ?? `support-${index + 1}`)
 				})
 		),
 		questions: questionsWithSharedTables,
-		localAssetManifest: normalizeLocalAssetManifest(input.localAssetManifest ?? input.assetManifest ?? [])
+		localAssetManifest: normalizeLocalAssetManifest(
+			input.localAssetManifest ?? input.assetManifest ?? []
+		)
 	};
 }
 
 function propagateStructuredTableBlocks(questions) {
 	const tablesByParent = new Map();
 	for (const question of questions) {
-		const parent = question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef) ?? 'unknown';
+		const parent =
+			question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef) ?? 'unknown';
 		for (const block of renderBlocksFor(question)) {
 			if (!isStructuredTableBlock(block)) continue;
 			const label = normalizedLabel(block.label ?? block.assetLabel ?? block.sourceLabel);
@@ -378,7 +412,8 @@ function propagateStructuredTableBlocks(questions) {
 		}
 	}
 	return questions.map((question) => {
-		const parent = question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef) ?? 'unknown';
+		const parent =
+			question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef) ?? 'unknown';
 		const availableTables = tablesByParent.get(parent);
 		if (!availableTables?.size) return question;
 		const existing = new Set(
@@ -411,8 +446,8 @@ function renderBlocksFor(question) {
 function isStructuredTableBlock(block) {
 	if (!block || typeof block !== 'object') return false;
 	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
-	return (block.rows ?? []).some((row) =>
-		Array.isArray(row) && row.some((cell) => String(cell ?? '').trim())
+	return (block.rows ?? []).some(
+		(row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim())
 	);
 }
 
@@ -426,7 +461,8 @@ function referencedTableLabels(question) {
 	]
 		.filter(Boolean)
 		.join('\n');
-	for (const match of text.matchAll(/\btable\s+(\d+[A-Za-z]?)\b/gi)) labels.add(`Table ${match[1]}`);
+	for (const match of text.matchAll(/\btable\s+(\d+[A-Za-z]?)\b/gi))
+		labels.add(`Table ${match[1]}`);
 	if (/^table\s+\d+/i.test(String(question.response?.assetLabel ?? ''))) {
 		labels.add(question.response.assetLabel);
 	}
@@ -450,8 +486,16 @@ function cloneJson(value) {
 
 function normalizeDocument(doc = {}, metadataDoc = {}, fallback = {}) {
 	const sourcePath = normalizeLocalFilePath(
-		metadataDoc?.originalPath ?? doc.filePath ?? doc.sourceFile ?? metadataDoc?.path ?? fallback.path ?? null
+		metadataDoc?.originalPath ??
+			doc.filePath ??
+			doc.sourceFile ??
+			metadataDoc?.path ??
+			fallback.path ??
+			null
 	);
+	const detectedPageCount =
+		sourcePath && existsSync(sourcePath) ? bestEffortPdfPageCount(sourcePath) : 0;
+	const pageCount = positiveInteger(doc.pageCount, metadataDoc?.pageCount, detectedPageCount) ?? 0;
 	return {
 		id: doc.id ?? metadataDoc?.id ?? fallback.id,
 		docType: doc.docType ?? metadataDoc?.docType ?? fallback.docType,
@@ -467,9 +511,11 @@ function normalizeDocument(doc = {}, metadataDoc = {}, fallback = {}) {
 		title: doc.title ?? metadataDoc?.title ?? fallback.title ?? fallback.id,
 		sourceUrl: doc.sourceUrl ?? metadataDoc?.sourceUrl ?? null,
 		filePath: sourcePath,
-		fileHash: sourcePath && existsSync(sourcePath) ? `sha256:${fileHash(sourcePath)}` : doc.fileHash ?? null,
-		pageCount:
-			doc.pageCount ?? metadataDoc?.pageCount ?? (sourcePath && existsSync(sourcePath) ? pdfPageCount(sourcePath) : 0),
+		fileHash:
+			sourcePath && existsSync(sourcePath)
+				? `sha256:${fileHash(sourcePath)}`
+				: (doc.fileHash ?? null),
+		pageCount,
 		metadata: {
 			...(doc.metadata ?? {}),
 			provenanceNotes: doc.provenanceNotes ?? undefined,
@@ -478,14 +524,26 @@ function normalizeDocument(doc = {}, metadataDoc = {}, fallback = {}) {
 	};
 }
 
+function positiveInteger(...values) {
+	for (const value of values) {
+		const number = Number(value);
+		if (Number.isInteger(number) && number > 0) return number;
+	}
+	return null;
+}
+
 function normalizeQuestion(question, index, sourceDocument) {
 	const promptText = String(question.promptText ?? question.sourceQuestionRef ?? '').trim();
 	const contextBlocks = normalizedContextBlocks(question);
-	const assets = normalizeAssets(question.assets ?? question.requiredAssets ?? [], question.sourceQuestionRef);
+	const assets = normalizeAssets(
+		question.assets ?? question.requiredAssets ?? [],
+		question.sourceQuestionRef
+	);
 	return {
 		id: question.id ?? null,
 		sourceQuestionRef: question.sourceQuestionRef,
-		parentSourceQuestionRef: question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef),
+		parentSourceQuestionRef:
+			question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef),
 		displayOrder: question.displayOrder ?? index + 1,
 		promptText,
 		selfContainedPromptText: question.selfContainedPromptText ?? promptText,
@@ -498,7 +556,9 @@ function normalizeQuestion(question, index, sourceDocument) {
 		specRef: question.specRef ?? null,
 		stemBlocks: normalizeBlocks(contextBlocks),
 		leadBlocks: normalizeBlocks(question.leadBlocks ?? []),
-		promptBlocks: normalizeBlocks(question.promptBlocks ?? [{ kind: 'paragraph', text: promptText }]),
+		promptBlocks: normalizeBlocks(
+			question.promptBlocks ?? [{ kind: 'paragraph', text: promptText }]
+		),
 		response: normalizeResponse(question.response, question.marks),
 		afterResponseBlocks: normalizeBlocks(question.afterResponseBlocks ?? []),
 		assets,
@@ -548,7 +608,9 @@ function normalizeAssets(assets, sourceQuestionRef) {
 			asset.assetId ??
 			asset.id ??
 			`${sourceQuestionRef ?? 'question'}-asset-${index + 1}`;
-		const filePath = normalizeLocalFilePath(asset.filePath ?? asset.file ?? asset.localPath ?? null);
+		const filePath = normalizeLocalFilePath(
+			asset.filePath ?? asset.file ?? asset.localPath ?? null
+		);
 		return {
 			...asset,
 			sourceLabel: String(sourceLabel),
@@ -567,7 +629,9 @@ function normalizeAssets(assets, sourceQuestionRef) {
 function normalizeLocalAssetManifest(manifest) {
 	return (manifest ?? [])
 		.map((asset) => {
-			const filePath = normalizeLocalFilePath(asset.filePath ?? asset.file ?? asset.localPath ?? asset.path);
+			const filePath = normalizeLocalFilePath(
+				asset.filePath ?? asset.file ?? asset.localPath ?? asset.path
+			);
 			if (!filePath || !existsSync(filePath)) return null;
 			const page = Number(asset.page ?? asset.pageNumber ?? NaN);
 			return {
@@ -594,8 +658,27 @@ function normalizeBlocks(blocks) {
 	return (blocks ?? [])
 		.map((block) => {
 			if (!block || typeof block !== 'object') return null;
+			const kind = block.kind ?? 'paragraph';
+			if (
+				kind === 'table' &&
+				(!Array.isArray(block.columns) || block.columns.length === 0) &&
+				Array.isArray(block.rows)
+			) {
+				return {
+					kind: 'structured-table',
+					text: null,
+					label: block.label ?? null,
+					assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
+					columns: null,
+					rows: block.rows,
+					items: null,
+					keyItems: null,
+					compact: block.compact ?? null,
+					wide: block.wide ?? null
+				};
+			}
 			return {
-				kind: block.kind ?? 'paragraph',
+				kind,
 				text: block.text ?? null,
 				label: block.label ?? null,
 				assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
@@ -613,10 +696,14 @@ function normalizeBlocks(blocks) {
 function normalizeResponse(response, marks) {
 	if (!response?.kind) return { kind: marks ? 'lines' : 'none', count: marks ?? null };
 	const output = canonicalResponse(response);
-	if (output.kind === 'lines' && output.count === undefined) output.count = output.lineCount ?? marks ?? 1;
-	if (output.kind === 'labeled-lines' && output.lineCount === undefined) output.lineCount = output.count ?? null;
+	if (output.kind === 'lines' && output.count === undefined)
+		output.count = output.lineCount ?? marks ?? 1;
+	if (output.kind === 'labeled-lines' && output.lineCount === undefined)
+		output.lineCount = output.count ?? null;
 	if (fixedResponseKinds.has(output.kind)) {
-		output.correctAnswers = normalizeCorrectAnswers(output.correctAnswers ?? response.answerKey ?? []);
+		output.correctAnswers = normalizeCorrectAnswers(
+			output.correctAnswers ?? response.answerKey ?? []
+		);
 	}
 	return output;
 }
@@ -694,7 +781,8 @@ function canonicalResponse(response) {
 		return {
 			...response,
 			kind: 'asset-canvas',
-			assetLabel: response.assetLabel ?? response.targetAssetId ?? response.assetId ?? response.label ?? null,
+			assetLabel:
+				response.assetLabel ?? response.targetAssetId ?? response.assetId ?? response.label ?? null,
 			instructions: response.instructions ?? response.graphType ?? kind,
 			correctAnswers: normalizeCorrectAnswers(response.correctAnswers ?? response.answers ?? [])
 		};
@@ -734,7 +822,8 @@ function normalizeCorrectAnswers(value) {
 				answer.answer ??
 				answer.text ??
 				(Array.isArray(answer.answers) ? answer.answers.join(' | ') : null);
-			if (correctAnswer === null || correctAnswer === undefined || !String(correctAnswer).trim()) return null;
+			if (correctAnswer === null || correctAnswer === undefined || !String(correctAnswer).trim())
+				return null;
 			return { targetId: String(targetId), correctAnswer: String(correctAnswer).trim() };
 		})
 		.filter(Boolean);
@@ -742,7 +831,8 @@ function normalizeCorrectAnswers(value) {
 
 function normalizeModelAnswer(value) {
 	if (!value) return null;
-	if (typeof value === 'string') return { answerText: value, confidence: null, needsHumanReview: false };
+	if (typeof value === 'string')
+		return { answerText: value, confidence: null, needsHumanReview: false };
 	return {
 		answerText: value.answerText ?? '',
 		confidence: value.confidence ?? 0.5,
@@ -776,13 +866,24 @@ function placeholderChain(question, subjectArea) {
 function mechanicalSummary(candidate, options = {}) {
 	const refs = candidate.questions.map((question) => question.sourceQuestionRef);
 	const duplicateRefs = refs.filter((ref, index) => refs.indexOf(ref) !== index);
-	const markTotal = candidate.questions.reduce((sum, question) => sum + Number(question.marks ?? 0), 0);
-	const deterministicIssues = deterministicIssuesFor(candidate, { includeAnswerChainIssues: false });
+	const markTotal = candidate.questions.reduce(
+		(sum, question) => sum + Number(question.marks ?? 0),
+		0
+	);
+	const deterministicIssues = deterministicIssuesFor(candidate, {
+		includeAnswerChainIssues: false
+	});
 	const extraIssues = [];
 	if (options.expectedMarks != null && markTotal !== options.expectedMarks) {
-		extraIssues.push({ code: 'mark_total_mismatch', message: `${markTotal} != ${options.expectedMarks}` });
+		extraIssues.push({
+			code: 'mark_total_mismatch',
+			message: `${markTotal} != ${options.expectedMarks}`
+		});
 	}
-	if (options.expectedQuestions != null && candidate.questions.length !== options.expectedQuestions) {
+	if (
+		options.expectedQuestions != null &&
+		candidate.questions.length !== options.expectedQuestions
+	) {
 		extraIssues.push({
 			code: 'question_count_mismatch',
 			message: `${candidate.questions.length} != ${options.expectedQuestions}`
@@ -812,6 +913,8 @@ function mechanicalSummary(candidate, options = {}) {
 
 function deterministicIssuesFor(candidate, options = {}) {
 	const findings = [];
+	const sourceDocumentId = candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? null;
+	const expectedLineCounts = expectedResponseLineCountsForSource(sourceDocumentId);
 	if (!candidate?.sourceDocument?.id) {
 		findings.push({
 			sourceQuestionRef: null,
@@ -865,7 +968,10 @@ function deterministicIssuesFor(candidate, options = {}) {
 				evidence: ref
 			});
 		}
-		if (!Number.isFinite(Number(question.pageStart)) || !Number.isFinite(Number(question.pageEnd))) {
+		if (
+			!Number.isFinite(Number(question.pageStart)) ||
+			!Number.isFinite(Number(question.pageEnd))
+		) {
 			issues.push({
 				code: 'missing_page_range',
 				field: 'pageStart/pageEnd',
@@ -889,6 +995,24 @@ function deterministicIssuesFor(candidate, options = {}) {
 				evidence: ref
 			});
 		}
+		const overrequiredChecklist = overrequiredAlternativeChecklist(question);
+		if (overrequiredChecklist) {
+			issues.push({
+				code: 'mark_checklist_overrequires_alternatives',
+				field: 'markChecklist.required',
+				severity: 'error',
+				evidence: overrequiredChecklist
+			});
+		}
+		const underGranularMarkScheme = underGranularAnyNMarkScheme(question);
+		if (underGranularMarkScheme) {
+			issues.push({
+				code: 'mark_scheme_under_granular_any_n',
+				field: 'markSchemeItems',
+				severity: 'error',
+				evidence: underGranularMarkScheme
+			});
+		}
 		const response = question.response;
 		if (!response?.kind || !supportedResponseKinds.has(response.kind)) {
 			issues.push({
@@ -910,6 +1034,61 @@ function deterministicIssuesFor(candidate, options = {}) {
 				evidence: ref
 			});
 		}
+		if (expectedLineCounts.has(ref)) {
+			const expected = expectedLineCounts.get(ref);
+			const actual = responseVisibleLineCount(response);
+			if (actual !== expected) {
+				issues.push({
+					code: 'known_response_line_count_mismatch',
+					field: 'response.lineCount',
+					severity: 'error',
+					evidence: `${ref}: expected ${expected}, found ${actual ?? 'missing'}`
+				});
+			}
+		}
+		if (sourceDocumentId === 'aqa-84611h-qp-nov20' && ref === '02.4') {
+			const gradingText = [
+				...(question.markSchemeItems ?? []).map((item) => item.text),
+				...(question.markChecklist ?? []).map((item) => item.text),
+				question.modelAnswer?.answerText
+			]
+				.filter(Boolean)
+				.join('\n')
+				.toLowerCase();
+			if (!gradingText.includes('diffusion')) {
+				issues.push({
+					code: 'known_mark_scheme_allowance_missing',
+					field: 'markSchemeItems',
+					severity: 'error',
+					evidence: '02.4 must include the official allowed answer diffusion as well as osmosis.'
+				});
+			}
+		}
+		if (sourceDocumentId === 'aqa-84611h-qp-nov20') {
+			for (const issue of knownSourceSpecificIssues(question)) issues.push(issue);
+		}
+		if (response?.kind === 'equation-blanks') {
+			const blankIds = (response.segments ?? [])
+				.filter((segment) => segment?.kind === 'blank')
+				.map((segment, index) => String(segment.id ?? segment.targetId ?? `blank-${index + 1}`));
+			const keyedIds = new Set(
+				(response.correctAnswers ?? []).flatMap((answer) =>
+					String(answer?.targetId ?? answer?.id ?? '')
+						.split('|')
+						.map((part) => part.trim())
+						.filter(Boolean)
+				)
+			);
+			for (const blankId of blankIds) {
+				if (keyedIds.has(blankId)) continue;
+				issues.push({
+					code: 'equation_blank_missing_answer_key',
+					field: 'response.correctAnswers',
+					severity: 'error',
+					evidence: `${ref} -> ${blankId}`
+				});
+			}
+		}
 		if (['lines', 'labeled-lines'].includes(response?.kind) && !question.modelAnswer?.answerText) {
 			issues.push({
 				code: 'written_response_missing_model_answer',
@@ -928,6 +1107,14 @@ function deterministicIssuesFor(candidate, options = {}) {
 				});
 			}
 		}
+		for (const label of missingReferencedMediaLabels(question)) {
+			issues.push({
+				code: 'referenced_media_missing_asset',
+				field: 'assets',
+				severity: 'error',
+				evidence: `${ref} -> ${label}`
+			});
+		}
 		if (['asset-canvas', 'image-label-zones'].includes(response?.kind)) {
 			const labels = [
 				response.assetLabel,
@@ -935,12 +1122,14 @@ function deterministicIssuesFor(candidate, options = {}) {
 				response.sourceLabel,
 				...(Array.isArray(response.assets) ? response.assets : [])
 			].filter(Boolean);
-			const assetLabels = new Set(
-				(question.assets ?? []).flatMap((asset) =>
-					[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId].filter(Boolean)
+			const matchingAssets = (question.assets ?? []).filter((asset) =>
+				labels.some((label) =>
+					[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+						.filter(Boolean)
+						.includes(label)
 				)
 			);
-			if (!labels.length || !labels.some((label) => assetLabels.has(label))) {
+			if (!labels.length || matchingAssets.length === 0) {
 				issues.push({
 					code: 'response_asset_missing_asset',
 					field: 'response.assetLabel',
@@ -948,6 +1137,56 @@ function deterministicIssuesFor(candidate, options = {}) {
 					evidence: ref
 				});
 			}
+			if (matchingAssets.length > 0 && !matchingAssets.some(assetHasRenderableSource)) {
+				issues.push({
+					code: 'response_asset_not_renderable',
+					field: 'assets.filePath',
+					severity: 'error',
+					evidence: `${ref} -> ${labels.join(', ')}`
+				});
+			}
+			if (
+				response.kind === 'asset-canvas' &&
+				labels.some((label) => normalizedMediaLabel(label).startsWith('table '))
+			) {
+				issues.push({
+					code: 'table_asset_canvas_response',
+					field: 'response.kind',
+					severity: 'error',
+					evidence: `${ref} -> ${labels.join(', ')}`
+				});
+			}
+			if (
+				response.kind === 'image-label-zones' &&
+				(!Array.isArray(response.labels) || response.labels.length === 0)
+			) {
+				issues.push({
+					code: 'image_label_zones_missing_labels',
+					field: 'response.labels',
+					severity: 'error',
+					evidence: ref
+				});
+			}
+			if (
+				response.kind === 'image-label-zones' &&
+				(!Array.isArray(response.zones) || response.zones.length === 0)
+			) {
+				issues.push({
+					code: 'image_label_zones_missing_zones',
+					field: 'response.zones',
+					severity: 'error',
+					evidence: ref
+				});
+			}
+		}
+		const duplicateRenderText = duplicateLearnerVisibleBlockText(question);
+		if (duplicateRenderText) {
+			issues.push({
+				code: 'render_block_duplicate_text',
+				field: 'stemBlocks/leadBlocks/promptBlocks/afterResponseBlocks',
+				severity: 'error',
+				evidence: duplicateRenderText
+			});
 		}
 		if (options.includeAnswerChainIssues) {
 			if (!question.answerChain?.title || !question.answerChain?.canonicalChainText) {
@@ -1013,10 +1252,454 @@ function deterministicIssuesFor(candidate, options = {}) {
 	return findings;
 }
 
+function duplicateLearnerVisibleBlockText(question) {
+	const seen = [];
+	for (const block of [
+		...(question.stemBlocks ?? []),
+		...(question.leadBlocks ?? []),
+		...(question.promptBlocks ?? []),
+		...(question.afterResponseBlocks ?? [])
+	]) {
+		const rawText = blockPlainText(block).trim();
+		const text = normalizedRenderText(rawText);
+		if (text.length < 18) continue;
+		for (const previous of seen) {
+			if (text === previous.normalized || text.startsWith(`${previous.normalized} `)) {
+				return rawText.slice(0, Math.max(rawText.indexOf('.') + 1, 120)).trim();
+			}
+			if (previous.normalized.startsWith(`${text} `)) {
+				return previous.rawText.slice(0, Math.max(previous.rawText.indexOf('.') + 1, 120)).trim();
+			}
+		}
+		seen.push({ normalized: text, rawText });
+	}
+	return null;
+}
+
+function expectedResponseLineCountsForSource(sourceDocumentId) {
+	if (sourceDocumentId !== 'aqa-84611h-qp-nov20') return new Map();
+	return new Map(
+		Object.entries({
+			'01.2': 4,
+			'01.3': 4,
+			'01.5': 2,
+			'01.6': 2,
+			'01.7': 1,
+			'01.8': 2,
+			'02.1': 4,
+			'02.3': 14,
+			'02.4': 1,
+			'02.5': 6,
+			'03.1': 2,
+			'03.2': 6,
+			'03.3': 5,
+			'03.4': 1,
+			'03.6': 8,
+			'04.2': 7,
+			'04.3': 2,
+			'04.4': 6,
+			'04.5': 4,
+			'04.6': 4,
+			'04.7': 6,
+			'04.8': 2,
+			'05.1': 1,
+			'05.2': 2,
+			'05.3': 1,
+			'05.4': 12,
+			'05.5': 5,
+			'05.6': 5,
+			'06.1': 4,
+			'06.2': 5,
+			'06.3': 5,
+			'06.4': 6,
+			'06.5': 4,
+			'06.6': 2,
+			'06.7': 10,
+			'07.1': 7,
+			'07.2': 4,
+			'07.3': 16,
+			'07.4': 3
+		})
+	);
+}
+
+function responseVisibleLineCount(response) {
+	if (!['lines', 'labeled-lines'].includes(response?.kind)) return null;
+	if (Number.isFinite(Number(response.lineCount))) return Number(response.lineCount);
+	if (Number.isFinite(Number(response.count))) return Number(response.count);
+	if (Array.isArray(response.fields)) {
+		const total = response.fields.reduce((sum, field) => sum + Number(field?.lineCount ?? 0), 0);
+		return total || null;
+	}
+	return null;
+}
+
+function knownSourceSpecificIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	const visibleText = [
+		question.contextText,
+		question.selfContainedPromptText,
+		...(question.stemBlocks ?? []).map(blockSearchText),
+		...(question.leadBlocks ?? []).map(blockSearchText),
+		...(question.promptBlocks ?? []).map(blockSearchText)
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	const gradingText = [
+		...(question.markSchemeItems ?? []).map((item) => item.text),
+		...(question.markChecklist ?? []).map((item) => item.text)
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	if (['06.5', '06.6'].includes(ref)) {
+		const hasSurveyContext =
+			/15\s*year|over\s+15\s+years/.test(visibleText) &&
+			(/400\s*000/.test(visibleText) ||
+				/800\s*000/.test(visibleText) ||
+				/million women/.test(visibleText));
+		if (!hasSurveyContext) {
+			issues.push({
+				code: 'known_survey_context_missing',
+				field: 'stemBlocks/contextText',
+				severity: 'error',
+				evidence: `${ref} must include the Million Women survey setup, duration, cohort size, and controlled-factor context.`
+			});
+		}
+	}
+	if (ref === '01.1') {
+		const standaloneText = String(question.selfContainedPromptText ?? '').toLowerCase();
+		if (
+			standaloneText.includes('carbon dioxide') &&
+			standaloneText.includes('water') &&
+			standaloneText.includes('glucose')
+		) {
+			issues.push({
+				code: 'known_self_contained_answer_leak',
+				field: 'selfContainedPromptText',
+				severity: 'error',
+				evidence:
+					'01.1 selfContainedPromptText must not include the completed photosynthesis equation answers.'
+			});
+		}
+	}
+	if (ref === '01.9') {
+		if (
+			!/\b3\s+or\s+4\b/.test(gradingText) ||
+			!/all\s+(?:plotted\s+)?(?:mean\s+)?points/.test(gradingText)
+		) {
+			issues.push({
+				code: 'known_graph_plotting_mark_scheme_mismatch',
+				field: 'markSchemeItems',
+				severity: 'error',
+				evidence:
+					'01.9 must encode 2 marks for all points plotted correctly and 1 mark for 3 or 4 correct plots.'
+			});
+		}
+	}
+	if (['01.3', '01.9'].includes(ref)) {
+		const hasRateUnit =
+			/rate\s+of\s+photosynthesis/.test(visibleText) &&
+			/cm\s*(?:3|\u00b3)\s*\/\s*hour/.test(visibleText);
+		if (!hasRateUnit) {
+			issues.push({
+				code: 'known_table_unit_missing',
+				field: 'stemBlocks/contextText',
+				severity: 'error',
+				evidence: `${ref} must render Table 1 with the official rate header/unit: Rate of photosynthesis in cm3/hour.`
+			});
+		}
+	}
+	if (ref === '01.3') {
+		const responseText = stringifyBlockValue(question.response).toLowerCase();
+		if (!/cm\s*(?:3|\u00b3)\s*\/\s*hour/.test(responseText)) {
+			issues.push({
+				code: 'known_response_unit_missing',
+				field: 'response.labels',
+				severity: 'error',
+				evidence: '01.3 response must expose the printed final-answer unit: X = ... cm3/hour.'
+			});
+		}
+	}
+	if (['02.3', '06.7', '07.3'].includes(ref)) {
+		if (!/\blevel\s*1\b/.test(gradingText) || !/\blevel\s*2\b/.test(gradingText)) {
+			issues.push({
+				code: 'known_level_response_descriptors_missing',
+				field: 'markSchemeItems',
+				severity: 'error',
+				evidence: `${ref} must include official level-of-response descriptors and mark bands, not only indicative content rows.`
+			});
+		}
+	}
+	for (const issue of knownFigureCropIssues(question)) issues.push(issue);
+	return issues;
+}
+
+function knownFigureCropIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const requirements = new Map([
+		[
+			'figure 2',
+			{
+				minWidth: 900,
+				minHeight: 520,
+				maxHeight: 620,
+				evidence:
+					"Figure 2 crop must include the complete right-hand 'Mesophyll cell' label and Stomata label, but not the Q02.2 prompt text."
+			}
+		],
+		[
+			'figure 4',
+			{
+				minWidth: 1050,
+				minHeight: 620,
+				maxHeight: 730,
+				evidence:
+					"Figure 4 crop must include the full key, including 'Water molecules' and 'Nitrate ions', but not the Q02.4 prompt text."
+			}
+		],
+		[
+			'figure 5',
+			{
+				minWidth: 1150,
+				minHeight: 500,
+				maxHeight: 570,
+				evidence:
+					'Figure 5 crop must include the three cell diagrams and scale bars, but not the Q03.1 prompt text.'
+			}
+		],
+		[
+			'figure 6',
+			{
+				minWidth: 950,
+				minHeight: 720,
+				evidence:
+					'Figure 6 crop must include the full cell-cycle chart, including the Stage 1 label.'
+			}
+		],
+		[
+			'figure 9',
+			{
+				minWidth: 700,
+				minHeight: 480,
+				evidence: "Figure 9 crop must include the full 'Nodules' label, arrows, and nodule image."
+			}
+		]
+	]);
+	const issues = [];
+	for (const asset of question.assets ?? []) {
+		const label = normalizedMediaLabel(
+			asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? asset.assetId ?? ''
+		);
+		const requirement =
+			label === 'figure 10' && Number(asset.page ?? question.pageStart ?? 0) === 26
+				? {
+						minWidth: 900,
+						minHeight: 960,
+						maxHeight: 1040,
+						evidence:
+							'Repeated Figure 10 crop must include the graph, axes, and key, but not the Q06.4 prompt text.'
+					}
+				: requirements.get(label);
+		if (!requirement) continue;
+		const dimensions = imageDimensionsForAsset(asset);
+		if (!dimensions) continue;
+		const tooSmall =
+			dimensions.width < requirement.minWidth || dimensions.height < requirement.minHeight;
+		const tooTall =
+			Number.isFinite(Number(requirement.maxHeight)) &&
+			dimensions.height > Number(requirement.maxHeight);
+		if (!tooSmall && !tooTall) continue;
+		issues.push({
+			code: tooTall ? 'known_figure_crop_prompt_contamination' : 'known_figure_crop_incomplete',
+			field: 'assets.filePath',
+			severity: 'error',
+			evidence: `${ref} ${asset.sourceLabel ?? label}: ${requirement.evidence} Found ${dimensions.width}x${dimensions.height}; expected at least ${requirement.minWidth}x${requirement.minHeight}${
+				requirement.maxHeight ? ` and height no more than ${requirement.maxHeight}` : ''
+			}.`
+		});
+	}
+	return issues;
+}
+
+function missingReferencedMediaLabels(question) {
+	const labels = referencedMediaLabels(question);
+	if (!labels.length) return [];
+	const blockLabels = new Set();
+	for (const block of [
+		...(question.stemBlocks ?? []),
+		...(question.leadBlocks ?? []),
+		...(question.promptBlocks ?? []),
+		...(question.afterResponseBlocks ?? [])
+	]) {
+		for (const label of [block?.label, block?.assetLabel, block?.sourceLabel].filter(Boolean)) {
+			blockLabels.add(normalizedMediaLabel(label));
+		}
+	}
+	const renderableAssetLabels = new Set();
+	for (const asset of question.assets ?? []) {
+		if (!assetHasRenderableSource(asset)) continue;
+		for (const label of [asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId].filter(
+			Boolean
+		)) {
+			renderableAssetLabels.add(normalizedMediaLabel(label));
+		}
+	}
+	const missing = [];
+	for (const label of labels) {
+		const normalized = normalizedMediaLabel(label);
+		const isTable = normalized.startsWith('table ');
+		if (renderableAssetLabels.has(normalized)) continue;
+		if (isTable && blockLabels.has(normalized)) continue;
+		missing.push(label);
+	}
+	return [...new Set(missing)];
+}
+
+function referencedMediaLabels(question) {
+	const labels = [];
+	const texts = [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.stemBlocks ?? []).map(blockPlainText),
+		...(question.leadBlocks ?? []).map(blockPlainText),
+		...(question.promptBlocks ?? []).map(blockPlainText),
+		...(question.afterResponseBlocks ?? []).map(blockPlainText)
+	];
+	for (const text of texts) {
+		const value = String(text ?? '');
+		const regex = /\b(Fig(?:ure)?|Table)\s+(\d+[A-Za-z]?)/gi;
+		for (const match of value.matchAll(regex)) {
+			const kind = /^table$/i.test(match[1]) ? 'Table' : 'Figure';
+			labels.push(`${kind} ${match[2]}`);
+		}
+	}
+	return [...new Set(labels)];
+}
+
+function normalizedMediaLabel(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/\bfig\.\s*/g, 'figure ')
+		.replace(/\bfig\s+/g, 'figure ')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function blockPlainText(block) {
+	if (!block || typeof block !== 'object') return '';
+	if (typeof block.text === 'string') return block.text;
+	if (Array.isArray(block.items)) return block.items.join(' ');
+	return '';
+}
+
+function blockSearchText(block) {
+	if (!block || typeof block !== 'object') return '';
+	return [
+		block.text,
+		block.label,
+		block.assetLabel,
+		block.columns,
+		block.rows,
+		block.items,
+		block.keyItems
+	]
+		.map(stringifyBlockValue)
+		.filter(Boolean)
+		.join(' ');
+}
+
+function stringifyBlockValue(value) {
+	if (value === null || value === undefined) return '';
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return String(value);
+	}
+	if (Array.isArray(value)) return value.map(stringifyBlockValue).filter(Boolean).join(' ');
+	if (typeof value === 'object')
+		return Object.values(value).map(stringifyBlockValue).filter(Boolean).join(' ');
+	return '';
+}
+
+function normalizedRenderText(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function assetHasRenderableSource(asset) {
+	if (asset?.publicPath || asset?.public_path || asset?.r2Key || asset?.r2_key) return true;
+	const filePath = asset?.filePath ?? asset?.file ?? asset?.localPath ?? null;
+	if (!filePath) return false;
+	const value = String(filePath);
+	if (/^https?:\/\//i.test(value)) return true;
+	if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return false;
+	const resolved = path.isAbsolute(value) ? value : path.resolve(localPathBaseDir, value);
+	return existsSync(resolved);
+}
+
+function imageDimensionsForAsset(asset) {
+	const filePath = asset?.filePath ?? asset?.file ?? asset?.localPath ?? null;
+	if (!filePath) return null;
+	const value = String(filePath);
+	if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return null;
+	const resolved = path.isAbsolute(value) ? value : path.resolve(localPathBaseDir, value);
+	if (!existsSync(resolved)) return null;
+	try {
+		const buffer = readFileSync(resolved);
+		if (
+			buffer.length >= 24 &&
+			buffer[0] === 0x89 &&
+			buffer[1] === 0x50 &&
+			buffer[2] === 0x4e &&
+			buffer[3] === 0x47
+		) {
+			return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+		}
+	} catch {
+		return null;
+	}
+	return null;
+}
+
+function underGranularAnyNMarkScheme(question) {
+	const requiredCount = Number(question?.marks ?? 0);
+	if (!Number.isFinite(requiredCount) || requiredCount <= 1) return null;
+	const positiveItems = (question.markSchemeItems ?? []).filter(isPositiveMarkSchemeItem);
+	const itemTexts = positiveItems.map((item) => String(item.text ?? ''));
+	const anyCount = Math.max(0, ...itemTexts.map(inferredAnyNCountFromText));
+	if (!anyCount) return null;
+	const expectedRows = Math.min(requiredCount, anyCount);
+	if (positiveItems.length >= expectedRows) return null;
+	return `${question.sourceQuestionRef ?? 'unknown'} expects ${expectedRows} independently awardable rows from an any-${anyCount} mark scheme, found ${positiveItems.length}.`;
+}
+
+function overrequiredAlternativeChecklist(question) {
+	const marks = Number(question?.marks ?? 0);
+	if (!Number.isFinite(marks) || marks <= 0) return null;
+	const checklist = question.markChecklist ?? [];
+	if (checklist.length <= marks) return null;
+	const requiredCount = checklist.filter((item) => item?.required !== false).length;
+	if (requiredCount <= marks) return null;
+	return `${question.sourceQuestionRef ?? 'unknown'} has ${requiredCount} required checklist rows for ${marks} marks; alternative/any-answer checklist rows must not all be required.`;
+}
+
+function inferredAnyNCountFromText(text) {
+	const match = String(text ?? '').match(/\bany\s+(two|three|four|five|six|2|3|4|5|6)\b/i);
+	if (!match) return 0;
+	const wordToNumber = { two: 2, three: 3, four: 4, five: 5, six: 6 };
+	const raw = match[1].toLowerCase();
+	return wordToNumber[raw] ?? Number(raw) ?? 0;
+}
+
 function isPositiveMarkSchemeItem(item) {
 	const itemType = String(item?.itemType ?? item?.kind ?? '').toLowerCase();
 	const text = String(item?.text ?? '').toLowerCase();
-	const negativeType = /^(?:allow|accept|ignore|reject|alternative|guidance|do[_ -]?not|do not credit|do not accept)$/;
+	const negativeType =
+		/^(?:allow|accept|ignore|reject|alternative|guidance|do[_ -]?not|do not credit|do not accept)$/;
 	if (itemType) return !negativeType.test(itemType);
 	return !/^\s*(?:allow|accept|ignore|reject|alternative|guidance|do[_ -]?not|do not credit|do not accept)\b/.test(
 		text
@@ -1034,7 +1717,8 @@ function blockingIssues(findings) {
 function parentMarkTotals(questions) {
 	const totals = {};
 	for (const question of questions) {
-		const parent = question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef) ?? 'unknown';
+		const parent =
+			question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef) ?? 'unknown';
 		totals[parent] = (totals[parent] ?? 0) + Number(question.marks ?? 0);
 	}
 	return totals;
@@ -1125,6 +1809,14 @@ function pdfPageCount(filePath) {
 	return Number(match[1]);
 }
 
+function bestEffortPdfPageCount(filePath) {
+	try {
+		return pdfPageCount(filePath);
+	} catch {
+		return 0;
+	}
+}
+
 function pdfInfo(filePath) {
 	try {
 		return {
@@ -1138,9 +1830,13 @@ function pdfInfo(filePath) {
 				raw: execFileSync('mutool', ['info', filePath], { encoding: 'utf8' })
 			};
 		} catch (mutoolError) {
-			const pdfMessage = pdfInfoError instanceof Error ? pdfInfoError.message : String(pdfInfoError);
-			const mutoolMessage = mutoolError instanceof Error ? mutoolError.message : String(mutoolError);
-			throw new Error(`Could not inspect PDF ${filePath}. pdfinfo: ${pdfMessage}; mutool: ${mutoolMessage}`);
+			const pdfMessage =
+				pdfInfoError instanceof Error ? pdfInfoError.message : String(pdfInfoError);
+			const mutoolMessage =
+				mutoolError instanceof Error ? mutoolError.message : String(mutoolError);
+			throw new Error(
+				`Could not inspect PDF ${filePath}. pdfinfo: ${pdfMessage}; mutool: ${mutoolMessage}`
+			);
 		}
 	}
 }

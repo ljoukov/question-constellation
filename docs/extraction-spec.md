@@ -614,6 +614,23 @@ default the Codex production pipeline runs solvability and D1 dry-run checks. Im
 reports existing source documents/questions, existing chain links for the target paper, incoming
 question ID collisions, and incoming chain IDs already attached to other papers. Shared-chain updates
 are blocked unless `--allow-shared-chain-updates` is passed after cross-paper chain validation.
+The prepare script clears its output directory before each run and refuses to do so if that output is
+the input root or input-file directory; stale JSON files must not be allowed to contaminate strict
+audit or import dry-run results. The normalizer treats non-positive PDF `pageCount` values as missing
+and recomputes the count from the official PDF path, because Codex draft JSON can preserve
+`pageCount: 0` even when all page refs are otherwise correct.
+
+After a real D1 import, run `scripts/check-public-question-routes.mjs` for the imported
+`sourceDocumentId`. It queries D1, opens every deployed question, question-chain, practice, chain,
+constellation, and image route under `https://constellation.eviworld.com`, and fails on HTTP errors
+or app error bodies. This is the route-health gate for "open question" failures that can escape a
+pure D1 row-count audit.
+
+The D1 post-write audit requires mark-scheme rows, checklist rows, and a chain for every imported
+question. It also requires a model answer or fixed answer key for normal written/fixed-response
+questions. `asset-canvas` and `drawing-box` responses are exempt from the single-answer requirement:
+graph/drawing responses are gradable from their mark scheme and checklist, and forcing a fake
+answer key would make the data less faithful.
 
 The older `@ljoukov/llm` chunk/agentic path is kept as a legacy diagnostic and repair harness under
 `scripts/extract-paper-llm.mjs`, `scripts/run-production-extraction-pipeline.mjs`, and
@@ -629,17 +646,17 @@ Six-paper isolated Codex rollout study, 2026-06-28: free-discovery Codex runs we
 official PDFs in isolated temporary directories. They discovered several workflows now captured in
 the production prompts and helper menu:
 
-| Paper | Mode | Wall time | Questions | Marks | Commands | Input tokens | Cached input |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Biology P1 Nov20 | free discovery | 892.38s | 46 | 100 | 14 | 1,953,808 | 1,587,328 |
-| Chemistry P1 Nov20 | free discovery | 717.32s | 43 | 100 | 48 | 2,476,964 | 2,182,784 |
-| Physics P1 Nov20 | free discovery | 858.10s | 41 | 100 | 31 | 3,740,954 | 3,227,392 |
-| Biology P1 Nov20 | prompted toolkit | 624.23s | 46 | 100 | 44 | 1,399,015 | 1,176,704 |
-| Chemistry P1 Nov20 | prompted toolkit | 689.49s | 43 | 100 | 73 | 1,673,756 | 1,491,200 |
-| Physics P1 Nov20 | prompted toolkit | 902.03s | 41 | 100 | 57 | n/a | n/a |
-| Biology P2 Nov20 | prompted toolkit | 685.28s | 43 | 100 | 38 | 3,492,832 | 3,031,040 |
-| Chemistry P2 Nov20 | prompted toolkit | 932.46s | 47 | 100 | 66 | 4,178,204 | 3,804,160 |
-| Physics P2 Nov20 | prompted toolkit | 685.73s | 38 | 100 | 53 | 1,925,301 | 1,756,416 |
+| Paper              | Mode             | Wall time | Questions | Marks | Commands | Input tokens | Cached input |
+| ------------------ | ---------------- | --------: | --------: | ----: | -------: | -----------: | -----------: |
+| Biology P1 Nov20   | free discovery   |   892.38s |        46 |   100 |       14 |    1,953,808 |    1,587,328 |
+| Chemistry P1 Nov20 | free discovery   |   717.32s |        43 |   100 |       48 |    2,476,964 |    2,182,784 |
+| Physics P1 Nov20   | free discovery   |   858.10s |        41 |   100 |       31 |    3,740,954 |    3,227,392 |
+| Biology P1 Nov20   | prompted toolkit |   624.23s |        46 |   100 |       44 |    1,399,015 |    1,176,704 |
+| Chemistry P1 Nov20 | prompted toolkit |   689.49s |        43 |   100 |       73 |    1,673,756 |    1,491,200 |
+| Physics P1 Nov20   | prompted toolkit |   902.03s |        41 |   100 |       57 |          n/a |          n/a |
+| Biology P2 Nov20   | prompted toolkit |   685.28s |        43 |   100 |       38 |    3,492,832 |    3,031,040 |
+| Chemistry P2 Nov20 | prompted toolkit |   932.46s |        47 |   100 |       66 |    4,178,204 |    3,804,160 |
+| Physics P2 Nov20   | prompted toolkit |   685.73s |        38 |   100 |       53 |    1,925,301 |    1,756,416 |
 
 The full artifacts live under `tmp/codex-isolated-pdf-baselines-20260628/`. The prompted toolkit
 helped Biology P1 and Physics P2, modestly helped Chemistry P1, and hurt or failed to cleanly finish
@@ -663,11 +680,11 @@ Direct whole-paper Codex PDF-only reruns, 2026-06-29, used isolated temporary di
 only the official PDFs plus the prompt. Codex was allowed to discover its own local workflow and write
 temporary helper scripts/artifacts:
 
-| Paper | Wall time | Questions | Marks | Commands | Input tokens | Cached input | Output tokens | Notes |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Biology P1 Jun18 | 754s | 44 | 100 | 47 | 2,375,562 | 2,176,896 | 36,583 | Includes review-marked withdrawn `06.1`-`06.8` placeholders; production importer must omit or repair these before D1. |
-| Chemistry P1 Jun18 | 887s | 46 | 100 | 95 | 2,955,790 | 2,691,968 | 42,191 | Passed Codex's syntax/count validation with no review flags. |
-| Physics P2 Jun18 | 1,383s | 48 | 100 | 51 | 5,561,702 | 4,909,184 | 34,883 | Passed Codex's syntax/count validation with no review flags. |
+| Paper              | Wall time | Questions | Marks | Commands | Input tokens | Cached input | Output tokens | Notes                                                                                                                 |
+| ------------------ | --------: | --------: | ----: | -------: | -----------: | -----------: | ------------: | --------------------------------------------------------------------------------------------------------------------- |
+| Biology P1 Jun18   |      754s |        44 |   100 |       47 |    2,375,562 |    2,176,896 |        36,583 | Includes review-marked withdrawn `06.1`-`06.8` placeholders; production importer must omit or repair these before D1. |
+| Chemistry P1 Jun18 |      887s |        46 |   100 |       95 |    2,955,790 |    2,691,968 |        42,191 | Passed Codex's syntax/count validation with no review flags.                                                          |
+| Physics P2 Jun18   |    1,383s |        48 |   100 |       51 |    5,561,702 |    4,909,184 |        34,883 | Passed Codex's syntax/count validation with no review flags.                                                          |
 
 The observable Codex sequence was not a single rigid recipe: it used `pdfinfo`,
 `pdftotext -layout`, `pdfimages -list` / embedded extraction, PyMuPDF/pdfplumber summaries and table
@@ -696,12 +713,12 @@ beat on whole-paper quality before import.
 
 Current Codex SDK production run, Biology P1 Nov20, 2026-06-29:
 
-| Phase | Artifact | Wall time | Questions | Marks | Actions | Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| PDF extraction | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json` | 500.567s | 46 | 100 | 51 | 3 | 1,371,023 | 1,202,176 | 21,831 | 3,637 | deterministic extraction validation passed |
-| Answer chains | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` | 557.425s | 46 | 100 | 41 | 0 | 1,407,819 | 1,218,560 | 27,717 | 11,011 | 32 reused, 14 created, 0 updated, 0 review |
-| Solvability audit | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json` | 893.195s | 46 | 100 | n/a | 0 failed calls | 212,340 | 0 | 15,481 | 52,850 | 46/46 passed |
-| D1 import write | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json` | 8.2s | 46 | 100 | 554 SQL inserts | 0 | n/a | n/a | n/a | n/a | targeted D1 replacement passed |
+| Phase             | Artifact                                                                           | Wall time | Questions | Marks |         Actions | Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result                                     |
+| ----------------- | ---------------------------------------------------------------------------------- | --------: | --------: | ----: | --------------: | -------------: | -----------: | -----------: | ------------: | ---------------: | ------------------------------------------ |
+| PDF extraction    | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json`       |  500.567s |        46 |   100 |              51 |              3 |    1,371,023 |    1,202,176 |        21,831 |            3,637 | deterministic extraction validation passed |
+| Answer chains     | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` |  557.425s |        46 |   100 |              41 |              0 |    1,407,819 |    1,218,560 |        27,717 |           11,011 | 32 reused, 14 created, 0 updated, 0 review |
+| Solvability audit | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json`   |  893.195s |        46 |   100 |             n/a | 0 failed calls |      212,340 |            0 |        15,481 |           52,850 | 46/46 passed                               |
+| D1 import write   | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json`        |      8.2s |        46 |   100 | 554 SQL inserts |              0 |          n/a |          n/a |           n/a |              n/a | targeted D1 replacement passed             |
 
 The raw SDK extraction and chain phases were faster than the prompted Biology P1 Nov20 Codex
 baseline (624.23s extraction-only) and much more complete than the legacy chunk extractor, but the
@@ -730,6 +747,27 @@ answer keys, 43 answer-chain links, and no questions missing grading evidence. C
 subscription-metered and the SDK does not emit dollar cost, so compare Codex approaches by wall time,
 actions, failed actions, and token counts. `@ljoukov/llm` judge phases still emit cost in their own
 logs; the v7 solvability audit logged 46 calls, 280,671 total tokens, and `$3.11163`.
+
+Render/import fix rerun, Biology P1 Nov20, 2026-06-29:
+
+| Phase                        | Artifact                                                                                                     | Wall time |         Actions |  Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result                                                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------ | --------: | --------------: | --------------: | -----------: | -----------: | ------------: | ---------------: | ---------------------------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction         | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20-renderfix-v12/normalized-extraction.json`                      |  585.272s |              46 |               2 |    1,691,858 |    1,432,064 |        23,889 |            4,238 | 46 questions, 100 marks, mechanical validation passed                                                                  |
+| Targeted Codex repair        | `tmp/codex-extraction-repair/aqa-84611h-qp-nov20-renderfix-v12-to-v15/repaired-normalized-extraction.json`   |  103.976s |              22 |               2 |      299,143 |      264,704 |         4,495 |              814 | repaired Q01.3/Q01.8/Q01.9/Q02.1; preserved Q07.1 = 7 and Q07.3 = 16 line counts                                       |
+| Independent extraction judge | `tmp/codex-extraction-judge/aqa-84611h-qp-nov20-renderfix-v15/judge-report.json`                             |  201.065s |              39 |               0 |    1,066,391 |      913,920 |         7,330 |            1,208 | pass, score 0.98, 46 refs checked, 0 required repairs                                                                  |
+| Codex answer chains          | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-renderfix-v15/chain-reconciled-normalized.json`                     |  617.405s |              38 |               0 |    1,122,847 |    1,017,344 |        26,277 |           11,663 | 32 reused, 14 created, chain validation passed                                                                         |
+| Strict audit and solvability | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import-audit.json`                       |       n/a |  46 judge calls |  0 failed calls |          n/a |          n/a |           n/a |              n/a | mechanical audit passed; solvability 46/46                                                                             |
+| R2 upload                    | `tmp/codex-extraction-repair/aqa-84611h-qp-nov20-renderfix-v12-to-v15/assets/`                               |      8.4s |      11 uploads |               0 |          n/a |          n/a |           n/a |              n/a | 11 referenced assets uploaded                                                                                          |
+| D1 import write              | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import/chain-reconciled-normalized.json` |      5.8s | 588 SQL inserts |               0 |          n/a |          n/a |           n/a |              n/a | post-write coverage passed: 46 overlays, 155 mark rows, 77 checklist rows, 39 model answers, 10 answer keys, 44 chains |
+| Deployed crawl               | `tmp/public-route-checks/aqa-84611h-qp-nov20-renderfix-v15.json`                                             |   64.425s | 237 HTTP routes | 0 failed routes |          n/a |          n/a |           n/a |              n/a | all 46 questions, 44 chains/constellations, and 11 image routes returned 200                                           |
+
+The v15 rerun fixed the importer path rather than patching D1 by hand:
+
+- `codex-import-helper.mjs` now recomputes official PDF page counts when Codex emits `pageCount: 0`.
+- `prepare-import-ready-extraction.mjs` now clears stale output before strict audit/import checks.
+- `import-physics-vision.mjs` no longer rejects graph/drawing `asset-canvas` questions for lacking a
+  single answer key when they have mark rows and checklist rows.
+- `check-public-question-routes.mjs` makes deployed route crawling repeatable after D1 writes.
 
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
