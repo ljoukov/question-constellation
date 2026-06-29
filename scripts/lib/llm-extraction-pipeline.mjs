@@ -1488,7 +1488,7 @@ async function generateJsonWithTimeout(options, label = 'LLM call', timeoutMs = 
 	}
 }
 
-async function runToolLoopWithTimeout(options, label = 'LLM tool loop', timeoutMs = null) {
+export async function runToolLoopWithTimeout(options, label = 'LLM tool loop', timeoutMs = null) {
 	const resolvedTimeoutMs = Number(process.env.EXTRACTION_LLM_TIMEOUT_MS ?? DEFAULT_LLM_TIMEOUT_MS);
 	const activeTimeoutMs = timeoutMs ?? resolvedTimeoutMs;
 	const sourceOnEvent = options.onEvent;
@@ -3124,6 +3124,38 @@ function buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, conte
 	return packets.map((packet, index) => ({ ...packet, index, total: packets.length }));
 }
 
+function buildAgenticWholePaperPacket(questionImages, pageRefsByPage) {
+	const refsByPage = normalizePageRefMap(pageRefsByPage);
+	const selectedPages = questionImages.map(pageNumberFromRenderedPath).filter(Boolean);
+	const targetRefs = [
+		...new Set(
+			selectedPages
+				.flatMap((page) => refsByPage.get(page) ?? [])
+				.filter(Boolean)
+		)
+	].sort(compareQuestionRefs);
+	return [
+		{
+			index: 0,
+			total: 1,
+			chunkStrategy: 'agentic-whole-paper',
+			parentRef: null,
+			targetRefs,
+			priorContextImages: [],
+			coreImages: questionImages,
+			lookaheadImages: [],
+			images: questionImages,
+			priorContextPages: [],
+			corePages: selectedPages,
+			lookaheadPages: []
+		}
+	];
+}
+
+function isAgenticWholePaperPacket(packet) {
+	return packet?.chunkStrategy === 'agentic-whole-paper';
+}
+
 function compactAgenticPageRefSummary(packet, pageRefsByPage) {
 	const refsByPage = normalizePageRefMap(pageRefsByPage);
 	return [...(packet.corePages ?? []), ...(packet.priorContextPages ?? []), ...(packet.lookaheadPages ?? [])]
@@ -3152,8 +3184,11 @@ function buildAgenticExtractionPrompt({
 	expectedQuestionCount = null,
 	assetManifestText = ''
 }) {
+	const wholePaper = isAgenticWholePaperPacket(packet);
 	return [
-		'Extract this GCSE parent-question packet into compact Question Constellation extraction JSON using the available tools.',
+		wholePaper
+			? 'Extract this whole GCSE question paper into compact Question Constellation extraction JSON using the available tools.'
+			: 'Extract this GCSE parent-question packet into compact Question Constellation extraction JSON using the available tools.',
 		'This is a bounded PDF-backed agentic extraction loop. Do not ask for shell access, repo files, full OCR dumps, precomputed .txt files, or broad mark-scheme dumps.',
 		'Do not request git status, repository context, web search, or any source outside the official PDFs exposed by tools. This is not a repo-roaming Codex session.',
 		'Request only narrow observations through tools: selected page text, mark-scheme slices by refs, selected page images, cropped/zoomed images, response-line checks, and partial JSON validation.',
@@ -3162,20 +3197,31 @@ function buildAgenticExtractionPrompt({
 		'When complete, call submit_extraction. Do not finish with free-form prose.',
 		`Use sourceDocument.id: ${sourceDocumentId}`,
 		`Use markSchemeDocument.id: ${markSchemeDocumentId}`,
-		`Packet ${packet.index + 1} of ${packet.total}; parent ref: ${packet.parentRef ?? 'unknown'}.`,
+		wholePaper
+			? `Whole-paper packet ${packet.index + 1} of ${packet.total}.`
+			: `Packet ${packet.index + 1} of ${packet.total}; parent ref: ${packet.parentRef ?? 'unknown'}.`,
 		`Core question-paper pages: ${(packet.corePages ?? []).join(', ') || 'none'}.`,
-		packet.priorContextPages?.length
-			? `Prior context pages: ${packet.priorContextPages.join(', ')}. Use only for parent stems, earlier values, tables, figures, and diagrams needed by core targets.`
-			: 'Prior context pages: none.',
-		packet.lookaheadPages?.length
-			? `Lookahead pages: ${packet.lookaheadPages.join(', ')}. Use only to finish a core-page subquestion; do not extract new sibling refs that begin only on lookahead pages.`
-			: 'Lookahead pages: none.',
+		wholePaper
+			? 'Prior context pages: not applicable; this packet contains the whole selected question paper.'
+			: packet.priorContextPages?.length
+				? `Prior context pages: ${packet.priorContextPages.join(', ')}. Use only for parent stems, earlier values, tables, figures, and diagrams needed by core targets.`
+				: 'Prior context pages: none.',
+		wholePaper
+			? 'Lookahead pages: not applicable; this packet contains the whole selected question paper.'
+			: packet.lookaheadPages?.length
+				? `Lookahead pages: ${packet.lookaheadPages.join(', ')}. Use only to finish a core-page subquestion; do not extract new sibling refs that begin only on lookahead pages.`
+				: 'Lookahead pages: none.',
 		packet.targetRefs?.length
-			? `Detected target refs for this packet: ${packet.targetRefs.join(', ')}. Extract these refs unless a tool observation proves the scout missed or misread a ref.`
+			? wholePaper
+				? `The text scout detected these candidate refs across the selected paper: ${packet.targetRefs.join(', ')}. Extract every independently marked learner-facing subquestion, omit withdrawn/replacement/statistics-only entries, and explain any added or omitted ref in reviewNotes.`
+				: `Detected target refs for this packet: ${packet.targetRefs.join(', ')}. Extract these refs unless a tool observation proves the scout missed or misread a ref.`
 			: 'No target refs were detected. Use tools carefully and submit an empty questions array if the selected pages contain no marked subquestion starts.',
 		expectedQuestionCount ? `Return exactly ${expectedQuestionCount} atomic question(s).` : '',
 		'Use read_question_page_text for prompt/ref/mark-value anchors, then use page images or crops for layout, response controls, tables, figures, diagrams, and answer spaces.',
 		'Use read_mark_scheme_for_refs with the target refs before writing markSchemeItems, markChecklist, modelAnswer, or answer keys.',
+		wholePaper
+			? 'For whole-paper extraction, stage compact question batches with stage_extraction_questions as you finish parent sections. Use validate_staged_extraction before final submission, then call submit_extraction with {} to submit the staged paper. Do not attempt one huge terminal submit payload.'
+			: null,
 		'Use check_response_line_counts with sourceQuestionRef on a bounded answer-area crop before finalizing lines/labeled-lines counts when the page has visible ruled answer lines. The crop must include the whole answer area; if the tool returns boundaryWarnings, or the first/last line may be outside the crop, or the count conflicts with the page image, run scan_question_page_horizontal_rules and rerun check_response_line_counts with a larger crop before submitting.',
 		'Extract every independently marked subquestion in the packet. Do not create rows for unmarked parent stems.',
 		'Do not generate answerChain fields; the script creates placeholders and a later text-only chain reconciliation phase assigns reusable chains.',
@@ -3313,6 +3359,8 @@ function createAgenticExtractionTools({
 	agentWorkDir
 }) {
 	let submittedValue = null;
+	const stagedQuestionsByRef = new Map();
+	const stagedQuestionRefs = [];
 	const lineCountObservations = [];
 	const imageByPage = renderedImagesByPage(packet.images ?? []);
 	const toolContext = {
@@ -3327,12 +3375,52 @@ function createAgenticExtractionTools({
 		height: z.number().min(1),
 		purpose: z.string().max(240).optional()
 	});
+	function stagedExtractionEnvelope() {
+		return {
+			questions: stagedQuestionRefs
+				.map((ref) => stagedQuestionsByRef.get(ref))
+				.filter(Boolean)
+		};
+	}
+	function stageCompactQuestions(questions) {
+		for (const question of questions ?? []) {
+			const ref = question.sourceQuestionRef;
+			if (!stagedQuestionsByRef.has(ref)) stagedQuestionRefs.push(ref);
+			stagedQuestionsByRef.set(ref, question);
+		}
+	}
+	function validateCompactExtraction(value) {
+		const full = expandCompactFullPaperExtraction({
+			value,
+			sourceDocumentId,
+			markSchemeDocumentId,
+			questionPaper,
+			markScheme,
+			chunk: packet
+		});
+		const deterministicIssues = deterministicCandidateIssues(full, {
+			includeAnswerChainIssues: false
+		});
+		const observationIssues = lineCountObservationFindings(full, lineCountObservations);
+		const allIssues = [...deterministicIssues, ...observationIssues];
+		const blocking = blockingIssues(allIssues);
+		return {
+			full,
+			status: blocking.length ? 'blocked' : 'valid',
+			questionCount: full.questions.length,
+			refs: full.questions.map((question) => question.sourceQuestionRef),
+			blockingIssueCount: blocking.length,
+			blockingIssues: blocking,
+			deterministicIssueCount: allIssues.length,
+			deterministicIssues: allIssues
+		};
+	}
 	const tools = {
 		read_question_page_text: tool({
 			description:
-				'Read deterministic pdftotext -layout output for one to four allowed packet pages. Use this for refs, prompt text, marks, and table values. This is not a full-paper OCR dump.',
+				'Read deterministic pdftotext -layout output for a small set of allowed packet pages. Use this for refs, prompt text, marks, and table values. This is not a full-paper OCR dump.',
 			inputSchema: z.object({
-				pages: z.array(pageSchema).min(1).max(4),
+				pages: z.array(pageSchema).min(1).max(8),
 				maxChars: z.number().int().min(1000).max(18000).optional()
 			}),
 			execute: ({ pages, maxChars = 12000 }) => {
@@ -3356,7 +3444,7 @@ function createAgenticExtractionTools({
 			description:
 				'Read a narrow mark-scheme text slice around specific sourceQuestionRef values. Use this before finalizing marking evidence. Do not request all refs unless this packet needs them.',
 			inputSchema: z.object({
-				refs: z.array(z.string()).min(1).max(12),
+				refs: z.array(z.string()).min(1).max(18),
 				windowLines: z.number().int().min(12).max(90).optional(),
 				maxChars: z.number().int().min(2000).max(32000).optional()
 			}),
@@ -3374,7 +3462,7 @@ function createAgenticExtractionTools({
 			description:
 				'List official embedded image objects on allowed packet pages. Use before treating rendered page screenshots as figure assets; many AQA figures are embedded directly in the PDF.',
 			inputSchema: z.object({
-				pages: z.array(pageSchema).min(1).max(6).optional()
+				pages: z.array(pageSchema).min(1).max(12).optional()
 			}),
 			execute: ({ pages = packet.corePages ?? [] }) => {
 				for (const page of pages) {
@@ -3635,71 +3723,86 @@ function createAgenticExtractionTools({
 				};
 			}
 		}),
+		stage_extraction_questions: tool({
+			description:
+				'Validate and stage a compact batch of extracted questions for this packet without final submission. Use this for whole-paper extraction in parent-question batches, then validate_staged_extraction and submit_extraction with {}.',
+			inputSchema: z.object({
+				questions: z.array(CompactQuestionSchema).min(1).max(12)
+			}),
+			execute: ({ questions }) => {
+				stageCompactQuestions(questions);
+				const validation = validateCompactExtraction(stagedExtractionEnvelope());
+				return {
+					status: validation.status,
+					stagedQuestionCount: validation.questionCount,
+					stagedRefs: validation.refs,
+					blockingIssueCount: validation.blockingIssueCount,
+					blockingIssues: validation.blockingIssues,
+					deterministicIssueCount: validation.deterministicIssueCount,
+					deterministicIssues: validation.deterministicIssues
+				};
+			}
+		}),
+		validate_staged_extraction: tool({
+			description:
+				'Validate all currently staged compact questions for this packet. Use before final submit_extraction when using stage_extraction_questions.',
+			inputSchema: z.object({}),
+			execute: () => {
+				const validation = validateCompactExtraction(stagedExtractionEnvelope());
+				return {
+					status: validation.status,
+					stagedQuestionCount: validation.questionCount,
+					stagedRefs: validation.refs,
+					blockingIssueCount: validation.blockingIssueCount,
+					blockingIssues: validation.blockingIssues,
+					deterministicIssueCount: validation.deterministicIssueCount,
+					deterministicIssues: validation.deterministicIssues
+				};
+			}
+		}),
 		validate_partial_extraction: tool({
 			description:
 				'Validate compact extraction JSON for the current packet and run deterministic extraction checks excluding answer-chain checks. Use before submit_extraction.',
 			inputSchema: LlmCompactFullPaperExtractionSchema,
 			execute: (value) => {
-				const full = expandCompactFullPaperExtraction({
-					value,
-					sourceDocumentId,
-					markSchemeDocumentId,
-					questionPaper,
-					markScheme,
-					chunk: packet
-				});
-				const deterministicIssues = deterministicCandidateIssues(full, {
-					includeAnswerChainIssues: false
-				});
-				const observationIssues = lineCountObservationFindings(full, lineCountObservations);
-				const allIssues = [...deterministicIssues, ...observationIssues];
-				const blocking = blockingIssues(allIssues);
+				const validation = validateCompactExtraction(value);
 				return {
-					status: blocking.length ? 'blocked' : 'valid',
-					questionCount: full.questions.length,
-					refs: full.questions.map((question) => question.sourceQuestionRef),
-					blockingIssueCount: blocking.length,
-					blockingIssues: blocking,
-					deterministicIssueCount: allIssues.length,
-					deterministicIssues: allIssues
+					status: validation.status,
+					questionCount: validation.questionCount,
+					refs: validation.refs,
+					blockingIssueCount: validation.blockingIssueCount,
+					blockingIssues: validation.blockingIssues,
+					deterministicIssueCount: validation.deterministicIssueCount,
+					deterministicIssues: validation.deterministicIssues
 				};
 			}
 		}),
 		submit_extraction: tool({
 			description:
-				'Terminal tool. Submit final compact extraction JSON for this packet after using the source tools and partial validator.',
-			inputSchema: LlmCompactFullPaperExtractionSchema,
+				'Terminal tool. Submit final compact extraction JSON for this packet after using the source tools and validator. If questions were staged with stage_extraction_questions, pass {}.',
+			inputSchema: z.object({ questions: z.array(CompactQuestionSchema).optional() }).strict(),
 			terminal: true,
 			execute: (value) => {
-				const full = expandCompactFullPaperExtraction({
-					value,
-					sourceDocumentId,
-					markSchemeDocumentId,
-					questionPaper,
-					markScheme,
-					chunk: packet
-				});
-				const blocking = blockingIssues(
-					[
-						...deterministicCandidateIssues(full, {
-							includeAnswerChainIssues: false
-						}),
-						...lineCountObservationFindings(full, lineCountObservations)
-					]
-				);
-				if (blocking.length) {
+				const candidateValue =
+					Array.isArray(value?.questions) && value.questions.length
+						? value
+						: stagedQuestionRefs.length
+							? stagedExtractionEnvelope()
+							: value;
+				const validation = validateCompactExtraction(candidateValue);
+				if (validation.blockingIssues.length) {
 					throw new Error(
-						`Submission has ${blocking.length} blocking extraction issue(s): ${JSON.stringify(blocking)}`
+						`Submission has ${validation.blockingIssues.length} blocking extraction issue(s): ${JSON.stringify(validation.blockingIssues)}`
 					);
 				}
-				submittedValue = full;
+				submittedValue = validation.full;
 				return {
 					status: 'accepted',
-					summary: `accepted ${full.questions.length} question(s): ${full.questions
+					summary: `accepted ${validation.full.questions.length} question(s): ${validation.full.questions
 						.map((question) => question.sourceQuestionRef)
 						.join(', ')}`,
-					questionCount: full.questions.length,
-					refs: full.questions.map((question) => question.sourceQuestionRef)
+					questionCount: validation.full.questions.length,
+					refs: validation.full.questions.map((question) => question.sourceQuestionRef)
 				};
 			}
 		})
@@ -4128,8 +4231,11 @@ export async function extractFullPaperFromPdfSet({
 				'Use chunk mode for production or pass allowQuestionGranularity=true for a focused diagnostic run.'
 		);
 	}
-	if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
-		throw new Error('chunkStrategy must be parent-question or fixed-pages.');
+	if (!['parent-question', 'fixed-pages', 'whole-paper'].includes(chunkStrategy)) {
+		throw new Error('chunkStrategy must be parent-question, fixed-pages, or whole-paper.');
+	}
+	if (chunkStrategy === 'whole-paper' && extractionStrategy !== 'agentic') {
+		throw new Error('chunkStrategy=whole-paper is only supported with extractionStrategy=agentic.');
 	}
 	const pageRefsByPage = new Map(
 		questionImages.map((image) => {
@@ -4138,10 +4244,13 @@ export async function extractFullPaperFromPdfSet({
 		})
 	);
 	if (extractionStrategy === 'agentic') {
-		const packets = buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, contextPages);
+		const packets =
+			chunkStrategy === 'whole-paper'
+				? buildAgenticWholePaperPacket(questionImages, pageRefsByPage)
+				: buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, contextPages);
 		const agentCacheDir = path.join(outputRoot, sourceDocumentId, 'agentic');
 		console.error(
-			`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} extraction_strategy=agentic packets=${packets.length} planned_core_pages=${packets.map((packet) => packet.corePages.join('-')).join(',')}`
+			`[extract] ${sourceDocumentId}: question_pages=${questionImages.length} mark_scheme_pages=${markScheme.pageCount} mark_scheme_text_chars=${markSchemeText.length} mark_scheme_images=${markSchemeImages.length} extraction_strategy=agentic chunk_strategy=${chunkStrategy} packets=${packets.length} planned_core_pages=${packets.map((packet) => packet.corePages.join('-')).join(',')}`
 		);
 		if (forceChunkCache && existsSync(agentCacheDir)) {
 			rmSync(agentCacheDir, { recursive: true, force: true });
@@ -4182,7 +4291,9 @@ export async function extractFullPaperFromPdfSet({
 				extractionSpec,
 				extraInstructions,
 				expectedQuestionCount:
-					packets.length === 1 ? (expectedQuestionCount ?? packet.targetRefs.length) || null : null,
+					packets.length === 1 && chunkStrategy !== 'whole-paper'
+						? (expectedQuestionCount ?? packet.targetRefs.length) || null
+						: expectedQuestionCount,
 				assetManifestText,
 				dpi,
 				agentWorkDir: packetDir,
@@ -4671,14 +4782,14 @@ function responseAssetCompletenessIssues(question) {
 	}
 	const issues = [];
 	for (const label of labels) {
+		if (questionHasStructuredTableSurface(question, label)) {
+			continue;
+		}
 		const matchingAssets = (question.assets ?? []).filter((candidate) =>
 			assetMatchesLabel(candidate, label)
 		);
 		const asset =
 			matchingAssets.find((candidate) => assetHasUsableReference(candidate)) ?? matchingAssets[0];
-		if (!asset && questionHasStructuredTableSurface(question, label)) {
-			continue;
-		}
 		if (!asset) {
 			issues.push({
 				severity: 'error',
@@ -5034,7 +5145,7 @@ function structuredTableBlockMatches(block, label) {
 	const hasColumns = Array.isArray(block.columns)
 		? block.columns.some((column) => String(column ?? '').trim())
 		: false;
-	return hasRows && hasColumns;
+	return hasRows && (hasColumns || rows.length > 1);
 }
 
 function mediaAssetPageLabelMismatch(asset, label, field = 'assets') {
@@ -6189,7 +6300,8 @@ export async function judgeQuestionSolvability({
 				'4. If attached images are provided, inspect them as part of the learner-visible context. If an image is needed but not attached or not described in text/tables, fail.',
 				'5. After forming an attempted answer from visible context, compare it with targetAnswerKey and report whether the mark scheme fits the extracted question.',
 				'6. Treat targetAnswerKey.responseUnorderedGroups as part of the grading semantics; do not require fixed per-blank order when an unordered group covers those targetIds.',
-				'7. This is an end-user extraction/rendering validation. Do not judge answer-chain reusability here except where it affects the visible question.'
+				'7. This is an end-user extraction/rendering validation. Do not judge answer-chain reusability here except where it affects the visible question.',
+				'8. Return only the requested JSON object matching the schema. Do not wrap it in Markdown and do not include explanatory prose outside the JSON.'
 			].join('\n')
 		},
 		...context.inlineImages.map((image) => ({
@@ -6211,7 +6323,7 @@ export async function judgeQuestionSolvability({
 				{
 					role: 'system',
 					content:
-						'You are an independent GCSE question extraction verifier. You did not generate the extraction. Judge whether the learner-facing assembled question is complete and answerable, including parent context, prior subparts, tables, diagrams, images, and response controls.'
+						'You are an independent GCSE question extraction verifier. You did not generate the extraction. Judge whether the learner-facing assembled question is complete and answerable, including parent context, prior subparts, tables, diagrams, images, and response controls. Return only valid JSON matching the requested schema.'
 				},
 				{
 					role: 'user',

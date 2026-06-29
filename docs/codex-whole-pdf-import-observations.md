@@ -45,6 +45,28 @@ These numbers show that a 20-step cap is too small for a whole-paper agentic ext
 
 The historical `tmp/codex-benchmark-whole-paper-20260628` artifact is not equivalent to a true PDF-only production run because the prompt was given precomputed `question-paper.txt`, `mark-scheme.txt`, and page PNGs. It remains useful as a reference for expected JSON quality and latency, but not as proof of PDF-to-JSON extraction from official PDFs.
 
+## Production SDK Wrapper Result
+
+The production path now launches Codex through `@openai/codex-sdk` from clean prepared work
+directories. The Biology Paper 1 November 2020 run started from the official question-paper and
+mark-scheme PDFs, not pre-fed text dumps.
+
+| Phase | Artifact | Wall time | Commands/actions | Failed actions | Token usage | Outcome |
+| --- | --- | ---: | ---: | ---: | --- | --- |
+| Codex PDF extraction | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json` | 500.567s | 51 | 3 | input 1,371,023; cached 1,202,176; output 21,831; reasoning 3,637 | 46 questions, 100 marks, deterministic validation passed |
+| Codex answer-chain reconciliation | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` | 557.425s | 41 | 0 | input 1,407,819; cached 1,218,560; output 27,717; reasoning 11,011 | 32 reused, 14 created, 0 updated, 0 review; chain validation passed |
+| Solvability judge | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json` | 893.195s | 46 LLM judge calls | 0 | prompt 212,340; response 15,481; thinking 52,850; total 280,671 | 46/46 passed |
+| D1 import | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json` | 8.2s | 554 insert statements | 0 | n/a | targeted write passed; 46-question post-write coverage |
+
+The raw SDK extraction was faster than the prompted Biology P1 Nov20 Codex baseline (624.23s) and
+substantially better than the old chunk extractor, but the independent solvability audit found
+real learner-facing context defects that the deterministic extraction validator did not catch:
+Q01 investigation/Table 1 context, Q06.1 age/gender controlled-factor setup, and Q07 mAbs definition
+context. The final v7 artifact repairs those fields from the official PDF and then passes strict
+audit, solvability, D1 dry-run, and D1 write. This is the intended safety pattern: Codex may produce
+a mechanically valid whole paper, but import still waits for learner-facing solvability and D1
+replacement checks.
+
 ## OCR And Visual Inspection Conclusion
 
 The JSONL rollouts did not show explicit `view_image` or image-view tool events. Codex appears to have used a hybrid workflow:

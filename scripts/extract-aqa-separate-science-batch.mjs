@@ -54,8 +54,8 @@ const paperAttempts = integerArg('paper-attempts', 2, 1);
 const chunkPages = integerArg('chunk-pages', 6, 1);
 const chunkConcurrency = integerArg('chunk-concurrency', 2, 1);
 const chunkStrategy = stringArg('chunk-strategy', 'parent-question');
-if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
-	throw new Error('--chunk-strategy must be parent-question or fixed-pages.');
+if (!['parent-question', 'fixed-pages', 'whole-paper'].includes(chunkStrategy)) {
+	throw new Error('--chunk-strategy must be parent-question, fixed-pages, or whole-paper.');
 }
 const extractionGranularity = stringArg('extraction-granularity', 'chunk');
 if (!['chunk', 'question'].includes(extractionGranularity)) {

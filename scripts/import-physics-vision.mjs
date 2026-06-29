@@ -17,6 +17,8 @@ const args = new Set(process.argv.slice(2));
 const paperArg = stringArg('paper', '');
 const allPapers = args.has('--all');
 const dryRun = args.has('--dry-run');
+const checkExisting = args.has('--check-existing');
+const allowSharedChainUpdates = args.has('--allow-shared-chain-updates');
 const applySchemaFlag = args.has('--apply-schema');
 const recursive = args.has('--recursive');
 const replaceAllSubject =
@@ -83,15 +85,16 @@ function requiredEnv(name, fallback = null) {
 
 const wranglerConfig = readWranglerConfig();
 const databaseConfig = wranglerConfig.d1_databases?.find((db) => db.binding === 'QUESTION_DB');
-const accountId = dryRun
+const shouldQueryD1 = !dryRun || checkExisting;
+const accountId = !shouldQueryD1
 	? (process.env.CLOUDFLARE_ACCOUNT_ID ?? 'dry-run-account')
 	: requiredEnv('CLOUDFLARE_ACCOUNT_ID');
-const apiToken = dryRun
+const apiToken = !shouldQueryD1
 	? (process.env.CLOUDFLARE_API_TOKEN ??
 		process.env.CLOUDFLARE_ACCOUNT_ACCESS_TOKEN ??
 		'dry-run-token')
 	: requiredEnv('CLOUDFLARE_API_TOKEN', process.env.CLOUDFLARE_ACCOUNT_ACCESS_TOKEN ?? null);
-const databaseId = dryRun
+const databaseId = !shouldQueryD1
 	? (process.env.QUESTION_DB_DATABASE_ID ?? databaseConfig?.database_id ?? 'dry-run-database')
 	: requiredEnv('QUESTION_DB_DATABASE_ID', databaseConfig?.database_id ?? null);
 const d1QueryUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
@@ -757,7 +760,7 @@ function chainIdFor(answerChain, subjectArea = null) {
 	return `${chainPrefixForSubject(subjectArea)}-${base}-${shortHash(answerChain.canonicalChainText)}`;
 }
 
-function addQuestionStatements(statements, paper, question, chainUseCount) {
+function addQuestionStatements(statements, paper, question, chainUseCount, options = {}) {
 	const sourceDocumentId = paper.sourceDocument.id;
 	const subjectArea = subjectAreaForPaper(paper);
 	const subject = subjectForPaper(paper);
@@ -1018,85 +1021,88 @@ function addQuestionStatements(statements, paper, question, chainUseCount) {
 	if (question.answerChain) {
 		const chain = question.answerChain;
 		const chainId = chainIdFor(chain, subjectArea);
+		const reuseExistingChainDefinition = options.reuseExistingChainIds?.has(chainId) === true;
 		const currentUseCount = chainUseCount.get(chainId) ?? 0;
 		chainUseCount.set(chainId, currentUseCount + 1);
-		statements.push(
-			upsertStatement(
-				'answer_chains',
-				[
-					'id',
-					'slug',
-					'title',
-					'canonical_chain_text',
-					'subject',
-					'subject_area',
-					'broad_topic',
-					'summary',
-					'created_by',
-					'confidence',
-					'needs_human_review',
-					'review_notes_json',
-					'status',
-					'metadata_json'
-				],
-				[
-					chainId,
-					chainId,
-					chain.title,
-					chain.canonicalChainText,
-					subject,
-					subjectArea,
-					chain.broadTopic ?? null,
-					chain.summary ?? null,
-					'extraction_agent',
-					chain.confidence ?? null,
-					bool(chain.needsHumanReview),
-					json(chain.reviewNotes, []),
-					chain.needsHumanReview ? 'draft' : 'published',
-					json(
-						{
-							source: 'llm-vision-extracted',
-							chain_family_id: chain.chainFamilyId ?? null
-						},
-						{}
-					)
-				]
-			)
-		);
-
-		for (const [index, step] of (chain.steps ?? []).entries()) {
+		if (!reuseExistingChainDefinition) {
 			statements.push(
 				upsertStatement(
-					'answer_chain_steps',
+					'answer_chains',
 					[
 						'id',
-						'answer_chain_id',
-						'display_order',
-						'step_text',
-						'step_role',
-						'explanation',
-						'common_omission',
-						'supported_by_mark_scheme_item_ids_json',
-						'evidence_json'
+						'slug',
+						'title',
+						'canonical_chain_text',
+						'subject',
+						'subject_area',
+						'broad_topic',
+						'summary',
+						'created_by',
+						'confidence',
+						'needs_human_review',
+						'review_notes_json',
+						'status',
+						'metadata_json'
 					],
 					[
-						`${chainId}-step-${index + 1}`,
 						chainId,
-						index + 1,
-						step.stepText,
-						step.stepRole ?? 'link',
-						step.explanation ?? null,
-						step.commonOmission ?? null,
+						chainId,
+						chain.title,
+						chain.canonicalChainText,
+						subject,
+						subjectArea,
+						chain.broadTopic ?? null,
+						chain.summary ?? null,
+						'extraction_agent',
+						chain.confidence ?? null,
+						bool(chain.needsHumanReview),
+						json(chain.reviewNotes, []),
+						chain.needsHumanReview ? 'draft' : 'published',
 						json(
-							(step.markSchemeItemIndexes ?? [])
-								.map((itemIndex) => markSchemeItemIds[itemIndex])
-								.filter(Boolean),
-							[]
-						),
-						json([], [])
+							{
+								source: 'llm-vision-extracted',
+								chain_family_id: chain.chainFamilyId ?? null
+							},
+							{}
+						)
 					]
 				)
 			);
+
+			for (const [index, step] of (chain.steps ?? []).entries()) {
+				statements.push(
+					upsertStatement(
+						'answer_chain_steps',
+						[
+							'id',
+							'answer_chain_id',
+							'display_order',
+							'step_text',
+							'step_role',
+							'explanation',
+							'common_omission',
+							'supported_by_mark_scheme_item_ids_json',
+							'evidence_json'
+						],
+						[
+							`${chainId}-step-${index + 1}`,
+							chainId,
+							index + 1,
+							step.stepText,
+							step.stepRole ?? 'link',
+							step.explanation ?? null,
+							step.commonOmission ?? null,
+							json(
+								(step.markSchemeItemIndexes ?? [])
+									.map((itemIndex) => markSchemeItemIds[itemIndex])
+									.filter(Boolean),
+								[]
+							),
+							json([], [])
+						]
+					)
+				);
+			}
 		}
 
 		statements.push(
@@ -1277,11 +1283,133 @@ async function questionIdsForSourceDocuments(sourceDocumentIds) {
 	return rows.map((row) => row.id);
 }
 
+async function chainIdsForSourceDocuments(sourceDocumentIds) {
+	if (!sourceDocumentIds.length) return [];
+	const placeholders = sourceDocumentIds.map(() => '?').join(', ');
+	const rows = await d1Query(
+		`SELECT DISTINCT qac.answer_chain_id AS id
+		   FROM questions q
+		   JOIN question_answer_chains qac ON qac.question_id = q.id
+		  WHERE q.source_document_id IN (${placeholders})`,
+		sourceDocumentIds
+	);
+	return rows.map((row) => row.id).filter(Boolean);
+}
+
+async function existingReplacementPlan(papers) {
+	const sourceDocumentIds = papers.map((paper) => paper.sourceDocument.id);
+	const incomingQuestionIds = papers.flatMap((paper) =>
+		(paper.questions ?? []).map((question) => stableQuestionId(paper.sourceDocument.id, question.sourceQuestionRef))
+	);
+	const incomingChainActions = incomingChainActionsForPapers(papers);
+	const incomingChainIds = [
+		...new Set(
+			papers.flatMap((paper) =>
+				(paper.questions ?? [])
+					.map((question) => question.answerChain)
+					.filter(Boolean)
+					.map((chain) => chainIdFor(chain, subjectAreaForPaper(paper)))
+			)
+		)
+	];
+	const sourcePlaceholders = sourceDocumentIds.map(() => '?').join(', ');
+	const existingSourceDocuments = sourceDocumentIds.length
+		? await d1Query(
+				`SELECT id, doc_type, title, subject_area, component_code, series
+				   FROM source_documents
+				  WHERE id IN (${sourcePlaceholders})
+				  ORDER BY id`,
+				sourceDocumentIds
+			)
+		: [];
+	const existingQuestionRows = sourceDocumentIds.length
+		? await d1Query(
+				`SELECT source_document_id, COUNT(*) AS questions
+				   FROM questions
+				  WHERE source_document_id IN (${sourcePlaceholders})
+				  GROUP BY source_document_id
+				  ORDER BY source_document_id`,
+				sourceDocumentIds
+			)
+		: [];
+	const existingPaperChainIds = await chainIdsForSourceDocuments(sourceDocumentIds);
+	const questionIdCollisions =
+		incomingQuestionIds.length && sourceDocumentIds.length
+			? await d1Query(
+					`SELECT id, source_document_id, source_question_ref
+					   FROM questions
+					  WHERE id IN (${incomingQuestionIds.map(() => '?').join(', ')})
+					    AND source_document_id NOT IN (${sourcePlaceholders})
+					  ORDER BY id`,
+					[...incomingQuestionIds, ...sourceDocumentIds]
+				)
+			: [];
+	const rawSharedIncomingChains =
+		incomingChainIds.length && sourceDocumentIds.length
+			? await d1Query(
+					`SELECT ac.id,
+					        ac.title,
+					        COUNT(DISTINCT qac.question_id) AS linked_questions,
+					        SUM(CASE WHEN q.source_document_id IN (${sourcePlaceholders}) THEN 1 ELSE 0 END) AS selected_links,
+					        GROUP_CONCAT(DISTINCT q.source_document_id) AS linked_source_document_ids
+					   FROM answer_chains ac
+					   LEFT JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
+					   LEFT JOIN questions q ON q.id = qac.question_id
+					  WHERE ac.id IN (${incomingChainIds.map(() => '?').join(', ')})
+					  GROUP BY ac.id
+					 HAVING linked_questions > selected_links
+					  ORDER BY ac.id`,
+					[...sourceDocumentIds, ...incomingChainIds]
+				)
+			: [];
+	const sharedIncomingChains = rawSharedIncomingChains.map((row) => {
+		const actions = [...(incomingChainActions.get(row.id) ?? new Set())].sort();
+		return {
+			...row,
+			incoming_actions: actions,
+			safe_reuse_only: actions.length === 1 && actions[0] === 'reuse_existing'
+		};
+	});
+	const unsafeSharedIncomingChains = sharedIncomingChains.filter((row) => !row.safe_reuse_only);
+	return {
+		sourceDocumentIds,
+		existingSourceDocuments,
+		existingQuestionRows,
+		existingPaperChainIds,
+		incomingQuestionCount: incomingQuestionIds.length,
+		incomingChainCount: incomingChainIds.length,
+		questionIdCollisions,
+		sharedIncomingChains,
+		unsafeSharedIncomingChains,
+		allowSharedChainUpdates,
+		safeToReplace:
+			questionIdCollisions.length === 0 &&
+			(allowSharedChainUpdates || unsafeSharedIncomingChains.length === 0)
+	};
+}
+
+function incomingChainActionsForPapers(papers) {
+	const actionsByChainId = new Map();
+	for (const paper of papers) {
+		const subjectArea = subjectAreaForPaper(paper);
+		for (const question of paper.questions ?? []) {
+			if (!question.answerChain) continue;
+			const chainId = chainIdFor(question.answerChain, subjectArea);
+			if (!actionsByChainId.has(chainId)) actionsByChainId.set(chainId, new Set());
+			actionsByChainId.get(chainId).add(question.chainResolution?.action ?? 'unknown');
+		}
+	}
+	return actionsByChainId;
+}
+
 async function clearRowsForPapers(papers) {
 	const sourceDocumentIds = papers.map((paper) => paper.sourceDocument.id);
 	const subjectAreas = [...new Set(papers.map(subjectAreaForPaper).filter(Boolean))];
 	const chainPrefixes = subjectAreas.map(chainPrefixForSubject);
 	const questionIds = await questionIdsForSourceDocuments(sourceDocumentIds);
+	const existingPaperChainIds = replaceAllSubject
+		? []
+		: await chainIdsForSourceDocuments(sourceDocumentIds);
 	const extractedChainIds = [
 		...new Set(
 			papers.flatMap((paper) =>
@@ -1333,6 +1461,41 @@ async function clearRowsForPapers(papers) {
 				sql: `DELETE FROM answer_chain_steps WHERE answer_chain_id IN (${quoted})`,
 				params: ids
 			});
+		}
+	}
+	if (!replaceAllSubject && existingPaperChainIds.length) {
+		for (const ids of paramChunks(existingPaperChainIds)) {
+			const quoted = ids.map(() => '?').join(', ');
+			statements.push(
+				{
+					sql: `DELETE FROM constellation_questions WHERE constellation_id IN (SELECT c.id FROM constellations c WHERE c.answer_chain_id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = c.answer_chain_id))`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM constellations WHERE answer_chain_id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = constellations.answer_chain_id)`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM chain_family_members WHERE answer_chain_id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = chain_family_members.answer_chain_id)`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM cross_subject_chain_family_members WHERE answer_chain_id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = cross_subject_chain_family_members.answer_chain_id)`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM answer_chain_steps WHERE answer_chain_id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = answer_chain_steps.answer_chain_id)`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM common_weak_answers WHERE answer_chain_id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = common_weak_answers.answer_chain_id)`,
+					params: ids
+				},
+				{
+					sql: `DELETE FROM answer_chains WHERE id IN (${quoted}) AND NOT EXISTS (SELECT 1 FROM question_answer_chains qac WHERE qac.answer_chain_id = answer_chains.id)`,
+					params: ids
+				}
+			);
 		}
 	}
 	if (replaceAllSubject && chainIds.length) {
@@ -1431,6 +1594,20 @@ async function audit(papers) {
 const papers = loadPapers();
 validateExtractedPapers(papers);
 const importedSubjectAreas = [...new Set(papers.map(subjectAreaForPaper).filter(Boolean))];
+const replacementPlan = checkExisting ? await existingReplacementPlan(papers) : null;
+if (replacementPlan && !replacementPlan.safeToReplace) {
+	console.log(JSON.stringify({ d1_existing_replacement_plan: replacementPlan }, null, 2));
+	throw new Error(
+		'D1 replacement check found conflicts. Resolve question ID collisions or pass --allow-shared-chain-updates only after cross-paper chain validation.'
+	);
+}
+const reuseExistingChainIds = new Set(
+	replacementPlan && !allowSharedChainUpdates
+		? replacementPlan.sharedIncomingChains
+				.filter((chain) => chain.safe_reuse_only)
+				.map((chain) => chain.id)
+		: []
+);
 
 console.log(
 	JSON.stringify(
@@ -1441,7 +1618,9 @@ console.log(
 			subject_areas: importedSubjectAreas,
 			questions: papers.reduce((sum, paper) => sum + paper.questions.length, 0),
 			replace_all_subject: replaceAllSubject,
-			dry_run: dryRun
+			dry_run: dryRun,
+			check_existing: checkExisting,
+			d1_existing_replacement_plan: replacementPlan
 		},
 		null,
 		2
@@ -1467,7 +1646,7 @@ for (const paper of papers) {
 		.sort((a, b) => compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef))
 		.map((question, index) => ({ ...question, displayOrder: index + 1 }));
 	for (const question of questions) {
-		addQuestionStatements(statements, paper, question, chainUseCount);
+		addQuestionStatements(statements, paper, question, chainUseCount, { reuseExistingChainIds });
 	}
 }
 

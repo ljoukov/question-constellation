@@ -55,7 +55,7 @@ Optional:
   --existing-chains=<json-or-md>
   --chunk-pages=6
   --context-pages=2
-  --chunk-strategy=parent-question|fixed-pages
+  --chunk-strategy=parent-question|fixed-pages|whole-paper
   --chunk-concurrency=1
   --extraction-strategy=chunk|agentic
   --agent-max-steps=8
@@ -113,8 +113,8 @@ const dpi = integerArg('dpi', 160, 90);
 const chunkPages = integerArg('chunk-pages', 6, 1);
 const contextPages = integerArg('context-pages', 2, 0);
 const chunkStrategy = stringArg('chunk-strategy', 'parent-question');
-if (!['parent-question', 'fixed-pages'].includes(chunkStrategy)) {
-	throw new Error('--chunk-strategy must be parent-question or fixed-pages.');
+if (!['parent-question', 'fixed-pages', 'whole-paper'].includes(chunkStrategy)) {
+	throw new Error('--chunk-strategy must be parent-question, fixed-pages, or whole-paper.');
 }
 const chunkConcurrency = integerArg('chunk-concurrency', 1, 1);
 const extractionStrategy = stringArg('extraction-strategy', 'chunk');

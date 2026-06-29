@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
 const rootDir = process.cwd();
@@ -14,6 +15,8 @@ const recursive = !hasArg('no-recursive');
 const runSolvability = hasArg('run-solvability');
 const importToD1 = hasArg('import');
 const noImportCheck = hasArg('no-import-check');
+const checkExisting = hasArg('check-existing');
+const allowSharedChainUpdates = hasArg('allow-shared-chain-updates');
 const keepWarnings = hasArg('keep-warnings');
 const model = stringArg('model', '');
 const thinkingLevel = stringArg('thinking-level', '');
@@ -40,6 +43,8 @@ console.log(
 			recursive,
 			runSolvability,
 			importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
+			checkExisting,
+			allowSharedChainUpdates,
 			keptQuestions: buildSummary.keptQuestions,
 			droppedQuestions: buildSummary.droppedQuestions,
 			importedPapers: importResults.map((result) => result.sourceDocumentId),
@@ -107,6 +112,14 @@ function buildImportReadySubset() {
 }
 
 function auditImportReadySubset() {
+	const resolvedOutputRoot = path.resolve(rootDir, outputRoot);
+	const resolvedAuditOutput = path.resolve(rootDir, auditOutput);
+	if (
+		resolvedAuditOutput.startsWith(`${resolvedOutputRoot}${path.sep}`) &&
+		existsSync(resolvedAuditOutput)
+	) {
+		rmSync(resolvedAuditOutput, { force: true });
+	}
 	const args = [
 		'scripts/audit-extracted-question-data.mjs',
 		`--input-root=${outputRoot}`,
@@ -141,6 +154,8 @@ function runImportChecks(summary) {
 			`--paper=${sourceDocumentId}`
 		];
 		if (!importToD1) args.push('--dry-run');
+		if (checkExisting) args.push('--check-existing');
+		if (allowSharedChainUpdates) args.push('--allow-shared-chain-updates');
 		runCapturedLog(args, `${importToD1 ? 'import' : 'import dry-run'} ${sourceDocumentId}`);
 		return {
 			sourceDocumentId,

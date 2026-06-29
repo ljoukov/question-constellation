@@ -60,6 +60,13 @@ const batchSource = readText(path.join(rootDir, 'scripts/extract-aqa-separate-sc
 const productionPipelineSource = readText(
 	path.join(rootDir, 'scripts/run-production-extraction-pipeline.mjs')
 );
+const codexImportHelperSource = readText(path.join(rootDir, 'scripts/codex-import-helper.mjs'));
+const codexSdkRunnerSource = readText(path.join(rootDir, 'scripts/lib/codex-sdk-runner.mjs'));
+const codexPdfExtractionSource = readText(path.join(rootDir, 'scripts/run-codex-pdf-extraction.mjs'));
+const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-answer-chains.mjs'));
+const codexProductionImportSource = readText(
+	path.join(rootDir, 'scripts/run-codex-production-import-pipeline.mjs')
+);
 const productionBatchSource = readText(
 	path.join(rootDir, 'scripts/run-production-extraction-batch.mjs')
 );
@@ -87,6 +94,9 @@ const reconcileAnswerChainsSource = readText(
 const chainSpecificityAuditSource = readText(
 	path.join(rootDir, 'scripts/audit-answer-chain-specificity.mjs')
 );
+const codexObservationSource = readText(
+	path.join(rootDir, 'docs/codex-whole-pdf-import-observations.md')
+);
 const questionTypesSource = readText(path.join(rootDir, 'src/lib/experiments/questions/types.ts'));
 const questionDataSource = readText(path.join(rootDir, 'src/lib/server/questionExperimentData.ts'));
 const questionGradingSource = readText(
@@ -102,6 +112,11 @@ for (const filePath of [
 	'scripts/extract-aqa-separate-science-batch.mjs',
 	'scripts/extract-paper-llm.mjs',
 	'scripts/run-production-extraction-pipeline.mjs',
+	'scripts/codex-import-helper.mjs',
+	'scripts/lib/codex-sdk-runner.mjs',
+	'scripts/run-codex-pdf-extraction.mjs',
+	'scripts/run-codex-answer-chains.mjs',
+	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/run-production-extraction-batch.mjs',
 	'scripts/verify-production-extraction-run.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
@@ -136,6 +151,10 @@ requireIncludes(
 		'pnpm run repair:extraction-response-assets',
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run extract:production',
+		'pnpm run codex:production-import',
+		'Codex SDK',
+		'run-codex-pdf-extraction.mjs',
+		'run-codex-answer-chains.mjs',
 		'pnpm run extract:production:batch',
 		'pnpm run verify:production-extraction',
 		'pnpm run download:aqa-separate-science',
@@ -164,12 +183,14 @@ requireIncludes(
 		'pdfinfo',
 		'pdftoppm',
 		'pdftotext',
-		'Codex CLI is useful only as a benchmark',
-		'Whole-paper Codex CLI baseline',
-		'core-page text and detected refs',
-		'Crop referenced figure',
+		'Codex is now the main production runner',
+		'@openai/codex-sdk',
+		'helper.mjs',
+		'validate-extraction',
+		'validate-chain',
+		'D1 replacement safety',
 		'phase-specific model and reasoning overrides',
-		'PDF-to-question extraction in 41.56 seconds',
+		'Codex Whole-PDF Import Observations',
 		'--mark-scheme-image-mode=all',
 		'learner-facing solvability judge',
 		'production-extraction-summary.json',
@@ -234,7 +255,11 @@ requireIncludes(
 		'allowQuestionGranularity',
 		'Do not start or extract sibling subquestions',
 		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk',
-		'withdrawn questions, replacement notices, statistics-only rows'
+		'withdrawn questions, replacement notices, statistics-only rows',
+		'stage_extraction_questions',
+		'validate_staged_extraction',
+		'stagedExtractionEnvelope',
+		'chunkStrategy=whole-paper is only supported with extractionStrategy=agentic'
 	],
 	'Pipeline library'
 );
@@ -278,7 +303,7 @@ requireIncludes(
 		'--supporting-document',
 		'--existing-chains',
 		'--context-pages=2',
-		'--chunk-strategy=parent-question|fixed-pages',
+		'--chunk-strategy=parent-question|fixed-pages|whole-paper',
 		'--chunk-concurrency=1',
 		'--extraction-granularity=chunk|question',
 		'--allow-question-granularity',
@@ -323,6 +348,7 @@ requireIncludes(
 		"integerArg('paper-attempts', 2, 1)",
 		"integerArg('chunk-pages', 6, 1)",
 		"stringArg('chunk-strategy', 'parent-question')",
+		"['parent-question', 'fixed-pages', 'whole-paper']",
 		'--chunk-strategy=${chunkStrategy}',
 		"integerArg('chunk-concurrency', 2, 1)",
 		'--chunk-concurrency=${chunkConcurrency}',
@@ -393,6 +419,116 @@ requireIncludes(
 );
 
 requireIncludes(
+	codexImportHelperSource,
+	[
+		'pdf-info',
+		'pdftotext-pages',
+		'render-pages',
+		'extract-embedded-images',
+		'contact-sheet',
+		'line-count',
+		'normalize-extraction',
+		'validate-extraction',
+		'validate-chain',
+		'structured_fields',
+		'tick_box',
+		'equation_completion',
+		'fixed_response_missing_answer_key'
+	],
+	'Codex import helper'
+);
+
+requireIncludes(
+	codexSdkRunnerSource,
+	[
+		"from '@openai/codex-sdk'",
+		'loadDotEnvFile',
+		'runCodexSdkTurn',
+		'eventsPath',
+		'lastMessagePath',
+		'commandActions',
+		'failedCommandActions',
+		'usage',
+		'CODEX_API_KEY',
+		'CLOUDFLARE'
+	].filter((value) => value !== 'CLOUDFLARE'),
+	'Codex SDK runner'
+);
+
+requireIncludes(
+	codexPdfExtractionSource,
+	[
+		'official-question-paper.pdf',
+		'helper.mjs',
+		'metadata.json',
+		'Do not run git',
+		'Do not create final answer chains',
+		'normalize-extraction',
+		'validate-extraction',
+		'expected-marks',
+		'expected-questions',
+		'question-paper.pdf',
+		'mark-scheme.pdf',
+		'events.jsonl',
+		'gpt-5.5'
+	],
+	'Codex PDF extraction runner'
+);
+
+requireIncludes(
+	codexAnswerChainsSource,
+	[
+		'answer-chain reconciliation phase',
+		'existing-chain-context.json',
+		'reuse_existing',
+		'create_new',
+		'update_existing',
+		'Do not put worked numeric answers',
+		'validate-chain',
+		'chain-reconciled.json',
+		'events.jsonl',
+		'xhigh'
+	],
+	'Codex answer-chain runner'
+);
+
+requireIncludes(
+	codexProductionImportSource,
+	[
+		'scripts/run-codex-pdf-extraction.mjs',
+		'scripts/run-codex-answer-chains.mjs',
+		'scripts/prepare-import-ready-extraction.mjs',
+		'--run-solvability',
+		'--skip-solvability',
+		'--import',
+		'codex-production-import-summary.json',
+		'codex-extraction-summary.json',
+		'codex-chain-summary.json',
+		'importReadyAuditPath',
+		'--check-existing',
+		'--skip-d1-conflict-check',
+		"stringArg('extraction-thinking-level'",
+		"stringArg('chain-thinking-level'",
+		"stringArg('solvability-thinking-level'"
+	],
+	'Codex production import orchestrator'
+);
+
+requireIncludes(
+	codexObservationSource,
+	[
+		'true PDF-only Codex baselines',
+		'20-step cap is too small',
+		'OCR',
+		'Formulae and equations',
+		'PDF-to-structured-question JSON extraction',
+		'Separate answer-chain reconciliation',
+		'Safe D1 replacement/import'
+	],
+	'Codex whole-PDF observations'
+);
+
+requireIncludes(
 	productionBatchSource,
 	[
 		'scripts/run-production-extraction-pipeline.mjs',
@@ -444,7 +580,12 @@ requireIncludes(
 		'chainPrefixForSubject',
 		'deterministicCandidateIssues',
 		'needsHumanReview',
-		'unorderedGroupsArray'
+		'unorderedGroupsArray',
+		'checkExisting',
+		'existingReplacementPlan',
+		'questionIdCollisions',
+		'sharedIncomingChains',
+		'allow-shared-chain-updates'
 	],
 	'Vision importer'
 );
@@ -505,6 +646,8 @@ requireIncludes(
 		'scripts/import-physics-vision.mjs',
 		'importMode',
 		'--run-solvability',
+		'--check-existing',
+		'--allow-shared-chain-updates',
 		'runCapturedLog',
 		'process.stderr.write(output)',
 		'process.env.EXTRACTION_RUN_ID = runId'
@@ -562,6 +705,7 @@ for (const scriptName of [
 	'extract:aqa-separate-science',
 	'extract:paper-llm',
 	'extract:production',
+	'extract:production:llm',
 	'extract:production:batch',
 	'verify:production-extraction',
 	'summarize:llm-extraction-logs',
@@ -573,6 +717,9 @@ for (const scriptName of [
 	'build:existing-chain-context',
 	'reconcile:answer-chains',
 	'prepare:import-ready-extraction',
+	'codex:pdf-extract',
+	'codex:answer-chains',
+	'codex:production-import',
 	'repair:extracted-data',
 	'repair:answer-chain-specificity',
 	'repair:extraction-response-assets',
@@ -583,6 +730,10 @@ for (const scriptName of [
 	'test:extraction-pipeline'
 ]) {
 	if (!packageJson.scripts?.[scriptName]) fail(`Missing package script: ${scriptName}`);
+}
+
+if (packageJson.scripts?.['extract:production'] !== 'node scripts/run-codex-production-import-pipeline.mjs') {
+	fail('extract:production must point at the Codex production import runner.');
 }
 
 for (const obsoleteScriptName of ['extract:aqa', 'repair:physics-vision-chains']) {
@@ -629,6 +780,11 @@ for (const scriptPath of [
 	'scripts/build-import-ready-extracted-subset.mjs',
 	'scripts/build-existing-chain-context.mjs',
 	'scripts/reconcile-answer-chains.mjs',
+	'scripts/codex-import-helper.mjs',
+	'scripts/lib/codex-sdk-runner.mjs',
+	'scripts/run-codex-pdf-extraction.mjs',
+	'scripts/run-codex-answer-chains.mjs',
+	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
@@ -771,6 +927,96 @@ if (
 		chainContextSummary,
 		chainContext
 	});
+}
+
+const codexChainDryRun = JSON.parse(
+	runNodeScript('scripts/run-codex-answer-chains.mjs', [
+		`--input=${chainContextInput}`,
+		`--existing-chains=${chainContextOutput}`,
+		`--output=${path.join(chainContextDir, 'codex-chain-output.json')}`,
+		`--work-dir=${path.join(chainContextDir, 'codex-chain-work')}`,
+		'--dry-run'
+	])
+);
+if (
+	codexChainDryRun.status !== 'dry-run' ||
+	codexChainDryRun.plan.questionCount !== 3 ||
+	codexChainDryRun.plan.existingChainsPath !== 'tmp/test-existing-chain-context/context.json'
+) {
+	fail('Codex answer-chain dry-run did not expose the expected plan.', {
+		codexChainDryRun
+	});
+}
+
+const helperNormalizeDir = path.join(rootDir, 'tmp/test-codex-helper-normalize');
+mkdirSync(helperNormalizeDir, { recursive: true });
+const helperNormalizeInput = path.join(helperNormalizeDir, 'raw.json');
+const helperNormalizeOutput = path.join(helperNormalizeDir, 'normalized.json');
+writeFileSync(
+	helperNormalizeInput,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'test-paper',
+				docType: 'question_paper',
+				subject: 'Biology',
+				subjectArea: 'Biology'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					promptText: 'Use Table 1 to calculate the mean.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: { kind: 'lines', count: 1 },
+					stemBlocks: [
+						{
+							kind: 'table',
+							label: 'Table 1',
+							rows: [
+								['Temperature', 'Test 1', 'Test 2'],
+								['45', '1.9', '14.2']
+							]
+						}
+					],
+					markSchemeItems: [{ itemType: 'mark', text: 'Correct mean.' }],
+					markChecklist: [{ text: 'Calculates the mean.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Mean calculated from the table.' }
+				},
+				{
+					sourceQuestionRef: '01.2',
+					promptText: 'Draw a ring around the anomalous result in Table 1.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'image-label-zones',
+						assetLabel: 'Table 1',
+						correctAnswers: [{ targetId: '45-test-2', correctAnswer: '14.2' }]
+					},
+					assets: [{ sourceLabel: 'Table 1', role: 'data-table' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'A ring around 14.2.' }],
+					markChecklist: [{ text: 'Identifies the anomalous result.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'normalize-extraction',
+	`--input=${helperNormalizeInput}`,
+	`--output=${helperNormalizeOutput}`
+]);
+const helperNormalized = JSON.parse(readText(helperNormalizeOutput));
+const propagatedTable = helperNormalized.questions
+	.find((question) => question.sourceQuestionRef === '01.2')
+	?.stemBlocks?.find((block) => block.kind === 'table' && block.label === 'Table 1');
+if (!propagatedTable || propagatedTable.rows?.length !== 2) {
+	fail('Codex helper normalization did not propagate shared parent table blocks.', helperNormalized);
 }
 
 const pipelineModule = await import(
@@ -1746,6 +1992,59 @@ if (
 	)
 ) {
 	fail('Deterministic checks treated a labelled table as a missing media block.');
+}
+
+const rowOnlyStructuredTableIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.4',
+			commandWord: 'Draw',
+			marks: 1,
+			promptText: 'Draw a ring around the anomalous result in Table 1.',
+			response: {
+				kind: 'image-label-zones',
+				assetLabel: 'Table 1',
+				correctAnswers: [{ targetId: '45-test-2', correctAnswer: '14.2' }]
+			},
+			stemBlocks: [
+				{
+					kind: 'table',
+					label: 'Table 1',
+					rows: [
+						['Temperature', 'Test 1', 'Test 2'],
+						['45', '1.9', '14.2']
+					]
+				}
+			],
+			assets: [{ sourceLabel: 'Table 1', role: 'data-table' }],
+			markSchemeItems: [{ itemType: 'mark', text: 'A ring around 14.2.' }],
+			answerChain: {
+				id: 'bio-chain-data-anomaly-selection',
+				title: 'Select an anomalous table value',
+				canonicalChainText:
+					'Use the pattern in a data table to identify and mark the anomalous value.',
+				summary: 'Reusable table-anomaly selection chain.',
+				steps: [
+					{
+						stepText: 'Identify the anomalous table value.',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	rowOnlyStructuredTableIssues.some((finding) =>
+		finding.issues.some((issue) =>
+			['response_asset_label_only', 'referenced_media_missing_asset'].includes(issue.code)
+		)
+	)
+) {
+	fail('Deterministic checks did not accept a row-only structured table as a table surface.');
 }
 
 const duplicateFixedModelAnswerIssues = pipelineModule.deterministicCandidateIssues({

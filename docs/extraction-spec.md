@@ -363,7 +363,7 @@ scripts/extract-paper-llm.mjs
 scripts/eval-extraction-pipeline-llm.mjs
 ```
 
-The CLI accepts PDFs and writes extracted JSON:
+The legacy `@ljoukov/llm` CLI accepts PDFs and writes extracted JSON:
 
 ```sh
 node scripts/extract-paper-llm.mjs \
@@ -376,9 +376,10 @@ node scripts/extract-paper-llm.mjs \
   --write-eval=<evaluation.json>
 ```
 
-For production imports, prefer the orchestrated script. It runs the PDF extraction judge, optional
-existing-chain context build, answer-chain reconciliation and judge, strict import-ready subset
-audit, learner-facing solvability judge, and D1 import dry-run or write:
+For production imports, use the Codex orchestrator. It runs official-PDF extraction, optional
+existing-chain context build, Codex answer-chain reconciliation, strict import-ready subset audit,
+learner-facing solvability judge, D1 replacement safety check, and D1 import dry-run or explicit
+write:
 
 ```sh
 pnpm run extract:production -- \
@@ -392,27 +393,21 @@ pnpm run extract:production -- \
   --series="November 2020" \
   --year=2020 \
   --existing-chain-input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
-  --chunk-pages=2 \
-  --chunk-concurrency=2 \
-  --model=chatgpt-gpt-5.5 \
-  --judge-model=chatgpt-gpt-5.5 \
-  --extraction-thinking-level=medium \
-  --extraction-judge-thinking-level=medium \
-  --extraction-judge-mode=question-batches \
-  --extraction-judge-batch-size=8 \
-  --extraction-judge-concurrency=2 \
+  --model=gpt-5.5 \
+  --extraction-thinking-level=high \
   --chain-thinking-level=xhigh \
-  --solvability-thinking-level=xhigh \
-  --thinking-level=xhigh
+  --solvability-thinking-level=xhigh
 ```
 
 The orchestrator writes a summary under
-`tmp/production-extraction/<source-document-id>/production-extraction-summary.json`. It defaults to
-an import dry-run; add `--import` only after reviewing the summary and strict audit. Use
-`--skip-solvability` only for local debugging because the solvability judge is the end-user
-renderability gate.
+`tmp/codex-production-import/<source-document-id>/codex-production-import-summary.json`. It defaults
+to an import dry-run and a read-only D1 replacement/conflict check; add `--import` only after
+reviewing the summary, strict audit, solvability results, and D1 replacement plan. Use
+`--skip-solvability` or `--skip-d1-conflict-check` only for local debugging because those are the
+end-user renderability and safe-replacement gates.
 
-After a production run, verify the run artifact before treating it as import-ready:
+For legacy `@ljoukov/llm` production runs, verify the old run artifact before treating it as
+import-ready:
 
 ```sh
 pnpm run verify:production-extraction -- \
@@ -436,8 +431,9 @@ pnpm run extract:physics-vision -- --all --force
 `extract:physics-vision` is a compatibility command for the same script-first pipeline; there should
 not be a second Physics-specific extractor.
 
-For AQA Separate Science Higher, first download the official assessment resources into `data/`, then
-extract/import from that manifest:
+For AQA Separate Science Higher, first download the official assessment resources into `data/`. The
+Codex single-paper production path is the main path; the batch/chunk commands below remain useful for
+legacy comparison, repairs, and manifest management:
 
 ```sh
 pnpm run download:aqa-separate-science
@@ -460,16 +456,12 @@ The downloader scrapes the official AQA assessment-resource pages for GCSE Biolo
 `data/aqa-separate-science-higher/manifest.json`. Modified-print variants and examiner reports are
 excluded unless a future importer explicitly needs them.
 
-Use `extract:production:batch` for unattended parallel production imports from the AQA Separate
-Science manifest. It runs the same per-paper orchestrator as `extract:production`, so every paper
-goes through PDF-to-question extraction, independent extraction judge, answer-chain reconciliation,
-answer-chain judge, strict import-ready subset, learner-facing solvability judge, and import dry-run
-or write. Use `--dry-run` first to inspect the exact per-paper commands. Batch `--concurrency`
-controls the number of papers running at once; `--solvability-concurrency` is forwarded to the
-per-paper learner-facing solvability gate. Use `--run-id-prefix=<id>` so every paper gets a stable
-LLM log file such as `tmp/llm-extraction-logs/<id>-aqa-84611h-qp-nov20.jsonl`.
-Use `--paper-attempts=<n>` for unattended runs; retries reuse existing chunk caches instead of
-starting the whole paper from page 1 again.
+Use `extract:production:batch` only for unattended legacy comparison runs from the AQA Separate
+Science manifest until a Codex batch wrapper is added. Use `--dry-run` first to inspect the exact
+per-paper commands. Batch `--concurrency` controls the number of legacy papers running at once;
+`--solvability-concurrency` is forwarded to the per-paper learner-facing solvability gate. Use
+`--run-id-prefix=<id>` so every legacy paper gets a stable LLM log file such as
+`tmp/llm-extraction-logs/<id>-aqa-84611h-qp-nov20.jsonl`.
 
 Use `--question-pages=1-3` and `--mark-scheme-pages=4-5` for chunked extraction. The script first
 does a cheap deterministic scout over question-paper text to find visible source question refs by
@@ -557,54 +549,85 @@ Required local tools are:
 - `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
   output.
 
-Bounded agentic extraction is now available through the same script/library path with
-`--extraction-strategy=agentic`. It uses `@ljoukov/llm.runToolLoop()` rather than a manual Codex
-workflow. The agent starts from the official PDFs and a deterministic page/ref scout; it must request
-observations through tools and must not receive whole `question-paper.txt`, `mark-scheme.txt`, full
-OCR dumps, or historical Codex benchmark text files as prompt inputs. Current tools are:
+Codex is now the main production runner for whole-paper PDF import. `pnpm run extract:production`
+and `pnpm run codex:production-import` call
+`scripts/run-codex-production-import-pipeline.mjs`, which runs three phases:
 
-- `read_question_page_text` for one to four allowed packet pages via `pdftotext -layout`, including
-  core-page text and detected refs.
-- `read_mark_scheme_for_refs` for narrow mark-scheme slices by `sourceQuestionRef`.
-- `list_embedded_question_images` and `view_embedded_question_images` for official embedded PDF
-  assets.
-- `read_question_page_image_metadata`, `view_question_page_image`, and
-  `crop_question_page_image` for layout and visual inspection.
-- `check_response_line_counts` for bounded answer-area crops and
-  `scan_question_page_horizontal_rules` for full-page y-coordinate cross-checks when a crop may
-  clip a line.
-- `validate_partial_extraction` and terminal `submit_extraction` for schema and deterministic
-  extraction checks.
+1. PDF extraction with `scripts/run-codex-pdf-extraction.mjs`.
+2. Separate answer-chain reconciliation with `scripts/run-codex-answer-chains.mjs`.
+3. Strict import-ready preparation with extraction audit, solvability judge, D1 conflict check, and
+   D1 import dry-run or explicit write.
 
-Line-count observations are stateful inside the tool loop. If the agent observed a line count for a
-`sourceQuestionRef`, `validate_partial_extraction` and `submit_extraction` reject a submitted
-`response.lineCount` mismatch. They also reject the latest observation when the crop boundary is
-close enough to the first or last detected line that the crop may have clipped the answer area; the
-agent must rerun a larger bounded crop before submitting.
+The runner uses the official Codex SDK (`@openai/codex-sdk`) to launch local Codex. The SDK wraps the
+Codex CLI and streams JSONL events, so benchmarks remain comparable with direct `codex exec --json`
+runs while the script gets cleaner event logging, usage accounting, final-message capture, and
+timeouts. The default Codex model name is `gpt-5.5`; the old `chatgpt-gpt-5.5` model identifier is
+for `@ljoukov/llm` calls and is not the Codex CLI model name.
 
-Codex CLI is useful only as a benchmark and failure-analysis baseline. A 2026-06-28 baseline run on
-AQA Biology Paper 1 November 2020 page 2 (`gpt-5.5`, medium reasoning) completed in 137 seconds,
-used 22 shell tool calls, rendered the page, extracted question/mark-scheme text, validated JSON,
-and produced two refs (`01.1`, `01.2`). The same `chatgpt-gpt-5.5` model identifier is not accepted
-by this local Codex CLI; Codex uses the native `gpt-5.5` name. Treat Codex parity as an engineering
-target: if Codex succeeds faster or with better quality, inspect its observable trace and move the
-deterministic tool steps into these scripts rather than replacing the production importer with a
-manual Codex workflow.
+The PDF extraction runner prepares a clean isolated directory containing only:
 
-Whole-paper Codex CLI baseline: on 2026-06-28, an isolated `codex exec` run using `gpt-5.5`,
-medium reasoning, all 36 rendered question-paper pages, `question-paper.txt`, and `mark-scheme.txt`
-extracted the full AQA Biology Paper 1 November 2020 paper in `523.00` seconds. It produced valid
-JSON with 46 independently marked subquestions (`01.1` through `07.4`), no duplicate refs, no empty
-prompt blocks, no empty checklists, and no missing response kinds in a mechanical scan. Its JSONL
-trace showed 22 command-execution events, no web search, and only local file/text reads plus JSON
-validation. A clean isolated parent-question slice for `06.1` to `06.7` took `151.24` seconds with
-14 command-execution events and no web search. A repo-context slice took `202.46` seconds but read
-repo docs/old repair files and used web search, so treat it as a context-assisted comparison rather
-than a blind baseline.
+- `question-paper.pdf`, `mark-scheme.pdf`, and optional `supporting-XX.pdf` official inputs.
+- `helper.mjs`, copied from `scripts/codex-import-helper.mjs`.
+- `metadata.json` and the exact `prompt.md` used for the run.
+
+It does not feed `question-paper.txt`, `mark-scheme.txt`, full OCR dumps, historical benchmark
+texts, or extracted repository context into the prompt. Codex may create local working artifacts from
+the PDFs during the run. The prompt tells Codex to use the PDF text layer first, render pages/contact
+sheets for layout, extract embedded images for figures/tables, use geometry/rendered checks for
+answer-line counts, and treat OCR as fallback only. Formulae and equations get explicit visual
+verification requirements for chemistry equations, ionic formulae, state symbols, charges, physics
+formulae, fractions, units, and rearranged equations.
+
+`scripts/codex-import-helper.mjs` is self-contained so it works inside `/tmp` clean directories. It
+provides the helper operations Codex should call instead of reinventing them every run:
+
+- `pdf-info`
+- `pdftotext-pages`
+- `render-pages`
+- `extract-embedded-images`
+- `contact-sheet`
+- `line-count`
+- `normalize-extraction`
+- `validate-extraction`
+- `validate-chain`
+- `summarize-codex-events`
+
+The helper canonicalizes common Codex draft response kinds (`tick_box`, `tick_box_table`,
+`equation_completion`, `calculation`, `structured_fields`) into app response kinds before
+validation. It still fails real defects such as duplicate refs, mark-total mismatch, unsupported
+response kinds, missing mark evidence, missing fixed-response answer keys, missing written
+modelAnswer rows, missing visual assets, unresolved review flags, and placeholder answer chains in
+the chain phase.
+
+Answer chains are not produced during PDF extraction. `scripts/run-codex-answer-chains.mjs` runs
+after extraction and receives one normalized paper plus optional `existing-chain-context.json`.
+For each question it must choose `reuse_existing`, `create_new`, `update_existing`, or
+`needs_review`. If it updates/generalizes a published chain, the prompt requires it to inspect every
+available already-attached example in the existing context; if the evidence is insufficient, it must
+create a new chain or mark review instead of over-generalizing. Exact numeric answers, tick-box
+letters, table values, source-specific facts, and worked solutions stay in response keys, mark scheme
+items, checklists, or model answers, not in answer-chain fields.
+
+`scripts/prepare-import-ready-extraction.mjs` remains the strict gate after chain reconciliation. By
+default the Codex production pipeline runs solvability and D1 dry-run checks. Import writes require
+`--import`. D1 replacement safety is read-only by default through `--check-existing`: the import path
+reports existing source documents/questions, existing chain links for the target paper, incoming
+question ID collisions, and incoming chain IDs already attached to other papers. Shared-chain updates
+are blocked unless `--allow-shared-chain-updates` is passed after cross-paper chain validation.
+
+The older `@ljoukov/llm` chunk/agentic path is kept as a legacy diagnostic and repair harness under
+`scripts/extract-paper-llm.mjs`, `scripts/run-production-extraction-pipeline.mjs`, and
+`pnpm run extract:production:llm`. It is no longer the main production import path.
+
+Whole-paper Codex comparison data lives in
+`docs/codex-whole-pdf-import-observations.md` ("Codex Whole-PDF Import Observations"). The historical
+`tmp/codex-benchmark-whole-paper-20260628` artifact is not a true PDF-only production baseline
+because it supplied precomputed `question-paper.txt`, `mark-scheme.txt`, and page PNGs. It remains a
+useful JSON-quality reference, but not proof of official-PDF-to-JSON extraction.
 
 Six-paper isolated Codex rollout study, 2026-06-28: free-discovery Codex runs were given only
-official PDFs in isolated temporary directories. They discovered several workflows worth
-productionizing:
+official PDFs in isolated temporary directories. They discovered several workflows now captured in
+the production prompts and helper menu:
 
 | Paper | Mode | Wall time | Questions | Marks | Commands | Input tokens | Cached input |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -636,6 +659,22 @@ agent choose:
 - A deterministic builder/validator step that writes JSON, checks duplicate refs and 100 total
   marks, writes a trace summary, then stops.
 
+Direct whole-paper Codex PDF-only reruns, 2026-06-29, used isolated temporary directories containing
+only the official PDFs plus the prompt. Codex was allowed to discover its own local workflow and write
+temporary helper scripts/artifacts:
+
+| Paper | Wall time | Questions | Marks | Commands | Input tokens | Cached input | Output tokens | Notes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Biology P1 Jun18 | 754s | 44 | 100 | 47 | 2,375,562 | 2,176,896 | 36,583 | Includes review-marked withdrawn `06.1`-`06.8` placeholders; production importer must omit or repair these before D1. |
+| Chemistry P1 Jun18 | 887s | 46 | 100 | 95 | 2,955,790 | 2,691,968 | 42,191 | Passed Codex's syntax/count validation with no review flags. |
+| Physics P2 Jun18 | 1,383s | 48 | 100 | 51 | 5,561,702 | 4,909,184 | 34,883 | Passed Codex's syntax/count validation with no review flags. |
+
+The observable Codex sequence was not a single rigid recipe: it used `pdfinfo`,
+`pdftotext -layout`, `pdfimages -list` / embedded extraction, PyMuPDF/pdfplumber summaries and table
+extraction, rendered page contact sheets, targeted crop/line checks, PDF drawing geometry, custom
+builder scripts, `jq`/Python validation, and final count/mark sanity checks. The production runner
+keeps those useful deterministic steps available but still lets Codex choose the workflow by paper.
+
 Prompt caveats from the rollout study:
 
 - In isolated Codex runs, say "do not run git; this is not a repo."
@@ -648,61 +687,60 @@ Prompt caveats from the rollout study:
   Production scripts should make the final builder/schema validation as deterministic and compact as
   possible.
 
-Script-side Q07 agentic verification, 2026-06-28/29: AQA Biology Paper 1 November 2020 parent
-question `07` was run from official PDFs only, selecting question-paper pages 28-31 and mark-scheme
-refs `07.1` to `07.4`. The successful extraction run
-`agentic-q07-bio-nov20-rerun3-20260628` wrote
-`tmp/agentic-extraction-q07-rerun3-20260628/raw/aqa-84611h-qp-nov20-q07.json`. It used one
-`runToolLoop()` call, took `475.609s`, cost `$0.722115`, and used 214,451 total tokens
-(202,191 prompt, 145,920 cached, 11,965 response, 295 thinking). Tool completions were:
-`read_question_page_text` 1, `read_mark_scheme_for_refs` 1, `list_embedded_question_images` 1,
-`read_question_page_image_metadata` 4, `view_question_page_image` 4,
-`scan_question_page_horizontal_rules` 4, `check_response_line_counts` 12,
-`validate_partial_extraction` 2, and `submit_extraction` 1. The first line-count validation blocked
-tight crops; enlarged crops then verified `07.1=7`, `07.2=4`, `07.3=16`, `07.4=3` with no boundary
-warnings.
-
-Independent Q07 extraction judge run `agentic-q07-bio-nov20-rerun3-judge-20260628` passed with
-score `0.98`, took `48.249s`, cost `$0.09555`, and used 12,665 total tokens. Text-only answer-chain
-reconciliation initially failed as one xhigh four-ref batch because the model produced invalid chain
-JSON/roles near the timeout; after the prompt was tightened to list allowed `stepRole` values and the
-script was rerun with `--batch-size=2`, `agentic-q07-bio-nov20-rerun3-chain2-20260628` passed with
-chain judge score `0.97`, took `284.242s`, cost `$0.304625`, and used 22,505 total tokens. The
-strict import-ready/solvability/dry-run run `agentic-q07-bio-nov20-rerun3-import2-20260628` passed
-with solvability `4/4`, took `140.573s`, cost `$0.17165`, and used 15,585 total tokens. Final
-artifacts:
-
-- Extraction output: `tmp/agentic-extraction-q07-rerun3-20260628/raw/aqa-84611h-qp-nov20-q07.json`.
-- Extraction judge: `tmp/agentic-extraction-q07-rerun3-20260628/eval/aqa-84611h-qp-nov20-q07.independent-extraction-judge.eval.json`.
-- Chain output: `tmp/agentic-extraction-q07-rerun3-20260628/chain-reconciled/aqa-84611h-qp-nov20-q07.json`.
-- Import-ready output: `tmp/agentic-extraction-q07-rerun3-20260628/import-ready/aqa-84611h-qp-nov20-q07.json`.
-- Strict audit: `tmp/agentic-extraction-q07-rerun3-20260628/import-ready-audit-rerun.json`.
-- Logs: `tmp/llm-extraction-logs/agentic-q07-bio-nov20-rerun3-*.jsonl`.
-
 The previous full-paper chunk run in
 `tmp/production-extraction-full-paper/aqa-84611h-qp-nov20/` failed during PDF extraction/judging:
 the extraction portion used 12 logged calls, 292,191 tokens, and `$2.23753`; a later repaired judge
 run used 7 calls, 133,015 tokens, and `$1.0494`. Its extraction judge reported `fail` with score
-`0.90` and three required repairs. The Q07 agentic packet is not a whole-paper replacement benchmark,
-but it demonstrates the intended bounded tool loop and fixes the known `07.1` / `07.3` line-count
-failure mode.
+`0.90` and three required repairs. This is the legacy script baseline the Codex production path must
+beat on whole-paper quality before import.
 
-The whole-paper Codex result is a quality target, not a replacement importer. It handled
-mark-checklist semantics well, especially any-two alternatives and level-of-response descriptors,
-but emitted page-image asset references rather than cropped production assets. The script harness
-must keep deterministic media cropping and import-shape validation while adopting the Codex-style
-prompt rule that `markChecklist.required` means "required in every full-credit answer." Accepted
-alternatives from any-one/any-two/max-two lists and level-response indicative content must be
-`required=false` under a required umbrella criterion such as "Give two distinct credited reasons."
+Current Codex SDK production run, Biology P1 Nov20, 2026-06-29:
 
-Use phase-specific model and reasoning overrides when benchmarking. On the same 2026-06-28 page-2
-fixture, the script-side text/ref scout plus `chatgpt-gpt-5.5-fast` at `medium` reasoning completed
-PDF-to-question extraction in 41.56 seconds, used 7,848 total tokens, cost about `$0.1571`, and then
-passed the independent extraction judge at score `0.98` in 42.76 seconds. The same scoped extraction
-call at `xhigh` reasoning timed out after 240 seconds with no JSON output. Do not assume higher
-reasoning is better for the PDF-to-question phase; require a deterministic pass and independent judge
-pass before changing production defaults. Chain reconciliation and semantic judges can still use
-`xhigh` when their own benchmarks justify it.
+| Phase | Artifact | Wall time | Questions | Marks | Actions | Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| PDF extraction | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json` | 500.567s | 46 | 100 | 51 | 3 | 1,371,023 | 1,202,176 | 21,831 | 3,637 | deterministic extraction validation passed |
+| Answer chains | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` | 557.425s | 46 | 100 | 41 | 0 | 1,407,819 | 1,218,560 | 27,717 | 11,011 | 32 reused, 14 created, 0 updated, 0 review |
+| Solvability audit | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json` | 893.195s | 46 | 100 | n/a | 0 failed calls | 212,340 | 0 | 15,481 | 52,850 | 46/46 passed |
+| D1 import write | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json` | 8.2s | 46 | 100 | 554 SQL inserts | 0 | n/a | n/a | n/a | n/a | targeted D1 replacement passed |
+
+The raw SDK extraction and chain phases were faster than the prompted Biology P1 Nov20 Codex
+baseline (624.23s extraction-only) and much more complete than the legacy chunk extractor, but the
+first learner-facing solvability audit found real source-context defects: Q01 investigation/table
+context, Q06.1 controlled-factor context, and Q07 mAbs definition/context. The final v7 import
+artifact repairs those fields from the official PDF text layer and rendered-page evidence, then
+passes deterministic extraction validation, chain validation, strict audit, 46/46 solvability, D1
+dry-run, and D1 write coverage. The production extraction prompt now explicitly requires exact
+parent/source stems for referential prompts such as "this investigation", "the mAbs", "other
+factors", and "the anomalous result"; the normalizer also renders `contextText` as `stemBlocks` when
+Codex supplies context text without explicit blocks.
+
+D1 replacement safety for the v7 import was read-only checked before write:
+
+- Existing paper row count: 46.
+- Incoming question count: 46.
+- Incoming chain count: 43.
+- Question ID collisions: 0.
+- Shared incoming chains attached to other papers: 7, all `reuse_existing`.
+- Unsafe shared-chain updates: 0.
+- `safeToReplace`: `true`.
+
+The actual import replaced only `aqa-84611h-qp-nov20` and reported post-write coverage of 46
+questions, 46 render overlays, 98 mark-scheme rows, 96 checklist rows, 40 model answers, 9 fixed
+answer keys, 43 answer-chain links, and no questions missing grading evidence. Codex runs are
+subscription-metered and the SDK does not emit dollar cost, so compare Codex approaches by wall time,
+actions, failed actions, and token counts. `@ljoukov/llm` judge phases still emit cost in their own
+logs; the v7 solvability audit logged 46 calls, 280,671 total tokens, and `$3.11163`.
+
+The direct Codex whole-paper result is now the quality target and the production execution model. It
+handled mark-checklist semantics well, especially any-two alternatives and level-of-response
+descriptors, but raw Codex outputs still need normalization, app response-kind validation, asset
+validation, chain reconciliation, solvability, strict audit, and D1 dry-run before import.
+
+Use phase-specific model and reasoning overrides when benchmarking. Codex extraction defaults to
+`gpt-5.5` with high reasoning for quality; answer-chain reconciliation and solvability default to
+`gpt-5.5` with xhigh reasoning. Do not optimize cost ahead of extraction quality. Record wall time,
+command actions, failed actions, input/cached/output/reasoning tokens, question count, mark total,
+validation results, chain results, solvability results, D1 dry-run results, and artifact paths.
 
 Every `@ljoukov/llm.generateJson()` extractor, judge, and repair call must be durably logged. By
 default, `scripts/lib/llm-extraction-pipeline.mjs` writes JSONL records to
@@ -721,6 +759,11 @@ only for local debugging. Log records must include:
   repaired refs.
 
 Use the summary command to inspect accounting and stuck/active calls:
+
+The legacy `scripts/run-production-extraction-pipeline.mjs` still writes
+`production-extraction-summary.json` for old chunk/batch benchmark compatibility. New Codex SDK runs
+write phase-specific summaries such as `codex-extraction-summary.json`, `codex-chain-summary.json`,
+and `codex-production-import-summary.json` instead.
 
 ```sh
 pnpm run summarize:llm-extraction-logs
@@ -1020,14 +1063,23 @@ requires both the mechanical checks and the semantic judge to pass. The judge sh
 conceptual equivalence, not exact wording: the chain must capture the reusable method, while worked
 numbers stay in model/checklist evidence.
 
-The extraction pipeline may run a bounded repair loop with `--repair-attempts=<n>`. This is the only
-agentic loop needed for the current chain-quality problem: the script gives the model deterministic
-findings and judge feedback, then asks it to return repaired JSON. The model does not get filesystem
-write tools. For PDF/layout extraction, prefer deterministic script-side tools before the LLM call
-over a model-controlled shell loop. If a later benchmark proves model-controlled inspection is needed,
-expose narrow runtime tools inside `@ljoukov/llm.runToolLoop()` or `runAgentLoop()` such as
-`read_pdf_text`, `render_pdf_page`, `read_page_image_metadata`, and
-`compare_candidate_to_golden`; do not expose arbitrary shell or D1 write access to the extractor.
+The extraction pipeline may run bounded repair loops with `--repair-attempts=<n>`, but keep the
+phases separate:
+
+- PDF-to-question extraction recovers source-grounded prompt, response, asset, and mark-scheme
+  evidence. It creates placeholder chains only.
+- `pnpm run codex:answer-chains` runs the text-only per-paper Codex chain workflow. It can reuse,
+  update, create, or mark review from mark evidence and existing-chain context. If it updates or
+  generalizes a published chain, it must check every available already-attached example in the
+  supplied context; otherwise it should split/create a new chain.
+- `pnpm run reconcile:answer-chains` remains the legacy `@ljoukov/llm` text-only chain workflow for
+  diagnostic comparisons and focused repair runs.
+- `pnpm run prepare:import-ready-extraction` builds the strict import-ready subset, runs the
+  learner-facing solvability judge, and performs the targeted D1 import dry-run or write.
+
+The model does not get filesystem write tools in repair/generalization phases except through the
+terminal submit tool managed by the script. The production process must not expose arbitrary shell or
+D1 write access to the extractor or chain agents.
 
 After extraction or repair, run an independent reviewer pass. The reviewer can be a second scripted
 LLM judge or a separate fresh-context agent, but it should see only candidate JSON, the golden fixture

@@ -37,7 +37,7 @@ Optional:
   --chunk-pages=2
   --context-pages=2
   --chunk-concurrency=2
-  --chunk-strategy=parent-question|fixed-pages
+  --chunk-strategy=parent-question|fixed-pages|whole-paper
   --extraction-strategy=chunk|agentic
   --agent-max-steps=8
   --model=chatgpt-gpt-5.5
