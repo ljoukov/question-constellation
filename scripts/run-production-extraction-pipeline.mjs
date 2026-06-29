@@ -38,6 +38,8 @@ Optional:
   --context-pages=2
   --chunk-concurrency=2
   --chunk-strategy=parent-question|fixed-pages
+  --extraction-strategy=chunk|agentic
+  --agent-max-steps=8
   --model=chatgpt-gpt-5.5
   --judge-model=chatgpt-gpt-5.5
   --thinking-level=xhigh
@@ -142,6 +144,8 @@ const plan = {
 		? relative(path.resolve(rootDir, existingChainInputRoot))
 		: null,
 	runId: runId || null,
+	extractionStrategy: stringArg('extraction-strategy', 'chunk'),
+	agentMaxSteps: stringArg('agent-max-steps', '') || null,
 	runSolvability,
 	skipExtractionJudge,
 	extractionJudgeMode: skipExtractionJudge ? 'none' : extractionJudgeMode,
@@ -254,6 +258,8 @@ function extractionCommand() {
 	forwardString(args, 'context-pages');
 	forwardString(args, 'chunk-concurrency');
 	forwardString(args, 'chunk-strategy');
+	forwardString(args, 'extraction-strategy');
+	forwardString(args, 'agent-max-steps');
 	forwardPhaseString(args, 'extraction-model', 'model');
 	forwardString(args, 'judge-model');
 	forwardPhaseString(args, 'extraction-thinking-level', 'thinking-level');

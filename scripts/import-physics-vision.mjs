@@ -1177,16 +1177,15 @@ function loadPapers() {
 	const files = listExtractionFiles(extractionRoot, recursive)
 		.filter((fileName) => fileName.endsWith('.json'))
 		.sort();
+	const papers = files.map((fileName) => ({
+		fileName,
+		paper: readJson(path.join(extractionRoot, fileName))
+	}));
 	const selected = allPapers
-		? files
-		: files.filter(
-				(fileName) =>
-					path.basename(fileName) === `${paperArg}.json` ||
-					path.basename(fileName).startsWith(`${paperArg}.`) ||
-					fileName === `${paperArg}.json`
-			);
+		? papers
+		: papers.filter(({ fileName, paper }) => paperMatchesSelection(fileName, paper));
 	if (!selected.length) throw new Error(`No extracted paper matched ${paperArg}.`);
-	return selected.map((fileName) => readJson(path.join(extractionRoot, fileName)));
+	return selected.map(({ paper }) => paper);
 }
 
 function listExtractionFiles(dir, includeNested) {
@@ -1201,6 +1200,19 @@ function listExtractionFiles(dir, includeNested) {
 		}
 	}
 	return files;
+}
+
+function paperMatchesSelection(fileName, paper) {
+	const baseName = path.basename(fileName);
+	if (
+		baseName === `${paperArg}.json` ||
+		baseName.startsWith(`${paperArg}.`) ||
+		fileName === `${paperArg}.json`
+	) {
+		return true;
+	}
+	const sourceDocumentId = paper?.sourceDocument?.id ?? paper?.sourceDocumentId ?? '';
+	return sourceDocumentId === paperArg || sourceDocumentId.includes(paperArg);
 }
 
 function validateExtractedPapers(papers) {

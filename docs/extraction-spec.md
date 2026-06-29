@@ -523,11 +523,20 @@ The script owns PDF processing. The model should not be asked to discover files 
 commands. To match Codex-quality extraction without depending on the Codex harness, the script must
 do the deterministic preparation first:
 
-- Extract core question-paper page text with `pdftotext -layout`.
+- Extract or expose core question-paper page text with `pdftotext -layout`. For the bounded
+  agentic path, do this through page-scoped tools on demand rather than by pre-feeding whole-paper
+  text dumps or historical `question-paper.txt` / `mark-scheme.txt` artifacts.
 - Detect candidate `sourceQuestionRef` values from that text.
-- Pass the core-page text and detected refs into the extractor prompt before page images.
+- Pass compact metadata and detected refs into the extractor prompt. Let the agent request
+  page/ref text, page images, crops, line checks, and mark-scheme slices through explicit tools.
 - Render question-paper pages for layout, response controls, figures, answer lines, and tables that
   text extraction flattened.
+- Check embedded PDF images with `pdfimages` or PyMuPDF before treating rendered page screenshots as
+  figure assets. Use embedded assets when the official PDF contains the figure directly; use page
+  renders for layout and visual understanding.
+- Count answer spaces with targeted crop/image checks or PDF vector/drawing inspection. Do not rely
+  on one global method: some papers encode writing lines as strokes, others as thin filled
+  rectangles, and graph/table borders can look like answer lines.
 - Crop referenced figure, graph, and diagram assets deterministically before review. The current
   cropper uses `pdftotext -bbox-layout` to find standalone figure labels, then a rendered-page
   row-projection pass to isolate the visual region. A fallback full-page image is allowed only as a
@@ -539,11 +548,39 @@ do the deterministic preparation first:
 Required local tools are:
 
 - `pdfinfo` to count/inspect pages.
+- `pdfimages` and/or PyMuPDF to detect and extract embedded official figure assets before falling
+  back to rendered-page crops.
 - `pdftoppm` to render pages to PNG images.
 - `pdftotext` to provide the model with deterministic text/ref scouts before visual inspection and
   bounding boxes for deterministic figure cropping.
+- A targeted answer-line detector over rendered crops and/or PDF drawing commands.
 - `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
   output.
+
+Bounded agentic extraction is now available through the same script/library path with
+`--extraction-strategy=agentic`. It uses `@ljoukov/llm.runToolLoop()` rather than a manual Codex
+workflow. The agent starts from the official PDFs and a deterministic page/ref scout; it must request
+observations through tools and must not receive whole `question-paper.txt`, `mark-scheme.txt`, full
+OCR dumps, or historical Codex benchmark text files as prompt inputs. Current tools are:
+
+- `read_question_page_text` for one to four allowed packet pages via `pdftotext -layout`, including
+  core-page text and detected refs.
+- `read_mark_scheme_for_refs` for narrow mark-scheme slices by `sourceQuestionRef`.
+- `list_embedded_question_images` and `view_embedded_question_images` for official embedded PDF
+  assets.
+- `read_question_page_image_metadata`, `view_question_page_image`, and
+  `crop_question_page_image` for layout and visual inspection.
+- `check_response_line_counts` for bounded answer-area crops and
+  `scan_question_page_horizontal_rules` for full-page y-coordinate cross-checks when a crop may
+  clip a line.
+- `validate_partial_extraction` and terminal `submit_extraction` for schema and deterministic
+  extraction checks.
+
+Line-count observations are stateful inside the tool loop. If the agent observed a line count for a
+`sourceQuestionRef`, `validate_partial_extraction` and `submit_extraction` reject a submitted
+`response.lineCount` mismatch. They also reject the latest observation when the crop boundary is
+close enough to the first or last detected line that the crop may have clipped the answer area; the
+agent must rerun a larger bounded crop before submitting.
 
 Codex CLI is useful only as a benchmark and failure-analysis baseline. A 2026-06-28 baseline run on
 AQA Biology Paper 1 November 2020 page 2 (`gpt-5.5`, medium reasoning) completed in 137 seconds,
@@ -564,6 +601,91 @@ validation. A clean isolated parent-question slice for `06.1` to `06.7` took `15
 14 command-execution events and no web search. A repo-context slice took `202.46` seconds but read
 repo docs/old repair files and used web search, so treat it as a context-assisted comparison rather
 than a blind baseline.
+
+Six-paper isolated Codex rollout study, 2026-06-28: free-discovery Codex runs were given only
+official PDFs in isolated temporary directories. They discovered several workflows worth
+productionizing:
+
+| Paper | Mode | Wall time | Questions | Marks | Commands | Input tokens | Cached input |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Biology P1 Nov20 | free discovery | 892.38s | 46 | 100 | 14 | 1,953,808 | 1,587,328 |
+| Chemistry P1 Nov20 | free discovery | 717.32s | 43 | 100 | 48 | 2,476,964 | 2,182,784 |
+| Physics P1 Nov20 | free discovery | 858.10s | 41 | 100 | 31 | 3,740,954 | 3,227,392 |
+| Biology P1 Nov20 | prompted toolkit | 624.23s | 46 | 100 | 44 | 1,399,015 | 1,176,704 |
+| Chemistry P1 Nov20 | prompted toolkit | 689.49s | 43 | 100 | 73 | 1,673,756 | 1,491,200 |
+| Physics P1 Nov20 | prompted toolkit | 902.03s | 41 | 100 | 57 | n/a | n/a |
+| Biology P2 Nov20 | prompted toolkit | 685.28s | 43 | 100 | 38 | 3,492,832 | 3,031,040 |
+| Chemistry P2 Nov20 | prompted toolkit | 932.46s | 47 | 100 | 66 | 4,178,204 | 3,804,160 |
+| Physics P2 Nov20 | prompted toolkit | 685.73s | 38 | 100 | 53 | 1,925,301 | 1,756,416 |
+
+The full artifacts live under `tmp/codex-isolated-pdf-baselines-20260628/`. The prompted toolkit
+helped Biology P1 and Physics P2, modestly helped Chemistry P1, and hurt or failed to cleanly finish
+Physics P1 / Chemistry P2. Do not encode a single rigid workflow. Use a prompt/tool menu and let the
+agent choose:
+
+- Text-first extraction with `pdftotext -layout`.
+- Embedded-asset extraction with `pdfimages` or PyMuPDF.
+- Rendered-page/contact-sheet inspection for layout and graph/diagram understanding.
+- Targeted crop line detection only where line counts are uncertain.
+- PDF vector/drawing inspection for papers where answer rules are vector strokes or thin filled
+  rectangles.
+- Text/pdfplumber table extraction for real tables, with visual fallback when tables are raster or
+  pdfplumber output is noisy.
+- LaTeX normalization for formulae, chemical equations, symbols, units, powers of ten, and
+  substitutions.
+- A deterministic builder/validator step that writes JSON, checks duplicate refs and 100 total
+  marks, writes a trace summary, then stops.
+
+Prompt caveats from the rollout study:
+
+- In isolated Codex runs, say "do not run git; this is not a repo."
+- Say to use the prepared Python interpreter, not plain `python`, when Pillow/PyMuPDF/pdfplumber are
+  required.
+- `contact-sheet --thumb` must be a `WxH` value such as `220x300`.
+- Avoid whole-page line detection by default; it can count graph grids, table borders, and page
+  rules.
+- The longest remaining bottleneck is not observation but whole-paper JSON/builder synthesis.
+  Production scripts should make the final builder/schema validation as deterministic and compact as
+  possible.
+
+Script-side Q07 agentic verification, 2026-06-28/29: AQA Biology Paper 1 November 2020 parent
+question `07` was run from official PDFs only, selecting question-paper pages 28-31 and mark-scheme
+refs `07.1` to `07.4`. The successful extraction run
+`agentic-q07-bio-nov20-rerun3-20260628` wrote
+`tmp/agentic-extraction-q07-rerun3-20260628/raw/aqa-84611h-qp-nov20-q07.json`. It used one
+`runToolLoop()` call, took `475.609s`, cost `$0.722115`, and used 214,451 total tokens
+(202,191 prompt, 145,920 cached, 11,965 response, 295 thinking). Tool completions were:
+`read_question_page_text` 1, `read_mark_scheme_for_refs` 1, `list_embedded_question_images` 1,
+`read_question_page_image_metadata` 4, `view_question_page_image` 4,
+`scan_question_page_horizontal_rules` 4, `check_response_line_counts` 12,
+`validate_partial_extraction` 2, and `submit_extraction` 1. The first line-count validation blocked
+tight crops; enlarged crops then verified `07.1=7`, `07.2=4`, `07.3=16`, `07.4=3` with no boundary
+warnings.
+
+Independent Q07 extraction judge run `agentic-q07-bio-nov20-rerun3-judge-20260628` passed with
+score `0.98`, took `48.249s`, cost `$0.09555`, and used 12,665 total tokens. Text-only answer-chain
+reconciliation initially failed as one xhigh four-ref batch because the model produced invalid chain
+JSON/roles near the timeout; after the prompt was tightened to list allowed `stepRole` values and the
+script was rerun with `--batch-size=2`, `agentic-q07-bio-nov20-rerun3-chain2-20260628` passed with
+chain judge score `0.97`, took `284.242s`, cost `$0.304625`, and used 22,505 total tokens. The
+strict import-ready/solvability/dry-run run `agentic-q07-bio-nov20-rerun3-import2-20260628` passed
+with solvability `4/4`, took `140.573s`, cost `$0.17165`, and used 15,585 total tokens. Final
+artifacts:
+
+- Extraction output: `tmp/agentic-extraction-q07-rerun3-20260628/raw/aqa-84611h-qp-nov20-q07.json`.
+- Extraction judge: `tmp/agentic-extraction-q07-rerun3-20260628/eval/aqa-84611h-qp-nov20-q07.independent-extraction-judge.eval.json`.
+- Chain output: `tmp/agentic-extraction-q07-rerun3-20260628/chain-reconciled/aqa-84611h-qp-nov20-q07.json`.
+- Import-ready output: `tmp/agentic-extraction-q07-rerun3-20260628/import-ready/aqa-84611h-qp-nov20-q07.json`.
+- Strict audit: `tmp/agentic-extraction-q07-rerun3-20260628/import-ready-audit-rerun.json`.
+- Logs: `tmp/llm-extraction-logs/agentic-q07-bio-nov20-rerun3-*.jsonl`.
+
+The previous full-paper chunk run in
+`tmp/production-extraction-full-paper/aqa-84611h-qp-nov20/` failed during PDF extraction/judging:
+the extraction portion used 12 logged calls, 292,191 tokens, and `$2.23753`; a later repaired judge
+run used 7 calls, 133,015 tokens, and `$1.0494`. Its extraction judge reported `fail` with score
+`0.90` and three required repairs. The Q07 agentic packet is not a whole-paper replacement benchmark,
+but it demonstrates the intended bounded tool loop and fixes the known `07.1` / `07.3` line-count
+failure mode.
 
 The whole-paper Codex result is a quality target, not a replacement importer. It handled
 mark-checklist semantics well, especially any-two alternatives and level-of-response descriptors,
