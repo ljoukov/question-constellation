@@ -5392,6 +5392,93 @@ textarea::placeholder {
 	}
 }
 
+.qc-browse-layout,
+.qc-browse-feed,
+.qc-browse-chain,
+.qc-browse-chain-steps,
+.qc-browse-question-set,
+.qc-question-card-grid,
+.qc-question-card,
+.qc-chain-title-link,
+.qc-chain-title-link > span,
+.qc-chain-title,
+.qc-chain-topic,
+.qc-question-title,
+.qc-question-preview,
+.qc-question-meta {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.qc-browse-chain {
+	overflow: hidden;
+}
+
+.qc-browse-chain-steps,
+.qc-browse-question-set {
+	overflow: hidden;
+}
+
+.qc-browse-pattern li,
+.qc-question-card,
+.qc-question-title,
+.qc-question-preview,
+.qc-question-meta {
+	overflow-wrap: anywhere;
+	word-break: normal;
+}
+
+@media (max-width: 700px) {
+	.qc-browse-layout,
+	.qc-browse-feed {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	.qc-browse-pattern {
+		display: grid;
+		grid-auto-flow: row;
+		grid-auto-columns: auto;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.05rem;
+		overflow: visible;
+		padding-bottom: 0;
+	}
+
+	.qc-browse-pattern li {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.qc-browse-pattern li:not(:last-child)::after {
+		content: '↓';
+		top: calc(100% + 0.28rem);
+		left: 50%;
+		display: grid;
+		width: 1rem;
+		height: 1.05rem;
+		place-items: center;
+		transform: translateX(-50%);
+	}
+
+	.qc-question-card-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.qc-browse-question-set-head {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.qc-browse-question-set-head span {
+		white-space: normal;
+	}
+
+	.qc-chain-title-link {
+		width: 100%;
+	}
+}
+
 :root[data-theme='dark'] {
 	color-scheme: dark;
 	--qc-spark-background: oklch(0.129 0.042 264.695);
@@ -6039,6 +6126,20 @@ html[data-theme='dark'] .app-shell {
 	color: #56d894;
 }
 
+:root[data-theme='dark'] .qc-real-hint {
+	border-left-color: #72a7ff;
+	background: rgba(7, 20, 38, 0.72);
+	color: #eaf4ff;
+}
+
+:root[data-theme='dark'] .qc-real-hint p {
+	color: #93c5fd;
+}
+
+:root[data-theme='dark'] .qc-real-hint span {
+	color: #f8fafc;
+}
+
 :root[data-theme='dark'] .qc-real-main .grading-shell {
 	background: #050505;
 	color: #f8f8f2;
@@ -6175,6 +6276,20 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-browse-start::after {
 		color: #56d894;
+	}
+
+	:root:not([data-theme='light']) .qc-real-hint {
+		border-left-color: #72a7ff;
+		background: rgba(7, 20, 38, 0.72);
+		color: #eaf4ff;
+	}
+
+	:root:not([data-theme='light']) .qc-real-hint p {
+		color: #93c5fd;
+	}
+
+	:root:not([data-theme='light']) .qc-real-hint span {
+		color: #f8fafc;
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .grading-shell {
