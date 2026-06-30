@@ -922,7 +922,9 @@ Flagged D1 chain reuse review mode, 2026-06-30:
   multi-paper chains / 264 public question links. D1 empty published-chain query returned 0 rows.
   `tmp/public-route-check-after-review-mode.json` fetched all 23 newly promoted chain pages and all
   49 newly published question pages; every route returned 200 and every chain page contained the
-  expected multiple question ids and title.
+  expected multiple question ids and title. `tmp/public-practice-route-check-after-review-mode.json`
+  also fetched all 49 chain-page "Open question" practice links; every route returned 200 with the
+  expected chain and question ids.
 
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
