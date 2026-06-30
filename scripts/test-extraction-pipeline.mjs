@@ -62,9 +62,13 @@ const productionPipelineSource = readText(
 );
 const codexImportHelperSource = readText(path.join(rootDir, 'scripts/codex-import-helper.mjs'));
 const codexSdkRunnerSource = readText(path.join(rootDir, 'scripts/lib/codex-sdk-runner.mjs'));
-const codexPdfExtractionSource = readText(path.join(rootDir, 'scripts/run-codex-pdf-extraction.mjs'));
+const codexPdfExtractionSource = readText(
+	path.join(rootDir, 'scripts/run-codex-pdf-extraction.mjs')
+);
+const codexExtractionJudgeSource = readText(
+	path.join(rootDir, 'scripts/run-codex-extraction-judge.mjs')
+);
 const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-answer-chains.mjs'));
-const chainStyleJudgeSource = readText(path.join(rootDir, 'scripts/judge-answer-chain-style.mjs'));
 const codexProductionImportSource = readText(
 	path.join(rootDir, 'scripts/run-codex-production-import-pipeline.mjs')
 );
@@ -116,6 +120,7 @@ for (const filePath of [
 	'scripts/codex-import-helper.mjs',
 	'scripts/lib/codex-sdk-runner.mjs',
 	'scripts/run-codex-pdf-extraction.mjs',
+	'scripts/run-codex-extraction-judge.mjs',
 	'scripts/run-codex-answer-chains.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/run-production-extraction-batch.mjs',
@@ -130,6 +135,8 @@ for (const filePath of [
 	'scripts/build-existing-chain-context.mjs',
 	'scripts/reconcile-answer-chains.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
+	'scripts/run-codex-extraction-judge.mjs',
+	'scripts/codex-pdf-tools.sh',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-answer-chain-specificity.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
@@ -282,13 +289,7 @@ requireIncludes(
 
 requireIncludes(
 	cropPdfFigureSource,
-	[
-		'pdftotext',
-		'-bbox-layout',
-		'Figure',
-		'choose_vertical_crop',
-		'bboxNormalized'
-	],
+	['pdftotext', '-bbox-layout', 'Figure', 'choose_vertical_crop', 'bboxNormalized'],
 	'PDF figure cropper'
 );
 
@@ -436,7 +437,22 @@ requireIncludes(
 		'equation_completion',
 		'fixed_response_missing_answer_key',
 		'answer_chain_canonical_not_memory_links',
-		'answer_chain_step_label_too_long'
+		'answer_chain_step_label_too_long',
+		'response_asset_not_renderable',
+		'image_label_zones_missing_labels',
+		'image_label_zones_missing_zones',
+		'referenced_media_missing_asset',
+		'render_block_duplicate_text',
+		'table_asset_canvas_response',
+		'mark_scheme_under_granular_any_n',
+		'mark_checklist_overrequires_alternatives',
+		'known_response_line_count_mismatch',
+		'known_mark_scheme_allowance_missing',
+		'known_survey_context_missing',
+		'known_graph_plotting_mark_scheme_mismatch',
+		'known_level_response_descriptors_missing',
+		'known_self_contained_answer_leak',
+		'known_figure_crop_incomplete'
 	],
 	'Codex import helper'
 );
@@ -464,6 +480,8 @@ requireIncludes(
 		'official-question-paper.pdf',
 		'helper.mjs',
 		'metadata.json',
+		'pdf-tools.sh',
+		'bash pdf-tools.sh',
 		'Do not run git',
 		'Do not create final answer chains',
 		'normalize-extraction',
@@ -473,9 +491,52 @@ requireIncludes(
 		'question-paper.pdf',
 		'mark-scheme.pdf',
 		'events.jsonl',
-		'gpt-5.5'
+		'gpt-5.5',
+		'Do not duplicate learner-visible setup',
+		'Use image-label-zones only when the response surface is a real extracted/rendered image asset',
+		'Do not count the gaps between rules and do not subtract one from the number of rules',
+		'Attach the same figure/table dependency to every atomic subquestion that refers to it',
+		'07.1 = 7',
+		'07.3 = 16',
+		'02.3 = 14',
+		'06.7 = 10',
+		'every visible blank segment must have a matching response.correctAnswers target',
+		'Figure and response-surface assets must be complete learner-visible crops',
+		'Do not use asset-canvas for tables that can be represented structurally',
+		'one positive markSchemeItems row per independently awardable mark',
+		'A question must not have more required checklist rows than its mark value',
+		'01.2 = 4',
+		'Q02.4 mark-scheme/checklist/model grading support includes the official allowed answer "diffusion"',
+		'Million Women survey setup',
+		'3 or 4 correct plots earns 1 mark',
+		'official level-of-response mark bands/descriptors',
+		'selfContainedPromptText must not reveal the completed equation',
+		'Figure 2 includes the complete Mesophyll cell label',
+		'Figure 4 includes the full key including Water molecules and Nitrate ions',
+		'Figure 6 includes the full cell-cycle chart and Stage 1 label',
+		'Figure 9 includes the full Nodules label and arrows'
 	],
 	'Codex PDF extraction runner'
+);
+
+requireIncludes(
+	codexExtractionJudgeSource,
+	[
+		'runCodexSdkTurn',
+		'candidate.json',
+		'question-paper.pdf',
+		'mark-scheme.pdf',
+		'pdf-tools.sh',
+		'judge-report.json',
+		'mechanical-validation.json',
+		'Q07.1 has 7 visible ruled answer lines',
+		'Q07.3 has 16 visible ruled answer lines',
+		'Do not judge answer-chain style',
+		'Do not inspect the repository',
+		'learner-rendering judge',
+		'requiredRepairs'
+	],
+	'Codex extraction judge runner'
 );
 
 requireIncludes(
@@ -487,10 +548,6 @@ requireIncludes(
 		'create_new',
 		'update_existing',
 		'Do not put worked numeric answers',
-		'memory handle',
-		'2 to 5 compact links',
-		'graph plotting, percentage change, clinical trials, food tests',
-		'chain-style-judge.json',
 		'validate-chain',
 		'chain-reconciled.json',
 		'events.jsonl',
@@ -500,26 +557,15 @@ requireIncludes(
 );
 
 requireIncludes(
-	chainStyleJudgeSource,
-	[
-		'answer-chain style validator',
-		'Titles should usually be 1-3 words',
-		'One simple emoji per step is allowed',
-		'Symbiosis benefit: resource gained then used',
-		'resource gained -> biological use',
-		'status must be failed if any issue has severity error'
-	],
-	'Answer-chain style judge'
-);
-
-requireIncludes(
 	codexProductionImportSource,
 	[
 		'scripts/run-codex-pdf-extraction.mjs',
 		'scripts/run-codex-answer-chains.mjs',
 		'scripts/prepare-import-ready-extraction.mjs',
+		'scripts/upload-r2-images.mjs',
 		'--run-solvability',
 		'--skip-solvability',
+		'--skip-r2-upload',
 		'--import',
 		'codex-production-import-summary.json',
 		'codex-extraction-summary.json',
@@ -605,7 +651,10 @@ requireIncludes(
 		'existingReplacementPlan',
 		'questionIdCollisions',
 		'sharedIncomingChains',
-		'allow-shared-chain-updates'
+		'allow-shared-chain-updates',
+		'validateRenderJsonForApp',
+		'asset-canvas assetId must be a string',
+		'image-label-zones needs at least one target zone'
 	],
 	'Vision importer'
 );
@@ -738,8 +787,8 @@ for (const scriptName of [
 	'reconcile:answer-chains',
 	'prepare:import-ready-extraction',
 	'codex:pdf-extract',
+	'codex:extraction-judge',
 	'codex:answer-chains',
-	'judge:answer-chain-style',
 	'codex:production-import',
 	'repair:extracted-data',
 	'repair:answer-chain-specificity',
@@ -753,7 +802,10 @@ for (const scriptName of [
 	if (!packageJson.scripts?.[scriptName]) fail(`Missing package script: ${scriptName}`);
 }
 
-if (packageJson.scripts?.['extract:production'] !== 'node scripts/run-codex-production-import-pipeline.mjs') {
+if (
+	packageJson.scripts?.['extract:production'] !==
+	'node scripts/run-codex-production-import-pipeline.mjs'
+) {
 	fail('extract:production must point at the Codex production import runner.');
 }
 
@@ -778,6 +830,7 @@ requireIncludes(
 	[
 		'--asset-root=',
 		'--referenced-baseline=',
+		'--source-document-id=',
 		'data/vision-extracted/aqa-separate-science-higher/assets/question-papers',
 		'all_local_assets'
 	],
@@ -969,100 +1022,6 @@ if (
 	});
 }
 
-const chainStyleDir = path.join(rootDir, 'tmp/test-codex-chain-style');
-mkdirSync(chainStyleDir, { recursive: true });
-const chainStyleInput = path.join(chainStyleDir, 'chain-reconciled.json');
-const chainStyleOutput = path.join(chainStyleDir, 'chain-validation.json');
-const chainStyleFixture = {
-	sourceDocument: { id: 'test-paper' },
-	markSchemeDocument: { id: 'test-ms' },
-	questions: [
-		{
-			sourceQuestionRef: '01.1',
-			promptText: 'Explain how nitrate ions enter the root hair cell.',
-			marks: 3,
-			pageStart: 1,
-			pageEnd: 1,
-			response: { kind: 'lines' },
-			assets: [],
-			markSchemeItems: [
-				{ itemType: 'mark', text: 'Moves from low concentration to high concentration.' },
-				{ itemType: 'mark', text: 'Process is active transport.' },
-				{ itemType: 'mark', text: 'Requires energy.' }
-			],
-			markChecklist: [{ text: 'Names active transport.', markSchemeItemIndexes: [1] }],
-			modelAnswer: { answerText: 'Active transport moves nitrate ions against the gradient using energy.' },
-			answerChain: {
-				id: 'bio-chain-active-transport-test',
-				title: 'Active transport',
-				canonicalChainText:
-					'When concentration evidence shows movement from low to high concentration, identify active transport and explain that energy is needed.',
-				summary: 'Active transport explanation.',
-				steps: [
-					{
-						stepText: 'Identify movement from a low concentration region to a high concentration region.',
-						stepRole: 'evidence',
-						markSchemeItemIndexes: [0]
-					},
-					{ stepText: 'Name active transport.', stepRole: 'process', markSchemeItemIndexes: [1] },
-					{ stepText: 'State energy is needed.', stepRole: 'cause', markSchemeItemIndexes: [2] }
-				],
-				needsHumanReview: false
-			},
-			needsHumanReview: false
-		}
-	]
-};
-writeFileSync(chainStyleInput, JSON.stringify(chainStyleFixture, null, 2));
-runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
-	'validate-chain',
-	`--input=${chainStyleInput}`,
-	`--output=${chainStyleOutput}`
-]);
-const chainStyleFailure = JSON.parse(readText(chainStyleOutput));
-if (
-	chainStyleFailure.status !== 'failed' ||
-	!chainStyleFailure.blockingIssues.some(
-		(issue) => issue.code === 'answer_chain_canonical_not_memory_links'
-	) ||
-	!chainStyleFailure.blockingIssues.some((issue) => issue.code === 'answer_chain_step_label_too_long')
-) {
-	fail('Codex chain validator did not reject paragraph-like answer-chain text.', chainStyleFailure);
-}
-chainStyleFixture.questions[0].answerChain.canonicalChainText = 'resource gained -> biological use';
-chainStyleFixture.questions[0].answerChain.steps[0].stepText = 'resource gained';
-chainStyleFixture.questions[0].answerChain.steps[1].stepText = 'biological use';
-writeFileSync(chainStyleInput, JSON.stringify(chainStyleFixture, null, 2));
-runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
-	'validate-chain',
-	`--input=${chainStyleInput}`,
-	`--output=${chainStyleOutput}`
-]);
-const placeholderChainFailure = JSON.parse(readText(chainStyleOutput));
-if (
-	placeholderChainFailure.status !== 'failed' ||
-	!placeholderChainFailure.blockingIssues.some(
-		(issue) => issue.code === 'answer_chain_placeholder_label'
-	)
-) {
-	fail('Codex chain validator did not reject placeholder answer-chain labels.', placeholderChainFailure);
-}
-chainStyleFixture.questions[0].answerChain.canonicalChainText =
-	'low to high -> active transport -> energy needed';
-chainStyleFixture.questions[0].answerChain.steps[0].stepText = 'low to high';
-chainStyleFixture.questions[0].answerChain.steps[1].stepText = 'active transport';
-writeFileSync(chainStyleInput, JSON.stringify(chainStyleFixture, null, 2));
-const chainStylePass = JSON.parse(
-	runNodeScript('scripts/codex-import-helper.mjs', [
-		'validate-chain',
-		`--input=${chainStyleInput}`,
-		`--output=${chainStyleOutput}`
-	])
-);
-if (chainStylePass.status !== 'passed') {
-	fail('Codex chain validator rejected compact memory-link chain text.', chainStylePass);
-}
-
 const helperNormalizeDir = path.join(rootDir, 'tmp/test-codex-helper-normalize');
 mkdirSync(helperNormalizeDir, { recursive: true });
 const helperNormalizeInput = path.join(helperNormalizeDir, 'raw.json');
@@ -1129,9 +1088,783 @@ runNodeScript('scripts/codex-import-helper.mjs', [
 const helperNormalized = JSON.parse(readText(helperNormalizeOutput));
 const propagatedTable = helperNormalized.questions
 	.find((question) => question.sourceQuestionRef === '01.2')
-	?.stemBlocks?.find((block) => block.kind === 'table' && block.label === 'Table 1');
+	?.stemBlocks?.find((block) => block.kind === 'structured-table' && block.label === 'Table 1');
 if (!propagatedTable || propagatedTable.rows?.length !== 2) {
-	fail('Codex helper normalization did not propagate shared parent table blocks.', helperNormalized);
+	fail(
+		'Codex helper normalization did not propagate shared parent table blocks.',
+		helperNormalized
+	);
+}
+
+const invalidImageLabelExtractionPath = path.join(helperNormalizeDir, 'invalid-image-label.json');
+writeFileSync(
+	invalidImageLabelExtractionPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					promptText: 'Select the anomalous value from Table 1.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'image-label-zones',
+						assetLabel: 'Table 1',
+						correctAnswers: [{ targetId: 'row-1', correctAnswer: '14.2' }]
+					},
+					assets: [{ sourceLabel: 'Table 1', role: 'data-table' }],
+					markSchemeItems: [{ itemType: 'mark', text: '14.2 selected.' }],
+					markChecklist: [{ text: 'Selects 14.2.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const imageLabelFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${invalidImageLabelExtractionPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+for (const code of [
+	'response_asset_not_renderable',
+	'image_label_zones_missing_labels',
+	'image_label_zones_missing_zones'
+]) {
+	if (!imageLabelFailure.includes(code)) {
+		fail(`Codex helper validation did not reject invalid image-label-zones with ${code}.`, {
+			imageLabelFailure
+		});
+	}
+}
+
+const duplicateRenderTextPath = path.join(helperNormalizeDir, 'duplicate-render-text.json');
+writeFileSync(
+	duplicateRenderTextPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.2',
+					promptText: 'The deadly nightshade plant has poisonous berries. Name the substance.',
+					marks: 1,
+					pageStart: 4,
+					pageEnd: 4,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'The deadly nightshade plant has poisonous berries.' }
+					],
+					promptBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'The deadly nightshade plant has poisonous berries. Name the substance.'
+						}
+					],
+					response: { kind: 'lines', count: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Atropine.' }],
+					markChecklist: [{ text: 'Names atropine.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Atropine.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const duplicateRenderFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${duplicateRenderTextPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!duplicateRenderFailure.includes('render_block_duplicate_text')) {
+	fail('Codex helper validation did not reject duplicated learner-visible render text.', {
+		duplicateRenderFailure
+	});
+}
+
+const missingReferencedMediaPath = path.join(helperNormalizeDir, 'missing-referenced-media.json');
+writeFileSync(
+	missingReferencedMediaPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.3',
+					promptText: 'Use Figure 1 to describe the pattern.',
+					marks: 1,
+					pageStart: 5,
+					pageEnd: 5,
+					stemBlocks: [{ kind: 'paragraph', text: 'Figure 1 shows a graph.' }],
+					promptBlocks: [{ kind: 'paragraph', text: 'Use Figure 1 to describe the pattern.' }],
+					response: { kind: 'lines', count: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Describes the pattern.' }],
+					markChecklist: [{ text: 'Describes the graph pattern.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'The value increases.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const missingMediaFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${missingReferencedMediaPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!missingMediaFailure.includes('referenced_media_missing_asset')) {
+	fail('Codex helper validation did not reject a referenced Figure without a renderable asset.', {
+		missingMediaFailure
+	});
+}
+
+const missingEquationBlankKeyPath = path.join(
+	helperNormalizeDir,
+	'missing-equation-blank-key.json'
+);
+writeFileSync(
+	missingEquationBlankKeyPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					promptText: 'Complete the word equation.',
+					marks: 2,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'blank', id: 'before-arrow-1' },
+							{ kind: 'text', text: ' + ' },
+							{ kind: 'blank', id: 'before-arrow-2' },
+							{ kind: 'text', text: ' -> ' },
+							{ kind: 'blank', id: 'after-arrow' }
+						],
+						correctAnswers: [
+							{ targetId: 'before-arrow-1', correctAnswer: 'carbon dioxide' },
+							{ targetId: 'after-arrow', correctAnswer: 'glucose' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Carbon dioxide and water before the arrow.' },
+						{ itemType: 'mark', text: 'Glucose after the arrow.' }
+					],
+					markChecklist: [
+						{ text: 'Completes the reactants.', markSchemeItemIndexes: [0] },
+						{ text: 'Completes glucose.', markSchemeItemIndexes: [1] }
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const missingEquationKeyFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${missingEquationBlankKeyPath}`,
+	'--expected-marks=2',
+	'--expected-questions=1'
+]);
+if (!missingEquationKeyFailure.includes('equation_blank_missing_answer_key')) {
+	fail('Codex helper validation did not reject an unkeyed equation blank.', {
+		missingEquationKeyFailure
+	});
+}
+
+const tableAssetCanvasPath = path.join(helperNormalizeDir, 'table-asset-canvas.json');
+writeFileSync(
+	tableAssetCanvasPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.4',
+					promptText: 'Draw a ring around the anomalous result in Table 1.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					stemBlocks: [
+						{
+							kind: 'table',
+							label: 'Table 1',
+							columns: ['Temperature', 'Test 1', 'Test 2'],
+							rows: [['45', '1.9', '14.2']]
+						}
+					],
+					response: {
+						kind: 'asset-canvas',
+						assetLabel: 'Table 1',
+						correctAnswers: [{ targetId: 'table-cell', correctAnswer: '14.2' }]
+					},
+					assets: [
+						{
+							sourceLabel: 'Table 1',
+							role: 'response-surface',
+							filePath: 'scripts/codex-import-helper.mjs'
+						}
+					],
+					markSchemeItems: [{ itemType: 'mark', text: 'A ring around 14.2.' }],
+					markChecklist: [{ text: 'Identifies 14.2.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const tableAssetCanvasFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${tableAssetCanvasPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!tableAssetCanvasFailure.includes('table_asset_canvas_response')) {
+	fail('Codex helper validation did not reject a table-backed asset-canvas response.', {
+		tableAssetCanvasFailure
+	});
+}
+
+const underGranularAnyNPath = path.join(helperNormalizeDir, 'under-granular-any-n.json');
+writeFileSync(
+	underGranularAnyNPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '03.1',
+					promptText: 'Give two similarities between the cells.',
+					marks: 2,
+					pageStart: 6,
+					pageEnd: 6,
+					response: {
+						kind: 'labeled-lines',
+						labels: ['Similarity 1', 'Similarity 2'],
+						lineCount: 2
+					},
+					markSchemeItems: [
+						{
+							itemType: 'mark',
+							text: 'Any two similarities: cytoplasm, cell membrane, DNA/genetic material, ribosomes.',
+							marks: 1
+						}
+					],
+					markChecklist: [
+						{
+							text: 'Gives two valid similarities.',
+							markSchemeItemIndexes: [0]
+						}
+					],
+					modelAnswer: { answerText: 'Both have cytoplasm and a cell membrane.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const underGranularAnyNFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${underGranularAnyNPath}`,
+	'--expected-marks=2',
+	'--expected-questions=1'
+]);
+if (!underGranularAnyNFailure.includes('mark_scheme_under_granular_any_n')) {
+	fail('Codex helper validation did not reject compressed any-N mark-scheme rows.', {
+		underGranularAnyNFailure
+	});
+}
+
+const overrequiredChecklistPath = path.join(helperNormalizeDir, 'overrequired-checklist.json');
+writeFileSync(
+	overrequiredChecklistPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.5',
+					promptText: 'Suggest one possible cause of the anomalous result.',
+					marks: 1,
+					pageStart: 3,
+					pageEnd: 3,
+					response: { kind: 'lines', count: 2, lineCount: 2 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Scale or value was misread.', marks: 1 },
+						{ itemType: 'mark', text: 'Temperature changed.', marks: 1 },
+						{ itemType: 'mark', text: 'Different amount of pondweed was used.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Scale or value was misread.', required: true, markSchemeItemIndexes: [0] },
+						{ text: 'Temperature changed.', required: true, markSchemeItemIndexes: [1] },
+						{
+							text: 'Different amount of pondweed was used.',
+							required: true,
+							markSchemeItemIndexes: [2]
+						}
+					],
+					modelAnswer: { answerText: 'The scale may have been misread.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const overrequiredChecklistFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${overrequiredChecklistPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!overrequiredChecklistFailure.includes('mark_checklist_overrequires_alternatives')) {
+	fail('Codex helper validation did not reject an over-required alternative checklist.', {
+		overrequiredChecklistFailure
+	});
+}
+
+const knownLineCountMismatchPath = path.join(helperNormalizeDir, 'known-line-count-mismatch.json');
+writeFileSync(
+	knownLineCountMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.2',
+					promptText: 'Describe how you could make the investigation more valid.',
+					marks: 2,
+					pageStart: 2,
+					pageEnd: 2,
+					response: { kind: 'lines', count: 2, lineCount: 2 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Use more temperatures.', marks: 1 }],
+					markChecklist: [{ text: 'Improves validity.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Use more temperatures and repeat the investigation.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const knownLineCountFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${knownLineCountMismatchPath}`,
+	'--expected-marks=2',
+	'--expected-questions=1'
+]);
+if (!knownLineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject a known source-document line-count mismatch.', {
+		knownLineCountFailure
+	});
+}
+
+const missingKnownAllowancePath = path.join(helperNormalizeDir, 'missing-known-allowance.json');
+writeFileSync(
+	missingKnownAllowancePath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.4',
+					promptText: 'Name the process by which water moves into root hair cells.',
+					marks: 1,
+					pageStart: 9,
+					pageEnd: 9,
+					response: { kind: 'lines', count: 1, lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Osmosis.', marks: 1 }],
+					markChecklist: [{ text: 'Names osmosis.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Osmosis.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const missingKnownAllowanceFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${missingKnownAllowancePath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!missingKnownAllowanceFailure.includes('known_mark_scheme_allowance_missing')) {
+	fail('Codex helper validation did not reject a missing known mark-scheme allowance.', {
+		missingKnownAllowanceFailure
+	});
+}
+
+const missingSurveyContextPath = path.join(helperNormalizeDir, 'missing-survey-context.json');
+writeFileSync(
+	missingSurveyContextPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '06.5',
+					promptText: 'Suggest two other factors that should have been controlled.',
+					selfContainedPromptText: 'Suggest two other factors that should have been controlled.',
+					marks: 2,
+					pageStart: 22,
+					pageEnd: 22,
+					response: { kind: 'lines', count: 4, lineCount: 4 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Age.', marks: 1 },
+						{ itemType: 'mark', text: 'BMI.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Names age.', required: false, markSchemeItemIndexes: [0] },
+						{ text: 'Names BMI.', required: false, markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: { answerText: 'Age and BMI.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const missingSurveyContextFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${missingSurveyContextPath}`,
+	'--expected-marks=2',
+	'--expected-questions=1'
+]);
+if (!missingSurveyContextFailure.includes('known_survey_context_missing')) {
+	fail('Codex helper validation did not reject missing Million Women survey context.', {
+		missingSurveyContextFailure
+	});
+}
+
+const graphPlottingMismatchPath = path.join(helperNormalizeDir, 'graph-plotting-mismatch.json');
+writeFileSync(
+	graphPlottingMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.9',
+					promptText: 'Plot a graph of mean rate against temperature.',
+					marks: 4,
+					pageStart: 5,
+					pageEnd: 5,
+					response: { kind: 'drawing-box' },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Suitable linear scale.', marks: 1 },
+						{ itemType: 'mark', text: 'Both axes labelled.', marks: 1 },
+						{ itemType: 'mark', text: 'Two correct plotted mean points.', marks: 1 },
+						{ itemType: 'mark', text: 'Line of best fit.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Uses a suitable scale.', markSchemeItemIndexes: [0] },
+						{ text: 'Labels axes.', markSchemeItemIndexes: [1] },
+						{ text: 'Plots two mean points.', markSchemeItemIndexes: [2] },
+						{ text: 'Draws a line of best fit.', markSchemeItemIndexes: [3] }
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const graphPlottingMismatchFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${graphPlottingMismatchPath}`,
+	'--expected-marks=4',
+	'--expected-questions=1'
+]);
+if (!graphPlottingMismatchFailure.includes('known_graph_plotting_mark_scheme_mismatch')) {
+	fail('Codex helper validation did not reject the known Q01.9 plotting mark mismatch.', {
+		graphPlottingMismatchFailure
+	});
+}
+
+const missingLevelDescriptorsPath = path.join(helperNormalizeDir, 'missing-level-descriptors.json');
+writeFileSync(
+	missingLevelDescriptorsPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.3',
+					promptText:
+						'Explain how a root hair cell is adapted for absorbing water and mineral ions.',
+					marks: 6,
+					pageStart: 8,
+					pageEnd: 8,
+					response: { kind: 'lines', count: 14, lineCount: 14 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Large surface area.', marks: 1 },
+						{ itemType: 'mark', text: 'Thin cell wall.', marks: 1 },
+						{ itemType: 'mark', text: 'Many mitochondria for active transport.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Links surface area to absorption.', markSchemeItemIndexes: [0] },
+						{ text: 'Links thin wall to short diffusion distance.', markSchemeItemIndexes: [1] },
+						{ text: 'Links mitochondria to active transport.', markSchemeItemIndexes: [2] }
+					],
+					modelAnswer: {
+						answerText:
+							'Root hair cells have a large surface area and thin wall for absorption, and mitochondria provide energy for active transport of mineral ions.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const missingLevelDescriptorsFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${missingLevelDescriptorsPath}`,
+		'--expected-marks=6',
+		'--expected-questions=1'
+	]
+);
+if (!missingLevelDescriptorsFailure.includes('known_level_response_descriptors_missing')) {
+	fail('Codex helper validation did not reject missing level-of-response descriptors.', {
+		missingLevelDescriptorsFailure
+	});
+}
+
+const selfContainedAnswerLeakPath = path.join(
+	helperNormalizeDir,
+	'self-contained-answer-leak.json'
+);
+writeFileSync(
+	selfContainedAnswerLeakPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					promptText: 'Complete the word equation for photosynthesis.',
+					selfContainedPromptText:
+						'Complete the word equation for photosynthesis: carbon dioxide + water -> glucose + oxygen.',
+					marks: 2,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'blank', id: 'reactant-1' },
+							{ kind: 'text', text: ' + ' },
+							{ kind: 'blank', id: 'reactant-2' },
+							{ kind: 'text', text: ' -> ' },
+							{ kind: 'blank', id: 'product-1' },
+							{ kind: 'text', text: ' + oxygen' }
+						],
+						correctAnswers: [
+							{ targetId: 'reactant-1', correctAnswer: 'carbon dioxide or water' },
+							{ targetId: 'reactant-2', correctAnswer: 'water or carbon dioxide' },
+							{ targetId: 'product-1', correctAnswer: 'glucose' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Carbon dioxide and water before the arrow.', marks: 1 },
+						{ itemType: 'mark', text: 'Glucose after the arrow.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Includes carbon dioxide and water.', markSchemeItemIndexes: [0] },
+						{ text: 'Includes glucose.', markSchemeItemIndexes: [1] }
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const selfContainedAnswerLeakFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${selfContainedAnswerLeakPath}`,
+		'--expected-marks=2',
+		'--expected-questions=1'
+	]
+);
+if (!selfContainedAnswerLeakFailure.includes('known_self_contained_answer_leak')) {
+	fail('Codex helper validation did not reject a Q01.1 self-contained answer leak.', {
+		selfContainedAnswerLeakFailure
+	});
+}
+
+const tinyFigurePath = path.join(helperNormalizeDir, 'tiny-figure.png');
+writeFileSync(
+	tinyFigurePath,
+	Buffer.from(
+		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+		'base64'
+	)
+);
+const incompleteFigureCropPath = path.join(helperNormalizeDir, 'incomplete-figure-crop.json');
+writeFileSync(
+	incompleteFigureCropPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.2',
+					promptText: 'Figure 2 shows part of a leaf. Which two changes increase diffusion?',
+					selfContainedPromptText:
+						'Figure 2 shows part of a leaf. Which two changes increase diffusion?',
+					marks: 2,
+					pageStart: 7,
+					pageEnd: 7,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Figure 2 shows part of a leaf.' },
+						{ kind: 'asset', assetLabel: 'Figure 2' }
+					],
+					response: {
+						kind: 'choice',
+						options: [
+							'Decreased number of chloroplasts',
+							'Increased carbon dioxide concentration',
+							'Increased number of open stomata'
+						],
+						correctAnswers: [
+							{ targetId: 'choice-1', correctAnswer: 'Increased carbon dioxide concentration' },
+							{ targetId: 'choice-2', correctAnswer: 'Increased number of open stomata' }
+						]
+					},
+					assets: [{ sourceLabel: 'Figure 2', role: 'figure', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Increased carbon dioxide concentration.', marks: 1 },
+						{ itemType: 'mark', text: 'Increased number of stomata that are open.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Selects increased carbon dioxide concentration.', markSchemeItemIndexes: [0] },
+						{ text: 'Selects increased number of open stomata.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: {
+						answerText:
+							'Increased carbon dioxide concentration and increased number of stomata that are open.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const incompleteFigureCropFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${incompleteFigureCropPath}`,
+	'--expected-marks=2',
+	'--expected-questions=1'
+]);
+if (!incompleteFigureCropFailure.includes('known_figure_crop_incomplete')) {
+	fail('Codex helper validation did not reject a known incomplete figure crop.', {
+		incompleteFigureCropFailure
+	});
+}
+
+const oversizedFigurePath = path.join(helperNormalizeDir, 'oversized-figure-crop.png');
+const oversizedFigureBuffer = Buffer.alloc(24);
+Buffer.from('89504e470d0a1a0a', 'hex').copy(oversizedFigureBuffer, 0);
+oversizedFigureBuffer.writeUInt32BE(1000, 16);
+oversizedFigureBuffer.writeUInt32BE(700, 20);
+writeFileSync(oversizedFigurePath, oversizedFigureBuffer);
+const oversizedFigureCropPath = path.join(helperNormalizeDir, 'oversized-figure-crop.json');
+writeFileSync(
+	oversizedFigureCropPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'aqa-84611h-qp-nov20', docType: 'question_paper' },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.2',
+					promptText: 'Figure 2 shows part of a leaf. Which two changes increase diffusion?',
+					selfContainedPromptText:
+						'Figure 2 shows part of a leaf. Which two changes increase diffusion?',
+					marks: 2,
+					pageStart: 7,
+					pageEnd: 7,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Figure 2 shows part of a leaf.' },
+						{ kind: 'asset', assetLabel: 'Figure 2' }
+					],
+					response: {
+						kind: 'choice',
+						options: [
+							'Decreased number of chloroplasts',
+							'Increased carbon dioxide concentration',
+							'Increased number of open stomata'
+						],
+						correctAnswers: [
+							{ targetId: 'choice-1', correctAnswer: 'Increased carbon dioxide concentration' },
+							{ targetId: 'choice-2', correctAnswer: 'Increased number of open stomata' }
+						]
+					},
+					assets: [
+						{ sourceLabel: 'Figure 2', role: 'figure', filePath: 'oversized-figure-crop.png' }
+					],
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Increased carbon dioxide concentration.', marks: 1 },
+						{ itemType: 'mark', text: 'Increased number of stomata that are open.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Selects increased carbon dioxide concentration.', markSchemeItemIndexes: [0] },
+						{ text: 'Selects increased number of open stomata.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: {
+						answerText:
+							'Increased carbon dioxide concentration and increased number of stomata that are open.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const oversizedFigureCropFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${oversizedFigureCropPath}`,
+	'--expected-marks=2',
+	'--expected-questions=1'
+]);
+if (!oversizedFigureCropFailure.includes('known_figure_crop_prompt_contamination')) {
+	fail('Codex helper validation did not reject a known prompt-contaminated figure crop.', {
+		oversizedFigureCropFailure
+	});
 }
 
 const pipelineModule = await import(

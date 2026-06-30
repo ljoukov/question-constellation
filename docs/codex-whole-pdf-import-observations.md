@@ -24,22 +24,22 @@ The user explicitly questioned whether a custom bounded harness is needed at all
 
 Historical true PDF-only Codex baselines were found under `/tmp/qc-codex-pdf-baselines-20260628`.
 
-| Paper | Output | Completed Commands | Failed Commands | Agent Messages | Token Usage |
-| --- | ---: | ---: | ---: | ---: | --- |
-| Biology P1 Nov 2020 | 46 questions, 100 marks | 13 | 1 | 17 | input 1,953,808; cached 1,587,328; output 39,734; reasoning 10,045 |
-| Chemistry P1 Nov 2020 | 43 questions, 100 marks | 44 | 4 | 28 | input 2,476,964; cached 2,182,784; output 35,273; reasoning 9,675 |
-| Physics P1 Nov 2020 | 41 questions, 100 marks | 31 | 0 | 36 | input 3,740,954; cached 3,227,392; output 34,739; reasoning 12,688 |
+| Paper                 |                  Output | Completed Commands | Failed Commands | Agent Messages | Token Usage                                                        |
+| --------------------- | ----------------------: | -----------------: | --------------: | -------------: | ------------------------------------------------------------------ |
+| Biology P1 Nov 2020   | 46 questions, 100 marks |                 13 |               1 |             17 | input 1,953,808; cached 1,587,328; output 39,734; reasoning 10,045 |
+| Chemistry P1 Nov 2020 | 43 questions, 100 marks |                 44 |               4 |             28 | input 2,476,964; cached 2,182,784; output 35,273; reasoning 9,675  |
+| Physics P1 Nov 2020   | 41 questions, 100 marks |                 31 |               0 |             36 | input 3,740,954; cached 3,227,392; output 34,739; reasoning 12,688 |
 
 Prompted whole-paper Codex baselines were found under `/tmp/qc-codex-prompted-baselines-20260628`.
 
-| Paper | Output | Completed Commands | Failed Commands | Token Usage |
-| --- | ---: | ---: | ---: | --- |
-| Biology P1 Nov 2020 | 46 questions, 100 marks | 40 | 4 | input 1,399,015; cached 1,176,704; output 29,512; reasoning 7,837 |
-| Biology P2 Nov 2020 | 43 questions, 100 marks | 36 | 2 | input 3,492,832; cached 3,031,040; output 27,809; reasoning 5,396 |
-| Chemistry P1 Nov 2020 | 43 questions, 100 marks | 66 | 7 | input 1,673,756; cached 1,491,200; output 34,832; reasoning 7,243 |
-| Chemistry P2 Nov 2020 | 47 questions, 100 marks | 60 | 6 | input 4,178,204; cached 3,804,160; output 40,665; reasoning 9,080 |
-| Physics P1 Nov 2020 | 41 questions, 100 marks | 55 | 2 | unavailable in trace |
-| Physics P2 Nov 2020 | 38 questions, 100 marks | 53 | 0 | input 1,925,301; cached 1,756,416; output 32,980; reasoning 8,029 |
+| Paper                 |                  Output | Completed Commands | Failed Commands | Token Usage                                                       |
+| --------------------- | ----------------------: | -----------------: | --------------: | ----------------------------------------------------------------- |
+| Biology P1 Nov 2020   | 46 questions, 100 marks |                 40 |               4 | input 1,399,015; cached 1,176,704; output 29,512; reasoning 7,837 |
+| Biology P2 Nov 2020   | 43 questions, 100 marks |                 36 |               2 | input 3,492,832; cached 3,031,040; output 27,809; reasoning 5,396 |
+| Chemistry P1 Nov 2020 | 43 questions, 100 marks |                 66 |               7 | input 1,673,756; cached 1,491,200; output 34,832; reasoning 7,243 |
+| Chemistry P2 Nov 2020 | 47 questions, 100 marks |                 60 |               6 | input 4,178,204; cached 3,804,160; output 40,665; reasoning 9,080 |
+| Physics P1 Nov 2020   | 41 questions, 100 marks |                 55 |               2 | unavailable in trace                                              |
+| Physics P2 Nov 2020   | 38 questions, 100 marks |                 53 |               0 | input 1,925,301; cached 1,756,416; output 32,980; reasoning 8,029 |
 
 These numbers show that a 20-step cap is too small for a whole-paper agentic extractor. Whole-paper Codex runs commonly required roughly 30 to 65 shell/tool actions, and the lower-count Biology baseline still depended on broad shell access and efficient PDF utilities.
 
@@ -51,12 +51,12 @@ The production path now launches Codex through `@openai/codex-sdk` from clean pr
 directories. The Biology Paper 1 November 2020 run started from the official question-paper and
 mark-scheme PDFs, not pre-fed text dumps.
 
-| Phase | Artifact | Wall time | Commands/actions | Failed actions | Token usage | Outcome |
-| --- | --- | ---: | ---: | ---: | --- | --- |
-| Codex PDF extraction | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json` | 500.567s | 51 | 3 | input 1,371,023; cached 1,202,176; output 21,831; reasoning 3,637 | 46 questions, 100 marks, deterministic validation passed |
-| Codex answer-chain reconciliation | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` | 557.425s | 41 | 0 | input 1,407,819; cached 1,218,560; output 27,717; reasoning 11,011 | 32 reused, 14 created, 0 updated, 0 review; chain validation passed |
-| Solvability judge | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json` | 893.195s | 46 LLM judge calls | 0 | prompt 212,340; response 15,481; thinking 52,850; total 280,671 | 46/46 passed |
-| D1 import | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json` | 8.2s | 554 insert statements | 0 | n/a | targeted write passed; 46-question post-write coverage |
+| Phase                             | Artifact                                                                           | Wall time |      Commands/actions | Failed actions | Token usage                                                        | Outcome                                                             |
+| --------------------------------- | ---------------------------------------------------------------------------------- | --------: | --------------------: | -------------: | ------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Codex PDF extraction              | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json`       |  500.567s |                    51 |              3 | input 1,371,023; cached 1,202,176; output 21,831; reasoning 3,637  | 46 questions, 100 marks, deterministic validation passed            |
+| Codex answer-chain reconciliation | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` |  557.425s |                    41 |              0 | input 1,407,819; cached 1,218,560; output 27,717; reasoning 11,011 | 32 reused, 14 created, 0 updated, 0 review; chain validation passed |
+| Solvability judge                 | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json`   |  893.195s |    46 LLM judge calls |              0 | prompt 212,340; response 15,481; thinking 52,850; total 280,671    | 46/46 passed                                                        |
+| D1 import                         | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json`        |      8.2s | 554 insert statements |              0 | n/a                                                                | targeted write passed; 46-question post-write coverage              |
 
 The raw SDK extraction was faster than the prompted Biology P1 Nov20 Codex baseline (624.23s) and
 substantially better than the old chunk extractor, but the independent solvability audit found
@@ -66,6 +66,43 @@ context. The final v7 artifact repairs those fields from the official PDF and th
 audit, solvability, D1 dry-run, and D1 write. This is the intended safety pattern: Codex may produce
 a mechanically valid whole paper, but import still waits for learner-facing solvability and D1
 replacement checks.
+
+Follow-up render/import-fix run on the same Biology Paper 1 November 2020 whole paper used the same
+official PDFs and Codex subscription path, then repaired only defects found by independent judging
+and downstream import checks:
+
+| Phase                                   | Artifact                                                                                                     | Wall time |            Commands/actions | Failed actions | Token usage                                                        | Outcome                                                                              |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------: | --------------------------: | -------------: | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Codex PDF extraction                    | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20-renderfix-v12/normalized-extraction.json`                      |  585.272s |                          46 |              2 | input 1,691,858; cached 1,432,064; output 23,889; reasoning 4,238  | 46 questions, 100 marks, mechanical validation passed                                |
+| Targeted Codex repair                   | `tmp/codex-extraction-repair/aqa-84611h-qp-nov20-renderfix-v12-to-v15/repaired-normalized-extraction.json`   |  103.976s |                          22 |              2 | input 299,143; cached 264,704; output 4,495; reasoning 814         | repaired Table 1 units and response-line counts; Q07.1 = 7 and Q07.3 = 16 preserved  |
+| Independent extraction judge            | `tmp/codex-extraction-judge/aqa-84611h-qp-nov20-renderfix-v15/judge-report.json`                             |  201.065s |                          39 |              0 | input 1,066,391; cached 913,920; output 7,330; reasoning 1,208     | pass, score 0.98, 46 refs checked, 0 required repairs                                |
+| Codex answer-chain reconciliation       | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-renderfix-v15/chain-reconciled-normalized.json`                     |  617.405s |                          38 |              0 | input 1,122,847; cached 1,017,344; output 26,277; reasoning 11,663 | 32 reused, 14 created, 0 updated, 0 review; chain validation passed                  |
+| Strict audit / solvability / D1 dry-run | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import-audit.json`                       |       n/a | 46 judge calls plus dry-run | 0 failed calls | n/a                                                                | mechanical audit passed; solvability 46/46; replacement `safeToReplace: true`        |
+| R2 upload                               | `tmp/codex-extraction-repair/aqa-84611h-qp-nov20-renderfix-v12-to-v15/assets/`                               |      8.4s |                  11 uploads |              0 | n/a                                                                | all referenced assets uploaded under `images/papers/aqa-84611h-qp-nov20/`            |
+| D1 import                               | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import/chain-reconciled-normalized.json` |      5.8s |       588 insert statements |              0 | n/a                                                                | targeted write passed; 46 overlays, 155 mark rows, 77 checklist rows, 44 chain links |
+| Deployed route crawl                    | `tmp/public-route-checks/aqa-84611h-qp-nov20-renderfix-v15.json`                                             |   64.425s |             237 HTTP routes |              0 | n/a                                                                | all question, practice, chain, constellation, and image routes returned 200          |
+
+The first deployed route crawl proved route health, not public-visible multi-paper coverage.
+Follow-up route reporting must use the same visibility rules as the public chain pages. For the
+Biology Nov20 v15 import, the corrected report at
+`tmp/public-route-checks/aqa-84611h-qp-nov20-renderfix-v15-visible.json` shows 44 public-visible
+chains, two public multi-question chains within the same paper, and zero public multi-paper chains.
+Seven imported chain ids have raw links across multiple papers but only one public-visible question,
+because the other linked questions are draft/review-blocked or otherwise hidden from the public
+chain route.
+
+The v15 run exposed three production-path fixes:
+
+- Treat non-positive PDF `pageCount` values as missing and recompute from the official PDF in the
+  normalizer.
+- Clear import-ready output directories before writing so stale JSON cannot contaminate strict
+  audit or D1 dry-run/import.
+- Do not require a fake model answer or answer key for `asset-canvas`/`drawing-box` responses when
+  mark-scheme rows and checklist rows provide the grading evidence.
+
+It also added `scripts/check-public-question-routes.mjs`, which queries D1 and crawls the deployed
+`constellation.eviworld.com` routes after import. This caught the class of "open question" failures
+that row-count-only import checks cannot prove absent.
 
 ## OCR And Visual Inspection Conclusion
 

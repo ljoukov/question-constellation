@@ -427,11 +427,23 @@ function normalizeBlock(block, assetIdsByLabel, reviewNotes) {
 	if (kind === 'bullet-list') return { kind: 'bullet-list', items: block.items ?? [] };
 	if (kind === 'key') return { kind: 'key', items: block.keyItems ?? [] };
 	if (kind === 'table') {
+		const columns = Array.isArray(block.columns)
+			? block.columns.map((cell) => String(cell ?? ''))
+			: [];
+		if (columns.length === 0) {
+			return {
+				kind: 'structured-table',
+				label: block.label ?? undefined,
+				rows: structuredTableRows(block.rows),
+				compact: block.compact === true,
+				wide: block.wide === true
+			};
+		}
 		return {
 			kind: 'table',
 			label: block.label ?? undefined,
-			columns: block.columns ?? [],
-			rows: block.rows ?? [],
+			columns,
+			rows: plainTableRows(block.rows),
 			compact: block.compact === true
 		};
 	}
@@ -440,17 +452,15 @@ function normalizeBlock(block, assetIdsByLabel, reviewNotes) {
 			return {
 				kind: 'table',
 				label: block.label ?? undefined,
-				columns: block.columns,
-				rows: block.rows ?? [],
+				columns: block.columns.map((cell) => String(cell ?? '')),
+				rows: plainTableRows(block.rows),
 				compact: block.compact === true
 			};
 		}
 		return {
 			kind: 'structured-table',
 			label: block.label ?? undefined,
-			rows: (block.rows ?? []).map((row) =>
-				row.map((cell) => (typeof cell === 'string' ? { text: cell } : cell))
-			),
+			rows: structuredTableRows(block.rows),
 			compact: block.compact === true,
 			wide: block.wide === true
 		};
@@ -472,6 +482,25 @@ function normalizeBlock(block, assetIdsByLabel, reviewNotes) {
 		return { kind: 'figure', assetId, label: visibleLabel ?? undefined };
 	}
 	return null;
+}
+
+function plainTableRows(rows) {
+	return Array.isArray(rows)
+		? rows.filter((row) => Array.isArray(row)).map((row) => row.map((cell) => String(cell ?? '')))
+		: [];
+}
+
+function structuredTableRows(rows) {
+	return Array.isArray(rows)
+		? rows
+				.filter((row) => Array.isArray(row))
+				.map((row) =>
+					row.map((cell) => {
+						if (cell && typeof cell === 'object' && typeof cell.text === 'string') return cell;
+						return { text: String(cell ?? '') };
+					})
+				)
+		: [];
 }
 
 function compactBlockList(blocks, assetIdsByLabel, reviewNotes) {
@@ -590,14 +619,6 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes) {
 		const assetId = assetIdsByLabel.get(String(response.assetLabel ?? '').toLowerCase());
 		if (!assetId) reviewNotes.push(`Missing response asset mapping for ${response.assetLabel}.`);
 		if (response.kind === 'asset-canvas') {
-			if (!assetId) {
-				return {
-					kind: 'drawing-box',
-					label: response.label ?? 'Drawing answer',
-					width: response.width ?? 420,
-					height: response.height ?? 180
-				};
-			}
 			return {
 				kind: 'asset-canvas',
 				assetId: assetId ?? `missing-${slugify(response.assetLabel ?? 'asset')}`,
@@ -624,6 +645,31 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes) {
 	return { kind: 'none' };
 }
 
+function nonEmptyString(value) {
+	const text = String(value ?? '').trim();
+	return text ? text : null;
+}
+
+function localAssetFileName(asset, filePath) {
+	const explicit = nonEmptyString(asset.localAssetFileName ?? asset.fileName);
+	if (explicit) return path.basename(explicit);
+	if (!filePath || /^[a-z][a-z0-9+.-]*:/i.test(String(filePath))) return null;
+	const baseName = path.basename(String(filePath));
+	return baseName && baseName !== '.' ? baseName : null;
+}
+
+function assetDeliveryPaths(asset, sourceDocumentId, filePath) {
+	const r2Key = nonEmptyString(asset.r2Key ?? asset.r2_key);
+	const publicPath = nonEmptyString(asset.publicPath ?? asset.public_path);
+	if (r2Key || publicPath) return { r2Key, publicPath };
+	const fileName = localAssetFileName(asset, filePath);
+	if (!fileName) return { r2Key: null, publicPath: null };
+	return {
+		r2Key: `images/papers/${sourceDocumentId}/${fileName}`,
+		publicPath: `/images/papers/${sourceDocumentId}/${fileName}`
+	};
+}
+
 function assetStatements(question, questionId, sourceDocumentId) {
 	const statements = [];
 	const assetIdsByLabel = new Map();
@@ -636,10 +682,8 @@ function assetStatements(question, questionId, sourceDocumentId) {
 			(localFileName
 				? `data/aqa-combined-science-trilogy-higher/assets/question-papers/${sourceDocumentId}/${localFileName}`
 				: null);
-		const publicPath =
-			asset.publicPath ??
-			(localFileName ? `/images/papers/${sourceDocumentId}/${localFileName}` : null);
-		assetIdsByLabel.set(label.toLowerCase(), id);
+		const delivery = assetDeliveryPaths(asset, sourceDocumentId, filePath);
+		if (delivery.r2Key || delivery.publicPath) assetIdsByLabel.set(label.toLowerCase(), id);
 		statements.push(
 			insertStatement(
 				'question_assets',
@@ -673,9 +717,8 @@ function assetStatements(question, questionId, sourceDocumentId) {
 					asset.altText ?? label,
 					null,
 					filePath,
-					asset.r2Key ??
-						(localFileName ? `images/papers/${sourceDocumentId}/${localFileName}` : null),
-					publicPath,
+					delivery.r2Key,
+					delivery.publicPath,
 					asset.needsHumanReview ? 0.72 : 0.9,
 					bool(asset.needsHumanReview),
 					json(
@@ -753,6 +796,185 @@ function responseAnswerKeyStatements(questionId, response) {
 			]
 		);
 	});
+}
+
+function validateRendererBlock(block, location, availableAssetIds) {
+	const issues = [];
+	if (block.kind === 'paragraph' || block.kind === 'equation') {
+		if (typeof block.text !== 'string') issues.push(`${location} text must be a string`);
+		return issues;
+	}
+	if (block.kind === 'figure') {
+		if (typeof block.assetId !== 'string') {
+			issues.push(`${location} figure assetId must be a string`);
+		} else if (!availableAssetIds.has(block.assetId)) {
+			issues.push(`${location} references unavailable asset ${block.assetId}`);
+		}
+		return issues;
+	}
+	if (block.kind === 'table') {
+		if (!Array.isArray(block.columns) || !block.columns.every((cell) => typeof cell === 'string')) {
+			issues.push(`${location} table columns must be strings`);
+		}
+		if (
+			!Array.isArray(block.rows) ||
+			!block.rows.every(
+				(row) => Array.isArray(row) && row.every((cell) => typeof cell === 'string')
+			)
+		) {
+			issues.push(`${location} table rows must be string arrays`);
+		}
+		return issues;
+	}
+	if (block.kind === 'structured-table') {
+		if (
+			!Array.isArray(block.rows) ||
+			!block.rows.every(
+				(row) =>
+					Array.isArray(row) &&
+					row.every((cell) => cell && typeof cell === 'object' && typeof cell.text === 'string')
+			)
+		) {
+			issues.push(`${location} structured-table rows must contain text cell objects`);
+		}
+		return issues;
+	}
+	if (block.kind === 'ordered-list' || block.kind === 'bullet-list') {
+		if (!Array.isArray(block.items) || !block.items.every((item) => typeof item === 'string')) {
+			issues.push(`${location} list items must be strings`);
+		}
+		return issues;
+	}
+	if (block.kind === 'key') {
+		if (
+			!Array.isArray(block.items) ||
+			!block.items.every(
+				(item) =>
+					item &&
+					typeof item === 'object' &&
+					typeof item.marker === 'string' &&
+					typeof item.text === 'string'
+			)
+		) {
+			issues.push(`${location} key items must have marker and text`);
+		}
+		return issues;
+	}
+	issues.push(`${location} has unsupported block kind ${block.kind ?? 'missing'}`);
+	return issues;
+}
+
+function validateRendererResponse(response, location, availableAssetIds) {
+	const issues = [];
+	if (response.kind === 'none') return issues;
+	if (response.kind === 'lines') {
+		if (typeof response.count !== 'number' || response.count < 1) {
+			issues.push(`${location} lines response needs a positive count`);
+		}
+		return issues;
+	}
+	if (response.kind === 'labeled-lines') {
+		if (
+			!Array.isArray(response.labels) ||
+			!response.labels.every((label) => typeof label === 'string')
+		) {
+			issues.push(`${location} labeled-lines labels must be strings`);
+		}
+		return issues;
+	}
+	if (response.kind === 'number-line') {
+		if (typeof response.label !== 'string')
+			issues.push(`${location} number-line label must be a string`);
+		return issues;
+	}
+	if (response.kind === 'choice') {
+		if (
+			!Array.isArray(response.options) ||
+			!response.options.every((option) => typeof option === 'string')
+		) {
+			issues.push(`${location} choice options must be strings`);
+		}
+		return issues;
+	}
+	if (response.kind === 'choice-table') {
+		if (
+			!Array.isArray(response.columns) ||
+			!response.columns.every((column) => typeof column === 'string')
+		) {
+			issues.push(`${location} choice-table columns must be strings`);
+		}
+		if (
+			!Array.isArray(response.rows) ||
+			!response.rows.every(
+				(row) => Array.isArray(row) && row.every((cell) => typeof cell === 'string')
+			)
+		) {
+			issues.push(`${location} choice-table rows must be string arrays`);
+		}
+		return issues;
+	}
+	if (response.kind === 'matching') {
+		if (!Array.isArray(response.left) || !response.left.every((item) => typeof item === 'string')) {
+			issues.push(`${location} matching left values must be strings`);
+		}
+		if (
+			!Array.isArray(response.right) ||
+			!response.right.every((item) => typeof item === 'string')
+		) {
+			issues.push(`${location} matching right values must be strings`);
+		}
+		return issues;
+	}
+	if (response.kind === 'equation-blanks') {
+		if (!Array.isArray(response.segments))
+			issues.push(`${location} equation-blanks segments must be an array`);
+		return issues;
+	}
+	if (response.kind === 'asset-canvas') {
+		if (typeof response.assetId !== 'string') {
+			issues.push(`${location} asset-canvas assetId must be a string`);
+		} else if (!availableAssetIds.has(response.assetId)) {
+			issues.push(`${location} references unavailable asset ${response.assetId}`);
+		}
+		return issues;
+	}
+	if (response.kind === 'drawing-box') return issues;
+	if (response.kind === 'image-label-zones') {
+		if (typeof response.assetId !== 'string') {
+			issues.push(`${location} image-label-zones assetId must be a string`);
+		} else if (!availableAssetIds.has(response.assetId)) {
+			issues.push(`${location} references unavailable asset ${response.assetId}`);
+		}
+		if (!Array.isArray(response.labels) || response.labels.length === 0) {
+			issues.push(`${location} image-label-zones needs at least one label`);
+		}
+		if (!Array.isArray(response.zones) || response.zones.length === 0) {
+			issues.push(`${location} image-label-zones needs at least one target zone`);
+		}
+		return issues;
+	}
+	issues.push(`${location} has unsupported response kind ${response.kind ?? 'missing'}`);
+	return issues;
+}
+
+function validateRenderJsonForApp(renderJson, question, availableAssetIds) {
+	const issues = [];
+	for (const section of ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks']) {
+		const blocks = renderJson[section];
+		if (!Array.isArray(blocks)) {
+			issues.push(`${section} must be an array`);
+			continue;
+		}
+		for (const [index, block] of blocks.entries()) {
+			issues.push(...validateRendererBlock(block, `${section}[${index}]`, availableAssetIds));
+		}
+	}
+	issues.push(...validateRendererResponse(renderJson.response, 'response', availableAssetIds));
+	if (issues.length) {
+		throw new Error(
+			`Question ${question.sourceQuestionRef} produces app-incompatible render_json: ${issues.join('; ')}`
+		);
+	}
 }
 
 function chainIdFor(answerChain, subjectArea = null) {
@@ -896,6 +1118,7 @@ function addQuestionStatements(statements, paper, question, chainUseCount, optio
 			review_notes: reviewNotes
 		}
 	};
+	validateRenderJsonForApp(renderJson, question, new Set(assetIdsByLabel.values()));
 	statements.push(
 		insertStatement(
 			'question_rendering_overlays',
@@ -1300,7 +1523,9 @@ async function chainIdsForSourceDocuments(sourceDocumentIds) {
 async function existingReplacementPlan(papers) {
 	const sourceDocumentIds = papers.map((paper) => paper.sourceDocument.id);
 	const incomingQuestionIds = papers.flatMap((paper) =>
-		(paper.questions ?? []).map((question) => stableQuestionId(paper.sourceDocument.id, question.sourceQuestionRef))
+		(paper.questions ?? []).map((question) =>
+			stableQuestionId(paper.sourceDocument.id, question.sourceQuestionRef)
+		)
 	);
 	const incomingChainActions = incomingChainActionsForPapers(papers);
 	const incomingChainIds = [
@@ -1458,7 +1683,10 @@ async function clearRowsForPapers(papers, options = {}) {
 		}
 	}
 	if (!replaceAllSubject && extractedChainIds.length) {
-		for (const ids of paramChunks(extractedChainIds)) {
+		const chainIdsToReplace = extractedChainIds.filter(
+			(chainId) => !reuseExistingChainIds.has(chainId)
+		);
+		for (const ids of paramChunks(chainIdsToReplace)) {
 			const quoted = ids.map(() => '?').join(', ');
 			statements.push({
 				sql: `DELETE FROM answer_chain_steps WHERE answer_chain_id IN (${quoted})`,
@@ -1584,7 +1812,14 @@ async function audit(papers) {
 		   LEFT JOIN question_answer_chains qac ON qac.question_id = q.id
 		  WHERE q.source_document_id IN (${placeholders})
 		  GROUP BY q.id
-		 HAVING mark_rows = 0 OR checklist_rows = 0 OR (model_answers = 0 AND answer_keys = 0) OR chains = 0
+		 HAVING mark_rows = 0
+		    OR checklist_rows = 0
+		    OR (
+		        model_answers = 0
+		        AND answer_keys = 0
+		        AND response_kind NOT IN ('asset-canvas', 'drawing-box')
+		    )
+		    OR chains = 0
 		  ORDER BY q.source_document_id, q.display_order`,
 		sourceDocumentIds
 	);

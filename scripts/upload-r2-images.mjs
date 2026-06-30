@@ -13,11 +13,14 @@ const defaultAssetRoots = [
 const bucketName = 'question-constellation';
 const r2Prefix = 'images/papers';
 const defaultConcurrency = 4;
+const localWranglerPath = path.join(rootDir, 'node_modules/.bin/wrangler');
+const wranglerCommand = existsSync(localWranglerPath) ? localWranglerPath : 'wrangler';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const explicitAssetRoot = stringArg('asset-root', '');
 const baselinePath = stringArg('referenced-baseline', '');
+const sourceDocumentId = stringArg('source-document-id', '');
 const localAssetRoot = resolveAssetRoot();
 const limit = integerArg('limit', null, 1);
 const offset = integerArg('offset', 0, 0);
@@ -25,10 +28,11 @@ const concurrency = integerArg('concurrency', defaultConcurrency, 1);
 const maxRetries = integerArg('retries', 3, 0);
 
 const usage = `Usage:
-node scripts/upload-r2-images.mjs [--dry-run] [--asset-root=<dir>] [--referenced-baseline=<json>]
+node scripts/upload-r2-images.mjs [--dry-run] [--asset-root=<dir>] [--referenced-baseline=<json>] [--source-document-id=<id>]
 
 Defaults to uploading all local assets from the first existing current extraction asset root.
-Use --referenced-baseline=<json> only to filter uploads to assets referenced by an existing extraction JSON.`;
+Use --referenced-baseline=<json> only to filter uploads to assets referenced by an existing extraction JSON.
+Use --source-document-id=<id> for Codex SDK extraction assets that should be stored under images/papers/<id>/.`;
 
 if (args.has('--help')) {
 	console.log(usage);
@@ -97,7 +101,9 @@ function toUploadItem(filePath) {
 			`Referenced asset ${path.relative(rootDir, filePath)} is outside --asset-root=${path.relative(rootDir, localAssetRoot)}.`
 		);
 	}
-	const key = `${r2Prefix}/${relativePath}`;
+	const key = sourceDocumentId
+		? `${r2Prefix}/${sourceDocumentId}/${path.basename(filePath)}`
+		: `${r2Prefix}/${relativePath}`;
 	return {
 		filePath,
 		key,
@@ -145,7 +151,7 @@ function referencedUploadItems() {
 function runWranglerPutOnce(item) {
 	return new Promise((resolve, reject) => {
 		const child = execFile(
-			'wrangler',
+			wranglerCommand,
 			[
 				'r2',
 				'object',
@@ -226,6 +232,7 @@ console.log(
 			total_files: allItems.length,
 			source: baselinePath ? 'referenced_extraction_assets' : 'all_local_assets',
 			referenced_baseline: baselinePath || null,
+			source_document_id: sourceDocumentId || null,
 			offset,
 			selected_files: items.length,
 			total_selected_bytes: items.reduce((sum, item) => sum + item.size, 0),

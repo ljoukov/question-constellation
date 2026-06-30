@@ -671,6 +671,29 @@ the prompt-based chain-style judge and should intentionally replace existing pub
 canonical text, and steps. Without this flag, safe `reuse_existing` chains preserve their existing D1
 definitions during a paper replacement.
 
+The prepare script clears its output directory before each run and refuses to do so if that output is
+the input root or input-file directory; stale JSON files must not be allowed to contaminate strict
+audit or import dry-run results. The normalizer treats non-positive PDF `pageCount` values as missing
+and recomputes the count from the official PDF path, because Codex draft JSON can preserve
+`pageCount: 0` even when all page refs are otherwise correct.
+
+After a real D1 import, run `scripts/check-public-question-routes.mjs` for the imported
+`sourceDocumentId`. It queries D1, opens every deployed question, question-chain, practice, chain,
+constellation, and image route under `https://constellation.eviworld.com`, and fails on HTTP errors
+or app error bodies. This is the route-health gate for "open question" failures that can escape a
+pure D1 row-count audit. The same report also records public-visible chain multiplicity using the
+same predicates as the public chain pages: published chain, published question, no review flags on
+the chain/question/membership, and an available rendering overlay. Raw D1 memberships that are
+draft, review-blocked, or missing render overlays do not count as public multi-question or
+multi-paper evidence. If a report advertises multi-paper chains, use `publicMultiPaperChains`, not
+raw `total_linked_papers`.
+
+The D1 post-write audit requires mark-scheme rows, checklist rows, and a chain for every imported
+question. It also requires a model answer or fixed answer key for normal written/fixed-response
+questions. `asset-canvas` and `drawing-box` responses are exempt from the single-answer requirement:
+graph/drawing responses are gradable from their mark scheme and checklist, and forcing a fake
+answer key would make the data less faithful.
+
 The older `@ljoukov/llm` chunk/agentic path is kept as a legacy diagnostic and repair harness under
 `scripts/extract-paper-llm.mjs`, `scripts/run-production-extraction-pipeline.mjs`, and
 `pnpm run extract:production:llm`. It is no longer the main production import path.
@@ -925,6 +948,27 @@ Flagged D1 chain reuse review mode, 2026-06-30:
   expected multiple question ids and title. `tmp/public-practice-route-check-after-review-mode.json`
   also fetched all 49 chain-page "Open question" practice links; every route returned 200 with the
   expected chain and question ids.
+
+Render/import fix rerun, Biology P1 Nov20, 2026-06-29:
+
+| Phase                        | Artifact                                                                                                     | Wall time |         Actions |  Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result                                                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------ | --------: | --------------: | --------------: | -----------: | -----------: | ------------: | ---------------: | ---------------------------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction         | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20-renderfix-v12/normalized-extraction.json`                      |  585.272s |              46 |               2 |    1,691,858 |    1,432,064 |        23,889 |            4,238 | 46 questions, 100 marks, mechanical validation passed                                                                  |
+| Targeted Codex repair        | `tmp/codex-extraction-repair/aqa-84611h-qp-nov20-renderfix-v12-to-v15/repaired-normalized-extraction.json`   |  103.976s |              22 |               2 |      299,143 |      264,704 |         4,495 |              814 | repaired Q01.3/Q01.8/Q01.9/Q02.1; preserved Q07.1 = 7 and Q07.3 = 16 line counts                                       |
+| Independent extraction judge | `tmp/codex-extraction-judge/aqa-84611h-qp-nov20-renderfix-v15/judge-report.json`                             |  201.065s |              39 |               0 |    1,066,391 |      913,920 |         7,330 |            1,208 | pass, score 0.98, 46 refs checked, 0 required repairs                                                                  |
+| Codex answer chains          | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-renderfix-v15/chain-reconciled-normalized.json`                     |  617.405s |              38 |               0 |    1,122,847 |    1,017,344 |        26,277 |           11,663 | 32 reused, 14 created, chain validation passed                                                                         |
+| Strict audit and solvability | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import-audit.json`                       |       n/a |  46 judge calls |  0 failed calls |          n/a |          n/a |           n/a |              n/a | mechanical audit passed; solvability 46/46                                                                             |
+| R2 upload                    | `tmp/codex-extraction-repair/aqa-84611h-qp-nov20-renderfix-v12-to-v15/assets/`                               |      8.4s |      11 uploads |               0 |          n/a |          n/a |           n/a |              n/a | 11 referenced assets uploaded                                                                                          |
+| D1 import write              | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import/chain-reconciled-normalized.json` |      5.8s | 588 SQL inserts |               0 |          n/a |          n/a |           n/a |              n/a | post-write coverage passed: 46 overlays, 155 mark rows, 77 checklist rows, 39 model answers, 10 answer keys, 44 chains |
+| Deployed crawl               | `tmp/public-route-checks/aqa-84611h-qp-nov20-renderfix-v15.json`                                             |   64.425s | 237 HTTP routes | 0 failed routes |          n/a |          n/a |           n/a |              n/a | all 46 questions, 44 chains/constellations, and 11 image routes returned 200                                           |
+
+The v15 rerun fixed the importer path rather than patching D1 by hand:
+
+- `codex-import-helper.mjs` now recomputes official PDF page counts when Codex emits `pageCount: 0`.
+- `prepare-import-ready-extraction.mjs` now clears stale output before strict audit/import checks.
+- `import-physics-vision.mjs` no longer rejects graph/drawing `asset-canvas` questions for lacking a
+  single answer key when they have mark rows and checklist rows.
+- `check-public-question-routes.mjs` makes deployed route crawling repeatable after D1 writes.
 
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
