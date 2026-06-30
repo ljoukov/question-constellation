@@ -21,6 +21,8 @@
 		"codex:pdf-extract": "node scripts/run-codex-pdf-extraction.mjs",
 		"codex:answer-chains": "node scripts/run-codex-answer-chains.mjs",
 		"judge:answer-chain-style": "node scripts/judge-answer-chain-style.mjs",
+		"audit:public-answer-chain-style": "node scripts/audit-public-answer-chain-style.mjs",
+		"repair:public-answer-chain-style": "node scripts/repair-public-answer-chain-style.mjs",
 		"codex:production-import": "node scripts/run-codex-production-import-pipeline.mjs",
 		"extract:physics-vision": "node scripts/extract-paper-llm.mjs --preset=aqa-physics",
 		"extract:aqa-separate-science": "node scripts/extract-paper-llm.mjs --preset=aqa-separate-science",

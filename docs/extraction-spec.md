@@ -624,6 +624,33 @@ canonical chain text must be 2-5 compact `->` links, summaries must stay concise
 must stay short. The prompt-based chain-style judge then checks whether the chain is actually a
 memorable learner-facing cue rather than a generic instruction.
 
+For already-deployed public D1 chains, use the public route-equivalent style audit before posting
+links or claiming a cleanup:
+
+```sh
+npm run audit:public-answer-chain-style -- --include-reuse-warnings \
+  --output=tmp/public-chain-style-audit.json
+```
+
+This audit checks only chains that the app can publicly route to: published chain, published
+membership, published question, and an available rendering overlay. It fails paragraph-like titles,
+canonical text, summaries, step labels, unsupported legacy step roles, and placeholder handles. With
+`--include-reuse-warnings`, it also warns when a chain has only one public source paper; that warning
+means the wording may be reusable, but the deployed data does not yet prove cross-paper reuse. Repair
+deployed copy with:
+
+```sh
+npm run repair:public-answer-chain-style -- \
+  --output=tmp/public-chain-style-repair.json
+
+npm run repair:public-answer-chain-style -- \
+  --skip-generation --input-repair=tmp/public-chain-style-repair.json --write
+```
+
+The repair command rewrites only `answer_chains`, `answer_chain_steps`, and stale/overlong
+`question_answer_chains.fit_notes`. It must not change question extraction, mark-scheme rows, model
+answers, fixed-response answer keys, assets, or memberships. Run route checks after a write.
+
 Answer chains are not produced during PDF extraction. `scripts/run-codex-answer-chains.mjs` runs
 after extraction and receives one normalized paper plus optional `existing-chain-context.json`.
 For each question it must choose `reuse_existing`, `create_new`, `update_existing`, or
@@ -784,15 +811,30 @@ Follow-up chain-quality remediation for the same Biology P1 Nov20 import, 2026-0
   insert/upsert statements, post-write coverage of 46 questions, 46 render overlays, 98 mark-scheme
   rows, 96 checklist rows, 40 model answers, 9 fixed-response answer keys, 45 answer-chain links,
   and no missing grading evidence.
-- D1 cleanup verified by query and live routes: old bad chains
-  `bio-chain-symbiosis-resource-gained-metabolic-use`,
-  `bio-chain-control-variable-kept-constant-valid-investigation`,
-  `bio-chain-thorns-mechanical-defence-recall`, and
-  `bio-chain-poison-chemical-defence-recall` were deleted or consolidated and return 404. Updated
-  shared chains such as `bio-chain-active-transport-energy-evidence`,
-  `bio-chain-food-test-reagent-treatment-colour`, and
-  `bio-chain-reaction-time-control-variables` return 200 and have compact step rows. Q07.1 and Q07.3
-  D1 render overlays store `lines` counts of 6 and 16 respectively.
+- D1 write was verified by query and live routes. Q07.1 and Q07.3 D1 render overlays store `lines`
+  counts of 6 and 16 respectively. Later link checks found that some manually reported chain URLs
+  were stale draft-only ids rather than the public ids actually attached to the Nov 2020 questions;
+  do not report links from raw chain ids without checking the public route body.
+
+Public D1 chain-copy remediation, 2026-06-30:
+
+- Baseline public-route-equivalent style audit:
+  `tmp/public-chain-style-audit-before.json`, 225 public chains, 218 hard style-error chains, 7
+  warning-only chains, 2,231 style errors, 339 warnings.
+- Repair artifact: `tmp/public-chain-style-repair-all.json`, 218 repaired chains, 446,119 total
+  GPT-5.5 tokens (`323,990` prompt, `49,675` response, `72,454` thinking), `$5.283820`.
+- D1 write from the validated repair plan updated 218 `answer_chains`, replaced 553 old
+  `answer_chain_steps` with 735 compact step rows, and shortened 248 stale/overlong
+  `question_answer_chains.fit_notes`.
+- Post-write wording-only audit:
+  `tmp/public-chain-style-audit-after-style-only.json`, 225 public chains, 0 errors, 0 warnings.
+- Post-write audit with reuse warnings:
+  `tmp/public-chain-style-audit-after.json`, 225 public chains, 0 style errors, 175 warnings, all
+  warnings `single_public_paper`. This is a publication coverage warning, not a chain-copy warning:
+  Biology currently has one public paper, so Biology chains should not be described as cross-paper
+  until more audited Biology papers are imported/published or existing draft rows are safely promoted.
+- Live route sweeps after the write passed: 225/225 public chain pages and 310/310 public question
+  pages returned real pages with no 404/not-found body.
 
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
