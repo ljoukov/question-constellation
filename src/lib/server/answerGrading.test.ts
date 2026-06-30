@@ -28,6 +28,7 @@ const practiceData: PracticePageData = {
 		modelAnswer:
 			'Step-up transformers increase potential difference, which decreases current for the same power, reducing energy lost by heating in cables.',
 		commonWeakAnswer: 'It makes electricity faster.',
+		commonWeakExplanation: 'This does not explain the lower current or reduced heating loss.',
 		weakAnswerMissingStepIds: ['current', 'heating-loss'],
 		checklist: [
 			{ id: 'pd-check', text: 'Say that potential difference is increased.', stepId: 'pd' },

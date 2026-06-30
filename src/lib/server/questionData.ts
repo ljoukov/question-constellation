@@ -86,6 +86,7 @@ export type Question = {
 	constellationRole: string;
 	modelAnswer: string;
 	commonWeakAnswer: string;
+	commonWeakExplanation: string;
 	weakAnswerMissingStepIds: string[];
 	checklist: MarkChecklistItem[];
 	repairChain: RepairChainNode[];
@@ -272,6 +273,7 @@ type ModelAnswerRow = {
 
 type WeakAnswerRow = {
 	weak_answer_text: string;
+	explanation: string | null;
 	missing_chain_step_ids_json: string;
 };
 
@@ -623,13 +625,26 @@ async function getWeakAnswer(
 	chain: AnswerChain
 ): Promise<{
 	text: string;
+	explanation: string;
 	missingStepIds: string[];
 }> {
 	const row = await queryFirst<WeakAnswerRow>(
-		`SELECT weak_answer_text, missing_chain_step_ids_json
+		`SELECT weak_answer_text, explanation, missing_chain_step_ids_json
 		 FROM common_weak_answers
 		 WHERE question_id = ?
-		 ORDER BY confidence DESC
+		   AND needs_human_review = 0
+		 ORDER BY CASE
+		            WHEN explanation IS NOT NULL AND TRIM(explanation) <> '' THEN 0
+		            ELSE 1
+		          END,
+		          CASE
+		            WHEN missing_chain_step_ids_json IS NOT NULL
+		              AND missing_chain_step_ids_json <> '[]' THEN 0
+		            ELSE 1
+		          END,
+		          COALESCE(confidence, 0) DESC,
+		          LENGTH(COALESCE(explanation, '')) DESC,
+		          id
 		 LIMIT 1`,
 		[questionId]
 	);
@@ -646,6 +661,7 @@ async function getWeakAnswer(
 
 		return {
 			text: row.weak_answer_text,
+			explanation: row.explanation?.replace(/\s+/g, ' ').trim() ?? '',
 			missingStepIds:
 				missingStepIds.length > 0 ? missingStepIds : chain.steps.slice(1).map((step) => step.id)
 		};
@@ -656,6 +672,7 @@ async function getWeakAnswer(
 		.map((step) => step.id);
 	return {
 		text: 'Names the topic but skips the middle reasoning links.',
+		explanation: '',
 		missingStepIds
 	};
 }
@@ -701,6 +718,7 @@ async function hydrateQuestion(
 		constellationRole: constellationRole(transferDistance),
 		modelAnswer: await getModelAnswer(row.id, chain),
 		commonWeakAnswer: weakAnswer.text,
+		commonWeakExplanation: weakAnswer.explanation,
 		weakAnswerMissingStepIds: weakAnswer.missingStepIds,
 		checklist,
 		repairChain: repairChainFromSteps(chain),

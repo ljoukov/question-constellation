@@ -1,14 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import {
-	copyFileSync,
-	existsSync,
-	mkdirSync,
-	readFileSync,
-	rmSync,
-	writeFileSync
-} from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
 
@@ -49,13 +42,19 @@ const sourceDocumentId =
 	inputPaper.sourceDocument?.id ?? inputPaper.sourceDocumentId ?? path.basename(inputPath, '.json');
 const outputPath = path.resolve(
 	rootDir,
-	stringArg('output', path.join('tmp/codex-answer-chains', sourceDocumentId, 'chain-reconciled.json'))
+	stringArg(
+		'output',
+		path.join('tmp/codex-answer-chains', sourceDocumentId, 'chain-reconciled.json')
+	)
 );
 const workDir = path.resolve(
 	rootDir,
 	stringArg('work-dir', path.join('tmp/codex-answer-chains', sourceDocumentId))
 );
-const summaryPath = path.resolve(rootDir, stringArg('summary', path.join(workDir, 'codex-chain-summary.json')));
+const summaryPath = path.resolve(
+	rootDir,
+	stringArg('summary', path.join(workDir, 'codex-chain-summary.json'))
+);
 const existingChainsPath = stringArg('existing-chains', '');
 const existingChainInputRoot = stringArg('existing-chain-input-root', '');
 const model = stringArg('model', 'gpt-5.5');
@@ -65,7 +64,11 @@ const chainStyleJudgeModel = stringArg('chain-style-judge-model', 'chatgpt-gpt-5
 const chainStyleJudgeThinkingLevel = stringArg('chain-style-judge-thinking-level', 'medium');
 const chainStyleJudgeBatchSize = integerArg('chain-style-judge-batch-size', 8, 1);
 const chainStyleJudgeMaxExistingChains = integerArg('chain-style-judge-max-existing-chains', 16, 0);
-const chainStyleJudgeSourceSnippetChars = integerArg('chain-style-judge-source-snippet-chars', 360, 80);
+const chainStyleJudgeSourceSnippetChars = integerArg(
+	'chain-style-judge-source-snippet-chars',
+	360,
+	80
+);
 const chainStyleRepairAttempts = integerArg('chain-style-repair-attempts', 2, 0);
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const dryRun = hasArg('dry-run');
@@ -85,7 +88,9 @@ const plan = {
 	outputPath: relative(outputPath),
 	workDir: relative(workDir),
 	summaryPath: relative(summaryPath),
-	existingChainsPath: existingChainsPath ? relative(path.resolve(rootDir, existingChainsPath)) : null,
+	existingChainsPath: existingChainsPath
+		? relative(path.resolve(rootDir, existingChainsPath))
+		: null,
 	existingChainInputRoot: existingChainInputRoot
 		? relative(path.resolve(rootDir, existingChainInputRoot))
 		: null,
@@ -196,7 +201,10 @@ function prepareWorkDir() {
 	}
 	mkdirSync(workDir, { recursive: true });
 	copyFileSync(inputPath, path.join(workDir, 'extraction.json'));
-	copyFileSync(path.join(rootDir, 'scripts/codex-import-helper.mjs'), path.join(workDir, 'helper.mjs'));
+	copyFileSync(
+		path.join(rootDir, 'scripts/codex-import-helper.mjs'),
+		path.join(workDir, 'helper.mjs')
+	);
 	const specSourcePath = path.join(rootDir, 'docs/extraction-spec.md');
 	if (existsSync(specSourcePath)) {
 		const specTargetDir = path.join(workDir, 'docs');
@@ -204,7 +212,10 @@ function prepareWorkDir() {
 		copyFileSync(specSourcePath, path.join(specTargetDir, 'extraction-spec.md'));
 	}
 	if (existingChainsPath) {
-		copyFileSync(path.resolve(rootDir, existingChainsPath), path.join(workDir, 'existing-chain-context.json'));
+		copyFileSync(
+			path.resolve(rootDir, existingChainsPath),
+			path.join(workDir, 'existing-chain-context.json')
+		);
 	} else if (existingChainInputRoot) {
 		const result = spawnSync(
 			process.execPath,
@@ -276,6 +287,12 @@ Allowed answerChain.steps[].stepRole values are exactly: given, cause, process, 
 
 Every answerChain.steps[] entry must include a non-empty markSchemeItemIndexes array. These indexes are zero-based indexes into that same question's markSchemeItems array and must point only to positive marking points, not allow/accept/reject/ignore/guidance/alternative rows. If one reusable chain step is supported by several positive mark items, include all of those indexes. If one positive mark item supports several compact reusable steps, duplicate the index across those steps.
 
+For each written, explanatory, calculation-method, or multi-mark question, produce at least one question-specific commonWeakAnswers entry unless the source genuinely provides no useful trap. Do not reuse identical chain-level text across every question. Each entry must include:
+- weakAnswerText: a plausible incomplete or mistaken student answer for this exact source question.
+- explanation: a concise student-facing reason that answer fails for this exact question; this powers the pre-answer hint UI, so do not leave it blank.
+- missingStepIndexes or missingChainStepIds: the omitted answer-chain link(s), when identifiable.
+The explanation should point to the trap, not give a worked numeric answer. Keep final numeric values and fixed-response answers out of commonWeakAnswers.
+
 Before finishing, run the validator. It rejects missing ids, paragraph-like canonical chains, overlong step labels, non-canonical step roles, missing step evidence, placeholder/review chains, and invalid mark-scheme evidence indexes.
 
 Write the full reconciled paper to chain-reconciled.json, preserving all questions. Then run:
@@ -293,7 +310,12 @@ function ensureChainOutput() {
 function validateChain(chainPath) {
 	const result = spawnSync(
 		process.execPath,
-		['helper.mjs', 'validate-chain', `--input=${path.basename(chainPath)}`, '--output=chain-validation.json'],
+		[
+			'helper.mjs',
+			'validate-chain',
+			`--input=${path.basename(chainPath)}`,
+			'--output=chain-validation.json'
+		],
 		{
 			cwd: workDir,
 			encoding: 'utf8',

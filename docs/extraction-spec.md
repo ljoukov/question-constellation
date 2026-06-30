@@ -1847,6 +1847,7 @@ Minimum shape:
       "common_weak_answers": [
         {
           "weak_answer_text": "Less blood gets to the heart so it hurts.",
+          "explanation": "This names reduced blood flow but misses the oxygen, respiration, and energy links.",
           "missing_step_indexes": [1],
           "confidence": 0.74
         }
@@ -2214,6 +2215,12 @@ CREATE INDEX idx_extraction_issues_open
 13. Insert `extraction_issues` for any uncertain object.
 14. Store raw agent output JSON on `extraction_runs.raw_output_json`.
 15. Set the run status to `completed` or `review_required`.
+
+`common_weak_answers` are question-specific evidence, not chain-level copy. New
+imports should populate `explanation` and `missing_chain_step_ids_json` whenever
+possible, because practice hints use those fields to build a clue for the active
+question. `answer_chain_steps.common_omission` remains the fallback when a
+specific question has no reviewed weak-answer row.
 
 ## Agent Quality Checklist
 

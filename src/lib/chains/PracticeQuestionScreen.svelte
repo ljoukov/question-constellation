@@ -72,6 +72,7 @@
 	const focusedParts = $derived(
 		focusedPaper?.questions.flatMap((question) => question.parts) ?? []
 	);
+	const activeHint = $derived(activeQuestion.hint?.trim() || chain.weakLink);
 	const focusedPartRefs = $derived(new Set(focusedParts.map((part) => part.ref)));
 	const answeredParts = $derived(
 		focusedParts.filter((part) => (answers[part.ref] ?? '').trim().length > 0)
@@ -274,8 +275,8 @@
 
 			{#if hintOpen && !hasGrade}
 				<section class="qc-real-hint" aria-label="Hint">
-					<p>Hint</p>
-					<span><MathText text={chain.weakLink} /></span>
+					<p>Hint for this question</p>
+					<span><MathText text={activeHint} /></span>
 				</section>
 			{/if}
 

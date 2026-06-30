@@ -13,6 +13,7 @@ export type ChainQuestionTeaser = {
 	paperLabel?: string;
 	title: string;
 	teaser: string;
+	hint?: string | null;
 	label: ChainQuestionLabel;
 	marks: number | null;
 	command: string;
@@ -43,8 +44,7 @@ export const learningChains: LearningChain[] = [
 		symbol: '⚛️',
 		paperSlug: 'aqa-8464p1h-jun18',
 		paperLabel: 'AQA Physics Paper 1, June 2018',
-		summary:
-			'Use particle motion to explain why a gas pressure changes when conditions change.',
+		summary: 'Use particle motion to explain why a gas pressure changes when conditions change.',
 		steps: [
 			'temperature changes',
 			'particle speed changes',

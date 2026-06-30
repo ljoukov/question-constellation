@@ -45,7 +45,6 @@
 	let gradePhase = $state<GradePhase>('idle');
 	let gradeError = $state('');
 	let gradeResult = $state<GradeResult | null>(null);
-	let streamedThought = $state('');
 
 	const questionIndex = $derived(
 		data.questions.findIndex((question) => question.id === data.question.id)
@@ -77,6 +76,24 @@
 	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
 	const feedbackMarkdown = $derived((gradeResult?.feedbackMarkdown ?? '').trim());
 	const hasMissingLinks = $derived(missingItems.length > 0);
+	const hintMissingLinks = $derived(
+		data.question.weakAnswerMissingStepIds
+			.map(
+				(stepId) => data.question.repairChain.find((node) => node.stepId === stepId)?.label ?? null
+			)
+			.filter((label): label is string => Boolean(label))
+	);
+	const weakAnswerExplanation = $derived(
+		data.question.commonWeakExplanation.replace(/\s+/g, ' ').trim()
+	);
+	const collapsedHintText = $derived(
+		weakAnswerExplanation
+			? `Watch this trap: ${weakAnswerExplanation}`
+			: hintMissingLinks[0]
+				? `Start with: ${hintMissingLinks[0]}.`
+				: 'Watch for the common trap in this question.'
+	);
+	const expandedHintText = $derived(questionHintText());
 	let showHint = $state(false);
 
 	async function checkAnswer() {
@@ -86,7 +103,6 @@
 		rewriteText = '';
 		gradeError = '';
 		gradeResult = null;
-		streamedThought = '';
 		gradePhase = 'connecting';
 
 		try {
@@ -129,6 +145,20 @@
 
 	function isNodeMissing(stepId: string | null) {
 		return stepId ? missingStepIds.has(stepId) : false;
+	}
+
+	function questionHintText() {
+		if (weakAnswerExplanation) {
+			return `Avoid the common trap: ${weakAnswerExplanation}`;
+		}
+		if (hintMissingLinks.length > 0) {
+			return `Use this link: ${hintMissingLinks.join(' -> ')}.`;
+		}
+		const weakAnswer = data.question.commonWeakAnswer.replace(/\s+/g, ' ').trim();
+		if (weakAnswer) {
+			return `Avoid stopping at: ${weakAnswer}`;
+		}
+		return data.chain.commonMissingLink;
 	}
 
 	function statusDescriptionForPhase(phase: GradePhase) {
@@ -184,7 +214,6 @@
 		}
 
 		if (message.event === 'thought') {
-			streamedThought += message.data;
 			return;
 		}
 
@@ -242,7 +271,6 @@
 		gradePhase = 'idle';
 		gradeError = '';
 		gradeResult = null;
-		streamedThought = '';
 		showHint = false;
 	});
 </script>
@@ -322,14 +350,10 @@
 				<h1 class="attempt-question">{data.question.prompt}</h1>
 
 				<section class="memory-first-card">
-							<span class="icon-tile info"><Lightbulb size={22} /></span>
+					<span class="icon-tile info"><Lightbulb size={22} /></span>
 					<div>
 						<h2>Hint available</h2>
-						<p>
-							{showHint
-								? 'Name the resistive force, explain how it changes, then say how the resultant force changes before the final motion.'
-								: 'Start with the force that opposes the motion.'}
-						</p>
+						<p>{showHint ? expandedHintText : collapsedHintText}</p>
 					</div>
 				</section>
 

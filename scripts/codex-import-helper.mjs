@@ -1261,6 +1261,19 @@ function deterministicIssuesFor(candidate, options = {}) {
 					evidence: ref
 				});
 			}
+			for (const [weakIndex, weakAnswer] of (question.commonWeakAnswers ?? []).entries()) {
+				const hasWeakText = String(
+					weakAnswer?.weakAnswerText ?? weakAnswer?.weak_answer_text ?? ''
+				).trim();
+				if (hasWeakText && !String(weakAnswer?.explanation ?? '').trim()) {
+					issues.push({
+						code: 'common_weak_answer_missing_explanation',
+						field: `commonWeakAnswers[${weakIndex}].explanation`,
+						severity: 'warning',
+						evidence: ref
+					});
+				}
+			}
 		}
 		if (issues.length) findings.push({ sourceQuestionRef: ref, issues });
 	}

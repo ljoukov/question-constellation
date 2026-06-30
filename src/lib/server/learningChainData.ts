@@ -22,6 +22,7 @@ type ChainRow = {
 };
 
 type ChainStepRow = {
+	id: string;
 	answer_chain_id: string;
 	display_order: number;
 	step_text: string;
@@ -53,6 +54,9 @@ type QuestionMembershipRow = {
 	source_series: string | null;
 	source_year: number | null;
 	source_component_code: string | null;
+	weak_answer_text: string | null;
+	weak_answer_explanation: string | null;
+	weak_missing_chain_step_ids_json: string | null;
 };
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -230,6 +234,45 @@ function sortQuestions(a: QuestionMembershipRow, b: QuestionMembershipRow) {
 	);
 }
 
+function cleanSingleLine(text: string) {
+	return text.replace(/\s+/g, ' ').trim();
+}
+
+function questionHintFromWeakAnswer(
+	row: QuestionMembershipRow,
+	steps: ChainStepRow[]
+): string | null {
+	const explanation = row.weak_answer_explanation
+		? cleanSingleLine(row.weak_answer_explanation)
+		: '';
+	if (explanation) {
+		return truncateRichText(`Avoid the common trap: ${explanation}`, 180);
+	}
+
+	const missingStepRefs = parseJson<Array<string | number>>(
+		row.weak_missing_chain_step_ids_json,
+		[]
+	);
+	const missingSteps = missingStepRefs
+		.map((item) => {
+			if (typeof item === 'number') return steps[item]?.step_text;
+			return steps.find((step) => step.id === item)?.step_text;
+		})
+		.filter((item): item is string => Boolean(item))
+		.map((item) => item.replace(/\.$/, ''));
+
+	if (missingSteps.length > 0) {
+		return truncateRichText(`Focus on this link: ${missingSteps.join(' -> ')}`, 160);
+	}
+
+	const weakAnswer = row.weak_answer_text ? cleanSingleLine(row.weak_answer_text) : '';
+	if (weakAnswer) {
+		return truncateRichText(`Do not stop at "${weakAnswer}". Use the full chain.`, 160);
+	}
+
+	return null;
+}
+
 function groupBy<T, K extends string>(items: T[], keyFor: (item: T) => K) {
 	const groups = new Map<K, T[]>();
 	for (const item of items) {
@@ -244,7 +287,7 @@ function groupBy<T, K extends string>(items: T[], keyFor: (item: T) => K) {
 	return groups;
 }
 
-function toQuestionTeaser(row: QuestionMembershipRow): ChainQuestionTeaser {
+function toQuestionTeaser(row: QuestionMembershipRow, steps: ChainStepRow[]): ChainQuestionTeaser {
 	return {
 		id: row.id,
 		ref: row.source_question_ref,
@@ -253,6 +296,7 @@ function toQuestionTeaser(row: QuestionMembershipRow): ChainQuestionTeaser {
 		paperLabel: paperLabel(row),
 		title: titleFromQuestion(row),
 		teaser: teaserFromPrompt(row.prompt_text),
+		hint: questionHintFromWeakAnswer(row, steps),
 		label: distanceLabel(row.transfer_distance),
 		marks: row.marks,
 		command: row.command_word ?? 'Question'
@@ -292,7 +336,7 @@ function buildLearningChain(
 			'Use each link in the chain before jumping to the final answer.',
 		primaryRef: firstQuestion.id,
 		accent: subjectAccent(subject),
-		questions: sortedQuestions.map(toQuestionTeaser)
+		questions: sortedQuestions.map((question) => toQuestionTeaser(question, steps))
 	};
 }
 
@@ -327,7 +371,7 @@ async function fetchChainRows() {
 
 async function fetchStepRows() {
 	return queryRows<ChainStepRow>(
-		`SELECT answer_chain_id, display_order, step_text, common_omission
+		`SELECT id, answer_chain_id, display_order, step_text, common_omission
 		 FROM answer_chain_steps
 		 ORDER BY answer_chain_id, display_order`
 	);
@@ -342,10 +386,35 @@ async function fetchQuestionRows() {
 		        sd.board AS source_board, sd.qualification AS source_qualification,
 		        sd.subject AS source_subject, sd.tier AS source_tier,
 		        sd.paper AS source_paper, sd.series AS source_series,
-		        sd.year AS source_year, sd.component_code AS source_component_code
+		        sd.year AS source_year, sd.component_code AS source_component_code,
+		        cwa.weak_answer_text AS weak_answer_text,
+		        cwa.explanation AS weak_answer_explanation,
+		        cwa.missing_chain_step_ids_json AS weak_missing_chain_step_ids_json
 		 FROM question_answer_chains qac
 		 JOIN questions q ON q.id = qac.question_id
 		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
+		 LEFT JOIN common_weak_answers cwa
+		   ON cwa.question_id = q.id
+		  AND cwa.needs_human_review = 0
+		  AND cwa.id = (
+			SELECT cwa2.id
+			FROM common_weak_answers cwa2
+			WHERE cwa2.question_id = q.id
+			  AND cwa2.needs_human_review = 0
+			ORDER BY CASE
+			           WHEN cwa2.explanation IS NOT NULL AND TRIM(cwa2.explanation) <> '' THEN 0
+			           ELSE 1
+			         END,
+			         CASE
+			           WHEN cwa2.missing_chain_step_ids_json IS NOT NULL
+			             AND cwa2.missing_chain_step_ids_json <> '[]' THEN 0
+			           ELSE 1
+			         END,
+			         COALESCE(cwa2.confidence, 0) DESC,
+			         LENGTH(COALESCE(cwa2.explanation, '')) DESC,
+			         cwa2.id
+			LIMIT 1
+		  )
 		 WHERE qac.needs_human_review = 0
 		   AND q.needs_human_review = 0
 		   AND q.status = 'published'

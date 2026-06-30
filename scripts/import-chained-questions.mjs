@@ -540,7 +540,11 @@ function tableColumnsFromFlatHeader(headerLines, width, dataRows = []) {
 	}
 
 	if (width === 2) {
-		if (lines.length === 1 && splitPaperColumns(lines[0]).length === 1 && isNumericSequenceColumn(dataRows)) {
+		if (
+			lines.length === 1 &&
+			splitPaperColumns(lines[0]).length === 1 &&
+			isNumericSequenceColumn(dataRows)
+		) {
 			return ['', withInlineMath(lines[0])];
 		}
 
@@ -1663,7 +1667,8 @@ const localEmbeddedImagesByDocument = new Map(
 
 const importedQuestionsBySourceAndGroup = new Map();
 for (const question of importedQuestions) {
-	const groupRef = question.parent_source_question_ref ?? question.source_question_ref.split('.')[0];
+	const groupRef =
+		question.parent_source_question_ref ?? question.source_question_ref.split('.')[0];
 	const key = `${question.source_document_id}:${groupRef}`;
 	const group = importedQuestionsBySourceAndGroup.get(key) ?? [];
 	group.push(question);
@@ -1680,7 +1685,9 @@ function standaloneFigureLabels(text) {
 }
 
 function sourceQuestionRefSlug(ref) {
-	return String(ref ?? 'question').replace(/[^0-9A-Za-z]+/g, '-').replace(/^-|-$/g, '');
+	return String(ref ?? 'question')
+		.replace(/[^0-9A-Za-z]+/g, '-')
+		.replace(/^-|-$/g, '');
 }
 
 function pageNumbersForInferredFigure(question, label, sourceTextKind) {
@@ -1772,7 +1779,10 @@ function inferredAssetsForQuestion(question) {
 const augmentedQuestionAssetsByQuestionId = new Map(
 	importedQuestions.map((question) => [
 		question.id,
-		[...(question.assets ?? []).filter(isRenderableQuestionAsset), ...inferredAssetsForQuestion(question)]
+		[
+			...(question.assets ?? []).filter(isRenderableQuestionAsset),
+			...inferredAssetsForQuestion(question)
+		]
 	])
 );
 
@@ -2428,7 +2438,7 @@ if (!schemaOnly) {
 						null,
 						weakAnswer.weak_answer_text,
 						json(weakAnswer.missing_step_indexes ?? [], []),
-						null,
+						weakAnswer.explanation ?? null,
 						'agent',
 						weakAnswer.confidence ?? null,
 						bool(weakAnswer.needs_human_review)
