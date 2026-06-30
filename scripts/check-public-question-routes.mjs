@@ -55,12 +55,18 @@ const questionRoutes = rows.flatMap((row) => [
 	route('practice', `/questions/${encodeURIComponent(row.question_id)}/practice`, row)
 ]);
 const chainIds = [...new Set(rows.map((row) => row.answer_chain_id).filter(Boolean))].sort();
-const chainRoutes = chainIds.flatMap((chainId) => [
-	route('chain', `/chains/${encodeURIComponent(chainId)}`, { answer_chain_id: chainId }),
-	route('constellation', `/constellations/${encodeURIComponent(chainId)}`, {
-		answer_chain_id: chainId
-	})
-]);
+const chainVisibility = await loadChainVisibility(chainIds);
+const visibilityByChainId = new Map(chainVisibility.map((item) => [item.answer_chain_id, item]));
+const chainRoutes = chainIds.flatMap((chainId) => {
+	const metadata = {
+		answer_chain_id: chainId,
+		public_visibility: visibilityByChainId.get(chainId) ?? null
+	};
+	return [
+		route('chain', `/chains/${encodeURIComponent(chainId)}`, metadata),
+		route('constellation', `/constellations/${encodeURIComponent(chainId)}`, metadata)
+	];
+});
 const assetRoutes = includeAssets
 	? [
 			...new Map(
@@ -77,6 +83,12 @@ const checks = await mapLimit(
 	checkRoute
 );
 const failed = checks.filter((check) => check.status !== 'passed');
+const publicMultiQuestionChains = chainVisibility.filter((item) => item.visible_questions > 1);
+const publicMultiPaperChains = chainVisibility.filter((item) => item.visible_papers > 1);
+const singlePublicQuestionChains = chainVisibility.filter((item) => item.visible_questions === 1);
+const rawMultiPaperButSingleVisibleChains = singlePublicQuestionChains.filter(
+	(item) => item.total_linked_papers > 1
+);
 const summary = {
 	status: failed.length === 0 ? 'passed' : 'failed',
 	startedAt,
@@ -86,9 +98,19 @@ const summary = {
 	databaseId,
 	questionCount: rows.length,
 	chainCount: chainIds.length,
+	publicVisibleChainCount: chainVisibility.filter((item) => item.visible_questions > 0).length,
+	publicMultiQuestionChainCount: publicMultiQuestionChains.length,
+	publicMultiPaperChainCount: publicMultiPaperChains.length,
+	singlePublicQuestionChainCount: singlePublicQuestionChains.length,
+	rawMultiPaperButSingleVisibleChainCount: rawMultiPaperButSingleVisibleChains.length,
 	routeCount: checks.length,
 	failedRouteCount: failed.length,
 	assetRoutesChecked: assetRoutes.length,
+	publicMultiQuestionChains,
+	publicMultiPaperChains,
+	singlePublicQuestionChains,
+	rawMultiPaperButSingleVisibleChains,
+	chainVisibility,
 	failed,
 	checks
 };
@@ -186,12 +208,15 @@ async function loadImportedQuestionRows() {
 		        GROUP_CONCAT(DISTINCT qa.public_path) AS asset_paths_csv
 		   FROM questions q
 		   JOIN question_answer_chains qac ON qac.question_id = q.id
+		   JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 		  LEFT JOIN question_assets qa ON qa.question_id = q.id AND qa.public_path IS NOT NULL
 		  WHERE q.source_document_id = ?
 		    AND q.status = 'published'
 		    AND q.needs_human_review = 0
 		    AND qac.needs_human_review = 0
 		    AND qac.is_primary = 1
+		    AND ac.status = 'published'
+		    AND ac.needs_human_review = 0
 		  GROUP BY q.id, q.source_question_ref, qac.answer_chain_id
 		  ORDER BY q.display_order, q.source_question_ref`,
 		[sourceDocumentId]
@@ -205,6 +230,72 @@ async function loadImportedQuestionRows() {
 			.map((value) => value.trim())
 			.filter(Boolean)
 	}));
+}
+
+async function loadChainVisibility(chainIds) {
+	if (chainIds.length === 0) return [];
+	const placeholders = chainIds.map(() => '?').join(', ');
+	const totalRows = await d1Query(
+		`SELECT qac.answer_chain_id,
+		        ac.title,
+		        ac.status AS chain_status,
+		        ac.needs_human_review AS chain_needs_human_review,
+		        COUNT(DISTINCT q.id) AS total_linked_questions,
+		        COUNT(DISTINCT q.source_document_id) AS total_linked_papers
+		   FROM question_answer_chains qac
+		   JOIN questions q ON q.id = qac.question_id
+		   JOIN answer_chains ac ON ac.id = qac.answer_chain_id
+		  WHERE qac.answer_chain_id IN (${placeholders})
+		  GROUP BY qac.answer_chain_id, ac.title, ac.status, ac.needs_human_review`,
+		chainIds
+	);
+	const visibleRows = await d1Query(
+		`SELECT qac.answer_chain_id,
+		        COUNT(DISTINCT q.id) AS visible_questions,
+		        COUNT(DISTINCT q.source_document_id) AS visible_papers,
+		        GROUP_CONCAT(DISTINCT q.source_document_id) AS visible_source_document_ids,
+		        GROUP_CONCAT(q.source_document_id || ':' || q.source_question_ref) AS visible_question_refs
+		   FROM question_answer_chains qac
+		   JOIN questions q ON q.id = qac.question_id
+		   JOIN answer_chains ac ON ac.id = qac.answer_chain_id
+		  WHERE qac.answer_chain_id IN (${placeholders})
+		    AND qac.needs_human_review = 0
+		    AND q.needs_human_review = 0
+		    AND q.status = 'published'
+		    AND ac.needs_human_review = 0
+		    AND ac.status = 'published'
+		    AND EXISTS (
+		     SELECT 1
+		       FROM question_rendering_overlays qro
+		      WHERE qro.question_id = q.id
+		    )
+		  GROUP BY qac.answer_chain_id`,
+		chainIds
+	);
+	const totalsByChainId = new Map(totalRows.map((row) => [row.answer_chain_id, row]));
+	const visibleByChainId = new Map(visibleRows.map((row) => [row.answer_chain_id, row]));
+	return chainIds
+		.map((chainId) => {
+			const total = totalsByChainId.get(chainId) ?? {};
+			const visible = visibleByChainId.get(chainId) ?? {};
+			return {
+				answer_chain_id: chainId,
+				title: total.title ?? null,
+				chain_status: total.chain_status ?? null,
+				chain_needs_human_review: Boolean(Number(total.chain_needs_human_review ?? 0)),
+				total_linked_questions: Number(total.total_linked_questions ?? 0),
+				total_linked_papers: Number(total.total_linked_papers ?? 0),
+				visible_questions: Number(visible.visible_questions ?? 0),
+				visible_papers: Number(visible.visible_papers ?? 0),
+				visible_source_document_ids: csvList(visible.visible_source_document_ids),
+				visible_question_refs: csvList(visible.visible_question_refs)
+			};
+		})
+		.sort((a, b) => {
+			const visibleDelta = b.visible_questions - a.visible_questions;
+			if (visibleDelta) return visibleDelta;
+			return a.answer_chain_id.localeCompare(b.answer_chain_id);
+		});
 }
 
 async function d1Query(sql, params = []) {
@@ -226,6 +317,13 @@ async function d1Query(sql, params = []) {
 	const result = Array.isArray(body.result) ? body.result[0] : body.result;
 	if (result?.success === false) throw new Error(`D1 statement failed: ${JSON.stringify(result)}`);
 	return result?.results ?? [];
+}
+
+function csvList(value) {
+	return String(value ?? '')
+		.split(',')
+		.map((item) => item.trim())
+		.filter(Boolean);
 }
 
 function loadDotEnvFile(filePath) {

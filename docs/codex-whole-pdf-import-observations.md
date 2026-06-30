@@ -82,6 +82,15 @@ and downstream import checks:
 | D1 import                               | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/renderfix-v15-fresh-import/chain-reconciled-normalized.json` |      5.8s |       588 insert statements |              0 | n/a                                                                | targeted write passed; 46 overlays, 155 mark rows, 77 checklist rows, 44 chain links |
 | Deployed route crawl                    | `tmp/public-route-checks/aqa-84611h-qp-nov20-renderfix-v15.json`                                             |   64.425s |             237 HTTP routes |              0 | n/a                                                                | all question, practice, chain, constellation, and image routes returned 200          |
 
+The first deployed route crawl proved route health, not public-visible multi-paper coverage.
+Follow-up route reporting must use the same visibility rules as the public chain pages. For the
+Biology Nov20 v15 import, the corrected report at
+`tmp/public-route-checks/aqa-84611h-qp-nov20-renderfix-v15-visible.json` shows 44 public-visible
+chains, two public multi-question chains within the same paper, and zero public multi-paper chains.
+Seven imported chain ids have raw links across multiple papers but only one public-visible question,
+because the other linked questions are draft/review-blocked or otherwise hidden from the public
+chain route.
+
 The v15 run exposed three production-path fixes:
 
 - Treat non-positive PDF `pageCount` values as missing and recompute from the official PDF in the

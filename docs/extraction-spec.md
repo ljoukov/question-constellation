@@ -624,7 +624,12 @@ After a real D1 import, run `scripts/check-public-question-routes.mjs` for the i
 `sourceDocumentId`. It queries D1, opens every deployed question, question-chain, practice, chain,
 constellation, and image route under `https://constellation.eviworld.com`, and fails on HTTP errors
 or app error bodies. This is the route-health gate for "open question" failures that can escape a
-pure D1 row-count audit.
+pure D1 row-count audit. The same report also records public-visible chain multiplicity using the
+same predicates as the public chain pages: published chain, published question, no review flags on
+the chain/question/membership, and an available rendering overlay. Raw D1 memberships that are
+draft, review-blocked, or missing render overlays do not count as public multi-question or
+multi-paper evidence. If a report advertises multi-paper chains, use `publicMultiPaperChains`, not
+raw `total_linked_papers`.
 
 The D1 post-write audit requires mark-scheme rows, checklist rows, and a chain for every imported
 question. It also requires a model answer or fixed answer key for normal written/fixed-response
