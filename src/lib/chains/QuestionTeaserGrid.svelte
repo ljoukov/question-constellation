@@ -3,11 +3,17 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 
-	let { chain, limit = null }: { chain: LearningChain; limit?: number | null } = $props();
+	let {
+		chain,
+		questions = chain.questions,
+		limit = null
+	}: {
+		chain: LearningChain;
+		questions?: LearningChain['questions'];
+		limit?: number | null;
+	} = $props();
 
-	const visibleQuestions = $derived(
-		limit === null ? chain.questions : chain.questions.slice(0, limit)
-	);
+	const visibleQuestions = $derived(limit === null ? questions : questions.slice(0, limit));
 
 	function practiceHref(ref = chain.primaryRef) {
 		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref });

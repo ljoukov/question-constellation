@@ -13,10 +13,22 @@
 			chains: LearningChain[];
 			initialSearch: string;
 			initialSubject: string;
+			initialMarks: string;
 		};
 	} = $props();
 
 	const subjectOrder = ['Biology', 'Chemistry', 'Physics'];
+	const marksFilterOptions = [
+		{ value: 'all', label: 'All' },
+		{ value: '1', label: '1' },
+		{ value: '2', label: '2' },
+		{ value: '3-4', label: '3-4' },
+		{ value: '4+', label: '4+' },
+		{ value: '5+', label: '5+' },
+		{ value: '6', label: '6' }
+	] as const;
+	type MarksFilter = (typeof marksFilterOptions)[number]['value'];
+	const validMarksFilterValues = new Set<string>(marksFilterOptions.map((option) => option.value));
 
 	function canonicalSubject(value: string | null | undefined) {
 		const lower = (value ?? '').toLowerCase();
@@ -40,6 +52,11 @@
 	let selectedSubject = $state(
 		untrack(() => canonicalSubject(data.initialSubject) ?? 'All subjects')
 	);
+	let selectedMarksFilter = $state<MarksFilter>(
+		untrack(() =>
+			validMarksFilterValues.has(data.initialMarks) ? (data.initialMarks as MarksFilter) : 'all'
+		)
+	);
 	let visibleCount = $state(12);
 	const previewQuestionLimit = 3;
 
@@ -50,10 +67,29 @@
 		)
 	]);
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
+
+	function questionMatchesMarks(question: LearningChain['questions'][number]) {
+		const marks = question.marks;
+		if (selectedMarksFilter === 'all') return true;
+		if (marks === null || marks === undefined) return false;
+		if (selectedMarksFilter === '1') return marks === 1;
+		if (selectedMarksFilter === '2') return marks === 2;
+		if (selectedMarksFilter === '3-4') return marks >= 3 && marks <= 4;
+		if (selectedMarksFilter === '4+') return marks >= 4;
+		if (selectedMarksFilter === '5+') return marks >= 5;
+		if (selectedMarksFilter === '6') return marks === 6;
+		return true;
+	}
+
+	function matchingQuestions(chain: LearningChain) {
+		return chain.questions.filter(questionMatchesMarks);
+	}
+
 	const filteredChains = $derived(
 		data.chains.filter((chain) => {
 			if (selectedSubject !== 'All subjects' && chainSubject(chain) !== selectedSubject)
 				return false;
+			if (selectedMarksFilter !== 'all' && matchingQuestions(chain).length === 0) return false;
 			if (!normalizedSearch) return true;
 
 			const haystack = [
@@ -83,10 +119,14 @@
 	const firstChain = $derived(filteredChains[0] ?? null);
 	const visibleChains = $derived(filteredChains.slice(0, visibleCount));
 	const remainingCount = $derived(Math.max(0, filteredChains.length - visibleChains.length));
+	const filteredQuestionCount = $derived(
+		filteredChains.reduce((sum, chain) => sum + matchingQuestions(chain).length, 0)
+	);
 
 	$effect(() => {
 		searchQuery;
 		selectedSubject;
+		selectedMarksFilter;
 		visibleCount = 12;
 	});
 
@@ -94,12 +134,13 @@
 		return resolve('/chains/[chainId]', { chainId: chain.id });
 	}
 
-	function syncBrowseUrl(nextSearch: string, nextSubject: string) {
+	function syncBrowseUrl(nextSearch: string, nextSubject: string, nextMarksFilter: MarksFilter) {
 		if (typeof window === 'undefined') return;
 		const params = new URLSearchParams();
 		const trimmedSearch = nextSearch.trim();
 		if (trimmedSearch) params.set('q', trimmedSearch);
 		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
+		if (nextMarksFilter !== 'all') params.set('marks', nextMarksFilter);
 		const query = params.toString();
 		const nextUrl = `${resolve('/')}${query ? `?${query}` : ''}`;
 		window.history.replaceState(window.history.state, '', nextUrl);
@@ -107,12 +148,17 @@
 
 	function updateSearch(value: string) {
 		searchQuery = value;
-		syncBrowseUrl(value, selectedSubject);
+		syncBrowseUrl(value, selectedSubject, selectedMarksFilter);
 	}
 
 	function updateSubject(value: string) {
 		selectedSubject = value;
-		syncBrowseUrl(searchQuery, value);
+		syncBrowseUrl(searchQuery, value, selectedMarksFilter);
+	}
+
+	function updateMarksFilter(value: MarksFilter) {
+		selectedMarksFilter = value;
+		syncBrowseUrl(searchQuery, selectedSubject, value);
 	}
 
 	function accessibleText(value: string) {
@@ -155,10 +201,27 @@
 					{#if filteredChains.length === data.chains.length}
 						{data.chains.length} chains in the database
 					{:else}
-						{filteredChains.length} of {data.chains.length} chains
+						{filteredChains.length} of {data.chains.length} chains · {filteredQuestionCount}
+						questions match
 					{/if}
 				</p>
 			</div>
+
+			<section class="qc-browse-filters" aria-label="Browse filters">
+				<div class="qc-mark-filter" role="group" aria-label="Question marks">
+					<span>Marks</span>
+					{#each marksFilterOptions as option (option.value)}
+						<button
+							type="button"
+							class:active={selectedMarksFilter === option.value}
+							aria-pressed={selectedMarksFilter === option.value}
+							onclick={() => updateMarksFilter(option.value)}
+						>
+							{option.label}
+						</button>
+					{/each}
+				</div>
+			</section>
 
 			{#each visibleChains as chain (chain.id)}
 				<article class={['qc-browse-chain', `accent-${chain.accent}`]}>
@@ -189,13 +252,21 @@
 						<div class="qc-browse-question-set-head">
 							<h3>Practice questions</h3>
 							<span>
-								{chain.questions.length} questions
-								{#if chain.questions.length > previewQuestionLimit}
+								{#if selectedMarksFilter === 'all'}
+									{chain.questions.length} questions
+								{:else}
+									{matchingQuestions(chain).length} matching
+								{/if}
+								{#if matchingQuestions(chain).length > previewQuestionLimit}
 									<a href={chainHref(chain)}>More</a>
 								{/if}
 							</span>
 						</div>
-						<QuestionTeaserGrid {chain} limit={previewQuestionLimit} />
+						<QuestionTeaserGrid
+							{chain}
+							questions={matchingQuestions(chain)}
+							limit={previewQuestionLimit}
+						/>
 					</section>
 				</article>
 			{/each}

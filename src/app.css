@@ -1870,6 +1870,61 @@ textarea::placeholder {
 	line-height: 1.35;
 }
 
+.qc-browse-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.qc-mark-filter {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.38rem;
+	min-width: 0;
+	max-width: 100%;
+	padding: 0.34rem;
+	border: 1px solid rgba(92, 118, 130, 0.24);
+	background: color-mix(in srgb, #ffffff 68%, transparent);
+}
+
+.qc-mark-filter > span {
+	padding: 0 0.34rem;
+	color: #526778;
+	font-size: 0.82rem;
+	font-weight: 500;
+	line-height: 1;
+}
+
+.qc-mark-filter button {
+	min-height: 2rem;
+	min-width: 2.2rem;
+	padding: 0.35rem 0.62rem;
+	border: 1px solid rgba(92, 118, 130, 0.32);
+	border-radius: 0;
+	background: #ffffff;
+	color: #102033;
+	font: inherit;
+	font-size: 0.86rem;
+	font-weight: 450;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.qc-mark-filter button:hover,
+.qc-mark-filter button:focus-visible {
+	border-color: var(--chain-accent, #168458);
+	box-shadow: 0 0 0 2px rgba(22, 132, 88, 0.16);
+}
+
+.qc-mark-filter button.active {
+	border-color: #168458;
+	background: #edfaf3;
+	color: #0d5a3f;
+}
+
 .qc-browse-chain {
 	display: grid;
 	gap: 0.95rem;
@@ -5440,7 +5495,7 @@ textarea::placeholder {
 		grid-auto-flow: row;
 		grid-auto-columns: auto;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 1.05rem;
+		gap: 1.45rem;
 		overflow: visible;
 		padding-bottom: 0;
 	}
@@ -5452,13 +5507,17 @@ textarea::placeholder {
 
 	.qc-browse-pattern li:not(:last-child)::after {
 		content: '↓';
-		top: calc(100% + 0.28rem);
+		top: calc(100% + 0.2rem);
 		left: 50%;
 		display: grid;
 		width: 1rem;
 		height: 1.05rem;
 		place-items: center;
 		transform: translateX(-50%);
+	}
+
+	.qc-mark-filter {
+		width: 100%;
 	}
 
 	.qc-question-card-grid {
@@ -6109,6 +6168,33 @@ html[data-theme='dark'] .app-shell {
 	border-top-color: rgba(226, 232, 240, 0.32);
 }
 
+:root[data-theme='dark'] .qc-mark-filter {
+	border-color: rgba(226, 232, 240, 0.32);
+	background: rgba(7, 20, 31, 0.68);
+}
+
+:root[data-theme='dark'] .qc-mark-filter > span {
+	color: #a9bbcc;
+}
+
+:root[data-theme='dark'] .qc-mark-filter button {
+	border-color: rgba(226, 232, 240, 0.52);
+	background: #050505;
+	color: #eaf4ff;
+}
+
+:root[data-theme='dark'] .qc-mark-filter button:hover,
+:root[data-theme='dark'] .qc-mark-filter button:focus-visible {
+	border-color: #56d894;
+	box-shadow: 0 0 0 2px rgba(86, 216, 148, 0.22);
+}
+
+:root[data-theme='dark'] .qc-mark-filter button.active {
+	border-color: #56d894;
+	background: #061c16;
+	color: #b8f7d5;
+}
+
 :root[data-theme='dark'] .qc-show-more-chains,
 :root[data-theme='dark'] .qc-chain-load-more {
 	border-color: rgba(226, 232, 240, 0.72);
@@ -6259,6 +6345,33 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-browse-question-set {
 		border-top-color: rgba(226, 232, 240, 0.32);
+	}
+
+	:root:not([data-theme='light']) .qc-mark-filter {
+		border-color: rgba(226, 232, 240, 0.32);
+		background: rgba(7, 20, 31, 0.68);
+	}
+
+	:root:not([data-theme='light']) .qc-mark-filter > span {
+		color: #a9bbcc;
+	}
+
+	:root:not([data-theme='light']) .qc-mark-filter button {
+		border-color: rgba(226, 232, 240, 0.52);
+		background: #050505;
+		color: #eaf4ff;
+	}
+
+	:root:not([data-theme='light']) .qc-mark-filter button:hover,
+	:root:not([data-theme='light']) .qc-mark-filter button:focus-visible {
+		border-color: #56d894;
+		box-shadow: 0 0 0 2px rgba(86, 216, 148, 0.22);
+	}
+
+	:root:not([data-theme='light']) .qc-mark-filter button.active {
+		border-color: #56d894;
+		background: #061c16;
+		color: #b8f7d5;
 	}
 
 	:root:not([data-theme='light']) .qc-show-more-chains,
