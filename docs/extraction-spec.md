@@ -884,6 +884,46 @@ Public D1 cross-paper chain reuse review, 2026-06-30:
   with zero public questions; sampled stale URLs now return the normal not-found route instead of a
   broken public chain page.
 
+Flagged D1 chain reuse review mode, 2026-06-30:
+
+- Use `pnpm run review:d1-answer-chain-reuse -- --candidate-mode=review --force` only after the
+  clean no-review promotion pass. Review mode looks for draft questions with no question-level human
+  review flag where the chain, chain link, or previously demoted chain row is still review-flagged.
+  It is a repair/promotion workflow for already-imported evidence, not a replacement for per-paper
+  answer-chain reconciliation.
+- Review-mode Codex must reject candidates when the review flag is justified by bad extraction,
+  corrupted mark-scheme evidence, incomplete support, or a chain that covers only part of a
+  multi-mark question. The parent process still requires manual semantic inspection of every
+  accepted chain before `--write`; deterministic validation alone is not enough for review-flagged
+  groups.
+- Run artifact:
+  `tmp/codex-d1-chain-review-flagged-20260630/review-plan.full.json`. Codex reviewed 42 candidate
+  groups. Raw Codex accepted 24 chains / 51 questions and rejected 18; deterministic validation
+  passed but reported 12 summary wording warnings. Manual Codex inspection then rejected
+  `bio-chain-bacteria-favourable-conditions-reproduce-faster` because it covered only the
+  rapid-growth stage of a 4-mark growth-curve question, broadened
+  `bio-chain-meiosis-divisions-haploid-variation` to include the varied-cell outcome, and shortened
+  warning summaries.
+- Final validation artifact:
+  `tmp/codex-d1-chain-review-flagged-20260630/summary-after-manual-validate.json`, 23 accepted
+  chains, 19 rejected chains, 49 questions to publish, 0 validation errors, 0 validation warnings.
+  Codex SDK metrics: 392.173s, 42 events, 13 command actions, 0 failed actions, 501,742 input
+  tokens, 393,728 cached input tokens, 20,083 output tokens, 5,787 reasoning tokens. Codex SDK runs
+  are subscription-metered, so no dollar cost is available.
+- D1 write artifact:
+  `tmp/codex-d1-chain-review-flagged-20260630/summary-after-manual-write.json`, 23 chains
+  published, 49 questions published, 33 question metadata titles updated, 49 chain links updated,
+  76 old step rows deleted, and 81 compact step rows inserted.
+- Post-write D1/public verification:
+  `tmp/public-chain-style-audit-after-review-mode.json`, 252 public chains, 0 style errors, 175
+  reuse warnings, all existing `single_public_paper` warnings. Subject counts after the write:
+  Biology 53 public chains / 9 multi-paper chains / 64 public question links; Chemistry 18 public
+  chains / 18 multi-paper chains / 40 public question links; Physics 181 public chains / 50
+  multi-paper chains / 264 public question links. D1 empty published-chain query returned 0 rows.
+  `tmp/public-route-check-after-review-mode.json` fetched all 23 newly promoted chain pages and all
+  49 newly published question pages; every route returned 200 and every chain page contained the
+  expected multiple question ids and title.
+
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
 descriptors, but raw Codex outputs still need normalization, app response-kind validation, asset
@@ -1226,8 +1266,11 @@ phases separate:
   generalizes a published chain, it must check every available already-attached example in the
   supplied context; otherwise it should split/create a new chain.
 - `pnpm run review:d1-answer-chain-reuse` runs the Codex D1 publication review for already-imported
-  draft chains. It is for conservative post-import promotion of no-review, mechanically complete,
-  multi-paper chain groups; it is not a substitute for per-paper answer-chain reconciliation.
+  draft chains. Default `--candidate-mode=clean` is for conservative post-import promotion of
+  no-review, mechanically complete, multi-paper chain groups. `--candidate-mode=review` is for
+  flagged/demoted groups where Codex and a manual evidence pass decide whether review flags can be
+  cleared for a safe cross-paper subset. Neither mode is a substitute for per-paper answer-chain
+  reconciliation.
 - `pnpm run reconcile:answer-chains` remains the legacy `@ljoukov/llm` text-only chain workflow for
   diagnostic comparisons and focused repair runs.
 - `pnpm run prepare:import-ready-extraction` builds the strict import-ready subset, runs the

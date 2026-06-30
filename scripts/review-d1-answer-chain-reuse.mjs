@@ -21,6 +21,7 @@ Optional:
   --chain-id=<id>                    may be passed multiple times
   --min-papers=2
   --min-questions=2
+  --candidate-mode=clean|review
   --limit=10
   --work-dir=tmp/codex-d1-chain-reuse-review
   --output=tmp/codex-d1-chain-reuse-review/review-plan.full.json
@@ -44,6 +45,7 @@ const subject = stringArg('subject', 'all');
 const chainIds = stringArgs('chain-id');
 const minPapers = integerArg('min-papers', 2, 1);
 const minQuestions = integerArg('min-questions', 2, 1);
+const candidateMode = enumArg('candidate-mode', 'clean', ['clean', 'review']);
 const limit = integerArg('limit', 0, 0);
 const workDir = path.resolve(rootDir, stringArg('work-dir', 'tmp/codex-d1-chain-reuse-review'));
 const codexPlanPath = path.join(workDir, 'review-plan.json');
@@ -76,6 +78,7 @@ if (inputPlanPath) {
 			status: 'dry-run',
 			subject,
 			chainIds,
+			candidateMode,
 			minPapers,
 			minQuestions,
 			workDir: relative(workDir),
@@ -144,6 +147,7 @@ if (inputPlanPath) {
 			finishedAt: new Date().toISOString(),
 			subject,
 			chainIds,
+			candidateMode,
 			minPapers,
 			minQuestions,
 			model,
@@ -163,6 +167,7 @@ if (inputPlanPath) {
 			finishedAt: new Date().toISOString(),
 			subject,
 			chainIds,
+			candidateMode,
 			minPapers,
 			minQuestions,
 			model,
@@ -196,6 +201,20 @@ async function loadCandidates() {
 	const subjectFilter = subject && subject !== 'all' ? 'AND ac.subject_area = ?' : '';
 	const chainFilter = chainIds.length ? `AND ac.id IN (${chainIds.map(() => '?').join(', ')})` : '';
 	const params = [...(subjectFilter ? [subject] : []), ...(chainIds.length ? chainIds : [])];
+	const modeFilter =
+		candidateMode === 'clean'
+			? `ac.status = 'draft'
+		   AND ac.needs_human_review = 0
+		   AND q.status = 'draft'
+		   AND q.needs_human_review = 0
+		   AND qac.needs_human_review = 0`
+			: `q.status = 'draft'
+		   AND q.needs_human_review = 0
+		   AND (
+		     ac.needs_human_review = 1
+		     OR qac.needs_human_review = 1
+		     OR ac.status = 'demoted'
+		   )`;
 	const rawCandidates = await d1Rows(
 		`SELECT ac.id, ac.slug, ac.title, ac.canonical_chain_text AS canonicalChainText,
 		        ac.summary, ac.subject_area AS subjectArea, ac.broad_topic AS broadTopic,
@@ -205,11 +224,7 @@ async function loadCandidates() {
 		 FROM answer_chains ac
 		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
 		 JOIN questions q ON q.id = qac.question_id
-		 WHERE ac.status = 'draft'
-		   AND ac.needs_human_review = 0
-		   AND q.status = 'draft'
-		   AND q.needs_human_review = 0
-		   AND qac.needs_human_review = 0
+		 WHERE ${modeFilter}
 		   ${subjectFilter}
 		   ${chainFilter}
 		 GROUP BY ac.id
@@ -335,7 +350,7 @@ async function fetchExamples(chainIds) {
 		const noReview =
 			example.questionStatus === 'draft' &&
 			Number(example.questionNeedsReview ?? 0) === 0 &&
-			Number(example.linkNeedsReview ?? 0) === 0;
+			(candidateMode === 'review' || Number(example.linkNeedsReview ?? 0) === 0);
 		const hasAnswerEvidence = mechanical.modelAnswerRows > 0 || mechanical.answerKeyRows > 0;
 		return {
 			...example,
@@ -387,6 +402,10 @@ function prepareWorkDir(candidates) {
 }
 
 function buildPrompt() {
+	const modeTask =
+		candidateMode === 'clean'
+			? 'The candidates already have no-review draft chain links. Confirm semantic reuse and compact the visible chain before publication.'
+			: 'The candidates are review-flagged chain groups. Decide whether the source evidence is strong enough to clear chain/link review flags for a subset, compact the visible chain, and publish only those safe examples.';
 	return `You are running a Codex answer-chain publication review for Question Constellation.
 
 Inputs in this isolated work directory:
@@ -395,6 +414,9 @@ Inputs in this isolated work directory:
 - docs/extraction-spec.md: product/schema contract if needed.
 
 Do not use the web. Do not inspect git or the repository. Do not write outside this work directory. Do not connect to D1. The parent runner will apply accepted rows after validation.
+
+Mode: ${candidateMode}
+${modeTask}
 
 Your task:
 1. Read candidates.json.
@@ -438,6 +460,7 @@ Reject when:
 - mark evidence looks corrupted or insufficient;
 - the chain would be a one-question solved answer;
 - the safe publish set would not span multiple papers.
+- in review mode, the existing review flag appears justified by bad extraction, wrong mark evidence, wrong grouping, or uncertain fit.
 
 Style rules:
 - title is usually 1-3 words, hard maximum 5 words.
@@ -587,6 +610,13 @@ function validateAcceptedDecision({ candidate, decision, findings }) {
 
 async function applyPlan(plan) {
 	const accepted = plan.decisions.filter((decision) => decision.status === 'accept');
+	const writeCandidateMode = plan.candidateMode ?? candidateMode;
+	const chainWriteFilter =
+		writeCandidateMode === 'review'
+			? `status IN ('draft', 'demoted', 'published')`
+			: `status = 'draft'
+			   AND needs_human_review = 0`;
+	const linkWriteFilter = writeCandidateMode === 'review' ? '' : 'AND needs_human_review = 0';
 	const exampleByQuestionId = new Map(
 		(plan.candidates ?? []).flatMap((candidate) =>
 			(candidate.eligibleExamples ?? []).map((example) => [example.questionId, example])
@@ -610,8 +640,7 @@ async function applyPlan(plan) {
 			     review_notes_json = '[]',
 			     updated_at = CURRENT_TIMESTAMP
 			 WHERE id = ?
-			   AND status = 'draft'
-			   AND needs_human_review = 0`,
+			   AND ${chainWriteFilter}`,
 			[repair.title, repair.canonicalChainText, repair.summary, decision.chainId],
 			{ rootDir }
 		);
@@ -666,7 +695,7 @@ async function applyPlan(plan) {
 				     fit_confidence = COALESCE(fit_confidence, 0.9)
 				 WHERE answer_chain_id = ?
 				   AND question_id = ?
-				   AND needs_human_review = 0`,
+				   ${linkWriteFilter}`,
 				[decision.evidenceSummary || repair.summary, decision.chainId, questionId],
 				{ rootDir }
 			);
@@ -826,6 +855,7 @@ function summarizeFullPlan(plan) {
 		output: relative(outputPath),
 		summary: relative(summaryPath),
 		selectedChains: plan.selectedChains ?? 0,
+		candidateMode: plan.candidateMode ?? candidateMode,
 		acceptedChains: accepted.length,
 		rejectedChains: rejected.length,
 		questionsToPublish: accepted.reduce(
@@ -944,6 +974,14 @@ function integerArg(name, defaultValue, minValue) {
 	const value = Number(raw);
 	if (!Number.isInteger(value) || value < minValue) {
 		throw new Error(`--${name} must be an integer >= ${minValue}.`);
+	}
+	return value;
+}
+
+function enumArg(name, defaultValue, allowedValues) {
+	const value = stringArg(name, defaultValue);
+	if (!allowedValues.includes(value)) {
+		throw new Error(`--${name} must be one of: ${allowedValues.join(', ')}`);
 	}
 	return value;
 }
