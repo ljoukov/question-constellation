@@ -685,17 +685,17 @@ Six-paper isolated Codex rollout study, 2026-06-28: free-discovery Codex runs we
 official PDFs in isolated temporary directories. They discovered several workflows now captured in
 the production prompts and helper menu:
 
-| Paper | Mode | Wall time | Questions | Marks | Commands | Input tokens | Cached input |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Biology P1 Nov20 | free discovery | 892.38s | 46 | 100 | 14 | 1,953,808 | 1,587,328 |
-| Chemistry P1 Nov20 | free discovery | 717.32s | 43 | 100 | 48 | 2,476,964 | 2,182,784 |
-| Physics P1 Nov20 | free discovery | 858.10s | 41 | 100 | 31 | 3,740,954 | 3,227,392 |
-| Biology P1 Nov20 | prompted toolkit | 624.23s | 46 | 100 | 44 | 1,399,015 | 1,176,704 |
-| Chemistry P1 Nov20 | prompted toolkit | 689.49s | 43 | 100 | 73 | 1,673,756 | 1,491,200 |
-| Physics P1 Nov20 | prompted toolkit | 902.03s | 41 | 100 | 57 | n/a | n/a |
-| Biology P2 Nov20 | prompted toolkit | 685.28s | 43 | 100 | 38 | 3,492,832 | 3,031,040 |
-| Chemistry P2 Nov20 | prompted toolkit | 932.46s | 47 | 100 | 66 | 4,178,204 | 3,804,160 |
-| Physics P2 Nov20 | prompted toolkit | 685.73s | 38 | 100 | 53 | 1,925,301 | 1,756,416 |
+| Paper              | Mode             | Wall time | Questions | Marks | Commands | Input tokens | Cached input |
+| ------------------ | ---------------- | --------: | --------: | ----: | -------: | -----------: | -----------: |
+| Biology P1 Nov20   | free discovery   |   892.38s |        46 |   100 |       14 |    1,953,808 |    1,587,328 |
+| Chemistry P1 Nov20 | free discovery   |   717.32s |        43 |   100 |       48 |    2,476,964 |    2,182,784 |
+| Physics P1 Nov20   | free discovery   |   858.10s |        41 |   100 |       31 |    3,740,954 |    3,227,392 |
+| Biology P1 Nov20   | prompted toolkit |   624.23s |        46 |   100 |       44 |    1,399,015 |    1,176,704 |
+| Chemistry P1 Nov20 | prompted toolkit |   689.49s |        43 |   100 |       73 |    1,673,756 |    1,491,200 |
+| Physics P1 Nov20   | prompted toolkit |   902.03s |        41 |   100 |       57 |          n/a |          n/a |
+| Biology P2 Nov20   | prompted toolkit |   685.28s |        43 |   100 |       38 |    3,492,832 |    3,031,040 |
+| Chemistry P2 Nov20 | prompted toolkit |   932.46s |        47 |   100 |       66 |    4,178,204 |    3,804,160 |
+| Physics P2 Nov20   | prompted toolkit |   685.73s |        38 |   100 |       53 |    1,925,301 |    1,756,416 |
 
 The full artifacts live under `tmp/codex-isolated-pdf-baselines-20260628/`. The prompted toolkit
 helped Biology P1 and Physics P2, modestly helped Chemistry P1, and hurt or failed to cleanly finish
@@ -719,11 +719,11 @@ Direct whole-paper Codex PDF-only reruns, 2026-06-29, used isolated temporary di
 only the official PDFs plus the prompt. Codex was allowed to discover its own local workflow and write
 temporary helper scripts/artifacts:
 
-| Paper | Wall time | Questions | Marks | Commands | Input tokens | Cached input | Output tokens | Notes |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Biology P1 Jun18 | 754s | 44 | 100 | 47 | 2,375,562 | 2,176,896 | 36,583 | Includes review-marked withdrawn `06.1`-`06.8` placeholders; production importer must omit or repair these before D1. |
-| Chemistry P1 Jun18 | 887s | 46 | 100 | 95 | 2,955,790 | 2,691,968 | 42,191 | Passed Codex's syntax/count validation with no review flags. |
-| Physics P2 Jun18 | 1,383s | 48 | 100 | 51 | 5,561,702 | 4,909,184 | 34,883 | Passed Codex's syntax/count validation with no review flags. |
+| Paper              | Wall time | Questions | Marks | Commands | Input tokens | Cached input | Output tokens | Notes                                                                                                                 |
+| ------------------ | --------: | --------: | ----: | -------: | -----------: | -----------: | ------------: | --------------------------------------------------------------------------------------------------------------------- |
+| Biology P1 Jun18   |      754s |        44 |   100 |       47 |    2,375,562 |    2,176,896 |        36,583 | Includes review-marked withdrawn `06.1`-`06.8` placeholders; production importer must omit or repair these before D1. |
+| Chemistry P1 Jun18 |      887s |        46 |   100 |       95 |    2,955,790 |    2,691,968 |        42,191 | Passed Codex's syntax/count validation with no review flags.                                                          |
+| Physics P2 Jun18   |    1,383s |        48 |   100 |       51 |    5,561,702 |    4,909,184 |        34,883 | Passed Codex's syntax/count validation with no review flags.                                                          |
 
 The observable Codex sequence was not a single rigid recipe: it used `pdfinfo`,
 `pdftotext -layout`, `pdfimages -list` / embedded extraction, PyMuPDF/pdfplumber summaries and table
@@ -752,12 +752,12 @@ beat on whole-paper quality before import.
 
 Current Codex SDK production run, Biology P1 Nov20, 2026-06-29:
 
-| Phase | Artifact | Wall time | Questions | Marks | Actions | Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| PDF extraction | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json` | 500.567s | 46 | 100 | 51 | 3 | 1,371,023 | 1,202,176 | 21,831 | 3,637 | deterministic extraction validation passed |
-| Answer chains | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` | 557.425s | 46 | 100 | 41 | 0 | 1,407,819 | 1,218,560 | 27,717 | 11,011 | 32 reused, 14 created, 0 updated, 0 review |
-| Solvability audit | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json` | 893.195s | 46 | 100 | n/a | 0 failed calls | 212,340 | 0 | 15,481 | 52,850 | 46/46 passed |
-| D1 import write | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json` | 8.2s | 46 | 100 | 554 SQL inserts | 0 | n/a | n/a | n/a | n/a | targeted D1 replacement passed |
+| Phase             | Artifact                                                                           | Wall time | Questions | Marks |         Actions | Failed actions | Input tokens | Cached input | Output tokens | Reasoning tokens | Result                                     |
+| ----------------- | ---------------------------------------------------------------------------------- | --------: | --------: | ----: | --------------: | -------------: | -----------: | -----------: | ------------: | ---------------: | ------------------------------------------ |
+| PDF extraction    | `tmp/codex-sdk-extraction/aqa-84611h-qp-nov20/normalized-extraction-v5.json`       |  500.567s |        46 |   100 |              51 |              3 |    1,371,023 |    1,202,176 |        21,831 |            3,637 | deterministic extraction validation passed |
+| Answer chains     | `tmp/codex-sdk-chain/aqa-84611h-qp-nov20-v7-source-repaired/chain-reconciled.json` |  557.425s |        46 |   100 |              41 |              0 |    1,407,819 |    1,218,560 |        27,717 |           11,011 | 32 reused, 14 created, 0 updated, 0 review |
+| Solvability audit | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-solvability-v7-audit.json`   |  893.195s |        46 |   100 |             n/a | 0 failed calls |      212,340 |            0 |        15,481 |           52,850 | 46/46 passed                               |
+| D1 import write   | `tmp/codex-sdk-import-ready/aqa-84611h-qp-nov20/final-import-v7-audit.json`        |      8.2s |        46 |   100 | 554 SQL inserts |              0 |          n/a |          n/a |           n/a |              n/a | targeted D1 replacement passed             |
 
 The raw SDK extraction and chain phases were faster than the prompted Biology P1 Nov20 Codex
 baseline (624.23s extraction-only) and much more complete than the legacy chunk extractor, but the
@@ -835,6 +835,54 @@ Public D1 chain-copy remediation, 2026-06-30:
   until more audited Biology papers are imported/published or existing draft rows are safely promoted.
 - Live route sweeps after the write passed: 225/225 public chain pages and 310/310 public question
   pages returned real pages with no 404/not-found body.
+
+Public D1 cross-paper chain reuse review, 2026-06-30:
+
+- Use `pnpm run review:d1-answer-chain-reuse -- --dotenv=/path/to/.env.local --force` to prepare
+  clean D1-derived chain candidates, launch Codex through `@openai/codex-sdk`, and validate the
+  review plan before any D1 write. The runner gives Codex only `candidates.json`, `helper.mjs`,
+  `docs/extraction-spec.md`, and a prompt inside an isolated work directory. Codex must write
+  `review-plan.json`; the parent runner applies accepted rows to D1 only with `--write`.
+- Candidate selection is intentionally conservative: `answer_chains.status='draft'`,
+  `answer_chains.needs_human_review=0`, draft questions with `needs_human_review=0`,
+  no-review `question_answer_chains`, render overlays, mark rows, checklist rows, and model-answer
+  or fixed-response answer-key evidence. Attached review-flagged examples are shown to Codex as
+  warnings but are not publishable.
+- Run artifact:
+  `tmp/codex-d1-chain-reuse-review-20260630/review-plan.full.json`. Codex accepted 4/4 candidate
+  chains and 9/9 publication-ready questions after manual semantic inspection of the same evidence.
+  Codex SDK summary: 118.078s, 30 events, 9 command actions, 0 failed actions, 147,763 input tokens,
+  88,064 cached input tokens, 5,899 output tokens, 2,989 reasoning tokens. The deterministic plan
+  validator passed after copy tightening with 0 errors and 0 warnings.
+- D1 write summary:
+  `tmp/codex-d1-chain-reuse-review-20260630/summary-after-write.json`, 4 chains published, 9
+  questions published, 9 chain links updated, 15 old step rows replaced with 15 compact step rows.
+  Six promoted Chemistry question metadata titles were repaired because their extractor metadata had
+  captured answer-line or tick-box option text as the public card title; future writes normalize
+  accepted question titles from the command/question phrase.
+- Promoted public multi-paper chains:
+  `bio-chain-ivf-eggs-fertilisation-embryo-transfer` (`IVF sequence`, 2 questions / 2 papers),
+  `chem-chain-chromatography-rf-relationship` (`Rf equation`, 3 questions / 3 papers),
+  `chem-chain-crude-oil-formation-plankton-burial-compression-time` (`Crude oil`, 2 questions / 2
+  papers), and `chem-chain-exothermic-temperature-increase-shifts-left` (`Equilibrium shift`, 2
+  questions / 2 papers).
+- Post-write public style audit:
+  `tmp/public-chain-style-audit-after-cross-paper-promotion.json`, 229 public chains, 0 style
+  errors, 175 warnings, all still `single_public_paper`. Corrected public counts: Biology 45 public
+  chains / 1 multi-paper chain, Chemistry 3 public chains / 3 multi-paper chains, Physics 181 public
+  chains / 50 multi-paper chains.
+- Live route verification passed for the four promoted chain URLs and all nine promoted question
+  URLs. Fresh chain-page HTML contained the expected multiple question refs and repaired card titles.
+- Empty published-shell cleanup demoted 9 `answer_chains` rows that had `status='published'` but no
+  route-visible public questions:
+  `bio-chain-data-two-conclusions-comparison`, `bio-chain-food-test-reagent-treatment-colour`,
+  `bio-chain-percentage-change-original-difference`,
+  `bio-chain-photosynthesis-limitation-glucose-protein-growth`,
+  `bio-chain-prokaryotic-cell-differences-recall`, `bio-chain-reaction-time-control-variables`,
+  `physics-chain-atomic-model-diagram-labels`, `physics-chain-flemings-left-hand-rule-labels`, and
+  `physics-chain-heating-practical-risk-burns-cuts`. Post-cleanup D1 query found 0 published chains
+  with zero public questions; sampled stale URLs now return the normal not-found route instead of a
+  broken public chain page.
 
 The direct Codex whole-paper result is now the quality target and the production execution model. It
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
@@ -1177,6 +1225,9 @@ phases separate:
   update, create, or mark review from mark evidence and existing-chain context. If it updates or
   generalizes a published chain, it must check every available already-attached example in the
   supplied context; otherwise it should split/create a new chain.
+- `pnpm run review:d1-answer-chain-reuse` runs the Codex D1 publication review for already-imported
+  draft chains. It is for conservative post-import promotion of no-review, mechanically complete,
+  multi-paper chain groups; it is not a substitute for per-paper answer-chain reconciliation.
 - `pnpm run reconcile:answer-chains` remains the legacy `@ljoukov/llm` text-only chain workflow for
   diagnostic comparisons and focused repair runs.
 - `pnpm run prepare:import-ready-extraction` builds the strict import-ready subset, runs the
@@ -1206,6 +1257,23 @@ They should not share a chain when:
 - One requires a different causal mechanism.
 - One is pure recall and the other is reasoning.
 - One requires a calculation method and the other requires conceptual explanation.
+
+Compact chain examples that should guide future Codex chain extraction/review:
+
+- `IVF sequence`: `collect eggs -> lab fertilise -> embryo divides -> uterus transfer`. This is
+  reusable across IVF process questions, but it must not be attached to separate one-mark hormone,
+  target-organ, microscope, ratio, or ethics questions.
+- `Rf equation`: `distances -> divide -> rearrange -> round`. This is reusable across
+  chromatography Rf calculations where the target value changes, because the same ratio method earns
+  the marks.
+- `Crude oil`: `dead plankton -> buried sediment -> compressed -> long time`. This is a compact
+  formation recall chain with concrete terms, not a generic `source -> process -> product` label.
+- `Equilibrium shift`: `temp up -> exothermic forward -> shifts left`. This is acceptable for
+  repeated one-mark Le Chatelier decisions with the same condition and direction, but should split
+  from pressure, concentration, catalyst, or endothermic-temperature chains.
+- `Food test`: `reagent -> treatment -> colour`. This is good only for food-test method questions;
+  do not attach graph plotting, colorimeter interpretation, enzyme pH, or food-test calculation rows
+  just because the source experiment uses iodine or food tests.
 
 ### Model Answers
 
