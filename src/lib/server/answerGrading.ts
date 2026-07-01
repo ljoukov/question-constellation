@@ -10,6 +10,13 @@ const CHATGPT_CODEX_PROXY_ENV_KEYS = [
 	'CHATGPT_CODEX_PROXY_API_KEY'
 ] as const;
 
+const QUESTION_GUIDANCE_KEYS = [
+	['gradingProfile', 'Grading profile'],
+	['ocrSectionBMarking', 'OCR Section B marking rules'],
+	['markSchemeGuidance', 'Mark-scheme indicative credit'],
+	['examinerReportGuidance', 'Examiner-report guidance']
+] as const;
+
 export type QuestionGradeStage =
 	| 'load_question'
 	| 'build_prompt'
@@ -164,15 +171,13 @@ export function parseGradeResponse(rawText: string, data: PracticePageData): Que
 		presentStepIds = data.chain.steps.map((step) => step.id).filter((id) => !missing.has(id));
 	}
 
-	const explicitResult = readField(rawText, 'RESULT')?.toLowerCase();
+	const correctThreshold = Math.ceil(maxMarks * 0.85);
 	const result: QuestionGradeResult['result'] =
-		explicitResult === 'correct' || explicitResult === 'partial' || explicitResult === 'incorrect'
-			? explicitResult
-			: awardedMarks >= maxMarks
+		awardedMarks <= 0
+			? 'incorrect'
+			: awardedMarks >= correctThreshold && missingStepIds.length === 0
 				? 'correct'
-				: awardedMarks === 0
-					? 'incorrect'
-					: 'partial';
+				: 'partial';
 
 	return {
 		status: 'ok',
@@ -201,22 +206,88 @@ function stepSelectionList(data: PracticePageData): string {
 		.join('\n');
 }
 
+function compactPromptValue(value: unknown): string {
+	if (typeof value === 'string') return value;
+	try {
+		return JSON.stringify(value, null, 2);
+	} catch {
+		return String(value);
+	}
+}
+
+function buildQuestionSpecificGuidance(data: PracticePageData): string {
+	const metadata = data.question.renderingOverlay?.metadata;
+	if (!metadata) return '';
+
+	return QUESTION_GUIDANCE_KEYS.map(([key, label]) => {
+		const value = metadata[key];
+		if (value === undefined || value === null || value === '') return '';
+		return `${label}:\n${compactPromptValue(value)}`;
+	})
+		.filter(Boolean)
+		.join('\n\n');
+}
+
+function isEnglishLiteratureExtendedResponse(data: PracticePageData): boolean {
+	const profile = data.question.renderingOverlay?.metadata?.gradingProfile;
+	return (
+		/english literature/i.test(data.question.meta.subject) ||
+		(typeof profile === 'string' && /english-literature/i.test(profile))
+	);
+}
+
+function buildGradingMethod(data: PracticePageData): string {
+	const englishCapRule =
+		data.question.meta.marks === 40
+			? '- For this 40-mark OCR Shakespeare extract question, no meaningful wider-play reference means a maximum of 22/40; only brief or name-dropped wider reference means a maximum of 28/40. If you mention one of these caps in feedback, the awarded mark must obey it.'
+			: '- Convert any question-specific extract or wider-text cap into a hard ceiling on the awarded mark. If you mention a cap in feedback, the awarded mark must obey it.';
+	const generalMethod = [
+		'Grading method:',
+		'1. Read the student answer as a whole before selecting steps.',
+		'2. Award marks for correct exam-relevant ideas, not exact wording.',
+		'3. Treat the listed answer-chain steps as diagnostic categories for the UI. They are not automatically equal mark buckets.',
+		'4. Mark a step present only when the answer makes that move clearly enough to earn credit; mark it missing when absent, vague, or only named without use.',
+		'5. Credit valid alternative wording or a different defensible interpretation when it fits the mark scheme.'
+	];
+
+	if (!isEnglishLiteratureExtendedResponse(data)) return generalMethod.join('\n');
+
+	return [
+		...generalMethod,
+		'',
+		'English Literature extended-response rules:',
+		'- Apply the OCR level descriptors holistically first, then choose the total mark.',
+		'- The mark is out of the full question total, including SPaG/AO4 when the question includes it.',
+		'- Do not require every example from the model answer or indicative content; they are possible routes, not a checklist.',
+		'- Reward a controlled argument, precise references, analysis of language/form/structure, wider-text links, relevant context, and clear expression.',
+		'- Be alert to OCR caps: an extract-only answer should not normally go beyond Level 3 content, and a brief wider-text reference should not normally go beyond Level 4 content.',
+		englishCapRule,
+		'- Do not reward plot retelling, unsupported assertions, bolted-on context, or confused context just because it contains relevant names.',
+		'- If the answer is nearly good, feedback should tell the student what to tighten. If it is very weak, give one concrete next sentence or reference to add.'
+	].join('\n');
+}
+
 function buildQuestionContext(data: PracticePageData): string {
 	const parts = [
 		data.question.context ? `Question context:\n${data.question.context}` : '',
 		`Question prompt:\n${data.question.prompt}`,
 		`Model answer:\n${data.question.modelAnswer}`,
-		`Common weak answer:\n${data.question.commonWeakAnswer}`
+		`Common weak answer:\n${data.question.commonWeakAnswer}`,
+		data.question.commonWeakExplanation
+			? `Why that weak answer fails:\n${data.question.commonWeakExplanation}`
+			: ''
 	].filter(Boolean);
 	return parts.join('\n\n');
 }
 
 export function buildGradePrompt(data: PracticePageData, studentAnswer: string): string {
+	const questionSpecificGuidance = buildQuestionSpecificGuidance(data);
 	return [
 		'You are grading one GCSE free-text answer for an online practice question.',
 		'Use the exact answer-chain step ids listed below. Do not invent ids.',
-		'Select which listed steps are clearly present in the student answer and which are missing.',
-		'Award marks for correct exam-relevant ideas, not for exact wording. Keep feedback short and student-facing.',
+		'Your job is to give fair examiner-style feedback, not to write a chatty tutor response.',
+		'',
+		buildGradingMethod(data),
 		'',
 		'Return plain text only, exactly in this field format:',
 		'%RESULT%: correct|partial|incorrect',
@@ -225,13 +296,16 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 		`%PRESENT_STEP_IDS%: comma-separated exact ids from the list, or ${NONE}`,
 		`%MISSING_STEP_IDS%: comma-separated exact ids from the list, or ${NONE}`,
 		'%FEEDBACK%:',
-		'Short Markdown feedback in 2-5 bullets. Mention what was present and the next repair move.',
+		'Short Markdown feedback in 3-5 bullets. Include the mark reason, what already earns credit, and the highest-value next repair.',
+		'When helpful, include one improved sentence that stays close to the student answer rather than a full replacement essay.',
+		'Use "correct" only for a secure high-scoring answer with no missing diagnostic step, "partial" for any meaningful credit below that or with any missing step, and "incorrect" for no meaningful credit.',
 		'',
 		'Exam metadata:',
 		`${data.question.meta.board} ${data.question.meta.qualification} ${data.question.meta.subject} ${data.question.meta.tier}`,
 		`${data.question.meta.paper}; topic: ${data.question.meta.topic}; marks: ${data.question.meta.marks}`,
 		'',
 		buildQuestionContext(data),
+		questionSpecificGuidance ? `\nQuestion-specific OCR guidance:\n${questionSpecificGuidance}` : '',
 		'',
 		'Answer-chain steps to select from:',
 		stepSelectionList(data),

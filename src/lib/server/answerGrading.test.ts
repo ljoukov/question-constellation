@@ -96,6 +96,110 @@ const practiceData: PracticePageData = {
 	memoryEntry: {} as PracticePageData['memoryEntry']
 };
 
+const englishPracticeData: PracticePageData = {
+	...practiceData,
+	question: {
+		...practiceData.question,
+		id: 'english-lit-romeo-juliet-fate-guided',
+		sourceRef: 'Q4*',
+		title: 'How Shakespeare presents fate in Romeo and Juliet',
+		prompt:
+			'Explore the ways in which Shakespeare presents fate in this tragedy. Refer to this extract which is the Prologue and elsewhere in the play.',
+		context: "A pair of star-cross'd lovers take their life.",
+		renderingOverlay: {
+			id: 'english-overlay',
+			version: 'v1',
+			provenance: 'manual',
+			confidence: 0.82,
+			needsHumanReview: false,
+			stemBlocks: [],
+			promptBlocks: [],
+			responseInteraction: { kind: 'extended_text', marks: 40 },
+			afterResponseBlocks: [],
+			assets: [],
+			layout: {},
+			metadata: {
+				gradingProfile: 'ocr-gcse-english-literature-section-b-shakespeare-extract',
+				ocrSectionBMarking: {
+					contentMarks: 36,
+					spagMarks: 4,
+					extractQuestionCaps: [
+						'If the answer does not move beyond the Prologue extract, the content mark should not normally move beyond Level 3.'
+					]
+				},
+				examinerReportGuidance: {
+					commonWeaknesses: [
+						'Weaker answers retold the plot or inserted quotations randomly.',
+						'Weaker answers bolted on general context without linking it to fate.'
+					]
+				}
+			}
+		},
+		meta: {
+			qualification: 'GCSE',
+			board: 'OCR',
+			subject: 'English Literature',
+			tier: '',
+			paper: 'J352/02 Exploring poetry and Shakespeare',
+			topic: 'English Literature: Romeo and Juliet: fate',
+			questionType: 'Explore',
+			marks: 40
+		},
+		modelAnswer:
+			"Shakespeare presents fate as a force shaping the tragedy from the Prologue through Romeo's later struggle against the stars.",
+		commonWeakAnswer: 'Romeo and Juliet are unlucky because their families argue and they die.',
+		commonWeakExplanation:
+			'This retells the tragedy but does not analyse Shakespeare methods or link the extract to the wider play.',
+		checklist: [
+			{
+				id: 'claim-check',
+				text: 'AO1: task-focused argument about fate.',
+				stepId: 'english-chain-romeo-juliet-fate-step-claim'
+			},
+			{
+				id: 'method-check',
+				text: "AO2: analysis of Shakespeare's methods.",
+				stepId: 'english-chain-romeo-juliet-fate-step-method'
+			}
+		]
+	},
+	chain: {
+		...practiceData.chain,
+		id: 'english-chain-romeo-juliet-fate',
+		title: 'Romeo and Juliet fate paragraph',
+		canonicalText: 'claim -> evidence -> method -> wider play -> context',
+		steps: [
+			{
+				id: 'english-chain-romeo-juliet-fate-step-claim',
+				short: 'claim',
+				label: 'Make a clear claim about fate in the tragedy',
+				role: 'conclusion',
+				explanation: '',
+				markEvidence: 'AO1 argument',
+				commonOmission: ''
+			},
+			{
+				id: 'english-chain-romeo-juliet-fate-step-method',
+				short: 'method',
+				label: "Explain Shakespeare's method and effect",
+				role: 'method',
+				explanation: '',
+				markEvidence: 'AO2 method',
+				commonOmission: ''
+			},
+			{
+				id: 'english-chain-romeo-juliet-fate-step-context',
+				short: 'context',
+				label: 'Use context and expression to sharpen the argument',
+				role: 'link',
+				explanation: '',
+				markEvidence: 'AO3/AO4 context and expression',
+				commonOmission: ''
+			}
+		]
+	}
+};
+
 describe('answer grading prompt and parser', () => {
 	it('builds a selection-oriented prompt from real question fields', () => {
 		const prompt = buildGradePrompt(
@@ -107,6 +211,20 @@ describe('answer grading prompt and parser', () => {
 		expect(prompt).toContain('id: current');
 		expect(prompt).toContain('Physics Paper 1');
 		expect(prompt).toContain('Student answer:');
+	});
+
+	it('includes OCR English Literature level guidance without making steps rigid mark buckets', () => {
+		const prompt = buildGradePrompt(
+			englishPracticeData,
+			'Shakespeare presents fate through the Prologue because the lovers are star-crossed.'
+		);
+
+		expect(prompt).toContain('English Literature extended-response rules');
+		expect(prompt).toContain('not automatically equal mark buckets');
+		expect(prompt).toContain('extract-only answer should not normally go beyond Level 3');
+		expect(prompt).toContain('Question-specific OCR guidance');
+		expect(prompt).toContain('retold the plot');
+		expect(prompt).toContain('When helpful, include one improved sentence');
 	});
 
 	it('parses sentinel grading fields and ignores unknown step ids', () => {
@@ -129,6 +247,25 @@ describe('answer grading prompt and parser', () => {
 		expect(result.presentStepIds).toEqual(['pd', 'current']);
 		expect(result.missingStepIds).toEqual(['heating-loss']);
 		expect(result.feedbackMarkdown).toContain('heating-loss');
+	});
+
+	it('downgrades inconsistent correct labels when a diagnostic step is still missing', () => {
+		const result = parseGradeResponse(
+			[
+				'%RESULT%: correct',
+				'%AWARDED_MARKS%: 31',
+				'%MAX_MARKS%: 40',
+				'%PRESENT_STEP_IDS%: english-chain-romeo-juliet-fate-step-claim',
+				'%MISSING_STEP_IDS%: english-chain-romeo-juliet-fate-step-context',
+				'%FEEDBACK%:',
+				'- Strong but missing context.'
+			].join('\n'),
+			englishPracticeData
+		);
+
+		expect(result.result).toBe('partial');
+		expect(result.awardedMarks).toBe(31);
+		expect(result.missingStepIds).toEqual(['english-chain-romeo-juliet-fate-step-context']);
 	});
 });
 

@@ -54,28 +54,28 @@ const modelAnswer =
 const markItems = [
 	{
 		id: `${questionId}-ms-argument`,
-		text: 'Clear argument about how Shakespeare presents fate in the tragedy, not only plot summary.',
-		marks: 8
+		text: 'AO1: clear, task-focused argument about how Shakespeare presents fate in the tragedy, supported by knowledge of the play rather than plot summary.',
+		marks: 10
 	},
 	{
 		id: `${questionId}-ms-evidence`,
-		text: 'Precise quotation or textual reference from the Prologue or wider play.',
+		text: 'AO1: precise textual references from the Prologue and the wider play, integrated into the argument.',
 		marks: 8
 	},
 	{
 		id: `${questionId}-ms-method`,
-		text: "Analysis of Shakespeare's methods, such as the Chorus, sonnet form, imagery, structure, or dramatic irony.",
-		marks: 9
+		text: "AO2: analysis of Shakespeare's methods, such as the Chorus, sonnet form, imagery, structure, dramatic irony, and audience effect.",
+		marks: 10
 	},
 	{
 		id: `${questionId}-ms-wider`,
-		text: 'Connection between the Prologue and moments elsewhere in Romeo and Juliet.',
-		marks: 7
+		text: 'AO1/AO2: meaningful connection between the Prologue and moments elsewhere in Romeo and Juliet, not a detached second example.',
+		marks: 6
 	},
 	{
 		id: `${questionId}-ms-context`,
-		text: 'Relevant context and controlled expression, including ideas about astrology, tragedy, fate, or audience expectation.',
-		marks: 8
+		text: 'AO3/AO4: relevant context and controlled expression, including ideas about astrology, tragedy, fate, social disorder, audience expectation, and SPaG.',
+		marks: 6
 	}
 ];
 
@@ -129,6 +129,72 @@ const metadata = {
 	officialOcrQuestion: true,
 	sourceQuestionPaperUrl: questionPaperUrl,
 	sourceMarkSchemeUrl: markSchemeUrl,
+	sourceExaminerReportUrl:
+		'https://www.ocr.org.uk/Images/729389-examiners-report-exploring-poetry-and-shakespeare.pdf',
+	gradingProfile: 'ocr-gcse-english-literature-section-b-shakespeare-extract',
+	ocrSectionBMarking: {
+		totalMarks: 40,
+		contentMarks: 36,
+		spagMarks: 4,
+		assessmentObjectiveWeights: {
+			AO1: 14,
+			AO2: 14,
+			AO3: 8,
+			AO4: 4
+		},
+		levelSummary: [
+			'31-36 content: sustained critical style, perceptive understanding, precise interwoven references, detailed sensitive AO2, perceptive context.',
+			'25-30 content: convincing critical style, well-developed response, integrated references, thoughtful AO2, convincing context.',
+			'19-24 content: credible critical style, detailed response, relevant references, some analytical AO2, clear context.',
+			'13-18 content: reasonably developed response with some relevant references, reasonable AO2 explanation, some relevant context.',
+			'7-12 content: straightforward response, some textual support, simple comments on language/form/structure, some implied context.',
+			'1-6 content: basic relevant comments, limited references, little awareness of method or context.'
+		],
+		extractQuestionCaps: [
+			'If the answer does not move beyond the Prologue extract, the content mark should not normally move beyond Level 3: for this 40-mark question, do not award above 22/40 including SPaG.',
+			'If the answer refers only briefly to the wider play, the content mark should not normally move beyond Level 4: for this 40-mark question, do not award above 28/40 including SPaG.'
+		],
+		spagSummary: [
+			'4 SPaG: consistently accurate spelling and punctuation, controlled vocabulary and sentence structures.',
+			'2-3 SPaG: considerable accuracy and general control of meaning.',
+			'1 SPaG: reasonable accuracy; errors do not stop meaning.'
+		]
+	},
+	markSchemeGuidance: {
+		credit: [
+			"Credit arguments that Romeo and Juliet's love is death-marked from the beginning and that the audience knows this before the characters do.",
+			"Credit discussion of fatal loins, star-cross'd lovers, death-mark'd love, misadventured overthrows, fortune, chance, accident, and debate about destiny versus human choice.",
+			"Credit wider-play links including Queen Mab, the first meeting, prodigious birth of love, fortune's fool, ill-divining soul, I defy you stars, misfortune's book, Friar Lawrence's failed message, the tomb scene, and the Prince's closing judgement.",
+			'Credit method analysis of the Prologue as sonnet, Chorus, dramatic irony, theatrical structure, star imagery, and the contrast between rage and love.',
+			'Credit relevant context about astrology, predetermination, tragedy, social feud/civil disorder, Fortune, providence, and audience expectations where it sharpens the argument.'
+		],
+		cautions: [
+			'Do not require every indicative example; OCR says other valid content should be credited.',
+			'Do not reward plot summary unless it is used to support a clear argument about fate.',
+			'Do not reward context that is bolted on and not linked to the question.',
+			'Do not treat Fortune and God as interchangeable if the answer becomes confused.'
+		]
+	},
+	examinerReportGuidance: {
+		successSignals: [
+			"Strong answers understood the Prologue as setting out how fate and chance shape the lovers' lives and deaths.",
+			'Strong answers grasped the sonnet form and dramatic structure, then made confident links to well-selected moments elsewhere.',
+			'Strong answers returned to the extract while discussing wider moments, making genuine links rather than adding a separate paragraph.',
+			'Some strong answers considered agency versus fate, but the line of argument had to remain controlled.'
+		],
+		commonWeaknesses: [
+			'Weaker answers retold the plot or inserted quotations randomly.',
+			'Weaker answers used pre-prepared material that drifted away from the wording of the task.',
+			'Weaker answers bolted on general context about patriarchy, church, divine right, or social order without linking it to fate.',
+			'Some answers confused the Chorus addressing the audience or became unclear when discussing Fortune, God, and agency.',
+			'Long answers could become repetitive; quality and control matter more than quantity.'
+		],
+		feedbackPriorities: [
+			'Name the highest-value missing move: task argument, precise evidence, method/effect, wider-play link, or relevant context/expression.',
+			'When an answer is nearly good, tell the student what to tighten rather than replacing the whole answer.',
+			'When an answer is stuck or very weak, give one concrete next sentence or reference to add.'
+		]
+	},
 	note: 'Guided-practice seed based on OCR June 2024 J352/02 Question 4*. Extract text is from Shakespeare.'
 };
 
