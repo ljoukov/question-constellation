@@ -1,7 +1,7 @@
 import { queryFirst } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-const ENGLISH_GUIDED_QUESTION_ID = 'english-lit-macbeth-conflicted-guided';
+const ENGLISH_GUIDED_QUESTION_ID = 'english-lit-romeo-juliet-fate-guided';
 
 type EnglishQuestionRow = {
 	id: string;
@@ -27,6 +27,7 @@ type GuidedQuestionMetadata = {
 	stem?: string;
 	instructions?: string[];
 	extract?: string[];
+	sourceQuestionRef?: string;
 };
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -80,7 +81,8 @@ export const load: PageServerLoad = async () => {
 				qualification: row.qualification ?? 'GCSE',
 				subject: row.subject ?? 'English Literature',
 				paper: row.paper ?? row.source_title ?? 'English paper',
-				marks: row.marks ?? 30,
+				marks: row.marks ?? 40,
+				sourceQuestionRef: metadata.sourceQuestionRef ?? row.source_question_ref,
 				source: metadata.source ?? row.source_title ?? 'D1 English guided question',
 				title: metadata.title ?? 'English guided answer practice',
 				stem: metadata.stem ?? row.prompt_text,

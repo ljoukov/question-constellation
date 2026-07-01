@@ -1,124 +1,148 @@
 import { d1Query, d1Rows } from './lib/d1-rest.mjs';
 
-const importId = 'english-guided-macbeth-seed-v1';
-const sourceDocumentId = 'ocr-english-lit-macbeth-guided-sample';
-const questionId = 'english-lit-macbeth-conflicted-guided';
-const chainId = 'english-chain-macbeth-conflict';
-const constellationId = 'english-constellation-macbeth-conflict';
-const sourceQuestionRef = '21';
+const importId = 'english-guided-romeo-juliet-fate-seed-v1';
+const sourceDocumentId = 'ocr-j352-02-jun24-romeo-juliet-fate';
+const questionId = 'english-lit-romeo-juliet-fate-guided';
+const chainId = 'english-chain-romeo-juliet-fate';
+const constellationId = 'english-constellation-romeo-juliet-fate';
+const sourceQuestionRef = '4*';
+const questionPaperUrl =
+	'https://www.ocr.org.uk/Images/727831-question-paper-exploring-poetry-and-shakespeare.pdf';
+const markSchemeUrl =
+	'https://www.ocr.org.uk/Images/727833-mark-scheme-exploring-poetry-and-shakespeare.pdf';
+
+const legacySeeds = [
+	{
+		importId: 'english-guided-macbeth-seed-v1',
+		sourceDocumentId: 'ocr-english-lit-macbeth-guided-sample',
+		questionId: 'english-lit-macbeth-conflicted-guided',
+		chainId: 'english-chain-macbeth-conflict',
+		constellationId: 'english-constellation-macbeth-conflict'
+	}
+];
 
 const extract = [
-	'Is this a dagger which I see before me,',
-	'The handle toward my hand? Come, let me clutch thee.',
-	'I have thee not, and yet I see thee still.',
-	'Art thou not, fatal vision, sensible',
-	'To feeling as to sight? or art thou but',
-	'A dagger of the mind, a false creation,',
-	'Proceeding from the heat-oppressed brain?',
-	'I see thee yet, in form as palpable',
-	'As this which now I draw.'
+	'Two households, both alike in dignity,',
+	'In fair Verona, where we lay our scene,',
+	'From ancient grudge break to new mutiny,',
+	'Where civil blood makes civil hands unclean.',
+	'From forth the fatal loins of these two foes',
+	"A pair of star-cross'd lovers take their life;",
+	'Whose misadventured piteous overthrows',
+	"Doth with their death bury their parents' strife.",
+	"The fearful passage of their death-mark'd love,",
+	"And the continuance of their parents' rage,",
+	"Which, but their children's end, nought could remove,",
+	"Is now the two hours' traffic of our stage;",
+	'The which if you with patient ears attend,',
+	'What here shall miss, our toil shall strive to mend.'
 ];
 
 const stem =
-	'Starting with this extract, explore how Shakespeare presents Macbeth as a conflicted character.';
+	'Explore the ways in which Shakespeare presents fate in this tragedy. Refer to this extract which is the Prologue and elsewhere in the play.';
 
 const instructions = [
-	'Write about how Macbeth is presented in this extract.',
-	'Write about how Shakespeare presents Macbeth elsewhere in the play.',
-	'Use references to the play to support your answer.'
+	'Write about how fate is presented in this extract.',
+	'Write about how Shakespeare presents fate elsewhere in the play.',
+	'Use references to the play to support your answer.',
+	'Remember that 6 marks are available for spelling, punctuation, grammar and specialist terminology.'
 ];
 
 const modelAnswer =
-	'Shakespeare presents Macbeth as conflicted by making the dagger both tempting and unreachable. The phrase "fatal vision" suggests that Macbeth can imagine the murder clearly, but the word "vision" also makes it unstable, as if his ambition is disturbing his mind. Because he reaches for the dagger but cannot touch it, the audience sees him caught between action and fear. This conflict connects to the wider play because Macbeth hesitates before killing Duncan, but later his ambition and guilt make him more violent. For a Jacobean audience, his struggle would also feel dangerous because regicide breaks the expected order of kingship.';
+	'Shakespeare presents fate as a force that seems to shape the whole tragedy before the action begins. The Prologue calls Romeo and Juliet "star-cross\'d lovers", suggesting that their love is controlled by forces beyond ordinary choice, while "death-mark\'d love" makes the ending feel unavoidable. The Chorus also creates dramatic irony because the audience knows the lovers are doomed before they do. This idea develops elsewhere when Romeo calls himself "fortune\'s fool" after Mercutio dies and later declares "I defy you, stars", as if he tries to fight the fate already set out in the opening. A strong answer could also argue that Shakespeare leaves space for human responsibility: the family feud, Friar Lawrence\'s failed plan and the missed letter all make fate look like a mixture of destiny, chance and human error. For an audience familiar with astrology and tragedy, the language of stars and fortune would make the lovers seem trapped by a larger order.';
 
 const markItems = [
 	{
 		id: `${questionId}-ms-argument`,
-		text: 'Clear argument about Macbeth as conflicted, not only plot summary.',
-		marks: 6
-	},
-	{
-		id: `${questionId}-ms-evidence`,
-		text: 'Precise quotation or textual reference from the extract or wider play.',
-		marks: 6
-	},
-	{
-		id: `${questionId}-ms-method`,
-		text: "Analysis of Shakespeare's language, imagery, staging, or audience effect.",
+		text: 'Clear argument about how Shakespeare presents fate in the tragedy, not only plot summary.',
 		marks: 8
 	},
 	{
+		id: `${questionId}-ms-evidence`,
+		text: 'Precise quotation or textual reference from the Prologue or wider play.',
+		marks: 8
+	},
+	{
+		id: `${questionId}-ms-method`,
+		text: "Analysis of Shakespeare's methods, such as the Chorus, sonnet form, imagery, structure, or dramatic irony.",
+		marks: 9
+	},
+	{
 		id: `${questionId}-ms-wider`,
-		text: 'Connection between the extract and Macbeth elsewhere in the play.',
-		marks: 5
+		text: 'Connection between the Prologue and moments elsewhere in Romeo and Juliet.',
+		marks: 7
 	},
 	{
 		id: `${questionId}-ms-context`,
-		text: 'Relevant context linked to the argument, such as kingship, regicide, ambition, or the supernatural.',
-		marks: 5
+		text: 'Relevant context and controlled expression, including ideas about astrology, tragedy, fate, or audience expectation.',
+		marks: 8
 	}
 ];
 
 const chainSteps = [
 	{
 		id: `${chainId}-step-claim`,
-		text: 'Make a clear claim about Macbeth as conflicted',
+		text: 'Make a clear claim about fate in the tragedy',
 		role: 'conclusion',
 		explanation: 'A high-mark answer starts by answering the exact task.',
-		commonOmission: 'Retelling the scene without naming the conflict.'
+		commonOmission: 'Retelling the story without saying what Shakespeare suggests about fate.'
 	},
 	{
 		id: `${chainId}-step-evidence`,
 		text: 'Anchor the point in precise evidence',
 		role: 'evidence',
-		explanation: 'Use a short quotation or precise reference that can be analysed.',
+		explanation: 'Use a short quotation or precise reference from the Prologue or wider play.',
 		commonOmission: 'Making a general claim without source support.'
 	},
 	{
 		id: `${chainId}-step-method`,
 		text: "Explain Shakespeare's method and effect",
 		role: 'method',
-		explanation: 'Move from quotation to language, imagery, staging, or audience effect.',
+		explanation: 'Move from quotation to method, structure, dramatic irony, or audience effect.',
 		commonOmission: 'Naming a technique without explaining what it shows.'
 	},
 	{
 		id: `${chainId}-step-wider`,
 		text: 'Connect the extract to the wider play',
 		role: 'link',
-		explanation: 'Show how this moment develops before or after Duncan is murdered.',
+		explanation: 'Show how fate, chance, and choice return later in the play.',
 		commonOmission: 'Writing only about the extract when the question asks elsewhere too.'
 	},
 	{
 		id: `${chainId}-step-context`,
-		text: 'Link relevant context to the argument',
+		text: 'Use context and expression to sharpen the argument',
 		role: 'link',
-		explanation: 'Use context only where it strengthens the reading of Macbeth as conflicted.',
-		commonOmission: 'Adding context as a disconnected fact.'
+		explanation: 'Use context only where it strengthens the reading of fate and tragedy.',
+		commonOmission:
+			'Adding context as a disconnected fact, or losing marks through unclear expression.'
 	}
 ];
 
 const metadata = {
-	title: 'How Shakespeare presents Macbeth as conflicted',
-	source: 'OCR-style sample using public-domain Macbeth text',
+	title: 'How Shakespeare presents fate in Romeo and Juliet',
+	source: 'OCR June 2024 J352/02 Question 4*',
 	stem,
 	instructions,
 	extract,
+	sourceQuestionRef,
 	seededForRoute: '/english',
-	officialOcrQuestion: false,
-	note: 'Curated guided-practice seed. Full OCR PDF extraction/import is separate.'
+	officialOcrQuestion: true,
+	sourceQuestionPaperUrl: questionPaperUrl,
+	sourceMarkSchemeUrl: markSchemeUrl,
+	note: 'Guided-practice seed based on OCR June 2024 J352/02 Question 4*. Extract text is from Shakespeare.'
 };
 
 const renderJson = {
 	stemBlocks: [
-		{ type: 'text', text: 'OCR-style sample using public-domain Macbeth text' },
+		{ type: 'text', text: 'OCR June 2024 J352/02 Question 4*' },
 		{ type: 'extract', lines: extract }
 	],
 	promptBlocks: [
 		{ type: 'paragraph', text: stem },
 		{ type: 'list', items: instructions }
 	],
-	response: { kind: 'extended_text', marks: 30, suggestedLines: 28 },
-	afterResponseBlocks: [{ type: 'marks', text: '[30]' }],
+	response: { kind: 'extended_text', marks: 40, suggestedLines: 32 },
+	afterResponseBlocks: [{ type: 'marks', text: '[40]' }],
 	assets: [],
 	layout: { kind: 'exam-paper', questionNumber: sourceQuestionRef },
 	metadata
@@ -129,35 +153,42 @@ async function exec(sql, params = []) {
 }
 
 async function deleteExistingRows() {
-	const statements = [
-		[
-			'DELETE FROM common_weak_answers WHERE question_id = ? OR answer_chain_id = ?',
-			[questionId, chainId]
-		],
-		[
-			'DELETE FROM constellation_questions WHERE constellation_id = ? OR question_id = ?',
-			[constellationId, questionId]
-		],
-		['DELETE FROM constellations WHERE id = ?', [constellationId]],
-		[
-			'DELETE FROM question_answer_chains WHERE question_id = ? OR answer_chain_id = ?',
-			[questionId, chainId]
-		],
-		['DELETE FROM answer_chain_steps WHERE answer_chain_id = ?', [chainId]],
-		['DELETE FROM model_answers WHERE question_id = ?', [questionId]],
-		['DELETE FROM mark_checklist_items WHERE question_id = ?', [questionId]],
-		['DELETE FROM mark_scheme_items WHERE question_id = ?', [questionId]],
-		['DELETE FROM question_response_answer_keys WHERE question_id = ?', [questionId]],
-		['DELETE FROM question_rendering_overlays WHERE question_id = ?', [questionId]],
-		['DELETE FROM question_assets WHERE question_id = ?', [questionId]],
-		['DELETE FROM questions WHERE id = ?', [questionId]],
-		['DELETE FROM answer_chains WHERE id = ?', [chainId]],
-		['DELETE FROM source_documents WHERE id = ?', [sourceDocumentId]],
-		['DELETE FROM content_imports WHERE id = ?', [importId]]
+	const seedsToDelete = [
+		{ importId, sourceDocumentId, questionId, chainId, constellationId },
+		...legacySeeds
 	];
 
-	for (const [sql, params] of statements) {
-		await exec(sql, params);
+	for (const seed of seedsToDelete) {
+		const statements = [
+			[
+				'DELETE FROM common_weak_answers WHERE question_id = ? OR answer_chain_id = ?',
+				[seed.questionId, seed.chainId]
+			],
+			[
+				'DELETE FROM constellation_questions WHERE constellation_id = ? OR question_id = ?',
+				[seed.constellationId, seed.questionId]
+			],
+			['DELETE FROM constellations WHERE id = ?', [seed.constellationId]],
+			[
+				'DELETE FROM question_answer_chains WHERE question_id = ? OR answer_chain_id = ?',
+				[seed.questionId, seed.chainId]
+			],
+			['DELETE FROM answer_chain_steps WHERE answer_chain_id = ?', [seed.chainId]],
+			['DELETE FROM model_answers WHERE question_id = ?', [seed.questionId]],
+			['DELETE FROM mark_checklist_items WHERE question_id = ?', [seed.questionId]],
+			['DELETE FROM mark_scheme_items WHERE question_id = ?', [seed.questionId]],
+			['DELETE FROM question_response_answer_keys WHERE question_id = ?', [seed.questionId]],
+			['DELETE FROM question_rendering_overlays WHERE question_id = ?', [seed.questionId]],
+			['DELETE FROM question_assets WHERE question_id = ?', [seed.questionId]],
+			['DELETE FROM questions WHERE id = ?', [seed.questionId]],
+			['DELETE FROM answer_chains WHERE id = ?', [seed.chainId]],
+			['DELETE FROM source_documents WHERE id = ?', [seed.sourceDocumentId]],
+			['DELETE FROM content_imports WHERE id = ?', [seed.importId]]
+		];
+
+		for (const [sql, params] of statements) {
+			await exec(sql, params);
+		}
 	}
 }
 
@@ -192,13 +223,13 @@ async function insertSeedRows() {
 			null,
 			'J352/02 Exploring poetry and Shakespeare',
 			'J352/02',
-			'guided-sample',
-			null,
-			'OCR-style Macbeth guided sample',
-			null,
-			null,
-			null,
-			null,
+			'June 2024',
+			2024,
+			'OCR J352/02 June 2024 Question paper - Exploring poetry and Shakespeare',
+			questionPaperUrl,
+			'data/ocr-gcse-english-literature/question-papers/OCR-J352-02-QP-JUN24.PDF',
+			'c0f3be806bddf97e106ac6a1c3ff57e676871c83a68a086eaad97cf0f2017574',
+			16,
 			JSON.stringify(metadata)
 		]
 	);
@@ -223,7 +254,7 @@ async function insertSeedRows() {
 			`${stem}\n\n${extract.join('\n')}\n\n${instructions.join('\n')}`,
 			extract.join('\n'),
 			'explore',
-			30,
+			40,
 			'OCR',
 			'GCSE',
 			'English Literature',
@@ -231,9 +262,9 @@ async function insertSeedRows() {
 			null,
 			'J352/02 Exploring poetry and Shakespeare',
 			'J352/02',
-			'guided-sample',
-			null,
-			JSON.stringify(['English Literature', 'Macbeth', 'character conflict']),
+			'June 2024',
+			2024,
+			JSON.stringify(['English Literature', 'Romeo and Juliet', 'fate']),
 			null,
 			null,
 			null,
@@ -328,12 +359,12 @@ async function insertSeedRows() {
 		[
 			chainId,
 			chainId,
-			'Macbeth conflict paragraph',
+			'Romeo and Juliet fate paragraph',
 			'claim -> evidence -> method -> wider play -> context',
 			'English Literature',
 			'English',
-			'Macbeth',
-			'Build a high-mark Macbeth paragraph by growing from a clear claim to evidence, method, wider-play link, and relevant context.',
+			'Romeo and Juliet',
+			'Build a high-mark Romeo and Juliet paragraph about fate by growing from a clear claim to evidence, method, wider-play link, and relevant context.',
 			'manual_seed',
 			0.82,
 			0,
@@ -397,7 +428,7 @@ async function insertSeedRows() {
 		[
 			constellationId,
 			constellationId,
-			'Macbeth conflict paragraphs',
+			'Romeo and Juliet fate paragraphs',
 			chainId,
 			'OCR',
 			'GCSE',
@@ -405,7 +436,7 @@ async function insertSeedRows() {
 			'English',
 			null,
 			'J352/02 Exploring poetry and Shakespeare',
-			JSON.stringify(['English Literature', 'Macbeth']),
+			JSON.stringify(['English Literature', 'Romeo and Juliet', 'fate']),
 			'Guided practice for building high-mark Shakespeare paragraphs in stages.',
 			0.82,
 			0,
@@ -443,13 +474,13 @@ async function insertSeedRows() {
 			`${questionId}-weak-summary-only`,
 			questionId,
 			chainId,
-			'Macbeth sees a dagger and feels scared, then he kills Duncan.',
+			'Romeo and Juliet are unlucky because their families argue and they both die.',
 			JSON.stringify([
 				`${chainId}-step-method`,
 				`${chainId}-step-wider`,
 				`${chainId}-step-context`
 			]),
-			"This retells the moment but does not explain Shakespeare's method, connect elsewhere in the play, or link context to the argument.",
+			"This retells the tragedy but does not explain Shakespeare's methods, connect precise moments across the play, or link fate to context and audience expectations.",
 			'manual_seed',
 			0.78,
 			0

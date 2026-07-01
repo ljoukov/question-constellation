@@ -62,7 +62,7 @@
 	};
 
 	const subjects = ['English', 'Biology', 'Chemistry', 'Physics'];
-	const fallbackQuestionId = 'english-lit-macbeth-conflicted-guided';
+	const fallbackQuestionId = 'english-lit-romeo-juliet-fate-guided';
 	const stepResponse = { kind: 'lines', count: 5 } satisfies ExamResponse;
 	const fullResponse = { kind: 'lines', count: 16 } satisfies ExamResponse;
 	let { data }: PageProps = $props();
@@ -73,27 +73,34 @@
 		qualification: 'GCSE',
 		subject: 'English Literature',
 		paper: 'J352/02 Exploring poetry and Shakespeare',
-		marks: 30,
-		source: 'OCR-style sample using public-domain Macbeth text',
-		title: 'How Shakespeare presents Macbeth as conflicted',
-		stem: 'Starting with this extract, explore how Shakespeare presents Macbeth as a conflicted character.',
+		marks: 40,
+		sourceQuestionRef: '4*',
+		source: 'OCR June 2024 J352/02 Question 4*',
+		title: 'How Shakespeare presents fate in Romeo and Juliet',
+		stem: 'Explore the ways in which Shakespeare presents fate in this tragedy. Refer to this extract which is the Prologue and elsewhere in the play.',
 		modelAnswer:
-			'Shakespeare presents Macbeth as conflicted by making the dagger both tempting and unreachable. The phrase "fatal vision" suggests that Macbeth can imagine the murder clearly, but the word "vision" also makes it unstable, as if his ambition is disturbing his mind. Because he reaches for the dagger but cannot touch it, the audience sees him caught between action and fear. This conflict connects to the wider play because Macbeth hesitates before killing Duncan, but later his ambition and guilt make him more violent. For a Jacobean audience, his struggle would also feel dangerous because regicide breaks the expected order of kingship.',
+			'Shakespeare presents fate as a force that seems to shape the whole tragedy before the action begins. The Prologue calls Romeo and Juliet "star-cross\'d lovers", suggesting that their love is controlled by forces beyond ordinary choice, while "death-mark\'d love" makes the ending feel unavoidable. The Chorus also creates dramatic irony because the audience knows the lovers are doomed before they do. This idea develops elsewhere when Romeo calls himself "fortune\'s fool" after Mercutio dies and later declares "I defy you, stars", as if he tries to fight the fate already set out in the opening. A strong answer could also argue that Shakespeare leaves space for human responsibility: the family feud, Friar Lawrence\'s failed plan and the missed letter all make fate look like a mixture of destiny, chance and human error. For an audience familiar with astrology and tragedy, the language of stars and fortune would make the lovers seem trapped by a larger order.',
 		instructions: [
-			'Write about how Macbeth is presented in this extract.',
-			'Write about how Shakespeare presents Macbeth elsewhere in the play.',
-			'Use references to the play to support your answer.'
+			'Write about how fate is presented in this extract.',
+			'Write about how Shakespeare presents fate elsewhere in the play.',
+			'Use references to the play to support your answer.',
+			'Remember that 6 marks are available for spelling, punctuation, grammar and specialist terminology.'
 		],
 		extract: [
-			'Is this a dagger which I see before me,',
-			'The handle toward my hand? Come, let me clutch thee.',
-			'I have thee not, and yet I see thee still.',
-			'Art thou not, fatal vision, sensible',
-			'To feeling as to sight? or art thou but',
-			'A dagger of the mind, a false creation,',
-			'Proceeding from the heat-oppressed brain?',
-			'I see thee yet, in form as palpable',
-			'As this which now I draw.'
+			'Two households, both alike in dignity,',
+			'In fair Verona, where we lay our scene,',
+			'From ancient grudge break to new mutiny,',
+			'Where civil blood makes civil hands unclean.',
+			'From forth the fatal loins of these two foes',
+			"A pair of star-cross'd lovers take their life;",
+			'Whose misadventured piteous overthrows',
+			"Doth with their death bury their parents' strife.",
+			"The fearful passage of their death-mark'd love,",
+			"And the continuance of their parents' rage,",
+			"Which, but their children's end, nought could remove,",
+			"Is now the two hours' traffic of our stage;",
+			'The which if you with patient ears attend,',
+			'What here shall miss, our toil shall strive to mend.'
 		]
 	};
 	const question = $derived(data.guidedQuestion ?? fallbackQuestion);
@@ -102,67 +109,67 @@
 	const stages: Stage[] = [
 		{
 			id: 'task',
-			stepId: 'english-chain-macbeth-conflict-step-claim',
+			stepId: 'english-chain-romeo-juliet-fate-step-claim',
 			title: 'Read the task',
 			shortTitle: 'Task',
-			markRange: '0-6',
+			markRange: '0-8',
 			revealTitle: 'Question focus',
 			revealedText:
-				'The task is not asking for a plot summary. It asks how Shakespeare presents Macbeth as conflicted, starting with this moment and then reaching elsewhere in the play.',
-			prompt: 'What exactly must your answer prove about Macbeth?',
-			placeholder: 'Macbeth is shown as conflicted because...',
-			goal: 'Make a direct claim about Macbeth and the focus word in the question.'
+				'The task is not asking for a plot summary. It asks how Shakespeare presents fate in the tragedy, starting with the Prologue and then reaching elsewhere in the play.',
+			prompt: 'What exactly must your answer prove about fate?',
+			placeholder: 'Shakespeare presents fate as...',
+			goal: 'Make a direct claim about fate and tragedy.'
 		},
 		{
 			id: 'evidence',
-			stepId: 'english-chain-macbeth-conflict-step-evidence',
+			stepId: 'english-chain-romeo-juliet-fate-step-evidence',
 			title: 'Choose first evidence',
 			shortTitle: 'Quote',
-			markRange: '6-12',
+			markRange: '8-16',
 			revealTitle: 'First extract slice',
 			revealedText:
-				'"Is this a dagger which I see before me" and "fatal vision" let you write about hallucination, temptation, fear, and violent intent.',
+				'"Star-cross\'d lovers", "fatal loins", and "death-mark\'d love" all let you write about fate, danger, and an ending that seems fixed from the start.',
 			prompt: 'Choose one word or phrase from the extract and say why it matters.',
-			placeholder: 'The phrase "fatal vision" matters because...',
+			placeholder: 'The phrase "star-cross\'d lovers" matters because...',
 			goal: 'Anchor the point in a quotation instead of making a general comment.'
 		},
 		{
 			id: 'analysis',
-			stepId: 'english-chain-macbeth-conflict-step-method',
+			stepId: 'english-chain-romeo-juliet-fate-step-method',
 			title: 'Explain the method',
 			shortTitle: 'Effect',
-			markRange: '12-18',
+			markRange: '16-25',
 			revealTitle: 'Language lens',
 			revealedText:
-				'The image is both physical and uncertain. Macbeth reaches for the dagger but cannot touch it, so Shakespeare can stage conflict inside his mind.',
-			prompt: 'What does Shakespeare make the audience notice about Macbeth through this image?',
-			placeholder: 'This suggests Macbeth is torn between...',
+				'The Chorus tells the audience the ending before the play unfolds. That creates dramatic irony and makes the lovers seem trapped inside the pattern of tragedy.',
+			prompt: 'What does Shakespeare make the audience understand through the Prologue?',
+			placeholder: 'This makes the audience see the lovers as...',
 			goal: 'Move from quotation to effect: what the method makes the audience understand.'
 		},
 		{
 			id: 'development',
-			stepId: 'english-chain-macbeth-conflict-step-wider',
+			stepId: 'english-chain-romeo-juliet-fate-step-wider',
 			title: 'Open the wider question',
 			shortTitle: 'Link',
-			markRange: '18-24',
+			markRange: '25-32',
 			revealTitle: 'More of the question',
 			revealedText:
-				'The full question also asks about elsewhere in the play. Link this moment to Macbeth before Duncan is murdered, then to how guilt and ambition change him later.',
-			prompt: 'Where else in the play could you connect this conflict?',
-			placeholder: 'Elsewhere, Macbeth is conflicted when...',
+				'The full question also asks about elsewhere in the play. You could link to Queen Mab, "fortune\'s fool", "I defy you, stars", Friar Lawrence\'s failed message, or the tomb scene.',
+			prompt: 'Where else in the play could you connect this idea of fate?',
+			placeholder: 'Elsewhere, fate seems important when...',
 			goal: 'Show that the paragraph can grow beyond the extract.'
 		},
 		{
 			id: 'response',
-			stepId: 'english-chain-macbeth-conflict-step-context',
+			stepId: 'english-chain-romeo-juliet-fate-step-context',
 			title: 'Build the full answer',
 			shortTitle: 'Essay',
-			markRange: '24-30',
+			markRange: '32-40',
 			revealTitle: 'Full response shape',
 			revealedText:
-				"A high-mark answer makes a clear argument, uses evidence, analyses Shakespeare's choices, and links the extract to the wider play and audience expectations.",
+				"A high-mark answer makes a clear argument, uses evidence, analyses Shakespeare's choices, links the Prologue to the wider play, and keeps expression controlled for the SPaG marks.",
 			prompt: 'Turn your notes into one developed paragraph.',
-			placeholder: 'Shakespeare presents Macbeth as conflicted in this extract by...',
+			placeholder: 'Shakespeare presents fate in Romeo and Juliet by...',
 			goal: 'Join the previous steps into a paragraph that can be checked against the mark scheme.'
 		}
 	];
@@ -219,93 +226,114 @@
 		return [
 			{
 				id: 'argument',
-				stepId: 'english-chain-macbeth-conflict-step-claim',
+				stepId: 'english-chain-romeo-juliet-fate-step-claim',
 				title: 'Clear answer to the task',
-				marks: 6,
+				marks: 8,
 				present:
 					hasAttempt &&
-					includesAny(trimmed, ['conflict', 'conflicted', 'torn', 'hesitat', 'struggle']) &&
-					includesAny(trimmed, ['Macbeth', 'Shakespeare']),
-				found: 'You make an argument about Macbeth rather than only retelling the scene.',
-				missing:
-					'Start with a direct argument about how Shakespeare presents Macbeth as conflicted.'
+					includesAny(trimmed, [
+						'fate',
+						'fated',
+						'destiny',
+						'predetermin',
+						'doomed',
+						'chance',
+						'fortune',
+						'tragedy'
+					]) &&
+					includesAny(trimmed, ['Romeo', 'Juliet', 'Shakespeare']),
+				found: 'You make an argument about fate rather than only retelling the plot.',
+				missing: 'Start with a direct argument about how Shakespeare presents fate in the tragedy.'
 			},
 			{
 				id: 'evidence',
-				stepId: 'english-chain-macbeth-conflict-step-evidence',
+				stepId: 'english-chain-romeo-juliet-fate-step-evidence',
 				title: 'Precise textual evidence',
-				marks: 6,
+				marks: 8,
 				present: includesAny(trimmed, [
-					'dagger',
-					'fatal vision',
-					'heat-oppressed',
-					'false creation',
-					'mind',
-					'bell',
-					'blood',
-					'guilt'
+					'star-cross',
+					'fatal loins',
+					'death-mark',
+					'ancient grudge',
+					'misadventured',
+					'fortune',
+					'defy you, stars',
+					'prologue',
+					'chorus'
 				]),
 				found: 'You use textual evidence that can be analysed.',
-				missing: 'Add a short quotation or precise reference from the extract or wider play.'
+				missing: 'Add a short quotation or precise reference from the Prologue or wider play.'
 			},
 			{
 				id: 'method',
-				stepId: 'english-chain-macbeth-conflict-step-method',
+				stepId: 'english-chain-romeo-juliet-fate-step-method',
 				title: "Analysis of Shakespeare's methods",
-				marks: 8,
+				marks: 9,
 				present: includesAny(trimmed, [
 					'suggest',
 					'imply',
 					'connot',
 					'image',
 					'imagery',
+					'sonnet',
+					'prologue',
+					'chorus',
+					'foreshadow',
+					'dramatic irony',
 					'metaphor',
-					'soliloquy',
 					'audience',
-					'stage',
+					'structure',
 					'dramatic'
 				]),
 				found: 'You explain how a writer choice shapes meaning.',
 				missing:
-					"Explain what Shakespeare's language, image, or stage moment makes the audience think."
+					"Explain what Shakespeare's language, structure, or dramatic irony makes the audience understand."
 			},
 			{
 				id: 'wider',
-				stepId: 'english-chain-macbeth-conflict-step-wider',
+				stepId: 'english-chain-romeo-juliet-fate-step-wider',
 				title: 'Connection to the wider play',
-				marks: 5,
+				marks: 7,
 				present: includesAny(trimmed, [
 					'elsewhere',
 					'later',
 					'before',
 					'after',
-					'Duncan',
-					'Lady Macbeth',
-					'ambition',
-					'guilt',
-					'king'
+					'queen mab',
+					"fortune's fool",
+					'defy you, stars',
+					'friar',
+					'letter',
+					'tomb',
+					'mercutio',
+					'tybalt',
+					'act 3',
+					'act 5'
 				]),
 				found: 'You connect the extract to the wider play.',
 				missing:
-					'Add one sentence linking this extract to Macbeth before or after Duncan is murdered.'
+					'Add one sentence linking the Prologue to another moment where fate, chance, or choice matters.'
 			},
 			{
 				id: 'context',
-				stepId: 'english-chain-macbeth-conflict-step-context',
-				title: 'Relevant context',
-				marks: 5,
-				present: includesAny(trimmed, [
-					'Jacobean',
-					'kingship',
-					'divine right',
-					'supernatural',
-					'masculinity',
-					'regicide',
-					'ambition'
-				]),
-				found: 'You bring in context without making it the whole answer.',
+				stepId: 'english-chain-romeo-juliet-fate-step-context',
+				title: 'Context and controlled expression',
+				marks: 8,
+				present:
+					includesAny(trimmed, [
+						'Elizabethan',
+						'Jacobean',
+						'astrology',
+						'stars',
+						'fortune',
+						'providence',
+						'tragedy',
+						'audience',
+						'fate'
+					]) && trimmed.split(/\s+/).length >= 50,
+				found: 'You bring in context or audience expectations without making it the whole answer.',
 				missing:
-					'Link the conflict to a relevant idea such as kingship, ambition, masculinity, or the supernatural.'
+					'Link fate to relevant context or audience expectations, and keep expression controlled for the SPaG marks.'
 			}
 		];
 	}
@@ -551,7 +579,7 @@
 
 			<section class="english-paper" aria-label="Full question">
 				<div class="english-paper-number">
-					<span>2</span><span>1</span>
+					<span>{question.sourceQuestionRef ?? '4*'}</span>
 				</div>
 				<div class="english-paper-body">
 					<p class="english-source-label">{question.source}</p>
@@ -912,10 +940,6 @@
 		border: 1px solid #111111;
 		font-size: 0.9rem;
 		font-weight: 700;
-	}
-
-	.english-paper-number span + span {
-		border-left: 0;
 	}
 
 	.english-paper-body {
