@@ -17,7 +17,7 @@
 		};
 	} = $props();
 
-	const subjectOrder = ['Biology', 'Chemistry', 'Physics'];
+	const subjectOrder = ['English', 'Biology', 'Chemistry', 'Physics'];
 	const marksFilterOptions = [
 		{ value: 'all', label: 'All' },
 		{ value: '1', label: '1' },
@@ -32,6 +32,7 @@
 
 	function canonicalSubject(value: string | null | undefined) {
 		const lower = (value ?? '').toLowerCase();
+		if (lower.includes('english')) return 'English';
 		if (lower.includes('biology')) return 'Biology';
 		if (lower.includes('chemistry')) return 'Chemistry';
 		if (lower.includes('physics')) return 'Physics';
