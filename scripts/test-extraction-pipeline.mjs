@@ -196,6 +196,8 @@ requireIncludes(
 		'helper.mjs',
 		'validate-extraction',
 		'validate-chain',
+		'run-legacy-chain-style-judge',
+		'run-legacy-solvability',
 		'D1 replacement safety',
 		'phase-specific model and reasoning overrides',
 		'Codex Whole-PDF Import Observations',
@@ -429,6 +431,7 @@ requireIncludes(
 		'extract-embedded-images',
 		'contact-sheet',
 		'line-count',
+		'assemble-extraction-fragments',
 		'normalize-extraction',
 		'validate-extraction',
 		'validate-chain',
@@ -452,7 +455,28 @@ requireIncludes(
 		'known_graph_plotting_mark_scheme_mismatch',
 		'known_level_response_descriptors_missing',
 		'known_self_contained_answer_leak',
-		'known_figure_crop_incomplete'
+		'known_figure_crop_incomplete',
+		'known_figure_crop_prompt_contamination',
+		'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
+		"'07.2': 8",
+		"'08.2': 12",
+		"'10.2': 6",
+		"'13.4': 3",
+		"'13.5': 4",
+		"'14.3': 2",
+		'Figure 3 logic-circuit image asset must include the complete circuit',
+		"'16.3': 18",
+		'knownComputerScience2023Paper2FigureCropIssues',
+		'knownComputerScience2023Paper2ResponseIssues',
+		'knownComputerScience2023Paper2SqlIssues',
+		'complete visible 16-cell RLE bit pattern',
+		'Loan row L0007',
+		'known_sql_skeleton_duplicate_response',
+		'known_missing_response_control',
+		'known_database_context_missing',
+		'common_weak_answer_missing_confidence',
+		'Q03.0 official mark-scheme split is 10111; 100;',
+		"'07.3': 5"
 	],
 	'Codex import helper'
 );
@@ -484,6 +508,9 @@ requireIncludes(
 		'bash pdf-tools.sh',
 		'Do not run git',
 		'Do not create final answer chains',
+		'write those records incrementally as small JSON fragments under question-fragments/',
+		'assemble-extraction-fragments',
+		'Do not wait until the whole paper is observed before writing any question data',
 		'normalize-extraction',
 		'validate-extraction',
 		'expected-marks',
@@ -502,6 +529,28 @@ requireIncludes(
 		'response space continues on the next page',
 		'For labeled written responses',
 		'Known fragile checks for Computer Science 2024 Paper 2',
+		'Known fragile checks for Computer Science 2023 Paper 2',
+		'02.1 = 2',
+		'15.0 = 18',
+		'16.3 = 18',
+		'count both visible working lines and the printed final answer line',
+		'07.2 = 8',
+		'07.3 = 5',
+		'08.2 = 12 total',
+		'10.2 = 6 total',
+		'13.4 = 3',
+		'13.5 = 4 total',
+		'14.3 = 2',
+		'For Q03.0, the paper leaves an unruled blank workspace',
+		'The official mark-scheme split is 10111; 100;',
+		'Q07.2, Figure 1 is the 5 by 5 bitmap only',
+		'Figure 2 is a simple 16-cell RLE bit pattern',
+		'For Q11.2 and Q11.3, Figure 3 must include the complete logic circuit',
+		'Q14.5 must include enough learner-visible Student and Loan table data',
+		'Loan table through row L0007',
+		'For Q14.5, render the DELETE FROM / WHERE SQL skeleton exactly once',
+		'If an interactive response control already renders a SQL/code skeleton with blanks',
+		'pageCount: pdfPageCount',
 		'02.2 = 5',
 		'learner label bank must be AND, XOR, NOT',
 		'08.2 = 6 total',
@@ -565,8 +614,11 @@ requireIncludes(
 		'create_new',
 		'update_existing',
 		'Do not put worked numeric answers',
+		'do not put exact table names',
 		'validate-chain',
 		'chain-reconciled.json',
+		'run-legacy-chain-style-judge',
+		'skip-chain-style-judge',
 		'events.jsonl',
 		'xhigh'
 	],
@@ -1111,6 +1163,126 @@ if (!propagatedTable || propagatedTable.rows?.length !== 2) {
 		'Codex helper normalization did not propagate shared parent table blocks.',
 		helperNormalized
 	);
+}
+
+const helperFragmentsDir = path.join(rootDir, 'tmp/test-codex-helper-fragments');
+const helperQuestionFragmentsDir = path.join(helperFragmentsDir, 'question-fragments');
+mkdirSync(helperQuestionFragmentsDir, { recursive: true });
+writeFileSync(
+	path.join(helperFragmentsDir, 'metadata.json'),
+	JSON.stringify(
+		{
+			sourceDocumentId: 'test-fragment-paper',
+			markSchemeDocumentId: 'test-fragment-ms',
+			questionPaper: {
+				id: 'test-fragment-paper',
+				docType: 'question_paper',
+				subject: 'Computer Science',
+				subjectArea: 'Computer Science',
+				title: 'Fragment test paper',
+				pageCount: 4
+			},
+			markScheme: {
+				id: 'test-fragment-ms',
+				docType: 'mark_scheme',
+				subject: 'Computer Science',
+				subjectArea: 'Computer Science',
+				title: 'Fragment test mark scheme',
+				pageCount: 4
+			}
+		},
+		null,
+		2
+	)
+);
+writeFileSync(
+	path.join(helperQuestionFragmentsDir, 'q01.json'),
+	JSON.stringify(
+		{
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					displayOrder: 1,
+					promptText: 'State one purpose of a register.',
+					selfContainedPromptText: 'State one purpose of a register.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: { kind: 'lines', count: 2, lineCountEvidence: 'Rendered crop shows 2 ruled lines.' },
+					markSchemeItems: [{ itemType: 'mark', text: 'Stores data currently being used.' }],
+					markChecklist: [{ text: 'States a valid register purpose.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'A register stores data currently being used by the CPU.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+writeFileSync(
+	path.join(helperQuestionFragmentsDir, 'q02.json'),
+	JSON.stringify(
+		{
+			questions: [
+				{
+					sourceQuestionRef: '02.1',
+					displayOrder: 2,
+					promptText: 'Explain one benefit of using hexadecimal.',
+					selfContainedPromptText: 'Explain one benefit of using hexadecimal.',
+					marks: 2,
+					pageStart: 3,
+					pageEnd: 3,
+					response: { kind: 'lines', count: 3, lineCountEvidence: 'Rendered crop shows 3 ruled lines.' },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Hexadecimal is shorter than binary.' },
+						{ itemType: 'mark', text: 'It is easier for humans to read or transcribe.' }
+					],
+					markChecklist: [
+						{ text: 'Identifies that hexadecimal is shorter.', markSchemeItemIndexes: [0] },
+						{ text: 'Links this to human readability.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: {
+						answerText:
+							'Hexadecimal is shorter than binary, so long values are easier for humans to read.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const helperFragmentsRaw = path.join(helperFragmentsDir, 'extraction.json');
+const helperFragmentsNormalized = path.join(helperFragmentsDir, 'normalized.json');
+const helperFragmentsValidation = path.join(helperFragmentsDir, 'validation.json');
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'assemble-extraction-fragments',
+	`--fragments-dir=${helperQuestionFragmentsDir}`,
+	`--output=${helperFragmentsRaw}`,
+	`--metadata=${path.join(helperFragmentsDir, 'metadata.json')}`
+]);
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'normalize-extraction',
+	`--input=${helperFragmentsRaw}`,
+	`--output=${helperFragmentsNormalized}`,
+	`--metadata=${path.join(helperFragmentsDir, 'metadata.json')}`
+]);
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${helperFragmentsNormalized}`,
+	'--expected-marks=3',
+	'--expected-questions=2',
+	`--output=${helperFragmentsValidation}`
+]);
+const helperFragmentValidation = JSON.parse(readText(helperFragmentsValidation));
+if (
+	helperFragmentValidation.status !== 'passed' ||
+	helperFragmentValidation.questionCount !== 2 ||
+	helperFragmentValidation.markTotal !== 3
+) {
+	fail('Codex helper fragment assembly did not produce a valid extraction.', {
+		helperFragmentValidation
+	});
 }
 
 const invalidImageLabelExtractionPath = path.join(helperNormalizeDir, 'invalid-image-label.json');
@@ -2130,6 +2302,141 @@ for (const expectedFailure of [
 			}
 		);
 	}
+}
+
+const computerScience2023SqlDuplicatePath = path.join(
+	helperNormalizeDir,
+	'computer-science-2023-sql-duplicate.json'
+);
+writeFileSync(
+	computerScience2023SqlDuplicatePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper',
+				pageCount: 24
+			},
+			markSchemeDocument: { id: 'aqa-computer-science-2023-june-paper-2-computing-concepts-ms' },
+			questions: [
+				{
+					sourceQuestionRef: '14.5',
+					promptText:
+						'Barry Tucker has returned their copy of the book Python Basics. Complete the SQL to delete the loan record for the book PB002.',
+					selfContainedPromptText:
+						'Barry Tucker has returned their copy of the book Python Basics. Complete the SQL to delete the loan record for the book PB002.',
+					marks: 2,
+					pageStart: 19,
+					pageEnd: 19,
+					promptBlocks: [
+						{ kind: 'paragraph', text: 'Complete the SQL to delete the loan record.' },
+						{ kind: 'code', text: 'DELETE FROM __________\n\nWHERE ______________________________' }
+					],
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'text', text: 'DELETE FROM ' },
+							{ kind: 'blank', id: 'delete-from' },
+							{ kind: 'text', text: '\n\nWHERE ' },
+							{ kind: 'blank', id: 'where-clause' }
+						],
+						correctAnswers: [
+							{ targetId: 'delete-from', correctAnswer: 'Loan' },
+							{
+								targetId: 'where-clause',
+								correctAnswer: 'CopyID = "PB002" AND StudentID = "TUC004"'
+							}
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'DELETE FROM Loan.', marks: 1 },
+						{
+							itemType: 'mark',
+							text: 'WHERE CopyID = "PB002" AND StudentID = "TUC004".',
+							marks: 1
+						}
+					],
+					markChecklist: [
+						{ text: 'Completes DELETE FROM with Loan.', markSchemeItemIndexes: [0] },
+						{
+							text: 'Completes WHERE with both CopyID PB002 and StudentID TUC004.',
+							markSchemeItemIndexes: [1]
+						}
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2023SqlDuplicateFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2023SqlDuplicatePath}`,
+		'--expected-marks=2',
+		'--expected-questions=1'
+	]
+);
+if (!computerScience2023SqlDuplicateFailure.includes('known_sql_skeleton_duplicate_response')) {
+	fail('Codex helper validation did not reject duplicated Q14.5 SQL skeleton rendering.', {
+		computerScience2023SqlDuplicateFailure
+	});
+}
+
+const computerScience2023MissingResponsePath = path.join(
+	helperNormalizeDir,
+	'computer-science-2023-missing-response.json'
+);
+writeFileSync(
+	computerScience2023MissingResponsePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper',
+				pageCount: 28
+			},
+			markSchemeDocument: { id: 'aqa-computer-science-2023-june-paper-2-computing-concepts-ms' },
+			questions: [
+				{
+					sourceQuestionRef: '03.0',
+					promptText: 'Add together the following three binary numbers and give your answer in binary.',
+					selfContainedPromptText:
+						'Add together the following three binary numbers and give your answer in binary.',
+					marks: 2,
+					pageStart: 3,
+					pageEnd: 3,
+					stemBlocks: [
+						{
+							kind: 'code',
+							text: '  0 1 0 1 1 0 0 0\n  0 0 0 1 1 0 0 1\n+ 0 1 0 0 1 0 1 1'
+						}
+					],
+					response: { kind: 'none' },
+					markSchemeItems: [{ itemType: 'mark', text: 'Correct binary answer.', marks: 2 }],
+					markChecklist: [{ text: 'Adds the binary numbers correctly.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2023MissingResponseFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2023MissingResponsePath}`,
+		'--expected-marks=2',
+		'--expected-questions=1'
+	]
+);
+if (!computerScience2023MissingResponseFailure.includes('known_missing_response_control')) {
+	fail('Codex helper validation did not reject missing Q03.0 response control.', {
+		computerScience2023MissingResponseFailure
+	});
 }
 
 const oversizedFigurePath = path.join(helperNormalizeDir, 'oversized-figure-crop.png');
@@ -3332,6 +3639,115 @@ if (
 ) {
 	fail(
 		'Deterministic checks warned when a fixed-response model answer only repeats a completed equation.'
+	);
+}
+
+const duplicateChoiceLetterModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '01.2',
+			commandWord: 'Shade',
+			marks: 2,
+			response: {
+				kind: 'choice',
+				multiple: true,
+				options: [
+					'A Storage distractor',
+					'B Human readable',
+					'C Processing distractor',
+					'F Faster to type'
+				],
+				correctAnswers: [
+					{ targetId: 'answer-1', correctAnswer: 'B Human readable' },
+					{ targetId: 'answer-2', correctAnswer: 'F Faster to type' }
+				]
+			},
+			markSchemeItems: [
+				{ itemType: 'mark', text: 'Human readable.' },
+				{ itemType: 'mark', text: 'Faster to type.' }
+			],
+			modelAnswer: { answerText: 'B and F' },
+			answerChain: {
+				id: 'cs-chain-choice-concept-match',
+				title: 'Choice concept',
+				canonicalChainText: 'concept cue -> option match',
+				summary: 'Match concepts.',
+				steps: [
+					{
+						stepText: 'concept cue',
+						stepRole: 'given',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					},
+					{
+						stepText: 'option match',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [1]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	duplicateChoiceLetterModelAnswerIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'fixed_response_model_answer_review')
+	)
+) {
+	fail(
+		'Deterministic checks warned when a fixed-response model answer used only the correct option letters.'
+	);
+}
+
+const duplicateBitSequenceModelAnswerIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '07.4',
+			commandWord: 'Give',
+			marks: 2,
+			response: {
+				kind: 'equation-blanks',
+				segments: Array.from({ length: 4 }, (_, index) => ({
+					kind: 'blank',
+					id: `bit-${index + 1}`
+				})),
+				correctAnswers: [
+					{ targetId: 'bit-1', correctAnswer: '1' },
+					{ targetId: 'bit-2', correctAnswer: '0' },
+					{ targetId: 'bit-3', correctAnswer: '1' },
+					{ targetId: 'bit-4', correctAnswer: '1' }
+				]
+			},
+			markSchemeItems: [{ itemType: 'mark', text: 'Correct bit pattern.' }],
+			modelAnswer: { answerText: '1011' },
+			answerChain: {
+				id: 'cs-chain-bit-pattern-method',
+				title: 'Bit pattern',
+				canonicalChainText: 'cue -> bit order',
+				summary: 'Order bits.',
+				steps: [
+					{
+						stepText: 'bit order',
+						stepRole: 'conclusion',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	duplicateBitSequenceModelAnswerIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'fixed_response_model_answer_review')
+	)
+) {
+	fail(
+		'Deterministic checks warned when a fixed-response model answer only joined one-bit answer keys.'
 	);
 }
 

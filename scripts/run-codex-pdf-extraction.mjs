@@ -198,7 +198,8 @@ function metadata() {
 			title: stringArg('question-paper-title', sourceDocumentId),
 			sourceUrl: stringArg('question-paper-url', ''),
 			path: 'question-paper.pdf',
-			originalPath: questionPaperPath
+			originalPath: questionPaperPath,
+			pageCount: pdfPageCount(questionPaperPath)
 		},
 		markScheme: {
 			id: markSchemeDocumentId,
@@ -207,16 +208,25 @@ function metadata() {
 			title: stringArg('mark-scheme-title', markSchemeDocumentId),
 			sourceUrl: stringArg('mark-scheme-url', ''),
 			path: 'mark-scheme.pdf',
-			originalPath: markSchemePath
+			originalPath: markSchemePath,
+			pageCount: pdfPageCount(markSchemePath)
 		},
 		supportingDocuments: supportingDocumentPaths.map((filePath, index) => ({
 			id: `${sourceDocumentId}-support-${index + 1}`,
 			docType: supportingDocumentType(filePath),
 			title: path.basename(filePath),
 			path: `supporting-${String(index + 1).padStart(2, '0')}.pdf`,
-			originalPath: filePath
+			originalPath: filePath,
+			pageCount: pdfPageCount(filePath)
 		}))
 	};
+}
+
+function pdfPageCount(filePath) {
+	const result = spawnSync('pdfinfo', [filePath], { encoding: 'utf8' });
+	if (result.status !== 0) return null;
+	const match = /^Pages:\s+(\d+)\s*$/m.exec(result.stdout ?? '');
+	return match ? Number(match[1]) : null;
 }
 
 function supportingDocumentType(filePath) {
@@ -241,7 +251,22 @@ function buildExtractionPrompt() {
 					'For Q07.1, preserve the official truth-table answer options A-D as renderable tables, not prose summaries. Option A is the unusual printed two-column A/B table with rows 0 1 and 1 0; options B-D are A/B/Q tables with four rows each. Use multi-line choice option strings or structured table blocks, but the learner-visible view must show the table data and lozenge choices faithfully.',
 					'For Q03.0 and Q09.1, preserve the official partial-mark split as separate 1-mark positive rows, not one collapsed 2-mark row. Q03.0 is credited as separate binary parts 11010 and 101, and the complete model answer must be 11010101. Q09.1 is credited as separate parts A and DDED. For Q13.2, include the official level mark bands as ranges 5-6, 3-4, and 1-2, not only representative 6/4/2 marks.'
 				].join('\n')
-			: sourceDocumentId === 'aqa-84611h-qp-nov20'
+			: sourceDocumentId ===
+				  'aqa-computer-science-2023-june-paper-2-computing-concepts-qp'
+				? [
+						'',
+						'Known fragile checks for Computer Science 2023 Paper 2: verify response controls and figure crops from rendered pages before final validation.',
+						'Exact line-count expectations from independent rendered-page judge evidence are: 02.1 = 2, 02.2 = 5 including the final Answer line, 04.0 = 5 including the final Answer line, 06.2 = 6 including the final Answer line, 07.2 = 8, 07.3 = 5 including the final Answer line, 08.2 = 12 total with 4 lines each for Clock / Control unit / Register, 10.2 = 6 total with 3 lines each for Fetch stage / Decode stage, 13.4 = 3, 13.5 = 4 total with 2 lines each for the two numbered TCP/IP layer responses, 14.3 = 2, 14.4 = 10, 15.0 = 18, and 16.3 = 18. If your extraction undercounts any visible ruled lines, repair before validation.',
+						'For calculation questions on this paper, the printed final "Answer" ruled line is part of the learner response area. Count it together with the working lines; do not count only the working area above the answer label.',
+						'For Q03.0, the paper leaves an unruled blank workspace under the binary addition. The digital extraction still needs a learner answer control; use response.kind="lines" with a single digital answer line and evidence that the paper has unruled workspace. Do not use response.kind="none" for this marked binary-answer question. The official mark-scheme split is 10111; 100; and the complete model answer is 10111100. Do not reuse the Computer Science 2024 Q03 answer 11010101.',
+						'For Q15.0 and Q16.3, use a full-height answer-area crop. Prior extraction undercounted these long response areas by stopping before the first or bottom ruled lines.',
+						'For Q07.2, Figure 1 is the 5 by 5 bitmap only. If you attach an image asset, crop tightly to the bitmap and do not include the caption or following prompt text; at 180 DPI, a good crop is approximately x=610, y=640, width=440, height=380.',
+						'For Q07.4, Figure 2 is a simple 16-cell RLE bit pattern. Prefer a structured-table block containing the 16 visible bits and omit a screenshot asset. If you attach a Figure 2 image asset, the crop must include the full visible bit-pattern row, not just the lead-in text or "Figure 2" label. At 180 DPI, a good figure-only crop is approximately x=260, y=1110, width=1000, height=220.',
+						'For Q11.2 and Q11.3, Figure 3 must include the complete logic circuit: inputs A, B, C, gates G1 and G2, both left/right rails, the right-side output line, and output D. Do not crop only the caption/top of the figure. At 180 DPI, a good figure-only crop is approximately x=515, y=720, width=600, height=365.',
+						'For Q14.1, Q14.2, Q14.3, Q14.4, and Q14.5, carry the Figure 5 database evidence into every atomic subquestion that depends on it. Prefer complete structured tables for BookCopy, Student, and Loan. Q14.5 must include enough learner-visible Student and Loan table data to derive Barry Tucker -> StudentID TUC004 and the PB002 loan row; do not put only the derived WHERE condition in learner-facing text. If you attach a Figure 5 image asset, it must include all three complete tables and the Loan table through row L0007. At 180 DPI, a good figure-only crop is approximately x=155, y=330, width=1175, height=1450. A crop with height about 1220 cuts off L0007 and must not be used.',
+						'For Q14.5, render the DELETE FROM / WHERE SQL skeleton exactly once. Preferred shape: keep promptBlocks to the surrounding task wording and put the DELETE FROM text, WHERE text, and blanks in response.kind="equation-blanks". Do not also add a promptBlocks code block containing the same skeleton.'
+					].join('\n')
+				: sourceDocumentId === 'aqa-84611h-qp-nov20'
 				? [
 						'',
 						'Known fragile checks for Biology Paper 1 November 2020: verify response controls and figure crops from rendered pages before final validation.',
@@ -271,7 +296,7 @@ Inputs in this directory:
 - metadata.json: stable document metadata
 
 Do not run git, do not inspect the repository, do not use the web, and do not assume any precomputed question-paper.txt, mark-scheme.txt, OCR dump, or historical benchmark text exists. Start from the PDFs. You may create local working text/layout/image artifacts from the PDFs as observations.
-Do not create a custom generator script, extraction synthesizer, or new program that writes the extraction JSON. Write extraction.json directly from the source-derived records in this Codex run, then use only helper.mjs for normalization and validation. Small PDF/image observation artifacts and figure crops are fine.
+Do not create a custom generator script, extraction synthesizer, or new program that infers question data. Codex must recover the source-derived records in this run. To avoid one huge brittle final JSON response, write those records incrementally as small JSON fragments under question-fragments/ by parent question or source section, then use helper.mjs to assemble, normalize, and validate them. Small PDF/image observation artifacts and figure crops are fine.
 
 Task: extract the whole paper into structured JSON for downstream import. Focus only on question extraction and mark-scheme extraction/alignment. Do not create final answer chains; leave answerChain absent or placeholder-like. A separate Codex run will reconcile answer chains.
 
@@ -289,11 +314,13 @@ Required extraction coverage:
 - selfContainedPromptText must make the question standalone without revealing the answer. For equation-blanks, fill-in blanks, graph/table selection, calculation, fixed-choice, logic-gate, diagram-interpretation, and other keyed responses, never place the completed answer, selected option, gate/function name, derived dimensions, calculated intermediate values, or mark-scheme-derived facts in selfContainedPromptText or learner-visible prompt/context blocks. Learner-visible blocks should preserve official source evidence and task wording; put solved facts only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
 - For Computer Science code, SQL, pseudo-code, database, Boolean logic, Huffman/tree/graph, circuit, and truth-table questions, treat the printed code/diagram/skeleton as learner-visible source evidence, not as disposable prose. Reproduce exact visible labels, placeholder letters, line breaks, indentation, brackets, punctuation, table headers, and target positions in stemBlocks/promptBlocks/response metadata. Verify these surfaces from rendered pages or embedded images before final JSON.
 - For SQL/program/code skeleton questions with labels such as A, B, C or numbered blanks, the learner-visible blocks must show where each label sits in the official skeleton. Do not flatten a labelled skeleton into a generic sentence like "INSERT INTO ( )", and do not rename official labels to generic "first/second/third" fields.
+- If an interactive response control already renders a SQL/code skeleton with blanks, do not duplicate the same skeleton in stemBlocks, leadBlocks, or promptBlocks. Use one learner-visible skeleton surface only: either a structured prompt/code block with a non-duplicating response, or an equation-blanks response that includes the code text and blank targets.
 - Prefer faithful structured code/table blocks over extra screenshot assets for simple printed code, SQL skeletons, bit patterns, and small one-line figures. If the structured block fully represents the learner-visible source, omit the image asset. Only attach a screenshot asset when the crop has been visually checked to contain exactly the figure/skeleton and no neighboring prompt text, answer lines, or adjacent question material.
 - For Boolean expressions, logic formulae, overbars, subscripts/superscripts, set notation, mathematical fractions, units, and chemical equations, use faithful notation in learner-visible text and model answers. Prefer LaTeX where it prevents ambiguity, for example \`\\overline{A} + B \\cdot C\`; do not use ambiguous plain text such as "A-bar" when the paper shows a NOT bar.
 - Use only app response kinds: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.
 - For response.kind "lines" and every labeled-lines field, count the number of visible ruled horizontal writing lines in the answer area from rendered pages. Do not infer line counts from marks or command words, including one-mark "state" questions. Do not count the gaps between rules and do not subtract one from the number of rules; a learner can write on each visible rule. Use rendered-page crops and bash pdf-tools.sh line-count for every written response with visible ruled lines, then inspect the crop to exclude prompt/table/box borders. Put brief line-count evidence in response.lineCountEvidence or the field's lineCountEvidence.
 - For labeled written responses, count each visible ruled line available for the learner, including the first line beside/after a printed label and any separate "Name" line before a description field. Do not halve or compress line counts because the response has sublabels.
+- For calculation and structured-response questions, count both visible working lines and the printed final answer line when both are ruled response lines. Do not treat a labelled final "Answer" line as separate from the learner response area.
 - For long written responses, always check whether the response space continues on the next page. If the answer area spans pages, set pageEnd to the final response page and sum the visible ruled lines across every page; do not stop at the first page or first crop.
 - For response.kind "equation-blanks", every visible blank segment must have a matching response.correctAnswers target. If two same-side reactants can be in either order, still key both visible blank ids and represent order flexibility explicitly; do not leave an unkeyed blank.
 - For source-paper instructions such as "draw a ring around" or "circle" a value in a printed table, prefer a structural table block plus a fixed response (choice or choice-table) whose answer key names the selected cell/value. Do not use asset-canvas for tables that can be represented structurally. If a table absolutely must be an image response surface, the crop must include the complete table data and validation/judging must prove it renders.
@@ -318,6 +345,7 @@ Useful PDF observation commands. Use the shell helper for commands that call sys
 - bash pdf-tools.sh line-count --image=qp-pages/page-03.png --crop=x,y,width,height --output=q-lines.json
 
 Useful JSON normalization and validation commands:
+- node helper.mjs assemble-extraction-fragments --fragments-dir=question-fragments --output=extraction.json --metadata=metadata.json
 - node helper.mjs normalize-extraction --input=extraction.json --output=normalized-extraction.json --metadata=metadata.json
 - node helper.mjs validate-extraction --input=normalized-extraction.json${
 		expectedMarks === null ? '' : ` --expected-marks=${expectedMarks}`
@@ -325,7 +353,15 @@ Useful JSON normalization and validation commands:
 		expectedQuestions === null ? '' : ` --expected-questions=${expectedQuestions}`
 	} --output=validation.json
 
-Write extraction.json first. Then run normalize-extraction and validate-extraction. If validation fails, repair extraction.json or normalized-extraction.json and rerun validation until validation.json passes or a genuine source defect remains. A passing run should leave:
+Required write workflow:
+1. Create question-fragments/ early.
+2. As soon as a parent question or source section is fully observed, write one JSON fragment file such as question-fragments/q01.json containing { "questions": [...] }. Do not wait until the whole paper is observed before writing any question data.
+3. Keep each fragment small enough to inspect and repair directly. A fragment may include reviewNotes and localAssetManifest entries for assets used by its questions.
+4. After all fragments are written, run assemble-extraction-fragments to create extraction.json.
+5. Then run normalize-extraction and validate-extraction.
+
+If validation fails, repair the relevant question-fragments/*.json file, rerun assemble-extraction-fragments, normalize-extraction, and validate-extraction until validation.json passes or a genuine source defect remains. A passing run should leave:
+- question-fragments/*.json
 - extraction.json
 - normalized-extraction.json
 - validation.json
@@ -337,7 +373,14 @@ function ensureNormalizedExtraction() {
 	const normalizedPath = path.join(workDir, 'normalized-extraction.json');
 	if (existsSync(normalizedPath)) return normalizedPath;
 	if (!existsSync(path.join(workDir, 'extraction.json'))) {
-		throw new Error('Codex did not write extraction.json.');
+		const fragmentsDir = path.join(workDir, 'question-fragments');
+		if (!existsSync(fragmentsDir)) throw new Error('Codex did not write extraction.json.');
+		runHelper([
+			'assemble-extraction-fragments',
+			'--fragments-dir=question-fragments',
+			'--output=extraction.json',
+			'--metadata=metadata.json'
+		]);
 	}
 	runHelper([
 		'normalize-extraction',

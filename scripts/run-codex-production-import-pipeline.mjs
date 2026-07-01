@@ -32,7 +32,9 @@ Optional:
   --expected-questions=46
   --run-id=<stable-log-id>
   --skip-solvability
+  --run-legacy-solvability
   --skip-extraction-judge
+  --run-legacy-chain-style-judge
   --no-import-check
   --skip-d1-conflict-check
   --allow-shared-chain-updates
@@ -72,7 +74,7 @@ const summaryPath = path.join(workRoot, 'codex-production-import-summary.json');
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
 const runExtractionJudge = !hasArg('skip-extraction-judge');
-const runSolvability = !hasArg('skip-solvability');
+const runSolvability = hasArg('run-legacy-solvability') && !hasArg('skip-solvability');
 const noImportCheck = hasArg('no-import-check');
 const importToD1 = hasArg('import');
 const checkExisting = !noImportCheck && !hasArg('skip-d1-conflict-check');
@@ -212,6 +214,11 @@ function chainCommand() {
 	];
 	forwardString(args, 'existing-chains');
 	forwardString(args, 'existing-chain-input-root');
+	if (hasArg('run-legacy-chain-style-judge')) {
+		args.push('--run-legacy-chain-style-judge');
+	} else {
+		args.push('--skip-chain-style-judge');
+	}
 	if (force) args.push('--force');
 	return args;
 }

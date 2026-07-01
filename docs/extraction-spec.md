@@ -409,8 +409,8 @@ node scripts/extract-paper-llm.mjs \
 
 For production imports, use the Codex orchestrator. It runs official-PDF extraction, optional
 existing-chain context build, Codex answer-chain reconciliation, strict import-ready subset audit,
-learner-facing solvability judge, D1 replacement safety check, and D1 import dry-run or explicit
-write:
+D1 replacement safety check, and D1 import dry-run or explicit write. The legacy learner-facing
+solvability judge is opt-in only until a Codex-subscription-backed replacement is added:
 
 ```sh
 pnpm run extract:production -- \
@@ -426,16 +426,16 @@ pnpm run extract:production -- \
   --existing-chain-input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
   --model=gpt-5.5 \
   --extraction-thinking-level=high \
-  --chain-thinking-level=xhigh \
-  --solvability-thinking-level=xhigh
+  --chain-thinking-level=xhigh
 ```
 
 The orchestrator writes a summary under
 `tmp/codex-production-import/<source-document-id>/codex-production-import-summary.json`. It defaults
 to an import dry-run and a read-only D1 replacement/conflict check; add `--import` only after
 reviewing the summary, strict audit, solvability results, and D1 replacement plan. Use
-`--skip-solvability` or `--skip-d1-conflict-check` only for local debugging because those are the
-end-user renderability and safe-replacement gates.
+`--run-legacy-solvability` only when intentionally running the older API-key-backed judge for a
+diagnostic comparison. Use `--skip-d1-conflict-check` only for local debugging because the D1
+replacement plan is the safe-replacement gate.
 
 For AQA GCSE Computer Science, Geography, and History imports, first build the paper manifest from
 official AQA assessment-resource records plus any configured GCSE paper index used for PDF discovery:
@@ -615,8 +615,9 @@ Required local tools are:
 - `pdftotext` to provide the model with deterministic text/ref scouts before visual inspection and
   bounding boxes for deterministic figure cropping.
 - A targeted answer-line detector over rendered crops and/or PDF drawing commands.
-- `@ljoukov/llm` to call `chatgpt-gpt-5.5` or another configured model with structured JSON
-  output.
+- Codex CLI/SDK auth for `gpt-5.5` subscription-backed extraction, judge, and chain runs.
+- `@ljoukov/llm` only for explicitly requested legacy diagnostics or repair runs, not the default
+  production import path.
 
 Codex is now the main production runner for whole-paper PDF import. `pnpm run extract:production`
 and `pnpm run codex:production-import` call
@@ -624,8 +625,18 @@ and `pnpm run codex:production-import` call
 
 1. PDF extraction with `scripts/run-codex-pdf-extraction.mjs`.
 2. Separate answer-chain reconciliation with `scripts/run-codex-answer-chains.mjs`.
-3. Strict import-ready preparation with extraction audit, solvability judge, D1 conflict check, and
-   D1 import dry-run or explicit write.
+3. Strict import-ready preparation with extraction audit, D1 conflict check, and D1 import dry-run
+   or explicit write. The older per-question solvability judge is available only as an explicit
+   legacy diagnostic until there is a Codex-subscription-backed replacement.
+
+The production pipeline passes `--skip-chain-style-judge` to the answer-chain runner unless
+`--run-legacy-chain-style-judge` is explicitly supplied, and it only runs the older solvability
+judge when `--run-legacy-solvability` is explicitly supplied. This avoids accidentally using legacy
+`@ljoukov/llm` API-key paths during Codex subscription imports. The chain phase still runs
+deterministic `validate-chain` checks for missing ids, placeholder chains, overlong visible labels,
+invalid step roles, and invalid positive mark evidence. Use a Codex-run reviewer or the public
+route-equivalent style audit for production quality gates; use the legacy prompt-based chain-style
+judge and legacy solvability judge only when intentionally comparing or repairing older artifacts.
 
 The runner uses the official Codex SDK (`@openai/codex-sdk`) to launch local Codex through the same
 subscription-backed CLI auth as interactive Codex. The SDK wraps the Codex CLI and streams JSONL
@@ -672,8 +683,10 @@ response kinds, missing mark evidence, missing fixed-response answer keys, missi
 modelAnswer rows, missing visual assets, unresolved review flags, and placeholder answer chains in
 the chain phase. `validate-chain` also rejects paragraph-like answer chains: titles must stay short,
 canonical chain text must be 2-5 compact `->` links, summaries must stay concise, and step labels
-must stay short. The prompt-based chain-style judge then checks whether the chain is actually a
-memorable learner-facing cue rather than a generic instruction.
+must stay short. A separate reviewer can then check whether the chain is actually a memorable
+learner-facing cue rather than a generic instruction; in the Codex production path this should be a
+Codex reviewer or public style audit, while the legacy prompt-based chain-style judge is explicit
+opt-in.
 
 For already-deployed public D1 chains, use the public route-equivalent style audit before posting
 links or claiming a cleanup:
@@ -1061,9 +1074,28 @@ before the D1 write; if a manual import path is used for diagnostics, run
 `scripts/upload-r2-images.mjs` with the extraction asset root and reconciled JSON before claiming
 route health.
 
+Computer Science Paper 2 June 2023 follow-up, 2026-07-01:
+
+| Phase                              | Artifact                                                                                                                                                                                   | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Codex PDF extraction               | `tmp/codex-humanities-cs-followup-v8/aqa-computer-science-2023-june-paper-2-computing-concepts-qp/raw/aqa-computer-science-2023-june-paper-2-computing-concepts-qp.json`                 |  956.402s |            51 |              2 |           2,427,464 |    2,202,112 |                 44,715 |            5,278 | 44 questions, 90 marks, deterministic validation passed                                                                                    |
+| Independent Codex extraction judge | `tmp/codex-humanities-cs-followup-v8/aqa-computer-science-2023-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                                      |  194.710s |            27 |              0 |             656,517 |      497,664 |                  8,791 |            2,651 | pass, score 0.99, 44 refs checked, 0 required repairs                                                                                      |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-followup-v8/aqa-computer-science-2023-june-paper-2-computing-concepts-qp/chain-reconciled/aqa-computer-science-2023-june-paper-2-computing-concepts-qp.json`     |  652.357s |            40 |              0 |           1,281,240 |    1,181,696 |                 34,524 |           15,118 | 4 reused, 39 created, 1 updated, chain validation passed, legacy style judge skipped                                                       |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-followup-v8/aqa-computer-science-2023-june-paper-2-computing-concepts-qp/import-ready-audit-confidence.json`                                                      |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 44/44 kept, 0 audit errors/warnings; legacy per-question solvability not run                                                               |
+| D1 import write                    | `tmp/codex-humanities-cs-followup-v8/aqa-computer-science-2023-june-paper-2-computing-concepts-qp/import-ready-confidence/aqa-computer-science-2023-june-paper-2-computing-concepts-qp.json` |    34.177s | 631 SQL stmts |              0 |                 n/a |          n/a |                    n/a |              n/a | 44 questions, 44 overlays, 148 mark rows, 80 checklist rows, 36 model answers, 33 answer keys, 44 chain links, no missing grading evidence |
+| Deployed crawl                     | `tmp/public-route-checks/aqa-computer-science-2023-june-paper-2-computing-concepts-qp-after-import.json`                                                                                   |   64.546s |    225 routes |              0 |                 n/a |          n/a |                    n/a |              n/a | all question/chain/practice/constellation/image routes passed; 5 multi-paper chains visible across 2 papers                                |
+
+This run deliberately exercised the cross-paper safety guard. The first D1 dry-run blocked because
+Codex proposed updating the existing `cs-chain-logic-gate-truth-table-match` chain, which was
+already attached to a 2024 Paper 2 question. Manual cross-paper inspection showed the update only
+generalized "gate symbol" to "gate cue", so it still fit the 2024 OR-gate truth-table question and
+the new 2023 XOR truth-table question. Only after that check did the write use
+`--allow-shared-chain-updates`. The deployed route crawl confirmed there were no chains linked to
+multiple papers but showing only one public question.
+
 Use phase-specific model and reasoning overrides when benchmarking. Codex extraction defaults to
-`gpt-5.5` with high reasoning for quality; answer-chain reconciliation and solvability default to
-`gpt-5.5` with xhigh reasoning. Do not optimize cost ahead of extraction quality. Record wall time,
+`gpt-5.5` with high reasoning for quality; answer-chain reconciliation defaults to `gpt-5.5` with
+xhigh reasoning. Do not optimize cost ahead of extraction quality. Record wall time,
 command actions, failed actions, input/cached/output/reasoning tokens, question count, mark total,
 validation results, chain results, solvability results, D1 dry-run results, and artifact paths.
 

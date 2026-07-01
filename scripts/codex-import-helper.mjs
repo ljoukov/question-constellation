@@ -74,6 +74,7 @@ try {
 	else if (command === 'contact-sheet') contactSheetCommand();
 	else if (command === 'line-count') lineCountCommand();
 	else if (command === 'detect-lines-from-pgm') detectLinesFromPgmCommand();
+	else if (command === 'assemble-extraction-fragments') assembleExtractionFragmentsCommand();
 	else if (command === 'normalize-extraction') normalizeExtractionCommand();
 	else if (command === 'validate-extraction') validateExtractionCommand();
 	else if (command === 'validate-chain') validateChainCommand();
@@ -93,6 +94,7 @@ node helper.mjs extract-embedded-images --pdf=question-paper.pdf --output-dir=qp
 node helper.mjs contact-sheet --glob=qp-pages/*.png --output=qp-contact.jpg --thumb=220x310 --columns=4
 node helper.mjs line-count --image=qp-pages/page-03.png --crop=170,400,950,1100 --output=q01-lines.json
 node helper.mjs detect-lines-from-pgm --pgm=qp-pages/page-03-crop.pgm --output=q01-lines.json
+node helper.mjs assemble-extraction-fragments --fragments-dir=question-fragments --output=extraction.json --metadata=metadata.json
 node helper.mjs normalize-extraction --input=extraction.json --output=normalized.json --metadata=metadata.json
 node helper.mjs validate-extraction --input=normalized.json --expected-marks=100 --output=validation.json
 node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json
@@ -283,6 +285,70 @@ function detectLinesFromPgmCommand() {
 	writeMaybe({ pgm, parameters: { threshold, minRunRatio, minDarkRatio }, ...result });
 }
 
+function assembleExtractionFragmentsCommand() {
+	const fragmentsDir = path.resolve(requiredArg('fragments-dir'));
+	const output = requiredArg('output');
+	const metadataPath = stringArg('metadata', '');
+	const metadata = metadataPath && existsSync(metadataPath) ? readJson(metadataPath) : {};
+	const files = jsonFilesUnder(fragmentsDir);
+	if (files.length === 0) {
+		throw new Error(`No JSON fragments found under ${fragmentsDir}`);
+	}
+	const assembled = {
+		sourceDocument: metadata.questionPaper ?? {},
+		markSchemeDocument: metadata.markScheme ?? {},
+		supportingDocuments: metadata.supportingDocuments ?? [],
+		reviewNotes: [],
+		localAssetManifest: [],
+		questions: []
+	};
+	const seenRefs = new Map();
+	const fragmentSummaries = [];
+	for (const filePath of files) {
+		const fragment = readJson(filePath);
+		const questions = questionsFromFragment(fragment, filePath);
+		const reviewNotes = Array.isArray(fragment?.reviewNotes) ? fragment.reviewNotes : [];
+		const assets = Array.isArray(fragment?.localAssetManifest)
+			? fragment.localAssetManifest
+			: Array.isArray(fragment?.assetManifest)
+				? fragment.assetManifest
+				: [];
+		for (const question of questions) {
+			const ref = String(question?.sourceQuestionRef ?? '').trim();
+			if (!ref) throw new Error(`Question without sourceQuestionRef in ${filePath}`);
+			if (seenRefs.has(ref)) {
+				throw new Error(
+					`Duplicate sourceQuestionRef ${ref} in ${filePath}; first seen in ${seenRefs.get(ref)}`
+				);
+			}
+			seenRefs.set(ref, filePath);
+			assembled.questions.push(question);
+		}
+		assembled.reviewNotes.push(...reviewNotes);
+		assembled.localAssetManifest.push(...assets);
+		fragmentSummaries.push({
+			file: path.relative(rootDir, filePath),
+			questions: questions.map((question) => question.sourceQuestionRef)
+		});
+	}
+	assembled.questions.sort((a, b) => displayOrderFor(a) - displayOrderFor(b));
+	writeJson(output, assembled);
+	console.log(
+		JSON.stringify(
+			{
+				output,
+				fragmentCount: files.length,
+				questionCount: assembled.questions.length,
+				firstRef: assembled.questions[0]?.sourceQuestionRef ?? null,
+				lastRef: assembled.questions.at(-1)?.sourceQuestionRef ?? null,
+				fragments: fragmentSummaries
+			},
+			null,
+			2
+		)
+	);
+}
+
 function normalizeExtractionCommand() {
 	const inputPath = requiredArg('input');
 	localPathBaseDir = path.dirname(path.resolve(inputPath));
@@ -358,6 +424,47 @@ function summarizeCodexEventsCommand() {
 		}))
 	};
 	writeMaybe(summary);
+}
+
+function jsonFilesUnder(dirPath) {
+	return readdirSync(dirPath, { withFileTypes: true })
+		.flatMap((entry) => {
+			const entryPath = path.join(dirPath, entry.name);
+			if (entry.isDirectory()) return jsonFilesUnder(entryPath);
+			if (entry.isFile() && entry.name.endsWith('.json')) return [entryPath];
+			return [];
+		})
+		.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+}
+
+function questionsFromFragment(fragment, filePath) {
+	if (Array.isArray(fragment)) return fragment;
+	if (Array.isArray(fragment?.questions)) return fragment.questions;
+	if (fragment && typeof fragment === 'object' && fragment.sourceQuestionRef) return [fragment];
+	throw new Error(
+		`Fragment must be a question object, an array of question objects, or an object with questions[]: ${filePath}`
+	);
+}
+
+function displayOrderFor(question) {
+	const explicit = Number(question?.displayOrder);
+	if (Number.isFinite(explicit)) return explicit;
+	return sortableQuestionRef(question?.sourceQuestionRef);
+}
+
+function sortableQuestionRef(ref) {
+	const parts = String(ref ?? '').match(/\d+|[A-Za-z]+/g) ?? [];
+	let value = 0;
+	parts.slice(0, 3).forEach((part, index) => {
+		const number = /^\d+$/.test(part)
+			? Number(part)
+			: part
+					.toLowerCase()
+					.split('')
+					.reduce((sum, char) => sum + char.charCodeAt(0) - 96, 0);
+		value += number / 100 ** index;
+	});
+	return value || Number.MAX_SAFE_INTEGER;
 }
 
 function writeMaybe(value) {
@@ -1126,6 +1233,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 		if (
 			[
 				'aqa-84611h-qp-nov20',
+				'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
 				'aqa-computer-science-2024-june-paper-2-computing-concepts-qp'
 			].includes(sourceDocumentId)
 		) {
@@ -1323,6 +1431,17 @@ function deterministicIssuesFor(candidate, options = {}) {
 						evidence: ref
 					});
 				}
+				if (
+					hasWeakText &&
+					!Number.isFinite(Number(weakAnswer?.confidence))
+				) {
+					issues.push({
+						code: 'common_weak_answer_missing_confidence',
+						field: `commonWeakAnswers[${weakIndex}].confidence`,
+						severity: 'error',
+						evidence: ref
+					});
+				}
 			}
 		}
 		if (issues.length) findings.push({ sourceQuestionRef: ref, issues });
@@ -1477,6 +1596,26 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
+	if (sourceDocumentId === 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp') {
+		return new Map(
+			Object.entries({
+				'02.1': 2,
+				'02.2': 5,
+				'04.0': 5,
+				'06.2': 6,
+				'07.2': 8,
+				'07.3': 5,
+				'08.2': 12,
+				'10.2': 6,
+				'13.4': 3,
+				'13.5': 4,
+				'14.3': 2,
+				'14.4': 10,
+				'15.0': 18,
+				'16.3': 18
+			})
+		);
+	}
 	if (sourceDocumentId !== 'aqa-84611h-qp-nov20') return new Map();
 	return new Map(
 		Object.entries({
@@ -1555,6 +1694,18 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		.join('\n')
 		.toLowerCase();
 	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
+	if (sourceDocumentId === 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp') {
+		for (const issue of knownComputerScience2023Paper2FigureCropIssues(question)) {
+			issues.push(issue);
+		}
+		for (const issue of knownComputerScience2023Paper2ResponseIssues(question)) {
+			issues.push(issue);
+		}
+		for (const issue of knownComputerScience2023Paper2SqlIssues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
 	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-2-computing-concepts-qp') {
 		if (['04.1', '04.2'].includes(ref)) {
 			const figureOneAssets = (question.assets ?? []).filter((asset) =>
@@ -1856,6 +2007,219 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	}
 	for (const issue of knownFigureCropIssues(question)) issues.push(issue);
 	return issues;
+}
+
+function knownComputerScience2023Paper2FigureCropIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const requirements = new Map([
+		[
+			'07.2',
+			{
+				label: 'figure 1',
+				minWidth: 400,
+				minHeight: 360,
+				maxHeight: 400,
+				evidence:
+					'Figure 1 bitmap image asset must be a tight crop of the 5 by 5 bitmap only; do not include the caption, following prompt text, or answer area.'
+			}
+		],
+		[
+			'07.4',
+			{
+				label: 'figure 2',
+				minWidth: 900,
+				minHeight: 180,
+				evidence:
+					'Figure 2 image asset must include the complete visible 16-cell RLE bit pattern; prefer a structured table and omit the image asset if the structured block fully represents the pattern.'
+			}
+		],
+		[
+			'11.2',
+			{
+				label: 'figure 3',
+				minWidth: 590,
+				minHeight: 360,
+				evidence:
+					'Figure 3 logic-circuit image asset must include the complete circuit: inputs A, B, C, gates G1 and G2, both rails, the output line, and D.'
+			}
+		],
+		[
+			'11.3',
+			{
+				label: 'figure 3',
+				minWidth: 590,
+				minHeight: 360,
+				evidence:
+					'Figure 3 logic-circuit image asset must include the complete circuit: inputs A, B, C, gates G1 and G2, both rails, the output line, and D.'
+			}
+		],
+		[
+			'14.1',
+			{
+				label: 'figure 5',
+				minWidth: 1100,
+				minHeight: 1400,
+				evidence:
+					'Figure 5 database image asset must include complete BookCopy, Student and Loan tables, including Loan row L0007; prefer complete structured tables and omit the image asset if the structured blocks fully represent the data.'
+			}
+		],
+		[
+			'14.2',
+			{
+				label: 'figure 5',
+				minWidth: 1100,
+				minHeight: 1400,
+				evidence:
+					'Figure 5 database image asset must include complete BookCopy, Student and Loan tables, including Loan row L0007; prefer complete structured tables and omit the image asset if the structured blocks fully represent the data.'
+			}
+		],
+		[
+			'14.3',
+			{
+				label: 'figure 5',
+				minWidth: 1100,
+				minHeight: 1400,
+				evidence:
+					'Figure 5 database image asset must include complete BookCopy, Student and Loan tables, including Loan row L0007; prefer complete structured tables and omit the image asset if the structured blocks fully represent the data.'
+			}
+		],
+		[
+			'14.5',
+			{
+				label: 'figure 5',
+				minWidth: 1100,
+				minHeight: 1400,
+				evidence:
+					'Figure 5 database image asset must include complete BookCopy, Student and Loan tables, including Loan row L0007; prefer complete structured tables and omit the image asset if the structured blocks fully represent the data.'
+			}
+		]
+	]);
+	const requirement = requirements.get(ref);
+	if (!requirement) return [];
+	const issues = [];
+	for (const asset of question.assets ?? []) {
+		const label = normalizedMediaLabel(
+			asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? asset.assetId ?? ''
+		);
+		if (label !== requirement.label) continue;
+		const dimensions = imageDimensionsForAsset(asset);
+		if (!dimensions) continue;
+		const tooSmall =
+			dimensions.width < requirement.minWidth || dimensions.height < requirement.minHeight;
+		const tooTall =
+			Number.isFinite(Number(requirement.maxHeight)) &&
+			dimensions.height > Number(requirement.maxHeight);
+		if (!tooSmall && !tooTall) {
+			continue;
+		}
+		issues.push({
+			code: tooTall ? 'known_figure_crop_prompt_contamination' : 'known_figure_crop_incomplete',
+			field: 'assets.filePath',
+			severity: 'error',
+			evidence: `${ref} ${asset.sourceLabel ?? label}: ${requirement.evidence} Found ${dimensions.width}x${dimensions.height}; expected at least ${requirement.minWidth}x${requirement.minHeight}${
+				requirement.maxHeight ? ` and height no more than ${requirement.maxHeight}` : ''
+			}, or no image asset when a complete structured block is present.`
+		});
+	}
+	return issues;
+}
+
+function knownComputerScience2023Paper2SqlIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	if (ref !== '14.5') return [];
+	const response = question.response ?? {};
+	if (response.kind !== 'equation-blanks') return [];
+	const responseText = (response.segments ?? [])
+		.map((segment) => [segment?.text, segment?.label].filter(Boolean).join(' '))
+		.filter(Boolean)
+		.join('\n');
+	if (!/\bDELETE\s+FROM\b/i.test(responseText) || !/\bWHERE\b/i.test(responseText)) return [];
+	const blockText = [
+		...(question.stemBlocks ?? []),
+		...(question.leadBlocks ?? []),
+		...(question.promptBlocks ?? [])
+	]
+		.map(blockSearchText)
+		.filter(Boolean)
+		.join('\n');
+	if (!/\bDELETE\s+FROM\b/i.test(blockText) || !/\bWHERE\b/i.test(blockText)) return [];
+	return [
+		{
+			code: 'known_sql_skeleton_duplicate_response',
+			field: 'promptBlocks/response',
+			severity: 'error',
+			evidence:
+				'Q14.5 must render the DELETE FROM / WHERE skeleton once. If response.kind="equation-blanks" contains the SQL text and blanks, do not also include the same skeleton in prompt/stem blocks.'
+		}
+	];
+}
+
+function knownComputerScience2023Paper2ResponseIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	if (ref === '14.5') return knownComputerScience2023Paper2Q145ContextIssues(question);
+	if (ref !== '03.0') return [];
+	const issues = [];
+	if (!question.response?.kind || question.response.kind === 'none') {
+		issues.push({
+			code: 'known_missing_response_control',
+			field: 'response.kind',
+			severity: 'error',
+			evidence:
+				'Q03.0 is a marked binary-answer question. Even though the paper has unruled blank workspace, the digital extraction needs an app-visible learner answer control, not response.kind="none".'
+		});
+	}
+	const gradingText = [
+		...(question.markSchemeItems ?? []).map((item) => item.text),
+		...(question.markChecklist ?? []).map((item) => item.text)
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
+	const hasOfficialSplit =
+		/\b10111\b/.test(gradingText) && /(?:^|[^01])100(?:[^01]|$)/.test(gradingText);
+	if (!hasOfficialSplit || !/\b10111100\b/.test(modelAnswerText)) {
+		issues.push({
+			code: 'known_model_answer_mismatch',
+			field: 'modelAnswer/markSchemeItems',
+			severity: 'error',
+			evidence:
+				'Q03.0 official mark-scheme split is 10111; 100; and the complete binary model answer is 10111100. Do not use the 2024 Q03 answer 11010101.'
+		});
+	}
+	return issues;
+}
+
+function knownComputerScience2023Paper2Q145ContextIssues(question) {
+	const hasFigureFiveAsset = (question.assets ?? []).some((asset) =>
+		[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+			.filter(Boolean)
+			.some((label) => normalizedMediaLabel(label) === 'figure 5')
+	);
+	const visibleBlockText = [
+		...(question.stemBlocks ?? []),
+		...(question.leadBlocks ?? []),
+		...(question.promptBlocks ?? [])
+	]
+		.map(blockSearchText)
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
+	if (
+		hasFigureFiveAsset ||
+		(visibleBlockText.includes('tuc004') && visibleBlockText.includes('pb002'))
+	) {
+		return [];
+	}
+	return [
+		{
+			code: 'known_database_context_missing',
+			field: 'stemBlocks/assets',
+			severity: 'error',
+			evidence:
+				'Q14.5 must carry Figure 5 database context or visible Student/Loan table data linking Barry Tucker to TUC004 and PB002 to the Loan row; the SQL answer key is not enough for learner solvability.'
+		}
+	];
 }
 
 function knownComputerScience2024Paper2SqlAssetIssues(question) {

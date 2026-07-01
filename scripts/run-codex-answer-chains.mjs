@@ -20,13 +20,14 @@ Optional:
   --summary=tmp/codex-answer-chains/<source-id>/codex-chain-summary.json
   --model=gpt-5.5
   --thinking-level=xhigh
+  --skip-chain-style-judge
+  --run-legacy-chain-style-judge
   --chain-style-judge-model=chatgpt-gpt-5.5
   --chain-style-judge-thinking-level=medium
   --chain-style-judge-batch-size=8
   --chain-style-judge-max-existing-chains=16
   --chain-style-judge-source-snippet-chars=360
   --chain-style-repair-attempts=4
-  --skip-chain-style-judge
   --timeout-ms=7200000
   --force
   --dry-run`;
@@ -59,7 +60,8 @@ const existingChainsPath = stringArg('existing-chains', '');
 const existingChainInputRoot = stringArg('existing-chain-input-root', '');
 const model = stringArg('model', 'gpt-5.5');
 const thinkingLevel = stringArg('thinking-level', 'xhigh');
-const skipChainStyleJudge = hasArg('skip-chain-style-judge');
+const runLegacyChainStyleJudge = hasArg('run-legacy-chain-style-judge');
+const skipChainStyleJudge = hasArg('skip-chain-style-judge') || !runLegacyChainStyleJudge;
 const chainStyleJudgeModel = stringArg('chain-style-judge-model', 'chatgpt-gpt-5.5');
 const chainStyleJudgeThinkingLevel = stringArg('chain-style-judge-thinking-level', 'medium');
 const chainStyleJudgeBatchSize = integerArg('chain-style-judge-batch-size', 8, 1);
@@ -265,6 +267,7 @@ For fixed-response items, distinguish concept from answer artifact:
 - allowed: a compact underlying concept or method, such as "data + instructions -> binary" or "destination -> value marker -> ordered values";
 - forbidden: the exact selected letter, the full selected option sentence, exact table values, the literal answer for a labelled blank such as a specific SQL keyword, or a final numeric result.
 - for SQL/code blanks, visible chains should cue structure ("command clause", "filter condition", "destination", "ordered values"), while exact SQL words and values stay in response.correctAnswers/modelAnswer.
+- for database questions, do not put exact table names, field names, row ids, copied identifiers, book names, person names, or other one-paper table values in answerChain fields or commonWeakAnswers. Use generic handles such as "target table", "row filter", "both identifiers", "join fields", or "ordered fields".
 
 Student-visible chain style is strict:
 - answerChain.title should usually be 1 to 3 words. Use more only when absolutely necessary, and never more than 5 words.
@@ -298,9 +301,10 @@ For each written, explanatory, calculation-method, or multi-mark question, produ
 - weakAnswerText: a plausible incomplete or mistaken student answer for this exact source question.
 - explanation: a concise student-facing reason that answer fails for this exact question; this powers the pre-answer hint UI, so do not leave it blank.
 - missingStepIndexes or missingChainStepIds: the omitted answer-chain link(s), when identifiable.
+- confidence: a number from 0 to 1.
 The explanation should point to the trap, not give a worked numeric answer. Keep final numeric values and fixed-response answers out of commonWeakAnswers.
 
-Before finishing, run the validator. It rejects missing ids, paragraph-like canonical chains, overlong step labels, non-canonical step roles, missing step evidence, placeholder/review chains, and invalid mark-scheme evidence indexes.
+Before finishing, run the validator. It rejects missing ids, paragraph-like canonical chains, overlong step labels, non-canonical step roles, missing step evidence, placeholder/review chains, missing commonWeakAnswers confidence, and invalid mark-scheme evidence indexes.
 
 Write the full reconciled paper to chain-reconciled.json, preserving all questions. Then run:
 node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json

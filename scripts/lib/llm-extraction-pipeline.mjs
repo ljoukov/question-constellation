@@ -4029,7 +4029,10 @@ function chunkWindowReviewNote(note) {
 export function normalizeExtractedQuestionForImport(question) {
 	const response = normalizeQuestionResponseForExtraction(question);
 	const normalizedQuestion = response === question.response ? question : { ...question, response };
-	return normalizeQuestionRenderBlocks(normalizedQuestion);
+	const withoutDuplicateFixedModelAnswer = shouldDropFixedResponseModelAnswer(normalizedQuestion)
+		? { ...normalizedQuestion, modelAnswer: null }
+		: normalizedQuestion;
+	return normalizeQuestionRenderBlocks(withoutDuplicateFixedModelAnswer);
 }
 
 function normalizeExtractedQuestionResponse(question) {
@@ -4692,19 +4695,37 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 		.map(normalizedForExactMatch)
 		.filter(Boolean);
 	if (answers.length === 0) return false;
+	const answerLabels = responseCorrectAnswerTexts(question.response)
+		.map(optionLabelForFixedAnswer)
+		.filter(Boolean);
+	const modelAnswerTokens = modelAnswer
+		.split(/\s+/)
+		.filter((token) => token && !['and', 'or'].includes(token));
+	const compactModelAnswer = modelAnswer.replace(/\s+/g, '');
+	const compactJoinedAnswers = answers.join('').replace(/\s+/g, '');
+	if (
+		compactJoinedAnswers.length >= 2 &&
+		compactModelAnswer === compactJoinedAnswers
+	) {
+		return true;
+	}
+	if (
+		answerLabels.length > 0 &&
+		modelAnswerTokens.length === answerLabels.length &&
+		modelAnswerTokens.every((token) => answerLabels.includes(token))
+	) {
+		return true;
+	}
 	if (answers.some((answer) => modelAnswer === answer)) return true;
 	const joinedAnswers = normalizedForExactMatch(answers.join(' '));
 	if (joinedAnswers && (modelAnswer === joinedAnswers || modelAnswer.includes(joinedAnswers))) {
 		return true;
 	}
-	const modelAnswerAnswerTokens = modelAnswer
-		.split(/\s+/)
-		.filter((token) => token && !['and', 'or'].includes(token));
 	if (
-		modelAnswerAnswerTokens.length > 0 &&
+		modelAnswerTokens.length > 0 &&
 		answers.length > 0 &&
-		modelAnswerAnswerTokens.length === answers.length &&
-		modelAnswerAnswerTokens.every((token) => answers.includes(token))
+		modelAnswerTokens.length === answers.length &&
+		modelAnswerTokens.every((token) => answers.includes(token))
 	) {
 		return true;
 	}
@@ -4726,6 +4747,17 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 		modelAnswer.length <= 200 &&
 		coreAnswers.every((answer) => modelAnswer.includes(answer) || answer.includes(modelAnswer))
 	);
+}
+
+function shouldDropFixedResponseModelAnswer(question) {
+	if (!fixedResponseKinds().has(question.response?.kind)) return false;
+	if (!String(question.modelAnswer?.answerText ?? '').trim()) return false;
+	return fixedResponseModelAnswerDuplicatesAnswerKey(question);
+}
+
+function optionLabelForFixedAnswer(value) {
+	const match = String(value ?? '').trim().match(/^([A-Za-z]|\d{1,3})(?:[.)]|[\s:-]+)/);
+	return match ? normalizedForExactMatch(match[1]) : '';
 }
 
 function normalizedCoreFixedAnswerText(value) {
