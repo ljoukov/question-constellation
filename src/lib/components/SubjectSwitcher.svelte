@@ -15,6 +15,12 @@
 		subjects?: SubjectNavigationItem[];
 		currentSubject?: string;
 	} = $props();
+
+	function subjectHref(item: SubjectNavigationItem) {
+		return item.subject === 'English'
+			? resolve('/english')
+			: resolve('/questions/[questionId]', { questionId: item.questionId });
+	}
 </script>
 
 {#if subjects.length > 0}
@@ -27,7 +33,7 @@
 		<div class="subject-switcher-menu">
 			{#each subjects as item (item.subject)}
 				<a
-					href={resolve('/questions/[questionId]', { questionId: item.questionId })}
+					href={subjectHref(item)}
 					aria-current={item.subject === currentSubject ? 'page' : undefined}
 				>
 					<span>{item.subject}</span>

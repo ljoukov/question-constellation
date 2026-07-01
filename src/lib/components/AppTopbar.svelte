@@ -123,6 +123,10 @@
 
 	function navigateToBrowse({ q = searchValue, subject: nextSubject = subject } = {}) {
 		if (!browser) return;
+		if (nextSubject === 'English') {
+			window.location.assign(resolve('/english'));
+			return;
+		}
 		const params = new URLSearchParams();
 		const trimmedQuery = q.trim();
 		if (trimmedQuery) params.set('q', trimmedQuery);

@@ -153,6 +153,10 @@
 	}
 
 	function updateSubject(value: string) {
+		if (value === 'English') {
+			window.location.assign(resolve('/english'));
+			return;
+		}
 		selectedSubject = value;
 		syncBrowseUrl(searchQuery, value, selectedMarksFilter);
 	}
