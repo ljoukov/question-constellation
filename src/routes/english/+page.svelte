@@ -672,13 +672,20 @@
 							<ChevronLeft size={18} aria-hidden="true" />
 							Back
 						</button>
-						<button type="button" class="english-primary" onclick={nextStage}>
+						<button
+							type="button"
+							class="english-primary"
+							onclick={nextStage}
+							aria-label={activeStageIndex === stages.length - 1
+								? 'Write full answer'
+								: 'Reveal next part'}
+						>
 							{#if activeStageIndex === stages.length - 1}
 								<PenLine size={18} aria-hidden="true" />
-								Write full answer
+								Full answer
 							{:else}
 								<ChevronRight size={18} aria-hidden="true" />
-								Reveal next part
+								Next part
 							{/if}
 						</button>
 					</div>
@@ -1335,14 +1342,13 @@
 		}
 
 		.english-actions {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr);
+			flex-wrap: nowrap;
+			align-items: center;
+			gap: 0.65rem;
 		}
 
-		.english-primary,
-		.english-secondary,
-		.english-reset {
-			width: 100%;
+		.english-actions .english-primary {
+			margin-left: auto;
 		}
 	}
 
