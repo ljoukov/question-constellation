@@ -19,7 +19,7 @@ Optional:
   --work-dir=tmp/codex-extraction-judge/<source-id>
   --output=tmp/codex-extraction-judge/<source-id>/judge-report.json
   --summary=tmp/codex-extraction-judge/<source-id>/codex-judge-summary.json
-  --expected-marks=100
+  --expected-marks=<n>
   --expected-questions=46
   --model=gpt-5.5
   --thinking-level=high
@@ -51,7 +51,7 @@ const summaryPath = path.resolve(
 const model = stringArg('model', 'gpt-5.5');
 const thinkingLevel = stringArg('thinking-level', 'high');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
-const expectedMarks = integerArg('expected-marks', 100, 1);
+const expectedMarks = integerArg('expected-marks', null, 1);
 const expectedQuestions = integerArg('expected-questions', null, 1);
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
@@ -158,9 +158,9 @@ function validateCandidateMechanically() {
 		'helper.mjs',
 		'validate-extraction',
 		'--input=candidate.json',
-		`--expected-marks=${expectedMarks}`,
 		'--output=mechanical-validation.json'
 	];
+	if (expectedMarks !== null) args.push(`--expected-marks=${expectedMarks}`);
 	if (expectedQuestions !== null) args.push(`--expected-questions=${expectedQuestions}`);
 	const result = spawnSync(process.execPath, args, {
 		cwd: workDir,
@@ -181,6 +181,10 @@ function buildPrompt() {
 		expectedQuestions === null
 			? 'Confirm the candidate question count matches the whole official paper.'
 			: `Confirm the candidate contains exactly ${expectedQuestions} atomic questions.`;
+	const expectedMarkLine =
+		expectedMarks === null
+			? 'Confirm the candidate mark total matches the whole official paper and official mark scheme.'
+			: `Confirm the candidate mark total is exactly ${expectedMarks}.`;
 	return `You are an independent GCSE extraction and learner-rendering judge. You did not create candidate.json.
 
 Files in this clean work directory:
@@ -194,7 +198,7 @@ Files in this clean work directory:
 Do not inspect the repository, previous extraction workdirs, benchmark artifacts, git history, or the web. Start only from these files.
 
 Task:
-1. Mechanically confirm candidate.json is a whole-paper extraction for ${sourceDocumentId}. ${expectedQuestionLine} Expected mark total: ${expectedMarks}.
+1. Mechanically confirm candidate.json is a whole-paper extraction for ${sourceDocumentId}. ${expectedQuestionLine} ${expectedMarkLine}
 2. Independently compare candidate questions against the official question-paper PDF and mark-scheme PDF.
 3. Judge extraction quality only: learner-facing wording/context, page refs, response controls, answer-line counts, required figures/tables/assets, formula/equation rendering, positive mark-scheme alignment, answer keys/model answers, and whether each question is answerable from the assembled app-visible context.
 4. Do not judge answer-chain style or chain quality. Chain reconciliation is a separate workflow.
@@ -209,7 +213,9 @@ Useful commands:
 - bash pdf-tools.sh render-pages --pdf=question-paper.pdf --pages=1-36 --dpi=140 --output-dir=qp-pages
 - bash pdf-tools.sh contact-sheet --glob='qp-pages/*.png' --output=qp-contact.jpg --thumb=170x240 --columns=6
 - bash pdf-tools.sh extract-embedded-images --pdf=question-paper.pdf --output-dir=qp-images --manifest=qp-images.txt
-- node helper.mjs validate-extraction --input=candidate.json --expected-marks=${expectedMarks}${
+- node helper.mjs validate-extraction --input=candidate.json${
+		expectedMarks === null ? '' : ` --expected-marks=${expectedMarks}`
+	}${
 		expectedQuestions === null ? '' : ` --expected-questions=${expectedQuestions}`
 	} --output=mechanical-validation.json
 

@@ -338,45 +338,48 @@ function normalizeSolvabilityJudge(value) {
 	};
 }
 
-export const SolvabilityJudgeSchema = z.preprocess(normalizeSolvabilityJudge, z.object({
-	verdict: z.enum(['pass', 'fail']),
-	score: z.number().min(0).max(1),
-	sourceQuestionRef: z.string(),
-	studentVisibleSolvable: z.boolean(),
-	attemptedAnswerFromVisibleContext: z.string(),
-	markSchemeAlignment: z.enum(['matches', 'partially_matches', 'mismatch', 'not_applicable']),
-	rationale: z.string(),
-	missingContext: z.array(
-		z.object({
-			kind: z.enum([
-				'text',
-				'table',
-				'image',
-				'diagram',
-				'previous_part',
-				'response_area',
-				'other'
-			]),
-			severity: z.enum(['blocking', 'warning']),
-			description: z.string()
-		})
-	),
-	mediaFindings: z.array(
-		z.object({
-			label: z.string(),
-			status: z.enum(['present', 'missing', 'not_needed', 'unclear']),
-			note: z.string()
-		})
-	),
-	renderFindings: z.array(
-		z.object({
-			field: z.string(),
-			severity: z.enum(['blocking', 'warning']),
-			note: z.string()
-		})
-	),
-	requiredRepairs: z.array(z.string())
-}));
+export const SolvabilityJudgeSchema = z.preprocess(
+	normalizeSolvabilityJudge,
+	z.object({
+		verdict: z.enum(['pass', 'fail']),
+		score: z.number().min(0).max(1),
+		sourceQuestionRef: z.string(),
+		studentVisibleSolvable: z.boolean(),
+		attemptedAnswerFromVisibleContext: z.string(),
+		markSchemeAlignment: z.enum(['matches', 'partially_matches', 'mismatch', 'not_applicable']),
+		rationale: z.string(),
+		missingContext: z.array(
+			z.object({
+				kind: z.enum([
+					'text',
+					'table',
+					'image',
+					'diagram',
+					'previous_part',
+					'response_area',
+					'other'
+				]),
+				severity: z.enum(['blocking', 'warning']),
+				description: z.string()
+			})
+		),
+		mediaFindings: z.array(
+			z.object({
+				label: z.string(),
+				status: z.enum(['present', 'missing', 'not_needed', 'unclear']),
+				note: z.string()
+			})
+		),
+		renderFindings: z.array(
+			z.object({
+				field: z.string(),
+				severity: z.enum(['blocking', 'warning']),
+				note: z.string()
+			})
+		),
+		requiredRepairs: z.array(z.string())
+	})
+);
 
 export const ChainResolutionSchema = z.object({
 	action: z.enum(['reuse_existing', 'update_existing', 'create_new', 'needs_review']),
@@ -3120,7 +3123,8 @@ function buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, conte
 		for (const ref of refsByPage.get(page) ?? []) {
 			const parent = questionParentRef(ref);
 			if (!parent) continue;
-			if (!parents.has(parent)) parents.set(parent, { parentRef: parent, refs: new Set(), pages: new Set() });
+			if (!parents.has(parent))
+				parents.set(parent, { parentRef: parent, refs: new Set(), pages: new Set() });
 			parents.get(parent).refs.add(ref);
 			parents.get(parent).pages.add(page);
 		}
@@ -3154,7 +3158,9 @@ function buildAgenticParentQuestionPackets(questionImages, pageRefsByPage, conte
 				(page) => page < start && page >= start - contextPages
 			);
 			const lookaheadPages = selectedPages.filter((page) => page === end + 1);
-			const priorContextImages = priorContextPages.map((page) => imagesByPage.get(page)).filter(Boolean);
+			const priorContextImages = priorContextPages
+				.map((page) => imagesByPage.get(page))
+				.filter(Boolean);
 			const coreImages = corePages.map((page) => imagesByPage.get(page)).filter(Boolean);
 			const lookaheadImages = lookaheadPages.map((page) => imagesByPage.get(page)).filter(Boolean);
 			return {
@@ -3179,11 +3185,7 @@ function buildAgenticWholePaperPacket(questionImages, pageRefsByPage) {
 	const refsByPage = normalizePageRefMap(pageRefsByPage);
 	const selectedPages = questionImages.map(pageNumberFromRenderedPath).filter(Boolean);
 	const targetRefs = [
-		...new Set(
-			selectedPages
-				.flatMap((page) => refsByPage.get(page) ?? [])
-				.filter(Boolean)
-		)
+		...new Set(selectedPages.flatMap((page) => refsByPage.get(page) ?? []).filter(Boolean))
 	].sort(compareQuestionRefs);
 	return [
 		{
@@ -3209,7 +3211,11 @@ function isAgenticWholePaperPacket(packet) {
 
 function compactAgenticPageRefSummary(packet, pageRefsByPage) {
 	const refsByPage = normalizePageRefMap(pageRefsByPage);
-	return [...(packet.corePages ?? []), ...(packet.priorContextPages ?? []), ...(packet.lookaheadPages ?? [])]
+	return [
+		...(packet.corePages ?? []),
+		...(packet.priorContextPages ?? []),
+		...(packet.lookaheadPages ?? [])
+	]
 		.sort((a, b) => a - b)
 		.map((page) => ({
 			page,
@@ -3428,9 +3434,7 @@ function createAgenticExtractionTools({
 	});
 	function stagedExtractionEnvelope() {
 		return {
-			questions: stagedQuestionRefs
-				.map((ref) => stagedQuestionsByRef.get(ref))
-				.filter(Boolean)
+			questions: stagedQuestionRefs.map((ref) => stagedQuestionsByRef.get(ref)).filter(Boolean)
 		};
 	}
 	function stageCompactQuestions(questions) {
@@ -3541,7 +3545,9 @@ function createAgenticExtractionTools({
 				if (!toolPageAllowed(packet, page)) {
 					throw new Error(`Page ${page} is outside this packet's allowed pages.`);
 				}
-				const imageInfos = embeddedPdfImages(questionPaper.path).filter((image) => image.page === page);
+				const imageInfos = embeddedPdfImages(questionPaper.path).filter(
+					(image) => image.page === page
+				);
 				const extracted = extractEmbeddedPdfImages({
 					pdfPath: questionPaper.path,
 					outputDir: path.join(agentWorkDir, 'embedded-images'),
@@ -3635,7 +3641,9 @@ function createAgenticExtractionTools({
 				const dimensions = pngDimensions(image);
 				const cropBox = clampCropBox({ x, y, width, height }, dimensions);
 				if (cropBox.width * cropBox.height > dimensions.width * dimensions.height * 0.75) {
-					throw new Error('Crop is too broad. Use view_question_page_image or request a smaller crop.');
+					throw new Error(
+						'Crop is too broad. Use view_question_page_image or request a smaller crop.'
+					);
 				}
 				const cropPath = renderPdfCrop({
 					pdfPath: questionPaper.path,
@@ -4687,6 +4695,17 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 	if (answers.some((answer) => modelAnswer === answer)) return true;
 	const joinedAnswers = normalizedForExactMatch(answers.join(' '));
 	if (joinedAnswers && (modelAnswer === joinedAnswers || modelAnswer.includes(joinedAnswers))) {
+		return true;
+	}
+	const modelAnswerAnswerTokens = modelAnswer
+		.split(/\s+/)
+		.filter((token) => token && !['and', 'or'].includes(token));
+	if (
+		modelAnswerAnswerTokens.length > 0 &&
+		answers.length > 0 &&
+		modelAnswerAnswerTokens.length === answers.length &&
+		modelAnswerAnswerTokens.every((token) => answers.includes(token))
+	) {
 		return true;
 	}
 	const longEnoughAnswers = answers.filter((answer) => answer.length >= 2);

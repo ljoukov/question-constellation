@@ -104,6 +104,41 @@ It also added `scripts/check-public-question-routes.mjs`, which queries D1 and c
 `constellation.eviworld.com` routes after import. This caught the class of "open question" failures
 that row-count-only import checks cannot prove absent.
 
+## Humanities And Computing Canary
+
+AQA GCSE Computer Science Paper 2 June 2024 was used as the first non-science-whole-paper canary on
+2026-07-01. The run started from official PDFs in
+`data/aqa-gcse-history-geography-computer-science/` and examiner-report evidence; whole text dumps
+were not supplied as prompt inputs.
+
+| Phase                                   | Artifact                                                                                                                                                                         | Wall time |  Actions/calls | Failed actions | Token usage                                                       | Outcome                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | -------------: | -------------: | ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Codex PDF extraction                    | `tmp/codex-humanities-canary-subscription-v8/aqa-computer-science-2024-june-paper-2-computing-concepts-qp/raw/aqa-computer-science-2024-june-paper-2-computing-concepts-qp.json` |  765.148s |             68 |              2 | input 2,137,304; cached 1,867,264; output 36,553; reasoning 4,389 | 38 questions, 90 marks, deterministic validation passed              |
+| Independent Codex extraction judge      | `tmp/codex-humanities-canary-subscription-v8/aqa-computer-science-2024-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                    |  252.157s |             42 |              2 | input 924,378; cached 642,048; output 10,868; reasoning 3,015     | pass, score 0.98, 38 refs checked, 0 required repairs                |
+| Codex answer chains                     | `tmp/codex-humanities-chain-rerun-v1/chain-reconciled/aqa-computer-science-2024-june-paper-2-computing-concepts-qp.json`                                                         |  421.364s |             19 |              0 | input 441,319; cached 377,344; output 22,407; reasoning 9,520     | chain validation passed; style repairs then passed independent judge |
+| Chain style judge                       | `tmp/codex-humanities-chain-rerun-v1/codex-chains/chain-style-judge.json`                                                                                                        |       n/a |      5 batches |              0 | prompt 24,356; response 349; thinking 2,379; total 27,084         | passed, 0 issues                                                     |
+| Strict audit / solvability / D1 dry-run | `tmp/codex-humanities-chain-rerun-v1/import-ready-final-solvability-audit.json`                                                                                                  |       n/a |      38 judges |              0 | prompt 106,855; response 11,547; thinking 24,696; total 143,098   | audit passed, solvability 38/38, 38 kept, 0 dropped, `safeToReplace` |
+| D1 canary write                         | `tmp/codex-humanities-chain-rerun-v1/import-ready-final-solvability/aqa-computer-science-2024-june-paper-2-computing-concepts-qp.normalized.json`                                |    8.147s | 580 statements |              0 | n/a                                                               | 38 questions, 38 overlays, 141 mark rows, 69 checklist rows          |
+| R2 upload and deployed crawl            | `tmp/public-route-checks/aqa-computer-science-2024-june-paper-2-computing-concepts-qp-after-r2.json`                                                                             |   73.262s |     200 routes |              0 | n/a                                                               | 0 failed routes after 10 referenced assets were uploaded to R2       |
+
+This canary confirmed that the Codex production path can handle a whole Computer Science paper with
+SQL/code, fixed-response answers, level descriptors, and exact binary/logic notation through D1
+dry-run. It also exposed importer-level fixes: recompute missing/non-positive page counts from the
+official PDF, normalize string level marks, allow reusable calculation constants such as base 16 in
+chain handles, and treat fixed-response prose like `A and E` as duplicate answer-key evidence rather
+than a reason to drop the question.
+
+The run did not prove cross-paper chain reuse. It had no existing-chain context, so all 38 chain ids
+were created new. A production batch should either provide D1/exported existing-chain context to each
+chain run or perform a later Codex chain consolidation pass before claiming multi-paper reuse.
+
+The first route crawl for the canary failed 10/200 routes, all image assets. The question, practice,
+chain, and constellation routes already returned 200, but the PNGs had not been uploaded because the
+manual canary write bypassed the production pipeline's R2 upload phase. After
+`scripts/upload-r2-images.mjs` uploaded the 10 referenced assets, the second crawl passed 200/200.
+This is an operational requirement: official-PDF extraction, strict audit, and D1 write are not
+enough for route health when the paper references local image assets.
+
 ## OCR And Visual Inspection Conclusion
 
 The JSONL rollouts did not show explicit `view_image` or image-view tool events. Codex appears to have used a hybrid workflow:

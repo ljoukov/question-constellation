@@ -62,7 +62,7 @@ const STOP_WORDS = new Set([
 
 const candidate = readJson(inputPath);
 const existingChains = existingChainsPath
-	? readJson(path.resolve(rootDir, existingChainsPath)).answerChains ?? []
+	? (readJson(path.resolve(rootDir, existingChainsPath)).answerChains ?? [])
 	: [];
 const payload = {
 	sourceDocumentId: candidate.sourceDocument?.id ?? candidate.sourceDocumentId ?? null,
@@ -111,7 +111,10 @@ for (const [index, chains] of batches.entries()) {
 const issues = batchResults.flatMap((result) => result.issues ?? []);
 const output = {
 	status: issues.some((issue) => issue.severity === 'error') ? 'failed' : 'passed',
-	summary: batchResults.map((result) => result.summary).filter(Boolean).join(' '),
+	summary: batchResults
+		.map((result) => result.summary)
+		.filter(Boolean)
+		.join(' '),
 	issues,
 	model,
 	thinkingLevel,
@@ -164,48 +167,55 @@ async function judgeBatch({ payload, batchIndex, batchCount }) {
 				)
 			}),
 			input: [
-		'You are an independent answer-chain style validator for Question Constellation.',
-		'Judge only answer-chain quality and chain consolidation. Do not judge PDF extraction.',
-		'Fail real learner-facing chain problems even when deterministic length checks pass.',
-		`This is batch ${batchIndex} of ${batchCount}. Judge every chain in this batch.`,
-		'',
-		'Product standard:',
-		'- A chain is a memorable GCSE reasoning handle, not a paragraph.',
-		'- Titles should usually be 1-3 words; allow up to 5 only when a short title would be ambiguous.',
-		'- canonicalChainText should be 2-5 tiny links joined by " -> ".',
-		'- Each visible chain link and stepText should usually be 1-4 words.',
-		'- One simple emoji per step is allowed if it makes the step easier to remember, but emojis are optional.',
-		'- Summary must add a short memory cue or usage note. It must not repeat the canonical chain in sentence form.',
-		'- Put explanations in explanation/commonOmission/modelAnswer/checklist, not in the visible chain labels.',
-		'- Never require final numeric answers, exact table values, exact fixed-response answer text, or worked calculation results in chain fields. Calculation chains should cue the method only.',
-		'- For fixed-response questions such as choice, matching, equation blanks, image labels, and number lines, keep exact selected options and blank answers in response.correctAnswers, not in answerChain fields. Use a reusable cue/category/method handle instead.',
-		'- For "any two", "any three", or "suggest one" mark schemes, the visible chain should not list every accepted alternative as a required sequence. A compact category/count handle is acceptable when examples live in explanation or mark evidence.',
-		'- Existing chains may include old rows from the same sourceDocumentId that this candidate paper will replace. Do not fail a duplicate solely because an incoming question moves away from an old same-paper chain that is absent from the candidate output. Do fail duplicates among incoming chains, or when the candidate ignores an existing same-reasoning chain from other papers.',
-		'',
-		'Always fail issues like these:',
-		'- Title: "Symbiosis benefit: resource gained then used" because it is too long and abstract.',
-		'- Summary: "Name the resource gained from the relationship and connect it to how the organism uses it" because it repeats the chain as an instruction.',
-		'- Step: "State the useful resource or substance the organism gains from its partner in the relationship" because it is not a memory cue.',
-		'- Canonical text that starts "When...", "For a...", or reads as a complete teaching paragraph.',
-		'- Generic chains such as "resource gained -> biological use" when the source supports a more concrete memorable chain.',
-		'- Fixed-response exact-answer chains such as title "Willow Bark", canonical "painkiller plant -> willow bark", canonical "CO2 + water -> glucose", or chain labels that copy "fatty acids" and "glycerol" from response.correctAnswers.',
-		'- New chain IDs that duplicate an existing chain with the same ordered mark-scoring links.',
-		'- Alternative mark routes written as a false required sequence.',
-		'',
-		'Pass compact examples:',
-		'- title: "Active transport"; canonical: "low to high -> active transport -> energy needed"',
-		'- title: "Percentage change"; canonical: "change -> original -> times 100"',
-		'- title: "Food test"; canonical: "reagent -> treatment -> colour"',
-		'- title: "Clinical trials"; canonical: "safety -> dose -> works"',
-		'- title: "Stage total"; canonical: "selected stages -> add -> total percent"',
-		'- title: "Unit ratio"; canonical: "convert units -> compare -> ratio"',
-		'- title: "Cell similarities"; canonical: "both shown -> shared structures -> choose two"',
-		'- title: "Practical extension"; canonical: "specific extension -> relevant outcome"',
-		'',
-		'Return JSON only. status must be failed if any issue has severity error.',
-		'',
-		'CHAIN_PAYLOAD:',
-		JSON.stringify(payload, null, 2)
+				'You are an independent answer-chain style validator for Question Constellation.',
+				'Judge only answer-chain quality and chain consolidation. Do not judge PDF extraction.',
+				'Fail real learner-facing chain problems even when deterministic length checks pass.',
+				`This is batch ${batchIndex} of ${batchCount}. Judge every chain in this batch.`,
+				'',
+				'Product standard:',
+				'- A chain is a memorable GCSE reasoning handle, not a paragraph.',
+				'- Titles should usually be 1-3 words; allow up to 5 only when a short title would be ambiguous.',
+				'- canonicalChainText should be 2-5 tiny links joined by " -> ".',
+				'- Each visible chain link and stepText should usually be 1-4 words.',
+				'- One simple emoji per step is allowed if it makes the step easier to remember, but emojis are optional.',
+				'- Summary must add a short memory cue or usage note. It must not repeat the canonical chain in sentence form.',
+				'- Put explanations in explanation/commonOmission/modelAnswer/checklist, not in the visible chain labels.',
+				'- Never require final numeric answers, exact table values, exact fixed-response answer text, or worked calculation results in chain fields. Calculation chains should cue the method only.',
+				'- For fixed-response questions such as choice, matching, equation blanks, image labels, and number lines, keep exact selected letters, full selected-option sentences, exact blank-fill answers, final values, and table values in response.correctAnswers, not in answerChain fields. Use a reusable cue/category/method handle instead.',
+				'- Do not over-sanitize fixed-response chains. A compact underlying concept is allowed when it is the reusable GCSE idea. For example, "data + instructions -> binary" is a valid concept handle for a binary representation choice question; "B" or the full option sentence is not.',
+				'- For SQL/code blanks, fail literal blank answers in visible chain fields, but pass structural cues. Good: "command clause -> filter condition" or "destination -> value marker -> ordered values". Bad: visible labels that expose an exact blank keyword or final value.',
+				'- For "any two", "any three", or "suggest one" mark schemes, the visible chain should not list every accepted alternative as a required sequence. A compact category/count handle is acceptable when examples live in explanation or mark evidence.',
+				'- Existing chains may include old rows from the same sourceDocumentId that this candidate paper will replace. Do not fail a duplicate solely because an incoming question moves away from an old same-paper chain that is absent from the candidate output. Do fail duplicates among incoming chains, or when the candidate ignores an existing same-reasoning chain from other papers.',
+				'',
+				'Always fail issues like these:',
+				'- Title: "Symbiosis benefit: resource gained then used" because it is too long and abstract.',
+				'- Summary: "Name the resource gained from the relationship and connect it to how the organism uses it" because it repeats the chain as an instruction.',
+				'- Step: "State the useful resource or substance the organism gains from its partner in the relationship" because it is not a memory cue.',
+				'- Canonical text that starts "When...", "For a...", or reads as a complete teaching paragraph.',
+				'- Generic chains such as "resource gained -> biological use" when the source supports a more concrete memorable chain.',
+				'- Fixed-response exact-answer chains such as title "Willow Bark", canonical "painkiller plant -> willow bark", canonical "CO2 + water -> glucose", or chain labels that copy "fatty acids" and "glycerol" from response.correctAnswers.',
+				'- Over-abstract repairs such as "stored content -> binary scope" when the mark evidence supports the compact underlying concept "data + instructions -> binary".',
+				'- New chain IDs that duplicate an existing chain with the same ordered mark-scoring links.',
+				'- Alternative mark routes written as a false required sequence.',
+				'',
+				'Pass compact examples:',
+				'- title: "Active transport"; canonical: "low to high -> active transport -> energy needed"',
+				'- title: "Percentage change"; canonical: "change -> original -> times 100"',
+				'- title: "Food test"; canonical: "reagent -> treatment -> colour"',
+				'- title: "Clinical trials"; canonical: "safety -> dose -> works"',
+				'- title: "Stage total"; canonical: "selected stages -> add -> total percent"',
+				'- title: "Unit ratio"; canonical: "convert units -> compare -> ratio"',
+				'- title: "Cell similarities"; canonical: "both shown -> shared structures -> choose two"',
+				'- title: "Practical extension"; canonical: "specific extension -> relevant outcome"',
+				'- title: "Binary Storage"; canonical: "data + instructions -> binary"',
+				'- title: "School network"; canonical: "school users -> shared benefits -> risks/costs -> balance"',
+				'- title: "Blagging phishing"; canonical: "fake story -> sensitive gain -> one vs many"',
+				'- title: "SQL query"; canonical: "command clause -> filter condition"',
+				'',
+				'Return JSON only. status must be failed if any issue has severity error.',
+				'',
+				'CHAIN_PAYLOAD:',
+				JSON.stringify(payload, null, 2)
 			].join('\n')
 		});
 		return {
@@ -247,11 +257,13 @@ function chainPayload(candidate) {
 				snippet(answer, 120)
 			),
 			chainResolution: question.chainResolution ?? null,
-			markSchemeItems: (question.markSchemeItems ?? []).map((item, index) => ({
-				index,
-				itemType: item.itemType ?? item.kind ?? null,
-				text: snippet(item.text ?? '', sourceSnippetChars)
-			})).slice(0, 8)
+			markSchemeItems: (question.markSchemeItems ?? [])
+				.map((item, index) => ({
+					index,
+					itemType: item.itemType ?? item.kind ?? null,
+					text: snippet(item.text ?? '', sourceSnippetChars)
+				}))
+				.slice(0, 8)
 		});
 		groups.set(chain.id, group);
 	}
@@ -299,7 +311,12 @@ function relevantExistingChains(batchChains, existing) {
 			chain,
 			score:
 				(referencedIds.has(chain.id) ? 1000 : 0) +
-				overlapScore(batchTokens, tokenSet(`${chain.id} ${chain.title} ${chain.canonicalChainText} ${chain.summary} ${chain.chainFamilyId}`))
+				overlapScore(
+					batchTokens,
+					tokenSet(
+						`${chain.id} ${chain.title} ${chain.canonicalChainText} ${chain.summary} ${chain.chainFamilyId}`
+					)
+				)
 		}))
 		.filter((entry) => entry.score > 0)
 		.sort((left, right) => right.score - left.score || left.chain.id.localeCompare(right.chain.id))
@@ -341,11 +358,12 @@ function responseCorrectAnswerTexts(response) {
 }
 
 function snippet(value, maxChars) {
-	const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+	const text = String(value ?? '')
+		.replace(/\s+/g, ' ')
+		.trim();
 	if (text.length <= maxChars) return text;
 	return `${text.slice(0, maxChars - 1).trimEnd()}…`;
 }
-
 
 function hasArg(name) {
 	return process.argv.includes(`--${name}`);

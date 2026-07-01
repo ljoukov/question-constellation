@@ -75,6 +75,23 @@ function reusableNumericFactOnly(text, numbers) {
 	return numbers.every((token) => normalizeNumberToken(token) === '4');
 }
 
+function reusableCalculationConstantOnly(text, numbers) {
+	const normalizedNumbers = numbers.map(normalizeNumberToken);
+	if (
+		normalizedNumbers.every((token) => token === '16') &&
+		/\b(?:hex|hexadecimal|base\s*16|divide\s+by\s+16|remainders?|hex\s+digits?)\b/i.test(text)
+	) {
+		return true;
+	}
+	if (
+		normalizedNumbers.every((token) => token === '8') &&
+		/\b(?:bits?|bytes?|bit\s*depth|byte\s+conversion)\b/i.test(text)
+	) {
+		return true;
+	}
+	return false;
+}
+
 function numberTokens(text) {
 	return Array.from(textForNumberAudit(text).matchAll(NUMBER_PATTERN)).map((match) => match[0]);
 }
@@ -146,6 +163,7 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			hasVariableAssignment ||
 			(SUBSTITUTION_PATTERN.test(auditText) && (numbers.length > 0 || hasConcreteUnit));
 		const shouldWarnForReusableFact = reusableNumericFactOnly(auditText, numbers);
+		const usesReusableCalculationConstant = reusableCalculationConstantOnly(auditText, numbers);
 
 		if (hasSubstitution) {
 			issues.push({
@@ -159,7 +177,12 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			continue;
 		}
 
-		if (numbers.length > 0 && calculationLike && !shouldWarnForReusableFact) {
+		if (
+			numbers.length > 0 &&
+			calculationLike &&
+			!shouldWarnForReusableFact &&
+			!usesReusableCalculationConstant
+		) {
 			issues.push({
 				severity: 'error',
 				code: 'chain_prompt_specific_number',
@@ -172,7 +195,7 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			continue;
 		}
 
-		if (numbers.length > 0 && (field.core || hasConcreteUnit)) {
+		if (numbers.length > 0 && (field.core || hasConcreteUnit) && !usesReusableCalculationConstant) {
 			issues.push({
 				severity: 'warning',
 				code: 'chain_numeric_review',

@@ -496,6 +496,23 @@ requireIncludes(
 		'Use image-label-zones only when the response surface is a real extracted/rendered image asset',
 		'Do not count the gaps between rules and do not subtract one from the number of rules',
 		'Attach the same figure/table dependency to every atomic subquestion that refers to it',
+		'For Computer Science code, SQL, pseudo-code',
+		'carry that earlier dependency forward',
+		'structured code/table blocks over extra screenshot assets',
+		'response space continues on the next page',
+		'For labeled written responses',
+		'Known fragile checks for Computer Science 2024 Paper 2',
+		'02.2 = 5',
+		'learner label bank must be AND, XOR, NOT',
+		'08.2 = 6 total',
+		'complete model answer must be 11010101',
+		'Do not put solved or derived facts into learner-visible prompts',
+		'Figure 5 on page 12 should include the title',
+		'For Q07.1, preserve the official truth-table answer options A-D',
+		'For Q03.0 and Q09.1, preserve the official partial-mark split',
+		'do not use ambiguous plain text such as "A-bar"',
+		'response.lineCountEvidence',
+		'leaf labels',
 		'07.1 = 7',
 		'07.3 = 16',
 		'02.3 = 14',
@@ -1793,6 +1810,326 @@ if (!incompleteFigureCropFailure.includes('known_figure_crop_incomplete')) {
 	fail('Codex helper validation did not reject a known incomplete figure crop.', {
 		incompleteFigureCropFailure
 	});
+}
+
+const computerScienceCanaryFailurePath = path.join(
+	helperNormalizeDir,
+	'computer-science-canary-known-defects.json'
+);
+const broadSqlSkeletonPath = path.join(helperNormalizeDir, 'broad-sql-skeleton.png');
+const broadSqlSkeletonBuffer = Buffer.alloc(24);
+Buffer.from('89504e470d0a1a0a', 'hex').copy(broadSqlSkeletonBuffer, 0);
+broadSqlSkeletonBuffer.writeUInt32BE(1000, 16);
+broadSqlSkeletonBuffer.writeUInt32BE(900, 20);
+writeFileSync(broadSqlSkeletonPath, broadSqlSkeletonBuffer);
+writeFileSync(
+	computerScienceCanaryFailurePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2024-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '03.0',
+					promptText: 'Add the two binary numbers together.',
+					selfContainedPromptText: 'Add the two binary numbers together.',
+					marks: 2,
+					pageStart: 3,
+					pageEnd: 3,
+					response: { kind: 'lines', lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: '11010101', marks: 2 }],
+					markChecklist: [{ text: 'Binary sum is 11010101.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '10111010' }
+				},
+				{
+					sourceQuestionRef: '05.3',
+					promptText:
+						'Calculate the minimum amount of storage required to store Image D. Give your answer in bytes.',
+					selfContainedPromptText:
+						'Figure 2 shows Image D as an 8 by 5 pixel bitmap using three colours and needing 2 bits per pixel. Calculate the storage.',
+					marks: 2,
+					pageStart: 7,
+					pageEnd: 7,
+					stemBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'Image D is 8 pixels by 5 pixels and uses three colours.'
+						}
+					],
+					response: { kind: 'lines', lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: '10 bytes', marks: 2 }],
+					markChecklist: [{ text: 'Gives 10 bytes.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '10 bytes' }
+				},
+				{
+					sourceQuestionRef: '06.0',
+					promptText: 'Calculate the number of bits in 7 MB.',
+					selfContainedPromptText:
+						'Calculate the number of bits in 7 MB. Use decimal megabytes as in the paper.',
+					marks: 2,
+					pageStart: 10,
+					pageEnd: 10,
+					response: { kind: 'lines', lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: '56 000 000 bits', marks: 2 }],
+					markChecklist: [{ text: 'Gives 56 000 000 bits.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '56 000 000 bits' }
+				},
+				{
+					sourceQuestionRef: '07.1',
+					promptText: 'Which truth table matches the logic gate in Figure 4?',
+					selfContainedPromptText:
+						'Figure 4 shows a two-input OR logic gate. Which truth table matches the logic gate?',
+					marks: 1,
+					pageStart: 12,
+					pageEnd: 12,
+					response: {
+						kind: 'choice',
+						options: ['A', 'B', 'C', 'D'],
+						correctAnswers: [{ targetId: 'answer', correctAnswer: 'C' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'C', marks: 1 }],
+					markChecklist: [{ text: 'Selects C.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '07.2',
+					promptText:
+						'Complete the logic circuit by writing the name of a logic gate in each empty box.',
+					selfContainedPromptText:
+						'Complete the logic circuit so it has the same functionality as Figure 5.',
+					marks: 3,
+					pageStart: 12,
+					pageEnd: 12,
+					response: {
+						kind: 'image-label-zones',
+						assetLabel: 'Q07.2 logic circuit',
+						labels: ['AND', 'OR', 'NOT'],
+						zones: [
+							{ id: 'box-X', label: 'X', x: 10, y: 10, width: 50, height: 50 },
+							{ id: 'box-Y', label: 'Y', x: 70, y: 10, width: 50, height: 50 },
+							{ id: 'box-Z', label: 'Z', x: 130, y: 10, width: 50, height: 50 }
+						],
+						correctAnswers: [
+							{ targetId: 'box-X', correctAnswer: 'AND' },
+							{ targetId: 'box-Y', correctAnswer: 'OR' },
+							{ targetId: 'box-Z', correctAnswer: 'NOT' }
+						]
+					},
+					assets: [
+						{
+							sourceLabel: 'Q07.2 logic circuit',
+							role: 'response-surface',
+							filePath: 'tiny-figure.png'
+						}
+					],
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'X = AND', marks: 1 },
+						{ itemType: 'mark', text: 'Y = OR', marks: 1 },
+						{ itemType: 'mark', text: 'Z = NOT', marks: 1 }
+					],
+					markChecklist: [{ text: 'Uses AND, OR and NOT.', markSchemeItemIndexes: [0, 1, 2] }],
+					modelAnswer: { answerText: 'X = AND; Y = OR; Z = NOT' }
+				},
+				{
+					sourceQuestionRef: '08.2',
+					promptText: 'Explain three ways to improve the performance of a CPU.',
+					selfContainedPromptText: 'Explain three ways to improve the performance of a CPU.',
+					marks: 3,
+					pageStart: 15,
+					pageEnd: 15,
+					response: {
+						kind: 'labeled-lines',
+						fields: [
+							{ label: '1', lineCount: 1 },
+							{ label: '2', lineCount: 1 },
+							{ label: '3', lineCount: 1 }
+						]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'One improvement explained.', marks: 3 }],
+					markChecklist: [{ text: 'Gives three improvements.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Increase clock speed; increase cache; increase cores.' }
+				},
+				{
+					sourceQuestionRef: '09.1',
+					promptText: 'State the string that this bit pattern represents.',
+					selfContainedPromptText:
+						'Figure 7 contains a Huffman tree used to decode the bit pattern. State the string that this bit pattern represents.',
+					marks: 2,
+					pageStart: 16,
+					pageEnd: 16,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Figure 7 contains a Huffman tree.' },
+						{ kind: 'asset', assetLabel: 'Figure 7' }
+					],
+					response: {
+						kind: 'labeled-lines',
+						fields: [{ label: 'String', lineCount: 1 }]
+					},
+					assets: [{ sourceLabel: 'Figure 7', role: 'figure', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'Decodes the bit pattern.', marks: 2 }],
+					markChecklist: [{ text: 'Decoded string is correct.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'ADDED' }
+				},
+				{
+					sourceQuestionRef: '04.1',
+					promptText:
+						'State the result of applying a left binary shift of two to the bit pattern shown in Figure 1.',
+					selfContainedPromptText:
+						'Figure 1 shows the bit pattern 00110011. State the result of applying a left binary shift of two to the bit pattern shown in Figure 1.',
+					marks: 1,
+					pageStart: 3,
+					pageEnd: 3,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Figure 1 shows a bit pattern.' },
+						{ kind: 'code', label: 'Figure 1', text: '00110011' }
+					],
+					response: { kind: 'lines', lineCount: 1 },
+					assets: [{ sourceLabel: 'Figure 1', role: 'figure', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [{ itemType: 'mark', text: '11001100', marks: 1 }],
+					markChecklist: [{ text: 'Gives shifted bit pattern.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '11001100' }
+				},
+				{
+					sourceQuestionRef: '05.4',
+					promptText:
+						'Complete the table to show the binary representation of each colour in Image D.',
+					selfContainedPromptText:
+						'Figure 3 shows how Image D can be represented as binary data. Complete the table to show the binary representation of each colour in Image D.',
+					marks: 1,
+					pageStart: 9,
+					pageEnd: 9,
+					stemBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'Figure 3 shows how Image D can be represented as binary data.'
+						},
+						{ kind: 'asset', assetLabel: 'Figure 3' }
+					],
+					response: {
+						kind: 'choice-table',
+						columns: ['Colour', 'Binary representation'],
+						rows: [
+							['White', ''],
+							['Black', ''],
+							['Grey', '']
+						],
+						correctAnswers: [
+							{ targetId: 'White', correctAnswer: '00' },
+							{ targetId: 'Black', correctAnswer: '01' },
+							{ targetId: 'Grey', correctAnswer: '10' }
+						]
+					},
+					assets: [{ sourceLabel: 'Figure 3', role: 'figure', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'All three rows correct.', marks: 1 }],
+					markChecklist: [{ text: 'Maps all colours correctly.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '07.3',
+					promptText: 'Write a Boolean expression for the output.',
+					selfContainedPromptText: 'Write a Boolean expression for the output.',
+					marks: 1,
+					pageStart: 13,
+					pageEnd: 13,
+					response: { kind: 'lines', lineCount: 1 },
+					assets: [],
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Correct Boolean expression with NOT A.', marks: 1 }
+					],
+					markChecklist: [{ text: 'Uses NOT A correctly.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'A-bar + B.C' }
+				},
+				{
+					sourceQuestionRef: '18.7',
+					promptText: 'State the SQL that should have been written in place of the labels.',
+					selfContainedPromptText:
+						'The following SQL is run: INSERT INTO ( ). State the SQL that should have been written in place of the labels.',
+					marks: 3,
+					pageStart: 26,
+					pageEnd: 26,
+					stemBlocks: [{ kind: 'paragraph', text: 'The following SQL is run: INSERT INTO ( )' }],
+					response: {
+						kind: 'labeled-lines',
+						fields: [
+							{ label: 'First label', lineCount: 2 },
+							{ label: 'Second label', lineCount: 2 },
+							{ label: 'Third label', lineCount: 2 }
+						]
+					},
+					assets: [
+						{
+							sourceLabel: 'Q18.7 SQL skeleton',
+							role: 'source_sql',
+							filePath: 'broad-sql-skeleton.png'
+						}
+					],
+					markSchemeItems: [{ itemType: 'mark', text: 'Correct INSERT SQL.', marks: 3 }],
+					markChecklist: [{ text: 'SQL fields are correct.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Film VALUES 103, Gladiator, 2000' }
+				},
+				{
+					sourceQuestionRef: '13.2',
+					promptText: 'Discuss advantages and disadvantages of a school network.',
+					selfContainedPromptText: 'Discuss advantages and disadvantages of a school network.',
+					marks: 6,
+					pageStart: 20,
+					pageEnd: 21,
+					response: { kind: 'lines', lineCount: 34 },
+					markSchemeItems: [
+						{
+							itemType: 'mark',
+							text: 'Level 3: thorough discussion of advantages and disadvantages.',
+							marks: 6
+						},
+						{
+							itemType: 'mark',
+							text: 'Level 2: some explanation of advantages and disadvantages.',
+							marks: 4
+						},
+						{
+							itemType: 'mark',
+							text: 'Level 1: simple descriptions of advantages or disadvantages.',
+							marks: 2
+						}
+					],
+					markChecklist: [{ text: 'Apply level descriptor.', markSchemeItemIndexes: [0, 1, 2] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScienceCanaryFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${computerScienceCanaryFailurePath}`,
+	'--expected-marks=27',
+	'--expected-questions=12'
+]);
+for (const expectedFailure of [
+	'known_response_line_count_mismatch',
+	'known_figure_crop_incomplete',
+	'known_simple_figure_asset_should_be_structural',
+	'known_prior_figure_context_missing',
+	'known_self_contained_answer_leak',
+	'known_truth_table_options_unfaithful',
+	'known_logic_gate_label_bank_mismatch',
+	'known_model_answer_mismatch',
+	'known_partial_mark_scheme_collapsed',
+	'known_level_response_descriptors_missing',
+	'known_boolean_not_bar_ambiguous',
+	'known_sql_skeleton_labels_missing',
+	'known_sql_skeleton_crop_too_broad'
+]) {
+	if (!computerScienceCanaryFailure.includes(expectedFailure)) {
+		fail(
+			`Codex helper validation did not reject Computer Science canary defect: ${expectedFailure}`,
+			{
+				computerScienceCanaryFailure
+			}
+		);
+	}
 }
 
 const oversizedFigurePath = path.join(helperNormalizeDir, 'oversized-figure-crop.png');

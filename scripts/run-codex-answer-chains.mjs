@@ -25,7 +25,7 @@ Optional:
   --chain-style-judge-batch-size=8
   --chain-style-judge-max-existing-chains=16
   --chain-style-judge-source-snippet-chars=360
-  --chain-style-repair-attempts=2
+  --chain-style-repair-attempts=4
   --skip-chain-style-judge
   --timeout-ms=7200000
   --force
@@ -69,7 +69,7 @@ const chainStyleJudgeSourceSnippetChars = integerArg(
 	360,
 	80
 );
-const chainStyleRepairAttempts = integerArg('chain-style-repair-attempts', 2, 0);
+const chainStyleRepairAttempts = integerArg('chain-style-repair-attempts', 4, 0);
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
@@ -255,9 +255,16 @@ For every marked question decide one action:
 
 If updating/generalizing an existing published chain, inspect all available attached examples in existing-chain-context.json. If those examples do not provide enough evidence to prove the generalized chain still fits, do not update the existing chain; create a new chain or mark needs_review. Split rather than over-generalize.
 
-Answer-chain fields must describe reusable reasoning, method patterns, or compact recall handles. Do not put worked numeric answers, exact table values, exact tick-box letters, or one-off final data values in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
+Answer-chain fields must describe reusable reasoning, method patterns, or compact recall handles. Do not put worked numeric answers, exact table values, exact tick-box letters, exact blank-fill answers, or one-off final data values in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
 
 Do include concrete GCSE biology terms when those terms are the mark-scoring idea. Compact does not mean abstract. For recall or explanation questions, a useful chain may name glucose, nitrate ions, fatty acids, glycerol, chlorophyll, active transport, osmosis, mitosis, thorns, or self-reporting if that is what learners must remember. Do not hide concrete accepted terms behind placeholders.
+
+The same rule applies outside science: use concrete compact GCSE computing/geography/history concepts when they are the reusable idea. Good computing handles include "data + instructions -> binary", "high vs low -> clear contrast -> three points", "school users -> shared benefits -> risks/costs -> balance", and "fake story -> sensitive gain -> one vs many". These are allowed even for fixed-response questions because they cue the underlying concept rather than the option letter or exact blank text.
+
+For fixed-response items, distinguish concept from answer artifact:
+- allowed: a compact underlying concept or method, such as "data + instructions -> binary" or "destination -> value marker -> ordered values";
+- forbidden: the exact selected letter, the full selected option sentence, exact table values, the literal answer for a labelled blank such as a specific SQL keyword, or a final numeric result.
+- for SQL/code blanks, visible chains should cue structure ("command clause", "filter condition", "destination", "ordered values"), while exact SQL words and values stay in response.correctAnswers/modelAnswer.
 
 Student-visible chain style is strict:
 - answerChain.title should usually be 1 to 3 words. Use more only when absolutely necessary, and never more than 5 words.
@@ -271,7 +278,7 @@ Never use placeholder visible labels when concrete mark-scoring words are availa
 
 Common failure modes to avoid:
 - Do not put final numeric answers or worked table values in answer-chain fields. For calculations, write the method handle, such as "selected stages -> add -> total percent" or "convert units -> compare -> ratio".
-- For fixed-choice questions, visible links should usually be the markable selected ideas, not an extra unmarked outcome.
+- For fixed-choice questions, visible links should usually be the compact underlying concept, not the answer letter or a verbatim option sentence.
 - Keep canonicalChainText and steps aligned: each visible canonical link should normally have a matching compact stepText.
 - If the mark scheme gives alternative routes, do not turn alternatives into a false required sequence. Use one compact alternative link such as "self-report/change/binge" with branch detail in explanation/commonOmission, or split the chain if the alternatives are different skills.
 - For "any two", "any three", or "suggest one" questions, do not list all accepted alternatives as an ordered chain. Use a category/count handle such as "both shown -> shared structures -> choose two", "shown differences -> choose three", or "specific extension -> relevant outcome"; put examples in explanation/commonOmission.
@@ -308,6 +315,7 @@ function ensureChainOutput() {
 }
 
 function validateChain(chainPath) {
+	normalizeChainOutput(chainPath);
 	const result = spawnSync(
 		process.execPath,
 		[
@@ -331,6 +339,31 @@ function validateChain(chainPath) {
 	if (result.stdout.trim()) process.stderr.write(result.stdout);
 	if (result.stderr.trim()) process.stderr.write(result.stderr);
 	return readJson(path.join(workDir, 'chain-validation.json'));
+}
+
+function normalizeChainOutput(chainPath) {
+	const result = spawnSync(
+		process.execPath,
+		[
+			'helper.mjs',
+			'normalize-extraction',
+			`--input=${path.basename(chainPath)}`,
+			`--output=${path.basename(chainPath)}`
+		],
+		{
+			cwd: workDir,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+			maxBuffer: 64 * 1024 * 1024
+		}
+	);
+	if (result.status !== 0) {
+		throw new Error(
+			`helper normalize-extraction failed with exit code ${result.status ?? result.signal}.\n${result.stdout}\n${result.stderr}`
+		);
+	}
+	if (result.stdout.trim()) process.stderr.write(result.stdout);
+	if (result.stderr.trim()) process.stderr.write(result.stderr);
 }
 
 function judgeChainStyle(chainPath, { allowFailure = false } = {}) {
@@ -405,12 +438,13 @@ Task:
 2. Repair every real error in chain-reconciled.json by editing only answerChain and chainResolution fields.
 3. Consider warnings when they affect learner-facing clarity or duplicate chain consolidation.
 4. Preserve all extraction facts: prompts, response controls, correctAnswers, mark schemes, checklists, model answers, assets, page ranges, ids, and provenance.
-5. Do not put worked numeric answers, exact table values, tick-box letters, or final source-specific numeric results in answer-chain fields. Calculation chains should describe the method only.
+5. Do not put worked numeric answers, exact table values, tick-box letters, exact blank-fill answers, or final source-specific numeric results in answer-chain fields. Calculation chains should describe the method only.
 6. Keep concrete GCSE terms when they are the mark-scoring idea: glucose, nitrate ions, fatty acids, glycerol, chlorophyll, osmosis, mitosis, active transport, self-reporting, etc.
-7. Keep canonicalChainText and steps aligned. If canonicalChainText has a visible link, the steps should normally include the same compact link.
-8. Do not turn alternative mark routes into a false required sequence. Use a compact alternative link with branch detail in explanation/commonOmission, or split the chain if the skills are genuinely different.
-9. Use positive mark-scheme evidence indexes only. Avoid generic level descriptor rows.
-10. Keep titles short, summaries as distinct memory cues, and visible step labels compact.
+7. For fixed-response repairs, keep the useful underlying concept when it is reusable, but remove answer artifacts. For example, "data + instructions -> binary" is a valid concept handle, while a letter or a full option sentence is not. "destination -> value marker -> ordered values" is valid for SQL INSERT, while the literal blank answer is not.
+8. Keep canonicalChainText and steps aligned. If canonicalChainText has a visible link, the steps should normally include the same compact link.
+9. Do not turn alternative mark routes into a false required sequence. Use a compact alternative link with branch detail in explanation/commonOmission, or split the chain if the skills are genuinely different.
+10. Use positive mark-scheme evidence indexes only. Avoid generic level descriptor rows.
+11. Keep titles short, summaries as distinct memory cues, and visible step labels compact.
 
 After repair, run:
 node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json

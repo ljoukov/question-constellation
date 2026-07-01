@@ -226,6 +226,15 @@ For each question or subquestion, extract:
 
 Preserve distinction between positive marking points and negative guidance. A `reject` item is not a checklist item, but it can become a warning or common weak answer rule.
 
+### From Examiner Reports
+
+When examiner reports or mark/commentary reports are available, use them as secondary evidence for
+student-facing traps and grading guidance. They should inform `common_weak_answers.explanation`,
+hint wording, and warning-style feedback, especially where examiners describe recurring
+misreadings, missing evaluation, weak use of sources, or common calculation/setup errors. Do not use
+examiner-report comments as replacement positive marking points; credit still comes from the mark
+scheme. Preserve report provenance in review notes or evidence metadata where possible.
+
 ### Derived Objects
 
 After source extraction, derive:
@@ -428,6 +437,44 @@ reviewing the summary, strict audit, solvability results, and D1 replacement pla
 `--skip-solvability` or `--skip-d1-conflict-check` only for local debugging because those are the
 end-user renderability and safe-replacement gates.
 
+For AQA GCSE Computer Science, Geography, and History imports, first build the paper manifest from
+official AQA assessment-resource records plus any configured GCSE paper index used for PDF discovery:
+
+```sh
+pnpm run download:aqa-indexed-subject-papers -- \
+  --computer-science-index-url=<source-url> \
+  --geography-index-url=<source-url> \
+  --history-index-url=<source-url> \
+  --concurrency=8
+```
+
+An external GCSE paper index is a discovery pointer source, not the import authority. Prefer records
+discovered from AQA assessment-resource pages when present
+(`source_role: official_aqa_assessment_resource`). Use externally discovered PDF URLs only as public
+PDF pointers for rows or supporting documents that are not matched by AQA assessment-resource
+metadata (`source_role: discovery_index_pdf_pointer`). Do not infer authority from the CDN hostname
+alone; keep `source_page_url`, `discovered_via`, hashes, and local PDF metadata in the manifest.
+
+Then run whole-paper Codex production imports from that manifest:
+
+```sh
+pnpm run codex:production-import:batch -- \
+  --all \
+  --manifest=data/aqa-gcse-history-geography-computer-science/manifest.json \
+  --data-root=data/aqa-gcse-history-geography-computer-science \
+  --work-root=tmp/codex-humanities-production-import \
+  --summary=tmp/codex-humanities-production-import/summary.json \
+  --model=gpt-5.5 \
+  --concurrency=8 \
+  --solvability-concurrency=2 \
+  --paper-attempts=2
+```
+
+The downloaded manifest currently covers 100 whole-paper entries: 6 Computer Science, 15 Geography,
+and 79 History papers, with 70 AQA examiner-report PDFs. Examiner reports are secondary evidence
+only for common traps, weak-answer explanations, hints, and grading warnings; positive credit still
+comes from the mark scheme.
+
 For legacy `@ljoukov/llm` production runs, verify the old run artifact before treating it as
 import-ready:
 
@@ -580,10 +627,14 @@ and `pnpm run codex:production-import` call
 3. Strict import-ready preparation with extraction audit, solvability judge, D1 conflict check, and
    D1 import dry-run or explicit write.
 
-The runner uses the official Codex SDK (`@openai/codex-sdk`) to launch local Codex. The SDK wraps the
-Codex CLI and streams JSONL events, so benchmarks remain comparable with direct `codex exec --json`
-runs while the script gets cleaner event logging, usage accounting, final-message capture, and
-timeouts. The default Codex model name is `gpt-5.5`; the old `chatgpt-gpt-5.5` model identifier is
+The runner uses the official Codex SDK (`@openai/codex-sdk`) to launch local Codex through the same
+subscription-backed CLI auth as interactive Codex. The SDK wraps the Codex CLI and streams JSONL
+events, so benchmarks remain comparable with direct `codex exec --json` runs while the script gets
+cleaner event logging, usage accounting, final-message capture, and timeouts. The SDK runner strips
+generic `OPENAI_*` variables and `CODEX_API_KEY` from the subscription environment so a local
+`.env.local` cannot accidentally switch production imports to API-key auth. Set `CODEX_API_KEY`, or
+set `CODEX_USE_OPENAI_API_KEY=true` with `OPENAI_API_KEY`, only for an explicitly intended API-key
+diagnostic. The default Codex model name is `gpt-5.5`; the old `chatgpt-gpt-5.5` model identifier is
 for `@ljoukov/llm` calls and is not the Codex CLI model name.
 
 The PDF extraction runner prepares a clean isolated directory containing only:
@@ -974,6 +1025,41 @@ The direct Codex whole-paper result is now the quality target and the production
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
 descriptors, but raw Codex outputs still need normalization, app response-kind validation, asset
 validation, chain reconciliation, solvability, strict audit, and D1 dry-run before import.
+
+Computer Science canary, Paper 2 June 2024, 2026-07-01:
+
+| Phase                                   | Artifact                                                                                                                                                                         | Wall time |      Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | -----------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | --------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction                    | `tmp/codex-humanities-canary-subscription-v8/aqa-computer-science-2024-june-paper-2-computing-concepts-qp/raw/aqa-computer-science-2024-june-paper-2-computing-concepts-qp.json` |  765.148s |                 68 |              2 |           2,137,304 |    1,867,264 |                 36,553 |            4,389 | 38 questions, 90 marks, deterministic extraction validation passed                                  |
+| Independent Codex extraction judge      | `tmp/codex-humanities-canary-subscription-v8/aqa-computer-science-2024-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                    |  252.157s |                 42 |              2 |             924,378 |      642,048 |                 10,868 |            3,015 | pass, score 0.98, 38 refs checked, 0 required repairs                                               |
+| Codex answer-chain reconciliation       | `tmp/codex-humanities-chain-rerun-v1/chain-reconciled/aqa-computer-science-2024-june-paper-2-computing-concepts-qp.json`                                                         |  421.364s |                 19 |              0 |             441,319 |      377,344 |                 22,407 |            9,520 | 38 created, 0 reused; deterministic chain validation passed after prompt/style repairs              |
+| Chain style repair 1                    | `tmp/codex-humanities-chain-rerun-v1/codex-chains/style-repair-summary-1.json`                                                                                                   |  185.381s |                 28 |              1 |             584,788 |      514,560 |                  9,119 |            4,621 | repaired fixed-response/SQL-style chain wording; one harmless missing-context read                  |
+| Chain style repair 2                    | `tmp/codex-humanities-chain-rerun-v1/codex-chains/style-repair-summary-2.json`                                                                                                   |   91.711s |                 21 |              1 |             214,664 |      156,672 |                  4,194 |            1,091 | repaired decimal-to-hex method wording; one harmless missing-context read                           |
+| Prompt chain-style judge                | `tmp/codex-humanities-chain-rerun-v1/codex-chains/chain-style-judge.json`                                                                                                        |       n/a |          5 batches |              0 |              24,356 |            0 |                    349 |            2,379 | passed, 0 issues, 27,084 total tokens                                                               |
+| Strict audit / solvability / D1 dry-run | `tmp/codex-humanities-chain-rerun-v1/import-ready-final-solvability-audit.json`                                                                                                  |       n/a |          38 judges |              0 |             106,855 |            0 |                 11,547 |           24,696 | 38/38 solvability passed, 0 audit errors/warnings, 38 kept, 0 dropped, `safeToReplace`              |
+| D1 canary write                         | `tmp/codex-humanities-chain-rerun-v1/import-ready-final-solvability/aqa-computer-science-2024-june-paper-2-computing-concepts-qp.normalized.json`                                |    8.147s | 580 SQL statements |              0 |                 n/a |          n/a |                    n/a |              n/a | 38 questions, 38 overlays, 141 mark rows, 69 checklist rows, 38 model answers, 11 answer keys       |
+| R2 upload and deployed crawl            | `tmp/public-route-checks/aqa-computer-science-2024-june-paper-2-computing-concepts-qp-after-r2.json`                                                                             |   73.262s |         200 routes |              0 |                 n/a |          n/a |                    n/a |              n/a | after uploading 10 referenced assets, all question/chain/practice/constellation/image routes passed |
+
+This run started from official AQA PDFs plus the examiner report and did not feed whole
+`question-paper.txt` or `mark-scheme.txt` files to Codex. It exposed importer fixes that are now
+part of the production path: normalize non-positive page counts from the official PDF, coerce
+string/level mark values before audit, keep reusable calculation constants such as base-16 out of
+the prompt-specific-number guardrail, and treat fixed-response model answers such as `A and E` as
+duplicates of separate answer keys instead of dropping the question. The extracted CS paper passed
+through import-ready D1 dry-run with no existing-paper conflicts and 580 planned SQL statements.
+
+The canary did not prove cross-paper Computer Science chain reuse because no existing-chain context
+was supplied; all 38 chains were created new. Batch imports that claim reuse must pass
+`--existing-chain-input-root` or `--existing-chains` into the chain phase, then report reused,
+updated, and created counts from `codex-chain-summary.json` and public route-visible multiplicity
+after any D1 write.
+
+The first deployed route crawl for this canary failed only the 10 asset HEAD routes because the D1
+write was performed manually from the import-ready artifact before running the R2 upload helper. The
+main `scripts/run-codex-production-import-pipeline.mjs --import` path uploads referenced assets
+before the D1 write; if a manual import path is used for diagnostics, run
+`scripts/upload-r2-images.mjs` with the extraction asset root and reconciled JSON before claiming
+route health.
 
 Use phase-specific model and reasoning overrides when benchmarking. Codex extraction defaults to
 `gpt-5.5` with high reasoning for quality; answer-chain reconciliation and solvability default to

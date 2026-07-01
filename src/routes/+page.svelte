@@ -17,7 +17,17 @@
 		};
 	} = $props();
 
-	const subjectOrder = ['English', 'Biology', 'Chemistry', 'Physics'];
+	const subjectOrder = [
+		'English',
+		'Science',
+		'Biology',
+		'Chemistry',
+		'Physics',
+		'Computer Science',
+		'Geography',
+		'History'
+	];
+	const scienceSubjects = new Set(['Science', 'Biology', 'Chemistry', 'Physics']);
 	const marksFilterOptions = [
 		{ value: 'all', label: 'All' },
 		{ value: '1', label: '1' },
@@ -33,9 +43,14 @@
 	function canonicalSubject(value: string | null | undefined) {
 		const lower = (value ?? '').toLowerCase();
 		if (lower.includes('english')) return 'English';
+		if (lower.includes('computer science') || lower.includes('computing'))
+			return 'Computer Science';
+		if (lower.includes('geography')) return 'Geography';
+		if (lower.includes('history')) return 'History';
 		if (lower.includes('biology')) return 'Biology';
 		if (lower.includes('chemistry')) return 'Chemistry';
 		if (lower.includes('physics')) return 'Physics';
+		if (lower.includes('science')) return 'Science';
 		return null;
 	}
 
@@ -47,6 +62,13 @@
 			canonicalSubject(chain.title) ??
 			'Science'
 		);
+	}
+
+	function chainMatchesSubject(chain: LearningChain, subject: string) {
+		const subjectName = chainSubject(chain);
+		if (subject === 'All subjects') return true;
+		if (subject === 'Science') return scienceSubjects.has(subjectName);
+		return subjectName === subject;
 	}
 
 	let searchQuery = $state(untrack(() => data.initialSearch));
@@ -61,13 +83,27 @@
 	let visibleCount = $state(12);
 	const previewQuestionLimit = 3;
 
-	const subjects = $derived([
-		'All subjects',
-		...subjectOrder.filter((subject) =>
-			data.chains.some((chain) => chainSubject(chain) === subject)
-		)
-	]);
+	const subjects = $derived.by(() => {
+		const availableSubjects = new Set<string>(data.chains.map(chainSubject));
+		const ordered = subjectOrder.filter((subject) => {
+			if (subject === 'Science') {
+				return [...availableSubjects].some((candidate) => scienceSubjects.has(candidate));
+			}
+			return availableSubjects.has(subject);
+		});
+		const remaining = [...availableSubjects]
+			.filter((subject) => !subjectOrder.includes(subject))
+			.sort((left, right) => left.localeCompare(right));
+		return ['All subjects', ...ordered, ...remaining];
+	});
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
+	const browseKicker = $derived(
+		selectedSubject === 'All subjects'
+			? 'GCSE question bank'
+			: selectedSubject === 'Science'
+				? 'GCSE Science'
+				: `GCSE ${selectedSubject}`
+	);
 
 	function questionMatchesMarks(question: LearningChain['questions'][number]) {
 		const marks = question.marks;
@@ -88,8 +124,7 @@
 
 	const filteredChains = $derived(
 		data.chains.filter((chain) => {
-			if (selectedSubject !== 'All subjects' && chainSubject(chain) !== selectedSubject)
-				return false;
+			if (!chainMatchesSubject(chain, selectedSubject)) return false;
 			if (selectedMarksFilter !== 'all' && matchingQuestions(chain).length === 0) return false;
 			if (!normalizedSearch) return true;
 
@@ -191,7 +226,7 @@
 
 	<div class="qc-browse-layout">
 		<aside class="qc-browse-intro">
-			<p class="qc-real-kicker">GCSE Science</p>
+			<p class="qc-real-kicker">{browseKicker}</p>
 			<h1>Choose a question chain.</h1>
 			<p>Pick a real exam question, then practise the same thinking chain in nearby questions.</p>
 			{#if firstChain}

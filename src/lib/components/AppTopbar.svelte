@@ -7,7 +7,16 @@
 
 	let {
 		subject = 'Physics',
-		subjects = ['All subjects', 'Physics', 'Chemistry', 'Biology'],
+		subjects = [
+			'All subjects',
+			'Science',
+			'Biology',
+			'Chemistry',
+			'Physics',
+			'Computer Science',
+			'Geography',
+			'History'
+		],
 		searchValue = '',
 		searchPlaceholder = 'Search questions',
 		onSearchChange,

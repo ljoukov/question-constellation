@@ -500,16 +500,20 @@ function cloneJson(value) {
 }
 
 function normalizeDocument(doc = {}, metadataDoc = {}, fallback = {}) {
-	const sourcePath = normalizeLocalFilePath(
-		metadataDoc?.originalPath ??
-			doc.filePath ??
-			doc.sourceFile ??
-			metadataDoc?.path ??
-			fallback.path ??
-			null
-	);
-	const detectedPageCount =
-		sourcePath && existsSync(sourcePath) ? bestEffortPdfPageCount(sourcePath) : 0;
+	const sourcePathCandidates = [
+		doc.filePath,
+		doc.sourceFile,
+		metadataDoc?.originalPath,
+		metadataDoc?.path,
+		fallback.path
+	]
+		.map(normalizeLocalFilePath)
+		.filter(Boolean);
+	const sourcePath =
+		sourcePathCandidates.find((candidate) => existsSync(candidate)) ??
+		sourcePathCandidates[0] ??
+		null;
+	const detectedPageCount = sourcePath ? bestEffortPdfPageCount(sourcePath) : 0;
 	const pageCount = positiveInteger(doc.pageCount, metadataDoc?.pageCount, detectedPageCount) ?? 0;
 	return {
 		id: doc.id ?? metadataDoc?.id ?? fallback.id,
@@ -554,6 +558,7 @@ function normalizeQuestion(question, index, sourceDocument) {
 		question.assets ?? question.requiredAssets ?? [],
 		question.sourceQuestionRef
 	);
+	const needsHumanReview = question.needsHumanReview === true;
 	return {
 		id: question.id ?? null,
 		sourceQuestionRef: question.sourceQuestionRef,
@@ -564,7 +569,7 @@ function normalizeQuestion(question, index, sourceDocument) {
 		selfContainedPromptText: question.selfContainedPromptText ?? promptText,
 		contextText: question.contextText ?? null,
 		commandWord: question.commandWord ?? null,
-		marks: question.marks ?? null,
+		marks: numberOrNull(question.marks),
 		pageStart: question.pageStart ?? null,
 		pageEnd: question.pageEnd ?? question.pageStart ?? null,
 		topicPath: question.topicPath ?? [],
@@ -580,7 +585,7 @@ function normalizeQuestion(question, index, sourceDocument) {
 		markSchemeItems: (question.markSchemeItems ?? []).map((item) => ({
 			itemType: item.itemType ?? item.kind ?? 'mark',
 			text: String(item.text ?? '').trim(),
-			marks: item.marks ?? null,
+			marks: numberOrNull(item.marks),
 			sourceRef: item.sourceRef ?? question.sourceQuestionRef,
 			confidence: item.confidence ?? null
 		})),
@@ -600,10 +605,25 @@ function normalizeQuestion(question, index, sourceDocument) {
 			identityStable: false
 		},
 		commonWeakAnswers: question.commonWeakAnswers ?? [],
-		extractionConfidence: question.extractionConfidence ?? null,
-		needsHumanReview: question.needsHumanReview === true,
+		extractionConfidence: normalizedConfidence(
+			question.extractionConfidence ?? question.confidence,
+			needsHumanReview ? 0.5 : 0.9
+		),
+		needsHumanReview,
 		reviewNotes: question.reviewNotes ?? []
 	};
+}
+
+function numberOrNull(value) {
+	if (value === null || value === undefined || value === '') return null;
+	const number = Number(value);
+	return Number.isFinite(number) ? number : null;
+}
+
+function normalizedConfidence(value, fallback) {
+	const number = Number(value);
+	if (!Number.isFinite(number)) return fallback;
+	return Math.max(0, Math.min(1, number));
 }
 
 function normalizedContextBlocks(question) {
@@ -928,6 +948,7 @@ function mechanicalSummary(candidate, options = {}) {
 function deterministicIssuesFor(candidate, options = {}) {
 	const findings = [];
 	const sourceDocumentId = candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? null;
+	const sourcePageCount = Number(candidate?.sourceDocument?.pageCount ?? 0);
 	const expectedLineCounts = expectedResponseLineCountsForSource(sourceDocumentId);
 	if (!candidate?.sourceDocument?.id) {
 		findings.push({
@@ -938,6 +959,19 @@ function deterministicIssuesFor(candidate, options = {}) {
 					field: 'sourceDocument.id',
 					severity: 'error',
 					evidence: 'sourceDocument.id is required.'
+				}
+			]
+		});
+	}
+	if (!Number.isInteger(sourcePageCount) || sourcePageCount <= 0) {
+		findings.push({
+			sourceQuestionRef: null,
+			issues: [
+				{
+					code: 'source_document_missing_page_count',
+					field: 'sourceDocument.pageCount',
+					severity: 'error',
+					evidence: candidate?.sourceDocument?.pageCount ?? 'missing'
 				}
 			]
 		});
@@ -991,6 +1025,17 @@ function deterministicIssuesFor(candidate, options = {}) {
 				field: 'pageStart/pageEnd',
 				severity: 'error',
 				evidence: ref
+			});
+		} else if (
+			Number.isInteger(sourcePageCount) &&
+			sourcePageCount > 0 &&
+			Number(question.pageEnd) > sourcePageCount
+		) {
+			issues.push({
+				code: 'question_page_span_out_of_range',
+				field: 'pageStart/pageEnd',
+				severity: 'error',
+				evidence: `${question.pageEnd} > ${sourcePageCount}`
 			});
 		}
 		if (!(question.markSchemeItems ?? []).length) {
@@ -1078,8 +1123,13 @@ function deterministicIssuesFor(candidate, options = {}) {
 				});
 			}
 		}
-		if (sourceDocumentId === 'aqa-84611h-qp-nov20') {
-			for (const issue of knownSourceSpecificIssues(question)) issues.push(issue);
+		if (
+			[
+				'aqa-84611h-qp-nov20',
+				'aqa-computer-science-2024-june-paper-2-computing-concepts-qp'
+			].includes(sourceDocumentId)
+		) {
+			for (const issue of knownSourceSpecificIssues(question, sourceDocumentId)) issues.push(issue);
 		}
 		if (response?.kind === 'equation-blanks') {
 			const blankIds = (response.segments ?? [])
@@ -1398,6 +1448,35 @@ function duplicateLearnerVisibleBlockText(question) {
 }
 
 function expectedResponseLineCountsForSource(sourceDocumentId) {
+	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-2-computing-concepts-qp') {
+		return new Map(
+			Object.entries({
+				'02.1': 2,
+				'02.2': 5,
+				'05.3': 7,
+				'06.0': 7,
+				'07.3': 2,
+				'08.1': 15,
+				'08.2': 6,
+				'09.1': 2,
+				'09.2': 10,
+				'11.0': 12,
+				'12.0': 24,
+				13.1: 4,
+				13.2: 34,
+				'14.0': 6,
+				'15.0': 6,
+				'16.0': 8,
+				'17.0': 10,
+				18.1: 4,
+				18.2: 6,
+				18.3: 4,
+				18.6: 6,
+				19.1: 4,
+				19.2: 14
+			})
+		);
+	}
 	if (sourceDocumentId !== 'aqa-84611h-qp-nov20') return new Map();
 	return new Map(
 		Object.entries({
@@ -1455,7 +1534,7 @@ function responseVisibleLineCount(response) {
 	return null;
 }
 
-function knownSourceSpecificIssues(question) {
+function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	const ref = question.sourceQuestionRef ?? 'unknown';
 	const issues = [];
 	const visibleText = [
@@ -1475,6 +1554,227 @@ function knownSourceSpecificIssues(question) {
 		.filter(Boolean)
 		.join('\n')
 		.toLowerCase();
+	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
+	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-2-computing-concepts-qp') {
+		if (['04.1', '04.2'].includes(ref)) {
+			const figureOneAssets = (question.assets ?? []).filter((asset) =>
+				[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+					.filter(Boolean)
+					.some((label) => normalizedMediaLabel(label) === 'figure 1')
+			);
+			if (figureOneAssets.length) {
+				issues.push({
+					code: 'known_simple_figure_asset_should_be_structural',
+					field: 'assets',
+					severity: 'error',
+					evidence:
+						'Q04.1/Q04.2 should render Figure 1 as a structured code block containing 00110011, or prove an exact crop. Do not attach an unchecked Figure 1 screenshot asset.'
+				});
+			}
+		}
+		if (ref === '05.4') {
+			const hasFigureTwoDependency = (question.assets ?? []).some((asset) =>
+				[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+					.filter(Boolean)
+					.some((label) => normalizedMediaLabel(label) === 'figure 2')
+			);
+			if (!hasFigureTwoDependency) {
+				issues.push({
+					code: 'known_prior_figure_context_missing',
+					field: 'assets/stemBlocks',
+					severity: 'error',
+					evidence:
+						'05.4 must carry forward Figure 2 / Image D context as well as Figure 3, because the colour-to-binary mapping depends on the earlier image.'
+				});
+			}
+		}
+		if (ref === '05.3') {
+			if (
+				/(?:8\s*(?:by|x)\s*5|8\s+pixels?\s+by\s+5|2\s+bits?\s+per\s+pixel|colour\s+depth\s+of\s+2|uses\s+three\s+colou?rs)/i.test(
+					visibleText
+				)
+			) {
+				issues.push({
+					code: 'known_self_contained_answer_leak',
+					field: 'contextText/stemBlocks/selfContainedPromptText',
+					severity: 'error',
+					evidence:
+						'05.3 learner-facing context must not give away derived Image D dimensions, colour count, or 2-bit colour depth; provide Figure 2 and preserve the official calculation task.'
+				});
+			}
+		}
+		if (ref === '06.0' && /decimal\s+megabytes?|as\s+in\s+the\s+paper/.test(visibleText)) {
+			issues.push({
+				code: 'known_self_contained_answer_leak',
+				field: 'selfContainedPromptText',
+				severity: 'error',
+				evidence:
+					'06.0 learner-facing prompt must not add non-official "decimal megabytes" or "as in the paper" guidance.'
+			});
+		}
+		if (ref === '07.1' && /\bor\s+logic\s+gate\b|\bor\s+gate\b/.test(visibleText)) {
+			issues.push({
+				code: 'known_self_contained_answer_leak',
+				field: 'selfContainedPromptText',
+				severity: 'error',
+				evidence:
+					'07.1 learner-facing text must not name Figure 4 as an OR gate; that reveals the keyed truth-table choice.'
+			});
+		}
+		if (ref === '07.1') {
+			const optionText = responseLabels(question.response).join('\n');
+			const normalizedOptions = optionText
+				.replace(/[|,:;=<>-]+/g, ' ')
+				.replace(/\s+/g, ' ')
+				.trim()
+				.toLowerCase();
+			const requiredRows = ['0 0 0', '0 1 0', '1 0 0', '1 1 1', '0 1 1', '1 0 1', '1 1 0'];
+			const hasRequiredRows = requiredRows.every((row) => normalizedOptions.includes(row));
+			if (!hasRequiredRows || /\b(?:pairs only|as printed|q is|exactly one)\b/i.test(optionText)) {
+				issues.push({
+					code: 'known_truth_table_options_unfaithful',
+					field: 'response.options',
+					severity: 'error',
+					evidence:
+						'07.1 response options must preserve the official visible truth-table rows for A-D, not prose summaries of the gates or table behavior.'
+				});
+			}
+		}
+		if (ref === '07.2') {
+			const labels = new Set(
+				(responseLabels(question.response) ?? []).map((label) => label.trim().toUpperCase())
+			);
+			const answerLabels = new Set(
+				(question.response?.correctAnswers ?? []).map((answer) =>
+					String(answer?.correctAnswer ?? '')
+						.trim()
+						.toUpperCase()
+				)
+			);
+			for (const requiredLabel of ['AND', 'XOR', 'NOT']) {
+				if (labels.has(requiredLabel) && answerLabels.has(requiredLabel)) continue;
+				issues.push({
+					code: 'known_logic_gate_label_bank_mismatch',
+					field: 'response.labels',
+					severity: 'error',
+					evidence:
+						'07.2 learner-facing label bank and answer key must both include AND, XOR, and NOT.'
+				});
+				break;
+			}
+			if (labels.has('OR') || answerLabels.has('OR')) {
+				issues.push({
+					code: 'known_logic_gate_label_bank_mismatch',
+					field: 'response.correctAnswers',
+					severity: 'error',
+					evidence:
+						'07.2 official mark scheme uses XOR for box Y. OR must not appear as a keyed response option or answer.'
+				});
+			}
+			if (question.needsHumanReview) {
+				issues.push({
+					code: 'known_unresolved_review_flag',
+					field: 'needsHumanReview',
+					severity: 'error',
+					evidence:
+						'07.2 has enough rendered truth-table/circuit and mark-scheme evidence to resolve without a review flag.'
+				});
+			}
+		}
+		if (ref === '07.3' && /\ba\s*-\s*bar\b|\ba\s*bar\b/.test(modelAnswerText)) {
+			issues.push({
+				code: 'known_boolean_not_bar_ambiguous',
+				field: 'modelAnswer.answerText',
+				severity: 'error',
+				evidence:
+					'07.3 modelAnswer must use an actual overbar notation such as \\overline{A}, not ambiguous plain text A-bar.'
+			});
+		}
+		if (ref === '07.3' && /\b(?:not|and|or)\s+gate\b/.test(visibleText)) {
+			issues.push({
+				code: 'known_self_contained_answer_leak',
+				field: 'selfContainedPromptText',
+				severity: 'error',
+				evidence:
+					'07.3 learner-facing text must not name the gates in Figure 6; attach/render the circuit and keep the Boolean answer in grading fields.'
+			});
+		}
+		if (ref === '03.0') {
+			const positiveItems = (question.markSchemeItems ?? []).filter(isPositiveMarkSchemeItem);
+			const hasFirstPart = positiveItems.some(
+				(item) => Number(item.marks ?? 1) <= 1 && /\b11010\b/.test(String(item.text ?? ''))
+			);
+			const hasSecondPart = positiveItems.some(
+				(item) => Number(item.marks ?? 1) <= 1 && /\b101\b/.test(String(item.text ?? ''))
+			);
+			const hasCollapsedTwoMarkItem = positiveItems.some((item) => Number(item.marks ?? 0) > 1);
+			if (positiveItems.length < 2 || !hasFirstPart || !hasSecondPart || hasCollapsedTwoMarkItem) {
+				issues.push({
+					code: 'known_partial_mark_scheme_collapsed',
+					field: 'markSchemeItems',
+					severity: 'error',
+					evidence:
+						'03.0 official mark scheme credits 11010 and 101 as separate 1-mark parts; do not collapse them into one 2-mark binary answer row.'
+				});
+			}
+			if (!/\b11010101\b/.test(modelAnswerText) || /\b10111010\b/.test(modelAnswerText)) {
+				issues.push({
+					code: 'known_model_answer_mismatch',
+					field: 'modelAnswer.answerText',
+					severity: 'error',
+					evidence:
+						'03.0 complete model answer must be 11010101; the official 11010 and 101 mark fragments combine in that order.'
+				});
+			}
+		}
+		if (ref === '09.1') {
+			const positiveItems = (question.markSchemeItems ?? []).filter(isPositiveMarkSchemeItem);
+			const hasA = positiveItems.some(
+				(item) => Number(item.marks ?? 1) <= 1 && /^A\b/i.test(String(item.text ?? '').trim())
+			);
+			const hasDded = positiveItems.some(
+				(item) => Number(item.marks ?? 1) <= 1 && /\bDDED\b/.test(String(item.text ?? ''))
+			);
+			const hasCollapsedTwoMarkItem = positiveItems.some((item) => Number(item.marks ?? 0) > 1);
+			if (positiveItems.length < 2 || !hasA || !hasDded || hasCollapsedTwoMarkItem) {
+				issues.push({
+					code: 'known_partial_mark_scheme_collapsed',
+					field: 'markSchemeItems',
+					severity: 'error',
+					evidence:
+						'09.1 official mark scheme credits A and DDED as separate 1-mark parts; do not collapse them into one 2-mark decoded-string row.'
+				});
+			}
+		}
+		if (ref === '13.2') {
+			const hasLevelBands =
+				/(?:5\s*[-–]\s*6|5\s+to\s+6)/.test(gradingText) &&
+				/(?:3\s*[-–]\s*4|3\s+to\s+4)/.test(gradingText) &&
+				/(?:1\s*[-–]\s*2|1\s+to\s+2)/.test(gradingText);
+			if (!hasLevelBands) {
+				issues.push({
+					code: 'known_level_response_descriptors_missing',
+					field: 'markSchemeItems',
+					severity: 'error',
+					evidence:
+						'13.2 must preserve the official level mark bands as ranges 5-6, 3-4, and 1-2, not only representative 6/4/2 rows.'
+				});
+			}
+		}
+		if (ref === '18.7' && /insert\s+into\s*\(\s*\)/.test(visibleText)) {
+			issues.push({
+				code: 'known_sql_skeleton_labels_missing',
+				field: 'stemBlocks/promptBlocks/response.fields',
+				severity: 'error',
+				evidence:
+					'18.7 must preserve the learner-visible SQL skeleton with official A/B/C label positions; a flattened INSERT INTO ( ) sentence is insufficient.'
+			});
+		}
+		for (const issue of knownComputerScience2024Paper2SqlAssetIssues(question)) issues.push(issue);
+		for (const issue of knownComputerScience2024Paper2FigureCropIssues(question))
+			issues.push(issue);
+		return issues;
+	}
 	if (['06.5', '06.6'].includes(ref)) {
 		const hasSurveyContext =
 			/15\s*year|over\s+15\s+years/.test(visibleText) &&
@@ -1555,6 +1855,109 @@ function knownSourceSpecificIssues(question) {
 		}
 	}
 	for (const issue of knownFigureCropIssues(question)) issues.push(issue);
+	return issues;
+}
+
+function knownComputerScience2024Paper2SqlAssetIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	if (!['18.5', '18.7'].includes(ref)) return [];
+	const issues = [];
+	for (const asset of question.assets ?? []) {
+		const label = normalizedMediaLabel(
+			asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? asset.assetId ?? ''
+		);
+		if (!label.includes('sql skeleton')) continue;
+		const dimensions = imageDimensionsForAsset(asset);
+		if (!dimensions || dimensions.height <= 620) continue;
+		issues.push({
+			code: 'known_sql_skeleton_crop_too_broad',
+			field: 'assets.filePath',
+			severity: 'error',
+			evidence: `${ref} ${asset.sourceLabel ?? label}: SQL skeleton crops must not include neighboring prompt text, response lines, or adjacent questions. Prefer the structured code block if it is faithful. Found ${dimensions.width}x${dimensions.height}; expected a tight skeleton-only crop or no SQL asset.`
+		});
+	}
+	return issues;
+}
+
+function responseLabels(response) {
+	if (!response) return [];
+	return [
+		...(Array.isArray(response.labels) ? response.labels : []),
+		...(Array.isArray(response.options) ? response.options : []),
+		...(Array.isArray(response.labelBank) ? response.labelBank : [])
+	]
+		.map((label) => String(label ?? '').trim())
+		.filter(Boolean);
+}
+
+function knownComputerScience2024Paper2FigureCropIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const requirements = new Map([
+		[
+			'figure 2',
+			{
+				minWidth: 980,
+				minHeight: 730,
+				evidence:
+					'Figure 2 asset must include the complete four bitmap images A, B, C and D, including labels, right edges and lower grid content.'
+			}
+		],
+		[
+			'figure 5',
+			{
+				minWidth: 900,
+				minHeight: 760,
+				evidence:
+					'Figure 5 truth-table asset should include the complete learner-visible table, including header and all eight data rows.'
+			}
+		],
+		[
+			'figure 6',
+			{
+				minWidth: 980,
+				minHeight: 520,
+				evidence:
+					'Figure 6 logic-circuit asset must include the complete circuit, including the right-side output line and Q label.'
+			}
+		],
+		[
+			'figure 7',
+			{
+				minWidth: 880,
+				minHeight: 620,
+				evidence:
+					'Figure 7 Huffman-tree asset must include the complete tree, including A, D, E, and P leaf labels.'
+			}
+		],
+		[
+			'figure 8',
+			{
+				minWidth: 900,
+				minHeight: 1350,
+				evidence:
+					'Figure 8 database asset must include the complete Film, Performance and Actor tables, including Actor rows 8 Tom Hanks and 9 Lea Thompson.'
+			}
+		]
+	]);
+	const issues = [];
+	for (const asset of question.assets ?? []) {
+		const label = normalizedMediaLabel(
+			asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? asset.assetId ?? ''
+		);
+		const requirement = requirements.get(label);
+		if (!requirement) continue;
+		const dimensions = imageDimensionsForAsset(asset);
+		if (!dimensions) continue;
+		if (dimensions.width >= requirement.minWidth && dimensions.height >= requirement.minHeight) {
+			continue;
+		}
+		issues.push({
+			code: 'known_figure_crop_incomplete',
+			field: 'assets.filePath',
+			severity: 'error',
+			evidence: `${ref} ${asset.sourceLabel ?? label}: ${requirement.evidence} Found ${dimensions.width}x${dimensions.height}; expected at least ${requirement.minWidth}x${requirement.minHeight}.`
+		});
+	}
 	return issues;
 }
 

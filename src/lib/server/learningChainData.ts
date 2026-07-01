@@ -178,6 +178,10 @@ function subjectSymbol(subject: string) {
 	if (lower.includes('biology')) return '🧬';
 	if (lower.includes('chemistry')) return '⚗️';
 	if (lower.includes('physics')) return '⚛️';
+	if (lower.includes('computer')) return '</>';
+	if (lower.includes('geography')) return '⌖';
+	if (lower.includes('history')) return '¶';
+	if (lower.includes('english')) return 'Aa';
 	return '✦';
 }
 
@@ -185,6 +189,8 @@ function subjectAccent(subject: string): LearningChain['accent'] {
 	const lower = subject.toLowerCase();
 	if (lower.includes('chemistry')) return 'amber';
 	if (lower.includes('physics')) return 'blue';
+	if (lower.includes('computer')) return 'blue';
+	if (lower.includes('history')) return 'amber';
 	return 'green';
 }
 

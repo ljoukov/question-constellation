@@ -57,11 +57,8 @@ export async function runCodexSdkTurn({
 	let threadId = null;
 	let failedError = null;
 	try {
-		const apiKey = process.env.CODEX_API_KEY ?? process.env.OPENAI_API_KEY ?? undefined;
-		const codex = new Codex({
-			apiKey,
-			env: codexEnvironment(apiKey)
-		});
+		const apiKey = codexApiKey();
+		const codex = new Codex(codexOptions(apiKey));
 		const thread = codex.startThread({
 			model,
 			modelReasoningEffort: thinkingLevel,
@@ -108,6 +105,33 @@ export async function runCodexSdkTurn({
 	return { ...summary, finalResponse };
 }
 
+function codexApiKey() {
+	if (process.env.CODEX_API_KEY) return process.env.CODEX_API_KEY;
+	const useOpenAiKey = ['1', 'true', 'yes'].includes(
+		String(process.env.CODEX_USE_OPENAI_API_KEY ?? '').toLowerCase()
+	);
+	return useOpenAiKey ? (process.env.OPENAI_API_KEY ?? undefined) : undefined;
+}
+
+function codexOptions(apiKey) {
+	if (!apiKey) return { env: codexSubscriptionEnvironment() };
+	return {
+		apiKey,
+		env: codexEnvironment(apiKey)
+	};
+}
+
+function codexSubscriptionEnvironment() {
+	const env = {};
+	for (const [name, value] of Object.entries(process.env)) {
+		if (value === undefined) continue;
+		if (/^OPENAI_/i.test(name)) continue;
+		if (name === 'CODEX_API_KEY') continue;
+		env[name] = value;
+	}
+	return env;
+}
+
 export function summarizeCodexEvents(events, base = {}) {
 	const completedCommands = events.filter(
 		(event) => event.type === 'item.completed' && event.item?.type === 'command_execution'
@@ -118,7 +142,8 @@ export function summarizeCodexEvents(events, base = {}) {
 	const fileChanges = events
 		.filter((event) => event.type === 'item.completed' && event.item?.type === 'file_change')
 		.flatMap((event) => event.item?.changes ?? []);
-	const usage = events.filter((event) => event.type === 'turn.completed').slice(-1)[0]?.usage ?? null;
+	const usage =
+		events.filter((event) => event.type === 'turn.completed').slice(-1)[0]?.usage ?? null;
 	return {
 		...base,
 		events: events.length,
