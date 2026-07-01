@@ -8,6 +8,7 @@
 		themePreference,
 		type ThemePreference
 	} from '$lib/themePreference';
+	import { disableViewportZoom } from '$lib/viewportZoom';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -15,6 +16,7 @@
 
 	onMount(() => {
 		let stopAutomaticThemeSync = () => {};
+		const stopViewportZoomGuard = disableViewportZoom();
 		const unsubscribe = themePreference.subscribe((preference: ThemePreference) => {
 			stopAutomaticThemeSync();
 			if (preference === 'auto') {
@@ -28,6 +30,7 @@
 		return () => {
 			unsubscribe();
 			stopAutomaticThemeSync();
+			stopViewportZoomGuard();
 		};
 	});
 
