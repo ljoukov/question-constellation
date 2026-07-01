@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/private';
 import { getPracticePageData, type PracticePageData } from '$lib/server/questionData';
 import { configureChatGptCodexProxy, type LlmStreamEvent, type LlmTextModelId } from '@ljoukov/llm';
 
-const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.3-codex-spark';
+const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
 const GRADING_THINKING_LEVEL = 'medium';
 const NONE = 'none';
 const CHATGPT_CODEX_PROXY_ENV_KEYS = [
@@ -213,10 +213,10 @@ function buildQuestionContext(data: PracticePageData): string {
 
 export function buildGradePrompt(data: PracticePageData, studentAnswer: string): string {
 	return [
-		'You are grading one GCSE science free-text answer for an online practice question.',
+		'You are grading one GCSE free-text answer for an online practice question.',
 		'Use the exact answer-chain step ids listed below. Do not invent ids.',
 		'Select which listed steps are clearly present in the student answer and which are missing.',
-		'Award marks for correct science ideas, not for exact wording. Keep feedback short and student-facing.',
+		'Award marks for correct exam-relevant ideas, not for exact wording. Keep feedback short and student-facing.',
 		'',
 		'Return plain text only, exactly in this field format:',
 		'%RESULT%: correct|partial|incorrect',

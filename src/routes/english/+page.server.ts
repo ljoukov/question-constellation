@@ -75,6 +75,7 @@ export const load: PageServerLoad = async () => {
 
 		return {
 			guidedQuestion: {
+				id: row.id,
 				board: row.board ?? 'OCR',
 				qualification: row.qualification ?? 'GCSE',
 				subject: row.subject ?? 'English Literature',
