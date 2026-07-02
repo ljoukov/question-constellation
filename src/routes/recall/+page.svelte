@@ -377,6 +377,7 @@
 		name="description"
 		content="Practise compact AQA GCSE science recall cards for definitions, formulae, tests, units, and required practical facts."
 	/>
+	<link rel="canonical" href="https://constellation.eviworld.com/recall" />
 </svelte:head>
 
 {#if sessionActive}

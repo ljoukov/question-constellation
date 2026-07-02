@@ -215,6 +215,7 @@
 		name="description"
 		content="Browse GCSE question chains, choose a question, then practise it in the original exam-paper format."
 	/>
+	<link rel="canonical" href="https://constellation.eviworld.com/" />
 </svelte:head>
 
 <main class="qc-real-app qc-browse-app">

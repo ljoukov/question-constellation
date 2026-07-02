@@ -12,6 +12,9 @@
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
 	);
+	const canonicalUrl = $derived(
+		`https://constellation.eviworld.com/questions/${encodeURIComponent(data.question.id)}`
+	);
 	const chainHref = $derived(
 		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
 	);
@@ -56,7 +59,7 @@
 			? 'Attempt a GCSE English question first, then review the mark path and practise.'
 			: 'Attempt a GCSE question first, then reveal the answer chain when ready.'}
 	/>
-	<link rel="canonical" href={questionHref} />
+	<link rel="canonical" href={canonicalUrl} />
 </svelte:head>
 
 <main class="qc-real-app qc-question-page">

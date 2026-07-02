@@ -283,6 +283,7 @@
 		name="description"
 		content="Browse GCSE English Language and English Literature questions by exam board, paper, year, text, question type, and marks."
 	/>
+	<link rel="canonical" href="https://constellation.eviworld.com/english" />
 </svelte:head>
 
 <main class="qc-real-app qc-browse-app qc-english-app">

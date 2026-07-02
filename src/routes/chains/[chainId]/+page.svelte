@@ -16,6 +16,9 @@
 	} = $props();
 
 	const chain = $derived(data.chain);
+	const canonicalUrl = $derived(
+		`https://constellation.eviworld.com/chains/${encodeURIComponent(chain.id)}`
+	);
 </script>
 
 <svelte:head>
@@ -24,6 +27,7 @@
 		name="description"
 		content={`Open a GCSE question chain for ${chain.title}, then choose a related exam question.`}
 	/>
+	<link rel="canonical" href={canonicalUrl} />
 </svelte:head>
 
 <main class="qc-real-app qc-chain-page">

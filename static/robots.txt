@@ -1,5 +1,14 @@
 # allow crawling everything by default
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
 User-agent: *
-Disallow:
+Allow: /
 
 Sitemap: https://constellation.eviworld.com/sitemap.xml
