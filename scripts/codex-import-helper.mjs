@@ -602,6 +602,14 @@ function normalizedLabel(value) {
 		.trim();
 }
 
+function normalizedForExactMatch(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
 function cloneJson(value) {
 	return JSON.parse(JSON.stringify(value));
 }
@@ -981,12 +989,16 @@ function normalizeCorrectAnswers(value) {
 	if (!Array.isArray(value) && typeof value === 'object') {
 		return Object.entries(value)
 			.filter(([, answer]) => answer !== null && answer !== undefined && String(answer).trim())
-			.map(([targetId, answer]) => ({ targetId, correctAnswer: String(answer).trim() }));
+			.map(([targetId, answer]) => normalizeCorrectAnswerEntry({ targetId, correctAnswer: answer }))
+			.filter(Boolean);
 	}
 	return (Array.isArray(value) ? value : [value])
 		.map((answer, index) => {
 			if (typeof answer === 'string' || typeof answer === 'number') {
-				return { targetId: 'answer', correctAnswer: String(answer).trim() };
+				return normalizeCorrectAnswerEntry({
+					targetId: index === 0 ? 'answer' : `answer-${index + 1}`,
+					correctAnswer: answer
+				});
 			}
 			if (!answer || typeof answer !== 'object') return null;
 			const targetId =
@@ -1001,9 +1013,102 @@ function normalizeCorrectAnswers(value) {
 				(Array.isArray(answer.answers) ? answer.answers.join(' | ') : null);
 			if (correctAnswer === null || correctAnswer === undefined || !String(correctAnswer).trim())
 				return null;
-			return { targetId: String(targetId), correctAnswer: String(correctAnswer).trim() };
+			return normalizeCorrectAnswerEntry({
+				targetId,
+				correctAnswer,
+				aliases: answer.aliases ?? answer.acceptedAnswers ?? answer.accepted ?? null
+			});
 		})
 		.filter(Boolean);
+}
+
+function rawCorrectAnswerEntries(value) {
+	if (!value) return [];
+	if (!Array.isArray(value) && typeof value === 'object') {
+		return Object.entries(value)
+			.flatMap(([targetId, answer]) => {
+				if (Array.isArray(answer)) {
+					return answer.map((item) => rawCorrectAnswerEntry(targetId, item)).filter(Boolean);
+				}
+				return [rawCorrectAnswerEntry(targetId, answer)].filter(Boolean);
+			});
+	}
+	return (Array.isArray(value) ? value : [value])
+		.map((answer, index) => {
+			if (typeof answer === 'string' || typeof answer === 'number') {
+				return {
+					targetId: index === 0 ? 'answer' : `answer-${index + 1}`,
+					correctAnswer: String(answer).trim(),
+					aliases: []
+				};
+			}
+			if (!answer || typeof answer !== 'object') return null;
+			return rawCorrectAnswerEntry(
+				answer.targetId ?? answer.id ?? (index === 0 ? 'answer' : `answer-${index + 1}`),
+				answer
+			);
+		})
+		.filter(Boolean);
+}
+
+function rawCorrectAnswerEntry(targetId, value) {
+	if (value === null || value === undefined) return null;
+	if (typeof value === 'string' || typeof value === 'number') {
+		const correctAnswer = String(value).trim();
+		return correctAnswer ? { targetId: String(targetId), correctAnswer, aliases: [] } : null;
+	}
+	if (!value || typeof value !== 'object') return null;
+	const correctAnswer = value.correctAnswer ?? value.answer ?? value.text ?? value.value;
+	if (correctAnswer === null || correctAnswer === undefined || !String(correctAnswer).trim()) {
+		return null;
+	}
+	return {
+		targetId: String(targetId),
+		correctAnswer: String(correctAnswer).trim(),
+		aliases: aliasValues(value.aliases ?? value.acceptedAnswers ?? value.accepted)
+	};
+}
+
+function normalizeCorrectAnswerEntry({ targetId, correctAnswer, aliases = null }) {
+	const split = splitMachineAnswerAlternatives(correctAnswer);
+	const explicitAliases = aliasValues(aliases);
+	const canonical = split[0] ?? String(correctAnswer ?? '').trim();
+	const combinedAliases = [...new Set([...split.slice(1), ...explicitAliases])].filter(
+		(alias) => normalizedForExactMatch(alias) !== normalizedForExactMatch(canonical)
+	);
+	if (!String(targetId ?? '').trim() || !canonical) return null;
+	return {
+		targetId: String(targetId).trim(),
+		correctAnswer: canonical,
+		...(combinedAliases.length ? { aliases: combinedAliases } : {})
+	};
+}
+
+function aliasValues(value) {
+	if (typeof value === 'string') {
+		return value
+			.split(/\s*(?:\||;|\n)\s*/)
+			.map((alias) => alias.trim())
+			.filter(Boolean);
+	}
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((alias) => (typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''))
+		.filter(Boolean);
+}
+
+function splitMachineAnswerAlternatives(value) {
+	const text = String(value ?? '').trim();
+	if (!text) return [];
+	const parts = text
+		.split(/\s+\bor\b\s+|\s+\|\s+/i)
+		.map((part) => part.trim())
+		.filter(Boolean);
+	if (parts.length < 2) return [text];
+	if (parts.some((part) => part.length > 24 || /\b(?:allow|accept|ignore|reject)\b/i.test(part))) {
+		return [text];
+	}
+	return parts;
 }
 
 function normalizeModelAnswer(value) {
@@ -1248,6 +1353,20 @@ function deterministicIssuesFor(candidate, options = {}) {
 				severity: 'error',
 				evidence: ref
 			});
+		}
+		for (const answer of rawCorrectAnswerEntries(response?.correctAnswers)) {
+			if (
+				fixedResponseKinds.has(response?.kind) &&
+				!(answer.aliases ?? []).length &&
+				splitMachineAnswerAlternatives(answer.correctAnswer).length > 1
+			) {
+				issues.push({
+					code: 'fixed_response_alternative_answer_not_machine_readable',
+					field: 'response.correctAnswers',
+					severity: 'error',
+					evidence: `${ref} ${answer.targetId}: ${answer.correctAnswer}`
+				});
+			}
 		}
 		if (expectedLineCounts.has(ref)) {
 			const expected = expectedLineCounts.get(ref);

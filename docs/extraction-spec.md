@@ -409,8 +409,8 @@ node scripts/extract-paper-llm.mjs \
 
 For production imports, use the Codex orchestrator. It runs official-PDF extraction, optional
 existing-chain context build, Codex answer-chain reconciliation, strict import-ready subset audit,
-D1 replacement safety check, and D1 import dry-run or explicit write. The legacy learner-facing
-solvability judge is opt-in only until a Codex-subscription-backed replacement is added:
+Codex SDK learner-facing solvability review, D1 replacement safety check, and D1 import dry-run or
+explicit write:
 
 ```sh
 pnpm run extract:production -- \
@@ -436,6 +436,16 @@ reviewing the summary, strict audit, solvability results, and D1 replacement pla
 `--run-legacy-solvability` only when intentionally running the older API-key-backed judge for a
 diagnostic comparison. Use `--skip-d1-conflict-check` only for local debugging because the D1
 replacement plan is the safe-replacement gate.
+
+To run the Codex SDK solvability gate directly against an import-ready artifact:
+
+```sh
+pnpm run codex:solvability-judge -- \
+  --input=tmp/codex-production-import/<source-document-id>/import-ready/<source-document-id>.json \
+  --source-document-id=<source-document-id> \
+  --model=gpt-5.5 \
+  --thinking-level=xhigh
+```
 
 For AQA GCSE Computer Science, Geography, and History imports, first build the paper manifest from
 official AQA assessment-resource records plus any configured GCSE paper index used for PDF discovery:
@@ -621,13 +631,14 @@ Required local tools are:
 
 Codex is now the main production runner for whole-paper PDF import. `pnpm run extract:production`
 and `pnpm run codex:production-import` call
-`scripts/run-codex-production-import-pipeline.mjs`, which runs three phases:
+`scripts/run-codex-production-import-pipeline.mjs`, which runs four phases:
 
 1. PDF extraction with `scripts/run-codex-pdf-extraction.mjs`.
 2. Separate answer-chain reconciliation with `scripts/run-codex-answer-chains.mjs`.
-3. Strict import-ready preparation with extraction audit, D1 conflict check, and D1 import dry-run
-   or explicit write. The older per-question solvability judge is available only as an explicit
-   legacy diagnostic until there is a Codex-subscription-backed replacement.
+3. Import-ready preparation with strict extraction audit before learner-facing review.
+4. Codex SDK learner-facing solvability review with `scripts/run-codex-solvability-judge.mjs`,
+   then final strict import-ready preparation with D1 conflict check and D1 import dry-run or
+   explicit write.
 
 The production pipeline passes `--skip-chain-style-judge` to the answer-chain runner unless
 `--run-legacy-chain-style-judge` is explicitly supplied, and it only runs the older solvability
@@ -1100,7 +1111,10 @@ Computer Science Paper 2 June 2022 follow-up, 2026-07-02:
 | Codex PDF extraction               | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/raw/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json`             |  879.575s |            54 |              1 |           2,742,139 |    2,447,872 |                 41,778 |            5,480 | 45 questions, 90 marks, deterministic validation passed; one harmless `identify` race before a crop existed                                                            |
 | Independent Codex extraction judge | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                                |  243.256s |            33 |              0 |           1,211,551 |      934,912 |                 10,466 |            2,597 | pass, score 1.00, 45 refs checked, 0 required repairs                                                                                                                   |
 | Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/chain-reconciled/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json` |  559.805s |            31 |              0 |           1,050,747 |      932,352 |                 28,940 |           12,521 | 9 reused, 34 created, 2 updated, 0 review; deterministic chain validation passed; legacy chain style judge skipped                                                      |
-| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-strict-media-fix-audit.json`                                          |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 45/45 kept, 0 audit errors/warnings; D1 dry-run passed with 595 planned SQL statements and `safeToReplace`; legacy per-question solvability not run by request         |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-strict-media-fix-audit.json`                                          |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 45/45 kept, 0 audit errors/warnings; D1 dry-run passed with 595 planned SQL statements and `safeToReplace`; Codex solvability run separately below                    |
+| Codex solvability v2               | `tmp/codex-solvability-cs2022-v2/codex-solvability-summary.json`                                                                                                                                 |  322.605s |            34 |              2 |             769,266 |      671,744 |                 15,482 |            5,208 | failed 44/45: Q11.0 stored alternative Unicode/ASCII answers as literal strings such as `119 or 77` instead of canonical answers plus aliases                           |
+| Alias-fixed strict audit / D1 dry-run | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-alias-fix-audit.json`                                               |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 45/45 kept, 0 audit errors/warnings; D1 dry-run passed with 595 planned SQL statements                                                                                  |
+| Codex solvability v3               | `tmp/codex-solvability-cs2022-v3-alias-fix/codex-solvability-summary.json`                                                                                                                       |  263.114s |            24 |              0 |             709,143 |      562,176 |                 13,148 |            4,502 | passed 45/45 after importer normalization converted literal alternatives into `correctAnswer` plus `aliases`                                                           |
 
 This run exposed two importer problems that would have made a correct Codex extraction look bad in
 the app or in import accounting:
@@ -1114,6 +1128,11 @@ the app or in import accounting:
   when the source figure is a string/table rather than a diagram. This keeps CS 2022 Q17.2 and
   Q18.1/Q18.3/Q18.4/Q18.5 in the strict import-ready subset while still requiring real image assets
   for diagram or label-on-image response surfaces such as Q17.3.
+- Fixed-response alternatives now normalize into machine-readable aliases before import. The Codex
+  solvability judge caught Q11.0 because `119 or 77` style literal answer strings are not a
+  deterministic grading key. The prompt, helper validation, shared import normalizer, subset
+  builder, and D1 importer now preserve `{correctAnswer, aliases}` and block raw literal
+  alternatives when they have not been normalized.
 
 The visible-PDF source identity audit for the AQA History, Geography, and Computer Science manifest
 now blocks manifest rows whose visible PDF front matter disagrees with the manifest. The audit
@@ -1583,6 +1602,9 @@ Every fixed-response key should be student-checkable:
 links`.
 - Choice tables must store the selected row in exactly the same serialized form emitted by the UI,
   for example `Vacuole | Ribosome | Cell wall`.
+- Alternative accepted fixed-response answers must be machine-readable. Store one canonical
+  `correctAnswer` plus `aliases`, not a raw literal such as `"119 or 77"`, so D1 writes
+  `aliases_json` and deterministic grading can accept all official variants.
 - Calculation questions with visible working lines and a final answer blank should use a written
   response shape such as `labeled-lines` for the working and final answer line, with the worked
   calculation and final value in `modelAnswer` and `markChecklist`. Do not collapse a two-mark

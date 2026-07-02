@@ -622,7 +622,13 @@ function createLooseRenderBlockSchema() {
 
 function createLooseResponseSchema() {
 	const correctAnswers = () =>
-		z.array(z.object({ targetId: z.string(), correctAnswer: z.string() }));
+		z.array(
+			z.object({
+				targetId: z.string(),
+				correctAnswer: z.string(),
+				aliases: z.array(z.string()).optional()
+			})
+		);
 	return z.discriminatedUnion('kind', [
 		z.object({ kind: z.literal('none') }).passthrough(),
 		z.object({ kind: z.literal('lines') }).passthrough(),
@@ -665,14 +671,19 @@ function normalizeCompactCorrectAnswer(value) {
 		(Array.isArray(value.answers) ? value.answers.join(' | ') : undefined);
 	return {
 		targetId: String(targetId),
-		correctAnswer: String(correctAnswer ?? '')
+		correctAnswer: String(correctAnswer ?? ''),
+		aliases: aliasValues(value.aliases ?? value.acceptedAnswers ?? value.accepted)
 	};
 }
 
 function compactCorrectAnswerSchema() {
 	return z.preprocess(
 		normalizeCompactCorrectAnswer,
-		z.object({ targetId: z.string(), correctAnswer: z.string() })
+		z.object({
+			targetId: z.string(),
+			correctAnswer: z.string(),
+			aliases: z.array(z.string()).optional()
+		})
 	);
 }
 
@@ -2529,10 +2540,54 @@ function compactResponse(response, marks) {
 	}
 	if (Array.isArray(output.correctAnswers)) {
 		output.correctAnswers = output.correctAnswers.map((answer) =>
-			typeof answer === 'string' ? { targetId: 'answer', correctAnswer: answer } : answer
+			normalizeCorrectAnswerEntry(
+				typeof answer === 'string' ? { targetId: 'answer', correctAnswer: answer } : answer
+			)
 		);
 	}
 	return output;
+}
+
+function normalizeCorrectAnswerEntry(answer) {
+	if (!answer || typeof answer !== 'object') return answer;
+	const split = splitMachineAnswerAlternatives(answer.correctAnswer ?? answer.answer ?? answer.text);
+	const canonical = split[0] ?? String(answer.correctAnswer ?? answer.answer ?? answer.text ?? '').trim();
+	const aliases = [
+		...split.slice(1),
+		...aliasValues(answer.aliases ?? answer.acceptedAnswers ?? answer.accepted)
+	].filter((alias) => normalizedForExactMatch(alias) !== normalizedForExactMatch(canonical));
+	return {
+		...answer,
+		correctAnswer: canonical,
+		...(aliases.length ? { aliases: [...new Set(aliases)] } : {})
+	};
+}
+
+function aliasValues(value) {
+	if (typeof value === 'string') {
+		return value
+			.split(/\s*(?:\||;|\n)\s*/)
+			.map((alias) => alias.trim())
+			.filter(Boolean);
+	}
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((alias) => (typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''))
+		.filter(Boolean);
+}
+
+function splitMachineAnswerAlternatives(value) {
+	const text = String(value ?? '').trim();
+	if (!text) return [];
+	const parts = text
+		.split(/\s+\bor\b\s+|\s+\|\s+/i)
+		.map((part) => part.trim())
+		.filter(Boolean);
+	if (parts.length < 2) return [text];
+	if (parts.some((part) => part.length > 24 || /\b(?:allow|accept|ignore|reject)\b/i.test(part))) {
+		return [text];
+	}
+	return parts;
 }
 
 function compactModelAnswer(value) {
@@ -2766,10 +2821,24 @@ function responseToFinalAnswerLabel(response) {
 
 function normalizeQuestionResponseForExtraction(question) {
 	let response = question.response;
+	response = normalizeMachineReadableCorrectAnswersResponse(response);
 	response = normalizeStructuredTableSelectionResponse(response, question.stemBlocks ?? []);
 	response = normalizeEquationBlankOrderingResponse(response, question.markSchemeItems ?? []);
 	response = normalizeCalculationWorkingResponse(response, question);
 	return response;
+}
+
+function normalizeMachineReadableCorrectAnswersResponse(response) {
+	if (!response?.correctAnswers || !fixedResponseKinds().has(response.kind)) return response;
+	let changed = false;
+	const correctAnswers = Array.isArray(response.correctAnswers)
+		? response.correctAnswers.map((answer) => {
+				const normalized = normalizeCorrectAnswerEntry(answer);
+				if (JSON.stringify(normalized) !== JSON.stringify(answer)) changed = true;
+				return normalized;
+			})
+		: response.correctAnswers;
+	return changed ? { ...response, correctAnswers } : response;
 }
 
 function structuredTableSelectionRows(block) {
@@ -2933,6 +3002,7 @@ function extractionSpecPrompt(extractionSpec) {
 		'Recover learner-visible prompt/context, response controls, required images/tables/graphs, positive mark-scheme evidence, checklist items, answer keys or model answers, provenance, confidence, and review flags.',
 		'Do not return specification references, assessment objectives, or topic taxonomy; the script sets topicPath to [] and specRef to null in this phase.',
 		'Keep exact values, table entries, answer keys, and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.',
+		'For fixed-response alternatives, keep one canonical correctAnswer and put other accepted values in aliases. Do not encode alternatives as one literal string such as "119 or 77".',
 		'Checklist required=true means every full-credit response needs that criterion; alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.'
 	].join('\n');
 }
@@ -4615,17 +4685,53 @@ function reusableChainTextFields(chain) {
 }
 
 function responseCorrectAnswerTexts(response) {
+	return responseCorrectAnswerEntries(response).map((answer) => answer.correctAnswer);
+}
+
+function responseCorrectAnswerEntries(response) {
 	const answers = response?.correctAnswers;
 	if (!answers) return [];
 	if (Array.isArray(answers)) {
 		return answers
-			.map((answer) => answer?.correctAnswer)
-			.filter((answer) => typeof answer === 'string' && answer.trim());
+			.map((answer) =>
+				typeof answer === 'string'
+					? { targetId: 'answer', correctAnswer: answer, aliases: [] }
+					: {
+							targetId: String(answer?.targetId ?? answer?.id ?? 'answer'),
+							correctAnswer: String(answer?.correctAnswer ?? answer?.answer ?? '').trim(),
+							aliases: aliasValues(answer?.aliases)
+						}
+			)
+			.filter((answer) => answer.correctAnswer);
 	}
 	if (typeof answers === 'object') {
-		return Object.values(answers)
-			.flatMap((answer) => (Array.isArray(answer) ? answer : [answer]))
-			.filter((answer) => typeof answer === 'string' && answer.trim());
+		return Object.entries(answers).flatMap(([targetId, rawAnswer]) => {
+			if (Array.isArray(rawAnswer)) {
+				return rawAnswer
+					.map((answer) =>
+						typeof answer === 'string'
+							? { targetId, correctAnswer: answer, aliases: [] }
+							: {
+									targetId,
+									correctAnswer: String(answer?.correctAnswer ?? answer?.answer ?? '').trim(),
+									aliases: aliasValues(answer?.aliases)
+								}
+					)
+					.filter((answer) => answer.correctAnswer);
+			}
+			if (rawAnswer && typeof rawAnswer === 'object') {
+				return [
+					{
+						targetId,
+						correctAnswer: String(rawAnswer.correctAnswer ?? rawAnswer.answer ?? '').trim(),
+						aliases: aliasValues(rawAnswer.aliases)
+					}
+				].filter((answer) => answer.correctAnswer);
+			}
+			return typeof rawAnswer === 'string' && rawAnswer.trim()
+				? [{ targetId, correctAnswer: rawAnswer.trim(), aliases: [] }]
+				: [];
+		});
 	}
 	return [];
 }
@@ -4841,7 +4947,23 @@ function responseKeyIssues(question) {
 			evidence: kind,
 			message:
 				'Fixed-response questions need response.correctAnswers so the UI/import path can store a deterministic answer key.'
-		});
+			});
+	}
+	for (const answer of responseCorrectAnswerEntries(question.response)) {
+		if (
+			fixedResponseKinds().has(kind) &&
+			answer.aliases.length === 0 &&
+			splitMachineAnswerAlternatives(answer.correctAnswer).length > 1
+		) {
+			issues.push({
+				severity: 'error',
+				code: 'fixed_response_alternative_answer_not_machine_readable',
+				field: 'response.correctAnswers',
+				evidence: `${answer.targetId}: ${answer.correctAnswer}`,
+				message:
+					'Fixed-response alternative answers must use aliases or separate machine-readable accepted values, not a literal "x or y" answer string.'
+			});
+		}
 	}
 	return issues;
 }

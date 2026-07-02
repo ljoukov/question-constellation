@@ -69,6 +69,9 @@ const codexExtractionJudgeSource = readText(
 	path.join(rootDir, 'scripts/run-codex-extraction-judge.mjs')
 );
 const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-answer-chains.mjs'));
+const codexSolvabilityJudgeSource = readText(
+	path.join(rootDir, 'scripts/run-codex-solvability-judge.mjs')
+);
 const codexProductionImportSource = readText(
 	path.join(rootDir, 'scripts/run-codex-production-import-pipeline.mjs')
 );
@@ -122,6 +125,7 @@ for (const filePath of [
 	'scripts/run-codex-pdf-extraction.mjs',
 	'scripts/run-codex-extraction-judge.mjs',
 	'scripts/run-codex-answer-chains.mjs',
+	'scripts/run-codex-solvability-judge.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/run-production-extraction-batch.mjs',
 	'scripts/verify-production-extraction-run.mjs',
@@ -160,6 +164,7 @@ requireIncludes(
 		'node scripts/extract-paper-llm.mjs',
 		'pnpm run extract:production',
 		'pnpm run codex:production-import',
+		'pnpm run codex:solvability-judge',
 		'Codex SDK',
 		'run-codex-pdf-extraction.mjs',
 		'run-codex-answer-chains.mjs',
@@ -643,16 +648,20 @@ requireIncludes(
 	[
 		'scripts/run-codex-pdf-extraction.mjs',
 		'scripts/run-codex-answer-chains.mjs',
+		'scripts/run-codex-solvability-judge.mjs',
 		'scripts/prepare-import-ready-extraction.mjs',
 		'scripts/upload-r2-images.mjs',
-		'--run-solvability',
 		'--skip-solvability',
+		'--run-legacy-solvability',
+		'--solvability-timeout-ms',
 		'--skip-r2-upload',
 		'--import',
 		'codex-production-import-summary.json',
 		'codex-extraction-summary.json',
 		'codex-chain-summary.json',
 		'importReadyAuditPath',
+		'solvabilitySummaryPath',
+		'importReadyPaperPath',
 		'--check-existing',
 		'--skip-d1-conflict-check',
 		"stringArg('extraction-thinking-level'",
@@ -660,6 +669,24 @@ requireIncludes(
 		"stringArg('solvability-thinking-level'"
 	],
 	'Codex production import orchestrator'
+);
+
+requireIncludes(
+	codexSolvabilityJudgeSource,
+	[
+		'runCodexSdkTurn',
+		'buildLearnerVisibleQuestionContext',
+		'solvability-contexts.json',
+		'solvability-report.json',
+		'studentVisibleSolvable',
+		'markSchemeFits',
+		'requiredRepairs',
+		'assetCopyPairs',
+		'--target-only',
+		'gpt-5.5',
+		'xhigh'
+	],
+	'Codex solvability judge'
 );
 
 requireIncludes(
@@ -871,6 +898,7 @@ for (const scriptName of [
 	'codex:pdf-extract',
 	'codex:extraction-judge',
 	'codex:answer-chains',
+	'codex:solvability-judge',
 	'codex:production-import',
 	'repair:extracted-data',
 	'repair:answer-chain-specificity',
@@ -940,6 +968,7 @@ for (const scriptPath of [
 	'scripts/lib/codex-sdk-runner.mjs',
 	'scripts/run-codex-pdf-extraction.mjs',
 	'scripts/run-codex-answer-chains.mjs',
+	'scripts/run-codex-solvability-judge.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
@@ -1159,6 +1188,23 @@ writeFileSync(
 					assets: [{ sourceLabel: 'Table 1', role: 'data-table' }],
 					markSchemeItems: [{ itemType: 'mark', text: 'A ring around 14.2.' }],
 					markChecklist: [{ text: 'Identifies the anomalous result.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '01.3',
+					promptText: 'Complete the Unicode value for w.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'text', text: 'w Unicode value = ' },
+							{ kind: 'blank', id: 'unicode-w', label: 'w Unicode value' }
+						],
+						correctAnswers: [{ targetId: 'unicode-w', correctAnswer: '119 or 77' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: '119 or 77.' }],
+					markChecklist: [{ text: 'Gives the decimal or hexadecimal code.', markSchemeItemIndexes: [0] }]
 				}
 			]
 		},
@@ -1192,6 +1238,17 @@ const normalizedFormulaBlock = helperNormalized.questions
 if (normalizedFormulaBlock?.kind !== 'equation') {
 	fail('Codex helper normalization did not canonicalize formula blocks to equation blocks.', {
 		normalizedFormulaBlock
+	});
+}
+const normalizedAliasAnswer = helperNormalized.questions
+	.find((question) => question.sourceQuestionRef === '01.3')
+	?.response?.correctAnswers?.find((answer) => answer.targetId === 'unicode-w');
+if (
+	normalizedAliasAnswer?.correctAnswer !== '119' ||
+	normalizedAliasAnswer?.aliases?.join(',') !== '77'
+) {
+	fail('Codex helper normalization did not convert literal alternatives into aliases.', {
+		normalizedAliasAnswer
 	});
 }
 
@@ -3907,6 +3964,66 @@ if (
 	)
 ) {
 	fail('Deterministic checks did not flag missing fixed-response answer keys.');
+}
+
+const rawAlternativeAnswerQuestion = {
+	sourceQuestionRef: '11.0',
+	commandWord: 'Complete',
+	marks: 2,
+	promptText: 'Complete the Unicode values.',
+	response: {
+		kind: 'equation-blanks',
+		segments: [
+			{ kind: 'text', text: 'w = ' },
+			{ kind: 'blank', id: 'unicode-w', label: 'w Unicode value' }
+		],
+		correctAnswers: [{ targetId: 'unicode-w', correctAnswer: '119 or 77' }]
+	},
+	markSchemeItems: [{ itemType: 'mark', text: '119 or 77.' }],
+	modelAnswer: null
+};
+const rawAlternativeAnswerIssues = pipelineModule.deterministicCandidateIssues(
+	{ questions: [rawAlternativeAnswerQuestion] },
+	{ includeAnswerChainIssues: false }
+);
+if (
+	!rawAlternativeAnswerIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' &&
+				issue.code === 'fixed_response_alternative_answer_not_machine_readable'
+		)
+	)
+) {
+	fail('Deterministic checks did not reject literal fixed-response alternatives.');
+}
+const normalizedAlternativeAnswerQuestion = pipelineModule.normalizeExtractedQuestionForImport(
+	rawAlternativeAnswerQuestion
+);
+const normalizedAlternativeAnswer =
+	normalizedAlternativeAnswerQuestion.response?.correctAnswers?.[0];
+if (
+	normalizedAlternativeAnswer?.correctAnswer !== '119' ||
+	normalizedAlternativeAnswer?.aliases?.join(',') !== '77'
+) {
+	fail('Import normalizer did not convert literal fixed-response alternatives into aliases.', {
+		normalizedAlternativeAnswerQuestion
+	});
+}
+const normalizedAlternativeAnswerIssues = pipelineModule.deterministicCandidateIssues(
+	{ questions: [normalizedAlternativeAnswerQuestion] },
+	{ includeAnswerChainIssues: false }
+);
+if (
+	normalizedAlternativeAnswerIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.code === 'fixed_response_alternative_answer_not_machine_readable'
+		)
+	)
+) {
+	fail('Deterministic checks rejected normalized fixed-response aliases.', {
+		normalizedAlternativeAnswerIssues
+	});
 }
 
 const missingResponseSlotsIssues = pipelineModule.deterministicCandidateIssues({

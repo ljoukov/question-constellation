@@ -28,11 +28,12 @@ Optional:
   --judge-thinking-level=high
   --solvability-model=gpt-5.5
   --solvability-thinking-level=xhigh
+  --solvability-timeout-ms=7200000
   --expected-marks=100
   --expected-questions=46
   --run-id=<stable-log-id>
-  --skip-solvability
-  --run-legacy-solvability
+  --skip-solvability           skip the default Codex SDK solvability judge
+  --run-legacy-solvability     use the old @ljoukov/llm solvability path instead of Codex SDK
   --skip-extraction-judge
   --run-legacy-chain-style-judge
   --no-import-check
@@ -71,11 +72,16 @@ const reconciledOutputPath = path.join(workRoot, 'chain-reconciled', `${sourceDo
 const chainSummaryPath = path.join(workRoot, 'codex-chain-summary.json');
 const importReadyRoot = path.join(workRoot, 'import-ready');
 const importReadyAuditPath = path.join(workRoot, 'import-ready-audit.json');
+const importReadyPaperPath = path.join(importReadyRoot, `${sourceDocumentId}.json`);
+const solvabilityOutputPath = path.join(workRoot, 'codex-solvability', 'solvability-report.json');
+const solvabilitySummaryPath = path.join(workRoot, 'codex-solvability-summary.json');
 const summaryPath = path.join(workRoot, 'codex-production-import-summary.json');
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
 const runExtractionJudge = !hasArg('skip-extraction-judge');
-const runSolvability = hasArg('run-legacy-solvability') && !hasArg('skip-solvability');
+const skipSolvability = hasArg('skip-solvability');
+const runLegacySolvability = hasArg('run-legacy-solvability') && !skipSolvability;
+const runCodexSolvability = !skipSolvability && !runLegacySolvability;
 const noImportCheck = hasArg('no-import-check');
 const importToD1 = hasArg('import');
 const checkExisting = !noImportCheck && !hasArg('skip-d1-conflict-check');
@@ -101,7 +107,8 @@ const plan = {
 	summaryPath: relative(summaryPath),
 	sourceIdentityCheck,
 	runExtractionJudge,
-	runSolvability,
+	solvabilityMode: skipSolvability ? 'none' : runLegacySolvability ? 'legacy' : 'codex',
+	solvabilityOutputPath: runCodexSolvability ? relative(solvabilityOutputPath) : null,
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
 	checkExisting,
 	uploadR2Assets
@@ -124,11 +131,38 @@ try {
 	}
 	steps.push(runInherited(chainCommand(), 'Codex answer-chain reconciliation'));
 	if (uploadR2Assets) steps.push(runInherited(uploadAssetsCommand(), 'R2 asset upload'));
-	const importReady = runJson(
-		prepareImportReadyCommand(),
-		'strict audit / solvability / D1 dry-run'
-	);
-	steps.push({ label: 'strict audit / solvability / D1 dry-run', status: 'passed' });
+	let importReady = null;
+	if (runCodexSolvability) {
+		importReady = runJson(
+			prepareImportReadyCommand({ forceNoImportCheck: true }),
+			'strict audit before Codex solvability'
+		);
+		steps.push({ label: 'strict audit before Codex solvability', status: 'passed' });
+		steps.push(runInherited(codexSolvabilityCommand(), 'Codex solvability judge'));
+		if (!noImportCheck) {
+			importReady = runJson(
+				prepareImportReadyCommand(),
+				`strict audit / D1 ${importToD1 ? 'write' : 'dry-run'}`
+			);
+			steps.push({
+				label: `strict audit / D1 ${importToD1 ? 'write' : 'dry-run'}`,
+				status: 'passed'
+			});
+		}
+	} else {
+		importReady = runJson(
+			prepareImportReadyCommand({ includeLegacySolvability: runLegacySolvability }),
+			`strict audit${runLegacySolvability ? ' / legacy solvability' : ''} / D1 ${
+				noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run'
+			}`
+		);
+		steps.push({
+			label: `strict audit${runLegacySolvability ? ' / legacy solvability' : ''} / D1 ${
+				noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run'
+			}`,
+			status: 'passed'
+		});
+	}
 	const summary = {
 		status: 'passed',
 		startedAt,
@@ -136,6 +170,7 @@ try {
 		plan,
 		steps,
 		importReady,
+		solvabilitySummary: readJsonIfExists(solvabilitySummaryPath),
 		extractionSummary: readJsonIfExists(extractionSummaryPath),
 		extractionJudgeSummary: readJsonIfExists(extractionJudgeSummaryPath),
 		chainSummary: readJsonIfExists(chainSummaryPath)
@@ -152,7 +187,8 @@ try {
 		error: error instanceof Error ? error.message : String(error),
 		extractionSummary: readJsonIfExists(extractionSummaryPath),
 		extractionJudgeSummary: readJsonIfExists(extractionJudgeSummaryPath),
-		chainSummary: readJsonIfExists(chainSummaryPath)
+		chainSummary: readJsonIfExists(chainSummaryPath),
+		solvabilitySummary: readJsonIfExists(solvabilitySummaryPath)
 	};
 	writeJson(summaryPath, summary);
 	console.error(JSON.stringify({ ...summary, summary: relative(summaryPath) }, null, 2));
@@ -165,7 +201,13 @@ function plannedCommands() {
 		...(runExtractionJudge ? [extractionJudgeCommand()] : []),
 		chainCommand(),
 		...(uploadR2Assets ? [uploadAssetsCommand()] : []),
-		prepareImportReadyCommand()
+		...(runCodexSolvability
+			? [
+					prepareImportReadyCommand({ forceNoImportCheck: true }),
+					codexSolvabilityCommand(),
+					...(noImportCheck ? [] : [prepareImportReadyCommand()])
+				]
+			: [prepareImportReadyCommand({ includeLegacySolvability: runLegacySolvability })])
 	].map((command) => command.map(String));
 }
 
@@ -238,14 +280,37 @@ function uploadAssetsCommand() {
 	];
 }
 
-function prepareImportReadyCommand() {
+function codexSolvabilityCommand() {
+	const minScore = stringArg('min-solvability-score', stringArg('min-score', ''));
+	const args = [
+		'scripts/run-codex-solvability-judge.mjs',
+		`--input=${importReadyPaperPath}`,
+		`--source-document-id=${sourceDocumentId}`,
+		`--work-dir=${path.join(workRoot, 'codex-solvability')}`,
+		`--output=${solvabilityOutputPath}`,
+		`--summary=${solvabilitySummaryPath}`,
+		`--model=${stringArg('solvability-model', stringArg('model', 'gpt-5.5'))}`,
+		`--thinking-level=${stringArg('solvability-thinking-level', 'xhigh')}`,
+		`--timeout-ms=${stringArg('solvability-timeout-ms', stringArg('timeout-ms', '7200000'))}`
+	];
+	if (minScore) args.push(`--min-score=${minScore}`);
+	const question = stringArg('solvability-question', '');
+	if (question) args.push(`--question=${question}`);
+	const maxQuestions = stringArg('solvability-max-questions', '');
+	if (maxQuestions) args.push(`--max-questions=${maxQuestions}`);
+	if (hasArg('solvability-target-only')) args.push('--target-only');
+	if (force) args.push('--force');
+	return args;
+}
+
+function prepareImportReadyCommand({ forceNoImportCheck = false, includeLegacySolvability = false } = {}) {
 	const args = [
 		'scripts/prepare-import-ready-extraction.mjs',
 		`--input=${reconciledOutputPath}`,
 		`--output-root=${importReadyRoot}`,
 		`--audit-output=${importReadyAuditPath}`
 	];
-	if (runSolvability) {
+	if (includeLegacySolvability) {
 		args.push('--run-solvability');
 		args.push(`--model=${stringArg('solvability-model', stringArg('model', 'gpt-5.5'))}`);
 		args.push(`--thinking-level=${stringArg('solvability-thinking-level', 'xhigh')}`);
@@ -253,10 +318,10 @@ function prepareImportReadyCommand() {
 		forwardString(args, 'concurrency');
 	}
 	forwardString(args, 'run-id');
-	if (noImportCheck) args.push('--no-import-check');
-	if (checkExisting) args.push('--check-existing');
+	if (noImportCheck || forceNoImportCheck) args.push('--no-import-check');
+	if (checkExisting && !forceNoImportCheck) args.push('--check-existing');
 	if (hasArg('allow-shared-chain-updates')) args.push('--allow-shared-chain-updates');
-	if (importToD1) args.push('--import');
+	if (importToD1 && !forceNoImportCheck) args.push('--import');
 	return args;
 }
 

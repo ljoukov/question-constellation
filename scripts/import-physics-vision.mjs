@@ -213,14 +213,17 @@ function correctAnswersObject(value) {
 						typeof item.correctAnswer === 'string' &&
 						item.correctAnswer.trim()
 				)
-				.map((item) => [item.targetId, item.correctAnswer.trim()])
+				.map((item) => [
+					item.targetId,
+					answerKeyValue(item.correctAnswer, item.aliases ?? item.acceptedAnswers ?? item.accepted)
+				])
 		);
 	}
 	if (!Array.isArray(value) && typeof value === 'object') {
 		entries.push(
 			...Object.entries(value)
-				.filter(([, answer]) => typeof answer === 'string' && answer.trim())
-				.map(([targetId, answer]) => [targetId, answer.trim()])
+				.map(([targetId, answer]) => [targetId, answerKeyValueFromRaw(answer)])
+				.filter(([, answer]) => answer)
 		);
 	}
 	if (entries.length === 0) return null;
@@ -231,11 +234,106 @@ function correctAnswersObject(value) {
 			answers[targetId] = answer;
 		} else if (Array.isArray(answers[targetId])) {
 			answers[targetId].push(answer);
+		} else if (typeof answers[targetId] === 'object' && !Array.isArray(answers[targetId])) {
+			answers[targetId] = mergeAnswerKeyValues(answers[targetId], answer);
+		} else if (typeof answer === 'object' && !Array.isArray(answer)) {
+			answers[targetId] = mergeAnswerKeyValues(answerKeyValue(answers[targetId]), answer);
 		} else {
-			answers[targetId] = [answers[targetId], answer];
+			answers[targetId] = mergeAnswerKeyValues(answerKeyValue(answers[targetId]), answerKeyValue(answer));
 		}
 	}
 	return answers;
+}
+
+function answerKeyValueFromRaw(value) {
+	if (typeof value === 'string' || typeof value === 'number') return answerKeyValue(value);
+	if (Array.isArray(value)) {
+		return value
+			.map(answerKeyValueFromRaw)
+			.filter(Boolean)
+			.reduce((merged, item) => mergeAnswerKeyValues(merged, item), null);
+	}
+	if (!value || typeof value !== 'object') return null;
+	const answer = value.correctAnswer ?? value.answer ?? value.text ?? value.value;
+	return answerKeyValue(answer, value.aliases ?? value.acceptedAnswers ?? value.accepted);
+}
+
+function answerKeyValue(answer, aliases = null) {
+	const split = splitMachineAnswerAlternatives(answer);
+	const canonical = split[0] ?? String(answer ?? '').trim();
+	const combinedAliases = [...split.slice(1), ...aliasValues(aliases)].filter(
+		(alias) => normalizedForExactMatch(alias) !== normalizedForExactMatch(canonical)
+	);
+	if (!canonical) return null;
+	return combinedAliases.length
+		? { correctAnswer: canonical, aliases: [...new Set(combinedAliases)] }
+		: canonical;
+}
+
+function mergeAnswerKeyValues(left, right) {
+	const leftObject = answerKeyObject(left);
+	const rightObject = answerKeyObject(right);
+	if (!leftObject) return rightObject;
+	if (!rightObject) return leftObject;
+	return {
+		correctAnswer: leftObject.correctAnswer,
+		aliases: [
+			...new Set(
+				[
+					...(leftObject.aliases ?? []),
+					rightObject.correctAnswer,
+					...(rightObject.aliases ?? [])
+				].filter(
+					(alias) => normalizedForExactMatch(alias) !== normalizedForExactMatch(leftObject.correctAnswer)
+				)
+			)
+		]
+	};
+}
+
+function answerKeyObject(value) {
+	if (!value) return null;
+	if (typeof value === 'string' || typeof value === 'number') {
+		return { correctAnswer: String(value).trim(), aliases: [] };
+	}
+	if (typeof value !== 'object' || Array.isArray(value)) return null;
+	const correctAnswer = String(value.correctAnswer ?? value.answer ?? value.value ?? '').trim();
+	return correctAnswer ? { correctAnswer, aliases: aliasValues(value.aliases) } : null;
+}
+
+function aliasValues(value) {
+	if (typeof value === 'string') {
+		return value
+			.split(/\s*(?:\||;|\n)\s*/)
+			.map((alias) => alias.trim())
+			.filter(Boolean);
+	}
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((alias) => (typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''))
+		.filter(Boolean);
+}
+
+function splitMachineAnswerAlternatives(value) {
+	const text = String(value ?? '').trim();
+	if (!text) return [];
+	const parts = text
+		.split(/\s+\bor\b\s+|\s+\|\s+/i)
+		.map((part) => part.trim())
+		.filter(Boolean);
+	if (parts.length < 2) return [text];
+	if (parts.some((part) => part.length > 24 || /\b(?:allow|accept|ignore|reject)\b/i.test(part))) {
+		return [text];
+	}
+	return parts;
+}
+
+function normalizedForExactMatch(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9.+-]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 function unorderedGroupsArray(value) {
@@ -822,8 +920,13 @@ function responseAnswerKeyStatements(questionId, response) {
 	for (const [targetId, rawAnswers] of Object.entries(response.correctAnswers)) {
 		const answers = Array.isArray(rawAnswers) ? rawAnswers : [rawAnswers];
 		for (const rawAnswer of answers) {
-			if (typeof rawAnswer !== 'string' || !rawAnswer.trim()) continue;
-			rows.push({ targetId, answer: rawAnswer.trim() });
+			const parsed = answerKeyObject(rawAnswer);
+			if (!parsed?.correctAnswer) continue;
+			rows.push({
+				targetId,
+				answer: parsed.correctAnswer,
+				aliases: parsed.aliases ?? []
+			});
 		}
 	}
 	const targetCounts = new Map();
@@ -831,7 +934,7 @@ function responseAnswerKeyStatements(questionId, response) {
 		targetCounts.set(row.targetId, (targetCounts.get(row.targetId) ?? 0) + 1);
 	}
 	const seenTargets = new Map();
-	return rows.map(({ targetId, answer }, index) => {
+	return rows.map(({ targetId, answer, aliases }, index) => {
 		const seenCount = (seenTargets.get(targetId) ?? 0) + 1;
 		seenTargets.set(targetId, seenCount);
 		const storedTargetId = targetCounts.get(targetId) > 1 ? `${targetId}-${seenCount}` : targetId;
@@ -854,7 +957,7 @@ function responseAnswerKeyStatements(questionId, response) {
 				storedTargetId,
 				answer,
 				responseAnswerKeyOrder(response, targetId, index + 1),
-				json([], []),
+				json(aliases, []),
 				json({ source: 'llm-vision-extracted' }, {})
 			]
 		);

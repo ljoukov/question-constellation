@@ -115,23 +115,29 @@ function outputPathFor(filePath) {
 function buildSubsetForFile(filePath) {
 	try {
 		const paper = readJson(filePath);
-		const issueMap = questionIssueMap(paper);
+		const normalizedPaper = {
+			...paper,
+			questions: (paper.questions ?? []).map((question) =>
+				normalizeExtractedQuestionForImport(question)
+			)
+		};
+		const issueMap = questionIssueMap(normalizedPaper);
 		const dropped = [];
 		const keptQuestions = [];
 		let prunedAssets = 0;
-		for (const question of paper.questions ?? []) {
+		for (const question of normalizedPaper.questions ?? []) {
 			const reasons = dropReasonsForQuestion(question, issueMap.get(question.sourceQuestionRef) ?? []);
 			if (reasons.length > 0) {
 				dropped.push({ sourceQuestionRef: question.sourceQuestionRef, reasons });
 			} else {
 				const pruned = pruneLabelOnlyAssets(question);
 				prunedAssets += pruned.prunedAssets;
-				keptQuestions.push(normalizeExtractedQuestionForImport(pruned.question));
+				keptQuestions.push(pruned.question);
 			}
 		}
 		const outPath = outputPathFor(filePath);
 		const output = {
-			...paper,
+			...normalizedPaper,
 			questions: keptQuestions,
 			extractionRun: {
 				...(paper.extractionRun ?? {}),

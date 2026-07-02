@@ -148,6 +148,9 @@ AQA GCSE Computer Science Paper 2 June 2022 was then run as an identity-safe fol
 | Independent Codex extraction judge | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                                |  243.256s |      33 |      0 | input 1,211,551; cached 934,912; output 10,466; reasoning 2,597    | pass, score 1.00, 45 refs checked, 0 required repairs                                           |
 | Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/chain-reconciled/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json` |  559.805s |      31 |      0 | input 1,050,747; cached 932,352; output 28,940; reasoning 12,521   | 9 reused, 34 created, 2 updated, 0 review                                                       |
 | Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-strict-media-fix-audit.json`                                          |       n/a |     n/a |      0 | n/a                                                                | 45/45 kept, 0 audit errors/warnings, D1 dry-run passed with 595 planned SQL statements          |
+| Codex solvability v2               | `tmp/codex-solvability-cs2022-v2/codex-solvability-summary.json`                                                                                                                                 |  322.605s |      34 |      2 | input 769,266; cached 671,744; output 15,482; reasoning 5,208      | failed 44/45: Q11.0 used raw literal alternatives such as `119 or 77`                           |
+| Alias-fixed strict audit / D1 dry-run | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-alias-fix-audit.json`                                               |       n/a |     n/a |      0 | n/a                                                                | 45/45 kept, 0 audit errors/warnings, D1 dry-run passed with 595 planned SQL statements          |
+| Codex solvability v3               | `tmp/codex-solvability-cs2022-v3-alias-fix/codex-solvability-summary.json`                                                                                                                       |  263.114s |      24 |      0 | input 709,143; cached 562,176; output 13,148; reasoning 4,502      | passed 45/45 after alias normalization                                                          |
 
 The first strict import-ready subset kept only 39/45 questions because the deterministic validator
 warned that Figure 2/Figure 3/Figure 4 references lacked media assets. That was too conservative:
@@ -160,6 +163,12 @@ The same run also forced response-rendering support for per-field labelled answe
 four visible working lines plus one hexadecimal answer line, and Q04.1 has two separately labelled
 three-line answer fields. The import path now preserves those `labeled-lines.fields` through
 normalization, D1 import JSON, server data loading, grading parsing, and the Svelte renderer.
+
+The Codex SDK solvability judge found a defect that strict mechanical validation missed: Q11.0
+encoded accepted Unicode alternatives as raw strings such as `119 or 77`. Those are not
+machine-checkable fixed-response keys. The production prompt, helper validator, shared import
+normalizer, subset builder, and D1 importer now require/preserve canonical `correctAnswer` values
+with `aliases`, and the alias-fixed import-ready artifact passed 45/45 solvability.
 
 The source-identity audit over the AQA History/Geography/Computer Science manifest found 61 safe
 rows and 39 visible-series mismatches: 2 Computer Science, 6 Geography, and 31 History. Its artifacts

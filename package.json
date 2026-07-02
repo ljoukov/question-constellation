@@ -23,6 +23,7 @@
 		"codex:pdf-extract": "node scripts/run-codex-pdf-extraction.mjs",
 		"codex:extraction-judge": "node scripts/run-codex-extraction-judge.mjs",
 		"codex:answer-chains": "node scripts/run-codex-answer-chains.mjs",
+		"codex:solvability-judge": "node scripts/run-codex-solvability-judge.mjs",
 		"audit:aqa-manifest-source-identity": "node scripts/audit-aqa-manifest-source-identity.mjs",
 		"judge:answer-chain-style": "node scripts/judge-answer-chain-style.mjs",
 		"audit:public-answer-chain-style": "node scripts/audit-public-answer-chain-style.mjs",
