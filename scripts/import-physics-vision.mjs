@@ -425,7 +425,7 @@ function normalizeBlock(block, assetIdsByLabel, reviewNotes) {
 	if (kind === 'equation' && block.text) return { kind: 'equation', text: block.text };
 	if (kind === 'ordered-list') return { kind: 'ordered-list', items: block.items ?? [] };
 	if (kind === 'bullet-list') return { kind: 'bullet-list', items: block.items ?? [] };
-	if (kind === 'key') return { kind: 'key', items: block.keyItems ?? [] };
+	if (kind === 'key') return { kind: 'key', items: normalizedKeyItems(block, reviewNotes) };
 	if (kind === 'table') {
 		const columns = Array.isArray(block.columns)
 			? block.columns.map((cell) => String(cell ?? ''))
@@ -503,6 +503,35 @@ function structuredTableRows(rows) {
 		: [];
 }
 
+function normalizedKeyItems(block, reviewNotes) {
+	const rawItems = Array.isArray(block.keyItems)
+		? block.keyItems
+		: Array.isArray(block.items)
+			? block.items
+			: [];
+	const items = [];
+	for (const [index, item] of rawItems.entries()) {
+		if (typeof item === 'string') {
+			const text = item.trim();
+			if (text) items.push({ marker: String(items.length + 1), text });
+			continue;
+		}
+		if (!item || typeof item !== 'object') continue;
+		const marker = String(item.marker ?? item.term ?? item.label ?? item.key ?? '').trim();
+		const text = String(item.text ?? item.definition ?? item.value ?? item.answer ?? '').trim();
+		if (marker && text) {
+			items.push({ marker, text });
+			continue;
+		}
+		if (text) {
+			items.push({ marker: String(items.length + 1), text });
+			continue;
+		}
+		reviewNotes.push(`Dropped malformed key item ${index + 1}.`);
+	}
+	return items;
+}
+
 function compactBlockList(blocks, assetIdsByLabel, reviewNotes) {
 	return (blocks ?? [])
 		.map((block) => normalizeBlock(block, assetIdsByLabel, reviewNotes))
@@ -550,11 +579,25 @@ function removeRedundantResponseBankBlocks(blocks, response) {
 	});
 }
 
-function normalizeResponse(response, assetIdsByLabel, reviewNotes) {
+function fallbackDigitalLineCount(marks) {
+	const numericMarks = Number(marks);
+	if (!Number.isFinite(numericMarks) || numericMarks < 1) return 1;
+	if (numericMarks >= 40) return 16;
+	if (numericMarks >= 20) return 10;
+	return Math.min(8, Math.max(1, Math.ceil(numericMarks / 2)));
+}
+
+function positiveLineCount(response, marks) {
+	const count = Number(response.count ?? response.lineCount);
+	if (Number.isFinite(count) && count >= 1) return count;
+	return fallbackDigitalLineCount(marks);
+}
+
+function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = null) {
 	if (!response?.kind) return { kind: 'none' };
 	const correctAnswers = correctAnswersObject(response.correctAnswers);
 	if (response.kind === 'lines')
-		return { kind: 'lines', count: response.count ?? response.lineCount ?? 1 };
+		return { kind: 'lines', count: positiveLineCount(response, question?.marks) };
 	if (response.kind === 'labeled-lines') {
 		return {
 			kind: 'labeled-lines',
@@ -1082,7 +1125,7 @@ function addQuestionStatements(statements, paper, question, chainUseCount, optio
 		...assetRows
 	);
 
-	const response = normalizeResponse(question.response, assetIdsByLabel, reviewNotes);
+	const response = normalizeResponse(question.response, assetIdsByLabel, reviewNotes, question);
 	const stemBlocks = compactBlockList(question.stemBlocks, assetIdsByLabel, reviewNotes);
 	const leadBlocks = compactBlockList(question.leadBlocks, assetIdsByLabel, reviewNotes);
 	const promptBlocks = removeRedundantResponseBankBlocks(

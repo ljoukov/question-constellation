@@ -17,6 +17,7 @@ Options:
   --data-root=data/aqa-gcse-history-geography-computer-science
   --subject=all|computer-science|geography|history|biology|chemistry|physics|english
   --max-papers=<n>
+  --exclude-paper=<source-document-id-or-component> (repeatable)
   --concurrency=<n>
   --paper-attempts=<n>
   --work-root=tmp/codex-production-import-batch
@@ -50,6 +51,12 @@ const summaryPath = path.resolve(
 );
 const all = hasArg('all');
 const paperArg = stringArg('paper', '');
+const excludePaperArgs = stringArgs('exclude-paper').flatMap((value) =>
+	value
+		.split(',')
+		.map((part) => part.trim())
+		.filter(Boolean)
+);
 const subjectArg = canonicalSubject(stringArg('subject', 'all'));
 const maxPapers = optionalIntegerArg('max-papers');
 const concurrency = integerArg('concurrency', 1, 1);
@@ -92,8 +99,8 @@ if (dryRun) {
 		workRoot: relative(workRoot),
 		missingFiles,
 		planned: planned.map((paper) => ({
-			sourceDocumentId: paper.row.source_document_id,
-			subject: paper.row.subject_area ?? paper.row.subject ?? null,
+			sourceDocumentId: paper.sourceDocumentId,
+			subject: subjectAreaFor(paper.row),
 			paper: paper.row.paper,
 			series: paper.row.series,
 			workRoot: relative(paper.workRoot),
@@ -114,36 +121,46 @@ console.log(JSON.stringify(summary(finalStatus), null, 2));
 if (failed.length > 0) process.exit(1);
 
 function selectRows(rows) {
+	const excludedPapers = new Set(excludePaperArgs);
+	const excludedPaperUpper = new Set(excludePaperArgs.map((value) => value.toUpperCase()));
 	const filtered = rows.filter((row) => {
-		const rowSubject = canonicalSubject(row.subject_area ?? row.subject ?? '');
+		const rowSubject = canonicalSubject(subjectAreaFor(row));
 		const subjectMatches = subjectArg === 'all' || rowSubject === subjectArg;
 		const component = String(row.component ?? '').toUpperCase();
+		const unitCode = String(row.unit_code ?? '').toUpperCase();
+		const sourceDocumentId = sourceDocumentIdFor(row);
+		const excluded =
+			excludedPapers.has(sourceDocumentId) ||
+			excludedPaperUpper.has(component) ||
+			excludedPaperUpper.has(unitCode) ||
+			excludedPapers.has(row.question_paper?.filename ?? '') ||
+			excludedPapers.has(row.mark_scheme?.filename ?? '');
 		const paperMatches =
 			!paperArg ||
-			row.source_document_id === paperArg ||
+			sourceDocumentId === paperArg ||
 			component === paperArg.toUpperCase() ||
+			unitCode === paperArg.toUpperCase() ||
 			row.question_paper?.filename === paperArg ||
 			row.mark_scheme?.filename === paperArg;
-		return subjectMatches && paperMatches;
+		return !excluded && subjectMatches && paperMatches;
 	});
 	return maxPapers ? filtered.slice(0, maxPapers) : filtered;
 }
 
 function plannedPaper(row) {
+	const sourceDocumentId = sourceDocumentIdFor(row);
 	const questionPaperPath = documentPath(row.question_paper, 'question-papers');
 	const markSchemePath = documentPath(row.mark_scheme, 'mark-schemes');
-	const supportingDocumentPaths = (row.supporting_documents ?? []).map((document) =>
-		documentPath(
-			document,
-			document.document_type === 'examiner_report' ? 'examiner-reports' : 'supporting-documents'
-		)
+	const supportingDocumentPaths = supportingDocumentsFor(row).map((document) =>
+		documentPath(document, documentSubdir(document))
 	);
-	const paperWorkRoot = path.join(workRoot, row.source_document_id);
+	const paperWorkRoot = path.join(workRoot, sourceDocumentId);
 	const missingFiles = [questionPaperPath, markSchemePath, ...supportingDocumentPaths]
 		.filter((filePath) => !existsSync(filePath))
 		.map(relative);
 	return {
 		row,
+		sourceDocumentId,
 		questionPaperPath,
 		markSchemePath,
 		supportingDocumentPaths,
@@ -163,27 +180,46 @@ function documentPath(document, defaultSubdir) {
 	return path.join(dataRoot, defaultSubdir, document?.filename ?? '');
 }
 
+function documentSubdir(document) {
+	return document?.document_type === 'examiner_report' ? 'examiner-reports' : 'supporting-documents';
+}
+
+function supportingDocumentsFor(row) {
+	const documents = [];
+	if (row.examiner_report) documents.push(row.examiner_report);
+	documents.push(...(row.supporting_documents ?? []));
+
+	const seen = new Set();
+	return documents.filter((document) => {
+		const key = document?.local_path ?? document?.source_url ?? document?.filename ?? '';
+		if (!key || seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
 function productionCommand(row, paper) {
+	const sourceDocumentId = sourceDocumentIdFor(row);
 	const args = [
 		'scripts/run-codex-production-import-pipeline.mjs',
 		`--question-paper=${paper.questionPaperPath}`,
 		`--mark-scheme=${paper.markSchemePath}`,
-		`--source-document-id=${row.source_document_id}`,
-		`--mark-scheme-document-id=${row.mark_scheme_document_id}`,
+		`--source-document-id=${sourceDocumentId}`,
+		`--mark-scheme-document-id=${markSchemeDocumentIdFor(row)}`,
 		`--work-root=${paper.workRoot}`,
 		`--board=${row.board ?? manifest.board ?? ''}`,
 		`--qualification=${row.qualification ?? manifest.qualification ?? ''}`,
 		`--subject=${row.subject ?? manifest.subject ?? ''}`,
-		`--subject-area=${row.subject_area ?? row.subject ?? manifest.subject ?? ''}`,
+		`--subject-area=${subjectAreaFor(row)}`,
 		`--tier=${row.tier ?? manifest.tier ?? ''}`,
 		`--paper-label=${row.paper ?? ''}`,
-		`--component-code=${row.component ?? ''}`,
+		`--component-code=${row.unit_code ?? row.component ?? ''}`,
 		`--series=${row.series ?? ''}`,
 		`--year=${row.year ?? ''}`,
 		`--question-paper-title=${row.question_paper?.title ?? ''}`,
 		`--mark-scheme-title=${row.mark_scheme?.title ?? ''}`,
-		`--question-paper-url=${row.question_paper?.url ?? ''}`,
-		`--mark-scheme-url=${row.mark_scheme?.url ?? ''}`,
+		`--question-paper-url=${documentUrl(row.question_paper)}`,
+		`--mark-scheme-url=${documentUrl(row.mark_scheme)}`,
 		`--run-id=${runIdFor(row)}`
 	].filter((arg) => !arg.endsWith('='));
 	for (const supportingDocumentPath of paper.supportingDocumentPaths) {
@@ -231,7 +267,7 @@ function productionCommand(row, paper) {
 
 function runIdFor(row) {
 	if (runId && selected.length === 1) return runId;
-	return `${runIdPrefix}-${row.source_document_id}`;
+	return `${runIdPrefix}-${sourceDocumentIdFor(row)}`;
 }
 
 async function processSelectedPapers() {
@@ -249,8 +285,8 @@ async function processSelectedPapers() {
 				writeSummary('running');
 			} catch (error) {
 				const result = {
-					sourceDocumentId: paper.row.source_document_id,
-					subject: paper.row.subject_area ?? paper.row.subject ?? null,
+					sourceDocumentId: paper.sourceDocumentId,
+					subject: subjectAreaFor(paper.row),
 					paper: paper.row.paper,
 					series: paper.row.series,
 					workRoot: relative(paper.workRoot),
@@ -267,13 +303,13 @@ async function processSelectedPapers() {
 }
 
 async function processPaper(paper) {
-	console.error(`[codex-production-batch] importing ${paper.row.source_document_id}`);
+	console.error(`[codex-production-batch] importing ${paper.sourceDocumentId}`);
 	await runCommandWithRetry(process.execPath, paper.command);
 	const paperSummaryPath = path.join(paper.workRoot, 'codex-production-import-summary.json');
 	const paperSummary = existsSync(paperSummaryPath) ? readJson(paperSummaryPath) : null;
 	return {
-		sourceDocumentId: paper.row.source_document_id,
-		subject: paper.row.subject_area ?? paper.row.subject ?? null,
+		sourceDocumentId: paper.sourceDocumentId,
+		subject: subjectAreaFor(paper.row),
 		paper: paper.row.paper,
 		series: paper.row.series,
 		workRoot: relative(paper.workRoot),
@@ -368,6 +404,37 @@ function canonicalSubject(value) {
 	return normalized;
 }
 
+function sourceDocumentIdFor(row) {
+	if (row.source_document_id) return row.source_document_id;
+	const spec = slugPart(row.spec_code ?? manifest.spec_code ?? row.unit_code ?? row.component);
+	const unit = slugPart(row.unit_code ?? row.component ?? row.paper);
+	const series = slugPart(row.series_code ?? row.series ?? row.year);
+	const componentParts = unit.startsWith(spec) ? [unit] : [spec, unit];
+	return ['ocr', ...componentParts, 'qp', series].filter(Boolean).join('-');
+}
+
+function markSchemeDocumentIdFor(row) {
+	if (row.mark_scheme_document_id) return row.mark_scheme_document_id;
+	return sourceDocumentIdFor(row).replace('-qp-', '-ms-');
+}
+
+function subjectAreaFor(row) {
+	const subject = row.subject_area ?? row.subject ?? manifest.subject ?? '';
+	return /english/i.test(subject) ? 'English' : subject;
+}
+
+function documentUrl(document) {
+	return document?.url ?? document?.source_url ?? '';
+}
+
+function slugPart(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/&/g, 'and')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
 function hasArg(name) {
 	return process.argv.includes(`--${name}`);
 }
@@ -376,6 +443,13 @@ function stringArg(name, defaultValue) {
 	const prefix = `--${name}=`;
 	const arg = process.argv.find((candidate) => candidate.startsWith(prefix));
 	return arg ? arg.slice(prefix.length) : defaultValue;
+}
+
+function stringArgs(name) {
+	const prefix = `--${name}=`;
+	return process.argv
+		.filter((candidate) => candidate.startsWith(prefix))
+		.map((candidate) => candidate.slice(prefix.length));
 }
 
 function integerArg(name, defaultValue, minValue) {
