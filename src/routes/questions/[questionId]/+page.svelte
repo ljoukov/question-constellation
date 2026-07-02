@@ -72,7 +72,7 @@
 	<div class="qc-real-layout qc-question-layout">
 		<aside class="qc-real-rail qc-question-rail" aria-label="Question route">
 			<IconBackLink
-				href={topbarSubject === 'English' ? englishHref : resolve('/')}
+				href={topbarSubject === 'English' ? englishHref : resolve('/chains')}
 				label="Back to question finder"
 			/>
 			<p class="qc-real-kicker">

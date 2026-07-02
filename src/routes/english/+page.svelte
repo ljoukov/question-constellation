@@ -256,7 +256,7 @@
 		const params = new URLSearchParams();
 		if (value && value !== 'All subjects') params.set('subject', value);
 		const query = params.toString();
-		window.location.assign(`${resolve('/')}${query ? `?${query}` : ''}`);
+		window.location.assign(`${resolve('/chains')}${query ? `?${query}` : ''}`);
 	}
 
 	function questionHref(question: EnglishQuestion) {

@@ -35,7 +35,7 @@
 
 	<div class="qc-chain-layout">
 		<aside class="qc-chain-side" aria-label="Question chain summary">
-			<IconBackLink href={resolve('/')} label="Back to question finder" />
+			<IconBackLink href={resolve('/chains')} label="Back to question finder" />
 			<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
 			<h1><MathText text={chain.title} /></h1>
 			<p><MathText text={chain.summary} /></p>

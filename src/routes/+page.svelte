@@ -1,334 +1,328 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
-	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import type { LearningChain } from '$lib/learningChains';
-	import { untrack } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import type { ChainQuestionTeaser, LearningChain } from '$lib/learningChains';
+	import {
+		ArrowRight,
+		BookOpenCheck,
+		CheckCircle2,
+		ClipboardCheck,
+		LibraryBig,
+		Network,
+		Search,
+		Sparkles
+	} from '@lucide/svelte';
+	import type { PageProps } from './$types';
 
-	let {
-		data
-	}: {
-		data: {
-			chains: LearningChain[];
-			initialSearch: string;
-			initialSubject: string;
-			initialMarks: string;
-		};
-	} = $props();
+	let { data }: PageProps = $props();
 
-	const subjectOrder = [
-		'English',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History'
+	const chainsHref = resolve('/chains');
+	const pastPapersHref = resolve('/past-papers/gcse');
+	const englishHref = resolve('/english');
+	const memoryHref = resolve('/thinking-memory');
+	const featuredChain = $derived(data.featuredChains[0] ?? null);
+	const featuredQuestion = $derived(featuredChain?.questions[0] ?? null);
+	const featuredChainHref = $derived(
+		featuredChain ? resolve('/chains/[chainId]', { chainId: featuredChain.id }) : chainsHref
+	);
+	const featuredConstellationHref = $derived(
+		featuredChain ? resolve('/constellations/[chainId]', { chainId: featuredChain.id }) : chainsHref
+	);
+	const startQuestionHref = $derived(
+		featuredChain && featuredQuestion ? questionHref(featuredChain, featuredQuestion) : chainsHref
+	);
+	const chainCountLabel = $derived(formatCount(data.stats.chainCount));
+	const questionCountLabel = $derived(formatCount(data.stats.questionCount));
+	const subjectCountLabel = $derived(formatCount(data.stats.subjectCount));
+
+	const navLinks = [
+		{ href: chainsHref, label: 'Question chains' },
+		{ href: pastPapersHref, label: 'Past papers' },
+		{ href: englishHref, label: 'English' },
+		{ href: memoryHref, label: 'Thinking Memory' }
 	];
-	const scienceSubjects = new Set(['Science', 'Biology', 'Chemistry', 'Physics']);
-	const marksFilterOptions = [
-		{ value: 'all', label: 'All' },
-		{ value: '1', label: '1' },
-		{ value: '2', label: '2' },
-		{ value: '3-4', label: '3-4' },
-		{ value: '4+', label: '4+' },
-		{ value: '5+', label: '5+' },
-		{ value: '6', label: '6' }
-	] as const;
-	type MarksFilter = (typeof marksFilterOptions)[number]['value'];
-	const validMarksFilterValues = new Set<string>(marksFilterOptions.map((option) => option.value));
 
-	function canonicalSubject(value: string | null | undefined) {
-		const lower = (value ?? '').toLowerCase();
-		if (lower.includes('english')) return 'English';
-		if (lower.includes('computer science') || lower.includes('computing'))
-			return 'Computer Science';
-		if (lower.includes('geography')) return 'Geography';
-		if (lower.includes('history')) return 'History';
-		if (lower.includes('biology')) return 'Biology';
-		if (lower.includes('chemistry')) return 'Chemistry';
-		if (lower.includes('physics')) return 'Physics';
-		if (lower.includes('science')) return 'Science';
-		return null;
-	}
-
-	function chainSubject(chain: LearningChain) {
-		return (
-			canonicalSubject(chain.subject) ??
-			canonicalSubject(chain.paperLabel) ??
-			canonicalSubject(chain.topic) ??
-			canonicalSubject(chain.title) ??
-			'Science'
-		);
-	}
-
-	function chainMatchesSubject(chain: LearningChain, subject: string) {
-		const subjectName = chainSubject(chain);
-		if (subject === 'All subjects') return true;
-		if (subject === 'Science') return scienceSubjects.has(subjectName);
-		return subjectName === subject;
-	}
-
-	let searchQuery = $state(untrack(() => data.initialSearch));
-	let selectedSubject = $state(
-		untrack(() => canonicalSubject(data.initialSubject) ?? 'All subjects')
-	);
-	let selectedMarksFilter = $state<MarksFilter>(
-		untrack(() =>
-			validMarksFilterValues.has(data.initialMarks) ? (data.initialMarks as MarksFilter) : 'all'
-		)
-	);
-	let visibleCount = $state(12);
-	let visibleFilterKey = $state('');
-	const previewQuestionLimit = 3;
-
-	const subjects = $derived.by(() => {
-		const availableSubjects = new Set<string>(data.chains.map(chainSubject));
-		const ordered = subjectOrder.filter((subject) => {
-			if (subject === 'Science') {
-				return [...availableSubjects].some((candidate) => scienceSubjects.has(candidate));
-			}
-			return availableSubjects.has(subject);
-		});
-		const remaining = [...availableSubjects]
-			.filter((subject) => !subjectOrder.includes(subject))
-			.sort((left, right) => left.localeCompare(right));
-		return ['All subjects', ...ordered, ...remaining];
-	});
-	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
-	const browseKicker = $derived(
-		selectedSubject === 'All subjects'
-			? 'GCSE question bank'
-			: selectedSubject === 'Science'
-				? 'GCSE Science'
-				: `GCSE ${selectedSubject}`
-	);
-
-	function questionMatchesMarks(question: LearningChain['questions'][number]) {
-		const marks = question.marks;
-		if (selectedMarksFilter === 'all') return true;
-		if (marks === null || marks === undefined) return false;
-		if (selectedMarksFilter === '1') return marks === 1;
-		if (selectedMarksFilter === '2') return marks === 2;
-		if (selectedMarksFilter === '3-4') return marks >= 3 && marks <= 4;
-		if (selectedMarksFilter === '4+') return marks >= 4;
-		if (selectedMarksFilter === '5+') return marks >= 5;
-		if (selectedMarksFilter === '6') return marks === 6;
-		return true;
-	}
-
-	function matchingQuestions(chain: LearningChain) {
-		return chain.questions.filter(questionMatchesMarks);
-	}
-
-	const filteredChains = $derived(
-		data.chains.filter((chain) => {
-			if (!chainMatchesSubject(chain, selectedSubject)) return false;
-			if (selectedMarksFilter !== 'all' && matchingQuestions(chain).length === 0) return false;
-			if (!normalizedSearch) return true;
-
-			const haystack = [
-				chain.title,
-				chain.subject,
-				chainSubject(chain),
-				chain.topic,
-				chain.summary,
-				chain.steps.join(' '),
-				chain.questions
-					.map((question) =>
-						[
-							question.title,
-							question.teaser,
-							question.label,
-							question.command,
-							question.paperLabel
-						].join(' ')
-					)
-					.join(' ')
-			]
-				.join(' ')
-				.toLowerCase();
-			return normalizedSearch.split(/\s+/).every((term) => haystack.includes(term));
-		})
-	);
-	const firstChain = $derived(filteredChains[0] ?? null);
-	const visibleChains = $derived(filteredChains.slice(0, visibleCount));
-	const remainingCount = $derived(Math.max(0, filteredChains.length - visibleChains.length));
-	const filteredQuestionCount = $derived(
-		filteredChains.reduce((sum, chain) => sum + matchingQuestions(chain).length, 0)
-	);
-
-	$effect(() => {
-		const nextFilterKey = `${searchQuery}\0${selectedSubject}\0${selectedMarksFilter}`;
-		if (nextFilterKey !== visibleFilterKey) {
-			visibleFilterKey = nextFilterKey;
-			visibleCount = 12;
+	const coverage = [
+		{
+			label: 'AQA GCSE Science',
+			detail: 'Biology, Chemistry and Physics chains from published question sets.'
+		},
+		{
+			label: 'GCSE English',
+			detail: 'Guided practice built around evidence, method, context and thesis control.'
+		},
+		{
+			label: 'Past-paper routes',
+			detail: 'Board, subject, paper, tier, topic and mark value stay visible.'
 		}
-	});
+	];
 
-	function chainHref(chain: LearningChain) {
-		return resolve('/chains/[chainId]', { chainId: chain.id });
-	}
-
-	function syncBrowseUrl(nextSearch: string, nextSubject: string, nextMarksFilter: MarksFilter) {
-		if (typeof window === 'undefined') return;
-		const params = new SvelteURLSearchParams();
-		const trimmedSearch = nextSearch.trim();
-		if (trimmedSearch) params.set('q', trimmedSearch);
-		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
-		if (nextMarksFilter !== 'all') params.set('marks', nextMarksFilter);
-		const query = params.toString();
-		const nextUrl = `${resolve('/')}${query ? `?${query}` : ''}`;
-		window.history.replaceState(window.history.state, '', nextUrl);
-	}
-
-	function updateSearch(value: string) {
-		searchQuery = value;
-		syncBrowseUrl(value, selectedSubject, selectedMarksFilter);
-	}
-
-	function updateSubject(value: string) {
-		if (value === 'English') {
-			window.location.assign(resolve('/english'));
-			return;
+	const faqs = [
+		{
+			question: 'Is this a chatbot?',
+			answer:
+				'No. The public pages are built around curated questions, mark checklists, model answers, common weak answers and reusable answer chains.'
+		},
+		{
+			question: 'Can students use it without an account?',
+			answer:
+				'Yes. Public question, answer-chain, constellation, practice and Thinking Memory preview routes are usable without signing in.'
+		},
+		{
+			question: 'What makes an answer chain different from a topic?',
+			answer:
+				'A topic names the content. An answer chain shows the ordered links that turn a weak answer into a mark-scoring answer.'
 		}
-		selectedSubject = value;
-		syncBrowseUrl(searchQuery, value, selectedMarksFilter);
+	];
+
+	function formatCount(value: number) {
+		return new Intl.NumberFormat('en-GB').format(value);
 	}
 
-	function updateMarksFilter(value: MarksFilter) {
-		selectedMarksFilter = value;
-		syncBrowseUrl(searchQuery, selectedSubject, value);
-	}
+	function questionHref(chain: LearningChain, question: ChainQuestionTeaser) {
+		if (question.id) {
+			return resolve('/questions/[questionId]', { questionId: question.id });
+		}
 
-	function accessibleText(value: string) {
-		return value.replace(/\s*<=>\s*/g, ' ⇌ ').replace(/\s*(?:->|⟶|⇒|)\s*/g, ' → ');
+		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref: question.ref });
 	}
 </script>
 
 <svelte:head>
-	<title>Question Constellation</title>
+	<title>Question Constellation | GCSE Answer Chains</title>
 	<meta
 		name="description"
-		content="Browse GCSE question chains, choose a question, then practise it in the original exam-paper format."
+		content="A public GCSE question bank organized by answer chains: start with a real exam question, reveal the chain, then practise transfer questions."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/" />
+	<meta property="og:title" content="Question Constellation" />
+	<meta
+		property="og:description"
+		content="GCSE exam questions mapped by the answer chains that earn marks."
+	/>
+	<meta
+		property="og:image"
+		content="https://constellation.eviworld.com/product/question-flow.webp"
+	/>
+	<meta property="og:url" content="https://constellation.eviworld.com/" />
 </svelte:head>
 
-<main class="qc-real-app qc-browse-app">
-	<AppTopbar
-		subject={selectedSubject}
-		{subjects}
-		searchValue={searchQuery}
-		searchPlaceholder="Search chains or questions"
-		onSearchChange={updateSearch}
-		onSubjectChange={updateSubject}
-	/>
+<main class="qc-home-app">
+	<header class="qc-home-topbar" aria-label="Site header">
+		<a class="qc-home-brand" href={resolve('/')} aria-label="Question Constellation home">
+			<img src="/brand/question-constellation-logo.svg" alt="" width="34" height="34" />
+			<span>Question Constellation</span>
+		</a>
+		<nav class="qc-home-nav" aria-label="Primary navigation">
+			{#each navLinks as link (link.href)}
+				<a href={link.href}>{link.label}</a>
+			{/each}
+		</nav>
+		<a class="qc-home-nav-action" href={chainsHref}>Browse chains</a>
+	</header>
 
-	<div class="qc-browse-layout">
-		<aside class="qc-browse-intro">
-			<p class="qc-real-kicker">{browseKicker}</p>
-			<h1>Choose a question chain.</h1>
-			<p>Pick a real exam question, then practise the same thinking chain in nearby questions.</p>
-			{#if firstChain}
-				<a class="qc-browse-start" href={chainHref(firstChain)}>Start with a chain</a>
-			{/if}
-			<a class="qc-browse-start" href={resolve('/past-papers/gcse')}>Download past papers</a>
-		</aside>
+	<section class="qc-home-hero" aria-labelledby="home-title">
+		<div class="qc-home-hero-media" aria-hidden="true">
+			<img
+				src="/product/question-flow.webp"
+				alt=""
+				width="1280"
+				height="720"
+				loading="eager"
+				decoding="async"
+			/>
+		</div>
+		<div class="qc-home-hero-content">
+			<p class="qc-home-eyebrow">Public GCSE question bank</p>
+			<h1 id="home-title">Question Constellation</h1>
+			<p class="qc-home-hero-copy">
+				Find real exam questions, reveal the answer chain behind the marks, then practise nearby and
+				harder questions that use the same hidden logic.
+			</p>
+			<div class="qc-home-actions" aria-label="Homepage actions">
+				<a class="qc-home-button primary" href={startQuestionHref}>
+					Start with a question
+					<ArrowRight size={18} aria-hidden="true" />
+				</a>
+				<a class="qc-home-button secondary" href={chainsHref}>Browse all chains</a>
+			</div>
+			<dl class="qc-home-stats" aria-label="Question bank size">
+				<div>
+					<dt>{questionCountLabel}</dt>
+					<dd>public questions</dd>
+				</div>
+				<div>
+					<dt>{chainCountLabel}</dt>
+					<dd>answer chains</dd>
+				</div>
+				<div>
+					<dt>{subjectCountLabel}</dt>
+					<dd>subject areas</dd>
+				</div>
+			</dl>
+		</div>
+	</section>
 
-		<section class="qc-browse-feed" aria-label="Question chains">
-			<div class="qc-browse-heading">
-				<h2>Question chains</h2>
-				<p>
-					{#if filteredChains.length === data.chains.length}
-						{data.chains.length} chains in the database
-					{:else}
-						{filteredChains.length} of {data.chains.length} chains · {filteredQuestionCount}
-						questions match
-					{/if}
-				</p>
+	<section class="qc-home-section qc-home-flow" aria-labelledby="flow-title">
+		<div class="qc-home-section-head">
+			<p class="qc-home-eyebrow">Question first</p>
+			<h2 id="flow-title">The page flow follows how marks are won.</h2>
+			<p>
+				A student starts on a concrete question, sees the missing links in a weak answer, opens the
+				constellation, and practises transfer.
+			</p>
+		</div>
+
+		<div class="qc-home-flow-grid">
+			<article>
+				<Search size={21} aria-hidden="true" />
+				<h3>Start from a paper-style question</h3>
+				<p>Board, subject, topic, tier, command word and mark value stay visible.</p>
+			</article>
+			<article>
+				<Network size={21} aria-hidden="true" />
+				<h3>Reveal the answer chain</h3>
+				<p>The reusable reasoning steps appear beside the model answer and checklist.</p>
+			</article>
+			<article>
+				<ClipboardCheck size={21} aria-hidden="true" />
+				<h3>Practise the constellation</h3>
+				<p>Near, stretch and transfer questions make the same chain work in new contexts.</p>
+			</article>
+			<article>
+				<LibraryBig size={21} aria-hidden="true" />
+				<h3>Save it to Thinking Memory</h3>
+				<p>Earned chains become a review library after practice, not a starting taxonomy.</p>
+			</article>
+		</div>
+	</section>
+
+	<section class="qc-home-section qc-home-product-band" aria-labelledby="product-title">
+		<div class="qc-home-product-copy">
+			<p class="qc-home-eyebrow">Built like an exam atlas</p>
+			<h2 id="product-title">Questions that look different can use the same chain.</h2>
+			<p>
+				Question Constellation groups exam questions by the reasoning sequence that earns marks.
+				That makes revision less about memorising isolated answers and more about spotting
+				transferable structure.
+			</p>
+			<a class="qc-home-inline-link" href={featuredConstellationHref}>
+				Open a constellation
+				<ArrowRight size={17} aria-hidden="true" />
+			</a>
+		</div>
+		<div class="qc-home-image-stack">
+			<img
+				src="/product/answer-chain-reveal.webp"
+				alt="Answer chain reveal page showing an exam question and reusable reasoning steps."
+				width="1040"
+				height="585"
+				loading="lazy"
+				decoding="async"
+			/>
+			<img
+				src="/product/checklist-rewrite.webp"
+				alt="Practice page showing a mark checklist and answer rewrite flow."
+				width="1040"
+				height="585"
+				loading="lazy"
+				decoding="async"
+			/>
+		</div>
+	</section>
+
+	{#if featuredChain}
+		<section class="qc-home-section qc-home-featured" aria-labelledby="featured-title">
+			<div class="qc-home-section-head">
+				<p class="qc-home-eyebrow">Example chain</p>
+				<h2 id="featured-title"><MathText text={featuredChain.title} /></h2>
+				<p><MathText text={featuredChain.summary} /></p>
 			</div>
 
-			<section class="qc-browse-filters" aria-label="Browse filters">
-				<div class="qc-mark-filter" role="group" aria-label="Question marks">
-					<span>Marks</span>
-					{#each marksFilterOptions as option (option.value)}
-						<button
-							type="button"
-							class:active={selectedMarksFilter === option.value}
-							aria-pressed={selectedMarksFilter === option.value}
-							onclick={() => updateMarksFilter(option.value)}
-						>
-							{option.label}
-						</button>
+			<div class="qc-home-chain-panel">
+				<div>
+					<p class="qc-home-mini-label"><MathText text={featuredChain.topic} /></p>
+					<ol class="qc-home-chain-steps" aria-label="Featured answer chain steps">
+						{#each featuredChain.steps.slice(0, 5) as step, index (`${featuredChain.id}-${index}`)}
+							<li><MathText text={step} /></li>
+						{/each}
+					</ol>
+				</div>
+				<div class="qc-home-chain-questions">
+					{#each featuredChain.questions.slice(0, 3) as question (question.id ?? question.ref)}
+						<a href={questionHref(featuredChain, question)}>
+							<span><MathText text={`${question.label} · ${question.marks ?? '?'} marks`} /></span>
+							<strong><MathText text={question.title} /></strong>
+						</a>
 					{/each}
 				</div>
-			</section>
+			</div>
 
-			{#each visibleChains as chain (chain.id)}
-				<article class={['qc-browse-chain', `accent-${chain.accent}`]}>
-					<a class="qc-chain-title-link" href={chainHref(chain)}>
-						<span class="qc-chain-symbol" aria-hidden="true">{chain.symbol}</span>
-						<span>
-							<span class="qc-chain-topic"><MathText text={chain.topic} /></span>
-							<span class="qc-chain-title"><MathText text={chain.title} /></span>
-						</span>
-					</a>
+			<div class="qc-home-actions compact" aria-label="Featured chain actions">
+				<a class="qc-home-button primary" href={featuredChainHref}>View this chain</a>
+				<a class="qc-home-button secondary" href={pastPapersHref}>Download past papers</a>
+			</div>
+		</section>
+	{/if}
 
-					<section
-						class="qc-browse-chain-steps"
-						aria-label={`${accessibleText(chain.title)} thinking chain`}
-					>
-						<h3>Thinking chain</h3>
-						<ol class="qc-browse-pattern">
-							{#each chain.steps as step, index (`${chain.id}-${index}`)}
-								<li><MathText text={step} /></li>
-							{/each}
-						</ol>
-					</section>
-
-					<section
-						class="qc-browse-question-set"
-						aria-label={`${accessibleText(chain.title)} questions`}
-					>
-						<div class="qc-browse-question-set-head">
-							<h3>Practice questions</h3>
-							<span>
-								{#if selectedMarksFilter === 'all'}
-									{chain.questions.length} questions
-								{:else}
-									{matchingQuestions(chain).length} matching
-								{/if}
-								{#if matchingQuestions(chain).length > previewQuestionLimit}
-									<a href={chainHref(chain)}>More</a>
-								{/if}
-							</span>
-						</div>
-						<QuestionTeaserGrid
-							{chain}
-							questions={matchingQuestions(chain)}
-							limit={previewQuestionLimit}
-						/>
-					</section>
+	<section class="qc-home-section qc-home-coverage" aria-labelledby="coverage-title">
+		<div class="qc-home-section-head">
+			<p class="qc-home-eyebrow">Exam-specific surfaces</p>
+			<h2 id="coverage-title">Public pages keep the exam context visible.</h2>
+		</div>
+		<div class="qc-home-coverage-grid">
+			{#each coverage as item (item.label)}
+				<article>
+					<CheckCircle2 size={20} aria-hidden="true" />
+					<h3>{item.label}</h3>
+					<p>{item.detail}</p>
 				</article>
 			{/each}
+		</div>
+	</section>
 
-			{#if visibleChains.length === 0}
-				<p class="qc-empty-search">No chains match that search.</p>
-			{/if}
+	<section class="qc-home-section qc-home-principles" aria-labelledby="principles-title">
+		<div>
+			<p class="qc-home-eyebrow">Product stance</p>
+			<h2 id="principles-title">Curated structure carries the value.</h2>
+		</div>
+		<div class="qc-home-principle-list">
+			<p>
+				<BookOpenCheck size={20} aria-hidden="true" />
+				Model answers, mark checklists and common weak answers are public.
+			</p>
+			<p>
+				<Sparkles size={20} aria-hidden="true" />
+				Runtime AI is optional and belongs behind explicit checking actions.
+			</p>
+			<p>
+				<Network size={20} aria-hidden="true" />
+				Thinking Memory is a post-practice library of earned chains.
+			</p>
+		</div>
+	</section>
 
-			{#if remainingCount > 0}
-				<button
-					type="button"
-					class="qc-show-more-chains"
-					onclick={() => (visibleCount = Math.min(visibleCount + 12, data.chains.length))}
-				>
-					Show more chains
-				</button>
-			{/if}
-		</section>
-	</div>
+	<section class="qc-home-section qc-home-faq" aria-labelledby="faq-title">
+		<div class="qc-home-section-head">
+			<p class="qc-home-eyebrow">FAQ</p>
+			<h2 id="faq-title">Straight answers before you open a question.</h2>
+		</div>
+		<div class="qc-home-faq-grid">
+			{#each faqs as item (item.question)}
+				<article>
+					<h3>{item.question}</h3>
+					<p>{item.answer}</p>
+				</article>
+			{/each}
+		</div>
+	</section>
+
+	<section class="qc-home-final" aria-labelledby="final-title">
+		<h2 id="final-title">Open the question bank.</h2>
+		<p>Start from a real question, reveal the chain, then practise transfer.</p>
+		<div class="qc-home-actions compact" aria-label="Footer actions">
+			<a class="qc-home-button primary" href={chainsHref}>Browse question chains</a>
+			<a class="qc-home-button secondary" href={memoryHref}>Preview Thinking Memory</a>
+		</div>
+	</section>
 </main>

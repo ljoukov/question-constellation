@@ -148,7 +148,7 @@
 		if (trimmedQuery) params.set('q', trimmedQuery);
 		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
 		const suffix = params.toString();
-		window.location.assign(`${resolve('/')}${suffix ? `?${suffix}` : ''}`);
+		window.location.assign(`${resolve('/chains')}${suffix ? `?${suffix}` : ''}`);
 	}
 
 	function submitSearch(event: SubmitEvent) {
