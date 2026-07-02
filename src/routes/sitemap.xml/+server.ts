@@ -1,16 +1,22 @@
 import type { RequestHandler } from './$types';
-import { gcsePastPaperSubjectIndex } from '$lib/pastPapers/gcsePastPapers';
+import { gcsePastPaperBoards, gcsePastPaperSubjectIndex } from '$lib/pastPapers/gcsePastPapers';
 
 const BASE_URL = 'https://constellation.eviworld.com';
 
-const staticUrls = [
+type SitemapUrl = {
+	path: string;
+	priority: string;
+	changefreq: string;
+};
+
+const staticUrls: SitemapUrl[] = [
 	{ path: '/', priority: '1.0', changefreq: 'weekly' },
 	{ path: '/past-papers/gcse', priority: '0.9', changefreq: 'weekly' },
 	{ path: '/english', priority: '0.7', changefreq: 'monthly' },
 	{ path: '/recall', priority: '0.6', changefreq: 'monthly' }
 ];
 
-function urlEntry({ path, priority, changefreq }: (typeof staticUrls)[number]) {
+function urlEntry({ path, priority, changefreq }: SitemapUrl) {
 	return [
 		'<url>',
 		`<loc>${BASE_URL}${path}</loc>`,
@@ -30,11 +36,25 @@ function pastPaperSubjectEntry(path: string) {
 	].join('');
 }
 
+function pastPaperBoardEntry(path: string) {
+	return [
+		'<url>',
+		`<loc>${BASE_URL}${path}</loc>`,
+		'<changefreq>weekly</changefreq>',
+		'<priority>0.85</priority>',
+		'</url>'
+	].join('');
+}
+
 export const GET: RequestHandler = async () => {
+	const boardPaths = gcsePastPaperBoards
+		.filter((board) => board.id !== 'all')
+		.map((board) => `/past-papers/gcse/${board.id}`);
 	const body = [
 		'<?xml version="1.0" encoding="UTF-8"?>',
 		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
 		staticUrls.map(urlEntry).join(''),
+		boardPaths.map(pastPaperBoardEntry).join(''),
 		gcsePastPaperSubjectIndex.map((page) => pastPaperSubjectEntry(page.localPath)).join(''),
 		'</urlset>'
 	].join('');

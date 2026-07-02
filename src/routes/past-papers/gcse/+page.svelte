@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { BookOpen } from '@lucide/svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import type { PageData } from './$types';
@@ -9,9 +10,6 @@
 	const pageDescription =
 		'Download free GCSE past papers and mark schemes for AQA, Edexcel, OCR and WJEC by exam board and subject.';
 	const pageTitle = 'Free GCSE Past Papers | AQA, Edexcel, OCR, WJEC | Question Constellation';
-	const subjectPages = $derived(
-		data.boardSections.flatMap((board) => board.categories.flatMap((category) => category.pages))
-	);
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -45,12 +43,12 @@
 				},
 				mainEntity: {
 					'@type': 'ItemList',
-					numberOfItems: subjectPages.length,
-					itemListElement: subjectPages.slice(0, 50).map((page, index) => ({
+					numberOfItems: data.boards.length,
+					itemListElement: data.boards.map((board, index) => ({
 						'@type': 'ListItem',
 						position: index + 1,
-						name: `${page.boardName} GCSE ${page.subject}${page.tier ? ` ${page.tier}` : ''}`,
-						url: `https://constellation.eviworld.com${page.localPath}`
+						name: `${board.name} GCSE Past Papers`,
+						url: `https://constellation.eviworld.com${board.localPath}`
 					}))
 				}
 			}
@@ -103,36 +101,15 @@
 				<h2 id="subject-directory-title">Choose Your Exam Board</h2>
 			</div>
 
-			<div class="board-directory">
-				{#each data.boardSections as board (board.id)}
-					<section id={board.id} class="board-section" aria-labelledby={`board-${board.id}`}>
-						<div class="board-heading">
-							<h3 id={`board-${board.id}`}>{board.name}</h3>
-						</div>
-
-						<div class="category-grid">
-							{#each board.categories as category (category.name)}
-								<section
-									class="category-section"
-									aria-labelledby={`board-${board.id}-${category.name}`}
-								>
-									<h4 id={`board-${board.id}-${category.name}`}>{category.name}</h4>
-									<div class="subject-grid">
-										{#each category.pages as page (page.id)}
-											<!-- eslint-disable svelte/no-navigation-without-resolve -->
-											<a class="subject-card" href={page.localPath}>
-												<span class="subject-card-title">
-													<BookOpen size={18} aria-hidden="true" strokeWidth={2.2} />
-													<span>{page.subject}{page.tier ? ` ${page.tier}` : ''}</span>
-												</span>
-											</a>
-											<!-- eslint-enable svelte/no-navigation-without-resolve -->
-										{/each}
-									</div>
-								</section>
-							{/each}
-						</div>
-					</section>
+			<div class="board-grid">
+				{#each data.boards as board (board.id)}
+					<a class="board-card" href={resolve('/past-papers/gcse/[board]', { board: board.id })}>
+						<span class="board-card-title">
+							<BookOpen size={18} aria-hidden="true" strokeWidth={2.2} />
+							<span>{board.name}</span>
+						</span>
+						<span class="board-card-copy">Past papers by subject</span>
+					</a>
 				{/each}
 			</div>
 		</section>
@@ -204,8 +181,8 @@
 		font-size: 0.96rem;
 	}
 
-	.subject-card:hover .subject-card-title,
-	.subject-card:focus-visible .subject-card-title {
+	.board-card:hover .board-card-title,
+	.board-card:focus-visible .board-card-title {
 		color: #0f6b3d;
 		text-decoration: underline;
 		text-underline-offset: 0.18em;
@@ -237,62 +214,23 @@
 		font-size: 0.95rem;
 	}
 
-	.board-directory {
+	.board-grid {
 		display: grid;
-		gap: 1rem;
-	}
-
-	.board-section {
-		display: grid;
-		gap: 0.85rem;
-		padding: 1rem;
-		border: 1px solid #cbd7df;
-		background: rgba(255, 255, 255, 0.72);
-	}
-
-	.board-heading h3 {
-		margin: 0;
-		color: #123f35;
-		font-size: 1.18rem;
-		font-weight: 620;
-		line-height: 1.15;
-	}
-
-	.category-grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.9rem;
-	}
-
-	.category-section {
-		display: grid;
-		align-content: start;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 0.55rem;
-		min-width: 0;
 	}
 
-	.category-section h4 {
-		margin: 0;
-		color: #526778;
-		font-size: 0.86rem;
-		font-weight: 620;
-	}
-
-	.subject-grid {
+	.board-card {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.45rem;
-	}
-
-	.subject-card {
-		display: grid;
-		min-height: 3.2rem;
-		padding: 0.65rem 0.72rem;
+		min-height: 5rem;
+		align-content: center;
+		padding: 0.9rem;
 		border: 1px solid #cbd7df;
 		background: rgba(255, 255, 255, 0.82);
 	}
 
-	.subject-card-title {
+	.board-card-title {
 		display: inline-flex;
 		align-items: flex-start;
 		gap: 0.55rem;
@@ -301,12 +239,18 @@
 		line-height: 1.25;
 	}
 
-	.subject-card-title :global(svg) {
+	.board-card-title :global(svg) {
 		flex: 0 0 auto;
 		margin-top: 0.1rem;
 	}
 
+	.board-card-copy {
+		color: #526778;
+		font-size: 0.9rem;
+	}
+
 	.seo-copy {
+		margin-top: 1.4rem;
 		padding: 1.3rem;
 		border: 1px solid #cbd7df;
 		background: rgba(255, 255, 255, 0.82);
@@ -322,26 +266,24 @@
 	}
 
 	:global(:root[data-theme='dark']) .past-papers-kicker,
-	:global(:root[data-theme='dark']) .subject-card:hover .subject-card-title,
-	:global(:root[data-theme='dark']) .subject-card:focus-visible .subject-card-title {
+	:global(:root[data-theme='dark']) .board-card:hover .board-card-title,
+	:global(:root[data-theme='dark']) .board-card:focus-visible .board-card-title {
 		color: #7dd3a1;
 	}
 
 	:global(:root[data-theme='dark']) .past-papers-hero p,
 	:global(:root[data-theme='dark']) .seo-copy p,
-	:global(:root[data-theme='dark']) .category-section h4 {
+	:global(:root[data-theme='dark']) .board-card-copy {
 		color: #9fb0c5;
 	}
 
-	:global(:root[data-theme='dark']) .board-section,
-	:global(:root[data-theme='dark']) .subject-card,
+	:global(:root[data-theme='dark']) .board-card,
 	:global(:root[data-theme='dark']) .seo-copy {
 		border-color: #263449;
 		background: rgba(15, 23, 42, 0.78);
 	}
 
-	:global(:root[data-theme='dark']) .subject-card-title,
-	:global(:root[data-theme='dark']) .board-heading h3,
+	:global(:root[data-theme='dark']) .board-card-title,
 	:global(:root[data-theme='dark']) .past-papers-hero h1,
 	:global(:root[data-theme='dark']) .section-heading h2,
 	:global(:root[data-theme='dark']) .seo-copy h2 {
@@ -357,16 +299,12 @@
 			padding-top: 1.8rem;
 		}
 
-		.category-grid {
-			grid-template-columns: 1fr;
-		}
-
 		.section-heading {
 			display: grid;
 			align-items: start;
 		}
 
-		.subject-grid {
+		.board-grid {
 			grid-template-columns: 1fr;
 		}
 	}

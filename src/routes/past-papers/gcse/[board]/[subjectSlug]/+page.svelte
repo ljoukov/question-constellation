@@ -10,6 +10,12 @@
 	const pageTitle = $derived(`${data.page.pageLabel} Past Papers | Question Constellation`);
 	const firstYear = $derived(Math.min(...data.page.rows.map((row) => row.year)));
 	const latestYear = $derived(Math.max(...data.page.rows.map((row) => row.year)));
+	const subjectPath = $derived(
+		resolve('/past-papers/gcse/[board]/[subjectSlug]', {
+			board: data.page.boardId,
+			subjectSlug: data.page.subjectSlug
+		})
+	);
 	const pageDescription = $derived(
 		`Download ${data.page.pageLabel} GCSE past papers, mark schemes and inserts from ${firstYear}-${latestYear}.`
 	);
@@ -29,7 +35,7 @@
 						'@type': 'ListItem',
 						position: 2,
 						name: data.page.boardName,
-						item: `https://constellation.eviworld.com/past-papers/gcse?board=${data.page.boardId}`
+						item: `https://constellation.eviworld.com/past-papers/gcse/${data.page.boardId}`
 					},
 					{
 						'@type': 'ListItem',
@@ -89,8 +95,7 @@
 		<nav class="breadcrumb" aria-label="Breadcrumb">
 			<a href={resolve('/past-papers/gcse')}>GCSE Past Papers</a>
 			<span aria-hidden="true">/</span>
-			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-			<a href={`${resolve('/past-papers/gcse')}#${data.page.boardId}`}>{data.page.boardName}</a>
+			<a href={resolve(`/past-papers/gcse/${data.page.boardId}`)}>{data.page.boardName}</a>
 			<span aria-hidden="true">/</span>
 			<span>{data.page.subject}{data.page.tier ? ` ${data.page.tier}` : ''}</span>
 		</nav>
@@ -110,6 +115,27 @@
 				<h2 id="download-title">Download Papers</h2>
 				<p>Question papers, mark schemes and inserts are listed where they are available.</p>
 			</div>
+
+			{#if data.page.paperFilters.length > 1}
+				<nav class="paper-filter" aria-label="Filter papers">
+					<a
+						class:active-filter={data.page.selectedPaperFilterId === 'all'}
+						aria-current={data.page.selectedPaperFilterId === 'all' ? 'page' : undefined}
+						href={subjectPath}
+					>
+						All papers
+					</a>
+					{#each data.page.paperFilters as filter (filter.id)}
+						<a
+							class:active-filter={data.page.selectedPaperFilterId === filter.id}
+							aria-current={data.page.selectedPaperFilterId === filter.id ? 'page' : undefined}
+							href={`${subjectPath}?paper=${filter.id}`}
+						>
+							{filter.label}
+						</a>
+					{/each}
+				</nav>
+			{/if}
 
 			<PastPaperDownloadRows rows={data.page.rows} />
 		</section>
@@ -213,6 +239,38 @@
 		font-size: 0.95rem;
 	}
 
+	.paper-filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin: 0 0 0.9rem;
+	}
+
+	.paper-filter a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.25rem;
+		padding: 0.45rem 0.72rem;
+		border: 1px solid #cbd7df;
+		background: rgba(255, 255, 255, 0.78);
+		color: #34495e;
+		font-size: 0.9rem;
+		font-weight: 560;
+	}
+
+	.paper-filter a:hover,
+	.paper-filter a:focus-visible {
+		color: #0f6b3d;
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+	}
+
+	.paper-filter a.active-filter {
+		border-color: #0f6b3d;
+		background: rgba(15, 107, 61, 0.07);
+		color: #0f6b3d;
+	}
+
 	.download-section :global(.paper-table) {
 		border: 1px solid #cbd7df;
 		background: rgba(255, 255, 255, 0.82);
@@ -241,6 +299,23 @@
 	:global(:root[data-theme='dark']) .download-section :global(.paper-table) {
 		border-color: #263449;
 		background: rgba(15, 23, 42, 0.78);
+	}
+
+	:global(:root[data-theme='dark']) .paper-filter a {
+		border-color: #263449;
+		background: rgba(15, 23, 42, 0.78);
+		color: #cbd5e1;
+	}
+
+	:global(:root[data-theme='dark']) .paper-filter a:hover,
+	:global(:root[data-theme='dark']) .paper-filter a:focus-visible,
+	:global(:root[data-theme='dark']) .paper-filter a.active-filter {
+		color: #7dd3a1;
+	}
+
+	:global(:root[data-theme='dark']) .paper-filter a.active-filter {
+		border-color: #2f9f72;
+		background: rgba(47, 159, 114, 0.12);
 	}
 
 	:global(:root[data-theme='dark']) .subject-hero h1,
