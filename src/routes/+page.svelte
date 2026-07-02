@@ -5,6 +5,7 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 	import { untrack } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	let {
 		data
@@ -81,6 +82,7 @@
 		)
 	);
 	let visibleCount = $state(12);
+	let visibleFilterKey = $state('');
 	const previewQuestionLimit = 3;
 
 	const subjects = $derived.by(() => {
@@ -160,10 +162,11 @@
 	);
 
 	$effect(() => {
-		searchQuery;
-		selectedSubject;
-		selectedMarksFilter;
-		visibleCount = 12;
+		const nextFilterKey = `${searchQuery}\0${selectedSubject}\0${selectedMarksFilter}`;
+		if (nextFilterKey !== visibleFilterKey) {
+			visibleFilterKey = nextFilterKey;
+			visibleCount = 12;
+		}
 	});
 
 	function chainHref(chain: LearningChain) {
@@ -172,7 +175,7 @@
 
 	function syncBrowseUrl(nextSearch: string, nextSubject: string, nextMarksFilter: MarksFilter) {
 		if (typeof window === 'undefined') return;
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		const trimmedSearch = nextSearch.trim();
 		if (trimmedSearch) params.set('q', trimmedSearch);
 		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
@@ -232,6 +235,7 @@
 			{#if firstChain}
 				<a class="qc-browse-start" href={chainHref(firstChain)}>Start with a chain</a>
 			{/if}
+			<a class="qc-browse-start" href={resolve('/past-papers/gcse')}>Download past papers</a>
 		</aside>
 
 		<section class="qc-browse-feed" aria-label="Question chains">
@@ -279,7 +283,7 @@
 					>
 						<h3>Thinking chain</h3>
 						<ol class="qc-browse-pattern">
-							{#each chain.steps as step}
+							{#each chain.steps as step, index (`${chain.id}-${index}`)}
 								<li><MathText text={step} /></li>
 							{/each}
 						</ol>
