@@ -4977,7 +4977,7 @@ textarea::placeholder {
 .qc-topbar-brand img {
 	width: 2rem;
 	height: 2rem;
-	border-radius: 0.45rem;
+	object-fit: contain;
 }
 
 .qc-topbar-search {
@@ -6934,10 +6934,6 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-topbar-brand {
 		color: #f8fafc;
-	}
-
-	:root:not([data-theme='light']) .qc-topbar-brand img {
-		box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.22);
 	}
 
 	:root:not([data-theme='light']) .qc-topbar-search,
