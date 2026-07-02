@@ -163,6 +163,43 @@ export type PracticePageData = {
 	questions: Question[];
 	nextQuestion: Question;
 	memoryEntry: MemoryEntry;
+	englishPractice?: EnglishPracticeData | null;
+};
+
+export type EnglishPracticeCriterion = {
+	id: string;
+	title: string;
+	detail: string;
+	marks: number;
+	found: string;
+	missing: string;
+	keywords: string[];
+};
+
+export type EnglishPracticeStage = {
+	id: string;
+	criterionId: string;
+	title: string;
+	shortTitle: string;
+	revealedText: string;
+	prompt: string;
+	placeholder: string;
+	goal: string;
+};
+
+export type EnglishPracticeData = {
+	questionId: string;
+	question: Question;
+	sourceTitle: string;
+	instructions: string[];
+	criteria: EnglishPracticeCriterion[];
+	stages: EnglishPracticeStage[];
+	modelAnswer: string;
+	weakAnswerText: string;
+	weakAnswerExplanation: string;
+	isExtended: boolean;
+	stepLineCount: number;
+	fullLineCount: number;
 };
 
 export type ThinkingMemoryPageData = {
@@ -282,6 +319,14 @@ type ConstellationRow = {
 	title: string;
 	summary: string | null;
 	answer_chain_id: string;
+};
+
+type EnglishQuestionMetadata = {
+	title?: string;
+	source?: string;
+	stem?: string;
+	instructions?: string[];
+	sourceQuestionRef?: string;
 };
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -677,6 +722,560 @@ async function getWeakAnswer(
 	};
 }
 
+function isEnglishQuestionRow(
+	row: Pick<QuestionRow, 'subject' | 'subject_area' | 'paper'>
+): boolean {
+	return [row.subject, row.subject_area, row.paper].some((value) => /english/i.test(value ?? ''));
+}
+
+export async function isEnglishQuestion(questionId: string): Promise<boolean> {
+	try {
+		return isEnglishQuestionRow(await getQuestionRow(questionId));
+	} catch {
+		return false;
+	}
+}
+
+function cleanChecklistLabel(value: string): string {
+	const cleaned = value
+		.replace(/\s+/g, ' ')
+		.replace(/^AO\d(?:\/AO\d)?:\s*/i, '')
+		.trim();
+	return cleaned ? `${cleaned[0].toUpperCase()}${cleaned.slice(1)}` : cleaned;
+}
+
+function truncateSentence(value: string, limit = 92): string {
+	const cleaned = cleanChecklistLabel(value);
+	if (cleaned.length <= limit) return cleaned;
+	return `${cleaned.slice(0, limit - 3).trim()}...`;
+}
+
+function keywordCandidates(value: string): string[] {
+	const stopWords = new Set([
+		'about',
+		'against',
+		'answer',
+		'available',
+		'because',
+		'between',
+		'clear',
+		'clearly',
+		'could',
+		'credit',
+		'developed',
+		'enough',
+		'explain',
+		'explains',
+		'explores',
+		'from',
+		'ideas',
+		'including',
+		'into',
+		'marks',
+		'rather',
+		'relevant',
+		'should',
+		'than',
+		'that',
+		'their',
+		'there',
+		'these',
+		'this',
+		'uses',
+		'with',
+		'write',
+		'writes'
+	]);
+	return [...new Set(value.toLowerCase().match(/[a-z][a-z'-]{3,}/g) ?? [])]
+		.filter((word) => !stopWords.has(word))
+		.slice(0, 12);
+}
+
+function distributeMarks(totalMarks: number, count: number): number[] {
+	if (count <= 0) return [];
+	const base = Math.max(1, Math.floor(totalMarks / count));
+	const marks = Array.from({ length: count }, () => base);
+	let remainder = Math.max(0, totalMarks - base * count);
+	for (let index = 0; index < marks.length && remainder > 0; index += 1) {
+		marks[index] += 1;
+		remainder -= 1;
+	}
+	return marks;
+}
+
+function genericEnglishChecklist(row: QuestionRow): ChecklistRow[] {
+	const prompt = row.prompt_text.toLowerCase();
+	const subject = row.subject ?? '';
+	const literature = /literature/i.test(subject);
+	const writingTask =
+		/writing|write|letter|speech|article|argue|advise|account|description|story/.test(prompt) &&
+		(row.marks ?? 0) >= 10;
+
+	if (literature) {
+		return [
+			{
+				id: `${row.id}-criterion-argument`,
+				text: 'Clear, task-focused argument that answers the exact literature question.',
+				display_order: 1
+			},
+			{
+				id: `${row.id}-criterion-evidence`,
+				text: 'Precise textual references from the extract, poem or wider text.',
+				display_order: 2
+			},
+			{
+				id: `${row.id}-criterion-method`,
+				text: "Analysis of the writer's language, form, structure or dramatic methods.",
+				display_order: 3
+			},
+			{
+				id: `${row.id}-criterion-wider`,
+				text: 'Meaningful connection to the wider text or second poem where the question requires it.',
+				display_order: 4
+			},
+			{
+				id: `${row.id}-criterion-expression`,
+				text: 'Relevant context and controlled expression for SPaG credit.',
+				display_order: 5
+			}
+		];
+	}
+
+	if (writingTask) {
+		return [
+			{
+				id: `${row.id}-criterion-form`,
+				text: 'Sustains the required form, audience and purpose.',
+				display_order: 1
+			},
+			{
+				id: `${row.id}-criterion-content`,
+				text: 'Develops relevant ideas with a clear line of argument or description.',
+				display_order: 2
+			},
+			{
+				id: `${row.id}-criterion-structure`,
+				text: 'Organises ideas clearly with paragraphs and deliberate structure.',
+				display_order: 3
+			},
+			{
+				id: `${row.id}-criterion-language`,
+				text: 'Uses vocabulary and sentence choices for effect.',
+				display_order: 4
+			},
+			{
+				id: `${row.id}-criterion-accuracy`,
+				text: 'Controls spelling, punctuation and grammar.',
+				display_order: 5
+			}
+		];
+	}
+
+	return [
+		{
+			id: `${row.id}-criterion-answer`,
+			text:
+				(row.marks ?? 0) <= 2
+					? 'Gives the exact word, phrase or point required by the question.'
+					: 'Answers the question directly with relevant evidence from the source.',
+			display_order: 1
+		}
+	];
+}
+
+function buildEnglishCriteria(
+	row: QuestionRow,
+	checklistRows: ChecklistRow[]
+): EnglishPracticeCriterion[] {
+	const rows = checklistRows.length > 0 ? checklistRows : genericEnglishChecklist(row);
+	const markValues = distributeMarks(row.marks ?? rows.length, rows.length);
+
+	return rows.map((item, index) => {
+		const detail = cleanChecklistLabel(item.text);
+		const title = truncateSentence(detail, 74);
+		return {
+			id: item.id || `${row.id}-criterion-${index + 1}`,
+			title,
+			detail,
+			marks: markValues[index] ?? 1,
+			found: `You cover this focus: ${detail}`,
+			missing: `Add this focus: ${detail}`,
+			keywords: keywordCandidates(detail)
+		};
+	});
+}
+
+function englishQuestionKind(row: QuestionRow): 'literature' | 'writing' | 'reading' {
+	const subject = row.subject ?? '';
+	const prompt = row.prompt_text.toLowerCase();
+	if (/literature/i.test(subject)) return 'literature';
+	if (
+		(row.marks ?? 0) >= 10 &&
+		/\b(?:write|letter|speech|article|argue|advise|account|story|description)\b/.test(prompt)
+	) {
+		return 'writing';
+	}
+	return 'reading';
+}
+
+function criterionAt(
+	criteria: EnglishPracticeCriterion[],
+	index: number
+): EnglishPracticeCriterion {
+	return criteria[Math.min(index, criteria.length - 1)] ?? criteria[0];
+}
+
+function buildEnglishStages(
+	row: QuestionRow,
+	question: Question,
+	criteria: EnglishPracticeCriterion[]
+): EnglishPracticeStage[] {
+	const marks = row.marks ?? 0;
+	const kind = englishQuestionKind(row);
+	const hasExtractOrSource = Boolean(question.context.trim());
+	const asksWider = /\belsewhere\b|\bwider\b|\bwhole\s+play\b|\bat least two\b|\bcompare\b/i.test(
+		row.prompt_text
+	);
+
+	if (marks <= 2) {
+		const criterion = criterionAt(criteria, 0);
+		return [
+			{
+				id: 'direct-answer',
+				criterionId: criterion.id,
+				title: 'Answer directly',
+				shortTitle: 'Answer',
+				revealedText:
+					'This is a short-answer item. Give only the word, phrase or point the question asks for.',
+				prompt: 'What is the exact answer?',
+				placeholder: 'The answer is...',
+				goal: criterion.detail
+			}
+		];
+	}
+
+	if (kind === 'writing') {
+		return [
+			{
+				id: 'choice-form',
+				criterionId: criterionAt(criteria, 0).id,
+				title: 'Choose the task and form',
+				shortTitle: 'Form',
+				revealedText:
+					'Choose one task, then keep the form clear from the first line: speech, letter, article, account or story.',
+				prompt: 'Which task are you answering, and what form should it sound like?',
+				placeholder: 'I am answering the ... task, so my response should...',
+				goal: criterionAt(criteria, 0).detail
+			},
+			{
+				id: 'audience-purpose',
+				criterionId: criterionAt(criteria, 1).id,
+				title: 'Set audience and purpose',
+				shortTitle: 'Purpose',
+				revealedText:
+					'High marks come from writing that has a clear audience, purpose and direction, not just a list of points.',
+				prompt: 'What do you want the reader or listener to think by the end?',
+				placeholder: 'By the end, the reader should...',
+				goal: criterionAt(criteria, 1).detail
+			},
+			{
+				id: 'structure',
+				criterionId: criterionAt(criteria, 2).id,
+				title: 'Plan the structure',
+				shortTitle: 'Structure',
+				revealedText:
+					'Plan a beginning, development and ending so the response feels controlled rather than repetitive.',
+				prompt: 'What are your main sections or paragraph moves?',
+				placeholder: 'First..., then..., finally...',
+				goal: criterionAt(criteria, 2).detail
+			},
+			{
+				id: 'language',
+				criterionId: criterionAt(criteria, 3).id,
+				title: 'Choose language for effect',
+				shortTitle: 'Language',
+				revealedText:
+					'Select vocabulary, sentence shapes and rhetorical choices that fit the form and purpose.',
+				prompt: 'Write one sentence that shows the tone you want.',
+				placeholder: 'One effective sentence could be...',
+				goal: criterionAt(criteria, 3).detail
+			},
+			{
+				id: 'full-response',
+				criterionId: criterionAt(criteria, criteria.length - 1).id,
+				title: 'Build the full response',
+				shortTitle: 'Full',
+				revealedText:
+					'Now write the response with clear organisation, purposeful language and controlled accuracy.',
+				prompt: 'Turn the plan into the response.',
+				placeholder: 'Write the response...',
+				goal: criterionAt(criteria, criteria.length - 1).detail
+			}
+		];
+	}
+
+	if (kind === 'literature') {
+		return [
+			{
+				id: 'task',
+				criterionId: criterionAt(criteria, 0).id,
+				title: 'Read the task',
+				shortTitle: 'Task',
+				revealedText: asksWider
+					? 'This question needs a line of argument that uses the printed material and reaches into the wider text.'
+					: 'This question needs a line of argument that answers the exact wording, not a plot summary.',
+				prompt: 'What exactly must your answer prove?',
+				placeholder: 'The writer presents...',
+				goal: criterionAt(criteria, 0).detail
+			},
+			{
+				id: 'evidence',
+				criterionId: criterionAt(criteria, 1).id,
+				title: hasExtractOrSource ? 'Choose first evidence' : 'Choose evidence',
+				shortTitle: 'Evidence',
+				revealedText: hasExtractOrSource
+					? 'Start with one precise word, phrase or moment from the source on the left.'
+					: 'Use a precise reference rather than a broad memory of what happens.',
+				prompt: 'Which quotation or precise reference will anchor the point?',
+				placeholder: 'The phrase or moment I will use is...',
+				goal: criterionAt(criteria, 1).detail
+			},
+			{
+				id: 'method',
+				criterionId: criterionAt(criteria, 2).id,
+				title: 'Explain the method',
+				shortTitle: 'Method',
+				revealedText:
+					'Move from evidence to method: language, imagery, form, structure, stagecraft or audience effect.',
+				prompt: 'What does the writer make the audience understand or feel?',
+				placeholder: 'This suggests...',
+				goal: criterionAt(criteria, 2).detail
+			},
+			{
+				id: 'wider',
+				criterionId: criterionAt(criteria, 3).id,
+				title: asksWider ? 'Open the wider question' : 'Develop the idea',
+				shortTitle: asksWider ? 'Wider' : 'Develop',
+				revealedText: asksWider
+					? 'Bring in another moment from the text so the answer does not stay trapped in one extract.'
+					: 'Develop the idea with another precise moment or a more detailed interpretation.',
+				prompt: asksWider
+					? 'Where else in the text can you connect this idea?'
+					: 'How can this point be developed further?',
+				placeholder: asksWider ? 'Elsewhere...' : 'This develops because...',
+				goal: criterionAt(criteria, 3).detail
+			},
+			{
+				id: 'full-answer',
+				criterionId: criterionAt(criteria, criteria.length - 1).id,
+				title: 'Build the full answer',
+				shortTitle: 'Essay',
+				revealedText:
+					'Join the argument, evidence, method and wider connection into a developed answer.',
+				prompt: 'Turn your notes into a developed paragraph or answer.',
+				placeholder: 'The writer presents...',
+				goal: criterionAt(criteria, criteria.length - 1).detail
+			}
+		];
+	}
+
+	const stages: EnglishPracticeStage[] = [
+		{
+			id: 'direct-answer',
+			criterionId: criterionAt(criteria, 0).id,
+			title: 'Answer the question',
+			shortTitle: 'Answer',
+			revealedText: 'Start by answering the exact command word. Do not write around the question.',
+			prompt: 'What is your direct answer?',
+			placeholder: 'The answer is...',
+			goal: criterionAt(criteria, 0).detail
+		}
+	];
+
+	if (marks >= 4) {
+		stages.push({
+			id: 'evidence',
+			criterionId: criterionAt(criteria, 1).id,
+			title: 'Use the source',
+			shortTitle: 'Evidence',
+			revealedText:
+				'Use a precise word, phrase or detail from the source so the answer can earn explanation marks.',
+			prompt: 'Which evidence from the source supports your answer?',
+			placeholder: 'The source says...',
+			goal: criterionAt(criteria, 1).detail
+		});
+	}
+
+	if (marks >= 6) {
+		stages.push({
+			id: 'explain-effect',
+			criterionId: criterionAt(criteria, 2).id,
+			title: 'Explain the effect',
+			shortTitle: 'Effect',
+			revealedText:
+				'Higher-mark reading answers need inference or effect, not only copied evidence.',
+			prompt: 'What does that evidence suggest, imply or make the reader think?',
+			placeholder: 'This suggests...',
+			goal: criterionAt(criteria, 2).detail
+		});
+	}
+
+	return stages;
+}
+
+async function getStandaloneModelAnswer(questionId: string, fallback: string): Promise<string> {
+	const row = await queryFirst<ModelAnswerRow>(
+		`SELECT answer_text
+		 FROM model_answers
+		 WHERE question_id = ?
+		   AND needs_human_review = 0
+		 ORDER BY COALESCE(confidence, 0) DESC
+		 LIMIT 1`,
+		[questionId]
+	);
+
+	return row?.answer_text ?? fallback;
+}
+
+async function getStandaloneWeakAnswer(questionId: string): Promise<{
+	text: string;
+	explanation: string;
+}> {
+	const row = await queryFirst<WeakAnswerRow>(
+		`SELECT weak_answer_text, explanation, missing_chain_step_ids_json
+		 FROM common_weak_answers
+		 WHERE question_id = ?
+		   AND needs_human_review = 0
+		 ORDER BY CASE
+		            WHEN explanation IS NOT NULL AND TRIM(explanation) <> '' THEN 0
+		            ELSE 1
+		          END,
+		          COALESCE(confidence, 0) DESC,
+		          id
+		 LIMIT 1`,
+		[questionId]
+	);
+
+	return {
+		text: row?.weak_answer_text ?? 'A vague answer that does not meet the mark focus.',
+		explanation: row?.explanation?.replace(/\s+/g, ' ').trim() ?? ''
+	};
+}
+
+function roleForEnglishCriterion(text: string): ChainStep['role'] {
+	const lower = text.toLowerCase();
+	if (/\bevidence|reference|quotation|source|extract\b/.test(lower)) return 'evidence';
+	if (/\bmethod|language|structure|form|effect|analyse|analysis\b/.test(lower)) return 'method';
+	if (/\bcontext|expression|spag|spelling|punctuation|grammar\b/.test(lower)) return 'conclusion';
+	return 'link';
+}
+
+function buildEnglishDiagnosticChain(
+	row: QuestionRow,
+	criteria: EnglishPracticeCriterion[],
+	modelAnswer: string,
+	weakAnswer: { text: string; explanation: string }
+): AnswerChain {
+	const steps = criteria.map<ChainStep>((criterion) => ({
+		id: criterion.id,
+		short: criterion.title,
+		label: criterion.detail,
+		role: roleForEnglishCriterion(criterion.detail),
+		explanation: criterion.missing,
+		markEvidence: criterion.detail,
+		commonOmission: criterion.missing
+	}));
+
+	return {
+		id: `${row.id}-english-mark-focus`,
+		title: 'Mark focus for this English question',
+		canonicalText: criteria.map((criterion) => criterion.title).join(' -> '),
+		concreteText: criteria.map((criterion) => criterion.detail).join('\n'),
+		pageTitle: 'English guided practice',
+		summary: 'Use these criteria to build and check this answer.',
+		steps,
+		commonMissingLink:
+			weakAnswer.explanation ||
+			criteria[0]?.missing ||
+			'Answer the exact question before checking.',
+		modelAnswer
+	};
+}
+
+function sourceTitleFromRow(row: QuestionRow): string {
+	const metadata = parseJson<EnglishQuestionMetadata>(row.metadata_json, {});
+	return (
+		metadata.source ?? row.paper ?? `${row.board ?? 'OCR'} ${row.qualification ?? 'GCSE'} English`
+	);
+}
+
+async function getEnglishPracticePageDataFromRow(row: QuestionRow): Promise<PracticePageData> {
+	const checklistRows = await getStoredChecklist(row.id);
+	const criteria = buildEnglishCriteria(row, checklistRows);
+	const weakAnswer = await getStandaloneWeakAnswer(row.id);
+	const modelAnswer = await getStandaloneModelAnswer(
+		row.id,
+		criteria.map((criterion) => criterion.detail).join(' ')
+	);
+	const metadata = parseJson<EnglishQuestionMetadata>(row.metadata_json, {});
+	const chain = buildEnglishDiagnosticChain(row, criteria, modelAnswer, weakAnswer);
+	const membership: MembershipRow = {
+		answer_chain_id: chain.id,
+		transfer_distance: 'unclassified',
+		display_order: 0,
+		fit_confidence: 1,
+		fit_notes: chain.summary,
+		needs_human_review: 0
+	};
+	const question = await hydrateQuestion(row, chain, membership);
+	const stages = buildEnglishStages(row, question, criteria);
+	const marks = row.marks ?? criteria.length;
+
+	const englishPractice: EnglishPracticeData = {
+		questionId: row.id,
+		question,
+		sourceTitle: sourceTitleFromRow(row),
+		instructions: Array.isArray(metadata.instructions)
+			? metadata.instructions.filter((instruction) => instruction.trim().length > 0)
+			: [],
+		criteria,
+		stages,
+		modelAnswer,
+		weakAnswerText: weakAnswer.text,
+		weakAnswerExplanation: weakAnswer.explanation,
+		isExtended: marks >= 10,
+		stepLineCount: marks >= 20 ? 5 : marks >= 6 ? 4 : 3,
+		fullLineCount: marks >= 30 ? 18 : marks >= 10 ? 12 : marks >= 6 ? 8 : 4
+	};
+
+	return {
+		question,
+		chain,
+		constellation: {
+			id: `${row.id}-english-practice`,
+			title: question.title,
+			summary: 'Guided English answer practice for this question.',
+			chainId: chain.id,
+			questionIds: [question.id]
+		},
+		questions: [question],
+		nextQuestion: question,
+		memoryEntry: {
+			id: `memory-${chain.id}`,
+			chainId: chain.id,
+			savedFromQuestionId: question.id,
+			lastPractisedQuestionId: question.id,
+			nextReviewQuestionId: question.id,
+			mastery: 'building',
+			lastSavedLabel: 'Ready to save after checking',
+			reviewLabel: 'Review this question',
+			attemptedQuestionIds: [question.id],
+			recurringMissingStepId: criteria[1]?.id ?? criteria[0]?.id ?? chain.id
+		},
+		englishPractice
+	};
+}
+
 function repairChainFromSteps(chain: AnswerChain): RepairChainNode[] {
 	return chain.steps.map((step) => ({
 		id: `${step.id}-node`,
@@ -896,6 +1495,11 @@ export async function getConstellationPageData(chainId: string): Promise<Constel
 }
 
 export async function getPracticePageData(questionId: string): Promise<PracticePageData> {
+	const row = await getQuestionRow(questionId);
+	if (isEnglishQuestionRow(row)) {
+		return await getEnglishPracticePageDataFromRow(row);
+	}
+
 	const publicData = await getPublicQuestionData(questionId);
 	const questions = await getQuestionsForChain(publicData.chain);
 	const nextQuestion = nextQuestionAfter(questions, publicData.question.id);

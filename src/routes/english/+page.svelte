@@ -20,10 +20,18 @@
 		'Geography',
 		'History'
 	];
-	const marksOptions = ['All marks', '1-2 marks', '3-5 marks', '6-10 marks', '11-20 marks', '20+ marks'];
+	const marksOptions = [
+		'All marks',
+		'1-2 marks',
+		'3-5 marks',
+		'6-10 marks',
+		'11-20 marks',
+		'20+ marks'
+	];
 	const pageSize = 24;
 
 	let searchQuery = $state(untrack(() => data.initialFilters.search));
+	let selectedBoard = $state(untrack(() => data.initialFilters.board));
 	let selectedCourse = $state(untrack(() => data.initialFilters.course));
 	let selectedPaper = $state(untrack(() => data.initialFilters.paper));
 	let selectedYear = $state(untrack(() => data.initialFilters.year));
@@ -32,9 +40,24 @@
 	let selectedMarks = $state(untrack(() => data.initialFilters.marks));
 	let visibleCount = $state(pageSize);
 
-	const courseOptions = $derived(['All English', ...unique(data.questions.map((question) => question.subject))]);
+	const boardOptions = $derived.by(() => {
+		const options = unique([
+			...data.stats.boards,
+			...data.questions.map((question) => question.board)
+		]);
+		return options.length > 0 ? options : ['OCR'];
+	});
+	const boardScopedQuestions = $derived(
+		data.questions.filter((question) => question.board === selectedBoard)
+	);
+	const courseOptions = $derived([
+		'All English',
+		...unique(boardScopedQuestions.map((question) => question.subject))
+	]);
 	const courseScopedQuestions = $derived(
-		data.questions.filter((question) => selectedCourse === 'All English' || question.subject === selectedCourse)
+		boardScopedQuestions.filter(
+			(question) => selectedCourse === 'All English' || question.subject === selectedCourse
+		)
 	);
 	const paperOptions = $derived([
 		'All papers',
@@ -42,9 +65,9 @@
 	]);
 	const yearOptions = $derived([
 		'All years',
-		...unique(courseScopedQuestions.map((question) => (question.year ? String(question.year) : ''))).sort(
-			(left, right) => Number(right) - Number(left)
-		)
+		...unique(
+			courseScopedQuestions.map((question) => (question.year ? String(question.year) : ''))
+		).sort((left, right) => Number(right) - Number(left))
 	]);
 	const textOptions = $derived([
 		'All texts',
@@ -58,9 +81,11 @@
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
 	const filteredQuestions = $derived.by(() =>
 		data.questions.filter((question) => {
+			if (question.board !== selectedBoard) return false;
 			if (selectedCourse !== 'All English' && question.subject !== selectedCourse) return false;
 			if (selectedPaper !== 'All papers' && question.paper !== selectedPaper) return false;
-			if (selectedYear !== 'All years' && String(question.year ?? '') !== selectedYear) return false;
+			if (selectedYear !== 'All years' && String(question.year ?? '') !== selectedYear)
+				return false;
 			if (selectedText !== 'All texts' && question.textGroup !== selectedText) return false;
 			if (selectedType !== 'All types' && question.questionType !== selectedType) return false;
 			if (selectedMarks !== 'All marks' && question.marksBand !== selectedMarks) return false;
@@ -88,6 +113,7 @@
 	const groupedQuestions = $derived(groupQuestions(visibleQuestions));
 	const activeFilterCount = $derived(
 		[
+			boardOptions.length > 1 && selectedBoard !== defaultBoardOption(),
 			selectedCourse !== 'All English',
 			selectedPaper !== 'All papers',
 			selectedYear !== 'All years',
@@ -99,11 +125,12 @@
 	);
 	const finderSummary = $derived(
 		filteredQuestions.length === data.questions.length
-			? `${data.questions.length} OCR English questions`
-			: `${filteredQuestions.length} of ${data.questions.length} OCR English questions`
+			? `${data.questions.length} English questions`
+			: `${filteredQuestions.length} of ${data.questions.length} English questions`
 	);
 
 	$effect(() => {
+		selectedBoard;
 		selectedCourse;
 		selectedPaper;
 		selectedYear;
@@ -115,6 +142,7 @@
 	});
 
 	$effect(() => {
+		if (!boardOptions.includes(selectedBoard)) selectedBoard = defaultBoardOption();
 		if (!courseOptions.includes(selectedCourse)) selectedCourse = 'All English';
 		if (!paperOptions.includes(selectedPaper)) selectedPaper = 'All papers';
 		if (!yearOptions.includes(selectedYear)) selectedYear = 'All years';
@@ -127,6 +155,10 @@
 		return [...new Set(values.filter(Boolean))].sort((left, right) => left.localeCompare(right));
 	}
 
+	function defaultBoardOption() {
+		return boardOptions[0] ?? 'OCR';
+	}
+
 	function groupQuestions(questions: EnglishQuestion[]) {
 		const groups = new Map<string, { key: string; title: string; questions: EnglishQuestion[] }>();
 		for (const question of questions) {
@@ -134,7 +166,10 @@
 				question.subject,
 				question.componentCode || question.paper,
 				question.year ? String(question.year) : '',
-				question.series.replace(String(question.year ?? ''), '').replace(/[-\s]+$/, '').trim()
+				question.series
+					.replace(String(question.year ?? ''), '')
+					.replace(/[-\s]+$/, '')
+					.trim()
 			].filter(Boolean);
 			const title = parts.join(' · ');
 			const key = `${question.sourceDocumentId}:${title}`;
@@ -149,6 +184,8 @@
 		const params = new URLSearchParams();
 		const trimmedSearch = searchQuery.trim();
 		if (trimmedSearch) params.set('q', trimmedSearch);
+		if (boardOptions.length > 1 && selectedBoard !== defaultBoardOption())
+			params.set('board', selectedBoard);
 		if (selectedCourse !== 'All English') params.set('course', selectedCourse);
 		if (selectedPaper !== 'All papers') params.set('paper', selectedPaper);
 		if (selectedYear !== 'All years') params.set('year', selectedYear);
@@ -156,7 +193,11 @@
 		if (selectedType !== 'All types') params.set('type', selectedType);
 		if (selectedMarks !== 'All marks') params.set('marks', selectedMarks);
 		const query = params.toString();
-		window.history.replaceState(window.history.state, '', `${resolve('/english')}${query ? `?${query}` : ''}`);
+		window.history.replaceState(
+			window.history.state,
+			'',
+			`${resolve('/english')}${query ? `?${query}` : ''}`
+		);
 	}
 
 	function updateSearch(value: string) {
@@ -166,12 +207,22 @@
 
 	function updateFilter(next: {
 		course?: string;
+		board?: string;
 		paper?: string;
 		year?: string;
 		text?: string;
 		type?: string;
 		marks?: string;
 	}) {
+		if (next.board !== undefined && next.board !== selectedBoard) {
+			selectedBoard = next.board;
+			selectedCourse = 'All English';
+			selectedPaper = 'All papers';
+			selectedYear = 'All years';
+			selectedText = 'All texts';
+			selectedType = 'All types';
+			selectedMarks = 'All marks';
+		}
 		if (next.course !== undefined && next.course !== selectedCourse) {
 			selectedCourse = next.course;
 			selectedPaper = 'All papers';
@@ -190,6 +241,7 @@
 
 	function clearFilters() {
 		searchQuery = '';
+		selectedBoard = defaultBoardOption();
 		selectedCourse = 'All English';
 		selectedPaper = 'All papers';
 		selectedYear = 'All years';
@@ -208,11 +260,9 @@
 	}
 
 	function questionHref(question: EnglishQuestion) {
-		return resolve('/questions/[questionId]', { questionId: question.slug || question.id });
-	}
-
-	function practiceHref(question: EnglishQuestion) {
-		return resolve('/questions/[questionId]/practice', { questionId: question.slug || question.id });
+		return resolve('/questions/[questionId]/practice', {
+			questionId: question.slug || question.id
+		});
 	}
 
 	function metadataLine(question: EnglishQuestion) {
@@ -228,10 +278,10 @@
 </script>
 
 <svelte:head>
-	<title>OCR GCSE English Questions | Question Constellation</title>
+	<title>GCSE English Questions | Question Constellation</title>
 	<meta
 		name="description"
-		content="Browse OCR GCSE English Language and English Literature questions by paper, year, text, question type, and marks."
+		content="Browse GCSE English Language and English Literature questions by exam board, paper, year, text, question type, and marks."
 	/>
 </svelte:head>
 
@@ -240,7 +290,7 @@
 		subject="English"
 		subjects={topbarSubjects}
 		searchValue={searchQuery}
-		searchPlaceholder="Search OCR English"
+		searchPlaceholder="Search English questions"
 		onSearchChange={updateSearch}
 		onSubjectChange={updateTopbarSubject}
 	/>
@@ -248,10 +298,10 @@
 	<div class="qc-browse-layout qc-english-layout">
 		<aside class="qc-browse-intro qc-english-side">
 			<p class="qc-real-kicker">GCSE English</p>
-			<h1>Choose an OCR English question.</h1>
+			<h1>Choose an English question.</h1>
 			<p>
-				Filter by course, paper, year, text, and question type, then open the original question
-				or practise it with checking.
+				Filter by exam board, course, paper, year, text, and question type, then open a guided
+				question workspace.
 			</p>
 
 			<div class="qc-english-stats" aria-label="English corpus summary">
@@ -274,8 +324,23 @@
 				</div>
 
 				<label>
+					<span>Board</span>
+					<select
+						value={selectedBoard}
+						onchange={(event) => updateFilter({ board: event.currentTarget.value })}
+					>
+						{#each boardOptions as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+				</label>
+
+				<label>
 					<span>Course</span>
-					<select value={selectedCourse} onchange={(event) => updateFilter({ course: event.currentTarget.value })}>
+					<select
+						value={selectedCourse}
+						onchange={(event) => updateFilter({ course: event.currentTarget.value })}
+					>
 						{#each courseOptions as option}
 							<option value={option}>{option}</option>
 						{/each}
@@ -284,7 +349,10 @@
 
 				<label>
 					<span>Paper</span>
-					<select value={selectedPaper} onchange={(event) => updateFilter({ paper: event.currentTarget.value })}>
+					<select
+						value={selectedPaper}
+						onchange={(event) => updateFilter({ paper: event.currentTarget.value })}
+					>
 						{#each paperOptions as option}
 							<option value={option}>{option}</option>
 						{/each}
@@ -293,7 +361,10 @@
 
 				<label>
 					<span>Year</span>
-					<select value={selectedYear} onchange={(event) => updateFilter({ year: event.currentTarget.value })}>
+					<select
+						value={selectedYear}
+						onchange={(event) => updateFilter({ year: event.currentTarget.value })}
+					>
 						{#each yearOptions as option}
 							<option value={option}>{option}</option>
 						{/each}
@@ -303,7 +374,10 @@
 				{#if showTextFilter}
 					<label>
 						<span>Text</span>
-						<select value={selectedText} onchange={(event) => updateFilter({ text: event.currentTarget.value })}>
+						<select
+							value={selectedText}
+							onchange={(event) => updateFilter({ text: event.currentTarget.value })}
+						>
 							{#each textOptions as option}
 								<option value={option}>{option}</option>
 							{/each}
@@ -313,7 +387,10 @@
 
 				<label>
 					<span>Question type</span>
-					<select value={selectedType} onchange={(event) => updateFilter({ type: event.currentTarget.value })}>
+					<select
+						value={selectedType}
+						onchange={(event) => updateFilter({ type: event.currentTarget.value })}
+					>
 						{#each typeOptions as option}
 							<option value={option}>{option}</option>
 						{/each}
@@ -322,7 +399,10 @@
 
 				<label>
 					<span>Marks</span>
-					<select value={selectedMarks} onchange={(event) => updateFilter({ marks: event.currentTarget.value })}>
+					<select
+						value={selectedMarks}
+						onchange={(event) => updateFilter({ marks: event.currentTarget.value })}
+					>
 						{#each marksOptions as option}
 							<option value={option}>{option}</option>
 						{/each}
@@ -331,10 +411,10 @@
 			</section>
 		</aside>
 
-		<section class="qc-browse-feed qc-english-feed" aria-label="OCR English questions">
+		<section class="qc-browse-feed qc-english-feed" aria-label="English questions">
 			<div class="qc-browse-heading qc-english-heading">
 				<div>
-					<p class="qc-real-kicker">OCR only for now</p>
+					<p class="qc-real-kicker">Question bank</p>
 					<h2>Question finder</h2>
 				</div>
 				<p>{finderSummary}</p>
@@ -343,7 +423,7 @@
 			{#if data.questions.length === 0}
 				<section class="qc-empty-search qc-english-empty">
 					<Search size={19} aria-hidden="true" />
-					<span>No OCR English questions are published in D1 yet.</span>
+					<span>No English questions are published in D1 yet.</span>
 				</section>
 			{:else if filteredQuestions.length === 0}
 				<section class="qc-empty-search qc-english-empty">
@@ -392,12 +472,7 @@
 									</div>
 
 									<div class="qc-english-card-actions">
-										<a href={questionHref(question)}>Open question</a>
-										{#if question.hasChain}
-											<a class="primary" href={practiceHref(question)}>Practise</a>
-										{:else}
-											<span>Practice coming soon</span>
-										{/if}
+										<a class="primary" href={questionHref(question)}>Open question</a>
 									</div>
 								</article>
 							{/each}
@@ -409,7 +484,8 @@
 					<button
 						type="button"
 						class="qc-show-more-chains"
-						onclick={() => (visibleCount = Math.min(visibleCount + pageSize, filteredQuestions.length))}
+						onclick={() =>
+							(visibleCount = Math.min(visibleCount + pageSize, filteredQuestions.length))}
 					>
 						Show more questions
 					</button>

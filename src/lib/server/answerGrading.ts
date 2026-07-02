@@ -194,12 +194,13 @@ export function parseGradeResponse(rawText: string, data: PracticePageData): Que
 }
 
 function stepSelectionList(data: PracticePageData): string {
+	const isEnglish = isEnglishPracticeQuestion(data);
 	return data.chain.steps
 		.map((step, index) => {
 			const checklistItem = data.question.checklist.find((item) => item.stepId === step.id);
 			return [
 				`${index + 1}. id: ${step.id}`,
-				`   chain link: ${step.label}`,
+				`   ${isEnglish ? 'diagnostic criterion' : 'chain link'}: ${step.label}`,
 				`   mark/checklist point: ${checklistItem?.text ?? step.markEvidence}`
 			].join('\n');
 		})
@@ -236,7 +237,17 @@ function isEnglishLiteratureExtendedResponse(data: PracticePageData): boolean {
 	);
 }
 
+function isEnglishPracticeQuestion(data: PracticePageData): boolean {
+	const profile = data.question.renderingOverlay?.metadata?.gradingProfile;
+	return (
+		/english/i.test(data.question.meta.subject) ||
+		/english/i.test(data.question.meta.paper) ||
+		(typeof profile === 'string' && /english/i.test(profile))
+	);
+}
+
 function buildGradingMethod(data: PracticePageData): string {
+	const isEnglish = isEnglishPracticeQuestion(data);
 	const englishCapRule =
 		data.question.meta.marks === 40
 			? '- For this 40-mark OCR Shakespeare extract question, no meaningful wider-play reference means a maximum of 22/40; only brief or name-dropped wider reference means a maximum of 28/40. If you mention one of these caps in feedback, the awarded mark must obey it.'
@@ -245,8 +256,8 @@ function buildGradingMethod(data: PracticePageData): string {
 		'Grading method:',
 		'1. Read the student answer as a whole before selecting steps.',
 		'2. Award marks for correct exam-relevant ideas, not exact wording.',
-		'3. Treat the listed answer-chain steps as diagnostic categories for the UI. They are not automatically equal mark buckets.',
-		'4. Mark a step present only when the answer makes that move clearly enough to earn credit; mark it missing when absent, vague, or only named without use.',
+		`3. Treat the listed ${isEnglish ? 'diagnostic criteria' : 'answer-chain steps'} as diagnostic categories for the UI. They are not automatically equal mark buckets.`,
+		`4. Mark a ${isEnglish ? 'criterion' : 'step'} present only when the answer makes that move clearly enough to earn credit; mark it missing when absent, vague, or only named without use.`,
 		'5. Credit valid alternative wording or a different defensible interpretation when it fits the mark scheme.'
 	];
 
@@ -282,9 +293,10 @@ function buildQuestionContext(data: PracticePageData): string {
 
 export function buildGradePrompt(data: PracticePageData, studentAnswer: string): string {
 	const questionSpecificGuidance = buildQuestionSpecificGuidance(data);
+	const isEnglish = isEnglishPracticeQuestion(data);
 	return [
 		'You are grading one GCSE free-text answer for an online practice question.',
-		'Use the exact answer-chain step ids listed below. Do not invent ids.',
+		`Use the exact ${isEnglish ? 'diagnostic criterion' : 'answer-chain step'} ids listed below. Do not invent ids.`,
 		'Your job is to give fair examiner-style feedback, not to write a chatty tutor response.',
 		'',
 		buildGradingMethod(data),
@@ -305,9 +317,11 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 		`${data.question.meta.paper}; topic: ${data.question.meta.topic}; marks: ${data.question.meta.marks}`,
 		'',
 		buildQuestionContext(data),
-		questionSpecificGuidance ? `\nQuestion-specific OCR guidance:\n${questionSpecificGuidance}` : '',
+		questionSpecificGuidance
+			? `\nQuestion-specific OCR guidance:\n${questionSpecificGuidance}`
+			: '',
 		'',
-		'Answer-chain steps to select from:',
+		`${isEnglish ? 'Diagnostic criteria' : 'Answer-chain steps'} to select from:`,
 		stepSelectionList(data),
 		'',
 		'Student answer:',

@@ -102,11 +102,17 @@ function canonicalTextMatch(value: string) {
 	if (/\bpoetry\b|\bpoem\b|\bpoems\b/.test(normalised)) return 'Poetry anthology';
 	if (/\bshakespeare\b/.test(normalised)) return 'Shakespeare';
 	if (/\bmodern\s+(?:prose|drama|text)\b/.test(normalised)) return 'Modern prose or drama';
-	if (/\b19th[-\s]century\b|\bnineteenth[-\s]century\b/.test(normalised)) return '19th-century prose';
+	if (/\b19th[-\s]century\b|\bnineteenth[-\s]century\b/.test(normalised))
+		return '19th-century prose';
 	return '';
 }
 
-function deriveTextGroup(row: EnglishQuestionRow, subject: string, topicPath: string[], metadata: QuestionMetadata) {
+function deriveTextGroup(
+	row: EnglishQuestionRow,
+	subject: string,
+	topicPath: string[],
+	metadata: QuestionMetadata
+) {
 	if (subject !== 'English Literature') return '';
 	const haystack = [
 		...topicPath,
@@ -146,7 +152,9 @@ function deriveQuestionType(row: EnglishQuestionRow, subject: string) {
 		if (lower.includes('elsewhere')) return 'Whole text essay';
 		return row.command_word ? cleanText(row.command_word) : 'Literature essay';
 	}
-	if (/\bwrite\b|\bletter\b|\barticle\b|\bspeech\b|\baccount\b|\bstory\b|\bdescription\b/.test(lower)) {
+	if (
+		/\bwrite\b|\bletter\b|\barticle\b|\bspeech\b|\baccount\b|\bstory\b|\bdescription\b/.test(lower)
+	) {
 		return 'Writing task';
 	}
 	if (/\bcompare\b|\bcomparison\b/.test(lower)) return 'Comparison';
@@ -185,7 +193,7 @@ function hydrateQuestion(row: EnglishQuestionRow) {
 	const topicPath = parseJson<string[]>(row.topic_path_json, []);
 	const metadata = parseJson<QuestionMetadata>(row.metadata_json, {});
 	const subject = normaliseSubject(row, topicPath);
-	const paper = row.paper ?? row.source_paper ?? row.source_title ?? 'OCR English paper';
+	const paper = row.paper ?? row.source_paper ?? row.source_title ?? 'English paper';
 	const componentCode = row.component_code ?? row.source_component_code ?? '';
 	const series = row.series ?? row.source_series ?? '';
 	const year = row.year ?? row.source_year ?? null;
@@ -276,14 +284,18 @@ export const load: PageServerLoad = async ({ url }) => {
 			stats: {
 				questionCount: questions.length,
 				sourceDocumentCount: corpus?.source_documents ?? 0,
+				boards: uniqueSorted(questions.map((question) => question.board)),
 				subjects: sortSubjects(questions.map((question) => question.subject)),
 				papers: uniqueSorted(questions.map((question) => question.paper)),
 				texts: uniqueSorted(questions.map((question) => question.textGroup)),
 				questionTypes: uniqueSorted(questions.map((question) => question.questionType)),
-				years: uniqueSorted(questions.map((question) => (question.year ? String(question.year) : '')))
+				years: uniqueSorted(
+					questions.map((question) => (question.year ? String(question.year) : ''))
+				)
 			},
 			initialFilters: {
 				search: url.searchParams.get('q') ?? '',
+				board: url.searchParams.get('board') ?? OCR_BOARD,
 				course: url.searchParams.get('course') ?? 'All English',
 				paper: url.searchParams.get('paper') ?? 'All papers',
 				year: url.searchParams.get('year') ?? 'All years',
@@ -293,13 +305,14 @@ export const load: PageServerLoad = async ({ url }) => {
 			}
 		};
 	} catch (error) {
-		console.error('[english] failed to load OCR English questions', error);
+		console.error('[english] failed to load English questions', error);
 		return {
 			questions: [],
 			fallbackGuidedQuestionId: FALLBACK_GUIDED_QUESTION_ID,
 			stats: {
 				questionCount: 0,
 				sourceDocumentCount: 0,
+				boards: [OCR_BOARD],
 				subjects: [],
 				papers: [],
 				texts: [],
@@ -308,6 +321,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			},
 			initialFilters: {
 				search: url.searchParams.get('q') ?? '',
+				board: url.searchParams.get('board') ?? OCR_BOARD,
 				course: 'All English',
 				paper: 'All papers',
 				year: 'All years',

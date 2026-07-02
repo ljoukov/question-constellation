@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamPaper from '$lib/experiments/questions/components/ExamPaper.svelte';
+	import HintPanel from '$lib/components/HintPanel.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { focusPaperByRef } from '$lib/experiments/questions/paperUtils';
 	import ThinkingChain from './ThinkingChain.svelte';
@@ -260,24 +261,22 @@
 					<p>{paper.subtitle || chain.paperLabel} · Question {focusedRef}</p>
 					<h2><MathText text={activeQuestion.title} /></h2>
 				</div>
-				<button
-					type="button"
-					class="qc-real-link-button"
-					onclick={() => (hasGrade ? (patternOpen = !patternOpen) : (hintOpen = !hintOpen))}
-				>
-					{#if hasGrade}
+				{#if hasGrade}
+					<button
+						type="button"
+						class="qc-real-link-button"
+						onclick={() => (patternOpen = !patternOpen)}
+					>
 						{patternOpen ? 'Hide thinking chain' : 'Show thinking chain'}
-					{:else}
-						{hintOpen ? 'Hide hint' : 'Need a hint?'}
-					{/if}
-				</button>
+					</button>
+				{/if}
 			</div>
 
-			{#if hintOpen && !hasGrade}
-				<section class="qc-real-hint" aria-label="Hint">
-					<p>Hint for this question</p>
-					<span><MathText text={activeHint} /></span>
-				</section>
+			{#if !hasGrade}
+				<HintPanel
+					hints={[{ title: 'Hint for this question', text: activeHint }]}
+					bind:open={hintOpen}
+				/>
 			{/if}
 
 			{#if displayPaper}
