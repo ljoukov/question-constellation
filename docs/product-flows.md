@@ -156,7 +156,7 @@ An answer chain should include:
 - Common missing links
 - Model answer using the chain
 - Question families that use it
-- Mastery and review state once saved
+- Review state only if a future retained-chain surface is rebuilt
 
 ### Constellation
 
@@ -178,20 +178,20 @@ Example Biology constellation:
 5. Root hair cells and active transport
 6. Blocked arteries and heart muscle
 
-### Thinking Memory
+### Retained Chain Review
 
-Thinking Memory is the student's saved library of earned answer chains. It is not the first-use taxonomy.
+The old `/thinking-memory` route is removed from the current product. A retained-chain review surface may return later, but it should be rebuilt after practice is useful enough to create earned review state. It is not the first-use taxonomy and should not be restored as a standalone old UI.
 
-It should show:
+A future version should show:
 
-- Saved chains
+- Retained chains
 - Where each chain was discovered
 - Questions where the chain has been used
 - Common missing link
 - Review action
 - Reset or relearn action
 
-The memory should grow after practice, not before it.
+Any retained-chain surface should grow after practice, not before it.
 
 ## Primary UX Flows
 
@@ -223,8 +223,7 @@ Design requirement:
 5. Student taps `Check answer` or `Use mark checklist`.
 6. The app shows which chain links are present and which are missing.
 7. Student rewrites using the chain.
-8. The app saves the chain to Thinking Memory.
-9. Student continues to the next transfer question.
+8. Student continues to the next transfer question.
 
 Design requirement:
 
@@ -246,10 +245,10 @@ Design requirement:
 - Avoid broad introductory copy.
 - The page should answer the query immediately.
 
-### Flow D: Saved Chain Review
+### Flow D: Retained Chain Review (Future)
 
-1. Student opens Thinking Memory.
-2. Student selects a saved chain.
+1. Student opens a future retained-chain review surface after practising.
+2. Student selects an earned chain.
 3. The app shows:
    - chain steps
    - questions already attempted
@@ -260,12 +259,12 @@ Design requirement:
 
 Design requirement:
 
-- Thinking Memory should not become a notes folder.
+- Retained-chain review should not become a notes folder.
 - It should be a retrieval and transfer surface.
 
 ### Flow E: Relearn Or Reset
 
-1. Student sees a saved chain with a recurring weakness.
+1. Student sees a retained chain with a recurring weakness.
 2. Student taps `Reset / relearn`.
 3. The app returns to the original concrete question and rebuilds the chain step by step.
 4. Student can then retry a transfer question.
@@ -396,15 +395,15 @@ Do not include:
 - Long generated paragraph as the main result
 - Internal product claims
 
-### Saved Chain Page
+### Retained Chain Review Page (Future)
 
 Purpose:
 
-- Confirm that the answer chain has entered Thinking Memory.
+- Review an earned answer chain after a rebuilt retained-chain surface exists.
 
 Required elements:
 
-- Saved chain title
+- Retained chain title
 - Chain steps
 - Used-in count
 - Common missing link
@@ -415,7 +414,7 @@ Required elements:
 
 Do not include:
 
-- Mixed-subject memory cards during the first Biology flow
+- Mixed-subject review cards during the first Biology flow
 - QR codes
 - Share mechanics
 - Generic progress dashboard
@@ -437,7 +436,7 @@ This board shows the first public journey:
 2. Answer chain page
 3. Constellation page
 
-### Mobile: Practice To Thinking Memory
+### Mobile: Practice Follow-Up
 
 ![Question Constellation Practice Memory](assets/product-flows/practice-memory.png)
 
@@ -445,7 +444,7 @@ This board shows the continuation:
 
 1. Attempt question 2
 2. Checklist result
-3. Saved chain in Thinking Memory
+3. Next transfer question
 
 ### Desktop: Public Question Learning
 
@@ -476,12 +475,12 @@ collapsed until the student chooses help or checks their answer.
 This mock shows feedback as chain-link evidence, not chat. Missing links lead into a
 rewrite task where the answer chain is visible as a repair scaffold.
 
-### Desktop: Thinking Memory
+### Desktop: Retained Chain Review (Archived Mock)
 
-![Desktop Thinking Memory mock](assets/product-flows/desktop-thinking-memory.png)
+![Desktop retained-chain review mock](assets/product-flows/desktop-thinking-memory.png)
 
-This mock shows Thinking Memory as a retrieval surface for saved answer chains after
-practice, with review and relearn actions tied back to concrete questions.
+This archived mock shows an older retained-chain review idea. The current app does
+not expose `/thinking-memory`; rebuild this surface before making it public again.
 
 ## Content Example
 
@@ -545,7 +544,6 @@ First version should include:
 - Common weak answers
 - Manual or generated authoring workflow
 - Optional answer checking behind an explicit action
-- Thinking Memory prototype for saved chains
 
 First version should not include:
 
@@ -559,7 +557,7 @@ First version should not include:
 
 ## Implementation Notes
 
-The current app already has the right conceptual model in `docs/product-methodology.md`: subject and concrete question first, then guided reasoning, pattern naming, transfer, and saved memory.
+The current app already has the right conceptual model in `docs/product-methodology.md`: subject and concrete question first, then guided reasoning, pattern naming, and transfer.
 
 The next implementation should tighten the product around public, indexable question and chain pages:
 
@@ -572,7 +570,7 @@ The next implementation should tighten the product around public, indexable ques
 Data should make answer chains first-class:
 
 ```text
-Question -> AnswerChain -> Constellation -> ThinkingMemoryEntry
+Question -> AnswerChain -> Constellation
 ```
 
 Each question should be traceable back to:

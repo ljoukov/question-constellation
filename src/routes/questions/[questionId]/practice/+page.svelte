@@ -8,7 +8,7 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import { CheckCircle2, CircleAlert, Save, Target, Zap } from '@lucide/svelte';
+	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -312,7 +312,10 @@
 
 		<div class="qc-real-layout qc-question-layout">
 			<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
-				<IconBackLink href={previousHref} label={`Back to ${isEnglish ? 'mark path' : 'answer chain'}`} />
+				<IconBackLink
+					href={previousHref}
+					label={`Back to ${isEnglish ? 'mark path' : 'answer chain'}`}
+				/>
 				<p class="qc-real-kicker">Guided practice</p>
 				<h1><MathText text={data.constellation.title} /></h1>
 				<div class="qc-practice-progress" aria-label="Practice progress">
@@ -506,11 +509,11 @@
 							<p class="qc-checked-answer">{answerText}</p>
 						{/if}
 						<div class="qc-practice-actions" aria-label="Next actions">
-							<a class="qc-action-button primary" href={resolve('/thinking-memory')}>
-								<Save size={18} aria-hidden="true" />
-								Memory
+							<a class="qc-action-button primary" href={nextQuestionHref}>
+								<ArrowRight size={18} aria-hidden="true" />
+								Next question
 							</a>
-							<a class="qc-action-button" href={nextQuestionHref}>Next question</a>
+							<a class="qc-action-button" href={previousHref}>Review chain</a>
 						</div>
 					</section>
 				{/if}

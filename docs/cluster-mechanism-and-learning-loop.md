@@ -7,7 +7,7 @@ The issue is not mainly visual. The issue is whether a cluster is deep enough to
 create the product loop:
 
 ```text
-attempt question -> diagnose missing link -> repair answer -> practise transfer -> save Thinking Memory
+attempt question -> diagnose missing link -> repair answer -> practise transfer -> retain chain for review
 ```
 
 If a cluster cannot support that loop, it may be a reasonable taxonomy but it is
@@ -83,10 +83,10 @@ The strongest ideas are:
    sequencing questions that reveal and repair thinking.
 2. The valuable unit is a learning episode, not just a correct/incorrect answer:
    first attempt, missing step, hint, repair, transfer, and later recurrence.
-3. Thinking Memory should store earned reusable patterns, not generic notes.
+3. Retained-chain review should store earned reusable patterns, not generic notes.
 4. A pattern should unlock many GCSE questions. The designer repeatedly pushed
    on whether the hierarchy should be `subject -> thinking move -> question
-   family`, not only `subject -> question family -> thinking move`.
+family`, not only `subject -> question family -> thinking move`.
 5. Practice should give fresh questions using the same logic, not simply repeat
    the examples shown on the cluster page.
 
@@ -95,7 +95,7 @@ That is why the generated images feel compelling. They show:
 - a named thinking chain,
 - grouped question examples by transfer distance,
 - "what stays the same",
-- a saved Thinking Memory object,
+- a retained-chain review object,
 - and a CTA to practise new questions using the same pattern.
 
 ## Extra Lens From The Pitch
@@ -145,7 +145,7 @@ For the blood-flow example:
 
 This also gives the product a measurable standard: one week later, can the
 student reconstruct the chain and apply it to a fresh question? If not, the
-cluster did not create Thinking Memory.
+cluster did not create a useful retained-chain object.
 
 ## The Real Failure Mode
 
@@ -188,7 +188,7 @@ reduced delivery/gas exchange -> less oxygen reaches cells -> less aerobic respi
 ```
 
 Both can support a common weak answer, a checklist, a transfer ladder, and a
-Thinking Memory entry.
+retained-chain review entry.
 
 ## Real Data Already Supports The Better Pattern
 
@@ -271,7 +271,7 @@ Example:
 reduced delivery -> less oxygen -> less aerobic respiration -> less energy -> symptom/effect
 ```
 
-This is what the learner can save into Thinking Memory.
+This is what the learner can retain for later review.
 
 ### Internal Chain Family Tags
 
@@ -391,7 +391,7 @@ extract exact chains
 -> assign transfer ladder
 -> add excluded-neighbor boundaries
 -> validate against mark-scheme evidence
--> publish as constellation / Thinking Memory candidate
+-> publish as constellation / retained-chain candidate
 -> keep broad families as internal tags
 ```
 
@@ -469,7 +469,7 @@ subject -> thinking move -> question families
 This matches the designer steering: one thinking move can unlock many GCSE
 questions.
 
-For Thinking Memory:
+For retained-chain review:
 
 ```text
 subject filter -> saved thinking moves -> questions used -> next transfer

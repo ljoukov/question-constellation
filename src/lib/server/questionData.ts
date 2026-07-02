@@ -114,19 +114,6 @@ export type Constellation = {
 	questionIds: string[];
 };
 
-export type MemoryEntry = {
-	id: string;
-	chainId: string;
-	savedFromQuestionId: string;
-	lastPractisedQuestionId: string;
-	nextReviewQuestionId: string;
-	mastery: 'new' | 'building' | 'secure';
-	lastSavedLabel: string;
-	reviewLabel: string;
-	attemptedQuestionIds: string[];
-	recurringMissingStepId: string;
-};
-
 export type NavigationData = {
 	primaryQuestionId: string;
 	primaryChainId: string;
@@ -162,7 +149,6 @@ export type PracticePageData = {
 	constellation: Constellation;
 	questions: Question[];
 	nextQuestion: Question;
-	memoryEntry: MemoryEntry;
 	englishPractice?: EnglishPracticeData | null;
 };
 
@@ -200,26 +186,6 @@ export type EnglishPracticeData = {
 	isExtended: boolean;
 	stepLineCount: number;
 	fullLineCount: number;
-};
-
-export type ThinkingMemoryPageData = {
-	entries: Array<
-		MemoryEntry & {
-			chain: AnswerChain;
-			savedFromQuestion: Question;
-			lastPractisedQuestion: Question;
-			nextReviewQuestion: Question;
-			recurringMissingStep: ChainStep;
-		}
-	>;
-	selected: MemoryEntry & {
-		chain: AnswerChain;
-		savedFromQuestion: Question;
-		lastPractisedQuestion: Question;
-		nextReviewQuestion: Question;
-		recurringMissingStep: ChainStep;
-	};
-	questions: Question[];
 };
 
 type QuestionRow = {
@@ -1260,18 +1226,6 @@ async function getEnglishPracticePageDataFromRow(row: QuestionRow): Promise<Prac
 		},
 		questions: [question],
 		nextQuestion: question,
-		memoryEntry: {
-			id: `memory-${chain.id}`,
-			chainId: chain.id,
-			savedFromQuestionId: question.id,
-			lastPractisedQuestionId: question.id,
-			nextReviewQuestionId: question.id,
-			mastery: 'building',
-			lastSavedLabel: 'Ready to save after checking',
-			reviewLabel: 'Review this question',
-			attemptedQuestionIds: [question.id],
-			recurringMissingStepId: criteria[1]?.id ?? criteria[0]?.id ?? chain.id
-		},
 		englishPractice
 	};
 }
@@ -1509,90 +1463,6 @@ export async function getPracticePageData(questionId: string): Promise<PracticeP
 		chain: publicData.chain,
 		constellation: publicData.constellation,
 		questions,
-		nextQuestion,
-		memoryEntry: {
-			id: `memory-${publicData.chain.id}`,
-			chainId: publicData.chain.id,
-			savedFromQuestionId: publicData.question.id,
-			lastPractisedQuestionId: publicData.question.id,
-			nextReviewQuestionId: nextQuestion.id,
-			mastery: 'building',
-			lastSavedLabel: 'Ready to save after repair',
-			reviewLabel: 'Review next',
-			attemptedQuestionIds: [publicData.question.id],
-			recurringMissingStepId: publicData.chain.steps[1]?.id ?? publicData.chain.steps[0]?.id
-		}
-	};
-}
-
-async function hydrateMemoryEntry(entry: MemoryEntry) {
-	const chain = await getChain(entry.chainId);
-	const recurringMissingStep =
-		chain.steps.find((step) => step.id === entry.recurringMissingStepId) ?? chain.steps[0];
-
-	return {
-		...entry,
-		chain,
-		savedFromQuestion: (await getPublicQuestionData(entry.savedFromQuestionId)).question,
-		lastPractisedQuestion: (await getPublicQuestionData(entry.lastPractisedQuestionId)).question,
-		nextReviewQuestion: (await getPublicQuestionData(entry.nextReviewQuestionId)).question,
-		recurringMissingStep
-	};
-}
-
-export async function getThinkingMemoryPageData(): Promise<ThinkingMemoryPageData> {
-	const rows = await queryRows<{
-		chain_id: string;
-		start_question_id: string;
-		next_question_id: string;
-		recurring_step_id: string;
-	}>(
-		`SELECT ac.id AS chain_id,
-		        MIN(CASE WHEN qac.transfer_distance = 'start' THEN qac.question_id ELSE NULL END) AS start_question_id,
-		        MIN(CASE WHEN qac.transfer_distance != 'start' THEN qac.question_id ELSE NULL END) AS next_question_id,
-		        MIN(acs.id) AS recurring_step_id
-		 FROM answer_chains ac
-		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
-		 JOIN answer_chain_steps acs ON acs.answer_chain_id = ac.id
-		 JOIN questions q ON q.id = qac.question_id
-		 WHERE ac.needs_human_review = 0
-		   AND ac.status = 'published'
-		   AND qac.needs_human_review = 0
-		   AND q.needs_human_review = 0
-		   AND q.status = 'published'
-		 GROUP BY ac.id
-		 ORDER BY COALESCE(ac.confidence, 0) DESC, ac.id
-		 LIMIT 8`
-	);
-
-	const entries = await Promise.all(
-		rows
-			.filter((row) => row.start_question_id)
-			.map((row, index): MemoryEntry => {
-				const nextQuestionId = row.next_question_id ?? row.start_question_id;
-				return {
-					id: `memory-${row.chain_id}`,
-					chainId: row.chain_id,
-					savedFromQuestionId: row.start_question_id,
-					lastPractisedQuestionId: row.start_question_id,
-					nextReviewQuestionId: nextQuestionId,
-					mastery: index % 3 === 0 ? 'building' : index % 3 === 1 ? 'new' : 'secure',
-					lastSavedLabel: 'Available chain',
-					reviewLabel: index === 0 ? 'Review today' : 'Practice transfer',
-					attemptedQuestionIds: [row.start_question_id],
-					recurringMissingStepId: row.recurring_step_id
-				};
-			})
-			.map(hydrateMemoryEntry)
-	);
-
-	if (entries.length === 0) {
-		throw new Error('No answer chains have been imported into D1.');
-	}
-
-	return {
-		entries,
-		selected: entries[0],
-		questions: entries.map((entry) => entry.nextReviewQuestion)
+		nextQuestion
 	};
 }

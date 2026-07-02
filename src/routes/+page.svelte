@@ -7,7 +7,6 @@
 		BookOpenCheck,
 		CheckCircle2,
 		ClipboardCheck,
-		LibraryBig,
 		Network,
 		Search,
 		Sparkles
@@ -19,7 +18,7 @@
 	const chainsHref = resolve('/chains');
 	const pastPapersHref = resolve('/past-papers/gcse');
 	const englishHref = resolve('/english');
-	const memoryHref = resolve('/thinking-memory');
+	const signInHref = resolve('/auth/start');
 	const featuredChain = $derived(data.featuredChains[0] ?? null);
 	const featuredQuestion = $derived(featuredChain?.questions[0] ?? null);
 	const featuredChainHref = $derived(
@@ -36,10 +35,9 @@
 	const subjectCountLabel = $derived(formatCount(data.stats.subjectCount));
 
 	const navLinks = [
-		{ href: chainsHref, label: 'Question chains' },
-		{ href: pastPapersHref, label: 'Past papers' },
+		{ href: chainsHref, label: 'Questions' },
 		{ href: englishHref, label: 'English' },
-		{ href: memoryHref, label: 'Thinking Memory' }
+		{ href: pastPapersHref, label: 'Past papers' }
 	];
 
 	const coverage = [
@@ -66,7 +64,7 @@
 		{
 			question: 'Can students use it without an account?',
 			answer:
-				'Yes. Public question, answer-chain, constellation, practice and Thinking Memory preview routes are usable without signing in.'
+				'Yes. Public question, answer-chain, constellation and practice routes are usable without signing in.'
 		},
 		{
 			question: 'What makes an answer chain different from a topic?',
@@ -118,7 +116,7 @@
 				<a href={link.href}>{link.label}</a>
 			{/each}
 		</nav>
-		<a class="qc-home-nav-action" href={chainsHref}>Browse chains</a>
+		<a class="qc-home-nav-action" href={signInHref}>Sign In For Free</a>
 	</header>
 
 	<section class="qc-home-hero" aria-labelledby="home-title">
@@ -190,9 +188,9 @@
 				<p>Near, stretch and transfer questions make the same chain work in new contexts.</p>
 			</article>
 			<article>
-				<LibraryBig size={21} aria-hidden="true" />
-				<h3>Save it to Thinking Memory</h3>
-				<p>Earned chains become a review library after practice, not a starting taxonomy.</p>
+				<BookOpenCheck size={21} aria-hidden="true" />
+				<h3>Check and repair the answer</h3>
+				<p>The mark checklist shows which links are present, missing, or need a rewrite.</p>
 			</article>
 		</div>
 	</section>
@@ -217,7 +215,7 @@
 				alt="Answer chain reveal page showing an exam question and reusable reasoning steps."
 				width="1040"
 				height="585"
-				loading="lazy"
+				loading="eager"
 				decoding="async"
 			/>
 			<img
@@ -225,7 +223,7 @@
 				alt="Practice page showing a mark checklist and answer rewrite flow."
 				width="1040"
 				height="585"
-				loading="lazy"
+				loading="eager"
 				decoding="async"
 			/>
 		</div>
@@ -297,7 +295,7 @@
 			</p>
 			<p>
 				<Network size={20} aria-hidden="true" />
-				Thinking Memory is a post-practice library of earned chains.
+				Question, chain, constellation and practice pages stay public.
 			</p>
 		</div>
 	</section>
@@ -322,7 +320,7 @@
 		<p>Start from a real question, reveal the chain, then practise transfer.</p>
 		<div class="qc-home-actions compact" aria-label="Footer actions">
 			<a class="qc-home-button primary" href={chainsHref}>Browse question chains</a>
-			<a class="qc-home-button secondary" href={memoryHref}>Preview Thinking Memory</a>
+			<a class="qc-home-button secondary" href={pastPapersHref}>Download past papers</a>
 		</div>
 	</section>
 </main>

@@ -57,6 +57,9 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
 	];
+	const subjectOptions = $derived(
+		subject && !subjects.includes(subject) ? [subject, ...subjects] : subjects
+	);
 
 	function clearAppearanceCloseTimer() {
 		if (!appearanceCloseTimer) return;
@@ -210,7 +213,7 @@
 		<label class="qc-topbar-subject">
 			<span class="sr-only">Subject</span>
 			<select aria-label="Subject" value={subject} onchange={updateSubject}>
-				{#each subjects as option (option)}
+				{#each subjectOptions as option (option)}
 					<option value={option}>{option}</option>
 				{/each}
 			</select>

@@ -9,8 +9,7 @@ export type RouteLoadingContentType =
 	| 'practice'
 	| 'question'
 	| 'question-bank'
-	| 'recall-practice'
-	| 'thinking-memory';
+	| 'recall-practice';
 
 const routeLoadingMessages = {
 	default: 'Loading...',
@@ -23,8 +22,7 @@ const routeLoadingMessages = {
 	practice: 'Loading practice...',
 	question: 'Loading question...',
 	'question-bank': 'Loading question bank...',
-	'recall-practice': 'Loading recall practice...',
-	'thinking-memory': 'Loading Thinking Memory...'
+	'recall-practice': 'Loading recall practice...'
 } satisfies Record<RouteLoadingContentType, string>;
 
 export function routeLoadingMessageFor(contentType: RouteLoadingContentType = 'default') {
@@ -42,7 +40,6 @@ export function routeLoadingContentTypeForRoute(
 	if (routeId === '/') return 'question-bank';
 	if (routeId === '/english') return 'english-questions';
 	if (routeId === '/recall') return 'recall-practice';
-	if (routeId === '/thinking-memory') return 'thinking-memory';
 	if (routeId.startsWith('/past-papers/gcse')) return 'past-papers';
 
 	if (routeId === '/questions/[questionId]') return 'question';
@@ -69,7 +66,6 @@ function pathContentType(pathname: string): RouteLoadingContentType {
 	if (pathname === '/') return 'question-bank';
 	if (pathname === '/english') return 'english-questions';
 	if (pathname === '/recall') return 'recall-practice';
-	if (pathname === '/thinking-memory') return 'thinking-memory';
 	if (pathname.startsWith('/past-papers/gcse')) return 'past-papers';
 	if (pathname.startsWith('/constellations/')) return 'constellation';
 	if (pathname.startsWith('/chains/')) return 'answer-chain';

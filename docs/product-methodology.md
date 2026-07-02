@@ -12,13 +12,13 @@ For the detailed product flows, acquisition paths, screen specifications, and cu
 
 3. A constellation is a curated set of questions that look different but use the same answer chain. Nearby questions should be close matches; stretch and exam-transfer questions should make the same hidden logic work in less obvious contexts.
 
-4. The answer chain should feel earned. The learner starts with a real question, sees what the weak answer misses, repairs the missing links, and only then saves the chain into Thinking Memory.
+4. The answer chain should feel earned. The learner starts with a real question, sees what the weak answer misses, repairs the missing links, and then practises transfer through related questions.
 
-5. Thinking Memory is a post-practice retrieval surface. It should contain saved answer chains, recurring missing links, and review actions. It is not the main first-use taxonomy.
+5. Do not expose the old `/thinking-memory` surface. Retained-chain review may return later, but it needs a fresh post-practice design and should not be a main first-use taxonomy or a standalone old UI.
 
 6. Runtime model use should be optional and lightweight. Curated questions, model answers, mark checklists, common weak answers, and static answer-chain structure should carry most of the product value. Model-based checking belongs behind explicit actions like `Check answer`.
 
-7. The core loop is: public question -> answer chain -> constellation -> practice -> saved memory -> transfer.
+7. The core loop is: public question -> answer chain -> constellation -> practice -> transfer.
 
 ## Product Implications
 
@@ -28,6 +28,6 @@ For the detailed product flows, acquisition paths, screen specifications, and cu
 - Do not make a full planner or progress dashboard the first product bet.
 - Do not mix unrelated subjects inside the first-use flow.
 - Use subjects and GCSE topics as the learner's familiar entry path, but make answer chains the distinctive structure.
-- Reveal and save chains after practice or guided repair, not before.
+- Reveal chains after practice or guided repair, not before.
 - Keep transfer visible through `start`, `near`, `stretch`, and `exam transfer` question labels.
-- Keep Thinking Memory as one library of earned chains, with subject filters only as navigation help.
+- Keep retained-chain review out of the public app until it is rebuilt around earned practice history.

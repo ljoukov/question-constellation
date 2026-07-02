@@ -92,8 +92,7 @@ const practiceData: PracticePageData = {
 		questionIds: ['8464p1h-jun22-01-4']
 	},
 	questions: [],
-	nextQuestion: {} as PracticePageData['nextQuestion'],
-	memoryEntry: {} as PracticePageData['memoryEntry']
+	nextQuestion: {} as PracticePageData['nextQuestion']
 };
 
 const englishPracticeData: PracticePageData = {

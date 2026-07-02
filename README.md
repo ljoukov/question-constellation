@@ -1,6 +1,6 @@
 # Question Constellation
 
-SvelteKit app for exploring GCSE question families and reusable Thinking Memory patterns.
+SvelteKit app for exploring GCSE question families and reusable answer chains.
 
 ## Product Docs
 

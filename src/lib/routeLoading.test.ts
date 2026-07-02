@@ -32,9 +32,6 @@ describe('route loading copy', () => {
 		expect(routeLoadingMessageFor(routeLoadingContentTypeForRoute('/english'))).toBe(
 			'Loading English questions...'
 		);
-		expect(routeLoadingMessageFor(routeLoadingContentTypeForRoute('/thinking-memory'))).toBe(
-			'Loading Thinking Memory...'
-		);
 		expect(routeLoadingMessageFor(routeLoadingContentTypeForRoute('/recall'))).toBe(
 			'Loading recall practice...'
 		);
