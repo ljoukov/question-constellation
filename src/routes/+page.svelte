@@ -122,7 +122,17 @@
 	<section class="qc-home-hero" aria-labelledby="home-title">
 		<div class="qc-home-hero-media" aria-hidden="true">
 			<img
+				class="qc-theme-image qc-theme-image-light"
 				src="/product/question-flow.webp"
+				alt=""
+				width="1280"
+				height="720"
+				loading="eager"
+				decoding="async"
+			/>
+			<img
+				class="qc-theme-image qc-theme-image-dark"
+				src="/product/question-flow-dark.webp"
 				alt=""
 				width="1280"
 				height="720"
@@ -211,6 +221,7 @@
 		</div>
 		<div class="qc-home-image-stack">
 			<img
+				class="qc-theme-image qc-theme-image-light qc-home-image-primary"
 				src="/product/answer-chain-reveal.webp"
 				alt="Answer chain reveal page showing an exam question and reusable reasoning steps."
 				width="1040"
@@ -219,10 +230,29 @@
 				decoding="async"
 			/>
 			<img
-				src="/product/checklist-rewrite.webp"
-				alt="Practice page showing a mark checklist and answer rewrite flow."
+				class="qc-theme-image qc-theme-image-dark qc-home-image-primary"
+				src="/product/answer-chain-reveal-dark.webp"
+				alt="Answer chain reveal page showing an exam question and reusable reasoning steps."
 				width="1040"
 				height="585"
+				loading="eager"
+				decoding="async"
+			/>
+			<img
+				class="qc-theme-image qc-theme-image-light qc-home-image-secondary"
+				src="/product/checklist-rewrite.webp"
+				alt="Practice page showing a mark checklist and answer rewrite flow."
+				width="1440"
+				height="960"
+				loading="eager"
+				decoding="async"
+			/>
+			<img
+				class="qc-theme-image qc-theme-image-dark qc-home-image-secondary"
+				src="/product/checklist-rewrite-dark.webp"
+				alt="Practice page showing a mark checklist and answer rewrite flow."
+				width="1440"
+				height="960"
 				loading="eager"
 				decoding="async"
 			/>

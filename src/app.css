@@ -9369,3 +9369,52 @@ html[data-theme='dark'] .app-shell {
 		font-size: 0.78rem;
 	}
 }
+
+.qc-theme-image.qc-theme-image-dark {
+	display: none;
+}
+
+.qc-home-image-stack img.qc-theme-image {
+	height: auto;
+	aspect-ratio: auto;
+	object-fit: contain;
+}
+
+.qc-home-image-stack img.qc-home-image-primary {
+	width: 100%;
+	margin-top: 0;
+	margin-left: 0;
+	border-color: var(--home-ink);
+}
+
+.qc-home-image-stack img.qc-home-image-secondary {
+	width: 76%;
+	margin-top: -1.8rem;
+	margin-left: auto;
+	border-color: var(--home-blue);
+}
+
+:root[data-theme='dark'] .qc-theme-image.qc-theme-image-light {
+	display: none;
+}
+
+:root[data-theme='dark'] .qc-theme-image.qc-theme-image-dark {
+	display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) .qc-theme-image.qc-theme-image-light {
+		display: none;
+	}
+
+	:root:not([data-theme='light']) .qc-theme-image.qc-theme-image-dark {
+		display: block;
+	}
+}
+
+@media (max-width: 720px) {
+	.qc-home-image-stack img.qc-home-image-secondary {
+		width: 100%;
+		margin-top: 0;
+	}
+}
