@@ -31,6 +31,8 @@
 		'Chemistry',
 		'Physics',
 		'Computer Science',
+		'Geography',
+		'History',
 		'English'
 	];
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);

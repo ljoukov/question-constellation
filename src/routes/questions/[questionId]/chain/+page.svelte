@@ -31,6 +31,8 @@
 		'Chemistry',
 		'Physics',
 		'Computer Science',
+		'Geography',
+		'History',
 		'English'
 	];
 	const chainSteps = $derived(data.chain.steps.map((step) => step.short));

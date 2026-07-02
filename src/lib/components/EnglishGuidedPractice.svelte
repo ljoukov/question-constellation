@@ -110,7 +110,9 @@
 		'Biology',
 		'Chemistry',
 		'Physics',
-		'Computer Science'
+		'Computer Science',
+		'Geography',
+		'History'
 	];
 
 	let loadedQuestionId = $state('');
