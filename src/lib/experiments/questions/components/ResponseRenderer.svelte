@@ -29,6 +29,7 @@
 
 	let textAnswer = $state('');
 	let labeledAnswers = $state<Record<string, string>>({});
+	let labeledChoice = $state<number | null>(null);
 	let numberAnswer = $state('');
 	let selectedChoices = $state<number[]>([]);
 	let selectedChoiceTableRow = $state<number | null>(null);
@@ -47,6 +48,28 @@
 		}
 		if (response.kind === 'number-line' && answer !== numberAnswer) {
 			numberAnswer = answer;
+		}
+		if (response.kind === 'labeled-lines') {
+			const parsed = answerMap(answer);
+			const nextAnswers = Object.fromEntries(
+				labeledFields().map((field) => [
+					field.label,
+					parsed.get(normalizedAnswer(field.label)) ?? ''
+				])
+			);
+			if (JSON.stringify(nextAnswers) !== JSON.stringify(labeledAnswers)) {
+				labeledAnswers = nextAnswers;
+			}
+			const choiceOptions = response.choiceOptions ?? [];
+			const selectedChoiceText = parsed.get('choice') ?? parsed.get('selected') ?? '';
+			const nextChoice =
+				selectedChoiceText.length === 0
+					? null
+					: choiceOptions.findIndex((option) => option.trim() === selectedChoiceText.trim());
+			const normalizedChoice = nextChoice === -1 ? null : nextChoice;
+			if (labeledChoice !== normalizedChoice) labeledChoice = normalizedChoice;
+		} else if (labeledChoice !== null) {
+			labeledChoice = null;
 		}
 		if (response.kind === 'choice') {
 			const allowedCount = choiceMaxSelections();
@@ -84,12 +107,17 @@
 	}
 
 	function serializeLabeledAnswers(nextAnswers = labeledAnswers) {
-		return response.kind === 'labeled-lines'
-			? response.labels
-					.map((label) => `${label}: ${nextAnswers[label] ?? ''}`.trim())
-					.filter(Boolean)
-					.join('\n')
-			: '';
+		if (response.kind !== 'labeled-lines') return '';
+		const choiceAnswer =
+			labeledChoice !== null && response.choiceOptions?.[labeledChoice]
+				? [`Choice: ${response.choiceOptions[labeledChoice]}`]
+				: [];
+		return [
+			...choiceAnswer,
+			...labeledFields()
+				.map((field) => `${field.label}: ${nextAnswers[field.label] ?? ''}`.trim())
+				.filter(Boolean)
+		].join('\n');
 	}
 
 	function serializeMatchingAnswers(nextAnswers = matchingAnswers) {
@@ -150,6 +178,46 @@
 		const nextAnswers = { ...labeledAnswers, [label]: value };
 		labeledAnswers = nextAnswers;
 		emitAnswer(serializeLabeledAnswers(nextAnswers));
+	}
+
+	function labeledFields() {
+		if (response.kind !== 'labeled-lines') return [];
+		if (response.fields?.length) {
+			return response.fields
+				.filter((field) => field.label.trim().length > 0)
+				.map((field) => ({
+					label: field.label,
+					lineCount: field.lineCount ?? response.lineCount
+				}));
+		}
+		return response.labels.map((label) => ({ label, lineCount: response.lineCount }));
+	}
+
+	function setLabeledChoice(index: number) {
+		if (response.kind !== 'labeled-lines') return;
+		labeledChoice = labeledChoice === index ? null : index;
+		emitAnswer(serializeLabeledAnswers());
+	}
+
+	function answerMap(value: string) {
+		return new Map(
+			value
+				.split(/\r?\n/)
+				.map((line) => {
+					const [label, ...rest] = line.split(':');
+					const key = normalizedAnswer(label ?? '');
+					if (!key) return null;
+					return [key, rest.join(':').trim()] as const;
+				})
+				.filter((entry): entry is readonly [string, string] => Boolean(entry))
+		);
+	}
+
+	function normalizedAnswer(value: string) {
+		return value
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, ' ')
+			.trim();
 	}
 
 	function toggleChoice(index: number) {
@@ -403,27 +471,56 @@
 	></textarea>
 {:else if response.kind === 'labeled-lines'}
 	<div class="labeled-lines">
-		{#each response.labels as label (label)}
+		{#if response.choiceOptions?.length}
+			<div
+				class="choice-list inline-choice-list"
+				class:horizontal={response.choiceLayout === 'horizontal'}
+				role="radiogroup"
+				aria-label={response.choicePrompt ?? 'Ring one option'}
+			>
+				{#if response.choicePrompt}
+					<p class="inline-choice-prompt">{response.choicePrompt}</p>
+				{/if}
+				{#each response.choiceOptions as option, index (`${option}-${index}`)}
+					{@const selected = labeledChoice === index}
+					<button
+						type="button"
+						class="choice-row"
+						class:selected
+						role="radio"
+						aria-checked={selected}
+						onclick={() => setLabeledChoice(index)}
+					>
+						<span class="choice-label"><MathText text={option} /></span>
+						<span class="tick-cell" aria-hidden="true">
+							<span class="tick-mark">{selected ? '✓' : ''}</span>
+						</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
+		{#each labeledFields() as field (field.label)}
+			{@const fieldLineCount = field.lineCount ?? response.lineCount}
 			<label
 				class="labeled-line"
-				class:multiline={Boolean(response.lineCount && response.lineCount > 1)}
+				class:multiline={Boolean(fieldLineCount && fieldLineCount > 1)}
 			>
-				<span>{label}</span>
-				{#if response.lineCount && response.lineCount > 1}
+				<span>{field.label}</span>
+				{#if fieldLineCount && fieldLineCount > 1}
 					<textarea
 						class="lined-textarea labeled-textarea"
-						rows={response.lineCount}
-						style={`--answer-line-count: ${response.lineCount}`}
-						value={labeledAnswers[label] ?? ''}
-						aria-label={`${label} answer`}
-						oninput={(event) => setLabeledAnswer(label, event.currentTarget.value)}
+						rows={fieldLineCount}
+						style={`--answer-line-count: ${fieldLineCount}`}
+						value={labeledAnswers[field.label] ?? ''}
+						aria-label={`${field.label} answer`}
+						oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
 					></textarea>
 				{:else}
 					<input
 						class="line-input"
-						value={labeledAnswers[label] ?? ''}
-						aria-label={`${label} answer`}
-						oninput={(event) => setLabeledAnswer(label, event.currentTarget.value)}
+						value={labeledAnswers[field.label] ?? ''}
+						aria-label={`${field.label} answer`}
+						oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
 					/>
 				{/if}
 			</label>
@@ -772,6 +869,15 @@
 		display: grid;
 		gap: 0.55rem;
 		margin: 0.85rem 0 0.2rem;
+	}
+
+	.inline-choice-list {
+		margin-top: 0;
+	}
+
+	.inline-choice-prompt {
+		margin: 0 0 0.1rem;
+		font-weight: 600;
 	}
 
 	.choice-list.horizontal {

@@ -1093,6 +1093,34 @@ the new 2023 XOR truth-table question. Only after that check did the write use
 `--allow-shared-chain-updates`. The deployed route crawl confirmed there were no chains linked to
 multiple papers but showing only one public question.
 
+Computer Science Paper 2 June 2022 follow-up, 2026-07-02:
+
+| Phase                              | Artifact                                                                                                                                                                                        | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction               | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/raw/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json`             |  879.575s |            54 |              1 |           2,742,139 |    2,447,872 |                 41,778 |            5,480 | 45 questions, 90 marks, deterministic validation passed; one harmless `identify` race before a crop existed                                                            |
+| Independent Codex extraction judge | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                                |  243.256s |            33 |              0 |           1,211,551 |      934,912 |                 10,466 |            2,597 | pass, score 1.00, 45 refs checked, 0 required repairs                                                                                                                   |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/chain-reconciled/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json` |  559.805s |            31 |              0 |           1,050,747 |      932,352 |                 28,940 |           12,521 | 9 reused, 34 created, 2 updated, 0 review; deterministic chain validation passed; legacy chain style judge skipped                                                      |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-strict-media-fix-audit.json`                                          |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 45/45 kept, 0 audit errors/warnings; D1 dry-run passed with 595 planned SQL statements and `safeToReplace`; legacy per-question solvability not run by request         |
+
+This run exposed two importer problems that would have made a correct Codex extraction look bad in
+the app or in import accounting:
+
+- `labeled-lines` now preserves per-field line counts and fixed-response answer keys through
+  normalization, D1 import, server data loading, grading parsing, and the Svelte response renderer.
+  This is needed for mixed response areas such as Q01.2's four working lines plus one hexadecimal
+  answer line and Q04.1's separate three-line answer areas for system software and application
+  software.
+- Referenced `Figure`/`Table` warnings now accept learner-visible structured source data blocks
+  when the source figure is a string/table rather than a diagram. This keeps CS 2022 Q17.2 and
+  Q18.1/Q18.3/Q18.4/Q18.5 in the strict import-ready subset while still requiring real image assets
+  for diagram or label-on-image response surfaces such as Q17.3.
+
+The visible-PDF source identity audit for the AQA History, Geography, and Computer Science manifest
+now blocks manifest rows whose visible PDF front matter disagrees with the manifest. The audit
+artifact is `tmp/aqa-humanities-cs-source-identity-audit.json`: 100 rows checked, 61 passed, 39
+failed with `visible_series_mismatch` (2 Computer Science, 6 Geography, 31 History). The
+identity-safe subset is `tmp/aqa-humanities-cs-identity-safe-manifest.json`.
+
 Use phase-specific model and reasoning overrides when benchmarking. Codex extraction defaults to
 `gpt-5.5` with high reasoning for quality; answer-chain reconciliation defaults to `gpt-5.5` with
 xhigh reasoning. Do not optimize cost ahead of extraction quality. Record wall time,

@@ -450,6 +450,7 @@ requireIncludes(
 		'mark_scheme_under_granular_any_n',
 		'mark_checklist_overrequires_alternatives',
 		'known_response_line_count_mismatch',
+		'labeled_lines_missing_labels',
 		'known_mark_scheme_allowance_missing',
 		'known_survey_context_missing',
 		'known_graph_plotting_mark_scheme_mismatch',
@@ -457,6 +458,8 @@ requireIncludes(
 		'known_self_contained_answer_leak',
 		'known_figure_crop_incomplete',
 		'known_figure_crop_prompt_contamination',
+		'known_ring_choice_flattened',
+		'known_algorithm_context_missing',
 		'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
 		"'07.2': 8",
 		"'08.2': 12",
@@ -526,6 +529,8 @@ requireIncludes(
 		'For Computer Science code, SQL, pseudo-code',
 		'carry that earlier dependency forward',
 		'structured code/table blocks over extra screenshot assets',
+		'response.choiceOptions',
+		'Ring your chosen method',
 		'response space continues on the next page',
 		'For labeled written responses',
 		'Known fragile checks for Computer Science 2024 Paper 2',
@@ -551,9 +556,17 @@ requireIncludes(
 		'For Q14.5, render the DELETE FROM / WHERE SQL skeleton exactly once',
 		'If an interactive response control already renders a SQL/code skeleton with blanks',
 		'pageCount: pdfPageCount',
+		'01.1 = 2',
+		'01.2 = 5',
 		'02.2 = 5',
+		'13.1 = 4',
 		'learner label bank must be AND, XOR, NOT',
 		'08.2 = 6 total',
+		'01.2 has four visible working lines plus a final keyed hexadecimal answer field',
+		'System software = 3 lines and Application software = 3 lines',
+		'02.3 = 2',
+		'04.2 = 2 lines for each of the four numbered function fields',
+		'15.3 = 3 lines for each of the two numbered reason fields',
 		'complete model answer must be 11010101',
 		'Do not put solved or derived facts into learner-visible prompts',
 		'Figure 5 on page 12 should include the title',
@@ -1122,6 +1135,10 @@ writeFileSync(
 								['Temperature', 'Test 1', 'Test 2'],
 								['45', '1.9', '14.2']
 							]
+						},
+						{
+							kind: 'formula',
+							text: '\\overline{A} + B'
 						}
 					],
 					markSchemeItems: [{ itemType: 'mark', text: 'Correct mean.' }],
@@ -1163,6 +1180,19 @@ if (!propagatedTable || propagatedTable.rows?.length !== 2) {
 		'Codex helper normalization did not propagate shared parent table blocks.',
 		helperNormalized
 	);
+}
+if (propagatedTable.rows?.[0]?.[0]?.text !== 'Temperature') {
+	fail('Codex helper normalization did not canonicalize structured-table string cells.', {
+		propagatedTable
+	});
+}
+const normalizedFormulaBlock = helperNormalized.questions
+	.find((question) => question.sourceQuestionRef === '01.1')
+	?.stemBlocks?.find((block) => block.text === '\\overline{A} + B');
+if (normalizedFormulaBlock?.kind !== 'equation') {
+	fail('Codex helper normalization did not canonicalize formula blocks to equation blocks.', {
+		normalizedFormulaBlock
+	});
 }
 
 const helperFragmentsDir = path.join(rootDir, 'tmp/test-codex-helper-fragments');
@@ -1290,8 +1320,8 @@ writeFileSync(
 	invalidImageLabelExtractionPath,
 	JSON.stringify(
 		{
-			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
-			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			sourceDocument: { id: 'test-paper', docType: 'question_paper', pageCount: 6 },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 2 },
 			questions: [
 				{
 					sourceQuestionRef: '01.1',
@@ -1337,8 +1367,8 @@ writeFileSync(
 	duplicateRenderTextPath,
 	JSON.stringify(
 		{
-			sourceDocument: { id: 'test-paper', docType: 'question_paper' },
-			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			sourceDocument: { id: 'test-paper', docType: 'question_paper', pageCount: 6 },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 2 },
 			questions: [
 				{
 					sourceQuestionRef: '01.2',
@@ -1416,6 +1446,46 @@ if (!missingMediaFailure.includes('referenced_media_missing_asset')) {
 		missingMediaFailure
 	});
 }
+
+const structuredFigureMediaPath = path.join(helperNormalizeDir, 'structured-figure-media.json');
+writeFileSync(
+	structuredFigureMediaPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper', pageCount: 6 },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 2 },
+			questions: [
+				{
+					sourceQuestionRef: '01.3',
+					promptText: 'Use Figure 1 to describe the pattern.',
+					marks: 1,
+					pageStart: 5,
+					pageEnd: 5,
+					stemBlocks: [
+						{
+							kind: 'structured-table',
+							label: 'Figure 1',
+							rows: [[{ text: 'Year 1: 12' }], [{ text: 'Year 2: 18' }]]
+						}
+					],
+					promptBlocks: [{ kind: 'paragraph', text: 'Use Figure 1 to describe the pattern.' }],
+					response: { kind: 'lines', count: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Describes the increase.' }],
+					markChecklist: [{ text: 'Describes the increase.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'The value increases from Year 1 to Year 2.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${structuredFigureMediaPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
 
 const missingEquationBlankKeyPath = path.join(
 	helperNormalizeDir,
@@ -2301,6 +2371,575 @@ for (const expectedFailure of [
 				computerScienceCanaryFailure
 			}
 		);
+	}
+}
+
+const computerScienceNewGuardrailsPath = path.join(
+	helperNormalizeDir,
+	'computer-science-new-guardrails.json'
+);
+writeFileSync(
+	computerScienceNewGuardrailsPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '14.1',
+					promptText: 'Describe what is meant by a validation check.',
+					selfContainedPromptText: 'Describe what is meant by a validation check.',
+					marks: 1,
+					pageStart: 35,
+					pageEnd: 35,
+					response: { kind: 'lines', lineCount: 2 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Checks data is sensible.', marks: 1 }],
+					markChecklist: [{ text: 'Defines validation.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScienceNewGuardrailsFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScienceNewGuardrailsPath}`,
+		'--expected-marks=1',
+		'--expected-questions=1'
+	]
+);
+if (!computerScienceNewGuardrailsFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject new CS Paper 1A line-count guardrail.', {
+		computerScienceNewGuardrailsFailure
+	});
+}
+
+const computerScience2024Paper1ASlidingContextPath = path.join(
+	helperNormalizeDir,
+	'computer-science-2024-paper-1a-sliding-context.json'
+);
+writeFileSync(
+	computerScience2024Paper1ASlidingContextPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '12.5',
+					promptText: 'State the purpose of the program.',
+					selfContainedPromptText:
+						'The program loops through positions and checks getTile(i, j) == 0. State the purpose of the program.',
+					marks: 1,
+					pageStart: 28,
+					pageEnd: 28,
+					response: { kind: 'lines', lineCount: 2 },
+					stemBlocks: [{ kind: 'code', label: 'Figure 16', text: 'if (getTile(i, j) == 0)' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'Finds the blank tile.', marks: 1 }],
+					markChecklist: [{ text: 'States that it finds the blank tile.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2024Paper1ASlidingContextFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2024Paper1ASlidingContextPath}`,
+		'--expected-marks=1',
+		'--expected-questions=1'
+	]
+);
+for (const expectedFailure of [
+	'known_sliding_puzzle_context_missing',
+	'known_sliding_puzzle_board_missing'
+]) {
+	if (!computerScience2024Paper1ASlidingContextFailure.includes(expectedFailure)) {
+		fail(`Codex helper validation did not reject CS 2024 Paper 1A guardrail: ${expectedFailure}`, {
+			computerScience2024Paper1ASlidingContextFailure
+		});
+	}
+}
+
+const computerScience2021Paper2LinePath = path.join(
+	helperNormalizeDir,
+	'computer-science-2021-paper-2-line-count.json'
+);
+writeFileSync(
+	computerScience2021Paper2LinePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2021-november-paper-2-written-assessment-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.3',
+					promptText: 'Explain one reason for using hexadecimal.',
+					selfContainedPromptText: 'Explain one reason for using hexadecimal.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: { kind: 'lines', lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: 'More compact than binary.', marks: 1 }],
+					markChecklist: [{ text: 'Gives a valid reason.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '13.3',
+					promptText: 'Explain how one of these security methods works.',
+					selfContainedPromptText:
+						'Ring your chosen security method: Authentication or MAC address filtering. Explain how it works.',
+					marks: 2,
+					pageStart: 13,
+					pageEnd: 13,
+					response: {
+						kind: 'labeled-lines',
+						fields: [
+							{ label: 'Chosen security method', lineCount: 1 },
+							{ label: 'How it works', lineCount: 3 }
+						]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'Explains one method.', marks: 2 }],
+					markChecklist: [{ text: 'Explains method.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2021Paper2LineFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2021Paper2LinePath}`,
+		'--expected-marks=3',
+		'--expected-questions=2'
+	]
+);
+if (!computerScience2021Paper2LineFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject CS 2021 Paper 2 line-count guardrail.', {
+		computerScience2021Paper2LineFailure
+	});
+}
+if (!computerScience2021Paper2LineFailure.includes('known_ring_choice_flattened')) {
+	fail('Codex helper validation did not reject CS 2021 Paper 2 ring-choice guardrail.', {
+		computerScience2021Paper2LineFailure
+	});
+}
+
+const computerScience2021Paper1ResponsePath = path.join(
+	helperNormalizeDir,
+	'computer-science-2021-paper-1-response-guards.json'
+);
+writeFileSync(
+	computerScience2021Paper1ResponsePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.4',
+					promptText: 'Complete the trace table.',
+					selfContainedPromptText: 'Complete the trace table for Figure 1.',
+					marks: 4,
+					pageStart: 5,
+					pageEnd: 5,
+					stemBlocks: [{ kind: 'paragraph', text: 'Use the algorithm in Figure 1.' }],
+					response: {
+						kind: 'choice-table',
+						columns: ['seconds', 'bpm', 'effort', 'OUTPUT'],
+						rows: [['0', '70', '', '']],
+						correctAnswers: [{ targetId: 'row1-effort', correctAnswer: '20' }]
+					},
+					assets: [{ sourceLabel: 'Figure 1', role: 'algorithm', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'Trace table completed.', marks: 4 }],
+					markChecklist: [{ text: 'Completes trace table.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '04.4',
+					promptText: 'Complete the trace table.',
+					selfContainedPromptText: 'Complete the trace table.',
+					marks: 3,
+					pageStart: 10,
+					pageEnd: 10,
+					response: {
+						kind: 'choice-table',
+						columns: ['i', 'newRow[0]'],
+						rows: [
+							['', '0'],
+							['0', '']
+						],
+						correctAnswers: [{ targetId: 'row-count', correctAnswer: 'seven trace rows' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'Trace table completed.', marks: 3 }],
+					markChecklist: [{ text: 'Completes trace table.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '05.3',
+					promptText: 'Develop an algorithm.',
+					selfContainedPromptText: 'Develop an algorithm.',
+					marks: 9,
+					pageStart: 13,
+					pageEnd: 13,
+					response: { kind: 'lines', lineCount: 13 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Algorithm is correct.', marks: 9 }],
+					markChecklist: [{ text: 'Develops a valid algorithm.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '07.2',
+					promptText: 'Identify the output of the logic circuit in Figure 6.',
+					selfContainedPromptText: 'Figure 6 shows a logic circuit. Identify the output.',
+					marks: 1,
+					pageStart: 17,
+					pageEnd: 17,
+					stemBlocks: [{ kind: 'asset', assetLabel: 'Figure 6' }],
+					response: {
+						kind: 'choice',
+						options: ['A', 'B'],
+						correctAnswers: [{ targetId: 'answer', correctAnswer: 'A' }]
+					},
+					assets: [{ sourceLabel: 'Figure 6', role: 'figure', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'Correct output.', marks: 1 }],
+					markChecklist: [{ text: 'Selects correct output.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '09.2',
+					promptText: 'Draw the output grid.',
+					selfContainedPromptText: 'Draw the output grid.',
+					marks: 2,
+					pageStart: 25,
+					pageEnd: 25,
+					response: { kind: 'drawing-box', grid: { rows: 3, columns: 5 } },
+					markSchemeItems: [{ itemType: 'mark', text: 'Grid drawn correctly.', marks: 2 }],
+					markChecklist: [{ text: 'Uses the correct grid.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2021Paper1ResponseFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2021Paper1ResponsePath}`,
+		'--expected-marks=19',
+		'--expected-questions=5'
+	]
+);
+for (const expectedFailure of [
+	'known_algorithm_context_missing',
+	'known_trace_table_response_rows_mismatch',
+	'known_response_line_count_mismatch',
+	'known_figure_crop_incomplete',
+	'known_drawing_grid_mismatch'
+]) {
+	if (!computerScience2021Paper1ResponseFailure.includes(expectedFailure)) {
+		fail(`Codex helper validation did not reject CS 2021 Paper 1 guardrail: ${expectedFailure}`, {
+			computerScience2021Paper1ResponseFailure
+		});
+	}
+}
+
+const computerScience2022Paper2DrawingPath = path.join(
+	helperNormalizeDir,
+	'computer-science-2022-paper-2-drawing-crop.json'
+);
+writeFileSync(
+	computerScience2022Paper2DrawingPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2022-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.2',
+					promptText: 'Apply a binary shift three places to the right on 10101000.',
+					selfContainedPromptText: 'Apply a binary shift three places to the right on 10101000.',
+					marks: 1,
+					pageStart: 3,
+					pageEnd: 3,
+					response: { kind: 'lines', lineCount: 2 },
+					markSchemeItems: [{ itemType: 'mark', text: '00010101.', marks: 1 }],
+					markChecklist: [{ text: 'Gives the shifted 8-bit result.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '03.2',
+					promptText: 'Complete the logic circuit for D, L, W and R.',
+					selfContainedPromptText: 'Complete the logic circuit for D, L, W and R.',
+					marks: 3,
+					pageStart: 4,
+					pageEnd: 4,
+					response: { kind: 'drawing-box', assetLabel: 'Q03.2 logic circuit drawing box' },
+					assets: [
+						{
+							sourceLabel: 'Q03.2 logic circuit drawing box',
+							role: 'response-surface',
+							filePath: 'tiny-figure.png'
+						}
+					],
+					markSchemeItems: [{ itemType: 'mark', text: 'Circuit is correct.', marks: 3 }],
+					markChecklist: [{ text: 'Draws the correct circuit.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '03.3',
+					promptText: 'Choose the corrected Boolean expression.',
+					selfContainedPromptText: 'Choose the corrected Boolean expression.',
+					marks: 1,
+					pageStart: 4,
+					pageEnd: 4,
+					response: {
+						kind: 'choice',
+						options: [
+							'A (W . D) . (D . L) . (W . L)',
+							'B (W . D) . (D . L) + (W . L)',
+							'C (W . D) + (D . L) + (W . L)',
+							'D (W . D) + (D + L) . (W . L)'
+						],
+						correctAnswers: [{ targetId: 'answer', correctAnswer: 'C' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'C', marks: 1 }],
+					markChecklist: [{ text: 'Selects C.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '09.2',
+					promptText: 'Explain one benefit.',
+					selfContainedPromptText: 'Explain one benefit.',
+					marks: 2,
+					pageStart: 10,
+					pageEnd: 10,
+					response: { kind: 'lines', lineCount: 2 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Valid explanation.', marks: 2 }],
+					markChecklist: [{ text: 'Explains a valid benefit.', markSchemeItemIndexes: [0] }]
+				},
+				{
+					sourceQuestionRef: '17.2',
+					promptText: 'Use Figure 2 to create a Huffman tree.',
+					selfContainedPromptText: 'Figure 2 shows MISSISSIPPI. Use it to create a Huffman tree.',
+					marks: 2,
+					pageStart: 20,
+					pageEnd: 20,
+					response: { kind: 'lines', lineCount: 2 },
+					assets: [{ sourceLabel: 'Figure 2', role: 'figure', filePath: 'tiny-figure.png' }],
+					markSchemeItems: [{ itemType: 'mark', text: 'Uses MISSISSIPPI frequencies.', marks: 2 }],
+					markChecklist: [{ text: 'Uses the frequency text.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2022Paper2DrawingFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2022Paper2DrawingPath}`,
+		'--expected-marks=9',
+		'--expected-questions=5'
+	]
+);
+if (!computerScience2022Paper2DrawingFailure.includes('known_bit_box_response_mismatch')) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 bit-box response guardrail.', {
+		computerScience2022Paper2DrawingFailure
+	});
+}
+if (!computerScience2022Paper2DrawingFailure.includes('known_figure_crop_incomplete')) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 drawing-crop guardrail.', {
+		computerScience2022Paper2DrawingFailure
+	});
+}
+if (!computerScience2022Paper2DrawingFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 line-count guardrail.', {
+		computerScience2022Paper2DrawingFailure
+	});
+}
+if (!computerScience2022Paper2DrawingFailure.includes('known_boolean_overline_missing')) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 Boolean-overline guardrail.', {
+		computerScience2022Paper2DrawingFailure
+	});
+}
+if (!computerScience2022Paper2DrawingFailure.includes('known_simple_figure_asset_should_be_structural')) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 text-figure asset guardrail.', {
+		computerScience2022Paper2DrawingFailure
+	});
+}
+
+const computerScience2022Paper2PerFieldLinePath = path.join(
+	helperNormalizeDir,
+	'computer-science-2022-paper-2-per-field-lines.json'
+);
+writeFileSync(
+	computerScience2022Paper2PerFieldLinePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2022-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '04.2',
+					promptText: 'State four functions of an operating system.',
+					selfContainedPromptText: 'State four functions of an operating system.',
+					marks: 4,
+					pageStart: 6,
+					pageEnd: 6,
+					response: {
+						kind: 'labeled-lines',
+						labels: ['1', '2', '3', '4'],
+						lineCount: 1
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Manages memory.', marks: 1 },
+						{ itemType: 'mark', text: 'Manages files.', marks: 1 },
+						{ itemType: 'mark', text: 'Manages peripherals.', marks: 1 },
+						{ itemType: 'mark', text: 'Provides a user interface.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Gives four valid operating-system functions.', markSchemeItemIndexes: [0, 1, 2, 3] }
+					],
+					modelAnswer: {
+						answerText: 'Manages memory, files, peripherals, and the user interface.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2022Paper2PerFieldLineFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2022Paper2PerFieldLinePath}`,
+		'--expected-marks=4',
+		'--expected-questions=1'
+	]
+);
+if (
+	!computerScience2022Paper2PerFieldLineFailure.includes(
+		'expected 2 per labeled field'
+	)
+) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 per-field line undercount.', {
+		computerScience2022Paper2PerFieldLineFailure
+	});
+}
+
+const computerScience2022Paper2ResponseSurfacePath = path.join(
+	helperNormalizeDir,
+	'computer-science-2022-paper-2-response-surfaces.json'
+);
+writeFileSync(
+	computerScience2022Paper2ResponseSurfacePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2022-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.2',
+					promptText: 'Convert the binary number 10111001 into hexadecimal. You should show your working.',
+					selfContainedPromptText:
+						'Convert the binary number 10111001 into hexadecimal. Show your working.',
+					marks: 2,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'text', text: 'Hexadecimal = ' },
+							{ kind: 'blank', id: 'left-hex-digit' },
+							{ kind: 'blank', id: 'right-hex-digit' }
+						],
+						correctAnswers: [
+							{ targetId: 'left-hex-digit', correctAnswer: 'B' },
+							{ targetId: 'right-hex-digit', correctAnswer: '9' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'B as the left hexadecimal digit.', marks: 1 },
+						{ itemType: 'mark', text: '9 as the right hexadecimal digit.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Left hexadecimal digit is B.', markSchemeItemIndexes: [0] },
+						{ text: 'Right hexadecimal digit is 9.', markSchemeItemIndexes: [1] }
+					]
+				},
+				{
+					sourceQuestionRef: '04.1',
+					promptText: 'Describe what is meant by the terms system software and application software.',
+					selfContainedPromptText:
+						'Describe what is meant by the terms system software and application software.',
+					marks: 2,
+					pageStart: 6,
+					pageEnd: 6,
+					response: { kind: 'lines', lineCount: 3 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'System software manages the computer system.', marks: 1 },
+						{ itemType: 'mark', text: 'Application software is used for end-user tasks.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Defines system software.', markSchemeItemIndexes: [0] },
+						{ text: 'Defines application software.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: {
+						answerText:
+							'System software manages the computer system. Application software lets the user perform tasks.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2022Paper2ResponseSurfaceFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2022Paper2ResponseSurfacePath}`,
+		'--expected-marks=4',
+		'--expected-questions=2'
+	]
+);
+for (const expectedFailure of [
+	'known_working_plus_answer_response_missing',
+	'known_response_line_count_mismatch'
+]) {
+	if (!computerScience2022Paper2ResponseSurfaceFailure.includes(expectedFailure)) {
+		fail(`Codex helper validation did not reject CS 2022 response surface: ${expectedFailure}`, {
+			computerScience2022Paper2ResponseSurfaceFailure
+		});
 	}
 }
 

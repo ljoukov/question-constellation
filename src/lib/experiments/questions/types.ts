@@ -70,7 +70,15 @@ export type ExamResponse =
 	| {
 			kind: 'labeled-lines';
 			labels: string[];
+			fields?: Array<{
+				label: string;
+				lineCount?: number;
+			}>;
 			lineCount?: number;
+			choicePrompt?: string;
+			choiceOptions?: string[];
+			choiceLayout?: 'vertical' | 'horizontal';
+			correctAnswers?: Record<string, string>;
 	  }
 	| {
 			kind: 'number-line';

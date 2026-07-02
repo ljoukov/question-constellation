@@ -39,6 +39,7 @@ Optional:
   --skip-d1-conflict-check
   --allow-shared-chain-updates
   --skip-r2-upload
+  --allow-visible-source-mismatch
   --import
   --force
   --dry-run
@@ -84,6 +85,8 @@ for (const filePath of [questionPaperPath, markSchemePath, ...supportingDocument
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
 }
 
+const sourceIdentityCheck = inspectSourceIdentity();
+
 const plan = {
 	sourceDocumentId,
 	questionPaperPath: relative(questionPaperPath),
@@ -96,6 +99,7 @@ const plan = {
 	importReadyRoot: relative(importReadyRoot),
 	importReadyAuditPath: relative(importReadyAuditPath),
 	summaryPath: relative(summaryPath),
+	sourceIdentityCheck,
 	runExtractionJudge,
 	runSolvability,
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
@@ -112,6 +116,8 @@ mkdirSync(workRoot, { recursive: true });
 const startedAt = new Date().toISOString();
 const steps = [];
 try {
+	enforceSourceIdentity(sourceIdentityCheck);
+	steps.push({ label: 'visible PDF source identity preflight', status: 'passed' });
 	steps.push(runInherited(extractionCommand(), 'Codex PDF extraction'));
 	if (runExtractionJudge) {
 		steps.push(runInherited(extractionJudgeCommand(), 'independent Codex extraction judge'));
@@ -252,6 +258,204 @@ function prepareImportReadyCommand() {
 	if (hasArg('allow-shared-chain-updates')) args.push('--allow-shared-chain-updates');
 	if (importToD1) args.push('--import');
 	return args;
+}
+
+function inspectSourceIdentity() {
+	const expectedSeries = stringArg('series', '');
+	const expectedComponent = stringArg('component-code', '');
+	const questionPaper = inspectPdfSource(questionPaperPath);
+	const markScheme = inspectPdfSource(markSchemePath);
+	const issues = [];
+	const expectedSeriesKey = normalizeSeries(expectedSeries);
+	const visibleSeries = firstNonEmpty([questionPaper.series, markScheme.series]);
+	const visibleSeriesKey = normalizeSeries(visibleSeries);
+	if (expectedSeriesKey && visibleSeriesKey && expectedSeriesKey !== visibleSeriesKey) {
+		issues.push({
+			code: 'visible_series_mismatch',
+			severity: 'error',
+			expected: expectedSeries,
+			visible: visibleSeries,
+			evidence: {
+				questionPaper: questionPaper.seriesEvidence,
+				markScheme: markScheme.seriesEvidence
+			}
+		});
+	}
+	if (
+		normalizeSeries(questionPaper.series) &&
+		normalizeSeries(markScheme.series) &&
+		normalizeSeries(questionPaper.series) !== normalizeSeries(markScheme.series)
+	) {
+		issues.push({
+			code: 'question_paper_mark_scheme_series_mismatch',
+			severity: 'error',
+			questionPaper: questionPaper.series,
+			markScheme: markScheme.series,
+			evidence: {
+				questionPaper: questionPaper.seriesEvidence,
+				markScheme: markScheme.seriesEvidence
+			}
+		});
+	}
+	const expectedComponentKey = normalizeComponent(expectedComponent);
+	const visibleComponent = firstNonEmpty([questionPaper.component, markScheme.component]);
+	if (
+		expectedComponentKey &&
+		normalizeComponent(visibleComponent) &&
+		!componentCodesCompatible(expectedComponent, visibleComponent)
+	) {
+		issues.push({
+			code: 'visible_component_mismatch',
+			severity: 'error',
+			expected: expectedComponent,
+			visible: visibleComponent,
+			evidence: {
+				questionPaper: questionPaper.componentEvidence,
+				markScheme: markScheme.componentEvidence
+			}
+		});
+	}
+	if (
+		normalizeComponent(questionPaper.component) &&
+		normalizeComponent(markScheme.component) &&
+		!componentCodesCompatible(questionPaper.component, markScheme.component)
+	) {
+		issues.push({
+			code: 'question_paper_mark_scheme_component_mismatch',
+			severity: 'error',
+			questionPaper: questionPaper.component,
+			markScheme: markScheme.component,
+			evidence: {
+				questionPaper: questionPaper.componentEvidence,
+				markScheme: markScheme.componentEvidence
+			}
+		});
+	}
+	return {
+		status: issues.some((issue) => issue.severity === 'error') ? 'failed' : 'passed',
+		expected: {
+			series: expectedSeries || null,
+			componentCode: expectedComponent || null
+		},
+		visible: {
+			series: visibleSeries || null,
+			componentCode: visibleComponent || null
+		},
+		questionPaper,
+		markScheme,
+		issues
+	};
+}
+
+function enforceSourceIdentity(check) {
+	if (hasArg('allow-visible-source-mismatch')) return;
+	const errors = check.issues.filter((issue) => issue.severity === 'error');
+	if (errors.length === 0) return;
+	throw new Error(
+		`Visible PDF source identity preflight failed: ${errors
+			.map((issue) => `${issue.code} expected=${issue.expected ?? 'n/a'} visible=${issue.visible ?? 'n/a'}`)
+			.join('; ')}. Pass --allow-visible-source-mismatch only for an audited exception.`
+	);
+}
+
+function inspectPdfSource(filePath) {
+	const firstPagesText = pdfTextFirstPages(filePath, 2);
+	const seriesMatch = findSeries(firstPagesText);
+	const componentMatch = findComponent(firstPagesText);
+	return {
+		path: relative(filePath),
+		series: seriesMatch?.series ?? null,
+		seriesEvidence: seriesMatch?.evidence ?? null,
+		component: componentMatch?.component ?? null,
+		componentEvidence: componentMatch?.evidence ?? null
+	};
+}
+
+function pdfTextFirstPages(filePath, pages) {
+	const result = spawnSync('pdftotext', ['-f', '1', '-l', String(pages), filePath, '-'], {
+		cwd: rootDir,
+		encoding: 'utf8',
+		maxBuffer: 4 * 1024 * 1024
+	});
+	if (result.status !== 0) return '';
+	return result.stdout;
+}
+
+function findSeries(text) {
+	const longMatch = text.match(/\b(January|June|November)\s+(20\d{2})\b/i);
+	if (longMatch) {
+		return {
+			series: `${titleCase(longMatch[1])} ${longMatch[2]}`,
+			evidence: trimEvidence(longMatch[0])
+		};
+	}
+	const compactMatch = text.match(/\b(Jan|Jun|Nov)(\d{2})\b/i);
+	if (compactMatch) {
+		const month = { jan: 'January', jun: 'June', nov: 'November' }[
+			compactMatch[1].toLowerCase()
+		];
+		return {
+			series: `${month} 20${compactMatch[2]}`,
+			evidence: trimEvidence(compactMatch[0])
+		};
+	}
+	return null;
+}
+
+function findComponent(text) {
+	const match = text.match(/\b(\d{4})\/([0-9A-Z]+(?:\/[A-Z]+)*)\b/i);
+	if (!match) return null;
+	return {
+		component: `${match[1]}/${match[2].toUpperCase()}`,
+		evidence: trimEvidence(match[0])
+	};
+}
+
+function normalizeSeries(value) {
+	const match = String(value ?? '').match(/\b(january|jan|june|jun|november|nov)\s*(20)?(\d{2})\b/i);
+	if (!match) return '';
+	const monthMap = {
+		jan: 'january',
+		january: 'january',
+		jun: 'june',
+		june: 'june',
+		nov: 'november',
+		november: 'november'
+	};
+	return `${monthMap[match[1].toLowerCase()]}-20${match[3]}`;
+}
+
+function normalizeComponent(value) {
+	return String(value ?? '')
+		.toUpperCase()
+		.replace(/[^0-9A-Z]/g, '');
+}
+
+function componentCodesCompatible(expected, visible) {
+	const expectedKey = normalizeComponent(expected);
+	const visibleKey = normalizeComponent(visible);
+	if (!expectedKey || !visibleKey) return true;
+	if (expectedKey === visibleKey) return true;
+	if (expectedKey.startsWith(visibleKey) && /^[A-Z]+$/.test(expectedKey.slice(visibleKey.length))) {
+		return true;
+	}
+	if (visibleKey.startsWith(expectedKey) && /^[A-Z]+$/.test(visibleKey.slice(expectedKey.length))) {
+		return true;
+	}
+	return false;
+}
+
+function firstNonEmpty(values) {
+	return values.find((value) => String(value ?? '').trim()) ?? '';
+}
+
+function titleCase(value) {
+	const lower = String(value ?? '').toLowerCase();
+	return lower ? `${lower[0].toUpperCase()}${lower.slice(1)}` : '';
+}
+
+function trimEvidence(value) {
+	return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);
 }
 
 function forwardCommonExtractionArgs(args) {

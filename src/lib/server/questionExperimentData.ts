@@ -136,7 +136,10 @@ function blockFromJson(value: Record<string, unknown>): ExamQuestionBlock {
 	if (value.kind === 'paragraph' && typeof value.text === 'string') {
 		return { kind: 'paragraph', text: value.text };
 	}
-	if (value.kind === 'equation' && typeof value.text === 'string') {
+	if (
+		(value.kind === 'equation' || value.kind === 'formula' || value.kind === 'math') &&
+		typeof value.text === 'string'
+	) {
 		return { kind: 'equation', text: value.text };
 	}
 	if (value.kind === 'figure' && typeof value.assetId === 'string') {
@@ -166,7 +169,7 @@ function blockFromJson(value: Record<string, unknown>): ExamQuestionBlock {
 		return {
 			kind: 'structured-table',
 			label: typeof value.label === 'string' ? value.label : undefined,
-			rows: value.rows as ExamTableCell[][],
+			rows: structuredRowsFromJson(value.rows),
 			compact: value.compact === true,
 			wide: value.wide === true
 		};
@@ -184,6 +187,28 @@ function blockFromJson(value: Record<string, unknown>): ExamQuestionBlock {
 		};
 	}
 	return assertNever(value as never);
+}
+
+function structuredRowsFromJson(rows: unknown[]): ExamTableCell[][] {
+	return rows.map((row) => {
+		if (!Array.isArray(row)) return [];
+		return row.map((cell) => {
+			if (cell && typeof cell === 'object' && !Array.isArray(cell)) {
+				const value = cell as Record<string, unknown>;
+				return {
+					text: String(value.text ?? ''),
+					header: value.header === true,
+					colspan: typeof value.colspan === 'number' ? value.colspan : undefined,
+					rowspan: typeof value.rowspan === 'number' ? value.rowspan : undefined,
+					align:
+						value.align === 'left' || value.align === 'center' || value.align === 'right'
+							? value.align
+							: undefined
+				};
+			}
+			return { text: String(cell ?? '') };
+		});
+	});
 }
 
 function blocksFromValue(value: unknown, label: string) {
@@ -228,8 +253,12 @@ function responseFromValue(raw: unknown): ExamResponse {
 	if (value.kind === 'lines' && typeof value.count === 'number') {
 		return { kind: 'lines', count: value.count };
 	}
-	if (value.kind === 'labeled-lines' && Array.isArray(value.labels)) {
-		if (value.labels.length === 0) {
+	if (value.kind === 'labeled-lines') {
+		const fields = labeledLineFields(value.fields);
+		const labels = Array.isArray(value.labels)
+			? (value.labels as string[]).filter((label) => typeof label === 'string')
+			: fields.map((field) => field.label);
+		if (labels.length === 0) {
 			return {
 				kind: 'lines',
 				count: typeof value.lineCount === 'number' ? value.lineCount : 1
@@ -237,8 +266,18 @@ function responseFromValue(raw: unknown): ExamResponse {
 		}
 		return {
 			kind: 'labeled-lines',
-			labels: value.labels as string[],
-			lineCount: typeof value.lineCount === 'number' ? value.lineCount : undefined
+			labels,
+			fields: fields.length ? fields : undefined,
+			lineCount: typeof value.lineCount === 'number' ? value.lineCount : undefined,
+			choicePrompt: typeof value.choicePrompt === 'string' ? value.choicePrompt : undefined,
+			choiceOptions: Array.isArray(value.choiceOptions)
+				? (value.choiceOptions as string[]).filter((option) => typeof option === 'string')
+				: undefined,
+			choiceLayout: value.choiceLayout === 'horizontal' ? 'horizontal' : undefined,
+			correctAnswers:
+				value.correctAnswers && typeof value.correctAnswers === 'object'
+					? (value.correctAnswers as Record<string, string>)
+					: undefined
 		};
 	}
 	if (value.kind === 'choice' && Array.isArray(value.options)) {
@@ -331,6 +370,20 @@ function responseFromValue(raw: unknown): ExamResponse {
 		};
 	}
 	return assertNever(value as never);
+}
+
+function labeledLineFields(raw: unknown): Array<{ label: string; lineCount?: number }> {
+	if (!Array.isArray(raw)) return [];
+	const fields: Array<{ label: string; lineCount?: number }> = [];
+	for (const field of raw) {
+		if (!field || typeof field !== 'object') continue;
+		const candidate = field as Record<string, unknown>;
+		if (typeof candidate.label !== 'string' || !candidate.label.trim()) continue;
+		const normalized: { label: string; lineCount?: number } = { label: candidate.label };
+		if (typeof candidate.lineCount === 'number') normalized.lineCount = candidate.lineCount;
+		fields.push(normalized);
+	}
+	return fields;
 }
 
 function responseForPart(raw: unknown, marks: number | null): ExamResponse {

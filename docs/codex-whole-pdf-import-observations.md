@@ -139,6 +139,34 @@ manual canary write bypassed the production pipeline's R2 upload phase. After
 This is an operational requirement: official-PDF extraction, strict audit, and D1 write are not
 enough for route health when the paper references local image assets.
 
+AQA GCSE Computer Science Paper 2 June 2022 was then run as an identity-safe follow-up on
+2026-07-02, using official PDFs only:
+
+| Phase                              | Artifact                                                                                                                                                                                        | Wall time | Actions | Failed | Token usage                                                        | Outcome                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------: | -----: | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Codex PDF extraction               | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/raw/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json`             |  879.575s |      54 |      1 | input 2,742,139; cached 2,447,872; output 41,778; reasoning 5,480  | 45 questions, 90 marks, deterministic validation passed                                         |
+| Independent Codex extraction judge | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/extraction-judge/judge-report.json`                                                |  243.256s |      33 |      0 | input 1,211,551; cached 934,912; output 10,466; reasoning 2,597    | pass, score 1.00, 45 refs checked, 0 required repairs                                           |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/chain-reconciled/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json` |  559.805s |      31 |      0 | input 1,050,747; cached 932,352; output 28,940; reasoning 12,521   | 9 reused, 34 created, 2 updated, 0 review                                                       |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-identity-safe-v3/work/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-strict-media-fix-audit.json`                                          |       n/a |     n/a |      0 | n/a                                                                | 45/45 kept, 0 audit errors/warnings, D1 dry-run passed with 595 planned SQL statements          |
+
+The first strict import-ready subset kept only 39/45 questions because the deterministic validator
+warned that Figure 2/Figure 3/Figure 4 references lacked media assets. That was too conservative:
+Codex had already preserved Figure 2's string and Figure 4's SQL source data as learner-visible
+structured blocks, and Q17.3 still had a real response-surface asset. The validator now accepts
+structured source-data blocks as satisfying a referenced Figure/Table dependency while continuing
+to require concrete assets for true diagram/image response surfaces.
+
+The same run also forced response-rendering support for per-field labelled answer areas. Q01.2 uses
+four visible working lines plus one hexadecimal answer line, and Q04.1 has two separately labelled
+three-line answer fields. The import path now preserves those `labeled-lines.fields` through
+normalization, D1 import JSON, server data loading, grading parsing, and the Svelte renderer.
+
+The source-identity audit over the AQA History/Geography/Computer Science manifest found 61 safe
+rows and 39 visible-series mismatches: 2 Computer Science, 6 Geography, and 31 History. Its artifacts
+are `tmp/aqa-humanities-cs-source-identity-audit.json` and
+`tmp/aqa-humanities-cs-identity-safe-manifest.json`. Batch import should run only the identity-safe
+subset unless a mismatch is manually audited and passed with `--allow-visible-source-mismatch`.
+
 ## OCR And Visual Inspection Conclusion
 
 The JSONL rollouts did not show explicit `view_image` or image-view tool events. Codex appears to have used a hybrid workflow:

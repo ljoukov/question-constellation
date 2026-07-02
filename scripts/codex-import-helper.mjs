@@ -799,7 +799,7 @@ function normalizeBlocks(blocks) {
 	return (blocks ?? [])
 		.map((block) => {
 			if (!block || typeof block !== 'object') return null;
-			const kind = block.kind ?? 'paragraph';
+			const kind = normalizeBlockKind(block.kind ?? 'paragraph');
 			if (
 				kind === 'table' &&
 				(!Array.isArray(block.columns) || block.columns.length === 0) &&
@@ -811,7 +811,7 @@ function normalizeBlocks(blocks) {
 					label: block.label ?? null,
 					assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
 					columns: null,
-					rows: block.rows,
+					rows: normalizeStructuredTableRows(block.rows),
 					items: null,
 					keyItems: null,
 					compact: block.compact ?? null,
@@ -824,7 +824,7 @@ function normalizeBlocks(blocks) {
 				label: block.label ?? null,
 				assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
 				columns: block.columns ?? null,
-				rows: block.rows ?? null,
+				rows: kind === 'structured-table' ? normalizeStructuredTableRows(block.rows) : (block.rows ?? null),
 				items: block.items ?? null,
 				keyItems: block.keyItems ?? null,
 				compact: block.compact ?? null,
@@ -834,9 +834,45 @@ function normalizeBlocks(blocks) {
 		.filter(Boolean);
 }
 
+function normalizeBlockKind(kind) {
+	const value = String(kind ?? 'paragraph');
+	if (['formula', 'math'].includes(value)) return 'equation';
+	return value;
+}
+
+function normalizeStructuredTableRows(rows) {
+	if (!Array.isArray(rows)) return null;
+	return rows.map((row) => {
+		if (!Array.isArray(row)) return [];
+		return row.map((cell) => {
+			if (cell && typeof cell === 'object' && !Array.isArray(cell)) {
+				return {
+					...cell,
+					text: String(cell.text ?? '')
+				};
+			}
+			return { text: String(cell ?? '') };
+		});
+	});
+}
+
 function normalizeResponse(response, marks) {
 	if (!response?.kind) return { kind: marks ? 'lines' : 'none', count: marks ?? null };
 	const output = canonicalResponse(response);
+	if (output.kind === 'labeled-lines' && Array.isArray(output.fields)) {
+		const fieldLabels = output.fields
+			.map((field) => String(field?.label ?? '').trim())
+			.filter(Boolean);
+		if (!Array.isArray(output.labels) || output.labels.length === 0) output.labels = fieldLabels;
+		const fieldLineCounts = output.fields
+			.map((field) => Number(field?.lineCount ?? 0))
+			.filter((count) => Number.isFinite(count) && count > 0);
+		if (fieldLineCounts.length) {
+			// The app renderer treats lineCount as lines per label. Keep fields[] for exact
+			// paper provenance and use the largest field count for a renderable fallback.
+			output.lineCount = Math.max(...fieldLineCounts);
+		}
+	}
 	if (output.kind === 'lines' && output.count === undefined)
 		output.count = output.lineCount ?? marks ?? 1;
 	if (output.kind === 'labeled-lines' && output.lineCount === undefined)
@@ -1189,6 +1225,19 @@ function deterministicIssuesFor(candidate, options = {}) {
 			});
 		}
 		if (
+			response?.kind === 'labeled-lines' &&
+			!(Array.isArray(response.labels) && response.labels.length > 0) &&
+			!(Array.isArray(response.fields) && response.fields.length > 0)
+		) {
+			issues.push({
+				code: 'labeled_lines_missing_labels',
+				field: 'response.labels',
+				severity: 'error',
+				evidence:
+					'labeled-lines responses must expose renderer labels, or fields[] that can be normalized into labels.'
+			});
+		}
+		if (
 			fixedResponseKinds.has(response?.kind) &&
 			!(response.correctAnswers ?? []).length &&
 			response.kind !== 'asset-canvas'
@@ -1202,13 +1251,13 @@ function deterministicIssuesFor(candidate, options = {}) {
 		}
 		if (expectedLineCounts.has(ref)) {
 			const expected = expectedLineCounts.get(ref);
-			const actual = responseVisibleLineCount(response);
-			if (actual !== expected) {
+			const mismatch = responseLineCountMismatch(response, expected);
+			if (mismatch) {
 				issues.push({
 					code: 'known_response_line_count_mismatch',
 					field: 'response.lineCount',
 					severity: 'error',
-					evidence: `${ref}: expected ${expected}, found ${actual ?? 'missing'}`
+					evidence: `${ref}: ${mismatch}`
 				});
 			}
 		}
@@ -1234,7 +1283,11 @@ function deterministicIssuesFor(candidate, options = {}) {
 			[
 				'aqa-84611h-qp-nov20',
 				'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
-				'aqa-computer-science-2024-june-paper-2-computing-concepts-qp'
+				'aqa-computer-science-2024-june-paper-2-computing-concepts-qp',
+				'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
+				'aqa-computer-science-2021-november-paper-2-written-assessment-qp',
+				'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp',
+				'aqa-computer-science-2022-june-paper-2-computing-concepts-qp'
 			].includes(sourceDocumentId)
 		) {
 			for (const issue of knownSourceSpecificIssues(question, sourceDocumentId)) issues.push(issue);
@@ -1567,6 +1620,97 @@ function duplicateLearnerVisibleBlockText(question) {
 }
 
 function expectedResponseLineCountsForSource(sourceDocumentId) {
+	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp') {
+		return new Map(
+			Object.entries({
+				'01.5': 20,
+				'06.0': 32,
+				'07.0': 20,
+				'11.0': 36,
+				'12.7': 25,
+				'14.1': 3,
+				'14.2': 38,
+				'15.0': 33
+			})
+		);
+	}
+	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-2-written-assessment-qp') {
+		return new Map(
+			Object.entries({
+				'01.1': 2,
+				'01.2': 5,
+				'01.3': 2,
+				'01.4': 2,
+				'03.0': 2,
+				'04.0': 1,
+				'05.1': 9,
+				'05.2': 4,
+				'07.2': 4,
+				'10.0': 18,
+				'12.0': 6,
+				'13.1': 4,
+				'13.3': 4,
+				'14.0': 18,
+				'16.2': 5,
+				'18.2': 6,
+				'20.0': 24
+			})
+		);
+	}
+	if (sourceDocumentId === 'aqa-computer-science-2022-june-paper-2-computing-concepts-qp') {
+		return new Map(
+			Object.entries({
+				'01.2': { fields: { Working: 4, 'Hexadecimal =': 1 } },
+				'02.3': 2,
+				'02.4': 2,
+				'03.4': { perField: 2 },
+				'04.1': { fields: { 'System software': 3, 'Application software': 3 } },
+				'04.2': { perField: 2 },
+				'05.0': 23,
+				'07.1': 2,
+				'07.2': 12,
+				'08.0': { perField: 2 },
+				'09.1': { perField: 2 },
+				'09.2': 4,
+				'10.0': 5,
+				'12.0': 7,
+				'13.3': 5,
+				'14.1': 2,
+				'14.3': { perField: 2 },
+				'14.5': 4,
+				'15.1': { perField: 2 },
+				'15.2': 4,
+				'15.3': { perField: 3 },
+				'16.1': 4,
+				'16.2': 4,
+				'17.1': { perField: 2 },
+				'18.1': 4,
+				'18.3': 2,
+				'18.4': 2
+			})
+		);
+	}
+	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp') {
+		return new Map(
+			Object.entries({
+				'02.1': 2,
+				'02.2': 2,
+				'02.3': 2,
+				'03.1': 4,
+				'03.2': 4,
+				'04.1': 6,
+				'04.2': 2,
+				'04.3': 6,
+				'04.5': 2,
+				'05.2': 4,
+				'05.3': 17,
+				'06.1': 6,
+				'06.2': 6,
+				'07.6': 18,
+				'09.3': 16
+			})
+		);
+	}
 	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-2-computing-concepts-qp') {
 		return new Map(
 			Object.entries({
@@ -1664,13 +1808,109 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 
 function responseVisibleLineCount(response) {
 	if (!['lines', 'labeled-lines'].includes(response?.kind)) return null;
-	if (Number.isFinite(Number(response.lineCount))) return Number(response.lineCount);
-	if (Number.isFinite(Number(response.count))) return Number(response.count);
 	if (Array.isArray(response.fields)) {
 		const total = response.fields.reduce((sum, field) => sum + Number(field?.lineCount ?? 0), 0);
 		return total || null;
 	}
+	if (Number.isFinite(Number(response.lineCount))) return Number(response.lineCount);
+	if (Number.isFinite(Number(response.count))) return Number(response.count);
 	return null;
+}
+
+function responseLineCountMismatch(response, expected) {
+	if (expected && typeof expected === 'object' && !Array.isArray(expected)) {
+		if (expected.fields && typeof expected.fields === 'object') {
+			const actuals = responseNamedFieldLineCounts(response);
+			const missing = [];
+			const mismatched = [];
+			for (const [label, rawCount] of Object.entries(expected.fields)) {
+				const expectedCount = Number(rawCount);
+				const actualCount = actuals.get(normalizedFieldLabel(label));
+				if (!Number.isFinite(expectedCount)) continue;
+				if (actualCount === undefined) {
+					missing.push(`${label}=${expectedCount}`);
+				} else if (actualCount !== expectedCount) {
+					mismatched.push(`${label}: expected ${expectedCount}, found ${actualCount}`);
+				}
+			}
+			if (missing.length || mismatched.length) {
+				const actualDescription = actuals.size
+					? [...actuals.entries()].map(([label, count]) => `${label}=${count}`).join(', ')
+					: 'none';
+				return [
+					missing.length ? `missing fields ${missing.join(', ')}` : '',
+					mismatched.join('; '),
+					`actual fields: ${actualDescription}`
+				]
+					.filter(Boolean)
+					.join('; ');
+			}
+			return null;
+		}
+		if (Number.isFinite(Number(expected.perField))) {
+			const expectedPerField = Number(expected.perField);
+			const actuals = responseFieldLineCounts(response);
+			if (actuals.length === 0) return `expected ${expectedPerField} per labeled field, found missing`;
+			const bad = actuals.filter((actual) => actual !== expectedPerField);
+			if (bad.length) {
+				return `expected ${expectedPerField} per labeled field, found ${actuals.join(', ')}`;
+			}
+			return null;
+		}
+		if (Number.isFinite(Number(expected.total))) {
+			const actual = responseVisibleLineCount(response);
+			const expectedTotal = Number(expected.total);
+			return actual === expectedTotal
+				? null
+				: `expected ${expectedTotal} total visible lines, found ${actual ?? 'missing'}`;
+		}
+	}
+	const actual = responseVisibleLineCount(response);
+	return actual === expected ? null : `expected ${expected}, found ${actual ?? 'missing'}`;
+}
+
+function responseFieldLineCounts(response) {
+	if (!['lines', 'labeled-lines'].includes(response?.kind)) return [];
+	if (response.kind === 'lines') {
+		const count = Number(response.lineCount ?? response.count ?? 0);
+		return Number.isFinite(count) && count > 0 ? [count] : [];
+	}
+	if (Array.isArray(response.fields) && response.fields.length > 0) {
+		return response.fields
+			.map((field) => Number(field?.lineCount ?? 0))
+			.filter((count) => Number.isFinite(count) && count > 0);
+	}
+	const count = Number(response.lineCount ?? response.count ?? 0);
+	if (!Number.isFinite(count) || count <= 0) return [];
+	const labelCount = Array.isArray(response.labels) && response.labels.length > 0 ? response.labels.length : 1;
+	return Array.from({ length: labelCount }, () => count);
+}
+
+function responseNamedFieldLineCounts(response) {
+	const result = new Map();
+	if (response?.kind !== 'labeled-lines') return result;
+	if (Array.isArray(response.fields) && response.fields.length > 0) {
+		for (const field of response.fields) {
+			const label = normalizedFieldLabel(field?.label);
+			const count = Number(field?.lineCount ?? 0);
+			if (label && Number.isFinite(count) && count > 0) result.set(label, count);
+		}
+		return result;
+	}
+	const count = Number(response.lineCount ?? response.count ?? 0);
+	if (!Number.isFinite(count) || count <= 0) return result;
+	for (const label of response.labels ?? []) {
+		const normalized = normalizedFieldLabel(label);
+		if (normalized) result.set(normalized, count);
+	}
+	return result;
+}
+
+function normalizedFieldLabel(label) {
+	return String(label ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, ' ')
+		.trim();
 }
 
 function knownSourceSpecificIssues(question, sourceDocumentId = null) {
@@ -1694,6 +1934,30 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		.join('\n')
 		.toLowerCase();
 	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
+	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp') {
+		for (const issue of knownComputerScience2024Paper1AResponseIssues(question, visibleText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-2-written-assessment-qp') {
+		for (const issue of knownComputerScience2021Paper2ResponseIssues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp') {
+		for (const issue of knownComputerScience2021Paper1ResponseIssues(question, visibleText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (sourceDocumentId === 'aqa-computer-science-2022-june-paper-2-computing-concepts-qp') {
+		for (const issue of knownComputerScience2022Paper2ResponseIssues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
 	if (sourceDocumentId === 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp') {
 		for (const issue of knownComputerScience2023Paper2FigureCropIssues(question)) {
 			issues.push(issue);
@@ -2009,6 +2273,381 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	return issues;
 }
 
+function knownComputerScience2024Paper1AResponseIssues(question, visibleText) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	if (!['12.2', '12.5'].includes(ref)) return [];
+	const issues = [];
+	const hasGetTileReturnContext =
+		/\bgettile\s*\(/.test(visibleText) &&
+		/\breturns?\b/.test(visibleText) &&
+		/\btile\s+value\b/.test(visibleText);
+	const hasBlankZeroContext =
+		/\bblank\s+space\b/.test(visibleText) &&
+		/(?:represented\s+(?:as|by)|value\s+(?:of\s+)?)\s*0\b/.test(visibleText);
+	if (!hasGetTileReturnContext || !hasBlankZeroContext) {
+		issues.push({
+			code: 'known_sliding_puzzle_context_missing',
+			field: 'stemBlocks/contextText/selfContainedPromptText',
+			severity: 'error',
+			evidence:
+				'Q12 subparts using getTile(i, j) == 0 must state that getTile(row, column) returns the tile value and that the blank space is represented by 0.'
+		});
+	}
+	if (ref === '12.5' && !/\bfigure\s*17\b|\bboard\b.*\bblank\b/.test(visibleText)) {
+		issues.push({
+			code: 'known_sliding_puzzle_board_missing',
+			field: 'stemBlocks/contextText/selfContainedPromptText',
+			severity: 'error',
+			evidence:
+				'Q12.5 must carry the repeated Figure 17 board or equivalent blank-space board context forward for independent rendering.'
+		});
+	}
+	return issues;
+}
+
+function knownComputerScience2021Paper2ResponseIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref === '03.0') {
+		const hasFigureOneAsset = (question.assets ?? []).some((asset) =>
+			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+				.filter(Boolean)
+				.some((label) => normalizedMediaLabel(label) === 'figure 1')
+		);
+		if (hasFigureOneAsset) {
+			issues.push({
+				code: 'known_simple_figure_asset_should_be_structural',
+				field: 'assets',
+				severity: 'error',
+				evidence:
+					'Q03.0 Figure 1 is a simple eight-bit pattern. Render it as a structured code/text block containing 1 0 1 1 0 0 0 0 and omit the fragile screenshot asset.'
+			});
+		}
+	}
+	if (ref === '13.3') {
+		const choiceOptions = question.response?.choiceOptions ?? question.response?.choices ?? [];
+		const hasChoiceOptions =
+			Array.isArray(choiceOptions) &&
+			choiceOptions.some((option) => /authentication/i.test(String(option))) &&
+			choiceOptions.some((option) => /mac\s+address\s+filtering/i.test(String(option)));
+		const labels = [
+			...(question.response?.labels ?? []),
+			...(question.response?.fields ?? []).map((field) => field?.label)
+		]
+			.filter(Boolean)
+			.join('\n');
+		if (!hasChoiceOptions || /chosen\s+security\s+method/i.test(labels)) {
+			issues.push({
+				code: 'known_ring_choice_flattened',
+				field: 'response.choiceOptions',
+				severity: 'error',
+				evidence:
+					'Q13.3 must render the official ring choice as fixed choiceOptions Authentication / MAC address filtering, plus four written explanation lines. Do not turn the chosen method into a writable line.'
+			});
+		}
+	}
+	for (const issue of knownAssetDimensionIssues(
+		question,
+		new Map([
+			[
+				'11.1',
+				{
+					label: 'figure 2',
+					minWidth: 980,
+					minHeight: 720,
+					evidence:
+						'Figure 2 asset must include the complete logic circuit diagram, all input labels, and the output P label.'
+				}
+			],
+			[
+				'11.3',
+				{
+					label: 'figure 2',
+					minWidth: 980,
+					minHeight: 720,
+					evidence:
+						'Figure 2 asset must include the complete logic circuit diagram, all input labels, and the output P label.'
+				}
+			],
+			[
+				'16.1',
+				{
+					label: 'figure 5',
+					minWidth: 900,
+					minHeight: 700,
+					evidence:
+						'Figures 4/5 asset must include complete clean Figure 4 and Figure 5 content, especially the full Figure 5 grid.'
+				}
+			]
+		])
+	)) {
+		issues.push(issue);
+	}
+	return issues;
+}
+
+function knownComputerScience2021Paper1ResponseIssues(question, visibleText) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref === '04.4') {
+		const rowCount = Array.isArray(question.response?.rows) ? question.response.rows.length : 0;
+		if (rowCount !== 7) {
+			issues.push({
+				code: 'known_trace_table_response_rows_mismatch',
+				field: 'response.rows',
+				severity: 'error',
+				evidence:
+					'Q04.4 official trace table response has 7 rows: the initial newRow row plus i = 0, 1, 2, 3, 4, 5. The digital response control must match that full table, not only the first editable row.'
+			});
+		}
+	}
+	if (ref === '02.4') {
+		const hasAlgorithmCode = renderBlocksFor(question).some(
+			(block) =>
+				String(block.kind ?? '') === 'code' &&
+				/\bseconds\b[\s\S]*\bgetBPM\s*\(\)[\s\S]*\bUNTIL\s+seconds\s*>\s*200/i.test(
+					blockPlainText(block)
+				)
+		);
+		if (!hasAlgorithmCode) {
+			issues.push({
+				code: 'known_algorithm_context_missing',
+				field: 'stemBlocks',
+				severity: 'error',
+				evidence:
+					'Q02.4 must carry the complete Figure 1 algorithm into learner-visible structured code before the trace-table response; an asset-only dependency is not enough.'
+			});
+		}
+	}
+	if (ref === '07.5') {
+		const sewingMachineMentions = (visibleText.match(/\bsewing\s+machine\b/g) ?? []).length;
+		const gateRestrictionMentions = (visibleText.match(/\band\b.*\bor\b.*\bnot\b/g) ?? []).length;
+		if (sewingMachineMentions > 1 || gateRestrictionMentions > 1) {
+			issues.push({
+				code: 'known_duplicate_logic_scenario',
+				field: 'stemBlocks/promptBlocks',
+				severity: 'error',
+				evidence:
+					'Q07.5 must render the sewing-machine scenario and AND/OR/NOT gate restriction once. Put shared scenario in stem/context and keep promptBlocks to the marked instruction.'
+			});
+		}
+	}
+	if (ref === '09.2') {
+		const grid = question.response?.grid ?? {};
+		if (Number(grid.rows) !== 4 || Number(grid.columns) !== 7) {
+			issues.push({
+				code: 'known_drawing_grid_mismatch',
+				field: 'response.grid',
+				severity: 'error',
+				evidence:
+					'Q09.2 official drawing response grid is 4 rows by 7 columns. Do not infer a smaller grid from the algorithm or crop.'
+			});
+		}
+	}
+	for (const issue of knownComputerScience2021Paper1CircuitCropIssues(question)) {
+		issues.push(issue);
+	}
+	return issues;
+}
+
+function knownComputerScience2021Paper1CircuitCropIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const requirements = new Map([
+		[
+			'02.4',
+			{
+				label: 'figure 1',
+				minWidth: 650,
+				minHeight: 680,
+				evidence:
+					'Figure 1 asset, if used, must include the complete algorithm from seconds <- 0 through UNTIL seconds > 200.'
+			}
+		],
+		[
+			'03.3',
+			{
+				label: 'figure 3',
+				minWidth: 730,
+				minHeight: 680,
+				evidence:
+					'Figure 3 asset must include the complete convert(cards) subroutine skeleton and all labels L1 to L5.'
+			}
+		],
+		[
+			'06.2',
+			{
+				label: 'figure 5',
+				minWidth: 730,
+				minHeight: 760,
+				evidence:
+					'Figure 5 asset, if used, must include the complete array/table context for the binary search comparison question.'
+			}
+		],
+		[
+			'07.2',
+			{
+				label: 'figure 6',
+				minWidth: 850,
+				minHeight: 380,
+				evidence:
+					'Figure 6 asset must include the complete official logic circuit, including all input labels/dots and output Q.'
+			}
+		],
+		[
+			'07.3',
+			{
+				label: 'figure 7',
+				minWidth: 760,
+				minHeight: 390,
+				evidence:
+					'Figure 7 asset must include the complete official logic circuit, including the top A input NOT gate area and right-side output/Q area.'
+			}
+		]
+	]);
+	return knownAssetDimensionIssues(question, requirements);
+}
+
+function knownComputerScience2022Paper2ResponseIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref === '01.2') {
+		const answers = new Map(
+			normalizeCorrectAnswers(question.response?.correctAnswers).map((answer) => [
+				answer.targetId,
+				String(answer.correctAnswer ?? '').trim().toUpperCase()
+			])
+		);
+		if (question.response?.kind !== 'labeled-lines') {
+			issues.push({
+				code: 'known_working_plus_answer_response_missing',
+				field: 'response.kind',
+				severity: 'error',
+				evidence:
+					'Q01.2 needs a learner response surface with four visible working lines plus a final keyed hexadecimal answer field; equation-blanks alone loses the official working space.'
+			});
+		}
+		if (answers.get('left-hex-digit') !== 'B' || answers.get('right-hex-digit') !== '9') {
+			issues.push({
+				code: 'known_hex_answer_key_missing',
+				field: 'response.correctAnswers',
+				severity: 'error',
+				evidence:
+					'Q01.2 must retain correctAnswers left-hex-digit = B and right-hex-digit = 9 while also rendering the working lines.'
+			});
+		}
+	}
+	if (ref === '02.2') {
+		const segments = Array.isArray(question.response?.segments) ? question.response.segments : [];
+		const blankCount = segments.filter((segment) => segment?.kind === 'blank').length;
+		if (question.response?.kind !== 'equation-blanks' || blankCount !== 8) {
+			issues.push({
+				code: 'known_bit_box_response_mismatch',
+				field: 'response',
+				severity: 'error',
+				evidence:
+					'Q02.2 official response is an eight-cell bit box. Represent it as response.kind="equation-blanks" with eight one-bit blank targets and keyed correctAnswers, not generic ruled lines.'
+			});
+		}
+	}
+	if (ref === '03.3') {
+		const options = responseLabels(question.response);
+		const optionB = options.find((option) => /^B\b/i.test(String(option).trim())) ?? '';
+		const optionD = options.find((option) => /^D\b/i.test(String(option).trim())) ?? '';
+		if (!hasOverlineW(optionB) || !hasOverlineW(optionD)) {
+			issues.push({
+				code: 'known_boolean_overline_missing',
+				field: 'response.options',
+				severity: 'error',
+				evidence:
+					'Q03.3 official options B and D show an overline on W. Preserve this as LaTeX \\overline{W} or equivalent unambiguous notation.'
+			});
+		}
+	}
+	const requirements = new Map([
+		[
+			'12.0',
+			{
+				label: 'figure 1',
+				minWidth: 350,
+				minHeight: 250,
+				maxHeight: 520,
+				evidence:
+					'Figure 1 bitmap asset must be a tight bitmap-only crop; do not include clipped following prompt text.'
+			}
+		],
+		[
+			'03.2',
+			{
+				label: 'q03.2 logic circuit drawing box',
+				minWidth: 1100,
+				minHeight: 610,
+				maxHeight: 630,
+				evidence:
+					'Q03.2 drawing-box asset must include D/L/W input labels and R output label, but exclude duplicated instruction text and the [3 marks] label.'
+			}
+		],
+		[
+			'17.2',
+			{
+				label: 'figure 2',
+				minWidth: 600,
+				minHeight: 100,
+				evidence:
+					'Figure 2 asset must visibly show the full MISSISSIPPI string. Prefer a structured Figure 2 text block and omit the redundant asset if the crop is fragile.'
+			}
+		],
+		[
+			'17.3',
+			[
+				{
+					label: 'figure 2',
+					minWidth: 600,
+					minHeight: 100,
+					evidence:
+						'Figure 2 asset must visibly show the full MISSISSIPPI string. Prefer a structured Figure 2 text block and omit the redundant asset if the crop is fragile.'
+				},
+				{
+					label: 'figure 3',
+					minWidth: 690,
+					minHeight: 360,
+					evidence:
+						'Figure 3 asset must include the complete Huffman code table, including the P / 101 row. Prefer a structured table block and omit the redundant asset if the crop is fragile.'
+				},
+				{
+					label: 'q17.3 huffman tree response',
+					minWidth: 1000,
+					minHeight: 640,
+					evidence:
+						'Q17.3 response asset must include the complete Huffman tree surface and all blank leaf boxes needed for I, S and P.'
+				}
+			]
+		]
+	]);
+	if (['17.2', '17.3'].includes(ref)) {
+		const hasFigureTwoAsset = (question.assets ?? []).some((asset) =>
+			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+				.filter(Boolean)
+				.some((label) => normalizedMediaLabel(label) === 'figure 2')
+		);
+		if (hasFigureTwoAsset) {
+			issues.push({
+				code: 'known_simple_figure_asset_should_be_structural',
+				field: 'assets',
+				severity: 'error',
+				evidence:
+					'Q17 Figure 2 is the text MISSISSIPPI. Render it as a structured text/code block and omit the fragile screenshot asset so the visible string cannot be clipped or wrong.'
+			});
+		}
+	}
+	for (const issue of knownAssetDimensionIssues(question, requirements)) issues.push(issue);
+	return issues;
+}
+
+function hasOverlineW(value) {
+	const text = String(value ?? '');
+	return /\\overline\s*\{?\s*W\s*\}?|W\u0305|W̅|overline\s*\(?\s*W/i.test(text);
+}
+
 function knownComputerScience2023Paper2FigureCropIssues(question) {
 	const ref = question.sourceQuestionRef ?? 'unknown';
 	const requirements = new Map([
@@ -2094,32 +2733,40 @@ function knownComputerScience2023Paper2FigureCropIssues(question) {
 			}
 		]
 	]);
-	const requirement = requirements.get(ref);
-	if (!requirement) return [];
+	return knownAssetDimensionIssues(question, requirements);
+}
+
+function knownAssetDimensionIssues(question, requirements) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const rawRequirement = requirements.get(ref);
+	if (!rawRequirement) return [];
+	const refRequirements = Array.isArray(rawRequirement) ? rawRequirement : [rawRequirement];
 	const issues = [];
-	for (const asset of question.assets ?? []) {
-		const label = normalizedMediaLabel(
-			asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? asset.assetId ?? ''
-		);
-		if (label !== requirement.label) continue;
-		const dimensions = imageDimensionsForAsset(asset);
-		if (!dimensions) continue;
-		const tooSmall =
-			dimensions.width < requirement.minWidth || dimensions.height < requirement.minHeight;
-		const tooTall =
-			Number.isFinite(Number(requirement.maxHeight)) &&
-			dimensions.height > Number(requirement.maxHeight);
-		if (!tooSmall && !tooTall) {
-			continue;
+	for (const requirement of refRequirements) {
+		for (const asset of question.assets ?? []) {
+			const label = normalizedMediaLabel(
+				asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? asset.assetId ?? ''
+			);
+			if (label !== requirement.label) continue;
+			const dimensions = imageDimensionsForAsset(asset);
+			if (!dimensions) continue;
+			const tooSmall =
+				dimensions.width < requirement.minWidth || dimensions.height < requirement.minHeight;
+			const tooTall =
+				Number.isFinite(Number(requirement.maxHeight)) &&
+				dimensions.height > Number(requirement.maxHeight);
+			if (!tooSmall && !tooTall) {
+				continue;
+			}
+			issues.push({
+				code: tooTall ? 'known_figure_crop_prompt_contamination' : 'known_figure_crop_incomplete',
+				field: 'assets.filePath',
+				severity: 'error',
+				evidence: `${ref} ${asset.sourceLabel ?? label}: ${requirement.evidence} Found ${dimensions.width}x${dimensions.height}; expected at least ${requirement.minWidth}x${requirement.minHeight}${
+					requirement.maxHeight ? ` and height no more than ${requirement.maxHeight}` : ''
+				}, or no image asset when a complete structured block is present.`
+			});
 		}
-		issues.push({
-			code: tooTall ? 'known_figure_crop_prompt_contamination' : 'known_figure_crop_incomplete',
-			field: 'assets.filePath',
-			severity: 'error',
-			evidence: `${ref} ${asset.sourceLabel ?? label}: ${requirement.evidence} Found ${dimensions.width}x${dimensions.height}; expected at least ${requirement.minWidth}x${requirement.minHeight}${
-				requirement.maxHeight ? ` and height no more than ${requirement.maxHeight}` : ''
-			}, or no image asset when a complete structured block is present.`
-		});
 	}
 	return issues;
 }
@@ -2415,15 +3062,16 @@ function knownFigureCropIssues(question) {
 function missingReferencedMediaLabels(question) {
 	const labels = referencedMediaLabels(question);
 	if (!labels.length) return [];
-	const blockLabels = new Set();
+	const renderableBlockLabels = new Set();
 	for (const block of [
 		...(question.stemBlocks ?? []),
 		...(question.leadBlocks ?? []),
 		...(question.promptBlocks ?? []),
 		...(question.afterResponseBlocks ?? [])
 	]) {
+		if (!blockHasRenderableSource(block)) continue;
 		for (const label of [block?.label, block?.assetLabel, block?.sourceLabel].filter(Boolean)) {
-			blockLabels.add(normalizedMediaLabel(label));
+			renderableBlockLabels.add(normalizedMediaLabel(label));
 		}
 	}
 	const renderableAssetLabels = new Set();
@@ -2438,9 +3086,8 @@ function missingReferencedMediaLabels(question) {
 	const missing = [];
 	for (const label of labels) {
 		const normalized = normalizedMediaLabel(label);
-		const isTable = normalized.startsWith('table ');
 		if (renderableAssetLabels.has(normalized)) continue;
-		if (isTable && blockLabels.has(normalized)) continue;
+		if (renderableBlockLabels.has(normalized)) continue;
 		missing.push(label);
 	}
 	return [...new Set(missing)];
@@ -2482,6 +3129,43 @@ function blockPlainText(block) {
 	if (typeof block.text === 'string') return block.text;
 	if (Array.isArray(block.items)) return block.items.join(' ');
 	return '';
+}
+
+function blockHasRenderableSource(block) {
+	if (!block || typeof block !== 'object') return false;
+	const kind = String(block.kind ?? '').toLowerCase();
+	if (
+		[
+			'code',
+			'table',
+			'structured-table',
+			'structured_table',
+			'equation',
+			'formula',
+			'math',
+			'diagram',
+			'structured-text',
+			'structured_text'
+		].includes(kind)
+	) {
+		return Boolean(blockRenderableContentText(block));
+	}
+	return false;
+}
+
+function blockRenderableContentText(block) {
+	return [
+		block?.text,
+		block?.columns,
+		block?.rows,
+		block?.items,
+		block?.keyItems,
+		block?.formula,
+		block?.latex
+	]
+		.map(stringifyBlockValue)
+		.filter(Boolean)
+		.join(' ');
 }
 
 function blockSearchText(block) {

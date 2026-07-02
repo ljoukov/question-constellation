@@ -601,8 +601,28 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 	if (response.kind === 'labeled-lines') {
 		return {
 			kind: 'labeled-lines',
-			labels: response.labels ?? [],
-			lineCount: response.lineCount ?? undefined
+			labels:
+				response.labels ??
+				(response.fields ?? [])
+					.map((field) => field?.label)
+					.filter((label) => typeof label === 'string' && label.trim()),
+			fields: Array.isArray(response.fields)
+				? response.fields
+						.filter((field) => field?.label)
+						.map((field) => ({
+							label: String(field.label),
+							...(Number.isFinite(Number(field.lineCount))
+								? { lineCount: Number(field.lineCount) }
+								: {})
+						}))
+				: undefined,
+			lineCount: response.lineCount ?? undefined,
+			...(response.choicePrompt ? { choicePrompt: response.choicePrompt } : {}),
+			...(Array.isArray(response.choiceOptions) && response.choiceOptions.length
+				? { choiceOptions: response.choiceOptions }
+				: {}),
+			...(response.choiceLayout ? { choiceLayout: response.choiceLayout } : {}),
+			...(correctAnswers ? { correctAnswers } : {})
 		};
 	}
 	if (response.kind === 'number-line') {
@@ -1571,6 +1591,7 @@ async function existingReplacementPlan(papers) {
 		)
 	);
 	const incomingChainActions = incomingChainActionsForPapers(papers);
+	const incomingChainDefinitions = incomingChainDefinitionsForPapers(papers);
 	const incomingChainIds = [
 		...new Set(
 			papers.flatMap((paper) =>
@@ -1631,12 +1652,23 @@ async function existingReplacementPlan(papers) {
 					[...sourceDocumentIds, ...incomingChainIds]
 				)
 			: [];
+	const existingSharedChainDefinitions = await existingChainDefinitions(
+		rawSharedIncomingChains.map((row) => row.id)
+	);
 	const sharedIncomingChains = rawSharedIncomingChains.map((row) => {
 		const actions = [...(incomingChainActions.get(row.id) ?? new Set())].sort();
+		const existingDefinition = existingSharedChainDefinitions.get(row.id) ?? null;
+		const incomingDefinition = incomingChainDefinitions.get(row.id) ?? null;
+		const definitionUnchanged = chainDefinitionsEqual(existingDefinition, incomingDefinition);
+		const safeReuseOnly =
+			(actions.length === 1 && actions[0] === 'reuse_existing') ||
+			(actions.every((action) => ['reuse_existing', 'update_existing'].includes(action)) &&
+				definitionUnchanged);
 		return {
 			...row,
 			incoming_actions: actions,
-			safe_reuse_only: actions.length === 1 && actions[0] === 'reuse_existing'
+			safe_existing_definition_unchanged: definitionUnchanged,
+			safe_reuse_only: safeReuseOnly
 		};
 	});
 	const unsafeSharedIncomingChains = sharedIncomingChains.filter((row) => !row.safe_reuse_only);
@@ -1655,6 +1687,88 @@ async function existingReplacementPlan(papers) {
 			questionIdCollisions.length === 0 &&
 			(allowSharedChainUpdates || unsafeSharedIncomingChains.length === 0)
 	};
+}
+
+async function existingChainDefinitions(chainIds) {
+	if (!chainIds.length) return new Map();
+	const rows = await d1Query(
+		`SELECT id, title, canonical_chain_text, summary
+		   FROM answer_chains
+		  WHERE id IN (${chainIds.map(() => '?').join(', ')})`,
+		chainIds
+	);
+	const stepRows = await d1Query(
+		`SELECT answer_chain_id, display_order, step_text, step_role, explanation, common_omission
+		   FROM answer_chain_steps
+		  WHERE answer_chain_id IN (${chainIds.map(() => '?').join(', ')})
+		  ORDER BY answer_chain_id, display_order`,
+		chainIds
+	);
+	const definitions = new Map(
+		rows.map((row) => [
+			row.id,
+			normalizeChainDefinition({
+				title: row.title,
+				canonicalChainText: row.canonical_chain_text,
+				summary: row.summary,
+				steps: []
+			})
+		])
+	);
+	for (const step of stepRows) {
+		const definition = definitions.get(step.answer_chain_id);
+		if (!definition) continue;
+		definition.steps.push(
+			normalizeChainStep({
+				stepText: step.step_text,
+				stepRole: step.step_role,
+				explanation: step.explanation,
+				commonOmission: step.common_omission
+			})
+		);
+	}
+	return definitions;
+}
+
+function incomingChainDefinitionsForPapers(papers) {
+	const definitions = new Map();
+	for (const paper of papers) {
+		const subjectArea = subjectAreaForPaper(paper);
+		for (const question of paper.questions ?? []) {
+			const chain = question.answerChain;
+			if (!chain) continue;
+			const chainId = chainIdFor(chain, subjectArea);
+			if (!definitions.has(chainId)) definitions.set(chainId, normalizeChainDefinition(chain));
+		}
+	}
+	return definitions;
+}
+
+function chainDefinitionsEqual(existingDefinition, incomingDefinition) {
+	if (!existingDefinition || !incomingDefinition) return false;
+	return JSON.stringify(existingDefinition) === JSON.stringify(incomingDefinition);
+}
+
+function normalizeChainDefinition(chain) {
+	return {
+		title: normalizeChainText(chain?.title),
+		canonicalChainText: normalizeChainText(chain?.canonicalChainText ?? chain?.canonical_chain_text),
+		summary: normalizeChainText(chain?.summary),
+		steps: (chain?.steps ?? []).map(normalizeChainStep)
+	};
+}
+
+function normalizeChainStep(step) {
+	return {
+		stepText: normalizeChainText(step?.stepText ?? step?.step_text),
+		stepRole: normalizeChainText(step?.stepRole ?? step?.step_role),
+		explanation: normalizeChainText(step?.explanation),
+		commonOmission: normalizeChainText(step?.commonOmission ?? step?.common_omission)
+	};
+}
+
+function normalizeChainText(value) {
+	return String(value ?? '').replace(/\s+/g, ' ').trim();
 }
 
 function incomingChainActionsForPapers(papers) {

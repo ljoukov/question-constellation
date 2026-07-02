@@ -5219,7 +5219,7 @@ function questionHasConcreteMediaAsset(question, label) {
 	) {
 		return true;
 	}
-	if (questionHasStructuredTableSurface(question, label)) return true;
+	if (questionHasStructuredReferenceSurface(question, label)) return true;
 	return questionRenderBlocks(question).some(
 		({ block }) =>
 			assetMatchesLabel(block, label) &&
@@ -5237,17 +5237,33 @@ function questionHasStructuredTableSurface(question, label) {
 }
 
 function structuredTableBlockMatches(block, label) {
+	if (!structuredReferenceBlockMatches(block, label)) return false;
+	return Array.isArray(block.columns)
+		? block.columns.some((column) => String(column ?? '').trim())
+		: Array.isArray(block.rows) && block.rows.length > 1;
+}
+
+function questionHasStructuredReferenceSurface(question, label) {
+	return questionRenderBlocks(question).some(({ block }) =>
+		structuredReferenceBlockMatches(block, label)
+	);
+}
+
+function structuredReferenceBlockMatches(block, label) {
 	if (!block || typeof block !== 'object') return false;
 	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
 	if (!assetMatchesLabel(block, label)) return false;
 	const rows = Array.isArray(block.rows) ? block.rows : [];
-	const hasRows = rows.some(
-		(row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim())
+	return rows.some(
+		(row) => Array.isArray(row) && row.some((cell) => structuredCellText(cell).trim())
 	);
-	const hasColumns = Array.isArray(block.columns)
-		? block.columns.some((column) => String(column ?? '').trim())
-		: false;
-	return hasRows && (hasColumns || rows.length > 1);
+}
+
+function structuredCellText(cell) {
+	if (!cell || typeof cell !== 'object') return String(cell ?? '');
+	return [cell.text, cell.value, cell.label, cell.html]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.join(' ');
 }
 
 function mediaAssetPageLabelMismatch(asset, label, field = 'assets') {

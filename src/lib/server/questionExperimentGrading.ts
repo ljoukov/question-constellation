@@ -170,6 +170,9 @@ type FixedResponse =
 			kind: 'labeled-lines';
 			labels: string[];
 			lineCount: number | null;
+			choicePrompt: string | null;
+			choiceOptions: string[];
+			choiceLayout: 'vertical' | 'horizontal' | null;
 			answerKeys: ParsedAnswerKey[];
 	  };
 
@@ -590,6 +593,11 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 			kind: 'labeled-lines',
 			labels: value.labels.filter((label): label is string => typeof label === 'string'),
 			lineCount: typeof value.lineCount === 'number' ? value.lineCount : null,
+			choicePrompt: typeof value.choicePrompt === 'string' ? value.choicePrompt : null,
+			choiceOptions: Array.isArray(value.choiceOptions)
+				? value.choiceOptions.filter((option): option is string => typeof option === 'string')
+				: [],
+			choiceLayout: value.choiceLayout === 'horizontal' ? 'horizontal' : null,
 			answerKeys
 		};
 	}
