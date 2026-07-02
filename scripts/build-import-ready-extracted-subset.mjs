@@ -201,7 +201,7 @@ function dropReasonsForQuestion(question, issues) {
 }
 
 function pruneLabelOnlyAssets(question) {
-	const assets = question.assets ?? [];
+	const assets = canonicalizeAssetAliases(question.assets ?? []);
 	const prunedAssets = assets.filter((asset) => !assetHasConcreteReference(asset)).length;
 	if (prunedAssets === 0) return { question, prunedAssets };
 	return {
@@ -213,8 +213,57 @@ function pruneLabelOnlyAssets(question) {
 	};
 }
 
+function canonicalizeAssetAliases(assets) {
+	const concreteAssets = assets.filter(assetHasConcreteReference);
+	if (concreteAssets.length === 0) return assets;
+	const out = assets.map((asset) => ({ ...asset }));
+	for (const alias of assets.filter((asset) => !assetHasConcreteReference(asset))) {
+		const officialLabel = officialMediaLabel(
+			alias?.sourceLabel ?? alias?.assetLabel ?? alias?.label ?? alias?.assetId ?? alias?.id
+		);
+		if (!officialLabel) continue;
+		const targetIndex = out.findIndex(
+			(asset) => assetHasConcreteReference(asset) && assetsReferToSameFile(asset, alias)
+		);
+		if (targetIndex < 0) continue;
+		const target = out[targetIndex];
+		if (!officialMediaLabel(target.sourceLabel)) target.assetLabel = officialLabel;
+		if (!target.sourceLabel || !String(target.sourceLabel).trim()) target.sourceLabel = officialLabel;
+	}
+	return out;
+}
+
 function assetHasConcreteReference(asset) {
 	return Boolean(asset?.filePath || asset?.sourcePath || asset?.localPath || asset?.path);
+}
+
+function officialMediaLabel(value) {
+	const match = String(value ?? '').match(/\b(Fig(?:ure)?s?|Table)\s+(\d+[A-Za-z]?)\b/i);
+	if (!match) return null;
+	const kind = /^table$/i.test(match[1]) ? 'Table' : 'Figure';
+	return `${kind} ${match[2]}`;
+}
+
+function assetsReferToSameFile(left, right) {
+	const leftKeys = assetReferenceKeys(left);
+	const rightKeys = assetReferenceKeys(right);
+	return leftKeys.some((key) => rightKeys.includes(key));
+}
+
+function assetReferenceKeys(asset) {
+	return [
+		asset?.filePath,
+		asset?.sourcePath,
+		asset?.localPath,
+		asset?.path,
+		asset?.publicPath,
+		asset?.r2Key
+	]
+		.filter(Boolean)
+		.flatMap((value) => {
+			const normalized = String(value).replace(/\\/g, '/').replace(/^\.\//, '');
+			return [normalized, path.basename(normalized)].filter(Boolean);
+		});
 }
 
 function aggregateDropReasons(results) {

@@ -2697,8 +2697,10 @@ function normalizeQuestionRenderBlocks(question) {
 	return changed ? { ...question, ...updates } : question;
 }
 
-function normalizeStructuredTableSelectionResponse(response, stemBlocks) {
+function normalizeStructuredTableSelectionResponse(response, question) {
 	if (!response || response.kind !== 'asset-canvas') return response;
+	if (!shouldNormalizeStructuredTableSelectionResponse(response, question)) return response;
+	const stemBlocks = question.stemBlocks ?? [];
 	const labels = [
 		response.assetLabel,
 		response.sourceLabel,
@@ -2729,6 +2731,25 @@ function normalizeStructuredTableSelectionResponse(response, stemBlocks) {
 			}
 		]
 	};
+}
+
+function shouldNormalizeStructuredTableSelectionResponse(response, question) {
+	const text = [learnerFacingQuestionText(question), response.instructions, response.label]
+		.filter(Boolean)
+		.join('\n');
+	if (
+		/\b(?:plot|draw|sketch|complete)\b[^.\n]{0,120}\b(?:graph|axis|axes|grid|diagram|cross[- ]section|profile)\b/i.test(
+			text
+		) ||
+		/\b(?:graph|axis|axes|grid|diagram|cross[- ]section|profile)\b[^.\n]{0,120}\b(?:plot|draw|sketch|complete)\b/i.test(
+			text
+		)
+	) {
+		return false;
+	}
+	return /\b(?:ring|circle|select|choose|tick|shade|mark)\b[^.\n]{0,120}\b(?:value|row|column|cell|box|entry|data|result|reading|answer)\b/i.test(
+		text
+	);
 }
 
 function normalizeEquationBlankOrderingResponse(response, markSchemeItems) {
@@ -2822,7 +2843,7 @@ function responseToFinalAnswerLabel(response) {
 function normalizeQuestionResponseForExtraction(question) {
 	let response = question.response;
 	response = normalizeMachineReadableCorrectAnswersResponse(response);
-	response = normalizeStructuredTableSelectionResponse(response, question.stemBlocks ?? []);
+	response = normalizeStructuredTableSelectionResponse(response, question);
 	response = normalizeEquationBlankOrderingResponse(response, question.markSchemeItems ?? []);
 	response = normalizeCalculationWorkingResponse(response, question);
 	return response;
@@ -4610,6 +4631,7 @@ export function deterministicCandidateIssues(candidate, options = {}) {
 			...writtenResponseModelAnswerIssues(question),
 			...responseKeyIssues(question),
 			...responseControlCompletenessIssues(question),
+			...responseDiagramSurfaceIssues(question),
 			...responseAssetCompletenessIssues(question),
 			...renderBlockDuplicateTextIssues(question),
 			...renderBlockAssetCompletenessIssues(question),
@@ -4989,6 +5011,45 @@ function responseControlCompletenessIssues(question) {
 	];
 }
 
+function responseDiagramSurfaceIssues(question) {
+	if (!questionRequiresDiagramResponse(question)) return [];
+	const kind = question.response?.kind;
+	if (['drawing-box', 'asset-canvas', 'image-label-zones'].includes(kind)) return [];
+	return [
+		{
+			severity: 'error',
+			code: 'diagram_response_surface_missing',
+			field: 'response.kind',
+			evidence: kind ?? 'missing',
+			message:
+				'The official prompt requires a diagram/drawing/plotting response, but the extracted response control is not diagram-capable. Use drawing-box for blank diagram spaces or asset-canvas/image-label-zones for source-image drawing.'
+		}
+	];
+}
+
+function questionRequiresDiagramResponse(question) {
+	const text = learnerFacingQuestionText(question);
+	const gradingText = [
+		...(question.markSchemeItems ?? []).map((item) => item?.text),
+		...(question.markChecklist ?? []).map((item) => item?.text),
+		question.modelAnswer?.answerText
+	]
+		.filter(Boolean)
+		.join('\n');
+	return (
+		/\buse\s+one\s+or\s+more\s+diagrams?\b/i.test(text) ||
+		/\buse\s+(?:a|an)\s+diagrams?\b/i.test(text) ||
+		/\bdraw\s+(?:a|an|one\s+or\s+more)?\s*diagrams?\b/i.test(text) ||
+		/\bsketch\s+(?:a|an|one\s+or\s+more)?\s*diagrams?\b/i.test(text) ||
+		/\bcomplete\s+(?:the\s+)?(?:graph|diagram|drawing)\b/i.test(text) ||
+		/\bplot\b[^.\n]{0,120}\b(?:graph|grid|axis|axes)\b/i.test(text) ||
+		/\b(?:graph|grid|axis|axes)\b[^.\n]{0,120}\bplot\b/i.test(text) ||
+		/\bmax(?:imum)?\s+(?:lower\s+)?level\s+\d+\s+if\s+diagram\s+is\s+not\s+used\b/i.test(
+			gradingText
+		)
+	);
+}
+
 function responseAssetCompletenessIssues(question) {
 	const kind = question.response?.kind;
 	if (!['asset-canvas', 'image-label-zones'].includes(kind)) return [];
@@ -5168,15 +5229,20 @@ function sourceDocumentMediaAssetConsistencyIssues(question, sourceDocument) {
 
 function mediaAssetSourcePageMismatch({ sourceDocument, asset, field }) {
 	const label = renderBlockAssetLabel(asset);
-	const expected = figureNumber(label);
+	const expected = figureNumbers(label);
 	const pageNumber = Number(asset?.pageNumber);
-	if (!expected || !Number.isInteger(pageNumber) || pageNumber < 1) return null;
+	if (expected.length === 0 || !Number.isInteger(pageNumber) || pageNumber < 1) return null;
 	const sourcePath = sourceDocument?.filePath;
 	if (!sourcePath || !sourcePathExists(sourcePath)) return null;
 	const text = sourcePdfPageText(sourcePath, pageNumber);
 	if (!text) return null;
-	const expectedPattern = new RegExp(`\\b(?:figure|fig\\.?)\\s*${escapeRegExp(expected)}\\b`, 'i');
-	if (expectedPattern.test(text)) return null;
+	for (const figure of expected) {
+		const expectedPattern = new RegExp(
+			`\\b(?:figure|fig\\.?)\\s*0*${escapeRegExp(figure)}\\b`,
+			'i'
+		);
+		if (expectedPattern.test(text)) return null;
+	}
 	return {
 		severity: 'error',
 		code: 'media_asset_page_label_mismatch',
@@ -5366,19 +5432,44 @@ function structuredTableBlockMatches(block, label) {
 }
 
 function questionHasStructuredReferenceSurface(question, label) {
-	return questionRenderBlocks(question).some(({ block }) =>
-		structuredReferenceBlockMatches(block, label)
-	);
+	if (
+		questionRenderBlocks(question).some(({ block }) =>
+			structuredReferenceBlockMatches(block, label)
+		)
+	) {
+		return true;
+	}
+	if (!questionTextDescribesLabelAsTable(question, label)) return false;
+	const tableBlocks = questionRenderBlocks(question)
+		.map(({ block }) => block)
+		.filter((block) => ['table', 'structured-table'].includes(String(block?.kind ?? '')));
+	return tableBlocks.length === 1 && structuredReferenceBlockHasRows(tableBlocks[0]);
 }
 
 function structuredReferenceBlockMatches(block, label) {
 	if (!block || typeof block !== 'object') return false;
 	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
 	if (!assetMatchesLabel(block, label)) return false;
+	return structuredReferenceBlockHasRows(block);
+}
+
+function structuredReferenceBlockHasRows(block) {
 	const rows = Array.isArray(block.rows) ? block.rows : [];
 	return rows.some(
 		(row) => Array.isArray(row) && row.some((cell) => structuredCellText(cell).trim())
 	);
+}
+
+function questionTextDescribesLabelAsTable(question, label) {
+	const escapedLabel = escapeRegExp(String(label ?? ''))
+		.replace(/figure/i, '(?:figure|fig\\.?)')
+		.replace(/table/i, 'table');
+	if (!escapedLabel) return false;
+	const text = learnerFacingQuestionText(question);
+	return new RegExp(
+		`\\b${escapedLabel}\\b[^.\\n]{0,120}\\btable\\b|\\btable\\b[^.\\n]{0,120}\\b${escapedLabel}\\b`,
+		'i'
+	).test(text);
 }
 
 function structuredCellText(cell) {
@@ -5390,38 +5481,80 @@ function structuredCellText(cell) {
 
 function mediaAssetPageLabelMismatch(asset, label, field = 'assets') {
 	if (!asset || !label) return null;
-	const expected = figureNumber(label);
-	if (!expected) return null;
-	const values = [
+	const expected = figureNumbers(label);
+	if (expected.length === 0) return null;
+	const metadataValues = [
 		asset.sourceLabel,
 		asset.label,
 		asset.assetLabel,
 		asset.altText,
 		asset.id,
-		asset.assetId,
+		asset.assetId
+	].filter((value) => typeof value === 'string' && value.trim());
+	const pathValues = [
 		asset.filePath,
 		asset.publicPath,
 		asset.r2Key
 	].filter((value) => typeof value === 'string' && value.trim());
+	const metadataMismatch = firstFigureLabelMismatch(metadataValues, expected);
+	if (metadataMismatch) {
+		return mediaAssetLabelMismatchIssue(field, label, metadataMismatch);
+	}
+	if (metadataValues.some((value) => intersectsFigureNumbers(figureNumbers(value), expected))) {
+		return null;
+	}
+	const pathMismatch = firstFigureLabelMismatch(pathValues, expected);
+	if (pathMismatch) return mediaAssetLabelMismatchIssue(field, label, pathMismatch);
+	return null;
+}
+
+function firstFigureLabelMismatch(values, expected) {
 	for (const value of values) {
-		const actual = figureNumber(value);
-		if (actual && actual !== expected) {
-			return {
-				severity: 'error',
-				code: 'media_asset_label_mismatch',
-				field,
-				evidence: `${label} -> ${value}`,
-				message:
-					'Media asset metadata or path appears to point to a different numbered figure than the learner-facing reference.'
-			};
-		}
+		const actual = figureNumbers(value);
+		if (actual.length > 0 && !intersectsFigureNumbers(actual, expected)) return value;
 	}
 	return null;
 }
 
-function figureNumber(value) {
-	const match = String(value ?? '').match(/\b(?:figure|fig\.?)\s*[-_ ]*(\d+[A-Za-z]?)\b/i);
-	return match ? match[1].toLowerCase() : null;
+function mediaAssetLabelMismatchIssue(field, label, value) {
+	return {
+		severity: 'error',
+		code: 'media_asset_label_mismatch',
+		field,
+		evidence: `${label} -> ${value}`,
+		message:
+			'Media asset metadata or path appears to point to a different numbered figure than the learner-facing reference.'
+	};
+}
+
+function intersectsFigureNumbers(left, right) {
+	return left.some((value) => right.includes(value));
+}
+
+function figureNumbers(value) {
+	const text = String(value ?? '');
+	const out = [];
+	for (const match of text.matchAll(/\bfigures?\s+([0-9A-Za-z,\sand&/-]+)/gi)) {
+		for (const numberMatch of match[1].matchAll(/\b\d+[A-Za-z]?\b/g)) {
+			out.push(normalizedFigureNumber(numberMatch[0]));
+		}
+	}
+	for (const match of text.matchAll(
+		/\b(?:figure|fig\.?)\s*[-_ ]*(\d+[A-Za-z]?)(?:\s*[-_]\s*(\d+[A-Za-z]?))?/gi
+	)) {
+		out.push(normalizedFigureNumber(match[1]));
+		if (match[2]) out.push(normalizedFigureNumber(match[2]));
+	}
+	return [...new Set(out.filter(Boolean))];
+}
+
+function normalizedFigureNumber(value) {
+	const match = String(value ?? '')
+		.trim()
+		.toLowerCase()
+		.match(/^0*(\d+)([a-z]?)$/);
+	if (!match) return String(value ?? '').trim().toLowerCase();
+	return `${Number(match[1])}${match[2] ?? ''}`;
 }
 
 function escapeRegExp(value) {
@@ -6349,6 +6482,7 @@ function normalizeAssetKey(value) {
 function assetMatchesLabel(asset, label) {
 	const wanted = normalizeAssetKey(label);
 	if (!wanted) return false;
+	const wantedFigures = figureNumbers(label);
 	return [
 		asset?.sourceLabel,
 		asset?.label,
@@ -6360,6 +6494,12 @@ function assetMatchesLabel(asset, label) {
 		asset?.publicPath
 	].some((value) => {
 		const normalized = normalizeAssetKey(value);
+		if (
+			wantedFigures.length > 0 &&
+			intersectsFigureNumbers(figureNumbers(value), wantedFigures)
+		) {
+			return true;
+		}
 		return (
 			normalized.length > 0 &&
 			(normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized))

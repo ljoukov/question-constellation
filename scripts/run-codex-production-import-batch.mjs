@@ -26,6 +26,7 @@ Options:
   --run-id=<single-paper-run-id>
   --dry-run
   --continue-on-error
+  --allow-dropped-questions  diagnostic only: allow partial import-ready subsets
 
 All model, judge, chain, solvability, import, and force flags accepted by codex:production-import
 are forwarded. Use --solvability-concurrency=<n> to control per-paper solvability checks; batch
@@ -257,6 +258,7 @@ function productionCommand(row, paper) {
 		'no-import-check',
 		'skip-d1-conflict-check',
 		'allow-shared-chain-updates',
+		'allow-dropped-questions',
 		'skip-r2-upload',
 		'import'
 	]) {
@@ -318,7 +320,8 @@ async function processPaper(paper) {
 		codex: {
 			extraction: paperSummary?.extractionSummary?.codex ?? null,
 			extractionJudge: paperSummary?.extractionJudgeSummary?.codex ?? null,
-			chains: paperSummary?.chainSummary?.codex ?? null
+			chains: paperSummary?.chainSummary?.codex ?? null,
+			solvability: paperSummary?.solvabilitySummary?.codex ?? null
 		},
 		importReady: paperSummary?.importReady
 			? {

@@ -769,6 +769,13 @@ questions. `asset-canvas` and `drawing-box` responses are exempt from the single
 graph/drawing responses are gradable from their mark scheme and checklist, and forcing a fake
 answer key would make the data less faithful.
 
+Import-ready normalization must preserve the response surface chosen by extraction when the prompt
+asks the learner to draw, plot, sketch, complete, or label a graph, grid, diagram, cross-section, or
+image. It may normalize an `asset-canvas` over a structured table into `choice-table` only for
+genuine table-value selection tasks such as ring/circle/select/tick/shade a value or cell. It must
+not convert graph plotting from a table of source data into a table-choice response; the source
+table is context, while the learner response surface is the graph canvas.
+
 The older `@ljoukov/llm` chunk/agentic path is kept as a legacy diagnostic and repair harness under
 `scripts/extract-paper-llm.mjs`, `scripts/run-production-extraction-pipeline.mjs`, and
 `pnpm run extract:production:llm`. It is no longer the main production import path.

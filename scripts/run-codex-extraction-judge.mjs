@@ -185,6 +185,10 @@ function buildPrompt() {
 		expectedMarks === null
 			? 'Confirm the candidate mark total matches the whole official paper and official mark scheme.'
 			: `Confirm the candidate mark total is exactly ${expectedMarks}.`;
+	const sourceSpecificLine =
+		sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
+			? 'For Geography 2022 Paper 1 Q02.3, the question-paper option B says "The trees drop their dead leaves because of lower temperatures in winter" while the mark scheme key abbreviates this as "The trees drop their leaves...". This is not a defect if response.options preserve the question-paper wording and the answer key still identifies option B / the corresponding mark-scheme wording.'
+			: '';
 	return `You are an independent GCSE extraction and learner-rendering judge. You did not create candidate.json.
 
 Files in this clean work directory:
@@ -205,6 +209,8 @@ Task:
 5. Use PDF text layer for exact text, rendered pages/contact sheets for layout, embedded image extraction for figures/tables, and visual inspection for equations/formulae/line counts. OCR is fallback only.
 6. For Biology Nov 2020, explicitly verify Q07.1 has 7 visible ruled answer lines and Q07.3 has 16 visible ruled answer lines.
 7. Fail real defects, including missing renderable assets for mentioned figures, missing table data, duplicated learner-visible setup text, wrong response-line counts, wrong fixed-response answer keys, missing model answers for written questions, or mark-scheme rows that do not support grading.
+8. For fixed-response or multiple-choice questions, judge learner-visible option text against the question paper, not against shortened mark-scheme wording. The mark scheme determines which option is correct; the question paper determines exactly what text the learner sees. Do not fail merely because a correct option's paper wording contains extra words that the mark scheme omits, as long as the selected option and grading evidence are aligned.
+${sourceSpecificLine}
 
 Useful commands:
 - bash pdf-tools.sh pdf-info --pdf=question-paper.pdf --output=question-paper.info.txt

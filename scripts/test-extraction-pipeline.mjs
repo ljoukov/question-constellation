@@ -75,6 +75,9 @@ const codexSolvabilityJudgeSource = readText(
 const codexProductionImportSource = readText(
 	path.join(rootDir, 'scripts/run-codex-production-import-pipeline.mjs')
 );
+const codexProductionImportBatchSource = readText(
+	path.join(rootDir, 'scripts/run-codex-production-import-batch.mjs')
+);
 const productionBatchSource = readText(
 	path.join(rootDir, 'scripts/run-production-extraction-batch.mjs')
 );
@@ -127,6 +130,7 @@ for (const filePath of [
 	'scripts/run-codex-answer-chains.mjs',
 	'scripts/run-codex-solvability-judge.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
+	'scripts/run-codex-production-import-batch.mjs',
 	'scripts/run-production-extraction-batch.mjs',
 	'scripts/verify-production-extraction-run.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
@@ -449,6 +453,7 @@ requireIncludes(
 		'response_asset_not_renderable',
 		'image_label_zones_missing_labels',
 		'image_label_zones_missing_zones',
+		'diagram_response_surface_missing',
 		'referenced_media_missing_asset',
 		'render_block_duplicate_text',
 		'table_asset_canvas_response',
@@ -457,11 +462,14 @@ requireIncludes(
 		'known_response_line_count_mismatch',
 		'labeled_lines_missing_labels',
 		'known_mark_scheme_allowance_missing',
+		'known_fixed_response_option_not_verbatim',
 		'known_survey_context_missing',
 		'known_graph_plotting_mark_scheme_mismatch',
 		'known_level_response_descriptors_missing',
 		'known_self_contained_answer_leak',
 		'known_figure_crop_incomplete',
+		'known_figure_key_text_missing',
+		'imageOcrTextForAsset',
 		'known_figure_crop_prompt_contamination',
 		'known_ring_choice_flattened',
 		'known_algorithm_context_missing',
@@ -594,6 +602,19 @@ requireIncludes(
 		'Million Women survey setup',
 		'3 or 4 correct plots earns 1 mark',
 		'official level-of-response mark bands/descriptors',
+		'copy every learner-visible option exactly from the question paper',
+		'For Q02.3, copy the multiple-choice options verbatim from the question paper',
+		'For Figure 6/Q02.4',
+		'The learner-visible key must include Tropical forest',
+		'For Figure 9 and Figure 10/Q02.9',
+		'For Figure 13/Q03.7',
+		'For Q03.6, Q04.6, and Q05.6',
+		'For Figure 20/Q05.7',
+		'Distance from source (km)',
+		'Do not represent such questions as response.kind="lines" or "labeled-lines" alone',
+		'A crop that ends mid-grid or before the x-axis labels is invalid',
+		'Y endpoint down to 0 m',
+		'crop to the figure boundary',
 		'selfContainedPromptText must not reveal the completed equation',
 		'Figure 2 includes the complete Mesophyll cell label',
 		'Figure 4 includes the full key including Water molecules and Nitrate ions',
@@ -618,6 +639,8 @@ requireIncludes(
 		'Do not judge answer-chain style',
 		'Do not inspect the repository',
 		'learner-rendering judge',
+		'judge learner-visible option text against the question paper',
+		'For Geography 2022 Paper 1 Q02.3',
 		'requiredRepairs'
 	],
 	'Codex extraction judge runner'
@@ -655,6 +678,7 @@ requireIncludes(
 		'--run-legacy-solvability',
 		'--solvability-timeout-ms',
 		'--skip-r2-upload',
+		'--allow-dropped-questions',
 		'--import',
 		'codex-production-import-summary.json',
 		'codex-extraction-summary.json',
@@ -669,6 +693,22 @@ requireIncludes(
 		"stringArg('solvability-thinking-level'"
 	],
 	'Codex production import orchestrator'
+);
+
+requireIncludes(
+	codexProductionImportBatchSource,
+	[
+		'scripts/run-codex-production-import-pipeline.mjs',
+		'--manifest=data/aqa-gcse-history-geography-computer-science/manifest.json',
+		'--solvability-concurrency',
+		'--continue-on-error',
+		'--allow-dropped-questions',
+		'paperAttempts',
+		'paperSummary?.solvabilitySummary?.codex',
+		'codex: {',
+		'runCommandWithRetry'
+	],
+	'Codex production import batch orchestrator'
 );
 
 requireIncludes(
@@ -826,6 +866,8 @@ requireIncludes(
 		'--run-solvability',
 		'--check-existing',
 		'--allow-shared-chain-updates',
+		'--allow-dropped-questions',
+		'Import-ready subset dropped',
 		'runCapturedLog',
 		'process.stderr.write(output)',
 		'process.env.EXTRACTION_RUN_ID = runId'
@@ -970,6 +1012,7 @@ for (const scriptPath of [
 	'scripts/run-codex-answer-chains.mjs',
 	'scripts/run-codex-solvability-judge.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
+	'scripts/run-codex-production-import-batch.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
@@ -1501,6 +1544,67 @@ const missingMediaFailure = runNodeScriptExpectFailure('scripts/codex-import-hel
 if (!missingMediaFailure.includes('referenced_media_missing_asset')) {
 	fail('Codex helper validation did not reject a referenced Figure without a renderable asset.', {
 		missingMediaFailure
+	});
+}
+
+const missingDiagramSurfacePath = path.join(helperNormalizeDir, 'missing-diagram-surface.json');
+writeFileSync(
+	missingDiagramSurfacePath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper', pageCount: 6 },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 2 },
+			questions: [
+				{
+					sourceQuestionRef: '03.6',
+					promptText:
+						'Explain how a wave cut platform is formed as a cliff is eroded. Use one or more diagrams to support your answer.',
+					marks: 4,
+					pageStart: 5,
+					pageEnd: 5,
+					promptBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'Explain how a wave cut platform is formed as a cliff is eroded.'
+						},
+						{ kind: 'paragraph', text: 'Use one or more diagrams to support your answer.' }
+					],
+					response: {
+						kind: 'lines',
+						lineCount: 6,
+						lineCountEvidence: 'Rendered page shows six ruled lines.'
+					},
+					markSchemeItems: [
+						{
+							itemType: 'level_descriptor',
+							text: 'Max lower Level 2 if diagram is not used.'
+						},
+						{ itemType: 'mark', text: 'Explains notch formation and cliff retreat.' }
+					],
+					markChecklist: [
+						{ text: 'Uses a labelled diagram.', markSchemeItemIndexes: [0] },
+						{ text: 'Explains erosion and retreat.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: {
+						answerText:
+							'A labelled diagram shows a notch cut by erosion, collapse, retreat and the platform left behind.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const missingDiagramSurfaceFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${missingDiagramSurfacePath}`,
+	'--expected-marks=4',
+	'--expected-questions=1'
+]);
+if (!missingDiagramSurfaceFailure.includes('diagram_response_surface_missing')) {
+	fail('Codex helper validation did not reject a diagram-required prompt with only lines.', {
+		missingDiagramSurfaceFailure
 	});
 }
 
@@ -3931,6 +4035,69 @@ if (
 	fail('Deterministic checks did not flag unsupported response.kind values.');
 }
 
+const missingDiagramResponseIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '03.6',
+				commandWord: 'Explain',
+				marks: 4,
+				promptText:
+					'Explain how a wave cut platform is formed as a cliff is eroded. Use one or more diagrams to support your answer.',
+				response: { kind: 'lines', count: 6 },
+				markSchemeItems: [
+					{ itemType: 'level_descriptor', text: 'Max lower Level 2 if diagram is not used.' },
+					{ itemType: 'mark', text: 'Explains erosion and retreat.' }
+				],
+				markChecklist: [{ text: 'Uses a labelled diagram.', markSchemeItemIndexes: [0] }],
+				modelAnswer: { answerText: 'A labelled diagram shows notch formation and retreat.' }
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	!missingDiagramResponseIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' && issue.code === 'diagram_response_surface_missing'
+		)
+	)
+) {
+	fail('Deterministic checks did not flag a diagram-required prompt with only answer lines.');
+}
+
+const drawingBoxDiagramResponseIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '03.6',
+				commandWord: 'Explain',
+				marks: 4,
+				promptText:
+					'Explain how a wave cut platform is formed as a cliff is eroded. Use one or more diagrams to support your answer.',
+				response: { kind: 'drawing-box', label: 'Diagram and written answer' },
+				markSchemeItems: [
+					{ itemType: 'level_descriptor', text: 'Max lower Level 2 if diagram is not used.' },
+					{ itemType: 'mark', text: 'Explains erosion and retreat.' }
+				],
+				markChecklist: [{ text: 'Uses a labelled diagram.', markSchemeItemIndexes: [0] }],
+				modelAnswer: { answerText: 'A labelled diagram shows notch formation and retreat.' }
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	drawingBoxDiagramResponseIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'diagram_response_surface_missing')
+	)
+) {
+	fail('Deterministic checks rejected a diagram-required drawing-box response.', {
+		drawingBoxDiagramResponseIssues
+	});
+}
+
 const missingAnswerKeyIssues = pipelineModule.deterministicCandidateIssues({
 	questions: [
 		{
@@ -4023,6 +4190,102 @@ if (
 ) {
 	fail('Deterministic checks rejected normalized fixed-response aliases.', {
 		normalizedAlternativeAnswerIssues
+	});
+}
+
+const graphPlottingAssetQuestion = {
+	sourceQuestionRef: '04.1',
+	commandWord: 'Plot',
+	marks: 1,
+	promptText: 'Plot the width of the river at Site 6 on to the graph below. Use the following data.',
+	stemBlocks: [
+		{
+			kind: 'structured-table',
+			label: 'Figure 14',
+			columns: ['Site', '1', '2', '6'],
+			rows: [
+				['Distance from source (km)', '2', '15', '66'],
+				['Width of river (m)', '1.9', '3.2', '9.0']
+			]
+		}
+	],
+	response: {
+		kind: 'asset-canvas',
+		assetLabel: 'Figure 14',
+		instructions: 'Plot Site 6 at distance 66 km and width 9.0 m.',
+		correctAnswers: [{ targetId: 'site-6-point', correctAnswer: 'Point plotted at (66 km, 9.0 m).' }]
+	},
+	markSchemeItems: [{ itemType: 'mark', text: 'Correct plot at distance 66 km and river width 9.0 m.' }],
+	modelAnswer: { answerText: 'Plot a point at 66 km and 9.0 m.' }
+};
+const normalizedGraphPlottingAssetQuestion =
+	pipelineModule.normalizeExtractedQuestionForImport(graphPlottingAssetQuestion);
+if (normalizedGraphPlottingAssetQuestion.response?.kind !== 'asset-canvas') {
+	fail('Import normalizer converted a graph plotting canvas into a choice-table.', {
+		normalizedGraphPlottingAssetQuestion
+	});
+}
+const graphPlottingChoiceTableIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				...graphPlottingAssetQuestion,
+				response: {
+					kind: 'choice-table',
+					columns: ['Source row', 'Source column', 'Value'],
+					rows: [['Site: Distance from source (km)', '6', '66']],
+					correctAnswers: [
+						{ targetId: 'answer', correctAnswer: 'Site: Distance from source (km) | 6 | 66' }
+					]
+				}
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	!graphPlottingChoiceTableIssues.some((finding) =>
+		finding.issues.some(
+			(issue) =>
+				issue.severity === 'error' && issue.code === 'diagram_response_surface_missing'
+		)
+	)
+) {
+	fail('Deterministic checks did not reject graph plotting represented as choice-table.', {
+		graphPlottingChoiceTableIssues
+	});
+}
+
+const tableValueSelectionQuestion = {
+	sourceQuestionRef: '01.4',
+	commandWord: 'Ring',
+	marks: 1,
+	promptText: 'Ring the anomalous value in Table 1.',
+	stemBlocks: [
+		{
+			kind: 'structured-table',
+			label: 'Table 1',
+			columns: ['Trial', '1', '2', '3'],
+			rows: [['Volume of gas (cm3)', '18.5', '19.3', '14.2']]
+		}
+	],
+	response: {
+		kind: 'asset-canvas',
+		assetLabel: 'Table 1',
+		correctAnswers: [{ targetId: 'answer', correctAnswer: '14.2' }]
+	},
+	markSchemeItems: [{ itemType: 'mark', text: 'A ring around 14.2.' }],
+	modelAnswer: null
+};
+const normalizedTableValueSelectionQuestion =
+	pipelineModule.normalizeExtractedQuestionForImport(tableValueSelectionQuestion);
+if (
+	normalizedTableValueSelectionQuestion.response?.kind !== 'choice-table' ||
+	normalizedTableValueSelectionQuestion.response?.correctAnswers?.[0]?.correctAnswer !==
+		'Trial: Volume of gas (cm3) | 3 | 14.2'
+) {
+	fail('Import normalizer did not convert a genuine table value selection into choice-table.', {
+		normalizedTableValueSelectionQuestion
 	});
 }
 

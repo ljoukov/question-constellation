@@ -45,6 +45,17 @@ These numbers show that a 20-step cap is too small for a whole-paper agentic ext
 
 The historical `tmp/codex-benchmark-whole-paper-20260628` artifact is not equivalent to a true PDF-only production run because the prompt was given precomputed `question-paper.txt`, `mark-scheme.txt`, and page PNGs. It remains useful as a reference for expected JSON quality and latency, but not as proof of PDF-to-JSON extraction from official PDFs.
 
+The copied historical benchmark under
+`/home/yaroslav_volovich/projects/questions-constellation/tmp/codex-benchmark-whole-paper-20260628`
+contains `codex-events.jsonl`, but no separate original rollout JSONL for thread
+`019f0fec-9133-78e2-a113-bf614ba9b6c5` was found locally. The observable sequence was:
+read slices of precomputed `question-paper.txt` and `mark-scheme.txt` with `sed`, list the
+pre-rendered page PNGs and PDFs with `rg --files`, check text lengths with `wc -l`, write
+`codex-output.json`, then validate JSON syntax/counts with `python3 -m json.tool`. It used 11
+command actions, 0 failed actions, and 549,045 input / 396,032 cached / 26,422 output / 558
+reasoning tokens, producing 46 questions and 100 marks. This is a useful quality target, but it is
+not a production PDF-only trace because the core text and page images were pre-fed.
+
 ## Production SDK Wrapper Result
 
 The production path now launches Codex through `@openai/codex-sdk` from clean prepared work
@@ -175,6 +186,35 @@ rows and 39 visible-series mismatches: 2 Computer Science, 6 Geography, and 31 H
 are `tmp/aqa-humanities-cs-source-identity-audit.json` and
 `tmp/aqa-humanities-cs-identity-safe-manifest.json`. Batch import should run only the identity-safe
 subset unless a mismatch is manually audited and passed with `--allow-visible-source-mismatch`.
+
+AQA GCSE Geography Paper 1 June 2022 was then used as a response-rendering canary on 2026-07-02.
+The run started from the official PDFs and examiner report under
+`data/aqa-gcse-history-geography-computer-science/`, with no pre-fed `question-paper.txt` or
+`mark-scheme.txt` prompt inputs. The previous v10 canary extracted the whole paper but failed
+learner-facing solvability on four refs: `03.6`, `04.1`, `04.6`, and `05.6`.
+
+| Phase | Artifact | Wall time | Actions | Failed | Token usage | Outcome |
+| --- | --- | ---: | ---: | ---: | --- | --- |
+| v10 Codex PDF extraction | `tmp/codex-humanities-geography-v10/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/raw/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp.json` | 1556.097s | 121 | 2 | input 7,066,663; cached 6,594,560; output 61,444; reasoning 6,914 | 40 questions, 103 marks, deterministic validation passed |
+| v10 independent extraction judge | `tmp/codex-humanities-geography-v10/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/extraction-judge/judge-report.json` | 294.178s | 56 | 0 | input 1,166,412; cached 968,192; output 13,582; reasoning 3,294 | pass, score 0.99, 0 required repairs |
+| v10 answer-chain reconciliation | `tmp/codex-humanities-geography-v10/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/chain-reconciled/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp.json` | 485.276s | 30 | 1 | input 1,226,515; cached 1,131,008; output 25,097; reasoning 6,973 | 40 created, chain validation passed |
+| v10 Codex solvability | `tmp/codex-humanities-geography-v10/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/codex-solvability/solvability-report.json` | 401.668s | 13 | 0 | input 1,035,749; cached 830,464; output 16,275; reasoning 8,186 | failed 36/40: `03.6`, `04.1`, `04.6`, `05.6` |
+| v11 Codex PDF extraction | `tmp/codex-humanities-geography-v11/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/raw/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp.json` | 1063.793s | 57 | 2 | input 4,251,594; cached 3,913,728; output 44,132; reasoning 6,350 | 40 questions, 103 marks, deterministic validation passed |
+| v11 independent extraction judge | `tmp/codex-humanities-geography-v11/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/extraction-judge/judge-report.json` | 399.386s | 47 | 0 | input 1,748,557; cached 1,489,408; output 14,040; reasoning 2,268 | pass, score 1.00, 40 refs checked, 0 required repairs |
+| v11 answer-chain reconciliation | `tmp/codex-humanities-geography-v11/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/chain-reconciled/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp.json` | 476.687s | 23 | 1 | input 1,045,315; cached 950,784; output 23,884; reasoning 9,737 | 40 created, chain validation passed; style judge intentionally skipped |
+| v11 stale import-ready solvability | `tmp/codex-humanities-geography-v11/work/aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp/codex-solvability/solvability-report.json` | 475.779s | 47 | 1 | input 2,624,957; cached 2,292,736; output 19,953; reasoning 6,065 | failed 39/40: import-ready normalized `04.1` graph plotting into `choice-table` |
+| v11 fixed strict audit / D1 dry-run | `tmp/codex-humanities-geography-v11-fixed-import-ready/prepare-import-ready-summary.json` and `tmp/codex-humanities-geography-v11-fixed-import-ready/d1-import-dry-run.json` | n/a | n/a | 0 | n/a | 40/40 kept, 0 dropped, strict audit passed, D1 dry-run planned 614 statements |
+| v11 fixed Codex solvability | `tmp/codex-humanities-geography-v11-fixed-import-ready/codex-solvability/solvability-report.json` | 428.708s | 25 | 3 | input 1,591,435; cached 1,318,912; output 15,647; reasoning 5,464 | passed 40/40 |
+
+This canary exposed two importer defects that should stay as permanent gates. First, diagram-required
+written responses must use a diagram-capable response surface. The extractor now prompts
+Q03.6/Q04.6/Q05.6-style questions as `drawing-box` plus visible line evidence, and deterministic
+validators emit `diagram_response_surface_missing` when such prompts are normalized to plain
+`lines`. Second, import-ready normalization must not convert graph plotting, diagram, image, grid,
+or cross-section responses into `choice-table` merely because the source data are also present as a
+structured table. Table data can be context; the learner response surface remains the graph/image
+canvas. `choice-table` normalization is now reserved for genuine ring/circle/select/tick/shade a
+table value or cell prompts.
 
 ## OCR And Visual Inspection Conclusion
 

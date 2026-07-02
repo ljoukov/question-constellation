@@ -41,6 +41,7 @@ Optional:
   --allow-shared-chain-updates
   --skip-r2-upload
   --allow-visible-source-mismatch
+  --allow-dropped-questions  diagnostic only: allow partial import-ready subsets
   --import
   --force
   --dry-run
@@ -321,6 +322,7 @@ function prepareImportReadyCommand({ forceNoImportCheck = false, includeLegacySo
 	if (noImportCheck || forceNoImportCheck) args.push('--no-import-check');
 	if (checkExisting && !forceNoImportCheck) args.push('--check-existing');
 	if (hasArg('allow-shared-chain-updates')) args.push('--allow-shared-chain-updates');
+	if (hasArg('allow-dropped-questions')) args.push('--allow-dropped-questions');
 	if (importToD1 && !forceNoImportCheck) args.push('--import');
 	return args;
 }

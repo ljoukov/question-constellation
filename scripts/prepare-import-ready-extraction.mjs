@@ -18,6 +18,7 @@ const noImportCheck = hasArg('no-import-check');
 const checkExisting = hasArg('check-existing');
 const allowSharedChainUpdates = hasArg('allow-shared-chain-updates');
 const refreshSharedChainDefinitions = hasArg('refresh-shared-chain-definitions');
+const allowDroppedQuestions = hasArg('allow-dropped-questions');
 const keepWarnings = hasArg('keep-warnings');
 const model = stringArg('model', '');
 const thinkingLevel = stringArg('thinking-level', '');
@@ -48,6 +49,7 @@ console.log(
 			checkExisting,
 			allowSharedChainUpdates,
 			refreshSharedChainDefinitions,
+			allowDroppedQuestions,
 			keptQuestions: buildSummary.keptQuestions,
 			droppedQuestions: buildSummary.droppedQuestions,
 			importedPapers: importResults.map((result) => result.sourceDocumentId),
@@ -125,6 +127,17 @@ function buildImportReadySubset() {
 	}
 	if (summary.keptQuestions <= 0) {
 		throw new Error('Import-ready subset contains no questions; nothing is safe to import.');
+	}
+	if (summary.droppedQuestions > 0 && !allowDroppedQuestions) {
+		const reasonSummary = Object.entries(summary.dropReasons ?? {})
+			.slice(0, 8)
+			.map(([reason, count]) => `${reason}=${count}`)
+			.join(', ');
+		throw new Error(
+			`Import-ready subset dropped ${summary.droppedQuestions} question(s). ` +
+				`This is not safe for production import without --allow-dropped-questions. ` +
+				(reasonSummary ? `Top reasons: ${reasonSummary}.` : '')
+		);
 	}
 	return summary;
 }
