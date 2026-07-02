@@ -233,13 +233,14 @@
 
 	.seo-copy {
 		margin-top: 1.4rem;
-		padding-top: 1.2rem;
-		border-top: 1px solid rgba(105, 129, 143, 0.15);
+		padding: 1.3rem;
+		border: 1px solid #cbd7df;
+		background: rgba(255, 255, 255, 0.82);
 	}
 
 	.seo-copy p {
-		max-width: 50rem;
-		margin: 0.55rem 0 0;
+		max-width: 40rem;
+		margin: 0;
 		font-size: 0.95rem;
 	}
 
@@ -275,6 +276,10 @@
 	:global(:root[data-theme='dark']) .qualification-card {
 		border-color: #334155;
 		background: rgba(15, 23, 42, 0.76);
+	}
+
+	:global(:root[data-theme='dark']) .seo-copy {
+		background: rgba(15, 23, 42, 0.78);
 	}
 
 	:global(:root[data-theme='dark']) .qualification-card:hover,
