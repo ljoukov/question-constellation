@@ -1,18 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
-	import SubjectSwitcher from '$lib/components/SubjectSwitcher.svelte';
-	import {
-		ArrowLeft,
-		ArrowRight,
-		BookOpen,
-		Bookmark,
-		ChevronRight,
-		ClipboardList,
-		Lightbulb,
-		Route,
-		TriangleAlert
-	} from '@lucide/svelte';
+	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
+	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { ClipboardList, PenLine, TriangleAlert } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -23,145 +15,124 @@
 	const practiceHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.practiceQuestion.id })
 	);
+	const currentPracticeHref = $derived(
+		resolve('/questions/[questionId]/practice', { questionId: data.question.id })
+	);
 	const constellationHref = $derived(
 		resolve('/constellations/[chainId]', { chainId: data.chain.id })
 	);
-	const currentSubject = $derived(
-		data.question.meta.topic.split(':')[0] || data.question.meta.paper
-	);
+	const isEnglish = $derived(data.question.meta.subject.toLowerCase().includes('english'));
+	const topbarSubject = $derived(isEnglish ? 'English' : data.question.meta.subject);
+	const topbarSubjects = [
+		'All subjects',
+		'Science',
+		'Biology',
+		'Chemistry',
+		'Physics',
+		'Computer Science',
+		'English'
+	];
+	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 </script>
 
 <svelte:head>
-	<title>Same answer chain | Question Constellation</title>
+	<title>{isEnglish ? 'How this earns marks' : data.chain.pageTitle} | Question Constellation</title
+	>
 	<meta
 		name="description"
-		content="Reveal the answer chain and see how it transfers to related GCSE questions."
+		content={isEnglish
+			? 'Review the mark path for this GCSE English question and practise another question.'
+			: 'Reveal the answer chain and see how it transfers to related GCSE questions.'}
 	/>
 </svelte:head>
 
-<main class="flow-page chain-reveal-page">
-	<header class="app-header compact-header">
-		<a class="icon-button" href={questionHref} aria-label="Back to question">
-			<ArrowLeft size={25} strokeWidth={2.1} />
-		</a>
-		<a class="brand-lockup" href={questionHref}>
-			<strong>Question Constellation</strong>
-		</a>
-		<div class="header-actions">
-			<SubjectSwitcher subjects={data.subjectNavigation} {currentSubject} />
-			<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
-		</div>
-	</header>
+<main class="qc-real-app qc-chain-reveal-page">
+	<AppTopbar
+		subject={topbarSubject}
+		subjects={topbarSubjects}
+		searchPlaceholder="Search questions"
+	/>
 
-	<div class="flow-grid chain-grid">
-		<section class="flow-main">
-			<div class="section-intro">
-				<h1 class="desktop-title">Same answer chain</h1>
-				<p>Use this to connect the question's starting point to the final result.</p>
-			</div>
-
-			<section class="chain-card large-chain" aria-label={data.chain.concreteText}>
-				<div class="chain-icons">
-					{#each data.chain.steps as step (step.id)}
-						<div class="chain-node">
-							<span class="chain-node-icon"><Route size={25} strokeWidth={2.2} /></span>
-							<span>{step.short}</span>
-						</div>
-					{/each}
-				</div>
-			</section>
-
-			<div class="chain-teaching-grid">
-				<div class="answer-stack">
-					<section class="answer-panel">
-						<h2>Current question</h2>
-						<div class="compact-question">
-							<span class="question-letter">Q</span>
-							<div class="question-content compact">
-								{#if data.question.context}
-									<p class="question-context">{data.question.context}</p>
-								{/if}
-								<p>{data.question.prompt}</p>
-								{#if data.question.assets.length > 0}
-									<div class="question-assets compact-assets" aria-label="Question source images">
-										{#each data.question.assets as asset (asset.id)}
-											<QuestionAssetFigure {asset} />
-										{/each}
-									</div>
-								{/if}
-							</div>
-						</div>
-					</section>
-
-					<section class="answer-panel resources-panel">
-						<h2>Use after you understand the chain</h2>
-						<p>
-							These resources explain how the links cause the effect and how examiners award marks.
-						</p>
-						<a class="resource-row" href={questionHref}>
-							<BookOpen size={23} />
-							Show model answer
-							<ChevronRight size={22} />
-						</a>
-						<a
-							class="resource-row"
-							href={resolve('/questions/[questionId]/practice', { questionId: data.question.id })}
-						>
-							<ClipboardList size={23} />
-							Open mark checklist
-							<ChevronRight size={22} />
-						</a>
-						<div class="hint-card compact-hint">
-							<Lightbulb size={21} />
-							Try writing an answer using the chain first, then check it against the model and checklist.
-						</div>
-					</section>
-				</div>
-
-				<section class="answer-panel">
-					<h2>Why this earns marks</h2>
-					<ol class="mark-list">
-						{#each data.question.checklist as item, index (item.id)}
-							<li>
-								<span>{index + 1}</span>
-								{item.text}
-							</li>
-						{/each}
-					</ol>
-					<div class="inline-warning">
-						<TriangleAlert size={20} />
-						Common weak answer: {data.question.commonWeakAnswer}
-					</div>
-				</section>
-			</div>
-		</section>
-
-		<aside class="flow-sidebar practice-transfer">
-			<h2>Practice transfer</h2>
-			<p>These look different, but use the same chain.</p>
-			<section class="constellation-list" aria-label="Questions using this chain">
+	<div class="qc-real-layout qc-question-layout">
+		<aside
+			class="qc-real-rail qc-question-rail"
+			aria-label={isEnglish ? 'Questions using this mark path' : 'Questions using this chain'}
+		>
+			<a class="qc-real-quiet-link" href={questionHref}>Back to question</a>
+			<p class="qc-real-kicker">{isEnglish ? 'Mark path' : 'Answer chain'}</p>
+			<h1><MathText text={data.chain.title} /></h1>
+			<p class="qc-rail-summary"><MathText text={data.chain.summary} /></p>
+			<ThinkingChain
+				steps={chainSteps}
+				label={isEnglish ? 'Mark path' : 'Answer chain'}
+				note={isEnglish ? 'Use the order, then put it into exam language.' : ''}
+			/>
+			<nav class="qc-real-chain-list" aria-label="Practice transfer questions">
 				{#each data.questions as question, index (question.id)}
 					<a
-						class="question-row"
+						class:active={question.id === data.question.id}
 						href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
 					>
-						<span class="number-dot">{index + 1}</span>
-						<h3>{question.title}</h3>
-						<span class="row-end">
-							<span class={['tag', question.transferDistance]}>{question.distanceLabel}</span>
-							<ChevronRight size={22} />
-						</span>
+						<span>{index + 1}</span>
+						<span><MathText text={question.title} /></span>
+						<small>{question.distanceLabel} · {question.meta.marks} marks</small>
 					</a>
 				{/each}
-			</section>
-			<a class="primary-button" href={constellationHref}>
-				<ClipboardList size={23} />
-				Open constellation
-			</a>
-			<a class="secondary-button" href={practiceHref}>
-				<ArrowRight size={23} />
-				Start question 2
-			</a>
+			</nav>
 		</aside>
+
+		<section
+			class="qc-real-main qc-chain-reveal-main"
+			aria-label={isEnglish ? 'Mark path' : 'Answer chain'}
+		>
+			<div class="qc-real-question-top">
+				<div>
+					<p><MathText text={data.question.sourceRef} /></p>
+					<h2>{isEnglish ? 'How this earns marks' : 'Same answer chain'}</h2>
+				</div>
+				<a class="qc-real-link-button" href={currentPracticeHref}>Practise this question</a>
+			</div>
+
+			<section class="qc-answer-panel">
+				<p class="qc-panel-label">Model answer</p>
+				<p><MathText text={data.question.modelAnswer} /></p>
+			</section>
+
+			<section class="qc-answer-panel">
+				<p class="qc-panel-label">Mark checklist</p>
+				<ol class="qc-checklist">
+					{#each data.question.checklist as item, index (item.id)}
+						<li>
+							<span>{index + 1}</span>
+							<MathText text={item.text} />
+						</li>
+					{/each}
+				</ol>
+			</section>
+
+			<section class="qc-warning-panel">
+				<TriangleAlert size={19} aria-hidden="true" />
+				<div>
+					<p class="qc-panel-label">Common weak answer</p>
+					<p><MathText text={data.question.commonWeakAnswer} /></p>
+				</div>
+			</section>
+
+			<ExamQuestionCard question={data.question} compact showTitle={false} />
+
+			<div
+				class="qc-action-row"
+				aria-label={isEnglish ? 'Mark path actions' : 'Answer chain actions'}
+			>
+				<a class="qc-action-button primary" href={constellationHref}>
+					<ClipboardList size={18} aria-hidden="true" />
+					{isEnglish ? 'Open question set' : 'Open constellation'}
+				</a>
+				<a class="qc-action-button" href={practiceHref}>
+					<PenLine size={18} aria-hidden="true" />
+					Start practice
+				</a>
+			</div>
+		</section>
 	</div>
 </main>

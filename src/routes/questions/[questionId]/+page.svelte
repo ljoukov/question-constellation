@@ -1,18 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
-	import SubjectSwitcher from '$lib/components/SubjectSwitcher.svelte';
-	import {
-		Bookmark,
-		Circle,
-		Info,
-		Link2,
-		Lock,
-		Network,
-		PenLine,
-		Target,
-		TriangleAlert
-	} from '@lucide/svelte';
+	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { BookOpen, ListChecks, PenLine, Route } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -26,146 +17,130 @@
 	const practiceHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.question.id })
 	);
+	const englishHref = $derived(resolve('/english'));
+	const isEnglish = $derived(data.question.meta.subject.toLowerCase().includes('english'));
+	const topbarSubject = $derived(isEnglish ? 'English' : data.question.meta.subject);
+	const topbarSubjects = [
+		'All subjects',
+		'Science',
+		'Biology',
+		'Chemistry',
+		'Physics',
+		'Computer Science',
+		'English'
+	];
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
-	const promptLines = $derived(
-		data.question.prompt
-			.split(/\r?\n/)
-			.map((line) => line.trim())
-			.filter(Boolean)
+	const metaItems = $derived(
+		[
+			data.question.meta.board,
+			data.question.meta.qualification,
+			data.question.meta.subject,
+			data.question.meta.paper,
+			`${data.question.meta.marks} marks`,
+			data.question.meta.questionType
+		].filter(Boolean)
 	);
-	const promptIsSingleLine = $derived(promptLines.length <= 1);
+	const learningGoal = $derived(
+		data.question.meta.subject.toLowerCase().includes('english')
+			? 'Build an answer that stays on the question, uses precise evidence, explains methods, and links back to the wider text.'
+			: 'Build a mark-scoring answer by making every required link explicit before you check it.'
+	);
 </script>
 
 <svelte:head>
 	<title>{data.question.title} | Question Constellation</title>
 	<meta
 		name="description"
-		content="Attempt a GCSE question first, then reveal the answer chain when ready."
+		content={isEnglish
+			? 'Attempt a GCSE English question first, then review the mark path and practise.'
+			: 'Attempt a GCSE question first, then reveal the answer chain when ready.'}
 	/>
 	<link rel="canonical" href={questionHref} />
 </svelte:head>
 
-<main class="flow-page public-learning-page">
-	<header class="app-header">
-		<a
-			class="brand-lockup"
-			href={resolve('/questions/[questionId]', { questionId: data.question.id })}
-		>
-			<Network size={30} strokeWidth={1.9} />
-			<strong>Question Constellation</strong>
-		</a>
-		<nav class="desktop-nav" aria-label="Main navigation">
-			<SubjectSwitcher
-				subjects={data.subjectNavigation}
-				currentSubject={topicLabel || data.question.meta.paper}
-			/>
-			<a href={practiceHref}>Practice</a>
-		</nav>
-		<div class="header-actions public-header-actions">
-			<span class="mobile-subject-wrapper">
-				<SubjectSwitcher
-					subjects={data.subjectNavigation}
-					currentSubject={topicLabel || data.question.meta.paper}
-				/>
-			</span>
-			<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
-		</div>
-	</header>
+<main class="qc-real-app qc-question-page">
+	<AppTopbar
+		subject={topbarSubject}
+		subjects={topbarSubjects}
+		searchPlaceholder="Search questions"
+	/>
 
-	<div class="flow-grid public-grid">
-		<section class="flow-main">
-			<p class="breadcrumb">
-				{data.question.meta.board}
-				{data.question.meta.subject}
-				{data.question.meta.tier} /
-				{data.question.meta.paper}
+	<div class="qc-real-layout qc-question-layout">
+		<aside class="qc-real-rail qc-question-rail" aria-label="Question route">
+			<a class="qc-real-quiet-link" href={topbarSubject === 'English' ? englishHref : resolve('/')}>
+				Back to question finder
+			</a>
+			<p class="qc-real-kicker">
+				<MathText text={`${data.question.meta.qualification} ${data.question.meta.subject}`} />
 			</p>
-			<h1 class="sr-only">{data.question.title}</h1>
-
-			<section class="meta-pills" aria-label="Exam metadata">
-				<span class="pill">{data.question.meta.marks} marks</span>
-				<span class="pill">{topicLabel}</span>
-				<span class="pill">{data.question.meta.questionType}</span>
-			</section>
-
-			<section class="exam-question-card" class:has-assets={data.question.assets.length > 0}>
-				<div class="question-letter">Q</div>
-				<div class="question-content">
-					{#if data.question.context}
-						<p class="question-context">{data.question.context}</p>
-					{/if}
-					{#if data.question.assets.length > 0}
-						<div class="question-assets question-card-assets" aria-label="Question source images">
-							{#each data.question.assets as asset (asset.id)}
-								<QuestionAssetFigure {asset} loading="eager" />
-							{/each}
-						</div>
-					{/if}
-					{#if promptIsSingleLine}
-						<h2 class="question-heading">{promptLines[0] ?? data.question.prompt}</h2>
-					{:else}
-						<div class="question-prompt-multiline">
-							{#each promptLines as line, index (index)}
-								<p>{line}</p>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			</section>
-
-			<div class="desktop-action-row">
-				<a class="primary-button" href={chainHref}>
-					<Link2 size={23} />
-					Show answer chain
+			<h1><MathText text={data.question.title} /></h1>
+			<div class="qc-question-meta-stack" aria-label="Exam metadata">
+				{#each metaItems as item (item)}
+					<span><MathText text={item} /></span>
+				{/each}
+			</div>
+			<nav class="qc-real-chain-list" aria-label="Question learning route">
+				<a class="active" href={questionHref}>
+					<span>1</span>
+					<span>Question</span>
+					<small>Read the task first</small>
 				</a>
-				<a class="secondary-button" href={practiceHref}>
-					<PenLine size={23} />
+				<a href={chainHref}>
+					<span>2</span>
+					<span>{isEnglish ? 'Mark path' : 'Answer chain'}</span>
+					<small>{isEnglish ? 'See how marks build' : 'Reveal the reusable marks'}</small>
+				</a>
+				<a href={practiceHref}>
+					<span>3</span>
+					<span>Practice</span>
+					<small>Write, check, repair</small>
+				</a>
+			</nav>
+		</aside>
+
+		<section class="qc-real-main qc-question-main" aria-label="Question">
+			<div class="qc-real-question-top">
+				<div>
+					<p><MathText text={`${data.question.sourceRef} · ${topicLabel}`} /></p>
+					<h2>Start with the exam question.</h2>
+				</div>
+				<a class="qc-real-link-button" href={chainHref}>
+					{isEnglish ? 'Show mark path' : 'Show answer chain'}
+				</a>
+			</div>
+
+			<ExamQuestionCard question={data.question} assetLoading="eager" />
+
+			<div class="qc-action-row" aria-label="Question actions">
+				<a class="qc-action-button primary" href={chainHref}>
+					<Route size={18} aria-hidden="true" />
+					{isEnglish ? 'Show mark path' : 'Show answer chain'}
+				</a>
+				<a class="qc-action-button" href={practiceHref}>
+					<PenLine size={18} aria-hidden="true" />
 					Try without hints
 				</a>
 			</div>
 
-			<section class="teaching-card">
-				<span class="icon-tile success"><Target size={28} /></span>
+			<section class="qc-guidance-panel">
+				<div class="qc-guidance-icon"><BookOpen size={19} aria-hidden="true" /></div>
 				<div>
-					<h2>Learning goal</h2>
-					<p>Build a step-by-step explanation from the given change to the final result.</p>
+					<p class="qc-panel-label">Learning goal</p>
+					<p>{learningGoal}</p>
 				</div>
 			</section>
 
-			<p class="helper-line">
-				<Info size={18} />
-				The chain appears after you reveal it or check an attempt.
-			</p>
+			<section class="qc-guidance-panel muted">
+				<div class="qc-guidance-icon"><ListChecks size={19} aria-hidden="true" /></div>
+				<div>
+					<p class="qc-panel-label">Hidden for now</p>
+					<p>
+						The model answer and mark checklist appear on the {isEnglish
+							? 'mark path'
+							: 'answer-chain'} and practice steps.
+					</p>
+				</div>
+			</section>
 		</section>
-
-		<aside class="flow-sidebar">
-			<section class="side-card prompt-card">
-				<h2>Before you reveal</h2>
-				<ul class="prompt-list">
-					<li><Circle size={21} /> What is the first change?</li>
-					<li><Circle size={21} /> What does that change affect next?</li>
-					<li><Circle size={21} /> What final result must be explained?</li>
-				</ul>
-			</section>
-
-			<section class="side-card hidden-card">
-				<div class="side-title-row">
-					<h2>Hidden for now</h2>
-					<Lock size={22} />
-				</div>
-				<div class="locked-chain" aria-label="Hidden answer chain">
-					<span></span><span></span><span></span><span></span><span></span>
-				</div>
-				<p>The answer chain and related questions stay hidden until the next step.</p>
-			</section>
-
-			<section class="side-card warning-card">
-				<span class="icon-tile warning"><TriangleAlert size={24} /></span>
-				<div>
-					<h2>Common trap</h2>
-					<p>Jumping straight from the given change to the final result.</p>
-				</div>
-			</section>
-		</aside>
 	</div>
 </main>

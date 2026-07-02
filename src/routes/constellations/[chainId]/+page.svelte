@@ -1,14 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import {
-		ArrowLeft,
-		ArrowRight,
-		Bookmark,
-		ChevronRight,
-		ClipboardList,
-		Network,
-		Route
-	} from '@lucide/svelte';
+	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
+	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -19,90 +13,88 @@
 	const practiceHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.practiceQuestion.id })
 	);
+	const isEnglish = $derived(data.startQuestion.meta.subject.toLowerCase().includes('english'));
+	const topbarSubject = $derived(isEnglish ? 'English' : data.startQuestion.meta.subject);
+	const topbarSubjects = [
+		'All subjects',
+		'Science',
+		'Biology',
+		'Chemistry',
+		'Physics',
+		'Computer Science',
+		'English'
+	];
+	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 </script>
 
 <svelte:head>
 	<title>{data.constellation.title} | Question Constellation</title>
 	<meta
 		name="description"
-		content="A GCSE question constellation: different questions using the same answer chain."
+		content={isEnglish
+			? 'A GCSE English question set using the same mark path.'
+			: 'A GCSE question constellation: different questions using the same answer chain.'}
 	/>
 </svelte:head>
 
-<main class="flow-page constellation-page">
-	<header class="app-header compact-header">
-		<a class="icon-button" href={chainHref} aria-label="Back to answer chain">
-			<ArrowLeft size={25} strokeWidth={2.1} />
-		</a>
-		<a
-			class="brand-lockup"
-			href={resolve('/questions/[questionId]', { questionId: data.startQuestion.id })}
+<main class="qc-real-app qc-constellation-page">
+	<AppTopbar
+		subject={topbarSubject}
+		subjects={topbarSubjects}
+		searchPlaceholder="Search questions"
+	/>
+
+	<div class="qc-real-layout qc-question-layout">
+		<aside
+			class="qc-real-rail qc-question-rail"
+			aria-label={isEnglish ? 'Question set summary' : 'Constellation summary'}
 		>
-			<Network size={28} strokeWidth={1.9} />
-			<strong>Question Constellation</strong>
-		</a>
-		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
-	</header>
+			<a class="qc-real-quiet-link" href={chainHref}>
+				Back to {isEnglish ? 'mark path' : 'answer chain'}
+			</a>
+			<p class="qc-real-kicker">{isEnglish ? 'Question set' : 'Constellation'}</p>
+			<h1><MathText text={data.constellation.title} /></h1>
+			<p class="qc-rail-summary"><MathText text={data.constellation.summary} /></p>
+			<ThinkingChain
+				steps={chainSteps}
+				label={isEnglish ? 'Shared mark path' : 'Shared answer chain'}
+			/>
+		</aside>
 
-	<div class="flow-grid chain-grid">
-		<section class="flow-main">
-			<p class="breadcrumb">Constellation / {data.chain.title}</p>
-			<h1 class="desktop-title">{data.constellation.title}</h1>
-			<section class="meta-pills" aria-label="Constellation metadata">
-				<span class="pill">{data.questions.length} questions</span>
-				<span class="pill">1 answer chain</span>
-				<span class="pill">{data.startQuestion.meta.board} {data.startQuestion.meta.tier}</span>
-			</section>
-
-			<section class="chain-card large-chain" aria-label={data.chain.canonicalText}>
-				<div class="chain-icons">
-					{#each data.chain.steps as step (step.id)}
-						<div class="chain-node">
-							<span class="chain-node-icon"><Route size={23} strokeWidth={2.2} /></span>
-							<span>{step.short}</span>
-						</div>
-					{/each}
+		<section class="qc-real-main qc-constellation-main" aria-label="Question set">
+			<div class="qc-real-question-top">
+				<div>
+					<p>
+						{data.questions.length} questions · {data.startQuestion.meta.board}
+						{data.startQuestion.meta.subject}
+					</p>
+					<h2>{isEnglish ? 'Questions in this set' : 'Questions in this constellation'}</h2>
 				</div>
-			</section>
+				<a class="qc-real-link-button" href={practiceHref}>Start practice</a>
+			</div>
 
-			<section class="answer-panel">
-				<h2>Ordered question set</h2>
-				<div class="constellation-list">
-					{#each data.questions as question, index (question.id)}
+			<ol class="qc-chain-question-list">
+				{#each data.questions as question, index (question.id)}
+					<li>
 						<a
-							class="question-row"
+							class="qc-chain-question"
 							href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
 						>
-							<span class="number-dot">{index + 1}</span>
-							<h3>{question.title}</h3>
-							<span class="row-end">
-								<span class={['tag', question.transferDistance]}>{question.distanceLabel}</span>
-								<ChevronRight size={22} />
+							<span class="qc-chain-question-index">{index + 1}</span>
+							<span class="qc-chain-question-body">
+								<span class="qc-chain-question-meta">
+									<MathText
+										text={`${question.distanceLabel} · ${question.meta.questionType} · ${question.meta.marks} marks`}
+									/>
+								</span>
+								<span class="qc-chain-question-title"><MathText text={question.title} /></span>
+								<span class="qc-chain-question-teaser"><MathText text={question.prompt} /></span>
 							</span>
+							<span class="qc-chain-question-action">Practice</span>
 						</a>
-					{/each}
-				</div>
-			</section>
+					</li>
+				{/each}
+			</ol>
 		</section>
-
-		<aside class="flow-sidebar practice-transfer">
-			<h2>Same chain, new context</h2>
-			<p>{data.constellation.summary}</p>
-			<section class="side-card">
-				<div class="side-title-row">
-					<h2>Start question 2</h2>
-					<ClipboardList size={22} />
-				</div>
-				<p>{data.practiceQuestion.title}</p>
-			</section>
-			<a class="primary-button" href={practiceHref}>
-				<ArrowRight size={23} />
-				Start question 2
-			</a>
-			<a class="secondary-button" href={chainHref}>
-				<Route size={23} />
-				Back to answer chain
-			</a>
-		</aside>
 	</div>
 </main>

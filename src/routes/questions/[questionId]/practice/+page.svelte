@@ -1,17 +1,15 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
+	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
-	import QuestionAssetFigure from '$lib/components/QuestionAssetFigure.svelte';
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import {
-		ArrowLeft,
-		Bookmark,
 		CheckCircle2,
-		Circle,
 		CircleAlert,
-		Info,
 		Lightbulb,
 		ListChecks,
-		Lock,
 		Save,
 		Target,
 		Zap
@@ -45,6 +43,7 @@
 	let gradePhase = $state<GradePhase>('idle');
 	let gradeError = $state('');
 	let gradeResult = $state<GradeResult | null>(null);
+	let showHint = $state(false);
 
 	const questionIndex = $derived(
 		data.questions.findIndex((question) => question.id === data.question.id)
@@ -64,6 +63,12 @@
 	);
 	const previousHref = $derived(
 		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
+	);
+	const questionHref = $derived(
+		resolve('/questions/[questionId]', { questionId: data.question.id })
+	);
+	const nextQuestionHref = $derived(
+		resolve('/questions/[questionId]/practice', { questionId: data.nextQuestion.id })
 	);
 	const isChecking = $derived(
 		gradePhase === 'connecting' ||
@@ -94,7 +99,21 @@
 				: 'Watch for the common trap in this question.'
 	);
 	const expandedHintText = $derived(questionHintText());
-	let showHint = $state(false);
+	const isEnglish = $derived(data.question.meta.subject.toLowerCase().includes('english'));
+	const topbarSubject = $derived(isEnglish ? 'English' : data.question.meta.subject);
+	const topbarSubjects = [
+		'All subjects',
+		'Science',
+		'Biology',
+		'Chemistry',
+		'Physics',
+		'Computer Science',
+		'English'
+	];
+	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
+	const answerRows = $derived(
+		data.question.meta.marks >= 30 ? 16 : data.question.meta.marks >= 10 ? 12 : 8
+	);
 
 	async function checkAnswer() {
 		if (!canCheck) return;
@@ -164,7 +183,11 @@
 	function statusDescriptionForPhase(phase: GradePhase) {
 		if (phase === 'connecting') return 'Starting the answer check.';
 		if (phase === 'calling') return 'Looking for the links you included.';
-		if (phase === 'thinking') return 'Comparing your answer with the chain.';
+		if (phase === 'thinking') {
+			return isEnglish
+				? 'Comparing your answer with the mark path.'
+				: 'Comparing your answer with the chain.';
+		}
 		if (phase === 'grading') return 'Preparing feedback.';
 		if (phase === 'error') return 'The check could not finish.';
 		return '';
@@ -279,134 +302,141 @@
 	<title>{data.question.title} practice | Question Constellation</title>
 	<meta
 		name="description"
-		content="Attempt a GCSE question before revealing and repairing the answer chain."
+		content={isEnglish
+			? 'Write, check, and repair a GCSE English answer against the mark path.'
+			: 'Attempt a GCSE question before revealing and repairing the answer chain.'}
 	/>
 </svelte:head>
 
-<main class="flow-page practice-page">
-	<header class="app-header compact-header">
-		<a class="icon-button" href={previousHref} aria-label="Back to answer chain">
-			<ArrowLeft size={25} strokeWidth={2.1} />
-		</a>
-		<strong class="header-title desktop-centered">{data.constellation.title}</strong>
-		<Bookmark class="bookmark" size={25} strokeWidth={2.1} />
-	</header>
+<main class="qc-real-app qc-practice-page">
+	<AppTopbar
+		subject={topbarSubject}
+		subjects={topbarSubjects}
+		searchPlaceholder="Search questions"
+	/>
 
-	{#if !checked}
-		<section class="practice-progress-strip">
-			<div class="progress-meter">
-				<p class="progress-label">Question {questionNumber} of {data.questions.length}</p>
-				<div class="progress-track" aria-hidden="true">
-					<span class="progress-fill" style={`width: ${progressPercent}`}></span>
+	<div class="qc-real-layout qc-question-layout">
+		<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
+			<a class="qc-real-quiet-link" href={previousHref}>
+				Back to {isEnglish ? 'mark path' : 'answer chain'}
+			</a>
+			<p class="qc-real-kicker">Guided practice</p>
+			<h1><MathText text={data.constellation.title} /></h1>
+			<div class="qc-practice-progress" aria-label="Practice progress">
+				<span>Question {questionNumber} of {data.questions.length}</span>
+				<div class="qc-practice-progress-track" aria-hidden="true">
+					<span class="qc-practice-progress-fill" style={`width: ${progressPercent}`}></span>
 				</div>
 			</div>
+			<nav class="qc-real-chain-list" aria-label="Practice questions">
+				{#each data.questions as question, index (question.id)}
+					<a
+						class:active={question.id === data.question.id}
+						href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
+					>
+						<span>{index + 1}</span>
+						<span><MathText text={question.title} /></span>
+						<small>{question.distanceLabel} · {question.meta.marks} marks</small>
+					</a>
+				{/each}
+			</nav>
+		</aside>
 
-			<section class="meta-pills" aria-label="Exam metadata">
-				<span class="pill">
-					{data.question.meta.board}
-					{data.question.meta.subject}
-					{data.question.meta.tier}
-				</span>
-				<span class="pill">{data.question.meta.paper}</span>
-				<span class="pill">{data.question.meta.marks} marks</span>
-			</section>
-		</section>
-
-		<div class="flow-grid practice-attempt-grid">
-			<aside class="practice-rail">
-				<section class="side-card prompt-card">
-					<h2>Before you check</h2>
-					<ul class="prompt-list">
-						<li><Circle size={21} /> Use the words in the question</li>
-						<li><Circle size={21} /> Write each cause before the effect</li>
-						<li><Circle size={21} /> Leave a gap if you are unsure</li>
-					</ul>
-				</section>
-
-				<section class="side-card compare-card">
-					<span class="icon-tile info"><Lock size={22} /></span>
+		<section class="qc-real-main qc-practice-main" aria-label="Practice workspace">
+			{#if !checked}
+				<div class="qc-real-question-top">
 					<div>
-						<h2>Chain hidden</h2>
-						<p>Chain reveals after you check your answer.</p>
+						<p>
+							<MathText
+								text={`${data.question.sourceRef} · ${data.question.meta.paper} · ${data.question.meta.marks} marks`}
+							/>
+						</p>
+						<h2>Write the answer, then check it.</h2>
 					</div>
-				</section>
-			</aside>
+					<button class="qc-real-link-button" type="button" onclick={() => (showHint = !showHint)}>
+						{showHint ? 'Hide hint' : 'Show one hint'}
+					</button>
+				</div>
 
-			<section class="flow-main practice-workspace">
-				{#if data.question.context}
-					<section class="question-context-card">
-						<p>{data.question.context}</p>
+				{#if showHint}
+					<section class="qc-real-hint">
+						<p>One hint</p>
+						<span><MathText text={expandedHintText} /></span>
+					</section>
+				{:else}
+					<section class="qc-real-hint subtle">
+						<p>Common trap</p>
+						<span><MathText text={collapsedHintText} /></span>
 					</section>
 				{/if}
 
-				{#if data.question.assets.length > 0}
-					<div class="question-assets practice-assets" aria-label="Question source images">
-						{#each data.question.assets as asset (asset.id)}
-							<QuestionAssetFigure {asset} />
-						{/each}
-					</div>
-				{/if}
+				<ExamQuestionCard question={data.question} showTitle={false} />
 
-				<h1 class="attempt-question">{data.question.prompt}</h1>
-
-				<section class="memory-first-card">
-					<span class="icon-tile info"><Lightbulb size={22} /></span>
-					<div>
-						<h2>Hint available</h2>
-						<p>{showHint ? expandedHintText : collapsedHintText}</p>
+				<section class="qc-practice-answer-card">
+					<label for="answer">Your answer</label>
+					<textarea
+						id="answer"
+						class="qc-lined-answer"
+						class:extended={data.question.meta.marks >= 20}
+						bind:value={answerText}
+						rows={answerRows}
+						placeholder="Write your answer..."
+						spellcheck="true"
+					></textarea>
+					<div class="qc-practice-actions" aria-label="Answer actions">
+						<button
+							class="qc-action-button primary"
+							type="button"
+							onclick={checkAnswer}
+							disabled={!canCheck}
+						>
+							{#if isChecking}
+								<span class="loading-spinner button-spinner" aria-hidden="true"></span>
+								{statusText}
+							{:else}
+								<CheckCircle2 size={18} aria-hidden="true" />
+								Check answer
+							{/if}
+						</button>
+						<button class="qc-action-button" type="button" onclick={() => (showHint = true)}>
+							<ListChecks size={18} aria-hidden="true" />
+							Hint
+						</button>
 					</div>
 				</section>
 
-				<textarea
-					id="answer"
-					bind:value={answerText}
-					rows="8"
-					placeholder="Write your answer..."
-					spellcheck="true"
-				></textarea>
-
-				<div class="desktop-action-row">
-					<button class="primary-button" type="button" onclick={checkAnswer} disabled={!canCheck}>
-						{#if isChecking}
-							<span class="loading-spinner button-spinner" aria-hidden="true"></span>
-							{statusText}
-						{:else}
-							<CheckCircle2 size={22} />
-							Check answer
-						{/if}
-					</button>
-					<button class="secondary-button" type="button" onclick={() => (showHint = true)}>
-						<ListChecks size={22} />
-						Show one hint
-					</button>
-				</div>
-
 				{#if isChecking}
-					<section class="grading-status-card" aria-live="polite">
+					<section class="qc-status-panel" aria-live="polite">
 						<span class="loading-spinner" aria-hidden="true"></span>
 						<div>
-							<h2>{statusText}</h2>
+							<p class="qc-panel-label">{statusText}</p>
 							<p>{statusDescription}</p>
 						</div>
 					</section>
 				{/if}
 
 				{#if gradeError}
-					<section class="grading-status-card error" aria-live="polite">
-						<CircleAlert size={22} />
+					<section class="qc-status-panel error" aria-live="polite">
+						<CircleAlert size={19} aria-hidden="true" />
 						<div>
-							<h2>Could not check</h2>
+							<p class="qc-panel-label">Could not check</p>
 							<p>{gradeError}</p>
 						</div>
 					</section>
 				{/if}
-			</section>
-		</div>
-	{:else}
-		<div class="flow-grid checklist-rewrite-grid">
-			<aside class="feedback-rail">
-				<section class="score-card">
-					<h1 class="result-title">{resultTitle}</h1>
+			{:else}
+				<div class="qc-real-question-top">
+					<div>
+						<p><MathText text={data.question.sourceRef} /></p>
+						<h2>{resultTitle}</h2>
+					</div>
+					<a class="qc-real-link-button" href={previousHref}>
+						Review {isEnglish ? 'mark path' : 'chain'}
+					</a>
+				</div>
+
+				<section class="qc-result-summary">
+					<p class="qc-panel-label">Checked answer</p>
 					<p>
 						{gradeResult?.awardedMarks ?? 0} of {gradeResult?.maxMarks ?? data.question.meta.marks}
 						marks. {missingItems.length === 0
@@ -415,111 +445,98 @@
 					</p>
 				</section>
 
-				<section class="chain-card compact-chain-card" aria-label="Checklist result chain">
-					<h2>Chain preview</h2>
-					<div class="chain-icons compact result-chain">
+				<ThinkingChain
+					steps={chainSteps}
+					label={isEnglish ? 'Checked mark path' : 'Checked answer chain'}
+					note={hasMissingLinks
+						? 'Missing links are shown below.'
+						: `${isEnglish ? 'The mark path' : 'The chain'} is complete.`}
+				/>
+
+				<div class="qc-feedback-stack">
+					<section class="qc-answer-panel">
+						<p class="qc-panel-label">You included ({includedItems.length})</p>
+						{#if includedItems.length > 0}
+							<ul class="qc-result-list">
+								{#each includedItems as item (item.id)}
+									<li>
+										<CheckCircle2 size={18} aria-hidden="true" />
+										<span><MathText text={shortChecklistText(item.text)} /></span>
+									</li>
+								{/each}
+							</ul>
+						{:else}
+							<p>No checklist links were confirmed yet.</p>
+						{/if}
+					</section>
+
+					{#if missingItems.length > 0}
+						<section class="qc-answer-panel missing">
+							<p class="qc-panel-label">Missing ({missingItems.length})</p>
+							<ul class="qc-result-list">
+								{#each missingItems as item (item.id)}
+									<li>
+										<CircleAlert size={18} aria-hidden="true" />
+										<span><MathText text={shortChecklistText(item.text)} /></span>
+									</li>
+								{/each}
+							</ul>
+						</section>
+					{/if}
+
+					{#if feedbackMarkdown}
+						<section class="qc-answer-panel">
+							<p class="qc-panel-label">Feedback</p>
+							<MarkdownContent markdown={feedbackMarkdown} class="qc-feedback-markdown" />
+						</section>
+					{/if}
+				</div>
+
+				<section class="qc-repair-panel">
+					<p class="qc-panel-label">{isEnglish ? 'Repair path' : 'Repair chain'}</p>
+					<div
+						class="qc-repair-chain"
+						aria-label={isEnglish ? 'Mark path reminder' : 'Answer chain reminder'}
+					>
 						{#each data.question.repairChain as node (node.id)}
-							<div class="chain-node" class:missing={isNodeMissing(node.stepId)}>
-								<span class="chain-node-icon">
-									{#if node.icon === 'zap'}
-										<Zap size={22} strokeWidth={2.2} />
-									{:else}
-										<Target size={22} strokeWidth={2.2} />
-									{/if}
-								</span>
-								<span>{node.label}</span>
-							</div>
+							<span class:missing={isNodeMissing(node.stepId)}>
+								{#if node.icon === 'zap'}
+									<Zap size={16} aria-hidden="true" />
+								{:else}
+									<Target size={16} aria-hidden="true" />
+								{/if}
+								<MathText text={node.label} />
+							</span>
 						{/each}
 					</div>
 				</section>
 
-				<section class="result-card included-card">
-					<h2>You included ({includedItems.length})</h2>
-					<div class="result-list">
-						{#each includedItems as item (item.id)}
-							<div class="result-row">
-								<CheckCircle2 size={20} />
-								<span>{shortChecklistText(item.text)}</span>
-							</div>
-						{/each}
+				<section class="qc-practice-answer-card">
+					<label for="rewrite">
+						{hasMissingLinks ? 'Rewrite with the missing links' : 'Your checked answer'}
+					</label>
+					{#if hasMissingLinks}
+						<textarea
+							id="rewrite"
+							class="qc-lined-answer"
+							class:extended={data.question.meta.marks >= 20}
+							bind:value={rewriteText}
+							rows={answerRows}
+							placeholder="Rewrite your answer..."
+							spellcheck="true"
+						></textarea>
+					{:else}
+						<p class="qc-checked-answer">{answerText}</p>
+					{/if}
+					<div class="qc-practice-actions" aria-label="Next actions">
+						<a class="qc-action-button primary" href={resolve('/thinking-memory')}>
+							<Save size={18} aria-hidden="true" />
+							Memory
+						</a>
+						<a class="qc-action-button" href={nextQuestionHref}>Next question</a>
 					</div>
 				</section>
-
-				{#if missingItems.length > 0}
-					<section class="result-card missing-card">
-						<h2>Missing ({missingItems.length})</h2>
-						<div class="result-list">
-							{#each missingItems as item (item.id)}
-								<div class="result-row missing">
-									<CircleAlert size={20} />
-									<span>{shortChecklistText(item.text)}</span>
-								</div>
-							{/each}
-						</div>
-					</section>
-				{/if}
-
-				{#if feedbackMarkdown}
-					<section class="result-card feedback-card">
-						<h2>Feedback</h2>
-						<MarkdownContent markdown={feedbackMarkdown} class="feedback-markdown" />
-					</section>
-				{/if}
-
-				<section class="repair-card">
-					<Info size={21} color="#0b57eb" />
-					<span>
-						{missingItems.length === 0
-							? 'Save this chain or try the next transfer question.'
-							: 'Add the missing links so the final effect is explained.'}
-					</span>
-				</section>
-			</aside>
-
-			<section class="flow-main rewrite-workspace">
-				<h1>{hasMissingLinks ? 'Rewrite with the missing links' : 'Answer chain complete'}</h1>
-				<p class="workspace-subtitle">
-					{hasMissingLinks
-						? 'Use the feedback to repair your answer.'
-						: 'Save this chain or try the next transfer question.'}
-				</p>
-				<div class="chain-reminder" aria-label="Answer chain reminder">
-					{#each data.question.repairChain as node (node.id)}
-						<span>{node.label}</span>
-					{/each}
-				</div>
-				{#if hasMissingLinks}
-					<textarea
-						bind:value={rewriteText}
-						rows="12"
-						placeholder="Rewrite your answer..."
-						spellcheck="true"
-					></textarea>
-				{:else}
-					<section class="completion-card">
-						<h2>Your checked answer</h2>
-						<p>{answerText}</p>
-					</section>
-				{/if}
-				<div class="button-stack">
-					<a class="primary-button" href={resolve('/thinking-memory')}>
-						<Save size={22} />
-						View in Thinking Memory
-					</a>
-					<a
-						class="secondary-button"
-						href={resolve('/questions/[questionId]/chain', { questionId: data.question.id })}
-					>
-						Show model answer
-					</a>
-					<a
-						class="text-button"
-						href={resolve('/questions/[questionId]/practice', { questionId: data.nextQuestion.id })}
-					>
-						Next question
-					</a>
-				</div>
-			</section>
-		</div>
-	{/if}
+			{/if}
+		</section>
+	</div>
 </main>
