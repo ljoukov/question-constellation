@@ -9,10 +9,13 @@
 		type ThemePreference
 	} from '$lib/themePreference';
 	import { disableViewportZoom } from '$lib/viewportZoom';
+	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
+	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
 	let showRouteLoading = $state(false);
+	let routeLoadingContentType = $state<RouteLoadingContentType>('default');
 
 	onMount(() => {
 		let stopAutomaticThemeSync = () => {};
@@ -36,6 +39,10 @@
 
 	$effect(() => {
 		if (navigating.to) {
+			routeLoadingContentType = routeLoadingContentTypeForRoute(
+				navigating.to.route.id,
+				navigating.to.url.pathname
+			);
 			showRouteLoading = true;
 			return;
 		}
@@ -81,10 +88,7 @@
 
 <div class="app-shell">
 	{#if showRouteLoading}
-		<div class="route-loading" role="status" aria-live="polite">
-			<span class="loading-spinner"></span>
-			<span>Loading question...</span>
-		</div>
+		<RouteLoadingToast contentType={routeLoadingContentType} />
 	{/if}
 	{@render children()}
 </div>
