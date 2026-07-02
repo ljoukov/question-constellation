@@ -1,5 +1,6 @@
 import {
 	getGcsePastPaperSubjectPage,
+	pastPaperEntryPath,
 	pastPaperPageLabel,
 	pastPaperSubjectPath,
 	type PastPaperEntry,
@@ -38,7 +39,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 				...entry,
 				pageId: page.id,
 				pageLabel,
-				localPath
+				localPath,
+				paperLocalPath: pastPaperEntryPath(page, entry)
 			}))
 		}
 	};

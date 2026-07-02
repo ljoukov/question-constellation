@@ -24,6 +24,10 @@
 	function documentAriaLabel(row: PastPaperDownloadRow, document: PastPaperDocument) {
 		return `${row.pageLabel} ${row.year} ${row.series} ${row.paper} ${documentText(document)} PDF`;
 	}
+
+	function paperPageLabel(row: PastPaperDownloadRow) {
+		return `${row.pageLabel} ${row.paper} ${row.series} ${row.year} past papers`;
+	}
 </script>
 
 <div class="paper-table" role="list">
@@ -32,7 +36,11 @@
 			<div class="paper-meta">
 				<span class="paper-year">{row.year}</span>
 				<span>{row.series}</span>
-				<strong>{row.paper}</strong>
+				<strong>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -->
+					<a class="paper-detail-link" href={row.paperLocalPath}>{paperPageLabel(row)}</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				</strong>
 				{#if showPageLabel}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a class="paper-page-link" href={row.localPath}>{row.pageLabel}</a>
@@ -112,6 +120,18 @@
 		text-underline-offset: 0.18em;
 	}
 
+	.paper-detail-link {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.paper-detail-link:hover,
+	.paper-detail-link:focus-visible {
+		color: #0f6b3d;
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+	}
+
 	.paper-year {
 		display: inline-flex;
 		align-items: center;
@@ -178,6 +198,11 @@
 	}
 
 	:global(:root[data-theme='dark']) .paper-page-link {
+		color: #7dd3a1;
+	}
+
+	:global(:root[data-theme='dark']) .paper-detail-link:hover,
+	:global(:root[data-theme='dark']) .paper-detail-link:focus-visible {
 		color: #7dd3a1;
 	}
 

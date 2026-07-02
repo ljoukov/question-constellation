@@ -64,6 +64,7 @@ export type PastPaperDownloadRow = PastPaperEntry & {
 	pageId: string;
 	pageLabel: string;
 	localPath: string;
+	paperLocalPath: string;
 };
 
 export type GcsePastPaperData = {
@@ -108,6 +109,25 @@ export function pastPaperSubjectPath(page: Pick<PastPaperSubjectPage, 'boardId' 
 	return `/past-papers/gcse/${page.boardId}/${page.subjectSlug}`;
 }
 
+export function pastPaperEntrySlug(
+	page: Pick<PastPaperSubjectPage, 'id'>,
+	entry: Pick<PastPaperEntry, 'id' | 'year' | 'series' | 'paper'>
+) {
+	const pagePrefix = `${page.id}-`;
+	if (entry.id.startsWith(pagePrefix)) {
+		return entry.id.slice(pagePrefix.length);
+	}
+
+	return slugifyPastPaperPart(`${entry.year} ${entry.series} ${entry.paper}`);
+}
+
+export function pastPaperEntryPath(
+	page: Pick<PastPaperSubjectPage, 'id' | 'boardId' | 'subjectSlug'>,
+	entry: Pick<PastPaperEntry, 'id' | 'year' | 'series' | 'paper'>
+) {
+	return `${pastPaperSubjectPath(page)}/${pastPaperEntrySlug(page, entry)}`;
+}
+
 export function pastPaperPageLabel(
 	page: Pick<PastPaperSubjectPage, 'boardName' | 'subject' | 'tier'>
 ) {
@@ -134,12 +154,46 @@ export const gcsePastPaperSubjectIndex: PastPaperSubjectIndex[] = gcsePastPaperD
 	}
 );
 
+export const gcsePastPaperEntryIndex = gcsePastPaperData.pages.flatMap((page) =>
+	page.entries.map((entry) => ({
+		id: entry.id,
+		boardId: page.boardId,
+		subjectSlug: page.subjectSlug,
+		year: entry.year,
+		series: entry.series,
+		paper: entry.paper,
+		localPath: pastPaperEntryPath(page, entry)
+	}))
+);
+
 export function getGcsePastPaperSubjectPage(boardId: string, subjectSlug: string) {
 	return gcsePastPaperData.pages.find(
 		(page) => page.boardId === boardId && page.subjectSlug === subjectSlug
 	);
 }
 
+export function getGcsePastPaperEntry(boardId: string, subjectSlug: string, paperSlug: string) {
+	const page = getGcsePastPaperSubjectPage(boardId, subjectSlug);
+	if (!page) return null;
+
+	const entry = page.entries.find((candidate) => pastPaperEntrySlug(page, candidate) === paperSlug);
+	if (!entry) return null;
+
+	return {
+		page,
+		entry,
+		localPath: pastPaperEntryPath(page, entry)
+	};
+}
+
 export function getGcsePastPaperBoardPages(boardId: string) {
 	return gcsePastPaperSubjectIndex.filter((page) => page.boardId === boardId);
+}
+
+function slugifyPastPaperPart(value: string) {
+	return value
+		.toLowerCase()
+		.replace(/&/g, 'and')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '');
 }

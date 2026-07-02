@@ -1,5 +1,9 @@
 import type { RequestHandler } from './$types';
-import { gcsePastPaperBoards, gcsePastPaperSubjectIndex } from '$lib/pastPapers/gcsePastPapers';
+import {
+	gcsePastPaperBoards,
+	gcsePastPaperEntryIndex,
+	gcsePastPaperSubjectIndex
+} from '$lib/pastPapers/gcsePastPapers';
 
 const BASE_URL = 'https://constellation.eviworld.com';
 
@@ -37,6 +41,16 @@ function pastPaperSubjectEntry(path: string) {
 	].join('');
 }
 
+function pastPaperEntry(path: string) {
+	return [
+		'<url>',
+		`<loc>${BASE_URL}${path}</loc>`,
+		'<changefreq>yearly</changefreq>',
+		'<priority>0.75</priority>',
+		'</url>'
+	].join('');
+}
+
 function pastPaperBoardEntry(path: string) {
 	return [
 		'<url>',
@@ -57,6 +71,7 @@ export const GET: RequestHandler = async () => {
 		staticUrls.map(urlEntry).join(''),
 		boardPaths.map(pastPaperBoardEntry).join(''),
 		gcsePastPaperSubjectIndex.map((page) => pastPaperSubjectEntry(page.localPath)).join(''),
+		gcsePastPaperEntryIndex.map((entry) => pastPaperEntry(entry.localPath)).join(''),
 		'</urlset>'
 	].join('');
 
