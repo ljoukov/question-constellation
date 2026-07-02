@@ -178,7 +178,13 @@
 
 <header class="qc-topbar" class:search-open={mobileSearchOpen} aria-label="Site header">
 	<a href={resolve('/')} class="qc-topbar-brand" aria-label="Question Constellation home">
-		<img src="/brand/question-constellation-icon.png" alt="" width="32" height="32" />
+		<img
+			src="/brand/question-constellation-icon-64.png"
+			srcset="/brand/question-constellation-icon-64.png 1x, /brand/question-constellation-icon-128.png 2x"
+			alt=""
+			width="32"
+			height="32"
+		/>
 		<span>Question Constellation</span>
 	</a>
 

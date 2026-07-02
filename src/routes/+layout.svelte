@@ -8,7 +8,6 @@
 		themePreference,
 		type ThemePreference
 	} from '$lib/themePreference';
-	import { disableViewportZoom } from '$lib/viewportZoom';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import type { LayoutProps } from './$types';
@@ -19,7 +18,6 @@
 
 	onMount(() => {
 		let stopAutomaticThemeSync = () => {};
-		const stopViewportZoomGuard = disableViewportZoom();
 		const unsubscribe = themePreference.subscribe((preference: ThemePreference) => {
 			stopAutomaticThemeSync();
 			if (preference === 'auto') {
@@ -33,7 +31,6 @@
 		return () => {
 			unsubscribe();
 			stopAutomaticThemeSync();
-			stopViewportZoomGuard();
 		};
 	});
 
