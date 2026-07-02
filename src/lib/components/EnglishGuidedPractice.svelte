@@ -3,6 +3,7 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
@@ -484,7 +485,7 @@
 
 	<div class="qc-english-practice-layout">
 		<aside class="qc-english-practice-side" aria-label="Question and mark support">
-			<a class="qc-real-quiet-link" href={resolve('/english')}>Back to question finder</a>
+			<IconBackLink href={resolve('/english')} label="Back to question finder" />
 			<p class="qc-real-kicker">{question.meta.qualification} {question.meta.subject}</p>
 			<h1><MathText text={question.title} /></h1>
 			<div class="qc-question-meta-stack" aria-label="Exam metadata">

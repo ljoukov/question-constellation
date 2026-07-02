@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { BookOpen, ListChecks, PenLine, Route } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -67,9 +68,10 @@
 
 	<div class="qc-real-layout qc-question-layout">
 		<aside class="qc-real-rail qc-question-rail" aria-label="Question route">
-			<a class="qc-real-quiet-link" href={topbarSubject === 'English' ? englishHref : resolve('/')}>
-				Back to question finder
-			</a>
+			<IconBackLink
+				href={topbarSubject === 'English' ? englishHref : resolve('/')}
+				label="Back to question finder"
+			/>
 			<p class="qc-real-kicker">
 				<MathText text={`${data.question.meta.qualification} ${data.question.meta.subject}`} />
 			</p>

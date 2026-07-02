@@ -5,6 +5,7 @@
 	import EnglishGuidedPractice from '$lib/components/EnglishGuidedPractice.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { CheckCircle2, CircleAlert, Save, Target, Zap } from '@lucide/svelte';
@@ -309,9 +310,7 @@
 
 		<div class="qc-real-layout qc-question-layout">
 			<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
-				<a class="qc-real-quiet-link" href={previousHref}>
-					Back to {isEnglish ? 'mark path' : 'answer chain'}
-				</a>
+				<IconBackLink href={previousHref} label={`Back to ${isEnglish ? 'mark path' : 'answer chain'}`} />
 				<p class="qc-real-kicker">Guided practice</p>
 				<h1><MathText text={data.constellation.title} /></h1>
 				<div class="qc-practice-progress" aria-label="Practice progress">

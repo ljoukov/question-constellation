@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { PageProps } from './$types';
 
@@ -49,9 +50,7 @@
 			class="qc-real-rail qc-question-rail"
 			aria-label={isEnglish ? 'Question set summary' : 'Constellation summary'}
 		>
-			<a class="qc-real-quiet-link" href={chainHref}>
-				Back to {isEnglish ? 'mark path' : 'answer chain'}
-			</a>
+			<IconBackLink href={chainHref} label={`Back to ${isEnglish ? 'mark path' : 'answer chain'}`} />
 			<p class="qc-real-kicker">{isEnglish ? 'Question set' : 'Constellation'}</p>
 			<h1><MathText text={data.constellation.title} /></h1>
 			<p class="qc-rail-summary"><MathText text={data.constellation.summary} /></p>

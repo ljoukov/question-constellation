@@ -2324,9 +2324,18 @@ textarea::placeholder {
 }
 
 .qc-chain-question-action {
-	color: #315a76;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.18rem;
+	padding: 0.42rem 0.66rem;
+	border: 1px solid #168458;
+	background: #edfaf3;
+	color: #0d5a3f;
 	font-size: 0.9rem;
-	font-weight: 460;
+	font-weight: 520;
+	line-height: 1;
+	white-space: nowrap;
 }
 
 .qc-real-layout {
@@ -2892,6 +2901,7 @@ textarea::placeholder {
 
 	.qc-chain-question-action {
 		grid-column: 2;
+		justify-self: start;
 	}
 
 	.qc-real-layout {
@@ -5178,7 +5188,8 @@ textarea::placeholder {
 	opacity: 1;
 }
 
-.qc-chain-back {
+.qc-chain-back,
+.qc-icon-back {
 	display: inline-grid;
 	width: 2.2rem;
 	height: 2.2rem;
@@ -5190,6 +5201,21 @@ textarea::placeholder {
 	color: #102033;
 	font-size: 1.32rem;
 	line-height: 1;
+	text-decoration: none;
+	transition:
+		border-color 160ms ease,
+		box-shadow 160ms ease,
+		background-color 160ms ease;
+}
+
+.qc-chain-back:hover,
+.qc-chain-back:focus-visible,
+.qc-icon-back:hover,
+.qc-icon-back:focus-visible {
+	border-color: #168458;
+	background: #edfaf3;
+	box-shadow: 0 0 0 2px color-mix(in srgb, #168458 22%, transparent);
+	outline: 0;
 }
 
 .qc-browse-chain {
@@ -5489,9 +5515,17 @@ textarea::placeholder {
 
 .qc-chain-question-action {
 	align-self: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.18rem;
+	padding: 0.42rem 0.66rem;
+	border: 1px solid #168458;
+	background: #edfaf3;
 	color: #0d5a3f;
 	font-size: 0.92rem;
 	font-weight: 520;
+	line-height: 1;
 	white-space: nowrap;
 }
 
@@ -6227,6 +6261,19 @@ textarea::placeholder {
 		min-height: 0;
 	}
 
+	.qc-chain-question {
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.7rem;
+		align-items: start;
+		min-height: 0;
+		padding: 0.82rem;
+	}
+
+	.qc-chain-question-action {
+		grid-column: 2;
+		justify-self: start;
+	}
+
 	.qc-real-main .question-experiment-page,
 	.qc-real-main .question-experiment-page .paper-sheet {
 		width: 100%;
@@ -6489,9 +6536,19 @@ html[data-theme='dark'] .app-shell {
 }
 
 :root[data-theme='dark'] .qc-avatar-popover button,
-:root[data-theme='dark'] .qc-chain-back {
+:root[data-theme='dark'] .qc-chain-back,
+:root[data-theme='dark'] .qc-icon-back {
 	background: transparent;
 	color: var(--qc-spark-popover-foreground);
+}
+
+:root[data-theme='dark'] .qc-chain-back:hover,
+:root[data-theme='dark'] .qc-chain-back:focus-visible,
+:root[data-theme='dark'] .qc-icon-back:hover,
+:root[data-theme='dark'] .qc-icon-back:focus-visible {
+	border-color: #56d894;
+	background: #061c16;
+	box-shadow: 0 0 0 2px rgba(86, 216, 148, 0.24);
 }
 
 :root[data-theme='dark'] .qc-avatar-popover button:hover,
@@ -6886,10 +6943,20 @@ html[data-theme='dark'] .app-shell {
 	}
 
 	:root:not([data-theme='light']) .qc-avatar-popover button,
-	:root:not([data-theme='light']) .qc-chain-back {
+	:root:not([data-theme='light']) .qc-chain-back,
+	:root:not([data-theme='light']) .qc-icon-back {
 		border-color: rgba(226, 232, 240, 0.72);
 		background: #071426;
 		color: #f8fafc;
+	}
+
+	:root:not([data-theme='light']) .qc-chain-back:hover,
+	:root:not([data-theme='light']) .qc-chain-back:focus-visible,
+	:root:not([data-theme='light']) .qc-icon-back:hover,
+	:root:not([data-theme='light']) .qc-icon-back:focus-visible {
+		border-color: #56d894;
+		background: #061c16;
+		box-shadow: 0 0 0 2px rgba(86, 216, 148, 0.24);
 	}
 
 	:root:not([data-theme='light']) .qc-browse-intro,
@@ -7255,8 +7322,13 @@ html[data-theme='dark'] .app-shell {
 	color: #a9bbcc;
 }
 
-:root[data-theme='dark'] .qc-browse-question-set-head a,
+:root[data-theme='dark'] .qc-browse-question-set-head a {
+	color: #b8f7d5;
+}
+
 :root[data-theme='dark'] .qc-chain-question-action {
+	border-color: #56d894;
+	background: #061c16;
 	color: #b8f7d5;
 }
 
@@ -7458,8 +7530,13 @@ html[data-theme='dark'] .app-shell {
 		color: #a9bbcc;
 	}
 
-	:root:not([data-theme='light']) .qc-browse-question-set-head a,
+	:root:not([data-theme='light']) .qc-browse-question-set-head a {
+		color: #b8f7d5;
+	}
+
 	:root:not([data-theme='light']) .qc-chain-question-action {
+		border-color: #56d894;
+		background: #061c16;
 		color: #b8f7d5;
 	}
 

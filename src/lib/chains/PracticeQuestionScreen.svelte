@@ -3,6 +3,7 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamPaper from '$lib/experiments/questions/components/ExamPaper.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { focusPaperByRef } from '$lib/experiments/questions/paperUtils';
 	import ThinkingChain from './ThinkingChain.svelte';
@@ -235,6 +236,7 @@
 
 	<div class="qc-real-layout">
 		<aside class="qc-real-rail" aria-label="Related practice sequence">
+			<IconBackLink href={chainHref} label="View all questions in this chain" />
 			<p class="qc-real-kicker">{chain.paperLabel}</p>
 			<h1><MathText text={chain.title} /></h1>
 
@@ -251,8 +253,6 @@
 					</a>
 				{/each}
 			</nav>
-
-			<a class="qc-real-quiet-link" href={chainHref}>View all questions in this chain</a>
 		</aside>
 
 		<section class="qc-real-main" aria-label="Current question">

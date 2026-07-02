@@ -3,6 +3,7 @@
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ClipboardList, PenLine, TriangleAlert } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -58,7 +59,7 @@
 			class="qc-real-rail qc-question-rail"
 			aria-label={isEnglish ? 'Questions using this mark path' : 'Questions using this chain'}
 		>
-			<a class="qc-real-quiet-link" href={questionHref}>Back to question</a>
+			<IconBackLink href={questionHref} label="Back to question" />
 			<p class="qc-real-kicker">{isEnglish ? 'Mark path' : 'Answer chain'}</p>
 			<h1><MathText text={data.chain.title} /></h1>
 			<p class="qc-rail-summary"><MathText text={data.chain.summary} /></p>

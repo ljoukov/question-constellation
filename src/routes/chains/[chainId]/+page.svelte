@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import ChainQuestionList from '$lib/chains/ChainQuestionList.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 
@@ -29,7 +31,7 @@
 
 	<div class="qc-chain-layout">
 		<aside class="qc-chain-side" aria-label="Question chain summary">
-			<a class="qc-chain-back" href="/" aria-label="Back to chains">←</a>
+			<IconBackLink href={resolve('/')} label="Back to question finder" />
 			<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
 			<h1><MathText text={chain.title} /></h1>
 			<p><MathText text={chain.summary} /></p>
