@@ -122,6 +122,7 @@
 
 	.paper-detail-link {
 		color: inherit;
+		font-weight: 400;
 		text-decoration: none;
 	}
 
