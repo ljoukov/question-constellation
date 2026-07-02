@@ -2528,6 +2528,9 @@ function compactResponse(response, marks) {
 		output.count = Math.max(1, marks ?? 1);
 	}
 	if (kind === 'choice') {
+		if (!Array.isArray(output.options) && Array.isArray(output.choiceOptions)) {
+			output.options = output.choiceOptions;
+		}
 		output.options ??= [];
 		output.correctAnswers ??= [];
 	}
@@ -2842,11 +2845,19 @@ function responseToFinalAnswerLabel(response) {
 
 function normalizeQuestionResponseForExtraction(question) {
 	let response = question.response;
+	response = normalizeChoiceOptionsResponse(response);
 	response = normalizeMachineReadableCorrectAnswersResponse(response);
 	response = normalizeStructuredTableSelectionResponse(response, question);
 	response = normalizeEquationBlankOrderingResponse(response, question.markSchemeItems ?? []);
 	response = normalizeCalculationWorkingResponse(response, question);
 	return response;
+}
+
+function normalizeChoiceOptionsResponse(response) {
+	if (response?.kind !== 'choice') return response;
+	if (Array.isArray(response.options)) return response;
+	if (!Array.isArray(response.choiceOptions)) return response;
+	return { ...response, options: response.choiceOptions };
 }
 
 function normalizeMachineReadableCorrectAnswersResponse(response) {
@@ -6363,7 +6374,9 @@ function responseToLearnerText(response) {
 		return `Labelled answer lines: ${(response.labels ?? []).join(', ') || 'no labels'}.`;
 	}
 	if (kind === 'choice') {
-		return `Choice options:\n${(response.options ?? []).map((option) => `- ${option}`).join('\n')}`;
+		return `Choice options:\n${(response.options ?? response.choiceOptions ?? [])
+			.map((option) => `- ${option}`)
+			.join('\n')}`;
 	}
 	if (kind === 'choice-table') {
 		return `Choice table:\n${tableRowsToText([response.columns ?? [], ...(response.rows ?? [])])}`;
@@ -6576,6 +6589,24 @@ function inlineDataForAsset(asset, label) {
 	return null;
 }
 
+function assetIdentityKey(asset) {
+	return [
+		asset?.filePath,
+		asset?.sourcePath,
+		asset?.localPath,
+		asset?.path,
+		asset?.publicPath,
+		asset?.r2Key,
+		asset?.assetLabel,
+		asset?.sourceLabel,
+		asset?.label,
+		asset?.page
+	]
+		.map((value) => String(value ?? '').trim())
+		.filter(Boolean)
+		.join('|');
+}
+
 function markEvidenceForQuestion(question) {
 	return {
 		markSchemeItems: question.markSchemeItems ?? [],
@@ -6608,22 +6639,40 @@ export function buildLearnerVisibleQuestionContext(candidate, sourceQuestionRef,
 	const media = [];
 	const inlineImages = [];
 	for (const label of requiredAssetLabels) {
-		const matchingAsset =
-			assets.find((asset) => assetMatchesLabel(asset, label) && assetHasUsableReference(asset)) ??
-			assets.find((asset) => assetMatchesLabel(asset, label));
-		const inlineData =
-			attachImages && matchingAsset && inlineImages.length < maxImages
-				? inlineDataForAsset(matchingAsset, label)
-				: null;
-		if (inlineData) {
-			inlineImages.push(inlineData);
+		const usableMatches = assets.filter(
+			(asset) => assetMatchesLabel(asset, label) && assetHasUsableReference(asset)
+		);
+		const matchingAssets = usableMatches.length
+			? usableMatches
+			: assets.filter((asset) => assetMatchesLabel(asset, label));
+		if (matchingAssets.length === 0) {
+			media.push({
+				label,
+				present: false,
+				hasInlineImage: false,
+				asset: null
+			});
+			continue;
 		}
-		media.push({
-			label,
-			present: Boolean(matchingAsset),
-			hasInlineImage: Boolean(inlineData),
-			asset: matchingAsset ? compactUnknown(matchingAsset) : null
-		});
+		const seenAssetKeys = new Set();
+		for (const matchingAsset of matchingAssets) {
+			const key = assetIdentityKey(matchingAsset);
+			if (key && seenAssetKeys.has(key)) continue;
+			if (key) seenAssetKeys.add(key);
+			const inlineData =
+				attachImages && inlineImages.length < maxImages
+					? inlineDataForAsset(matchingAsset, label)
+					: null;
+			if (inlineData) {
+				inlineImages.push(inlineData);
+			}
+			media.push({
+				label,
+				present: true,
+				hasInlineImage: Boolean(inlineData),
+				asset: compactUnknown(matchingAsset)
+			});
+		}
 	}
 	return {
 		sourceDocument: candidate.sourceDocument ?? {

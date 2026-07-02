@@ -1141,6 +1141,32 @@ the app or in import accounting:
   builder, and D1 importer now preserve `{correctAnswer, aliases}` and block raw literal
   alternatives when they have not been normalized.
 
+Geography Paper 1 June 2023 repair canary, 2026-07-02:
+
+| Phase                                   | Artifact                                                                                                                                                                                                          | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Codex PDF extraction                    | `tmp/codex-humanities-geography-repair-v23/work/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp/raw/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp.json`        | 1894.550s |           116 |              2 |           9,333,595 |    8,632,832 |                 62,333 |            8,236 | 39 questions, 103 printed marks, mechanical validation passed after in-run Figure 15 and Figure 7/context repairs                           |
+| Repo normalization and extraction judge | `tmp/codex-humanities-geography-repair-v23/work/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp/extraction-judge-repo-normalized/judge-report.json`                                      |  383.959s |            72 |              3 |           1,660,994 |    1,459,712 |                 15,978 |            3,486 | independent judge passed, score 1.00, 39 refs checked, 0 required repairs                                                                  |
+| Codex answer-chain reconciliation       | `tmp/codex-humanities-geography-repair-v23/work/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp/chain-reconciled/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp.json` |  605.327s |            24 |              0 |             854,287 |      772,096 |                 30,483 |           13,729 | 35 created, 4 reused, 0 updated/review, 37 unique chain ids; deterministic chain validation passed                                          |
+| Strict audit / D1 dry-run               | `tmp/codex-humanities-geography-repair-v23/work/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp/import-ready-audit.json`                                                                 |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 39/39 kept, 0 dropped, 0 audit errors/warnings; D1 dry-run passed with 651 planned SQL statements and `safeToReplace`                     |
+| Codex solvability                       | `tmp/codex-humanities-geography-repair-v23/work/aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp/codex-solvability-summary.json`                                                          |  322.597s |            25 |              0 |             847,480 |      696,320 |                 11,938 |            2,922 | passed 39/39                                                                                                                               |
+
+This run is the repeatability pattern for Geography imports. The accepted artifact was not
+hand-edited: Codex ran from the official question paper, mark scheme, examiner report, and OS-map
+insert PDFs; deterministic helper normalization then removed duplicated `contextText` that repeated
+rendered block text before the independent judge reran. The helper now rejects raw duplicate
+`contextText` that survives normalization with `context_text_duplicates_render_block`.
+
+The run exposed two Geography-specific importer rules that are now encoded in prompts and helper
+validation rather than patched into one output:
+
+- Copyright-blanked Figure 7 food webs may be represented as faithful structured learner-visible
+  source tables, but exact organism labels such as `Large water plant` must be preserved and the
+  source must not label that organism as the producer before the learner answers.
+- Figure/source crops must exclude surrounding setup or prompt text; OCR-detected phrases such as
+  `Study Figure`, `Using Figure`, `With the help of Figure`, and `Shade one circle only` are blocking
+  crop contamination unless they belong in separate `stemBlocks` or `promptBlocks`.
+
 The visible-PDF source identity audit for the AQA History, Geography, and Computer Science manifest
 now blocks manifest rows whose visible PDF front matter disagrees with the manifest. The audit
 artifact is `tmp/aqa-humanities-cs-source-identity-audit.json`: 100 rows checked, 61 passed, 39

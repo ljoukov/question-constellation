@@ -670,6 +670,13 @@ function positiveInteger(...values) {
 function normalizeQuestion(question, index, sourceDocument) {
 	const promptText = String(question.promptText ?? question.sourceQuestionRef ?? '').trim();
 	const contextBlocks = normalizedContextBlocks(question);
+	const promptBlocks = question.promptBlocks ?? [{ kind: 'paragraph', text: promptText }];
+	const contextText = nonDuplicatingContextText(question, [
+		...contextBlocks,
+		...(question.leadBlocks ?? []),
+		...promptBlocks,
+		...(question.afterResponseBlocks ?? [])
+	]);
 	const assets = normalizeAssets(
 		question.assets ?? question.requiredAssets ?? [],
 		question.sourceQuestionRef
@@ -683,7 +690,7 @@ function normalizeQuestion(question, index, sourceDocument) {
 		displayOrder: question.displayOrder ?? index + 1,
 		promptText,
 		selfContainedPromptText: question.selfContainedPromptText ?? promptText,
-		contextText: question.contextText ?? null,
+		contextText,
 		commandWord: question.commandWord ?? null,
 		marks: numberOrNull(question.marks),
 		pageStart: question.pageStart ?? null,
@@ -692,9 +699,7 @@ function normalizeQuestion(question, index, sourceDocument) {
 		specRef: question.specRef ?? null,
 		stemBlocks: normalizeBlocks(contextBlocks),
 		leadBlocks: normalizeBlocks(question.leadBlocks ?? []),
-		promptBlocks: normalizeBlocks(
-			question.promptBlocks ?? [{ kind: 'paragraph', text: promptText }]
-		),
+		promptBlocks: normalizeBlocks(promptBlocks),
 		response: normalizeResponse(question.response, question.marks),
 		afterResponseBlocks: normalizeBlocks(question.afterResponseBlocks ?? []),
 		assets,
@@ -748,6 +753,35 @@ function normalizedContextBlocks(question) {
 	const contextText = String(question.contextText ?? '').trim();
 	if (!contextText) return [];
 	return [{ kind: 'paragraph', text: contextText }];
+}
+
+function nonDuplicatingContextText(question, blocks = []) {
+	const original = String(question.contextText ?? '').trim();
+	if (!original) return null;
+	if (!normalizedRenderText(original)) return null;
+	let cleaned = original;
+	const blockTexts = blocks
+		.map((block) => String(block?.text ?? '').trim())
+		.filter((text) => normalizedRenderText(text).length >= 24)
+		.sort((a, b) => b.length - a.length);
+	for (const text of blockTexts) {
+		cleaned = cleaned.replace(whitespaceFlexibleRegExp(text, 'gi'), ' ');
+	}
+	cleaned = cleaned
+		.replace(/\s+([,.;:!?])/g, '$1')
+		.replace(/^[,.;:\s]+/, '')
+		.replace(/\s+/g, ' ')
+		.trim();
+	if (!normalizedRenderText(cleaned).replace(/[^a-z0-9]+/g, '')) return null;
+	return cleaned;
+}
+
+function escapeRegExp(value) {
+	return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function whitespaceFlexibleRegExp(value, flags = 'g') {
+	return new RegExp(escapeRegExp(value).replace(/\s+/g, '\\s+'), flags);
 }
 
 function normalizeAssets(assets, sourceQuestionRef) {
@@ -1410,7 +1444,10 @@ function deterministicIssuesFor(candidate, options = {}) {
 				'aqa-computer-science-2021-november-paper-2-written-assessment-qp',
 				'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp',
 				'aqa-computer-science-2022-june-paper-2-computing-concepts-qp',
-				'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
+				'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp',
+				'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp',
+				'aqa-geography-2022-june-paper-3-geographical-applications-qp',
+				'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
 			].includes(sourceDocumentId)
 		) {
 			for (const issue of knownSourceSpecificIssues(question, sourceDocumentId)) issues.push(issue);
@@ -1463,6 +1500,10 @@ function deterministicIssuesFor(candidate, options = {}) {
 				evidence: `${ref} -> ${label}`
 			});
 		}
+		for (const issue of contextTextDuplicateBlockIssues(question)) issues.push(issue);
+		for (const issue of copyrightPlaceholderMediaIssues(question)) issues.push(issue);
+		for (const issue of learnerVisibleSourceProvenanceIssues(question)) issues.push(issue);
+		for (const issue of genericFigureCropPromptTextIssues(question)) issues.push(issue);
 		if (['asset-canvas', 'image-label-zones'].includes(response?.kind)) {
 			const labels = [
 				response.assetLabel,
@@ -1757,6 +1798,34 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
+	if (sourceDocumentId === 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp') {
+		return new Map(
+			Object.entries({
+				'01.4': 18,
+				'01.5': 12,
+				'02.5': 18,
+				'03.3': 12,
+				'03.4': 18
+			})
+		);
+	}
+	if (sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp') {
+		return new Map(
+			Object.entries({
+				'01.4': 12,
+				'01.10': 18,
+				'01.11': 27,
+				'02.9': 18,
+				'02.10': { fields: { 'Chosen environment': 2, Answer: 24 } },
+				'03.5': 12,
+				'03.6': 18,
+				'04.5': 12,
+				'04.6': 18,
+				'05.5': 12,
+				'05.6': 18
+			})
+		);
+	}
 	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp') {
 		return new Map(
 			Object.entries({
@@ -2022,6 +2091,32 @@ function responseDiagramSurfaceIssues(question) {
 	];
 }
 
+function contextTextDuplicateBlockIssues(question) {
+	const context = normalizedRenderText(question.contextText);
+	if (!context) return [];
+	const duplicateFields = [];
+	for (const field of ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks']) {
+		for (const [index, block] of (question[field] ?? []).entries()) {
+			const text = normalizedRenderText(block?.text);
+			if (text.length < 24) continue;
+			if (context === text || context.includes(text) || text.includes(context)) {
+				duplicateFields.push(`${field}[${index}]`);
+			}
+		}
+	}
+	if (!duplicateFields.length) return [];
+	return [
+		{
+			code: 'context_text_duplicates_render_block',
+			field: 'contextText/stemBlocks/leadBlocks/promptBlocks/afterResponseBlocks',
+			severity: 'error',
+			evidence: `${question.sourceQuestionRef ?? 'unknown'} duplicates contextText in ${duplicateFields
+				.slice(0, 5)
+				.join(', ')}`
+		}
+	];
+}
+
 function questionRequiresDiagramResponse(question) {
 	const text = [
 		question.promptText,
@@ -2122,6 +2217,24 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
 	if (sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp') {
 		for (const issue of knownGeography2022Paper1Issues(question, visibleText, gradingText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (sourceDocumentId === 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp') {
+		for (const issue of knownGeography2022Paper2Issues(question, visibleText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (sourceDocumentId === 'aqa-geography-2022-june-paper-3-geographical-applications-qp') {
+		for (const issue of knownGeography2022Paper3Issues(question, visibleText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp') {
+		for (const issue of knownGeography2023Paper1Issues(question)) {
 			issues.push(issue);
 		}
 		return issues;
@@ -2465,6 +2578,291 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	return issues;
 }
 
+function knownGeography2022Paper2Issues(question, visibleText) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref === '01.10') {
+		const spagItems = (question.markSchemeItems ?? []).filter((item) =>
+			/\b(?:spag|spelling|punctuation|grammar|specialist\s+terms?)\b/i.test(
+				String(item?.text ?? '')
+			)
+		);
+		const hasHigh = spagItems.some(
+			(item) => Number(item?.marks) === 3 && /\bhigh\b/i.test(String(item?.text ?? ''))
+		);
+		const hasIntermediate = spagItems.some(
+			(item) =>
+				Number(item?.marks) === 2 && /\bintermediate\b/i.test(String(item?.text ?? ''))
+		);
+		const hasThreshold = spagItems.some(
+			(item) => Number(item?.marks) === 1 && /\bthreshold\b/i.test(String(item?.text ?? ''))
+		);
+		if (!hasHigh || !hasIntermediate || !hasThreshold) {
+			issues.push({
+				code: 'known_spag_rubric_incomplete',
+				field: 'markSchemeItems',
+				severity: 'error',
+				evidence:
+					'Geography 2022 Paper 2 Q01.10 must include distinct SPaG rows: High 3, Intermediate 2, and Threshold 1. Do not merge intermediate and threshold into a single 2-mark row.'
+			});
+		}
+	}
+	if (ref === '03.1') {
+		const hasFigureTenAsset = (question.assets ?? []).some((asset) =>
+			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+				.filter(Boolean)
+				.some((label) => mediaLabelMatches(label, 'figure 10'))
+		);
+		const hasBlockedPlaceholder =
+			question.needsHumanReview === true ||
+			/\b(?:source status|official map unavailable|block for human review|copyright[- ]restriction|no supporting insert)\b/i.test(
+				visibleText
+			);
+		if (hasBlockedPlaceholder && !hasFigureTenAsset) {
+			issues.push({
+				code: 'known_unresolved_copyright_source',
+				field: 'stemBlocks/assets/needsHumanReview',
+				severity: 'error',
+				evidence:
+					'Geography 2022 Paper 2 Q03.1 depends on Figure 10. If no renderable Figure 10 or equivalent learner-visible source data is available, this row must remain blocked and validation must not treat it as import-ready.'
+			});
+		}
+	}
+	return issues;
+}
+
+function knownGeography2022Paper3Issues(question, visibleText) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	if (ref !== '04.2') return [];
+	const rows = [
+		...(question.stemBlocks ?? []),
+		...(question.leadBlocks ?? []),
+		...(question.promptBlocks ?? [])
+	].flatMap((block) => (Array.isArray(block?.rows) ? block.rows : []));
+	function scoreFor(labelPattern) {
+		for (const row of rows) {
+			const cells = (Array.isArray(row) ? row : [])
+				.map((cell) => stringifyBlockValue(cell).replace(/\s+/g, ' ').trim())
+				.filter(Boolean);
+			if (!cells.length || !labelPattern.test(cells[0])) continue;
+			return cells.slice(1).join(' ');
+		}
+		return '';
+	}
+	const requiredValues = [
+		{
+			label: 'Noisy',
+			score: scoreFor(/\bnoisy\b/i),
+			matches: /^[-−]\s*1\b/
+		},
+		{
+			label: 'Lots of traffic',
+			score: scoreFor(/\blots\s+of\s+traffic\b/i),
+			matches: /^[-−]\s*2\b/
+		},
+		{
+			label: 'Unattractive',
+			score: scoreFor(/\bunattractive\b/i),
+			matches: /^0\b/
+		},
+		{
+			label: 'Lots of litter',
+			score: scoreFor(/\blots\s+of\s+litter\b/i),
+			matches: /^[-−]\s*2\b/
+		},
+		{
+			label: 'Crowded',
+			score: scoreFor(/\bcrowded\b/i),
+			matches: /^[-−]\s*1\b/
+		}
+	];
+	const missing = requiredValues
+		.filter((requirement) => !requirement.matches.test(requirement.score))
+		.map((requirement) => requirement.label);
+	if (!missing.length) return [];
+	return [
+		{
+			code: 'known_source_table_value_mismatch',
+			field: 'stemBlocks',
+			severity: 'error',
+			evidence: `Geography 2022 Paper 3 Q04.2 Figure 4 environmental quality values are wrong or missing for: ${missing.join(
+				', '
+			)}. Required values are Noisy=-1, Lots of traffic=-2, Unattractive=0, Lots of litter=-2, Crowded=-1.`
+		}
+	];
+}
+
+function knownGeography2023Paper1Issues(question) {
+	const issues = knownAssetDimensionIssues(
+		question,
+		new Map([
+			[
+				'01.2',
+				{
+					label: 'figure 1',
+					minWidth: 900,
+					minHeight: 820,
+					evidence:
+						'Figure 1 must include the complete Arctic sea-ice graph, including the lower graph area, x-axis/year labels, y-axis scale, and graph bottom.'
+				}
+			],
+			[
+				'01.3',
+				{
+					label: 'figure 1',
+					minWidth: 900,
+					minHeight: 820,
+					evidence:
+						'Q01.3 is not answerable unless Figure 1 includes the complete graph bottom and axes needed to read 1980 and 2016 values.'
+				}
+			],
+			[
+				'01.8',
+				{
+					label: 'figure 4',
+					minWidth: 1250,
+					minHeight: 1700,
+					evidence:
+						'Figure 4 must include the world map/key and the complete tropical storm deaths table, including the final Stan row, so the median can be calculated from all listed storms.'
+				}
+			],
+			[
+				'02.5',
+				{
+					label: 'figure 8',
+					minWidth: 1200,
+					minHeight: 560,
+					maxHeight: 780,
+					forbiddenOcrTerms: ['Study Figure 8', 'describe the distribution'],
+					evidence:
+						'Figure 8 must be a clean map-only crop with map/title/key evidence, without Q02.4 answer lines or duplicated Q02.5 setup/prompt text.'
+				}
+			],
+			[
+				'02.6',
+				{
+					label: 'figure 9',
+					minWidth: 1200,
+					minHeight: 620,
+					maxHeight: 840,
+					forbiddenOcrTerms: ['Using Figure 9', 'what percentage', 'Shade one circle only'],
+					evidence:
+						'Figure 9 must be a clean nutrient-cycle diagram crop, without the Q02.6 prompt or response-control instruction below it.'
+				}
+			],
+			[
+				'03.3',
+				{
+					label: 'figure 11',
+					minWidth: 820,
+					minHeight: 1050,
+					evidence:
+						'Figure 11 OS map must include both X and Y markers, full 39-41/71-74 grid labels, scale bar, and north arrow.'
+				}
+			],
+			[
+				'03.4',
+				{
+					label: 'figure 11',
+					minWidth: 820,
+					minHeight: 1050,
+					evidence:
+						'Figure 11 OS map must include both X and Y markers, full 39-41/71-74 grid labels, scale bar, and north arrow.'
+				}
+			],
+			[
+				'04.6',
+				{
+					label: 'figure 16',
+					minWidth: 900,
+					minHeight: 330,
+					maxHeight: 620,
+					forbiddenOcrTerms: ['Discuss the issues', 'flood management schemes'],
+					evidence:
+						'Figure 16 must be a clean source-box crop that stops before the Q04.6 prompt text.'
+				}
+			],
+			[
+				'05.3',
+				{
+					label: 'figure 17',
+					minWidth: 1200,
+					minHeight: 1050,
+					evidence:
+						'Figure 17 OS map must include both X and Y markers, full 63-67/59-61 grid labels, scale bar, and north arrow.'
+				}
+			],
+			[
+				'05.4',
+				{
+					label: 'figure 17',
+					minWidth: 1200,
+					minHeight: 1050,
+					evidence:
+						'Figure 17 OS map must include both X and Y markers, full 63-67/59-61 grid labels, scale bar, and north arrow.'
+				}
+			]
+		])
+	);
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	if (ref === '02.1' || ref === '02.3') {
+		const potentiallyVisiblePrompt = [
+			question.selfContainedPromptText,
+			...(question.stemBlocks ?? []).map(blockSearchText),
+			...(question.leadBlocks ?? []).map(blockSearchText),
+			...(question.promptBlocks ?? []).map(blockSearchText)
+		]
+			.filter(Boolean)
+			.join('\n');
+		if (!/\blarge\s+water\s+plant\b/i.test(potentiallyVisiblePrompt)) {
+			issues.push({
+				code: 'known_source_label_mismatch',
+				field: 'selfContainedPromptText/stemBlocks/promptBlocks',
+				severity: 'error',
+				evidence:
+					'Geography 2023 Paper 1 Figure 7 substitutes must preserve the exact official organism label "Large water plant"; do not shorten it to "water plant".'
+			});
+		}
+		const explicitProducerLeakPatterns = [
+			/\blarge\s+water\s+plant\b[^.\n;]{0,80}\b(?:is|as|=|:)\s*(?:the\s+)?producer\b/i,
+			/\bproducer\b[^.\n;]{0,80}\b(?:is|=|:)\s*(?:the\s+)?large\s+water\s+plant\b/i,
+			/\blarge\s+water\s+plant\b[^.\n;]{0,100}\b(?:base\s+of\s+the\s+food\s+web|lowest\s+trophic|photosynthesi[sz]es|makes\s+its\s+own\s+food)\b/i
+		];
+		if (explicitProducerLeakPatterns.some((pattern) => pattern.test(potentiallyVisiblePrompt))) {
+			issues.push({
+				code: 'known_self_contained_answer_leak',
+				field: 'selfContainedPromptText/stemBlocks/promptBlocks',
+				severity: 'error',
+				evidence:
+					'Geography 2023 Paper 1 Q02.1 asks the learner to identify a producer from Figure 7. Learner-visible/self-contained wording may show organism names and feeding links, but must not label Large water plant as the producer before the learner answers.'
+			});
+		}
+	}
+	if (ref === '01.10') {
+		const figureFiveAssets = (question.assets ?? []).filter((asset) =>
+			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+				.filter(Boolean)
+				.some((label) => mediaLabelMatches(label, 'figure 5'))
+		);
+		const completeSingleAsset = figureFiveAssets.some((asset) => {
+			const dimensions = imageDimensionsForAsset(asset);
+			return dimensions && dimensions.width >= 900 && dimensions.height >= 1200;
+		});
+		if (figureFiveAssets.length === 1 && !completeSingleAsset) {
+			const dimensions = imageDimensionsForAsset(figureFiveAssets[0]);
+			issues.push({
+				code: 'known_figure_crop_incomplete',
+				field: 'assets.filePath',
+				severity: 'error',
+				evidence: `01.10 Figure 5 must include both the cyclone shelter photograph and Cyclone Amphan track map/key, or use separate Figure 5 photograph/map assets. Found one Figure 5 asset${
+					dimensions ? ` sized ${dimensions.width}x${dimensions.height}` : ''
+				}.`
+			});
+		}
+	}
+	return issues;
+}
+
 function knownGeography2022Paper1Issues(question, visibleText, gradingText) {
 	const ref = question.sourceQuestionRef ?? 'unknown';
 	const issues = [];
@@ -2649,6 +3047,36 @@ function assetMatchesFigureRequirement(asset, requirement, question) {
 function matchingOcrTerms(text, terms) {
 	const normalized = normalizeOcrSearchText(text);
 	return terms.filter((term) => normalized.includes(normalizeOcrSearchText(term)));
+}
+
+function genericFigureCropPromptTextIssues(question) {
+	const issues = [];
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	for (const asset of question.assets ?? []) {
+		const labels = [asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+			.filter(Boolean)
+			.map(String);
+		if (!labels.some((label) => /\b(?:figure|fig\.?|table|source|photograph|map)\b/i.test(label)))
+			continue;
+		const ocrText = imageOcrTextForAsset(asset);
+		if (!ocrText) continue;
+		const forbidden = matchingOcrTerms(ocrText, [
+			'Study Figure',
+			'Study Fig',
+			'Using Figure',
+			'Using Fig',
+			'With the help of Figure',
+			'Shade one circle only'
+		]);
+		if (!forbidden.length) continue;
+		issues.push({
+			code: 'asset_crop_contains_prompt_text',
+			field: 'assets.filePath',
+			severity: 'error',
+			evidence: `${ref} ${labels[0]} crop OCR contains setup/prompt text that should be rendered in stemBlocks or promptBlocks, not inside the source image: ${forbidden.join(', ')}.`
+		});
+	}
+	return issues;
 }
 
 function knownGeography2022Paper1Figure9And10DuplicateIssues(question) {
@@ -3470,6 +3898,20 @@ function knownAssetDimensionIssues(question, requirements) {
 				Number.isFinite(Number(requirement.maxHeight)) &&
 				dimensions.height > Number(requirement.maxHeight);
 			if (!tooSmall && !tooTall) {
+				if (requirement.forbiddenOcrTerms) {
+					const ocrText = imageOcrTextForAsset(asset);
+					if (ocrText) {
+						const forbidden = matchingOcrTerms(ocrText, requirement.forbiddenOcrTerms);
+						if (forbidden.length) {
+							issues.push({
+								code: 'known_figure_crop_duplicate_prompt_text',
+								field: 'assets.filePath',
+								severity: 'error',
+								evidence: `${ref} ${asset.sourceLabel ?? label}: ${requirement.evidence} Crop OCR contains duplicated prompt/setup text that should be rendered separately: ${forbidden.join(', ')}.`
+							});
+						}
+					}
+				}
 				continue;
 			}
 			issues.push({
@@ -3805,6 +4247,65 @@ function missingReferencedMediaLabels(question) {
 		missing.push(label);
 	}
 	return [...new Set(missing)];
+}
+
+function copyrightPlaceholderMediaIssues(question) {
+	const text = learnerVisibleQuestionText(question);
+	if (
+		!/\b(?:cannot be reproduced|not reproduced|third[- ]party copyright|copyright restrictions?|copyright placeholder|not supplied)\b/i.test(
+			text
+		)
+	) {
+		return [];
+	}
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	return [
+		{
+			code: 'media_copyright_placeholder',
+			field: 'contextText/stemBlocks/leadBlocks/promptBlocks',
+			severity: 'error',
+			evidence: `${ref}: ${text.replace(/\s+/g, ' ').trim().slice(0, 220)}`,
+			message:
+				'Learner-visible question content still contains a copyright/source placeholder. Provide a renderable or structured official source, or keep the question blocked for human review.'
+		}
+	];
+}
+
+function learnerVisibleSourceProvenanceIssues(question) {
+	const text = learnerVisibleQuestionText(question);
+	if (
+		!/\b(?:neutral substitute|official marking evidence|mark[- ]scheme evidence|reconstruct(?:ed|ion)|source unavailable|source status|not learner visible)\b/i.test(
+			text
+		)
+	) {
+		return [];
+	}
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	return [
+		{
+			code: 'learner_visible_source_provenance',
+			field: 'contextText/stemBlocks/leadBlocks/promptBlocks',
+			severity: 'error',
+			evidence: `${ref}: ${text.replace(/\s+/g, ' ').trim().slice(0, 220)}`,
+			message:
+				'Learner-visible source substitutes must contain clean source content only. Move reconstruction/provenance wording to reviewNotes or provenance metadata.'
+		}
+	];
+}
+
+function learnerVisibleQuestionText(question) {
+	return [
+		question.promptText,
+		question.selfContainedPromptText,
+		question.contextText,
+		...(question.stemBlocks ?? []).map(blockSearchText),
+		...(question.leadBlocks ?? []).map(blockSearchText),
+		...(question.promptBlocks ?? []).map(blockSearchText),
+		...(question.afterResponseBlocks ?? []).map(blockSearchText)
+	]
+		.map(stringifyBlockValue)
+		.filter(Boolean)
+		.join('\n');
 }
 
 function referencedMediaLabels(question) {

@@ -645,7 +645,7 @@ function normalizedBankText(value) {
 
 function responseBankItems(response) {
 	if (response.kind === 'image-label-zones') return response.labels ?? [];
-	if (response.kind === 'choice') return response.options ?? [];
+	if (response.kind === 'choice') return response.options ?? response.choiceOptions ?? [];
 	if (response.kind === 'matching') return [...(response.left ?? []), ...(response.right ?? [])];
 	if (response.kind === 'asset-canvas') return response.labelBank ?? [];
 	return [];
@@ -735,7 +735,7 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 	if (response.kind === 'choice') {
 		return {
 			kind: 'choice',
-			options: response.options ?? [],
+			options: response.options ?? response.choiceOptions ?? [],
 			layout: response.layout ?? 'vertical',
 			...(response.maxSelections && response.maxSelections > 1
 				? { maxSelections: response.maxSelections }

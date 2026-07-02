@@ -6,6 +6,24 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const rootDir = process.cwd();
+const usage = `Usage:
+node scripts/download-aqa-indexed-subject-papers.mjs \\
+  --computer-science-index-url=<url> \\
+  --geography-index-url=<url> \\
+  --history-index-url=<url>
+
+Options:
+  --subjects=computer-science,geography,history
+  --output-root=data/aqa-gcse-history-geography-computer-science
+  --concurrency=8
+  --force
+  --dry-run`;
+
+if (hasArg('help')) {
+	console.log(usage);
+	process.exit(0);
+}
+
 const subjectArg = stringArg('subjects', 'computer-science,geography,history');
 const selectedSubjectSlugs = new Set(
 	subjectArg
@@ -48,6 +66,50 @@ const specs = [
 			'https://www.aqa.org.uk/subjects/history/gcse/history-8145/assessment-resources?f.Resource+type|6=Examiner+reports&num_ranks=200&sort=date'
 	}
 ].filter((spec) => selectedSubjectSlugs.has(spec.subjectSlug));
+
+const supplementalGeographyPaper3PreReleaseByYear = new Map([
+	[
+		2020,
+		{
+			url: 'https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-3/PM/June%202020%20PM.PDF',
+			sourcePageUrl: 'https://www.physicsandmathstutor.com/past-papers/gcse-geography/aqa-paper-3/',
+			discoveredVia: 'pmt_aqa_geography_paper_3_preliminary_material_index'
+		}
+	],
+	[
+		2021,
+		{
+			url: 'https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-3/PM/June%202021%20PM.PDF',
+			sourcePageUrl: 'https://www.physicsandmathstutor.com/past-papers/gcse-geography/aqa-paper-3/',
+			discoveredVia: 'pmt_aqa_geography_paper_3_preliminary_material_index'
+		}
+	],
+	[
+		2022,
+		{
+			url: 'https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-3/PM/June%202022%20PM.PDF',
+			sourcePageUrl: 'https://www.physicsandmathstutor.com/past-papers/gcse-geography/aqa-paper-3/',
+			discoveredVia: 'pmt_aqa_geography_paper_3_preliminary_material_index'
+		}
+	],
+	[
+		2023,
+		{
+			url: 'https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-3/PM/June%202023%20PM.pdf',
+			sourcePageUrl: 'https://www.physicsandmathstutor.com/past-papers/gcse-geography/aqa-paper-3/',
+			discoveredVia: 'pmt_aqa_geography_paper_3_preliminary_material_index'
+		}
+	],
+	[
+		2024,
+		{
+			url: 'https://www.plympton.academy/site-plympton/assets/files/3998/2024_pre-release_booklet.pdf',
+			sourcePageUrl:
+				'https://www.plympton.academy/site-plympton/assets/files/3998/2024_pre-release_booklet.pdf',
+			discoveredVia: 'supplemental_public_aqa_geography_pre_release_pdf_pointer'
+		}
+	]
+]);
 
 if (specs.length === 0) {
 	throw new Error(
@@ -318,11 +380,57 @@ function supportingDocumentsFor(row, supportRows, reportResources) {
 			})
 		);
 	}
+	for (const document of supplementalSupportingDocumentsFor(row, documents)) {
+		documents.push(document);
+	}
 	for (const report of reportResources) {
 		if (reportMatchesPaper(report, row)) documents.push(reportDocument(report, row));
 	}
 	return uniqueBy(documents, (document) => document.url).sort((left, right) =>
 		left.title.localeCompare(right.title)
+	);
+}
+
+function supplementalSupportingDocumentsFor(row, existingDocuments) {
+	if (row.subjectSlug !== 'geography' || row.component !== '80353') return [];
+	if (hasPreReleaseDocument(existingDocuments)) return [];
+	const source = supplementalGeographyPaper3PreReleaseByYear.get(row.year);
+	if (!source) return [];
+	const filename = safeFilename(
+		`geography-${row.year}-${row.session}-paper-3-pre-release-resources-booklet`,
+		'PM'
+	);
+	return [
+		{
+			document_type: 'pre_release',
+			filename,
+			title: `Pre-release resources booklet: Paper 3 Geographical applications - ${row.series}`,
+			url: source.url,
+			source_page_url: source.sourcePageUrl,
+			discovered_via: source.discoveredVia,
+			source_role: 'discovery_index_pdf_pointer',
+			board: row.board,
+			qualification: row.qualification,
+			subject: row.subject,
+			series: row.series,
+			year: row.year,
+			component: row.component,
+			local_path: relative(path.join(directoryForDocument({ document_type: 'pre_release' }), filename))
+		}
+	];
+}
+
+function hasPreReleaseDocument(documents) {
+	return documents.some((document) =>
+		[
+			document.document_type,
+			document.filename,
+			document.title,
+			document.url,
+			document.discovered_via
+		]
+			.filter(Boolean)
+			.some((value) => /\b(?:pre[- ]?release|preliminary|resources booklet)\b/i.test(value))
 	);
 }
 

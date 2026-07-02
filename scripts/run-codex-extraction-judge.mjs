@@ -188,6 +188,9 @@ function buildPrompt() {
 	const sourceSpecificLine =
 		sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
 			? 'For Geography 2022 Paper 1 Q02.3, the question-paper option B says "The trees drop their dead leaves because of lower temperatures in winter" while the mark scheme key abbreviates this as "The trees drop their leaves...". This is not a defect if response.options preserve the question-paper wording and the answer key still identifies option B / the corresponding mark-scheme wording.'
+			: sourceDocumentId ===
+				  'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
+				? 'For Geography 2023 Paper 1 Q02.1 and Q02.3, Figure 7 may be missing from the public PDF because of third-party copyright. Do not require an image asset if candidate.json provides a learner-visible structured-table substitute labelled "Figure 7" that is sufficient to identify Large water plant as producer and reason that trout loss may increase aquatic insects/crayfish or stop humans eating trout. Treat provenance wording as valid only in reviewNotes, not in learner-visible blocks.'
 			: '';
 	return `You are an independent GCSE extraction and learner-rendering judge. You did not create candidate.json.
 
@@ -210,6 +213,8 @@ Task:
 6. For Biology Nov 2020, explicitly verify Q07.1 has 7 visible ruled answer lines and Q07.3 has 16 visible ruled answer lines.
 7. Fail real defects, including missing renderable assets for mentioned figures, missing table data, duplicated learner-visible setup text, wrong response-line counts, wrong fixed-response answer keys, missing model answers for written questions, or mark-scheme rows that do not support grading.
 8. For fixed-response or multiple-choice questions, judge learner-visible option text against the question paper, not against shortened mark-scheme wording. The mark scheme determines which option is correct; the question paper determines exactly what text the learner sees. Do not fail merely because a correct option's paper wording contains extra words that the mark scheme omits, as long as the selected option and grading evidence are aligned.
+9. The assembled learner-visible context is candidate.contextText, candidate.stemBlocks, candidate.leadBlocks, candidate.promptBlocks, candidate.afterResponseBlocks, candidate.response, and candidate.assets together. Inspect labelled structured-table/table/key/equation blocks before declaring a referenced Figure/Table missing. A complete structured block is a renderable source surface; do not require a PNG asset for simple source tables, keys, code, SQL skeletons, food webs, or other source material that is faithfully represented structurally.
+10. If a public PDF withholds a learner source for copyright, pass a neutral structured substitute only when it is learner-visible, labelled with the official Figure/Table/source label, sufficient to answer without the original image, supported by official mark-scheme/examiner evidence, and free of provenance phrases such as "reconstructed", "mark scheme evidence", or "source unavailable" in the learner-visible blocks. Provenance belongs in reviewNotes.
 ${sourceSpecificLine}
 
 Useful commands:
@@ -273,6 +278,16 @@ function candidateWithLocalAssets(candidate) {
 	for (const question of candidate.questions ?? []) {
 		for (const asset of question.assets ?? []) {
 			asset.filePath = remap(asset.filePath ?? asset.file ?? asset.localPath ?? null);
+		}
+		for (const block of [
+			...(question.stemBlocks ?? []),
+			...(question.leadBlocks ?? []),
+			...(question.promptBlocks ?? []),
+			...(question.afterResponseBlocks ?? [])
+		]) {
+			if (block && typeof block === 'object') {
+				block.filePath = remap(block.filePath ?? block.file ?? block.localPath ?? null);
+			}
 		}
 	}
 	for (const asset of candidate.localAssetManifest ?? []) {

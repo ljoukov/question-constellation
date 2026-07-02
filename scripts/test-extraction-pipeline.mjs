@@ -467,8 +467,12 @@ requireIncludes(
 		'known_graph_plotting_mark_scheme_mismatch',
 		'known_level_response_descriptors_missing',
 		'known_self_contained_answer_leak',
+		'known_source_label_mismatch',
+		'context_text_duplicates_render_block',
 		'known_figure_crop_incomplete',
 		'known_figure_key_text_missing',
+		'asset_crop_contains_prompt_text',
+		'genericFigureCropPromptTextIssues',
 		'imageOcrTextForAsset',
 		'known_figure_crop_prompt_contamination',
 		'known_ring_choice_flattened',
@@ -619,7 +623,11 @@ requireIncludes(
 		'Figure 2 includes the complete Mesophyll cell label',
 		'Figure 4 includes the full key including Water molecules and Nitrate ions',
 		'Figure 6 includes the full cell-cycle chart and Stage 1 label',
-		'Figure 9 includes the full Nodules label and arrows'
+		'Figure 9 includes the full Nodules label and arrows',
+		'asset whose OCR includes surrounding task text such as "Study Figure"',
+		'must not say that Large water plant is the producer',
+		'do not shorten it to "water plant"',
+		'between contextText and rendered blocks'
 	],
 	'Codex PDF extraction runner'
 );
@@ -640,6 +648,8 @@ requireIncludes(
 		'Do not inspect the repository',
 		'learner-rendering judge',
 		'judge learner-visible option text against the question paper',
+		'Inspect labelled structured-table/table/key/equation blocks before declaring a referenced Figure/Table missing',
+		'For Geography 2023 Paper 1 Q02.1 and Q02.3',
 		'For Geography 2022 Paper 1 Q02.3',
 		'requiredRepairs'
 	],
@@ -721,6 +731,9 @@ requireIncludes(
 		'studentVisibleSolvable',
 		'markSchemeFits',
 		'requiredRepairs',
+		'studentVisibleContext.sections[*].blocks.stem',
+		'structured table rendered there is visible evidence',
+		'inspect the local image file under assets/',
 		'assetCopyPairs',
 		'--target-only',
 		'gpt-5.5',
@@ -1547,6 +1560,46 @@ if (!missingMediaFailure.includes('referenced_media_missing_asset')) {
 	});
 }
 
+const copyrightPlaceholderPath = path.join(helperNormalizeDir, 'copyright-placeholder-media.json');
+writeFileSync(
+	copyrightPlaceholderPath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper', pageCount: 6 },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 2 },
+			questions: [
+				{
+					sourceQuestionRef: '02.1',
+					promptText: 'Use Figure 7 to name the producer in the food web.',
+					marks: 1,
+					pageStart: 4,
+					pageEnd: 4,
+					contextText:
+						'Figure 7 cannot be reproduced here due to third-party copyright restrictions.',
+					assets: [{ sourceLabel: 'Figure 7', publicPath: '/assets/source-placeholder.png' }],
+					response: { kind: 'lines', count: 1 },
+					markSchemeItems: [{ itemType: 'answer', text: 'Large water plant.' }],
+					markChecklist: [{ text: 'Names the producer.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'The producer is the large water plant.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const copyrightPlaceholderFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${copyrightPlaceholderPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!copyrightPlaceholderFailure.includes('media_copyright_placeholder')) {
+	fail('Codex helper validation did not reject learner-visible copyright-placeholder media.', {
+		copyrightPlaceholderFailure
+	});
+}
+
 const missingDiagramSurfacePath = path.join(helperNormalizeDir, 'missing-diagram-surface.json');
 writeFileSync(
 	missingDiagramSurfacePath,
@@ -2151,6 +2204,348 @@ writeFileSync(
 		'base64'
 	)
 );
+
+const geography2022Paper3SourceTablePath = path.join(
+	helperNormalizeDir,
+	'geography-2022-paper-3-source-table.json'
+);
+writeFileSync(
+	geography2022Paper3SourceTablePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2022-june-paper-3-geographical-applications-qp',
+				docType: 'question_paper',
+				pageCount: 20
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 10 },
+			questions: [
+				{
+					sourceQuestionRef: '04.2',
+					promptText: 'What was the total environmental quality score?',
+					marks: 1,
+					pageStart: 11,
+					pageEnd: 11,
+					stemBlocks: [
+						{
+							kind: 'structured-table',
+							label: 'Figure 4',
+							rows: [
+								[{ text: 'Environmental quality category' }, { text: 'Score shown' }],
+								[{ text: 'Lots of litter / No litter' }, { text: '-1' }],
+								[{ text: 'Crowded / Few people' }, { text: '-2' }],
+								[{ text: 'Noisy / Quiet' }, { text: '-1' }],
+								[{ text: 'Lots of traffic / Little traffic' }, { text: '-2' }],
+								[{ text: 'Unattractive / Attractive' }, { text: '0' }]
+							]
+						}
+					],
+					response: {
+						kind: 'equation-blanks',
+						segments: [{ kind: 'blank', id: 'total-score' }],
+						correctAnswers: [{ targetId: 'total-score', correctAnswer: '-6' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: '-6.', marks: 1 }],
+					markChecklist: [{ text: 'Gives -6.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '-6' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2022Paper3SourceTableFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2022Paper3SourceTablePath}`,
+		'--expected-marks=1',
+		'--expected-questions=1'
+	]
+);
+if (!geography2022Paper3SourceTableFailure.includes('known_source_table_value_mismatch')) {
+	fail('Codex helper validation did not reject swapped Geography 2022 Paper 3 source values.', {
+		geography2022Paper3SourceTableFailure
+	});
+}
+
+const geography2022Paper2KnownIssuesPath = path.join(
+	helperNormalizeDir,
+	'geography-2022-paper-2-known-issues.json'
+);
+writeFileSync(
+	geography2022Paper2KnownIssuesPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp',
+				docType: 'question_paper',
+				pageCount: 40
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 30 },
+			questions: [
+				{
+					sourceQuestionRef: '01.10',
+					promptText: 'Assess the challenges created by urban change.',
+					marks: 12,
+					pageStart: 11,
+					pageEnd: 12,
+					response: { kind: 'lines', lineCount: 30 },
+					markSchemeItems: [
+						{ itemType: 'level', text: 'Level 3 content.', marks: 9 },
+						{ itemType: 'mark', text: 'SPaG high performance.', marks: 3 },
+						{ itemType: 'mark', text: 'SPaG intermediate/threshold performance.', marks: 2 }
+					],
+					markChecklist: [{ text: 'Awards content and SPaG.', markSchemeItemIndexes: [0, 1, 2] }],
+					modelAnswer: { answerText: 'A named city creates several challenges.' }
+				},
+				{
+					sourceQuestionRef: '03.1',
+					promptText: 'Use Figure 10 to identify the continent.',
+					marks: 1,
+					pageStart: 23,
+					pageEnd: 23,
+					needsHumanReview: true,
+					stemBlocks: [
+						{
+							kind: 'structured-table',
+							label: 'Figure 10',
+							rows: [
+								[{ text: 'Source status' }, { text: 'Official map unavailable.' }],
+								[{ text: 'Review action' }, { text: 'Block for human review.' }]
+							]
+						}
+					],
+					response: {
+						kind: 'choice',
+						options: ['A Africa', 'B Asia'],
+						correctAnswers: [{ targetId: 'answer', correctAnswer: 'A Africa' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'A Africa.', marks: 1 }],
+					markChecklist: [{ text: 'Selects Africa.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Africa.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2022Paper2KnownIssuesFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2022Paper2KnownIssuesPath}`,
+		'--expected-marks=13',
+		'--expected-questions=2'
+	]
+);
+if (
+	!geography2022Paper2KnownIssuesFailure.includes('known_spag_rubric_incomplete') ||
+	!geography2022Paper2KnownIssuesFailure.includes('known_unresolved_copyright_source')
+) {
+	fail('Codex helper validation did not reject Geography 2022 Paper 2 known defects.', {
+		geography2022Paper2KnownIssuesFailure
+	});
+}
+
+const geography2023Paper1KnownIssuesPath = path.join(
+	helperNormalizeDir,
+	'geography-2023-paper-1-known-issues.json'
+);
+writeFileSync(
+	geography2023Paper1KnownIssuesPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp',
+				docType: 'question_paper',
+				pageCount: 44
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 38 },
+			questions: [
+				{
+					sourceQuestionRef: '01.2',
+					promptText: 'Using Figure 1, which statement is true?',
+					marks: 1,
+					pageStart: 3,
+					pageEnd: 3,
+					stemBlocks: [{ kind: 'paragraph', text: 'Study Figure 1.' }],
+					assets: [{ sourceLabel: 'Figure 1', filePath: 'tiny-figure.png' }],
+					response: {
+						kind: 'choice',
+						options: ['A', 'B'],
+						correctAnswers: [{ targetId: 'choice', correctAnswer: 'B' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'B.', marks: 1 }],
+					markChecklist: [{ text: 'Selects B.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'B.' }
+				},
+				{
+					sourceQuestionRef: '01.11',
+					promptText: 'Suggest how plate margin processes lead to hazards.',
+					marks: 12,
+					pageStart: 12,
+					pageEnd: 13,
+					response: { kind: 'lines', lineCount: 27 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level response.', marks: 9 }],
+					markChecklist: [{ text: 'Explains plate margin processes.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Different margins create earthquakes and volcanoes.' }
+				},
+				{
+					sourceQuestionRef: '02.10',
+					promptText: 'Assess the extent to which human activity has affected the chosen environment.',
+					marks: 9,
+					pageStart: 22,
+					pageEnd: 24,
+					response: {
+						kind: 'labeled-lines',
+						fields: [
+							{ label: 'Chosen environment', lineCount: 2 },
+							{ label: 'Answer', lineCount: 23 }
+						]
+					},
+					markSchemeItems: [{ itemType: 'level', text: 'Level response.', marks: 9 }],
+					markChecklist: [{ text: 'Assesses human activity.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Human activity changes the environment in several ways.' }
+				},
+				{
+					sourceQuestionRef: '02.1',
+					promptText: 'Name the producer in Figure 7.',
+					contextText: 'Study Figure 7, a diagram of a food web.',
+					marks: 1,
+					pageStart: 14,
+					pageEnd: 14,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Study Figure 7, a diagram of a food web.' },
+						{
+							kind: 'structured-table',
+							label: 'Figure 7',
+							rows: [
+								[{ text: 'Neutral substitute from official marking evidence' }],
+								[{ text: 'Water plant is at the base of the food web.' }]
+							]
+						}
+					],
+					response: {
+						kind: 'lines',
+						lineCount: 1
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'Large water plant.', marks: 1 }],
+					markChecklist: [{ text: 'Names Large water plant.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Large water plant.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2023Paper1KnownIssuesFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2023Paper1KnownIssuesPath}`,
+		'--expected-marks=23',
+		'--expected-questions=4'
+	]
+);
+if (
+	!geography2023Paper1KnownIssuesFailure.includes('known_figure_crop_incomplete') ||
+	!geography2023Paper1KnownIssuesFailure.includes('known_response_line_count_mismatch') ||
+	!geography2023Paper1KnownIssuesFailure.includes('learner_visible_source_provenance') ||
+	!geography2023Paper1KnownIssuesFailure.includes('known_source_label_mismatch') ||
+	!geography2023Paper1KnownIssuesFailure.includes('context_text_duplicates_render_block')
+) {
+	fail('Codex helper validation did not reject Geography 2023 Paper 1 known defects.', {
+		geography2023Paper1KnownIssuesFailure
+	});
+}
+
+const geography2023Figure7ValidPath = path.join(helperNormalizeDir, 'geography-2023-figure7-valid.json');
+writeFileSync(
+	geography2023Figure7ValidPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp',
+				docType: 'question_paper',
+				pageCount: 40
+			},
+			markSchemeDocument: { id: 'aqa-geography-2023-paper-1-ms', docType: 'mark_scheme', pageCount: 32 },
+			questions: [
+				{
+					sourceQuestionRef: '02.1',
+					promptText: 'Using Figure 7, identify a producer.',
+					selfContainedPromptText:
+						'Study Figure 7, a diagram of a food web. Using Figure 7, identify a producer.',
+					marks: 1,
+					pageStart: 14,
+					pageEnd: 14,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Study Figure 7, a diagram of a food web.' },
+						{
+							kind: 'table',
+							label: 'Figure 7',
+							columns: ['Food source', 'Consumer'],
+							rows: [
+								['Large water plant', 'Aquatic insects'],
+								['Large water plant', 'Crayfish'],
+								['Aquatic insects', 'Trout'],
+								['Crayfish', 'Trout'],
+								['Trout', 'Humans']
+							]
+						}
+					],
+					promptBlocks: [{ kind: 'paragraph', text: 'Using Figure 7, identify a producer.' }],
+					response: { kind: 'lines', lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Large water plant.', marks: 1 }],
+					markChecklist: [{ text: 'Names Large water plant.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Large water plant.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${geography2023Figure7ValidPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+
+const duplicateContextNormalizePath = path.join(
+	helperNormalizeDir,
+	'geography-2023-context-duplicate-normalize.json'
+);
+const duplicateContextNormalizedPath = path.join(
+	helperNormalizeDir,
+	'geography-2023-context-duplicate-normalized.json'
+);
+const duplicateContextCandidate = JSON.parse(readFileSync(geography2023Figure7ValidPath, 'utf8'));
+duplicateContextCandidate.questions[0].contextText = 'Study Figure 7, a diagram of a food web.';
+writeFileSync(duplicateContextNormalizePath, JSON.stringify(duplicateContextCandidate, null, 2));
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'normalize-extraction',
+	`--input=${duplicateContextNormalizePath}`,
+	`--output=${duplicateContextNormalizedPath}`
+]);
+const duplicateContextNormalized = JSON.parse(readFileSync(duplicateContextNormalizedPath, 'utf8'));
+if (duplicateContextNormalized.questions[0]?.contextText !== null) {
+	fail('Codex helper normalization did not remove contextText duplicated in stemBlocks.', {
+		contextText: duplicateContextNormalized.questions[0]?.contextText
+	});
+}
+runNodeScript('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${duplicateContextNormalizedPath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+
 const incompleteFigureCropPath = path.join(helperNormalizeDir, 'incomplete-figure-crop.json');
 writeFileSync(
 	incompleteFigureCropPath,
@@ -5104,6 +5499,23 @@ if (
 	fail('Solvability answer key omitted unordered response groups.', unorderedAnswerKeyContext);
 }
 
+const normalizedChoiceOptionsQuestion = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '01.1',
+	response: {
+		kind: 'choice',
+		choiceOptions: ['A One', 'B Two'],
+		correctAnswers: [{ targetId: 'choice', correctAnswer: 'B' }]
+	}
+});
+if (
+	normalizedChoiceOptionsQuestion.response.options?.join('|') !== 'A One|B Two' ||
+	normalizedChoiceOptionsQuestion.response.choiceOptions?.join('|') !== 'A One|B Two'
+) {
+	fail('Import normalization did not canonicalize choiceOptions to options.', {
+		normalizedChoiceOptionsQuestion
+	});
+}
+
 const numberedFigureContext = pipelineModule.buildLearnerVisibleQuestionContext(
 	{
 		sourceDocument: { id: 'test-paper' },
@@ -5140,6 +5552,37 @@ const figureTwoMedia = numberedFigureContext.studentVisibleContext.media.find(
 );
 if (figureTwoMedia?.asset?.sourceLabel !== 'Figure 2') {
 	fail('Solvability media selection cross-matched numbered figure assets.', figureTwoMedia);
+}
+
+const multiPageFigureContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		sourceDocument: { id: 'test-paper' },
+		questions: [
+			{
+				sourceQuestionRef: '02.1',
+				promptText: 'Use Figure 1.',
+				stemBlocks: [{ kind: 'figure', label: 'Figure 1', assetLabel: 'Figure 1' }],
+				response: { kind: 'lines', count: 1 },
+				assets: [
+					{ sourceLabel: 'Figure 1', assetLabel: 'Figure 1 page 2', filePath: 'tmp/fig-1-p2.png' },
+					{ sourceLabel: 'Figure 1', assetLabel: 'Figure 1 page 3', filePath: 'tmp/fig-1-p3.png' }
+				],
+				markSchemeItems: [{ itemType: 'mark', text: 'Uses both pages.' }]
+			}
+		]
+	},
+	'02.1',
+	{ attachImages: false }
+);
+const figureOneMedia = multiPageFigureContext.studentVisibleContext.media.filter(
+	(media) => media.label === 'Figure 1'
+);
+if (
+	figureOneMedia.length !== 2 ||
+	!figureOneMedia.some((media) => media.asset?.assetLabel === 'Figure 1 page 2') ||
+	!figureOneMedia.some((media) => media.asset?.assetLabel === 'Figure 1 page 3')
+) {
+	fail('Solvability media context collapsed multi-page figure assets.', figureOneMedia);
 }
 
 const tmpDir = path.join(rootDir, 'tmp/test-extraction-pipeline');

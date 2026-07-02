@@ -243,12 +243,13 @@ Do not inspect the repository, previous workdirs, benchmark artifacts, git histo
 Task:
 1. For every context in solvability-contexts.json, decide whether a student can answer the target question from the assembled app-visible context alone.
 2. Treat previous subparts listed in the context as visible context, but do not use targetAnswerKey to decide whether the prompt is understandable.
-3. Use targetAnswerKey only after deciding visibility, to verify that grading evidence and the extracted response controls fit the visible question.
-4. Fail real learner-facing defects: missing source table/figure/diagram data, missing response-surface asset, impossible fixed-response control, wrong or absent answer key, missing model answer for written responses, duplicated or contradictory prompt context, or mark-scheme evidence that cannot grade the visible question.
-5. Do not judge answer-chain quality except where the chain text has contaminated the visible question or grading fields.
-6. For structured source tables or source strings represented in context sections, an image asset is not required unless the target response itself is diagram/image based.
-7. If a context includes media entries with asset.filePath, inspect the local file when needed for label-zone or drawing response solvability.
-8. Use score >= ${minScore} for passed questions. Any blocking missingContext/renderFinding or non-empty requiredRepairs means the question fails.
+3. The learner-visible evidence is not only targetQuestion/contextText. Read studentVisibleContext.sections[*].blocks.stem, .lead, .prompt, and .afterResponse carefully. A structured table rendered there is visible evidence. Do not report source data as missing if those blocks already contain the required values.
+4. If a context includes studentVisibleContext.media[] with present=true and asset.filePath, inspect the local image file under assets/ before reporting that a figure, map, graph, photograph, or diagram is missing. If the image contains the required source information, the question is visible/solvable even when the same values are not also transcribed as text.
+5. Use targetAnswerKey only after deciding visibility, to verify that grading evidence and the extracted response controls fit the visible question.
+6. Fail real learner-facing defects: missing source table/figure/diagram data, missing response-surface asset, impossible fixed-response control, wrong or absent answer key, missing model answer for written responses, duplicated or contradictory prompt context, or mark-scheme evidence that cannot grade the visible question.
+7. Do not judge answer-chain quality except where the chain text has contaminated the visible question or grading fields.
+8. For structured source tables or source strings represented in context sections, an image asset is not required unless the target response itself is diagram/image based.
+9. Use score >= ${minScore} for passed questions. Any blocking missingContext/renderFinding or non-empty requiredRepairs means the question fails.
 
 Write exactly one JSON file named solvability-report.json with this shape:
 {
