@@ -19,6 +19,9 @@
 	const pageDescription = $derived(
 		`Download ${data.page.pageLabel} GCSE past papers, mark schemes and inserts from ${firstYear}-${latestYear}.`
 	);
+	function paperFilterLinkText(filterLabel: string) {
+		return `${data.page.pageLabel} ${filterLabel} past papers`;
+	}
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -122,16 +125,20 @@
 						class:active-filter={data.page.selectedPaperFilterId === 'all'}
 						aria-current={data.page.selectedPaperFilterId === 'all' ? 'page' : undefined}
 						href={subjectPath}
+						title={paperFilterLinkText('all papers')}
 					>
-						All papers
+						<span class="sr-only">{paperFilterLinkText('all papers')}</span>
+						<span aria-hidden="true">All papers</span>
 					</a>
 					{#each data.page.paperFilters as filter (filter.id)}
 						<a
 							class:active-filter={data.page.selectedPaperFilterId === filter.id}
 							aria-current={data.page.selectedPaperFilterId === filter.id ? 'page' : undefined}
 							href={`${subjectPath}?paper=${filter.id}`}
+							title={paperFilterLinkText(filter.label)}
 						>
-							{filter.label}
+							<span class="sr-only">{paperFilterLinkText(filter.label)}</span>
+							<span aria-hidden="true">{filter.label}</span>
 						</a>
 					{/each}
 				</nav>

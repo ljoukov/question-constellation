@@ -11,6 +11,7 @@ type SitemapUrl = {
 
 const staticUrls: SitemapUrl[] = [
 	{ path: '/', priority: '1.0', changefreq: 'weekly' },
+	{ path: '/past-papers', priority: '0.95', changefreq: 'weekly' },
 	{ path: '/past-papers/gcse', priority: '0.9', changefreq: 'weekly' },
 	{ path: '/english', priority: '0.7', changefreq: 'monthly' },
 	{ path: '/recall', priority: '0.6', changefreq: 'monthly' }

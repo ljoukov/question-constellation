@@ -106,9 +106,9 @@
 					<a class="board-card" href={resolve('/past-papers/gcse/[board]', { board: board.id })}>
 						<span class="board-card-title">
 							<BookOpen size={18} aria-hidden="true" strokeWidth={2.2} />
-							<span>{board.name}</span>
+							<span>{board.name} GCSE Past Papers</span>
 						</span>
-						<span class="board-card-copy">Past papers by subject</span>
+						<span class="board-card-copy">Subjects, tiers and mark schemes</span>
 					</a>
 				{/each}
 			</div>

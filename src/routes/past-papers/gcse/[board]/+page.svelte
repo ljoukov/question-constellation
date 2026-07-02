@@ -13,6 +13,12 @@
 	);
 	const boardPath = $derived(resolve('/past-papers/gcse/[board]', { board: data.board.id }));
 	const subjectPages = $derived(data.categories.flatMap((category) => category.pages));
+	function subjectVariantLinkText(
+		subject: PageData['categories'][number]['subjects'][number],
+		variant: PageData['categories'][number]['subjects'][number]['variants'][number]
+	) {
+		return `${data.board.name} GCSE ${subject.subject}${variant.tier ? ` ${variant.tier}` : ''} past papers`;
+	}
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -131,13 +137,16 @@
 
 									<div class="subject-tier-links" aria-label={`${subject.subject} tiers`}>
 										{#each subject.variants as variant (variant.id)}
+											{@const linkText = subjectVariantLinkText(subject, variant)}
 											<a
 												href={resolve('/past-papers/gcse/[board]/[subjectSlug]', {
 													board: variant.boardId,
 													subjectSlug: variant.subjectSlug
 												})}
+												title={linkText}
 											>
-												{variant.label}
+												<span class="sr-only">{linkText}</span>
+												<span aria-hidden="true">{variant.label}</span>
 											</a>
 										{/each}
 									</div>
