@@ -8,6 +8,8 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
+	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
 	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -120,6 +122,32 @@
 	const answerRows = $derived(
 		data.question.meta.marks >= 30 ? 16 : data.question.meta.marks >= 10 ? 12 : 8
 	);
+	const structuredResponse = $derived(
+		responseFromOverlay(data.question.renderingOverlay?.responseInteraction)
+	);
+	const responseAssets = $derived(
+		Object.fromEntries(
+			data.question.assets.map((asset) => [
+				asset.id,
+				{
+					id: asset.id,
+					label: asset.sourceLabel,
+					src: asset.publicPath,
+					alt: asset.altText,
+					width: asset.paperWidthPx ?? undefined
+				}
+			])
+		) as Record<string, ExamPaperAsset>
+	);
+
+	function responseFromOverlay(value: Record<string, unknown> | null | undefined) {
+		if (!value || value.kind === 'none') return null;
+		return value as ExamResponse;
+	}
+
+	function setAnswerText(value: string) {
+		answerText = value;
+	}
 
 	async function checkAnswer() {
 		if (!canCheck) return;
@@ -356,16 +384,28 @@
 					<ExamQuestionCard question={data.question} showTitle={false} />
 
 					<section class="qc-practice-answer-card">
-						<label for="answer">Your answer</label>
-						<textarea
-							id="answer"
-							class="qc-lined-answer"
-							class:extended={data.question.meta.marks >= 20}
-							bind:value={answerText}
-							rows={answerRows}
-							placeholder="Write your answer..."
-							spellcheck="true"
-						></textarea>
+						{#if structuredResponse}
+							<p class="qc-practice-answer-label">Your answer</p>
+							<div class="qc-practice-response">
+								<ResponseRenderer
+									response={structuredResponse}
+									assets={responseAssets}
+									answer={answerText}
+									onAnswerChange={setAnswerText}
+								/>
+							</div>
+						{:else}
+							<label for="answer">Your answer</label>
+							<textarea
+								id="answer"
+								class="qc-lined-answer"
+								class:extended={data.question.meta.marks >= 20}
+								bind:value={answerText}
+								rows={answerRows}
+								placeholder="Write your answer..."
+								spellcheck="true"
+							></textarea>
+						{/if}
 						<div class="qc-practice-actions" aria-label="Answer actions">
 							<button
 								class="qc-action-button primary"

@@ -5710,6 +5710,11 @@ textarea::placeholder {
 	gap: 0.5rem;
 }
 
+.qc-exam-rendered,
+.qc-practice-response {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
 .qc-exam-assets figure {
 	border-color: #102033;
 	border-radius: 0;
@@ -5892,7 +5897,8 @@ textarea::placeholder {
 	color: #405465;
 }
 
-.qc-practice-answer-card label {
+.qc-practice-answer-card label,
+.qc-practice-answer-label {
 	color: #102033;
 	font-size: 1rem;
 	font-weight: 540;
@@ -6674,6 +6680,7 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-exam-card h2,
 :root[data-theme='dark'] .qc-exam-prompt,
 :root[data-theme='dark'] .qc-practice-answer-card label,
+:root[data-theme='dark'] .qc-practice-answer-label,
 :root[data-theme='dark'] .qc-practice-progress > span {
 	color: #eff6ff;
 }
@@ -6685,6 +6692,17 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-exam-assets figure {
 	border-color: rgba(226, 232, 240, 0.72);
+	background: #050505;
+}
+
+:root[data-theme='dark'] .qc-exam-assets .asset-open-button {
+	background: #050505;
+}
+
+:root[data-theme='dark'] .qc-exam-assets .asset-open-button .asset-thumbnail,
+:root[data-theme='dark'] .qc-exam-assets .asset-dialog-image {
+	background: #050505;
+	filter: invert(1) hue-rotate(180deg) contrast(1.08) brightness(0.95);
 }
 
 :root[data-theme='dark'] .qc-exam-assets figcaption {
@@ -7076,6 +7094,7 @@ html[data-theme='dark'] .app-shell {
 	:root:not([data-theme='light']) .qc-exam-card h2,
 	:root:not([data-theme='light']) .qc-exam-prompt,
 	:root:not([data-theme='light']) .qc-practice-answer-card label,
+	:root:not([data-theme='light']) .qc-practice-answer-label,
 	:root:not([data-theme='light']) .qc-practice-progress > span {
 		color: #eff6ff;
 	}
@@ -7087,6 +7106,17 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-exam-assets figure {
 		border-color: rgba(226, 232, 240, 0.72);
+		background: #050505;
+	}
+
+	:root:not([data-theme='light']) .qc-exam-assets .asset-open-button {
+		background: #050505;
+	}
+
+	:root:not([data-theme='light']) .qc-exam-assets .asset-open-button .asset-thumbnail,
+	:root:not([data-theme='light']) .qc-exam-assets .asset-dialog-image {
+		background: #050505;
+		filter: invert(1) hue-rotate(180deg) contrast(1.08) brightness(0.95);
 	}
 
 	:root:not([data-theme='light']) .qc-exam-assets figcaption {

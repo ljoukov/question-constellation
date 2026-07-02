@@ -1,5 +1,10 @@
 <script lang="ts">
+	import BlockRenderer from '$lib/experiments/questions/components/BlockRenderer.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import type {
+		ExamPaperAsset,
+		ExamQuestionBlock
+	} from '$lib/experiments/questions/types';
 	import QuestionAssetFigure from './QuestionAssetFigure.svelte';
 
 	type ExamQuestionAsset = {
@@ -17,6 +22,10 @@
 		prompt: string;
 		context?: string;
 		assets?: ExamQuestionAsset[];
+		renderingOverlay?: {
+			stemBlocks: Array<Record<string, unknown>>;
+			promptBlocks: Array<Record<string, unknown>>;
+		} | null;
 		meta?: {
 			board?: string;
 			qualification?: string;
@@ -45,6 +54,30 @@
 	const contextLines = $derived(linesFrom(question.context ?? ''));
 	const promptLines = $derived(linesFrom(question.prompt));
 	const assets = $derived(question.assets ?? []);
+	const renderingOverlay = $derived(question.renderingOverlay ?? null);
+	const overlayStemBlocks = $derived(
+		(renderingOverlay?.stemBlocks ?? []) as ExamQuestionBlock[]
+	);
+	const overlayPromptBlocks = $derived(
+		(renderingOverlay?.promptBlocks ?? []) as ExamQuestionBlock[]
+	);
+	const hasRenderingOverlay = $derived(
+		overlayStemBlocks.length > 0 || overlayPromptBlocks.length > 0
+	);
+	const overlayAssets = $derived(
+		Object.fromEntries(
+			assets.map((asset) => [
+				asset.id ?? asset.publicPath,
+				{
+					id: asset.id ?? asset.publicPath,
+					label: asset.sourceLabel,
+					src: asset.publicPath,
+					alt: asset.altText,
+					width: asset.paperWidthPx ?? undefined
+				}
+			])
+		) as Record<string, ExamPaperAsset>
+	);
 	const questionLabel = $derived(
 		question.sourceRef ?? heading ?? question.title ?? 'Exam question'
 	);
@@ -95,32 +128,44 @@
 		<h2><MathText text={question.title} /></h2>
 	{/if}
 
-	{#if contextLines.length > 0}
-		<div class="qc-exam-context" aria-label="Question source">
-			{#each contextLines as line, index (index)}
-				<p><MathText text={line} /></p>
+	{#if hasRenderingOverlay}
+		<div class="qc-exam-rendered" aria-label="Question content">
+			{#each overlayStemBlocks as block, index (`stem-${index}`)}
+				<BlockRenderer {block} assets={overlayAssets} />
+			{/each}
+
+			{#each overlayPromptBlocks as block, index (`prompt-${index}`)}
+				<BlockRenderer {block} assets={overlayAssets} />
+			{/each}
+		</div>
+	{:else}
+		{#if contextLines.length > 0}
+			<div class="qc-exam-context" aria-label="Question source">
+				{#each contextLines as line, index (index)}
+					<p><MathText text={line} /></p>
+				{/each}
+			</div>
+		{/if}
+
+		{#if assets.length > 0}
+			<div class="question-assets qc-exam-assets" aria-label="Question source images">
+				{#each assets as asset, index (asset.id ?? `${asset.publicPath}-${index}`)}
+					<QuestionAssetFigure {asset} loading={assetLoading} />
+				{/each}
+			</div>
+		{/if}
+
+		<div class="qc-exam-prompt">
+			{#each promptLines as line, index (index)}
+				<p class:bullet={isBullet(line)}>
+					{#if isBullet(line)}
+						<span aria-hidden="true">•</span>
+						<MathText text={cleanBullet(line)} />
+					{:else}
+						<MathText text={line} />
+					{/if}
+				</p>
 			{/each}
 		</div>
 	{/if}
-
-	{#if assets.length > 0}
-		<div class="question-assets qc-exam-assets" aria-label="Question source images">
-			{#each assets as asset, index (asset.id ?? `${asset.publicPath}-${index}`)}
-				<QuestionAssetFigure {asset} loading={assetLoading} />
-			{/each}
-		</div>
-	{/if}
-
-	<div class="qc-exam-prompt">
-		{#each promptLines as line, index (index)}
-			<p class:bullet={isBullet(line)}>
-				{#if isBullet(line)}
-					<span aria-hidden="true">•</span>
-					<MathText text={cleanBullet(line)} />
-				{:else}
-					<MathText text={line} />
-				{/if}
-			</p>
-		{/each}
-	</div>
 </section>
