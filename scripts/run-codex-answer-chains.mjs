@@ -207,6 +207,10 @@ function prepareWorkDir() {
 		path.join(rootDir, 'scripts/codex-import-helper.mjs'),
 		path.join(workDir, 'helper.mjs')
 	);
+	copyFileSync(
+		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
+		path.join(workDir, 'answer-chain-specificity.mjs')
+	);
 	const specSourcePath = path.join(rootDir, 'docs/extraction-spec.md');
 	if (existsSync(specSourcePath)) {
 		const specTargetDir = path.join(workDir, 'docs');
@@ -247,7 +251,7 @@ ${hasExisting ? '- existing-chain-context.json: existing extracted/published cha
 - docs/extraction-spec.md: import/schema contract if you need to check allowed answer-chain fields
 - helper.mjs: deterministic chain validation
 
-Do not inspect PDFs in this phase and do not alter source extraction facts unless needed only to attach chain fields. Keep extraction, response controls, mark schemes, checklists, model answers, assets, page ranges, and provenance intact.
+This work directory is prepared for the task. Do not inspect repo state, run git commands, or roam outside the provided inputs. Do not inspect PDFs in this phase and do not alter source extraction facts unless needed only to attach chain fields. Keep extraction, response controls, mark schemes, checklists, model answers, assets, page ranges, and provenance intact.
 
 For every marked question decide one action:
 - reuse_existing: the existing chain already describes the reusable reasoning pattern without source-specific answers.
@@ -257,7 +261,7 @@ For every marked question decide one action:
 
 If updating/generalizing an existing published chain, inspect all available attached examples in existing-chain-context.json. If those examples do not provide enough evidence to prove the generalized chain still fits, do not update the existing chain; create a new chain or mark needs_review. Split rather than over-generalize.
 
-Answer-chain fields must describe reusable reasoning, method patterns, or compact recall handles. Do not put worked numeric answers, exact table values, exact tick-box letters, exact blank-fill answers, or one-off final data values in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
+Answer-chain fields must describe reusable reasoning, method patterns, or compact recall handles. Do not put worked numeric answers, exact table values, exact tick-box letters, exact blank-fill answers, one-off final data values, question-specific dates/years, mark counts, or item counts in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, modelAnswer, or prompt evidence. For History, use compact period/category wording such as "correct period" or "specified crisis" instead of a printed year range inside chain fields.
 
 Do include concrete GCSE biology terms when those terms are the mark-scoring idea. Compact does not mean abstract. For recall or explanation questions, a useful chain may name glucose, nitrate ions, fatty acids, glycerol, chlorophyll, active transport, osmosis, mitosis, thorns, or self-reporting if that is what learners must remember. Do not hide concrete accepted terms behind placeholders.
 
@@ -281,6 +285,7 @@ Never use placeholder visible labels when concrete mark-scoring words are availa
 
 Common failure modes to avoid:
 - Do not put final numeric answers or worked table values in answer-chain fields. For calculations, write the method handle, such as "selected stages -> add -> total percent" or "convert units -> compare -> ratio".
+- Do not put question-specific years or dates in answer-chain fields, including step explanations and common omissions. Use period-neutral wording when the year belongs to this paper rather than to the reusable chain.
 - For fixed-choice questions, visible links should usually be the compact underlying concept, not the answer letter or a verbatim option sentence.
 - Keep canonicalChainText and steps aligned: each visible canonical link should normally have a matching compact stepText.
 - If the mark scheme gives alternative routes, do not turn alternatives into a false required sequence. Use one compact alternative link such as "self-report/change/binge" with branch detail in explanation/commonOmission, or split the chain if the alternatives are different skills.

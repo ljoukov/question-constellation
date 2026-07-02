@@ -169,6 +169,10 @@ function prepareWorkDir() {
 		path.join(workDir, 'helper.mjs')
 	);
 	copyFileSync(
+		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
+		path.join(workDir, 'answer-chain-specificity.mjs')
+	);
+	copyFileSync(
 		path.join(rootDir, 'scripts/codex-pdf-tools.sh'),
 		path.join(workDir, 'pdf-tools.sh')
 	);
@@ -388,6 +392,26 @@ function buildExtractionPrompt() {
 	const geographyLineNote = [geographyGeneralNote, geographyPaperSpecificNote]
 		.filter(Boolean)
 		.join('\n');
+	const historyGeneralNote = sourceDocumentId?.startsWith('aqa-history-')
+		? [
+				'',
+				'History source handling: Paper 1 Section A interpretation booklets and other source booklets are official learner evidence. Inspect every supporting insert/source booklet before deciding a source is missing. If the public PDF says an interpretation/source cannot be reproduced for third-party copyright, do not publish that placeholder as the learner-visible source. Use a neutral structured substitute only when official mark-scheme/examiner-report evidence is enough to make the question answerable without giving away the answer; keep provenance and copyright caveats in reviewNotes, not learner-visible blocks. If the neutral substitute is sufficient and learner-safe, set needsHumanReview=false so the question can proceed through import. Set needsHumanReview=true only when official evidence is insufficient or contradictory.',
+				'History answer books often continue long responses onto one or more "Extra space" pages. For every written response, count from rendered full response boxes on each page, then sum the pages. On continuation pages, the first ruled line just below/near "Extra space" and the last ruled line above the page footer are normally learner-writable lines; do not discard them as borders unless visual inspection shows they are only the outer page box. A line-count crop that starts too low or ends too high will undercount. Prefer a wide inner-page crop, compare against the full rendered page, and record page-by-page counts in response.lineCountEvidence.',
+				'For AQA History 16-page answer booklets, Q03/Q05/Q06 style long responses commonly span pages. Verify continuation-page counts explicitly; do not reuse the short first-page crop pattern from Q01/Q02.'
+			].join('\n')
+		: '';
+	const historyPaperSpecificNote =
+		sourceDocumentId ===
+		'aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+			? [
+					'',
+					'Known fragile checks for History 2024 Paper 1 Section A Option B Germany: Interpretation A in the public insert is withheld for third-party copyright. Do not expose the "cannot be reproduced" placeholder as the learner source. If you build a neutral substitute from official mark-scheme/examiner-report evidence, keep provenance in reviewNotes, keep learner-visible source blocks clean, and set needsHumanReview=false when the assembled question is answerable. Learner-visible Interpretation A text must not include provenance phrases such as "official evidence indicates", "mark scheme evidence", "reconstructed", "source unavailable", or "neutral substitute".',
+					'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 25, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 75 total with 22 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If your extraction differs, repair the fragment before validation.'
+				].join('\n')
+			: '';
+	const historyLineNote = [historyGeneralNote, historyPaperSpecificNote]
+		.filter(Boolean)
+		.join('\n');
 	const expectedQuestionLine =
 		expectedQuestions === null
 			? 'Infer the exact atomic question count from the official question paper and mark scheme.'
@@ -455,7 +479,7 @@ Required extraction coverage:
 - For fixed-response answer keys with accepted alternatives, keep one canonical correctAnswer and put the other accepted values in aliases, for example {"targetId":"unicode-w","correctAnswer":"119","aliases":["77"]}. Do not encode alternatives as one literal string such as "119 or 77"; validation and grading treat that as defective.
 - Chemistry equations, ionic formulae, state symbols, subscripts/superscripts, charges, physics formulae, fractions, units, rearranged equations, Computer Science Boolean expressions, SQL/program code, binary/hex values, and database/table notation must be verified visually through rendered pages or embedded-image inspection, not trusted to OCR/plain text alone.
 - OCR is fallback only. Prefer PDF text layer for exact printed text, rendered pages/contact sheets for layout, embedded-image extraction for figures/tables, and geometry/rendered checks for answer lines.
-${fragileLineNote}${geographyLineNote}
+${fragileLineNote}${geographyLineNote}${historyLineNote}
 
 Useful PDF observation commands. Use the shell helper for commands that call system PDF/image tools; the Codex sandbox can run those tools directly more reliably than nested Node child_process calls:
 - bash pdf-tools.sh pdf-info --pdf=question-paper.pdf --output=question-paper.info.txt

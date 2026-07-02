@@ -144,6 +144,10 @@ function prepareWorkDir() {
 		path.join(workDir, 'helper.mjs')
 	);
 	copyFileSync(
+		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
+		path.join(workDir, 'answer-chain-specificity.mjs')
+	);
+	copyFileSync(
 		path.join(rootDir, 'scripts/codex-pdf-tools.sh'),
 		path.join(workDir, 'pdf-tools.sh')
 	);

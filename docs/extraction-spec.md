@@ -1167,6 +1167,40 @@ validation rather than patched into one output:
   `Study Figure`, `Using Figure`, `With the help of Figure`, and `Shade one circle only` are blocking
   crop contamination unless they belong in separate `stemBlocks` or `promptBlocks`.
 
+History Paper 1 Section A Option B Germany June 2024 canary, 2026-07-02:
+
+| Phase                              | Artifact                                                                                                                                                                          | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                            |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction               | `tmp/codex-humanities-history-canary-v5-full/work/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp/raw/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp.json` |  471.323s |            59 |              2 |           1,534,080 |    1,345,536 |                 23,175 |            3,587 | 6 questions, 40 marks, deterministic validation passed, 0 review refs                                                                             |
+| Independent Codex extraction judge | `tmp/codex-humanities-history-canary-v5-full/work/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp/extraction-judge/judge-report.json` |  212.913s |            34 |              1 |             742,458 |      614,912 |                  9,175 |            2,363 | pass, score 1.00; line counts verified as 22, 24, 50, 25, 51, 75                                                                                  |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-history-canary-v5-full/work/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp/chain-reconciled/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp.json` |  276.238s |            20 |              0 |             839,958 |      776,192 |                 13,836 |            7,025 | 0 reused, 6 created, 0 updated/review; deterministic chain validation passed                                                                       |
+| Codex solvability                  | `tmp/codex-humanities-history-canary-v5-full/work/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp/codex-solvability/solvability-report.json` |   93.728s |            16 |              1 |             268,181 |      193,024 |                  4,437 |            1,029 | passed 6/6                                                                                                                                        |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-history-canary-v5-full/work/aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp/import-ready-audit.json` |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 6/6 kept, 0 dropped, 0 audit errors/warnings; D1 dry-run passed with 136 planned statements and `safeToReplace`                                   |
+
+This run is the repeatability pattern for History imports with copyright-withheld source text. The
+accepted artifact was produced by the production batch runner from the official question paper, mark
+scheme, examiner report, and insert PDFs. No historical `question-paper.txt` or `mark-scheme.txt`
+benchmark dump was supplied as prompt input.
+
+The run exposed three History/importer rules that are now encoded in prompts and helper packaging:
+
+- A copyright-withheld interpretation/source can use a neutral learner-visible substitute only when
+  official mark-scheme/examiner-report evidence is enough to make the question answerable without
+  giving away the answer. In that case provenance belongs in `reviewNotes`, learner-visible blocks
+  must not contain phrases such as `official evidence`, `mark scheme evidence`, `reconstructed`, or
+  `source unavailable`, and `needsHumanReview` should remain false. Set `needsHumanReview=true`
+  only when the official evidence is insufficient or contradictory.
+- History answer-book continuation pages must be counted from rendered pages. For this canary the
+  independent judge verified 03.1 as 23+27 lines, 05.1 as 24+27 lines, and 06.1 as 22+27+26 lines.
+- `helper.mjs validate-chain` must use the same answer-chain specificity checks as the import-ready
+  subset builder and fail warnings that would otherwise drop questions at import time. The chain
+  prompt also forbids question-specific years/dates/counts in visible answer-chain fields, including
+  step explanations and common omissions.
+
+Because `helper.mjs` now imports the shared specificity checker, every isolated Codex work directory
+that copies `helper.mjs` must also copy `answer-chain-specificity.mjs`; this applies to extraction,
+extraction-judge, and chain runs.
+
 The visible-PDF source identity audit for the AQA History, Geography, and Computer Science manifest
 now blocks manifest rows whose visible PDF front matter disagrees with the manifest. The audit
 artifact is `tmp/aqa-humanities-cs-source-identity-audit.json`: 100 rows checked, 61 passed, 39

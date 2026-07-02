@@ -12,6 +12,7 @@ import {
 	writeFileSync
 } from 'node:fs';
 import path from 'node:path';
+import { answerChainSpecificityIssues } from './answer-chain-specificity.mjs';
 
 const rootDir = process.cwd();
 let localPathBaseDir = rootDir;
@@ -378,7 +379,7 @@ function validateChainCommand() {
 	localPathBaseDir = path.dirname(path.resolve(inputPath));
 	const candidate = readJson(inputPath);
 	const deterministicIssues = deterministicIssuesFor(candidate, { includeAnswerChainIssues: true });
-	const blocking = blockingIssues(deterministicIssues);
+	const blocking = chainValidationBlockingIssues(deterministicIssues);
 	const summary = {
 		status: blocking.length ? 'failed' : 'passed',
 		sourceDocumentId: candidate.sourceDocument?.id ?? candidate.sourceDocumentId ?? null,
@@ -1594,6 +1595,14 @@ function deterministicIssuesFor(candidate, options = {}) {
 					evidence: ref
 				});
 			}
+			issues.push(
+				...answerChainSpecificityIssues(question.answerChain, {
+					commandWord: question.commandWord
+				}).map((issue) => ({
+					...issue,
+					field: issue.field ? `answerChain.${issue.field}` : 'answerChain'
+				}))
+			);
 			issues.push(...answerChainStyleIssues(question.answerChain, ref));
 			for (const [stepIndex, step] of (question.answerChain?.steps ?? []).entries()) {
 				if (!allowedAnswerChainStepRoles.has(step?.stepRole)) {
@@ -1784,6 +1793,21 @@ function duplicateLearnerVisibleBlockText(question) {
 }
 
 function expectedResponseLineCountsForSource(sourceDocumentId) {
+	if (
+		sourceDocumentId ===
+		'aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+	) {
+		return new Map(
+			Object.entries({
+				'01.1': 22,
+				'02.1': 24,
+				'03.1': 50,
+				'04.1': 25,
+				'05.1': 51,
+				'06.1': 75
+			})
+		);
+	}
 	if (sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp') {
 		return new Map(
 			Object.entries({
@@ -4274,7 +4298,7 @@ function copyrightPlaceholderMediaIssues(question) {
 function learnerVisibleSourceProvenanceIssues(question) {
 	const text = learnerVisibleQuestionText(question);
 	if (
-		!/\b(?:neutral substitute|official marking evidence|mark[- ]scheme evidence|reconstruct(?:ed|ion)|source unavailable|source status|not learner visible)\b/i.test(
+		!/\b(?:neutral substitute|official (?:evidence|marking evidence)|mark[- ]scheme evidence|reconstruct(?:ed|ion)|source unavailable|source status|not learner visible)\b/i.test(
 			text
 		)
 	) {
@@ -4530,6 +4554,14 @@ function blockingIssues(findings) {
 	return findings.flatMap((finding) =>
 		(finding.issues ?? [])
 			.filter((issue) => issue.severity === 'error')
+			.map((issue) => ({ ...issue, sourceQuestionRef: finding.sourceQuestionRef }))
+	);
+}
+
+function chainValidationBlockingIssues(findings) {
+	return findings.flatMap((finding) =>
+		(finding.issues ?? [])
+			.filter((issue) => issue.severity === 'error' || issue.severity === 'warning')
 			.map((issue) => ({ ...issue, sourceQuestionRef: finding.sourceQuestionRef }))
 	);
 }
