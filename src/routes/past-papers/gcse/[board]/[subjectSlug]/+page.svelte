@@ -227,10 +227,9 @@
 	}
 
 	.section-heading {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		align-items: end;
+		display: grid;
+		gap: 0.35rem;
+		align-items: start;
 		margin-bottom: 0.8rem;
 	}
 
@@ -333,11 +332,6 @@
 	@media (max-width: 900px) {
 		.past-papers-page {
 			padding: 0.9rem 0.78rem 3rem;
-		}
-
-		.section-heading {
-			display: grid;
-			align-items: start;
 		}
 	}
 </style>
