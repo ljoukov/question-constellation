@@ -94,10 +94,21 @@ a {
 	color: #0b1020;
 	font-size: 0.88rem;
 	font-weight: 820;
+	white-space: nowrap;
 	transform: translateX(-50%);
 }
 
+.route-loading-copy {
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.route-loading-copy-expanded {
+	display: none;
+}
+
 .loading-spinner {
+	flex: 0 0 auto;
 	width: 1rem;
 	height: 1rem;
 	border: 2px solid #c8d5e7;
@@ -109,6 +120,16 @@ a {
 @keyframes loading-spin {
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+@media (min-width: 560px) {
+	.route-loading-copy-compact {
+		display: none;
+	}
+
+	.route-loading-copy-expanded {
+		display: inline;
 	}
 }
 
