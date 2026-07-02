@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { Check, ChevronDown, ChevronRight, Search } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
 
 	let {
@@ -19,14 +20,20 @@
 		],
 		searchValue = '',
 		searchPlaceholder = 'Search questions',
+		showSearch = true,
+		showSubject = true,
 		onSearchChange,
+		onSearchSubmit,
 		onSubjectChange
 	}: {
 		subject?: string;
 		subjects?: string[];
 		searchValue?: string;
 		searchPlaceholder?: string;
+		showSearch?: boolean;
+		showSubject?: boolean;
 		onSearchChange?: (value: string) => void;
+		onSearchSubmit?: (value: string) => void;
 		onSubjectChange?: (value: string) => void;
 	} = $props();
 
@@ -136,7 +143,7 @@
 			window.location.assign(resolve('/english'));
 			return;
 		}
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		const trimmedQuery = q.trim();
 		if (trimmedQuery) params.set('q', trimmedQuery);
 		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
@@ -146,9 +153,13 @@
 
 	function submitSearch(event: SubmitEvent) {
 		event.preventDefault();
-		if (onSearchChange) return;
 		const form = event.currentTarget as HTMLFormElement;
 		const input = form.elements.namedItem('q') as HTMLInputElement | null;
+		if (onSearchSubmit) {
+			onSearchSubmit(input?.value ?? '');
+			return;
+		}
+		if (onSearchChange) return;
 		navigateToBrowse({ q: input?.value ?? '', subject });
 	}
 
@@ -166,42 +177,46 @@
 <svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
 
 <header class="qc-topbar" class:search-open={mobileSearchOpen} aria-label="Site header">
-	<a href="/" class="qc-topbar-brand" aria-label="Question Constellation home">
+	<a href={resolve('/')} class="qc-topbar-brand" aria-label="Question Constellation home">
 		<img src="/brand/question-constellation-icon.png" alt="" width="32" height="32" />
 		<span>Question Constellation</span>
 	</a>
 
-	<form class="qc-topbar-search" role="search" onsubmit={submitSearch}>
-		<Search size={17} aria-hidden="true" strokeWidth={2} />
-		<input
-			type="search"
-			name="q"
-			autocomplete="off"
-			placeholder={searchPlaceholder}
-			value={searchValue}
-			oninput={updateSearch}
-		/>
-	</form>
+	{#if showSearch}
+		<form class="qc-topbar-search" role="search" onsubmit={submitSearch}>
+			<Search size={17} aria-hidden="true" strokeWidth={2} />
+			<input
+				type="search"
+				name="q"
+				autocomplete="off"
+				placeholder={searchPlaceholder}
+				value={searchValue}
+				oninput={updateSearch}
+			/>
+		</form>
 
-	<button
-		type="button"
-		class="qc-topbar-search-button"
-		aria-label="Search questions"
-		aria-expanded={mobileSearchOpen}
-		onclick={() => (mobileSearchOpen = !mobileSearchOpen)}
-	>
-		<Search size={19} aria-hidden="true" strokeWidth={2} />
-	</button>
+		<button
+			type="button"
+			class="qc-topbar-search-button"
+			aria-label="Search questions"
+			aria-expanded={mobileSearchOpen}
+			onclick={() => (mobileSearchOpen = !mobileSearchOpen)}
+		>
+			<Search size={19} aria-hidden="true" strokeWidth={2} />
+		</button>
+	{/if}
 
-	<label class="qc-topbar-subject">
-		<span class="sr-only">Subject</span>
-		<select aria-label="Subject" value={subject} onchange={updateSubject}>
-			{#each subjects as option}
-				<option value={option}>{option}</option>
-			{/each}
-		</select>
-		<ChevronDown size={15} aria-hidden="true" strokeWidth={2.4} />
-	</label>
+	{#if showSubject}
+		<label class="qc-topbar-subject">
+			<span class="sr-only">Subject</span>
+			<select aria-label="Subject" value={subject} onchange={updateSubject}>
+				{#each subjects as option (option)}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+			<ChevronDown size={15} aria-hidden="true" strokeWidth={2.4} />
+		</label>
+	{/if}
 
 	<div class="qc-avatar-menu" bind:this={accountMenuRoot}>
 		<button
@@ -248,7 +263,7 @@
 					</button>
 					{#if appearanceMenuOpen}
 						<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
-							{#each themeOptions as option}
+							{#each themeOptions as option (option.value)}
 								<button
 									type="button"
 									class="qc-menu-item qc-appearance-item"
