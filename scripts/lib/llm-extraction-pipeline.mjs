@@ -535,11 +535,14 @@ export function createRenderBlockSchema() {
 			'figure',
 			'table',
 			'structured-table',
+			'code',
+			'preformatted',
 			'ordered-list',
 			'bullet-list',
 			'key'
 		]),
 		text: z.string().nullable(),
+		code: z.string().nullable().optional(),
 		label: z.string().nullable(),
 		assetLabel: z.string().nullable(),
 		columns: z.array(z.string()).nullable(),
@@ -582,6 +585,11 @@ export function createFullResponseSchema() {
 		right: z.array(z.string()).nullable(),
 		assetLabel: z.string().nullable(),
 		labelBank: z.array(z.string()).nullable(),
+		width: z.number().nullable().optional(),
+		height: z.number().nullable().optional(),
+		grid: z.object({ rows: z.number(), columns: z.number() }).nullable().optional(),
+		rowLabels: z.array(z.string()).nullable().optional(),
+		columnLabels: z.array(z.string()).nullable().optional(),
 		segments: z
 			.array(
 				z.object({
@@ -728,7 +736,22 @@ function createCompactResponseSchema() {
 			})
 			.strict(),
 		z
-			.object({ kind: z.literal('drawing-box'), instructions: z.string().nullable().optional() })
+			.object({
+				kind: z.literal('drawing-box'),
+				label: z.string().nullable().optional(),
+				instructions: z.string().nullable().optional(),
+				width: z.number().nullable().optional(),
+				height: z.number().nullable().optional(),
+				grid: z
+					.object({
+						rows: z.number().int().positive(),
+						columns: z.number().int().positive()
+					})
+					.nullable()
+					.optional(),
+				rowLabels: z.array(z.string()).nullable().optional(),
+				columnLabels: z.array(z.string()).nullable().optional()
+			})
 			.strict(),
 		z
 			.object({
@@ -3085,7 +3108,7 @@ export function buildFullPaperPrompt({
 		'Return compact source-grounded question data. No extra JSON keys. Checklist items should be one short sentence each. Mark-scheme items should be concise positive marking evidence, not long explanations. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use contextBlocks plus response objects for tables, MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
 		'Do not put answers from previous subquestions into learner-visible promptText or promptBlocks. If a later subquestion is ambiguous outside the original sequence, put resolved context only in selfContainedPromptText/contextText for standalone grading and keep promptBlocks faithful to the printed prompt.',
 		'When a marked question has printed setup/context before the actual instruction, put that setup in contextText/contextBlocks and set promptText to only the marked instruction. selfContainedPromptText may combine context and instruction. The renderer shows contextBlocks/stemBlocks before promptBlocks, so do not duplicate the same sentence in both.',
-		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers.',
+		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers. For blank printed grids that the learner must complete or draw on, use drawing-box with response.grid { rows, columns } and rowLabels/columnLabels when visible; verify the grid visually instead of inferring it from code or OCR.',
 		'For equation-blanks, always include response.segments with text/math/blank segments in visible order, and make each correctAnswers targetId match a blank segment id.',
 		'When two or more equation blanks accept a set of answers in any order, add response.unorderedGroups with targetIds and answers so the grader does not accept duplicate entries as correct.',
 		'For calculation questions with visible working lines and a final answer blank, use response.kind "labeled-lines" with labels for the working space and final answer line. Keep the exact calculation and final value in modelAnswer and markChecklist.',
@@ -3386,7 +3409,7 @@ function buildAgenticExtractionPrompt({
 		'Do not generate answerChain fields; the script creates placeholders and a later text-only chain reconciliation phase assigns reusable chains.',
 		'For markChecklist.required, true means every full-credit response must satisfy that criterion. Alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.',
 		'For level-of-response questions, preserve level descriptor mark ranges and make indicative-content examples optional checklist evidence.',
-		'Use response.kind values only from: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.',
+		'Use response.kind values only from: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For blank printed grids that the learner must complete or draw on, use drawing-box with response.grid { rows, columns } and rowLabels/columnLabels when visible; verify the grid visually instead of inferring it from code or OCR.',
 		'Render formulae, equations, chemical equations, units, symbols, powers of ten, algebraic expressions, and substitutions as LaTeX strings where appropriate.',
 		'For source tables needed by a target question, use contextBlocks with kind "structured-table" when possible instead of requiring an image asset.',
 		'For graph drawing, label-on-image, or visual response surfaces, use asset-canvas or image-label-zones only when a concrete asset exists or mark needsHumanReview with a blocking review note.',
@@ -5003,7 +5026,9 @@ function responseKeyIssues(question) {
 
 function responseControlCompletenessIssues(question) {
 	const response = question.response;
-	if (!response || response.kind !== 'equation-blanks') return [];
+	if (!response) return [];
+	if (response.kind === 'drawing-box') return drawingBoxGridMetadataIssues(question);
+	if (response.kind !== 'equation-blanks') return [];
 	const segments = Array.isArray(response.segments) ? response.segments : [];
 	const hasBlankSegment = segments.some((segment) => segment?.kind === 'blank' && segment?.id);
 	const hasStructuredSlots = ['blanks', 'fields', 'items', 'zones'].some(
@@ -5020,6 +5045,70 @@ function responseControlCompletenessIssues(question) {
 				'equation-blanks responses need visible blank segments or structured slot definitions. Treat as import-blocking with --fail-on-warnings until the learner can enter answers in the intended places.'
 		}
 	];
+}
+
+function drawingBoxGridMetadataIssues(question) {
+	const response = question.response ?? {};
+	const issues = [];
+	const grid = response.grid;
+	const visibleText = learnerFacingQuestionText(question);
+	const asksForGrid =
+		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cell|square)\b/i.test(
+			visibleText
+		) ||
+		/\b(?:following|the|this)\s+grid\b/i.test(visibleText);
+	if (!grid) {
+		if (asksForGrid) {
+			issues.push({
+				severity: 'warning',
+				code: 'drawing_grid_metadata_missing',
+				field: 'response.grid',
+				evidence: question.sourceQuestionRef,
+				message:
+					'The prompt appears to ask the learner to complete a printed grid. Add response.grid rows/columns, or use asset-canvas when the answer surface is a source visual.'
+			});
+		}
+		return issues;
+	}
+	const rows = Number(grid.rows);
+	const columns = Number(grid.columns);
+	if (!Number.isInteger(rows) || rows < 1 || !Number.isInteger(columns) || columns < 1) {
+		issues.push({
+			severity: 'error',
+			code: 'drawing_grid_invalid',
+			field: 'response.grid',
+			evidence: JSON.stringify(grid),
+			message: 'drawing-box response.grid must contain positive integer rows and columns.'
+		});
+		return issues;
+	}
+	if (
+		Array.isArray(response.rowLabels) &&
+		response.rowLabels.length > 0 &&
+		response.rowLabels.length !== rows
+	) {
+		issues.push({
+			severity: 'error',
+			code: 'drawing_grid_row_label_count_mismatch',
+			field: 'response.rowLabels',
+			evidence: `${response.rowLabels.length} labels for ${rows} rows`,
+			message: 'drawing-box rowLabels must match response.grid.rows when supplied.'
+		});
+	}
+	if (
+		Array.isArray(response.columnLabels) &&
+		response.columnLabels.length > 0 &&
+		response.columnLabels.length !== columns
+	) {
+		issues.push({
+			severity: 'error',
+			code: 'drawing_grid_column_label_count_mismatch',
+			field: 'response.columnLabels',
+			evidence: `${response.columnLabels.length} labels for ${columns} columns`,
+			message: 'drawing-box columnLabels must match response.grid.columns when supplied.'
+		});
+	}
+	return issues;
 }
 
 function responseDiagramSurfaceIssues(question) {
@@ -6394,6 +6483,10 @@ function blockToLearnerText(block) {
 		const columns = Array.isArray(block.columns) ? `${block.columns.join(' | ')}\n` : '';
 		return `${label}${columns}${tableRowsToText(block.rows)}`.trim();
 	}
+	if (kind === 'code' || kind === 'preformatted') {
+		const label = block.label ? `${block.label}\n` : '';
+		return `${label}${String(block.text ?? block.code ?? '').trim()}`.trim();
+	}
 	if (['figure', 'image', 'assetRef'].includes(kind)) {
 		const label = blockLabel(block) ?? 'unlabelled media';
 		const alt = stripHtml(block.altText ?? block.caption ?? block.text ?? '');
@@ -6465,7 +6558,21 @@ function responseToLearnerText(response) {
 	if (kind === 'image-label-zones') {
 		return `Image label zones on ${response.assetLabel ?? response.label ?? response.assetId ?? 'image'} using labels ${(response.labels ?? []).join(', ')}.`;
 	}
-	if (kind === 'drawing-box') return `Drawing box: ${response.label ?? 'unlabelled'}.`;
+	if (kind === 'drawing-box') {
+		const parts = [`Drawing box: ${response.label ?? 'unlabelled'}.`];
+		const rows = response.grid?.rows;
+		const columns = response.grid?.columns;
+		if (Number.isFinite(Number(rows)) && Number.isFinite(Number(columns))) {
+			parts.push(`Grid: ${rows} row(s) by ${columns} column(s).`);
+		}
+		if (Array.isArray(response.rowLabels) && response.rowLabels.length) {
+			parts.push(`Row labels: ${response.rowLabels.join(', ')}.`);
+		}
+		if (Array.isArray(response.columnLabels) && response.columnLabels.length) {
+			parts.push(`Column labels: ${response.columnLabels.join(', ')}.`);
+		}
+		return parts.join('\n');
+	}
 	return `Response control ${kind}: ${JSON.stringify(compactUnknown(response))}`;
 }
 

@@ -13,6 +13,7 @@ Usage:
   bash pdf-tools.sh extract-embedded-images --pdf=question-paper.pdf --output-dir=qp-images --manifest=qp-images.txt
   bash pdf-tools.sh contact-sheet --glob='qp-pages/*.png' --output=qp-contact.jpg --thumb=220x310 --columns=4
   bash pdf-tools.sh crop --image=qp-pages/page-03.png --crop=170,400,950,1100 --output=q01-crop.png
+  bash pdf-tools.sh crop-page --pdf=question-paper.pdf --page=3 --bbox=40,120,560,760 --dpi=180 --output=q03-page-crop.png
   bash pdf-tools.sh line-count --image=qp-pages/page-03.png --crop=170,400,950,1100 --output=q01-lines.json
 USAGE
 }
@@ -143,6 +144,46 @@ case "$command_name" in
     mkdir -p "$(dirname "$output")"
     convert "$image" -crop "${width}x${height}+${x}+${y}" "$output"
     printf '{"image":"%s","output":"%s","crop":"%s"}\n' "$image" "$output" "$crop"
+    ;;
+
+  crop-page)
+    pdf="$(require_arg pdf "$@")"
+    page="$(require_arg page "$@")"
+    output="$(require_arg output "$@")"
+    dpi="$(arg dpi 180 "$@")"
+    bbox="$(arg bbox "" "$@")"
+    crop="$(arg crop "" "$@")"
+    if [[ -z "$bbox" && -z "$crop" ]]; then
+      echo "Pass --bbox=x1,y1,x2,y2 in PDF points from top-left, or --crop=x,y,width,height in rendered pixels" >&2
+      exit 1
+    fi
+    tmp_dir="$(mktemp -d)"
+    cleanup() {
+      rm -rf "$tmp_dir"
+    }
+    trap cleanup EXIT
+    tmp_prefix="${tmp_dir}/page"
+    pdftoppm -singlefile -png -r "$dpi" -f "$page" -l "$page" "$pdf" "$tmp_prefix"
+    rendered="${tmp_prefix}.png"
+    if [[ -n "$bbox" ]]; then
+      IFS=',' read -r x1 y1 x2 y2 <<< "$bbox"
+      crop="$(awk -v x1="$x1" -v y1="$y1" -v x2="$x2" -v y2="$y2" -v dpi="$dpi" 'BEGIN {
+        scale = dpi / 72;
+        x = int(x1 * scale + 0.5);
+        y = int(y1 * scale + 0.5);
+        width = int((x2 - x1) * scale + 0.5);
+        height = int((y2 - y1) * scale + 0.5);
+        if (width <= 0 || height <= 0) exit 1;
+        printf "%d,%d,%d,%d", x, y, width, height;
+      }')" || {
+        echo "Invalid --bbox. Expected x1,y1,x2,y2 in PDF points from top-left." >&2
+        exit 1
+      }
+    fi
+    IFS=',' read -r x y width height <<< "$crop"
+    mkdir -p "$(dirname "$output")"
+    convert "$rendered" -crop "${width}x${height}+${x}+${y}" "$output"
+    printf '{"pdf":"%s","page":%s,"output":"%s","dpi":%s,"crop":"%s"}\n' "$pdf" "$page" "$output" "$dpi" "$crop"
     ;;
 
   line-count)

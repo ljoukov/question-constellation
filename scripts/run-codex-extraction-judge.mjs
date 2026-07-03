@@ -234,6 +234,7 @@ Useful commands:
 - bash pdf-tools.sh render-pages --pdf=question-paper.pdf --pages=1-36 --dpi=140 --output-dir=qp-pages
 - bash pdf-tools.sh contact-sheet --glob='qp-pages/*.png' --output=qp-contact.jpg --thumb=170x240 --columns=6
 - bash pdf-tools.sh extract-embedded-images --pdf=question-paper.pdf --output-dir=qp-images --manifest=qp-images.txt
+- bash pdf-tools.sh crop-page --pdf=question-paper.pdf --page=3 --bbox=x1,y1,x2,y2 --dpi=180 --output=q-page-crop.png
 - node helper.mjs validate-extraction --input=candidate.json${
 		expectedMarks === null ? '' : ` --expected-marks=${expectedMarks}`
 	}${

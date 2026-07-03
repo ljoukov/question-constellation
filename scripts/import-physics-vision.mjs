@@ -796,14 +796,32 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 		};
 	}
 	if (response.kind === 'drawing-box') {
+		const grid = drawingBoxGrid(response.grid);
+		const width = response.width ?? 420;
 		return {
 			kind: 'drawing-box',
 			label: response.label ?? 'Drawing answer',
-			width: response.width ?? 420,
-			height: response.height ?? 180
+			width,
+			height:
+				response.height ??
+				(grid ? Math.max(120, Math.round((width * grid.rows) / grid.columns)) : 180),
+			...(grid ? { grid } : {}),
+			...(Array.isArray(response.rowLabels) ? { rowLabels: response.rowLabels } : {}),
+			...(Array.isArray(response.columnLabels)
+				? { columnLabels: response.columnLabels }
+				: {})
 		};
 	}
 	return { kind: 'none' };
+}
+
+function drawingBoxGrid(value) {
+	const rows = Number(value?.rows);
+	const columns = Number(value?.columns);
+	if (!Number.isInteger(rows) || rows < 1 || !Number.isInteger(columns) || columns < 1) {
+		return null;
+	}
+	return { rows, columns };
 }
 
 function nonEmptyString(value) {
@@ -1104,7 +1122,23 @@ function validateRendererResponse(response, location, availableAssetIds) {
 		}
 		return issues;
 	}
-	if (response.kind === 'drawing-box') return issues;
+	if (response.kind === 'drawing-box') {
+		const grid = drawingBoxGrid(response.grid);
+		if (response.grid && !grid) {
+			issues.push(`${location} drawing-box grid must have positive integer rows and columns`);
+		}
+		if (grid && Array.isArray(response.rowLabels) && response.rowLabels.length !== grid.rows) {
+			issues.push(`${location} drawing-box rowLabels must match grid.rows`);
+		}
+		if (
+			grid &&
+			Array.isArray(response.columnLabels) &&
+			response.columnLabels.length !== grid.columns
+		) {
+			issues.push(`${location} drawing-box columnLabels must match grid.columns`);
+		}
+		return issues;
+	}
 	if (response.kind === 'image-label-zones') {
 		if (typeof response.assetId !== 'string') {
 			issues.push(`${location} image-label-zones assetId must be a string`);

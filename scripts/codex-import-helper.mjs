@@ -1395,6 +1395,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 			});
 		}
 		for (const issue of responseDiagramSurfaceIssues(question)) issues.push(issue);
+		for (const issue of drawingBoxGridMetadataIssues(question)) issues.push(issue);
 		if (
 			fixedResponseKinds.has(response?.kind) &&
 			!(response.correctAnswers ?? []).length &&
@@ -2194,6 +2195,71 @@ function responseDiagramSurfaceIssues(question) {
 	];
 }
 
+function drawingBoxGridMetadataIssues(question) {
+	const response = question.response ?? {};
+	if (response.kind !== 'drawing-box') return [];
+	const issues = [];
+	const grid = response.grid;
+	const visibleText = learnerVisibleQuestionText(question);
+	const asksForGrid =
+		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cell|square)\b/i.test(
+			visibleText
+		) ||
+		/\b(?:following|the|this)\s+grid\b/i.test(visibleText);
+	if (!grid) {
+		if (asksForGrid) {
+			issues.push({
+				code: 'drawing_grid_metadata_missing',
+				field: 'response.grid',
+				severity: 'warning',
+				evidence: question.sourceQuestionRef,
+				message:
+					'The prompt appears to ask the learner to complete a printed grid. Add response.grid rows/columns, or use asset-canvas when the answer surface is a source visual.'
+			});
+		}
+		return issues;
+	}
+	const rows = Number(grid.rows);
+	const columns = Number(grid.columns);
+	if (!Number.isInteger(rows) || rows < 1 || !Number.isInteger(columns) || columns < 1) {
+		issues.push({
+			code: 'drawing_grid_invalid',
+			field: 'response.grid',
+			severity: 'error',
+			evidence: JSON.stringify(grid),
+			message: 'drawing-box response.grid must contain positive integer rows and columns.'
+		});
+		return issues;
+	}
+	if (
+		Array.isArray(response.rowLabels) &&
+		response.rowLabels.length > 0 &&
+		response.rowLabels.length !== rows
+	) {
+		issues.push({
+			code: 'drawing_grid_row_label_count_mismatch',
+			field: 'response.rowLabels',
+			severity: 'error',
+			evidence: `${response.rowLabels.length} labels for ${rows} rows`,
+			message: 'drawing-box rowLabels must match response.grid.rows when supplied.'
+		});
+	}
+	if (
+		Array.isArray(response.columnLabels) &&
+		response.columnLabels.length > 0 &&
+		response.columnLabels.length !== columns
+	) {
+		issues.push({
+			code: 'drawing_grid_column_label_count_mismatch',
+			field: 'response.columnLabels',
+			severity: 'error',
+			evidence: `${response.columnLabels.length} labels for ${columns} columns`,
+			message: 'drawing-box columnLabels must match response.grid.columns when supplied.'
+		});
+	}
+	return issues;
+}
+
 function contextTextDuplicateBlockIssues(question) {
 	const context = normalizedRenderText(question.contextText);
 	if (!context) return [];
@@ -2221,17 +2287,7 @@ function contextTextDuplicateBlockIssues(question) {
 }
 
 function questionRequiresDiagramResponse(question) {
-	const text = [
-		question.promptText,
-		question.selfContainedPromptText,
-		question.contextText,
-		...(question.stemBlocks ?? []).map(blockPlainText),
-		...(question.leadBlocks ?? []).map(blockPlainText),
-		...(question.promptBlocks ?? []).map(blockPlainText),
-		...(question.afterResponseBlocks ?? []).map(blockPlainText)
-	]
-		.filter(Boolean)
-		.join('\n');
+	const text = learnerVisibleQuestionText(question);
 	const gradingText = [
 		...(question.markSchemeItems ?? []).map((item) => item?.text),
 		...(question.markChecklist ?? []).map((item) => item?.text),

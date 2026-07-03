@@ -336,11 +336,26 @@ function responseFromValue(raw: unknown): ExamResponse {
 		};
 	}
 	if (value.kind === 'drawing-box') {
+		const rows = Number((value.grid as { rows?: unknown } | undefined)?.rows);
+		const columns = Number((value.grid as { columns?: unknown } | undefined)?.columns);
+		const grid =
+			Number.isInteger(rows) && rows > 0 && Number.isInteger(columns) && columns > 0
+				? { rows, columns }
+				: undefined;
+		const rowLabels = Array.isArray(value.rowLabels)
+			? value.rowLabels.filter((label): label is string => typeof label === 'string')
+			: undefined;
+		const columnLabels = Array.isArray(value.columnLabels)
+			? value.columnLabels.filter((label): label is string => typeof label === 'string')
+			: undefined;
 		return {
 			kind: 'drawing-box',
 			label: typeof value.label === 'string' ? value.label : undefined,
 			width: typeof value.width === 'number' ? value.width : undefined,
-			height: typeof value.height === 'number' ? value.height : undefined
+			height: typeof value.height === 'number' ? value.height : undefined,
+			grid,
+			rowLabels: rowLabels?.length ? rowLabels : undefined,
+			columnLabels: columnLabels?.length ? columnLabels : undefined
 		};
 	}
 	if (

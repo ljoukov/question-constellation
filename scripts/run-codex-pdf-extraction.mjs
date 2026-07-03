@@ -511,6 +511,7 @@ Useful PDF observation commands. Use the shell helper for commands that call sys
 - bash pdf-tools.sh extract-embedded-images --pdf=question-paper.pdf --output-dir=qp-images --manifest=qp-images.txt
 - bash pdf-tools.sh contact-sheet --glob='qp-pages/*.png' --output=qp-contact.jpg --thumb=220x310 --columns=4
 - bash pdf-tools.sh crop --image=qp-pages/page-03.png --crop=x,y,width,height --output=q-crop.png
+- bash pdf-tools.sh crop-page --pdf=question-paper.pdf --page=3 --bbox=x1,y1,x2,y2 --dpi=180 --output=q-page-crop.png
 - bash pdf-tools.sh line-count --image=qp-pages/page-03.png --crop=x,y,width,height --output=q-lines.json
 
 Useful JSON normalization and validation commands:

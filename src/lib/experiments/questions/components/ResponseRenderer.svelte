@@ -719,22 +719,37 @@
 {:else if response.kind === 'drawing-box'}
 	<figure
 		class="drawing-box"
-		style={`--drawing-width: ${response.width ?? 420}px; --drawing-height: ${response.height ?? 180}px`}
+		class:has-grid={Boolean(response.grid)}
+		style={`--drawing-width: ${response.width ?? 420}px; --drawing-height: ${response.height ?? 180}px; --grid-rows: ${response.grid?.rows ?? 1}; --grid-columns: ${response.grid?.columns ?? 1}`}
 	>
-		{#if response.label}
-			<figcaption>{response.label}</figcaption>
+		{#if response.label || response.grid}
+			<figcaption>
+				{response.label ?? 'Drawing answer'}
+				{#if response.grid}
+					<span>{response.grid.rows} x {response.grid.columns} grid</span>
+				{/if}
+			</figcaption>
 		{/if}
-		<canvas
-			bind:this={drawingCanvas}
-			width={response.width ?? 420}
-			height={response.height ?? 180}
-			aria-label={response.label ?? 'Drawing answer'}
-			onpointerdown={startDrawing}
-			onpointermove={continueDrawing}
-			onpointerup={endDrawing}
-			onpointercancel={endDrawing}
-			onpointerleave={endDrawing}
-		></canvas>
+		<div class="drawing-grid-shell" class:with-row-labels={Boolean(response.rowLabels?.length)}>
+			{#if response.rowLabels?.length}
+				<div class="drawing-row-labels" aria-hidden="true">
+					{#each response.rowLabels as label}
+						<span>{label}</span>
+					{/each}
+				</div>
+			{/if}
+			<canvas
+				bind:this={drawingCanvas}
+				width={response.width ?? 420}
+				height={response.height ?? 180}
+				aria-label={response.label ?? 'Drawing answer'}
+				onpointerdown={startDrawing}
+				onpointermove={continueDrawing}
+				onpointerup={endDrawing}
+				onpointercancel={endDrawing}
+				onpointerleave={endDrawing}
+			></canvas>
+		</div>
 		<button type="button" class="clear-drawing-button" onclick={clearDrawing}>Clear</button>
 	</figure>
 {:else if response.kind === 'equation-blanks'}
@@ -1171,6 +1186,43 @@
 		font-weight: 700;
 	}
 
+	.drawing-box figcaption span {
+		display: block;
+		margin-top: 0.15rem;
+		color: #52606d;
+		font-size: 0.82rem;
+		font-weight: 500;
+	}
+
+	.drawing-grid-shell {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: stretch;
+	}
+
+	.drawing-grid-shell.with-row-labels {
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.4rem;
+	}
+
+	.drawing-row-labels {
+		display: grid;
+		grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
+		height: var(--drawing-height);
+		min-width: 2.8rem;
+		color: #425466;
+		font-size: 0.78rem;
+		line-height: 1.1;
+		text-align: right;
+	}
+
+	.drawing-row-labels span {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		white-space: nowrap;
+	}
+
 	.drawing-box canvas {
 		display: block;
 		width: 100%;
@@ -1179,6 +1231,16 @@
 		background: #ffffff;
 		touch-action: none;
 		cursor: crosshair;
+	}
+
+	.drawing-box.has-grid canvas {
+		background-color: #ffffff;
+		background-image:
+			linear-gradient(to right, rgba(0, 0, 0, 0.28) 1px, transparent 1px),
+			linear-gradient(to bottom, rgba(0, 0, 0, 0.28) 1px, transparent 1px);
+		background-size:
+			calc(100% / var(--grid-columns)) 100%,
+			100% calc(100% / var(--grid-rows));
 	}
 
 	.clear-drawing-button {

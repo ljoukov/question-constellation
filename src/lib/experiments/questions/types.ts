@@ -116,6 +116,12 @@ export type ExamResponse =
 			label?: string;
 			width?: number;
 			height?: number;
+			grid?: {
+				rows: number;
+				columns: number;
+			};
+			rowLabels?: string[];
+			columnLabels?: string[];
 	  }
 	| {
 			kind: 'equation-blanks';

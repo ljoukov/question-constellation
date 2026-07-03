@@ -7533,6 +7533,14 @@ html[data-theme='dark'] .app-shell {
 	color: #f8f8f2;
 }
 
+:root[data-theme='dark'] .qc-real-main .drawing-box.has-grid canvas,
+:root:not([data-theme='light']) .qc-real-main .drawing-box.has-grid canvas {
+	background-color: #050505;
+	background-image:
+		linear-gradient(to right, rgba(248, 248, 242, 0.32) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(248, 248, 242, 0.32) 1px, transparent 1px);
+}
+
 :root[data-theme='dark'] .qc-real-main .submit-grade-button:disabled {
 	background: #334155;
 	color: #cbd5e1;

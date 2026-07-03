@@ -269,6 +269,7 @@ requireIncludes(
 		'deterministic question-paper text scout',
 		'The script detected these sourceQuestionRef values from core-page text',
 		'For calculation questions with visible working lines',
+		'For blank printed grids that the learner must complete or draw on',
 		'For markChecklist.required, true means every full-credit response',
 		'level-response indicative content must be required=false',
 		'Do not use asset-canvas for a table that can be represented structurally',
@@ -463,6 +464,8 @@ requireIncludes(
 		'image_label_zones_missing_labels',
 		'image_label_zones_missing_zones',
 		'diagram_response_surface_missing',
+		'drawingBoxGridMetadataIssues',
+		'drawing_grid_row_label_count_mismatch',
 		'referenced_media_missing_asset',
 		'render_block_duplicate_text',
 		'table_asset_canvas_response',
@@ -536,6 +539,7 @@ requireIncludes(
 		'metadata.json',
 		'pdf-tools.sh',
 		'bash pdf-tools.sh',
+		'crop-page',
 		'Do not run git',
 		'Do not create final answer chains',
 		'write those records incrementally as small JSON fragments under question-fragments/',
@@ -668,6 +672,7 @@ requireIncludes(
 		'mark-scheme.pdf',
 		'pdf-tools.sh',
 		'judge-report.json',
+		'crop-page',
 		'mechanical-validation.json',
 		'Q07.1 has 7 visible ruled answer lines',
 		'Q07.3 has 16 visible ruled answer lines',
@@ -692,6 +697,7 @@ requireIncludes(
 		'For Ordnance Survey map extracts and other grid-reference maps',
 		'readable eastings and northings on the relevant margins',
 		'Use bash pdf-tools.sh for PDF observation commands',
+		'crop-page',
 		'do not call helper.mjs pdf-info',
 		'repaired-extraction.json',
 		'repair-validation.json',
@@ -5019,6 +5025,68 @@ if (
 	});
 }
 
+const drawingGridResponseIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '09.2',
+				commandWord: 'Complete',
+				marks: 2,
+				promptText: 'Complete the following grid.',
+				response: {
+					kind: 'drawing-box',
+					label: 'Grid answer',
+					grid: { rows: 4, columns: 7 },
+					rowLabels: ['Row 0', 'Row 1', 'Row 2', 'Row 3']
+				},
+				markSchemeItems: [{ itemType: 'mark', text: 'Grid completed correctly.' }],
+				markChecklist: [{ text: 'Completes the grid.', markSchemeItemIndexes: [0] }]
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	drawingGridResponseIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code.startsWith('drawing_grid_'))
+	)
+) {
+	fail('Deterministic checks rejected a valid drawing-box grid response.', {
+		drawingGridResponseIssues
+	});
+}
+
+const badDrawingGridResponseIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '09.2',
+				commandWord: 'Complete',
+				marks: 2,
+				promptText: 'Complete the following grid.',
+				response: {
+					kind: 'drawing-box',
+					label: 'Grid answer',
+					grid: { rows: 4, columns: 7 },
+					rowLabels: ['Row 0', 'Row 1']
+				},
+				markSchemeItems: [{ itemType: 'mark', text: 'Grid completed correctly.' }],
+				markChecklist: [{ text: 'Completes the grid.', markSchemeItemIndexes: [0] }]
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	!badDrawingGridResponseIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'drawing_grid_row_label_count_mismatch')
+	)
+) {
+	fail('Deterministic checks did not reject mismatched drawing-box row labels.', {
+		badDrawingGridResponseIssues
+	});
+}
+
 const missingAnswerKeyIssues = pipelineModule.deterministicCandidateIssues({
 	questions: [
 		{
@@ -6075,6 +6143,48 @@ if (
 ) {
 	fail('Solvability context stripped literal code comparison operators.', {
 		codeOperatorSolvabilityContext
+	});
+}
+
+const drawingGridSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '09.2',
+				parentSourceQuestionRef: '09',
+				displayOrder: 2,
+				promptText: 'Complete the grid to show the final stitch pattern.',
+				stemBlocks: [
+					{
+						kind: 'code',
+						label: 'Figure 8',
+						text: 'WHILE NOT atEnd()\n  moveNeedle()\nENDWHILE'
+					}
+				],
+				promptBlocks: [{ kind: 'text', text: 'Complete the grid.' }],
+				response: {
+					kind: 'drawing-box',
+					label: 'Final stitch grid',
+					grid: { rows: 4, columns: 7 },
+					rowLabels: ['Row 0', 'Row 1', 'Row 2', 'Row 3']
+				},
+				markSchemeItems: [{ itemType: 'mark', text: 'Grid completed correctly.' }]
+			}
+		]
+	},
+	'09.2',
+	{ attachImages: false }
+);
+const drawingGridVisibleText = JSON.stringify(
+	drawingGridSolvabilityContext.studentVisibleContext.sections
+);
+if (
+	!drawingGridVisibleText.includes('WHILE NOT atEnd()') ||
+	!drawingGridVisibleText.includes('Grid: 4 row(s) by 7 column(s).') ||
+	!drawingGridVisibleText.includes('Row labels: Row 0, Row 1, Row 2, Row 3.')
+) {
+	fail('Solvability context omitted code or drawing-grid response metadata.', {
+		drawingGridSolvabilityContext
 	});
 }
 

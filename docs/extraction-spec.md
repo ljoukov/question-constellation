@@ -681,6 +681,8 @@ provides the helper operations Codex should call instead of reinventing them eve
 - `render-pages`
 - `extract-embedded-images`
 - `contact-sheet`
+- `crop`
+- `crop-page`
 - `line-count`
 - `normalize-extraction`
 - `validate-extraction`
@@ -779,6 +781,13 @@ image. It may normalize an `asset-canvas` over a structured table into `choice-t
 genuine table-value selection tasks such as ring/circle/select/tick/shade a value or cell. It must
 not convert graph plotting from a table of source data into a table-choice response; the source
 table is context, while the learner response surface is the graph canvas.
+
+For blank printed grids that the learner must complete or draw on, extraction should use
+`response.kind: "drawing-box"` with `response.grid: { rows, columns }` and visible
+`rowLabels`/`columnLabels` when present. This is distinct from an unconstrained drawing area such as
+logic-circuit drawing, which can remain a plain `drawing-box`. Import, server loading, response
+rendering, and solvability context generation must preserve the grid metadata so the learner and the
+judge see the original answer surface.
 
 The older `@ljoukov/llm` chunk/agentic path is kept as a legacy diagnostic and repair harness under
 `scripts/extract-paper-llm.mjs`, `scripts/run-production-extraction-pipeline.mjs`, and
@@ -1226,6 +1235,31 @@ This run encoded two repeatable importer fixes rather than patching D1 by hand:
   `code` block as the learner-visible surface for a referenced figure when that block contains the full
   visual content. CS 2021 Paper 2 Q03 uses this for `Figure 1` (`1 0 1 1 0 0 0 0`), while true diagram
   and screenshot dependencies still require assets.
+
+Computer Science Paper 1 June 2021 deployed import, 2026-07-03:
+
+The official inputs are `data/aqa-gcse-history-geography-computer-science/question-papers/AQA-85201-QP-NOV21.PDF`
+and `data/aqa-gcse-history-geography-computer-science/mark-schemes/AQA-85201-MS-NOV21.PDF`.
+The filenames say `NOV21`, but the visible PDF identity is June 2021, component `8520/1`, so the
+source id is `aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp`.
+
+| Phase                              | Artifact                                                                                                                                                                                                                                                   | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction               | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/raw/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp.json`             | 1229.726s |            59 |              1 |           6,031,808 |    5,552,128 |                 49,801 |            8,143 | 31 questions, 80 marks, deterministic extraction validation passed; one harmless `identify` call ran before the Q07 assets existed                                       |
+| Independent Codex extraction judge | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/extraction-judge/judge-report.json`                                                                          | 1079.597s |            40 |              6 |           1,393,024 |    1,073,152 |                  9,856 |            1,637 | passed score 0.98, 31 refs checked, 0 required repairs; verified fragile line counts including Q05.3, Q06.2, Q07.6, and Q09.3                                         |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/chain-reconciled/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp.json` |  555.975s |            28 |              0 |           1,390,298 |    1,262,080 |                 28,951 |           12,690 | 8 reused, 23 created, 0 updated/review; deterministic chain validation passed                                                                                            |
+| Codex solvability before fix       | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/codex-solvability-summary.json`                                                                             |  351.679s |            26 |              1 |             738,501 |      569,856 |                 16,563 |            7,023 | failed 29/31 because Q09.1/Q09.2 rendered only unlabelled drawing boxes; the extracted JSON already contained 3x4 and 4x7 grid metadata                                |
+| Codex solvability after grid fix   | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/codex-solvability-grid-fix-summary.json`                                                                    |  527.053s |            30 |              3 |             769,052 |      653,312 |                 17,143 |            7,645 | passed 31/31 after solvability context, import, server loading, and renderer preserved `drawing-box.grid` and row labels                                               |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/import-ready-grid-fix-dry-run-audit.json`                                                                   |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 31/31 kept, 0 dropped, 0 audit errors/warnings; D1 dry-run safe with 479 planned statements and seven shared reuse-only chains                                         |
+| R2 asset upload                    | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/codex-extraction/assets`                                                                                    |       n/a |     2 objects |              0 |                 n/a |          n/a |                    n/a |              n/a | uploaded Q07 Figure 6 and Figure 7 under `images/papers/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/`                         |
+| D1 targeted write                  | `tmp/codex-humanities-cs-2021-paper-1-v1/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp/import-ready-grid-fix/aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp.json` |       n/a | 479 SQL stmts |              0 |                 n/a |          n/a |                    n/a |              n/a | wrote 31 questions, 31 overlays, 109 mark rows, 87 checklist rows, 24 model answers, 39 answer keys, and 29 chains                                                    |
+| Deployed route crawl               | `tmp/public-route-checks/aqa-computer-science-2021-june-paper-1-grid-fix.json`                                                                                                                                                              |   69.022s |    153 routes |              0 |                 n/a |          n/a |                    n/a |              n/a | all public question, practice, chain, constellation, and 2 asset routes returned 200; 7 public multi-paper chains and no raw multi-paper chain rendered as single-visible |
+
+This run encoded the grid-answer fix in the importer path rather than patching D1 rows. `drawing-box`
+now supports `grid`, `rowLabels`, and `columnLabels` across extraction schema, strict helper
+validation, import normalization, D1 render overlays, server-side hydration, Svelte rendering, and
+solvability context. The validator distinguishes real printed grid/cell/square answer surfaces from
+plain drawing areas such as logic-circuit boxes that mention a truth table.
 
 Geography Paper 1 June 2023 repair canary, 2026-07-02:
 
