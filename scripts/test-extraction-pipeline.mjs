@@ -614,6 +614,10 @@ requireIncludes(
 		'For Figure 13/Q03.7',
 		'For Q03.6, Q04.6, and Q05.6',
 		'For Figure 20/Q05.7',
+		'Q01.3/Figure 2 is an asset-canvas graph-completion response',
+		'x-axis numerical scale 0, 100, 200, ... 1000',
+		'Q02.3/Figure 6 requires the complete official Southampton Science Park learner source',
+		'text block and all three photographs',
 		'Distance from source (km)',
 		'Do not represent such questions as response.kind="lines" or "labeled-lines" alone',
 		'A crop that ends mid-grid or before the x-axis labels is invalid',
@@ -2077,6 +2081,155 @@ if (!graphPlottingMismatchFailure.includes('known_graph_plotting_mark_scheme_mis
 	fail('Codex helper validation did not reject the known Q01.9 plotting mark mismatch.', {
 		graphPlottingMismatchFailure
 	});
+}
+
+const geography2023P2Figure2MissingScalePath = path.join(
+	helperNormalizeDir,
+	'geography-2023-p2-figure2-missing-scale.json'
+);
+writeFileSync(
+	geography2023P2Figure2MissingScalePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '01.3',
+					promptText: 'Complete Figure 2 using the following data.',
+					marks: 1,
+					pageStart: 4,
+					pageEnd: 4,
+					stemBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'Study Figure 2, a graph showing selected crimes reported on Twitter in Mexico City.'
+						}
+					],
+					response: {
+						kind: 'asset-canvas',
+						assetLabel: 'Figure 2',
+						instructions: 'Draw the missing Theft of motor vehicle bar at the correct value.',
+						correctAnswers: [
+							{
+								targetId: 'theft-motor-vehicle-bar',
+								correctAnswer: 'Bar for Theft of motor vehicle reaches 350 reports.'
+							}
+						]
+					},
+					assets: [
+						{
+							sourceLabel: 'Figure 2',
+							role: 'response-surface',
+							filePath: 'assets/figure-02-crime-graph.png'
+						}
+					],
+					markSchemeItems: [
+						{ itemType: 'answer', text: 'Bar plotted accurately at 350 reports.', marks: 1 }
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2023P2Figure2MissingScaleFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2023P2Figure2MissingScalePath}`,
+		'--expected-marks=1',
+		'--expected-questions=1'
+	]
+);
+if (!geography2023P2Figure2MissingScaleFailure.includes('known_graph_scale_missing')) {
+	fail('Codex helper validation did not reject Geography 2023 Paper 2 Q01.3 without graph scale.', {
+		geography2023P2Figure2MissingScaleFailure
+	});
+}
+
+const geography2023P2Figure6MissingVisualSourcePath = path.join(
+	helperNormalizeDir,
+	'geography-2023-p2-figure6-missing-visual-source.json'
+);
+writeFileSync(
+	geography2023P2Figure6MissingVisualSourcePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.3',
+					promptText:
+						'To what extent are modern industrial developments environmentally sustainable? Use Figure 6 and your own understanding.',
+					marks: 6,
+					pageStart: 14,
+					pageEnd: 15,
+					stemBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'Study Figure 6, information about the Southampton Science Park.'
+						},
+						{
+							kind: 'table',
+							label: 'Figure 6',
+							columns: ['Information about the Southampton Science Park'],
+							rows: [
+								[
+									'Provides high-quality office, laboratory and meeting facilities in a healthy and inspiring environment.'
+								],
+								['72 acres of green space, lakes, walking routes and picnic spots.'],
+								['27 acres are a protected conservation area.'],
+								['Committed to minimising waste and making buildings more energy efficient.']
+							]
+						}
+					],
+					response: {
+						kind: 'lines',
+						lineCount: 17,
+						lineCountEvidence: 'Visible ruled answer lines counted from pages 14 and 15.'
+					},
+					assets: [],
+					markSchemeItems: [
+						{
+							itemType: 'mark',
+							text: 'Levelled response crediting evidence from Figure 6 and own understanding.',
+							marks: 6
+						}
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2023P2Figure6MissingVisualSourceFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2023P2Figure6MissingVisualSourcePath}`,
+		'--expected-marks=6',
+		'--expected-questions=1'
+	]
+);
+if (
+	!geography2023P2Figure6MissingVisualSourceFailure.includes(
+		'known_figure6_visual_source_missing'
+	)
+) {
+	fail(
+		'Codex helper validation did not reject Geography 2023 Paper 2 Q02.3 without Figure 6 visual source.',
+		{ geography2023P2Figure6MissingVisualSourceFailure }
+	);
 }
 
 const missingLevelDescriptorsPath = path.join(helperNormalizeDir, 'missing-level-descriptors.json');
@@ -5466,6 +5619,53 @@ if (
 	fail(
 		'Solvability context omitted visible table or target answer-key evidence.',
 		solvabilityContext
+	);
+}
+
+const mixedChoiceLineSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '04.1',
+				parentSourceQuestionRef: '04',
+				displayOrder: 1,
+				promptText:
+					'How many countries had a serious threat level? Shade one circle only. What percentage had a serious threat level?',
+				stemBlocks: [{ kind: 'text', text: 'Study Figure 12.' }],
+				promptBlocks: [
+					{
+						kind: 'text',
+						text: 'Shade one circle only. Give the percentage.'
+					}
+				],
+				response: {
+					kind: 'labeled-lines',
+					choiceOptions: ['A 3', 'B 4', 'C 5', 'D 6'],
+					fields: [{ label: 'Percentage', lineCount: 1 }],
+					labels: ['Percentage'],
+					lineCount: 1,
+					correctAnswers: [
+						{ targetId: 'choice', correctAnswer: 'B 4' },
+						{ targetId: 'Percentage', correctAnswer: '16%' }
+					]
+				},
+				markSchemeItems: [{ itemType: 'mark', text: 'B 4 and 16%.' }]
+			}
+		]
+	},
+	'04.1',
+	{ attachImages: false }
+);
+const mixedChoiceLineResponseText =
+	mixedChoiceLineSolvabilityContext.studentVisibleContext.sections[0]?.response ?? '';
+if (
+	!mixedChoiceLineResponseText.includes('Fixed choice control') ||
+	!mixedChoiceLineResponseText.includes('B 4') ||
+	!mixedChoiceLineResponseText.includes('Percentage')
+) {
+	fail(
+		'Solvability context omitted labeled-lines fixed choice options from the response surface.',
+		mixedChoiceLineSolvabilityContext
 	);
 }
 

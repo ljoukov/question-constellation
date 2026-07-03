@@ -6371,7 +6371,20 @@ function responseToLearnerText(response) {
 	if (kind === 'none') return 'No student response field.';
 	if (kind === 'lines') return `Answer lines: ${response.count ?? 'unspecified'} line(s).`;
 	if (kind === 'labeled-lines') {
-		return `Labelled answer lines: ${(response.labels ?? []).join(', ') || 'no labels'}.`;
+		const parts = [];
+		if (Array.isArray(response.choiceOptions) && response.choiceOptions.length) {
+			parts.push(
+				[
+					response.choicePrompt
+						? `Fixed choice control: ${response.choicePrompt}`
+						: 'Fixed choice control.',
+					'Choice options:',
+					...response.choiceOptions.map((option) => `- ${option}`)
+				].join('\n')
+			);
+		}
+		parts.push(`Labelled answer lines: ${(response.labels ?? []).join(', ') || 'no labels'}.`);
+		return parts.join('\n');
 	}
 	if (kind === 'choice') {
 		return `Choice options:\n${(response.options ?? response.choiceOptions ?? [])

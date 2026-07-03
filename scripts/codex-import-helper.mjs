@@ -1448,7 +1448,8 @@ function deterministicIssuesFor(candidate, options = {}) {
 				'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp',
 				'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp',
 				'aqa-geography-2022-june-paper-3-geographical-applications-qp',
-				'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
+				'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp',
+				'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp'
 			].includes(sourceDocumentId)
 		) {
 			for (const issue of knownSourceSpecificIssues(question, sourceDocumentId)) issues.push(issue);
@@ -2263,6 +2264,12 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		}
 		return issues;
 	}
+	if (sourceDocumentId === 'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp') {
+		for (const issue of knownGeography2023Paper2Issues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
 	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp') {
 		for (const issue of knownComputerScience2024Paper1AResponseIssues(question, visibleText)) {
 			issues.push(issue);
@@ -2885,6 +2892,130 @@ function knownGeography2023Paper1Issues(question) {
 		}
 	}
 	return issues;
+}
+
+function knownGeography2023Paper2Issues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref === '01.3') {
+		const evidence = learnerVisibleEvidenceForFigure(question, 'figure 2');
+		if (!hasFigure2CrimeGraphScale(evidence)) {
+			issues.push({
+				code: 'known_graph_scale_missing',
+				field: 'stemBlocks/assets.filePath',
+				severity: 'error',
+				evidence:
+					'Geography 2023 Paper 2 Q01.3 requires learner-visible Figure 2 graph scale evidence: the complete graph crop or structured source evidence must show the x-axis numerical scale including 0, 100, 1000 and the "Number of reports" axis title. A bar/grid-only crop is not solvable for placing the 350-report bar.'
+			});
+		}
+	}
+	if (ref === '02.3') {
+		const evidence = learnerVisibleEvidenceForFigure(question, 'figure 6');
+		if (!hasFigure6ScienceParkSource(question, evidence)) {
+			issues.push({
+				code: 'known_figure6_visual_source_missing',
+				field: 'stemBlocks/assets.filePath',
+				severity: 'error',
+				evidence:
+					'Geography 2023 Paper 2 Q02.3 requires learner-visible Figure 6 as a complete source with the official text plus the three Southampton Science Park photographs. A text-only extraction is not enough because the learner needs the construction/road, shuttle/building, and aerial site/green-setting evidence.'
+			});
+		}
+	}
+	if (ref === '02.4') {
+		const evidence = learnerVisibleEvidenceForFigure(question, 'figure 7');
+		if (!hasFigure7BirthRateKey(evidence)) {
+			issues.push({
+				code: 'known_figure_key_text_missing',
+				field: 'stemBlocks/assets.filePath',
+				severity: 'error',
+				evidence:
+					'Geography 2023 Paper 2 Q02.4 requires the learner-visible Figure 7 key/category mapping for birth rates, including the 11.47 or more category needed to shade Iceland for 12.3. Do not rely on selfContainedPromptText only.'
+			});
+		}
+	}
+	if (ref === '04.5') {
+		const evidence = learnerVisibleEvidenceForFigure(question, 'figure 13');
+		if (
+			requiredEvidenceTermsMissing(evidence, [
+				/\bzai\b/i,
+				/\bcompost\b/i,
+				/\btermite/i,
+				/\b500\b|five\s+hundred/i
+			]).length
+		) {
+			issues.push({
+				code: 'known_source_information_missing',
+				field: 'stemBlocks/assets.filePath',
+				severity: 'error',
+				evidence:
+					'Geography 2023 Paper 2 Q04.5 requires learner-visible Figure 13 information about Zai holes, compost/manure, termites, and yields increasing by up to 500%; a photograph-only crop plus selfContainedPromptText is not enough.'
+			});
+		}
+	}
+	return issues;
+}
+
+function learnerVisibleEvidenceForFigure(question, label) {
+	const blockText = [
+		question.contextText,
+		...(question.stemBlocks ?? []).map(blockSearchText),
+		...(question.leadBlocks ?? []).map(blockSearchText),
+		...(question.promptBlocks ?? []).map(blockSearchText),
+		...(question.afterResponseBlocks ?? []).map(blockSearchText)
+	]
+		.filter(Boolean)
+		.join('\n');
+	const ocrText = (question.assets ?? [])
+		.filter((asset) =>
+			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+				.filter(Boolean)
+				.some((candidate) => mediaLabelMatches(candidate, label))
+		)
+		.map((asset) => imageOcrTextForAsset(asset))
+		.filter(Boolean)
+		.join('\n');
+	return `${blockText}\n${ocrText}`;
+}
+
+function hasFigure2CrimeGraphScale(evidence) {
+	const text = normalizedRenderText(evidence);
+	return (
+		/\bnumber\s+of\s+reports\b/.test(text) &&
+		/\b0\b/.test(text) &&
+		/\b100\b/.test(text) &&
+		/\b1000\b/.test(text)
+	);
+}
+
+function hasFigure6ScienceParkSource(question, evidence) {
+	const text = normalizedRenderText(evidence);
+	const hasTextSource =
+		/\b72\s+acres\b/.test(text) &&
+		/\bgreen\s+space\b/.test(text) &&
+		/\b27\s+acres\b/.test(text) &&
+		/\bconservation\b/.test(text) &&
+		/\benergy\s+efficient\b/.test(text);
+	const hasRenderableFigure = (question.assets ?? []).some(
+		(asset) =>
+			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+				.filter(Boolean)
+				.some((candidate) => mediaLabelMatches(candidate, 'figure 6')) &&
+			assetHasRenderableSource(asset)
+	);
+	const hasStructuredPhotoEvidence =
+		/\b(?:construction|tree[- ]?removal|road)\b/.test(text) &&
+		/\b(?:bus|shuttle|public\s+transport)\b/.test(text) &&
+		/\b(?:aerial|car\s+park|parking|green\s+setting|site)\b/.test(text);
+	return hasTextSource && (hasRenderableFigure || hasStructuredPhotoEvidence);
+}
+
+function hasFigure7BirthRateKey(evidence) {
+	const text = normalizedRenderText(evidence);
+	return /11\s*47/.test(text) && /\bmore\b/.test(text);
+}
+
+function requiredEvidenceTermsMissing(evidence, patterns) {
+	return patterns.filter((pattern) => !pattern.test(String(evidence ?? '')));
 }
 
 function knownGeography2022Paper1Issues(question, visibleText, gradingText) {
