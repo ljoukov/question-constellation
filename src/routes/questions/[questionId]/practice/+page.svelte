@@ -27,6 +27,11 @@
 		thinkingMarkdown: string | null;
 		model: string;
 		modelVersion: string;
+		savedAttempt?: {
+			id: string;
+			activeGaps: Array<{ gapId: string; stepId: string; href: string }>;
+			recallPrompt: { href: string; label: string; cardCount: number } | null;
+		} | null;
 	};
 	type SseMessage = {
 		event: string;
@@ -78,6 +83,10 @@
 	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
 	const feedbackMarkdown = $derived((gradeResult?.feedbackMarkdown ?? '').trim());
 	const hasMissingLinks = $derived(missingItems.length > 0);
+	const gapHrefByStepId = $derived(
+		new Map((gradeResult?.savedAttempt?.activeGaps ?? []).map((gap) => [gap.stepId, gap.href]))
+	);
+	const recallPrompt = $derived(gradeResult?.savedAttempt?.recallPrompt ?? null);
 	const hintMissingLinks = $derived(
 		data.question.weakAnswerMissingStepIds
 			.map(
@@ -498,9 +507,27 @@
 										<li>
 											<CircleAlert size={18} aria-hidden="true" />
 											<span><MathText text={shortChecklistText(item.text)} /></span>
+											{#if gapHrefByStepId.get(item.stepId)}
+												<a class="qc-inline-repair-link" href={gapHrefByStepId.get(item.stepId)}>
+													Close this gap
+												</a>
+											{/if}
 										</li>
 									{/each}
 								</ul>
+							</section>
+						{/if}
+
+						{#if recallPrompt}
+							<section class="qc-answer-panel recall">
+								<p class="qc-panel-label">Flashcard repair</p>
+								<p>
+									This looks like a small recall gap. Practise {recallPrompt.cardCount}
+									cards for {recallPrompt.label.replace(/^.*?:\s*/, '')}.
+								</p>
+								<a class="qc-action-button primary compact" href={recallPrompt.href}>
+									Review flashcards
+								</a>
 							</section>
 						{/if}
 

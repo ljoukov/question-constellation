@@ -1,4 +1,5 @@
 import { gradeQuestionAnswerStreaming, type GradeStreamDelta } from '$lib/server/answerGrading';
+import { recordQuestionAttempt } from '$lib/server/personalLearning';
 import { createSseStream, sseResponse } from '$lib/server/sse';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
@@ -71,7 +72,7 @@ function gradingRuntimeDiagnostics(platformEnv: unknown) {
 	};
 }
 
-export const POST: RequestHandler = async ({ params, request, platform }) => {
+export const POST: RequestHandler = async ({ locals, params, request, platform }) => {
 	let questionId: string;
 	try {
 		questionId = paramsSchema.parse(params).questionId;
@@ -107,10 +108,27 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 				signal: request.signal,
 				onDelta: (delta) => sendDelta(send, delta)
 			});
+			let savedAttempt = null;
+			if (locals.user) {
+				try {
+					savedAttempt = await recordQuestionAttempt({
+						user: locals.user,
+						questionId,
+						answer: body.answer,
+						result
+					});
+				} catch (error) {
+					console.warn('[question-grade] failed to save personal attempt', {
+						error,
+						questionId,
+						userId: locals.user.uid
+					});
+				}
+			}
 
 			send({
 				event: 'done',
-				data: JSON.stringify(result)
+				data: JSON.stringify({ ...result, savedAttempt })
 			});
 		} catch (error) {
 			console.error('[question-grade] failed to grade answer', {

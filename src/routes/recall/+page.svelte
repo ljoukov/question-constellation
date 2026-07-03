@@ -51,6 +51,7 @@
 			initialKind: string;
 			initialSearch: string;
 			initialStart: boolean;
+			user: { uid: string; email: string; name: string | null; photoUrl: string | null } | null;
 		};
 	} = $props();
 
@@ -281,7 +282,23 @@
 				wrongChoices
 			}
 		});
+		syncRecallReview(card, grade);
 		advanceCard(true);
+	}
+
+	function syncRecallReview(card: RecallCard, grade: Grade) {
+		if (!browser || !data.user) return;
+		void fetch(resolve('/api/recall/review'), {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({
+				cardId: card.id,
+				grade,
+				mode
+			})
+		}).catch((error) => {
+			console.warn('Recall review sync failed.', error);
+		});
 	}
 
 	function chooseAnswer(card: RecallCard, choice: string) {

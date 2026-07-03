@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { page as pageState } from '$app/state';
 	import { Check, ChevronDown, ChevronRight, Search } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
+	import type { AdminUser } from '$lib/server/auth/session';
 
 	let {
 		subject = 'Physics',
@@ -57,6 +59,9 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
 	];
+	const currentUser = $derived((pageState.data.user ?? null) as AdminUser | null);
+	const accountName = $derived(currentUser?.name?.trim() || currentUser?.email || 'Account');
+	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
 	const subjectOptions = $derived(
 		subject && !subjects.includes(subject) ? [subject, ...subjects] : subjects
 	);
@@ -231,21 +236,46 @@
 			onclick={toggleAccountMenu}
 		>
 			<span class="qc-avatar-pixel" aria-hidden="true">
-				<img src="/brand/avatar-bottts.svg" alt="" width="32" height="32" />
+				<img src={avatarSrc} alt="" width="32" height="32" referrerpolicy="no-referrer" />
 			</span>
 		</button>
 		{#if accountMenuOpen}
 			<div class="qc-avatar-popover" role="menu" aria-label="Account">
 				<p class="qc-avatar-popover-title">Account</p>
-				<button
-					type="button"
-					class="qc-menu-item"
-					role="menuitem"
-					onclick={closeAccountMenu}
-					onpointerenter={closeAppearanceFromOtherItem}
-				>
-					Log in...
-				</button>
+				{#if currentUser}
+					<div class="qc-menu-user" role="none">
+						<strong>{accountName}</strong>
+						<span>{currentUser.email}</span>
+					</div>
+					<a
+						class="qc-menu-item"
+						role="menuitem"
+						href={resolve('/')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Learning home
+					</a>
+					<a
+						class="qc-menu-item"
+						role="menuitem"
+						href={resolve('/auth/logout')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Sign out
+					</a>
+				{:else}
+					<a
+						class="qc-menu-item"
+						role="menuitem"
+						href={resolve('/auth/start')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Sign in
+					</a>
+				{/if}
 				<div class="qc-menu-separator" role="separator"></div>
 				<div
 					class="qc-menu-submenu"

@@ -103,6 +103,42 @@ export async function queryRows<T extends Record<string, unknown>>(
 	return normalizeD1Results<T>(JSON.parse(bodyText) as D1RestResponse<T>);
 }
 
+export async function executeQuery(sql: string, params: SqlParam[] = []): Promise<void> {
+	const db = getQuestionDb();
+
+	if (db) {
+		let statement = db.prepare(sql);
+		if (params.length > 0) {
+			statement = statement.bind(...params);
+		}
+		await statement.run();
+		return;
+	}
+
+	const { accountId, apiToken, databaseId } = getLocalD1Config();
+	const response = await fetchD1WithRetry(
+		`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
+		{
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${apiToken}`,
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			},
+			body: JSON.stringify({ sql, params })
+		}
+	);
+	const bodyText = await response.text();
+
+	if (!response.ok) {
+		throw new Error(`D1 REST query failed: ${response.status} ${response.statusText}: ${bodyText}`);
+	}
+
+	normalizeD1Results<Record<string, unknown>>(
+		JSON.parse(bodyText) as D1RestResponse<Record<string, unknown>>
+	);
+}
+
 export async function queryFirst<T extends Record<string, unknown>>(
 	sql: string,
 	params: SqlParam[] = []

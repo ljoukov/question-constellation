@@ -6,7 +6,7 @@ import {
 } from '$lib/recall/aqaScienceRecall';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => ({
+export const load: PageServerLoad = async ({ locals, url }) => ({
 	cards: recallCards,
 	kindLabels: recallKindLabels,
 	subjects: recallSubjects,
@@ -15,5 +15,6 @@ export const load: PageServerLoad = async ({ url }) => ({
 	initialTopic: url.searchParams.get('topic') ?? 'all',
 	initialKind: url.searchParams.get('kind') ?? 'all',
 	initialSearch: url.searchParams.get('q') ?? '',
-	initialStart: url.searchParams.get('start') === '1'
+	initialStart: url.searchParams.get('start') === '1',
+	user: locals.user
 });
