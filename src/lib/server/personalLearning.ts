@@ -28,6 +28,20 @@ type UserProfileRow = {
 	last_seen_at: string;
 };
 
+type UserProfileSubjectRow = {
+	user_id: string;
+	subject: string;
+	board: string;
+	qualification: string;
+	course: string;
+	tier: string;
+	enabled: number;
+	current_grade: string | null;
+	target_grade: string | null;
+	created_at: string;
+	updated_at: string;
+};
+
 type DashboardGapRow = {
 	id: string;
 	answer_chain_id: string;
@@ -113,6 +127,17 @@ export type UserProfile = {
 	selectedTier: string;
 };
 
+export type LearnerSubject = {
+	subject: string;
+	board: string;
+	qualification: string;
+	course: 'Separate Science' | 'Combined Science';
+	tier: 'Higher' | 'Foundation';
+	enabled: boolean;
+	currentGrade: string | null;
+	targetGrade: string | null;
+};
+
 export type DashboardGap = {
 	id: string;
 	href: string;
@@ -164,8 +189,38 @@ export type DashboardCurriculumTopic = {
 	activeGapCount: number;
 };
 
+export type SubjectLearningLane = {
+	subject: string;
+	board: string;
+	qualification: string;
+	course: LearnerSubject['course'];
+	tier: LearnerSubject['tier'];
+	courseLabel: string;
+	href: string;
+	recallHref: string;
+	practiceHref: string;
+	gapsHref: string;
+	attemptCount: number;
+	activeGapCount: number;
+	recallDueCount: number;
+	recallReviewCount: number;
+	averageMarkPercent: number | null;
+	confidencePercent: number;
+	confidenceLabel: string;
+	confidenceDetail: string;
+	nextQuestion: DashboardNextQuestion | null;
+	openGap: DashboardGap | null;
+	primaryAction: {
+		label: string;
+		href: string;
+		kind: 'recall' | 'gap' | 'question' | 'browse';
+	};
+};
+
 export type PersonalDashboard = {
 	profile: UserProfile;
+	learnerSubjects: LearnerSubject[];
+	subjectLanes: SubjectLearningLane[];
 	stats: {
 		attemptCount: number;
 		activeGapCount: number;
@@ -185,6 +240,22 @@ export type PersonalDashboard = {
 		topics: DashboardCurriculumTopic[];
 	};
 	subjectOptions: string[];
+};
+
+export type LearnerProfileSettings = {
+	profile: UserProfile;
+	subjects: LearnerSubject[];
+	subjectOptions: string[];
+};
+
+export type LearnerSubjectInput = {
+	subject: string;
+	board: string;
+	course: string;
+	tier: string;
+	enabled: boolean;
+	currentGrade?: string | null;
+	targetGrade?: string | null;
 };
 
 export type SavedAttemptSummary = {
@@ -268,6 +339,20 @@ const personalTableStatements = [
 	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	  last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)`,
+	`CREATE TABLE IF NOT EXISTS user_profile_subjects (
+	  user_id TEXT NOT NULL,
+	  subject TEXT NOT NULL,
+	  board TEXT NOT NULL DEFAULT 'AQA',
+	  qualification TEXT NOT NULL DEFAULT 'GCSE',
+	  course TEXT NOT NULL DEFAULT 'Separate Science',
+	  tier TEXT NOT NULL DEFAULT 'Higher',
+	  enabled INTEGER NOT NULL DEFAULT 1,
+	  current_grade TEXT,
+	  target_grade TEXT,
+	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	  PRIMARY KEY (user_id, subject)
+	)`,
 	`CREATE TABLE IF NOT EXISTS user_question_attempts (
 	  id TEXT PRIMARY KEY,
 	  user_id TEXT NOT NULL,
@@ -332,6 +417,8 @@ const personalTableStatements = [
 	  ON user_question_attempts (user_id, created_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_question
 	  ON user_question_attempts (question_id, user_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_user_profile_subjects_user_enabled
+	  ON user_profile_subjects (user_id, enabled, subject)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_status
 	  ON user_chain_gaps (user_id, status, updated_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_chain
@@ -467,6 +554,85 @@ function toProfile(row: UserProfileRow): UserProfile {
 	};
 }
 
+function stemSubjects(): string[] {
+	return aqaStemCurriculum.map((entry) => entry.subject);
+}
+
+function safeBoard(value: string): 'AQA' {
+	return value === 'AQA' ? 'AQA' : 'AQA';
+}
+
+function safeCourse(value: string): LearnerSubject['course'] {
+	return value === 'Combined Science' ? 'Combined Science' : 'Separate Science';
+}
+
+function safeTier(value: string): LearnerSubject['tier'] {
+	return value === 'Foundation' ? 'Foundation' : 'Higher';
+}
+
+function toLearnerSubject(row: UserProfileSubjectRow): LearnerSubject {
+	return {
+		subject: getAqaStemSubject(row.subject).subject,
+		board: safeBoard(row.board),
+		qualification: 'GCSE',
+		course: safeCourse(row.course),
+		tier: safeTier(row.tier),
+		enabled: row.enabled === 1,
+		currentGrade: row.current_grade,
+		targetGrade: row.target_grade
+	};
+}
+
+function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSubject {
+	return {
+		subject,
+		board: 'AQA',
+		qualification: 'GCSE',
+		course: 'Separate Science',
+		tier: safeTier(profile.selectedTier),
+		enabled: true,
+		currentGrade: null,
+		targetGrade: null
+	};
+}
+
+async function ensureDefaultLearnerSubjects(profile: UserProfile): Promise<void> {
+	for (const subject of stemSubjects()) {
+		const defaults = defaultLearnerSubject(profile, subject);
+		await executeQuery(
+			`INSERT INTO user_profile_subjects (
+			   user_id, subject, board, qualification, course, tier, enabled, current_grade, target_grade
+			 )
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			 ON CONFLICT(user_id, subject) DO NOTHING`,
+			[
+				profile.uid,
+				subject,
+				defaults.board,
+				defaults.qualification,
+				defaults.course,
+				defaults.tier,
+				defaults.enabled ? 1 : 0,
+				defaults.currentGrade,
+				defaults.targetGrade
+			]
+		);
+	}
+}
+
+async function listLearnerSubjects(userId: string, profile: UserProfile): Promise<LearnerSubject[]> {
+	await ensureDefaultLearnerSubjects(profile);
+	const rows = await queryRows<UserProfileSubjectRow>(
+		`SELECT user_id, subject, board, qualification, course, tier, enabled,
+		        current_grade, target_grade, created_at, updated_at
+		 FROM user_profile_subjects
+		 WHERE user_id = ?`,
+		[userId]
+	);
+	const bySubject = new Map(rows.map((row) => [row.subject, toLearnerSubject(row)]));
+	return stemSubjects().map((subject) => bySubject.get(subject) ?? defaultLearnerSubject(profile, subject));
+}
+
 function questionTitle(
 	promptText: string | null | undefined,
 	metadataJson?: string | null
@@ -531,7 +697,9 @@ export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
 		   last_seen_at = CURRENT_TIMESTAMP`,
 		[user.uid, user.email, user.name, user.photoUrl]
 	);
-	return await readUserProfile(user.uid);
+	const profile = await readUserProfile(user.uid);
+	await ensureDefaultLearnerSubjects(profile);
+	return profile;
 }
 
 export async function updateUserPreferences({
@@ -546,16 +714,102 @@ export async function updateUserPreferences({
 	tier: string;
 }): Promise<void> {
 	await ensurePersonalLearningTables();
-	const safeBoard = board === 'AQA' ? 'AQA' : 'AQA';
 	const safeSubject = getAqaStemSubject(subject).subject;
-	const safeTier = tier === 'Foundation' ? 'Foundation' : 'Higher';
+	const normalizedBoard = safeBoard(board);
+	const normalizedTier = safeTier(tier);
 	await executeQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
 		     selected_tier = ?, updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?`,
-		[safeBoard, safeSubject, safeTier, userId]
+		[normalizedBoard, safeSubject, normalizedTier, userId]
 	);
+	await executeQuery(
+		`INSERT INTO user_profile_subjects (
+		   user_id, subject, board, qualification, course, tier, enabled
+		 )
+		 VALUES (?, ?, ?, 'GCSE', 'Separate Science', ?, 1)
+		 ON CONFLICT(user_id, subject) DO UPDATE SET
+		   board = excluded.board,
+		   qualification = excluded.qualification,
+		   tier = excluded.tier,
+		   enabled = 1,
+		   updated_at = CURRENT_TIMESTAMP`,
+		[userId, safeSubject, normalizedBoard, normalizedTier]
+	);
+}
+
+export async function updateLearnerSubjects({
+	userId,
+	subjects
+}: {
+	userId: string;
+	subjects: LearnerSubjectInput[];
+}): Promise<void> {
+	await ensurePersonalLearningTables();
+	const allowedSubjects = new Set(stemSubjects());
+	const normalized = stemSubjects().map((subject) => {
+		const input = subjects.find((entry) => getAqaStemSubject(entry.subject).subject === subject);
+		return {
+			subject,
+			board: safeBoard(input?.board ?? 'AQA'),
+			qualification: 'GCSE',
+			course: safeCourse(input?.course ?? 'Separate Science'),
+			tier: safeTier(input?.tier ?? 'Higher'),
+			enabled: allowedSubjects.has(subject) ? Boolean(input?.enabled) : false,
+			currentGrade: input?.currentGrade?.trim() || null,
+			targetGrade: input?.targetGrade?.trim() || null
+		} satisfies LearnerSubject;
+	});
+
+	for (const subject of normalized) {
+		await executeQuery(
+			`INSERT INTO user_profile_subjects (
+			   user_id, subject, board, qualification, course, tier, enabled, current_grade, target_grade
+			 )
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			 ON CONFLICT(user_id, subject) DO UPDATE SET
+			   board = excluded.board,
+			   qualification = excluded.qualification,
+			   course = excluded.course,
+			   tier = excluded.tier,
+			   enabled = excluded.enabled,
+			   current_grade = excluded.current_grade,
+			   target_grade = excluded.target_grade,
+			   updated_at = CURRENT_TIMESTAMP`,
+			[
+				userId,
+				subject.subject,
+				subject.board,
+				subject.qualification,
+				subject.course,
+				subject.tier,
+				subject.enabled ? 1 : 0,
+				subject.currentGrade,
+				subject.targetGrade
+			]
+		);
+	}
+
+	const primary = normalized.find((entry) => entry.enabled) ?? normalized[0];
+	await executeQuery(
+		`UPDATE user_profiles
+		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
+		     selected_tier = ?, updated_at = CURRENT_TIMESTAMP
+		 WHERE uid = ?`,
+		[primary.board, primary.subject, primary.tier, userId]
+	);
+}
+
+export async function getLearnerProfileSettings(
+	user: AdminUser
+): Promise<LearnerProfileSettings> {
+	const profile = await upsertUserProfile(user);
+	return {
+		profile,
+		subjects: await listLearnerSubjects(user.uid, profile),
+		subjectOptions: stemSubjects()
+	};
 }
 
 function toDashboardGap(row: DashboardGapRow): DashboardGap {
@@ -588,7 +842,17 @@ function toDashboardGap(row: DashboardGapRow): DashboardGap {
 	};
 }
 
-async function listActiveGaps(userId: string, limit = 6): Promise<DashboardGap[]> {
+async function listActiveGaps(
+	userId: string,
+	limit = 6,
+	subject?: string
+): Promise<DashboardGap[]> {
+	const subjectFilter = subject
+		? `AND LOWER(COALESCE(q.subject_area, q.subject, g.subject, '')) LIKE ?`
+		: '';
+	const params: Array<string | number> = [userId];
+	if (subject) params.push(`%${subject.toLowerCase()}%`);
+	params.push(limit);
 	const rows = await queryRows<DashboardGapRow>(
 		`SELECT
 		   g.id,
@@ -617,6 +881,7 @@ async function listActiveGaps(userId: string, limit = 6): Promise<DashboardGap[]
 		 LEFT JOIN questions q ON q.id = g.source_question_id
 		 WHERE g.user_id = ?
 		   AND g.status = 'active'
+		   ${subjectFilter}
 		 ORDER BY
 		   CASE g.gap_band
 		     WHEN 'large_gap' THEN 0
@@ -626,7 +891,7 @@ async function listActiveGaps(userId: string, limit = 6): Promise<DashboardGap[]
 		   END,
 		   g.updated_at DESC
 		 LIMIT ?`,
-		[userId, limit]
+		params
 	);
 
 	return rows.map((row) => ({
@@ -716,9 +981,65 @@ async function readDashboardStats(userId: string): Promise<PersonalDashboard['st
 	};
 }
 
+type SubjectLearningStats = {
+	attemptCount: number;
+	activeGapCount: number;
+	recallDueCount: number;
+	recallReviewCount: number;
+	averageMarkPercent: number | null;
+};
+
+async function readSubjectLearningStats(
+	userId: string,
+	subject: string
+): Promise<SubjectLearningStats> {
+	const subjectLike = `%${subject.toLowerCase()}%`;
+	const attemptStats = await queryFirst<{
+		attempt_count: number;
+		total_awarded: number | null;
+		total_marks: number | null;
+	}>(
+		`SELECT COUNT(*) AS attempt_count,
+		        SUM(a.awarded_marks) AS total_awarded,
+		        SUM(a.max_marks) AS total_marks
+		 FROM user_question_attempts a
+		 LEFT JOIN questions q ON q.id = a.question_id
+		 WHERE a.user_id = ?
+		   AND LOWER(COALESCE(q.subject_area, q.subject, '')) LIKE ?`,
+		[userId, subjectLike]
+	);
+	const gapStats = await queryFirst<{ active_count: number }>(
+		`SELECT COUNT(*) AS active_count
+		 FROM user_chain_gaps
+		 WHERE user_id = ?
+		   AND status = 'active'
+		   AND LOWER(COALESCE(subject, '')) LIKE ?`,
+		[userId, subjectLike]
+	);
+	const recallStats = await queryFirst<{ review_count: number; due_count: number | null }>(
+		`SELECT COUNT(*) AS review_count,
+		        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
+		 FROM user_recall_card_reviews
+		 WHERE user_id = ?
+		   AND subject = ?`,
+		[userId, subject]
+	);
+	const totalMarks = attemptStats?.total_marks ?? 0;
+
+	return {
+		attemptCount: attemptStats?.attempt_count ?? 0,
+		activeGapCount: gapStats?.active_count ?? 0,
+		recallDueCount: recallStats?.due_count ?? 0,
+		recallReviewCount: recallStats?.review_count ?? 0,
+		averageMarkPercent:
+			totalMarks > 0 ? Math.round(((attemptStats?.total_awarded ?? 0) / totalMarks) * 100) : null
+	};
+}
+
 async function getNextQuestion(
 	userId: string,
-	selectedSubject: string
+	selectedSubject: string,
+	learnerSubject?: LearnerSubject
 ): Promise<DashboardNextQuestion | null> {
 	const rows = await queryRows<NextQuestionRow>(
 		`SELECT
@@ -745,6 +1066,15 @@ async function getNextQuestion(
 		   AND ac.status = 'published'
 		   AND ac.needs_human_review = 0
 		   AND LOWER(COALESCE(q.subject_area, q.subject, '')) LIKE ?
+		   AND (q.board IS NULL OR q.board = ?)
+		   AND (
+		     q.tier IS NULL
+		     OR q.tier = ''
+		     OR LOWER(q.tier) = LOWER(?)
+		     OR LOWER(q.tier) LIKE '%foundation and higher%'
+		     OR LOWER(q.tier) LIKE '%higher and foundation%'
+		     OR LOWER(q.tier) LIKE '%both%'
+		   )
 		   AND q.id NOT IN (
 		     SELECT question_id FROM user_question_attempts WHERE user_id = ?
 		   )
@@ -759,7 +1089,12 @@ async function getNextQuestion(
 		   COALESCE(qac.fit_confidence, 0) DESC,
 		   q.id
 		 LIMIT 1`,
-		[`%${selectedSubject.toLowerCase()}%`, userId]
+		[
+			`%${selectedSubject.toLowerCase()}%`,
+			learnerSubject?.board ?? 'AQA',
+			learnerSubject?.tier ?? 'Higher',
+			userId
+		]
 	);
 	const row = rows[0];
 	if (!row) return null;
@@ -821,18 +1156,139 @@ async function buildCurriculumTopics(
 	};
 }
 
+function confidenceForSubject(stats: SubjectLearningStats): {
+	percent: number;
+	label: string;
+	detail: string;
+} {
+	const evidenceCount = stats.attemptCount + stats.recallReviewCount;
+	if (evidenceCount === 0) {
+		return {
+			percent: 14,
+			label: 'Low evidence',
+			detail: 'Start with recall or a real question.'
+		};
+	}
+
+	const markSignal = stats.averageMarkPercent ?? 45;
+	const percent = Math.max(
+		12,
+		Math.min(
+			94,
+			Math.round(
+				20 +
+					stats.attemptCount * 12 +
+					Math.min(18, stats.recallReviewCount * 2) +
+					markSignal * 0.34 -
+					stats.activeGapCount * 8
+			)
+		)
+	);
+	if (stats.activeGapCount > 0) {
+		return {
+			percent,
+			label: 'Known gaps',
+			detail: `${stats.activeGapCount} answer-chain ${stats.activeGapCount === 1 ? 'link' : 'links'} to repair.`
+		};
+	}
+	if (stats.recallDueCount > 0) {
+		return {
+			percent,
+			label: 'Recall due',
+			detail: `${stats.recallDueCount} ${stats.recallDueCount === 1 ? 'card' : 'cards'} ready.`
+		};
+	}
+	if ((stats.averageMarkPercent ?? 0) >= 75 && stats.attemptCount >= 3) {
+		return {
+			percent,
+			label: 'Strong evidence',
+			detail: 'Move into transfer practice.'
+		};
+	}
+	return {
+		percent,
+		label: 'Building evidence',
+		detail: 'More answers will reduce uncertainty.'
+	};
+}
+
+async function buildSubjectLane(
+	userId: string,
+	learnerSubject: LearnerSubject
+): Promise<SubjectLearningLane> {
+	const [stats, openGaps, nextQuestion] = await Promise.all([
+		readSubjectLearningStats(userId, learnerSubject.subject),
+		listActiveGaps(userId, 1, learnerSubject.subject),
+		getNextQuestion(userId, learnerSubject.subject, learnerSubject)
+	]);
+	const confidence = confidenceForSubject(stats);
+	const recallHref = `/recall?${new URLSearchParams({
+		subject: learnerSubject.subject,
+		start: '1'
+	}).toString()}`;
+	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
+	let primaryAction: SubjectLearningLane['primaryAction'];
+	if (openGaps[0]) {
+		primaryAction = { label: 'Close gap', href: openGaps[0].href, kind: 'gap' };
+	} else if (stats.recallDueCount > 0 || stats.attemptCount + stats.recallReviewCount === 0) {
+		primaryAction = { label: 'Start recall', href: recallHref, kind: 'recall' };
+	} else if (nextQuestion) {
+		primaryAction = { label: 'Try exam question', href: nextQuestion.href, kind: 'question' };
+	} else {
+		primaryAction = { label: 'Browse questions', href: browseHref, kind: 'browse' };
+	}
+
+	return {
+		subject: learnerSubject.subject,
+		board: learnerSubject.board,
+		qualification: learnerSubject.qualification,
+		course: learnerSubject.course,
+		tier: learnerSubject.tier,
+		courseLabel: metaLine([
+			learnerSubject.board,
+			learnerSubject.qualification,
+			learnerSubject.course,
+			learnerSubject.tier
+		]),
+		href: browseHref,
+		recallHref,
+		practiceHref: nextQuestion?.href ?? browseHref,
+		gapsHref: openGaps[0]?.href ?? browseHref,
+		attemptCount: stats.attemptCount,
+		activeGapCount: stats.activeGapCount,
+		recallDueCount: stats.recallDueCount,
+		recallReviewCount: stats.recallReviewCount,
+		averageMarkPercent: stats.averageMarkPercent,
+		confidencePercent: confidence.percent,
+		confidenceLabel: confidence.label,
+		confidenceDetail: confidence.detail,
+		nextQuestion,
+		openGap: openGaps[0] ?? null,
+		primaryAction
+	};
+}
+
 export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDashboard> {
 	const profile = await upsertUserProfile(user);
-	const [stats, activeGaps, recentAttempts, nextQuestion] = await Promise.all([
+	const learnerSubjects = await listLearnerSubjects(user.uid, profile);
+	const enabledSubjects = learnerSubjects.filter((entry) => entry.enabled);
+	const primarySubject =
+		enabledSubjects.find((entry) => entry.subject === profile.selectedSubject) ??
+		enabledSubjects[0] ??
+		learnerSubjects[0];
+	const [stats, activeGaps, recentAttempts, nextQuestion, subjectLanes] = await Promise.all([
 		readDashboardStats(user.uid),
 		listActiveGaps(user.uid),
 		listRecentAttempts(user.uid),
-		getNextQuestion(user.uid, profile.selectedSubject)
+		getNextQuestion(user.uid, primarySubject.subject, primarySubject),
+		Promise.all(enabledSubjects.map((entry) => buildSubjectLane(user.uid, entry)))
 	]);
 	const curriculum = await buildCurriculumTopics(profile, activeGaps);
 
 	return {
 		profile,
+		learnerSubjects,
+		subjectLanes,
 		stats,
 		activeGaps,
 		recentAttempts,

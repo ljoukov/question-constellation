@@ -1,7 +1,6 @@
 import { getExplorableLearningChains } from '$lib/server/learningChainData';
-import { getPersonalDashboard, updateUserPreferences } from '$lib/server/personalLearning';
-import { fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import { getPersonalDashboard } from '$lib/server/personalLearning';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const chains = await getExplorableLearningChains();
@@ -24,25 +23,4 @@ export const load: PageServerLoad = async ({ locals }) => {
 			subjectCount: subjects.size
 		}
 	};
-};
-
-export const actions: Actions = {
-	updatePreferences: async ({ locals, request }) => {
-		if (!locals.user) {
-			return fail(401, { message: 'Sign in to save preferences.' });
-		}
-
-		const form = await request.formData();
-		const board = String(form.get('board') ?? 'AQA');
-		const subject = String(form.get('subject') ?? 'Biology');
-		const tier = String(form.get('tier') ?? 'Higher');
-		await updateUserPreferences({
-			userId: locals.user.uid,
-			board,
-			subject,
-			tier
-		});
-
-		return { saved: true };
-	}
 };

@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type {
 		RecallCard,
@@ -636,9 +637,17 @@
 
 			<footer class="session-actions">
 				{#if mode === 'recognise'}
-					<button type="button" class="session-secondary" onclick={() => advanceCard(false)}>
+					<button
+						type="button"
+						class="session-secondary"
+						disabled={cardBusy}
+						onclick={() => advanceCard(false)}
+					>
 						<ArrowLeft size={18} aria-hidden="true" strokeWidth={2.2} />
 						Skip
+					</button>
+					<button type="button" class="session-primary" disabled>
+						Choose answer
 					</button>
 				{:else if revealed}
 					<button
@@ -648,15 +657,7 @@
 						onclick={() => gradeCurrentCard('again')}
 					>
 						<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
-						Again
-					</button>
-					<button
-						type="button"
-						class="session-secondary"
-						disabled={cardBusy}
-						onclick={() => gradeCurrentCard('hard')}
-					>
-						Hard
+						Review again
 					</button>
 					<button
 						type="button"
@@ -665,15 +666,7 @@
 						onclick={() => gradeCurrentCard('good')}
 					>
 						<CheckCircle2 size={18} aria-hidden="true" strokeWidth={2.2} />
-						Good
-					</button>
-					<button
-						type="button"
-						class="session-secondary success"
-						disabled={cardBusy}
-						onclick={() => gradeCurrentCard('easy')}
-					>
-						Easy
+						Had it
 					</button>
 				{:else}
 					<button type="button" class="session-secondary" disabled={cardBusy} onclick={skipCard}>
@@ -701,10 +694,10 @@
 		<section class="setup-shell" aria-label="Recall setup">
 			<div class="setup-copy">
 				<p class="recall-kicker">AQA GCSE Science</p>
-				<h1>Recall cards for low-mark questions.</h1>
+				<h1>Recall cards</h1>
 				<p>
 					Practise the small facts, equations, tests, units, and practical hooks that one- and
-					two-mark questions usually expect before a longer answer chain can help.
+					two-mark questions usually expect.
 				</p>
 				<div class="setup-stats" aria-label="Current recall set">
 					<div>
@@ -740,11 +733,10 @@
 			</div>
 
 			<div class="setup-panel">
-				<section class="setup-filter-block" aria-label="Practice mode">
-					<div class="setup-filter-title">
+				<ControlSection label="Mode">
+					{#snippet icon()}
 						<Brain size={17} aria-hidden="true" strokeWidth={2.2} />
-						<span>Mode</span>
-					</div>
+					{/snippet}
 					<div class="setup-segment">
 						{#each modeOptions as option (option.value)}
 							{@const ModeIcon = option.icon}
@@ -759,13 +751,12 @@
 							</button>
 						{/each}
 					</div>
-				</section>
+				</ControlSection>
 
-				<section class="setup-filter-block" aria-label="Card type">
-					<div class="setup-filter-title">
+				<ControlSection label="Type">
+					{#snippet icon()}
 						<Layers3 size={17} aria-hidden="true" strokeWidth={2.2} />
-						<span>Type</span>
-					</div>
+					{/snippet}
 					<div class="setup-chip-grid">
 						<button
 							type="button"
@@ -786,14 +777,13 @@
 							</button>
 						{/each}
 					</div>
-				</section>
+				</ControlSection>
 
-				<section class="setup-filter-block" aria-label="Specification topic">
-					<div class="setup-filter-title">
+				<ControlSection label="Specification">
+					{#snippet icon()}
 						<Target size={17} aria-hidden="true" strokeWidth={2.2} />
-						<span>Specification</span>
-					</div>
-					<select bind:value={selectedTopic} aria-label="Specification topic">
+					{/snippet}
+					<select class="setup-select" bind:value={selectedTopic} aria-label="Specification topic">
 						<option value="all">All topics</option>
 						{#each availableTopics as topic (topic.id)}
 							<option value={topic.id}>
@@ -802,7 +792,7 @@
 							</option>
 						{/each}
 					</select>
-				</section>
+				</ControlSection>
 			</div>
 		</section>
 	</main>
@@ -838,7 +828,6 @@
 
 	.setup-copy,
 	.setup-panel,
-	.setup-filter-block,
 	.session-complete {
 		border: 1px solid #d9e0ea;
 		background: #ffffff;
@@ -848,18 +837,18 @@
 	.setup-copy {
 		display: grid;
 		align-content: start;
-		gap: 1rem;
-		min-height: 30rem;
-		padding: clamp(1.15rem, 3vw, 2rem);
+		gap: 0.85rem;
+		min-height: 0;
+		padding: clamp(1rem, 2.4vw, 1.45rem);
 	}
 
 	.setup-copy h1 {
-		max-width: 12ch;
+		max-width: 16ch;
 		margin: 0;
 		color: #050811;
-		font-size: clamp(2.3rem, 6vw, 5rem);
-		font-weight: 900;
-		line-height: 0.96;
+		font-size: clamp(2rem, 4.2vw, 3.25rem);
+		font-weight: 880;
+		line-height: 1.02;
 		letter-spacing: 0;
 	}
 
@@ -953,35 +942,10 @@
 		color: #8f1f14;
 	}
 
-	.session-secondary.success {
-		border-color: #08773b;
-		color: #05642f;
-	}
-
 	.setup-panel {
 		display: grid;
 		gap: 0;
 		align-content: start;
-	}
-
-	.setup-filter-block {
-		display: grid;
-		gap: 0.75rem;
-		padding: 1rem;
-		border-width: 0 0 1px;
-		box-shadow: none;
-	}
-
-	.setup-filter-block:last-child {
-		border-bottom: 0;
-	}
-
-	.setup-filter-title {
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
-		color: #050811;
-		font-weight: 860;
 	}
 
 	.setup-segment,
@@ -993,7 +957,7 @@
 
 	.setup-segment button,
 	.setup-chip-grid button,
-	.setup-filter-block select {
+	.setup-select {
 		min-height: 2.45rem;
 		border: 1px solid #cfd7e2;
 		border-radius: 0;
@@ -1019,24 +983,20 @@
 		color: #075323;
 	}
 
-	.setup-filter-block select {
+	.setup-select {
 		width: 100%;
 		padding: 0 0.65rem;
 	}
 
 	.recall-session {
 		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: auto;
-		left: 0;
+		inset: 0;
 		z-index: 80;
 		display: grid;
 		grid-template-rows: auto minmax(0, 1fr) auto;
-		height: 100dvh;
 		height: var(--app-viewport-height, 100dvh);
 		min-height: 0;
-		max-height: 100dvh;
+		max-height: var(--app-viewport-height, 100dvh);
 		overflow: hidden;
 		touch-action: pan-y;
 	}
@@ -1117,7 +1077,8 @@
 	.stack-card.preview {
 		pointer-events: none;
 		border-color: rgba(11, 16, 32, 0.18);
-		box-shadow: none;
+		background: rgba(255, 255, 255, 0.56);
+		box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.04);
 		opacity: 0.38;
 		transition: opacity 180ms ease;
 	}
@@ -1211,7 +1172,7 @@
 	}
 
 	.stack-card.active.revealed .card-flipper {
-		transform: rotateY(-180deg);
+		transform: rotateY(180deg);
 	}
 
 	.card-face {
@@ -1229,7 +1190,7 @@
 	}
 
 	.card-face.back {
-		transform: rotateY(180deg);
+		transform: rotateY(-180deg);
 	}
 
 	.card-reveal-hitbox {
@@ -1359,6 +1320,7 @@
 		font-size: 1.25rem;
 		font-weight: 900;
 		text-transform: uppercase;
+		opacity: var(--drag-progress);
 		pointer-events: none;
 		animation: cue-pop 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 		transform: rotate(var(--cue-rotate, -7deg));
@@ -1389,18 +1351,20 @@
 	}
 
 	.session-actions {
-		display: flex;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 12rem));
 		flex: 0 0 auto;
 		justify-content: center;
 		gap: 0.7rem;
+		min-height: calc(4.85rem + env(safe-area-inset-bottom));
 		padding: 0.85rem 1rem max(1rem, env(safe-area-inset-bottom));
 		border-top: 1px solid #d9e0ea;
 		background: #ffffff;
 	}
 
 	.session-actions button {
-		width: auto;
-		min-width: 7rem;
+		width: 100%;
+		min-width: 0;
 	}
 
 	.session-actions button:disabled {
@@ -1438,7 +1402,6 @@
 
 	:global(:root[data-theme='dark']) .setup-copy,
 	:global(:root[data-theme='dark']) .setup-panel,
-	:global(:root[data-theme='dark']) .setup-filter-block,
 	:global(:root[data-theme='dark']) .session-header,
 	:global(:root[data-theme='dark']) .session-actions,
 	:global(:root[data-theme='dark']) .session-complete,
@@ -1449,7 +1412,7 @@
 	:global(:root[data-theme='dark']) .setup-stats div,
 	:global(:root[data-theme='dark']) .setup-segment button,
 	:global(:root[data-theme='dark']) .setup-chip-grid button,
-	:global(:root[data-theme='dark']) .setup-filter-block select,
+	:global(:root[data-theme='dark']) .setup-select,
 	:global(:root[data-theme='dark']) .choice-grid button,
 	:global(:root[data-theme='dark']) .card-meta span {
 		border-color: #334155;
@@ -1491,6 +1454,7 @@
 
 	:global(:root[data-theme='dark']) .stack-card.preview {
 		border-color: rgba(148, 163, 184, 0.18);
+		background: rgba(15, 23, 42, 0.48);
 		box-shadow: none;
 		opacity: 0.34;
 	}
@@ -1543,7 +1507,7 @@
 		}
 
 		.setup-copy h1 {
-			font-size: clamp(2rem, 14vw, 3.45rem);
+			font-size: clamp(1.85rem, 10vw, 2.75rem);
 		}
 
 		.setup-stats {

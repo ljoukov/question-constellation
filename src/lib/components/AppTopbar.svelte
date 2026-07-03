@@ -250,14 +250,65 @@
 					<a
 						class="qc-menu-item"
 						role="menuitem"
+						href={resolve('/profile')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Profile
+					</a>
+					<a
+						class="qc-menu-item"
+						role="menuitem"
 						href={resolve('/')}
 						onclick={closeAccountMenu}
 						onpointerenter={closeAppearanceFromOtherItem}
 					>
-						Learning home
+						Home
 					</a>
+					<div class="qc-menu-separator" role="separator"></div>
+					<div
+						class="qc-menu-submenu"
+						role="none"
+						onpointerenter={openAppearanceMenu}
+						onpointerleave={closeAppearanceMenu}
+					>
+						<button
+							type="button"
+							class="qc-menu-item qc-menu-submenu-trigger"
+							role="menuitem"
+							aria-haspopup="menu"
+							aria-expanded={appearanceMenuOpen}
+							onclick={toggleAppearanceMenu}
+						>
+							<span>Appearance</span>
+							<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
+						</button>
+						{#if appearanceMenuOpen}
+							<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
+								{#each themeOptions as option (option.value)}
+									<button
+										type="button"
+										class="qc-menu-item qc-appearance-item"
+										class:active={theme === option.value}
+										role="menuitemradio"
+										aria-checked={theme === option.value}
+										onclick={() => chooseTheme(option.value)}
+									>
+										<Check
+											size={15}
+											aria-hidden="true"
+											strokeWidth={2.3}
+											class={theme === option.value ? 'visible' : undefined}
+										/>
+										<span>{option.label}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+					<div class="qc-menu-separator" role="separator"></div>
 					<a
-						class="qc-menu-item"
+						class="qc-menu-item danger"
 						role="menuitem"
 						href={resolve('/auth/logout')}
 						onclick={closeAccountMenu}
@@ -275,48 +326,48 @@
 					>
 						Sign in
 					</a>
-				{/if}
-				<div class="qc-menu-separator" role="separator"></div>
-				<div
-					class="qc-menu-submenu"
-					role="none"
-					onpointerenter={openAppearanceMenu}
-					onpointerleave={closeAppearanceMenu}
-				>
-					<button
-						type="button"
-						class="qc-menu-item qc-menu-submenu-trigger"
-						role="menuitem"
-						aria-haspopup="menu"
-						aria-expanded={appearanceMenuOpen}
-						onclick={toggleAppearanceMenu}
+					<div class="qc-menu-separator" role="separator"></div>
+					<div
+						class="qc-menu-submenu"
+						role="none"
+						onpointerenter={openAppearanceMenu}
+						onpointerleave={closeAppearanceMenu}
 					>
-						<span>Appearance</span>
-						<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
-					</button>
-					{#if appearanceMenuOpen}
-						<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
-							{#each themeOptions as option (option.value)}
-								<button
-									type="button"
-									class="qc-menu-item qc-appearance-item"
-									class:active={theme === option.value}
-									role="menuitemradio"
-									aria-checked={theme === option.value}
-									onclick={() => chooseTheme(option.value)}
-								>
-									<Check
-										size={15}
-										aria-hidden="true"
-										strokeWidth={2.3}
-										class={theme === option.value ? 'visible' : undefined}
-									/>
-									<span>{option.label}</span>
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
+						<button
+							type="button"
+							class="qc-menu-item qc-menu-submenu-trigger"
+							role="menuitem"
+							aria-haspopup="menu"
+							aria-expanded={appearanceMenuOpen}
+							onclick={toggleAppearanceMenu}
+						>
+							<span>Appearance</span>
+							<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
+						</button>
+						{#if appearanceMenuOpen}
+							<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
+								{#each themeOptions as option (option.value)}
+									<button
+										type="button"
+										class="qc-menu-item qc-appearance-item"
+										class:active={theme === option.value}
+										role="menuitemradio"
+										aria-checked={theme === option.value}
+										onclick={() => chooseTheme(option.value)}
+									>
+										<Check
+											size={15}
+											aria-hidden="true"
+											strokeWidth={2.3}
+											class={theme === option.value ? 'visible' : undefined}
+										/>
+										<span>{option.label}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>

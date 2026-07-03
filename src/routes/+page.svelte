@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
@@ -13,47 +12,27 @@
 		CircleAlert,
 		ClipboardCheck,
 		GraduationCap,
-		ListChecks,
 		Network,
 		Search,
 		Sparkles,
 		Target
 	} from '@lucide/svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	type CourseUpdateStatus = 'idle' | 'updating' | 'updated' | 'error';
-	let courseUpdateStatus = $state<CourseUpdateStatus>('idle');
 
 	const chainsHref = resolve('/chains');
 	const pastPapersHref = resolve('/past-papers/gcse');
 	const englishHref = resolve('/english');
 	const blogHref = resolve('/blog');
 	const signInHref = resolve('/auth/start');
+	const profileHref = resolve('/profile');
 	const featuredChain = $derived(data.featuredChains[0] ?? null);
 	const dashboard = $derived(data.dashboard);
+	const subjectLanes = $derived(dashboard?.subjectLanes ?? []);
+	const primaryLane = $derived(subjectLanes[0] ?? null);
 	const learnerName = $derived(
 		dashboard?.profile.name?.split(/\s+/)[0] ?? dashboard?.profile.email.split('@')[0] ?? 'there'
-	);
-	const selectedCourseLabel = $derived(
-		dashboard
-			? [
-					dashboard.profile.selectedBoard,
-					dashboard.profile.selectedQualification,
-					dashboard.profile.selectedSubject,
-					dashboard.profile.selectedTier
-				].join(' ')
-			: ''
-	);
-	const courseStatusLabel = $derived(
-		courseUpdateStatus === 'updating'
-			? 'Updating course...'
-			: courseUpdateStatus === 'updated'
-				? 'Course updated'
-				: courseUpdateStatus === 'error'
-					? 'Course could not update'
-					: 'Changes apply immediately'
 	);
 	const averageMarkLabel = $derived(
 		dashboard?.stats.averageMarkPercent === null ||
@@ -127,26 +106,9 @@
 		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref: question.ref });
 	}
 
-	function recallHref(subject = dashboard?.profile.selectedSubject ?? 'Biology') {
-		const params = new URLSearchParams({ subject, start: '1' });
-		return `${resolve('/recall')}?${params.toString()}`;
+	function markLabel(value: number | null) {
+		return value === null ? 'No checks' : `${value}%`;
 	}
-
-	function handleCourseControlChange(event: Event) {
-		const form = (event.currentTarget as HTMLSelectElement).form;
-		if (!form) return;
-		courseUpdateStatus = 'updating';
-		form.requestSubmit();
-	}
-
-	const enhanceCoursePreferences: SubmitFunction = () => {
-		courseUpdateStatus = 'updating';
-		return async ({ result, update }) => {
-			await update({ reset: false });
-			courseUpdateStatus =
-				result.type === 'success' ? 'updated' : result.type === 'failure' ? 'error' : 'idle';
-		};
-	};
 </script>
 
 <svelte:head>
@@ -179,53 +141,18 @@
 		<div class="qc-dashboard-layout">
 			<section class="qc-dashboard-hero" aria-labelledby="dashboard-title">
 				<div>
-					<p class="qc-real-kicker">Signed-in question bank</p>
-					<h1 id="dashboard-title">Start with the next exam question, {learnerName}.</h1>
+					<p class="qc-real-kicker">Today</p>
+					<h1 id="dashboard-title">Choose a science subject, {learnerName}.</h1>
 					<p>
-						Use the course context to filter the question bank. Short knowledge goes to flashcards;
-						missing links in longer answers go to close-the-gap practice.
+						Each subject starts from what the app currently knows: short recall, real exam
+						questions, or the next missing answer-chain link.
 					</p>
 				</div>
-				<form
-					class="qc-dashboard-preferences"
-					method="POST"
-					action="?/updatePreferences"
-					aria-label="Course context"
-					use:enhance={enhanceCoursePreferences}
-				>
-					<input type="hidden" name="board" value={dashboard.profile.selectedBoard} />
-					<div class="qc-dashboard-preferences-head">
-						<span>Course context</span>
-						<strong>{selectedCourseLabel}</strong>
-					</div>
-					<label>
-						<span>Subject</span>
-						<select
-							name="subject"
-							value={dashboard.profile.selectedSubject}
-							onchange={handleCourseControlChange}
-						>
-							{#each dashboard.subjectOptions as subject (subject)}
-								<option value={subject}>{subject}</option>
-							{/each}
-						</select>
-					</label>
-					<label>
-						<span>Tier</span>
-						<select
-							name="tier"
-							value={dashboard.profile.selectedTier}
-							onchange={handleCourseControlChange}
-						>
-							<option value="Higher">Higher</option>
-							<option value="Foundation">Foundation</option>
-						</select>
-					</label>
-					<p class="qc-dashboard-preferences-note" data-state={courseUpdateStatus}>
-						{courseStatusLabel}
-					</p>
-					<button class="sr-only" type="submit" tabindex="-1">Apply course context</button>
-				</form>
+				<a class="qc-dashboard-profile-link" href={profileHref}>
+					<span>Profile</span>
+					<strong>{subjectLanes.length || dashboard.learnerSubjects.length} science courses</strong>
+					<ArrowRight size={16} aria-hidden="true" strokeWidth={2.2} />
+				</a>
 			</section>
 
 			<section class="qc-dashboard-stat-strip" aria-label="Learning stats">
@@ -251,51 +178,150 @@
 				</div>
 			</section>
 
+			<section class="qc-dashboard-subject-section" aria-labelledby="dashboard-subjects">
+				<div class="qc-dashboard-section-head">
+					<div>
+						<p class="qc-real-kicker">Subjects</p>
+						<h2 id="dashboard-subjects">Start from the right evidence.</h2>
+					</div>
+					<a href={profileHref}>Edit profile</a>
+				</div>
+
+				{#if subjectLanes.length > 0}
+					<div class="qc-dashboard-subjects">
+						{#each subjectLanes as lane (lane.subject)}
+							<article class="qc-subject-card" data-action={lane.primaryAction.kind}>
+								<header>
+									<div>
+										<p class="qc-real-kicker">{lane.courseLabel}</p>
+										<h3>{lane.subject}</h3>
+									</div>
+									<span class="qc-subject-confidence">{lane.confidenceLabel}</span>
+								</header>
+
+								<div class="qc-subject-meter" aria-label={`${lane.confidencePercent}% evidence`}>
+									<span style={`width: ${lane.confidencePercent}%`}></span>
+								</div>
+								<p><MathText text={lane.confidenceDetail} /></p>
+
+								<div class="qc-subject-stats" aria-label={`${lane.subject} learning evidence`}>
+									<div>
+										<strong>{lane.recallDueCount}</strong>
+										<span>recall due</span>
+									</div>
+									<div>
+										<strong>{lane.activeGapCount}</strong>
+										<span>open gaps</span>
+									</div>
+									<div>
+										<strong>{lane.attemptCount}</strong>
+										<span>answers checked</span>
+									</div>
+									<div>
+										<strong>{markLabel(lane.averageMarkPercent)}</strong>
+										<span>mark signal</span>
+									</div>
+								</div>
+
+								{#if lane.openGap}
+									<a class="qc-dashboard-question-link" href={lane.openGap.href}>
+										<strong><MathText text={lane.openGap.stepText} /></strong>
+										<span><MathText text={`${lane.openGap.chainTitle} · ${lane.openGap.topic}`} /></span>
+									</a>
+								{:else if lane.nextQuestion}
+									<a class="qc-dashboard-question-link" href={lane.nextQuestion.href}>
+										<strong><MathText text={lane.nextQuestion.title} /></strong>
+										<span><MathText text={lane.nextQuestion.meta} /></span>
+									</a>
+								{:else}
+									<p>No unused question found for the current bank.</p>
+								{/if}
+
+								<div class="qc-subject-actions">
+									<a class="qc-dashboard-action" href={lane.primaryAction.href}>
+										{lane.primaryAction.label}
+										<ArrowRight size={16} aria-hidden="true" />
+									</a>
+									<a href={lane.recallHref}>Recall</a>
+									<a href={lane.practiceHref}>Questions</a>
+								</div>
+							</article>
+						{/each}
+					</div>
+				{:else}
+					<section class="qc-dashboard-panel primary" aria-label="No selected subjects">
+						<div class="qc-dashboard-panel-head">
+							<div>
+								<p class="qc-real-kicker">Profile</p>
+								<h2>Select at least one science subject</h2>
+							</div>
+							<GraduationCap size={21} aria-hidden="true" />
+						</div>
+						<p>Choose Biology, Chemistry, Physics, or any combination in your profile.</p>
+						<a class="qc-dashboard-action" href={profileHref}>
+							Open profile
+							<ArrowRight size={16} aria-hidden="true" />
+						</a>
+					</section>
+				{/if}
+			</section>
+
 			<div class="qc-dashboard-grid">
 				<section class="qc-dashboard-panel primary" aria-labelledby="dashboard-next-question">
 					<div class="qc-dashboard-panel-head">
 						<div>
-							<p class="qc-real-kicker">Next concrete question</p>
-							<h2 id="dashboard-next-question">Continue practice</h2>
+							<p class="qc-real-kicker">Exam practice</p>
+							<h2 id="dashboard-next-question">Next concrete question</h2>
 						</div>
 						<GraduationCap size={21} aria-hidden="true" />
 					</div>
-					{#if dashboard.nextQuestion}
+					{#if primaryLane?.nextQuestion}
+						<a class="qc-dashboard-question-link" href={primaryLane.nextQuestion.href}>
+							<strong><MathText text={primaryLane.nextQuestion.title} /></strong>
+							<span><MathText text={primaryLane.nextQuestion.meta} /></span>
+							<small>Chain: <MathText text={primaryLane.nextQuestion.chainTitle} /></small>
+						</a>
+					{:else if dashboard.nextQuestion}
 						<a class="qc-dashboard-question-link" href={dashboard.nextQuestion.href}>
 							<strong><MathText text={dashboard.nextQuestion.title} /></strong>
 							<span><MathText text={dashboard.nextQuestion.meta} /></span>
 							<small>Chain: <MathText text={dashboard.nextQuestion.chainTitle} /></small>
 						</a>
 					{:else}
-						<p>
-							No unattempted {dashboard.profile.selectedSubject} question was found in the current set.
-						</p>
+						<p>No unattempted science question was found in the current set.</p>
 					{/if}
 				</section>
 
-				<section class="qc-dashboard-panel" aria-labelledby="dashboard-recall">
+				<section class="qc-dashboard-panel" aria-labelledby="dashboard-recent">
 					<div class="qc-dashboard-panel-head">
 						<div>
-							<p class="qc-real-kicker">1-2 mark knowledge</p>
-							<h2 id="dashboard-recall">Flashcard lane</h2>
+							<p class="qc-real-kicker">Recent checks</p>
+							<h2 id="dashboard-recent">Latest answers</h2>
 						</div>
-						<Brain size={21} aria-hidden="true" />
+						<ClipboardCheck size={21} aria-hidden="true" />
 					</div>
-					<p>
-						Definitions, formulae, units, tests and short required-practical facts belong here
-						before they are used in exam answers.
-					</p>
-					<a class="qc-dashboard-action" href={recallHref()}>
-						Review {dashboard.profile.selectedSubject} flashcards
-						<ArrowRight size={16} aria-hidden="true" />
-					</a>
+					{#if dashboard.recentAttempts.length > 0}
+						<div class="qc-dashboard-list">
+							{#each dashboard.recentAttempts.slice(0, 3) as attempt (attempt.id)}
+								<a href={attempt.questionHref}>
+									<strong><MathText text={attempt.questionTitle} /></strong>
+									<span>
+										{attempt.awardedMarks}/{attempt.maxMarks}
+										marks · {attempt.meta}
+									</span>
+								</a>
+							{/each}
+						</div>
+					{:else}
+						<p>Your checked answers will appear here after practice.</p>
+					{/if}
 				</section>
 
 				<section class="qc-dashboard-panel" aria-labelledby="dashboard-gaps">
 					<div class="qc-dashboard-panel-head">
 						<div>
-							<p class="qc-real-kicker">3-6 mark answers</p>
-							<h2 id="dashboard-gaps">Close the next gap</h2>
+							<p class="qc-real-kicker">Answer chains</p>
+							<h2 id="dashboard-gaps">Open gaps</h2>
 						</div>
 						<Target size={21} aria-hidden="true" />
 					</div>
@@ -311,38 +337,6 @@
 					{:else}
 						<p>Check a longer answer and missing chain links will appear here.</p>
 					{/if}
-				</section>
-
-				<section class="qc-dashboard-panel wide" aria-labelledby="dashboard-curriculum">
-					<div class="qc-dashboard-panel-head">
-						<div>
-							<p class="qc-real-kicker">
-								AQA GCSE {dashboard.curriculum.subject}
-								{dashboard.curriculum.specificationCode}
-							</p>
-							<h2 id="dashboard-curriculum">Course map</h2>
-						</div>
-						<ListChecks size={21} aria-hidden="true" />
-					</div>
-					<p class="qc-dashboard-panel-intro">
-						Topics from the selected AQA course. Question counts show what is currently in the bank;
-						spec references stay secondary.
-					</p>
-					<div class="qc-dashboard-curriculum">
-						{#each dashboard.curriculum.topics as topic (topic.id)}
-							<a href={topic.specUrl} target="_blank" rel="noreferrer">
-								<strong>{topic.title}</strong>
-								<small class="qc-dashboard-topic-meta">
-									<span>{topic.paper}</span>
-									<span>Spec ref {topic.code}</span>
-									<span>{topic.questionCount} questions</span>
-									{#if topic.activeGapCount > 0}
-										<span>{topic.activeGapCount} open gaps</span>
-									{/if}
-								</small>
-							</a>
-						{/each}
-					</div>
 				</section>
 			</div>
 		</div>
