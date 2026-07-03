@@ -488,12 +488,18 @@
 
 	:root[data-theme='dark'] .blog-article-hero h1,
 	:root[data-theme='dark'] .blog-faq h2,
+	:root[data-theme='dark'] .blog-faq summary,
 	:root[data-theme='dark'] .blog-sources h2,
 	:root[data-theme='dark'] .blog-article-cta h2,
 	:root[data-theme='dark'] .related-posts h2,
 	:root[data-theme='dark'] :global(.markdown-content.blog-article-body h2),
 	:root[data-theme='dark'] :global(.markdown-content.blog-article-body th) {
 		color: #eaf2f8;
+	}
+
+	:root[data-theme='dark'] .blog-faq summary::marker,
+	:root[data-theme='dark'] .blog-faq summary::-webkit-details-marker {
+		color: #8de0b4;
 	}
 
 	:root[data-theme='dark'] .blog-article-hero p,
