@@ -7,8 +7,8 @@
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import PracticeAnswerEditor from '$lib/components/PracticeAnswerEditor.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
 	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -158,6 +158,10 @@
 		answerText = value;
 	}
 
+	function setRewriteText(value: string) {
+		rewriteText = value;
+	}
+
 	async function checkAnswer() {
 		if (!canCheck) return;
 
@@ -224,8 +228,8 @@
 
 	function statusLabelForPhase(phase: GradePhase) {
 		if (phase === 'connecting') return 'Starting check';
-		if (phase === 'calling') return 'Checking answer';
-		if (phase === 'thinking') return 'Checking answer';
+		if (phase === 'calling') return 'Finding links';
+		if (phase === 'thinking') return isEnglish ? 'Comparing mark path' : 'Comparing chain';
 		if (phase === 'grading') return 'Preparing feedback';
 		if (phase === 'done') return 'Checked';
 		if (phase === 'error') return 'Could not check';
@@ -275,6 +279,7 @@
 
 		if (message.event === 'done') {
 			gradeResult = JSON.parse(message.data) as GradeResult;
+			rewriteText = answerText;
 			gradePhase = 'done';
 			checked = true;
 			return;
@@ -393,28 +398,17 @@
 					<ExamQuestionCard question={data.question} showTitle={false} />
 
 					<section class="qc-practice-answer-card">
-						{#if structuredResponse}
-							<p class="qc-practice-answer-label">Your answer</p>
-							<div class="qc-practice-response">
-								<ResponseRenderer
-									response={structuredResponse}
-									assets={responseAssets}
-									answer={answerText}
-									onAnswerChange={setAnswerText}
-								/>
-							</div>
-						{:else}
-							<label for="answer">Your answer</label>
-							<textarea
-								id="answer"
-								class="qc-lined-answer"
-								class:extended={data.question.meta.marks >= 20}
-								bind:value={answerText}
-								rows={answerRows}
-								placeholder="Write your answer..."
-								spellcheck="true"
-							></textarea>
-						{/if}
+						<PracticeAnswerEditor
+							id="answer"
+							label="Your answer"
+							response={structuredResponse}
+							assets={responseAssets}
+							value={answerText}
+							rows={answerRows}
+							extended={data.question.meta.marks >= 20}
+							placeholder="Write your answer..."
+							onValueChange={setAnswerText}
+						/>
 						<div class="qc-practice-actions" aria-label="Answer actions">
 							<button
 								class="qc-action-button primary"
@@ -424,7 +418,7 @@
 							>
 								{#if isChecking}
 									<span class="loading-spinner button-spinner" aria-hidden="true"></span>
-									{statusText}
+									Checking...
 								{:else}
 									<CheckCircle2 size={18} aria-hidden="true" />
 									Check answer
@@ -559,20 +553,20 @@
 					</section>
 
 					<section class="qc-practice-answer-card">
-						<label for="rewrite">
-							{hasMissingLinks ? 'Rewrite with the missing links' : 'Your checked answer'}
-						</label>
 						{#if hasMissingLinks}
-							<textarea
+							<PracticeAnswerEditor
 								id="rewrite"
-								class="qc-lined-answer"
-								class:extended={data.question.meta.marks >= 20}
-								bind:value={rewriteText}
+								label="Rewrite with the missing links"
+								response={structuredResponse}
+								assets={responseAssets}
+								value={rewriteText}
 								rows={answerRows}
+								extended={data.question.meta.marks >= 20}
 								placeholder="Rewrite your answer..."
-								spellcheck="true"
-							></textarea>
+								onValueChange={setRewriteText}
+							/>
 						{:else}
+							<p class="qc-practice-answer-label">Your checked answer</p>
 							<p class="qc-checked-answer">{answerText}</p>
 						{/if}
 						<div class="qc-practice-actions" aria-label="Next actions">

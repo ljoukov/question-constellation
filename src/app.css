@@ -6924,6 +6924,17 @@ textarea::placeholder {
 	font-family: Arial, Helvetica, sans-serif;
 }
 
+.qc-practice-response {
+	--qc-response-ink: #102033;
+	--qc-response-line: rgba(16, 32, 51, 0.72);
+	--qc-response-input-bg: transparent;
+	--qc-response-textarea-bg: transparent;
+	--qc-response-control-bg: transparent;
+	--qc-response-selected-bg: transparent;
+	--qc-response-muted: #526778;
+	color: var(--qc-response-ink);
+}
+
 .qc-exam-assets figure {
 	border-color: #102033;
 	border-radius: 0;
@@ -7223,7 +7234,9 @@ textarea::placeholder {
 }
 
 .qc-feedback-markdown {
+	--markdown-text: #283f53;
 	--markdown-strong: #102033;
+	--markdown-link: #0d5a3f;
 }
 
 .qc-repair-chain {
@@ -8019,28 +8032,33 @@ html[data-theme='dark'] .app-shell {
 }
 
 :root[data-theme='dark'] .qc-real-main .lined-textarea {
-	color: #f8f8f2;
-	background-color: #050505;
+	color: var(--qc-response-ink, #f8f8f2);
+	background-color: var(--qc-response-textarea-bg, #050505);
 	background-image: repeating-linear-gradient(
 		to bottom,
 		transparent 0,
 		transparent calc(var(--answer-line-height) - 1px),
-		rgba(248, 248, 242, 0.72) calc(var(--answer-line-height) - 1px),
-		rgba(248, 248, 242, 0.72) var(--answer-line-height)
+		var(--qc-response-line, rgba(248, 248, 242, 0.72)) calc(var(--answer-line-height) - 1px),
+		var(--qc-response-line, rgba(248, 248, 242, 0.72)) var(--answer-line-height)
 	);
 }
 
 :root[data-theme='dark'] .qc-real-main .line-input,
+:root[data-theme='dark'] .qc-real-main .equation-blank-input {
+	border-color: var(--qc-response-line, #f8f8f2);
+	background: var(--qc-response-input-bg, #050505);
+	color: var(--qc-response-ink, #f8f8f2);
+}
+
 :root[data-theme='dark'] .qc-real-main .choice-row,
 :root[data-theme='dark'] .qc-real-main .choice-grid-cell,
 :root[data-theme='dark'] .qc-real-main .table-tick-button,
 :root[data-theme='dark'] .qc-real-main .match-option,
-:root[data-theme='dark'] .qc-real-main .equation-blank-input,
 :root[data-theme='dark'] .qc-real-main .graphic-label-chip,
 :root[data-theme='dark'] .qc-real-main .drawing-box canvas {
-	border-color: #f8f8f2;
-	background: #050505;
-	color: #f8f8f2;
+	border-color: var(--qc-response-line, #f8f8f2);
+	background: var(--qc-response-control-bg, #050505);
+	color: var(--qc-response-ink, #f8f8f2);
 }
 
 :root[data-theme='dark'] .qc-real-main .choice-row.selected,
@@ -8050,8 +8068,8 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-real-main .match-option.connected,
 :root[data-theme='dark'] .qc-real-main .graphic-label-chip.active,
 :root[data-theme='dark'] .qc-real-main .graphic-label-chip.used {
-	background: #111827;
-	color: #f8f8f2;
+	background: var(--qc-response-selected-bg, #111827);
+	color: var(--qc-response-ink, #f8f8f2);
 }
 
 :root[data-theme='dark'] .qc-real-main .drawing-box.has-grid canvas,
@@ -8097,15 +8115,15 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-real-main .choice-row .tick-cell,
 :root[data-theme='dark'] .qc-real-main .table-tick-button {
-	border-color: #f8f8f2;
-	background: #050505;
-	color: #f8f8f2;
+	border-color: var(--qc-response-line, #f8f8f2);
+	background: var(--qc-response-control-bg, #050505);
+	color: var(--qc-response-ink, #f8f8f2);
 }
 
 :root[data-theme='dark'] .qc-real-main .choice-row.selected .tick-cell,
 :root[data-theme='dark'] .qc-real-main .table-tick-button.selected {
-	background: #111827;
-	color: #f8f8f2;
+	background: var(--qc-response-selected-bg, #111827);
+	color: var(--qc-response-ink, #f8f8f2);
 }
 
 :root[data-theme='dark'] .qc-real-next {
@@ -8139,6 +8157,16 @@ html[data-theme='dark'] .app-shell {
 	border-color: rgba(226, 232, 240, 0.72);
 	background: rgba(7, 20, 31, 0.68);
 	color: #eaf4ff;
+}
+
+:root[data-theme='dark'] .qc-practice-response {
+	--qc-response-ink: #eff6ff;
+	--qc-response-line: rgba(226, 232, 240, 0.76);
+	--qc-response-input-bg: transparent;
+	--qc-response-textarea-bg: transparent;
+	--qc-response-control-bg: transparent;
+	--qc-response-selected-bg: transparent;
+	--qc-response-muted: #a9bbcc;
 }
 
 :root[data-theme='dark'] .qc-question-meta-stack span,
@@ -8247,6 +8275,12 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-result-summary {
 	border-color: rgba(86, 216, 148, 0.7);
 	background: rgba(14, 83, 63, 0.42);
+}
+
+:root[data-theme='dark'] .qc-feedback-markdown {
+	--markdown-text: #dbeafe;
+	--markdown-strong: #eff6ff;
+	--markdown-link: #98f0c5;
 }
 
 :root[data-theme='dark'] .qc-practice-progress-track {
@@ -8467,28 +8501,33 @@ html[data-theme='dark'] .app-shell {
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .lined-textarea {
-		color: #f8f8f2;
-		background-color: #050505;
+		color: var(--qc-response-ink, #f8f8f2);
+		background-color: var(--qc-response-textarea-bg, #050505);
 		background-image: repeating-linear-gradient(
 			to bottom,
 			transparent 0,
 			transparent calc(var(--answer-line-height) - 1px),
-			rgba(248, 248, 242, 0.72) calc(var(--answer-line-height) - 1px),
-			rgba(248, 248, 242, 0.72) var(--answer-line-height)
+			var(--qc-response-line, rgba(248, 248, 242, 0.72)) calc(var(--answer-line-height) - 1px),
+			var(--qc-response-line, rgba(248, 248, 242, 0.72)) var(--answer-line-height)
 		);
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .line-input,
+	:root:not([data-theme='light']) .qc-real-main .equation-blank-input {
+		border-color: var(--qc-response-line, #f8f8f2);
+		background: var(--qc-response-input-bg, #050505);
+		color: var(--qc-response-ink, #f8f8f2);
+	}
+
 	:root:not([data-theme='light']) .qc-real-main .choice-row,
 	:root:not([data-theme='light']) .qc-real-main .choice-grid-cell,
 	:root:not([data-theme='light']) .qc-real-main .table-tick-button,
 	:root:not([data-theme='light']) .qc-real-main .match-option,
-	:root:not([data-theme='light']) .qc-real-main .equation-blank-input,
 	:root:not([data-theme='light']) .qc-real-main .graphic-label-chip,
 	:root:not([data-theme='light']) .qc-real-main .drawing-box canvas {
-		border-color: #f8f8f2;
-		background: #050505;
-		color: #f8f8f2;
+		border-color: var(--qc-response-line, #f8f8f2);
+		background: var(--qc-response-control-bg, #050505);
+		color: var(--qc-response-ink, #f8f8f2);
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .choice-row.selected,
@@ -8498,8 +8537,8 @@ html[data-theme='dark'] .app-shell {
 	:root:not([data-theme='light']) .qc-real-main .match-option.connected,
 	:root:not([data-theme='light']) .qc-real-main .graphic-label-chip.active,
 	:root:not([data-theme='light']) .qc-real-main .graphic-label-chip.used {
-		background: #111827;
-		color: #f8f8f2;
+		background: var(--qc-response-selected-bg, #111827);
+		color: var(--qc-response-ink, #f8f8f2);
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .submit-grade-button:disabled {
@@ -8537,15 +8576,15 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-real-main .choice-row .tick-cell,
 	:root:not([data-theme='light']) .qc-real-main .table-tick-button {
-		border-color: #f8f8f2;
-		background: #050505;
-		color: #f8f8f2;
+		border-color: var(--qc-response-line, #f8f8f2);
+		background: var(--qc-response-control-bg, #050505);
+		color: var(--qc-response-ink, #f8f8f2);
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .choice-row.selected .tick-cell,
 	:root:not([data-theme='light']) .qc-real-main .table-tick-button.selected {
-		background: #111827;
-		color: #f8f8f2;
+		background: var(--qc-response-selected-bg, #111827);
+		color: var(--qc-response-ink, #f8f8f2);
 	}
 
 	:root:not([data-theme='light']) .qc-rail-summary,
@@ -8566,6 +8605,16 @@ html[data-theme='dark'] .app-shell {
 		border-color: rgba(226, 232, 240, 0.72);
 		background: rgba(7, 20, 31, 0.68);
 		color: #eaf4ff;
+	}
+
+	:root:not([data-theme='light']) .qc-practice-response {
+		--qc-response-ink: #eff6ff;
+		--qc-response-line: rgba(226, 232, 240, 0.76);
+		--qc-response-input-bg: transparent;
+		--qc-response-textarea-bg: transparent;
+		--qc-response-control-bg: transparent;
+		--qc-response-selected-bg: transparent;
+		--qc-response-muted: #a9bbcc;
 	}
 
 	:root:not([data-theme='light']) .qc-question-meta-stack span,
@@ -8674,6 +8723,12 @@ html[data-theme='dark'] .app-shell {
 	:root:not([data-theme='light']) .qc-result-summary {
 		border-color: rgba(86, 216, 148, 0.7);
 		background: rgba(14, 83, 63, 0.42);
+	}
+
+	:root:not([data-theme='light']) .qc-feedback-markdown {
+		--markdown-text: #dbeafe;
+		--markdown-strong: #eff6ff;
+		--markdown-link: #98f0c5;
 	}
 
 	:root:not([data-theme='light']) .qc-practice-progress-track {
