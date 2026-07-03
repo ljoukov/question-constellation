@@ -28,6 +28,7 @@
 	type KindFilter = RecallCardKind | 'all';
 	type CardMotion =
 		| 'idle'
+		| 'entering'
 		| 'dragging'
 		| 'returning'
 		| 'flipping'
@@ -158,18 +159,8 @@
 	const sessionProgress = $derived(
 		totalCards === 0 ? '0%' : `${Math.min(100, (answeredInSession / totalCards) * 100)}%`
 	);
-	const dragRotation = $derived(dragX / 32);
-	const dragCue = $derived(
-		Math.abs(dragX) < 64
-			? ''
-			: dragX > 0
-				? revealed
-					? 'Good'
-					: 'Reveal'
-				: revealed
-					? 'Again'
-					: 'Skip'
-	);
+	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
+	const dragCue = $derived(!revealed || Math.abs(dragX) < 64 ? '' : dragX > 0 ? 'Good' : 'Again');
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 
 	$effect(() => {
@@ -262,7 +253,7 @@
 		resetCardState();
 	}
 
-	function resetCardState() {
+	function resetCardState(options?: { entering?: boolean }) {
 		clearMotionTimer();
 		revealed = false;
 		selectedChoice = null;
@@ -270,7 +261,12 @@
 		dragY = 0;
 		dragging = false;
 		activePointerId = null;
-		cardMotion = 'idle';
+		cardMotion = options?.entering ? 'entering' : 'idle';
+		if (options?.entering) {
+			afterMotion(360, () => {
+				cardMotion = 'idle';
+			});
+		}
 	}
 
 	function saveProgress(nextProgress: Record<string, RecallProgress>) {
@@ -345,7 +341,7 @@
 		dragY = 0;
 		cardMotion = 'flipping';
 		revealed = true;
-		afterMotion(420, () => {
+		afterMotion(560, () => {
 			cardMotion = 'idle';
 		});
 	}
@@ -356,7 +352,7 @@
 		dragX = 0;
 		dragY = 0;
 		cardMotion = 'returning';
-		afterMotion(220, () => {
+		afterMotion(260, () => {
 			cardMotion = 'idle';
 			afterReturn?.();
 		});
@@ -370,7 +366,7 @@
 		dragX = direction === 'right' ? width * 1.18 : -width * 1.18;
 		dragY = Math.max(-86, Math.min(86, dragY));
 		cardMotion = direction === 'right' ? 'exiting-right' : 'exiting-left';
-		afterMotion(280, afterExit);
+		afterMotion(360, afterExit);
 	}
 
 	function skipCard() {
@@ -391,26 +387,11 @@
 			return;
 		}
 		cardIndex += 1;
-		resetCardState();
-	}
-
-	function revealOrSkip(direction: 'left' | 'right', wasRevealed = revealed) {
-		if (!currentCard) return;
-		if (!wasRevealed && mode !== 'recognise') {
-			if (direction === 'right') {
-				returnCard(revealCard);
-			} else {
-				skipCard();
-			}
-			return;
-		}
-		if (wasRevealed) {
-			gradeCurrentCard(direction === 'right' ? 'good' : 'again');
-		}
+		resetCardState({ entering: true });
 	}
 
 	function handlePointerDown(event: PointerEvent) {
-		if (!currentCard || sessionComplete || mode === 'recognise' || cardBusy) return;
+		if (!currentCard || sessionComplete || mode === 'recognise' || cardBusy || !revealed) return;
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
 		clearMotionTimer();
 		activePointerId = event.pointerId;
@@ -439,11 +420,10 @@
 		}
 		const direction = dragX > 0 ? 'right' : 'left';
 		const shouldAct = Math.abs(dragX) > 92 && Math.abs(dragX) > Math.abs(dragY);
-		const wasRevealed = revealed;
 		dragging = false;
 		activePointerId = null;
 		if (shouldAct) {
-			revealOrSkip(direction, wasRevealed);
+			gradeCurrentCard(direction === 'right' ? 'good' : 'again');
 		} else {
 			returnCard();
 		}
@@ -534,87 +514,98 @@
 			<section class="card-stage" aria-live="polite">
 				<div class="stack-card ghost two"></div>
 				<div class="stack-card ghost one"></div>
-				<article
-					class="stack-card active"
-					class:dragging={cardMotion === 'dragging'}
-					class:returning={cardMotion === 'returning'}
-					class:flipping={cardMotion === 'flipping'}
-					class:revealed
-					class:exiting-left={cardMotion === 'exiting-left'}
-					class:exiting-right={cardMotion === 'exiting-right'}
-					style={`--drag-x: ${dragX}px; --drag-y: ${dragY}px; --drag-rotate: ${dragRotation}deg;`}
-					onpointerdown={handlePointerDown}
-					onpointermove={handlePointerMove}
-					onpointerup={handlePointerUp}
-					onpointercancel={handlePointerCancel}
-				>
-					{#if dragCue}
-						<div class:positive={dragX > 0} class:negative={dragX < 0} class="drag-cue">
-							{dragCue}
+				{#key currentCard.id}
+					<article
+						class="stack-card active"
+						class:entering={cardMotion === 'entering'}
+						class:dragging={cardMotion === 'dragging'}
+						class:returning={cardMotion === 'returning'}
+						class:flipping={cardMotion === 'flipping'}
+						class:revealed
+						class:exiting-left={cardMotion === 'exiting-left'}
+						class:exiting-right={cardMotion === 'exiting-right'}
+						style={`--drag-x: ${dragX}px; --drag-y: ${dragY}px; --drag-rotate: ${dragRotation}deg;`}
+						onpointerdown={handlePointerDown}
+						onpointermove={handlePointerMove}
+						onpointerup={handlePointerUp}
+						onpointercancel={handlePointerCancel}
+					>
+						{#if dragCue}
+							<div class:positive={dragX > 0} class:negative={dragX < 0} class="drag-cue">
+								{dragCue}
+							</div>
+						{/if}
+
+						<div class="card-flipper">
+							<div class="card-face front">
+								<header class="card-meta">
+									<span>{currentCard.subject}</span>
+									<span>{data.kindLabels[currentCard.kind]}</span>
+									<span>{currentCard.specRef}</span>
+								</header>
+
+								<section class="card-prompt">
+									<p>{currentTopic?.title ?? 'AQA Science'}</p>
+									<h1>
+										<MathText
+											text={mode === 'reverse'
+												? (currentCard.reverseFront ?? currentCard.back)
+												: currentCard.front}
+										/>
+									</h1>
+								</section>
+
+								{#if mode === 'recognise'}
+									<div class="choice-grid" aria-label="Answer choices">
+										{#each currentChoices as choice (choice)}
+											<button
+												type="button"
+												class:correct={selectedChoice !== null && choice === currentCard.back}
+												class:incorrect={selectedChoice === choice && choice !== currentCard.back}
+												onclick={() => chooseAnswer(currentCard, choice)}
+											>
+												<MathText text={choice} />
+											</button>
+										{/each}
+									</div>
+								{:else}
+									<p class="card-gesture-hint">Tap the card to flip and reveal.</p>
+									<button
+										type="button"
+										class="card-reveal-hitbox"
+										tabindex="-1"
+										aria-label="Reveal answer"
+										disabled={revealed || cardBusy}
+										onclick={revealCard}
+									></button>
+								{/if}
+							</div>
+
+							<div class="card-face back" aria-hidden={!revealed}>
+								<header class="card-meta">
+									<span>{currentCard.subject}</span>
+									<span>{data.kindLabels[currentCard.kind]}</span>
+									<span>{currentCard.specRef}</span>
+								</header>
+
+								<section class="card-answer">
+									<p>Expected recall</p>
+									<div>
+										<MathText
+											text={mode === 'reverse'
+												? (currentCard.reverseBack ?? currentCard.front)
+												: currentCard.back}
+										/>
+									</div>
+								</section>
+
+								<p class="card-gesture-hint">
+									Swipe right if you had it. Swipe left to review again.
+								</p>
+							</div>
 						</div>
-					{/if}
-
-					<div class="card-flipper">
-						<div class="card-face front">
-							<header class="card-meta">
-								<span>{currentCard.subject}</span>
-								<span>{data.kindLabels[currentCard.kind]}</span>
-								<span>{currentCard.specRef}</span>
-							</header>
-
-							<section class="card-prompt">
-								<p>{currentTopic?.title ?? 'AQA Science'}</p>
-								<h1>
-									<MathText
-										text={mode === 'reverse'
-											? (currentCard.reverseFront ?? currentCard.back)
-											: currentCard.front}
-									/>
-								</h1>
-							</section>
-
-							{#if mode === 'recognise'}
-								<div class="choice-grid" aria-label="Answer choices">
-									{#each currentChoices as choice (choice)}
-										<button
-											type="button"
-											class:correct={selectedChoice !== null && choice === currentCard.back}
-											class:incorrect={selectedChoice === choice && choice !== currentCard.back}
-											onclick={() => chooseAnswer(currentCard, choice)}
-										>
-											<MathText text={choice} />
-										</button>
-									{/each}
-								</div>
-							{:else}
-								<p class="card-gesture-hint">Swipe right to reveal. Swipe left to skip.</p>
-							{/if}
-						</div>
-
-						<div class="card-face back" aria-hidden={!revealed}>
-							<header class="card-meta">
-								<span>{currentCard.subject}</span>
-								<span>{data.kindLabels[currentCard.kind]}</span>
-								<span>{currentCard.specRef}</span>
-							</header>
-
-							<section class="card-answer">
-								<p>Expected recall</p>
-								<div>
-									<MathText
-										text={mode === 'reverse'
-											? (currentCard.reverseBack ?? currentCard.front)
-											: currentCard.back}
-									/>
-								</div>
-							</section>
-
-							<p class="card-gesture-hint">
-								Swipe right if you had it. Swipe left to review again.
-							</p>
-						</div>
-					</div>
-				</article>
+					</article>
+				{/key}
 			</section>
 
 			<footer class="session-actions">
@@ -1084,21 +1075,24 @@
 		height: min(68vh, 36rem);
 		border: 1px solid #0b1020;
 		background: #ffffff;
-		box-shadow: 10px 10px 0 #0b1020;
+		box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
 	}
 
 	.stack-card.ghost {
 		pointer-events: none;
+		border-color: rgba(11, 16, 32, 0.18);
+		box-shadow: none;
+		opacity: 0.82;
 	}
 
 	.stack-card.ghost.one {
 		transform: translate(0.65rem, 0.65rem);
-		background: #e9f5eb;
+		background: rgba(8, 96, 44, 0.09);
 	}
 
 	.stack-card.ghost.two {
 		transform: translate(1.3rem, 1.3rem);
-		background: #dce7f8;
+		background: rgba(37, 99, 235, 0.08);
 	}
 
 	.stack-card.active {
@@ -1115,6 +1109,10 @@
 		-webkit-tap-highlight-color: transparent;
 	}
 
+	.stack-card.active.entering {
+		animation: promote-card 360ms cubic-bezier(0.2, 0.76, 0.18, 1) both;
+	}
+
 	.stack-card.active.dragging {
 		cursor: grabbing;
 		transition: none;
@@ -1124,8 +1122,20 @@
 	.stack-card.active.exiting-right {
 		opacity: 0;
 		transition:
-			transform 280ms cubic-bezier(0.22, 0.75, 0.25, 1),
-			opacity 220ms ease;
+			transform 360ms cubic-bezier(0.22, 0.75, 0.25, 1),
+			opacity 280ms ease;
+	}
+
+	@keyframes promote-card {
+		from {
+			opacity: 0.92;
+			transform: translate(0.65rem, 0.65rem) rotate(0deg) scale(0.985);
+		}
+
+		to {
+			opacity: 1;
+			transform: translate(0, 0) rotate(0deg) scale(1);
+		}
 	}
 
 	.card-flipper {
@@ -1133,7 +1143,7 @@
 		width: 100%;
 		height: 100%;
 		transform-style: preserve-3d;
-		transition: transform 420ms cubic-bezier(0.2, 0.72, 0.18, 1);
+		transition: transform 560ms cubic-bezier(0.2, 0.72, 0.18, 1);
 		will-change: transform;
 	}
 
@@ -1157,6 +1167,21 @@
 
 	.card-face.back {
 		transform: rotateY(180deg);
+	}
+
+	.card-reveal-hitbox {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		cursor: pointer;
+	}
+
+	.stack-card.active.revealed .card-reveal-hitbox,
+	.card-reveal-hitbox:disabled {
+		pointer-events: none;
 	}
 
 	.card-meta {
@@ -1370,16 +1395,24 @@
 	}
 
 	:global(:root[data-theme='dark']) .stack-card {
-		border-color: #e5e7eb;
-		box-shadow: 10px 10px 0 #e5e7eb;
+		border-color: rgba(148, 163, 184, 0.42);
+		box-shadow:
+			0 1.35rem 3rem rgba(0, 0, 0, 0.42),
+			0 0 0 1px rgba(226, 232, 240, 0.08);
+	}
+
+	:global(:root[data-theme='dark']) .stack-card.ghost {
+		border-color: rgba(148, 163, 184, 0.18);
+		box-shadow: none;
+		opacity: 0.68;
 	}
 
 	:global(:root[data-theme='dark']) .stack-card.ghost.one {
-		background: #10251b;
+		background: rgba(34, 197, 94, 0.12);
 	}
 
 	:global(:root[data-theme='dark']) .stack-card.ghost.two {
-		background: #172554;
+		background: rgba(59, 130, 246, 0.11);
 	}
 
 	:global(:root[data-theme='dark']) .setup-segment button.active,
@@ -1432,7 +1465,7 @@
 		.stack-card {
 			width: min(calc(100vw - 2rem), 42rem);
 			height: min(64vh, 34rem);
-			box-shadow: 6px 6px 0 #0b1020;
+			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
 		}
 
 		.stack-card.ghost.one {
@@ -1464,5 +1497,15 @@
 			min-width: 0;
 			width: 100%;
 		}
+	}
+
+	:global(:root[data-theme='dark']) .stack-card {
+		box-shadow:
+			0 1.35rem 3rem rgba(0, 0, 0, 0.42),
+			0 0 0 1px rgba(226, 232, 240, 0.08);
+	}
+
+	:global(:root[data-theme='dark']) .stack-card.ghost {
+		box-shadow: none;
 	}
 </style>
