@@ -236,7 +236,6 @@
 			{#if firstChain}
 				<a class="qc-browse-start" href={chainHref(firstChain)}>Start with a chain</a>
 			{/if}
-			<a class="qc-browse-start" href={resolve('/past-papers/gcse')}>Download past papers</a>
 		</aside>
 
 		<section class="qc-browse-feed" aria-label="Question chains">

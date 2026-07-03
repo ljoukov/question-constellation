@@ -141,33 +141,65 @@
 			/>
 		</div>
 		<div class="qc-home-hero-content">
-			<p class="qc-home-eyebrow">Public GCSE question bank</p>
-			<h1 id="home-title">Question Constellation</h1>
-			<p class="qc-home-hero-copy">
-				Find real exam questions, reveal the answer chain behind the marks, then practise nearby and
-				harder questions that use the same hidden logic.
-			</p>
-			<div class="qc-home-actions" aria-label="Homepage actions">
-				<a class="qc-home-button primary" href={startQuestionHref}>
-					Start with a question
-					<ArrowRight size={18} aria-hidden="true" />
-				</a>
-				<a class="qc-home-button secondary" href={chainsHref}>Browse all chains</a>
+			<div class="qc-home-hero-copy-block">
+				<p class="qc-home-eyebrow">Public GCSE question bank</p>
+				<h1 id="home-title">Question Constellation</h1>
+				<p class="qc-home-hero-copy">
+					Find real exam questions, reveal the answer chain behind the marks, then practise nearby
+					and harder questions that use the same hidden logic.
+				</p>
+				<div class="qc-home-actions" aria-label="Homepage actions">
+					<a class="qc-home-button primary" href={startQuestionHref}>
+						Start with a question
+						<ArrowRight size={18} aria-hidden="true" />
+					</a>
+					<a class="qc-home-button secondary" href={chainsHref}>Browse all chains</a>
+				</div>
+				<dl class="qc-home-stats" aria-label="Question bank size">
+					<div>
+						<dt>{questionCountLabel}</dt>
+						<dd>public questions</dd>
+					</div>
+					<div>
+						<dt>{chainCountLabel}</dt>
+						<dd>answer chains</dd>
+					</div>
+					<div>
+						<dt>{subjectCountLabel}</dt>
+						<dd>subject areas</dd>
+					</div>
+				</dl>
 			</div>
-			<dl class="qc-home-stats" aria-label="Question bank size">
-				<div>
-					<dt>{questionCountLabel}</dt>
-					<dd>public questions</dd>
-				</div>
-				<div>
-					<dt>{chainCountLabel}</dt>
-					<dd>answer chains</dd>
-				</div>
-				<div>
-					<dt>{subjectCountLabel}</dt>
-					<dd>subject areas</dd>
-				</div>
-			</dl>
+
+			{#if featuredChain && featuredQuestion}
+				<aside class="qc-home-hero-preview" aria-label="Example question and answer chain">
+					<div class="qc-home-preview-question">
+						<span>
+							<MathText
+								text={`${featuredQuestion.label} · ${featuredQuestion.marks ?? '?'} marks`}
+							/>
+						</span>
+						<strong><MathText text={featuredQuestion.title} /></strong>
+					</div>
+
+					<div class="qc-home-preview-chain">
+						<p class="qc-home-mini-label">Answer chain</p>
+						<ol aria-label={`${featuredChain.title} answer chain`}>
+							{#each featuredChain.steps.slice(0, 4) as step, index (`hero-${featuredChain.id}-${index}`)}
+								<li><MathText text={step} /></li>
+							{/each}
+						</ol>
+					</div>
+
+					<div class="qc-home-preview-links">
+						<a href={featuredChainHref}>
+							Reveal this chain
+							<ArrowRight size={16} aria-hidden="true" />
+						</a>
+						<a href={featuredConstellationHref}>Open constellation</a>
+					</div>
+				</aside>
+			{/if}
 		</div>
 	</section>
 
