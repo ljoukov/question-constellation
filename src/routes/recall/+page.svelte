@@ -26,6 +26,13 @@
 	type Grade = 'again' | 'hard' | 'good' | 'easy';
 	type SubjectFilter = RecallSubject | 'All subjects';
 	type KindFilter = RecallCardKind | 'all';
+	type CardMotion =
+		| 'idle'
+		| 'dragging'
+		| 'returning'
+		| 'flipping'
+		| 'exiting-left'
+		| 'exiting-right';
 
 	type RecallProgress = {
 		seen: number;
@@ -96,6 +103,8 @@
 	let dragStartY = $state(0);
 	let dragging = $state(false);
 	let activePointerId = $state<number | null>(null);
+	let cardMotion = $state<CardMotion>('idle');
+	let motionTimer: ReturnType<typeof setTimeout> | null = null;
 
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
 	const availableTopics = $derived(
@@ -161,6 +170,7 @@
 					? 'Again'
 					: 'Skip'
 	);
+	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 
 	$effect(() => {
 		if (selectedTopic === 'all') return;
@@ -184,7 +194,24 @@
 		} catch {
 			progressById = {};
 		}
+		return () => {
+			clearMotionTimer();
+		};
 	});
+
+	function clearMotionTimer() {
+		if (!motionTimer) return;
+		clearTimeout(motionTimer);
+		motionTimer = null;
+	}
+
+	function afterMotion(delayMs: number, callback: () => void) {
+		clearMotionTimer();
+		motionTimer = setTimeout(() => {
+			motionTimer = null;
+			callback();
+		}, delayMs);
+	}
 
 	function topicFor(card: RecallCard) {
 		return topicById.get(card.topicId);
@@ -236,12 +263,14 @@
 	}
 
 	function resetCardState() {
+		clearMotionTimer();
 		revealed = false;
 		selectedChoice = null;
 		dragX = 0;
 		dragY = 0;
 		dragging = false;
 		activePointerId = null;
+		cardMotion = 'idle';
 	}
 
 	function saveProgress(nextProgress: Record<string, RecallProgress>) {
@@ -308,6 +337,52 @@
 		gradeCard(card, isCorrect ? 'good' : 'again', isCorrect ? undefined : choice);
 	}
 
+	function revealCard() {
+		if (!currentCard || revealed || mode === 'recognise' || cardBusy) return;
+		dragging = false;
+		activePointerId = null;
+		dragX = 0;
+		dragY = 0;
+		cardMotion = 'flipping';
+		revealed = true;
+		afterMotion(420, () => {
+			cardMotion = 'idle';
+		});
+	}
+
+	function returnCard(afterReturn?: () => void) {
+		dragging = false;
+		activePointerId = null;
+		dragX = 0;
+		dragY = 0;
+		cardMotion = 'returning';
+		afterMotion(220, () => {
+			cardMotion = 'idle';
+			afterReturn?.();
+		});
+	}
+
+	function exitCard(direction: 'left' | 'right', afterExit: () => void) {
+		if (!currentCard || cardMotion === 'exiting-left' || cardMotion === 'exiting-right') return;
+		const width = browser ? window.innerWidth : 420;
+		dragging = false;
+		activePointerId = null;
+		dragX = direction === 'right' ? width * 1.18 : -width * 1.18;
+		dragY = Math.max(-86, Math.min(86, dragY));
+		cardMotion = direction === 'right' ? 'exiting-right' : 'exiting-left';
+		afterMotion(280, afterExit);
+	}
+
+	function skipCard() {
+		exitCard('left', () => advanceCard(false));
+	}
+
+	function gradeCurrentCard(grade: Grade) {
+		if (!currentCard) return;
+		const card = currentCard;
+		exitCard(grade === 'again' ? 'left' : 'right', () => gradeCard(card, grade));
+	}
+
 	function advanceCard(countAsAnswered = false) {
 		if (countAsAnswered) answeredInSession += 1;
 		if (cardIndex + 1 >= filteredCards.length) {
@@ -323,21 +398,24 @@
 		if (!currentCard) return;
 		if (!wasRevealed && mode !== 'recognise') {
 			if (direction === 'right') {
-				revealed = true;
+				returnCard(revealCard);
 			} else {
-				advanceCard(false);
+				skipCard();
 			}
 			return;
 		}
 		if (wasRevealed) {
-			gradeCard(currentCard, direction === 'right' ? 'good' : 'again');
+			gradeCurrentCard(direction === 'right' ? 'good' : 'again');
 		}
 	}
 
 	function handlePointerDown(event: PointerEvent) {
-		if (!currentCard || sessionComplete) return;
+		if (!currentCard || sessionComplete || mode === 'recognise' || cardBusy) return;
+		if (event.pointerType === 'mouse' && event.button !== 0) return;
+		clearMotionTimer();
 		activePointerId = event.pointerId;
 		dragging = true;
+		cardMotion = 'dragging';
 		dragStartX = event.clientX;
 		dragStartY = event.clientY;
 		dragX = 0;
@@ -347,17 +425,38 @@
 
 	function handlePointerMove(event: PointerEvent) {
 		if (!dragging || activePointerId !== event.pointerId) return;
+		event.preventDefault();
 		dragX = event.clientX - dragStartX;
 		dragY = event.clientY - dragStartY;
 	}
 
 	function handlePointerUp(event: PointerEvent) {
 		if (!dragging || activePointerId !== event.pointerId) return;
+		try {
+			(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+		} catch {
+			// Pointer capture may already be released by the browser.
+		}
 		const direction = dragX > 0 ? 'right' : 'left';
 		const shouldAct = Math.abs(dragX) > 92 && Math.abs(dragX) > Math.abs(dragY);
 		const wasRevealed = revealed;
-		resetCardState();
-		if (shouldAct) revealOrSkip(direction, wasRevealed);
+		dragging = false;
+		activePointerId = null;
+		if (shouldAct) {
+			revealOrSkip(direction, wasRevealed);
+		} else {
+			returnCard();
+		}
+	}
+
+	function handlePointerCancel(event: PointerEvent) {
+		if (!dragging || activePointerId !== event.pointerId) return;
+		try {
+			(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+		} catch {
+			// Pointer capture may already be released by the browser.
+		}
+		returnCard();
 	}
 
 	function syncRecallUrl() {
@@ -437,11 +536,17 @@
 				<div class="stack-card ghost one"></div>
 				<article
 					class="stack-card active"
+					class:dragging={cardMotion === 'dragging'}
+					class:returning={cardMotion === 'returning'}
+					class:flipping={cardMotion === 'flipping'}
+					class:revealed
+					class:exiting-left={cardMotion === 'exiting-left'}
+					class:exiting-right={cardMotion === 'exiting-right'}
 					style={`--drag-x: ${dragX}px; --drag-y: ${dragY}px; --drag-rotate: ${dragRotation}deg;`}
 					onpointerdown={handlePointerDown}
 					onpointermove={handlePointerMove}
 					onpointerup={handlePointerUp}
-					onpointercancel={handlePointerUp}
+					onpointercancel={handlePointerCancel}
 				>
 					{#if dragCue}
 						<div class:positive={dragX > 0} class:negative={dragX < 0} class="drag-cue">
@@ -449,50 +554,66 @@
 						</div>
 					{/if}
 
-					<header class="card-meta">
-						<span>{currentCard.subject}</span>
-						<span>{data.kindLabels[currentCard.kind]}</span>
-						<span>{currentCard.specRef}</span>
-					</header>
+					<div class="card-flipper">
+						<div class="card-face front">
+							<header class="card-meta">
+								<span>{currentCard.subject}</span>
+								<span>{data.kindLabels[currentCard.kind]}</span>
+								<span>{currentCard.specRef}</span>
+							</header>
 
-					<section class="card-prompt">
-						<p>{currentTopic?.title ?? 'AQA Science'}</p>
-						<h1>
-							<MathText
-								text={mode === 'reverse'
-									? (currentCard.reverseFront ?? currentCard.back)
-									: currentCard.front}
-							/>
-						</h1>
-					</section>
+							<section class="card-prompt">
+								<p>{currentTopic?.title ?? 'AQA Science'}</p>
+								<h1>
+									<MathText
+										text={mode === 'reverse'
+											? (currentCard.reverseFront ?? currentCard.back)
+											: currentCard.front}
+									/>
+								</h1>
+							</section>
 
-					{#if mode === 'recognise'}
-						<div class="choice-grid" aria-label="Answer choices">
-							{#each currentChoices as choice (choice)}
-								<button
-									type="button"
-									class:correct={selectedChoice !== null && choice === currentCard.back}
-									class:incorrect={selectedChoice === choice && choice !== currentCard.back}
-									onclick={() => chooseAnswer(currentCard, choice)}
-								>
-									<MathText text={choice} />
-								</button>
-							{/each}
+							{#if mode === 'recognise'}
+								<div class="choice-grid" aria-label="Answer choices">
+									{#each currentChoices as choice (choice)}
+										<button
+											type="button"
+											class:correct={selectedChoice !== null && choice === currentCard.back}
+											class:incorrect={selectedChoice === choice && choice !== currentCard.back}
+											onclick={() => chooseAnswer(currentCard, choice)}
+										>
+											<MathText text={choice} />
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<p class="card-gesture-hint">Swipe right to reveal. Swipe left to skip.</p>
+							{/if}
 						</div>
-					{:else if revealed}
-						<section class="card-answer">
-							<p>Expected recall</p>
-							<div>
-								<MathText
-									text={mode === 'reverse'
-										? (currentCard.reverseBack ?? currentCard.front)
-										: currentCard.back}
-								/>
-							</div>
-						</section>
-					{:else}
-						<p class="card-gesture-hint">Swipe right to reveal. Swipe left to skip.</p>
-					{/if}
+
+						<div class="card-face back" aria-hidden={!revealed}>
+							<header class="card-meta">
+								<span>{currentCard.subject}</span>
+								<span>{data.kindLabels[currentCard.kind]}</span>
+								<span>{currentCard.specRef}</span>
+							</header>
+
+							<section class="card-answer">
+								<p>Expected recall</p>
+								<div>
+									<MathText
+										text={mode === 'reverse'
+											? (currentCard.reverseBack ?? currentCard.front)
+											: currentCard.back}
+									/>
+								</div>
+							</section>
+
+							<p class="card-gesture-hint">
+								Swipe right if you had it. Swipe left to review again.
+							</p>
+						</div>
+					</div>
 				</article>
 			</section>
 
@@ -506,7 +627,8 @@
 					<button
 						type="button"
 						class="session-secondary danger"
-						onclick={() => gradeCard(currentCard, 'again')}
+						disabled={cardBusy}
+						onclick={() => gradeCurrentCard('again')}
 					>
 						<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
 						Again
@@ -514,14 +636,16 @@
 					<button
 						type="button"
 						class="session-secondary"
-						onclick={() => gradeCard(currentCard, 'hard')}
+						disabled={cardBusy}
+						onclick={() => gradeCurrentCard('hard')}
 					>
 						Hard
 					</button>
 					<button
 						type="button"
 						class="session-primary"
-						onclick={() => gradeCard(currentCard, 'good')}
+						disabled={cardBusy}
+						onclick={() => gradeCurrentCard('good')}
 					>
 						<CheckCircle2 size={18} aria-hidden="true" strokeWidth={2.2} />
 						Good
@@ -529,15 +653,16 @@
 					<button
 						type="button"
 						class="session-secondary success"
-						onclick={() => gradeCard(currentCard, 'easy')}
+						disabled={cardBusy}
+						onclick={() => gradeCurrentCard('easy')}
 					>
 						Easy
 					</button>
 				{:else}
-					<button type="button" class="session-secondary" onclick={() => advanceCard(false)}>
+					<button type="button" class="session-secondary" disabled={cardBusy} onclick={skipCard}>
 						Skip
 					</button>
-					<button type="button" class="session-primary" onclick={() => (revealed = true)}>
+					<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
 						<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
 						Reveal
 					</button>
@@ -979,14 +1104,59 @@
 	.stack-card.active {
 		position: relative;
 		z-index: 2;
+		user-select: none;
+		touch-action: none;
+		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
+		transition:
+			transform 220ms cubic-bezier(0.22, 0.75, 0.25, 1),
+			opacity 220ms ease;
+		will-change: transform, opacity;
+		perspective: 1400px;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.stack-card.active.dragging {
+		cursor: grabbing;
+		transition: none;
+	}
+
+	.stack-card.active.exiting-left,
+	.stack-card.active.exiting-right {
+		opacity: 0;
+		transition:
+			transform 280ms cubic-bezier(0.22, 0.75, 0.25, 1),
+			opacity 220ms ease;
+	}
+
+	.card-flipper {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		transform-style: preserve-3d;
+		transition: transform 420ms cubic-bezier(0.2, 0.72, 0.18, 1);
+		will-change: transform;
+	}
+
+	.stack-card.active.revealed .card-flipper {
+		transform: rotateY(180deg);
+	}
+
+	.card-face {
+		position: absolute;
+		inset: 0;
 		display: grid;
 		grid-template-rows: auto minmax(0, 1fr) auto;
 		gap: 1rem;
 		padding: clamp(1rem, 3vw, 1.65rem);
-		user-select: none;
-		touch-action: pan-y;
-		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
-		transition: transform 120ms ease;
+		background: #ffffff;
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+		transform-style: preserve-3d;
+		overflow: hidden;
+	}
+
+	.card-face.back {
+		transform: rotateY(180deg);
 	}
 
 	.card-meta {
@@ -1038,14 +1208,16 @@
 	.card-answer {
 		display: grid;
 		gap: 0.38rem;
-		padding: 0.85rem;
+		align-content: center;
+		min-height: 0;
+		padding: clamp(1rem, 4vw, 1.3rem);
 		border: 1px solid #08602c;
 		background: #f8fcf8;
 	}
 
 	.card-answer div {
 		color: #122316;
-		font-size: clamp(1.05rem, 2.5vw, 1.42rem);
+		font-size: clamp(1.2rem, 3.5vw, 2rem);
 		font-weight: 760;
 		line-height: 1.36;
 		overflow-wrap: anywhere;
@@ -1126,6 +1298,11 @@
 		min-width: 7rem;
 	}
 
+	.session-actions button:disabled {
+		cursor: wait;
+		opacity: 0.62;
+	}
+
 	.session-complete {
 		align-self: center;
 		justify-self: center;
@@ -1161,6 +1338,7 @@
 	:global(:root[data-theme='dark']) .session-actions,
 	:global(:root[data-theme='dark']) .session-complete,
 	:global(:root[data-theme='dark']) .stack-card.active,
+	:global(:root[data-theme='dark']) .card-face,
 	:global(:root[data-theme='dark']) .session-icon-button,
 	:global(:root[data-theme='dark']) .setup-stats,
 	:global(:root[data-theme='dark']) .setup-stats div,
