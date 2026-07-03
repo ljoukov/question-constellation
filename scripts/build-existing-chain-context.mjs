@@ -2,6 +2,7 @@
 
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { fetchPublicChains } from './lib/public-chain-d1.mjs';
 import { readJson, writeJson } from './lib/llm-extraction-pipeline.mjs';
 
 const rootDir = process.cwd();
@@ -11,8 +12,17 @@ const outputPath = path.resolve(rootDir, stringArg('output', 'tmp/existing-chain
 const paperArg = stringArg('paper', '');
 const subjectArg = stringArg('subject', 'all').toLowerCase();
 const maxQuestionRefs = integerArg('max-question-refs', 8, 0);
+const maxExamplesPerChain = integerArg('max-examples-per-chain', maxQuestionRefs || 8, 0);
+const maxMarkItemsPerExample = integerArg('max-mark-items-per-example', 8, 0);
+const maxChains = integerArg('max-chains', 0, 0);
+const useD1 = hasArg('d1');
 const recursive = !hasArg('no-recursive');
 const dryRun = hasArg('dry-run');
+
+if (useD1) {
+	await buildD1Context();
+	process.exit(0);
+}
 
 const files = selectInputFiles();
 if (files.length === 0) throw new Error('No extracted paper JSON files matched the selection.');
@@ -180,6 +190,7 @@ function addChainOccurrence({ chain, sourceDocumentId, sourceQuestionRef, subjec
 				commonOmission: step.commonOmission ?? null
 			})),
 			exampleQuestionRefs: [],
+			examples: [],
 			subjects: new Set(),
 			topicPaths: new Set(),
 			markCounts: new Set()
@@ -211,6 +222,122 @@ function finalizeChainRecord(record) {
 		topicPaths: [...record.topicPaths].sort(),
 		markCounts: [...record.markCounts].sort((a, b) => a - b),
 		questionCount: record.exampleQuestionRefs.length,
-		exampleQuestionRefs
+		exampleQuestionRefs,
+		examples: record.examples ?? []
 	};
+}
+
+async function buildD1Context() {
+	const d1Subject = d1SubjectFilter(subjectArg);
+	let publicChains = await fetchPublicChains({
+		rootDir,
+		subject: d1Subject,
+		includeExamples: true,
+		maxExamplesPerChain,
+		maxMarkItemsPerExample
+	});
+	if (maxChains > 0) publicChains = publicChains.slice(0, maxChains);
+	const answerChains = publicChains.map((chain) => d1ChainRecord(chain));
+	const output = {
+		version: 1,
+		generatedAt: new Date().toISOString(),
+		source: 'd1:public-chains',
+		paper: paperArg || null,
+		subject: subjectArg,
+		answerChains,
+		skipped: []
+	};
+
+	if (!dryRun) {
+		mkdirSync(path.dirname(outputPath), { recursive: true });
+		writeJson(outputPath, output);
+	}
+
+	console.log(
+		JSON.stringify(
+			{
+				status: 'passed',
+				output: dryRun ? null : relative(outputPath),
+				input: null,
+				inputRoot: null,
+				source: 'd1',
+				files: 0,
+				answerChains: answerChains.length,
+				questionLinks: answerChains.reduce((sum, chain) => sum + chain.questionCount, 0),
+				skipped: 0,
+				subject: d1Subject,
+				maxExamplesPerChain,
+				maxMarkItemsPerExample,
+				maxChains,
+				dryRun
+			},
+			null,
+			2
+		)
+	);
+}
+
+function d1ChainRecord(chain) {
+	const metadata = parseJsonObject(chain.metadataJson);
+	const examples = (chain.examples ?? []).map((example) => ({
+		questionId: example.questionId,
+		sourceDocumentId: example.sourceDocumentId,
+		sourceQuestionRef: example.sourceQuestionRef,
+		promptText: example.promptText,
+		commandWord: example.commandWord,
+		marks: Number(example.marks ?? 0) || null,
+		fitNotes: example.fitNotes,
+		markSchemeItems: example.markSchemeItems ?? []
+	}));
+	return {
+		id: chain.id,
+		title: chain.title,
+		canonicalChainText: chain.canonicalChainText,
+		summary: chain.summary,
+		broadTopic: chain.broadTopic ?? null,
+		chainFamilyId: metadata.chain_family_id ?? metadata.chainFamilyId ?? null,
+		steps: (chain.steps ?? []).map((step) => ({
+			stepText: step.stepText,
+			stepRole: step.stepRole,
+			explanation: step.explanation ?? null,
+			commonOmission: step.commonOmission ?? null
+		})),
+		subjects: [chain.subjectArea].filter(Boolean),
+		topicPaths: [],
+		markCounts: [...new Set(examples.map((example) => example.marks).filter(Boolean))].sort(
+			(a, b) => a - b
+		),
+		questionCount: Number(chain.publicQuestions ?? examples.length ?? 0),
+		paperCount: Number(chain.publicPapers ?? 0),
+		exampleQuestionRefs: examples
+			.map((example) => ({
+				sourceDocumentId: example.sourceDocumentId,
+				sourceQuestionRef: example.sourceQuestionRef
+			}))
+			.slice(0, maxQuestionRefs || undefined),
+		examples
+	};
+}
+
+function parseJsonObject(value) {
+	if (!value) return {};
+	try {
+		const parsed = JSON.parse(value);
+		return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+	} catch {
+		return {};
+	}
+}
+
+function d1SubjectFilter(value) {
+	const normalized = String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+	if (!normalized || normalized === 'all') return 'all';
+	if (normalized === 'computer-science' || normalized === 'computing') return 'Computer Science';
+	if (normalized === 'geography') return 'Geography';
+	if (normalized === 'history') return 'History';
+	if (normalized === 'biology') return 'Biology';
+	if (normalized === 'chemistry') return 'Chemistry';
+	if (normalized === 'physics') return 'Physics';
+	if (normalized === 'english') return 'English';
+	return value;
 }

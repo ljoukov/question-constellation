@@ -1855,13 +1855,20 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 		return new Map(
 			Object.entries({
 				'01.5': 20,
+				'02.4': 3,
+				'02.5': 1,
+				'03.1': 2,
+				'04.2': 1,
 				'06.0': 32,
 				'07.0': 20,
-				'11.0': 36,
+				'09.3': 12,
+				'11.0': 37,
+				'12.6': 25,
 				'12.7': 25,
+				'13.0': 12,
 				'14.1': 3,
-				'14.2': 38,
-				'15.0': 33
+				'14.2': 40,
+				'15.0': 35
 			})
 		);
 	}
@@ -3572,8 +3579,33 @@ function normalizeOcrSearchText(text) {
 
 function knownComputerScience2024Paper1AResponseIssues(question, visibleText) {
 	const ref = question.sourceQuestionRef ?? 'unknown';
-	if (!['12.2', '12.5'].includes(ref)) return [];
 	const issues = [];
+	if (ref === '03.2' && hasUnsafeBoundaryRowIndependentAliases(question.response)) {
+		issues.push({
+			code: 'known_paired_boundary_answer_encoded_as_independent_aliases',
+			field: 'response.correctAnswers',
+			severity: 'error',
+			evidence:
+				'Q03.2 boundary test-data and expected-result blanks are paired: 0 or 101 must pair with Invalid number, while 1 or 100 must pair with Valid number entered. Do not encode these as independent aliases. Use a labeled/free response surface with markChecklist/modelAnswer pairing guidance, or a future structured-pair response.'
+		});
+	}
+	if (ref === '08.0') {
+		const responseText = JSON.stringify(question.response ?? {});
+		if (
+			!hasTraceState(responseText, [4, 0, 0]) ||
+			!hasTraceState(responseText, [4, 6, 0]) ||
+			!hasTraceState(responseText, [4, 6, 2])
+		) {
+			issues.push({
+				code: 'known_trace_table_response_incomplete',
+				field: 'response',
+				severity: 'error',
+				evidence:
+					'Q08.0 official trace-table response must represent the intermediate retained weeks states [4,0,0], [4,6,0], [4,6,2] and final weeksTotal 12. Do not compress the response to only final weeks[0], weeks[1], weeks[2] blanks.'
+			});
+		}
+	}
+	if (!['12.2', '12.5'].includes(ref)) return issues;
 	const hasGetTileReturnContext =
 		/\bgettile\s*\(/.test(visibleText) &&
 		/\breturns?\b/.test(visibleText) &&
@@ -3600,6 +3632,50 @@ function knownComputerScience2024Paper1AResponseIssues(question, visibleText) {
 		});
 	}
 	return issues;
+}
+
+function hasUnsafeBoundaryRowIndependentAliases(response) {
+	if (!response || typeof response !== 'object') return false;
+	const answersByTarget = new Map(
+		rawCorrectAnswerEntries(response.correctAnswers).map((entry) => [
+			normalizedAnswerTarget(entry.targetId),
+			answerAlternatives(entry)
+		])
+	);
+	const dataAlternatives =
+		answersByTarget.get('row2data') ?? answersByTarget.get('boundarytestdata') ?? [];
+	const expectedAlternatives =
+		answersByTarget.get('row2expected') ?? answersByTarget.get('boundaryexpectedresult') ?? [];
+	const hasInvalidData = dataAlternatives.some((value) => ['0', '101'].includes(value));
+	const hasValidData = dataAlternatives.some((value) => ['1', '100'].includes(value));
+	const hasInvalidResult = expectedAlternatives.some((value) => value === 'invalid number');
+	const hasValidResult = expectedAlternatives.some((value) => value === 'valid number entered');
+	return hasInvalidData && hasValidData && hasInvalidResult && hasValidResult;
+}
+
+function normalizedAnswerTarget(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '');
+}
+
+function answerAlternatives(entry) {
+	return [entry?.correctAnswer, ...(entry?.aliases ?? [])]
+		.map((value) =>
+			String(value ?? '')
+				.toLowerCase()
+				.replace(/\s+/g, ' ')
+				.trim()
+		)
+		.filter(Boolean);
+}
+
+function hasTraceState(text, values) {
+	const escaped = values.map((value) => String(value));
+	const pattern = new RegExp(
+		`(?:\\[|\\b)${escaped.join('(?:\\s*[,|/]\\s*|\\s+)')}(?:\\]|\\b)`
+	);
+	return pattern.test(String(text ?? ''));
 }
 
 function knownComputerScience2021Paper2ResponseIssues(question) {
@@ -3860,6 +3936,10 @@ function knownComputerScience2022Paper2ResponseIssues(question) {
 			});
 		}
 	}
+	if (ref === '17.3') {
+		const huffmanIssue = knownComputerScience2022Paper2HuffmanTreeKeyIssue(question);
+		if (huffmanIssue) issues.push(huffmanIssue);
+	}
 	const requirements = new Map([
 		[
 			'12.0',
@@ -3938,6 +4018,38 @@ function knownComputerScience2022Paper2ResponseIssues(question) {
 	}
 	for (const issue of knownAssetDimensionIssues(question, requirements)) issues.push(issue);
 	return issues;
+}
+
+function knownComputerScience2022Paper2HuffmanTreeKeyIssue(question) {
+	if (question.response?.kind !== 'image-label-zones') return null;
+	const zones = new Map(
+		(question.response?.zones ?? []).map((zone) => [String(zone.id ?? ''), zone])
+	);
+	const mismatches = [];
+	for (const answer of normalizeCorrectAnswers(question.response?.correctAnswers)) {
+		const zone = zones.get(String(answer.targetId ?? ''));
+		if (!zone) continue;
+		const expected = expectedComputerScience2022HuffmanLeaf(zone);
+		if (!expected) continue;
+		const actual = String(answer.correctAnswer ?? '').trim().toUpperCase();
+		if (actual !== expected) mismatches.push(`${answer.targetId}: expected ${expected}, found ${actual}`);
+	}
+	if (mismatches.length === 0) return null;
+	return {
+		code: 'known_huffman_tree_answer_key_swapped',
+		field: 'response.correctAnswers',
+		severity: 'error',
+		evidence: `Q17.3 Huffman response key must follow the rendered tree and Figure 3 code table: root-left/code 0 = I, node-7-right/code 11 = S, node-3-right/code 101 = P. ${mismatches.join('; ')}.`
+	};
+}
+
+function expectedComputerScience2022HuffmanLeaf(zone) {
+	const x = Number(zone.x ?? 0);
+	const y = Number(zone.y ?? 0);
+	if (x <= 0.2 && y <= 0.5) return 'I';
+	if (x >= 0.7 && y >= 0.35 && y <= 0.65) return 'S';
+	if (x >= 0.45 && x <= 0.7 && y >= 0.65) return 'P';
+	return null;
 }
 
 function hasOverlineW(value) {

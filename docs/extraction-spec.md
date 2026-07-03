@@ -1141,6 +1141,58 @@ the app or in import accounting:
   builder, and D1 importer now preserve `{correctAnswer, aliases}` and block raw literal
   alternatives when they have not been normalized.
 
+Later CS 2022 Paper 2 deployed repair, 2026-07-03:
+
+- Artifact: `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/chain-reconciled/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.repaired-q17-3.json`.
+- The new deterministic guard `known_huffman_tree_answer_key_swapped` blocks Q17.3 Huffman-tree
+  label swaps. Correct visual mapping is root-left/code `0 = I`, node-7-right/code `11 = S`, and
+  node-3-right/code `101 = P`.
+- Focused Codex repair: 140.602s, 30 command actions, 4 failed actions, 430,999 input tokens,
+  324,096 cached input tokens, 5,656 output tokens, and 1,341 reasoning tokens. It preserved the
+  paper and repaired the Q17.3 key.
+- Strict audit/import-ready: `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/import-ready-repaired-q17-3`, 45/45 kept, 0 dropped, 0 errors/warnings.
+- Codex solvability: `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2022-june-paper-2-computing-concepts-qp/codex-solvability-repaired-q17-3-summary.json`, 234.428s, 17 command actions, 0 failed actions, 421,539 input tokens, 316,416 cached input tokens, 11,981 output tokens, 3,382 reasoning tokens, passed 45/45.
+- D1 targeted write used `--allow-shared-chain-updates` only after inspecting the six shared-chain
+  generalizations; it inserted/replaced 45 questions, 45 overlays, 160 mark rows, 70 checklist rows,
+  37 model answers, 36 answer keys, and 45 chain links.
+- Deployed route crawl:
+  `tmp/public-route-checks/aqa-computer-science-2022-june-paper-2-computing-concepts-qp.json`,
+  228 routes, 0 failures, 45 questions, 45 chains, 13 public multi-paper chains, and no raw
+  multi-paper chain that rendered as a single visible question.
+
+Computer Science Paper 1A June 2024 deployed import, 2026-07-03:
+
+| Phase                                      | Artifact                                                                                                                                                                                                                                                                           | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                                    |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q08 trace-table focused repair             | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/raw/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp.repaired-q08-trace.json`          |  187.631s |           n/a |            n/a |             447,722 |      412,672 |                  8,197 |            1,444 | repaired Q08.0 so the trace response includes retained intermediate weeks states [4,0,0], [4,6,0], [4,6,2] and final weeksTotal 12                         |
+| Independent extraction judge after Q08     | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/extraction-judge-repaired-q08-summary.json`                                                                                       |  576.794s |           n/a |            n/a |           4,887,691 |    4,280,320 |                 20,255 |            5,388 | failed score 0.82; found ten line/grid-count defects, which became source-specific prompt and deterministic guards                                          |
+| Line-count repair                          | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/raw/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp.repaired-q08-linecounts.json`    |   84.640s |            13 |              0 |             153,619 |       96,256 |                  3,521 |              390 | repaired Q02.4/Q02.5/Q03.1/Q04.2/Q09.3/Q11.0/Q12.6/Q12.7/Q13.0/Q14.2/Q15.0 response counts                                                               |
+| Independent extraction judge after counts  | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/extraction-judge-repaired-q08-linecounts-summary.json`                                                                            |  316.314s |           n/a |            n/a |           1,451,903 |    1,289,728 |                 13,628 |            2,539 | passed score 1.00, 36 refs checked, 0 required repairs                                                                                                    |
+| Codex answer-chain reconciliation          | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/codex-chain-repaired-q08-linecounts-summary.json`                                                                                  |  446.370s |           n/a |              0 |             551,278 |      456,192 |                 23,451 |            8,606 | 35 created, 1 updated existing (`cs-chain-database-field-data-type`), 0 reused/review; chain validation passed                                              |
+| Q03.2 paired-boundary focused repair       | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/extraction-repair-q03-2-paired-v1-summary.json`                                                                                   |  112.920s |            20 |              3 |             172,609 |      130,560 |                  5,556 |            1,994 | repaired unsafe independent aliases for boundary test data/result pairs; deterministic validation passed                                                    |
+| Strict audit / D1 dry-run                  | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/import-ready-audit-repaired-q08-linecounts-q03pair-dryrun-allow-shared.json`                                                     |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 36/36 kept, 0 dropped, 0 audit errors/warnings; dry-run safe with one reviewed shared-chain update and 555 planned inserts                                  |
+| Codex solvability                          | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/codex-solvability-repaired-q08-linecounts-q03pair-summary.json`                                                                   |  286.827s |            27 |              1 |             832,508 |      763,392 |                 14,099 |            4,531 | passed 36/36 after preserving literal `<`, `>`, `||`, and `>=` in learner-visible context text                                                            |
+| D1 targeted write                          | `tmp/codex-humanities-cs-full-v6/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp/import-ready-audit-repaired-q08-linecounts-q03pair-import.json`                                                                   |       n/a | 555 SQL stmts |              0 |                 n/a |          n/a |                    n/a |              n/a | wrote 36 questions, 36 overlays, 114 mark rows, 88 checklist rows, 25 model answers, 26 answer keys, and 33 chain links                                    |
+| Deployed crawl                             | `tmp/public-route-checks/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp.json`                                                                                                                                     |   75.074s |    174 routes |              0 |                 n/a |          n/a |                    n/a |              n/a | all question, practice, chain, and constellation routes returned 200; 1 public multi-paper chain visible across 2 papers; no asset routes required          |
+
+This run added two repeatable importer safeguards:
+
+- Learner-visible context flattening now removes only actual HTML tags and preserves literal
+  Computer Science operators such as `<`, `>`, `||`, and `>=`. The previous broad tag-stripper made
+  correct JSON look unsolvable by turning `while (userNumber < 1 || userNumber > 100)` into
+  `while (userNumber  100)` in the solvability context.
+- `known_paired_boundary_answer_encoded_as_independent_aliases` blocks table-answer keys where two
+  cells are conditionally paired. Q03.2 boundary values `0/101` must pair with `Invalid number`, while
+  `1/100` must pair with `Valid number entered`; independent aliases would accept wrong cross-pairs.
+  The extraction and repair prompts now tell Codex to use labelled/free response fields plus
+  markChecklist/modelAnswer pairing guidance until the app has a structured paired-table response.
+
+The D1 write allowed exactly one shared-chain update after cross-paper inspection:
+`cs-chain-database-field-data-type` generalized from `field values -> suitable type` to
+`stored value -> suitable type`, which still fits the existing 2023 `DepositPaid` data-type question
+and the new 2024 `year = 2021` data-type question. Live route verification showed the chain renders
+both questions publicly.
+
 Geography Paper 1 June 2023 repair canary, 2026-07-02:
 
 | Phase                                   | Artifact                                                                                                                                                                                                               | Wall time |   Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                           |

@@ -23,6 +23,11 @@ function requireIncludes(text, values, label) {
 	if (missing.length > 0) fail(`${label} is missing required text.`, missing);
 }
 
+function requireExcludes(text, values, label) {
+	const present = values.filter((value) => text.includes(value));
+	if (present.length > 0) fail(`${label} includes forbidden text.`, present);
+}
+
 function runNodeScript(scriptPath, args = []) {
 	return execFileSync(process.execPath, [scriptPath, ...args], {
 		cwd: rootDir,
@@ -67,6 +72,9 @@ const codexPdfExtractionSource = readText(
 );
 const codexExtractionJudgeSource = readText(
 	path.join(rootDir, 'scripts/run-codex-extraction-judge.mjs')
+);
+const codexExtractionRepairSource = readText(
+	path.join(rootDir, 'scripts/run-codex-extraction-repair.mjs')
 );
 const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-answer-chains.mjs'));
 const codexSolvabilityJudgeSource = readText(
@@ -144,6 +152,7 @@ for (const filePath of [
 	'scripts/reconcile-answer-chains.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/run-codex-extraction-judge.mjs',
+	'scripts/run-codex-extraction-repair.mjs',
 	'scripts/codex-pdf-tools.sh',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-answer-chain-specificity.mjs',
@@ -495,6 +504,7 @@ requireIncludes(
 		'known_missing_response_control',
 		'known_database_context_missing',
 		'common_weak_answer_missing_confidence',
+		'known_paired_boundary_answer_encoded_as_independent_aliases',
 		'Q03.0 official mark-scheme split is 10111; 100;',
 		"'07.3': 5"
 	],
@@ -546,6 +556,8 @@ requireIncludes(
 		'For Computer Science code, SQL, pseudo-code',
 		'carry that earlier dependency forward',
 		'structured code/table blocks over extra screenshot assets',
+		'Do not use independent aliases when two visible blanks/cells must be paired',
+		'For Q03.2, the boundary test row has paired acceptable answers',
 		'response.choiceOptions',
 		'Ring your chosen method',
 		'response space continues on the next page',
@@ -579,11 +591,19 @@ requireIncludes(
 		'13.1 = 4',
 		'learner label bank must be AND, XOR, NOT',
 		'08.2 = 6 total',
+		'02.4 = 3 visible ruled lines',
+		'11.0 = 37 across pages 22 and 23',
+		'14.2 = 40 across pages 35 and 36',
+		'15.0 = 35 editable code-grid rows',
+		'For Q08.0, the official trace-table response must preserve the whole table progression',
+		'intermediate retained weeks states [4,0,0], [4,6,0], [4,6,2]',
 		'01.2 has four visible working lines plus a final keyed hexadecimal answer field',
 		'System software = 3 lines and Application software = 3 lines',
 		'02.3 = 2',
 		'04.2 = 2 lines for each of the four numbered function fields',
 		'15.3 = 3 lines for each of the two numbered reason fields',
+		'For Q17.3, key the Huffman tree response by path from the rendered tree and Figure 3',
+		'root-left/code 0 = I, node-7-right/code 11 = S, and node-3-right/code 101 = P',
 		'complete model answer must be 11010101',
 		'Do not put solved or derived facts into learner-visible prompts',
 		'Figure 5 on page 12 should include the title',
@@ -658,6 +678,24 @@ requireIncludes(
 		'requiredRepairs'
 	],
 	'Codex extraction judge runner'
+);
+
+requireIncludes(
+	codexExtractionRepairSource,
+	[
+		'judge-report.json and validation-report.json as the authoritative list of current defects',
+		'Do not apply repairs from other papers',
+		'do not encode conditionally paired alternatives as independent response.correctAnswers aliases',
+		'repaired-extraction.json',
+		'repair-validation.json',
+		'answer-chain-specificity.mjs'
+	],
+	'Codex extraction repair runner'
+);
+requireExcludes(
+	codexExtractionRepairSource,
+	['failed Biology Nov 2020', 'Preserve the already-correct Q07.1'],
+	'Codex extraction repair runner'
 );
 
 requireIncludes(
@@ -899,7 +937,10 @@ requireIncludes(
 		'exampleQuestionRefs',
 		'needs_human_review',
 		'questionCount',
-		'max-question-refs'
+		'max-question-refs',
+		"hasArg('d1')",
+		'fetchPublicChains',
+		'max-examples-per-chain'
 	],
 	'Existing chain context builder'
 );
@@ -2080,6 +2121,163 @@ const graphPlottingMismatchFailure = runNodeScriptExpectFailure('scripts/codex-i
 if (!graphPlottingMismatchFailure.includes('known_graph_plotting_mark_scheme_mismatch')) {
 	fail('Codex helper validation did not reject the known Q01.9 plotting mark mismatch.', {
 		graphPlottingMismatchFailure
+	});
+}
+
+const cs2024P1ATraceTableIncompletePath = path.join(
+	helperNormalizeDir,
+	'cs-2024-p1a-trace-table-incomplete.json'
+);
+writeFileSync(
+	cs2024P1ATraceTableIncompletePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '08.0',
+					promptText: 'Complete the trace table for the algorithm in Figure 6.',
+					marks: 6,
+					pageStart: 16,
+					pageEnd: 17,
+					stemBlocks: [
+						{ kind: 'paragraph', text: 'Figure 6 shows an algorithm.' },
+						{
+							kind: 'structured-table',
+							label: 'Trace table',
+							rows: [['i', 'daysTotal', 'weeks[0]', 'weeks[1]', 'weeks[2]', 'weeksTotal']]
+						}
+					],
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'blank', id: 'i-column' },
+							{ kind: 'blank', id: 'days-total-column' },
+							{ kind: 'blank', id: 'weeks-column' },
+							{ kind: 'blank', id: 'weeks-total' }
+						],
+						correctAnswers: [
+							{ targetId: 'i-column', correctAnswer: '0, 1, 2' },
+							{ targetId: 'days-total-column', correctAnswer: '30, 48, 16' },
+							{ targetId: 'weeks-column', correctAnswer: 'weeks[0]=4, weeks[1]=6, weeks[2]=2' },
+							{ targetId: 'weeks-total', correctAnswer: '12' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'i column correct: 0, 1, 2.', marks: 1 },
+						{ itemType: 'mark', text: 'First daysTotal value 30.', marks: 1 },
+						{ itemType: 'mark', text: 'Rest of daysTotal column 48, 16.', marks: 1 },
+						{ itemType: 'mark', text: 'Second weeks[0] value 4.', marks: 1 },
+						{ itemType: 'mark', text: 'Rest of weeks columns 6 and 2 with previous weeks retained.', marks: 1 },
+						{ itemType: 'mark', text: 'weeksTotal 12.', marks: 1 }
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const cs2024P1ATraceTableIncompleteFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${cs2024P1ATraceTableIncompletePath}`,
+		'--expected-marks=6',
+		'--expected-questions=1'
+	]
+);
+if (!cs2024P1ATraceTableIncompleteFailure.includes('known_trace_table_response_incomplete')) {
+	fail('Codex helper validation did not reject incomplete CS 2024 Paper 1A Q08 trace table.', {
+		cs2024P1ATraceTableIncompleteFailure
+	});
+}
+
+const cs2024P1APairedBoundaryAliasPath = path.join(
+	helperNormalizeDir,
+	'computer-science-2024-paper-1a-paired-boundary-alias.json'
+);
+writeFileSync(
+	cs2024P1APairedBoundaryAliasPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '03.2',
+					promptText: 'Complete the test plan.',
+					selfContainedPromptText: 'Complete the test plan for boundary validation.',
+					marks: 4,
+					pageStart: 8,
+					pageEnd: 9,
+					stemBlocks: [
+						{
+							kind: 'structured-table',
+							label: 'Figure 3',
+							rows: [['6', 'while (userNumber < 1 || userNumber > 100)']]
+						}
+					],
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'blank', id: 'row1-expected' },
+							{ kind: 'blank', id: 'row2-data' },
+							{ kind: 'blank', id: 'row2-expected' },
+							{ kind: 'blank', id: 'row3-data' }
+						],
+						correctAnswers: [
+							{ targetId: 'row1-expected', correctAnswer: 'Invalid number' },
+							{ targetId: 'row2-data', correctAnswer: '0', aliases: ['1', '100', '101'] },
+							{
+								targetId: 'row2-expected',
+								correctAnswer: 'Invalid number',
+								aliases: ['Valid number entered']
+							},
+							{ targetId: 'row3-data', correctAnswer: '50' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Row 1 expected result Invalid number.', marks: 1 },
+						{
+							itemType: 'mark',
+							text: 'Boundary row uses 0/101 with Invalid number or 1/100 with Valid number entered.',
+							marks: 1
+						}
+					],
+					markChecklist: [
+						{ text: 'Pairs the boundary value with the matching expected result.', markSchemeItemIndexes: [1] }
+					]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const cs2024P1APairedBoundaryAliasFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${cs2024P1APairedBoundaryAliasPath}`,
+		'--expected-marks=4',
+		'--expected-questions=1'
+	]
+);
+if (
+	!cs2024P1APairedBoundaryAliasFailure.includes(
+		'known_paired_boundary_answer_encoded_as_independent_aliases'
+	)
+) {
+	fail('Codex helper validation did not reject unsafe paired-boundary aliases.', {
+		cs2024P1APairedBoundaryAliasFailure
 	});
 }
 
@@ -3494,6 +3692,91 @@ if (!computerScience2022Paper2DrawingFailure.includes('known_boolean_overline_mi
 if (!computerScience2022Paper2DrawingFailure.includes('known_simple_figure_asset_should_be_structural')) {
 	fail('Codex helper validation did not reject CS 2022 Paper 2 text-figure asset guardrail.', {
 		computerScience2022Paper2DrawingFailure
+	});
+}
+
+const computerScience2022Paper2HuffmanSwapPath = path.join(
+	helperNormalizeDir,
+	'computer-science-2022-paper-2-huffman-swap.json'
+);
+writeFileSync(
+	computerScience2022Paper2HuffmanSwapPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-computer-science-2022-june-paper-2-computing-concepts-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '17.3',
+					promptText:
+						'Complete the Huffman tree below to show the position of the characters I, S and P using the codes from Figure 3.',
+					selfContainedPromptText:
+						'Figure 3 gives I=0, S=11 and P=101. Complete the Huffman tree.',
+					marks: 1,
+					pageStart: 19,
+					pageEnd: 19,
+					stemBlocks: [
+						{
+							kind: 'table',
+							label: 'Figure 3',
+							columns: ['Character', 'Binary code'],
+							rows: [
+								['M', '100'],
+								['I', '0'],
+								['S', '11'],
+								['P', '101']
+							]
+						}
+					],
+					response: {
+						kind: 'image-label-zones',
+						assetId: 'q17-3-huffman-tree-response',
+						assetLabel: 'Q17.3 Huffman tree response',
+						labels: ['I', 'S', 'P'],
+						zones: [
+							{ id: 'left-root-leaf', x: 0.04, y: 0.28, width: 0.09, height: 0.1 },
+							{ id: 'right-node-leaf', x: 0.79, y: 0.47, width: 0.09, height: 0.11 },
+							{ id: 'right-of-3-leaf', x: 0.52, y: 0.78, width: 0.09, height: 0.11 }
+						],
+						correctAnswers: [
+							{ targetId: 'left-root-leaf', correctAnswer: 'I' },
+							{ targetId: 'right-node-leaf', correctAnswer: 'P' },
+							{ targetId: 'right-of-3-leaf', correctAnswer: 'S' }
+						]
+					},
+					assets: [
+						{
+							sourceLabel: 'Q17.3 Huffman tree response',
+							role: 'response-surface',
+							filePath: 'tiny-figure.png'
+						}
+					],
+					markSchemeItems: [{ itemType: 'mark', text: 'I, S and P are in the correct leaves.', marks: 1 }],
+					markChecklist: [{ text: 'Labels all three leaves correctly.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const computerScience2022Paper2HuffmanSwapFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${computerScience2022Paper2HuffmanSwapPath}`,
+		'--expected-marks=1',
+		'--expected-questions=1'
+	]
+);
+if (
+	!computerScience2022Paper2HuffmanSwapFailure.includes('known_huffman_tree_answer_key_swapped')
+) {
+	fail('Codex helper validation did not reject CS 2022 Paper 2 Huffman S/P key swap.', {
+		computerScience2022Paper2HuffmanSwapFailure
 	});
 }
 
@@ -5622,6 +5905,45 @@ if (
 	);
 }
 
+const codeOperatorSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '03.3',
+				parentSourceQuestionRef: '03',
+				displayOrder: 3,
+				promptText: 'Describe the syntax and logic errors.',
+				stemBlocks: [
+					{
+						kind: 'structured-table',
+						label: 'Figure 3',
+						rows: [
+							['6', 'while (userNumber < 1 || userNumber > 100)'],
+							['faulty', 'whil (userNumber < 1 || userNumber >= 100)']
+						]
+					}
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Complete the table.' }],
+				response: { kind: 'labeled-lines', labels: ['Syntax error', 'Logic error'] },
+				markSchemeItems: [{ itemType: 'mark', text: '>=100 should be >100.' }]
+			}
+		]
+	},
+	'03.3',
+	{ attachImages: false }
+);
+const codeOperatorVisibleText = JSON.stringify(
+	codeOperatorSolvabilityContext.studentVisibleContext.sections
+);
+if (
+	!codeOperatorVisibleText.includes('userNumber < 1 || userNumber > 100') ||
+	!codeOperatorVisibleText.includes('userNumber >= 100')
+) {
+	fail('Solvability context stripped literal code comparison operators.', {
+		codeOperatorSolvabilityContext
+	});
+}
+
 const mixedChoiceLineSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
 	{
 		questions: [
@@ -5667,6 +5989,49 @@ if (
 		'Solvability context omitted labeled-lines fixed choice options from the response surface.',
 		mixedChoiceLineSolvabilityContext
 	);
+}
+
+const keyBlockSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '17.2',
+				parentSourceQuestionRef: '17',
+				displayOrder: 1,
+				promptText: 'Explain why RLE is not suitable.',
+				stemBlocks: [
+					{ kind: 'paragraph', text: 'When using RLE, the data become:' },
+					{
+						kind: 'key',
+						label: 'RLE output',
+						text: '1M 1I 2S 1I 2S 1I 2P 1I'
+					},
+					{
+						kind: 'key',
+						label: 'SQL skeleton',
+						text: "INSERT INTO [A]\n[B] (5, 'Alina', 'Ahmed', '2020-11-30')"
+					}
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Explain why RLE is not suitable.' }],
+				response: { kind: 'lines', lineCount: 4 },
+				markSchemeItems: [{ itemType: 'mark', text: 'RLE output is longer.' }]
+			}
+		]
+	},
+	'17.2',
+	{ attachImages: false }
+);
+const keyBlockVisibleText = keyBlockSolvabilityContext.studentVisibleContext.sections[0]?.blocks
+	?.stem ?? [];
+if (
+	!keyBlockVisibleText.some((text) => text.includes('1M 1I 2S')) ||
+	!keyBlockVisibleText.some((text) => text.includes('INSERT INTO [A]')) ||
+	keyBlockSolvabilityContext.studentVisibleContext.sections[0]?.response !==
+		'Answer lines: 4 line(s).'
+) {
+	fail('Solvability context omitted learner-visible key block text or lineCount response data.', {
+		keyBlockSolvabilityContext
+	});
 }
 
 const unorderedAnswerKeyContext = pipelineModule.buildLearnerVisibleQuestionContext(

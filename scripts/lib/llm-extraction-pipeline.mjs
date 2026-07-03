@@ -6275,8 +6275,8 @@ function orderQuestionsForRendering(questions) {
 function stripHtml(value) {
 	return String(value ?? '')
 		.replace(/<br\s*\/?>/gi, '\n')
-		.replace(/<\/(?:p|div|li|tr|h[1-6])>/gi, '\n')
-		.replace(/<[^>]+>/g, '')
+		.replace(/<\/(?:p|div|li|tr|h[1-6])\s*>/gi, '\n')
+		.replace(/<\/?[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*)?>/g, '')
 		.replace(/&nbsp;/g, ' ')
 		.replace(/&amp;/g, '&')
 		.replace(/&lt;/g, '<')
@@ -6346,10 +6346,14 @@ function blockToLearnerText(block) {
 		return (block.items ?? []).map((item, index) => `${index + 1}. ${stripHtml(item)}`).join('\n');
 	}
 	if (kind === 'key') {
-		return (block.items ?? [])
-			.map(
+		return [
+			block.label ? `${block.label}:` : '',
+			stripHtml(block.text ?? block.value ?? ''),
+			...(block.items ?? []).map(
 				(item) => `${item.marker ?? item.label ?? ''}: ${stripHtml(item.text ?? item.value ?? '')}`
 			)
+		]
+			.filter(Boolean)
 			.join('\n');
 	}
 	if (kind === 'table' || kind === 'structured-table') {
@@ -6369,7 +6373,8 @@ function responseToLearnerText(response) {
 	if (!response || typeof response !== 'object') return 'No response control extracted.';
 	const kind = response.kind ?? 'unknown';
 	if (kind === 'none') return 'No student response field.';
-	if (kind === 'lines') return `Answer lines: ${response.count ?? 'unspecified'} line(s).`;
+	if (kind === 'lines')
+		return `Answer lines: ${response.count ?? response.lineCount ?? 'unspecified'} line(s).`;
 	if (kind === 'labeled-lines') {
 		const parts = [];
 		if (Array.isArray(response.choiceOptions) && response.choiceOptions.length) {

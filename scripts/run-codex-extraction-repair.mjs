@@ -156,6 +156,10 @@ function prepareWorkDir() {
 		path.join(workDir, 'helper.mjs')
 	);
 	copyFileSync(
+		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
+		path.join(workDir, 'answer-chain-specificity.mjs')
+	);
+	copyFileSync(
 		path.join(rootDir, 'scripts/codex-pdf-tools.sh'),
 		path.join(workDir, 'pdf-tools.sh')
 	);
@@ -198,19 +202,14 @@ Task:
 2. Do not redo answer-chain reconciliation or chain wording. Preserve existing answerChain, chainResolution, and commonWeakAnswers fields exactly unless schema mechanics require copying them through.
 3. Keep this a focused repair. You may use a one-off Node command to load candidate.json, make source-verified edits, and write repaired-extraction.json. Do not hand-type the full JSON into the terminal.
 4. The repaired JSON must still be a whole-paper extraction for ${sourceDocumentId}. ${expectedQuestionLine} Expected mark total: ${expectedMarks}.
-5. Run deterministic validation with:
+5. Use judge-report.json and validation-report.json as the authoritative list of current defects. If either report conflicts with the official PDFs, follow the PDFs and note the discrepancy in the final message. Do not apply repairs from other papers.
+6. For paired table/cell answers, do not encode conditionally paired alternatives as independent response.correctAnswers aliases. For example, if one boundary value pairs with "Invalid number" and another boundary value pairs with "Valid number entered", use labeled/free response fields plus markChecklist/modelAnswer pairing guidance unless the app schema has an explicit structured-pair response.
+7. Run deterministic validation with:
    node helper.mjs validate-extraction --input=repaired-extraction.json --expected-marks=${expectedMarks}${
 			expectedQuestions === null ? '' : ` --expected-questions=${expectedQuestions}`
 		} --output=repair-validation.json
 
-Known current repairs from the failed Biology Nov 2020 judge/validator:
-- Q01.8 has two visible ruled answer lines on question-paper page 4. Set response.lineCount/count to 2.
-- Q02.1 has four visible ruled answer lines on question-paper page 6. Set response.lineCount/count to 4.
-- Table 1 must visibly include the official superheader/unit "Rate of photosynthesis in cm3/hour" wherever Table 1 is rendered, especially Q01.3 and Q01.9.
-- Q01.3 must expose the printed final-answer unit in the response label, such as "X = ... cm3/hour", without putting the solved answer in prompt text.
-- Preserve the already-correct Q07.1 = 7 and Q07.3 = 16 line counts.
-
-Use PDF text/rendered pages to verify these claims if needed. Finish only after repaired-extraction.json exists and repair-validation.json reports status "passed". Final message: repaired refs, validation status, question count, mark total.`;
+Use PDF text/rendered pages to verify the failure evidence when needed. Finish only after repaired-extraction.json exists and repair-validation.json reports status "passed". Final message: repaired refs, validation status, question count, mark total.`;
 }
 
 function validateRepaired(repairedPath) {
