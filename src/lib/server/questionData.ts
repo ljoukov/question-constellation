@@ -471,22 +471,22 @@ async function getChain(chainId: string): Promise<AnswerChain> {
 		   AND status = 'published'`,
 		[chainId, chainId]
 	);
-	if (!row) throw new Error(`Answer chain not found: ${chainId}`);
+	if (!row) throw new Error(`Method not found: ${chainId}`);
 
 	const steps = await getChainSteps(row.id);
 	const commonMissingLink =
 		steps.find((step) => step.commonOmission)?.commonOmission ??
-		'Students often name the topic but miss one of the middle reasoning links.';
+		'Students often name the topic but miss one of the middle reasoning steps.';
 
 	return {
 		id: row.id,
 		title: row.title,
 		canonicalText: row.canonical_chain_text,
 		concreteText: row.canonical_chain_text,
-		pageTitle: 'Same answer chain',
+		pageTitle: 'Same method',
 		summary:
 			row.summary ??
-			`Use this chain when a ${row.subject_area ?? 'science'} question asks for the same ordered reasoning links.`,
+			`Use this method when a ${row.subject_area ?? 'science'} question asks for the same ordered reasoning steps.`,
 		steps,
 		commonMissingLink,
 		modelAnswer: steps.map((step) => step.short).join(' -> ')
@@ -1339,7 +1339,7 @@ async function getConstellationForChain(
 		title: row?.title ?? chain.title,
 		summary:
 			row?.summary ??
-			`${questions.length} chained questions that use the same answer-chain structure.`,
+			`${questions.length} questions that use the same mark-scoring method.`,
 		chainId: chain.id,
 		questionIds: questions.map((question) => question.id)
 	};

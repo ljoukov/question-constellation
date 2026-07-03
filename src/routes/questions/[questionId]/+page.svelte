@@ -59,7 +59,7 @@
 		name="description"
 		content={isEnglish
 			? 'Attempt a GCSE English question first, then review the mark path and practise.'
-			: 'Attempt a GCSE question first, then reveal the answer chain when ready.'}
+			: 'Attempt a GCSE question first, then see the method when ready.'}
 	/>
 	<link rel="canonical" href={canonicalUrl} />
 </svelte:head>
@@ -94,12 +94,12 @@
 				</a>
 				<a href={chainHref}>
 					<span>2</span>
-					<span>{isEnglish ? 'Mark path' : 'Answer chain'}</span>
-					<small>{isEnglish ? 'See how marks build' : 'Reveal the reusable marks'}</small>
+					<span>Method</span>
+					<small>See how the marks build</small>
 				</a>
 				<a href={practiceHref}>
 					<span>3</span>
-					<span>Practice</span>
+					<span>Practice/check</span>
 					<small>Write, check, repair</small>
 				</a>
 			</nav>
@@ -112,7 +112,7 @@
 					<h2>Start with the exam question.</h2>
 				</div>
 				<a class="qc-real-link-button" href={chainHref}>
-					{isEnglish ? 'Show mark path' : 'Show answer chain'}
+					Show method
 				</a>
 			</div>
 
@@ -121,7 +121,7 @@
 			<div class="qc-action-row" aria-label="Question actions">
 				<a class="qc-action-button primary" href={chainHref}>
 					<Route size={18} aria-hidden="true" />
-					{isEnglish ? 'Show mark path' : 'Show answer chain'}
+					Show method
 				</a>
 				<a class="qc-action-button" href={practiceHref}>
 					<PenLine size={18} aria-hidden="true" />
@@ -142,9 +142,7 @@
 				<div>
 					<p class="qc-panel-label">Hidden for now</p>
 					<p>
-						The model answer and mark checklist appear on the {isEnglish
-							? 'mark path'
-							: 'answer-chain'} and practice steps.
+						The model answer and mark checklist appear on the method and practice steps.
 					</p>
 				</div>
 			</section>

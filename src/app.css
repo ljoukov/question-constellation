@@ -2487,6 +2487,27 @@ textarea::placeholder {
 	font-size: 0.9rem;
 }
 
+.qc-profile-subject-note {
+	display: grid;
+	gap: 0.28rem;
+	min-width: 0;
+	color: #405465;
+	font-size: 0.78rem;
+	font-weight: 680;
+}
+
+.qc-profile-subject-note strong {
+	display: flex;
+	align-items: center;
+	min-height: 2.35rem;
+	padding: 0 0.58rem;
+	border: 1px solid rgba(105, 129, 143, 0.2);
+	background: rgba(255, 255, 255, 0.48);
+	color: #102033;
+	font-size: 0.9rem;
+	font-weight: 720;
+}
+
 .qc-profile-footer {
 	display: flex;
 	justify-content: flex-end;
@@ -7750,6 +7771,7 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-profile-subject-name p,
 :root[data-theme='dark'] .qc-profile-footer p,
 :root[data-theme='dark'] .qc-profile-subject-row > label:not(.qc-profile-toggle),
+:root[data-theme='dark'] .qc-profile-subject-note,
 :root[data-theme='dark'] .qc-dashboard-stat-strip div,
 :root[data-theme='dark'] .qc-dashboard-question-link span,
 :root[data-theme='dark'] .qc-dashboard-list span,
@@ -7778,7 +7800,8 @@ html[data-theme='dark'] .app-shell {
 }
 
 :root[data-theme='dark'] .qc-dashboard-preferences select,
-:root[data-theme='dark'] .qc-profile-subject-row select {
+:root[data-theme='dark'] .qc-profile-subject-row select,
+:root[data-theme='dark'] .qc-profile-subject-note strong {
 	border-color: rgba(148, 163, 184, 0.28);
 	background: #071426;
 	color: #eaf4ff;
@@ -7799,6 +7822,11 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-profile-toggle span {
 	border-color: rgba(148, 163, 184, 0.36);
 	background: #1f3144;
+}
+
+:root[data-theme='dark'] .qc-profile-toggle input:checked + span {
+	border-color: #56d894;
+	background: #168458;
 }
 
 :root[data-theme='dark'] .qc-dashboard-topic-meta span {
@@ -7837,6 +7865,12 @@ html[data-theme='dark'] .app-shell {
 	border-color: rgba(148, 163, 184, 0.28);
 	background: #071426;
 	color: #eaf4ff;
+}
+
+:root[data-theme='dark'] .qc-gap-footer button:disabled {
+	border-color: rgba(148, 163, 184, 0.26);
+	background: #102033;
+	color: #7f93aa;
 }
 
 :root[data-theme='dark'] .qc-gap-memory span.target,

@@ -19,8 +19,9 @@
 				? 'Saved'
 				: saveStatus === 'error'
 					? 'Could not save'
-					: 'Save profile'
+				: 'Save profile'
 	);
+	const scienceSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
 
 	const enhanceProfile: SubmitFunction = () => {
 		saveStatus = 'saving';
@@ -36,7 +37,7 @@
 	<title>Profile | Question Constellation</title>
 	<meta
 		name="description"
-		content="Choose the GCSE science subjects and course details used for personalised practice."
+		content="Choose the GCSE subjects and course details used for personalised practice."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/profile" />
 </svelte:head>
@@ -57,9 +58,10 @@
 		<section class="qc-profile-hero" aria-labelledby="profile-title">
 			<div>
 				<p class="qc-real-kicker">Profile</p>
-				<h1 id="profile-title">Science courses</h1>
+				<h1 id="profile-title">Subjects</h1>
 				<p>
-					These choices shape recall, gap repair, and exam-question suggestions across the app.
+					Choose the subjects you want on your home screen. Science subjects also use course and
+					tier for question suggestions.
 				</p>
 			</div>
 			<div class="qc-profile-summary" aria-label="Selected subjects">
@@ -77,7 +79,7 @@
 		>
 			<input type="hidden" name="subjectCount" value={data.settings.subjects.length} />
 
-			<div class="qc-profile-subject-list" aria-label="Science subjects">
+			<div class="qc-profile-subject-list" aria-label="GCSE subjects">
 				{#each data.settings.subjects as subject, index (subject.subject)}
 					<section class="qc-profile-subject-row" aria-labelledby={`profile-subject-${index}`}>
 						<input type="hidden" name={`subject-${index}`} value={subject.subject} />
@@ -104,21 +106,34 @@
 							</select>
 						</label>
 
-						<label>
-							<span>Course</span>
-							<select name={`course-${index}`} value={subject.course}>
-								<option value="Separate Science">Separate Science</option>
-								<option value="Combined Science">Combined Science</option>
-							</select>
-						</label>
+						{#if scienceSubjects.has(subject.subject)}
+							<label>
+								<span>Course</span>
+								<select name={`course-${index}`} value={subject.course}>
+									<option value="Separate Science">Separate Science</option>
+									<option value="Combined Science">Combined Science</option>
+								</select>
+							</label>
 
-						<label>
-							<span>Tier</span>
-							<select name={`tier-${index}`} value={subject.tier}>
-								<option value="Higher">Higher</option>
-								<option value="Foundation">Foundation</option>
-							</select>
-						</label>
+							<label>
+								<span>Tier</span>
+								<select name={`tier-${index}`} value={subject.tier}>
+									<option value="Higher">Higher</option>
+									<option value="Foundation">Foundation</option>
+								</select>
+							</label>
+						{:else}
+							<input type="hidden" name={`course-${index}`} value="GCSE Subject" />
+							<input type="hidden" name={`tier-${index}`} value={subject.tier} />
+							<div class="qc-profile-subject-note">
+								<span>Course</span>
+								<strong>GCSE</strong>
+							</div>
+							<div class="qc-profile-subject-note">
+								<span>Practice</span>
+								<strong>Question bank</strong>
+							</div>
+						{/if}
 					</section>
 				{/each}
 			</div>

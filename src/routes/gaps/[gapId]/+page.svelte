@@ -164,13 +164,23 @@
 </script>
 
 <svelte:head>
-	<title>Close gap | {data.gapData.chain.title}</title>
+	<title>Fix mistake | {data.gapData.chain.title}</title>
 </svelte:head>
 
 <main class="qc-real-app qc-gap-page">
 	<AppTopbar
 		{subject}
-		subjects={['All subjects', 'Science', 'Biology', 'Chemistry', 'Physics']}
+		subjects={[
+			'All subjects',
+			'Science',
+			'Biology',
+			'Chemistry',
+			'Physics',
+			'Computer Science',
+			'Geography',
+			'History',
+			'English'
+		]}
 		searchPlaceholder="Search questions"
 	/>
 
@@ -181,12 +191,12 @@
 			<p><MathText text={`${data.gapData.gap.chainTitle} · ${data.gapData.gap.topic}`} /></p>
 			<div class="qc-gap-context-actions">
 				<a href={sourceHref}>Original question</a>
-				<a href={chainHref}>Answer chain</a>
+				<a href={chainHref}>Method</a>
 				<a href={recallHref}>Flashcards</a>
 			</div>
 		</aside>
 
-		<section class="qc-gap-workspace" aria-label="Close the gap builder">
+		<section class="qc-gap-workspace" aria-label="Fix mistake builder">
 			<header class="qc-gap-header">
 				<span>{subject}</span>
 				<h2><MathText text={data.gapData.question.title} /></h2>
@@ -194,7 +204,7 @@
 
 			{#if phase === 'build'}
 				<div class="qc-gap-section-bar">
-					<strong>Build the answer</strong>
+					<strong>Build the missing steps</strong>
 					<span>{allFieldsFilled ? 'Ready' : 'In progress'}</span>
 				</div>
 				<form class="qc-gap-questions" onsubmit={submitBuild}>
@@ -217,13 +227,13 @@
 						</label>
 					{/each}
 					<footer class="qc-gap-footer">
-						<span>{checkingFields ? 'Checking...' : 'Fill each link to continue.'}</span>
+						<span>{checkingFields ? 'Checking...' : 'Fill each step to continue.'}</span>
 						<button type="submit" disabled={!allFieldsFilled || checkingFields}>Next</button>
 					</footer>
 				</form>
 			{:else if phase === 'memory'}
 				<section class="qc-gap-memory">
-					<p class="qc-panel-label">Memory chain</p>
+					<p class="qc-panel-label">Method reminder</p>
 					<div>
 						{#each data.gapData.chain.steps as step (step.id)}
 							<span class:target={step.id === data.gapData.presentation.targetStepId}>
@@ -233,7 +243,7 @@
 					</div>
 				</section>
 				<footer class="qc-gap-footer">
-					<span>Now turn the chain into full sentences.</span>
+					<span>Now turn the method into full sentences.</span>
 					<button type="button" onclick={() => (phase = 'compose')}>Write answer</button>
 				</footer>
 			{:else if phase === 'compose'}
@@ -250,7 +260,7 @@
 					{/if}
 					<footer class="qc-gap-footer">
 						<span
-							>{checkingFinal ? 'Checking answer...' : 'Use the chain, but write naturally.'}</span
+							>{checkingFinal ? 'Checking answer...' : 'Use the method, but write naturally.'}</span
 						>
 						<button type="submit" disabled={!finalAnswer.trim() || checkingFinal}>
 							{checkingFinal ? 'Checking' : 'Check answer'}
@@ -287,7 +297,7 @@
 					{/each}
 				</div>
 				<footer class="qc-gap-footer">
-					<span>{finalResult.gapClosed ? 'Gap closed.' : 'Try the rewrite once more.'}</span>
+					<span>{finalResult.gapClosed ? 'Mistake fixed.' : 'Try the rewrite once more.'}</span>
 					{#if finalResult.gapClosed}
 						<button type="button" onclick={() => (phase = 'model')}>Model answer</button>
 					{:else}

@@ -131,7 +131,7 @@ export type LearnerSubject = {
 	subject: string;
 	board: string;
 	qualification: string;
-	course: 'Separate Science' | 'Combined Science';
+	course: 'Separate Science' | 'Combined Science' | 'GCSE Subject';
 	tier: 'Higher' | 'Foundation';
 	enabled: boolean;
 	currentGrade: string | null;
@@ -215,6 +215,7 @@ export type SubjectLearningLane = {
 		href: string;
 		kind: 'recall' | 'gap' | 'question' | 'browse';
 	};
+	supportsRecall: boolean;
 };
 
 export type PersonalDashboard = {
@@ -429,6 +430,18 @@ const personalTableStatements = [
 	  ON user_recall_card_reviews (user_id, due_at)`
 ];
 
+const learnerSubjectOptions = [
+	'Biology',
+	'Chemistry',
+	'Physics',
+	'Computer Science',
+	'Geography',
+	'History',
+	'English'
+];
+const defaultEnabledSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
+const stemSubjectSet = new Set<string>(aqaStemCurriculum.map((entry) => entry.subject));
+
 export async function ensurePersonalLearningTables(): Promise<void> {
 	if (ensuredPersonalTables) return;
 	for (const statement of personalTableStatements) {
@@ -554,8 +567,31 @@ function toProfile(row: UserProfileRow): UserProfile {
 	};
 }
 
-function stemSubjects(): string[] {
-	return aqaStemCurriculum.map((entry) => entry.subject);
+function profileSubjects(): string[] {
+	return learnerSubjectOptions;
+}
+
+function canonicalLearnerSubject(value: string | null | undefined): string {
+	const normalized = (value ?? '').trim().toLowerCase();
+	const matched = profileSubjects().find((subject) => subject.toLowerCase() === normalized);
+	if (matched) return matched;
+	if (normalized.includes('computer') || normalized.includes('computing')) return 'Computer Science';
+	if (normalized.includes('geography')) return 'Geography';
+	if (normalized.includes('history')) return 'History';
+	if (normalized.includes('english')) return 'English';
+	if (normalized.includes('biology')) return 'Biology';
+	if (normalized.includes('chemistry')) return 'Chemistry';
+	if (normalized.includes('physics')) return 'Physics';
+	if (normalized.includes('combined science') || normalized.includes('science')) return 'Biology';
+	return 'Biology';
+}
+
+function subjectSupportsRecall(subject: string): boolean {
+	return recallSubject(subject) !== null;
+}
+
+function isStemProfileSubject(subject: string): boolean {
+	return stemSubjectSet.has(subject);
 }
 
 function safeBoard(value: string): 'AQA' {
@@ -563,7 +599,9 @@ function safeBoard(value: string): 'AQA' {
 }
 
 function safeCourse(value: string): LearnerSubject['course'] {
-	return value === 'Combined Science' ? 'Combined Science' : 'Separate Science';
+	if (value === 'Combined Science') return 'Combined Science';
+	if (value === 'Separate Science') return 'Separate Science';
+	return 'GCSE Subject';
 }
 
 function safeTier(value: string): LearnerSubject['tier'] {
@@ -571,11 +609,12 @@ function safeTier(value: string): LearnerSubject['tier'] {
 }
 
 function toLearnerSubject(row: UserProfileSubjectRow): LearnerSubject {
+	const subject = canonicalLearnerSubject(row.subject);
 	return {
-		subject: getAqaStemSubject(row.subject).subject,
+		subject,
 		board: safeBoard(row.board),
 		qualification: 'GCSE',
-		course: safeCourse(row.course),
+		course: isStemProfileSubject(subject) ? safeCourse(row.course) : 'GCSE Subject',
 		tier: safeTier(row.tier),
 		enabled: row.enabled === 1,
 		currentGrade: row.current_grade,
@@ -588,16 +627,16 @@ function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSu
 		subject,
 		board: 'AQA',
 		qualification: 'GCSE',
-		course: 'Separate Science',
+		course: isStemProfileSubject(subject) ? 'Separate Science' : 'GCSE Subject',
 		tier: safeTier(profile.selectedTier),
-		enabled: true,
+		enabled: defaultEnabledSubjects.has(subject),
 		currentGrade: null,
 		targetGrade: null
 	};
 }
 
 async function ensureDefaultLearnerSubjects(profile: UserProfile): Promise<void> {
-	for (const subject of stemSubjects()) {
+	for (const subject of profileSubjects()) {
 		const defaults = defaultLearnerSubject(profile, subject);
 		await executeQuery(
 			`INSERT INTO user_profile_subjects (
@@ -629,8 +668,13 @@ async function listLearnerSubjects(userId: string, profile: UserProfile): Promis
 		 WHERE user_id = ?`,
 		[userId]
 	);
-	const bySubject = new Map(rows.map((row) => [row.subject, toLearnerSubject(row)]));
-	return stemSubjects().map((subject) => bySubject.get(subject) ?? defaultLearnerSubject(profile, subject));
+	const bySubject = new Map(rows.map((row) => {
+		const subject = toLearnerSubject(row);
+		return [subject.subject, subject] as const;
+	}));
+	return profileSubjects().map(
+		(subject) => bySubject.get(subject) ?? defaultLearnerSubject(profile, subject)
+	);
 }
 
 function questionTitle(
@@ -714,9 +758,10 @@ export async function updateUserPreferences({
 	tier: string;
 }): Promise<void> {
 	await ensurePersonalLearningTables();
-	const safeSubject = getAqaStemSubject(subject).subject;
+	const safeSubject = canonicalLearnerSubject(subject);
 	const normalizedBoard = safeBoard(board);
 	const normalizedTier = safeTier(tier);
+	const normalizedCourse = isStemProfileSubject(safeSubject) ? 'Separate Science' : 'GCSE Subject';
 	await executeQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
@@ -728,14 +773,15 @@ export async function updateUserPreferences({
 		`INSERT INTO user_profile_subjects (
 		   user_id, subject, board, qualification, course, tier, enabled
 		 )
-		 VALUES (?, ?, ?, 'GCSE', 'Separate Science', ?, 1)
+		 VALUES (?, ?, ?, 'GCSE', ?, ?, 1)
 		 ON CONFLICT(user_id, subject) DO UPDATE SET
 		   board = excluded.board,
 		   qualification = excluded.qualification,
+		   course = excluded.course,
 		   tier = excluded.tier,
 		   enabled = 1,
 		   updated_at = CURRENT_TIMESTAMP`,
-		[userId, safeSubject, normalizedBoard, normalizedTier]
+		[userId, safeSubject, normalizedBoard, normalizedCourse, normalizedTier]
 	);
 }
 
@@ -747,16 +793,17 @@ export async function updateLearnerSubjects({
 	subjects: LearnerSubjectInput[];
 }): Promise<void> {
 	await ensurePersonalLearningTables();
-	const allowedSubjects = new Set(stemSubjects());
-	const normalized = stemSubjects().map((subject) => {
-		const input = subjects.find((entry) => getAqaStemSubject(entry.subject).subject === subject);
+	const normalized = profileSubjects().map((subject) => {
+		const input = subjects.find((entry) => canonicalLearnerSubject(entry.subject) === subject);
 		return {
 			subject,
 			board: safeBoard(input?.board ?? 'AQA'),
 			qualification: 'GCSE',
-			course: safeCourse(input?.course ?? 'Separate Science'),
+			course: isStemProfileSubject(subject)
+				? safeCourse(input?.course ?? 'Separate Science')
+				: 'GCSE Subject',
 			tier: safeTier(input?.tier ?? 'Higher'),
-			enabled: allowedSubjects.has(subject) ? Boolean(input?.enabled) : false,
+			enabled: Boolean(input?.enabled),
 			currentGrade: input?.currentGrade?.trim() || null,
 			targetGrade: input?.targetGrade?.trim() || null
 		} satisfies LearnerSubject;
@@ -808,7 +855,7 @@ export async function getLearnerProfileSettings(
 	return {
 		profile,
 		subjects: await listLearnerSubjects(user.uid, profile),
-		subjectOptions: stemSubjects()
+		subjectOptions: profileSubjects()
 	};
 }
 
@@ -1133,6 +1180,15 @@ async function buildCurriculumTopics(
 	profile: UserProfile,
 	activeGaps: DashboardGap[]
 ): Promise<PersonalDashboard['curriculum']> {
+	if (!isStemProfileSubject(profile.selectedSubject)) {
+		return {
+			subject: profile.selectedSubject,
+			specificationCode: '',
+			specificationUrl: '',
+			localSpecificationPath: '',
+			topics: []
+		};
+	}
 	const subject = getAqaStemSubject(profile.selectedSubject);
 	const topics: DashboardCurriculumTopic[] = [];
 	for (const topic of subject.topics) {
@@ -1187,8 +1243,8 @@ function confidenceForSubject(stats: SubjectLearningStats): {
 	if (stats.activeGapCount > 0) {
 		return {
 			percent,
-			label: 'Known gaps',
-			detail: `${stats.activeGapCount} answer-chain ${stats.activeGapCount === 1 ? 'link' : 'links'} to repair.`
+			label: 'Mistakes to fix',
+			detail: `${stats.activeGapCount} ${stats.activeGapCount === 1 ? 'step needs' : 'steps need'} repair.`
 		};
 	}
 	if (stats.recallDueCount > 0) {
@@ -1222,6 +1278,7 @@ async function buildSubjectLane(
 		getNextQuestion(userId, learnerSubject.subject, learnerSubject)
 	]);
 	const confidence = confidenceForSubject(stats);
+	const supportsRecall = subjectSupportsRecall(learnerSubject.subject);
 	const recallHref = `/recall?${new URLSearchParams({
 		subject: learnerSubject.subject,
 		start: '1'
@@ -1229,11 +1286,13 @@ async function buildSubjectLane(
 	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
 	if (openGaps[0]) {
-		primaryAction = { label: 'Close gap', href: openGaps[0].href, kind: 'gap' };
-	} else if (stats.recallDueCount > 0 || stats.attemptCount + stats.recallReviewCount === 0) {
-		primaryAction = { label: 'Start recall', href: recallHref, kind: 'recall' };
+		primaryAction = { label: 'Fix mistake', href: openGaps[0].href, kind: 'gap' };
+	} else if (supportsRecall && stats.recallDueCount > 0) {
+		primaryAction = { label: 'Review flashcards', href: recallHref, kind: 'recall' };
 	} else if (nextQuestion) {
-		primaryAction = { label: 'Try exam question', href: nextQuestion.href, kind: 'question' };
+		primaryAction = { label: 'Continue practice', href: nextQuestion.href, kind: 'question' };
+	} else if (supportsRecall && stats.attemptCount + stats.recallReviewCount === 0) {
+		primaryAction = { label: 'Start flashcards', href: recallHref, kind: 'recall' };
 	} else {
 		primaryAction = { label: 'Browse questions', href: browseHref, kind: 'browse' };
 	}
@@ -1247,8 +1306,8 @@ async function buildSubjectLane(
 		courseLabel: metaLine([
 			learnerSubject.board,
 			learnerSubject.qualification,
-			learnerSubject.course,
-			learnerSubject.tier
+			isStemProfileSubject(learnerSubject.subject) ? learnerSubject.course : null,
+			isStemProfileSubject(learnerSubject.subject) ? learnerSubject.tier : null
 		]),
 		href: browseHref,
 		recallHref,
@@ -1264,7 +1323,8 @@ async function buildSubjectLane(
 		confidenceDetail: confidence.detail,
 		nextQuestion,
 		openGap: openGaps[0] ?? null,
-		primaryAction
+		primaryAction,
+		supportsRecall
 	};
 }
 
@@ -1294,7 +1354,7 @@ export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDas
 		recentAttempts,
 		nextQuestion,
 		curriculum,
-		subjectOptions: aqaStemCurriculum.map((entry) => entry.subject)
+		subjectOptions: profileSubjects()
 	};
 }
 
@@ -1524,26 +1584,26 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 			id: 'previous-link',
 			question: `What idea comes just before "${shortStepText(target.step_text)}"?`,
 			expectedAnswer: previous.step_text,
-			hint: previous.common_omission ?? 'Use the earlier cause in the answer chain.',
+			hint: previous.common_omission ?? 'Use the earlier cause in the method.',
 			focusStepId: previous.id
 		});
 	}
 
 	questions.push({
 		id: 'missing-link',
-		question: `What missing link needs to be added for "${shortStepText(target.step_text)}"?`,
+		question: `What missing step needs to be added for "${shortStepText(target.step_text)}"?`,
 		expectedAnswer: target.step_text,
 		hint:
 			target.common_omission ??
 			target.explanation ??
-			'Name the specific cause-and-effect link that earns this mark.',
+			'Name the specific cause-and-effect step that earns this mark.',
 		focusStepId: target.id
 	});
 
 	if (next && next.id !== target.id) {
 		questions.push({
 			id: 'next-link',
-			question: `What does that link lead to next?`,
+			question: `What does that step lead to next?`,
 			expectedAnswer: next.step_text,
 			hint: next.common_omission ?? 'Connect the missing idea to the next mark-scoring step.',
 			focusStepId: next.id
@@ -1595,7 +1655,7 @@ export async function getGapLearningData(
 		},
 		presentation: {
 			question: row.source_prompt_text ?? row.question_title ?? row.chain_title,
-			instructions: 'Answer each link in a short phrase, then rewrite the full answer.',
+			instructions: 'Answer each step in a short phrase, then rewrite the full answer.',
 			questions: guidedQuestions,
 			memoryChain: chainSteps.map((step) => step.short).join(' -> '),
 			answerPrompt: `Rewrite the original answer and make "${shortStepText(targetStep.step_text)}" explicit.`,
@@ -1624,7 +1684,7 @@ function judgeAnswerAgainstExpected(answer: string, expected: string): GapFieldJ
 	}
 	return {
 		result: 'incorrect',
-		feedback: 'Which word in the answer chain names this missing idea?'
+		feedback: 'Which word in the method names this missing idea?'
 	};
 }
 
@@ -1694,8 +1754,8 @@ export async function judgeGapFinalAnswer({
 		)
 	);
 	const summary = gapClosed
-		? 'The missing link is now explicit. Use the same chain on the next transfer question.'
-		: 'The answer still needs the target missing link. Add it directly, then connect it to the next step.';
+		? 'The missing step is now explicit. Use the same method on the next similar question.'
+		: 'The answer still needs the target missing step. Add it directly, then connect it to the next step.';
 
 	await executeQuery(
 		`INSERT INTO user_gap_builder_runs (

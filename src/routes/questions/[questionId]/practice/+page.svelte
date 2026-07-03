@@ -61,7 +61,7 @@
 		data.question.checklist.filter((item) => missingStepIds.has(item.stepId))
 	);
 	const resultTitle = $derived(
-		`${includedItems.length} of ${data.question.checklist.length} links found`
+		`${includedItems.length} of ${data.question.checklist.length} steps found`
 	);
 	const previousHref = $derived(
 		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
@@ -103,7 +103,7 @@
 				? { title: 'Common trap', text: `Avoid this: ${weakAnswerExplanation}` }
 				: null,
 			hintMissingLinks.length > 0
-				? { title: 'Missing link', text: `Use this link: ${hintMissingLinks.join(' -> ')}.` }
+				? { title: 'Missing step', text: `Use this step: ${hintMissingLinks.join(' -> ')}.` }
 				: null,
 			data.question.commonWeakAnswer.trim()
 				? {
@@ -215,11 +215,9 @@
 
 	function statusDescriptionForPhase(phase: GradePhase) {
 		if (phase === 'connecting') return 'Starting the answer check.';
-		if (phase === 'calling') return 'Looking for the links you included.';
+		if (phase === 'calling') return 'Looking for the steps you included.';
 		if (phase === 'thinking') {
-			return isEnglish
-				? 'Comparing your answer with the mark path.'
-				: 'Comparing your answer with the chain.';
+			return 'Comparing your answer with the method.';
 		}
 		if (phase === 'grading') return 'Preparing feedback.';
 		if (phase === 'error') return 'The check could not finish.';
@@ -228,8 +226,8 @@
 
 	function statusLabelForPhase(phase: GradePhase) {
 		if (phase === 'connecting') return 'Starting check';
-		if (phase === 'calling') return 'Finding links';
-		if (phase === 'thinking') return isEnglish ? 'Comparing mark path' : 'Comparing chain';
+		if (phase === 'calling') return 'Finding steps';
+		if (phase === 'thinking') return 'Comparing method';
 		if (phase === 'grading') return 'Preparing feedback';
 		if (phase === 'done') return 'Checked';
 		if (phase === 'error') return 'Could not check';
@@ -338,7 +336,7 @@
 		name="description"
 		content={isEnglish
 			? 'Write, check, and repair a GCSE English answer against the mark focus.'
-			: 'Attempt a GCSE question before revealing and repairing the answer chain.'}
+			: 'Write, check, and repair a GCSE answer against the mark-scoring method.'}
 	/>
 </svelte:head>
 
@@ -356,7 +354,7 @@
 			<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
 				<IconBackLink
 					href={previousHref}
-					label={`Back to ${isEnglish ? 'mark path' : 'answer chain'}`}
+					label="Back to method"
 				/>
 				<p class="qc-real-kicker">Guided practice</p>
 				<h1><MathText text={data.constellation.title} /></h1>
@@ -453,7 +451,7 @@
 							<h2>{resultTitle}</h2>
 						</div>
 						<a class="qc-real-link-button" href={previousHref}>
-							Review {isEnglish ? 'mark path' : 'chain'}
+							Review method
 						</a>
 					</div>
 
@@ -463,17 +461,17 @@
 							{gradeResult?.awardedMarks ?? 0} of {gradeResult?.maxMarks ??
 								data.question.meta.marks}
 							marks. {missingItems.length === 0
-								? 'All required links are present.'
-								: 'Add the missing links to complete the answer.'}
+								? 'All required steps are present.'
+								: 'Add the missing steps to complete the answer.'}
 						</p>
 					</section>
 
 					<ThinkingChain
 						steps={chainSteps}
-						label={isEnglish ? 'Checked mark path' : 'Checked answer chain'}
+						label="Checked method"
 						note={hasMissingLinks
-							? 'Missing links are shown below.'
-							: `${isEnglish ? 'The mark path' : 'The chain'} is complete.`}
+							? 'Missing steps are shown below.'
+							: 'The method is complete.'}
 					/>
 
 					<div class="qc-feedback-stack">
@@ -489,7 +487,7 @@
 									{/each}
 								</ul>
 							{:else}
-								<p>No checklist links were confirmed yet.</p>
+								<p>No checklist steps were confirmed yet.</p>
 							{/if}
 						</section>
 
@@ -503,7 +501,7 @@
 											<span><MathText text={shortChecklistText(item.text)} /></span>
 											{#if gapHrefByStepId.get(item.stepId)}
 												<a class="qc-inline-repair-link" href={gapHrefByStepId.get(item.stepId)}>
-													Close this gap
+													Fix this step
 												</a>
 											{/if}
 										</li>
@@ -534,10 +532,10 @@
 					</div>
 
 					<section class="qc-repair-panel">
-						<p class="qc-panel-label">{isEnglish ? 'Repair path' : 'Repair chain'}</p>
+						<p class="qc-panel-label">Fix the method</p>
 						<div
 							class="qc-repair-chain"
-							aria-label={isEnglish ? 'Mark path reminder' : 'Answer chain reminder'}
+							aria-label="Method reminder"
 						>
 							{#each data.question.repairChain as node (node.id)}
 								<span class:missing={isNodeMissing(node.stepId)}>
@@ -556,7 +554,7 @@
 						{#if hasMissingLinks}
 							<PracticeAnswerEditor
 								id="rewrite"
-								label="Rewrite with the missing links"
+								label="Rewrite with the missing steps"
 								response={structuredResponse}
 								assets={responseAssets}
 								value={rewriteText}
@@ -574,7 +572,7 @@
 								<ArrowRight size={18} aria-hidden="true" />
 								Next question
 							</a>
-							<a class="qc-action-button" href={previousHref}>Review chain</a>
+							<a class="qc-action-button" href={previousHref}>Review method</a>
 						</div>
 					</section>
 				{/if}

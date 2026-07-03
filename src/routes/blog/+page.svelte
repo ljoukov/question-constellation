@@ -23,7 +23,7 @@
 	const canonicalUrl = 'https://constellation.eviworld.com/blog';
 	const pageTitle = 'Question Constellation Blog | GCSE Revision Comparisons and Exam Technique';
 	const pageDescription =
-		'Comparisons, GCSE revision guides and learning-science notes from Question Constellation, a public question bank organized by answer chains.';
+		'Comparisons, GCSE revision guides and learning-science notes from Question Constellation, a public question bank organized around real questions and mark-scoring methods.';
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -103,7 +103,7 @@
 				<h1 id="blog-title">Question Constellation Blog</h1>
 				<p>
 					Comparisons, exam-technique guides and learning-science notes for students who want
-					questions, mark checklists and answer chains to do more of the work.
+					questions, mark checklists and methods to do more of the work.
 				</p>
 				<a class="blog-hero-link" href={resolve('/past-papers/gcse')}>
 					Open GCSE past papers

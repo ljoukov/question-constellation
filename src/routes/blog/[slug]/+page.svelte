@@ -176,14 +176,14 @@
 			<section class="blog-article-cta" aria-label="Try Question Constellation">
 				<div>
 					<p class="blog-kicker">Question first</p>
-					<h2>Try a GCSE question chain next.</h2>
+					<h2>Try a GCSE question next.</h2>
 					<p>
-						Start with a real question, reveal the chain, then practise related questions that use
+						Start with a real question, see the method, then practise related questions that use
 						the same logic.
 					</p>
 				</div>
 				<a href={resolve('/chains')}>
-					Browse question chains
+					Open question bank
 					<ArrowRight size={17} aria-hidden="true" strokeWidth={2.2} />
 				</a>
 			</section>

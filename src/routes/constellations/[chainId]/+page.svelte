@@ -36,7 +36,7 @@
 		name="description"
 		content={isEnglish
 			? 'A GCSE English question set using the same mark path.'
-			: 'A GCSE question constellation: different questions using the same answer chain.'}
+			: 'A GCSE practice set: different questions using the same method.'}
 	/>
 </svelte:head>
 
@@ -50,15 +50,15 @@
 	<div class="qc-real-layout qc-question-layout">
 		<aside
 			class="qc-real-rail qc-question-rail"
-			aria-label={isEnglish ? 'Question set summary' : 'Constellation summary'}
+			aria-label="Practice set summary"
 		>
-			<IconBackLink href={chainHref} label={`Back to ${isEnglish ? 'mark path' : 'answer chain'}`} />
-			<p class="qc-real-kicker">{isEnglish ? 'Question set' : 'Constellation'}</p>
+			<IconBackLink href={chainHref} label="Back to method" />
+			<p class="qc-real-kicker">Practice set</p>
 			<h1><MathText text={data.constellation.title} /></h1>
 			<p class="qc-rail-summary"><MathText text={data.constellation.summary} /></p>
 			<ThinkingChain
 				steps={chainSteps}
-				label={isEnglish ? 'Shared mark path' : 'Shared answer chain'}
+				label="Shared method"
 			/>
 		</aside>
 
@@ -69,7 +69,7 @@
 						{data.questions.length} questions · {data.startQuestion.meta.board}
 						{data.startQuestion.meta.subject}
 					</p>
-					<h2>{isEnglish ? 'Questions in this set' : 'Questions in this constellation'}</h2>
+					<h2>Questions in this set</h2>
 				</div>
 				<a class="qc-real-link-button" href={practiceHref}>Start practice</a>
 			</div>

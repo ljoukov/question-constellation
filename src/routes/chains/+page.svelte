@@ -210,10 +210,10 @@
 </script>
 
 <svelte:head>
-	<title>Question Chains | Question Constellation</title>
+	<title>Question Bank | Question Constellation</title>
 	<meta
 		name="description"
-		content="Browse GCSE question chains, choose a question, then practise it in the original exam-paper format."
+		content="Browse GCSE questions, choose a practice set, then practise in the original exam-paper format."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/chains" />
 </svelte:head>
@@ -223,7 +223,7 @@
 		subject={selectedSubject}
 		{subjects}
 		searchValue={searchQuery}
-		searchPlaceholder="Search chains or questions"
+		searchPlaceholder="Search questions or topics"
 		onSearchChange={updateSearch}
 		onSubjectChange={updateSubject}
 	/>
@@ -231,21 +231,21 @@
 	<div class="qc-browse-layout">
 		<aside class="qc-browse-intro">
 			<p class="qc-real-kicker">{browseKicker}</p>
-			<h1>Choose a question chain.</h1>
-			<p>Pick a real exam question, then practise the same thinking chain in nearby questions.</p>
+			<h1>Choose a question.</h1>
+			<p>Pick a real exam question, then practise similar questions that use the same method.</p>
 			{#if firstChain}
-				<a class="qc-browse-start" href={chainHref(firstChain)}>Start with a chain</a>
+				<a class="qc-browse-start" href={chainHref(firstChain)}>Start with this set</a>
 			{/if}
 		</aside>
 
-		<section class="qc-browse-feed" aria-label="Question chains">
+		<section class="qc-browse-feed" aria-label="Question bank">
 			<div class="qc-browse-heading">
-				<h2>Question chains</h2>
+				<h2>Practice sets</h2>
 				<p>
 					{#if filteredChains.length === data.chains.length}
-						{data.chains.length} chains in the database
+						{data.chains.length} sets in the question bank
 					{:else}
-						{filteredChains.length} of {data.chains.length} chains · {filteredQuestionCount}
+						{filteredChains.length} of {data.chains.length} sets · {filteredQuestionCount}
 						questions match
 					{/if}
 				</p>
@@ -280,9 +280,9 @@
 					<a
 						class="qc-browse-chain-steps"
 						href={chainHref(chain)}
-						aria-label={`${accessibleText(chain.title)} thinking chain`}
+						aria-label={`${accessibleText(chain.title)} method`}
 					>
-						<h3>Thinking chain</h3>
+						<h3>Method</h3>
 						<ol class="qc-browse-pattern">
 							{#each chain.steps as step, index (`${chain.id}-${index}`)}
 								<li><MathText text={step} /></li>
@@ -317,7 +317,7 @@
 			{/each}
 
 			{#if visibleChains.length === 0}
-				<p class="qc-empty-search">No chains match that search.</p>
+				<p class="qc-empty-search">No practice sets match that search.</p>
 			{/if}
 
 			{#if remainingCount > 0}
@@ -326,7 +326,7 @@
 					class="qc-show-more-chains"
 					onclick={() => (visibleCount = Math.min(visibleCount + 12, data.chains.length))}
 				>
-					Show more chains
+					Show more sets
 				</button>
 			{/if}
 		</section>

@@ -25,7 +25,7 @@
 	<title>{chain.title} | Question Constellation</title>
 	<meta
 		name="description"
-		content={`Open a GCSE question chain for ${chain.title}, then choose a related exam question.`}
+		content={`Open the GCSE method for ${chain.title}, then choose a related exam question.`}
 	/>
 	<link rel="canonical" href={canonicalUrl} />
 </svelte:head>
@@ -34,18 +34,18 @@
 	<AppTopbar subject={chain.subject} />
 
 	<div class="qc-chain-layout">
-		<aside class="qc-chain-side" aria-label="Question chain summary">
+		<aside class="qc-chain-side" aria-label="Question method summary">
 			<IconBackLink href={resolve('/chains')} label="Back to question finder" />
 			<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
 			<h1><MathText text={chain.title} /></h1>
 			<p><MathText text={chain.summary} /></p>
-			<ThinkingChain steps={chain.steps} label="Thinking chain" />
+			<ThinkingChain steps={chain.steps} label="Method" />
 		</aside>
 
-		<section class="qc-chain-main" aria-label="Questions in this chain">
+		<section class="qc-chain-main" aria-label="Questions using this method">
 			<div class="qc-chain-heading">
 				<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
-				<h2>Questions in this chain</h2>
+				<h2>Questions using this method</h2>
 			</div>
 
 			<ChainQuestionList {chain} />

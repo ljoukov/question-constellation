@@ -45,7 +45,7 @@
 		name="description"
 		content={isEnglish
 			? 'Review the mark path for this GCSE English question and practise another question.'
-			: 'Reveal the answer chain and see how it transfers to related GCSE questions.'}
+			: 'See the mark-scoring method and practise related GCSE questions.'}
 	/>
 </svelte:head>
 
@@ -59,15 +59,15 @@
 	<div class="qc-real-layout qc-question-layout">
 		<aside
 			class="qc-real-rail qc-question-rail"
-			aria-label={isEnglish ? 'Questions using this mark path' : 'Questions using this chain'}
+			aria-label="Questions using this method"
 		>
 			<IconBackLink href={questionHref} label="Back to question" />
-			<p class="qc-real-kicker">{isEnglish ? 'Mark path' : 'Answer chain'}</p>
+			<p class="qc-real-kicker">Method</p>
 			<h1><MathText text={data.chain.title} /></h1>
 			<p class="qc-rail-summary"><MathText text={data.chain.summary} /></p>
 			<ThinkingChain
 				steps={chainSteps}
-				label={isEnglish ? 'Mark path' : 'Answer chain'}
+				label="Method"
 				note={isEnglish ? 'Use the order, then put it into exam language.' : ''}
 			/>
 			<nav class="qc-real-chain-list" aria-label="Practice transfer questions">
@@ -86,12 +86,12 @@
 
 		<section
 			class="qc-real-main qc-chain-reveal-main"
-			aria-label={isEnglish ? 'Mark path' : 'Answer chain'}
+			aria-label="Method"
 		>
 			<div class="qc-real-question-top">
 				<div>
 					<p><MathText text={data.question.sourceRef} /></p>
-					<h2>{isEnglish ? 'How this earns marks' : 'Same answer chain'}</h2>
+					<h2>How this earns marks</h2>
 				</div>
 				<a class="qc-real-link-button" href={currentPracticeHref}>Practise this question</a>
 			</div>
@@ -125,11 +125,11 @@
 
 			<div
 				class="qc-action-row"
-				aria-label={isEnglish ? 'Mark path actions' : 'Answer chain actions'}
+				aria-label="Method actions"
 			>
 				<a class="qc-action-button primary" href={constellationHref}>
 					<ClipboardList size={18} aria-hidden="true" />
-					{isEnglish ? 'Open question set' : 'Open constellation'}
+					Open practice set
 				</a>
 				<a class="qc-action-button" href={practiceHref}>
 					<PenLine size={18} aria-hidden="true" />

@@ -55,7 +55,7 @@
 	const subjectCountLabel = $derived(formatCount(data.stats.subjectCount));
 
 	const navLinks = [
-		{ href: chainsHref, label: 'Questions' },
+		{ href: chainsHref, label: 'Question bank' },
 		{ href: englishHref, label: 'English' },
 		{ href: pastPapersHref, label: 'Past papers' },
 		{ href: blogHref, label: 'Blog' }
@@ -64,7 +64,7 @@
 	const coverage = [
 		{
 			label: 'AQA GCSE Science',
-			detail: 'Biology, Chemistry and Physics chains from published question sets.'
+			detail: 'Biology, Chemistry and Physics questions with mark checklists and repair steps.'
 		},
 		{
 			label: 'GCSE English',
@@ -80,17 +80,17 @@
 		{
 			question: 'Is this a chatbot?',
 			answer:
-				'No. The public pages are built around curated questions, mark checklists, model answers, common weak answers and reusable answer chains.'
+				'No. The public pages are built around curated questions, mark checklists, model answers, common weak answers and guided repair.'
 		},
 		{
 			question: 'Can students use it without an account?',
 			answer:
-				'Yes. Public question, answer-chain, constellation and practice routes are usable without signing in.'
+				'Yes. Public question, method, practice-set and practice routes are usable without signing in.'
 		},
 		{
-			question: 'What makes an answer chain different from a topic?',
+			question: 'What is a method?',
 			answer:
-				'A topic names the content. An answer chain shows the ordered links that turn a weak answer into a mark-scoring answer.'
+				'A topic names the content. A method shows the ordered steps that turn a weak answer into a mark-scoring answer.'
 		}
 	];
 
@@ -112,16 +112,16 @@
 </script>
 
 <svelte:head>
-	<title>Question Constellation | GCSE Answer Chains</title>
+	<title>Question Constellation | GCSE Question Practice</title>
 	<meta
 		name="description"
-		content="A public GCSE question bank organized by answer chains: start with a real exam question, reveal the chain, then practise transfer questions."
+		content="A public GCSE question bank: start with a real exam question, see the method, then practise similar questions and fix missed steps."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/" />
 	<meta property="og:title" content="Question Constellation" />
 	<meta
 		property="og:description"
-		content="GCSE exam questions mapped by the answer chains that earn marks."
+		content="GCSE exam questions with mark methods, similar practice questions and guided repair."
 	/>
 	<meta
 		property="og:image"
@@ -134,7 +134,7 @@
 	<main class="qc-real-app qc-dashboard-page">
 		<AppTopbar
 			subject={dashboard.profile.selectedSubject}
-			subjects={['All subjects', 'Science', 'Biology', 'Chemistry', 'Physics']}
+			subjects={['All subjects', ...dashboard.subjectOptions]}
 			searchPlaceholder="Search questions"
 		/>
 
@@ -142,15 +142,15 @@
 			<section class="qc-dashboard-hero" aria-labelledby="dashboard-title">
 				<div>
 					<p class="qc-real-kicker">Today</p>
-					<h1 id="dashboard-title">Choose a science subject, {learnerName}.</h1>
+					<h1 id="dashboard-title">Choose what to practise, {learnerName}.</h1>
 					<p>
-						Each subject starts from what the app currently knows: short recall, real exam
-						questions, or the next missing answer-chain link.
+						Each subject starts from the best next step: fix a known mistake, review due
+						flashcards, or continue with a real exam question.
 					</p>
 				</div>
 				<a class="qc-dashboard-profile-link" href={profileHref}>
 					<span>Profile</span>
-					<strong>{subjectLanes.length || dashboard.learnerSubjects.length} science courses</strong>
+					<strong>{subjectLanes.length || dashboard.learnerSubjects.length} selected subjects</strong>
 					<ArrowRight size={16} aria-hidden="true" strokeWidth={2.2} />
 				</a>
 			</section>
@@ -164,7 +164,7 @@
 				<div>
 					<CircleAlert size={18} aria-hidden="true" />
 					<strong>{dashboard.stats.activeGapCount}</strong>
-					<span>open chain gaps</span>
+					<span>mistakes to fix</span>
 				</div>
 				<div>
 					<Brain size={18} aria-hidden="true" />
@@ -182,7 +182,7 @@
 				<div class="qc-dashboard-section-head">
 					<div>
 						<p class="qc-real-kicker">Subjects</p>
-						<h2 id="dashboard-subjects">Start from the right evidence.</h2>
+						<h2 id="dashboard-subjects">One next step per subject.</h2>
 					</div>
 					<a href={profileHref}>Edit profile</a>
 				</div>
@@ -211,7 +211,7 @@
 									</div>
 									<div>
 										<strong>{lane.activeGapCount}</strong>
-										<span>open gaps</span>
+										<span>mistakes</span>
 									</div>
 									<div>
 										<strong>{lane.attemptCount}</strong>
@@ -226,7 +226,7 @@
 								{#if lane.openGap}
 									<a class="qc-dashboard-question-link" href={lane.openGap.href}>
 										<strong><MathText text={lane.openGap.stepText} /></strong>
-										<span><MathText text={`${lane.openGap.chainTitle} · ${lane.openGap.topic}`} /></span>
+										<span><MathText text={`${lane.openGap.questionTitle} · ${lane.openGap.topic}`} /></span>
 									</a>
 								{:else if lane.nextQuestion}
 									<a class="qc-dashboard-question-link" href={lane.nextQuestion.href}>
@@ -242,8 +242,10 @@
 										{lane.primaryAction.label}
 										<ArrowRight size={16} aria-hidden="true" />
 									</a>
-									<a href={lane.recallHref}>Recall</a>
-									<a href={lane.practiceHref}>Questions</a>
+									{#if lane.supportsRecall}
+										<a href={lane.recallHref}>Flashcards</a>
+									{/if}
+									<a href={lane.href}>Browse</a>
 								</div>
 							</article>
 						{/each}
@@ -253,11 +255,11 @@
 						<div class="qc-dashboard-panel-head">
 							<div>
 								<p class="qc-real-kicker">Profile</p>
-								<h2>Select at least one science subject</h2>
+								<h2>Select at least one subject</h2>
 							</div>
 							<GraduationCap size={21} aria-hidden="true" />
 						</div>
-						<p>Choose Biology, Chemistry, Physics, or any combination in your profile.</p>
+						<p>Choose the GCSE subjects you want to practise in your profile.</p>
 						<a class="qc-dashboard-action" href={profileHref}>
 							Open profile
 							<ArrowRight size={16} aria-hidden="true" />
@@ -271,7 +273,7 @@
 					<div class="qc-dashboard-panel-head">
 						<div>
 							<p class="qc-real-kicker">Exam practice</p>
-							<h2 id="dashboard-next-question">Next concrete question</h2>
+							<h2 id="dashboard-next-question">Next exam question</h2>
 						</div>
 						<GraduationCap size={21} aria-hidden="true" />
 					</div>
@@ -279,16 +281,16 @@
 						<a class="qc-dashboard-question-link" href={primaryLane.nextQuestion.href}>
 							<strong><MathText text={primaryLane.nextQuestion.title} /></strong>
 							<span><MathText text={primaryLane.nextQuestion.meta} /></span>
-							<small>Chain: <MathText text={primaryLane.nextQuestion.chainTitle} /></small>
+							<small>Method: <MathText text={primaryLane.nextQuestion.chainTitle} /></small>
 						</a>
 					{:else if dashboard.nextQuestion}
 						<a class="qc-dashboard-question-link" href={dashboard.nextQuestion.href}>
 							<strong><MathText text={dashboard.nextQuestion.title} /></strong>
 							<span><MathText text={dashboard.nextQuestion.meta} /></span>
-							<small>Chain: <MathText text={dashboard.nextQuestion.chainTitle} /></small>
+							<small>Method: <MathText text={dashboard.nextQuestion.chainTitle} /></small>
 						</a>
 					{:else}
-						<p>No unattempted science question was found in the current set.</p>
+						<p>No unattempted question was found for your selected subjects.</p>
 					{/if}
 				</section>
 
@@ -320,8 +322,8 @@
 				<section class="qc-dashboard-panel" aria-labelledby="dashboard-gaps">
 					<div class="qc-dashboard-panel-head">
 						<div>
-							<p class="qc-real-kicker">Answer chains</p>
-							<h2 id="dashboard-gaps">Open gaps</h2>
+							<p class="qc-real-kicker">Practice repair</p>
+							<h2 id="dashboard-gaps">Mistakes to fix</h2>
 						</div>
 						<Target size={21} aria-hidden="true" />
 					</div>
@@ -330,12 +332,12 @@
 							{#each dashboard.activeGaps.slice(0, 3) as gap (gap.id)}
 								<a href={gap.href}>
 									<strong><MathText text={gap.stepText} /></strong>
-									<span><MathText text={`${gap.chainTitle} · ${gap.topic}`} /></span>
+									<span><MathText text={`${gap.questionTitle} · ${gap.topic}`} /></span>
 								</a>
 							{/each}
 						</div>
 					{:else}
-						<p>Check a longer answer and missing chain links will appear here.</p>
+						<p>Check a longer answer and missed method steps will appear here.</p>
 					{/if}
 				</section>
 			</div>
@@ -382,15 +384,15 @@
 					<p class="qc-home-eyebrow">Public GCSE question bank</p>
 					<h1 id="home-title">Question Constellation</h1>
 					<p class="qc-home-hero-copy">
-						Find real exam questions, reveal the answer chain behind the marks, then practise nearby
-						and harder questions that use the same hidden logic.
+						Find real exam questions, see the method behind the marks, then practise similar
+						questions and fix the steps you missed.
 					</p>
 					<div class="qc-home-actions" aria-label="Homepage actions">
 						<a class="qc-home-button primary" href={startQuestionHref}>
 							Start with a question
 							<ArrowRight size={18} aria-hidden="true" />
 						</a>
-						<a class="qc-home-button secondary" href={chainsHref}>Browse all chains</a>
+						<a class="qc-home-button secondary" href={chainsHref}>Open question bank</a>
 					</div>
 					<dl class="qc-home-stats" aria-label="Question bank size">
 						<div>
@@ -399,7 +401,7 @@
 						</div>
 						<div>
 							<dt>{chainCountLabel}</dt>
-							<dd>answer chains</dd>
+							<dd>practice sets</dd>
 						</div>
 						<div>
 							<dt>{subjectCountLabel}</dt>
@@ -409,7 +411,7 @@
 				</div>
 
 				{#if featuredChain && featuredQuestion}
-					<aside class="qc-home-hero-preview" aria-label="Example question and answer chain">
+					<aside class="qc-home-hero-preview" aria-label="Example question and method">
 						<div class="qc-home-preview-question">
 							<span>
 								<MathText
@@ -420,8 +422,8 @@
 						</div>
 
 						<div class="qc-home-preview-chain">
-							<p class="qc-home-mini-label">Answer chain</p>
-							<ol aria-label={`${featuredChain.title} answer chain`}>
+							<p class="qc-home-mini-label">Method</p>
+							<ol aria-label={`${featuredChain.title} method`}>
 								{#each featuredChain.steps.slice(0, 4) as step, index (`hero-${featuredChain.id}-${index}`)}
 									<li><MathText text={step} /></li>
 								{/each}
@@ -430,10 +432,10 @@
 
 						<div class="qc-home-preview-links">
 							<a href={featuredChainHref}>
-								Reveal this chain
+								See the method
 								<ArrowRight size={16} aria-hidden="true" />
 							</a>
-							<a href={featuredConstellationHref}>Open constellation</a>
+							<a href={featuredConstellationHref}>Practice similar questions</a>
 						</div>
 					</aside>
 				{/if}
@@ -443,10 +445,10 @@
 		<section class="qc-home-section qc-home-flow" aria-labelledby="flow-title">
 			<div class="qc-home-section-head">
 				<p class="qc-home-eyebrow">Question first</p>
-				<h2 id="flow-title">The page flow follows how marks are won.</h2>
+				<h2 id="flow-title">The flow follows how marks are won.</h2>
 				<p>
-					A student starts on a concrete question, sees the missing links in a weak answer, opens
-					the constellation, and practises transfer.
+					Start on a concrete question, learn the method, practise similar questions, and repair
+					the steps that were missing.
 				</p>
 			</div>
 
@@ -458,13 +460,13 @@
 				</article>
 				<article>
 					<Network size={21} aria-hidden="true" />
-					<h3>Reveal the answer chain</h3>
-					<p>The reusable reasoning steps appear beside the model answer and checklist.</p>
+					<h3>See the method</h3>
+					<p>The mark-scoring steps appear beside the model answer and checklist.</p>
 				</article>
 				<article>
 					<ClipboardCheck size={21} aria-hidden="true" />
-					<h3>Practise the constellation</h3>
-					<p>Near, stretch and transfer questions make the same chain work in new contexts.</p>
+					<h3>Practise similar questions</h3>
+					<p>Near, stretch and transfer questions make the same method work in new contexts.</p>
 				</article>
 				<article>
 					<BookOpenCheck size={21} aria-hidden="true" />
@@ -477,14 +479,14 @@
 		<section class="qc-home-section qc-home-product-band" aria-labelledby="product-title">
 			<div class="qc-home-product-copy">
 				<p class="qc-home-eyebrow">Built like an exam atlas</p>
-				<h2 id="product-title">Questions that look different can use the same chain.</h2>
+				<h2 id="product-title">Questions that look different can use the same method.</h2>
 				<p>
-					Question Constellation groups exam questions by the reasoning sequence that earns marks.
+					Question Constellation groups exam questions by the steps that earn marks.
 					That makes revision less about memorising isolated answers and more about spotting
 					transferable structure.
 				</p>
 				<a class="qc-home-inline-link" href={featuredConstellationHref}>
-					Open a constellation
+					Open a practice set
 					<ArrowRight size={17} aria-hidden="true" />
 				</a>
 			</div>
@@ -492,7 +494,7 @@
 				<img
 					class="qc-theme-image qc-theme-image-light qc-home-image-primary"
 					src="/product/answer-chain-reveal.webp"
-					alt="Answer chain reveal page showing an exam question and reusable reasoning steps."
+					alt="Method page showing an exam question and reusable mark-scoring steps."
 					width="1040"
 					height="585"
 					loading="eager"
@@ -501,7 +503,7 @@
 				<img
 					class="qc-theme-image qc-theme-image-dark qc-home-image-primary"
 					src="/product/answer-chain-reveal-dark.webp"
-					alt="Answer chain reveal page showing an exam question and reusable reasoning steps."
+					alt="Method page showing an exam question and reusable mark-scoring steps."
 					width="1040"
 					height="585"
 					loading="eager"
@@ -531,7 +533,7 @@
 		{#if featuredChain}
 			<section class="qc-home-section qc-home-featured" aria-labelledby="featured-title">
 				<div class="qc-home-section-head">
-					<p class="qc-home-eyebrow">Example chain</p>
+					<p class="qc-home-eyebrow">Example method</p>
 					<h2 id="featured-title"><MathText text={featuredChain.title} /></h2>
 					<p><MathText text={featuredChain.summary} /></p>
 				</div>
@@ -539,7 +541,7 @@
 				<div class="qc-home-chain-panel">
 					<div>
 						<p class="qc-home-mini-label"><MathText text={featuredChain.topic} /></p>
-						<ol class="qc-home-chain-steps" aria-label="Featured answer chain steps">
+						<ol class="qc-home-chain-steps" aria-label="Featured method steps">
 							{#each featuredChain.steps.slice(0, 5) as step, index (`${featuredChain.id}-${index}`)}
 								<li><MathText text={step} /></li>
 							{/each}
@@ -557,7 +559,7 @@
 				</div>
 
 				<div class="qc-home-actions compact" aria-label="Featured chain actions">
-					<a class="qc-home-button primary" href={featuredChainHref}>View this chain</a>
+					<a class="qc-home-button primary" href={featuredChainHref}>View this method</a>
 					<a class="qc-home-button secondary" href={pastPapersHref}>Download past papers</a>
 				</div>
 			</section>
@@ -595,7 +597,7 @@
 				</p>
 				<p>
 					<Network size={20} aria-hidden="true" />
-					Question, chain, constellation and practice pages stay public.
+					Question, method, practice-set and practice pages stay public.
 				</p>
 			</div>
 		</section>
@@ -617,9 +619,9 @@
 
 		<section class="qc-home-final" aria-labelledby="final-title">
 			<h2 id="final-title">Open the question bank.</h2>
-			<p>Start from a real question, reveal the chain, then practise transfer.</p>
+			<p>Start from a real question, see the method, then practise similar questions.</p>
 			<div class="qc-home-actions compact" aria-label="Footer actions">
-				<a class="qc-home-button primary" href={chainsHref}>Browse question chains</a>
+				<a class="qc-home-button primary" href={chainsHref}>Open question bank</a>
 				<a class="qc-home-button secondary" href={pastPapersHref}>Download past papers</a>
 			</div>
 		</section>

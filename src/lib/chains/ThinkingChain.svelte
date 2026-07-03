@@ -3,7 +3,7 @@
 
 	let {
 		steps,
-		label = 'Thinking chain',
+		label = 'Method',
 		note = ''
 	}: {
 		steps: string[];

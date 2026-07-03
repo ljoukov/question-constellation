@@ -267,7 +267,7 @@
 						class="qc-real-link-button"
 						onclick={() => (patternOpen = !patternOpen)}
 					>
-						{patternOpen ? 'Hide thinking chain' : 'Show thinking chain'}
+						{patternOpen ? 'Hide method' : 'Show method'}
 					</button>
 				{/if}
 			</div>
@@ -297,7 +297,7 @@
 			{/if}
 
 			{#if patternOpen}
-				<ThinkingChain steps={chain.steps} label="Thinking chain" note="Use the links in order." />
+				<ThinkingChain steps={chain.steps} label="Method" note="Use the steps in order." />
 			{/if}
 
 			{#if hasGrade && nextQuestion && !questionMatchesRef(nextQuestion, selectedRef)}

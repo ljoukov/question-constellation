@@ -100,7 +100,7 @@
 				<h2 id="topic-questions">
 					{data.topic.questionCount} exam {questionWord}
 				</h2>
-				<p>Start with a real question, then open the answer chain when you are ready.</p>
+				<p>Start with a real question, then open the method when you are ready.</p>
 			</div>
 
 			<div class="question-list" role="list">
@@ -128,7 +128,7 @@
 		{#if data.topic.chains.length > 0}
 			<section class="topic-section" aria-labelledby="topic-chains">
 				<div class="section-heading">
-					<h2 id="topic-chains">Reusable answer chains</h2>
+					<h2 id="topic-chains">Reusable methods</h2>
 					<p>Questions in this topic often reuse the same mark-scoring steps.</p>
 				</div>
 
