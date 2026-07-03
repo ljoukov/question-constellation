@@ -18,6 +18,7 @@
 	const chainsHref = resolve('/chains');
 	const pastPapersHref = resolve('/past-papers/gcse');
 	const englishHref = resolve('/english');
+	const blogHref = resolve('/blog');
 	const signInHref = resolve('/auth/start');
 	const featuredChain = $derived(data.featuredChains[0] ?? null);
 	const featuredQuestion = $derived(featuredChain?.questions[0] ?? null);
@@ -37,7 +38,8 @@
 	const navLinks = [
 		{ href: chainsHref, label: 'Questions' },
 		{ href: englishHref, label: 'English' },
-		{ href: pastPapersHref, label: 'Past papers' }
+		{ href: pastPapersHref, label: 'Past papers' },
+		{ href: blogHref, label: 'Blog' }
 	];
 
 	const coverage = [

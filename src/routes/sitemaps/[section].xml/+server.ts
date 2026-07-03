@@ -3,6 +3,7 @@ import {
 	gcsePastPaperEntryIndex,
 	gcsePastPaperSubjectIndex
 } from '$lib/pastPapers/gcsePastPapers';
+import { blogArticles } from '$lib/blog/articles';
 import {
 	getPublicChainSitemapEntries,
 	getPublicQuestionSitemapEntries,
@@ -43,6 +44,18 @@ function pastPaperEntries(): SitemapEntry[] {
 	return [...boardEntries, ...subjectEntries, ...paperEntries];
 }
 
+function blogEntries(): SitemapEntry[] {
+	return [
+		{ path: '/blog', priority: '0.82', changefreq: 'weekly' },
+		...blogArticles.map((article) => ({
+			path: `/blog/${article.slug}`,
+			changefreq: 'monthly' as const,
+			priority: article.category === 'Comparison' ? '0.74' : '0.7',
+			lastmod: article.updatedAt ?? article.publishedAt
+		}))
+	];
+}
+
 function uniqueEntries(entries: SitemapEntry[]) {
 	const seen = new Set<string>();
 	return entries.filter((entry) => {
@@ -54,6 +67,7 @@ function uniqueEntries(entries: SitemapEntry[]) {
 
 async function entriesForSection(section: string): Promise<SitemapEntry[] | null> {
 	if (section === 'static') return uniqueEntries(staticEntries);
+	if (section === 'blog') return uniqueEntries(blogEntries());
 	if (section === 'past-papers') return uniqueEntries(pastPaperEntries());
 	if (section === 'questions') return uniqueEntries(await getPublicQuestionSitemapEntries());
 	if (section === 'chains') return uniqueEntries(await getPublicChainSitemapEntries());
