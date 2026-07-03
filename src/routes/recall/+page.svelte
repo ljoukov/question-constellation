@@ -139,6 +139,8 @@
 	);
 	const currentCard = $derived(filteredCards[cardIndex] ?? null);
 	const currentTopic = $derived(currentCard ? topicById.get(currentCard.topicId) : null);
+	const nextCard = $derived(filteredCards[cardIndex + 1] ?? null);
+	const followingCard = $derived(filteredCards[cardIndex + 2] ?? null);
 	const currentChoices = $derived(currentCard ? answerChoices(currentCard) : []);
 	const totalCards = $derived(filteredCards.length);
 	const seenCount = $derived(filteredCards.filter((card) => progressById[card.id]?.seen).length);
@@ -160,7 +162,8 @@
 		totalCards === 0 ? '0%' : `${Math.min(100, (answeredInSession / totalCards) * 100)}%`
 	);
 	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
-	const dragCue = $derived(!revealed || Math.abs(dragX) < 64 ? '' : dragX > 0 ? 'Good' : 'Again');
+	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Good' : 'Review');
+	const dragProgress = $derived(Math.min(1, Math.abs(dragX) / 140));
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 
 	$effect(() => {
@@ -206,6 +209,14 @@
 
 	function topicFor(card: RecallCard) {
 		return topicById.get(card.topicId);
+	}
+
+	function promptTextFor(card: RecallCard) {
+		return mode === 'reverse' ? (card.reverseFront ?? card.back) : card.front;
+	}
+
+	function answerTextFor(card: RecallCard) {
+		return mode === 'reverse' ? (card.reverseBack ?? card.front) : card.back;
 	}
 
 	function topicCardCount(topicId: string) {
@@ -511,9 +522,32 @@
 				</div>
 			</section>
 		{:else if currentCard}
-			<section class="card-stage" aria-live="polite">
-				<div class="stack-card ghost two"></div>
-				<div class="stack-card ghost one"></div>
+			<section
+				class="card-stage"
+				class:flipping-stack={cardMotion === 'flipping'}
+				class:moving-stack={['dragging', 'exiting-left', 'exiting-right'].includes(cardMotion)}
+				aria-live="polite"
+			>
+				{#if followingCard}
+					<article class="stack-card preview two" aria-hidden="true"></article>
+				{/if}
+				{#if nextCard}
+					{@const topic = topicFor(nextCard)}
+					<article class="stack-card preview one" aria-hidden="true">
+						<div class="card-face front">
+							<header class="card-meta">
+								<span>{nextCard.subject}</span>
+								<span>{data.kindLabels[nextCard.kind]}</span>
+								<span>{nextCard.specRef}</span>
+							</header>
+							<section class="card-prompt">
+								<p>{topic?.title ?? 'AQA Science'}</p>
+								<h1><MathText text={promptTextFor(nextCard)} /></h1>
+							</section>
+							<p class="card-gesture-hint">Next card</p>
+						</div>
+					</article>
+				{/if}
 				{#key currentCard.id}
 					<article
 						class="stack-card active"
@@ -524,7 +558,7 @@
 						class:revealed
 						class:exiting-left={cardMotion === 'exiting-left'}
 						class:exiting-right={cardMotion === 'exiting-right'}
-						style={`--drag-x: ${dragX}px; --drag-y: ${dragY}px; --drag-rotate: ${dragRotation}deg;`}
+						style={`--drag-x: ${dragX}px; --drag-y: ${dragY}px; --drag-rotate: ${dragRotation}deg; --drag-progress: ${dragProgress};`}
 						onpointerdown={handlePointerDown}
 						onpointermove={handlePointerMove}
 						onpointerup={handlePointerUp}
@@ -547,11 +581,7 @@
 								<section class="card-prompt">
 									<p>{currentTopic?.title ?? 'AQA Science'}</p>
 									<h1>
-										<MathText
-											text={mode === 'reverse'
-												? (currentCard.reverseFront ?? currentCard.back)
-												: currentCard.front}
-										/>
+										<MathText text={promptTextFor(currentCard)} />
 									</h1>
 								</section>
 
@@ -591,11 +621,7 @@
 								<section class="card-answer">
 									<p>Expected recall</p>
 									<div>
-										<MathText
-											text={mode === 'reverse'
-												? (currentCard.reverseBack ?? currentCard.front)
-												: currentCard.back}
-										/>
+										<MathText text={answerTextFor(currentCard)} />
 									</div>
 								</section>
 
@@ -1000,10 +1026,17 @@
 
 	.recall-session {
 		position: fixed;
-		inset: 0;
+		top: 0;
+		right: 0;
+		bottom: auto;
+		left: 0;
 		z-index: 80;
 		display: grid;
 		grid-template-rows: auto minmax(0, 1fr) auto;
+		height: 100dvh;
+		height: var(--app-viewport-height, 100dvh);
+		min-height: 0;
+		max-height: 100dvh;
 		overflow: hidden;
 		touch-action: pan-y;
 	}
@@ -1067,37 +1100,63 @@
 		place-items: center;
 		min-height: 0;
 		padding: clamp(1rem, 3vw, 2rem);
+		overflow: hidden;
 	}
 
 	.stack-card {
 		position: absolute;
 		width: min(100%, 42rem);
-		height: min(68vh, 36rem);
+		height: min(100%, 36rem);
+		max-height: 100%;
 		border: 1px solid #0b1020;
 		background: #ffffff;
 		box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
+		overflow: hidden;
 	}
 
-	.stack-card.ghost {
+	.stack-card.preview {
 		pointer-events: none;
 		border-color: rgba(11, 16, 32, 0.18);
 		box-shadow: none;
-		opacity: 0.82;
+		opacity: 0.38;
+		transition: opacity 180ms ease;
 	}
 
-	.stack-card.ghost.one {
+	.stack-card.preview.one {
+		z-index: 1;
 		transform: translate(0.65rem, 0.65rem);
-		background: rgba(8, 96, 44, 0.09);
 	}
 
-	.stack-card.ghost.two {
+	.stack-card.preview.two {
+		z-index: 0;
 		transform: translate(1.3rem, 1.3rem);
-		background: rgba(37, 99, 235, 0.08);
+		opacity: 0.46;
+	}
+
+	.stack-card.preview.two {
+		background: #f5f8fc;
+	}
+
+	.card-stage.moving-stack .stack-card.preview.one {
+		opacity: 0.72;
+	}
+
+	.card-stage.flipping-stack .stack-card.preview {
+		opacity: 0.18;
+	}
+
+	.stack-card.preview .card-meta,
+	.stack-card.preview .card-gesture-hint {
+		opacity: 0.78;
 	}
 
 	.stack-card.active {
 		position: relative;
 		z-index: 2;
+		border: 0;
+		background: transparent;
+		box-shadow: none;
+		overflow: visible;
 		user-select: none;
 		touch-action: none;
 		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
@@ -1142,13 +1201,17 @@
 		position: relative;
 		width: 100%;
 		height: 100%;
+		border: 1px solid #0b1020;
+		background: #ffffff;
+		box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
 		transform-style: preserve-3d;
+		transform-origin: center center;
 		transition: transform 560ms cubic-bezier(0.2, 0.72, 0.18, 1);
 		will-change: transform;
 	}
 
 	.stack-card.active.revealed .card-flipper {
-		transform: rotateY(180deg);
+		transform: rotateY(-180deg);
 	}
 
 	.card-face {
@@ -1288,7 +1351,7 @@
 
 	.drag-cue {
 		position: absolute;
-		top: 4.4rem;
+		top: 4rem;
 		z-index: 3;
 		padding: 0.45rem 0.65rem;
 		border: 2px solid currentColor;
@@ -1296,24 +1359,41 @@
 		font-size: 1.25rem;
 		font-weight: 900;
 		text-transform: uppercase;
-		transform: rotate(-8deg);
+		pointer-events: none;
+		animation: cue-pop 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+		transform: rotate(var(--cue-rotate, -7deg));
 	}
 
 	.drag-cue.positive {
-		right: 1.2rem;
+		left: 1.1rem;
 		color: #05642f;
+		--cue-rotate: -7deg;
 	}
 
 	.drag-cue.negative {
-		left: 1.2rem;
+		right: 1.1rem;
 		color: #8f1f14;
+		--cue-rotate: 7deg;
+	}
+
+	@keyframes cue-pop {
+		from {
+			opacity: 0;
+			transform: translateY(0.35rem) rotate(var(--cue-rotate, -7deg)) scale(0.94);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0) rotate(var(--cue-rotate, -7deg)) scale(1);
+		}
 	}
 
 	.session-actions {
 		display: flex;
+		flex: 0 0 auto;
 		justify-content: center;
 		gap: 0.7rem;
-		padding: 0.85rem 1rem max(0.85rem, env(safe-area-inset-bottom));
+		padding: 0.85rem 1rem max(1rem, env(safe-area-inset-bottom));
 		border-top: 1px solid #d9e0ea;
 		background: #ffffff;
 	}
@@ -1401,18 +1481,34 @@
 			0 0 0 1px rgba(226, 232, 240, 0.08);
 	}
 
-	:global(:root[data-theme='dark']) .stack-card.ghost {
+	:global(:root[data-theme='dark']) .card-flipper {
+		border-color: rgba(148, 163, 184, 0.42);
+		background: #0f172a;
+		box-shadow:
+			0 1.35rem 3rem rgba(0, 0, 0, 0.42),
+			0 0 0 1px rgba(226, 232, 240, 0.08);
+	}
+
+	:global(:root[data-theme='dark']) .stack-card.preview {
 		border-color: rgba(148, 163, 184, 0.18);
 		box-shadow: none;
-		opacity: 0.68;
+		opacity: 0.34;
 	}
 
-	:global(:root[data-theme='dark']) .stack-card.ghost.one {
-		background: rgba(34, 197, 94, 0.12);
+	:global(:root[data-theme='dark']) .card-stage.moving-stack .stack-card.preview.one {
+		opacity: 0.62;
 	}
 
-	:global(:root[data-theme='dark']) .stack-card.ghost.two {
-		background: rgba(59, 130, 246, 0.11);
+	:global(:root[data-theme='dark']) .card-stage.flipping-stack .stack-card.preview {
+		opacity: 0.14;
+	}
+
+	:global(:root[data-theme='dark']) .stack-card.preview.one .card-face {
+		background: #0d1b24;
+	}
+
+	:global(:root[data-theme='dark']) .stack-card.preview.two {
+		background: #0a1421;
 	}
 
 	:global(:root[data-theme='dark']) .setup-segment button.active,
@@ -1464,20 +1560,24 @@
 
 		.stack-card {
 			width: min(calc(100vw - 2rem), 42rem);
-			height: min(64vh, 34rem);
+			height: min(100%, 34rem);
 			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
 		}
 
-		.stack-card.ghost.one {
+		.card-flipper {
+			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
+		}
+
+		.stack-card.preview.one {
 			transform: translate(0.45rem, 0.45rem);
 		}
 
-		.stack-card.ghost.two {
+		.stack-card.preview.two {
 			transform: translate(0.9rem, 0.9rem);
 		}
 
 		.card-stage {
-			padding: 1rem;
+			padding: 0.85rem 1rem;
 		}
 
 		.card-prompt h1 {
@@ -1505,7 +1605,13 @@
 			0 0 0 1px rgba(226, 232, 240, 0.08);
 	}
 
-	:global(:root[data-theme='dark']) .stack-card.ghost {
+	:global(:root[data-theme='dark']) .stack-card.active {
+		border: 0;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	:global(:root[data-theme='dark']) .stack-card.preview {
 		box-shadow: none;
 	}
 </style>

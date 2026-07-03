@@ -17,9 +17,19 @@
 	let showRouteLoading = $state(false);
 	let routeLoadingContentType = $state<RouteLoadingContentType>('default');
 
+	function syncAppViewportHeight() {
+		if (typeof window === 'undefined') return;
+		const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+		document.documentElement.style.setProperty('--app-viewport-height', `${viewportHeight}px`);
+	}
+
 	onMount(() => {
 		let stopAutomaticThemeSync = () => {};
 		const stopViewportZoomGuard = disableViewportZoomUnless(() => window.location.pathname);
+		syncAppViewportHeight();
+		window.addEventListener('resize', syncAppViewportHeight);
+		window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
+		window.visualViewport?.addEventListener('scroll', syncAppViewportHeight);
 		const unsubscribe = themePreference.subscribe((preference: ThemePreference) => {
 			stopAutomaticThemeSync();
 			if (preference === 'auto') {
@@ -34,6 +44,9 @@
 			unsubscribe();
 			stopAutomaticThemeSync();
 			stopViewportZoomGuard();
+			window.removeEventListener('resize', syncAppViewportHeight);
+			window.visualViewport?.removeEventListener('resize', syncAppViewportHeight);
+			window.visualViewport?.removeEventListener('scroll', syncAppViewportHeight);
 		};
 	});
 
