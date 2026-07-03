@@ -263,6 +263,7 @@ function chainCommand() {
 	];
 	forwardString(args, 'existing-chains');
 	forwardString(args, 'existing-chain-input-root');
+	if (hasArg('allow-shared-chain-updates')) args.push('--allow-shared-chain-updates');
 	if (hasArg('run-legacy-chain-style-judge')) {
 		args.push('--run-legacy-chain-style-judge');
 	} else {

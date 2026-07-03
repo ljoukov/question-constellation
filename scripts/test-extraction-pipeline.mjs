@@ -3479,7 +3479,7 @@ writeFileSync(
 	JSON.stringify(
 		{
 			sourceDocument: {
-				id: 'aqa-computer-science-2021-november-paper-2-written-assessment-qp',
+				id: 'aqa-computer-science-2021-june-paper-2-written-assessment-qp',
 				docType: 'question_paper'
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
@@ -3548,7 +3548,7 @@ writeFileSync(
 	JSON.stringify(
 		{
 			sourceDocument: {
-				id: 'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp',
+				id: 'aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp',
 				docType: 'question_paper'
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
@@ -5330,6 +5330,50 @@ if (
 	)
 ) {
 	fail('Deterministic checks did not flag missing media referenced by learner text for review.');
+}
+
+const structuredFigureReferenceIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '04.7',
+			commandWord: 'What',
+			marks: 1,
+			promptText:
+				'A binary shift can be used to divide the value in Figure 1 by 4. What is the result of this shift?',
+			stemBlocks: [
+				{ kind: 'paragraph', text: 'Figure 1 shows a value represented as a bit pattern.' },
+				{ kind: 'equation', label: 'Figure 1', text: '1 0 1 1 0 0 0 0' }
+			],
+			response: { kind: 'lines' },
+			assets: [],
+			markSchemeItems: [{ itemType: 'marking_point', text: '00101100.' }],
+			modelAnswer: { answerText: '00101100' },
+			answerChain: {
+				id: 'cs-chain-left-shift-bit-pattern',
+				title: 'Bit shift',
+				canonicalChainText: 'shift direction -> fill zeros -> new pattern',
+				summary: 'Moved bits, filled gap.',
+				steps: [
+					{
+						stepText: 'shift direction',
+						stepRole: 'process',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	structuredFigureReferenceIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'referenced_media_missing_asset')
+	)
+) {
+	fail('Deterministic checks incorrectly rejected a labeled equation rendering a referenced figure.', {
+		structuredFigureReferenceIssues
+	});
 }
 
 const copyrightPlaceholderMediaIssues = pipelineModule.deterministicCandidateIssues({

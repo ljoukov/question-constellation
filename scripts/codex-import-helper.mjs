@@ -66,6 +66,14 @@ const forbiddenAnswerChainPlaceholderLabels = [
 	/\bcorrect option\b/i,
 	/\banswer is\b/i
 ];
+const computerScience2021Paper2SourceDocumentIds = new Set([
+	'aqa-computer-science-2021-june-paper-2-written-assessment-qp',
+	'aqa-computer-science-2021-november-paper-2-written-assessment-qp'
+]);
+const computerScience2021Paper1SourceDocumentIds = new Set([
+	'aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp',
+	'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp'
+]);
 
 try {
 	if (command === 'help' || hasArg('help')) printHelp();
@@ -1449,8 +1457,8 @@ function deterministicIssuesFor(candidate, options = {}) {
 				'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
 				'aqa-computer-science-2024-june-paper-2-computing-concepts-qp',
 				'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
-				'aqa-computer-science-2021-november-paper-2-written-assessment-qp',
-				'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp',
+				...computerScience2021Paper2SourceDocumentIds,
+				...computerScience2021Paper1SourceDocumentIds,
 				'aqa-computer-science-2022-june-paper-2-computing-concepts-qp',
 				'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp',
 				'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp',
@@ -1935,7 +1943,7 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
-	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-2-written-assessment-qp') {
+	if (computerScience2021Paper2SourceDocumentIds.has(sourceDocumentId)) {
 		return new Map(
 			Object.entries({
 				'01.1': 2,
@@ -1991,7 +1999,7 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
-	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp') {
+	if (computerScience2021Paper1SourceDocumentIds.has(sourceDocumentId)) {
 		return new Map(
 			Object.entries({
 				'02.1': 2,
@@ -2346,13 +2354,13 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		}
 		return issues;
 	}
-	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-2-written-assessment-qp') {
+	if (computerScience2021Paper2SourceDocumentIds.has(sourceDocumentId)) {
 		for (const issue of knownComputerScience2021Paper2ResponseIssues(question)) {
 			issues.push(issue);
 		}
 		return issues;
 	}
-	if (sourceDocumentId === 'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp') {
+	if (computerScience2021Paper1SourceDocumentIds.has(sourceDocumentId)) {
 		for (const issue of knownComputerScience2021Paper1ResponseIssues(question, visibleText)) {
 			issues.push(issue);
 		}

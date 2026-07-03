@@ -5437,6 +5437,9 @@ function questionHasStructuredTableSurface(question, label) {
 
 function structuredTableBlockMatches(block, label) {
 	if (!structuredReferenceBlockMatches(block, label)) return false;
+	if (!['table', 'structured-table', 'structured_table'].includes(normalizedBlockKind(block))) {
+		return false;
+	}
 	return Array.isArray(block.columns)
 		? block.columns.some((column) => String(column ?? '').trim())
 		: Array.isArray(block.rows) && block.rows.length > 1;
@@ -5459,9 +5462,41 @@ function questionHasStructuredReferenceSurface(question, label) {
 
 function structuredReferenceBlockMatches(block, label) {
 	if (!block || typeof block !== 'object') return false;
-	if (!['table', 'structured-table'].includes(String(block.kind ?? ''))) return false;
+	if (!structuredReferenceBlockKind(block)) return false;
 	if (!assetMatchesLabel(block, label)) return false;
-	return structuredReferenceBlockHasRows(block);
+	return structuredReferenceBlockHasContent(block);
+}
+
+function structuredReferenceBlockKind(block) {
+	const kind = normalizedBlockKind(block);
+	if (
+		[
+			'table',
+			'structured-table',
+			'structured_table',
+			'equation',
+			'formula',
+			'math',
+			'code'
+		].includes(kind)
+	) {
+		return kind;
+	}
+	return '';
+}
+
+function normalizedBlockKind(block) {
+	return String(block?.kind ?? '').toLowerCase();
+}
+
+function structuredReferenceBlockHasContent(block) {
+	const kind = structuredReferenceBlockKind(block);
+	if (['table', 'structured-table', 'structured_table'].includes(kind)) {
+		return structuredReferenceBlockHasRows(block);
+	}
+	return [block.text, block.formula, block.latex, block.code, block.html]
+		.map((value) => String(value ?? '').trim())
+		.some(Boolean);
 }
 
 function structuredReferenceBlockHasRows(block) {

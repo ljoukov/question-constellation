@@ -8,6 +8,15 @@ import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
 const rootDir = process.cwd();
 loadDefaultEnv(rootDir);
 
+const computerScience2021Paper2SourceDocumentIds = new Set([
+	'aqa-computer-science-2021-june-paper-2-written-assessment-qp',
+	'aqa-computer-science-2021-november-paper-2-written-assessment-qp'
+]);
+const computerScience2021Paper1SourceDocumentIds = new Set([
+	'aqa-computer-science-2021-june-paper-1-computational-thinking-and-problem-solving-qp',
+	'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp'
+]);
+
 const usage = `Usage:
 node scripts/run-codex-pdf-extraction.mjs \\
   --question-paper=<official-question-paper.pdf> \\
@@ -254,10 +263,10 @@ function buildExtractionPrompt() {
 					'For Q12.2 and Q12.5, carry the shared sliding-puzzle context into the atomic question: getTile(row, column) returns the tile value, the blank space is represented by 0, and the board context from Figure 17 is visible where the subpart depends on it. Q12.5 must not render as only Figure 16 code plus a bare purpose question.',
 					'For Q15.0, count only the editable grid after the printed starter code and before the printed closing brace. The closing brace itself is not a writable row, but the 35 grid rows before it are learner response space.'
 				].join('\n')
-			: sourceDocumentId === 'aqa-computer-science-2021-november-paper-2-written-assessment-qp'
+			: computerScience2021Paper2SourceDocumentIds.has(sourceDocumentId)
 				? [
 						'',
-						'Known fragile checks for Computer Science 2021 November Paper 2: verify visible ruled response lines from rendered pages before final validation.',
+						'Known fragile checks for Computer Science 2021 Paper 2: verify visible ruled response lines from rendered pages before final validation. Some source filenames say NOV21, but the official visible paper identity is June 2021.',
 						'Exact line-count expectations from independent rendered-page judge evidence are: 01.1 = 2, 01.2 = 5 including the final Answer line, 01.3 = 2, 01.4 = 2, 03.0 = 2, 04.0 = 1, 05.1 = 9, 05.2 = 4, 07.2 = 4, 10.0 = 18 total across Clock speed / Number of processor cores / Cache size, 12.0 = 6, 13.1 = 4, 13.3 = 4 including the partial ruled line after "How it works", 14.0 = 18, 16.2 = 5, 18.2 = 6, and 20.0 = 24 across pages 22 and 23. If your extraction differs, repair the fragment before validation.',
 						'For labeled responses such as Q10.0, count every ruled line under every label and sum the fields. For page-spanning long responses such as Q20.0, count each page separately and do not add a phantom extra line at the page break.',
 						'For Q03.0 Figure 1, the visible bit pattern is 1 0 1 1 0 0 0 0. Use a structured Figure 1 text/code block and omit the screenshot asset; this simple bit pattern should not depend on a fragile crop.',
@@ -265,11 +274,10 @@ function buildExtractionPrompt() {
 						'For Q13.3, preserve the printed ring choice as response.choiceOptions = ["Authentication", "MAC address filtering"] on the labeled-lines response, with response.labels only for the written explanation area. Do not turn the chosen security method into a writable line. The written explanation area has four ruled lines.',
 						'For Q16.1, Figure 4 and Figure 5 must render completely and answerably. Prefer faithful structured bitmap grids for both figures, with structured-table cells that have explicit text values such as {"text":"B"} / {"text":"W"}; if using an image, inspect that Figure 5 is not clipped.'
 					].join('\n')
-				: sourceDocumentId ===
-						  'aqa-computer-science-2021-november-paper-1-computational-thinking-and-problem-solving-qp'
+				: computerScience2021Paper1SourceDocumentIds.has(sourceDocumentId)
 					? [
 							'',
-							'Known fragile checks for Computer Science 2021 November Paper 1: verify trace tables, logic-circuit crops, duplicate context, and drawing grids from rendered pages before final validation.',
+							'Known fragile checks for Computer Science 2021 Paper 1: verify trace tables, logic-circuit crops, duplicate context, and drawing grids from rendered pages before final validation. Some source filenames say NOV21, but the official visible paper identity is June 2021.',
 							'Exact line-count expectations from independent rendered-page judge evidence are: 02.1 = 2, 02.2 = 2, 02.3 = 2, 03.1 = 4, 03.2 = 4, 04.1 = 6 total across the two corrected-statement fields, 04.2 = 2, 04.3 = 6, 04.5 = 2, 05.2 = 4 total across the two advantage fields, 05.3 = 17, 06.1 = 6, 06.2 = 6, 07.6 = 18 continuation lines after the three printed starter-code lines or 21 total lines if representing the full answer area, and 09.3 = 16. If your extraction differs, repair the fragment before validation.',
 							'For Q02.4, carry the complete Figure 1 algorithm forward as a learner-visible structured code block before the trace-table response. Do not rely on an asset-only Figure 1 dependency for the trace table question.',
 							'For Q04.4, the trace table response must include the initial newRow row plus six iteration rows for i = 0, 1, 2, 3, 4, 5: seven response rows total. Do not reduce the response control to the rows needed by the final answer.',

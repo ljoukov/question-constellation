@@ -22,6 +22,7 @@ Optional:
   --thinking-level=xhigh
   --skip-chain-style-judge
   --run-legacy-chain-style-judge
+  --allow-shared-chain-updates
   --chain-style-judge-model=chatgpt-gpt-5.5
   --chain-style-judge-thinking-level=medium
   --chain-style-judge-batch-size=8
@@ -63,6 +64,7 @@ const model = stringArg('model', 'gpt-5.5');
 const thinkingLevel = stringArg('thinking-level', 'xhigh');
 const runLegacyChainStyleJudge = hasArg('run-legacy-chain-style-judge');
 const skipChainStyleJudge = hasArg('skip-chain-style-judge') || !runLegacyChainStyleJudge;
+const allowSharedChainUpdates = hasArg('allow-shared-chain-updates');
 const chainStyleJudgeModel = stringArg('chain-style-judge-model', 'chatgpt-gpt-5.5');
 const chainStyleJudgeThinkingLevel = stringArg('chain-style-judge-thinking-level', 'medium');
 const chainStyleJudgeBatchSize = integerArg('chain-style-judge-batch-size', 8, 1);
@@ -101,6 +103,7 @@ const plan = {
 	model,
 	thinkingLevel,
 	skipChainStyleJudge,
+	allowSharedChainUpdates,
 	chainStyleJudgeModel,
 	chainStyleJudgeThinkingLevel,
 	chainStyleJudgeBatchSize,
@@ -293,6 +296,12 @@ For every marked question decide one action:
 
 If updating/generalizing an existing published chain, inspect all available attached examples in existing-chain-context.json. If those examples do not provide enough evidence to prove the generalized chain still fits, do not update the existing chain; create a new chain or mark needs_review. Split rather than over-generalize.
 
+${
+	allowSharedChainUpdates
+		? 'This run is explicitly allowed to propose shared-chain updates, but only after the cross-paper compatibility check above.'
+		: 'This run is not authorized to alter published/shared chain definitions. Treat update_existing as import-blocking. If an existing chain already fits, set reuse_existing and keep that chain id/visible definition unchanged. If it would need generalized, count-neutral, or less source-specific wording to fit, create a new stable chain id instead of update_existing.'
+}
+
 Answer-chain fields must describe reusable reasoning, method patterns, or compact recall handles. Do not put worked numeric answers, exact table values, exact tick-box letters, exact blank-fill answers, one-off final data values, question-specific dates/years, mark counts, or item counts in answerChain.title, canonicalChainText, summary, stepText, explanation, or commonOmission. Keep those values only in response.correctAnswers, markSchemeItems, markChecklist, modelAnswer, or prompt evidence. For History, use compact period/category wording such as "correct period" or "specified crisis" instead of a printed year range inside chain fields.
 
 Do include concrete GCSE biology terms when those terms are the mark-scoring idea. Compact does not mean abstract. For recall or explanation questions, a useful chain may name glucose, nitrate ions, fatty acids, glycerol, chlorophyll, active transport, osmosis, mitosis, thorns, or self-reporting if that is what learners must remember. Do not hide concrete accepted terms behind placeholders.
@@ -328,7 +337,7 @@ Common failure modes to avoid:
 
 Each marked question must have a stable answerChain.id. Reuse the existing id when the existing chain is genuinely reused; create a stable subject-prefixed id for new chains.
 
-Before creating a new chain, actively look for existing chains with the same mark-scoring method even if their title is broader, their examples are in a different paper, or their current canonical text is wordier than the target style. Prefer reuse_existing or update_existing over create_new for recurring method chains such as graph plotting, percentage change, clinical trials, food tests, cell cycle, diffusion/active transport, controlled variables, and practical validity. Do not split a chain just because the data source is a graph instead of a table, the command word differs, or the context organism/substance changes; split only when the ordered mark-scoring links differ.
+Before creating a new chain, actively look for existing chains with the same mark-scoring method even if their title is broader, their examples are in a different paper, or their current canonical text is wordier than the target style. Prefer reuse_existing over create_new when the existing visible chain can be reused unchanged. Use update_existing only in an update-authorized run; otherwise create_new when the existing visible chain would need changed wording to fit. Do not split a chain just because the data source is a graph instead of a table, the command word differs, or the context organism/substance changes; split only when the ordered mark-scoring links differ or when the only matching published chain is too count-specific/source-specific to reuse unchanged.
 
 Allowed answerChain.steps[].stepRole values are exactly: given, cause, process, link, effect, evidence, method, calculation, conclusion.
 

@@ -729,11 +729,15 @@ answers, fixed-response answer keys, assets, or memberships. Run route checks af
 Answer chains are not produced during PDF extraction. `scripts/run-codex-answer-chains.mjs` runs
 after extraction and receives one normalized paper plus optional `existing-chain-context.json`.
 For each question it must choose `reuse_existing`, `create_new`, `update_existing`, or
-`needs_review`. If it updates/generalizes a published chain, the prompt requires it to inspect every
-available already-attached example in the existing context; if the evidence is insufficient, it must
-create a new chain or mark review instead of over-generalizing. Exact numeric answers, tick-box
-letters, table values, source-specific facts, and worked solutions stay in response keys, mark scheme
-items, checklists, or model answers, not in answer-chain fields.
+`needs_review`. By default the Codex chain runner is not authorized to alter published/shared chain
+definitions: it may reuse an existing public chain only when the existing title, canonical text,
+summary, and steps fit unchanged. If a matching public chain would need more general, count-neutral,
+or source-neutral wording, create a new stable chain id instead of `update_existing`. Pass
+`--allow-shared-chain-updates` only for an intentional update run; then the prompt requires Codex to
+inspect every available already-attached example in the existing context, and if the evidence is
+insufficient it must create a new chain or mark review instead of over-generalizing. Exact numeric
+answers, tick-box letters, table values, source-specific facts, and worked solutions stay in response
+keys, mark scheme items, checklists, or model answers, not in answer-chain fields.
 
 `scripts/prepare-import-ready-extraction.mjs` remains the strict gate after chain reconciliation. By
 default the Codex production pipeline runs solvability and D1 dry-run checks. Import writes require
@@ -1193,6 +1197,36 @@ The D1 write allowed exactly one shared-chain update after cross-paper inspectio
 and the new 2024 `year = 2021` data-type question. Live route verification showed the chain renders
 both questions publicly.
 
+Computer Science Paper 2 June 2021 deployed import, 2026-07-03:
+
+The official inputs are `data/aqa-gcse-history-geography-computer-science/question-papers/AQA-85202-QP-NOV21.PDF`
+and `data/aqa-gcse-history-geography-computer-science/mark-schemes/AQA-85202-MS-NOV21.PDF`.
+The filenames say `NOV21`, but the visible PDF identity is June 2021, component `8520/2`, so the
+source id is `aqa-computer-science-2021-june-paper-2-written-assessment-qp`.
+
+| Phase                              | Artifact                                                                                                                                                                                                             | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                                        |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Codex PDF extraction               | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/raw/aqa-computer-science-2021-june-paper-2-written-assessment-qp.json`                                   |  773.786s |            39 |              1 |           3,026,008 |    2,691,584 |                 36,263 |            4,820 | 34 questions, 80 marks, deterministic extraction validation passed                                                                                             |
+| Independent Codex extraction judge | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/extraction-judge/judge-report.json`                                                                       |  207.985s |            25 |              0 |             662,137 |      549,376 |                  9,253 |            2,118 | pass, score 1.00, 34 refs checked, 0 required repairs                                                                                                          |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/chain-reconciled/aqa-computer-science-2021-june-paper-2-written-assessment-qp.json`                      |  526.426s |            32 |              1 |           1,503,557 |    1,385,984 |                 25,410 |            8,646 | 11 reused, 23 created, 0 updated/review; deterministic chain validation passed after one in-run repair                                                         |
+| Strict audit / D1 dry-run          | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/import-ready-doc-dry-run.out`                                                                             |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 34/34 kept, 0 dropped, 0 audit errors/warnings; existing-paper replacement safe, 11 shared chains all `reuse_existing`, 0 unsafe shared updates, 514 dry-run SQL |
+| Codex solvability                  | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/codex-solvability/solvability-report.json`                                                               |  247.441s |            31 |              2 |             664,527 |      519,168 |                 11,910 |            2,698 | passed 34/34; Q03 Figure 1 bit pattern rendered as structured equation text, no fragile screenshot needed                                                       |
+| R2 asset upload                    | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/codex-extraction/assets`                                                                                  |       n/a |     3 objects |              0 |                 n/a |          n/a |                    n/a |              n/a | uploaded Figure 2, Figure 3, and Table 3 assets under `images/papers/aqa-computer-science-2021-june-paper-2-written-assessment-qp/`                            |
+| D1 targeted write                  | `tmp/codex-humanities-cs-2021-paper-2-v2/work/aqa-computer-science-2021-june-paper-2-written-assessment-qp/import-ready/aqa-computer-science-2021-june-paper-2-written-assessment-qp.json`                          |       n/a | 514 SQL stmts |              0 |                 n/a |          n/a |                    n/a |              n/a | wrote 34 questions, 34 overlays, 141 mark rows, 72 checklist rows, 27 model answers, 34 answer keys, and 34 chains                                             |
+| Deployed route crawl               | `tmp/public-route-checks/aqa-computer-science-2021-june-paper-2-written-assessment-qp-after-import.json`                                                                                                             |   73.391s |   173 routes |              0 |                 n/a |          n/a |                    n/a |              n/a | all public question, practice, chain, constellation, and 3 asset routes returned 200; 11 public multi-paper chains and no single-visible multi-paper chain       |
+
+This run encoded two repeatable importer fixes rather than patching D1 by hand:
+
+- The first chain attempt proposed two `update_existing` actions for shared public chains and the D1
+  dry-run blocked them. `scripts/run-codex-answer-chains.mjs` now defaults to no shared-chain updates:
+  reuse unchanged public definitions when they fit, or create a new chain id when wording would need to
+  change. `--allow-shared-chain-updates` is now an explicit opt-in passed through the production
+  pipeline only after cross-paper compatibility review.
+- Referenced-media validation now accepts a labelled structured `equation`, `formula`, `math`, or
+  `code` block as the learner-visible surface for a referenced figure when that block contains the full
+  visual content. CS 2021 Paper 2 Q03 uses this for `Figure 1` (`1 0 1 1 0 0 0 0`), while true diagram
+  and screenshot dependencies still require assets.
+
 Geography Paper 1 June 2023 repair canary, 2026-07-02:
 
 | Phase                                   | Artifact                                                                                                                                                                                                               | Wall time |   Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                           |
@@ -1334,10 +1368,11 @@ that copies `helper.mjs` must also copy `answer-chain-specificity.mjs`; this app
 extraction-judge, and chain runs.
 
 The visible-PDF source identity audit for the AQA History, Geography, and Computer Science manifest
-now blocks manifest rows whose visible PDF front matter disagrees with the manifest. The audit
-artifact is `tmp/aqa-humanities-cs-source-identity-audit.json`: 100 rows checked, 61 passed, 39
-failed with `visible_series_mismatch` (2 Computer Science, 6 Geography, 31 History). The
-identity-safe subset is `tmp/aqa-humanities-cs-identity-safe-manifest.json`.
+now blocks manifest rows whose visible PDF front matter disagrees with the manifest. After the
+manifest series repair, the current audit artifact is
+`tmp/aqa-manifest-source-identity-audit-after-series-repair-20260703.json`: 100 rows checked, 100
+passed, 0 warnings, and 0 failures across 6 Computer Science, 15 Geography, and 79 History rows.
+Earlier failing artifacts are preserved only as diagnostics.
 
 Use phase-specific model and reasoning overrides when benchmarking. Codex extraction defaults to
 `gpt-5.5` with high reasoning for quality; answer-chain reconciliation defaults to `gpt-5.5` with
