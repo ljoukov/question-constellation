@@ -45,6 +45,8 @@
 				datePublished: article.publishedAt,
 				dateModified: article.updatedAt ?? article.publishedAt,
 				url: canonicalUrl,
+				mainEntityOfPage: canonicalUrl,
+				inLanguage: 'en-GB',
 				image: 'https://constellation.eviworld.com/product/question-flow.webp',
 				author: {
 					'@type': 'Organization',
@@ -84,6 +86,7 @@
 <svelte:head>
 	<title>{article.title} | Question Constellation</title>
 	<meta name="description" content={article.description} />
+	<meta name="keywords" content={article.tags.join(', ')} />
 	<link rel="canonical" href={canonicalUrl} />
 
 	<meta property="og:type" content="article" />
@@ -237,7 +240,7 @@
 	}
 
 	.blog-article {
-		max-width: 47rem;
+		max-width: 45rem;
 		padding-top: clamp(1.2rem, 2.5vw, 2rem);
 	}
 
@@ -273,10 +276,10 @@
 	}
 
 	.blog-article-hero p {
-		margin: 0.75rem 0 0;
+		margin: 0.9rem 0 0;
 		color: #526778;
-		font-size: 1.02rem;
-		line-height: 1.48;
+		font-size: clamp(1.03rem, 1.6vw, 1.12rem);
+		line-height: 1.68;
 	}
 
 	.blog-article-tags {
@@ -294,7 +297,7 @@
 		margin: 0 0 0.55rem;
 		color: #168458;
 		font-size: 0.78rem;
-		font-weight: 620;
+		font-weight: 560;
 		letter-spacing: 0;
 		text-transform: uppercase;
 	}
@@ -311,30 +314,45 @@
 	.blog-article-cta p {
 		margin: 0;
 		color: #526778;
-		line-height: 1.46;
+		line-height: 1.62;
 	}
 
-	:global(.blog-article-body) {
+	:global(.markdown-content.blog-article-body) {
 		--markdown-text: #203247;
 		--markdown-strong: #102033;
 		--markdown-link: #0f6b3d;
 		overflow-x: auto;
 		padding-bottom: 0.15rem;
 		color: #203247;
-		font-size: 1rem;
-		line-height: 1.65;
+		font-size: clamp(1rem, 1.35vw, 1.06rem);
+		line-height: 1.82;
 	}
 
-	:global(.blog-article-body h2) {
-		margin: 1.75rem 0 0.55rem;
+	:global(.markdown-content.blog-article-body p),
+	:global(.markdown-content.blog-article-body ul),
+	:global(.markdown-content.blog-article-body ol) {
+		margin-top: 1rem;
+		margin-bottom: 0;
+	}
+
+	:global(.markdown-content.blog-article-body li + li) {
+		margin-top: 0.42rem;
+	}
+
+	:global(.markdown-content.blog-article-body strong) {
+		font-weight: 600;
+	}
+
+	:global(.markdown-content.blog-article-body h2) {
+		margin: 2.4rem 0 0.75rem;
 		color: #102033;
 		font-size: clamp(1.16rem, 2vw, 1.45rem);
-		line-height: 1.18;
-		font-weight: 640;
+		line-height: 1.25;
+		font-weight: 560;
 		letter-spacing: 0;
 	}
 
-	:global(.blog-article-body table) {
+	:global(.markdown-content.blog-article-body table) {
 		display: table;
 		width: 100%;
 		min-width: 44rem;
@@ -343,22 +361,22 @@
 		border: 1px solid #d6e0e8;
 		background: rgba(255, 255, 255, 0.72);
 		font-size: 0.92rem;
-		line-height: 1.38;
+		line-height: 1.56;
 	}
 
-	:global(.blog-article-body th),
-	:global(.blog-article-body td) {
+	:global(.markdown-content.blog-article-body th),
+	:global(.markdown-content.blog-article-body td) {
 		min-width: 10rem;
-		padding: 0.65rem 0.7rem;
+		padding: 0.8rem 0.78rem;
 		border: 1px solid #d6e0e8;
 		text-align: left;
 		vertical-align: top;
 	}
 
-	:global(.blog-article-body th) {
+	:global(.markdown-content.blog-article-body th) {
 		color: #102033;
 		background: rgba(239, 248, 248, 0.9);
-		font-weight: 650;
+		font-weight: 580;
 	}
 
 	.blog-faq,
@@ -374,8 +392,8 @@
 		margin: 0 0 0.8rem;
 		color: #102033;
 		font-size: clamp(1.15rem, 2vw, 1.45rem);
-		line-height: 1.16;
-		font-weight: 640;
+		line-height: 1.24;
+		font-weight: 560;
 	}
 
 	.blog-faq details {
@@ -391,14 +409,14 @@
 		cursor: pointer;
 		padding: 0.75rem 0.85rem;
 		color: #102033;
-		font-weight: 620;
+		font-weight: 560;
 	}
 
 	.blog-faq details p {
 		margin: 0;
 		padding: 0 0.85rem 0.85rem;
 		color: #526778;
-		line-height: 1.46;
+		line-height: 1.62;
 	}
 
 	.blog-sources ul {
@@ -429,7 +447,7 @@
 		display: inline-flex;
 		gap: 0.35rem;
 		align-items: center;
-		font-weight: 650;
+		font-weight: 560;
 		text-decoration: none;
 	}
 
@@ -455,16 +473,16 @@
 	:root[data-theme='dark'] .blog-quick-take,
 	:root[data-theme='dark'] .blog-article-cta,
 	:root[data-theme='dark'] .blog-faq details,
-	:root[data-theme='dark'] :global(.blog-article-body table),
-	:root[data-theme='dark'] :global(.blog-article-body th),
-	:root[data-theme='dark'] :global(.blog-article-body td) {
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body table),
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body th),
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body td) {
 		border-color: rgba(148, 163, 184, 0.24);
 	}
 
 	:root[data-theme='dark'] .blog-quick-take,
 	:root[data-theme='dark'] .blog-article-cta,
 	:root[data-theme='dark'] .blog-faq details,
-	:root[data-theme='dark'] :global(.blog-article-body table) {
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body table) {
 		background: rgba(15, 23, 42, 0.72);
 	}
 
@@ -473,8 +491,8 @@
 	:root[data-theme='dark'] .blog-sources h2,
 	:root[data-theme='dark'] .blog-article-cta h2,
 	:root[data-theme='dark'] .related-posts h2,
-	:root[data-theme='dark'] :global(.blog-article-body h2),
-	:root[data-theme='dark'] :global(.blog-article-body th) {
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body h2),
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body th) {
 		color: #eaf2f8;
 	}
 
@@ -483,12 +501,12 @@
 	:root[data-theme='dark'] .blog-article-cta p,
 	:root[data-theme='dark'] .blog-faq details p,
 	:root[data-theme='dark'] .blog-sources ul,
-	:root[data-theme='dark'] :global(.blog-article-body) {
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body) {
 		color: #a9b8c8;
 	}
 
 	:root[data-theme='dark'] .blog-article-tags span,
-	:root[data-theme='dark'] :global(.blog-article-body th) {
+	:root[data-theme='dark'] :global(.markdown-content.blog-article-body th) {
 		border-color: rgba(148, 163, 184, 0.28);
 		background: rgba(15, 23, 42, 0.82);
 		color: #d5e2ee;

@@ -9,26 +9,24 @@
 	const articleHref = $derived(resolve('/blog/[slug]', { slug: article.slug }));
 </script>
 
-<article class="blog-card" class:compact>
+<a class="blog-card" class:compact href={articleHref} aria-label={`Read ${article.title}`}>
 	<div class="blog-card-meta">
 		<span>{article.category}</span>
 		<span>{formatArticleDate(article.publishedAt)}</span>
 		<span>{article.readMinutes} min read</span>
 	</div>
-	<h2>
-		<a href={articleHref}>{article.title}</a>
-	</h2>
+	<h2>{article.title}</h2>
 	<p>{article.description}</p>
 	<div class="blog-card-tags" aria-label="Article tags">
 		{#each article.tags.slice(0, compact ? 2 : 3) as tag (tag)}
 			<span>{tag}</span>
 		{/each}
 	</div>
-	<a class="blog-card-link" href={articleHref}>
+	<span class="blog-card-link">
 		Read article
 		<ArrowRight size={16} aria-hidden="true" strokeWidth={2.2} />
-	</a>
-</article>
+	</span>
+</a>
 
 <style>
 	.blog-card {
@@ -38,13 +36,26 @@
 		min-width: 0;
 		min-height: 100%;
 		padding: 1rem;
-		border: 1px solid #d6e0e8;
+		border: 1px solid #102033;
 		background: rgba(255, 255, 255, 0.74);
 		color: #0f172a;
+		text-decoration: none;
+		transition:
+			border-color 160ms ease,
+			box-shadow 160ms ease,
+			background-color 160ms ease;
 	}
 
 	.blog-card.compact {
 		padding: 0.9rem;
+	}
+
+	.blog-card:hover,
+	.blog-card:focus-visible {
+		border-color: #168458;
+		background: rgba(255, 255, 255, 0.9);
+		box-shadow: 0 0 0 2px color-mix(in srgb, #168458 24%, transparent);
+		outline: none;
 	}
 
 	.blog-card-meta,
@@ -68,29 +79,21 @@
 		margin: 0;
 		color: #102033;
 		font-size: clamp(1.05rem, 1.7vw, 1.28rem);
-		line-height: 1.16;
-		font-weight: 620;
+		line-height: 1.22;
+		font-weight: 560;
 		letter-spacing: 0;
 	}
 
-	.blog-card h2 a {
-		color: inherit;
-		text-decoration: none;
-	}
-
-	.blog-card h2 a:hover,
-	.blog-card h2 a:focus-visible {
+	.blog-card:hover h2,
+	.blog-card:focus-visible h2 {
 		color: #0f6b3d;
-		text-decoration: underline;
-		text-underline-offset: 0.18em;
-		outline: none;
 	}
 
 	.blog-card p {
 		margin: 0;
 		color: #526778;
-		font-size: 0.92rem;
-		line-height: 1.45;
+		font-size: 0.94rem;
+		line-height: 1.55;
 	}
 
 	.blog-card-tags span {
@@ -107,21 +110,21 @@
 		width: fit-content;
 		color: #0f6b3d;
 		font-size: 0.9rem;
-		font-weight: 620;
+		font-weight: 560;
 		text-decoration: none;
-	}
-
-	.blog-card-link:hover,
-	.blog-card-link:focus-visible {
-		text-decoration: underline;
-		text-underline-offset: 0.18em;
-		outline: none;
 	}
 
 	:root[data-theme='dark'] .blog-card {
 		border-color: rgba(148, 163, 184, 0.24);
 		background: rgba(15, 23, 42, 0.72);
 		color: #e5edf7;
+	}
+
+	:root[data-theme='dark'] .blog-card:hover,
+	:root[data-theme='dark'] .blog-card:focus-visible {
+		border-color: #8de0b4;
+		background: rgba(15, 23, 42, 0.86);
+		box-shadow: 0 0 0 2px color-mix(in srgb, #8de0b4 34%, transparent);
 	}
 
 	:root[data-theme='dark'] .blog-card h2 {
@@ -140,8 +143,8 @@
 	}
 
 	:root[data-theme='dark'] .blog-card-link,
-	:root[data-theme='dark'] .blog-card h2 a:hover,
-	:root[data-theme='dark'] .blog-card h2 a:focus-visible {
+	:root[data-theme='dark'] .blog-card:hover h2,
+	:root[data-theme='dark'] .blog-card:focus-visible h2 {
 		color: #8de0b4;
 	}
 </style>

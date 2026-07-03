@@ -1,12 +1,25 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { ArrowRight, BookOpenCheck, Network, Rows3 } from '@lucide/svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import BlogCard from '$lib/blog/BlogCard.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	const filterOptions = [
+		{ label: 'All', value: 'all' },
+		{ label: 'Comparisons', value: 'Comparison' },
+		{ label: 'Learning science', value: 'Learning science' },
+		{ label: 'Exam technique', value: 'Exam technique' }
+	] as const;
+	type BlogFilter = (typeof filterOptions)[number]['value'];
+	let selectedFilter = $state<BlogFilter>('all');
+	const visibleArticles = $derived(
+		selectedFilter === 'all'
+			? data.articles
+			: data.articles.filter((article) => article.category === selectedFilter)
+	);
 	const canonicalUrl = 'https://constellation.eviworld.com/blog';
 	const pageTitle = 'Question Constellation Blog | GCSE Revision Comparisons and Exam Technique';
 	const pageDescription =
@@ -119,48 +132,31 @@
 			</div>
 		</section>
 
-		<section class="blog-method-strip" aria-label="Question Constellation method">
-			<div>
-				<BookOpenCheck size={20} aria-hidden="true" strokeWidth={2.2} />
-				<span>Start with an exam question</span>
-			</div>
-			<div>
-				<Network size={20} aria-hidden="true" strokeWidth={2.2} />
-				<span>Reveal the answer chain</span>
-			</div>
-			<div>
-				<Rows3 size={20} aria-hidden="true" strokeWidth={2.2} />
-				<span>Practise nearby and transfer questions</span>
-			</div>
-		</section>
-
-		<section class="blog-section" aria-labelledby="comparisons-title">
+		<section class="blog-section" aria-labelledby="latest-title">
 			<div class="blog-section-heading">
-				<p class="blog-kicker">Comparisons</p>
-				<h2 id="comparisons-title">Question Constellation vs other GCSE tools</h2>
+				<p class="blog-kicker">Latest</p>
+				<h2 id="latest-title">GCSE revision articles</h2>
 				<p>
-					Each comparison is written around student jobs: learning content, remembering facts,
-					finding resources, checking answers and building mark-scoring structure.
+					Comparisons and revision-method notes, ordered by publication date. Use the filters to
+					narrow the list without leaving the page.
 				</p>
 			</div>
-			<div class="blog-card-grid">
-				{#each data.comparisonArticles as article (article.slug)}
-					<BlogCard {article} />
+
+			<div class="blog-filter-row" role="group" aria-label="Filter blog articles">
+				{#each filterOptions as option (option.value)}
+					<button
+						type="button"
+						class:active={selectedFilter === option.value}
+						aria-pressed={selectedFilter === option.value}
+						onclick={() => (selectedFilter = option.value)}
+					>
+						{option.label}
+					</button>
 				{/each}
 			</div>
-		</section>
 
-		<section class="blog-section" aria-labelledby="learning-title">
-			<div class="blog-section-heading">
-				<p class="blog-kicker">Learning science</p>
-				<h2 id="learning-title">Why the question-first method works</h2>
-				<p>
-					Short articles on retrieval practice, interleaving, feedback and transfer, grounded in
-					education research and adapted to GCSE exam practice.
-				</p>
-			</div>
-			<div class="blog-card-grid learning">
-				{#each data.learningArticles as article (article.slug)}
+			<div class="blog-card-grid">
+				{#each visibleArticles as article (article.slug)}
 					<BlogCard {article} />
 				{/each}
 			</div>
@@ -267,54 +263,58 @@
 		display: block;
 	}
 
-	.blog-method-strip {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.65rem;
-		padding: 1rem 0 0;
-	}
-
-	.blog-method-strip div {
-		display: flex;
-		gap: 0.55rem;
-		align-items: center;
-		min-width: 0;
-		padding: 0.75rem;
-		border: 1px solid #d6e0e8;
-		background: rgba(255, 255, 255, 0.65);
-		color: #234155;
-		font-size: 0.9rem;
-		font-weight: 560;
-	}
-
-	.blog-method-strip :global(svg) {
-		flex: 0 0 auto;
-		color: #168458;
-	}
-
 	.blog-section {
 		padding-top: 2rem;
 	}
 
 	.blog-section-heading {
 		max-width: 48rem;
-		margin-bottom: 1rem;
+		margin-bottom: 0.9rem;
 	}
 
 	.blog-section-heading h2 {
 		font-size: clamp(1.2rem, 2.1vw, 1.75rem);
 		line-height: 1.12;
-		font-weight: 600;
+		font-weight: 560;
+	}
+
+	.blog-filter-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0 0 1rem;
+	}
+
+	.blog-filter-row button {
+		border: 1px solid #102033;
+		border-radius: 0;
+		padding: 0.45rem 0.68rem;
+		background: rgba(255, 255, 255, 0.74);
+		color: #102033;
+		font: inherit;
+		font-size: 0.88rem;
+		font-weight: 520;
+		line-height: 1.2;
+		cursor: pointer;
+		transition:
+			border-color 160ms ease,
+			box-shadow 160ms ease,
+			background-color 160ms ease;
+	}
+
+	.blog-filter-row button:hover,
+	.blog-filter-row button:focus-visible,
+	.blog-filter-row button.active {
+		border-color: #168458;
+		background: #edfaf3;
+		box-shadow: 0 0 0 2px color-mix(in srgb, #168458 22%, transparent);
+		outline: none;
 	}
 
 	.blog-card-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 		gap: 0.8rem;
-	}
-
-	.blog-card-grid.learning {
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
 	}
 
 	:root[data-theme='dark'] .blog-shell {
@@ -325,7 +325,7 @@
 
 	:root[data-theme='dark'] .blog-hero,
 	:root[data-theme='dark'] .blog-hero-media,
-	:root[data-theme='dark'] .blog-method-strip div {
+	:root[data-theme='dark'] .blog-filter-row button {
 		border-color: rgba(148, 163, 184, 0.24);
 	}
 
@@ -344,14 +344,21 @@
 	}
 
 	:root[data-theme='dark'] .blog-hero-media,
-	:root[data-theme='dark'] .blog-method-strip div {
+	:root[data-theme='dark'] .blog-filter-row button {
 		background: rgba(15, 23, 42, 0.72);
 		color: #d5e2ee;
 	}
 
+	:root[data-theme='dark'] .blog-filter-row button:hover,
+	:root[data-theme='dark'] .blog-filter-row button:focus-visible,
+	:root[data-theme='dark'] .blog-filter-row button.active {
+		border-color: #8de0b4;
+		background: rgba(16, 56, 44, 0.66);
+		box-shadow: 0 0 0 2px color-mix(in srgb, #8de0b4 30%, transparent);
+	}
+
 	@media (max-width: 760px) {
-		.blog-hero,
-		.blog-method-strip {
+		.blog-hero {
 			grid-template-columns: 1fr;
 		}
 

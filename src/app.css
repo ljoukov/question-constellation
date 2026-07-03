@@ -5180,6 +5180,19 @@ textarea::placeholder {
 	border-radius: 0;
 	background: color-mix(in srgb, #ffffff 72%, transparent);
 	color: #102033;
+	text-decoration: none;
+	transition:
+		border-color 160ms ease,
+		box-shadow 160ms ease,
+		background-color 160ms ease;
+}
+
+.qc-browse-chain-steps:hover,
+.qc-browse-chain-steps:focus-visible {
+	border-color: var(--chain-accent, #168458);
+	background: color-mix(in srgb, #ffffff 88%, transparent);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--chain-accent, #168458) 24%, transparent);
+	outline: 0;
 }
 
 .qc-browse-chain-steps h3,
@@ -7202,6 +7215,8 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-browse-chain:hover,
 :root[data-theme='dark'] .qc-browse-chain:focus-within,
+:root[data-theme='dark'] .qc-browse-chain-steps:hover,
+:root[data-theme='dark'] .qc-browse-chain-steps:focus-visible,
 :root[data-theme='dark'] .qc-question-card:hover,
 :root[data-theme='dark'] .qc-question-card:focus-visible,
 :root[data-theme='dark'] .qc-chain-question:hover,
@@ -7410,6 +7425,8 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-browse-chain:hover,
 	:root:not([data-theme='light']) .qc-browse-chain:focus-within,
+	:root:not([data-theme='light']) .qc-browse-chain-steps:hover,
+	:root:not([data-theme='light']) .qc-browse-chain-steps:focus-visible,
 	:root:not([data-theme='light']) .qc-question-card:hover,
 	:root:not([data-theme='light']) .qc-question-card:focus-visible,
 	:root:not([data-theme='light']) .qc-chain-question:hover,

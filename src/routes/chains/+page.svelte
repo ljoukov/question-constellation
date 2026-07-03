@@ -277,8 +277,9 @@
 						</span>
 					</a>
 
-					<section
+					<a
 						class="qc-browse-chain-steps"
+						href={chainHref(chain)}
 						aria-label={`${accessibleText(chain.title)} thinking chain`}
 					>
 						<h3>Thinking chain</h3>
@@ -287,7 +288,7 @@
 								<li><MathText text={step} /></li>
 							{/each}
 						</ol>
-					</section>
+					</a>
 
 					<section
 						class="qc-browse-question-set"
