@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
@@ -18,9 +19,12 @@
 		Sparkles,
 		Target
 	} from '@lucide/svelte';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	type CourseUpdateStatus = 'idle' | 'updating' | 'updated' | 'error';
+	let courseUpdateStatus = $state<CourseUpdateStatus>('idle');
 
 	const chainsHref = resolve('/chains');
 	const pastPapersHref = resolve('/past-papers/gcse');
@@ -31,6 +35,25 @@
 	const dashboard = $derived(data.dashboard);
 	const learnerName = $derived(
 		dashboard?.profile.name?.split(/\s+/)[0] ?? dashboard?.profile.email.split('@')[0] ?? 'there'
+	);
+	const selectedCourseLabel = $derived(
+		dashboard
+			? [
+					dashboard.profile.selectedBoard,
+					dashboard.profile.selectedQualification,
+					dashboard.profile.selectedSubject,
+					dashboard.profile.selectedTier
+				].join(' ')
+			: ''
+	);
+	const courseStatusLabel = $derived(
+		courseUpdateStatus === 'updating'
+			? 'Updating course...'
+			: courseUpdateStatus === 'updated'
+				? 'Course updated'
+				: courseUpdateStatus === 'error'
+					? 'Course could not update'
+					: 'Changes apply immediately'
 	);
 	const averageMarkLabel = $derived(
 		dashboard?.stats.averageMarkPercent === null ||
@@ -108,6 +131,22 @@
 		const params = new URLSearchParams({ subject, start: '1' });
 		return `${resolve('/recall')}?${params.toString()}`;
 	}
+
+	function handleCourseControlChange(event: Event) {
+		const form = (event.currentTarget as HTMLSelectElement).form;
+		if (!form) return;
+		courseUpdateStatus = 'updating';
+		form.requestSubmit();
+	}
+
+	const enhanceCoursePreferences: SubmitFunction = () => {
+		courseUpdateStatus = 'updating';
+		return async ({ result, update }) => {
+			await update({ reset: false });
+			courseUpdateStatus =
+				result.type === 'success' ? 'updated' : result.type === 'failure' ? 'error' : 'idle';
+		};
+	};
 </script>
 
 <svelte:head>
@@ -140,42 +179,52 @@
 		<div class="qc-dashboard-layout">
 			<section class="qc-dashboard-hero" aria-labelledby="dashboard-title">
 				<div>
-					<p class="qc-real-kicker">Signed-in learning home</p>
-					<h1 id="dashboard-title">Pick up from a real question, {learnerName}.</h1>
+					<p class="qc-real-kicker">Signed-in question bank</p>
+					<h1 id="dashboard-title">Start with the next exam question, {learnerName}.</h1>
 					<p>
-						Use flashcards for facts and definitions. Use close-the-gap builders for the missing
-						links in longer mark-scoring answers.
+						Use the course context to filter the question bank. Short knowledge goes to flashcards;
+						missing links in longer answers go to close-the-gap practice.
 					</p>
 				</div>
-				<form class="qc-dashboard-preferences" method="POST" action="?/updatePreferences">
-					<label>
-						<span>Board</span>
-						<select name="board">
-							<option value="AQA" selected={dashboard.profile.selectedBoard === 'AQA'}>AQA</option>
-						</select>
-					</label>
+				<form
+					class="qc-dashboard-preferences"
+					method="POST"
+					action="?/updatePreferences"
+					aria-label="Course context"
+					use:enhance={enhanceCoursePreferences}
+				>
+					<input type="hidden" name="board" value={dashboard.profile.selectedBoard} />
+					<div class="qc-dashboard-preferences-head">
+						<span>Course context</span>
+						<strong>{selectedCourseLabel}</strong>
+					</div>
 					<label>
 						<span>Subject</span>
-						<select name="subject">
+						<select
+							name="subject"
+							value={dashboard.profile.selectedSubject}
+							onchange={handleCourseControlChange}
+						>
 							{#each dashboard.subjectOptions as subject (subject)}
-								<option value={subject} selected={dashboard.profile.selectedSubject === subject}>
-									{subject}
-								</option>
+								<option value={subject}>{subject}</option>
 							{/each}
 						</select>
 					</label>
 					<label>
 						<span>Tier</span>
-						<select name="tier">
-							<option value="Higher" selected={dashboard.profile.selectedTier === 'Higher'}
-								>Higher</option
-							>
-							<option value="Foundation" selected={dashboard.profile.selectedTier === 'Foundation'}
-								>Foundation</option
-							>
+						<select
+							name="tier"
+							value={dashboard.profile.selectedTier}
+							onchange={handleCourseControlChange}
+						>
+							<option value="Higher">Higher</option>
+							<option value="Foundation">Foundation</option>
 						</select>
 					</label>
-					<button type="submit">Save</button>
+					<p class="qc-dashboard-preferences-note" data-state={courseUpdateStatus}>
+						{courseStatusLabel}
+					</p>
+					<button class="sr-only" type="submit" tabindex="-1">Apply course context</button>
 				</form>
 			</section>
 
@@ -271,19 +320,26 @@
 								AQA GCSE {dashboard.curriculum.subject}
 								{dashboard.curriculum.specificationCode}
 							</p>
-							<h2 id="dashboard-curriculum">Spec coverage</h2>
+							<h2 id="dashboard-curriculum">Course map</h2>
 						</div>
 						<ListChecks size={21} aria-hidden="true" />
 					</div>
+					<p class="qc-dashboard-panel-intro">
+						Topics from the selected AQA course. Question counts show what is currently in the bank;
+						spec references stay secondary.
+					</p>
 					<div class="qc-dashboard-curriculum">
 						{#each dashboard.curriculum.topics as topic (topic.id)}
 							<a href={topic.specUrl} target="_blank" rel="noreferrer">
-								<span>{topic.code}</span>
 								<strong>{topic.title}</strong>
-								<small
-									>{topic.paper} · {topic.questionCount} questions · {topic.activeGapCount}
-									gaps</small
-								>
+								<small class="qc-dashboard-topic-meta">
+									<span>{topic.paper}</span>
+									<span>Spec ref {topic.code}</span>
+									<span>{topic.questionCount} questions</span>
+									{#if topic.activeGapCount > 0}
+										<span>{topic.activeGapCount} open gaps</span>
+									{/if}
+								</small>
 							</a>
 						{/each}
 					</div>
