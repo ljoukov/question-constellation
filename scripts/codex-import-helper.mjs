@@ -612,6 +612,13 @@ function normalizedForExactMatch(value) {
 		.trim();
 }
 
+function normalizedSlugForExactMatch(value) {
+	return String(value ?? '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
 function cloneJson(value) {
 	return JSON.parse(JSON.stringify(value));
 }
@@ -1604,6 +1611,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 					field: issue.field ? `answerChain.${issue.field}` : 'answerChain'
 				}))
 			);
+			issues.push(...fixedResponseChainExactAnswerIssues(question));
 			issues.push(...answerChainStyleIssues(question.answerChain, ref));
 			for (const [stepIndex, step] of (question.answerChain?.steps ?? []).entries()) {
 				if (!allowedAnswerChainStepRoles.has(step?.stepRole)) {
@@ -1674,6 +1682,61 @@ function deterministicIssuesFor(candidate, options = {}) {
 		if (issues.length) findings.push({ sourceQuestionRef: ref, issues });
 	}
 	return findings;
+}
+
+function fixedResponseChainExactAnswerIssues(question) {
+	const chain = question.answerChain;
+	if (!chain || !fixedResponseKinds.has(question.response?.kind)) return [];
+	const issues = [];
+	for (const answer of exactFixedAnswerTexts(question)) {
+		const normalizedAnswer = normalizedForExactMatch(answer);
+		const answerSlug = normalizedSlugForExactMatch(answer);
+		for (const [field, value] of reusableAnswerChainTextFields(chain)) {
+			const normalizedField = normalizedForExactMatch(value);
+			const fieldSlug = normalizedSlugForExactMatch(value);
+			if (
+				normalizedField.includes(normalizedAnswer) ||
+				(answerSlug && fieldSlug.includes(answerSlug))
+			) {
+				issues.push({
+					code: 'chain_exact_fixed_answer_text',
+					field,
+					severity: 'error',
+					evidence: value,
+					message:
+						'Fixed-response answer-chain text includes the exact correct answer. Keep exact answers in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer only.'
+				});
+			}
+		}
+	}
+	return issues;
+}
+
+function exactFixedAnswerTexts(question) {
+	const values = [
+		...rawCorrectAnswerEntries(question.response?.correctAnswers).map(
+			(answer) => answer.correctAnswer
+		),
+		question.modelAnswer?.answerText
+	].filter((value) => typeof value === 'string' && value.trim());
+	return [...new Set(values.map((value) => value.trim()))].filter((value) => {
+		const normalized = normalizedForExactMatch(value);
+		return normalized.length >= 4 && normalized.split(' ').length <= 6;
+	});
+}
+
+function reusableAnswerChainTextFields(chain) {
+	return [
+		['answerChain.id', chain?.id],
+		['answerChain.title', chain?.title],
+		['answerChain.canonicalChainText', chain?.canonicalChainText],
+		['answerChain.summary', chain?.summary],
+		...(chain?.steps ?? []).flatMap((step, index) => [
+			[`answerChain.steps[${index}].stepText`, step?.stepText],
+			[`answerChain.steps[${index}].explanation`, step?.explanation],
+			[`answerChain.steps[${index}].commonOmission`, step?.commonOmission]
+		])
+	].filter(([, value]) => typeof value === 'string' && value.trim());
 }
 
 function answerChainStyleIssues(chain, ref) {

@@ -27,6 +27,7 @@ Optional:
   --chain-style-judge-batch-size=8
   --chain-style-judge-max-existing-chains=16
   --chain-style-judge-source-snippet-chars=360
+  --chain-validation-repair-attempts=2
   --chain-style-repair-attempts=4
   --timeout-ms=7200000
   --force
@@ -71,6 +72,7 @@ const chainStyleJudgeSourceSnippetChars = integerArg(
 	360,
 	80
 );
+const chainValidationRepairAttempts = integerArg('chain-validation-repair-attempts', 2, 0);
 const chainStyleRepairAttempts = integerArg('chain-style-repair-attempts', 4, 0);
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const dryRun = hasArg('dry-run');
@@ -104,6 +106,7 @@ const plan = {
 	chainStyleJudgeBatchSize,
 	chainStyleJudgeMaxExistingChains,
 	chainStyleJudgeSourceSnippetChars,
+	chainValidationRepairAttempts,
 	chainStyleRepairAttempts,
 	questionCount: inputPaper.questions?.length ?? 0
 };
@@ -131,7 +134,35 @@ try {
 		timeoutMs
 	});
 	const chainPath = ensureChainOutput();
-	let validation = validateChain(chainPath);
+	let validation = validateChain(chainPath, { allowFailure: true });
+	const validationRepairs = [];
+	for (
+		let attempt = 1;
+		!chainValidationPassed(validation) && attempt <= chainValidationRepairAttempts;
+		attempt += 1
+	) {
+		const failedValidationPath = path.join(workDir, `chain-validation-failed-${attempt}.json`);
+		writeJson(failedValidationPath, validation);
+		const repairPrompt = buildValidationRepairPrompt(attempt, failedValidationPath);
+		const repairPromptPath = path.join(workDir, `validation-repair-prompt-${attempt}.md`);
+		writeFileSync(repairPromptPath, repairPrompt);
+		const repairSummary = await runCodexSdkTurn({
+			prompt: repairPrompt,
+			workDir,
+			eventsPath: path.join(workDir, `validation-repair-events-${attempt}.jsonl`),
+			lastMessagePath: path.join(workDir, `validation-repair-last-message-${attempt}.txt`),
+			summaryPath: path.join(workDir, `validation-repair-summary-${attempt}.json`),
+			model,
+			thinkingLevel,
+			timeoutMs
+		});
+		validationRepairs.push(repairSummary);
+		ensureChainOutput();
+		validation = validateChain(chainPath, { allowFailure: true });
+	}
+	if (!chainValidationPassed(validation)) {
+		throw new Error('deterministic answer-chain validation failed after repair attempts.');
+	}
 	let styleJudge = judgeChainStyle(chainPath, { allowFailure: true });
 	const repairs = [];
 	for (
@@ -172,6 +203,7 @@ try {
 		finishedAt: new Date().toISOString(),
 		plan,
 		codex: codexSummary,
+		validationRepairs,
 		repairs,
 		validation,
 		styleJudge,
@@ -323,8 +355,9 @@ function ensureChainOutput() {
 	return chainPath;
 }
 
-function validateChain(chainPath) {
-	normalizeChainOutput(chainPath);
+function validateChain(chainPath, { allowFailure = false } = {}) {
+	const normalizeResult = normalizeChainOutput(chainPath, { allowFailure });
+	if (normalizeResult?.status === 'failed') return normalizeResult;
 	const result = spawnSync(
 		process.execPath,
 		[
@@ -341,6 +374,19 @@ function validateChain(chainPath) {
 		}
 	);
 	if (result.status !== 0) {
+		const failedReport = existsSync(path.join(workDir, 'chain-validation.json'))
+			? readJson(path.join(workDir, 'chain-validation.json'))
+			: { status: 'failed', blockingIssues: [], deterministicIssues: [] };
+		if (allowFailure) {
+			return {
+				...failedReport,
+				runnerExitStatus: result.status ?? null,
+				runnerSignal: result.signal ?? null,
+				runnerError: `helper validate-chain failed with exit code ${result.status ?? result.signal}`,
+				stdout: result.stdout.trim() || null,
+				stderr: result.stderr.trim() || null
+			};
+		}
 		throw new Error(
 			`helper validate-chain failed with exit code ${result.status ?? result.signal}.\n${result.stdout}\n${result.stderr}`
 		);
@@ -350,7 +396,7 @@ function validateChain(chainPath) {
 	return readJson(path.join(workDir, 'chain-validation.json'));
 }
 
-function normalizeChainOutput(chainPath) {
+function normalizeChainOutput(chainPath, { allowFailure = false } = {}) {
 	const result = spawnSync(
 		process.execPath,
 		[
@@ -367,12 +413,31 @@ function normalizeChainOutput(chainPath) {
 		}
 	);
 	if (result.status !== 0) {
+		if (allowFailure) {
+			return {
+				status: 'failed',
+				blockingIssues: [],
+				deterministicIssues: [],
+				runnerExitStatus: result.status ?? null,
+				runnerSignal: result.signal ?? null,
+				runnerError: `helper normalize-extraction failed with exit code ${
+					result.status ?? result.signal
+				}`,
+				stdout: result.stdout.trim() || null,
+				stderr: result.stderr.trim() || null
+			};
+		}
 		throw new Error(
 			`helper normalize-extraction failed with exit code ${result.status ?? result.signal}.\n${result.stdout}\n${result.stderr}`
 		);
 	}
 	if (result.stdout.trim()) process.stderr.write(result.stdout);
 	if (result.stderr.trim()) process.stderr.write(result.stderr);
+	return { status: 'passed' };
+}
+
+function chainValidationPassed(validation) {
+	return validation?.status === 'passed';
 }
 
 function judgeChainStyle(chainPath, { allowFailure = false } = {}) {
@@ -461,6 +526,37 @@ node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-vali
 If validation fails, repair and rerun it. Finish with a concise message listing what you changed and the artifact paths.`;
 }
 
+function buildValidationRepairPrompt(attempt, failedValidationPath) {
+	const failedValidationName = path.basename(failedValidationPath);
+	return `You are repairing deterministic answer-chain validation failures for one extracted GCSE paper.
+
+Inputs in this directory:
+- chain-reconciled.json: current whole-paper chain reconciliation output to repair
+- ${failedValidationName}: host-side deterministic validation report with blocking issues
+- extraction.json: original extraction facts; use only as source evidence
+- existing-chain-context.json: existing chain ids and example refs, if present
+- helper.mjs: current deterministic validator
+- docs/extraction-spec.md: product/schema contract
+
+Repair attempt: ${attempt}
+
+Task:
+1. Read ${failedValidationName}.
+2. Repair every real blocking issue in chain-reconciled.json.
+3. Edit only answerChain, chainResolution, and commonWeakAnswers fields unless the validation report explicitly requires a small consistency fix to markSchemeItemIndexes inside those fields.
+4. Preserve source extraction facts: prompt text, response controls, correctAnswers, mark schemes, checklists, model answers, assets, page ranges, ids, and provenance.
+5. Do not put worked numeric answers, exact table values, exact tick-box letters, exact blank-fill answers, source-specific dates/years, final source values, or one-paper fixed answers in answer-chain fields.
+6. If an issue code is chain_exact_fixed_answer_text, remove the exact fixed answer from answerChain.title, canonicalChainText, summary, stepText, explanation, and commonOmission. Keep the exact answer only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
+7. For fixed-response recall or blank-fill items, use a compact generic recall/discrimination chain such as "cue -> category -> slot" or a similarly short method handle. Do not copy the literal answer word into the visible chain.
+8. Keep concrete reusable concepts when they are not exact one-paper answers. Prefer short memory handles: title 1-3 words, canonicalChainText 2-5 links joined by " -> ", and stepText usually 1-4 words.
+9. Use only positive mark-scheme evidence indexes in answerChain.steps[].markSchemeItemIndexes.
+
+After repair, run:
+node helper.mjs validate-chain --input=chain-reconciled.json --output=chain-validation.json
+
+If validation still fails, repair and rerun it. Finish with a concise message listing what you changed and the artifact paths.`;
+}
+
 function artifacts(chainPath) {
 	return {
 		workDir: relative(workDir),
@@ -472,6 +568,11 @@ function artifacts(chainPath) {
 			: null,
 		chainReconciled: relative(chainPath),
 		chainValidation: relative(path.join(workDir, 'chain-validation.json')),
+		validationRepairSummaries: Array.from({ length: chainValidationRepairAttempts }, (_, index) =>
+			path.join(workDir, `validation-repair-summary-${index + 1}.json`)
+		)
+			.filter((filePath) => existsSync(filePath))
+			.map(relative),
 		chainStyleJudge: skipChainStyleJudge
 			? null
 			: relative(path.join(workDir, 'chain-style-judge.json')),

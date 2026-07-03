@@ -6349,9 +6349,7 @@ function blockToLearnerText(block) {
 		return [
 			block.label ? `${block.label}:` : '',
 			stripHtml(block.text ?? block.value ?? ''),
-			...(block.items ?? []).map(
-				(item) => `${item.marker ?? item.label ?? ''}: ${stripHtml(item.text ?? item.value ?? '')}`
-			)
+			...(block.items ?? []).map(keyItemToLearnerText)
 		]
 			.filter(Boolean)
 			.join('\n');
@@ -6367,6 +6365,16 @@ function blockToLearnerText(block) {
 		return `[${kind}: ${label}${alt ? ` - ${alt}` : ''}]`;
 	}
 	return `[unsupported block ${kind}: ${JSON.stringify(compactUnknown(block))}]`;
+}
+
+function keyItemToLearnerText(item) {
+	if (typeof item === 'string' || typeof item === 'number') return `- ${stripHtml(item)}`;
+	const marker = String(item?.marker ?? item?.label ?? '').trim();
+	const text = stripHtml(item?.text ?? item?.value ?? '').trim();
+	if (marker && text) return `${marker}: ${text}`;
+	if (text) return `- ${text}`;
+	if (marker) return `- ${marker}`;
+	return '';
 }
 
 function responseToLearnerText(response) {

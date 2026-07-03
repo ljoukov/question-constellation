@@ -618,6 +618,9 @@ requireIncludes(
 		'06.7 = 10',
 		'every visible blank segment must have a matching response.correctAnswers target',
 		'Figure and response-surface assets must be complete learner-visible crops',
+		'For Ordnance Survey map extracts and other grid-reference maps',
+		'readable eastings and northings on the relevant margins',
+		'0870, 0970, or 7109',
 		'Do not use asset-canvas for tables that can be represented structurally',
 		'one positive markSchemeItems row per independently awardable mark',
 		'A question must not have more required checklist rows than its mark value',
@@ -686,6 +689,10 @@ requireIncludes(
 		'judge-report.json and validation-report.json as the authoritative list of current defects',
 		'Do not apply repairs from other papers',
 		'do not encode conditionally paired alternatives as independent response.correctAnswers aliases',
+		'For Ordnance Survey map extracts and other grid-reference maps',
+		'readable eastings and northings on the relevant margins',
+		'Use bash pdf-tools.sh for PDF observation commands',
+		'do not call helper.mjs pdf-info',
 		'repaired-extraction.json',
 		'repair-validation.json',
 		'answer-chain-specificity.mjs'
@@ -710,6 +717,9 @@ requireIncludes(
 		'do not put exact table names',
 		'validate-chain',
 		'chain-reconciled.json',
+		'chain-validation-repair-attempts',
+		'validation-repair-summary',
+		'deterministic answer-chain validation',
 		'run-legacy-chain-style-judge',
 		'skip-chain-style-judge',
 		'events.jsonl',
@@ -1350,6 +1360,86 @@ if (
 ) {
 	fail('Codex helper normalization did not convert literal alternatives into aliases.', {
 		normalizedAliasAnswer
+	});
+}
+
+const helperChainValidationInput = path.join(helperNormalizeDir, 'bad-fixed-chain.json');
+const helperChainValidationOutput = path.join(helperNormalizeDir, 'bad-fixed-chain-validation.json');
+writeFileSync(
+	helperChainValidationInput,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'test-fixed-chain-paper',
+				docType: 'question_paper',
+				subject: 'Geography',
+				subjectArea: 'Geography',
+				pageCount: 20
+			},
+			markSchemeDocument: { id: 'test-fixed-chain-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.3',
+					promptText: 'Complete the paragraph using the correct word.',
+					marks: 1,
+					pageStart: 4,
+					pageEnd: 4,
+					response: {
+						kind: 'equation-blanks',
+						segments: [
+							{ kind: 'text', text: 'Orchid plants are an example of a ' },
+							{ kind: 'blank', id: 'blank-1', label: 'role' }
+						],
+						correctAnswers: [{ targetId: 'blank-1', correctAnswer: 'producer' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'Producer.' }],
+					markChecklist: [{ text: 'Completes the blank as producer.', markSchemeItemIndexes: [0] }],
+					answerChain: {
+						id: 'geo-chain-ecosystem-blank-concepts',
+						title: 'Ecosystem Blanks',
+						canonicalChainText: 'cue -> producer role',
+						summary: 'Match ecology role.',
+						steps: [
+							{
+								stepText: 'cue',
+								stepRole: 'given',
+								explanation: 'Read the context.',
+								commonOmission: 'The cue matters.',
+								markSchemeItemIndexes: [0]
+							},
+							{
+								stepText: 'producer role',
+								stepRole: 'conclusion',
+								explanation: 'Select the plant role.',
+								commonOmission: 'The role must fit the organism.',
+								markSchemeItemIndexes: [0]
+							}
+						]
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-chain',
+	`--input=${helperChainValidationInput}`,
+	`--output=${helperChainValidationOutput}`
+]);
+const helperChainValidation = JSON.parse(readText(helperChainValidationOutput));
+if (
+	helperChainValidation.status !== 'failed' ||
+	!helperChainValidation.blockingIssues.some(
+		(issue) =>
+			issue.code === 'chain_exact_fixed_answer_text' &&
+			issue.sourceQuestionRef === '02.3' &&
+			issue.field === 'answerChain.steps[1].stepText'
+	)
+) {
+	fail('Codex helper validate-chain did not reject exact fixed-response answer chain text.', {
+		helperChainValidation
 	});
 }
 
@@ -6010,6 +6100,11 @@ const keyBlockSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionCon
 						kind: 'key',
 						label: 'SQL skeleton',
 						text: "INSERT INTO [A]\n[B] (5, 'Alina', 'Ahmed', '2020-11-30')"
+					},
+					{
+						kind: 'key',
+						label: 'Word bank',
+						items: ['chain', 'consumer', 'increase', 'producer', 'reduce', 'web']
 					}
 				],
 				promptBlocks: [{ kind: 'paragraph', text: 'Explain why RLE is not suitable.' }],
@@ -6026,6 +6121,7 @@ const keyBlockVisibleText = keyBlockSolvabilityContext.studentVisibleContext.sec
 if (
 	!keyBlockVisibleText.some((text) => text.includes('1M 1I 2S')) ||
 	!keyBlockVisibleText.some((text) => text.includes('INSERT INTO [A]')) ||
+	!keyBlockVisibleText.some((text) => text.includes('- producer')) ||
 	keyBlockSolvabilityContext.studentVisibleContext.sections[0]?.response !==
 		'Answer lines: 4 line(s).'
 ) {
