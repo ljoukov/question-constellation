@@ -2554,8 +2554,18 @@ function compactResponse(response, marks) {
 		if (!Array.isArray(output.options) && Array.isArray(output.choiceOptions)) {
 			output.options = output.choiceOptions;
 		}
+		if (Array.isArray(output.options)) {
+			output.options = output.options.map(choiceOptionString).filter(Boolean);
+		}
 		output.options ??= [];
 		output.correctAnswers ??= [];
+	}
+	if (kind === 'matching') {
+		if (!Array.isArray(output.left) && Array.isArray(output.prompts)) output.left = output.prompts;
+		if (!Array.isArray(output.right) && Array.isArray(output.options))
+			output.right = output.options;
+		output.left ??= [];
+		output.right ??= [];
 	}
 	if (
 		['choice-table', 'matching', 'equation-blanks', 'number-line', 'image-label-zones'].includes(
@@ -2576,8 +2586,11 @@ function compactResponse(response, marks) {
 
 function normalizeCorrectAnswerEntry(answer) {
 	if (!answer || typeof answer !== 'object') return answer;
-	const split = splitMachineAnswerAlternatives(answer.correctAnswer ?? answer.answer ?? answer.text);
-	const canonical = split[0] ?? String(answer.correctAnswer ?? answer.answer ?? answer.text ?? '').trim();
+	const split = splitMachineAnswerAlternatives(
+		answer.correctAnswer ?? answer.answer ?? answer.text
+	);
+	const canonical =
+		split[0] ?? String(answer.correctAnswer ?? answer.answer ?? answer.text ?? '').trim();
 	const aliases = [
 		...split.slice(1),
 		...aliasValues(answer.aliases ?? answer.acceptedAnswers ?? answer.accepted)
@@ -2598,13 +2611,18 @@ function aliasValues(value) {
 	}
 	if (!Array.isArray(value)) return [];
 	return value
-		.map((alias) => (typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''))
+		.map((alias) =>
+			typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''
+		)
 		.filter(Boolean);
 }
 
 function splitMachineAnswerAlternatives(value) {
 	const text = String(value ?? '').trim();
 	if (!text) return [];
+	if (/\b(?:\d+(?:\.\d+)?|[a-z])\s+or\s+(?:more|less|fewer)\b/i.test(text)) {
+		return [text];
+	}
 	const parts = text
 		.split(/\s+\bor\b\s+|\s+\|\s+/i)
 		.map((part) => part.trim())
@@ -2869,6 +2887,7 @@ function responseToFinalAnswerLabel(response) {
 function normalizeQuestionResponseForExtraction(question) {
 	let response = question.response;
 	response = normalizeChoiceOptionsResponse(response);
+	response = normalizeMatchingResponse(response);
 	response = normalizeMachineReadableCorrectAnswersResponse(response);
 	response = normalizeStructuredTableSelectionResponse(response, question);
 	response = normalizeEquationBlankOrderingResponse(response, question.markSchemeItems ?? []);
@@ -2878,9 +2897,43 @@ function normalizeQuestionResponseForExtraction(question) {
 
 function normalizeChoiceOptionsResponse(response) {
 	if (response?.kind !== 'choice') return response;
-	if (Array.isArray(response.options)) return response;
-	if (!Array.isArray(response.choiceOptions)) return response;
-	return { ...response, options: response.choiceOptions };
+	const sourceOptions = Array.isArray(response.options)
+		? response.options
+		: Array.isArray(response.choiceOptions)
+			? response.choiceOptions
+			: null;
+	if (!sourceOptions) return response;
+	const options = sourceOptions.map(choiceOptionString).filter(Boolean);
+	const changed =
+		response.options !== sourceOptions ||
+		options.length !== sourceOptions.length ||
+		options.some((option, index) => option !== sourceOptions[index]);
+	return changed ? { ...response, options } : response;
+}
+
+function choiceOptionString(option) {
+	if (typeof option === 'string') return option.trim();
+	if (typeof option === 'number' || typeof option === 'boolean') return String(option);
+	if (!option || typeof option !== 'object') return '';
+	const id = String(option.id ?? option.label ?? option.letter ?? option.key ?? '').trim();
+	const text = String(option.text ?? option.value ?? option.answer ?? option.option ?? '').trim();
+	if (id && text) return `${id}. ${text}`;
+	return text || id;
+}
+
+function normalizeMatchingResponse(response) {
+	if (response?.kind !== 'matching') return response;
+	let changed = false;
+	const next = { ...response };
+	if (!Array.isArray(next.left) && Array.isArray(next.prompts)) {
+		next.left = next.prompts;
+		changed = true;
+	}
+	if (!Array.isArray(next.right) && Array.isArray(next.options)) {
+		next.right = next.options;
+		changed = true;
+	}
+	return changed ? next : response;
 }
 
 function normalizeMachineReadableCorrectAnswersResponse(response) {
@@ -3109,6 +3162,7 @@ export function buildFullPaperPrompt({
 		'Do not put answers from previous subquestions into learner-visible promptText or promptBlocks. If a later subquestion is ambiguous outside the original sequence, put resolved context only in selfContainedPromptText/contextText for standalone grading and keep promptBlocks faithful to the printed prompt.',
 		'When a marked question has printed setup/context before the actual instruction, put that setup in contextText/contextBlocks and set promptText to only the marked instruction. selfContainedPromptText may combine context and instruction. The renderer shows contextBlocks/stemBlocks before promptBlocks, so do not duplicate the same sentence in both.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers. For blank printed grids that the learner must complete or draw on, use drawing-box with response.grid { rows, columns } and rowLabels/columnLabels when visible; verify the grid visually instead of inferring it from code or OCR.',
+		'For response.kind "matching", include the learner-visible prompts/descriptions in response.left and the selectable letters/items in response.right. Do not use prompts/options alone as the final app-rendered shape.',
 		'For equation-blanks, always include response.segments with text/math/blank segments in visible order, and make each correctAnswers targetId match a blank segment id.',
 		'When two or more equation blanks accept a set of answers in any order, add response.unorderedGroups with targetIds and answers so the grader does not accept duplicate entries as correct.',
 		'For calculation questions with visible working lines and a final answer blank, use response.kind "labeled-lines" with labels for the working space and final answer line. Keep the exact calculation and final value in modelAnswer and markChecklist.',
@@ -3410,6 +3464,7 @@ function buildAgenticExtractionPrompt({
 		'For markChecklist.required, true means every full-credit response must satisfy that criterion. Alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.',
 		'For level-of-response questions, preserve level descriptor mark ranges and make indicative-content examples optional checklist evidence.',
 		'Use response.kind values only from: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For blank printed grids that the learner must complete or draw on, use drawing-box with response.grid { rows, columns } and rowLabels/columnLabels when visible; verify the grid visually instead of inferring it from code or OCR.',
+		'For response.kind "matching", include the learner-visible prompts/descriptions in response.left and the selectable letters/items in response.right. Do not use prompts/options alone as the final app-rendered shape.',
 		'Render formulae, equations, chemical equations, units, symbols, powers of ten, algebraic expressions, and substitutions as LaTeX strings where appropriate.',
 		'For source tables needed by a target question, use contextBlocks with kind "structured-table" when possible instead of requiring an image asset.',
 		'For graph drawing, label-on-image, or visual response surfaces, use asset-canvas or image-label-zones only when a concrete asset exists or mark needsHumanReview with a blocking review note.',
@@ -4153,11 +4208,45 @@ function chunkWindowReviewNote(note) {
 
 export function normalizeExtractedQuestionForImport(question) {
 	const response = normalizeQuestionResponseForExtraction(question);
-	const normalizedQuestion = response === question.response ? question : { ...question, response };
+	const chainResolution = normalizeQuestionChainResolution(question.chainResolution);
+	const normalizedQuestion =
+		response === question.response && chainResolution === question.chainResolution
+			? question
+			: { ...question, response, chainResolution };
 	const withoutDuplicateFixedModelAnswer = shouldDropFixedResponseModelAnswer(normalizedQuestion)
 		? { ...normalizedQuestion, modelAnswer: null }
 		: normalizedQuestion;
 	return normalizeQuestionRenderBlocks(withoutDuplicateFixedModelAnswer);
+}
+
+function normalizeQuestionChainResolution(value) {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+	const allowedActions = new Set([
+		'reuse_existing',
+		'update_existing',
+		'create_new',
+		'needs_review'
+	]);
+	const action = allowedActions.has(value.action) ? value.action : 'needs_review';
+	let existingChainId =
+		value.existingChainId ?? value.existing_chain_id ?? value.currentChainId ?? null;
+	if (!existingChainId && ['reuse_existing', 'update_existing'].includes(action)) {
+		existingChainId = value.chainId ?? value.chain_id ?? value.answerChainId ?? null;
+	}
+	if (action === 'create_new') existingChainId = null;
+	const compatibilityRationale =
+		value.compatibilityRationale ??
+		value.compatibility_rationale ??
+		value.rationale ??
+		value.reason ??
+		'Chain reconciliation did not provide a rationale.';
+	return {
+		...value,
+		action,
+		existingChainId: existingChainId ? String(existingChainId) : null,
+		compatibilityRationale: String(compatibilityRationale),
+		identityStable: value.identityStable === true
+	};
 }
 
 function normalizeExtractedQuestionResponse(question) {
@@ -4744,6 +4833,13 @@ function responseCorrectAnswerTexts(response) {
 	return responseCorrectAnswerEntries(response).map((answer) => answer.correctAnswer);
 }
 
+function responseCorrectAnswerAndAliasTexts(response) {
+	return responseCorrectAnswerEntries(response).flatMap((answer) => [
+		answer.correctAnswer,
+		...(answer.aliases ?? [])
+	]);
+}
+
 function responseCorrectAnswerEntries(response) {
 	const answers = response?.correctAnswers;
 	if (!answers) return [];
@@ -4853,11 +4949,11 @@ function fixedResponseModelAnswerIssues(question) {
 function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 	const modelAnswer = normalizedForExactMatch(question.modelAnswer?.answerText);
 	if (!modelAnswer) return false;
-	const answers = responseCorrectAnswerTexts(question.response)
+	const answers = responseCorrectAnswerAndAliasTexts(question.response)
 		.map(normalizedForExactMatch)
 		.filter(Boolean);
 	if (answers.length === 0) return false;
-	const answerLabels = responseCorrectAnswerTexts(question.response)
+	const answerLabels = responseCorrectAnswerAndAliasTexts(question.response)
 		.map(optionLabelForFixedAnswer)
 		.filter(Boolean);
 	const modelAnswerTokens = modelAnswer
@@ -4865,10 +4961,7 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 		.filter((token) => token && !['and', 'or'].includes(token));
 	const compactModelAnswer = modelAnswer.replace(/\s+/g, '');
 	const compactJoinedAnswers = answers.join('').replace(/\s+/g, '');
-	if (
-		compactJoinedAnswers.length >= 2 &&
-		compactModelAnswer === compactJoinedAnswers
-	) {
+	if (compactJoinedAnswers.length >= 2 && compactModelAnswer === compactJoinedAnswers) {
 		return true;
 	}
 	if (
@@ -4901,7 +4994,7 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 	) {
 		return true;
 	}
-	const coreAnswers = responseCorrectAnswerTexts(question.response)
+	const coreAnswers = responseCorrectAnswerAndAliasTexts(question.response)
 		.map(normalizedCoreFixedAnswerText)
 		.filter((answer) => answer.length >= 2);
 	return (
@@ -4914,11 +5007,13 @@ function fixedResponseModelAnswerDuplicatesAnswerKey(question) {
 function shouldDropFixedResponseModelAnswer(question) {
 	if (!fixedResponseKinds().has(question.response?.kind)) return false;
 	if (!String(question.modelAnswer?.answerText ?? '').trim()) return false;
-	return fixedResponseModelAnswerDuplicatesAnswerKey(question);
+	return responseCorrectAnswerTexts(question.response).length > 0;
 }
 
 function optionLabelForFixedAnswer(value) {
-	const match = String(value ?? '').trim().match(/^([A-Za-z]|\d{1,3})(?:[.)]|[\s:-]+)/);
+	const match = String(value ?? '')
+		.trim()
+		.match(/^([A-Za-z]|\d{1,3})(?:[.)]|[\s:-]+)/);
 	return match ? normalizedForExactMatch(match[1]) : '';
 }
 
@@ -5003,7 +5098,34 @@ function responseKeyIssues(question) {
 			evidence: kind,
 			message:
 				'Fixed-response questions need response.correctAnswers so the UI/import path can store a deterministic answer key.'
+		});
+	}
+	if (kind === 'matching') {
+		const left = Array.isArray(question.response?.left)
+			? question.response.left
+			: Array.isArray(question.response?.prompts)
+				? question.response.prompts
+				: [];
+		const right = Array.isArray(question.response?.right)
+			? question.response.right
+			: Array.isArray(question.response?.options)
+				? question.response.options
+				: [];
+		if (
+			left.length === 0 ||
+			right.length === 0 ||
+			!left.every((item) => typeof item === 'string' && item.trim()) ||
+			!right.every((item) => typeof item === 'string' && item.trim())
+		) {
+			issues.push({
+				severity: 'error',
+				code: 'matching_response_missing_render_items',
+				field: 'response.left',
+				evidence: question.sourceQuestionRef,
+				message:
+					'Matching responses need non-empty renderable left/right values. The importer can normalize prompts/options, but the final control must not be empty.'
 			});
+		}
 	}
 	for (const answer of responseCorrectAnswerEntries(question.response)) {
 		if (
@@ -5055,8 +5177,7 @@ function drawingBoxGridMetadataIssues(question) {
 	const asksForGrid =
 		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cell|square)\b/i.test(
 			visibleText
-		) ||
-		/\b(?:following|the|this)\s+grid\b/i.test(visibleText);
+		) || /\b(?:following|the|this)\s+grid\b/i.test(visibleText);
 	if (!grid) {
 		if (asksForGrid) {
 			issues.push({
@@ -5618,25 +5739,29 @@ function mediaAssetPageLabelMismatch(asset, label, field = 'assets') {
 	if (!asset || !label) return null;
 	const expected = figureNumbers(label);
 	if (expected.length === 0) return null;
-	const metadataValues = [
-		asset.sourceLabel,
-		asset.label,
-		asset.assetLabel,
-		asset.altText,
-		asset.id,
-		asset.assetId
-	].filter((value) => typeof value === 'string' && value.trim());
-	const pathValues = [
-		asset.filePath,
-		asset.publicPath,
-		asset.r2Key
-	].filter((value) => typeof value === 'string' && value.trim());
+	const primaryLabelValues = [asset.sourceLabel, asset.label, asset.assetLabel].filter(
+		(value) => typeof value === 'string' && value.trim()
+	);
+	const descriptiveValues = [asset.altText].filter(
+		(value) => typeof value === 'string' && value.trim()
+	);
+	const identityValues = [asset.id, asset.assetId].filter(
+		(value) => typeof value === 'string' && value.trim()
+	);
+	const pathValues = [asset.filePath, asset.publicPath, asset.r2Key].filter(
+		(value) => typeof value === 'string' && value.trim()
+	);
+	if (primaryLabelValues.some((value) => intersectsFigureNumbers(figureNumbers(value), expected))) {
+		const descriptiveMismatch = firstFigureLabelMismatch(descriptiveValues, expected);
+		if (descriptiveMismatch) return mediaAssetLabelMismatchIssue(field, label, descriptiveMismatch);
+		const pathMismatch = firstFigureLabelMismatch(pathValues, expected);
+		if (pathMismatch) return mediaAssetLabelMismatchIssue(field, label, pathMismatch);
+		return null;
+	}
+	const metadataValues = [...primaryLabelValues, ...descriptiveValues, ...identityValues];
 	const metadataMismatch = firstFigureLabelMismatch(metadataValues, expected);
 	if (metadataMismatch) {
 		return mediaAssetLabelMismatchIssue(field, label, metadataMismatch);
-	}
-	if (metadataValues.some((value) => intersectsFigureNumbers(figureNumbers(value), expected))) {
-		return null;
 	}
 	const pathMismatch = firstFigureLabelMismatch(pathValues, expected);
 	if (pathMismatch) return mediaAssetLabelMismatchIssue(field, label, pathMismatch);
@@ -5670,17 +5795,24 @@ function figureNumbers(value) {
 	const text = String(value ?? '');
 	const out = [];
 	for (const match of text.matchAll(/\bfigures?\s+([0-9A-Za-z,\sand&/-]+)/gi)) {
-		for (const numberMatch of match[1].matchAll(/\b\d+[A-Za-z]?\b/g)) {
-			out.push(normalizedFigureNumber(numberMatch[0]));
+		for (const numberMatch of match[1].matchAll(/\b\d+[A-Za-z]*\b/g)) {
+			out.push(...expandedFigureNumbers(numberMatch[0]));
 		}
 	}
 	for (const match of text.matchAll(
-		/\b(?:figure|fig\.?)\s*[-_ ]*(\d+[A-Za-z]?)(?:\s*[-_]\s*(\d+[A-Za-z]?))?/gi
+		/\b(?:figure|fig\.?)\s*[-_ ]*(\d+[A-Za-z]*)(?:\s*[-_]\s*(\d+[A-Za-z]*))?/gi
 	)) {
-		out.push(normalizedFigureNumber(match[1]));
-		if (match[2]) out.push(normalizedFigureNumber(match[2]));
+		out.push(...expandedFigureNumbers(match[1]));
+		if (match[2]) out.push(...expandedFigureNumbers(match[2]));
 	}
 	return [...new Set(out.filter(Boolean))];
+}
+
+function expandedFigureNumbers(value) {
+	const normalized = normalizedFigureNumber(value);
+	const compact = normalized.match(/^(\d+)([a-z]{2,})$/);
+	if (!compact) return [normalized];
+	return [...compact[2]].map((letter) => `${compact[1]}${letter}`);
 }
 
 function normalizedFigureNumber(value) {
@@ -5688,7 +5820,10 @@ function normalizedFigureNumber(value) {
 		.trim()
 		.toLowerCase()
 		.match(/^0*(\d+)([a-z]?)$/);
-	if (!match) return String(value ?? '').trim().toLowerCase();
+	if (!match)
+		return String(value ?? '')
+			.trim()
+			.toLowerCase();
 	return `${Number(match[1])}${match[2] ?? ''}`;
 }
 
@@ -6536,11 +6671,19 @@ function responseToLearnerText(response) {
 		return `Choice table:\n${tableRowsToText([response.columns ?? [], ...(response.rows ?? [])])}`;
 	}
 	if (kind === 'matching') {
-		return [
-			`Matching response.`,
-			`Left: ${(response.left ?? []).join(', ')}`,
-			`Right: ${(response.right ?? []).join(', ')}`
-		].join('\n');
+		const left = Array.isArray(response.left)
+			? response.left
+			: Array.isArray(response.prompts)
+				? response.prompts
+				: [];
+		const right = Array.isArray(response.right)
+			? response.right
+			: Array.isArray(response.options)
+				? response.options
+				: [];
+		return [`Matching response.`, `Left: ${left.join(', ')}`, `Right: ${right.join(', ')}`].join(
+			'\n'
+		);
 	}
 	if (kind === 'equation-blanks') {
 		return `Equation blanks: ${(response.segments ?? [])
@@ -6675,10 +6818,7 @@ function assetMatchesLabel(asset, label) {
 		asset?.publicPath
 	].some((value) => {
 		const normalized = normalizeAssetKey(value);
-		if (
-			wantedFigures.length > 0 &&
-			intersectsFigureNumbers(figureNumbers(value), wantedFigures)
-		) {
+		if (wantedFigures.length > 0 && intersectsFigureNumbers(figureNumbers(value), wantedFigures)) {
 			return true;
 		}
 		return (

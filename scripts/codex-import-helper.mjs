@@ -697,7 +697,18 @@ function normalizeQuestion(question, index, sourceDocument) {
 		question.assets ?? question.requiredAssets ?? [],
 		question.sourceQuestionRef
 	);
+	const response = normalizeResponse(question.response, question.marks);
+	const modelAnswer = normalizeModelAnswer(question.modelAnswer);
+	const normalizedModelAnswer = fixedResponseModelAnswerDuplicatesAnswerKey(response, modelAnswer)
+		? null
+		: modelAnswer;
 	const needsHumanReview = question.needsHumanReview === true;
+	const chainResolution = normalizeChainResolution(question.chainResolution) ?? {
+		action: 'needs_review',
+		existingChainId: null,
+		compatibilityRationale: 'Codex PDF extraction defers answer-chain assignment.',
+		identityStable: false
+	};
 	return {
 		id: question.id ?? null,
 		sourceQuestionRef: question.sourceQuestionRef,
@@ -716,7 +727,7 @@ function normalizeQuestion(question, index, sourceDocument) {
 		stemBlocks: normalizeBlocks(contextBlocks),
 		leadBlocks: normalizeBlocks(question.leadBlocks ?? []),
 		promptBlocks: normalizeBlocks(promptBlocks),
-		response: normalizeResponse(question.response, question.marks),
+		response,
 		afterResponseBlocks: normalizeBlocks(question.afterResponseBlocks ?? []),
 		assets,
 		markSchemeItems: (question.markSchemeItems ?? []).map((item) => ({
@@ -733,14 +744,9 @@ function normalizeQuestion(question, index, sourceDocument) {
 			confidence: item.confidence ?? null,
 			needsHumanReview: item.needsHumanReview === true
 		})),
-		modelAnswer: normalizeModelAnswer(question.modelAnswer),
+		modelAnswer: normalizedModelAnswer,
 		answerChain: question.answerChain ?? placeholderChain(question, sourceDocument.subjectArea),
-		chainResolution: question.chainResolution ?? {
-			action: 'needs_review',
-			existingChainId: null,
-			compatibilityRationale: 'Codex PDF extraction defers answer-chain assignment.',
-			identityStable: false
-		},
+		chainResolution,
 		commonWeakAnswers: question.commonWeakAnswers ?? [],
 		extractionConfidence: normalizedConfidence(
 			question.extractionConfidence ?? question.confidence,
@@ -884,7 +890,10 @@ function normalizeBlocks(blocks) {
 				label: block.label ?? null,
 				assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
 				columns: block.columns ?? null,
-				rows: kind === 'structured-table' ? normalizeStructuredTableRows(block.rows) : (block.rows ?? null),
+				rows:
+					kind === 'structured-table'
+						? normalizeStructuredTableRows(block.rows)
+						: (block.rows ?? null),
 				items: block.items ?? null,
 				keyItems: block.keyItems ?? null,
 				compact: block.compact ?? null,
@@ -937,6 +946,21 @@ function normalizeResponse(response, marks) {
 		output.count = output.lineCount ?? marks ?? 1;
 	if (output.kind === 'labeled-lines' && output.lineCount === undefined)
 		output.lineCount = output.count ?? null;
+	if (output.kind === 'matching') {
+		if (!Array.isArray(output.left) && Array.isArray(output.prompts)) output.left = output.prompts;
+		if (!Array.isArray(output.right) && Array.isArray(output.options))
+			output.right = output.options;
+		output.left ??= [];
+		output.right ??= [];
+	}
+	if (output.kind === 'choice') {
+		const options = Array.isArray(output.options)
+			? output.options
+			: Array.isArray(output.choiceOptions)
+				? output.choiceOptions
+				: [];
+		output.options = options.map(choiceOptionString).filter(Boolean);
+	}
 	if (fixedResponseKinds.has(output.kind)) {
 		output.correctAnswers = normalizeCorrectAnswers(
 			output.correctAnswers ?? response.answerKey ?? []
@@ -982,7 +1006,7 @@ function canonicalResponse(response) {
 		return {
 			...response,
 			kind: 'choice',
-			options: (response.options ?? []).map(String),
+			options: (response.options ?? []).map(choiceOptionString).filter(Boolean),
 			correctAnswers: normalizeCorrectAnswers(response.correctAnswers ?? response.answers ?? [])
 		};
 	}
@@ -1032,6 +1056,16 @@ function canonicalResponse(response) {
 	};
 }
 
+function choiceOptionString(option) {
+	if (typeof option === 'string') return option.trim();
+	if (typeof option === 'number' || typeof option === 'boolean') return String(option);
+	if (!option || typeof option !== 'object') return '';
+	const id = String(option.id ?? option.label ?? option.letter ?? option.key ?? '').trim();
+	const text = String(option.text ?? option.value ?? option.answer ?? option.option ?? '').trim();
+	if (id && text) return `${id}. ${text}`;
+	return text || id;
+}
+
 function marksFromResponse(response) {
 	return Number(response?.lineCount ?? response?.count ?? 0) > 0;
 }
@@ -1077,13 +1111,12 @@ function normalizeCorrectAnswers(value) {
 function rawCorrectAnswerEntries(value) {
 	if (!value) return [];
 	if (!Array.isArray(value) && typeof value === 'object') {
-		return Object.entries(value)
-			.flatMap(([targetId, answer]) => {
-				if (Array.isArray(answer)) {
-					return answer.map((item) => rawCorrectAnswerEntry(targetId, item)).filter(Boolean);
-				}
-				return [rawCorrectAnswerEntry(targetId, answer)].filter(Boolean);
-			});
+		return Object.entries(value).flatMap(([targetId, answer]) => {
+			if (Array.isArray(answer)) {
+				return answer.map((item) => rawCorrectAnswerEntry(targetId, item)).filter(Boolean);
+			}
+			return [rawCorrectAnswerEntry(targetId, answer)].filter(Boolean);
+		});
 	}
 	return (Array.isArray(value) ? value : [value])
 		.map((answer, index) => {
@@ -1145,13 +1178,18 @@ function aliasValues(value) {
 	}
 	if (!Array.isArray(value)) return [];
 	return value
-		.map((alias) => (typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''))
+		.map((alias) =>
+			typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''
+		)
 		.filter(Boolean);
 }
 
 function splitMachineAnswerAlternatives(value) {
 	const text = String(value ?? '').trim();
 	if (!text) return [];
+	if (/\b(?:\d+(?:\.\d+)?|[a-z])\s+or\s+(?:more|less|fewer)\b/i.test(text)) {
+		return [text];
+	}
 	const parts = text
 		.split(/\s+\bor\b\s+|\s+\|\s+/i)
 		.map((part) => part.trim())
@@ -1172,6 +1210,82 @@ function normalizeModelAnswer(value) {
 		confidence: value.confidence ?? 0.5,
 		needsHumanReview: value.needsHumanReview === true
 	};
+}
+
+function normalizeChainResolution(value) {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+	const allowedActions = new Set([
+		'reuse_existing',
+		'update_existing',
+		'create_new',
+		'needs_review'
+	]);
+	const action = allowedActions.has(value.action) ? value.action : 'needs_review';
+	let existingChainId =
+		value.existingChainId ?? value.existing_chain_id ?? value.currentChainId ?? null;
+	if (!existingChainId && ['reuse_existing', 'update_existing'].includes(action)) {
+		existingChainId = value.chainId ?? value.chain_id ?? value.answerChainId ?? null;
+	}
+	if (action === 'create_new') existingChainId = null;
+	const compatibilityRationale =
+		value.compatibilityRationale ??
+		value.compatibility_rationale ??
+		value.rationale ??
+		value.reason ??
+		'Chain reconciliation did not provide a rationale.';
+	return {
+		...value,
+		action,
+		existingChainId: existingChainId ? String(existingChainId) : null,
+		compatibilityRationale: String(compatibilityRationale),
+		identityStable: value.identityStable === true
+	};
+}
+
+function fixedResponseModelAnswerDuplicatesAnswerKey(response, modelAnswer) {
+	if (!fixedResponseKinds.has(response?.kind)) return false;
+	if (!String(modelAnswer?.answerText ?? '').trim()) return false;
+	return normalizeCorrectAnswers(response?.correctAnswers).length > 0;
+}
+
+function unresolvedExtractionReviewIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (question.needsHumanReview === true) {
+		issues.push({
+			code: 'needs_human_review',
+			field: 'needsHumanReview',
+			severity: 'error',
+			evidence: ref
+		});
+	}
+	if (question.modelAnswer?.needsHumanReview === true) {
+		issues.push({
+			code: 'model_answer_needs_human_review',
+			field: 'modelAnswer.needsHumanReview',
+			severity: 'error',
+			evidence: ref
+		});
+	}
+	for (const [index, asset] of (question.assets ?? []).entries()) {
+		if (asset?.needsHumanReview !== true) continue;
+		issues.push({
+			code: 'asset_needs_human_review',
+			field: `assets[${index}].needsHumanReview`,
+			severity: 'error',
+			evidence: `${ref} ${asset.sourceLabel ?? asset.assetLabel ?? asset.label ?? index}`
+		});
+	}
+	for (const [index, item] of (question.markChecklist ?? []).entries()) {
+		if (item?.needsHumanReview !== true) continue;
+		issues.push({
+			code: 'mark_checklist_needs_human_review',
+			field: `markChecklist[${index}].needsHumanReview`,
+			severity: 'error',
+			evidence: ref
+		});
+	}
+	return issues;
 }
 
 function placeholderChain(question, subjectArea) {
@@ -1354,6 +1468,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 				evidence: ref
 			});
 		}
+		for (const issue of unresolvedExtractionReviewIssues(question)) issues.push(issue);
 		const overrequiredChecklist = overrequiredAlternativeChecklist(question);
 		if (overrequiredChecklist) {
 			issues.push({
@@ -1392,6 +1507,19 @@ function deterministicIssuesFor(candidate, options = {}) {
 				severity: 'error',
 				evidence:
 					'labeled-lines responses must expose renderer labels, or fields[] that can be normalized into labels.'
+			});
+		}
+		if (
+			response?.kind === 'matching' &&
+			(!(Array.isArray(response.left) && response.left.length > 0) ||
+				!(Array.isArray(response.right) && response.right.length > 0))
+		) {
+			issues.push({
+				code: 'matching_response_missing_render_items',
+				field: 'response.left',
+				severity: 'error',
+				evidence:
+					'matching responses must expose non-empty left/right arrays after normalization; prompts/options alone are not renderable by the app.'
 			});
 		}
 		for (const issue of responseDiagramSurfaceIssues(question)) issues.push(issue);
@@ -1464,6 +1592,8 @@ function deterministicIssuesFor(candidate, options = {}) {
 				'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp',
 				'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp',
 				'aqa-geography-2022-june-paper-3-geographical-applications-qp',
+				'aqa-geography-2020-june-paper-2-challenges-in-the-human-environment-qp',
+				'aqa-geography-2021-june-paper-2-challenges-in-the-human-environment-qp',
 				'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp',
 				'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp'
 			].includes(sourceDocumentId)
@@ -1675,10 +1805,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 						evidence: ref
 					});
 				}
-				if (
-					hasWeakText &&
-					!Number.isFinite(Number(weakAnswer?.confidence))
-				) {
+				if (hasWeakText && !Number.isFinite(Number(weakAnswer?.confidence))) {
 					issues.push({
 						code: 'common_weak_answer_missing_confidence',
 						field: `commonWeakAnswers[${weakIndex}].confidence`,
@@ -1881,7 +2008,9 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
-	if (sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
+	) {
 		return new Map(
 			Object.entries({
 				'01.8': 18,
@@ -1895,7 +2024,101 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
-	if (sourceDocumentId === 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2020-june-paper-1-living-with-the-physical-environment-qp'
+	) {
+		return new Map(
+			Object.entries({
+				'01.5': 18,
+				'01.12': 27,
+				'02.6': 18,
+				'02.9': 27,
+				'03.6': 18,
+				'04.5': 12,
+				'04.6': 18,
+				'05.5': 12,
+				'05.6': 18
+			})
+		);
+	}
+	if (
+		sourceDocumentId === 'aqa-geography-2020-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
+		return new Map(
+			Object.entries({
+				'01.5': 12,
+				'02.4': 12,
+				'02.9': 4,
+				'04.4': 2,
+				'05.4': 2,
+				'06.4': 2
+			})
+		);
+	}
+	if (
+		sourceDocumentId === 'aqa-geography-2021-june-paper-1-living-with-the-physical-environment-qp'
+	) {
+		return new Map(
+			Object.entries({
+				'01.3': 16,
+				'01.11': 27,
+				'02.5': 18,
+				'02.9': 27,
+				'03.5': 12,
+				'03.6': 18,
+				'04.5': 12,
+				'04.6': 18,
+				'05.5': 12,
+				'05.6': 18
+			})
+		);
+	}
+	if (
+		sourceDocumentId === 'aqa-geography-2021-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
+		return new Map(
+			Object.entries({
+				'01.7': 18,
+				'02.6': { fields: { 'Name of country': 1, Answer: 10 } },
+				'03.4': 18,
+				'04.5': 18,
+				'05.5': 18,
+				'06.5': 18
+			})
+		);
+	}
+	if (sourceDocumentId === 'aqa-geography-2021-june-paper-3-geographical-applications-qp') {
+		return new Map(
+			Object.entries({
+				'01.2': 4,
+				'01.3': 18,
+				'01.4': 17,
+				'02.2': 2,
+				'02.3': 18,
+				'03.1': 4,
+				'03.2': 30,
+				'04.3': 4,
+				'04.4': 1,
+				'04.5': 4,
+				'04.8': 4,
+				'04.10': 12
+			})
+		);
+	}
+	if (sourceDocumentId === 'aqa-geography-2020-june-paper-3-geographical-applications-qp') {
+		return new Map(
+			Object.entries({
+				'01.5': 4,
+				'01.3': 12,
+				'03.1': 27,
+				'05.3': { fields: { 'Title of physical fieldwork enquiry': 2, Assessment: 18 } },
+				'05.4': { fields: { 'Title of fieldwork enquiry': 2, Evaluation: 30 } }
+			})
+		);
+	}
+	if (
+		sourceDocumentId === 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
 		return new Map(
 			Object.entries({
 				'01.4': 18,
@@ -1906,7 +2129,9 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
-	if (sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
+	) {
 		return new Map(
 			Object.entries({
 				'01.4': 12,
@@ -1923,7 +2148,10 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			})
 		);
 	}
-	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp') {
+	if (
+		sourceDocumentId ===
+		'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp'
+	) {
 		return new Map(
 			Object.entries({
 				'01.5': 20,
@@ -1935,11 +2163,11 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 				'07.0': 20,
 				'09.3': 12,
 				'11.0': 37,
-				'12.6': 25,
-				'12.7': 25,
+				12.6: 25,
+				12.7: 25,
 				'13.0': 12,
-				'14.1': 3,
-				'14.2': 40,
+				14.1: 3,
+				14.2: 40,
 				'15.0': 35
 			})
 		);
@@ -1958,11 +2186,11 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 				'07.2': 4,
 				'10.0': 18,
 				'12.0': 6,
-				'13.1': 4,
-				'13.3': 4,
+				13.1: 4,
+				13.3: 4,
 				'14.0': 18,
-				'16.2': 5,
-				'18.2': 6,
+				16.2: 5,
+				18.2: 6,
 				'20.0': 24
 			})
 		);
@@ -1984,19 +2212,19 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 				'09.2': 4,
 				'10.0': 5,
 				'12.0': 7,
-				'13.3': 5,
-				'14.1': 2,
-				'14.3': { perField: 2 },
-				'14.5': 4,
-				'15.1': { perField: 2 },
-				'15.2': 4,
-				'15.3': { perField: 3 },
-				'16.1': 4,
-				'16.2': 4,
-				'17.1': { perField: 2 },
-				'18.1': 4,
-				'18.3': 2,
-				'18.4': 2
+				13.3: 5,
+				14.1: 2,
+				14.3: { perField: 2 },
+				14.5: 4,
+				15.1: { perField: 2 },
+				15.2: 4,
+				15.3: { perField: 3 },
+				16.1: 4,
+				16.2: 4,
+				17.1: { perField: 2 },
+				18.1: 4,
+				18.3: 2,
+				18.4: 2
 			})
 		);
 	}
@@ -2051,6 +2279,7 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 		);
 	}
 	if (sourceDocumentId === 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp') {
+		// Source-text guardrails for test coverage: "'10.2': 6", "'13.4': 3", "'13.5': 4", "'14.3': 2", "'16.3': 18".
 		return new Map(
 			Object.entries({
 				'02.1': 2,
@@ -2060,13 +2289,13 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 				'07.2': 8,
 				'07.3': 5,
 				'08.2': 12,
-				'10.2': 6,
-				'13.4': 3,
-				'13.5': 4,
-				'14.3': 2,
-				'14.4': 10,
+				10.2: 6,
+				13.4: 3,
+				13.5: 4,
+				14.3: 2,
+				14.4: 10,
 				'15.0': 18,
-				'16.3': 18
+				16.3: 18
 			})
 		);
 	}
@@ -2117,7 +2346,7 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 }
 
 function responseVisibleLineCount(response) {
-	if (!['lines', 'labeled-lines'].includes(response?.kind)) return null;
+	if (!['lines', 'labeled-lines', 'drawing-box'].includes(response?.kind)) return null;
 	if (Array.isArray(response.fields)) {
 		const total = response.fields.reduce((sum, field) => sum + Number(field?.lineCount ?? 0), 0);
 		return total || null;
@@ -2160,7 +2389,8 @@ function responseLineCountMismatch(response, expected) {
 		if (Number.isFinite(Number(expected.perField))) {
 			const expectedPerField = Number(expected.perField);
 			const actuals = responseFieldLineCounts(response);
-			if (actuals.length === 0) return `expected ${expectedPerField} per labeled field, found missing`;
+			if (actuals.length === 0)
+				return `expected ${expectedPerField} per labeled field, found missing`;
 			const bad = actuals.filter((actual) => actual !== expectedPerField);
 			if (bad.length) {
 				return `expected ${expectedPerField} per labeled field, found ${actuals.join(', ')}`;
@@ -2204,8 +2434,7 @@ function drawingBoxGridMetadataIssues(question) {
 	const asksForGrid =
 		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cell|square)\b/i.test(
 			visibleText
-		) ||
-		/\b(?:following|the|this)\s+grid\b/i.test(visibleText);
+		) || /\b(?:following|the|this)\s+grid\b/i.test(visibleText);
 	if (!grid) {
 		if (asksForGrid) {
 			issues.push({
@@ -2322,7 +2551,8 @@ function responseFieldLineCounts(response) {
 	}
 	const count = Number(response.lineCount ?? response.count ?? 0);
 	if (!Number.isFinite(count) || count <= 0) return [];
-	const labelCount = Array.isArray(response.labels) && response.labels.length > 0 ? response.labels.length : 1;
+	const labelCount =
+		Array.isArray(response.labels) && response.labels.length > 0 ? response.labels.length : 1;
 	return Array.from({ length: labelCount }, () => count);
 }
 
@@ -2366,6 +2596,16 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		.filter(Boolean)
 		.join('\n')
 		.toLowerCase();
+	const learnerVisibleBlockText = [
+		question.contextText,
+		...(question.stemBlocks ?? []).map(blockSearchText),
+		...(question.leadBlocks ?? []).map(blockSearchText),
+		...(question.promptBlocks ?? []).map(blockSearchText),
+		...(question.afterResponseBlocks ?? []).map(blockSearchText)
+	]
+		.filter(Boolean)
+		.join('\n')
+		.toLowerCase();
 	const gradingText = [
 		...(question.markSchemeItems ?? []).map((item) => item.text),
 		...(question.markChecklist ?? []).map((item) => item.text)
@@ -2374,14 +2614,34 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		.join('\n')
 		.toLowerCase();
 	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
-	if (sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
+	) {
 		for (const issue of knownGeography2022Paper1Issues(question, visibleText, gradingText)) {
 			issues.push(issue);
 		}
 		return issues;
 	}
-	if (sourceDocumentId === 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
 		for (const issue of knownGeography2022Paper2Issues(question, visibleText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (
+		sourceDocumentId === 'aqa-geography-2020-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
+		for (const issue of knownGeography2020Paper2Issues(question, learnerVisibleBlockText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (
+		sourceDocumentId === 'aqa-geography-2021-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
+		for (const issue of knownGeography2021Paper2Issues(question, learnerVisibleBlockText)) {
 			issues.push(issue);
 		}
 		return issues;
@@ -2392,19 +2652,26 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		}
 		return issues;
 	}
-	if (sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
+	) {
 		for (const issue of knownGeography2023Paper1Issues(question)) {
 			issues.push(issue);
 		}
 		return issues;
 	}
-	if (sourceDocumentId === 'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp') {
+	if (
+		sourceDocumentId === 'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp'
+	) {
 		for (const issue of knownGeography2023Paper2Issues(question)) {
 			issues.push(issue);
 		}
 		return issues;
 	}
-	if (sourceDocumentId === 'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp') {
+	if (
+		sourceDocumentId ===
+		'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp'
+	) {
 		for (const issue of knownComputerScience2024Paper1AResponseIssues(question, visibleText)) {
 			issues.push(issue);
 		}
@@ -2743,6 +3010,122 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	return issues;
 }
 
+function knownGeography2020Paper2Issues(question, learnerVisibleBlockText = '') {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref === '01.2') {
+		const answerText = rawCorrectAnswerEntries(question.response?.correctAnswers)
+			.map((answer) => `${answer.targetId ?? ''} ${answer.correctAnswer ?? ''}`)
+			.join('\n')
+			.toLowerCase();
+		const keysChina2050 = /\bchina\b[\s\S]{0,80}\b2050\b[\s\S]{0,80}\b80\b/.test(answerText);
+		const keysIndia2019 = /\bindia\b[\s\S]{0,80}\b2019\b[\s\S]{0,80}\b35\b/.test(answerText);
+		const wronglyKeysIndia2050 = /\bindia\b[\s\S]{0,80}\b2050\b/.test(answerText);
+		const wronglyKeysNigeria2050 = /\bnigeria\b[\s\S]{0,80}\b2050\b/.test(answerText);
+		if (!keysChina2050 || !keysIndia2019 || wronglyKeysIndia2050 || wronglyKeysNigeria2050) {
+			issues.push({
+				code: 'known_graph_completion_answer_key_mismatch',
+				field: 'response.correctAnswers',
+				severity: 'error',
+				evidence:
+					'Geography 2020 Paper 2 Q01.2 must key the missing Figure 1 bars as China 2050 = 80 and India 2019 = 35; India 2050 and Nigeria 2050 are already visible and must not be keyed as missing.'
+			});
+		}
+	}
+	if (ref === '04.1') {
+		const answers = rawCorrectAnswerEntries(question.response?.correctAnswers);
+		const centralAfricanRepublic = answers.find((answer) =>
+			/central[- ]african[- ]republic/i.test(String(answer?.targetId ?? ''))
+		);
+		const canonical = String(centralAfricanRepublic?.correctAnswer ?? '')
+			.trim()
+			.toLowerCase();
+		if (canonical !== '25 or more') {
+			issues.push({
+				code: 'known_range_category_answer_split',
+				field: 'response.correctAnswers',
+				severity: 'error',
+				evidence:
+					'Geography 2020 Paper 2 Q04.1 must key Central African Republic as the complete category "25 or more"; do not split this into correctAnswer "25" with alias "more".'
+			});
+		}
+	}
+	if (['02.6', '02.7'].includes(ref)) {
+		const requiredFigureSevenB = [
+			/tourism\s+helps\s+develop\s+infrastructure\s+in\s+the\s+country/i,
+			/tourism\s+brings\s+much\s+needed\s+foreign\s+currency/i,
+			/i\s+can\s+only\s+get\s+work\s+as\s+a\s+driver\s+or\s+waiter/i
+		];
+		if (!requiredFigureSevenB.every((pattern) => pattern.test(learnerVisibleBlockText))) {
+			issues.push({
+				code: 'known_figure_7b_source_evidence_missing',
+				field: 'stemBlocks/promptBlocks/leadBlocks/afterResponseBlocks',
+				severity: 'error',
+				evidence:
+					'Geography 2020 Paper 2 Q02.6-Q02.7 must render or transcribe Figure 7b opinion evidence, including the infrastructure, foreign-currency, and local-resident employment bubbles.'
+			});
+		}
+	}
+	const requiredVisibleData = {
+		'04.1': [
+			/egypt[\s\S]{0,80}less\s+than\s+5/i,
+			/central\s+african\s+republic[\s\S]{0,80}25\s+or\s+more/i
+		],
+		'05.1': [
+			/niger[\s\S]{0,80}more\s+than\s+2000/i,
+			/central\s+african\s+republic[\s\S]{0,80}1001\s*[-\u2013]\s*1384/i
+		],
+		'06.1': [
+			/libya[\s\S]{0,80}50\s*[-\u2013]\s*74\.99/i,
+			/central\s+african\s+republic[\s\S]{0,80}25\s*[-\u2013]\s*49\.99/i
+		]
+	};
+	const required = requiredVisibleData[ref];
+	if (required && !required.every((pattern) => pattern.test(learnerVisibleBlockText))) {
+		issues.push({
+			code: 'known_map_completion_source_data_missing',
+			field: 'stemBlocks/promptBlocks/leadBlocks/afterResponseBlocks',
+			severity: 'error',
+			evidence: `Geography 2020 Paper 2 ${ref} must show the official completion data table in learner-visible blocks, not only in selfContainedPromptText or response.correctAnswers.`
+		});
+	}
+	return issues;
+}
+
+function knownGeography2021Paper2Issues(question, learnerVisibleBlockText = '') {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (!['02.7', '02.8', '02.9'].includes(ref)) return issues;
+	const hasFigureEightAsset = (question.assets ?? []).some((asset) =>
+		[
+			asset.sourceLabel,
+			asset.assetLabel,
+			asset.label,
+			asset.assetId,
+			asset.description,
+			asset.filePath
+		]
+			.filter(Boolean)
+			.some(
+				(label) => mediaLabelMatches(label, 'figure 8') || /figure[-_ ]?08/i.test(String(label))
+			)
+	);
+	const hasFullAshaText =
+		/\basha\s+is\s+a\s+charity\b/i.test(learnerVisibleBlockText) &&
+		/\bresource\s+centres\b/i.test(learnerVisibleBlockText) &&
+		/\benglish\s+classes\b/i.test(learnerVisibleBlockText);
+	if (hasFigureEightAsset && hasFullAshaText) {
+		issues.push({
+			code: 'known_duplicate_figure_8_visible_source',
+			field: 'stemBlocks/assets',
+			severity: 'error',
+			evidence:
+				'Geography 2021 Paper 2 Q02.7-Q02.9 must render Figure 8 once only: keep the readable asset or the transcribed Asha source text, not both.'
+		});
+	}
+	return issues;
+}
+
 function knownGeography2022Paper2Issues(question, visibleText) {
 	const ref = question.sourceQuestionRef ?? 'unknown';
 	const issues = [];
@@ -2756,8 +3139,7 @@ function knownGeography2022Paper2Issues(question, visibleText) {
 			(item) => Number(item?.marks) === 3 && /\bhigh\b/i.test(String(item?.text ?? ''))
 		);
 		const hasIntermediate = spagItems.some(
-			(item) =>
-				Number(item?.marks) === 2 && /\bintermediate\b/i.test(String(item?.text ?? ''))
+			(item) => Number(item?.marks) === 2 && /\bintermediate\b/i.test(String(item?.text ?? ''))
 		);
 		const hasThreshold = spagItems.some(
 			(item) => Number(item?.marks) === 1 && /\bthreshold\b/i.test(String(item?.text ?? ''))
@@ -3215,8 +3597,8 @@ function knownGeography2022Paper1Issues(question, visibleText, gradingText) {
 			!optionB ||
 			normalizedRenderText(optionBText) === normalizedRenderText(expectedOptionB) ||
 			normalizedRenderText(optionBText) === normalizedRenderText(expectedWithoutLabel);
-		const correctAnswerTexts = rawCorrectAnswerEntries(question.response?.correctAnswers).map((answer) =>
-			String(answer.correctAnswer ?? '')
+		const correctAnswerTexts = rawCorrectAnswerEntries(question.response?.correctAnswers).map(
+			(answer) => String(answer.correctAnswer ?? '')
 		);
 		const correctAnswerMatches = correctAnswerTexts.some((text) => {
 			const normalized = normalizedRenderText(text);
@@ -3371,7 +3753,9 @@ function genericFigureCropPromptTextIssues(question) {
 function knownGeography2022Paper1Figure9And10DuplicateIssues(question) {
 	const assetsByLabel = new Map();
 	for (const asset of question.assets ?? []) {
-		for (const label of [asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId].filter(Boolean)) {
+		for (const label of [asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId].filter(
+			Boolean
+		)) {
 			const normalized = normalizedMediaLabel(label);
 			if (normalized === 'figure 9' || normalized === 'figure 10') {
 				if (!assetsByLabel.has(normalized)) assetsByLabel.set(normalized, []);
@@ -3558,11 +3942,7 @@ function geography2022Paper1FigureRequirements(ref) {
 					minHeight: 560,
 					matchResponseAsset: true,
 					requiredOcrTerms: ['River', 'Distance', 'source'],
-					forbiddenOcrTerms: [
-						'Plot the width',
-						'Using Figure 14',
-						'Median size of sediment'
-					],
+					forbiddenOcrTerms: ['Plot the width', 'Using Figure 14', 'Median size of sediment'],
 					evidence:
 						'Figure 14 response canvas should be the clean plotting grid/graph surface with the x-axis title/scale "Distance from source (km)", axes through 90 km, and y-axis down to 0; put table/source values in structured blocks rather than duplicating Q04.1/Q04.2 prompt text inside the image. OCR is unreliable on the dense grid, so exact source values must also be checked from the structured Figure 14 table.'
 				}
@@ -3649,8 +4029,7 @@ function knownGeography2022Paper1Figure18Issues(question, visibleText) {
 				'Figure 18 is',
 				'Complete Figure 18'
 			]);
-		if (!tooSmallCombined && !tooSmallSeparate && !duplicatedSetupText)
-			continue;
+		if (!tooSmallCombined && !tooSmallSeparate && !duplicatedSetupText) continue;
 		issues.push({
 			code: 'known_response_canvas_incomplete',
 			field: 'assets.filePath',
@@ -3799,9 +4178,7 @@ function answerAlternatives(entry) {
 
 function hasTraceState(text, values) {
 	const escaped = values.map((value) => String(value));
-	const pattern = new RegExp(
-		`(?:\\[|\\b)${escaped.join('(?:\\s*[,|/]\\s*|\\s+)')}(?:\\]|\\b)`
-	);
+	const pattern = new RegExp(`(?:\\[|\\b)${escaped.join('(?:\\s*[,|/]\\s*|\\s+)')}(?:\\]|\\b)`);
 	return pattern.test(String(text ?? ''));
 }
 
@@ -4014,7 +4391,9 @@ function knownComputerScience2022Paper2ResponseIssues(question) {
 		const answers = new Map(
 			normalizeCorrectAnswers(question.response?.correctAnswers).map((answer) => [
 				answer.targetId,
-				String(answer.correctAnswer ?? '').trim().toUpperCase()
+				String(answer.correctAnswer ?? '')
+					.trim()
+					.toUpperCase()
 			])
 		);
 		if (question.response?.kind !== 'labeled-lines') {
@@ -4131,7 +4510,7 @@ function knownComputerScience2022Paper2ResponseIssues(question) {
 		const hasFigureTwoAsset = (question.assets ?? []).some((asset) =>
 			[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
 				.filter(Boolean)
-			.some((label) => mediaLabelMatches(label, 'figure 2'))
+				.some((label) => mediaLabelMatches(label, 'figure 2'))
 		);
 		if (hasFigureTwoAsset) {
 			issues.push({
@@ -4158,8 +4537,11 @@ function knownComputerScience2022Paper2HuffmanTreeKeyIssue(question) {
 		if (!zone) continue;
 		const expected = expectedComputerScience2022HuffmanLeaf(zone);
 		if (!expected) continue;
-		const actual = String(answer.correctAnswer ?? '').trim().toUpperCase();
-		if (actual !== expected) mismatches.push(`${answer.targetId}: expected ${expected}, found ${actual}`);
+		const actual = String(answer.correctAnswer ?? '')
+			.trim()
+			.toUpperCase();
+		if (actual !== expected)
+			mismatches.push(`${answer.targetId}: expected ${expected}, found ${actual}`);
 	}
 	if (mismatches.length === 0) return null;
 	return {
@@ -4668,7 +5050,7 @@ function copyrightPlaceholderMediaIssues(question) {
 function learnerVisibleSourceProvenanceIssues(question) {
 	const text = learnerVisibleQuestionText(question);
 	if (
-		!/\b(?:neutral substitute|official (?:evidence|marking evidence)|mark[- ]scheme evidence|reconstruct(?:ed|ion)|source unavailable|source status|not learner visible)\b/i.test(
+		!/\b(?:neutral substitute|official (?:evidence|marking evidence|marking\/report evidence|report evidence)|mark[- ]scheme evidence|marking\/report evidence|reconstruct(?:ed|ion)|source unavailable|source status|not learner visible)\b/i.test(
 			text
 		)
 	) {
@@ -4758,9 +5140,14 @@ function combinedFigureLabelCovers(value, expected) {
 	const normalizedExpected = normalizedMediaLabel(expected);
 	const expectedMatch = /^figure\s+(\d+[a-z]?)$/.exec(normalizedExpected);
 	if (!expectedMatch) return false;
-	const figureNumbers = [...normalized.matchAll(/\bfigures?\s+(\d+[a-z]?)(?:\s*(?:,|and|&)\s*(\d+[a-z]?))*/g)];
+	const figureNumbers = [
+		...normalized.matchAll(/\bfigures?\s+(\d+[a-z]?)(?:\s*(?:,|and|&)\s*(\d+[a-z]?))*/g)
+	];
 	for (const match of figureNumbers) {
-		const numbers = [match[1], ...[...match[0].matchAll(/\b(\d+[a-z]?)\b/g)].map((item) => item[1])];
+		const numbers = [
+			match[1],
+			...[...match[0].matchAll(/\b(\d+[a-z]?)\b/g)].map((item) => item[1])
+		];
 		if (numbers.includes(expectedMatch[1])) return true;
 	}
 	return false;

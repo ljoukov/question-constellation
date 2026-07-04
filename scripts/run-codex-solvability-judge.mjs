@@ -249,7 +249,8 @@ Task:
 6. Fail real learner-facing defects: missing source table/figure/diagram data, missing response-surface asset, impossible fixed-response control, wrong or absent answer key, missing model answer for written responses, duplicated or contradictory prompt context, or mark-scheme evidence that cannot grade the visible question.
 7. Do not judge answer-chain quality except where the chain text has contaminated the visible question or grading fields.
 8. For structured source tables or source strings represented in context sections, an image asset is not required unless the target response itself is diagram/image based.
-9. Use score >= ${minScore} for passed questions. Any blocking missingContext/renderFinding or non-empty requiredRepairs means the question fails.
+9. Geography Paper 3 may include official fieldwork questions that explicitly ask the learner to use their own human or physical geography enquiry. Do not fail those merely because the app does not provide a concrete fieldwork scenario. Pass them when the learner-visible prompt clearly states the own-fieldwork dependency, the response surface is renderable, and the mark scheme/checklist/model answer can grade generic valid fieldwork evidence.
+10. Use score >= ${minScore} for passed questions. Any blocking missingContext/renderFinding or non-empty requiredRepairs means the question fails.
 
 Write exactly one JSON file named solvability-report.json with this shape:
 {
@@ -402,7 +403,8 @@ function optionalIntegerArg(name) {
 	const raw = stringArg(name, '');
 	if (!raw) return null;
 	const value = Number(raw);
-	if (!Number.isInteger(value) || value < 1) throw new Error(`--${name} must be a positive integer.`);
+	if (!Number.isInteger(value) || value < 1)
+		throw new Error(`--${name} must be a positive integer.`);
 	return value;
 }
 

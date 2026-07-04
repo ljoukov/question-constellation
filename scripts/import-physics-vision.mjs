@@ -239,7 +239,10 @@ function correctAnswersObject(value) {
 		} else if (typeof answer === 'object' && !Array.isArray(answer)) {
 			answers[targetId] = mergeAnswerKeyValues(answerKeyValue(answers[targetId]), answer);
 		} else {
-			answers[targetId] = mergeAnswerKeyValues(answerKeyValue(answers[targetId]), answerKeyValue(answer));
+			answers[targetId] = mergeAnswerKeyValues(
+				answerKeyValue(answers[targetId]),
+				answerKeyValue(answer)
+			);
 		}
 	}
 	return answers;
@@ -284,7 +287,8 @@ function mergeAnswerKeyValues(left, right) {
 					rightObject.correctAnswer,
 					...(rightObject.aliases ?? [])
 				].filter(
-					(alias) => normalizedForExactMatch(alias) !== normalizedForExactMatch(leftObject.correctAnswer)
+					(alias) =>
+						normalizedForExactMatch(alias) !== normalizedForExactMatch(leftObject.correctAnswer)
 				)
 			)
 		]
@@ -310,7 +314,9 @@ function aliasValues(value) {
 	}
 	if (!Array.isArray(value)) return [];
 	return value
-		.map((alias) => (typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''))
+		.map((alias) =>
+			typeof alias === 'string' || typeof alias === 'number' ? String(alias).trim() : ''
+		)
 		.filter(Boolean);
 }
 
@@ -735,7 +741,9 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 	if (response.kind === 'choice') {
 		return {
 			kind: 'choice',
-			options: response.options ?? response.choiceOptions ?? [],
+			options: (response.options ?? response.choiceOptions ?? [])
+				.map(choiceOptionString)
+				.filter(Boolean),
 			layout: response.layout ?? 'vertical',
 			...(response.maxSelections && response.maxSelections > 1
 				? { maxSelections: response.maxSelections }
@@ -752,12 +760,22 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 		};
 	}
 	if (response.kind === 'matching') {
+		const left = Array.isArray(response.left)
+			? response.left
+			: Array.isArray(response.prompts)
+				? response.prompts
+				: [];
+		const right = Array.isArray(response.right)
+			? response.right
+			: Array.isArray(response.options)
+				? response.options
+				: [];
 		return {
 			kind: 'matching',
 			leftTitle: response.leftTitle ?? null,
 			rightTitle: response.rightTitle ?? null,
-			left: response.left ?? [],
-			right: response.right ?? [],
+			left,
+			right,
 			...(correctAnswers ? { correctAnswers } : {})
 		};
 	}
@@ -807,12 +825,20 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 				(grid ? Math.max(120, Math.round((width * grid.rows) / grid.columns)) : 180),
 			...(grid ? { grid } : {}),
 			...(Array.isArray(response.rowLabels) ? { rowLabels: response.rowLabels } : {}),
-			...(Array.isArray(response.columnLabels)
-				? { columnLabels: response.columnLabels }
-				: {})
+			...(Array.isArray(response.columnLabels) ? { columnLabels: response.columnLabels } : {})
 		};
 	}
 	return { kind: 'none' };
+}
+
+function choiceOptionString(option) {
+	if (typeof option === 'string') return option.trim();
+	if (typeof option === 'number' || typeof option === 'boolean') return String(option);
+	if (!option || typeof option !== 'object') return '';
+	const id = String(option.id ?? option.label ?? option.letter ?? option.key ?? '').trim();
+	const text = String(option.text ?? option.value ?? option.answer ?? option.option ?? '').trim();
+	if (id && text) return `${id}. ${text}`;
+	return text || id;
 }
 
 function drawingBoxGrid(value) {
@@ -854,7 +880,8 @@ function assetStatements(question, questionId, sourceDocumentId) {
 	const assetIdsByLabel = new Map();
 	for (const [index, asset] of (question.assets ?? []).entries()) {
 		const label = asset.sourceLabel || `Asset ${index + 1}`;
-		const id = `${questionId}-asset-${slugify(label) || index + 1}`;
+		const idSeed = asset.assetId ?? asset.id ?? asset.assetLabel ?? `${label}-${index + 1}`;
+		const id = `${questionId}-asset-${slugify(idSeed) || slugify(label) || index + 1}`;
 		const localFileName = asset.localAssetFileName;
 		const filePath =
 			asset.filePath ??
@@ -862,7 +889,14 @@ function assetStatements(question, questionId, sourceDocumentId) {
 				? `data/aqa-combined-science-trilogy-higher/assets/question-papers/${sourceDocumentId}/${localFileName}`
 				: null);
 		const delivery = assetDeliveryPaths(asset, sourceDocumentId, filePath);
-		if (delivery.r2Key || delivery.publicPath) assetIdsByLabel.set(label.toLowerCase(), id);
+		if (delivery.r2Key || delivery.publicPath) {
+			for (const alias of [label, asset.sourceLabel, asset.assetLabel, asset.label]) {
+				const key = String(alias ?? '')
+					.trim()
+					.toLowerCase();
+				if (key && !assetIdsByLabel.has(key)) assetIdsByLabel.set(key, id);
+			}
+		}
 		statements.push(
 			insertStatement(
 				'question_assets',
@@ -1098,11 +1132,16 @@ function validateRendererResponse(response, location, availableAssetIds) {
 		return issues;
 	}
 	if (response.kind === 'matching') {
-		if (!Array.isArray(response.left) || !response.left.every((item) => typeof item === 'string')) {
+		if (
+			!Array.isArray(response.left) ||
+			response.left.length === 0 ||
+			!response.left.every((item) => typeof item === 'string')
+		) {
 			issues.push(`${location} matching left values must be strings`);
 		}
 		if (
 			!Array.isArray(response.right) ||
+			response.right.length === 0 ||
 			!response.right.every((item) => typeof item === 'string')
 		) {
 			issues.push(`${location} matching right values must be strings`);
@@ -1889,7 +1928,9 @@ function chainDefinitionsEqual(existingDefinition, incomingDefinition) {
 function normalizeChainDefinition(chain) {
 	return {
 		title: normalizeChainText(chain?.title),
-		canonicalChainText: normalizeChainText(chain?.canonicalChainText ?? chain?.canonical_chain_text),
+		canonicalChainText: normalizeChainText(
+			chain?.canonicalChainText ?? chain?.canonical_chain_text
+		),
 		summary: normalizeChainText(chain?.summary),
 		steps: (chain?.steps ?? []).map(normalizeChainStep)
 	};
@@ -1905,7 +1946,9 @@ function normalizeChainStep(step) {
 }
 
 function normalizeChainText(value) {
-	return String(value ?? '').replace(/\s+/g, ' ').trim();
+	return String(value ?? '')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 function incomingChainActionsForPapers(papers) {

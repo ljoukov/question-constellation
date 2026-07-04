@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { readJson, writeJson } from './lib/llm-extraction-pipeline.mjs';
@@ -24,6 +24,11 @@ Options:
   --summary=tmp/codex-production-import-batch-summary.json
   --run-id-prefix=codex-production-batch
   --run-id=<single-paper-run-id>
+  --d1-existing-chains
+  --existing-chain-context-root=<dir>
+  --existing-chain-max-examples=<n>
+  --existing-chain-max-mark-items=<n>
+  --existing-chain-max-chains=<n>
   --dry-run
   --continue-on-error
   --allow-dropped-questions  diagnostic only: allow partial import-ready subsets
@@ -66,6 +71,16 @@ const dryRun = hasArg('dry-run');
 const continueOnError = hasArg('continue-on-error');
 const runId = stringArg('run-id', '');
 const runIdPrefix = stringArg('run-id-prefix', runId || 'codex-production-batch');
+const explicitExistingChains = stringArg('existing-chains', '');
+const useD1ExistingChains =
+	!explicitExistingChains && (hasArg('d1-existing-chains') || hasArg('auto-d1-existing-chains'));
+const existingChainContextRoot = path.resolve(
+	rootDir,
+	stringArg('existing-chain-context-root', path.join(workRoot, 'existing-chain-contexts'))
+);
+const existingChainMaxExamples = integerArg('existing-chain-max-examples', 4, 0);
+const existingChainMaxMarkItems = integerArg('existing-chain-max-mark-items', 4, 0);
+const existingChainMaxChains = integerArg('existing-chain-max-chains', 0, 0);
 
 if (!existsSync(manifestPath)) throw new Error(`Missing manifest: ${relative(manifestPath)}`);
 if (!all && !paperArg && subjectArg === 'all') {
@@ -78,6 +93,9 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const selected = selectRows(manifest.rows ?? []);
 if (selected.length === 0) throw new Error('No manifest rows matched the selection.');
 
+const d1ExistingChainsBySubject = useD1ExistingChains
+	? buildD1ExistingChainContexts(selected)
+	: new Map();
 const planned = selected.map((row) => plannedPaper(row));
 const missingFiles = planned.flatMap((paper) => paper.missingFiles);
 if (!dryRun && missingFiles.length > 0) {
@@ -105,6 +123,7 @@ if (dryRun) {
 			paper: paper.row.paper,
 			series: paper.row.series,
 			workRoot: relative(paper.workRoot),
+			existingChainsPath: paper.existingChainsPath ? relative(paper.existingChainsPath) : null,
 			missingFiles: paper.missingFiles,
 			command: [process.execPath, ...paper.command]
 		}))
@@ -156,6 +175,7 @@ function plannedPaper(row) {
 		documentPath(document, documentSubdir(document))
 	);
 	const paperWorkRoot = path.join(workRoot, sourceDocumentId);
+	const existingChainsPath = existingChainsPathFor(row);
 	const missingFiles = [questionPaperPath, markSchemePath, ...supportingDocumentPaths]
 		.filter((filePath) => !existsSync(filePath))
 		.map(relative);
@@ -165,12 +185,14 @@ function plannedPaper(row) {
 		questionPaperPath,
 		markSchemePath,
 		supportingDocumentPaths,
+		existingChainsPath,
 		workRoot: paperWorkRoot,
 		missingFiles,
 		command: productionCommand(row, {
 			questionPaperPath,
 			markSchemePath,
 			supportingDocumentPaths,
+			existingChainsPath,
 			workRoot: paperWorkRoot
 		})
 	};
@@ -182,7 +204,9 @@ function documentPath(document, defaultSubdir) {
 }
 
 function documentSubdir(document) {
-	return document?.document_type === 'examiner_report' ? 'examiner-reports' : 'supporting-documents';
+	return document?.document_type === 'examiner_report'
+		? 'examiner-reports'
+		: 'supporting-documents';
 }
 
 function supportingDocumentsFor(row) {
@@ -226,8 +250,8 @@ function productionCommand(row, paper) {
 	for (const supportingDocumentPath of paper.supportingDocumentPaths) {
 		args.push(`--supporting-document=${supportingDocumentPath}`);
 	}
+	if (paper.existingChainsPath) args.push(`--existing-chains=${paper.existingChainsPath}`);
 	for (const name of [
-		'existing-chains',
 		'existing-chain-input-root',
 		'model',
 		'thinking-level',
@@ -270,6 +294,47 @@ function productionCommand(row, paper) {
 function runIdFor(row) {
 	if (runId && selected.length === 1) return runId;
 	return `${runIdPrefix}-${sourceDocumentIdFor(row)}`;
+}
+
+function existingChainsPathFor(row) {
+	if (explicitExistingChains) return path.resolve(rootDir, explicitExistingChains);
+	if (!useD1ExistingChains) return null;
+	return d1ExistingChainsBySubject.get(canonicalSubject(subjectAreaFor(row))) ?? null;
+}
+
+function buildD1ExistingChainContexts(rows) {
+	const subjects = [
+		...new Set(rows.map((row) => canonicalSubject(subjectAreaFor(row))).filter(Boolean))
+	].sort();
+	const bySubject = new Map();
+	mkdirSync(existingChainContextRoot, { recursive: true });
+	for (const subject of subjects) {
+		const outputPath = path.join(existingChainContextRoot, `${subject}.json`);
+		const args = [
+			'scripts/build-existing-chain-context.mjs',
+			'--d1',
+			`--subject=${subject}`,
+			`--output=${outputPath}`,
+			`--max-examples-per-chain=${existingChainMaxExamples}`,
+			`--max-mark-items-per-example=${existingChainMaxMarkItems}`
+		];
+		if (existingChainMaxChains > 0) args.push(`--max-chains=${existingChainMaxChains}`);
+		const result = spawnSync(process.execPath, args, {
+			cwd: rootDir,
+			encoding: 'utf8'
+		});
+		if (result.stdout?.trim()) console.error(result.stdout.trim());
+		if (result.stderr?.trim()) console.error(result.stderr.trim());
+		if (result.status !== 0) {
+			throw new Error(
+				`Failed to build D1 existing-chain context for ${subject}: ${process.execPath} exited with ${
+					result.status ?? result.signal
+				}.`
+			);
+		}
+		bySubject.set(subject, outputPath);
+	}
+	return bySubject;
 }
 
 async function processSelectedPapers() {
@@ -381,6 +446,12 @@ function summary(status) {
 		workRoot: relative(workRoot),
 		runIdPrefix,
 		continueOnError,
+		d1ExistingChains: useD1ExistingChains
+			? [...d1ExistingChainsBySubject.entries()].map(([subject, filePath]) => ({
+					subject,
+					filePath: relative(filePath)
+				}))
+			: [],
 		results
 	};
 }

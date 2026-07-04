@@ -560,6 +560,7 @@ requireIncludes(
 		'For Computer Science code, SQL, pseudo-code',
 		'carry that earlier dependency forward',
 		'structured code/table blocks over extra screenshot assets',
+		'Do not add a redundant modelAnswer that only repeats the fixed answer',
 		'Do not use independent aliases when two visible blanks/cells must be paired',
 		'For Q03.2, the boundary test row has paired acceptable answers',
 		'response.choiceOptions',
@@ -1321,7 +1322,61 @@ writeFileSync(
 						correctAnswers: [{ targetId: 'unicode-w', correctAnswer: '119 or 77' }]
 					},
 					markSchemeItems: [{ itemType: 'mark', text: '119 or 77.' }],
-					markChecklist: [{ text: 'Gives the decimal or hexadecimal code.', markSchemeItemIndexes: [0] }]
+					markChecklist: [
+						{ text: 'Gives the decimal or hexadecimal code.', markSchemeItemIndexes: [0] }
+					]
+				},
+				{
+					sourceQuestionRef: '01.4',
+					promptText: 'Select the year.',
+					marks: 1,
+					pageStart: 2,
+					pageEnd: 2,
+					response: {
+						kind: 'choice',
+						options: [
+							{ id: 'A', text: '2010' },
+							{ id: 'B', text: '2013' },
+							{ id: 'C', text: '2015' },
+							{ id: 'D', text: '2016' }
+						],
+						correctAnswers: [
+							{ targetId: 'answer', correctAnswer: 'C', aliases: ['2015', 'C 2015'] }
+						]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: 'C: 2015.' }],
+					markChecklist: [{ text: 'Selects 2015.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '2015.' }
+				},
+				{
+					sourceQuestionRef: '01.5',
+					promptText: 'Match the descriptions with the correct map letters.',
+					marks: 2,
+					pageStart: 3,
+					pageEnd: 3,
+					response: {
+						kind: 'matching',
+						prompts: ['Uneven coastline with large islands', 'South Downs headland'],
+						options: ['A', 'B', 'C', 'D', 'E'],
+						correctAnswers: [
+							{ targetId: 'Uneven coastline with large islands', correctAnswer: 'E' },
+							{ targetId: 'South Downs headland', correctAnswer: 'C' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Uneven coastline: E.' },
+						{ itemType: 'mark', text: 'South Downs headland: C.' }
+					],
+					markChecklist: [
+						{ text: 'Matches the coastline description to E.', markSchemeItemIndexes: [0] },
+						{ text: 'Matches the headland description to C.', markSchemeItemIndexes: [1] }
+					],
+					chainResolution: {
+						action: 'create_new',
+						chainId: 'geo-chain-map-description-match',
+						rationale: 'No existing map-description chain fits.'
+					},
+					modelAnswer: null
 				}
 			]
 		},
@@ -1368,9 +1423,48 @@ if (
 		normalizedAliasAnswer
 	});
 }
+const normalizedFixedChoice = helperNormalized.questions.find(
+	(question) => question.sourceQuestionRef === '01.4'
+);
+if (normalizedFixedChoice?.modelAnswer !== null) {
+	fail('Codex helper normalization did not drop a redundant fixed-response model answer.', {
+		normalizedFixedChoice
+	});
+}
+if (
+	JSON.stringify(normalizedFixedChoice?.response?.options) !==
+	JSON.stringify(['A. 2010', 'B. 2013', 'C. 2015', 'D. 2016'])
+) {
+	fail('Codex helper normalization did not stringify object-shaped choice options.', {
+		normalizedFixedChoice
+	});
+}
+const normalizedMatching = helperNormalized.questions.find(
+	(question) => question.sourceQuestionRef === '01.5'
+);
+if (
+	normalizedMatching?.response?.left?.length !== 2 ||
+	normalizedMatching?.response?.right?.length !== 5
+) {
+	fail('Codex helper normalization did not convert matching prompts/options into left/right.', {
+		normalizedMatching
+	});
+}
+if (
+	normalizedMatching?.chainResolution?.existingChainId !== null ||
+	normalizedMatching?.chainResolution?.compatibilityRationale !==
+		'No existing map-description chain fits.'
+) {
+	fail('Codex helper normalization did not canonicalize chainResolution aliases.', {
+		normalizedMatching
+	});
+}
 
 const helperChainValidationInput = path.join(helperNormalizeDir, 'bad-fixed-chain.json');
-const helperChainValidationOutput = path.join(helperNormalizeDir, 'bad-fixed-chain-validation.json');
+const helperChainValidationOutput = path.join(
+	helperNormalizeDir,
+	'bad-fixed-chain-validation.json'
+);
 writeFileSync(
 	helperChainValidationInput,
 	JSON.stringify(
@@ -1492,7 +1586,11 @@ writeFileSync(
 					marks: 1,
 					pageStart: 2,
 					pageEnd: 2,
-					response: { kind: 'lines', count: 2, lineCountEvidence: 'Rendered crop shows 2 ruled lines.' },
+					response: {
+						kind: 'lines',
+						count: 2,
+						lineCountEvidence: 'Rendered crop shows 2 ruled lines.'
+					},
 					markSchemeItems: [{ itemType: 'mark', text: 'Stores data currently being used.' }],
 					markChecklist: [{ text: 'States a valid register purpose.', markSchemeItemIndexes: [0] }],
 					modelAnswer: { answerText: 'A register stores data currently being used by the CPU.' }
@@ -1516,7 +1614,11 @@ writeFileSync(
 					marks: 2,
 					pageStart: 3,
 					pageEnd: 3,
-					response: { kind: 'lines', count: 3, lineCountEvidence: 'Rendered crop shows 3 ruled lines.' },
+					response: {
+						kind: 'lines',
+						count: 3,
+						lineCountEvidence: 'Rendered crop shows 3 ruled lines.'
+					},
 					markSchemeItems: [
 						{ itemType: 'mark', text: 'Hexadecimal is shorter than binary.' },
 						{ itemType: 'mark', text: 'It is easier for humans to read or transcribe.' }
@@ -2268,7 +2370,11 @@ writeFileSync(
 						{ itemType: 'mark', text: 'First daysTotal value 30.', marks: 1 },
 						{ itemType: 'mark', text: 'Rest of daysTotal column 48, 16.', marks: 1 },
 						{ itemType: 'mark', text: 'Second weeks[0] value 4.', marks: 1 },
-						{ itemType: 'mark', text: 'Rest of weeks columns 6 and 2 with previous weeks retained.', marks: 1 },
+						{
+							itemType: 'mark',
+							text: 'Rest of weeks columns 6 and 2 with previous weeks retained.',
+							marks: 1
+						},
 						{ itemType: 'mark', text: 'weeksTotal 12.', marks: 1 }
 					]
 				}
@@ -2349,7 +2455,10 @@ writeFileSync(
 						}
 					],
 					markChecklist: [
-						{ text: 'Pairs the boundary value with the matching expected result.', markSchemeItemIndexes: [1] }
+						{
+							text: 'Pairs the boundary value with the matching expected result.',
+							markSchemeItemIndexes: [1]
+						}
 					]
 				}
 			]
@@ -2516,9 +2625,7 @@ const geography2023P2Figure6MissingVisualSourceFailure = runNodeScriptExpectFail
 	]
 );
 if (
-	!geography2023P2Figure6MissingVisualSourceFailure.includes(
-		'known_figure6_visual_source_missing'
-	)
+	!geography2023P2Figure6MissingVisualSourceFailure.includes('known_figure6_visual_source_missing')
 ) {
 	fail(
 		'Codex helper validation did not reject Geography 2023 Paper 2 Q02.3 without Figure 6 visual source.',
@@ -2797,6 +2904,342 @@ if (
 	});
 }
 
+const geography2020Paper1LineCountsPath = path.join(
+	helperNormalizeDir,
+	'geography-2020-paper-1-line-counts.json'
+);
+writeFileSync(
+	geography2020Paper1LineCountsPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2020-june-paper-1-living-with-the-physical-environment-qp',
+				docType: 'question_paper',
+				pageCount: 44
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 36 },
+			questions: [
+				{
+					sourceQuestionRef: '01.12',
+					promptText: 'Evaluate management strategies.',
+					marks: 9,
+					pageStart: 13,
+					pageEnd: 14,
+					response: { kind: 'lines', lineCount: 25 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level response.', marks: 9 }],
+					markChecklist: [{ text: 'Evaluates management strategies.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Management strategies have different strengths.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2020Paper1LineCountsFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2020Paper1LineCountsPath}`,
+		'--expected-marks=9',
+		'--expected-questions=1'
+	]
+);
+if (!geography2020Paper1LineCountsFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject Geography 2020 Paper 1 line-count defects.', {
+		geography2020Paper1LineCountsFailure
+	});
+}
+
+const geography2021Paper1LineCountsPath = path.join(
+	helperNormalizeDir,
+	'geography-2021-paper-1-line-counts.json'
+);
+writeFileSync(
+	geography2021Paper1LineCountsPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2021-june-paper-1-living-with-the-physical-environment-qp',
+				docType: 'question_paper',
+				pageCount: 44
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 36 },
+			questions: [
+				{
+					sourceQuestionRef: '02.5',
+					promptText: 'Explain the challenges of development in the chosen environment.',
+					marks: 6,
+					pageStart: 12,
+					pageEnd: 13,
+					response: { kind: 'lines', lineCount: 16 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level response.', marks: 6 }],
+					markChecklist: [{ text: 'Explains challenges.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'There are several challenges.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2021Paper1LineCountsFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2021Paper1LineCountsPath}`,
+		'--expected-marks=6',
+		'--expected-questions=1'
+	]
+);
+if (!geography2021Paper1LineCountsFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject Geography 2021 Paper 1 line-count defects.', {
+		geography2021Paper1LineCountsFailure
+	});
+}
+
+const geography2021Paper3LineCountsPath = path.join(
+	helperNormalizeDir,
+	'geography-2021-paper-3-line-counts.json'
+);
+writeFileSync(
+	geography2021Paper3LineCountsPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2021-june-paper-3-geographical-applications-qp',
+				docType: 'question_paper',
+				pageCount: 32
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 24 },
+			questions: [
+				{
+					sourceQuestionRef: '03.2',
+					promptText: 'Evaluate the issue.',
+					marks: 9,
+					pageStart: 16,
+					pageEnd: 18,
+					response: { kind: 'lines', lineCount: 25 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level response.', marks: 9 }],
+					markChecklist: [{ text: 'Evaluates the issue.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'There are arguments on both sides.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2021Paper3LineCountsFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2021Paper3LineCountsPath}`,
+		'--expected-marks=9',
+		'--expected-questions=1'
+	]
+);
+if (!geography2021Paper3LineCountsFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject Geography 2021 Paper 3 line-count defects.', {
+		geography2021Paper3LineCountsFailure
+	});
+}
+
+const geography2020Paper2RangeCategoryPath = path.join(
+	helperNormalizeDir,
+	'geography-2020-paper-2-range-category.json'
+);
+writeFileSync(
+	geography2020Paper2RangeCategoryPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2020-june-paper-2-challenges-in-the-human-environment-qp',
+				docType: 'question_paper',
+				pageCount: 40
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 32 },
+			questions: [
+				{
+					sourceQuestionRef: '04.1',
+					promptText: 'Complete Figure 11 using the following data.',
+					marks: 2,
+					pageStart: 25,
+					pageEnd: 25,
+					response: {
+						kind: 'asset-canvas',
+						assetLabel: 'Figure 11',
+						correctAnswers: [
+							{ targetId: 'egypt', correctAnswer: 'less than 5' },
+							{
+								targetId: 'central-african-republic',
+								correctAnswer: '25',
+								aliases: ['more']
+							}
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Egypt less than 5.', marks: 1 },
+						{ itemType: 'mark', text: 'Central African Republic 25 or more.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Egypt is less than 5.', markSchemeItemIndexes: [0] },
+						{ text: 'Central African Republic is 25 or more.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: { answerText: 'Egypt: less than 5. Central African Republic: 25 or more.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2020Paper2RangeCategoryFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2020Paper2RangeCategoryPath}`,
+		'--expected-marks=2',
+		'--expected-questions=1'
+	]
+);
+if (!geography2020Paper2RangeCategoryFailure.includes('known_range_category_answer_split')) {
+	fail(
+		'Codex helper validation did not reject Geography 2020 Paper 2 range-category answer split.',
+		{
+			geography2020Paper2RangeCategoryFailure
+		}
+	);
+}
+
+const geography2020Paper2HiddenTablePath = path.join(
+	helperNormalizeDir,
+	'geography-2020-paper-2-hidden-map-table.json'
+);
+writeFileSync(
+	geography2020Paper2HiddenTablePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2020-june-paper-2-challenges-in-the-human-environment-qp',
+				docType: 'question_paper',
+				pageCount: 40
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 32 },
+			questions: [
+				{
+					sourceQuestionRef: '05.1',
+					promptText: 'Complete Figure 13 using the following data.',
+					selfContainedPromptText:
+						'Complete Figure 13 using the data: Niger more than 2000; Central African Republic 1001-1384.',
+					marks: 2,
+					pageStart: 29,
+					pageEnd: 29,
+					stemBlocks: [
+						{
+							kind: 'paragraph',
+							text: 'Study Figure 13, a map of Africa showing the water footprint per person per year.'
+						}
+					],
+					promptBlocks: [
+						{ kind: 'paragraph', text: 'Complete Figure 13 using the following data.' }
+					],
+					response: {
+						kind: 'asset-canvas',
+						assetLabel: 'Figure 13',
+						correctAnswers: [
+							{ targetId: 'niger', correctAnswer: 'more than 2000' },
+							{ targetId: 'central-african-republic', correctAnswer: '1001-1384' }
+						]
+					},
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Niger more than 2000.', marks: 1 },
+						{ itemType: 'mark', text: 'Central African Republic 1001-1384.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Niger is more than 2000.', markSchemeItemIndexes: [0] },
+						{ text: 'Central African Republic is 1001-1384.', markSchemeItemIndexes: [1] }
+					],
+					modelAnswer: { answerText: 'Niger: more than 2000. Central African Republic: 1001-1384.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2020Paper2HiddenTableFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2020Paper2HiddenTablePath}`,
+		'--expected-marks=2',
+		'--expected-questions=1'
+	]
+);
+if (!geography2020Paper2HiddenTableFailure.includes('known_map_completion_source_data_missing')) {
+	fail('Codex helper validation did not reject Geography 2020 Paper 2 hidden map-source data.', {
+		geography2020Paper2HiddenTableFailure
+	});
+}
+
+const geography2020Paper3KnownIssuesPath = path.join(
+	helperNormalizeDir,
+	'geography-2020-paper-3-known-issues.json'
+);
+writeFileSync(
+	geography2020Paper3KnownIssuesPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-geography-2020-june-paper-3-geographical-applications-qp',
+				docType: 'question_paper',
+				pageCount: 32
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 24 },
+			questions: [
+				{
+					sourceQuestionRef: '03.1',
+					promptText: 'Assess the issue.',
+					marks: 9,
+					pageStart: 14,
+					pageEnd: 15,
+					stemBlocks: [
+						{
+							kind: 'structured-table',
+							label: 'Figure 3 official marking/report evidence',
+							rows: [[{ text: 'Issue' }, { text: 'Visible source content.' }]]
+						}
+					],
+					response: { kind: 'lines', lineCount: 28 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level response.', marks: 9 }],
+					markChecklist: [{ text: 'Assesses the issue.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'There are arguments on both sides.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const geography2020Paper3KnownIssuesFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${geography2020Paper3KnownIssuesPath}`,
+		'--expected-marks=9',
+		'--expected-questions=1'
+	]
+);
+if (
+	!geography2020Paper3KnownIssuesFailure.includes('known_response_line_count_mismatch') ||
+	!geography2020Paper3KnownIssuesFailure.includes('learner_visible_source_provenance')
+) {
+	fail('Codex helper validation did not reject Geography 2020 Paper 3 known defects.', {
+		geography2020Paper3KnownIssuesFailure
+	});
+}
+
 const geography2023Paper1KnownIssuesPath = path.join(
 	helperNormalizeDir,
 	'geography-2023-paper-1-known-issues.json'
@@ -2842,7 +3285,8 @@ writeFileSync(
 				},
 				{
 					sourceQuestionRef: '02.10',
-					promptText: 'Assess the extent to which human activity has affected the chosen environment.',
+					promptText:
+						'Assess the extent to which human activity has affected the chosen environment.',
 					marks: 9,
 					pageStart: 22,
 					pageEnd: 24,
@@ -2910,7 +3354,10 @@ if (
 	});
 }
 
-const geography2023Figure7ValidPath = path.join(helperNormalizeDir, 'geography-2023-figure7-valid.json');
+const geography2023Figure7ValidPath = path.join(
+	helperNormalizeDir,
+	'geography-2023-figure7-valid.json'
+);
 writeFileSync(
 	geography2023Figure7ValidPath,
 	JSON.stringify(
@@ -2920,7 +3367,11 @@ writeFileSync(
 				docType: 'question_paper',
 				pageCount: 40
 			},
-			markSchemeDocument: { id: 'aqa-geography-2023-paper-1-ms', docType: 'mark_scheme', pageCount: 32 },
+			markSchemeDocument: {
+				id: 'aqa-geography-2023-paper-1-ms',
+				docType: 'mark_scheme',
+				pageCount: 32
+			},
 			questions: [
 				{
 					sourceQuestionRef: '02.1',
@@ -3448,7 +3899,9 @@ writeFileSync(
 					response: { kind: 'lines', lineCount: 2 },
 					stemBlocks: [{ kind: 'code', label: 'Figure 16', text: 'if (getTile(i, j) == 0)' }],
 					markSchemeItems: [{ itemType: 'mark', text: 'Finds the blank tile.', marks: 1 }],
-					markChecklist: [{ text: 'States that it finds the blank tile.', markSchemeItemIndexes: [0] }]
+					markChecklist: [
+						{ text: 'States that it finds the blank tile.', markSchemeItemIndexes: [0] }
+					]
 				}
 			]
 		},
@@ -3785,7 +4238,11 @@ if (!computerScience2022Paper2DrawingFailure.includes('known_boolean_overline_mi
 		computerScience2022Paper2DrawingFailure
 	});
 }
-if (!computerScience2022Paper2DrawingFailure.includes('known_simple_figure_asset_should_be_structural')) {
+if (
+	!computerScience2022Paper2DrawingFailure.includes(
+		'known_simple_figure_asset_should_be_structural'
+	)
+) {
 	fail('Codex helper validation did not reject CS 2022 Paper 2 text-figure asset guardrail.', {
 		computerScience2022Paper2DrawingFailure
 	});
@@ -3809,8 +4266,7 @@ writeFileSync(
 					sourceQuestionRef: '17.3',
 					promptText:
 						'Complete the Huffman tree below to show the position of the characters I, S and P using the codes from Figure 3.',
-					selfContainedPromptText:
-						'Figure 3 gives I=0, S=11 and P=101. Complete the Huffman tree.',
+					selfContainedPromptText: 'Figure 3 gives I=0, S=11 and P=101. Complete the Huffman tree.',
 					marks: 1,
 					pageStart: 19,
 					pageEnd: 19,
@@ -3850,8 +4306,12 @@ writeFileSync(
 							filePath: 'tiny-figure.png'
 						}
 					],
-					markSchemeItems: [{ itemType: 'mark', text: 'I, S and P are in the correct leaves.', marks: 1 }],
-					markChecklist: [{ text: 'Labels all three leaves correctly.', markSchemeItemIndexes: [0] }]
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'I, S and P are in the correct leaves.', marks: 1 }
+					],
+					markChecklist: [
+						{ text: 'Labels all three leaves correctly.', markSchemeItemIndexes: [0] }
+					]
 				}
 			]
 		},
@@ -3909,7 +4369,10 @@ writeFileSync(
 						{ itemType: 'mark', text: 'Provides a user interface.', marks: 1 }
 					],
 					markChecklist: [
-						{ text: 'Gives four valid operating-system functions.', markSchemeItemIndexes: [0, 1, 2, 3] }
+						{
+							text: 'Gives four valid operating-system functions.',
+							markSchemeItemIndexes: [0, 1, 2, 3]
+						}
 					],
 					modelAnswer: {
 						answerText: 'Manages memory, files, peripherals, and the user interface.'
@@ -3930,11 +4393,7 @@ const computerScience2022Paper2PerFieldLineFailure = runNodeScriptExpectFailure(
 		'--expected-questions=1'
 	]
 );
-if (
-	!computerScience2022Paper2PerFieldLineFailure.includes(
-		'expected 2 per labeled field'
-	)
-) {
+if (!computerScience2022Paper2PerFieldLineFailure.includes('expected 2 per labeled field')) {
 	fail('Codex helper validation did not reject CS 2022 Paper 2 per-field line undercount.', {
 		computerScience2022Paper2PerFieldLineFailure
 	});
@@ -3956,7 +4415,8 @@ writeFileSync(
 			questions: [
 				{
 					sourceQuestionRef: '01.2',
-					promptText: 'Convert the binary number 10111001 into hexadecimal. You should show your working.',
+					promptText:
+						'Convert the binary number 10111001 into hexadecimal. You should show your working.',
 					selfContainedPromptText:
 						'Convert the binary number 10111001 into hexadecimal. Show your working.',
 					marks: 2,
@@ -3985,7 +4445,8 @@ writeFileSync(
 				},
 				{
 					sourceQuestionRef: '04.1',
-					promptText: 'Describe what is meant by the terms system software and application software.',
+					promptText:
+						'Describe what is meant by the terms system software and application software.',
 					selfContainedPromptText:
 						'Describe what is meant by the terms system software and application software.',
 					marks: 2,
@@ -4129,7 +4590,8 @@ writeFileSync(
 			questions: [
 				{
 					sourceQuestionRef: '03.0',
-					promptText: 'Add together the following three binary numbers and give your answer in binary.',
+					promptText:
+						'Add together the following three binary numbers and give your answer in binary.',
 					selfContainedPromptText:
 						'Add together the following three binary numbers and give your answer in binary.',
 					marks: 2,
@@ -4143,7 +4605,9 @@ writeFileSync(
 					],
 					response: { kind: 'none' },
 					markSchemeItems: [{ itemType: 'mark', text: 'Correct binary answer.', marks: 2 }],
-					markChecklist: [{ text: 'Adds the binary numbers correctly.', markSchemeItemIndexes: [0] }]
+					markChecklist: [
+						{ text: 'Adds the binary numbers correctly.', markSchemeItemIndexes: [0] }
+					]
 				}
 			]
 		},
@@ -4986,8 +5450,7 @@ const missingDiagramResponseIssues = pipelineModule.deterministicCandidateIssues
 if (
 	!missingDiagramResponseIssues.some((finding) =>
 		finding.issues.some(
-			(issue) =>
-				issue.severity === 'error' && issue.code === 'diagram_response_surface_missing'
+			(issue) => issue.severity === 'error' && issue.code === 'diagram_response_surface_missing'
 		)
 	)
 ) {
@@ -5122,6 +5585,65 @@ if (
 	fail('Deterministic checks did not flag missing fixed-response answer keys.');
 }
 
+const matchingPromptOptionQuestion = {
+	sourceQuestionRef: '03.1',
+	commandWord: 'Match',
+	marks: 2,
+	promptText: 'Match the descriptions with the correct letters.',
+	response: {
+		kind: 'matching',
+		prompts: ['Uneven coastline with large islands', 'Headland at the South Downs limit'],
+		options: ['A', 'B', 'C', 'D', 'E'],
+		correctAnswers: [
+			{ targetId: 'Uneven coastline with large islands', correctAnswer: 'E' },
+			{ targetId: 'Headland at the South Downs limit', correctAnswer: 'C' }
+		]
+	},
+	markSchemeItems: [
+		{ itemType: 'mark', text: 'Uneven coastline: E.', marks: 1 },
+		{ itemType: 'mark', text: 'South Downs headland: C.', marks: 1 }
+	],
+	chainResolution: {
+		action: 'create_new',
+		chainId: 'geo-chain-map-description-match',
+		rationale: 'No existing map-description chain fits.'
+	},
+	modelAnswer: null
+};
+const normalizedMatchingPromptOptionQuestion = pipelineModule.normalizeExtractedQuestionForImport(
+	matchingPromptOptionQuestion
+);
+if (
+	normalizedMatchingPromptOptionQuestion.response?.left?.length !== 2 ||
+	normalizedMatchingPromptOptionQuestion.response?.right?.length !== 5
+) {
+	fail('Import normalizer did not convert matching prompts/options into left/right.', {
+		normalizedMatchingPromptOptionQuestion
+	});
+}
+if (
+	normalizedMatchingPromptOptionQuestion.chainResolution?.existingChainId !== null ||
+	normalizedMatchingPromptOptionQuestion.chainResolution?.compatibilityRationale !==
+		'No existing map-description chain fits.'
+) {
+	fail('Import normalizer did not canonicalize chainResolution aliases.', {
+		normalizedMatchingPromptOptionQuestion
+	});
+}
+const normalizedMatchingPromptOptionIssues = pipelineModule.deterministicCandidateIssues(
+	{ questions: [normalizedMatchingPromptOptionQuestion] },
+	{ includeAnswerChainIssues: false }
+);
+if (
+	normalizedMatchingPromptOptionIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'matching_response_missing_render_items')
+	)
+) {
+	fail('Deterministic checks rejected a renderable normalized matching response.', {
+		normalizedMatchingPromptOptionIssues
+	});
+}
+
 const rawAlternativeAnswerQuestion = {
 	sourceQuestionRef: '11.0',
 	commandWord: 'Complete',
@@ -5182,11 +5704,39 @@ if (
 	});
 }
 
+const rawRangeCategoryAnswerQuestion = {
+	sourceQuestionRef: '04.1',
+	commandWord: 'Complete',
+	marks: 1,
+	promptText: 'Complete the choropleth map.',
+	response: {
+		kind: 'asset-canvas',
+		assetLabel: 'Figure 11',
+		correctAnswers: [{ targetId: 'central-african-republic', correctAnswer: '25 or more' }]
+	},
+	markSchemeItems: [{ itemType: 'mark', text: '25 or more.' }],
+	modelAnswer: null
+};
+const normalizedRangeCategoryAnswerQuestion = pipelineModule.normalizeExtractedQuestionForImport(
+	rawRangeCategoryAnswerQuestion
+);
+const normalizedRangeCategoryAnswer =
+	normalizedRangeCategoryAnswerQuestion.response?.correctAnswers?.[0];
+if (
+	normalizedRangeCategoryAnswer?.correctAnswer !== '25 or more' ||
+	normalizedRangeCategoryAnswer?.aliases?.length
+) {
+	fail('Import normalizer split a range category label into answer aliases.', {
+		normalizedRangeCategoryAnswerQuestion
+	});
+}
+
 const graphPlottingAssetQuestion = {
 	sourceQuestionRef: '04.1',
 	commandWord: 'Plot',
 	marks: 1,
-	promptText: 'Plot the width of the river at Site 6 on to the graph below. Use the following data.',
+	promptText:
+		'Plot the width of the river at Site 6 on to the graph below. Use the following data.',
 	stemBlocks: [
 		{
 			kind: 'structured-table',
@@ -5202,13 +5752,18 @@ const graphPlottingAssetQuestion = {
 		kind: 'asset-canvas',
 		assetLabel: 'Figure 14',
 		instructions: 'Plot Site 6 at distance 66 km and width 9.0 m.',
-		correctAnswers: [{ targetId: 'site-6-point', correctAnswer: 'Point plotted at (66 km, 9.0 m).' }]
+		correctAnswers: [
+			{ targetId: 'site-6-point', correctAnswer: 'Point plotted at (66 km, 9.0 m).' }
+		]
 	},
-	markSchemeItems: [{ itemType: 'mark', text: 'Correct plot at distance 66 km and river width 9.0 m.' }],
+	markSchemeItems: [
+		{ itemType: 'mark', text: 'Correct plot at distance 66 km and river width 9.0 m.' }
+	],
 	modelAnswer: { answerText: 'Plot a point at 66 km and 9.0 m.' }
 };
-const normalizedGraphPlottingAssetQuestion =
-	pipelineModule.normalizeExtractedQuestionForImport(graphPlottingAssetQuestion);
+const normalizedGraphPlottingAssetQuestion = pipelineModule.normalizeExtractedQuestionForImport(
+	graphPlottingAssetQuestion
+);
 if (normalizedGraphPlottingAssetQuestion.response?.kind !== 'asset-canvas') {
 	fail('Import normalizer converted a graph plotting canvas into a choice-table.', {
 		normalizedGraphPlottingAssetQuestion
@@ -5235,8 +5790,7 @@ const graphPlottingChoiceTableIssues = pipelineModule.deterministicCandidateIssu
 if (
 	!graphPlottingChoiceTableIssues.some((finding) =>
 		finding.issues.some(
-			(issue) =>
-				issue.severity === 'error' && issue.code === 'diagram_response_surface_missing'
+			(issue) => issue.severity === 'error' && issue.code === 'diagram_response_surface_missing'
 		)
 	)
 ) {
@@ -5266,8 +5820,9 @@ const tableValueSelectionQuestion = {
 	markSchemeItems: [{ itemType: 'mark', text: 'A ring around 14.2.' }],
 	modelAnswer: null
 };
-const normalizedTableValueSelectionQuestion =
-	pipelineModule.normalizeExtractedQuestionForImport(tableValueSelectionQuestion);
+const normalizedTableValueSelectionQuestion = pipelineModule.normalizeExtractedQuestionForImport(
+	tableValueSelectionQuestion
+);
 if (
 	normalizedTableValueSelectionQuestion.response?.kind !== 'choice-table' ||
 	normalizedTableValueSelectionQuestion.response?.correctAnswers?.[0]?.correctAnswer !==
@@ -5439,9 +5994,12 @@ if (
 		finding.issues.some((issue) => issue.code === 'referenced_media_missing_asset')
 	)
 ) {
-	fail('Deterministic checks incorrectly rejected a labeled equation rendering a referenced figure.', {
-		structuredFigureReferenceIssues
-	});
+	fail(
+		'Deterministic checks incorrectly rejected a labeled equation rendering a referenced figure.',
+		{
+			structuredFigureReferenceIssues
+		}
+	);
 }
 
 const copyrightPlaceholderMediaIssues = pipelineModule.deterministicCandidateIssues({
@@ -5845,6 +6403,56 @@ if (
 	)
 ) {
 	fail('Deterministic checks did not flag a numbered media asset label/path mismatch.');
+}
+
+const combinedFigureAssetIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '02.6',
+			commandWord: 'State',
+			marks: 1,
+			promptText: "Using Figure 7b, state one benefit of tourism to South Africa's economy.",
+			stemBlocks: [{ kind: 'figure', assetLabel: 'Figures 7a and 7b' }],
+			response: { kind: 'lines', count: 2 },
+			assets: [
+				{
+					assetId: 'fig-07ab',
+					sourceLabel: 'Figures 7a and 7b',
+					filePath: 'tmp/figures-07a-07b-south-africa-tourism.png'
+				}
+			],
+			markSchemeItems: [{ itemType: 'marking_point', text: 'Identifies an economic benefit.' }],
+			modelAnswer: { answerText: 'Tourism can create jobs or income.' }
+		},
+		{
+			sourceQuestionRef: '03.4',
+			commandWord: 'Assess',
+			marks: 9,
+			promptText: 'Using Figure 10a and Figure 10b, assess the options.',
+			stemBlocks: [{ kind: 'figure', assetLabel: 'Figures 10a and 10b' }],
+			response: { kind: 'lines', count: 18 },
+			assets: [
+				{
+					assetId: 'fig-10ab',
+					sourceLabel: 'Figures 10a and 10b',
+					filePath: 'tmp/figure-10ab.png'
+				}
+			],
+			markSchemeItems: [{ itemType: 'marking_point', text: 'Uses evidence from both figures.' }],
+			modelAnswer: { answerText: 'The answer compares evidence from both figures.' }
+		}
+	]
+});
+if (
+	combinedFigureAssetIssues.some((finding) =>
+		finding.issues.some((issue) =>
+			['media_asset_label_mismatch', 'referenced_media_missing_asset'].includes(issue.code)
+		)
+	)
+) {
+	fail('Deterministic checks rejected a combined figure asset that covers a subfigure reference.', {
+		combinedFigureAssetIssues
+	});
 }
 
 const localSourcePageFixture = path.join(
@@ -6270,8 +6878,8 @@ const keyBlockSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionCon
 	'17.2',
 	{ attachImages: false }
 );
-const keyBlockVisibleText = keyBlockSolvabilityContext.studentVisibleContext.sections[0]?.blocks
-	?.stem ?? [];
+const keyBlockVisibleText =
+	keyBlockSolvabilityContext.studentVisibleContext.sections[0]?.blocks?.stem ?? [];
 if (
 	!keyBlockVisibleText.some((text) => text.includes('1M 1I 2S')) ||
 	!keyBlockVisibleText.some((text) => text.includes('INSERT INTO [A]')) ||
