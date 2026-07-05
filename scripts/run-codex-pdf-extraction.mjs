@@ -509,13 +509,27 @@ function buildExtractionPrompt() {
 		: '';
 	const historyPaperSpecificNote =
 		sourceDocumentId ===
-		'aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+		'aqa-history-2020-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp'
 			? [
 					'',
-					'Known fragile checks for History 2024 Paper 1 Section A Option B Germany: Interpretation A in the public insert is withheld for third-party copyright. Do not expose the "cannot be reproduced" placeholder as the learner source. If you build a neutral substitute from official mark-scheme/examiner-report evidence, keep provenance in reviewNotes, keep learner-visible source blocks clean, and set needsHumanReview=false when the assembled question is answerable. Learner-visible Interpretation A text must not include provenance phrases such as "official evidence indicates", "mark scheme evidence", "reconstructed", "source unavailable", or "neutral substitute".',
-					'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 25, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 75 total with 22 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If your extraction differs, repair the fragment before validation.'
+					'Known fragile checks for History 2020 Paper 1 Section A Option A America: the 16-page answer booklet has several ruled response areas where wide crops undercount by starting below the first learner-writable line or ending above the last continuation-page line. Use tight rendered-page crops around the ruled answer area, then compare with the full page before writing response.lineCount.',
+					'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 25, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 75 total with 22 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Count the ruled line beside/after the printed "Extra space" label as learner-writable, but exclude the outer page-frame border and mark-box border. If extraction differs, repair the fragment before validation.'
 				].join('\n')
-			: '';
+			: sourceDocumentId ===
+				  'aqa-history-2020-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+				? [
+						'',
+						'Known fragile checks for History 2020 Paper 1 Section A Option B Germany: Interpretation A in the public insert is withheld for third-party copyright. Do not expose the "cannot be reproduced" placeholder as the learner source. If you build a neutral substitute from official mark-scheme/examiner-report evidence, keep provenance in reviewNotes, keep learner-visible source blocks clean, and set needsHumanReview=false when the assembled question is answerable. Learner-visible Interpretation A text must not include provenance phrases such as "official evidence indicates", "mark scheme evidence", "reconstructed", "source unavailable", or "neutral substitute".',
+						'Exact response-line expectations from independent rendered-page judge evidence are: 01.0 = 22, 02.0 = 23, 03.0 = 49 total with 23 lines on page 4 and 26 continuation lines on page 5, 04.0 = 24, 05.0 = 49 total with 23 lines on page 7 and 26 continuation lines on page 8, and 06.0 = 74 total with 22 lines on page 9, 26 lines on page 10, and 26 lines on page 11. If extraction differs, repair the fragment before validation.'
+					].join('\n')
+				: sourceDocumentId ===
+					  'aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+					? [
+							'',
+							'Known fragile checks for History 2024 Paper 1 Section A Option B Germany: Interpretation A in the public insert is withheld for third-party copyright. Do not expose the "cannot be reproduced" placeholder as the learner source. If you build a neutral substitute from official mark-scheme/examiner-report evidence, keep provenance in reviewNotes, keep learner-visible source blocks clean, and set needsHumanReview=false when the assembled question is answerable. Learner-visible Interpretation A text must not include provenance phrases such as "official evidence indicates", "mark scheme evidence", "reconstructed", "source unavailable", or "neutral substitute".',
+							'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 25, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 75 total with 22 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If your extraction differs, repair the fragment before validation.'
+						].join('\n')
+					: '';
 	const historyLineNote = [historyGeneralNote, historyPaperSpecificNote].filter(Boolean).join('\n');
 	const expectedQuestionLine =
 		expectedQuestions === null

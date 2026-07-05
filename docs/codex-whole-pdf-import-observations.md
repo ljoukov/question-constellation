@@ -218,14 +218,14 @@ table value or cell prompts.
 
 ## July 2026 Humanities Batch Status
 
-Remote D1 inventory on 2026-07-04 shows that the manifest-backed AQA humanities/computing import is
+Remote D1 inventory on 2026-07-05 shows that the manifest-backed AQA humanities/computing import is
 incremental, not all complete:
 
 | Subject          | Manifest papers | D1 question-paper docs | D1 questions | D1 marks | Remaining |
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | --------: |
 | Computer Science |               6 |                      6 |          228 |      520 |         0 |
-| Geography        |              15 |                     14 |          462 |     1313 |         1 |
-| History          |              79 |                      1 |            6 |       40 |        78 |
+| Geography        |              15 |                     15 |          507 |     1437 |         0 |
+| History          |              79 |                      3 |           18 |      120 |        76 |
 
 The most recent Geography Paper 2 reruns were full official-PDF-to-D1 writes, not manual JSON
 patches.

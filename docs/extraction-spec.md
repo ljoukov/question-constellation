@@ -530,7 +530,7 @@ Current AQA History/Geography/Computer Science D1 status, measured from remote D
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | ------------------------: |
 | Computer Science |               6 |                      6 |          228 |      520 |                         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |                         0 |
-| History          |              79 |                      1 |            6 |       40 |                        78 |
+| History          |              79 |                      3 |           18 |      120 |                        76 |
 
 Geography 2022 Paper 2 imported successfully through the Codex SDK production path in
 `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp`.
@@ -1472,6 +1472,32 @@ The run exposed three History/importer rules that are now encoded in prompts and
 Because `helper.mjs` now imports the shared specificity checker, every isolated Codex work directory
 that copies `helper.mjs` must also copy `answer-chain-specificity.mjs`; this applies to extraction,
 extraction-judge, and chain runs.
+
+History Paper 1 Section A 2020 Germany and America D1 imports, 2026-07-05:
+
+| Paper                  | Work root                                                                                                                        |                                                                   Extraction |                                                  Extraction judge |                                  Chains |         Solvability |                                                 D1/routes |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------: | ----------------------------------------------------------------: | --------------------------------------: | ------------------: | --------------------------------------------------------: |
+| Option B Germany Nov20 | `tmp/codex-history-batch-v2/aqa-history-2020-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp`    |                       437.247s, 52 actions, 0 failed, 1,884,097 input tokens | 221.360s, pass 0.98, 42 actions, 0 failed, 1,159,801 input tokens | 297.510s, 2 reused, 4 created, 0 review | 94.185s, 6/6 passed | 6 questions, 40 marks, D1 write passed, route crawl 30/30 |
+| Option A America Nov20 | `tmp/codex-history-america-v4/aqa-history-2020-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp` | 504.298s, 78 actions, 2 failed contact-sheet retries, 2,910,538 input tokens |   180.877s, pass 0.97, 22 actions, 0 failed, 642,944 input tokens | 242.093s, 4 reused, 2 created, 0 review | 97.210s, 6/6 passed | 6 questions, 40 marks, D1 write passed, route crawl 30/30 |
+
+The 2020 Germany route crawl artifact is
+`tmp/public-route-checks/aqa-history-2020-june-paper-1-section-a-option-b-germany-2020-after-import.json`.
+It reported 30 routes checked, 0 failures, 2 public multi-question chains, and 2 public multi-paper
+chains. The 2020 America route crawl artifact is
+`tmp/public-route-checks/aqa-history-2020-june-paper-1-section-a-option-a-america-2020-after-import.json`.
+It reported 30 routes checked, 0 failures, 4 public multi-question chains, and 4 public multi-paper
+chains, with no raw multi-paper chain collapsed to a single visible question.
+
+The America paper is the repeatability case for rendered answer-line counting in History option
+papers. The production prompt now treats the line immediately after `Extra space` as
+learner-writable but excludes page-frame and mark-box borders. For AQA 8145/1A/A Nov20 the expected
+line counts are 01.1 = 22, 02.1 = 24, 03.1 = 50 (23 + 27), 04.1 = 25, 05.1 = 51 (24 + 27), and
+06.1 = 75 (22 + 27 + 26). The extraction judge verified these counts from rendered official pages.
+
+The independent extraction judge must evaluate the current schema fields. Valid imports may have
+legacy `answer` or `markScheme` fields absent or null when `markSchemeItems`, `markChecklist`, and
+`modelAnswer.answerText` contain the grading evidence. The judge should fail missing evidence in
+those current fields, not fail solely because legacy fields are null.
 
 The visible-PDF source identity audit for the AQA History, Geography, and Computer Science manifest
 now blocks manifest rows whose visible PDF front matter disagrees with the manifest. After the
