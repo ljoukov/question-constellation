@@ -3160,18 +3160,13 @@ function knownGeography2022Paper2Issues(question, visibleText) {
 				.filter(Boolean)
 				.some((label) => mediaLabelMatches(label, 'figure 10'))
 		);
-		const hasBlockedPlaceholder =
-			question.needsHumanReview === true ||
-			/\b(?:source status|official map unavailable|block for human review|copyright[- ]restriction|no supporting insert)\b/i.test(
-				visibleText
-			);
-		if (hasBlockedPlaceholder && !hasFigureTenAsset) {
+		if (!hasFigureTenAsset) {
 			issues.push({
 				code: 'known_unresolved_copyright_source',
 				field: 'stemBlocks/assets/needsHumanReview',
 				severity: 'error',
 				evidence:
-					'Geography 2022 Paper 2 Q03.1 depends on Figure 10. If no renderable Figure 10 or equivalent learner-visible source data is available, this row must remain blocked and validation must not treat it as import-ready.'
+					'Geography 2022 Paper 2 Q03.1 depends on Figure 10, which is withheld in the public question paper. Do not replace it with a structured substitute from mark-scheme answer-key evidence; without a real renderable Figure 10 asset from an official supporting source, this row must remain blocked or be held out of the publishable extraction.'
 			});
 		}
 	}

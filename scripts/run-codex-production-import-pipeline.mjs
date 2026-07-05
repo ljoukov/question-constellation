@@ -41,6 +41,8 @@ Optional:
   --allow-shared-chain-updates
   --skip-r2-upload
   --allow-visible-source-mismatch
+  --allow-unpublishable-source-drops
+  --reuse-existing-extraction
   --allow-dropped-questions  diagnostic only: allow partial import-ready subsets
   --import
   --force
@@ -226,6 +228,8 @@ function extractionCommand() {
 		`--timeout-ms=${stringArg('extraction-timeout-ms', stringArg('timeout-ms', '7200000'))}`
 	];
 	forwardCommonExtractionArgs(args);
+	if (hasArg('allow-unpublishable-source-drops')) args.push('--allow-unpublishable-source-drops');
+	if (hasArg('reuse-existing-extraction')) args.push('--reuse-existing-extraction');
 	if (force) args.push('--force');
 	return args;
 }
@@ -305,7 +309,10 @@ function codexSolvabilityCommand() {
 	return args;
 }
 
-function prepareImportReadyCommand({ forceNoImportCheck = false, includeLegacySolvability = false } = {}) {
+function prepareImportReadyCommand({
+	forceNoImportCheck = false,
+	includeLegacySolvability = false
+} = {}) {
 	const args = [
 		'scripts/prepare-import-ready-extraction.mjs',
 		`--input=${reconciledOutputPath}`,
@@ -421,7 +428,10 @@ function enforceSourceIdentity(check) {
 	if (errors.length === 0) return;
 	throw new Error(
 		`Visible PDF source identity preflight failed: ${errors
-			.map((issue) => `${issue.code} expected=${issue.expected ?? 'n/a'} visible=${issue.visible ?? 'n/a'}`)
+			.map(
+				(issue) =>
+					`${issue.code} expected=${issue.expected ?? 'n/a'} visible=${issue.visible ?? 'n/a'}`
+			)
 			.join('; ')}. Pass --allow-visible-source-mismatch only for an audited exception.`
 	);
 }
@@ -459,9 +469,7 @@ function findSeries(text) {
 	}
 	const compactMatch = text.match(/\b(Jan|Jun|Nov)(\d{2})\b/i);
 	if (compactMatch) {
-		const month = { jan: 'January', jun: 'June', nov: 'November' }[
-			compactMatch[1].toLowerCase()
-		];
+		const month = { jan: 'January', jun: 'June', nov: 'November' }[compactMatch[1].toLowerCase()];
 		return {
 			series: `${month} 20${compactMatch[2]}`,
 			evidence: trimEvidence(compactMatch[0])
@@ -480,7 +488,9 @@ function findComponent(text) {
 }
 
 function normalizeSeries(value) {
-	const match = String(value ?? '').match(/\b(january|jan|june|jun|november|nov)\s*(20)?(\d{2})\b/i);
+	const match = String(value ?? '').match(
+		/\b(january|jan|june|jun|november|nov)\s*(20)?(\d{2})\b/i
+	);
 	if (!match) return '';
 	const monthMap = {
 		jan: 'january',
@@ -523,7 +533,10 @@ function titleCase(value) {
 }
 
 function trimEvidence(value) {
-	return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);
+	return String(value ?? '')
+		.replace(/\s+/g, ' ')
+		.trim()
+		.slice(0, 120);
 }
 
 function forwardCommonExtractionArgs(args) {

@@ -499,6 +499,19 @@ that are already present, while still building D1 chain context from the current
 When every selected row is already imported, the runner exits successfully with an empty `planned`
 list instead of treating the no-op as a failure.
 
+Use `--allow-unpublishable-source-drops` only when an official PDF explicitly withholds a learner
+source, such as a copyright-restricted figure, and no official supporting PDF or mark-scheme/report
+evidence can produce a learner-safe substitute. This flag is deliberately narrower than
+`--allow-dropped-questions`: the extraction stage may drop only rows whose deterministic failure is
+`known_unresolved_copyright_source`, records the dropped refs in
+`extractionRun.droppedUnpublishableSourceQuestionRefs`, and then revalidates the cleaned extraction.
+Unexpected review flags, asset errors, answer-key defects, or chain/import warnings must still fail.
+If Codex extraction already completed but the wrapper/importer logic changed, use
+`--reuse-existing-extraction` against the same work root to reprocess the existing
+`question-fragments/`, `normalized-extraction.json`, and `validation.json` without spending another
+Codex extraction turn; downstream extraction judge, chain reconciliation, solvability, and D1 gates
+still run normally.
+
 For writes, the D1 update is incremental per paper. The pipeline does not stream in-progress data
 into D1. A paper is written only after official-PDF source identity preflight, Codex PDF extraction,
 independent extraction judge, Codex answer-chain reconciliation, R2 asset upload when assets are
@@ -511,19 +524,22 @@ and 79 History papers, with 70 AQA examiner-report PDFs. Examiner reports are se
 only for common traps, weak-answer explanations, hints, and grading warnings; positive credit still
 comes from the mark scheme.
 
-Current AQA History/Geography/Computer Science D1 status, measured from remote D1 on 2026-07-04:
+Current AQA History/Geography/Computer Science D1 status, measured from remote D1 on 2026-07-05:
 
 | Subject          | Manifest papers | D1 question-paper docs | D1 questions | D1 marks | Remaining manifest papers |
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | ------------------------: |
 | Computer Science |               6 |                      6 |          228 |      520 |                         0 |
-| Geography        |              15 |                     14 |          462 |     1313 |                         1 |
+| Geography        |              15 |                     15 |          507 |     1437 |                         0 |
 | History          |              79 |                      1 |            6 |       40 |                        78 |
 
-The remaining Geography paper is
-`aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp`. A retry using the new
-`--d1-existing-chains` path was blocked before model execution by Codex subscription usage limits;
-the SDK event reported reset at `Jul 6th, 2026 11:55 PM`. Do not fall back to `OPENAI_API_KEY` for
-these imports; the Codex SDK runner is expected to use ChatGPT subscription auth.
+Geography 2022 Paper 2 imported successfully through the Codex SDK production path in
+`tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp`.
+The importer held out Q03.1 only because the official question paper withholds Figure 10 for
+third-party copyright and the mark scheme provides only the answer key, not learner-safe source
+evidence. The publishable import has 45 questions and 124 marks. Extraction, independent extraction
+judge, chain reconciliation, R2 upload, strict audit, Codex solvability, D1 write, and deployed route
+crawl all passed. Do not fall back to `OPENAI_API_KEY` for these imports; the Codex SDK runner is
+expected to use ChatGPT subscription auth.
 
 For legacy `@ljoukov/llm` production runs, verify the old run artifact before treating it as
 import-ready:
@@ -1109,6 +1125,22 @@ The direct Codex whole-paper result is now the quality target and the production
 handled mark-checklist semantics well, especially any-two alternatives and level-of-response
 descriptors, but raw Codex outputs still need normalization, app response-kind validation, asset
 validation, chain reconciliation, solvability, strict audit, and D1 dry-run before import.
+
+Geography Paper 2 June 2022 final import, 2026-07-05:
+
+| Phase                              | Artifact                                                                                                                                                                                              | Wall time | Actions/calls | Failed actions | Input/prompt tokens | Cached input | Output/response tokens | Reasoning tokens | Result                                                                                                                                     |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------: | ------------: | -------------: | ------------------: | -----------: | ---------------------: | ---------------: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Codex PDF extraction               | `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp/raw/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp.json`              | 1106.343s |            70 |              1 |           5,164,539 |    4,686,848 |                 47,684 |            5,944 | 46 printed questions, 125 printed marks; Q03.1 deterministically held out as an unresolved copyright source                                |
+| Independent Codex extraction judge | `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp/extraction-judge/judge-report.json`                                                           |  301.422s |            58 |              1 |           1,003,797 |      775,168 |                 13,809 |            3,057 | pass, score 0.99; 45 retained questions, 124 marks, held-out Q03.1 verified from rendered official PDF evidence                            |
+| Codex answer-chain reconciliation  | `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp/chain-reconciled/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp.json` |  742.669s |            43 |              0 |           2,012,497 |    1,823,232 |                 36,867 |           13,497 | 15 reused existing chains, 30 create-new resolutions, 22 unique new chain IDs, deterministic chain validation passed                       |
+| Codex solvability judge            | `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp/codex-solvability/solvability-report.json`                                                    |  318.045s |            19 |              1 |             879,062 |      732,672 |                 15,510 |            4,343 | passed 45/45; image-dependent graph/map/source questions inspected against copied assets                                                   |
+| Strict audit / D1 write            | `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp/import-ready-audit.json`                                                                      |       n/a |           n/a |              0 |                 n/a |          n/a |                    n/a |              n/a | 45/45 kept, 0 audit errors/warnings, D1 write passed                                                                                       |
+| R2 upload and deployed crawl       | `tmp/public-route-checks/aqa-geography-2022-june-paper-2-after-import.json`                                                                                                                           |   91.269s |    209 routes |              0 |                 n/a |          n/a |                    n/a |              n/a | all question, question-chain, practice, chain, constellation, and 12 asset routes passed; 9 public multi-paper chains visible after import |
+
+This run proves the current production path can import a whole Geography paper from official PDFs
+while safely excluding a single unpublishable source item. It also exercises the D1 existing-chain
+context: the deployed crawl reports 31 public chains for this paper, 13 public multi-question chains,
+9 public multi-paper chains, and 0 raw multi-paper chains that show only one public question.
 
 Computer Science canary, Paper 2 June 2024, 2026-07-01:
 

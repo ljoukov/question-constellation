@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
+import { deterministicCandidateIssues } from './lib/llm-extraction-pipeline.mjs';
 
 const rootDir = process.cwd();
 loadDefaultEnv(rootDir);
@@ -47,6 +48,8 @@ Optional:
   --model=gpt-5.5
   --thinking-level=high
   --timeout-ms=7200000
+  --allow-unpublishable-source-drops
+  --reuse-existing-extraction
   --force
   --dry-run`;
 
@@ -86,6 +89,8 @@ const expectedMarks = integerArg('expected-marks', null, 1);
 const expectedQuestions = integerArg('expected-questions', null, 1);
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
+const allowUnpublishableSourceDrops = hasArg('allow-unpublishable-source-drops');
+const reuseExistingExtraction = hasArg('reuse-existing-extraction');
 
 for (const filePath of [questionPaperPath, markSchemePath, ...supportingDocumentPaths]) {
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
@@ -102,7 +107,8 @@ const plan = {
 	model,
 	thinkingLevel,
 	expectedMarks,
-	expectedQuestions
+	expectedQuestions,
+	reuseExistingExtraction
 };
 
 if (dryRun) {
@@ -110,25 +116,48 @@ if (dryRun) {
 	process.exit(0);
 }
 
-prepareWorkDir();
-const prompt = buildExtractionPrompt();
-writeFileSync(path.join(workDir, 'prompt.md'), prompt);
+let prompt = null;
+if (reuseExistingExtraction) {
+	if (!existsSync(workDir)) {
+		throw new Error(`Cannot reuse missing work dir: ${relative(workDir)}`);
+	}
+} else {
+	prepareWorkDir();
+	prompt = buildExtractionPrompt();
+	writeFileSync(path.join(workDir, 'prompt.md'), prompt);
+}
 
 const startedAt = new Date().toISOString();
 let codexSummary = null;
 try {
-	codexSummary = await runCodexSdkTurn({
-		prompt,
-		workDir,
-		eventsPath: path.join(workDir, 'events.jsonl'),
-		lastMessagePath: path.join(workDir, 'last-message.txt'),
-		summaryPath: path.join(workDir, 'codex-run-summary.json'),
-		model,
-		thinkingLevel,
-		timeoutMs
+	if (reuseExistingExtraction) {
+		codexSummary = readJsonIfExists(path.join(workDir, 'codex-run-summary.json'));
+	} else {
+		codexSummary = await runCodexSdkTurn({
+			prompt,
+			workDir,
+			eventsPath: path.join(workDir, 'events.jsonl'),
+			lastMessagePath: path.join(workDir, 'last-message.txt'),
+			summaryPath: path.join(workDir, 'codex-run-summary.json'),
+			model,
+			thinkingLevel,
+			timeoutMs
+		});
+	}
+	let normalizedPath = ensureNormalizedExtraction();
+	let droppedExtractionQuestions = [];
+	let validationResult = validateExtraction(normalizedPath, {
+		allowFailure: allowUnpublishableSourceDrops
 	});
-	const normalizedPath = ensureNormalizedExtraction();
-	const validation = validateExtraction(normalizedPath);
+	if (validationResult.failed) {
+		const dropResult = writePublishableExtractionSubset(
+			normalizedPath,
+			validationResult.validation
+		);
+		normalizedPath = dropResult.outputPath;
+		droppedExtractionQuestions = dropResult.dropped;
+		validationResult = validateExtraction(normalizedPath);
+	}
 	mkdirSync(path.dirname(outputPath), { recursive: true });
 	copyFileSync(normalizedPath, outputPath);
 	const summary = {
@@ -137,7 +166,8 @@ try {
 		finishedAt: new Date().toISOString(),
 		plan,
 		codex: codexSummary,
-		validation,
+		validation: validationResult.validation,
+		droppedExtractionQuestions,
 		artifacts: artifacts(normalizedPath)
 	};
 	writeJson(summaryPath, summary);
@@ -434,7 +464,7 @@ function buildExtractionPrompt() {
 												'',
 												'Known fragile checks for Geography 2022 Paper 2: count every visible ruled answer line, including ruled lines beside/after "Extra space" labels and continuation areas. Exact response-line expectations from independent rendered-page judge evidence are: Q01.4=18, Q01.5=12, Q01.10=30 excluding the separate city-name field, Q02.5=18, Q02.10=12 excluding the separate country field, Q02.11=18 excluding the separate LIC/NEE name field, Q03.3=12, Q03.4=18, Q04.7=17 excluding the separate local-scheme name field, Q05.7=17 excluding the separate local-scheme name field, and Q06.7=17 excluding the separate local-scheme name field. If extraction differs, repair before validation.',
 												'For Q01.10, include the separate +3 SPaG rubric in the question marks and grading evidence. The official SPaG rows are distinct: High performance = 3 marks, Intermediate performance = 2 marks, and Threshold performance = 1 mark. Do not merge Intermediate and Threshold into one 2-mark row; checklist support must point at all three SPaG rows.',
-												'For Q03.1/Figure 10, the public question-paper PDF may contain a copyright placeholder for the world map/category source. Do not publish the placeholder. Use a supporting insert/resource if present; otherwise only create a neutral structured substitute if official mark-scheme evidence is enough to make the learner source answerable without revealing the answer key. If the evidence is insufficient, keep the row blocked with needsHumanReview=true and do not let validation pass as learner-ready.'
+												'For Q03.1/Figure 10, the public question-paper PDF withholds the world map/category source for copyright. For this exact paper, the mark scheme and examiner report do not contain enough learner-safe source evidence to reconstruct Figure 10 without leaking the keyed answer. Do not create a neutral structured substitute for Q03.1. If no official supporting PDF contains a real renderable Figure 10 asset, keep Q03.1 needsHumanReview=true with a concise blocking note so the production runner can hold it out with --allow-unpublishable-source-drops.'
 											].join('\n')
 										: sourceDocumentId ===
 											  'aqa-geography-2022-june-paper-3-geographical-applications-qp'
@@ -616,7 +646,24 @@ function ensureNormalizedExtraction() {
 	return normalizedPath;
 }
 
-function validateExtraction(normalizedPath) {
+function validateExtraction(normalizedPath, { allowFailure = false } = {}) {
+	const args = validateExtractionArgs(normalizedPath);
+	const result = runHelperResult(args);
+	const validationPath = path.join(workDir, 'validation.json');
+	if (result.status !== 0) {
+		if (allowFailure && existsSync(validationPath)) {
+			return {
+				validation: readJson(validationPath),
+				failed: true,
+				error: helperError('validate-extraction', result).message
+			};
+		}
+		throw helperError('validate-extraction', result);
+	}
+	return { validation: readJson(validationPath), failed: false };
+}
+
+function validateExtractionArgs(normalizedPath) {
 	const args = [
 		'validate-extraction',
 		`--input=${path.basename(normalizedPath)}`,
@@ -624,24 +671,95 @@ function validateExtraction(normalizedPath) {
 	];
 	if (expectedMarks !== null) args.push(`--expected-marks=${expectedMarks}`);
 	if (expectedQuestions !== null) args.push(`--expected-questions=${expectedQuestions}`);
-	runHelper(args);
-	return readJson(path.join(workDir, 'validation.json'));
+	return args;
+}
+
+function writePublishableExtractionSubset(normalizedPath, failedValidation) {
+	const paper = readJson(normalizedPath);
+	const issueMap = deterministicIssueMap(paper, failedValidation);
+	const keptQuestions = [];
+	const dropped = [];
+	for (const question of paper.questions ?? []) {
+		const issues = issueMap.get(question.sourceQuestionRef) ?? [];
+		if (isAllowedUnpublishableSourceDrop(question, issues)) {
+			dropped.push({
+				sourceQuestionRef: question.sourceQuestionRef,
+				reasons: allowedDropReasons(question, issues)
+			});
+			continue;
+		}
+		keptQuestions.push(question);
+	}
+	if (dropped.length === 0) {
+		throw new Error(
+			'Extraction validation failed, but no known unpublishable-source question was eligible to drop.'
+		);
+	}
+	const output = {
+		...paper,
+		questions: keptQuestions,
+		extractionRun: {
+			...(paper.extractionRun ?? {}),
+			publishableSubset: true,
+			publishableSubsetSource: relative(normalizedPath),
+			droppedUnpublishableSourceQuestions: dropped,
+			droppedUnpublishableSourceQuestionRefs: dropped.map((item) => item.sourceQuestionRef)
+		}
+	};
+	const outputPath = path.join(workDir, 'normalized-extraction.publishable.json');
+	writeJson(outputPath, output);
+	return { outputPath, dropped };
+}
+
+function deterministicIssueMap(paper, validation) {
+	const map = new Map();
+	for (const finding of validation?.deterministicIssues ?? []) {
+		if (!finding.sourceQuestionRef) continue;
+		map.set(finding.sourceQuestionRef, finding.issues ?? []);
+	}
+	if (map.size > 0) return map;
+	for (const finding of deterministicCandidateIssues(paper)) {
+		if (!finding.sourceQuestionRef) continue;
+		map.set(finding.sourceQuestionRef, finding.issues ?? []);
+	}
+	return map;
+}
+
+function isAllowedUnpublishableSourceDrop(question, issues) {
+	return issues.some((issue) => issue.code === 'known_unresolved_copyright_source');
+}
+
+function allowedDropReasons(question, issues) {
+	const reasons = [];
+	if (question?.needsHumanReview === true) reasons.push('question_needs_human_review');
+	for (const issue of issues) {
+		if (issue.code === 'known_unresolved_copyright_source') reasons.push(issue.code);
+	}
+	return [...new Set(reasons)];
 }
 
 function runHelper(args) {
-	const result = spawnSync(process.execPath, ['helper.mjs', ...args], {
+	const result = runHelperResult(args);
+	if (result.status !== 0) {
+		throw helperError(args[0], result);
+	}
+	if (result.stdout.trim()) process.stderr.write(result.stdout);
+	if (result.stderr.trim()) process.stderr.write(result.stderr);
+}
+
+function runHelperResult(args) {
+	return spawnSync(process.execPath, ['helper.mjs', ...args], {
 		cwd: workDir,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
 		maxBuffer: 64 * 1024 * 1024
 	});
-	if (result.status !== 0) {
-		throw new Error(
-			`helper ${args[0]} failed with exit code ${result.status ?? result.signal}.\n${result.stdout}\n${result.stderr}`
-		);
-	}
-	if (result.stdout.trim()) process.stderr.write(result.stdout);
-	if (result.stderr.trim()) process.stderr.write(result.stderr);
+}
+
+function helperError(label, result) {
+	return new Error(
+		`helper ${label} failed with exit code ${result.status ?? result.signal}.\n${result.stdout}\n${result.stderr}`
+	);
 }
 
 function artifacts(normalizedPath) {
@@ -659,6 +777,10 @@ function artifacts(normalizedPath) {
 
 function readJson(filePath) {
 	return JSON.parse(readFileSync(filePath, 'utf8'));
+}
+
+function readJsonIfExists(filePath) {
+	return existsSync(filePath) ? readJson(filePath) : null;
 }
 
 function writeJson(filePath, value) {

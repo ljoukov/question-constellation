@@ -60,6 +60,9 @@ for (const filePath of [candidatePath, questionPaperPath, markSchemePath]) {
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
 }
 
+const candidate = readJson(candidatePath);
+const allowedDroppedSourceQuestions = allowedDroppedSourceQuestionsFor(candidate);
+
 const plan = {
 	sourceDocumentId,
 	candidatePath: relative(candidatePath),
@@ -71,7 +74,8 @@ const plan = {
 	model,
 	thinkingLevel,
 	expectedMarks,
-	expectedQuestions
+	expectedQuestions,
+	allowedDroppedSourceQuestions
 };
 
 if (dryRun) {
@@ -153,7 +157,7 @@ function prepareWorkDir() {
 	);
 	writeJson(
 		path.join(workDir, 'candidate.json'),
-		candidateWithLocalAssets(readJson(candidatePath))
+		candidateWithLocalAssets(structuredClone(candidate))
 	);
 }
 
@@ -183,12 +187,26 @@ function validateCandidateMechanically() {
 function buildPrompt() {
 	const expectedQuestionLine =
 		expectedQuestions === null
-			? 'Confirm the candidate question count matches the whole official paper.'
+			? allowedDroppedSourceQuestions.length > 0
+				? 'Confirm the candidate question count matches the whole official paper after subtracting audited unpublishable-source hold-outs.'
+				: 'Confirm the candidate question count matches the whole official paper.'
 			: `Confirm the candidate contains exactly ${expectedQuestions} atomic questions.`;
 	const expectedMarkLine =
 		expectedMarks === null
-			? 'Confirm the candidate mark total matches the whole official paper and official mark scheme.'
+			? allowedDroppedSourceQuestions.length > 0
+				? 'Confirm the candidate mark total matches the whole official paper and official mark scheme after subtracting audited unpublishable-source hold-outs.'
+				: 'Confirm the candidate mark total matches the whole official paper and official mark scheme.'
 			: `Confirm the candidate mark total is exactly ${expectedMarks}.`;
+	const allowedDroppedLine =
+		allowedDroppedSourceQuestions.length > 0
+			? [
+					'',
+					`Candidate declares audited unpublishable-source hold-outs: ${allowedDroppedSourceQuestions
+						.map((item) => `${item.sourceQuestionRef} (${item.reasons.join(', ')})`)
+						.join('; ')}.`,
+					'Do not fail merely because these held-out refs are absent from candidate.questions or totals. Independently verify that the official public PDF really withholds the learner source and no supplied official supporting PDF contains a renderable source. Record them in findings as held out/not applicable, not as required repairs. Still fail any missing question that is not listed here, any held-out ref whose source is actually available, or any attempt to fabricate answer-key-derived learner source content.'
+				].join('\n')
+			: '';
 	const sourceSpecificLine = [
 		sourceDocumentId === 'aqa-84611h-qp-nov20'
 			? 'For Biology Nov 2020, explicitly verify Q07.1 has 7 visible ruled answer lines and Q07.3 has 16 visible ruled answer lines.'
@@ -196,8 +214,7 @@ function buildPrompt() {
 		sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
 			? 'For Geography 2022 Paper 1 Q02.3, the question-paper option B says "The trees drop their dead leaves because of lower temperatures in winter" while the mark scheme key abbreviates this as "The trees drop their leaves...". This is not a defect if response.options preserve the question-paper wording and the answer key still identifies option B / the corresponding mark-scheme wording.'
 			: null,
-		sourceDocumentId ===
-		'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
+		sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
 			? 'For Geography 2023 Paper 1 Q02.1 and Q02.3, Figure 7 may be missing from the public PDF because of third-party copyright. Do not require an image asset if candidate.json provides a learner-visible structured-table substitute labelled "Figure 7" that is sufficient to identify Large water plant as producer and reason that trout loss may increase aquatic insects/crayfish or stop humans eating trout. Treat provenance wording as valid only in reviewNotes, not in learner-visible blocks.'
 			: null
 	]
@@ -225,6 +242,8 @@ Task:
 7. For fixed-response or multiple-choice questions, judge learner-visible option text against the question paper, not against shortened mark-scheme wording. The mark scheme determines which option is correct; the question paper determines exactly what text the learner sees. Do not fail merely because a correct option's paper wording contains extra words that the mark scheme omits, as long as the selected option and grading evidence are aligned.
 8. The assembled learner-visible context is candidate.contextText, candidate.stemBlocks, candidate.leadBlocks, candidate.promptBlocks, candidate.afterResponseBlocks, candidate.response, and candidate.assets together. Inspect labelled structured-table/table/key/equation blocks before declaring a referenced Figure/Table missing. A complete structured block is a renderable source surface; do not require a PNG asset for simple source tables, keys, code, SQL skeletons, food webs, or other source material that is faithfully represented structurally.
 9. If a public PDF withholds a learner source for copyright, pass a neutral structured substitute only when it is learner-visible, labelled with the official Figure/Table/source label, sufficient to answer without the original image, supported by official mark-scheme/examiner evidence, and free of provenance phrases such as "reconstructed", "mark scheme evidence", or "source unavailable" in the learner-visible blocks. Provenance belongs in reviewNotes.
+10. If candidate.extractionRun.droppedUnpublishableSourceQuestionRefs records an audited hold-out, do not require a neutral substitute when official evidence would reveal the answer key rather than provide learner source evidence.
+${allowedDroppedLine}
 ${sourceSpecificLine}
 
 Useful commands:
@@ -305,6 +324,32 @@ function candidateWithLocalAssets(candidate) {
 		asset.filePath = remap(asset.filePath ?? asset.file ?? asset.localPath ?? asset.path ?? null);
 	}
 	return candidate;
+}
+
+function allowedDroppedSourceQuestionsFor(candidate) {
+	const dropped = Array.isArray(candidate?.extractionRun?.droppedUnpublishableSourceQuestions)
+		? candidate.extractionRun.droppedUnpublishableSourceQuestions
+		: [];
+	const fromRefs = Array.isArray(candidate?.extractionRun?.droppedUnpublishableSourceQuestionRefs)
+		? candidate.extractionRun.droppedUnpublishableSourceQuestionRefs.map((ref) => ({
+				sourceQuestionRef: ref,
+				reasons: ['known_unresolved_copyright_source']
+			}))
+		: [];
+	const byRef = new Map();
+	for (const item of [...dropped, ...fromRefs]) {
+		const sourceQuestionRef = String(item?.sourceQuestionRef ?? '').trim();
+		if (!sourceQuestionRef) continue;
+		const reasons = (item?.reasons ?? [])
+			.map((reason) => String(reason ?? '').trim())
+			.filter(Boolean);
+		if (!reasons.includes('known_unresolved_copyright_source')) continue;
+		byRef.set(sourceQuestionRef, {
+			sourceQuestionRef,
+			reasons: [...new Set(reasons)]
+		});
+	}
+	return [...byRef.values()];
 }
 
 function judgePassed(report) {

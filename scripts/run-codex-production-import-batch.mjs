@@ -31,6 +31,8 @@ Options:
   --existing-chain-max-examples=<n>
   --existing-chain-max-mark-items=<n>
   --existing-chain-max-chains=<n>
+  --allow-unpublishable-source-drops
+  --reuse-existing-extraction
   --dry-run
   --continue-on-error
   --allow-dropped-questions  diagnostic only: allow partial import-ready subsets
@@ -319,6 +321,8 @@ function productionCommand(row, paper) {
 		'no-import-check',
 		'skip-d1-conflict-check',
 		'allow-shared-chain-updates',
+		'allow-unpublishable-source-drops',
+		'reuse-existing-extraction',
 		'allow-dropped-questions',
 		'skip-r2-upload',
 		'import'
