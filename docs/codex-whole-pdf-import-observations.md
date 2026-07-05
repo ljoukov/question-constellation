@@ -225,7 +225,7 @@ incremental, not all complete:
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | --------: |
 | Computer Science |               6 |                      6 |          228 |      520 |         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |         0 |
-| History          |              79 |                      3 |           18 |      120 |        76 |
+| History          |              79 |                     11 |           54 |      464 |        68 |
 
 The most recent Geography Paper 2 reruns were full official-PDF-to-D1 writes, not manual JSON
 patches.
@@ -242,17 +242,34 @@ single asset such as `figure-10ab.png` satisfies references to both Figure 10a a
 normalizer now expands compact multi-letter figure suffixes before deciding that an asset is
 missing.
 
+Recent AQA History 2020 reruns used whole official PDFs, not pre-fed text dumps. Each run passed
+official source-identity preflight, Codex PDF extraction, independent Codex extraction judging,
+separate Codex answer-chain reconciliation with D1 existing-chain context, strict audit, Codex
+solvability, D1 conflict checks, D1 write, and a deployed route crawl.
+
+| Paper                              |                                                                                         Extraction |                                                                                 Extraction judge |                                                                                      Chain run |                                                                                         Solvability | Import and route result                                                                                                                              |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------: | -----------------------------------------------------------------------------------------------: | ---------------------------------------------------------------------------------------------: | --------------------------------------------------------------------------------------------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History 2020 P1B A First World War | 455.930s; 54 commands; 0 failed; input 1,420,843; cached 1,155,072; output 18,764; reasoning 2,778 |    198.001s; 35 commands; 0 failed; input 542,606; cached 395,264; output 8,386; reasoning 1,558 | 233.120s; 28 commands; 1 failed; input 923,712; cached 771,584; output 10,623; reasoning 4,241 |        100.559s; 10 commands; 1 failed; input 185,051; cached 92,672; output 3,964; reasoning 1,541 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p1b-a-fww-after-import.json` passed 22/22 routes including 2 assets   |
+| History 2020 P1B C East-West       | 359.474s; 46 commands; 0 failed; input 1,630,350; cached 1,394,688; output 16,437; reasoning 1,774 | 255.834s; 43 commands; 1 failed; input 1,138,099; cached 949,248; output 11,674; reasoning 3,532 | 234.071s; 24 commands; 1 failed; input 828,878; cached 752,640; output 11,792; reasoning 4,895 |        84.378s; 12 commands; 0 failed; input 192,561; cached 145,408; output 3,892; reasoning 1,305 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p1b-c-east-west-after-import.json` passed 20/20 routes                |
+| History 2020 P1B D Asia            | 386.555s; 61 commands; 0 failed; input 1,653,944; cached 1,461,248; output 18,790; reasoning 2,737 |    170.686s; 22 commands; 0 failed; input 541,613; cached 404,992; output 7,626; reasoning 2,110 | 229.075s; 23 commands; 1 failed; input 788,125; cached 714,240; output 10,386; reasoning 4,457 | rerun 119.506s; 19 commands; 2 failed; input 190,669; cached 143,360; output 5,495; reasoning 1,687 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p1b-d-asia-after-import.json` passed 20/20 routes                     |
+| History 2020 P2A A Health          | 415.217s; 51 commands; 0 failed; input 1,370,248; cached 1,168,384; output 17,736; reasoning 1,309 |    145.878s; 20 commands; 1 failed; input 469,131; cached 351,744; output 6,124; reasoning 1,415 | 260.440s; 23 commands; 1 failed; input 702,798; cached 629,760; output 13,042; reasoning 6,325 |         113.015s; 18 commands; 1 failed; input 331,839; cached 231,936; output 4,912; reasoning 897 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2a-a-health-after-import.json` passed 21/21 routes including 1 asset |
+
+The independent judge caught real answer-line defects before import. Asia initially undercounted
+Q02.0 and Q04.0; Health initially undercounted every response box. The production extractor prompt,
+helper validation, and extraction judge now include source-specific rendered-page guardrails for
+these fragile answer books. The Health rerun from official PDFs produced the corrected counts
+`01.1 = 49`, `02.1 = 52`, `03.1 = 52`, and `04.1 = 101`, and the independent judge confirmed all
+four from rendered pages.
+
 The batch runner now has an explicit `--d1-existing-chains` mode. It builds subject-specific D1
 chain-context files using `scripts/build-existing-chain-context.mjs --d1` and passes them into each
 paper's separate Codex answer-chain run. This does not replace the later need for cohort-level chain
 consolidation, but it prevents the default production batch from importing valid questions with no
 awareness of already published chains.
 
-The next missing Geography run was attempted through that path and failed before model execution:
-`tmp/codex-humanities-geography-final-v53/summary.json` records the failed paper, and the raw SDK
-events report: `You've hit your usage limit ... try again at Jul 6th, 2026 11:55 PM.` `codex doctor`
-confirmed ChatGPT auth is configured and no stored API key is used. Further Codex extraction,
-chain, and solvability runs are blocked until that subscription limit resets or credits are added.
+An earlier missing Geography run failed before model execution because the Codex subscription hit a
+usage limit; `codex doctor` confirmed ChatGPT auth was configured and no stored API key was used.
+After the limit reset, the later Geography and History reruns above proceeded through the SDK path.
 
 ## OCR And Visual Inspection Conclusion
 

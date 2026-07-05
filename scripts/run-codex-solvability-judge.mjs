@@ -239,6 +239,7 @@ Files in this clean work directory:
 - assets/: local media files referenced by contexts, when a concrete asset exists
 
 Do not inspect the repository, previous workdirs, benchmark artifacts, git history, or the web. Start only from these files.
+Do not print all of candidate.json or solvability-contexts.json to the terminal. Use focused jq selectors, small per-question slices, and asset inspection commands so the event log stays reviewable and the turn does not waste context on giant JSON dumps.
 
 Task:
 1. For every context in solvability-contexts.json, decide whether a student can answer the target question from the assembled app-visible context alone.

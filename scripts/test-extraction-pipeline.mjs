@@ -2205,6 +2205,49 @@ if (!knownLineCountFailure.includes('known_response_line_count_mismatch')) {
 	});
 }
 
+const historyKnownLineCountMismatchPath = path.join(
+	helperNormalizeDir,
+	'history-known-line-count-mismatch.json'
+);
+writeFileSync(
+	historyKnownLineCountMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2020-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.1',
+					promptText: 'Write an account of how relations changed.',
+					marks: 8,
+					pageStart: 3,
+					pageEnd: 5,
+					response: { kind: 'lines', lineCount: 71 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Develops a relevant change.', marks: 1 }],
+					markChecklist: [{ text: 'Develop a relevant change.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'One relevant change was developed with supporting detail.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const historyKnownLineCountFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${historyKnownLineCountMismatchPath}`,
+	'--expected-marks=8',
+	'--expected-questions=1'
+]);
+if (!historyKnownLineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject the known History 2020 line-count guardrail.', {
+		historyKnownLineCountFailure
+	});
+}
+
 const missingKnownAllowancePath = path.join(helperNormalizeDir, 'missing-known-allowance.json');
 writeFileSync(
 	missingKnownAllowancePath,

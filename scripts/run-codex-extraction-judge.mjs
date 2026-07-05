@@ -216,10 +216,28 @@ function buildPrompt() {
 			: null,
 		sourceDocumentId === 'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp'
 			? 'For Geography 2023 Paper 1 Q02.1 and Q02.3, Figure 7 may be missing from the public PDF because of third-party copyright. Do not require an image asset if candidate.json provides a learner-visible structured-table substitute labelled "Figure 7" that is sufficient to identify Large water plant as producer and reason that trout loss may increase aquatic insects/crayfish or stop humans eating trout. Treat provenance wording as valid only in reviewNotes, not in learner-visible blocks.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
+			? 'For History 2020 Paper 1 Section B Option A First World War, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.0 = 103 total with 23 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2020-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp'
+			? 'For History 2020 Paper 1 Section B Option D Asia, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 73 total with 22 lines on page 3, 26 lines on page 4, and 25 lines on page 5; 03.0 = 48 total with 23 lines on page 6 and 25 lines on page 7; 04.0 = 101 total with 23 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2020-june-paper-2-section-a-option-a-britain-health-and-the-people-c1000-to-the-present-day-qp'
+			? 'For History 2020 Paper 2 Section A Option A Health, known rendered-page line-count guardrails are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
 			: null
 	]
 		.filter(Boolean)
 		.join('\n');
+	const historyJudgeLine = sourceDocumentId?.startsWith('aqa-history-')
+		? [
+				'',
+				'History answer-book line counts: count every visible ruled learner-writing line inside the response box, including the first full-width ruled line immediately below the prompt/mark allocation, the ruled line beside/after an "Extra space" label, and the final inner ruled line above the page-frame/footer. Exclude only outer page-frame borders, mark-box borders, and non-writable printed separators. For long responses, inspect every continuation page and report page-by-page counts before summing. If helper guardrails name an expected count for this source, use rendered-page evidence and this convention before declaring that count wrong.'
+			].join('\n')
+		: '';
 	return `You are an independent GCSE extraction and learner-rendering judge. You did not create candidate.json.
 
 Files in this clean work directory:
@@ -235,17 +253,18 @@ Do not inspect the repository, previous extraction workdirs, benchmark artifacts
 Task:
 1. Mechanically confirm candidate.json is a whole-paper extraction for ${sourceDocumentId}. ${expectedQuestionLine} ${expectedMarkLine}
 2. Independently compare candidate questions against the official question-paper PDF and mark-scheme PDF.
-3. Judge extraction quality only: learner-facing wording/context, page refs, response controls, answer-line counts, required figures/tables/assets, formula/equation rendering, positive mark-scheme alignment, answer keys/model answers, and whether each question is answerable from the assembled app-visible context.
+3. Judge extraction quality only: learner-facing wording/context, page references, response controls, answer-line counts, required figures/tables/assets, formula/equation rendering, positive mark-scheme alignment, answer keys/model answers, and whether each question is answerable from the assembled app-visible context.
 4. Do not judge answer-chain style or chain quality. Chain reconciliation is a separate workflow.
 5. Use PDF text layer for exact text, rendered pages/contact sheets for layout, embedded image extraction for figures/tables, and visual inspection for equations/formulae/line counts. OCR is fallback only.
 6. Fail real defects, including missing renderable assets for mentioned figures, missing table data, duplicated learner-visible setup text, wrong response-line counts, wrong fixed-response answer keys, missing model answers for written questions, or mark-scheme rows that do not support grading.
 7. For fixed-response or multiple-choice questions, judge learner-visible option text against the question paper, not against shortened mark-scheme wording. The mark scheme determines which option is correct; the question paper determines exactly what text the learner sees. Do not fail merely because a correct option's paper wording contains extra words that the mark scheme omits, as long as the selected option and grading evidence are aligned.
-8. The current extraction schema uses candidate.questions[].markSchemeItems, markChecklist, response.correctAnswers, and modelAnswer for grading support. For written questions, a modelAnswer object with answerText is a valid model answer. Legacy fields named answer or markScheme may be absent/null; do not fail because those legacy fields are null when markSchemeItems/markChecklist/modelAnswer or response.correctAnswers contain the required support.
+8. The current extraction schema uses candidate.questions[].pageStart and pageEnd for source page references, plus markSchemeItems, markChecklist, response.correctAnswers, and modelAnswer for grading support. Legacy question.pageRefs may be absent/null; do not fail for missing pageRefs when pageStart/pageEnd are present and correct. For written questions, a modelAnswer object with answerText is a valid model answer. Legacy fields named answer or markScheme may be absent/null; do not fail because those legacy fields are null when markSchemeItems/markChecklist/modelAnswer or response.correctAnswers contain the required support.
 9. The assembled learner-visible context is candidate.contextText, candidate.stemBlocks, candidate.leadBlocks, candidate.promptBlocks, candidate.afterResponseBlocks, candidate.response, and candidate.assets together. Inspect labelled structured-table/table/key/equation blocks before declaring a referenced Figure/Table missing. A complete structured block is a renderable source surface; do not require a PNG asset for simple source tables, keys, code, SQL skeletons, food webs, or other source material that is faithfully represented structurally.
 10. If a public PDF withholds a learner source for copyright, pass a neutral structured substitute only when it is learner-visible, labelled with the official Figure/Table/source label, sufficient to answer without the original image, supported by official mark-scheme/examiner evidence, and free of provenance phrases such as "reconstructed", "mark scheme evidence", or "source unavailable" in the learner-visible blocks. Provenance belongs in reviewNotes.
 11. If candidate.extractionRun.droppedUnpublishableSourceQuestionRefs records an audited hold-out, do not require a neutral substitute when official evidence would reveal the answer key rather than provide learner source evidence.
 ${allowedDroppedLine}
 ${sourceSpecificLine}
+${historyJudgeLine}
 
 Useful commands:
 - bash pdf-tools.sh pdf-info --pdf=question-paper.pdf --output=question-paper.info.txt
