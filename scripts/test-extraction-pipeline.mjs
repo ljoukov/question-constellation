@@ -2297,6 +2297,59 @@ if (!historyPaper2SectionBLineCountFailure.includes('known_response_line_count_m
 	);
 }
 
+const history2021SectionALineCountMismatchPath = path.join(
+	helperNormalizeDir,
+	'history-2021-section-a-line-count-mismatch.json'
+);
+writeFileSync(
+	history2021SectionALineCountMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2021-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '06.1',
+					promptText: 'How far do you agree with this interpretation?',
+					marks: 12,
+					pageStart: 9,
+					pageEnd: 11,
+					response: { kind: 'lines', lineCount: 72 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Develops a supported judgement.', marks: 1 }
+					],
+					markChecklist: [{ text: 'Develop a supported judgement.', markSchemeItemIndexes: [0] }],
+					modelAnswer: {
+						answerText: 'A supported judgement uses both interpretations and knowledge.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2021SectionALineCountFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2021SectionALineCountMismatchPath}`,
+		'--expected-marks=12',
+		'--expected-questions=1'
+	]
+);
+if (!history2021SectionALineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail(
+		'Codex helper validation did not reject the History 2021 Paper 1 Section A line-count guardrail.',
+		{
+			history2021SectionALineCountFailure
+		}
+	);
+}
+
 const missingKnownAllowancePath = path.join(helperNormalizeDir, 'missing-known-allowance.json');
 writeFileSync(
 	missingKnownAllowancePath,

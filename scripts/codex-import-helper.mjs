@@ -2041,6 +2041,32 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'05.1': 50,
 				'06.1': 75
 			},
+		'aqa-history-2021-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp':
+			{
+				'01.1': 22,
+				'02.1': 23,
+				'03.1': 50,
+				'04.1': 23,
+				'05.1': 50,
+				'06.1': 76
+			},
+		'aqa-history-2021-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp':
+			{
+				'01.1': 22,
+				'02.1': 24,
+				'03.1': 50,
+				'04.1': 24,
+				'05.1': 51,
+				'06.1': 76
+			},
+		'aqa-history-2021-june-paper-1-section-a-option-c-russia-1894-1945-tsardom-and-communism-qp': {
+			'01.0': 22,
+			'02.0': 24,
+			'03.0': 51,
+			'04.0': 23,
+			'05.0': 51,
+			'06.0': 73
+		},
 		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
 			{
 				'01.0': 22,

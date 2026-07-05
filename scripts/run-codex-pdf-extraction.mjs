@@ -537,35 +537,56 @@ function buildExtractionPrompt() {
 						'Exact response-line expectations from independent rendered-page judge evidence are: 01.0 = 22, 02.0 = 23, 03.0 = 49 total with 23 lines on page 4 and 26 continuation lines on page 5, 04.0 = 24, 05.0 = 49 total with 23 lines on page 7 and 26 continuation lines on page 8, and 06.0 = 74 total with 22 lines on page 9, 26 lines on page 10, and 26 lines on page 11. If extraction differs, repair the fragment before validation.'
 					].join('\n')
 				: sourceDocumentId ===
-					  'aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+					  'aqa-history-2021-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp'
 					? [
 							'',
-							'Known fragile checks for History 2024 Paper 1 Section A Option B Germany: Interpretation A in the public insert is withheld for third-party copyright. Do not expose the "cannot be reproduced" placeholder as the learner source. If you build a neutral substitute from official mark-scheme/examiner-report evidence, keep provenance in reviewNotes, keep learner-visible source blocks clean, and set needsHumanReview=false when the assembled question is answerable. Learner-visible Interpretation A text must not include provenance phrases such as "official evidence indicates", "mark scheme evidence", "reconstructed", "source unavailable", or "neutral substitute".',
-							'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 25, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 75 total with 22 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If your extraction differs, repair the fragment before validation.'
+							'Known fragile checks for History 2021 Paper 1 Section A Option A America: the independent judge found that undercounting the final essay response by two lines blocks D1 import. Count every learner-writable ruled line from rendered pages before validation.',
+							'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 23, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 23, 05.1 = 50 total with 23 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 76 total with 22 lines on page 9, 27 lines on page 10, and 27 lines on page 11. Count the ruled line beside/after "Extra space" and the final inner ruled line as learner-writable; exclude only the outer page-frame border. If extraction differs, repair the fragment before validation.'
 						].join('\n')
 					: sourceDocumentId ===
-						  'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
+						  'aqa-history-2021-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
 						? [
 								'',
-								'Known fragile checks for History 2020 Paper 1 Section B Option A First World War: count the first ruled answer line immediately below the prompt/mark allocation and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence are: 01.0 = 22; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 continuation lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 continuation lines on page 7; 04.0 = 103 total with 23 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+								'Known fragile checks for History 2021 Paper 1 Section A Option B Germany: independent judging found that Q03, Q05, and Q06 are easy to undercount from broad crops. Count every learner-writable ruled line from rendered pages before validation.',
+								'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 24, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 76 total with 23 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Count the ruled line beside/after "Extra space" and the final inner ruled line as learner-writable; exclude only the outer page-frame border. If extraction differs, repair the fragment before validation.'
 							].join('\n')
 						: sourceDocumentId ===
-							  'aqa-history-2020-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp'
+							  'aqa-history-2021-june-paper-1-section-a-option-c-russia-1894-1945-tsardom-and-communism-qp'
 							? [
 									'',
-									'Known fragile checks for History 2020 Paper 1 Section B Option D Asia: count the first ruled answer line immediately below the prompt/mark allocation, every ruled line on continuation pages, the ruled line beside/after "Extra space", and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence are: 01.0 = 22; 02.0 = 73 total with 22 lines on page 3, 26 lines on page 4, and 25 continuation/Extra space lines on page 5; 03.0 = 48 total with 23 lines on page 6 and 25 continuation/Extra space lines on page 7; 04.0 = 101 total with 23 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 26 continuation/Extra space lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+									'Known fragile checks for History 2021 Paper 1 Section A Option C Russia: the official paper numbers subquestions as 01.0-06.0 in current extraction artifacts. Long written answers are easy to undercount by one line on first pages and extra-space pages.',
+									'Exact response-line expectations from independent rendered-page judge evidence are: 01.0 = 22, 02.0 = 24, 03.0 = 51 total with 24 lines on page 4 and 27 continuation lines on page 5, 04.0 = 23, 05.0 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.0 = 73 total with 20 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Count the ruled line beside/after "Extra space" and the final inner ruled line as learner-writable; exclude only the outer page-frame border. If extraction differs, repair the fragment before validation.'
 								].join('\n')
-							: history2020Paper2SectionAIds.has(sourceDocumentId)
+							: sourceDocumentId ===
+								  'aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
 								? [
 										'',
-										'Known fragile checks for History 2020 Paper 2 Section A options: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence and matching answer-book layout are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+										'Known fragile checks for History 2024 Paper 1 Section A Option B Germany: Interpretation A in the public insert is withheld for third-party copyright. Do not expose the "cannot be reproduced" placeholder as the learner source. If you build a neutral substitute from official mark-scheme/examiner-report evidence, keep provenance in reviewNotes, keep learner-visible source blocks clean, and set needsHumanReview=false when the assembled question is answerable. Learner-visible Interpretation A text must not include provenance phrases such as "official evidence indicates", "mark scheme evidence", "reconstructed", "source unavailable", or "neutral substitute".',
+										'Exact response-line expectations from independent rendered-page judge evidence are: 01.1 = 22, 02.1 = 24, 03.1 = 50 total with 23 lines on page 4 and 27 continuation lines on page 5, 04.1 = 25, 05.1 = 51 total with 24 lines on page 7 and 27 continuation lines on page 8, and 06.1 = 75 total with 22 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If your extraction differs, repair the fragment before validation.'
 									].join('\n')
-								: history2020Paper2SectionBIds.has(sourceDocumentId)
+								: sourceDocumentId ===
+									  'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
 									? [
 											'',
-											'Known fragile checks for History 2020 Paper 2 Section B options: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence and matching answer-book layout are: 01.1 = 48 total with 21 lines on page 2 and 27 lines on page 3; 02.1 = 50 total with 23 lines on page 4 and 27 lines on page 5; 03.1 = 49 total with 22 lines on page 6 and 27 lines on page 7; 04.1 = 98 total with 19 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+											'Known fragile checks for History 2020 Paper 1 Section B Option A First World War: count the first ruled answer line immediately below the prompt/mark allocation and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence are: 01.0 = 22; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 continuation lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 continuation lines on page 7; 04.0 = 103 total with 23 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
 										].join('\n')
-									: '';
+									: sourceDocumentId ===
+										  'aqa-history-2020-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp'
+										? [
+												'',
+												'Known fragile checks for History 2020 Paper 1 Section B Option D Asia: count the first ruled answer line immediately below the prompt/mark allocation, every ruled line on continuation pages, the ruled line beside/after "Extra space", and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence are: 01.0 = 22; 02.0 = 73 total with 22 lines on page 3, 26 lines on page 4, and 25 continuation/Extra space lines on page 5; 03.0 = 48 total with 23 lines on page 6 and 25 continuation/Extra space lines on page 7; 04.0 = 101 total with 23 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 26 continuation/Extra space lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+											].join('\n')
+										: history2020Paper2SectionAIds.has(sourceDocumentId)
+											? [
+													'',
+													'Known fragile checks for History 2020 Paper 2 Section A options: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence and matching answer-book layout are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+												].join('\n')
+											: history2020Paper2SectionBIds.has(sourceDocumentId)
+												? [
+														'',
+														'Known fragile checks for History 2020 Paper 2 Section B options: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence and matching answer-book layout are: 01.1 = 48 total with 21 lines on page 2 and 27 lines on page 3; 02.1 = 50 total with 23 lines on page 4 and 27 lines on page 5; 03.1 = 49 total with 22 lines on page 6 and 27 lines on page 7; 04.1 = 98 total with 19 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+													].join('\n')
+												: '';
 	const historyLineNote = [historyGeneralNote, historyPaperSpecificNote].filter(Boolean).join('\n');
 	const expectedQuestionLine =
 		expectedQuestions === null
