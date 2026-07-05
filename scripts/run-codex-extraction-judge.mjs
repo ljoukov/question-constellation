@@ -207,6 +207,17 @@ function buildPrompt() {
 					'Do not fail merely because these held-out refs are absent from candidate.questions or totals. Independently verify that the official public PDF really withholds the learner source and no supplied official supporting PDF contains a renderable source. Record them in findings as held out/not applicable, not as required repairs. Still fail any missing question that is not listed here, any held-out ref whose source is actually available, or any attempt to fabricate answer-key-derived learner source content.'
 				].join('\n')
 			: '';
+	const history2020Paper2SectionAIds = new Set([
+		'aqa-history-2020-june-paper-2-section-a-option-a-britain-health-and-the-people-c1000-to-the-present-day-qp',
+		'aqa-history-2020-june-paper-2-section-a-option-b-britain-power-and-the-people-c1170-to-the-present-day-qp',
+		'aqa-history-2020-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp'
+	]);
+	const history2020Paper2SectionBIds = new Set([
+		'aqa-history-2020-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp',
+		'aqa-history-2020-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp',
+		'aqa-history-2020-june-paper-2-section-b-option-c-elizabethan-england-c1568-1603-qp',
+		'aqa-history-2020-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp'
+	]);
 	const sourceSpecificLine = [
 		sourceDocumentId === 'aqa-84611h-qp-nov20'
 			? 'For Biology Nov 2020, explicitly verify Q07.1 has 7 visible ruled answer lines and Q07.3 has 16 visible ruled answer lines.'
@@ -225,9 +236,11 @@ function buildPrompt() {
 		'aqa-history-2020-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp'
 			? 'For History 2020 Paper 1 Section B Option D Asia, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 73 total with 22 lines on page 3, 26 lines on page 4, and 25 lines on page 5; 03.0 = 48 total with 23 lines on page 6 and 25 lines on page 7; 04.0 = 101 total with 23 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
 			: null,
-		sourceDocumentId ===
-		'aqa-history-2020-june-paper-2-section-a-option-a-britain-health-and-the-people-c1000-to-the-present-day-qp'
-			? 'For History 2020 Paper 2 Section A Option A Health, known rendered-page line-count guardrails are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
+		history2020Paper2SectionAIds.has(sourceDocumentId)
+			? 'For History 2020 Paper 2 Section A options, known rendered-page line-count guardrails are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		history2020Paper2SectionBIds.has(sourceDocumentId)
+			? 'For History 2020 Paper 2 Section B options, known rendered-page line-count guardrails are: 01.1 = 48 total with 21 lines on page 2 and 27 lines on page 3; 02.1 = 50 total with 23 lines on page 4 and 27 lines on page 5; 03.1 = 49 total with 22 lines on page 6 and 27 lines on page 7; 04.1 = 98 total with 19 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
 			: null
 	]
 		.filter(Boolean)

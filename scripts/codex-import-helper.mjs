@@ -1993,6 +1993,18 @@ function duplicateLearnerVisibleBlockText(question) {
 }
 
 function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
+	const paper2SectionACounts = {
+		'01.1': 49,
+		'02.1': 52,
+		'03.1': 52,
+		'04.1': 101
+	};
+	const paper2SectionBCounts = {
+		'01.1': 48,
+		'02.1': 50,
+		'03.1': 49,
+		'04.1': 98
+	};
 	const countsBySource = {
 		'aqa-history-2020-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp':
 			{
@@ -2064,12 +2076,19 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'04.1': 101
 			},
 		'aqa-history-2020-june-paper-2-section-a-option-a-britain-health-and-the-people-c1000-to-the-present-day-qp':
-			{
-				'01.1': 49,
-				'02.1': 52,
-				'03.1': 52,
-				'04.1': 101
-			}
+			paper2SectionACounts,
+		'aqa-history-2020-june-paper-2-section-a-option-b-britain-power-and-the-people-c1170-to-the-present-day-qp':
+			paper2SectionACounts,
+		'aqa-history-2020-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp':
+			paper2SectionACounts,
+		'aqa-history-2020-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp':
+			paper2SectionBCounts,
+		'aqa-history-2020-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp':
+			paper2SectionBCounts,
+		'aqa-history-2020-june-paper-2-section-b-option-c-elizabethan-england-c1568-1603-qp':
+			paper2SectionBCounts,
+		'aqa-history-2020-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp':
+			paper2SectionBCounts
 	};
 	const counts = countsBySource[sourceDocumentId];
 	return counts ? new Map(Object.entries(withQuestionRefSuffixAliases(counts))) : null;

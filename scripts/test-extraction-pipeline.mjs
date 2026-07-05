@@ -2248,6 +2248,55 @@ if (!historyKnownLineCountFailure.includes('known_response_line_count_mismatch')
 	});
 }
 
+const historyPaper2SectionBLineCountMismatchPath = path.join(
+	helperNormalizeDir,
+	'history-paper-2-section-b-line-count-mismatch.json'
+);
+writeFileSync(
+	historyPaper2SectionBLineCountMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2020-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '04.1',
+					promptText: 'Write an account of Norman England.',
+					marks: 16,
+					pageStart: 8,
+					pageEnd: 11,
+					response: { kind: 'lines', lineCount: 91 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Develops a relevant account.', marks: 1 }],
+					markChecklist: [{ text: 'Develop a relevant account.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'A developed account uses relevant examples and explanation.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const historyPaper2SectionBLineCountFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${historyPaper2SectionBLineCountMismatchPath}`,
+		'--expected-marks=16',
+		'--expected-questions=1'
+	]
+);
+if (!historyPaper2SectionBLineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail(
+		'Codex helper validation did not reject the History Paper 2 Section B line-count guardrail.',
+		{
+			historyPaper2SectionBLineCountFailure
+		}
+	);
+}
+
 const missingKnownAllowancePath = path.join(helperNormalizeDir, 'missing-known-allowance.json');
 writeFileSync(
 	missingKnownAllowancePath,

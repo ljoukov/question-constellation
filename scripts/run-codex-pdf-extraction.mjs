@@ -510,6 +510,17 @@ function buildExtractionPrompt() {
 				'For response.lineCountEvidence, make the page-by-page counts arithmetic-consistent with response.lineCount/count. If a helper guardrail changes the total, rerender/reinspect the relevant pages and repair the evidence; do not leave page counts whose sum contradicts the stored total. Count the first full-width ruled line immediately below the printed question/mark allocation as learner-writable unless it is visibly only a section divider.'
 			].join('\n')
 		: '';
+	const history2020Paper2SectionAIds = new Set([
+		'aqa-history-2020-june-paper-2-section-a-option-a-britain-health-and-the-people-c1000-to-the-present-day-qp',
+		'aqa-history-2020-june-paper-2-section-a-option-b-britain-power-and-the-people-c1170-to-the-present-day-qp',
+		'aqa-history-2020-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp'
+	]);
+	const history2020Paper2SectionBIds = new Set([
+		'aqa-history-2020-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp',
+		'aqa-history-2020-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp',
+		'aqa-history-2020-june-paper-2-section-b-option-c-elizabethan-england-c1568-1603-qp',
+		'aqa-history-2020-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp'
+	]);
 	const historyPaperSpecificNote =
 		sourceDocumentId ===
 		'aqa-history-2020-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp'
@@ -544,13 +555,17 @@ function buildExtractionPrompt() {
 									'',
 									'Known fragile checks for History 2020 Paper 1 Section B Option D Asia: count the first ruled answer line immediately below the prompt/mark allocation, every ruled line on continuation pages, the ruled line beside/after "Extra space", and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence are: 01.0 = 22; 02.0 = 73 total with 22 lines on page 3, 26 lines on page 4, and 25 continuation/Extra space lines on page 5; 03.0 = 48 total with 23 lines on page 6 and 25 continuation/Extra space lines on page 7; 04.0 = 101 total with 23 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 26 continuation/Extra space lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
 								].join('\n')
-							: sourceDocumentId ===
-								  'aqa-history-2020-june-paper-2-section-a-option-a-britain-health-and-the-people-c1000-to-the-present-day-qp'
+							: history2020Paper2SectionAIds.has(sourceDocumentId)
 								? [
 										'',
-										'Known fragile checks for History 2020 Paper 2 Section A Option A Health: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+										'Known fragile checks for History 2020 Paper 2 Section A options: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence and matching answer-book layout are: 01.1 = 49 total with 22 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 101 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
 									].join('\n')
-								: '';
+								: history2020Paper2SectionBIds.has(sourceDocumentId)
+									? [
+											'',
+											'Known fragile checks for History 2020 Paper 2 Section B options: count every visible learner-writable ruled line in the response box, including the first full-width line below the prompt, lines beside/after "Extra space", continuation-page top lines, and the final inner ruled line above the page frame. Exclude only the outer page-frame border. Exact response-line expectations from rendered-page judge evidence and matching answer-book layout are: 01.1 = 48 total with 21 lines on page 2 and 27 lines on page 3; 02.1 = 50 total with 23 lines on page 4 and 27 lines on page 5; 03.1 = 49 total with 22 lines on page 6 and 27 lines on page 7; 04.1 = 98 total with 19 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. If extraction or lineCountEvidence differs, repair the fragment before validation.'
+										].join('\n')
+									: '';
 	const historyLineNote = [historyGeneralNote, historyPaperSpecificNote].filter(Boolean).join('\n');
 	const expectedQuestionLine =
 		expectedQuestions === null
