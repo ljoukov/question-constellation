@@ -475,6 +475,7 @@ pnpm run codex:production-import:batch -- \
   --work-root=tmp/codex-humanities-production-import \
   --summary=tmp/codex-humanities-production-import/summary.json \
   --d1-existing-chains \
+  --skip-imported \
   --existing-chain-max-examples=4 \
   --existing-chain-max-mark-items=4 \
   --model=gpt-5.5 \
@@ -491,6 +492,12 @@ import while still inventing new single-paper chains. For large same-subject bat
 run a wave with `--d1-existing-chains`, import only passed papers, rebuild D1 context, then run the
 next wave so later papers can reuse chains created by earlier waves. A future cohort-level chain
 consolidation pass may still be needed for high-quality cross-paper chain reuse.
+
+Use `--skip-imported` when resuming a batch against live D1. The batch runner checks existing
+`questions.source_document_id` values through the Cloudflare REST fallback and omits manifest rows
+that are already present, while still building D1 chain context from the current published data.
+When every selected row is already imported, the runner exits successfully with an empty `planned`
+list instead of treating the no-op as a failure.
 
 For writes, the D1 update is incremental per paper. The pipeline does not stream in-progress data
 into D1. A paper is written only after official-PDF source identity preflight, Codex PDF extraction,

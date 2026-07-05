@@ -3,6 +3,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { d1Rows } from './lib/d1-rest.mjs';
 import { readJson, writeJson } from './lib/llm-extraction-pipeline.mjs';
 
 const rootDir = process.cwd();
@@ -18,6 +19,7 @@ Options:
   --subject=all|computer-science|geography|history|biology|chemistry|physics|english
   --max-papers=<n>
   --exclude-paper=<source-document-id-or-component> (repeatable)
+  --skip-imported
   --concurrency=<n>
   --paper-attempts=<n>
   --work-root=tmp/codex-production-import-batch
@@ -65,6 +67,7 @@ const excludePaperArgs = stringArgs('exclude-paper').flatMap((value) =>
 );
 const subjectArg = canonicalSubject(stringArg('subject', 'all'));
 const maxPapers = optionalIntegerArg('max-papers');
+const skipImported = hasArg('skip-imported');
 const concurrency = integerArg('concurrency', 1, 1);
 const paperAttempts = integerArg('paper-attempts', 1, 1);
 const dryRun = hasArg('dry-run');
@@ -90,8 +93,21 @@ if (!all && !paperArg && subjectArg === 'all') {
 }
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const importedSourceDocumentIds = skipImported
+	? await loadImportedSourceDocumentIds(manifest.rows ?? [])
+	: new Set();
+const skippedImportedRows = [];
 const selected = selectRows(manifest.rows ?? []);
-if (selected.length === 0) throw new Error('No manifest rows matched the selection.');
+if (selected.length === 0) {
+	if (!skipImported || skippedImportedRows.length === 0) {
+		throw new Error('No manifest rows matched the selection.');
+	}
+	const output = emptySelectionSummary(dryRun ? 'dry-run' : 'passed');
+	mkdirSync(path.dirname(summaryPath), { recursive: true });
+	writeJson(summaryPath, output);
+	console.log(JSON.stringify(output, null, 2));
+	process.exit(0);
+}
 
 const d1ExistingChainsBySubject = useD1ExistingChains
 	? buildD1ExistingChainContexts(selected)
@@ -116,6 +132,9 @@ if (dryRun) {
 		manifest: relative(manifestPath),
 		dataRoot: relative(dataRoot),
 		workRoot: relative(workRoot),
+		skipImported,
+		skippedImported: skippedImportedRows.length,
+		d1ExistingChains: d1ExistingChainsSummary(),
 		missingFiles,
 		planned: planned.map((paper) => ({
 			sourceDocumentId: paper.sourceDocumentId,
@@ -162,9 +181,27 @@ function selectRows(rows) {
 			unitCode === paperArg.toUpperCase() ||
 			row.question_paper?.filename === paperArg ||
 			row.mark_scheme?.filename === paperArg;
-		return !excluded && subjectMatches && paperMatches;
+		if (excluded || !subjectMatches || !paperMatches) return false;
+		if (skipImported && importedSourceDocumentIds.has(sourceDocumentId)) {
+			skippedImportedRows.push(row);
+			return false;
+		}
+		return true;
 	});
 	return maxPapers ? filtered.slice(0, maxPapers) : filtered;
+}
+
+async function loadImportedSourceDocumentIds(rows) {
+	const ids = [...new Set(rows.map((row) => sourceDocumentIdFor(row)).filter(Boolean))];
+	if (ids.length === 0) return new Set();
+	const importedRows = await d1Rows(
+		`SELECT DISTINCT source_document_id AS id FROM questions WHERE source_document_id IN (${ids
+			.map(() => '?')
+			.join(',')})`,
+		ids,
+		{ rootDir }
+	);
+	return new Set(importedRows.map((row) => row.id));
 }
 
 function plannedPaper(row) {
@@ -446,13 +483,40 @@ function summary(status) {
 		workRoot: relative(workRoot),
 		runIdPrefix,
 		continueOnError,
-		d1ExistingChains: useD1ExistingChains
-			? [...d1ExistingChainsBySubject.entries()].map(([subject, filePath]) => ({
-					subject,
-					filePath: relative(filePath)
-				}))
-			: [],
+		skipImported,
+		skippedImported: skippedImportedRows.length,
+		d1ExistingChains: d1ExistingChainsSummary(),
 		results
+	};
+}
+
+function d1ExistingChainsSummary() {
+	return useD1ExistingChains
+		? [...d1ExistingChainsBySubject.entries()].map(([subject, filePath]) => ({
+				subject,
+				filePath: relative(filePath)
+			}))
+		: [];
+}
+
+function emptySelectionSummary(status) {
+	return {
+		status,
+		selected: 0,
+		passed: 0,
+		failed: 0,
+		concurrency,
+		paperAttempts,
+		manifest: relative(manifestPath),
+		dataRoot: relative(dataRoot),
+		workRoot: relative(workRoot),
+		runIdPrefix,
+		continueOnError,
+		skipImported,
+		skippedImported: skippedImportedRows.length,
+		d1ExistingChains: [],
+		planned: [],
+		results: []
 	};
 }
 
