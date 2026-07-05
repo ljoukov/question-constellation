@@ -530,7 +530,7 @@ Current AQA History/Geography/Computer Science D1 status, measured from remote D
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | ------------------------: |
 | Computer Science |               6 |                      6 |          228 |      520 |                         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |                         0 |
-| History          |              79 |                     14 |           66 |      592 |                        65 |
+| History          |              79 |                     17 |           78 |      712 |                        62 |
 
 Geography 2022 Paper 2 imported successfully through the Codex SDK production path in
 `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp`.
@@ -553,6 +553,9 @@ independent extraction judging, Codex solvability, D1 conflict checks, and deplo
 | History 2020 P2A B Power           | 560.914s; 50 commands; 0 failed; input 1,797,026; cached 1,600,512; output 18,420; reasoning 2,497 |    172.983s; 15 commands; 0 failed; input 569,240; cached 413,184; output 5,576; reasoning 1,126 | 253.248s; 29 commands; 0 failed; input 743,907; cached 677,376; output 12,397; reasoning 5,770 |      186.344s; 32 commands; 10 failed; input 332,199; cached 232,960; output 8,379; reasoning 1,580 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2a-b-power-after-import.json` passed 21/21 routes including 1 asset     |
 | History 2020 P2A C Migration       | 427.088s; 55 commands; 3 failed; input 1,565,851; cached 1,311,232; output 19,166; reasoning 2,896 |    202.893s; 19 commands; 1 failed; input 869,368; cached 666,112; output 7,261; reasoning 1,459 | 200.713s; 18 commands; 0 failed; input 388,446; cached 311,296; output 10,218; reasoning 4,639 |       136.816s; 20 commands; 2 failed; input 229,239; cached 152,064; output 6,101; reasoning 1,948 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2a-c-migration-after-import.json` passed 21/21 routes including 1 asset |
 | History 2020 P2B A Norman England  | 418.460s; 41 commands; 0 failed; input 1,683,352; cached 1,538,048; output 20,108; reasoning 2,728 |    214.556s; 39 commands; 0 failed; input 785,664; cached 643,072; output 8,936; reasoning 1,580 | 247.682s; 24 commands; 1 failed; input 584,828; cached 505,344; output 12,548; reasoning 4,507 |       104.924s; 15 commands; 1 failed; input 237,646; cached 179,200; output 4,572; reasoning 1,357 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2b-a-norman-after-import.json` passed 20/20 routes                      |
+| History 2020 P2B B Medieval        | 362.820s; 56 commands; 0 failed; input 1,368,946; cached 1,181,184; output 16,991; reasoning 3,084 |    163.963s; 22 commands; 0 failed; input 902,806; cached 701,952; output 6,438; reasoning 1,472 | 247.200s; 28 commands; 2 failed; input 896,924; cached 805,376; output 11,474; reasoning 4,452 |       121.355s; 14 commands; 1 failed; input 308,066; cached 258,048; output 5,108; reasoning 1,282 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2b-b-medieval-after-import.json` passed 20/20 routes                    |
+| History 2020 P2B C Elizabethan     | 480.343s; 68 commands; 0 failed; input 1,976,642; cached 1,777,664; output 22,496; reasoning 3,401 |    182.461s; 35 commands; 0 failed; input 577,886; cached 487,936; output 7,895; reasoning 1,956 |  219.614s; 20 commands; 0 failed; input 729,341; cached 607,232; output 9,989; reasoning 4,308 |       123.778s; 26 commands; 1 failed; input 243,127; cached 187,392; output 5,650; reasoning 1,299 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2b-c-elizabethan-after-import.json` passed 20/20 routes                 |
+| History 2020 P2B D Restoration     | 362.901s; 52 commands; 0 failed; input 1,408,949; cached 1,233,408; output 17,296; reasoning 2,150 |    120.281s; 23 commands; 0 failed; input 353,675; cached 278,016; output 5,154; reasoning 1,058 | 210.881s; 19 commands; 1 failed; input 613,623; cached 552,960; output 10,339; reasoning 3,954 |       122.377s; 19 commands; 4 failed; input 231,496; cached 185,856; output 5,205; reasoning 1,327 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2020-p2b-d-restoration-after-import.json` passed 20/20 routes                 |
 
 The History reruns exposed a repeatable answer-book line-count weakness. The extractor and
 independent judge now include source-specific rendered-page guardrails for First World War, Asia,
@@ -563,6 +566,18 @@ below the prompt, lines beside/after `Extra space`, continuation-page top lines,
 ruled line above the page frame. The v17 batch correctly failed before D1 on missing Paper 2
 guardrails; the v18 rerun from the same official PDFs passed after the extractor prompt,
 deterministic helper validation, and independent judge were updated.
+
+The v19 Paper 2 Section B resume exposed a strict-audit normalizer bug. Medieval and Elizabethan had
+already passed PDF extraction, extraction judge, and chain reconciliation, but import-ready audit
+failed because reused D1 chain definitions can omit `answerChain.reviewNotes` while the final D1
+schema requires an array. The shared import normalizer now compacts missing, scalar, and object-form
+chain review notes into arrays before strict audit and D1 writes. A regression in
+`scripts/test-extraction-pipeline.mjs` covers reused D1 chains without review notes. After the fix,
+Medieval and Elizabethan were rerun with cached official-PDF extraction artifacts and passed strict
+audit, Codex solvability, D1 conflict checks/write, and deployed route crawls. Route checks for
+Medieval, Elizabethan, and Restoration also confirmed public multi-paper chain visibility:
+`hist-chain-factor-weigh-judgement` is visible on 12 papers and the Section B `Convincing View`
+chain is visible on 4 papers, with zero route failures.
 
 For legacy `@ljoukov/llm` production runs, verify the old run artifact before treating it as
 import-ready:

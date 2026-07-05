@@ -4837,6 +4837,41 @@ for (const exportName of [
 	}
 }
 
+const reusedD1ChainQuestion = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '04.1',
+	response: { kind: 'lines', lineCount: 98 },
+	chainResolution: {
+		action: 'reuse_existing',
+		chainId: 'hist-chain-factor-weigh-judgement',
+		rationale: 'The existing judgment chain fits this question.'
+	},
+	answerChain: {
+		id: 'hist-chain-factor-weigh-judgement',
+		title: 'Factor Weigh Judgement',
+		canonicalChainText: 'Identify factors -> weigh importance -> reach judgement',
+		summary: 'Use evidence to judge relative importance.',
+		steps: [
+			{
+				stepText: 'Identify factors',
+				stepRole: 'evidence',
+				explanation: 'Select relevant causes or changes.',
+				commonOmission: 'Only naming one side of the argument.',
+				markSchemeItemIndexes: [0]
+			}
+		],
+		needsHumanReview: false
+	}
+});
+if (
+	!Array.isArray(reusedD1ChainQuestion.answerChain?.reviewNotes) ||
+	reusedD1ChainQuestion.answerChain.reviewNotes.length !== 0 ||
+	reusedD1ChainQuestion.chainResolution.existingChainId !== 'hist-chain-factor-weigh-judgement'
+) {
+	fail('Import normalization did not make a reused D1 answerChain strict-audit ready.', {
+		reusedD1ChainQuestion
+	});
+}
+
 const contextWindowChunks = pipelineModule.chunkImages(
 	[
 		'/tmp/question-paper-001.png',

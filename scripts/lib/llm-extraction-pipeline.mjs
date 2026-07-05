@@ -2659,7 +2659,8 @@ function compactChecklistText(item) {
 }
 
 function compactReviewNotes(notes) {
-	return (notes ?? [])
+	const values = Array.isArray(notes) ? notes : notes == null ? [] : [notes];
+	return values
 		.map((note) => {
 			if (typeof note === 'string') return note.trim();
 			const text = String(note?.text ?? note?.description ?? note?.note ?? '').trim();
@@ -4209,14 +4210,25 @@ function chunkWindowReviewNote(note) {
 export function normalizeExtractedQuestionForImport(question) {
 	const response = normalizeQuestionResponseForExtraction(question);
 	const chainResolution = normalizeQuestionChainResolution(question.chainResolution);
+	const answerChain = normalizeQuestionAnswerChainForImport(question.answerChain);
 	const normalizedQuestion =
-		response === question.response && chainResolution === question.chainResolution
+		response === question.response &&
+		chainResolution === question.chainResolution &&
+		answerChain === question.answerChain
 			? question
-			: { ...question, response, chainResolution };
+			: { ...question, response, chainResolution, answerChain };
 	const withoutDuplicateFixedModelAnswer = shouldDropFixedResponseModelAnswer(normalizedQuestion)
 		? { ...normalizedQuestion, modelAnswer: null }
 		: normalizedQuestion;
 	return normalizeQuestionRenderBlocks(withoutDuplicateFixedModelAnswer);
+}
+
+function normalizeQuestionAnswerChainForImport(value) {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+	return {
+		...value,
+		reviewNotes: compactReviewNotes(value.reviewNotes)
+	};
 }
 
 function normalizeQuestionChainResolution(value) {
