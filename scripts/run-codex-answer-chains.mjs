@@ -347,7 +347,7 @@ Every answerChain.steps[] entry must include a non-empty markSchemeItemIndexes a
 For each written, explanatory, calculation-method, or multi-mark question, produce at least one question-specific commonWeakAnswers entry unless the source genuinely provides no useful trap. Do not reuse identical chain-level text across every question. Each entry must include:
 - weakAnswerText: a plausible incomplete or mistaken student answer for this exact source question.
 - explanation: a concise student-facing reason that answer fails for this exact question; this powers the pre-answer hint UI, so do not leave it blank.
-- missingStepIndexes or missingChainStepIds: the omitted answer-chain link(s), when identifiable.
+- missingStepIndexes: an array of zero-based omitted answer-chain step indexes. Use [] when the omitted link is not identifiable; do not omit the property.
 - confidence: a number from 0 to 1.
 The explanation should point to the trap, not give a worked numeric answer. Keep final numeric values and fixed-response answers out of commonWeakAnswers.
 

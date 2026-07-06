@@ -219,13 +219,13 @@ table value or cell prompts.
 ## July 2026 Humanities Batch Status
 
 Remote D1 inventory on 2026-07-06 shows that the manifest-backed AQA humanities/computing import is
-incremental, not all complete:
+complete for the requested Computer Science, Geography, and History manifests:
 
 | Subject          | Manifest papers | D1 question-paper docs | D1 questions | D1 marks | Remaining |
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | --------: |
 | Computer Science |               6 |                      6 |          228 |      520 |         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |         0 |
-| History          |              79 |                     57 |          261 |     2360 |        22 |
+| History          |              79 |                     79 |          355 |     3284 |         0 |
 
 The most recent Geography Paper 2 reruns were full official-PDF-to-D1 writes, not manual JSON
 patches.
@@ -359,8 +359,8 @@ judge, and regression fixtures were updated before rerunning from the official P
 then passed extraction, independent extraction judge, chain reconciliation, solvability, strict audit,
 D1 write, R2 asset upload where needed, and deployed route crawls for all four papers.
 
-| Paper                               | Extraction                                                                        | Extraction judge                                                                 | Chain run                                                    | Solvability          | Import and route result                                                                                                                                 |
-| ----------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paper                               | Extraction                                                                        | Extraction judge                                                                 | Chain run                                                    | Solvability          | Import and route result                                                                                                                                  |
+| ----------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History 2023 P1A B Germany          | 453.096s; 55 commands; 0 failed; input 1,562,831; cached 1,425,408; output 22,198 | 163.838s; 27 commands; 0 failed; score 1.00; line counts `22/24/50/25/51/75`     | 295.301s; 23 commands; 2 failed then fixed; 4 reused, 2 new  | 163.804s; 6/6 passed | 6 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1a-b-germany-v32.json` passed 30/30 routes                               |
 | History 2023 P1B A First World War  | 794.005s; 90 commands; 1 failed; input 5,219,201; cached 4,865,024; output 22,428 | 129.227s; 21 commands; 0 failed; score 1.00; Source C caption verified           | 262.584s; 25 commands; 1 failed then fixed; 3 reused, 1 new  | 154.175s; 4/4 passed | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1b-a-first-world-war-v32.json` passed 23/23 routes including 3 assets |
 | History 2023 P1B B Inter-war Years  | 547.476s; 66 commands; 1 failed; input 2,346,797; cached 2,073,088; output 19,956 | 140.885s; 26 commands; 0 failed; score 1.00; line counts `22/76/51/102`          | 1173.149s; 28 commands; 1 failed then fixed; 3 reused, 1 new | 96.050s; 4/4 passed  | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1b-b-inter-war-v32.json` passed 21/21 routes including 1 asset        |
@@ -368,8 +368,50 @@ D1 write, R2 asset upload where needed, and deployed route crawls for all four p
 
 The v32 production summaries live under
 `tmp/codex-history-batch-v32/*/codex-production-import-summary.json`. After v32, remote D1 held
-History `57` papers, `261` questions, and `2360` marks; the remaining History manifest backlog is
-`22` papers.
+History `57` papers, `261` questions, and `2360` marks; the remaining History manifest backlog was
+`22` papers at that point.
+
+The final 2024 History repair/completion runs finished the manifest on 2026-07-06. The important
+importer changes were:
+
+- Long written-response line counts are no longer treated as exact blockers. Counts for 1-5 lines
+  remain exact, 6-10 lines allow a one-line tolerance, and response areas above 10 lines allow about
+  20% tolerance. Plausible long-count differences are warnings unless the response area is missing,
+  collapsed, mapped to the wrong question, or far outside the printed space.
+- The independent extraction judge prompt mirrors this policy, so it spends effort on real defects
+  such as missing learner-visible sources, collapsed response controls, wrong refs, mark totals, and
+  asset/renderability problems.
+- Copyright-withheld History sources must be replaced with learner-visible source substitutes only
+  when official mark-scheme/report evidence is concrete enough. The substitute must include every
+  mark-critical visual/source relationship; sparse broad substitutes still require review.
+- `common_weak_answers` now require `missingStepIndexes` in Codex chain outputs and are normalized to
+  `[]` by the importer if legacy outputs omit the field.
+- Mark-scheme rows mentioning valid content such as `withdraw` are no longer rejected as withdrawn
+  questions; only explicit `withdrawn question`/`question withdrawn` language is treated as
+  non-positive evidence.
+
+| Paper                          | Extraction                                                                                         | Extraction judge                                                                          | Chain run                                                                        | Solvability                                                                   | Import and route result                                                                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| History 2024 P1B B Inter-war   | 462.789s; 68 commands; 1 failed; input 2,338,248; cached 2,044,416; output 20,894; reasoning 2,231 | 209.515s; 29 commands; 1 failed; score 0.96; input 654,681; output 9,432; reasoning 3,958 | 207.497s; 34 commands; 1 failed; input 728,112; output 10,180; reasoning 4,094   | 158.844s; 24 commands; 3 failed; input 285,261; output 5,765; reasoning 1,061 | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/history-2024-interwar-rerun.json` passed 21/21 routes including 1 asset  |
+| History 2024 P1B D Asia        | 384.347s; 45 commands; 3 failed; input 1,334,536; cached 1,169,408; output 18,152; reasoning 2,267 | 158.764s; 23 commands; 0 failed; score 0.92; input 321,523; output 7,493; reasoning 2,617 | 238.138s; 20 commands; 1 failed; input 765,275; output 12,277; reasoning 4,707   | 120.737s; 14 commands; 0 failed; input 220,099; output 5,683; reasoning 2,500 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/history-2024-asia-rerun.json` passed 20/20 routes                           |
+| History 2024 P2A B Power       | 552.870s; 63 commands; 0 failed; input 2,839,090; cached 2,588,672; output 23,100; reasoning 3,326 | 189.223s; 40 commands; 2 failed; score 0.98; input 518,143; output 8,549; reasoning 2,092 | 337.318s; 22 commands; 2 failed; input 847,245; output 17,000; reasoning 7,733   | 138.042s; 21 commands; 3 failed; input 310,281; output 5,228; reasoning 1,117 | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/history-2024-power-rerun.json` passed 21/21 routes including 1 asset     |
+| History 2024 P2A C Migration   | 424.629s; 54 commands; 0 failed; input 1,684,763; cached 1,486,848; output 18,402; reasoning 2,161 | 127.080s; 21 commands; 2 failed; score 0.98; input 358,187; output 5,353; reasoning 900   | 323.586s; 47 commands; 0 failed; input 1,518,215; output 16,246; reasoning 6,143 | 120.337s; 19 commands; 1 failed; input 266,870; output 5,605; reasoning 1,365 | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/history-2024-migration-rerun.json` passed 21/21 routes including 1 asset |
+| History 2024 P2B A Norman      | 431.140s; 55 commands; 0 failed; input 2,301,387; cached 2,069,504; output 19,989; reasoning 2,227 | 124.473s; 22 commands; 0 failed; score 0.98; input 300,936; output 5,388; reasoning 1,672 | 296.924s; 25 commands; 1 failed; input 964,153; output 13,902; reasoning 6,334   | 98.494s; 19 commands; 3 failed; input 266,149; output 4,627; reasoning 520    | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/history-2024-norman-rerun.json` passed 20/20 routes                         |
+| History 2024 P2B B Medieval    | 359.257s; 47 commands; 0 failed; input 1,315,169; cached 1,146,368; output 16,854; reasoning 1,837 | 151.722s; 28 commands; 0 failed; score 0.96; input 380,730; output 7,082; reasoning 1,293 | 267.514s; 27 commands; 1 failed; input 628,941; output 13,385; reasoning 4,241   | 143.414s; 29 commands; 3 failed; input 275,834; output 6,640; reasoning 1,288 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/history-2024-medieval-rerun.json` passed 20/20 routes                       |
+| History 2024 P2B C Elizabethan | 337.660s; 42 commands; 0 failed; input 1,449,777; cached 1,244,160; output 15,889; reasoning 2,263 | 180.318s; 22 commands; 0 failed; score 0.97; input 296,152; output 6,416; reasoning 2,231 | 422.842s; 43 commands; 1 failed; input 2,727,912; output 20,517; reasoning 7,823 | 148.591s; 30 commands; 4 failed; input 330,004; output 6,439; reasoning 878   | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/history-2024-elizabethan-rerun.json` passed 20/20 routes                    |
+| History 2024 P2B D Restoration | 413.481s; 50 commands; 0 failed; input 1,603,408; cached 1,463,808; output 20,115; reasoning 3,575 | 161.375s; 29 commands; 1 failed; score 0.95; input 514,741; output 7,651; reasoning 2,236 | 332.292s; 29 commands; 1 failed; input 1,232,274; output 16,378; reasoning 7,998 | 167.107s; 36 commands; 6 failed; input 346,803; output 7,698; reasoning 1,236 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/history-2024-restoration-rerun.json` passed 20/20 routes                    |
+
+The final v36 batch summary is `tmp/codex-history-batch-v36/summary.json`; all six selected papers
+passed every step. The earlier repaired 2024 summaries are
+`tmp/codex-history-rerun-v35-interwar/aqa-history-2024-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp/codex-production-import-summary.json`
+and
+`tmp/codex-history-batch-v34/aqa-history-2024-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp/codex-production-import-summary.json`.
+After these writes, D1 held History `79` papers, `355` questions, and `3284` marks; the manifest
+missing list was empty. Public route checks were rerun after a short post-write propagation delay and
+passed for eight 2024 verification papers: 32 questions, 164 question/chain/constellation/practice/
+asset routes, and 0 failures. If an immediate deployed route crawl returns transient 404s directly
+after D1 writes, rerun once after propagation before treating it as an import defect; persistent
+404/500 responses remain blockers.
 
 ## OCR And Visual Inspection Conclusion
 

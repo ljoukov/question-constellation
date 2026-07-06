@@ -4211,16 +4211,35 @@ export function normalizeExtractedQuestionForImport(question) {
 	const response = normalizeQuestionResponseForExtraction(question);
 	const chainResolution = normalizeQuestionChainResolution(question.chainResolution);
 	const answerChain = normalizeQuestionAnswerChainForImport(question.answerChain);
+	const commonWeakAnswers = normalizeCommonWeakAnswers(question.commonWeakAnswers);
 	const normalizedQuestion =
 		response === question.response &&
 		chainResolution === question.chainResolution &&
-		answerChain === question.answerChain
+		answerChain === question.answerChain &&
+		commonWeakAnswers === question.commonWeakAnswers
 			? question
-			: { ...question, response, chainResolution, answerChain };
+			: { ...question, response, chainResolution, answerChain, commonWeakAnswers };
 	const withoutDuplicateFixedModelAnswer = shouldDropFixedResponseModelAnswer(normalizedQuestion)
 		? { ...normalizedQuestion, modelAnswer: null }
 		: normalizedQuestion;
 	return normalizeQuestionRenderBlocks(withoutDuplicateFixedModelAnswer);
+}
+
+function normalizeCommonWeakAnswers(value) {
+	if (!Array.isArray(value)) return value;
+	let changed = false;
+	const normalized = value.map((weakAnswer) => {
+		if (!weakAnswer || typeof weakAnswer !== 'object' || Array.isArray(weakAnswer)) {
+			return weakAnswer;
+		}
+		if (Array.isArray(weakAnswer.missingStepIndexes)) return weakAnswer;
+		changed = true;
+		return {
+			...weakAnswer,
+			missingStepIndexes: []
+		};
+	});
+	return changed ? normalized : value;
 }
 
 function normalizeQuestionAnswerChainForImport(value) {
@@ -5873,7 +5892,9 @@ export function positiveMarkSchemeItem(item) {
 	const source = `${itemType}\n${text}`;
 	const marks = Number(item?.marks);
 	if (
-		/\b(?:withdraw|withdrawn|statistics?|mean mark|max(?:imum)? mark|notice)\b/.test(source) ||
+		/\b(?:withdrawn|question withdrawn|withdrawn question|statistics?|mean mark|max(?:imum)? mark|notice)\b/.test(
+			source
+		) ||
 		/\b(?:rubric|guidance|ignore|reject|do not accept|do not credit)\b/.test(itemType)
 	) {
 		return false;

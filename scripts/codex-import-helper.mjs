@@ -1552,13 +1552,13 @@ function deterministicIssuesFor(candidate, options = {}) {
 		}
 		if (expectedLineCounts.has(ref)) {
 			const expected = expectedLineCounts.get(ref);
-			const mismatch = responseLineCountMismatch(response, expected);
+			const mismatch = responseLineCountIssue(response, expected);
 			if (mismatch) {
 				issues.push({
 					code: 'known_response_line_count_mismatch',
 					field: 'response.lineCount',
-					severity: 'error',
-					evidence: `${ref}: ${mismatch}`
+					severity: mismatch.severity,
+					evidence: `${ref}: ${mismatch.evidence}`
 				});
 			}
 		}
@@ -1812,6 +1812,14 @@ function deterministicIssuesFor(candidate, options = {}) {
 					issues.push({
 						code: 'common_weak_answer_missing_confidence',
 						field: `commonWeakAnswers[${weakIndex}].confidence`,
+						severity: 'error',
+						evidence: ref
+					});
+				}
+				if (hasWeakText && !Array.isArray(weakAnswer?.missingStepIndexes)) {
+					issues.push({
+						code: 'common_weak_answer_missing_step_indexes',
+						field: `commonWeakAnswers[${weakIndex}].missingStepIndexes`,
 						severity: 'error',
 						evidence: ref
 					});
@@ -2139,13 +2147,12 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'03.0': 52,
 				'04.0': 100
 			},
-		'aqa-history-2022-june-paper-2-section-b-option-c-elizabethan-england-c1568-1603-qp':
-			{
-				'01.1': 48,
-				'02.1': 52,
-				'03.1': 52,
-				'04.1': 102
-			},
+		'aqa-history-2022-june-paper-2-section-b-option-c-elizabethan-england-c1568-1603-qp': {
+			'01.1': 48,
+			'02.1': 52,
+			'03.1': 52,
+			'04.1': 102
+		},
 		'aqa-history-2022-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp': {
 			'01.1': 48,
 			'02.1': 52,
@@ -2208,13 +2215,12 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'03.1': 51,
 				'04.1': 102
 			},
-		'aqa-history-2022-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp':
-			{
-				'01.1': 22,
-				'02.1': 76,
-				'03.1': 51,
-				'04.1': 102
-			},
+		'aqa-history-2022-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp': {
+			'01.1': 22,
+			'02.1': 76,
+			'03.1': 51,
+			'04.1': 102
+		},
 		'aqa-history-2022-june-paper-1-section-b-option-e-conflict-and-tension-in-the-gulf-and-afghanistan-1990-2009-qp':
 			{
 				'01.0': 22,
@@ -2252,13 +2258,12 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'03.0': 51,
 				'04.0': 103
 			},
-		'aqa-history-2023-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp':
-			{
-				'01.0': 21,
-				'02.0': 75,
-				'03.0': 49,
-				'04.0': 101
-			},
+		'aqa-history-2023-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp': {
+			'01.0': 21,
+			'02.0': 75,
+			'03.0': 49,
+			'04.0': 101
+		},
 		'aqa-history-2023-june-paper-1-section-b-option-e-conflict-and-tension-in-the-gulf-and-afghanistan-1990-2009-qp':
 			{
 				'01.0': 22,
@@ -2696,57 +2701,89 @@ function responseVisibleLineCount(response) {
 	return null;
 }
 
-function responseLineCountMismatch(response, expected) {
+function responseLineCountIssue(response, expected) {
 	if (expected && typeof expected === 'object' && !Array.isArray(expected)) {
 		if (expected.fields && typeof expected.fields === 'object') {
 			const actuals = responseNamedFieldLineCounts(response);
-			const missing = [];
-			const mismatched = [];
+			const mismatches = [];
 			for (const [label, rawCount] of Object.entries(expected.fields)) {
 				const expectedCount = Number(rawCount);
 				const actualCount = actuals.get(normalizedFieldLabel(label));
 				if (!Number.isFinite(expectedCount)) continue;
 				if (actualCount === undefined) {
-					missing.push(`${label}=${expectedCount}`);
+					mismatches.push({
+						severity: 'error',
+						evidence: `${label} missing expected ${expectedCount}`
+					});
 				} else if (actualCount !== expectedCount) {
-					mismatched.push(`${label}: expected ${expectedCount}, found ${actualCount}`);
+					const issue = lineCountDifferenceIssue(actualCount, expectedCount);
+					if (issue) mismatches.push({ ...issue, evidence: `${label} ${issue.evidence}` });
 				}
 			}
-			if (missing.length || mismatched.length) {
+			if (mismatches.length) {
 				const actualDescription = actuals.size
 					? [...actuals.entries()].map(([label, count]) => `${label}=${count}`).join(', ')
 					: 'none';
-				return [
-					missing.length ? `missing fields ${missing.join(', ')}` : '',
-					mismatched.join('; '),
-					`actual fields: ${actualDescription}`
-				]
-					.filter(Boolean)
-					.join('; ');
+				return {
+					severity: mismatches.some((issue) => issue.severity === 'error') ? 'error' : 'warning',
+					evidence: `${mismatches.map((issue) => issue.evidence).join('; ')}; actual fields: ${actualDescription}`
+				};
 			}
 			return null;
 		}
 		if (Number.isFinite(Number(expected.perField))) {
 			const expectedPerField = Number(expected.perField);
 			const actuals = responseFieldLineCounts(response);
-			if (actuals.length === 0)
-				return `expected ${expectedPerField} per labeled field, found missing`;
-			const bad = actuals.filter((actual) => actual !== expectedPerField);
-			if (bad.length) {
-				return `expected ${expectedPerField} per labeled field, found ${actuals.join(', ')}`;
+			if (actuals.length === 0) {
+				return {
+					severity: 'error',
+					evidence: `expected ${expectedPerField} per labeled field, found missing`
+				};
+			}
+			const mismatches = actuals.flatMap((actual) => {
+				const issue = lineCountDifferenceIssue(actual, expectedPerField);
+				return issue ? [issue] : [];
+			});
+			if (mismatches.length) {
+				return {
+					severity: mismatches.some((issue) => issue.severity === 'error') ? 'error' : 'warning',
+					evidence: `expected ${expectedPerField} per labeled field, found ${actuals.join(', ')}`
+				};
 			}
 			return null;
 		}
 		if (Number.isFinite(Number(expected.total))) {
 			const actual = responseVisibleLineCount(response);
 			const expectedTotal = Number(expected.total);
-			return actual === expectedTotal
-				? null
-				: `expected ${expectedTotal} total visible lines, found ${actual ?? 'missing'}`;
+			return lineCountDifferenceIssue(actual, expectedTotal);
 		}
 	}
 	const actual = responseVisibleLineCount(response);
-	return actual === expected ? null : `expected ${expected}, found ${actual ?? 'missing'}`;
+	return lineCountDifferenceIssue(actual, Number(expected));
+}
+
+function lineCountDifferenceIssue(actual, expected) {
+	if (actual === null || actual === undefined || !Number.isFinite(Number(actual))) {
+		return { severity: 'error', evidence: `expected ${expected}, found missing` };
+	}
+	if (!Number.isFinite(Number(expected))) return null;
+	const actualNumber = Number(actual);
+	const expectedNumber = Number(expected);
+	if (actualNumber === expectedNumber) return null;
+	const tolerance = responseLineCountTolerance(expectedNumber);
+	const difference = Math.abs(actualNumber - expectedNumber);
+	if (difference <= tolerance) return null;
+	const evidence = `expected ${expectedNumber}, found ${actualNumber}, tolerance ${tolerance}`;
+	if (expectedNumber > 10 && actualNumber >= Math.max(10, Math.floor(expectedNumber * 0.5))) {
+		return { severity: 'warning', evidence };
+	}
+	return { severity: 'error', evidence };
+}
+
+function responseLineCountTolerance(expected) {
+	if (expected <= 5) return 0;
+	if (expected <= 10) return 1;
+	return Math.ceil(expected * 0.2);
 }
 
 function responseDiagramSurfaceIssues(question) {
@@ -3443,9 +3480,7 @@ function knownHistory2022NormanIssues(question, learnerVisibleBlockText = '') {
 			name: 'Witan/dead-king succession claim',
 			ok:
 				/\bwitan\b/.test(text) &&
-				(/dead\s+king|king'?s\s+wishes|choos(?:e|ing)\s+the\s+next\s+king|next\s+king/.test(
-					text
-				) ||
+				(/dead\s+king|king'?s\s+wishes|choos(?:e|ing)\s+the\s+next\s+king|next\s+king/.test(text) ||
 					/heir/.test(text))
 		},
 		{
@@ -3458,9 +3493,8 @@ function knownHistory2022NormanIssues(question, learnerVisibleBlockText = '') {
 		{
 			name: 'dangerous invasion logistics',
 			ok:
-				/(dangerous\s+invasion|invasion\s+was\s+dangerous|invad(?:e|ing)\s+england)/.test(
-					text
-				) && /(fleet|ships?|troops?|army|normandy|papal|pope|allies)/.test(text)
+				/(dangerous\s+invasion|invasion\s+was\s+dangerous|invad(?:e|ing)\s+england)/.test(text) &&
+				/(fleet|ships?|troops?|army|normandy|papal|pope|allies)/.test(text)
 		},
 		{
 			name: 'rival claimant evidence',

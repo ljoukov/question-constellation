@@ -209,6 +209,15 @@ For each question or subquestion, extract:
   answer layouts. Store these as explicit objects with provenance, not as inferred text snippets.
 - Any visible constraints, such as `use Figure 2`, `give your answer to 2 significant figures`, or `do not refer to...`.
 
+Answer-line counts are a renderability aid, not the learning objective. Keep short response spaces
+strict: 1-5 visible lines should match exactly, and 6-10 visible lines should normally be within one
+line. For long written-response areas above 10 lines, allow a wider tolerance of about 20% and treat
+plausible over/under counts as warnings, not import blockers, when the extracted response surface is
+clearly substantial and not collapsed. Fail long-response line counts only when the answer area is
+missing, unusably small, mapped to the wrong question, or implausibly far from the printed response
+space. Do not spend Codex time counting every ruled line on multi-page History/essay responses when
+the learner can resize or type a long answer in the app.
+
 Do not merge marked subparts into one practice question unless the mark scheme treats them as one answer. For example, `01.1`, `01.2`, and `01.3` should normally become separate question rows under the same parent.
 
 ### From Mark Schemes
@@ -298,6 +307,11 @@ format differs. First compare the ordered mark-scoring links with existing chain
 chains such as graph plotting, percentage change, clinical trials, food tests, cell cycle, diffusion
 or active transport, controlled variables, and practical validity should normally reuse or update an
 existing chain when the same links earn the marks.
+
+Every `common_weak_answers` entry should include `missingStepIndexes` in extracted JSON, even when
+the best value is `[]`. The D1 importer normalizes missing values to `[]`, but production Codex chain
+runs should emit the array explicitly so validation can distinguish "no identifiable missing step"
+from an accidentally incomplete weak-answer object.
 
 ### Numeric Specificity Guardrail
 

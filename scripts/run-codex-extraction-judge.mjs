@@ -351,7 +351,7 @@ function buildPrompt() {
 	const historyJudgeLine = sourceDocumentId?.startsWith('aqa-history-')
 		? [
 				'',
-				'History answer-book line counts: count every visible ruled learner-writing line inside the response box, including the first full-width ruled line immediately below the prompt/mark allocation, the ruled line beside/after an "Extra space" label, and the final inner ruled line above the page-frame/footer. Exclude only outer page-frame borders, mark-box borders, and non-writable printed separators. For long responses, inspect every continuation page and report page-by-page counts before summing. If helper guardrails name an expected count for this source, use rendered-page evidence and this convention before declaring that count wrong.'
+				'History answer-book line counts: exact counts matter for short learner controls, not for long essay boxes. For expected counts <=5, require exact counts. For 6-10 lines, allow a one-line tolerance. For long written responses over 10 lines, allow about 20% tolerance and treat larger but still plausible differences as warnings, not required repairs. Fail long-response line counts only when the response surface is missing, collapsed to an obviously tiny control, or otherwise not a usable long written response. Do not spend time trying to reconcile every continuation-page ruled line when the candidate already provides a substantial resizable long-answer area.'
 			].join('\n')
 		: '';
 	return `You are an independent GCSE extraction and learner-rendering judge. You did not create candidate.json.
@@ -372,7 +372,7 @@ Task:
 3. Judge extraction quality only: learner-facing wording/context, page references, response controls, answer-line counts, required figures/tables/assets, formula/equation rendering, positive mark-scheme alignment, answer keys/model answers, and whether each question is answerable from the assembled app-visible context.
 4. Do not judge answer-chain style or chain quality. Chain reconciliation is a separate workflow.
 5. Use PDF text layer for exact text, rendered pages/contact sheets for layout, embedded image extraction for figures/tables, and visual inspection for equations/formulae/line counts. OCR is fallback only.
-6. Fail real defects, including missing renderable assets for mentioned figures, missing table data, duplicated learner-visible setup text, wrong response-line counts, wrong fixed-response answer keys, missing model answers for written questions, or mark-scheme rows that do not support grading.
+6. Fail real defects, including missing renderable assets for mentioned figures, missing table data, duplicated learner-visible setup text, wrong short-response line counts, wrong fixed-response answer keys, missing model answers for written questions, or mark-scheme rows that do not support grading. For long written responses, use the tolerance policy below instead of failing small exact line-count differences.
 7. For fixed-response or multiple-choice questions, judge learner-visible option text against the question paper, not against shortened mark-scheme wording. The mark scheme determines which option is correct; the question paper determines exactly what text the learner sees. Do not fail merely because a correct option's paper wording contains extra words that the mark scheme omits, as long as the selected option and grading evidence are aligned.
 8. The current extraction schema uses candidate.questions[].pageStart and pageEnd for source page references, plus markSchemeItems, markChecklist, response.correctAnswers, and modelAnswer for grading support. Legacy question.pageRefs may be absent/null; do not fail for missing pageRefs when pageStart/pageEnd are present and correct. For written questions, a modelAnswer object with answerText is a valid model answer. Legacy fields named answer or markScheme may be absent/null; do not fail because those legacy fields are null when markSchemeItems/markChecklist/modelAnswer or response.correctAnswers contain the required support.
 9. The assembled learner-visible context is candidate.contextText, candidate.stemBlocks, candidate.leadBlocks, candidate.promptBlocks, candidate.afterResponseBlocks, candidate.response, and candidate.assets together. Inspect labelled structured-table/table/key/equation blocks before declaring a referenced Figure/Table missing. A complete structured block is a renderable source surface; do not require a PNG asset for simple source tables, keys, code, SQL skeletons, food webs, or other source material that is faithfully represented structurally.
@@ -380,6 +380,10 @@ Task:
 11. If candidate.extractionRun.droppedUnpublishableSourceQuestionRefs records an audited hold-out, do not require a neutral substitute when official evidence would reveal the answer key rather than provide learner source evidence.
 ${allowedDroppedLine}
 ${sourceSpecificLine}
+Response-line tolerance policy:
+- Exact counts matter for short controls: expected <=5 must be exact; expected 6-10 may differ by one line.
+- For long written-response boxes over 10 lines, accept differences up to 20%. If a long-response count differs by more than 20% but the learner still gets a substantial resizable essay answer area, record a warning/finding rather than a required repair.
+- Fail long-response line counts only when the response control is missing, collapsed to an obviously too-small control, or no longer represents the printed long-answer space.
 ${historyJudgeLine}
 
 Useful commands:

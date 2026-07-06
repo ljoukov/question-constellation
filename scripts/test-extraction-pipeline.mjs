@@ -43,7 +43,7 @@ function runNodeScriptExpectFailure(scriptPath, args = []) {
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe']
 		});
-		fail(`Expected ${scriptPath} to fail.`);
+		fail(`Expected ${scriptPath} to fail.`, { scriptPath, args });
 	} catch (error) {
 		return String(error.stdout ?? '') + String(error.stderr ?? '');
 	}
@@ -2215,7 +2215,8 @@ writeFileSync(
 		{
 			sourceDocument: {
 				id: 'aqa-history-2020-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp',
-				docType: 'question_paper'
+				docType: 'question_paper',
+				pageCount: 16
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 			questions: [
@@ -2236,15 +2237,17 @@ writeFileSync(
 		2
 	)
 );
-const historyKnownLineCountFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
-	'validate-extraction',
-	`--input=${historyKnownLineCountMismatchPath}`,
-	'--expected-marks=8',
-	'--expected-questions=1'
-]);
-if (!historyKnownLineCountFailure.includes('known_response_line_count_mismatch')) {
-	fail('Codex helper validation did not reject the known History 2020 line-count guardrail.', {
-		historyKnownLineCountFailure
+const historyKnownLineCountSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
+		'validate-extraction',
+		`--input=${historyKnownLineCountMismatchPath}`,
+		'--expected-marks=8',
+		'--expected-questions=1'
+	])
+);
+if (historyKnownLineCountSummary.status !== 'passed') {
+	fail('Codex helper validation did not tolerate a long History line-count approximation.', {
+		historyKnownLineCountSummary
 	});
 }
 
@@ -2258,7 +2261,8 @@ writeFileSync(
 		{
 			sourceDocument: {
 				id: 'aqa-history-2020-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp',
-				docType: 'question_paper'
+				docType: 'question_paper',
+				pageCount: 16
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 			questions: [
@@ -2279,20 +2283,19 @@ writeFileSync(
 		2
 	)
 );
-const historyPaper2SectionBLineCountFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const historyPaper2SectionBLineCountSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${historyPaper2SectionBLineCountMismatchPath}`,
 		'--expected-marks=16',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!historyPaper2SectionBLineCountFailure.includes('known_response_line_count_mismatch')) {
+if (historyPaper2SectionBLineCountSummary.status !== 'passed') {
 	fail(
-		'Codex helper validation did not reject the History Paper 2 Section B line-count guardrail.',
+		'Codex helper validation did not tolerate a long History Paper 2 response-line approximation.',
 		{
-			historyPaper2SectionBLineCountFailure
+			historyPaper2SectionBLineCountSummary
 		}
 	);
 }
@@ -2307,7 +2310,8 @@ writeFileSync(
 		{
 			sourceDocument: {
 				id: 'aqa-history-2021-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp',
-				docType: 'question_paper'
+				docType: 'question_paper',
+				pageCount: 16
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 			questions: [
@@ -2332,20 +2336,19 @@ writeFileSync(
 		2
 	)
 );
-const history2021SectionALineCountFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const history2021SectionALineCountSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${history2021SectionALineCountMismatchPath}`,
 		'--expected-marks=12',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!history2021SectionALineCountFailure.includes('known_response_line_count_mismatch')) {
+if (history2021SectionALineCountSummary.status !== 'passed') {
 	fail(
-		'Codex helper validation did not reject the History 2021 Paper 1 Section A line-count guardrail.',
+		'Codex helper validation did not tolerate a long History 2021 Paper 1 Section A line-count approximation.',
 		{
-			history2021SectionALineCountFailure
+			history2021SectionALineCountSummary
 		}
 	);
 }
@@ -2360,7 +2363,8 @@ writeFileSync(
 		{
 			sourceDocument: {
 				id: 'aqa-history-2023-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp',
-				docType: 'question_paper'
+				docType: 'question_paper',
+				pageCount: 16
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 			questions: [
@@ -2385,20 +2389,19 @@ writeFileSync(
 		2
 	)
 );
-const history2023GermanyLineCountFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const history2023GermanyLineCountSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${history2023GermanyLineCountMismatchPath}`,
 		'--expected-marks=12',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!history2023GermanyLineCountFailure.includes('known_response_line_count_mismatch')) {
+if (history2023GermanyLineCountSummary.status !== 'passed') {
 	fail(
-		'Codex helper validation did not reject the History 2023 Germany line-count guardrail.',
+		'Codex helper validation did not tolerate a long History 2023 Germany line-count approximation.',
 		{
-			history2023GermanyLineCountFailure
+			history2023GermanyLineCountSummary
 		}
 	);
 }
@@ -2486,7 +2489,8 @@ writeFileSync(
 		{
 			sourceDocument: {
 				id: 'aqa-history-2023-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp',
-				docType: 'question_paper'
+				docType: 'question_paper',
+				pageCount: 16
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 			questions: [
@@ -2497,7 +2501,9 @@ writeFileSync(
 					pageStart: 8,
 					pageEnd: 11,
 					response: { kind: 'lines', lineCount: 101 },
-					markSchemeItems: [{ itemType: 'mark', text: 'Develops a supported judgement.', marks: 1 }],
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Develops a supported judgement.', marks: 1 }
+					],
 					markChecklist: [{ text: 'Develop a supported judgement.', markSchemeItemIndexes: [0] }],
 					modelAnswer: { answerText: 'A supported judgement weighs more than one factor.' }
 				}
@@ -2507,19 +2513,21 @@ writeFileSync(
 		2
 	)
 );
-const history2023InterWarLineCountFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const history2023InterWarLineCountSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${history2023InterWarLineCountPath}`,
 		'--expected-marks=20',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!history2023InterWarLineCountFailure.includes('known_response_line_count_mismatch')) {
-	fail('Codex helper validation did not reject the History 2023 Inter-war line-count guardrail.', {
-		history2023InterWarLineCountFailure
-	});
+if (history2023InterWarLineCountSummary.status !== 'passed') {
+	fail(
+		'Codex helper validation did not tolerate a long History 2023 Inter-war line-count approximation.',
+		{
+			history2023InterWarLineCountSummary
+		}
+	);
 }
 
 const history2021FirstWorldWarLineCountMismatchPath = path.join(
@@ -2532,7 +2540,8 @@ writeFileSync(
 		{
 			sourceDocument: {
 				id: 'aqa-history-2021-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp',
-				docType: 'question_paper'
+				docType: 'question_paper',
+				pageCount: 16
 			},
 			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 			questions: [
@@ -2553,20 +2562,26 @@ writeFileSync(
 		2
 	)
 );
-const history2021FirstWorldWarLineCountFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const history2021FirstWorldWarLineCountSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${history2021FirstWorldWarLineCountMismatchPath}`,
 		'--expected-marks=16',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!history2021FirstWorldWarLineCountFailure.includes('known_response_line_count_mismatch')) {
+const history2021FirstWorldWarLineCountWarning =
+	history2021FirstWorldWarLineCountSummary.deterministicIssues
+		?.flatMap((finding) => finding.issues ?? [])
+		.find((issue) => issue.code === 'known_response_line_count_mismatch');
+if (
+	history2021FirstWorldWarLineCountSummary.status !== 'passed' ||
+	history2021FirstWorldWarLineCountWarning?.severity !== 'warning'
+) {
 	fail(
-		'Codex helper validation did not reject the History 2021 First World War line-count guardrail.',
+		'Codex helper validation did not downgrade a large long History line-count mismatch to a warning.',
 		{
-			history2021FirstWorldWarLineCountFailure
+			history2021FirstWorldWarLineCountSummary
 		}
 	);
 }
@@ -2658,7 +2673,7 @@ for (const { id, ref, badLineCount, marks, label } of [
 		mismatchPath,
 		JSON.stringify(
 			{
-				sourceDocument: { id, docType: 'question_paper' },
+				sourceDocument: { id, docType: 'question_paper', pageCount: 16 },
 				markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
 				questions: [
 					{
@@ -2680,15 +2695,17 @@ for (const { id, ref, badLineCount, marks, label } of [
 			2
 		)
 	);
-	const failureOutput = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
-		'validate-extraction',
-		`--input=${mismatchPath}`,
-		`--expected-marks=${marks}`,
-		'--expected-questions=1'
-	]);
-	if (!failureOutput.includes('known_response_line_count_mismatch')) {
-		fail(`Codex helper validation did not reject the ${label} line-count guardrail.`, {
-			failureOutput
+	const lineCountSummary = JSON.parse(
+		runNodeScript('scripts/codex-import-helper.mjs', [
+			'validate-extraction',
+			`--input=${mismatchPath}`,
+			`--expected-marks=${marks}`,
+			'--expected-questions=1'
+		])
+	);
+	if (lineCountSummary.status !== 'passed') {
+		fail(`Codex helper validation did not tolerate the ${label} long line-count approximation.`, {
+			lineCountSummary
 		});
 	}
 }
@@ -3440,7 +3457,9 @@ writeFileSync(
 					response: { kind: 'lines', lineCount: 48 },
 					markSchemeItems: [{ itemType: 'level', text: 'Level descriptors.', marks: 8 }],
 					markChecklist: [{ text: 'Evaluates the interpretation.', markSchemeItemIndexes: [0] }],
-					modelAnswer: { answerText: 'Interpretation A can be evaluated with contextual knowledge.' }
+					modelAnswer: {
+						answerText: 'Interpretation A can be evaluated with contextual knowledge.'
+					}
 				}
 			]
 		},
@@ -3458,9 +3477,12 @@ const history2022NormanSparseFailure = runNodeScriptExpectFailure(
 	]
 );
 if (!history2022NormanSparseFailure.includes('known_history_withheld_interpretation_too_sparse')) {
-	fail('Codex helper validation did not reject sparse History Norman Interpretation A substitute.', {
-		history2022NormanSparseFailure
-	});
+	fail(
+		'Codex helper validation did not reject sparse History Norman Interpretation A substitute.',
+		{
+			history2022NormanSparseFailure
+		}
+	);
 }
 
 const history2022MedievalHeldOutSourcePath = path.join(
@@ -3556,19 +3578,21 @@ writeFileSync(
 		2
 	)
 );
-const geography2020Paper1LineCountsFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const geography2020Paper1LineCountsSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${geography2020Paper1LineCountsPath}`,
 		'--expected-marks=9',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!geography2020Paper1LineCountsFailure.includes('known_response_line_count_mismatch')) {
-	fail('Codex helper validation did not reject Geography 2020 Paper 1 line-count defects.', {
-		geography2020Paper1LineCountsFailure
-	});
+if (geography2020Paper1LineCountsSummary.status !== 'passed') {
+	fail(
+		'Codex helper validation did not tolerate Geography 2020 Paper 1 long line-count approximation.',
+		{
+			geography2020Paper1LineCountsSummary
+		}
+	);
 }
 
 const geography2021Paper1LineCountsPath = path.join(
@@ -3603,19 +3627,21 @@ writeFileSync(
 		2
 	)
 );
-const geography2021Paper1LineCountsFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const geography2021Paper1LineCountsSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${geography2021Paper1LineCountsPath}`,
 		'--expected-marks=6',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!geography2021Paper1LineCountsFailure.includes('known_response_line_count_mismatch')) {
-	fail('Codex helper validation did not reject Geography 2021 Paper 1 line-count defects.', {
-		geography2021Paper1LineCountsFailure
-	});
+if (geography2021Paper1LineCountsSummary.status !== 'passed') {
+	fail(
+		'Codex helper validation did not tolerate Geography 2021 Paper 1 long line-count approximation.',
+		{
+			geography2021Paper1LineCountsSummary
+		}
+	);
 }
 
 const geography2021Paper3LineCountsPath = path.join(
@@ -3650,19 +3676,21 @@ writeFileSync(
 		2
 	)
 );
-const geography2021Paper3LineCountsFailure = runNodeScriptExpectFailure(
-	'scripts/codex-import-helper.mjs',
-	[
+const geography2021Paper3LineCountsSummary = JSON.parse(
+	runNodeScript('scripts/codex-import-helper.mjs', [
 		'validate-extraction',
 		`--input=${geography2021Paper3LineCountsPath}`,
 		'--expected-marks=9',
 		'--expected-questions=1'
-	]
+	])
 );
-if (!geography2021Paper3LineCountsFailure.includes('known_response_line_count_mismatch')) {
-	fail('Codex helper validation did not reject Geography 2021 Paper 3 line-count defects.', {
-		geography2021Paper3LineCountsFailure
-	});
+if (geography2021Paper3LineCountsSummary.status !== 'passed') {
+	fail(
+		'Codex helper validation did not tolerate Geography 2021 Paper 3 long line-count approximation.',
+		{
+			geography2021Paper3LineCountsSummary
+		}
+	);
 }
 
 const geography2020Paper2RangeCategoryPath = path.join(
@@ -3851,10 +3879,7 @@ const geography2020Paper3KnownIssuesFailure = runNodeScriptExpectFailure(
 		'--expected-questions=1'
 	]
 );
-if (
-	!geography2020Paper3KnownIssuesFailure.includes('known_response_line_count_mismatch') ||
-	!geography2020Paper3KnownIssuesFailure.includes('learner_visible_source_provenance')
-) {
+if (!geography2020Paper3KnownIssuesFailure.includes('learner_visible_source_provenance')) {
 	fail('Codex helper validation did not reject Geography 2020 Paper 3 known defects.', {
 		geography2020Paper3KnownIssuesFailure
 	});
@@ -3964,7 +3989,6 @@ const geography2023Paper1KnownIssuesFailure = runNodeScriptExpectFailure(
 );
 if (
 	!geography2023Paper1KnownIssuesFailure.includes('known_figure_crop_incomplete') ||
-	!geography2023Paper1KnownIssuesFailure.includes('known_response_line_count_mismatch') ||
 	!geography2023Paper1KnownIssuesFailure.includes('learner_visible_source_provenance') ||
 	!geography2023Paper1KnownIssuesFailure.includes('known_source_label_mismatch') ||
 	!geography2023Paper1KnownIssuesFailure.includes('context_text_duplicates_render_block')
@@ -4726,7 +4750,6 @@ const computerScience2021Paper1ResponseFailure = runNodeScriptExpectFailure(
 for (const expectedFailure of [
 	'known_algorithm_context_missing',
 	'known_trace_table_response_rows_mismatch',
-	'known_response_line_count_mismatch',
 	'known_figure_crop_incomplete',
 	'known_drawing_grid_mismatch'
 ]) {
@@ -7262,6 +7285,34 @@ if (
 	})
 ) {
 	fail('Marked alternative mark-scheme rows should count as positive evidence.');
+}
+if (
+	!pipelineModule.positiveMarkSchemeItem({
+		itemType: 'indicative',
+		marks: 1,
+		text: 'Credit contextual knowledge that Vietnamisation aimed to build up the South Vietnamese army so the USA could withdraw.'
+	})
+) {
+	fail(
+		'Valid positive History evidence mentioning withdrawal should not be treated as a withdrawn-question row.'
+	);
+}
+const weakAnswerNormalizedQuestion = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '02.1',
+	response: { kind: 'lines', lineCount: 18 },
+	commonWeakAnswers: [
+		{
+			weakAnswerText: 'Copies a source without judging usefulness.',
+			explanation: 'The answer needs an explicit utility judgement.',
+			confidence: 0.82
+		}
+	]
+});
+if (
+	!Array.isArray(weakAnswerNormalizedQuestion.commonWeakAnswers?.[0]?.missingStepIndexes) ||
+	weakAnswerNormalizedQuestion.commonWeakAnswers[0].missingStepIndexes.length !== 0
+) {
+	fail('Import normalization should add empty missingStepIndexes for common weak answers.');
 }
 if (
 	pipelineModule.positiveMarkSchemeItem({
