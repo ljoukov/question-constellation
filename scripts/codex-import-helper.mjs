@@ -2103,6 +2103,13 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 			'03.0': 51,
 			'04.0': 103
 		},
+		'aqa-history-2021-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp':
+			{
+				'01.1': 47,
+				'02.1': 48,
+				'03.1': 47,
+				'04.1': 97
+			},
 		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
 			{
 				'01.0': 22,

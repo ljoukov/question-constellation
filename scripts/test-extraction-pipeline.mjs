@@ -2420,6 +2420,13 @@ for (const { id, ref, badLineCount, marks, label } of [
 		badLineCount: 93,
 		marks: 20,
 		label: 'History 2021 Asia'
+	},
+	{
+		id: 'aqa-history-2021-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp',
+		ref: '04.1',
+		badLineCount: 91,
+		marks: 16,
+		label: 'History 2021 Migration'
 	}
 ]) {
 	const mismatchPath = path.join(

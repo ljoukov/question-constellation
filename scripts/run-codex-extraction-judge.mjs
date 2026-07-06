@@ -273,6 +273,10 @@ function buildPrompt() {
 		sourceDocumentId ===
 		'aqa-history-2021-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp'
 			? 'For History 2021 Paper 1 Section B Option D Asia, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 77 total with 23 lines on page 3, 26 lines on page 4, and 28 lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.0 = 103 total with 23 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, the ruled line beside/after "Extra space", or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp'
+			? 'For History 2021 Paper 2 Section A Option C Migration, known rendered-page line-count guardrails are: 01.1 = 47 total with 20 lines on page 2 and 27 lines on page 3; 02.1 = 48 total with 21 lines on page 4 and 27 lines on page 5; 03.1 = 47 total with 20 lines on page 6 and 27 lines on page 7; 04.1 = 97 total with 18 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border, and do not count outer page-frame borders as writable lines.'
 			: null
 	]
 		.filter(Boolean)
