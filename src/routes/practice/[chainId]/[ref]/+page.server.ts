@@ -1,9 +1,17 @@
 import { getExplorableLearningChain, getQuestionTeaser } from '$lib/server/learningChainData';
-import { getQuestionExperimentPaper } from '$lib/server/questionExperimentData';
+import { getFocusedQuestionExperimentPaper } from '$lib/server/questionExperimentData';
+import { getPublicRoutePayload, practiceRoutePayloadId } from '$lib/server/publicRoutePayloads';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
+	const materialized = await getPublicRoutePayload<{
+		chain: Awaited<ReturnType<typeof getExplorableLearningChain>>;
+		initialRef: string;
+		paper: Awaited<ReturnType<typeof getFocusedQuestionExperimentPaper>>;
+	}>(practiceRoutePayloadId(params.chainId, params.ref)).catch(() => null);
+	if (materialized?.chain && materialized.paper) return materialized;
+
 	const chain = await getExplorableLearningChain(params.chainId);
 	if (!chain) {
 		throw error(404, 'Question chain not found.');
@@ -17,6 +25,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		chain,
 		initialRef: question.id ?? question.ref,
-		paper: await getQuestionExperimentPaper(question.paperSlug ?? chain.paperSlug)
+		paper: await getFocusedQuestionExperimentPaper(
+			question.paperSlug ?? chain.paperSlug,
+			question.sourceRef ?? question.ref
+		)
 	};
 };

@@ -8,6 +8,7 @@ import type {
 	ExamResponse,
 	ExamTableCell
 } from '$lib/experiments/questions/types';
+import { focusPaperByRef } from '$lib/experiments/questions/paperUtils';
 import { queryFirst, queryRows } from './db';
 
 type PaperSummaryRow = {
@@ -137,6 +138,18 @@ function blockFromJson(value: Record<string, unknown>): ExamQuestionBlock {
 		return { kind: 'paragraph', text: value.text };
 	}
 	if (
+		(value.type === 'text' || value.type === 'paragraph' || value.type === 'marks') &&
+		typeof value.text === 'string'
+	) {
+		return { kind: 'paragraph', text: value.text };
+	}
+	if (value.type === 'extract' && Array.isArray(value.lines)) {
+		return { kind: 'paragraph', text: value.lines.map(String).join('\n') };
+	}
+	if (value.type === 'list' && Array.isArray(value.items)) {
+		return { kind: 'bullet-list', items: value.items.map(String) };
+	}
+	if (
 		(value.kind === 'equation' || value.kind === 'formula' || value.kind === 'math') &&
 		typeof value.text === 'string'
 	) {
@@ -250,6 +263,12 @@ function equationBlankUnorderedGroups(value: unknown) {
 function responseFromValue(raw: unknown): ExamResponse {
 	const value = raw as Record<string, unknown>;
 	if (value.kind === 'none') return { kind: 'none' };
+	if (value.kind === 'extended_text') {
+		const suggestedLines =
+			typeof value.suggestedLines === 'number' ? value.suggestedLines : undefined;
+		const marks = typeof value.marks === 'number' ? value.marks : null;
+		return { kind: 'lines', count: suggestedLines ?? fallbackLineCount(marks) };
+	}
 	if (value.kind === 'lines' && typeof value.count === 'number') {
 		return { kind: 'lines', count: value.count };
 	}
@@ -621,4 +640,12 @@ export async function getQuestionExperimentPaper(slug: string): Promise<ExamPape
 		assets,
 		questions
 	};
+}
+
+export async function getFocusedQuestionExperimentPaper(
+	slug: string,
+	ref: string
+): Promise<ExamPaper> {
+	const paper = await getQuestionExperimentPaper(slug);
+	return focusPaperByRef(paper, ref) ?? paper;
 }

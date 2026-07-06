@@ -7,6 +7,7 @@ import {
 	blockingAnswerChainSpecificityIssues,
 	chainSpecificityIssueSummary
 } from './answer-chain-specificity.mjs';
+import { materializePublicRoutePayloads } from './materialize-public-route-payloads.mjs';
 
 const rootDir = process.cwd();
 const extractionRoot = path.join(
@@ -15,7 +16,10 @@ const extractionRoot = path.join(
 );
 const baselinePath = path.join(extractionRoot, 'baseline/all-papers.json');
 const semanticDir = path.join(extractionRoot, 'semantic-chains');
-const migrationPath = path.join(rootDir, 'migrations/0001_public_content.sql');
+const migrationPaths = [
+	path.join(rootDir, 'migrations/0001_public_content.sql'),
+	path.join(rootDir, 'migrations/0005_public_route_payloads.sql')
+];
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
 const experimentModelAnswersPath = path.join(
 	rootDir,
@@ -1413,15 +1417,18 @@ async function executeSequential(statements, label) {
 }
 
 async function applySchema() {
-	const sql = readFileSync(migrationPath, 'utf8');
-	await executeBatch(
-		splitSqlStatements(sql).map((statement) => ({ sql: statement })),
-		'schema'
-	);
+	for (const migrationPath of migrationPaths) {
+		const sql = readFileSync(migrationPath, 'utf8');
+		await executeBatch(
+			splitSqlStatements(sql).map((statement) => ({ sql: statement })),
+			`schema ${path.basename(migrationPath)}`
+		);
+	}
 }
 
 async function clearPublicTables() {
 	const tables = [
+		'public_route_payloads',
 		'constellation_questions',
 		'constellations',
 		'common_weak_answers',
@@ -2478,6 +2485,7 @@ if (!schemaOnly) {
 	);
 
 	await executeBatch(insertStatements, 'insert');
+	await materializePublicRoutePayloads({ rootDir, dryRun, batchSize });
 }
 
 console.log('Import complete.');

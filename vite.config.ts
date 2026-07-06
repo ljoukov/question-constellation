@@ -3,6 +3,11 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
+	server: {
+		watch: {
+			ignored: ['**/tmp/**']
+		}
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

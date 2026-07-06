@@ -39,6 +39,7 @@
 		"extract:production:batch": "node scripts/run-production-extraction-batch.mjs",
 		"verify:production-extraction": "node scripts/verify-production-extraction-run.mjs",
 		"import:chained": "node scripts/import-chained-questions.mjs",
+		"materialize:public-routes": "node scripts/materialize-public-route-payloads.mjs",
 		"import:vision": "node scripts/import-physics-vision.mjs",
 		"import:physics-vision": "node scripts/import-physics-vision.mjs",
 		"import:aqa-separate-science": "node scripts/import-physics-vision.mjs --input-root=data/vision-extracted/aqa-separate-science-higher --recursive",

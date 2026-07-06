@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { queryRows } from '$lib/server/db';
+import { getPublicRoutePayload } from '$lib/server/publicRoutePayloads';
 
 type SubjectNavigationItem = {
 	subject: string;
@@ -8,6 +9,11 @@ type SubjectNavigationItem = {
 };
 
 async function getSubjectNavigation(): Promise<SubjectNavigationItem[]> {
+	const materialized = await getPublicRoutePayload<SubjectNavigationItem[]>(
+		'layout:subject-navigation'
+	).catch(() => null);
+	if (materialized && Array.isArray(materialized)) return materialized;
+
 	return await queryRows<SubjectNavigationItem>(
 		`WITH ranked_subject_questions AS (
 			SELECT
