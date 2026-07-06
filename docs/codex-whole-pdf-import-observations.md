@@ -225,7 +225,7 @@ incremental, not all complete:
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | --------: |
 | Computer Science |               6 |                      6 |          228 |      520 |         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |         0 |
-| History          |              79 |                     26 |          122 |     1088 |        53 |
+| History          |              79 |                     57 |          261 |     2360 |        22 |
 
 The most recent Geography Paper 2 reruns were full official-PDF-to-D1 writes, not manual JSON
 patches.
@@ -347,6 +347,29 @@ awareness of already published chains.
 An earlier missing Geography run failed before model execution because the Codex subscription hit a
 usage limit; `codex doctor` confirmed ChatGPT auth was configured and no stored API key was used.
 After the limit reset, the later Geography and History reruns above proceeded through the SDK path.
+
+The 2026-07-06 History v31/v32 run is the current repeatability check for the 2023 answer-book
+family. The v31 batch imported four of eight selected History papers and correctly blocked four
+before D1: 2023 Germany P1A B, 2023 First World War P1B A, 2023 Inter-war P1B B, and 2023
+Gulf/Afghanistan P1B E. The blockers were real importer defects: rendered response-line counts were
+undercounted for Germany, Inter-war, and Gulf/Afghanistan, and First World War Source C was missing
+the learner-visible provenance caption "A poster produced by the American navy, in January 1917, to
+recruit sailors." The extractor prompt, deterministic helper validator, independent extraction
+judge, and regression fixtures were updated before rerunning from the official PDFs. The v32 rerun
+then passed extraction, independent extraction judge, chain reconciliation, solvability, strict audit,
+D1 write, R2 asset upload where needed, and deployed route crawls for all four papers.
+
+| Paper                               | Extraction                                                                        | Extraction judge                                                                 | Chain run                                                    | Solvability          | Import and route result                                                                                                                                 |
+| ----------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History 2023 P1A B Germany          | 453.096s; 55 commands; 0 failed; input 1,562,831; cached 1,425,408; output 22,198 | 163.838s; 27 commands; 0 failed; score 1.00; line counts `22/24/50/25/51/75`     | 295.301s; 23 commands; 2 failed then fixed; 4 reused, 2 new  | 163.804s; 6/6 passed | 6 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1a-b-germany-v32.json` passed 30/30 routes                               |
+| History 2023 P1B A First World War  | 794.005s; 90 commands; 1 failed; input 5,219,201; cached 4,865,024; output 22,428 | 129.227s; 21 commands; 0 failed; score 1.00; Source C caption verified           | 262.584s; 25 commands; 1 failed then fixed; 3 reused, 1 new  | 154.175s; 4/4 passed | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1b-a-first-world-war-v32.json` passed 23/23 routes including 3 assets |
+| History 2023 P1B B Inter-war Years  | 547.476s; 66 commands; 1 failed; input 2,346,797; cached 2,073,088; output 19,956 | 140.885s; 26 commands; 0 failed; score 1.00; line counts `22/76/51/102`          | 1173.149s; 28 commands; 1 failed then fixed; 3 reused, 1 new | 96.050s; 4/4 passed  | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1b-b-inter-war-v32.json` passed 21/21 routes including 1 asset        |
+| History 2023 P1B E Gulf/Afghanistan | 474.381s; 51 commands; 0 failed; input 1,777,819; cached 1,507,840; output 21,165 | 152.094s; 22 commands; 1 failed debug command; score 1.00; counts `22/76/51/102` | 264.711s; 23 commands; 1 failed then fixed; 3 reused, 1 new  | 172.802s; 4/4 passed | 4 kept, D1/R2 write passed; route crawl `tmp/public-route-checks/aqa-history-2023-p1b-e-gulf-afghanistan-v32.json` passed 21/21 routes including 1 asset |
+
+The v32 production summaries live under
+`tmp/codex-history-batch-v32/*/codex-production-import-summary.json`. After v32, remote D1 held
+History `57` papers, `261` questions, and `2360` marks; the remaining History manifest backlog is
+`22` papers.
 
 ## OCR And Visual Inspection Conclusion
 

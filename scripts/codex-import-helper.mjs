@@ -1595,7 +1595,10 @@ function deterministicIssuesFor(candidate, options = {}) {
 				'aqa-geography-2020-june-paper-2-challenges-in-the-human-environment-qp',
 				'aqa-geography-2021-june-paper-2-challenges-in-the-human-environment-qp',
 				'aqa-geography-2023-june-paper-1-living-with-the-physical-environment-qp',
-				'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp'
+				'aqa-geography-2023-june-paper-2-challenges-in-the-human-environment-qp',
+				'aqa-history-2023-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp',
+				'aqa-history-2022-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp',
+				'aqa-history-2022-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp'
 			].includes(sourceDocumentId)
 		) {
 			for (const issue of knownSourceSpecificIssues(question, sourceDocumentId)) issues.push(issue);
@@ -2123,6 +2126,32 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 			'03.1': 52,
 			'04.1': 97
 		},
+		'aqa-history-2022-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp': {
+			'01.1': 48,
+			'02.1': 52,
+			'03.1': 52,
+			'04.1': 102
+		},
+		'aqa-history-2022-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp':
+			{
+				'01.0': 48,
+				'02.0': 52,
+				'03.0': 52,
+				'04.0': 100
+			},
+		'aqa-history-2022-june-paper-2-section-b-option-c-elizabethan-england-c1568-1603-qp':
+			{
+				'01.1': 48,
+				'02.1': 52,
+				'03.1': 52,
+				'04.1': 102
+			},
+		'aqa-history-2022-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp': {
+			'01.1': 48,
+			'02.1': 52,
+			'03.1': 52,
+			'04.1': 97
+		},
 		'aqa-history-2022-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp':
 			{
 				'01.1': 21,
@@ -2164,6 +2193,78 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'02.0': 74,
 				'03.0': 48,
 				'04.0': 101
+			},
+		'aqa-history-2022-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp':
+			{
+				'01.1': 22,
+				'02.1': 76,
+				'03.1': 51,
+				'04.1': 102
+			},
+		'aqa-history-2022-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp':
+			{
+				'01.1': 22,
+				'02.1': 76,
+				'03.1': 51,
+				'04.1': 102
+			},
+		'aqa-history-2022-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp':
+			{
+				'01.1': 22,
+				'02.1': 76,
+				'03.1': 51,
+				'04.1': 102
+			},
+		'aqa-history-2022-june-paper-1-section-b-option-e-conflict-and-tension-in-the-gulf-and-afghanistan-1990-2009-qp':
+			{
+				'01.0': 22,
+				'02.0': 75,
+				'03.0': 48,
+				'04.0': 102
+			},
+		'aqa-history-2023-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp':
+			{
+				'01.1': 22,
+				'02.1': 24,
+				'03.1': 50,
+				'04.1': 25,
+				'05.1': 51,
+				'06.1': 75
+			},
+		'aqa-history-2023-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
+			{
+				'01.1': 22,
+				'02.1': 76,
+				'03.1': 51,
+				'04.1': 103
+			},
+		'aqa-history-2023-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp':
+			{
+				'01.1': 22,
+				'02.1': 76,
+				'03.1': 51,
+				'04.1': 102
+			},
+		'aqa-history-2023-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp':
+			{
+				'01.0': 22,
+				'02.0': 76,
+				'03.0': 51,
+				'04.0': 103
+			},
+		'aqa-history-2023-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp':
+			{
+				'01.0': 21,
+				'02.0': 75,
+				'03.0': 49,
+				'04.0': 101
+			},
+		'aqa-history-2023-june-paper-1-section-b-option-e-conflict-and-tension-in-the-gulf-and-afghanistan-1990-2009-qp':
+			{
+				'01.0': 22,
+				'02.0': 76,
+				'03.0': 51,
+				'04.0': 102
 			},
 		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
 			{
@@ -2909,6 +3010,33 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	}
 	if (
 		sourceDocumentId ===
+		'aqa-history-2023-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
+	) {
+		for (const issue of knownHistory2023FirstWorldWarIssues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (
+		sourceDocumentId ===
+		'aqa-history-2022-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp'
+	) {
+		for (const issue of knownHistory2022NormanIssues(question, learnerVisibleBlockText)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (
+		sourceDocumentId ===
+		'aqa-history-2022-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp'
+	) {
+		for (const issue of knownHistory2022MedievalIssues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (
+		sourceDocumentId ===
 		'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp'
 	) {
 		for (const issue of knownComputerScience2024Paper1AResponseIssues(question, visibleText)) {
@@ -3246,6 +3374,110 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		}
 	}
 	for (const issue of knownFigureCropIssues(question)) issues.push(issue);
+	return issues;
+}
+
+function knownHistory2022MedievalIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref !== '01.0') return issues;
+
+	const reviewText = normalizedRenderText(
+		[
+			...(question.reviewNotes ?? []),
+			question.contextText,
+			...(question.stemBlocks ?? []).map(blockSearchText),
+			...(question.leadBlocks ?? []).map(blockSearchText),
+			...(question.promptBlocks ?? []).map(blockSearchText)
+		].join('\n')
+	);
+	const hasWithheldSourceEvidence =
+		/(withheld|third[- ]party copyright|copyright|not reproduced|cannot be reproduced)/.test(
+			reviewText
+		) &&
+		/(not enough|insufficient|blocked|human review|cannot reconstruct|not reconstruct)/.test(
+			reviewText
+		);
+	if (question.needsHumanReview === true && hasWithheldSourceEvidence) {
+		issues.push({
+			code: 'known_unresolved_copyright_source',
+			field: 'stemBlocks/assets/needsHumanReview',
+			severity: 'error',
+			evidence:
+				'History 2022 Paper 2B Option B Q01.0 depends on Interpretation A, whose body is withheld in the public insert. The current official evidence is not enough to publish a learner-safe substitute, so this row must remain blocked or be held out of the publishable extraction.'
+		});
+	}
+	return issues;
+}
+
+function knownHistory2023FirstWorldWarIssues(question) {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref !== '02.1') return issues;
+
+	const text = normalizedRenderText(learnerVisibleEvidenceForFigure(question, 'source c'));
+	const hasSourceCProvenance =
+		/\bamerican\s+navy\b/.test(text) &&
+		/\bjanuary\s+1917\b/.test(text) &&
+		/\brecruit\s+sailors\b/.test(text);
+	if (!hasSourceCProvenance) {
+		issues.push({
+			code: 'known_source_c_provenance_missing',
+			field: 'stemBlocks/assets.filePath',
+			severity: 'error',
+			evidence:
+				'History 2023 Paper 1B Option A Q02.1 needs learner-visible Source C provenance: "A poster produced by the American navy, in January 1917, to recruit sailors." Add that exact source/caption text as a visible block or include it in a complete Source C crop.'
+		});
+	}
+	return issues;
+}
+
+function knownHistory2022NormanIssues(question, learnerVisibleBlockText = '') {
+	const ref = question.sourceQuestionRef ?? 'unknown';
+	const issues = [];
+	if (ref !== '01.1') return issues;
+
+	const text = normalizedRenderText(learnerVisibleBlockText);
+	const checks = [
+		{
+			name: 'Witan/dead-king succession claim',
+			ok:
+				/\bwitan\b/.test(text) &&
+				(/dead\s+king|king'?s\s+wishes|choos(?:e|ing)\s+the\s+next\s+king|next\s+king/.test(
+					text
+				) ||
+					/heir/.test(text))
+		},
+		{
+			name: 'William shock and oath/prisoner claim',
+			ok:
+				/\bwilliam\b/.test(text) &&
+				/(shock|surpris|angry|expected|believed)/.test(text) &&
+				/(oath|swor|pledge|prisoner|captive|threatened|under\s+threat)/.test(text)
+		},
+		{
+			name: 'dangerous invasion logistics',
+			ok:
+				/(dangerous\s+invasion|invasion\s+was\s+dangerous|invad(?:e|ing)\s+england)/.test(
+					text
+				) && /(fleet|ships?|troops?|army|normandy|papal|pope|allies)/.test(text)
+		},
+		{
+			name: 'rival claimant evidence',
+			ok:
+				/(harold\s+godwinson|earl\s+of\s+wessex|harold\b)/.test(text) &&
+				/(edgar|harald\s+hardrada|blood\s+relative|nearest\s+relative|claimants?)/.test(text)
+		}
+	];
+	const missing = checks.filter((check) => !check.ok).map((check) => check.name);
+	if (missing.length) {
+		issues.push({
+			code: 'known_history_withheld_interpretation_too_sparse',
+			field: 'stemBlocks/leadBlocks/promptBlocks/contextText',
+			severity: 'error',
+			evidence: `History 2022 Paper 2B Option A Q01.1 uses a copyright-withheld Interpretation A. The learner-visible substitute must contain concrete source-like claims, not only broad labels. Missing: ${missing.join(', ')}.`
+		});
+	}
 	return issues;
 }
 

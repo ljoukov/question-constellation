@@ -2350,6 +2350,178 @@ if (!history2021SectionALineCountFailure.includes('known_response_line_count_mis
 	);
 }
 
+const history2023GermanyLineCountMismatchPath = path.join(
+	helperNormalizeDir,
+	'history-2023-germany-line-count-mismatch.json'
+);
+writeFileSync(
+	history2023GermanyLineCountMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2023-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '06.1',
+					promptText: 'How far do you agree with this interpretation?',
+					marks: 12,
+					pageStart: 9,
+					pageEnd: 11,
+					response: { kind: 'lines', lineCount: 72 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'Develops a supported judgement.', marks: 1 }
+					],
+					markChecklist: [{ text: 'Develop a supported judgement.', markSchemeItemIndexes: [0] }],
+					modelAnswer: {
+						answerText: 'A supported judgement uses both interpretations and knowledge.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2023GermanyLineCountFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2023GermanyLineCountMismatchPath}`,
+		'--expected-marks=12',
+		'--expected-questions=1'
+	]
+);
+if (!history2023GermanyLineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail(
+		'Codex helper validation did not reject the History 2023 Germany line-count guardrail.',
+		{
+			history2023GermanyLineCountFailure
+		}
+	);
+}
+
+const history2023FirstWorldWarSourceCPath = path.join(
+	helperNormalizeDir,
+	'history-2023-first-world-war-source-c-missing-provenance.json'
+);
+writeFileSync(
+	history2023FirstWorldWarSourceCPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2023-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '02.1',
+					promptText: 'How useful are Sources B and C to an historian studying the war at sea?',
+					marks: 12,
+					pageStart: 3,
+					pageEnd: 5,
+					stemBlocks: [
+						{ kind: 'paragraph', label: 'Source B', text: 'German naval request text.' },
+						{
+							kind: 'paragraph',
+							label: 'Source C',
+							text: 'The standing figure represents Germany.'
+						},
+						{ kind: 'figure', assetLabel: 'Source C' }
+					],
+					assets: [
+						{
+							sourceLabel: 'Source C',
+							role: 'source',
+							description: 'Poster crop without the official Source C provenance.'
+						}
+					],
+					response: { kind: 'lines', lineCount: 76 },
+					markSchemeItems: [
+						{
+							itemType: 'mark',
+							text: 'Evaluates Source C provenance for utility.',
+							marks: 1
+						}
+					],
+					markChecklist: [{ text: 'Uses Source C provenance.', markSchemeItemIndexes: [0] }],
+					modelAnswer: {
+						answerText: 'Source C is useful because its provenance helps explain recruitment aims.'
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2023FirstWorldWarSourceCFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2023FirstWorldWarSourceCPath}`,
+		'--expected-marks=12',
+		'--expected-questions=1'
+	]
+);
+if (!history2023FirstWorldWarSourceCFailure.includes('known_source_c_provenance_missing')) {
+	fail(
+		'Codex helper validation did not reject missing History 2023 First World War Source C provenance.',
+		{
+			history2023FirstWorldWarSourceCFailure
+		}
+	);
+}
+
+const history2023InterWarLineCountPath = path.join(
+	helperNormalizeDir,
+	'history-2023-inter-war-line-count-mismatch.json'
+);
+writeFileSync(
+	history2023InterWarLineCountPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2023-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '04.1',
+					promptText: 'Has one factor been the main cause of tension?',
+					marks: 20,
+					pageStart: 8,
+					pageEnd: 11,
+					response: { kind: 'lines', lineCount: 101 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Develops a supported judgement.', marks: 1 }],
+					markChecklist: [{ text: 'Develop a supported judgement.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'A supported judgement weighs more than one factor.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2023InterWarLineCountFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2023InterWarLineCountPath}`,
+		'--expected-marks=20',
+		'--expected-questions=1'
+	]
+);
+if (!history2023InterWarLineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail('Codex helper validation did not reject the History 2023 Inter-war line-count guardrail.', {
+		history2023InterWarLineCountFailure
+	});
+}
+
 const history2021FirstWorldWarLineCountMismatchPath = path.join(
 	helperNormalizeDir,
 	'history-2021-first-world-war-line-count-mismatch.json'
@@ -3227,6 +3399,128 @@ if (
 ) {
 	fail('Codex helper validation did not reject Geography 2022 Paper 2 known defects.', {
 		geography2022Paper2KnownIssuesFailure
+	});
+}
+
+const history2022NormanSparseInterpretationPath = path.join(
+	helperNormalizeDir,
+	'history-2022-norman-sparse-interpretation.json'
+);
+writeFileSync(
+	history2022NormanSparseInterpretationPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2022-june-paper-2-section-b-option-a-norman-england-c1066-c1100-qp',
+				docType: 'question_paper',
+				pageCount: 16
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 20 },
+			questions: [
+				{
+					sourceQuestionRef: '01.1',
+					promptText:
+						'How convincing is Interpretation A about what happened after the death of Edward the Confessor?',
+					selfContainedPromptText:
+						'How convincing is Interpretation A about what happened after the death of Edward the Confessor?',
+					marks: 8,
+					pageStart: 2,
+					pageEnd: 3,
+					stemBlocks: [
+						{
+							kind: 'key',
+							label: 'Interpretation A',
+							keyItems: [
+								{ term: 'Focus', definition: 'Succession crisis after Edward died.' },
+								{ term: 'Claimants', definition: 'There were rival claims.' },
+								{ term: 'William', definition: 'William was shocked.' }
+							]
+						}
+					],
+					response: { kind: 'lines', lineCount: 48 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level descriptors.', marks: 8 }],
+					markChecklist: [{ text: 'Evaluates the interpretation.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Interpretation A can be evaluated with contextual knowledge.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2022NormanSparseFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2022NormanSparseInterpretationPath}`,
+		'--expected-marks=8',
+		'--expected-questions=1'
+	]
+);
+if (!history2022NormanSparseFailure.includes('known_history_withheld_interpretation_too_sparse')) {
+	fail('Codex helper validation did not reject sparse History Norman Interpretation A substitute.', {
+		history2022NormanSparseFailure
+	});
+}
+
+const history2022MedievalHeldOutSourcePath = path.join(
+	helperNormalizeDir,
+	'history-2022-medieval-held-out-source.json'
+);
+writeFileSync(
+	history2022MedievalHeldOutSourcePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2022-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp',
+				docType: 'question_paper',
+				pageCount: 16
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 20 },
+			questions: [
+				{
+					sourceQuestionRef: '01.0',
+					promptText:
+						'How convincing is Interpretation A about the government of England under Edward I?',
+					selfContainedPromptText:
+						'Study Interpretation A. How convincing is Interpretation A about the government of England under Edward I?',
+					marks: 8,
+					pageStart: 2,
+					pageEnd: 3,
+					needsHumanReview: true,
+					reviewNotes: [
+						'The body of Interpretation A is withheld for third-party copyright and the official evidence is not enough to reconstruct a faithful learner-visible interpretation, so this row is blocked for human review.'
+					],
+					stemBlocks: [
+						{
+							kind: 'paragraph',
+							label: 'Interpretation A',
+							text: "An interpretation of the government of England under Edward I. Adapted from 'Edward I' by Andy King, 2016."
+						}
+					],
+					response: { kind: 'lines', lineCount: 48 },
+					markSchemeItems: [{ itemType: 'level', text: 'Level descriptors.', marks: 8 }],
+					markChecklist: [{ text: 'Evaluates the interpretation.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'Blocked until source evidence is available.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2022MedievalHeldOutFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2022MedievalHeldOutSourcePath}`,
+		'--expected-marks=8',
+		'--expected-questions=1'
+	]
+);
+if (!history2022MedievalHeldOutFailure.includes('known_unresolved_copyright_source')) {
+	fail('Codex helper validation did not flag History Medieval Q01 as an auditable hold-out.', {
+		history2022MedievalHeldOutFailure
 	});
 }
 

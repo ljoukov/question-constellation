@@ -530,7 +530,7 @@ Current AQA History/Geography/Computer Science D1 status, measured from remote D
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | ------------------------: |
 | Computer Science |               6 |                      6 |          228 |      520 |                         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |                         0 |
-| History          |              79 |                     26 |          122 |     1088 |                        53 |
+| History          |              79 |                     57 |          261 |     2360 |                        22 |
 
 Geography 2022 Paper 2 imported successfully through the Codex SDK production path in
 `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp`.
@@ -540,6 +540,18 @@ evidence. The publishable import has 45 questions and 124 marks. Extraction, ind
 judge, chain reconciliation, R2 upload, strict audit, Codex solvability, D1 write, and deployed route
 crawl all passed. Do not fall back to `OPENAI_API_KEY` for these imports; the Codex SDK runner is
 expected to use ChatGPT subscription auth.
+
+History v31/v32 on 2026-07-06 is the current 2023 response-book repeatability case. The v31 batch
+correctly stopped four papers before D1: 2023 Germany P1A B had line counts `18/20/47/21/47/72`
+instead of `22/24/50/25/51/75`; 2023 Inter-war P1B B had `20/76/51/101` instead of
+`22/76/51/102`; 2023 Gulf/Afghanistan P1B E had `20/75/49/99` instead of `22/76/51/102`; and
+2023 First World War P1B A omitted the learner-visible Source C provenance caption. The extractor
+prompt, helper validator, independent judge, and regression fixtures now encode these source-specific
+expectations, including the First World War Source C caption: "A poster produced by the American
+navy, in January 1917, to recruit sailors." The v32 rerun from the same official PDFs passed
+extraction, independent extraction judge, chain reconciliation, solvability, strict audit, D1/R2
+write, and deployed route crawls for all four papers. Artifacts are under
+`tmp/codex-history-batch-v32/` and `tmp/public-route-checks/*-v32.json`.
 
 Recent History reruns used the same official-PDF-to-D1 path with `--d1-existing-chains`,
 independent extraction judging, Codex solvability, D1 conflict checks, and deployed route crawls:
