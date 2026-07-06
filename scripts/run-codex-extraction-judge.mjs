@@ -261,6 +261,18 @@ function buildPrompt() {
 		sourceDocumentId ===
 		'aqa-history-2021-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
 			? 'For History 2021 Paper 1 Section B Option A First World War, known rendered-page line-count guardrails are: 01.0 = 21; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.0 = 102 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp'
+			? 'For History 2021 Paper 1 Section B Option B Inter-war Years, known rendered-page line-count guardrails are: 01.1 = 22; 02.1 = 77 total with 23 lines on page 3, 27 lines on page 4, and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 103 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 27 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp'
+			? 'For History 2021 Paper 1 Section B Option C East and West, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 lines on page 5; 03.0 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.0 = 102 total with 21 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 27 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp'
+			? 'For History 2021 Paper 1 Section B Option D Asia, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 77 total with 23 lines on page 3, 26 lines on page 4, and 28 lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.0 = 103 total with 23 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, the ruled line beside/after "Extra space", or the final inner ruled line above the page-frame border.'
 			: null
 	]
 		.filter(Boolean)

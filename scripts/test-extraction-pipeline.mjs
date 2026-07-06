@@ -2399,6 +2399,72 @@ if (!history2021FirstWorldWarLineCountFailure.includes('known_response_line_coun
 	);
 }
 
+for (const { id, ref, badLineCount, marks, label } of [
+	{
+		id: 'aqa-history-2021-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp',
+		ref: '04.1',
+		badLineCount: 98,
+		marks: 20,
+		label: 'History 2021 Inter-war Years'
+	},
+	{
+		id: 'aqa-history-2021-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp',
+		ref: '02.0',
+		badLineCount: 70,
+		marks: 12,
+		label: 'History 2021 East and West'
+	},
+	{
+		id: 'aqa-history-2021-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp',
+		ref: '04.0',
+		badLineCount: 93,
+		marks: 20,
+		label: 'History 2021 Asia'
+	}
+]) {
+	const mismatchPath = path.join(
+		helperNormalizeDir,
+		`${id.replace(/[^a-z0-9]+/gi, '-')}-line-count-mismatch.json`
+	);
+	writeFileSync(
+		mismatchPath,
+		JSON.stringify(
+			{
+				sourceDocument: { id, docType: 'question_paper' },
+				markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+				questions: [
+					{
+						sourceQuestionRef: ref,
+						promptText: 'Answer the History source question.',
+						marks,
+						pageStart: 2,
+						pageEnd: 11,
+						response: { kind: 'lines', lineCount: badLineCount },
+						markSchemeItems: [{ itemType: 'mark', text: 'Develops a supported answer.', marks: 1 }],
+						markChecklist: [{ text: 'Develop a supported answer.', markSchemeItemIndexes: [0] }],
+						modelAnswer: {
+							answerText: 'A developed answer uses relevant evidence and explanation.'
+						}
+					}
+				]
+			},
+			null,
+			2
+		)
+	);
+	const failureOutput = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+		'validate-extraction',
+		`--input=${mismatchPath}`,
+		`--expected-marks=${marks}`,
+		'--expected-questions=1'
+	]);
+	if (!failureOutput.includes('known_response_line_count_mismatch')) {
+		fail(`Codex helper validation did not reject the ${label} line-count guardrail.`, {
+			failureOutput
+		});
+	}
+}
+
 const missingKnownAllowancePath = path.join(helperNormalizeDir, 'missing-known-allowance.json');
 writeFileSync(
 	missingKnownAllowancePath,

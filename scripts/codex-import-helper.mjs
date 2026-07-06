@@ -2083,6 +2083,26 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'03.0': 51,
 				'04.0': 102
 			},
+		'aqa-history-2021-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp':
+			{
+				'01.1': 22,
+				'02.1': 77,
+				'03.1': 52,
+				'04.1': 103
+			},
+		'aqa-history-2021-june-paper-1-section-b-option-c-conflict-and-tension-between-east-and-west-1945-1972-qp':
+			{
+				'01.0': 22,
+				'02.0': 76,
+				'03.0': 52,
+				'04.0': 102
+			},
+		'aqa-history-2021-june-paper-1-section-b-option-d-conflict-and-tension-in-asia-1950-1975-qp': {
+			'01.0': 22,
+			'02.0': 77,
+			'03.0': 51,
+			'04.0': 103
+		},
 		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
 			{
 				'01.0': 22,
