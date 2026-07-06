@@ -308,7 +308,27 @@ regression tests now include the source-specific Migration guardrail: Q01.1 `20 
 `21 + 27 = 48`, Q03.1 `20 + 27 = 47`, and Q04.1 `18 + 27 + 27 + 25 = 97`. The forced rerun in
 `tmp/codex-history-batch-v23-migration-rerun/` then passed extraction, independent judge, chain
 reconciliation, solvability, strict audit, D1 write, and a deployed `20/20` route crawl. After this
-write, D1 held History `29` papers, `134` questions, and `1208` marks. The follow-up v19 Section B run
+write, D1 held History `29` papers, `134` questions, and `1208` marks. The v24 batch then imported
+2021 Elizabethan through all gates, but correctly blocked five papers before D1 because rendered
+response-line evidence did not match source-specific guardrails. The guardrails now cover 2021 P2B B
+Medieval `48/51/51/96`, 2021 P2B D Restoration `48/52/52/97`, 2022 P1A A America
+`21/22/49/23/49/71`, 2022 P1A B Germany `21/23/49/24/50/72`, 2022 P1A D America
+`22/24/48/25/50/74`, and 2022 P1B A First World War `23/74/48/101`. The rerun in
+`tmp/codex-history-batch-v24-rerun/` imported Medieval, Restoration, America 1840, and America
+1920 after extraction, independent judge, chain reconciliation, solvability, strict audit, safe D1
+write, and deployed route checks. Germany first exposed an import-path bug: `stemBlocks[].keyItems`
+with `{term, description}` entries were not included in learner-visible solvability context, so
+Q01.1-Q03.1 looked unsolvable despite correct extraction. The shared context builder now preserves
+`term`/`description` key items, and `tmp/codex-history-batch-v24-germany-keyitems-rerun/` passed all
+gates and D1 import. Route-check reports for the five rerun papers live under
+`tmp/public-route-checks/aqa-history-2021-p2b-b-medieval.json`,
+`tmp/public-route-checks/aqa-history-2021-p2b-d-restoration.json`,
+`tmp/public-route-checks/aqa-history-2022-p1a-a-america1840.json`,
+`tmp/public-route-checks/aqa-history-2022-p1a-d-america1920.json`, and
+`tmp/public-route-checks/aqa-history-2022-p1a-b-germany.json`; all have `failedRouteCount: 0`.
+After these writes, D1 held History `37` papers, `174` questions, and `1532` marks, with total D1
+coverage at `139` question papers: Biology `15`, Chemistry `14`, Computer Science `6`, English
+`39`, Geography `15`, History `37`, and Physics `13`. The follow-up v19 Section B run
 exposed an import-ready normalizer bug, not a source-extraction bug: reused D1 chain definitions can omit
 `answerChain.reviewNotes`, while the strict D1 audit schema requires an array. The shared import
 normalizer now converts missing or scalar chain review notes to arrays before subset building.

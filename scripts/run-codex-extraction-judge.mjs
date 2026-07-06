@@ -259,8 +259,28 @@ function buildPrompt() {
 			? 'For History 2021 Paper 1 Section A Option D America, known rendered-page line-count guardrails are: 01.1 = 21; 02.1 = 23; 03.1 = 49 total with 22 lines on page 4 and 27 lines on page 5; 04.1 = 23; 05.1 = 50 total with 23 lines on page 7 and 27 lines on page 8; 06.1 = 73 total with 20 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border. For Q01.1-Q03.1, also verify that complete learner-visible Interpretation A and Interpretation B text is present in candidate blocks or a readable asset.'
 			: null,
 		sourceDocumentId ===
+		'aqa-history-2022-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp'
+			? 'For History 2022 Paper 1 Section A Option A America, known rendered-page line-count guardrails are: 01.1 = 21; 02.1 = 22; 03.1 = 49 total with 23 lines on page 4 and 26 lines on page 5; 04.1 = 23; 05.1 = 49 total with 23 lines on page 7 and 26 lines on page 8; 06.1 = 71 total with 20 lines on page 9, 25 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2022-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp'
+			? 'For History 2022 Paper 1 Section A Option B Germany, known rendered-page line-count guardrails are: 01.1 = 21; 02.1 = 23; 03.1 = 49 total with 23 lines on page 4 and 26 lines on page 5; 04.1 = 24; 05.1 = 50 total with 24 lines on page 7 and 26 lines on page 8; 06.1 = 72 total with 21 lines on page 9, 26 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2022-june-paper-1-section-a-option-c-russia-1894-1945-tsardom-and-communism-qp'
+			? 'For History 2022 Paper 1 Section A Option C Russia, known rendered-page line-count guardrails are: 01.1 = 22; 02.1 = 22; 03.1 = 46 total with 20 lines on page 4 and 26 lines on page 5; 04.1 = 22; 05.1 = 47 total with 21 lines on page 7 and 26 lines on page 8; 06.1 = 70 total with 18 lines on page 9, 26 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2022-june-paper-1-section-a-option-d-america-1920-1973-opportunity-and-inequality-qp'
+			? 'For History 2022 Paper 1 Section A Option D America, known rendered-page line-count guardrails are: 01.1 = 22; 02.1 = 24; 03.1 = 48 total with 22 lines on page 4 and 26 lines on page 5; 04.1 = 25; 05.1 = 50 total with 24 lines on page 7 and 26 lines on page 8; 06.1 = 74 total with 21 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
 		'aqa-history-2021-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
 			? 'For History 2021 Paper 1 Section B Option A First World War, known rendered-page line-count guardrails are: 01.0 = 21; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.0 = 102 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2022-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
+			? 'For History 2022 Paper 1 Section B Option A First World War, known rendered-page line-count guardrails are: 01.0 = 23; 02.0 = 74 total with 23 lines on page 3, 27 lines on page 4, and 24 lines on page 5; 03.0 = 48 total with 24 lines on page 6 and 24 lines on page 7; 04.0 = 101 total with 23 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 24 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border. Also verify Source A/B assets render and Source C text is learner-visible.'
 			: null,
 		sourceDocumentId ===
 		'aqa-history-2021-june-paper-1-section-b-option-b-conflict-and-tension-the-inter-war-years-1918-1939-qp'
@@ -277,6 +297,14 @@ function buildPrompt() {
 		sourceDocumentId ===
 		'aqa-history-2021-june-paper-2-section-a-option-c-britain-migration-empires-and-the-people-c790-to-the-present-day-qp'
 			? 'For History 2021 Paper 2 Section A Option C Migration, known rendered-page line-count guardrails are: 01.1 = 47 total with 20 lines on page 2 and 27 lines on page 3; 02.1 = 48 total with 21 lines on page 4 and 27 lines on page 5; 03.1 = 47 total with 20 lines on page 6 and 27 lines on page 7; 04.1 = 97 total with 18 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border, and do not count outer page-frame borders as writable lines.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp'
+			? 'For History 2021 Paper 2 Section B Option B Medieval England, known rendered-page line-count guardrails are: 01.1 = 48 total with 22 lines on page 2 and 26 lines on page 3; 02.1 = 51 total with 25 lines on page 4 and 26 lines on page 5; 03.1 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.1 = 96 total with 22 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 22 lines on page 11. Independently inspect the rendered pages, but do not reuse the 2020 Section B pattern and do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp'
+			? 'For History 2021 Paper 2 Section B Option D Restoration England, known rendered-page line-count guardrails are: 01.1 = 48 total with 21 lines on page 2 and 27 lines on page 3; 02.1 = 52 total with 25 lines on page 4 and 27 lines on page 5; 03.1 = 52 total with 25 lines on page 6 and 27 lines on page 7; 04.1 = 97 total with 20 lines on page 8, 26 lines on page 9, 26 lines on page 10, and 25 lines on page 11. Independently inspect the rendered pages, but do not reuse the 2020 Section B pattern and do not drop the first full-width ruled line below the prompt, continuation-page top lines, lines beside/after "Extra space", or the final inner ruled line above the page-frame border.'
 			: null
 	]
 		.filter(Boolean)

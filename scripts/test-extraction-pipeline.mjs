@@ -2427,6 +2427,55 @@ for (const { id, ref, badLineCount, marks, label } of [
 		badLineCount: 91,
 		marks: 16,
 		label: 'History 2021 Migration'
+	},
+	{
+		id: 'aqa-history-2021-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp',
+		ref: '04.1',
+		badLineCount: 89,
+		marks: 16,
+		label: 'History 2021 Medieval England'
+	},
+	{
+		id: 'aqa-history-2021-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp',
+		ref: '04.1',
+		badLineCount: 89,
+		marks: 16,
+		label: 'History 2021 Restoration England'
+	},
+	{
+		id: 'aqa-history-2022-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp',
+		ref: '06.1',
+		badLineCount: 67,
+		marks: 12,
+		label: 'History 2022 America 1840'
+	},
+	{
+		id: 'aqa-history-2022-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp',
+		ref: '05.1',
+		badLineCount: 48,
+		marks: 8,
+		label: 'History 2022 Germany'
+	},
+	{
+		id: 'aqa-history-2022-june-paper-1-section-a-option-c-russia-1894-1945-tsardom-and-communism-qp',
+		ref: '06.1',
+		badLineCount: 67,
+		marks: 12,
+		label: 'History 2022 Russia'
+	},
+	{
+		id: 'aqa-history-2022-june-paper-1-section-a-option-d-america-1920-1973-opportunity-and-inequality-qp',
+		ref: '06.1',
+		badLineCount: 70,
+		marks: 12,
+		label: 'History 2022 America 1920'
+	},
+	{
+		id: 'aqa-history-2022-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp',
+		ref: '04.0',
+		badLineCount: 96,
+		marks: 20,
+		label: 'History 2022 First World War'
 	}
 ]) {
 	const mismatchPath = path.join(
@@ -7224,6 +7273,10 @@ const keyItemsSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionCon
 							{
 								label: 'Interpretation B',
 								text: 'B says immigrants contributed to American society.'
+							},
+							{
+								term: 'Provenance',
+								description: 'Adapted from an interview with a diplomat.'
 							}
 						]
 					}
@@ -7242,7 +7295,8 @@ const keyItemsVisibleText = JSON.stringify(
 );
 if (
 	!keyItemsVisibleText.includes('A says immigrants were treated as a threat.') ||
-	!keyItemsVisibleText.includes('B says immigrants contributed to American society.')
+	!keyItemsVisibleText.includes('B says immigrants contributed to American society.') ||
+	!keyItemsVisibleText.includes('Provenance: Adapted from an interview with a diplomat.')
 ) {
 	fail('Solvability context omitted keyItems from learner-visible key blocks.', {
 		keyItemsSolvabilityContext

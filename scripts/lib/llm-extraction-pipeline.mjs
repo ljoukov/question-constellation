@@ -6648,8 +6648,8 @@ function blockToLearnerText(block) {
 
 function keyItemToLearnerText(item) {
 	if (typeof item === 'string' || typeof item === 'number') return `- ${stripHtml(item)}`;
-	const marker = String(item?.marker ?? item?.label ?? '').trim();
-	const text = stripHtml(item?.text ?? item?.value ?? '').trim();
+	const marker = String(item?.marker ?? item?.label ?? item?.term ?? '').trim();
+	const text = stripHtml(item?.text ?? item?.value ?? item?.description ?? '').trim();
 	if (marker && text) return `${marker}: ${text}`;
 	if (text) return `- ${text}`;
 	if (marker) return `- ${marker}`;

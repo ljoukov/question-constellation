@@ -2110,6 +2110,61 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 				'03.1': 47,
 				'04.1': 97
 			},
+		'aqa-history-2021-june-paper-2-section-b-option-b-medieval-england-the-reign-of-edward-i-1272-1307-qp':
+			{
+				'01.1': 48,
+				'02.1': 51,
+				'03.1': 51,
+				'04.1': 96
+			},
+		'aqa-history-2021-june-paper-2-section-b-option-d-restoration-england-1660-1685-qp': {
+			'01.1': 48,
+			'02.1': 52,
+			'03.1': 52,
+			'04.1': 97
+		},
+		'aqa-history-2022-june-paper-1-section-a-option-a-america-1840-1895-expansion-and-consolidation-qp':
+			{
+				'01.1': 21,
+				'02.1': 22,
+				'03.1': 49,
+				'04.1': 23,
+				'05.1': 49,
+				'06.1': 71
+			},
+		'aqa-history-2022-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp':
+			{
+				'01.1': 21,
+				'02.1': 23,
+				'03.1': 49,
+				'04.1': 24,
+				'05.1': 50,
+				'06.1': 72
+			},
+		'aqa-history-2022-june-paper-1-section-a-option-c-russia-1894-1945-tsardom-and-communism-qp': {
+			'01.1': 22,
+			'02.1': 22,
+			'03.1': 46,
+			'04.1': 22,
+			'05.1': 47,
+			'06.1': 70
+		},
+		'aqa-history-2022-june-paper-1-section-a-option-d-america-1920-1973-opportunity-and-inequality-qp':
+			{
+				'01.1': 22,
+				'02.1': 24,
+				'03.1': 48,
+				'04.1': 25,
+				'05.1': 50,
+				'06.1': 74
+			},
+		'aqa-history-2022-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
+			{
+				'01.0': 23,
+				'02.0': 74,
+				'03.0': 48,
+				'04.0': 101
+			},
 		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
 			{
 				'01.0': 22,
