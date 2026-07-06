@@ -2067,6 +2067,22 @@ function expectedHistoryResponseLineCountsForSource(sourceDocumentId) {
 			'05.0': 51,
 			'06.0': 73
 		},
+		'aqa-history-2021-june-paper-1-section-a-option-d-america-1920-1973-opportunity-and-inequality-qp':
+			{
+				'01.1': 21,
+				'02.1': 23,
+				'03.1': 49,
+				'04.1': 23,
+				'05.1': 50,
+				'06.1': 73
+			},
+		'aqa-history-2021-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
+			{
+				'01.0': 21,
+				'02.0': 76,
+				'03.0': 51,
+				'04.0': 102
+			},
 		'aqa-history-2020-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp':
 			{
 				'01.0': 22,

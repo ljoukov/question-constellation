@@ -6617,10 +6617,14 @@ function blockToLearnerText(block) {
 		return (block.items ?? []).map((item, index) => `${index + 1}. ${stripHtml(item)}`).join('\n');
 	}
 	if (kind === 'key') {
+		const keyItems = [
+			...(Array.isArray(block.items) ? block.items : []),
+			...(Array.isArray(block.keyItems) ? block.keyItems : [])
+		];
 		return [
 			block.label ? `${block.label}:` : '',
 			stripHtml(block.text ?? block.value ?? ''),
-			...(block.items ?? []).map(keyItemToLearnerText)
+			...keyItems.map(keyItemToLearnerText)
 		]
 			.filter(Boolean)
 			.join('\n');

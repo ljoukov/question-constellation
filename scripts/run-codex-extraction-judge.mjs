@@ -253,6 +253,14 @@ function buildPrompt() {
 		sourceDocumentId ===
 		'aqa-history-2021-june-paper-1-section-a-option-c-russia-1894-1945-tsardom-and-communism-qp'
 			? 'For History 2021 Paper 1 Section A Option C Russia, known rendered-page line-count guardrails are: 01.0 = 22; 02.0 = 24; 03.0 = 51 total with 24 lines on page 4 and 27 lines on page 5; 04.0 = 23; 05.0 = 51 total with 24 lines on page 7 and 27 lines on page 8; 06.0 = 73 total with 20 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-1-section-a-option-d-america-1920-1973-opportunity-and-inequality-qp'
+			? 'For History 2021 Paper 1 Section A Option D America, known rendered-page line-count guardrails are: 01.1 = 21; 02.1 = 23; 03.1 = 49 total with 22 lines on page 4 and 27 lines on page 5; 04.1 = 23; 05.1 = 50 total with 23 lines on page 7 and 27 lines on page 8; 06.1 = 73 total with 20 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the ruled line beside/after "Extra space", continuation-page top lines, or the final inner ruled line above the page-frame border. For Q01.1-Q03.1, also verify that complete learner-visible Interpretation A and Interpretation B text is present in candidate blocks or a readable asset.'
+			: null,
+		sourceDocumentId ===
+		'aqa-history-2021-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp'
+			? 'For History 2021 Paper 1 Section B Option A First World War, known rendered-page line-count guardrails are: 01.0 = 21; 02.0 = 76 total with 23 lines on page 3, 26 lines on page 4, and 27 lines on page 5; 03.0 = 51 total with 25 lines on page 6 and 26 lines on page 7; 04.0 = 102 total with 22 lines on page 8, 27 lines on page 9, 27 lines on page 10, and 26 lines on page 11. Independently inspect the rendered pages, but do not drop the first full-width ruled line below the prompt/mark allocation, continuation-page top lines, or the final inner ruled line above the page-frame border.'
 			: null
 	]
 		.filter(Boolean)

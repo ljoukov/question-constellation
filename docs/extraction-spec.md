@@ -524,13 +524,13 @@ and 79 History papers, with 70 AQA examiner-report PDFs. Examiner reports are se
 only for common traps, weak-answer explanations, hints, and grading warnings; positive credit still
 comes from the mark scheme.
 
-Current AQA History/Geography/Computer Science D1 status, measured from remote D1 on 2026-07-05:
+Current AQA History/Geography/Computer Science D1 status, measured from remote D1 on 2026-07-06:
 
 | Subject          | Manifest papers | D1 question-paper docs | D1 questions | D1 marks | Remaining manifest papers |
 | ---------------- | --------------: | ---------------------: | -----------: | -------: | ------------------------: |
 | Computer Science |               6 |                      6 |          228 |      520 |                         0 |
 | Geography        |              15 |                     15 |          507 |     1437 |                         0 |
-| History          |              79 |                     20 |           96 |      832 |                        59 |
+| History          |              79 |                     23 |          110 |      960 |                        56 |
 
 Geography 2022 Paper 2 imported successfully through the Codex SDK production path in
 `tmp/codex-humanities-resume-v56/aqa-geography-2022-june-paper-2-challenges-in-the-human-environment-qp`.
@@ -559,6 +559,9 @@ independent extraction judging, Codex solvability, D1 conflict checks, and deplo
 | History 2021 P1A A America         | 377.754s; 53 commands; 0 failed; input 1,211,222; cached 1,069,056; output 18,859; reasoning 2,308 |    202.044s; 29 commands; 0 failed; input 793,661; cached 621,568; output 8,784; reasoning 2,575 |   276.969s; 22 commands; 3 failed; input 480,694; cached 389,120; output 14,293; reasoning 6,941 |       160.125s; 25 commands; 2 failed; input 267,292; cached 209,920; output 7,654; reasoning 2,448 | 6 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2021-p1a-a-america-after-import.json` passed 30/30 routes                     |
 | History 2021 P1A B Germany         | 406.752s; 42 commands; 0 failed; input 1,432,953; cached 1,235,968; output 18,363; reasoning 1,866 |    154.245s; 21 commands; 1 failed; input 496,328; cached 347,136; output 6,610; reasoning 1,559 |   276.690s; 26 commands; 1 failed; input 672,542; cached 602,624; output 13,756; reasoning 6,186 |       137.917s; 23 commands; 3 failed; input 314,851; cached 251,392; output 6,417; reasoning 1,309 | 6 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2021-p1a-b-germany-after-import.json` passed 30/30 routes                     |
 | History 2021 P1A C Russia          |   420.136s; 51 commands; 0 failed; input 1,174,612; cached 993,280; output 20,646; reasoning 2,361 |    173.337s; 31 commands; 1 failed; input 713,996; cached 574,976; output 7,770; reasoning 1,857 | 308.445s; 35 commands; 1 failed; input 1,067,863; cached 993,792; output 15,040; reasoning 6,669 |       132.365s; 23 commands; 2 failed; input 295,119; cached 257,536; output 5,651; reasoning 1,002 | 6 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2021-p1a-c-russia-after-import.json` passed 30/30 routes                      |
+| History 2021 P1B B Inter-war Years | 474.789s; 41 commands; 0 failed; input 2,296,029; cached 1,982,976; output 19,486; reasoning 4,310 |    227.056s; 29 commands; 3 failed; input 927,799; cached 693,760; output 9,324; reasoning 3,027 | 294.059s; 27 commands; 0 failed; input 1,118,899; cached 945,664; output 14,100; reasoning 6,704 |         385.312s; 16 commands; 2 failed; input 211,833; cached 154,112; output 4,298; reasoning 712 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2021-p1b-b-inter-war-after-import.json` passed 20/20 routes                   |
+| History 2021 P1A D America         | 449.833s; 52 commands; 0 failed; input 1,627,161; cached 1,448,960; output 20,880; reasoning 2,276 |   236.855s; 24 commands; 1 failed; input 709,775; cached 539,648; output 10,369; reasoning 4,979 |   283.831s; 28 commands; 0 failed; input 724,002; cached 628,736; output 13,930; reasoning 5,891 |       160.342s; 18 commands; 2 failed; input 333,999; cached 274,944; output 7,134; reasoning 2,799 | 6 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2021-p1a-d-america-1920-after-import.json` passed 30/30 routes                |
+| History 2021 P1B A First World War | 467.827s; 57 commands; 1 failed; input 1,767,117; cached 1,522,688; output 19,372; reasoning 2,930 |   232.786s; 34 commands; 1 failed; input 921,707; cached 790,016; output 10,480; reasoning 3,434 |   269.642s; 28 commands; 1 failed; input 977,633; cached 896,000; output 12,709; reasoning 5,751 |       184.458s; 22 commands; 3 failed; input 374,641; cached 306,176; output 6,228; reasoning 1,425 | 4 kept, D1 write passed; route crawl `tmp/public-route-checks/aqa-history-2021-p1b-a-fww-after-import.json` passed 22/22 routes including 2 assets      |
 
 The History reruns exposed a repeatable answer-book line-count weakness. The extractor and
 independent judge now include source-specific rendered-page guardrails for First World War, Asia,
@@ -575,7 +578,13 @@ counts: America Q06.1 was 74 instead of 76; Germany Q03.1/Q05.1/Q06.1 were 47/48
 50/51/76; Russia Q02.0/Q03.0/Q05.0/Q06.0 were 23/50/50/72 instead of 24/51/51/73. After adding the
 source-specific prompt/helper/judge guardrails, a fresh `--force` rerun from the official PDFs
 passed extraction judge, chain reconciliation, solvability, strict audit, D1 write, and deployed
-route crawls for all three papers.
+route crawls for all three papers. The next v21 run added two more repeatability fixes: Option D
+America first failed solvability because `stemBlocks[].keyItems` containing complete
+Interpretation A/B text were omitted from learner-visible contexts, and First World War first failed
+before D1 because broad crops undercounted its answer booklets as `14/57/37/70` instead of
+`21/76/51/102`. The shared learner-context builder now preserves `keyItems`, and the extractor,
+helper validator, and judge include source-specific 2021 P1A D and 2021 P1B A line-count
+guardrails. The rerun in `tmp/codex-history-batch-v21-rerun/` passed all gates and route crawls.
 
 The v19 Paper 2 Section B resume exposed a strict-audit normalizer bug. Medieval and Elizabethan had
 already passed PDF extraction, extraction judge, and chain reconciliation, but import-ready audit

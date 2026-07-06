@@ -2350,6 +2350,55 @@ if (!history2021SectionALineCountFailure.includes('known_response_line_count_mis
 	);
 }
 
+const history2021FirstWorldWarLineCountMismatchPath = path.join(
+	helperNormalizeDir,
+	'history-2021-first-world-war-line-count-mismatch.json'
+);
+writeFileSync(
+	history2021FirstWorldWarLineCountMismatchPath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'aqa-history-2021-june-paper-1-section-b-option-a-conflict-and-tension-the-first-world-war-1894-1918-qp',
+				docType: 'question_paper'
+			},
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme' },
+			questions: [
+				{
+					sourceQuestionRef: '04.0',
+					promptText: 'Write an account of the First World War.',
+					marks: 16,
+					pageStart: 8,
+					pageEnd: 11,
+					response: { kind: 'lines', lineCount: 70 },
+					markSchemeItems: [{ itemType: 'mark', text: 'Develops a relevant account.', marks: 1 }],
+					markChecklist: [{ text: 'Develop a relevant account.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: 'A developed account uses relevant examples and explanation.' }
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const history2021FirstWorldWarLineCountFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${history2021FirstWorldWarLineCountMismatchPath}`,
+		'--expected-marks=16',
+		'--expected-questions=1'
+	]
+);
+if (!history2021FirstWorldWarLineCountFailure.includes('known_response_line_count_mismatch')) {
+	fail(
+		'Codex helper validation did not reject the History 2021 First World War line-count guardrail.',
+		{
+			history2021FirstWorldWarLineCountFailure
+		}
+	);
+}
+
 const missingKnownAllowancePath = path.join(helperNormalizeDir, 'missing-known-allowance.json');
 writeFileSync(
 	missingKnownAllowancePath,
@@ -7079,6 +7128,51 @@ if (
 ) {
 	fail('Solvability context omitted learner-visible key block text or lineCount response data.', {
 		keyBlockSolvabilityContext
+	});
+}
+
+const keyItemsSolvabilityContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '01.1',
+				parentSourceQuestionRef: '01',
+				displayOrder: 1,
+				promptText: 'How convincing are Interpretations A and B?',
+				stemBlocks: [
+					{
+						kind: 'key',
+						label: 'Interpretations A and B',
+						keyItems: [
+							{
+								label: 'Interpretation A',
+								text: 'A says immigrants were treated as a threat.'
+							},
+							{
+								label: 'Interpretation B',
+								text: 'B says immigrants contributed to American society.'
+							}
+						]
+					}
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Compare the two interpretations.' }],
+				response: { kind: 'lines', lineCount: 21 },
+				markSchemeItems: [{ itemType: 'mark', text: 'Uses both interpretations.' }]
+			}
+		]
+	},
+	'01.1',
+	{ attachImages: false }
+);
+const keyItemsVisibleText = JSON.stringify(
+	keyItemsSolvabilityContext.studentVisibleContext.sections
+);
+if (
+	!keyItemsVisibleText.includes('A says immigrants were treated as a threat.') ||
+	!keyItemsVisibleText.includes('B says immigrants contributed to American society.')
+) {
+	fail('Solvability context omitted keyItems from learner-visible key blocks.', {
+		keyItemsSolvabilityContext
 	});
 }
 
