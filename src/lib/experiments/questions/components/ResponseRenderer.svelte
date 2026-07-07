@@ -47,43 +47,231 @@
 		value: string;
 	};
 
+	const CUSTOM_CARET_CLASS = 'custom-lined-caret';
+
 	function numericStyleValue(value: string) {
 		const parsed = Number.parseFloat(value);
 		return Number.isFinite(parsed) ? parsed : 0;
 	}
 
-	function resizeLinedTextarea(node: HTMLTextAreaElement, minLines: number) {
+	function visibleLogicalLineCount(value: string) {
+		return value.length === 0 ? 1 : value.split('\n').length;
+	}
+
+	function syncTextareaMeasure(
+		node: HTMLTextAreaElement,
+		measure: HTMLDivElement,
+		styles = getComputedStyle(node)
+	) {
+		const width = node.clientWidth || node.getBoundingClientRect().width;
+		measure.style.width = `${width}px`;
+		measure.style.boxSizing = styles.boxSizing;
+		measure.style.border = styles.border;
+		measure.style.padding = styles.padding;
+		measure.style.font = styles.font;
+		measure.style.letterSpacing = styles.letterSpacing;
+		measure.style.lineHeight = styles.lineHeight;
+		measure.style.textTransform = styles.textTransform;
+		measure.style.wordBreak = styles.wordBreak;
+		measure.style.wordSpacing = styles.wordSpacing;
+		measure.style.whiteSpace = 'pre-wrap';
+		measure.style.overflowWrap = 'break-word';
+		measure.style.tabSize = styles.tabSize;
+	}
+
+	function setMeasureText(measure: HTMLDivElement, value: string) {
+		measure.textContent = value.length > 0 ? value : '\u00a0';
+		if (value.endsWith('\n')) {
+			measure.appendChild(document.createTextNode('\u00a0'));
+		}
+	}
+
+	function resizeLinedTextarea(
+		node: HTMLTextAreaElement,
+		measure: HTMLDivElement,
+		minLines: number
+	): boolean {
 		const styles = getComputedStyle(node);
 		const lineHeight = numericStyleValue(styles.lineHeight);
-		if (lineHeight <= 0) return;
+		if (lineHeight <= 0) return false;
+
+		syncTextareaMeasure(node, measure, styles);
+		setMeasureText(measure, node.value);
 
 		const paddingBlock =
 			numericStyleValue(styles.paddingTop) + numericStyleValue(styles.paddingBottom);
 		const borderBlock =
 			numericStyleValue(styles.borderTopWidth) + numericStyleValue(styles.borderBottomWidth);
 		const minimumLines = Math.max(1, Math.ceil(minLines));
-
-		node.style.height = 'auto';
-		const contentHeight = Math.max(0, node.scrollHeight - paddingBlock);
+		const contentHeight = Math.max(0, measure.scrollHeight - paddingBlock);
 		const contentLines = Math.max(1, Math.ceil(contentHeight / lineHeight));
 		const visibleLines = Math.max(minimumLines, contentLines);
 		const targetHeight = Math.ceil(visibleLines * lineHeight + paddingBlock + borderBlock);
+		const currentHeight = numericStyleValue(node.style.height);
+		const heightChanged = Math.abs(currentHeight - targetHeight) > 0.5;
 
 		node.style.setProperty('--answer-visible-line-count', String(visibleLines));
-		node.style.height = `${targetHeight}px`;
+		if (heightChanged) {
+			node.style.height = `${targetHeight}px`;
+		}
+		return heightChanged;
+	}
+
+	function updateLinedTextareaCaret(
+		node: HTMLTextAreaElement,
+		measure: HTMLDivElement,
+		caret: HTMLSpanElement
+	) {
+		const selectionStart = node.selectionStart;
+		const selectionEnd = node.selectionEnd;
+		if (
+			document.activeElement !== node ||
+			selectionStart === null ||
+			selectionStart !== selectionEnd
+		) {
+			caret.hidden = true;
+			return;
+		}
+
+		const styles = getComputedStyle(node);
+		const lineHeight = numericStyleValue(styles.lineHeight);
+		const fontSize = numericStyleValue(styles.fontSize);
+		if (lineHeight <= 0 || fontSize <= 0) {
+			caret.hidden = true;
+			return;
+		}
+
+		syncTextareaMeasure(node, measure, styles);
+		measure.textContent = '';
+		const beforeCaret = node.value.slice(0, selectionStart);
+		if (beforeCaret.length > 0) {
+			measure.appendChild(document.createTextNode(beforeCaret));
+		}
+		const marker = document.createElement('span');
+		marker.textContent = '\u200b';
+		measure.appendChild(marker);
+
+		const markerRect = marker.getBoundingClientRect();
+		const measureRect = measure.getBoundingClientRect();
+		const nodeRect = node.getBoundingClientRect();
+		const markerHeight = markerRect.height || fontSize;
+		const markerLineTop =
+			markerHeight >= lineHeight - 1
+				? markerRect.top - measureRect.top
+				: markerRect.top - measureRect.top - (lineHeight - markerHeight) / 2;
+		const caretHeight = Math.max(12, Math.min(lineHeight - 4, fontSize));
+		const caretLeft = nodeRect.left + window.scrollX + markerRect.left - measureRect.left;
+		const caretTop = nodeRect.top + window.scrollY + markerLineTop + (lineHeight - caretHeight) / 2;
+
+		caret.hidden = false;
+		caret.style.left = `${caretLeft}px`;
+		caret.style.top = `${caretTop}px`;
+		caret.style.height = `${caretHeight}px`;
+		caret.style.backgroundColor =
+			styles.getPropertyValue('--qc-response-caret').trim() || '#2f6fff';
+	}
+
+	function placeCaretOnEmptyRule(node: HTMLTextAreaElement, event: PointerEvent, minLines: number) {
+		if (event.button !== 0 || !event.isPrimary) return false;
+
+		const styles = getComputedStyle(node);
+		const lineHeight = numericStyleValue(styles.lineHeight);
+		if (lineHeight <= 0) return false;
+
+		const rect = node.getBoundingClientRect();
+		const paddingTop = numericStyleValue(styles.paddingTop);
+		const visibleLines = Math.max(
+			1,
+			Number.parseInt(styles.getPropertyValue('--answer-visible-line-count'), 10) || minLines
+		);
+		const targetLine = Math.max(
+			1,
+			Math.min(visibleLines, Math.floor((event.clientY - rect.top - paddingTop) / lineHeight) + 1)
+		);
+		const currentLineCount = visibleLogicalLineCount(node.value);
+		const hasFreshTrailingLine = node.value.endsWith('\n');
+		if (targetLine < currentLineCount) return false;
+		if (targetLine === currentLineCount && !hasFreshTrailingLine) return false;
+
+		event.preventDefault();
+		node.focus({ preventScroll: true });
+		if (targetLine > currentLineCount) {
+			node.value = `${node.value}${'\n'.repeat(targetLine - currentLineCount)}`;
+			node.dispatchEvent(new Event('input', { bubbles: true }));
+		}
+		node.setSelectionRange(node.value.length, node.value.length);
+		return true;
 	}
 
 	function autogrowTextarea(node: HTMLTextAreaElement, params: AutogrowTextareaParams) {
 		let current = params;
 		let frame = 0;
+		let scrollBeforeInput: { x: number; y: number; height: number } | null = null;
+		const measure = document.createElement('div');
+		const caret = document.createElement('span');
+
+		measure.setAttribute('aria-hidden', 'true');
+		measure.style.position = 'absolute';
+		measure.style.left = '-10000px';
+		measure.style.top = '0';
+		measure.style.visibility = 'hidden';
+		measure.style.pointerEvents = 'none';
+		measure.style.overflow = 'hidden';
+		measure.style.minHeight = '0';
+		measure.style.height = 'auto';
+		caret.className = 'qc-lined-textarea-caret';
+		caret.hidden = true;
+		document.body.appendChild(measure);
+		document.body.appendChild(caret);
+		node.classList.add(CUSTOM_CARET_CLASS);
 
 		function scheduleResize() {
 			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(() => resizeLinedTextarea(node, current.minLines));
+			frame = requestAnimationFrame(() => {
+				const heightChanged = resizeLinedTextarea(node, measure, current.minLines);
+				const restoreScroll = scrollBeforeInput;
+				scrollBeforeInput = null;
+				if (
+					restoreScroll &&
+					!heightChanged &&
+					Math.abs(node.getBoundingClientRect().height - restoreScroll.height) <= 1
+				) {
+					window.scrollTo(restoreScroll.x, restoreScroll.y);
+					requestAnimationFrame(() => {
+						window.scrollTo(restoreScroll.x, restoreScroll.y);
+						updateLinedTextareaCaret(node, measure, caret);
+					});
+				}
+				updateLinedTextareaCaret(node, measure, caret);
+			});
 		}
 
+		function handleBeforeInput() {
+			scrollBeforeInput = {
+				x: window.scrollX,
+				y: window.scrollY,
+				height: node.getBoundingClientRect().height
+			};
+		}
+
+		function handlePointerDown(event: PointerEvent) {
+			if (placeCaretOnEmptyRule(node, event, current.minLines)) {
+				scheduleResize();
+			}
+		}
+
+		node.addEventListener('beforeinput', handleBeforeInput);
 		node.addEventListener('input', scheduleResize);
+		node.addEventListener('focus', scheduleResize);
+		node.addEventListener('blur', scheduleResize);
+		node.addEventListener('click', scheduleResize);
+		node.addEventListener('keyup', scheduleResize);
+		node.addEventListener('pointerdown', handlePointerDown);
+		node.addEventListener('select', scheduleResize);
+		document.addEventListener('selectionchange', scheduleResize);
 		window.addEventListener('resize', scheduleResize);
+		window.visualViewport?.addEventListener('resize', scheduleResize);
+		window.visualViewport?.addEventListener('scroll', scheduleResize);
 		scheduleResize();
 
 		return {
@@ -93,8 +281,21 @@
 			},
 			destroy() {
 				cancelAnimationFrame(frame);
+				node.removeEventListener('beforeinput', handleBeforeInput);
 				node.removeEventListener('input', scheduleResize);
+				node.removeEventListener('focus', scheduleResize);
+				node.removeEventListener('blur', scheduleResize);
+				node.removeEventListener('click', scheduleResize);
+				node.removeEventListener('keyup', scheduleResize);
+				node.removeEventListener('pointerdown', handlePointerDown);
+				node.removeEventListener('select', scheduleResize);
+				document.removeEventListener('selectionchange', scheduleResize);
 				window.removeEventListener('resize', scheduleResize);
+				window.visualViewport?.removeEventListener('resize', scheduleResize);
+				window.visualViewport?.removeEventListener('scroll', scheduleResize);
+				node.classList.remove(CUSTOM_CARET_CLASS);
+				measure.remove();
+				caret.remove();
 			}
 		};
 	}
@@ -890,6 +1091,7 @@
 		--answer-line-height: 1.9rem;
 		--answer-text-offset: 0.32rem;
 		--answer-visible-line-count: var(--answer-line-count);
+		--qc-response-caret: #2f6fff;
 		box-sizing: border-box;
 		display: block;
 		min-height: calc(
@@ -903,6 +1105,7 @@
 		line-height: var(--answer-line-height);
 		resize: none;
 		overflow: hidden;
+		overflow-anchor: none;
 		background-color: var(--qc-response-textarea-bg, transparent);
 		background-image: linear-gradient(
 			to bottom,
@@ -911,6 +1114,30 @@
 		);
 		background-size: 100% var(--answer-line-height);
 		background-attachment: local;
+	}
+
+	:global(.lined-textarea.custom-lined-caret) {
+		caret-color: transparent;
+	}
+
+	:global(.qc-lined-textarea-caret) {
+		position: absolute;
+		z-index: 10000;
+		width: 2px;
+		border-radius: 999px;
+		pointer-events: none;
+		animation: qc-lined-textarea-caret-blink 1s steps(1, end) infinite;
+	}
+
+	@keyframes qc-lined-textarea-caret-blink {
+		0%,
+		54% {
+			opacity: 1;
+		}
+		55%,
+		100% {
+			opacity: 0;
+		}
 	}
 
 	.line-input {
