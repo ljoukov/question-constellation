@@ -888,13 +888,18 @@
 
 	.lined-textarea {
 		--answer-line-height: 1.9rem;
+		--answer-text-offset: 0.32rem;
 		--answer-visible-line-count: var(--answer-line-count);
 		box-sizing: border-box;
 		display: block;
-		min-height: calc(var(--answer-line-count) * var(--answer-line-height));
-		height: calc(var(--answer-visible-line-count) * var(--answer-line-height));
+		min-height: calc(
+			var(--answer-line-count) * var(--answer-line-height) + var(--answer-text-offset)
+		);
+		height: calc(
+			var(--answer-visible-line-count) * var(--answer-line-height) + var(--answer-text-offset)
+		);
 		margin: 0.85rem 0 0.2rem;
-		padding: 0 0.15rem;
+		padding: var(--answer-text-offset) 0.15rem 0;
 		line-height: var(--answer-line-height);
 		resize: none;
 		overflow: hidden;
