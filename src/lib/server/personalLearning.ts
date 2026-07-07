@@ -418,6 +418,8 @@ const personalTableStatements = [
 	  ON user_question_attempts (user_id, created_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_question
 	  ON user_question_attempts (question_id, user_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_question
+	  ON user_question_attempts (user_id, question_id)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_profile_subjects_user_enabled
 	  ON user_profile_subjects (user_id, enabled, subject)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_status
@@ -575,7 +577,8 @@ function canonicalLearnerSubject(value: string | null | undefined): string {
 	const normalized = (value ?? '').trim().toLowerCase();
 	const matched = profileSubjects().find((subject) => subject.toLowerCase() === normalized);
 	if (matched) return matched;
-	if (normalized.includes('computer') || normalized.includes('computing')) return 'Computer Science';
+	if (normalized.includes('computer') || normalized.includes('computing'))
+		return 'Computer Science';
 	if (normalized.includes('geography')) return 'Geography';
 	if (normalized.includes('history')) return 'History';
 	if (normalized.includes('english')) return 'English';
@@ -584,6 +587,12 @@ function canonicalLearnerSubject(value: string | null | undefined): string {
 	if (normalized.includes('physics')) return 'Physics';
 	if (normalized.includes('combined science') || normalized.includes('science')) return 'Biology';
 	return 'Biology';
+}
+
+function canonicalLearnerSubjectOrNull(value: string | null | undefined): string | null {
+	const normalized = (value ?? '').trim();
+	if (!normalized) return null;
+	return canonicalLearnerSubject(normalized);
 }
 
 function subjectSupportsRecall(subject: string): boolean {
@@ -635,32 +644,10 @@ function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSu
 	};
 }
 
-async function ensureDefaultLearnerSubjects(profile: UserProfile): Promise<void> {
-	for (const subject of profileSubjects()) {
-		const defaults = defaultLearnerSubject(profile, subject);
-		await executeQuery(
-			`INSERT INTO user_profile_subjects (
-			   user_id, subject, board, qualification, course, tier, enabled, current_grade, target_grade
-			 )
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-			 ON CONFLICT(user_id, subject) DO NOTHING`,
-			[
-				profile.uid,
-				subject,
-				defaults.board,
-				defaults.qualification,
-				defaults.course,
-				defaults.tier,
-				defaults.enabled ? 1 : 0,
-				defaults.currentGrade,
-				defaults.targetGrade
-			]
-		);
-	}
-}
-
-async function listLearnerSubjects(userId: string, profile: UserProfile): Promise<LearnerSubject[]> {
-	await ensureDefaultLearnerSubjects(profile);
+async function listLearnerSubjects(
+	userId: string,
+	profile: UserProfile
+): Promise<LearnerSubject[]> {
 	const rows = await queryRows<UserProfileSubjectRow>(
 		`SELECT user_id, subject, board, qualification, course, tier, enabled,
 		        current_grade, target_grade, created_at, updated_at
@@ -668,10 +655,12 @@ async function listLearnerSubjects(userId: string, profile: UserProfile): Promis
 		 WHERE user_id = ?`,
 		[userId]
 	);
-	const bySubject = new Map(rows.map((row) => {
-		const subject = toLearnerSubject(row);
-		return [subject.subject, subject] as const;
-	}));
+	const bySubject = new Map(
+		rows.map((row) => {
+			const subject = toLearnerSubject(row);
+			return [subject.subject, subject] as const;
+		})
+	);
 	return profileSubjects().map(
 		(subject) => bySubject.get(subject) ?? defaultLearnerSubject(profile, subject)
 	);
@@ -741,9 +730,30 @@ export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
 		   last_seen_at = CURRENT_TIMESTAMP`,
 		[user.uid, user.email, user.name, user.photoUrl]
 	);
-	const profile = await readUserProfile(user.uid);
-	await ensureDefaultLearnerSubjects(profile);
-	return profile;
+	return await readUserProfile(user.uid);
+}
+
+async function getOrCreateUserProfile(user: AdminUser): Promise<UserProfile> {
+	const existing = await queryFirst<UserProfileRow>(
+		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
+		        selected_subject, selected_tier, created_at, updated_at, last_seen_at
+		 FROM user_profiles
+		 WHERE uid = ?`,
+		[user.uid]
+	).catch(async () => {
+		await ensurePersonalLearningTables();
+		return null;
+	});
+	if (existing) return toProfile(existing);
+
+	await ensurePersonalLearningTables();
+	await executeQuery(
+		`INSERT INTO user_profiles (uid, email, name, photo_url, selected_board, selected_subject)
+		 VALUES (?, ?, ?, ?, 'AQA', 'Biology')
+		 ON CONFLICT(uid) DO NOTHING`,
+		[user.uid, user.email, user.name, user.photoUrl]
+	);
+	return await readUserProfile(user.uid);
 }
 
 export async function updateUserPreferences({
@@ -848,10 +858,8 @@ export async function updateLearnerSubjects({
 	);
 }
 
-export async function getLearnerProfileSettings(
-	user: AdminUser
-): Promise<LearnerProfileSettings> {
-	const profile = await upsertUserProfile(user);
+export async function getLearnerProfileSettings(user: AdminUser): Promise<LearnerProfileSettings> {
+	const profile = await getOrCreateUserProfile(user);
 	return {
 		profile,
 		subjects: await listLearnerSubjects(user.uid, profile),
@@ -947,6 +955,71 @@ async function listActiveGaps(
 	}));
 }
 
+async function listFirstActiveGapBySubject(
+	userId: string,
+	subjects: string[]
+): Promise<Map<string, DashboardGap>> {
+	if (subjects.length === 0) return new Map();
+	const wantedSubjects = new Set(subjects);
+	const rows = await queryRows<DashboardGapRow & { row_number: number }>(
+		`WITH ranked_gaps AS (
+		   SELECT
+		     g.id,
+		     g.answer_chain_id,
+		     g.chain_step_id,
+		     g.source_question_id,
+		     g.gap_band,
+		     g.evidence_count,
+		     g.updated_at,
+		     ac.title AS chain_title,
+		     ac.canonical_chain_text,
+		     s.step_text,
+		     s.display_order AS step_order,
+		     q.prompt_text AS question_title,
+		     q.source_question_ref,
+		     COALESCE(q.board, g.board) AS board,
+		     COALESCE(q.qualification, g.qualification) AS qualification,
+		     COALESCE(q.subject_area, q.subject, g.subject) AS subject,
+		     COALESCE(q.tier, g.tier) AS tier,
+		     q.paper,
+		     q.topic_path_json,
+		     q.marks,
+		     ROW_NUMBER() OVER (
+		       PARTITION BY COALESCE(q.subject_area, q.subject, g.subject, '')
+		       ORDER BY
+		         CASE g.gap_band
+		           WHEN 'large_gap' THEN 0
+		           WHEN 'medium_gap' THEN 1
+		           WHEN 'small_gap' THEN 2
+		           ELSE 3
+		         END,
+		         g.updated_at DESC
+		     ) AS row_number
+		   FROM user_chain_gaps g
+		   JOIN answer_chains ac ON ac.id = g.answer_chain_id
+		   JOIN answer_chain_steps s ON s.id = g.chain_step_id
+		   LEFT JOIN questions q ON q.id = g.source_question_id
+		   WHERE g.user_id = ?
+		     AND g.status = 'active'
+		 )
+		 SELECT *
+		 FROM ranked_gaps
+		 WHERE row_number = 1`,
+		[userId]
+	);
+
+	const gapsBySubject = new Map<string, DashboardGap>();
+	for (const row of rows) {
+		const subject = canonicalLearnerSubjectOrNull(row.subject);
+		if (!subject || !wantedSubjects.has(subject) || gapsBySubject.has(subject)) continue;
+		gapsBySubject.set(subject, {
+			...toDashboardGap(row),
+			questionTitle: questionTitle(row.question_title)
+		});
+	}
+	return gapsBySubject;
+}
+
 async function listRecentAttempts(userId: string, limit = 6): Promise<DashboardAttempt[]> {
 	const rows = await queryRows<DashboardAttemptRow>(
 		`SELECT
@@ -1036,59 +1109,151 @@ type SubjectLearningStats = {
 	averageMarkPercent: number | null;
 };
 
-async function readSubjectLearningStats(
-	userId: string,
-	subject: string
-): Promise<SubjectLearningStats> {
-	const subjectLike = `%${subject.toLowerCase()}%`;
-	const attemptStats = await queryFirst<{
-		attempt_count: number;
-		total_awarded: number | null;
-		total_marks: number | null;
-	}>(
-		`SELECT COUNT(*) AS attempt_count,
-		        SUM(a.awarded_marks) AS total_awarded,
-		        SUM(a.max_marks) AS total_marks
-		 FROM user_question_attempts a
-		 LEFT JOIN questions q ON q.id = a.question_id
-		 WHERE a.user_id = ?
-		   AND LOWER(COALESCE(q.subject_area, q.subject, '')) LIKE ?`,
-		[userId, subjectLike]
-	);
-	const gapStats = await queryFirst<{ active_count: number }>(
-		`SELECT COUNT(*) AS active_count
-		 FROM user_chain_gaps
-		 WHERE user_id = ?
-		   AND status = 'active'
-		   AND LOWER(COALESCE(subject, '')) LIKE ?`,
-		[userId, subjectLike]
-	);
-	const recallStats = await queryFirst<{ review_count: number; due_count: number | null }>(
-		`SELECT COUNT(*) AS review_count,
-		        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
-		 FROM user_recall_card_reviews
-		 WHERE user_id = ?
-		   AND subject = ?`,
-		[userId, subject]
-	);
-	const totalMarks = attemptStats?.total_marks ?? 0;
+type SubjectAttemptStatsRow = {
+	subject: string | null;
+	attempt_count: number;
+	total_awarded: number | null;
+	total_marks: number | null;
+};
 
+type SubjectGapStatsRow = {
+	subject: string | null;
+	active_count: number;
+};
+
+type SubjectRecallStatsRow = {
+	subject: string | null;
+	review_count: number;
+	due_count: number | null;
+};
+
+function emptySubjectStats(): SubjectLearningStats {
 	return {
-		attemptCount: attemptStats?.attempt_count ?? 0,
-		activeGapCount: gapStats?.active_count ?? 0,
-		recallDueCount: recallStats?.due_count ?? 0,
-		recallReviewCount: recallStats?.review_count ?? 0,
-		averageMarkPercent:
-			totalMarks > 0 ? Math.round(((attemptStats?.total_awarded ?? 0) / totalMarks) * 100) : null
+		attemptCount: 0,
+		activeGapCount: 0,
+		recallDueCount: 0,
+		recallReviewCount: 0,
+		averageMarkPercent: null
 	};
 }
 
-async function getNextQuestion(
+function ensureSubjectStats(
+	statsBySubject: Map<string, SubjectLearningStats>,
+	subject: string
+): SubjectLearningStats {
+	const existing = statsBySubject.get(subject);
+	if (existing) return existing;
+	const created = emptySubjectStats();
+	statsBySubject.set(subject, created);
+	return created;
+}
+
+async function readSubjectLearningStatsMap(
+	userId: string,
+	subjects: string[]
+): Promise<Map<string, SubjectLearningStats>> {
+	const wantedSubjects = new Set(subjects);
+	const statsBySubject = new Map(
+		subjects.map((subject) => [subject, emptySubjectStats()] as const)
+	);
+
+	const [attemptRows, gapRows, recallRows] = await Promise.all([
+		queryRows<SubjectAttemptStatsRow>(
+			`SELECT COALESCE(q.subject_area, q.subject, '') AS subject,
+			        COUNT(*) AS attempt_count,
+			        SUM(a.awarded_marks) AS total_awarded,
+			        SUM(a.max_marks) AS total_marks
+			 FROM user_question_attempts a
+			 LEFT JOIN questions q ON q.id = a.question_id
+			 WHERE a.user_id = ?
+			 GROUP BY COALESCE(q.subject_area, q.subject, '')`,
+			[userId]
+		),
+		queryRows<SubjectGapStatsRow>(
+			`SELECT COALESCE(q.subject_area, q.subject, g.subject, '') AS subject,
+			        COUNT(*) AS active_count
+			 FROM user_chain_gaps g
+			 LEFT JOIN questions q ON q.id = g.source_question_id
+			 WHERE g.user_id = ?
+			   AND g.status = 'active'
+			 GROUP BY COALESCE(q.subject_area, q.subject, g.subject, '')`,
+			[userId]
+		),
+		queryRows<SubjectRecallStatsRow>(
+			`SELECT subject,
+			        COUNT(*) AS review_count,
+			        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
+			 FROM user_recall_card_reviews
+			 WHERE user_id = ?
+			 GROUP BY subject`,
+			[userId]
+		)
+	]);
+
+	const attemptTotalsBySubject = new Map<string, { awarded: number; marks: number }>();
+	for (const row of attemptRows) {
+		const subject = canonicalLearnerSubjectOrNull(row.subject);
+		if (!subject || !wantedSubjects.has(subject)) continue;
+		const stats = ensureSubjectStats(statsBySubject, subject);
+		const totals = attemptTotalsBySubject.get(subject) ?? { awarded: 0, marks: 0 };
+		totals.awarded += row.total_awarded ?? 0;
+		totals.marks += row.total_marks ?? 0;
+		attemptTotalsBySubject.set(subject, totals);
+		stats.attemptCount += row.attempt_count;
+	}
+	for (const [subject, totals] of attemptTotalsBySubject) {
+		const stats = ensureSubjectStats(statsBySubject, subject);
+		stats.averageMarkPercent =
+			totals.marks > 0 ? Math.round((totals.awarded / totals.marks) * 100) : null;
+	}
+
+	for (const row of gapRows) {
+		const subject = canonicalLearnerSubjectOrNull(row.subject);
+		if (!subject || !wantedSubjects.has(subject)) continue;
+		const stats = ensureSubjectStats(statsBySubject, subject);
+		stats.activeGapCount += row.active_count;
+	}
+
+	for (const row of recallRows) {
+		const subject = canonicalLearnerSubjectOrNull(row.subject);
+		if (!subject || !wantedSubjects.has(subject)) continue;
+		const stats = ensureSubjectStats(statsBySubject, subject);
+		stats.recallDueCount += row.due_count ?? 0;
+		stats.recallReviewCount += row.review_count;
+	}
+
+	return statsBySubject;
+}
+
+type NextQuestionSubjectColumn = 'subject_area' | 'subject';
+
+function nextQuestionFromRow(row: NextQuestionRow): DashboardNextQuestion {
+	return {
+		id: row.id,
+		href: `/questions/${encodeURIComponent(row.id)}`,
+		title: questionTitle(row.prompt_text, row.metadata_json),
+		meta: metaLine([
+			row.source_question_ref,
+			row.board,
+			row.qualification,
+			row.subject_area ?? row.subject,
+			row.paper,
+			row.marks ? `${row.marks} marks` : null
+		]),
+		chainId: row.answer_chain_id,
+		chainTitle: row.chain_title
+	};
+}
+
+async function getNextQuestionRowsForSubjectColumn(
 	userId: string,
 	selectedSubject: string,
-	learnerSubject?: LearnerSubject
-): Promise<DashboardNextQuestion | null> {
-	const rows = await queryRows<NextQuestionRow>(
+	learnerSubject: LearnerSubject | undefined,
+	subjectColumn: NextQuestionSubjectColumn
+): Promise<NextQuestionRow[]> {
+	const subjectPredicate =
+		subjectColumn === 'subject_area' ? 'q.subject_area = ?' : 'q.subject = ?';
+	return await queryRows<NextQuestionRow>(
 		`SELECT
 		   q.id,
 		   q.prompt_text,
@@ -1105,14 +1270,15 @@ async function getNextQuestion(
 		   qac.answer_chain_id,
 		   ac.title AS chain_title
 		 FROM questions q
-		 JOIN question_answer_chains qac ON qac.question_id = q.id
+		 JOIN question_answer_chains qac INDEXED BY idx_question_answer_chains_question
+		   ON qac.question_id = q.id
 		 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 		 WHERE q.status = 'published'
 		   AND q.needs_human_review = 0
 		   AND qac.needs_human_review = 0
 		   AND ac.status = 'published'
 		   AND ac.needs_human_review = 0
-		   AND LOWER(COALESCE(q.subject_area, q.subject, '')) LIKE ?
+		   AND ${subjectPredicate}
 		   AND (q.board IS NULL OR q.board = ?)
 		   AND (
 		     q.tier IS NULL
@@ -1136,31 +1302,27 @@ async function getNextQuestion(
 		   COALESCE(qac.fit_confidence, 0) DESC,
 		   q.id
 		 LIMIT 1`,
-		[
-			`%${selectedSubject.toLowerCase()}%`,
-			learnerSubject?.board ?? 'AQA',
-			learnerSubject?.tier ?? 'Higher',
-			userId
-		]
+		[selectedSubject, learnerSubject?.board ?? 'AQA', learnerSubject?.tier ?? 'Higher', userId]
 	);
-	const row = rows[0];
-	if (!row) return null;
+}
 
-	return {
-		id: row.id,
-		href: `/questions/${encodeURIComponent(row.id)}`,
-		title: questionTitle(row.prompt_text, row.metadata_json),
-		meta: metaLine([
-			row.source_question_ref,
-			row.board,
-			row.qualification,
-			row.subject_area ?? row.subject,
-			row.paper,
-			row.marks ? `${row.marks} marks` : null
-		]),
-		chainId: row.answer_chain_id,
-		chainTitle: row.chain_title
-	};
+async function getNextQuestion(
+	userId: string,
+	selectedSubject: string,
+	learnerSubject?: LearnerSubject
+): Promise<DashboardNextQuestion | null> {
+	const subjectAreaRows = await getNextQuestionRowsForSubjectColumn(
+		userId,
+		selectedSubject,
+		learnerSubject,
+		'subject_area'
+	);
+	const row =
+		subjectAreaRows[0] ??
+		(
+			await getNextQuestionRowsForSubjectColumn(userId, selectedSubject, learnerSubject, 'subject')
+		)[0];
+	return row ? nextQuestionFromRow(row) : null;
 }
 
 async function questionCountForTopic(subject: string, topicTitle: string): Promise<number> {
@@ -1268,15 +1430,12 @@ function confidenceForSubject(stats: SubjectLearningStats): {
 	};
 }
 
-async function buildSubjectLane(
-	userId: string,
-	learnerSubject: LearnerSubject
-): Promise<SubjectLearningLane> {
-	const [stats, openGaps, nextQuestion] = await Promise.all([
-		readSubjectLearningStats(userId, learnerSubject.subject),
-		listActiveGaps(userId, 1, learnerSubject.subject),
-		getNextQuestion(userId, learnerSubject.subject, learnerSubject)
-	]);
+function buildSubjectLane(
+	learnerSubject: LearnerSubject,
+	stats: SubjectLearningStats,
+	openGap: DashboardGap | null,
+	nextQuestion: DashboardNextQuestion | null
+): SubjectLearningLane {
 	const confidence = confidenceForSubject(stats);
 	const supportsRecall = subjectSupportsRecall(learnerSubject.subject);
 	const recallHref = `/recall?${new URLSearchParams({
@@ -1285,8 +1444,8 @@ async function buildSubjectLane(
 	}).toString()}`;
 	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
-	if (openGaps[0]) {
-		primaryAction = { label: 'Fix mistake', href: openGaps[0].href, kind: 'gap' };
+	if (openGap) {
+		primaryAction = { label: 'Fix mistake', href: openGap.href, kind: 'gap' };
 	} else if (supportsRecall && stats.recallDueCount > 0) {
 		primaryAction = { label: 'Review flashcards', href: recallHref, kind: 'recall' };
 	} else if (nextQuestion) {
@@ -1312,7 +1471,7 @@ async function buildSubjectLane(
 		href: browseHref,
 		recallHref,
 		practiceHref: nextQuestion?.href ?? browseHref,
-		gapsHref: openGaps[0]?.href ?? browseHref,
+		gapsHref: openGap?.href ?? browseHref,
 		attemptCount: stats.attemptCount,
 		activeGapCount: stats.activeGapCount,
 		recallDueCount: stats.recallDueCount,
@@ -1322,28 +1481,48 @@ async function buildSubjectLane(
 		confidenceLabel: confidence.label,
 		confidenceDetail: confidence.detail,
 		nextQuestion,
-		openGap: openGaps[0] ?? null,
+		openGap,
 		primaryAction,
 		supportsRecall
 	};
 }
 
 export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDashboard> {
-	const profile = await upsertUserProfile(user);
+	const profile = await getOrCreateUserProfile(user);
 	const learnerSubjects = await listLearnerSubjects(user.uid, profile);
 	const enabledSubjects = learnerSubjects.filter((entry) => entry.enabled);
+	const enabledSubjectNames = enabledSubjects.map((entry) => entry.subject);
 	const primarySubject =
 		enabledSubjects.find((entry) => entry.subject === profile.selectedSubject) ??
 		enabledSubjects[0] ??
 		learnerSubjects[0];
-	const [stats, activeGaps, recentAttempts, nextQuestion, subjectLanes] = await Promise.all([
+	const [
+		stats,
+		activeGaps,
+		recentAttempts,
+		subjectStatsBySubject,
+		openGapsBySubject,
+		nextQuestions
+	] = await Promise.all([
 		readDashboardStats(user.uid),
 		listActiveGaps(user.uid),
 		listRecentAttempts(user.uid),
-		getNextQuestion(user.uid, primarySubject.subject, primarySubject),
-		Promise.all(enabledSubjects.map((entry) => buildSubjectLane(user.uid, entry)))
+		readSubjectLearningStatsMap(user.uid, enabledSubjectNames),
+		listFirstActiveGapBySubject(user.uid, enabledSubjectNames),
+		Promise.all(enabledSubjects.map((entry) => getNextQuestion(user.uid, entry.subject, entry)))
 	]);
-	const curriculum = await buildCurriculumTopics(profile, activeGaps);
+	const subjectLanes = enabledSubjects.map((entry, index) =>
+		buildSubjectLane(
+			entry,
+			subjectStatsBySubject.get(entry.subject) ?? emptySubjectStats(),
+			openGapsBySubject.get(entry.subject) ?? null,
+			nextQuestions[index] ?? null
+		)
+	);
+	const nextQuestion =
+		subjectLanes.find((lane) => lane.subject === primarySubject.subject)?.nextQuestion ??
+		subjectLanes.find((lane) => lane.nextQuestion)?.nextQuestion ??
+		null;
 
 	return {
 		profile,
@@ -1353,7 +1532,13 @@ export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDas
 		activeGaps,
 		recentAttempts,
 		nextQuestion,
-		curriculum,
+		curriculum: {
+			subject: profile.selectedSubject,
+			specificationCode: '',
+			specificationUrl: '',
+			localSpecificationPath: '',
+			topics: []
+		},
 		subjectOptions: profileSubjects()
 	};
 }

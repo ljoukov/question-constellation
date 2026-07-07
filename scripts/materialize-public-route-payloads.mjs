@@ -51,6 +51,9 @@ function practiceRoutePayloadId(chainId, ref) {
 	return `practice:${chainId}:${ref}`;
 }
 
+const EXPLORABLE_CHAINS_PAYLOAD_ID = 'chains:explorable';
+const HOME_PUBLIC_SUMMARY_PAYLOAD_ID = 'home:public-summary';
+
 function practiceRoutePath(chainId, ref) {
 	return `/practice/${encodeURIComponent(chainId)}/${encodeURIComponent(ref)}`;
 }
@@ -303,6 +306,18 @@ function buildLearningChain(row, steps, questions) {
 		primaryRef: firstQuestion.id,
 		accent: subjectAccent(subject),
 		questions: sortedQuestions.map((question) => toQuestionTeaser(question, steps))
+	};
+}
+
+function buildHomePublicSummary(chains) {
+	const subjects = new Set(chains.map((chain) => chain.subject).filter(Boolean));
+	return {
+		featuredChains: chains.slice(0, 3),
+		stats: {
+			chainCount: chains.length,
+			questionCount: chains.reduce((total, chain) => total + chain.questions.length, 0),
+			subjectCount: subjects.size
+		}
 	};
 }
 
@@ -1183,12 +1198,28 @@ export async function materializePublicRoutePayloads({
 	const papersByDocument = await fetchPapersForQuestions({ rootDir, sourceDocumentIds });
 
 	const statements = [
-		{ sql: `DELETE FROM public_route_payloads WHERE route_kind IN ('layout', 'practice')` },
+		{
+			sql: `DELETE FROM public_route_payloads WHERE route_kind IN ('layout', 'practice', 'chains', 'home')`
+		},
 		upsertPayloadStatement({
 			id: 'layout:subject-navigation',
 			routeKind: 'layout',
 			routePath: '/__layout/subject-navigation',
 			payload: subjectNavigation,
+			sourceVersion
+		}),
+		upsertPayloadStatement({
+			id: EXPLORABLE_CHAINS_PAYLOAD_ID,
+			routeKind: 'chains',
+			routePath: '/chains',
+			payload: chains,
+			sourceVersion
+		}),
+		upsertPayloadStatement({
+			id: HOME_PUBLIC_SUMMARY_PAYLOAD_ID,
+			routeKind: 'home',
+			routePath: '/',
+			payload: buildHomePublicSummary(chains),
 			sourceVersion
 		})
 	];

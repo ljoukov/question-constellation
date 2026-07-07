@@ -6,6 +6,11 @@ import {
 	type ChainQuestionTeaser,
 	type LearningChain
 } from '$lib/learningChains';
+import {
+	EXPLORABLE_CHAINS_PAYLOAD_ID,
+	getPublicRoutePayload,
+	HOME_PUBLIC_SUMMARY_PAYLOAD_ID
+} from './publicRoutePayloads';
 import { sourceDocumentSlug } from './questionExperimentData';
 import { queryRows } from './db';
 
@@ -58,6 +63,15 @@ type QuestionMembershipRow = {
 	weak_answer_text: string | null;
 	weak_answer_explanation: string | null;
 	weak_missing_chain_step_ids_json: string | null;
+};
+
+export type HomePagePublicData = {
+	featuredChains: LearningChain[];
+	stats: {
+		chainCount: number;
+		questionCount: number;
+		subjectCount: number;
+	};
 };
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -542,7 +556,37 @@ async function fetchQuestionRowsForChain(chainId: string) {
 	);
 }
 
+function isLearningChainArray(value: unknown): value is LearningChain[] {
+	return (
+		Array.isArray(value) &&
+		value.every(
+			(chain) =>
+				chain &&
+				typeof chain === 'object' &&
+				typeof (chain as LearningChain).id === 'string' &&
+				Array.isArray((chain as LearningChain).questions)
+		)
+	);
+}
+
+function summarizeChains(chains: LearningChain[]): HomePagePublicData {
+	const subjects = new Set(chains.map((chain) => chain.subject).filter(Boolean));
+	return {
+		featuredChains: chains.slice(0, 3),
+		stats: {
+			chainCount: chains.length,
+			questionCount: chains.reduce((total, chain) => total + chain.questions.length, 0),
+			subjectCount: subjects.size
+		}
+	};
+}
+
 export async function getExplorableLearningChains(): Promise<LearningChain[]> {
+	const materialized = await getPublicRoutePayload<unknown>(EXPLORABLE_CHAINS_PAYLOAD_ID).catch(
+		() => null
+	);
+	if (isLearningChainArray(materialized)) return materialized;
+
 	try {
 		const [chains, steps, questions] = await Promise.all([
 			fetchChainRows(),
@@ -567,6 +611,17 @@ export async function getExplorableLearningChains(): Promise<LearningChain[]> {
 		console.error('[learningChainData] falling back to static chains', error);
 		return learningChains;
 	}
+}
+
+export async function getHomePagePublicData(): Promise<HomePagePublicData> {
+	const materialized = await getPublicRoutePayload<HomePagePublicData>(
+		HOME_PUBLIC_SUMMARY_PAYLOAD_ID
+	).catch(() => null);
+	if (materialized && isLearningChainArray(materialized.featuredChains)) {
+		return materialized;
+	}
+
+	return summarizeChains(await getExplorableLearningChains());
 }
 
 export async function getExplorableLearningChain(chainId: string): Promise<LearningChain | null> {

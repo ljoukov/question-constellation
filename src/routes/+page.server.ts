@@ -1,26 +1,32 @@
-import { getExplorableLearningChains } from '$lib/server/learningChainData';
+import { getHomePagePublicData } from '$lib/server/learningChainData';
 import { getPersonalDashboard } from '$lib/server/personalLearning';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const chains = await getExplorableLearningChains();
-	const subjects = new Set(chains.map((chain) => chain.subject).filter(Boolean));
-	const questionCount = chains.reduce((total, chain) => total + chain.questions.length, 0);
-	const dashboard = locals.user
-		? await getPersonalDashboard(locals.user).catch((error) => {
-				console.warn('Failed to load personal dashboard.', error);
-				return null;
-			})
-		: null;
+	if (locals.user) {
+		const dashboard = await getPersonalDashboard(locals.user).catch((error) => {
+			console.warn('Failed to load personal dashboard.', error);
+			return null;
+		});
+
+		return {
+			user: locals.user,
+			dashboard,
+			featuredChains: [],
+			stats: {
+				chainCount: 0,
+				questionCount: 0,
+				subjectCount: 0
+			}
+		};
+	}
+
+	const { featuredChains, stats } = await getHomePagePublicData();
 
 	return {
 		user: locals.user,
-		dashboard,
-		featuredChains: chains.slice(0, 3),
-		stats: {
-			chainCount: chains.length,
-			questionCount,
-			subjectCount: subjects.size
-		}
+		dashboard: null,
+		featuredChains,
+		stats
 	};
 };
