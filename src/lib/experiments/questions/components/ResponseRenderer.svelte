@@ -42,6 +42,63 @@
 	let drawingCanvas = $state<HTMLCanvasElement | null>(null);
 	let drawingActive = $state(false);
 
+	type AutogrowTextareaParams = {
+		minLines: number;
+		value: string;
+	};
+
+	function numericStyleValue(value: string) {
+		const parsed = Number.parseFloat(value);
+		return Number.isFinite(parsed) ? parsed : 0;
+	}
+
+	function resizeLinedTextarea(node: HTMLTextAreaElement, minLines: number) {
+		const styles = getComputedStyle(node);
+		const lineHeight = numericStyleValue(styles.lineHeight);
+		if (lineHeight <= 0) return;
+
+		const paddingBlock =
+			numericStyleValue(styles.paddingTop) + numericStyleValue(styles.paddingBottom);
+		const borderBlock =
+			numericStyleValue(styles.borderTopWidth) + numericStyleValue(styles.borderBottomWidth);
+		const minimumLines = Math.max(1, Math.ceil(minLines));
+
+		node.style.height = 'auto';
+		const contentHeight = Math.max(0, node.scrollHeight - paddingBlock);
+		const contentLines = Math.max(1, Math.ceil(contentHeight / lineHeight));
+		const visibleLines = Math.max(minimumLines, contentLines);
+		const targetHeight = Math.ceil(visibleLines * lineHeight + paddingBlock + borderBlock);
+
+		node.style.setProperty('--answer-visible-line-count', String(visibleLines));
+		node.style.height = `${targetHeight}px`;
+	}
+
+	function autogrowTextarea(node: HTMLTextAreaElement, params: AutogrowTextareaParams) {
+		let current = params;
+		let frame = 0;
+
+		function scheduleResize() {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() => resizeLinedTextarea(node, current.minLines));
+		}
+
+		node.addEventListener('input', scheduleResize);
+		window.addEventListener('resize', scheduleResize);
+		scheduleResize();
+
+		return {
+			update(next: AutogrowTextareaParams) {
+				current = next;
+				scheduleResize();
+			},
+			destroy() {
+				cancelAnimationFrame(frame);
+				node.removeEventListener('input', scheduleResize);
+				window.removeEventListener('resize', scheduleResize);
+			}
+		};
+	}
+
 	$effect(() => {
 		if (response.kind === 'lines' && answer !== textAnswer) {
 			textAnswer = answer;
@@ -467,6 +524,7 @@
 		style={`--answer-line-count: ${response.count}`}
 		aria-label={`${response.count} line answer`}
 		value={textAnswer}
+		use:autogrowTextarea={{ minLines: response.count, value: textAnswer }}
 		oninput={(event) => setTextAnswer(event.currentTarget.value)}
 	></textarea>
 {:else if response.kind === 'labeled-lines'}
@@ -501,10 +559,7 @@
 		{/if}
 		{#each labeledFields() as field (field.label)}
 			{@const fieldLineCount = field.lineCount ?? response.lineCount}
-			<label
-				class="labeled-line"
-				class:multiline={Boolean(fieldLineCount && fieldLineCount > 1)}
-			>
+			<label class="labeled-line" class:multiline={Boolean(fieldLineCount && fieldLineCount > 1)}>
 				<span>{field.label}</span>
 				{#if fieldLineCount && fieldLineCount > 1}
 					<textarea
@@ -513,6 +568,10 @@
 						style={`--answer-line-count: ${fieldLineCount}`}
 						value={labeledAnswers[field.label] ?? ''}
 						aria-label={`${field.label} answer`}
+						use:autogrowTextarea={{
+							minLines: fieldLineCount,
+							value: labeledAnswers[field.label] ?? ''
+						}}
 						oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
 					></textarea>
 				{:else}
@@ -829,12 +888,16 @@
 
 	.lined-textarea {
 		--answer-line-height: 1.9rem;
+		--answer-visible-line-count: var(--answer-line-count);
+		box-sizing: border-box;
 		display: block;
 		min-height: calc(var(--answer-line-count) * var(--answer-line-height));
+		height: calc(var(--answer-visible-line-count) * var(--answer-line-height));
 		margin: 0.85rem 0 0.2rem;
-		padding: 0 0.15rem 0.08rem;
+		padding: 0 0.15rem;
 		line-height: var(--answer-line-height);
-		resize: vertical;
+		resize: none;
+		overflow: hidden;
 		background-color: var(--qc-response-textarea-bg, transparent);
 		background-image: linear-gradient(
 			to bottom,
