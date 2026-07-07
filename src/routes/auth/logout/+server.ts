@@ -10,5 +10,5 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 	clearAuthSessionIdCookie(cookies);
 	clearAdminSessionCookie(cookies);
 	clearDevAdminSessionCookie(cookies);
-	return clientSideRedirect(new URL('/auth/relogin', url));
+	return clientSideRedirect(new URL('/', url));
 };
