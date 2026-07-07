@@ -195,8 +195,8 @@
 
 		event.preventDefault();
 		node.focus({ preventScroll: true });
-		if (targetLine > currentLineCount) {
-			node.value = `${node.value}${'\n'.repeat(targetLine - currentLineCount)}`;
+		if (!hasFreshTrailingLine) {
+			node.value = `${node.value}\n`;
 			node.dispatchEvent(new Event('input', { bubbles: true }));
 		}
 		node.setSelectionRange(node.value.length, node.value.length);
@@ -1088,8 +1088,8 @@
 	}
 
 	.lined-textarea {
-		--answer-line-height: 1.9rem;
-		--answer-text-offset: 0.32rem;
+		--answer-line-height: 30px;
+		--answer-text-offset: 5px;
 		--answer-visible-line-count: var(--answer-line-count);
 		--qc-response-caret: #2f6fff;
 		box-sizing: border-box;
