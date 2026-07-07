@@ -1172,7 +1172,7 @@
 	}
 
 	.stack-card.active.revealed .card-flipper {
-		transform: rotateY(180deg);
+		transform: rotateY(-180deg);
 	}
 
 	.card-face {
@@ -1190,7 +1190,7 @@
 	}
 
 	.card-face.back {
-		transform: rotateY(-180deg);
+		transform: rotateY(180deg);
 	}
 
 	.card-reveal-hitbox {
