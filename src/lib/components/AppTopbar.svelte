@@ -44,14 +44,18 @@
 	let accountMenuOpen = $state(false);
 	let appearanceMenuOpen = $state(false);
 	let appearancePinnedByClick = $state(false);
+	let accountToastMessage = $state('');
+	let accountToastTone = $state<'success' | 'error'>('success');
 	let accountMenuRoot: HTMLDivElement | null = null;
 	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
+	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
 		theme = value;
 	});
 	onDestroy(() => {
 		unsubscribe();
 		clearAppearanceCloseTimer();
+		clearAccountToastTimer();
 	});
 
 	const themeOptions: Array<{ value: ThemePreference; label: string }> = [
@@ -62,6 +66,9 @@
 	const currentUser = $derived((pageState.data.user ?? null) as AdminUser | null);
 	const accountName = $derived(currentUser?.name?.trim() || currentUser?.email || 'Account');
 	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
+	const accountDetailsText = $derived(
+		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
+	);
 	const subjectOptions = $derived(
 		subject && !subjects.includes(subject) ? [subject, ...subjects] : subjects
 	);
@@ -70,6 +77,22 @@
 		if (!appearanceCloseTimer) return;
 		clearTimeout(appearanceCloseTimer);
 		appearanceCloseTimer = null;
+	}
+
+	function clearAccountToastTimer() {
+		if (!accountToastTimer) return;
+		clearTimeout(accountToastTimer);
+		accountToastTimer = null;
+	}
+
+	function showAccountToast(message: string, tone: 'success' | 'error' = 'success') {
+		accountToastMessage = message;
+		accountToastTone = tone;
+		clearAccountToastTimer();
+		accountToastTimer = setTimeout(() => {
+			accountToastMessage = '';
+			accountToastTimer = null;
+		}, 2400);
 	}
 
 	function closeAccountMenu() {
@@ -91,6 +114,50 @@
 	function chooseTheme(value: ThemePreference) {
 		setThemePreference(value);
 		closeAccountMenu();
+	}
+
+	async function writeTextToClipboard(text: string): Promise<void> {
+		if (!browser) throw new Error('Clipboard is only available in the browser.');
+
+		if (navigator.clipboard?.writeText) {
+			try {
+				await navigator.clipboard.writeText(text);
+				return;
+			} catch {
+				// Fall back to a temporary selection for browsers that block the async API.
+			}
+		}
+
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.setAttribute('readonly', '');
+		textarea.style.position = 'fixed';
+		textarea.style.left = '-9999px';
+		textarea.style.top = '0';
+		document.body.appendChild(textarea);
+		textarea.select();
+		textarea.setSelectionRange(0, textarea.value.length);
+
+		try {
+			if (!document.execCommand('copy')) {
+				throw new Error('Copy command was rejected.');
+			}
+		} finally {
+			textarea.remove();
+		}
+	}
+
+	async function copyUserDetails() {
+		if (!currentUser || !accountDetailsText) return;
+
+		try {
+			await writeTextToClipboard(accountDetailsText);
+			showAccountToast('Copied user details to clipboard.');
+			closeAccountMenu();
+		} catch (error) {
+			console.warn('User details could not be copied.', error);
+			showAccountToast('Could not copy user details.', 'error');
+		}
 	}
 
 	function pointerSupportsHover(event: PointerEvent) {
@@ -243,10 +310,17 @@
 			<div class="qc-avatar-popover" role="menu" aria-label="Account">
 				<p class="qc-avatar-popover-title">Account</p>
 				{#if currentUser}
-					<div class="qc-menu-user" role="none">
+					<button
+						type="button"
+						class="qc-menu-user qc-menu-user-copy"
+						role="menuitem"
+						aria-label="Copy signed-in user details"
+						onclick={copyUserDetails}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
 						<strong>{accountName}</strong>
 						<span>{currentUser.email}</span>
-					</div>
+					</button>
 					<a
 						class="qc-menu-item"
 						role="menuitem"
@@ -372,3 +446,14 @@
 		{/if}
 	</div>
 </header>
+
+{#if accountToastMessage}
+	<div
+		class="qc-account-toast"
+		class:error={accountToastTone === 'error'}
+		role="status"
+		aria-live="polite"
+	>
+		{accountToastMessage}
+	</div>
+{/if}

@@ -6197,6 +6197,10 @@ textarea::placeholder {
 	min-width: 0;
 }
 
+.qc-menu-user-copy {
+	justify-items: start;
+}
+
 .qc-menu-user strong,
 .qc-menu-user span {
 	display: block;
@@ -6216,6 +6220,13 @@ textarea::placeholder {
 	color: var(--qc-spark-muted-foreground);
 	font-size: 0.76rem;
 	font-weight: 520;
+}
+
+.qc-menu-user-copy:hover strong,
+.qc-menu-user-copy:focus-visible strong,
+.qc-menu-user-copy:hover span,
+.qc-menu-user-copy:focus-visible span {
+	color: currentColor;
 }
 
 .qc-menu-item {
@@ -6299,6 +6310,32 @@ textarea::placeholder {
 
 .qc-appearance-item svg.visible {
 	opacity: 1;
+}
+
+.qc-account-toast {
+	position: fixed;
+	top: 4.75rem;
+	right: clamp(0.85rem, 2.4vw, 1.5rem);
+	z-index: 60;
+	display: flex;
+	align-items: center;
+	max-width: min(calc(100vw - 1.7rem), 22rem);
+	min-height: 2.4rem;
+	padding: 0.55rem 0.78rem;
+	border: 1px solid rgba(22, 132, 88, 0.22);
+	border-radius: 0.5rem;
+	background: rgba(246, 255, 251, 0.98);
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+	color: #0d3d2f;
+	font-size: 0.88rem;
+	font-weight: 760;
+	line-height: 1.25;
+}
+
+.qc-account-toast.error {
+	border-color: rgba(180, 35, 24, 0.22);
+	background: rgba(255, 248, 247, 0.98);
+	color: #8f1f17;
 }
 
 .qc-chain-back,
@@ -7471,6 +7508,13 @@ textarea::placeholder {
 		height: 2.2rem;
 	}
 
+	.qc-account-toast {
+		top: 4rem;
+		right: 0.68rem;
+		left: 0.68rem;
+		max-width: none;
+	}
+
 	.qc-appearance-submenu {
 		position: static;
 		width: 100%;
@@ -7962,6 +8006,18 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-avatar-popover button.active {
 	background: var(--qc-spark-accent);
 	color: var(--qc-spark-accent-foreground);
+}
+
+:root[data-theme='dark'] .qc-account-toast {
+	border-color: rgba(86, 216, 148, 0.26);
+	background: rgba(6, 28, 22, 0.96);
+	color: #c9f8df;
+}
+
+:root[data-theme='dark'] .qc-account-toast.error {
+	border-color: rgba(252, 165, 165, 0.28);
+	background: rgba(69, 10, 10, 0.94);
+	color: #fee2e2;
 }
 
 :root[data-theme='dark'] .qc-avatar-popover a.qc-menu-item.danger {
