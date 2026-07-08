@@ -11381,3 +11381,257 @@ html[data-theme='dark'] .app-shell {
 		margin-top: 0;
 	}
 }
+
+/* Signed-out homepage communication sections. */
+.qc-home-preview-question {
+	text-decoration: none;
+}
+
+.qc-home-preview-question:hover strong,
+.qc-home-preview-question:focus-visible strong {
+	color: #0d5a3f;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.18em;
+}
+
+.qc-home-papers {
+	width: 100%;
+	max-width: none;
+	padding-inline: max(clamp(1rem, 4vw, 2rem), calc((100vw - 91rem) / 2));
+	border-block: 1px solid rgba(105, 129, 143, 0.15);
+	background:
+		radial-gradient(42rem 24rem at 12% 0%, rgba(250, 204, 21, 0.13), transparent 68%),
+		radial-gradient(38rem 22rem at 88% 10%, rgba(22, 132, 88, 0.12), transparent 70%),
+		rgba(255, 255, 255, 0.28);
+}
+
+.qc-home-papers-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr);
+	gap: clamp(1.4rem, 4vw, 3rem);
+	align-items: start;
+}
+
+.qc-home-papers-copy {
+	margin-bottom: 0;
+}
+
+.qc-home-papers-copy .qc-home-inline-link,
+.qc-home-blog-link {
+	margin-top: 0.35rem;
+}
+
+.qc-home-resource-grid,
+.qc-home-blog-grid {
+	display: grid;
+	gap: 0.75rem;
+	min-width: 0;
+}
+
+.qc-home-resource-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.qc-home-blog-grid {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.qc-home-resource-card,
+.qc-home-blog-card {
+	position: relative;
+	display: grid;
+	align-content: start;
+	min-width: 0;
+	border: 1px solid var(--home-border);
+	border-radius: 0;
+	background: var(--home-surface);
+	color: var(--home-ink);
+	text-decoration: none;
+	box-shadow: none;
+}
+
+.qc-home-resource-card {
+	gap: 0.42rem;
+	min-height: 8.6rem;
+	padding: 1rem 2.55rem 1rem 1rem;
+}
+
+.qc-home-blog-card {
+	gap: 0.5rem;
+	min-height: 13rem;
+	padding: 1rem 1rem 3.1rem;
+}
+
+.qc-home-resource-card:hover,
+.qc-home-resource-card:focus-visible,
+.qc-home-blog-card:hover,
+.qc-home-blog-card:focus-visible {
+	border-color: #168458;
+	box-shadow: 0 0 0 2px rgba(22, 132, 88, 0.18);
+	outline: 0;
+}
+
+.qc-home-resource-card span,
+.qc-home-blog-card span {
+	color: var(--home-muted);
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-transform: uppercase;
+}
+
+.qc-home-resource-card strong,
+.qc-home-blog-card strong {
+	color: var(--home-ink);
+	font-size: 1.05rem;
+	font-weight: 560;
+	line-height: 1.18;
+}
+
+.qc-home-resource-card small,
+.qc-home-blog-card p {
+	margin: 0;
+	color: var(--home-muted);
+	font-size: 0.9rem;
+	font-weight: 400;
+	line-height: 1.42;
+}
+
+.qc-home-resource-card svg {
+	position: absolute;
+	right: 1rem;
+	bottom: 1rem;
+	color: #168458;
+}
+
+.qc-home-blog-card small {
+	position: absolute;
+	left: 1rem;
+	bottom: 1rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.36rem;
+	color: #0d5a3f;
+	font-size: 0.88rem;
+	font-weight: 520;
+}
+
+.qc-home-blog {
+	display: grid;
+	gap: 1rem;
+}
+
+@media (max-width: 980px) {
+	.qc-home-papers-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.qc-home-blog-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 720px) {
+	.qc-home-resource-grid,
+	.qc-home-blog-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.qc-home-resource-card,
+	.qc-home-blog-card {
+		min-height: 0;
+	}
+}
+
+:root[data-theme='dark'] .qc-home-preview-question:hover strong,
+:root[data-theme='dark'] .qc-home-preview-question:focus-visible strong {
+	color: #b8f7d5;
+}
+
+:root[data-theme='dark'] .qc-home-papers {
+	border-block-color: rgba(148, 163, 184, 0.2);
+	background:
+		radial-gradient(42rem 24rem at 12% 0%, rgba(240, 191, 105, 0.08), transparent 68%),
+		radial-gradient(38rem 22rem at 88% 10%, rgba(86, 216, 148, 0.1), transparent 70%),
+		rgba(7, 20, 31, 0.4);
+}
+
+:root[data-theme='dark'] .qc-home-resource-card,
+:root[data-theme='dark'] .qc-home-blog-card {
+	border-color: rgba(226, 232, 240, 0.72);
+	background: rgba(7, 20, 31, 0.68);
+	color: #eaf4ff;
+}
+
+:root[data-theme='dark'] .qc-home-resource-card:hover,
+:root[data-theme='dark'] .qc-home-resource-card:focus-visible,
+:root[data-theme='dark'] .qc-home-blog-card:hover,
+:root[data-theme='dark'] .qc-home-blog-card:focus-visible {
+	border-color: #56d894;
+	box-shadow: 0 0 0 2px rgba(86, 216, 148, 0.22);
+}
+
+:root[data-theme='dark'] .qc-home-resource-card span,
+:root[data-theme='dark'] .qc-home-resource-card small,
+:root[data-theme='dark'] .qc-home-blog-card span,
+:root[data-theme='dark'] .qc-home-blog-card p {
+	color: #a9bbcc;
+}
+
+:root[data-theme='dark'] .qc-home-resource-card strong,
+:root[data-theme='dark'] .qc-home-blog-card strong {
+	color: #eff6ff;
+}
+
+:root[data-theme='dark'] .qc-home-resource-card svg,
+:root[data-theme='dark'] .qc-home-blog-card small {
+	color: #98f0c5;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) .qc-home-preview-question:hover strong,
+	:root:not([data-theme='light']) .qc-home-preview-question:focus-visible strong {
+		color: #b8f7d5;
+	}
+
+	:root:not([data-theme='light']) .qc-home-papers {
+		border-block-color: rgba(148, 163, 184, 0.2);
+		background:
+			radial-gradient(42rem 24rem at 12% 0%, rgba(240, 191, 105, 0.08), transparent 68%),
+			radial-gradient(38rem 22rem at 88% 10%, rgba(86, 216, 148, 0.1), transparent 70%),
+			rgba(7, 20, 31, 0.4);
+	}
+
+	:root:not([data-theme='light']) .qc-home-resource-card,
+	:root:not([data-theme='light']) .qc-home-blog-card {
+		border-color: rgba(226, 232, 240, 0.72);
+		background: rgba(7, 20, 31, 0.68);
+		color: #eaf4ff;
+	}
+
+	:root:not([data-theme='light']) .qc-home-resource-card:hover,
+	:root:not([data-theme='light']) .qc-home-resource-card:focus-visible,
+	:root:not([data-theme='light']) .qc-home-blog-card:hover,
+	:root:not([data-theme='light']) .qc-home-blog-card:focus-visible {
+		border-color: #56d894;
+		box-shadow: 0 0 0 2px rgba(86, 216, 148, 0.22);
+	}
+
+	:root:not([data-theme='light']) .qc-home-resource-card span,
+	:root:not([data-theme='light']) .qc-home-resource-card small,
+	:root:not([data-theme='light']) .qc-home-blog-card span,
+	:root:not([data-theme='light']) .qc-home-blog-card p {
+		color: #a9bbcc;
+	}
+
+	:root:not([data-theme='light']) .qc-home-resource-card strong,
+	:root:not([data-theme='light']) .qc-home-blog-card strong {
+		color: #eff6ff;
+	}
+
+	:root:not([data-theme='light']) .qc-home-resource-card svg,
+	:root:not([data-theme='light']) .qc-home-blog-card small {
+		color: #98f0c5;
+	}
+}

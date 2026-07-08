@@ -1,6 +1,16 @@
 import { getHomePagePublicData } from '$lib/server/learningChainData';
 import { getPersonalDashboard } from '$lib/server/personalLearning';
+import { blogArticles } from '$lib/blog/articles';
+import type { BlogArticle, BlogArticleMeta } from '$lib/blog/types';
 import type { PageServerLoad } from './$types';
+
+function toBlogMeta(article: BlogArticle): BlogArticleMeta {
+	const meta = { ...article };
+	delete (meta as Partial<BlogArticle>).bodyMarkdown;
+	return meta;
+}
+
+const latestArticles = blogArticles.slice(0, 3).map(toBlogMeta);
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
@@ -17,7 +27,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				chainCount: 0,
 				questionCount: 0,
 				subjectCount: 0
-			}
+			},
+			latestArticles
 		};
 	}
 
@@ -27,6 +38,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		user: locals.user,
 		dashboard: null,
 		featuredChains,
-		stats
+		stats,
+		latestArticles
 	};
 };
