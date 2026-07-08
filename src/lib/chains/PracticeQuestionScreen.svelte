@@ -29,10 +29,9 @@
 	const firstQuestion = $derived(chain.questions[0]!);
 	const chainHref = $derived(resolve('/chains/[chainId]', { chainId: chain.id }));
 	const questionRoute = (question: LearningChain['questions'][number]) =>
-		resolve('/practice/[chainId]/[ref]', {
-			chainId: chain.id,
-			ref: question.id ?? question.ref
-		});
+		question.id
+			? resolve('/questions/[questionId]/practice', { questionId: question.id })
+			: chainHref;
 	const questionSourceRef = (question: LearningChain['questions'][number]) =>
 		question.sourceRef ?? question.ref;
 	const questionMatchesRef = (question: LearningChain['questions'][number], ref: string) =>

@@ -138,10 +138,10 @@
 
 	function questionHref(chain: LearningChain, question: ChainQuestionTeaser) {
 		if (question.id) {
-			return resolve('/questions/[questionId]', { questionId: question.id });
+			return resolve('/questions/[questionId]/practice', { questionId: question.id });
 		}
 
-		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref: question.ref });
+		return resolve('/chains/[chainId]', { chainId: chain.id });
 	}
 
 	function markLabel(value: number | null) {
