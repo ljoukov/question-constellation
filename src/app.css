@@ -6293,21 +6293,32 @@ textarea::placeholder {
 		align-items: center;
 		justify-content: center;
 		min-height: 2rem;
-		padding: 0.36rem 0.56rem;
-		border: 1px solid rgba(92, 118, 130, 0.22);
-		border-radius: 999px;
-		background: color-mix(in srgb, #ffffff 82%, transparent);
-		color: #334e62;
-		font-size: 0.8rem;
+		padding: 0.24rem 0.12rem;
+		border: 0;
+		background: transparent;
+		color: #526778;
+		font-size: 0.84rem;
 		font-weight: 650;
 		line-height: 1;
 		text-decoration: none;
 		white-space: nowrap;
 	}
 
-	.qc-topbar-mobile-links a.primary,
-	.qc-topbar-mobile-links a[aria-current='page'] {
-		border-color: rgba(22, 132, 88, 0.18);
+	.qc-topbar-mobile-links a:hover,
+	.qc-topbar-mobile-links a:focus-visible,
+	.qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
+		color: #0d5a3f;
+	}
+
+	.qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
+		text-decoration: underline;
+		text-underline-offset: 0.22rem;
+	}
+
+	.qc-topbar-mobile-links a.primary {
+		padding: 0.36rem 0.56rem;
+		border: 1px solid rgba(22, 132, 88, 0.18);
+		border-radius: 999px;
 		background: rgba(222, 243, 235, 0.84);
 		color: #125b41;
 		font-weight: 760;
@@ -8204,19 +8215,19 @@ html[data-theme='dark'] .app-shell {
 }
 
 :root[data-theme='dark'] .qc-topbar-mobile-links a {
-	border-color: var(--qc-spark-input);
-	background: var(--qc-spark-card);
-	color: #d9e6f5;
+	color: #a9bbcc;
 }
 
 :root[data-theme='dark'] .qc-topbar-nav a:hover,
-:root[data-theme='dark'] .qc-topbar-nav a:focus-visible {
+:root[data-theme='dark'] .qc-topbar-nav a:focus-visible,
+:root[data-theme='dark'] .qc-topbar-mobile-links a:hover,
+:root[data-theme='dark'] .qc-topbar-mobile-links a:focus-visible,
+:root[data-theme='dark'] .qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
 	color: #b8f7d5;
 }
 
 :root[data-theme='dark'] .qc-topbar-nav a[aria-current='page'],
 :root[data-theme='dark'] .qc-topbar-mobile-links a.primary,
-:root[data-theme='dark'] .qc-topbar-mobile-links a[aria-current='page'],
 :root[data-theme='dark'] .qc-topbar-action {
 	border-color: #56d894;
 	background: #061c16;
@@ -8727,19 +8738,19 @@ html[data-theme='dark'] .app-shell {
 	}
 
 	:root:not([data-theme='light']) .qc-topbar-mobile-links a {
-		border-color: rgba(148, 163, 184, 0.28);
-		background: #071426;
-		color: #d9e6f5;
+		color: #a9bbcc;
 	}
 
 	:root:not([data-theme='light']) .qc-topbar-nav a:hover,
-	:root:not([data-theme='light']) .qc-topbar-nav a:focus-visible {
+	:root:not([data-theme='light']) .qc-topbar-nav a:focus-visible,
+	:root:not([data-theme='light']) .qc-topbar-mobile-links a:hover,
+	:root:not([data-theme='light']) .qc-topbar-mobile-links a:focus-visible,
+	:root:not([data-theme='light']) .qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
 		color: #b8f7d5;
 	}
 
 	:root:not([data-theme='light']) .qc-topbar-nav a[aria-current='page'],
 	:root:not([data-theme='light']) .qc-topbar-mobile-links a.primary,
-	:root:not([data-theme='light']) .qc-topbar-mobile-links a[aria-current='page'],
 	:root:not([data-theme='light']) .qc-topbar-action {
 		border-color: #56d894;
 		background: #061c16;

@@ -91,14 +91,6 @@
 	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
-		if (primaryAction) {
-			links.push({
-				href: primaryAction.href,
-				label: primaryAction.label,
-				ariaLabel: primaryAction.ariaLabel,
-				variant: 'primary'
-			});
-		}
 		links.push(
 			...visibleNavLinks
 				.filter((link) => link.mobilePriority)
@@ -108,6 +100,14 @@
 					variant: 'secondary' as const
 				}))
 		);
+		if (primaryAction) {
+			links.push({
+				href: primaryAction.href,
+				label: primaryAction.label,
+				ariaLabel: primaryAction.ariaLabel,
+				variant: 'primary'
+			});
+		}
 		return links;
 	});
 	const topbarClass = $derived(
