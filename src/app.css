@@ -6550,6 +6550,8 @@ textarea::placeholder {
 	font-weight: 500;
 	line-height: 1;
 	opacity: 1;
+	pointer-events: none;
+	z-index: 1;
 }
 
 .qc-browse-pattern li:nth-child(2n)::after,
@@ -6828,15 +6830,15 @@ textarea::placeholder {
 }
 
 .qc-chain-side .qc-thinking-chain li:not(:last-child)::after {
-	content: '↓';
-	top: 100%;
+	content: '';
+	top: calc(100% + 0.06rem);
 	left: 50%;
-	display: grid;
-	width: 1rem;
-	height: 1.05rem;
-	place-items: center;
+	display: block;
+	width: 0.84rem;
+	height: 0.92rem;
 	transform: translateX(-50%);
-	background: none;
+	background: currentColor;
+	clip-path: polygon(42% 0, 58% 0, 58% 52%, 84% 52%, 50% 100%, 16% 52%, 42% 52%);
 	line-height: 1;
 }
 
@@ -7415,15 +7417,15 @@ textarea::placeholder {
 }
 
 .qc-question-rail .qc-thinking-chain li:not(:last-child)::after {
-	content: '↓';
-	top: 100%;
+	content: '';
+	top: calc(100% + 0.06rem);
 	left: 50%;
-	display: grid;
-	width: 1rem;
-	height: 1.05rem;
-	place-items: center;
+	display: block;
+	width: 0.84rem;
+	height: 0.92rem;
 	transform: translateX(-50%);
-	background: none;
+	background: currentColor;
+	clip-path: polygon(42% 0, 58% 0, 58% 52%, 84% 52%, 50% 100%, 16% 52%, 42% 52%);
 	line-height: 1;
 }
 
@@ -7586,14 +7588,15 @@ textarea::placeholder {
 
 	.qc-browse-pattern li:not(:last-child)::after,
 	.qc-thinking-chain li:not(:last-child)::after {
-		content: '↓';
-		top: calc(100% + 0.28rem);
+		content: '';
+		top: calc(100% + 0.08rem);
 		left: 50%;
-		display: grid;
-		width: 1rem;
-		height: 1.05rem;
-		place-items: center;
+		display: block;
+		width: 0.84rem;
+		height: 0.92rem;
 		transform: translateX(-50%);
+		background: currentColor;
+		clip-path: polygon(42% 0, 58% 0, 58% 52%, 84% 52%, 50% 100%, 16% 52%, 42% 52%);
 	}
 
 	.qc-question-card-grid {
