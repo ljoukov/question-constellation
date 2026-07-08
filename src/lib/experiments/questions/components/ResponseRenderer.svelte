@@ -159,9 +159,10 @@
 			markerHeight >= lineHeight - 1
 				? markerRect.top - measureRect.top
 				: markerRect.top - measureRect.top - (lineHeight - markerHeight) / 2;
-		const caretHeight = Math.max(12, Math.min(lineHeight - 4, fontSize));
+		const caretHeight = Math.max(14, Math.min(lineHeight - 3, fontSize + 4));
 		const caretLeft = nodeRect.left + window.scrollX + markerRect.left - measureRect.left;
-		const caretTop = nodeRect.top + window.scrollY + markerLineTop + (lineHeight - caretHeight) / 2;
+		const caretTop =
+			nodeRect.top + window.scrollY + markerLineTop + (lineHeight - caretHeight) / 2 - 1;
 
 		caret.hidden = false;
 		caret.style.left = `${caretLeft}px`;

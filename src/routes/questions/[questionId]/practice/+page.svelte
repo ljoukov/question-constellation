@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { beforeNavigate, pushState, replaceState } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
@@ -27,6 +27,7 @@
 		type PracticeDraftSave,
 		type SavedPracticeDraft
 	} from '$lib/practiceDrafts';
+	import { markLabel } from '$lib/marks';
 	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
@@ -146,6 +147,11 @@
 		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
+	const questionMetaSummary = $derived(
+		[data.question.sourceRef, data.question.meta.paper, markLabel(data.question.meta.marks)]
+			.filter(Boolean)
+			.join(' · ')
+	);
 	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 	const answerRows = $derived(
 		data.question.meta.marks >= 30 ? 16 : data.question.meta.marks >= 10 ? 12 : 8
@@ -332,11 +338,11 @@
 		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
 		if (nextUrl === currentUrl) return;
 
-		if (historyMode === 'replace') {
-			replaceState(nextUrl, page.state);
-			return;
-		}
-		pushState(nextUrl, page.state);
+		void goto(nextUrl, {
+			replaceState: historyMode === 'replace',
+			noScroll: true,
+			keepFocus: true
+		});
 	}
 
 	function clearCheckedResult() {
@@ -588,7 +594,7 @@
 						>
 							<span>{index + 1}</span>
 							<span><MathText text={question.title} /></span>
-							<small>{question.distanceLabel} · {question.meta.marks} marks</small>
+							<small>{question.distanceLabel}</small>
 						</a>
 					{/each}
 				</nav>
@@ -599,9 +605,7 @@
 					<div class="qc-real-question-top">
 						<div>
 							<p>
-								<MathText
-									text={`${data.question.sourceRef} · ${data.question.meta.paper} · ${data.question.meta.marks} marks`}
-								/>
+								<MathText text={questionMetaSummary} />
 							</p>
 							<h2>Write the answer, then check it.</h2>
 						</div>
@@ -609,7 +613,12 @@
 
 					<HintPanel hints={practiceHints} bind:open={showHint} />
 
-					<ExamQuestionCard question={data.question} showTitle={false} />
+					<ExamQuestionCard
+						question={data.question}
+						showTitle={false}
+						showHeader={false}
+						showMeta={false}
+					/>
 
 					<section class="qc-practice-answer-card">
 						<PracticeAnswerEditor

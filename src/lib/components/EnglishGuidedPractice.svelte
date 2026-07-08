@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pushState, replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
@@ -11,6 +11,7 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamResponse } from '$lib/experiments/questions/types';
+	import { markLabel, scoreFractionLabel } from '$lib/marks';
 	import {
 		latestPracticeDraft,
 		queuePracticeDraft,
@@ -150,6 +151,7 @@
 	let gradeResult = $state<GradeResult | null>(null);
 	let hintOpen = $state(false);
 	let lastQueuedDraftSignature = '';
+	let suppressResultRouteRepair = false;
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
@@ -192,7 +194,15 @@
 	const markText = $derived(
 		displayGrade.score === null
 			? 'Not checked'
-			: `${displayGrade.score}/${question.meta.marks} marks`
+			: `${checked ? 'Checked' : 'Draft'} ${scoreFractionLabel(displayGrade.score, question.meta.marks)}`
+	);
+	const metaChips = $derived(
+		uniqueLabels([
+			question.meta.board,
+			question.meta.tier,
+			question.meta.paper,
+			markLabel(question.meta.marks)
+		])
 	);
 	const nextAdvice = $derived(makeNextAdvice(displayGrade.criteria, answerForFeedback));
 	const modelDirection = $derived(makeModelDirection(displayGrade.criteria, answerForFeedback));
@@ -211,6 +221,19 @@
 		const parsed = Number(value);
 		if (!Number.isFinite(parsed)) return 0;
 		return Math.max(0, Math.min(practice.stages.length - 1, Math.floor(parsed) - 1));
+	}
+
+	function uniqueLabels(values: Array<string | null | undefined>) {
+		const seen = new Set<string>();
+		return values
+			.map((value) => value?.replace(/\s+/g, ' ').trim())
+			.filter((value): value is string => Boolean(value))
+			.filter((value) => {
+				const key = value.toLowerCase();
+				if (seen.has(key)) return false;
+				seen.add(key);
+				return true;
+			});
 	}
 
 	function englishPracticeStorageKey(questionId: string) {
@@ -382,8 +405,8 @@
 			model?: boolean;
 		},
 		historyMode: 'push' | 'replace' = 'push'
-	) {
-		if (typeof window === 'undefined') return;
+	): Promise<void> {
+		if (typeof window === 'undefined') return Promise.resolve();
 		const url = new URL(page.url);
 		const nextMode = next.mode ?? mode;
 		const nextStepIndex = Math.max(
@@ -419,21 +442,28 @@
 
 		const nextUrl = `${url.pathname}${url.search}${url.hash}`;
 		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
-		if (nextUrl === currentUrl) return;
+		if (nextUrl === currentUrl) return Promise.resolve();
 
-		if (historyMode === 'replace') {
-			replaceState(nextUrl, page.state);
-			return;
-		}
-		pushState(nextUrl, page.state);
+		return goto(nextUrl, {
+			replaceState: historyMode === 'replace',
+			noScroll: true,
+			keepFocus: true
+		});
 	}
 
-	function clearCheckedResult() {
+	function runWithResultRouteRepairSuppressed(navigate: () => Promise<void>) {
+		suppressResultRouteRepair = true;
+		void navigate().finally(() => {
+			suppressResultRouteRepair = false;
+		});
+	}
+
+	function clearCheckedResult({ updateUrl = true }: { updateUrl?: boolean } = {}) {
 		checkedAnswerText = '';
 		gradeResult = null;
 		gradeError = '';
 		gradePhase = 'idle';
-		if (requestedPracticeView === 'result' || showModelAnswer) {
+		if (updateUrl && (requestedPracticeView === 'result' || showModelAnswer)) {
 			updateEnglishPracticeUrl({ view: 'attempt', model: false }, 'replace');
 		}
 	}
@@ -581,11 +611,23 @@
 		if (nextMode === 'full' && !fullAnswer.trim() && draftedAnswer.trim()) {
 			fullAnswer = draftedAnswer;
 		}
-		clearCheckedResult();
-		updateEnglishPracticeUrl(
-			{ mode: nextMode, stepIndex: nextMode === 'steps' ? activeStageIndex : 0, view: 'attempt' },
-			'push'
-		);
+		runWithResultRouteRepairSuppressed(async () => {
+			clearCheckedResult({ updateUrl: false });
+			persistEnglishPracticeState({
+				mode: nextMode,
+				activeStageIndex: nextMode === 'steps' ? activeStageIndex : 0,
+				view: 'attempt',
+				model: false
+			});
+			await updateEnglishPracticeUrl(
+				{
+					mode: nextMode,
+					stepIndex: nextMode === 'steps' ? activeStageIndex : 0,
+					view: 'attempt'
+				},
+				'push'
+			);
+		});
 	}
 
 	function updateActiveStepAnswer(value: string) {
@@ -607,12 +649,14 @@
 
 	function goToStage(index: number) {
 		const nextIndex = Math.max(0, Math.min(practice.stages.length - 1, index));
-		clearCheckedResult();
-		hintOpen = false;
-		updateEnglishPracticeUrl(
-			{ mode: 'steps', stepIndex: nextIndex, view: 'attempt', model: false },
-			'push'
-		);
+		runWithResultRouteRepairSuppressed(async () => {
+			clearCheckedResult({ updateUrl: false });
+			hintOpen = false;
+			await updateEnglishPracticeUrl(
+				{ mode: 'steps', stepIndex: nextIndex, view: 'attempt', model: false },
+				'push'
+			);
+		});
 	}
 
 	function nextStage() {
@@ -797,6 +841,7 @@
 	});
 
 	$effect(() => {
+		if (suppressResultRouteRepair) return;
 		if (requestedPracticeView === 'result' && !hasCheckedResult && !isChecking) {
 			updateEnglishPracticeUrl({ view: 'attempt', model: false }, 'replace');
 		}
@@ -818,15 +863,20 @@
 		<aside class="qc-english-practice-side" aria-label="Question and mark support">
 			<IconBackLink href={finderHref} label="Back to question finder" />
 			<p class="qc-real-kicker">{question.meta.qualification} {question.meta.subject}</p>
-			<h1><MathText text={question.title} /></h1>
+			<h1>Question {question.sourceRef}</h1>
 			<div class="qc-question-meta-stack" aria-label="Exam metadata">
-				<span>{question.meta.board}</span>
-				<span>{question.meta.paper}</span>
-				<span>{question.sourceRef}</span>
-				<span>{question.meta.marks} marks</span>
+				{#each metaChips as chip (chip)}
+					<span>{chip}</span>
+				{/each}
 			</div>
 
-			<ExamQuestionCard {question} showTitle={false} assetLoading="eager" />
+			<ExamQuestionCard
+				{question}
+				showTitle={false}
+				showHeader={false}
+				showMeta={false}
+				assetLoading="eager"
+			/>
 
 			{#if practice.instructions.length > 0}
 				<section class="qc-english-support-panel">
@@ -994,10 +1044,6 @@
 					</label>
 
 					<div class="qc-english-actions">
-						<button type="button" class="qc-english-secondary" onclick={() => setMode('steps')}>
-							<ListChecks size={18} aria-hidden="true" />
-							Build in steps
-						</button>
 						<button
 							type="button"
 							class="qc-english-primary"
@@ -1489,7 +1535,9 @@
 		.qc-english-practice-side {
 			position: sticky;
 			top: 4rem;
-			min-height: calc(var(--app-viewport-height, 100vh) - 4rem);
+			max-height: calc(var(--app-viewport-height, 100vh) - 4rem);
+			overflow-y: auto;
+			align-self: start;
 			border-right: 1px solid rgba(105, 129, 143, 0.16);
 			border-bottom: 0;
 		}
@@ -1508,11 +1556,6 @@
 
 		.qc-english-practice-main {
 			padding: 0.9rem 0.7rem 1.6rem;
-		}
-
-		.qc-english-practice-side :global(.qc-exam-context) {
-			max-height: 16rem;
-			overflow: auto;
 		}
 
 		.qc-english-practice-side .qc-english-support-panel {

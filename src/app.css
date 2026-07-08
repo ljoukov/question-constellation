@@ -4058,6 +4058,11 @@ textarea::placeholder {
 		border-right: 1px solid rgba(105, 129, 143, 0.16);
 		border-bottom: 0;
 	}
+
+	.qc-exam-card.compact .qc-exam-context {
+		max-height: 22rem;
+		overflow: auto;
+	}
 }
 
 @media (max-width: 620px) {
@@ -7111,8 +7116,8 @@ textarea::placeholder {
 }
 
 .qc-exam-card.compact .qc-exam-context {
-	max-height: 22rem;
-	overflow: auto;
+	max-height: none;
+	overflow: visible;
 }
 
 .qc-exam-context p,
@@ -7755,10 +7760,6 @@ textarea::placeholder {
 
 	.qc-exam-card {
 		padding: 0.72rem;
-	}
-
-	.qc-exam-card.compact .qc-exam-context {
-		max-height: 18rem;
 	}
 
 	.qc-exam-ref,

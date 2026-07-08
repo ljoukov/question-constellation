@@ -1,10 +1,8 @@
 <script lang="ts">
 	import BlockRenderer from '$lib/experiments/questions/components/BlockRenderer.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import type {
-		ExamPaperAsset,
-		ExamQuestionBlock
-	} from '$lib/experiments/questions/types';
+	import type { ExamPaperAsset, ExamQuestionBlock } from '$lib/experiments/questions/types';
+	import { markLabel } from '$lib/marks';
 	import QuestionAssetFigure from './QuestionAssetFigure.svelte';
 
 	type ExamQuestionAsset = {
@@ -42,12 +40,16 @@
 		heading = '',
 		compact = false,
 		showTitle = true,
+		showHeader = true,
+		showMeta = true,
 		assetLoading = 'lazy'
 	}: {
 		question: ExamQuestion;
 		heading?: string;
 		compact?: boolean;
 		showTitle?: boolean;
+		showHeader?: boolean;
+		showMeta?: boolean;
 		assetLoading?: 'eager' | 'lazy';
 	} = $props();
 
@@ -55,9 +57,7 @@
 	const promptLines = $derived(linesFrom(question.prompt));
 	const assets = $derived(question.assets ?? []);
 	const renderingOverlay = $derived(question.renderingOverlay ?? null);
-	const overlayStemBlocks = $derived(
-		(renderingOverlay?.stemBlocks ?? []) as ExamQuestionBlock[]
-	);
+	const overlayStemBlocks = $derived((renderingOverlay?.stemBlocks ?? []) as ExamQuestionBlock[]);
 	const overlayPromptBlocks = $derived(
 		(renderingOverlay?.promptBlocks ?? []) as ExamQuestionBlock[]
 	);
@@ -81,9 +81,7 @@
 	const questionLabel = $derived(
 		question.sourceRef ?? heading ?? question.title ?? 'Exam question'
 	);
-	const marksLabel = $derived(
-		typeof question.meta?.marks === 'number' ? `${question.meta.marks} marks` : ''
-	);
+	const marksLabel = $derived(markLabel(question.meta?.marks));
 	const metaLine = $derived(
 		[
 			question.meta?.board,
@@ -113,14 +111,16 @@
 </script>
 
 <section class="qc-exam-card" class:compact aria-label={questionLabel}>
-	<header class="qc-exam-card-head">
-		<span class="qc-exam-ref"><MathText text={questionLabel} /></span>
-		{#if marksLabel}
-			<span class="qc-exam-marks">{marksLabel}</span>
-		{/if}
-	</header>
+	{#if showHeader}
+		<header class="qc-exam-card-head">
+			<span class="qc-exam-ref"><MathText text={questionLabel} /></span>
+			{#if marksLabel}
+				<span class="qc-exam-marks">{marksLabel}</span>
+			{/if}
+		</header>
+	{/if}
 
-	{#if metaLine}
+	{#if showMeta && metaLine}
 		<p class="qc-exam-meta"><MathText text={metaLine} /></p>
 	{/if}
 
