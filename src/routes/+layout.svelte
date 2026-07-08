@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import { navigating, page } from '$app/state';
+	import { navigating } from '$app/state';
 	import { onMount } from 'svelte';
 	import {
 		applyDocumentTheme,
@@ -8,7 +8,6 @@
 		themePreference,
 		type ThemePreference
 	} from '$lib/themePreference';
-	import { applyViewportZoomPolicy, disableViewportZoomUnless } from '$lib/viewportZoom';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import type { LayoutProps } from './$types';
@@ -25,7 +24,6 @@
 
 	onMount(() => {
 		let stopAutomaticThemeSync = () => {};
-		const stopViewportZoomGuard = disableViewportZoomUnless(() => window.location.pathname);
 		syncAppViewportHeight();
 		window.addEventListener('resize', syncAppViewportHeight);
 		window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
@@ -43,15 +41,10 @@
 		return () => {
 			unsubscribe();
 			stopAutomaticThemeSync();
-			stopViewportZoomGuard();
 			window.removeEventListener('resize', syncAppViewportHeight);
 			window.visualViewport?.removeEventListener('resize', syncAppViewportHeight);
 			window.visualViewport?.removeEventListener('scroll', syncAppViewportHeight);
 		};
-	});
-
-	$effect(() => {
-		applyViewportZoomPolicy(page.url.pathname);
 	});
 
 	$effect(() => {
