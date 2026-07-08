@@ -2750,6 +2750,7 @@ textarea::placeholder {
 
 .qc-gap-memory,
 .qc-gap-compose,
+.qc-gap-checked-answer,
 .qc-gap-result,
 .qc-gap-model,
 .qc-gap-step-review {
@@ -2796,6 +2797,22 @@ textarea::placeholder {
 
 .qc-gap-compose textarea {
 	min-height: 12rem;
+}
+
+.qc-gap-checked-answer {
+	display: grid;
+	gap: 0.52rem;
+	padding: 0.9rem;
+	border: 1px solid rgba(16, 32, 51, 0.18);
+	background: #ffffff;
+	color: #102033;
+}
+
+.qc-gap-checked-answer p {
+	margin: 0;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
 }
 
 .qc-gap-result {
@@ -3732,7 +3749,7 @@ textarea::placeholder {
 }
 
 .qc-real-main .experiment-grade-card {
-	box-shadow: 0 8px 20px rgba(28, 55, 64, 0.06);
+	box-shadow: none;
 }
 
 .qc-thinking-chain,
@@ -7328,6 +7345,10 @@ textarea::placeholder {
 	width: min(100%, 980px);
 }
 
+.qc-check-next-actions {
+	width: min(100%, 980px);
+}
+
 .qc-feedback-markdown {
 	--markdown-text: #283f53;
 	--markdown-strong: #102033;
@@ -7924,6 +7945,7 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-gap-workspace,
 :root[data-theme='dark'] .qc-gap-memory span,
 :root[data-theme='dark'] .qc-gap-step-review span,
+:root[data-theme='dark'] .qc-gap-checked-answer,
 :root[data-theme='dark'] .qc-gap-model {
 	border-color: rgba(148, 163, 184, 0.2);
 	background: rgba(7, 20, 31, 0.72);
@@ -7934,6 +7956,7 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-gap-question-text,
 :root[data-theme='dark'] .qc-gap-compose label,
 :root[data-theme='dark'] .qc-gap-memory span,
+:root[data-theme='dark'] .qc-gap-checked-answer,
 :root[data-theme='dark'] .qc-gap-step-review span {
 	color: #eff6ff;
 }
@@ -9040,7 +9063,6 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-real-main .experiment-grade-card {
 	border-color: rgba(125, 169, 255, 0.7);
-	border-left-color: #72a7ff;
 	background: #071426;
 	color: #eaf4ff;
 	box-shadow: none;
@@ -9048,33 +9070,34 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-real-main .experiment-grade-card.correct {
 	border-color: rgba(86, 216, 148, 0.7);
-	border-left-color: #56d894;
 	background: #061c16;
 }
 
 :root[data-theme='dark'] .qc-real-main .experiment-grade-card.partial {
 	border-color: rgba(240, 191, 105, 0.72);
-	border-left-color: #f0bf69;
 	background: #21180a;
 }
 
 :root[data-theme='dark'] .qc-real-main .experiment-grade-card.incorrect {
 	border-color: rgba(238, 154, 154, 0.72);
-	border-left-color: #ee9a9a;
 	background: #260f14;
 }
 
 :root[data-theme='dark'] .qc-real-main .experiment-grade-card.ungraded {
 	border-color: rgba(198, 203, 213, 0.62);
-	border-left-color: #aab4c4;
 	background: #111827;
 	color: #e5edf7;
 }
 
 :root[data-theme='dark'] .qc-real-main .grade-close-button,
 :root[data-theme='dark'] .qc-real-main .grade-mark-note,
+:root[data-theme='dark'] .qc-real-main .grade-summary,
 :root[data-theme='dark'] .qc-real-main .grade-model-answer-label {
 	color: #a9bbcc;
+}
+
+:root[data-theme='dark'] .qc-real-main .grade-card-label {
+	color: #98f0c5;
 }
 
 :root[data-theme='dark'] .qc-real-main .grade-model-answer {
@@ -9254,7 +9277,6 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-real-main .experiment-grade-card {
 		border-color: rgba(125, 169, 255, 0.7);
-		border-left-color: #72a7ff;
 		background: #071426;
 		color: #eaf4ff;
 		box-shadow: none;
@@ -9262,33 +9284,34 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-real-main .experiment-grade-card.correct {
 		border-color: rgba(86, 216, 148, 0.7);
-		border-left-color: #56d894;
 		background: #061c16;
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .experiment-grade-card.partial {
 		border-color: rgba(240, 191, 105, 0.72);
-		border-left-color: #f0bf69;
 		background: #21180a;
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .experiment-grade-card.incorrect {
 		border-color: rgba(238, 154, 154, 0.72);
-		border-left-color: #ee9a9a;
 		background: #260f14;
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .experiment-grade-card.ungraded {
 		border-color: rgba(198, 203, 213, 0.62);
-		border-left-color: #aab4c4;
 		background: #111827;
 		color: #e5edf7;
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .grade-close-button,
 	:root:not([data-theme='light']) .qc-real-main .grade-mark-note,
+	:root:not([data-theme='light']) .qc-real-main .grade-summary,
 	:root:not([data-theme='light']) .qc-real-main .grade-model-answer-label {
 		color: #a9bbcc;
+	}
+
+	:root:not([data-theme='light']) .qc-real-main .grade-card-label {
+		color: #98f0c5;
 	}
 
 	:root:not([data-theme='light']) .qc-real-main .grade-model-answer {

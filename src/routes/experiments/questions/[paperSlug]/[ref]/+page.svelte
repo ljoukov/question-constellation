@@ -27,12 +27,12 @@
 	const isSubmitting = $derived(submitPhase !== 'idle');
 	const submitLabel = $derived(
 		submitPhase === 'submitting'
-			? 'Submitting...'
+			? 'Checking...'
 			: submitPhase === 'thinking'
-				? 'Thinking...'
+				? 'Reading answer...'
 				: submitPhase === 'grading'
-					? 'Grading...'
-					: 'Submit'
+					? 'Checking marks...'
+					: 'Check answer'
 	);
 
 	const focusedPaper = $derived(focusPaperByRef(data.paper, data.ref));

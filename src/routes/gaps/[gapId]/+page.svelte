@@ -268,6 +268,10 @@
 					</footer>
 				</form>
 			{:else if phase === 'feedback' && finalResult}
+				<section class="qc-gap-checked-answer" aria-label="Checked rewrite">
+					<p class="qc-panel-label">Your rewrite</p>
+					<p><MathText text={finalAnswer} /></p>
+				</section>
 				<section class="qc-gap-result" class:closed={finalResult.gapClosed}>
 					{#if finalResult.gapClosed}
 						<CheckCircle2 size={21} aria-hidden="true" />

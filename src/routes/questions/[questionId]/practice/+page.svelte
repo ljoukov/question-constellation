@@ -352,10 +352,7 @@
 
 		<div class="qc-real-layout qc-question-layout">
 			<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
-				<IconBackLink
-					href={previousHref}
-					label="Back to method"
-				/>
+				<IconBackLink href={previousHref} label="Back to method" />
 				<p class="qc-real-kicker">Guided practice</p>
 				<h1><MathText text={data.constellation.title} /></h1>
 				<div class="qc-practice-progress" aria-label="Practice progress">
@@ -450,31 +447,62 @@
 							<p><MathText text={data.question.sourceRef} /></p>
 							<h2>{resultTitle}</h2>
 						</div>
-						<a class="qc-real-link-button" href={previousHref}>
-							Review method
-						</a>
+						<a class="qc-real-link-button" href={previousHref}> Review method </a>
 					</div>
-
-					<section class="qc-result-summary">
-						<p class="qc-panel-label">Checked answer</p>
-						<p>
-							{gradeResult?.awardedMarks ?? 0} of {gradeResult?.maxMarks ??
-								data.question.meta.marks}
-							marks. {missingItems.length === 0
-								? 'All required steps are present.'
-								: 'Add the missing steps to complete the answer.'}
-						</p>
-					</section>
 
 					<ThinkingChain
 						steps={chainSteps}
 						label="Checked method"
-						note={hasMissingLinks
-							? 'Missing steps are shown below.'
-							: 'The method is complete.'}
+						note={hasMissingLinks ? 'Missing steps are shown below.' : 'The method is complete.'}
 					/>
 
-					<div class="qc-feedback-stack">
+					<section class="qc-repair-panel">
+						<p class="qc-panel-label">Fix the method</p>
+						<div class="qc-repair-chain" aria-label="Method reminder">
+							{#each data.question.repairChain as node (node.id)}
+								<span class:missing={isNodeMissing(node.stepId)}>
+									{#if node.icon === 'zap'}
+										<Zap size={16} aria-hidden="true" />
+									{:else}
+										<Target size={16} aria-hidden="true" />
+									{/if}
+									<MathText text={node.label} />
+								</span>
+							{/each}
+						</div>
+					</section>
+
+					<section class="qc-practice-answer-card">
+						{#if hasMissingLinks}
+							<PracticeAnswerEditor
+								id="rewrite"
+								label="Rewrite with the missing steps"
+								response={structuredResponse}
+								assets={responseAssets}
+								value={rewriteText}
+								rows={answerRows}
+								extended={data.question.meta.marks >= 20}
+								placeholder="Rewrite your answer..."
+								onValueChange={setRewriteText}
+							/>
+						{:else}
+							<p class="qc-practice-answer-label">Your checked answer</p>
+							<p class="qc-checked-answer">{answerText}</p>
+						{/if}
+					</section>
+
+					<section class="qc-feedback-stack" aria-label="Answer feedback">
+						<section class="qc-result-summary">
+							<p class="qc-panel-label">Checked answer</p>
+							<p>
+								{gradeResult?.awardedMarks ?? 0} of {gradeResult?.maxMarks ??
+									data.question.meta.marks}
+								marks. {missingItems.length === 0
+									? 'All required steps are present.'
+									: 'Add the missing steps to complete the answer.'}
+							</p>
+						</section>
+
 						<section class="qc-answer-panel">
 							<p class="qc-panel-label">You included ({includedItems.length})</p>
 							{#if includedItems.length > 0}
@@ -529,52 +557,15 @@
 								<MarkdownContent markdown={feedbackMarkdown} class="qc-feedback-markdown" />
 							</section>
 						{/if}
+					</section>
+
+					<div class="qc-practice-actions qc-check-next-actions" aria-label="Next actions">
+						<a class="qc-action-button primary" href={nextQuestionHref}>
+							<ArrowRight size={18} aria-hidden="true" />
+							Next question
+						</a>
+						<a class="qc-action-button" href={previousHref}>Review method</a>
 					</div>
-
-					<section class="qc-repair-panel">
-						<p class="qc-panel-label">Fix the method</p>
-						<div
-							class="qc-repair-chain"
-							aria-label="Method reminder"
-						>
-							{#each data.question.repairChain as node (node.id)}
-								<span class:missing={isNodeMissing(node.stepId)}>
-									{#if node.icon === 'zap'}
-										<Zap size={16} aria-hidden="true" />
-									{:else}
-										<Target size={16} aria-hidden="true" />
-									{/if}
-									<MathText text={node.label} />
-								</span>
-							{/each}
-						</div>
-					</section>
-
-					<section class="qc-practice-answer-card">
-						{#if hasMissingLinks}
-							<PracticeAnswerEditor
-								id="rewrite"
-								label="Rewrite with the missing steps"
-								response={structuredResponse}
-								assets={responseAssets}
-								value={rewriteText}
-								rows={answerRows}
-								extended={data.question.meta.marks >= 20}
-								placeholder="Rewrite your answer..."
-								onValueChange={setRewriteText}
-							/>
-						{:else}
-							<p class="qc-practice-answer-label">Your checked answer</p>
-							<p class="qc-checked-answer">{answerText}</p>
-						{/if}
-						<div class="qc-practice-actions" aria-label="Next actions">
-							<a class="qc-action-button primary" href={nextQuestionHref}>
-								<ArrowRight size={18} aria-hidden="true" />
-								Next question
-							</a>
-							<a class="qc-action-button" href={previousHref}>Review method</a>
-						</div>
-					</section>
 				{/if}
 			</section>
 		</div>

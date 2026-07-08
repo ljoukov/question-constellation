@@ -117,11 +117,14 @@
 									aria-label={`Feedback for question ${part.ref}`}
 								>
 									<header class="grade-card-header">
-										{#if grade.checklist.length}
-											<p class="grade-mark-total">{marksLabel(grade)}</p>
-										{:else}
-											<h3><MathText text={grade.summary} /></h3>
-										{/if}
+										<div class="grade-card-title">
+											<p class="grade-card-label">Feedback</p>
+											{#if grade.checklist.length}
+												<p class="grade-mark-total">{marksLabel(grade)}</p>
+											{:else}
+												<h3><MathText text={grade.summary} /></h3>
+											{/if}
+										</div>
 										<button
 											type="button"
 											class="grade-close-button"
@@ -133,6 +136,9 @@
 									</header>
 
 									{#if grade.checklist.length}
+										{#if grade.summary}
+											<p class="grade-summary"><MathText text={grade.summary} /></p>
+										{/if}
 										<ul
 											class="grade-mark-list"
 											aria-label={`Mark breakdown for question ${part.ref}`}
@@ -339,12 +345,11 @@
 	.experiment-grade-card {
 		position: relative;
 		margin: 1rem 0 0.35rem;
-		padding: 1rem 1.25rem 1rem 1rem;
-		border: 1px solid #9bb8ff;
-		border-left: 0.42rem solid #356ff2;
-		border-radius: 8px;
-		background: #f6f9ff;
-		color: #10213f;
+		padding: 0.9rem;
+		border: 1px solid #102033;
+		border-radius: 0;
+		background: #ffffff;
+		color: #102033;
 		font-family:
 			Inter,
 			ui-sans-serif,
@@ -353,30 +358,26 @@
 			BlinkMacSystemFont,
 			'Segoe UI',
 			sans-serif;
-		box-shadow: 0 10px 24px rgb(21 47 100 / 10%);
+		box-shadow: none;
 	}
 
 	.experiment-grade-card.correct {
-		border-color: #7bc99b;
-		border-left-color: #15884f;
-		background: #f3fbf6;
+		border-color: #168458;
+		background: #edf9f3;
 	}
 
 	.experiment-grade-card.partial {
-		border-color: #f0bf69;
-		border-left-color: #b66d09;
+		border-color: #b66a16;
 		background: #fff8eb;
 	}
 
 	.experiment-grade-card.incorrect {
-		border-color: #ee9a9a;
-		border-left-color: #c03434;
-		background: #fff5f5;
+		border-color: #9b4a27;
+		background: #fff8ec;
 	}
 
 	.experiment-grade-card.ungraded {
 		border-color: #c6cbd5;
-		border-left-color: #697386;
 		background: #f8f9fb;
 		color: #293142;
 	}
@@ -388,15 +389,30 @@
 		justify-content: space-between;
 	}
 
+	.grade-card-title {
+		display: grid;
+		gap: 0.18rem;
+		min-width: 0;
+	}
+
+	.grade-card-label {
+		margin: 0;
+		color: #0d5a3f;
+		font-size: 0.84rem;
+		font-weight: 560;
+		line-height: 1.22;
+	}
+
 	.grade-card-header h3,
 	.grade-mark-total,
+	.grade-summary,
 	.grade-next-step {
 		margin: 0;
 	}
 
 	.grade-mark-total {
 		font-size: 1rem;
-		font-weight: 400;
+		font-weight: 600;
 		line-height: 1.3;
 	}
 
@@ -431,6 +447,13 @@
 	.grade-next-step {
 		margin-top: 0.65rem;
 		font-size: 0.93rem;
+	}
+
+	.grade-summary {
+		margin-top: 0.55rem;
+		color: #344054;
+		font-size: 0.92rem;
+		line-height: 1.38;
 	}
 
 	.grade-mark-list {
