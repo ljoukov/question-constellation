@@ -4,9 +4,17 @@ import {
 	type ChainQuestionTeaser,
 	type LearningChain
 } from '$lib/learningChains';
+import {
+	canonicalCurriculumSubject,
+	gcseCurriculumTopics,
+	normaliseCurriculumText,
+	slugifyCurriculumPart,
+	type GcseCurriculumTopic
+} from '$lib/curriculum/gcseCurriculum';
 import { subjectSymbol } from '$lib/subjectSymbols.js';
 import { sourceDocumentSlug } from './questionExperimentData';
 import { queryRows } from './db';
+import { getPublicRoutePayload } from './publicRoutePayloads';
 
 type ChainRow = {
 	id: string;
@@ -59,6 +67,38 @@ type QuestionMembershipRow = {
 	weak_missing_chain_step_ids_json: string | null;
 };
 
+type QuestionBankQuestionRow = {
+	id: string;
+	slug: string | null;
+	source_document_id: string;
+	source_question_ref: string | null;
+	display_order: number | null;
+	prompt_text: string;
+	command_word: string | null;
+	marks: number | null;
+	board: string | null;
+	qualification: string | null;
+	subject: string | null;
+	subject_area: string | null;
+	tier: string | null;
+	paper: string | null;
+	component_code: string | null;
+	series: string | null;
+	year: number | null;
+	topic_path_json: string | null;
+	metadata_json: string | null;
+	source_board: string | null;
+	source_qualification: string | null;
+	source_subject: string | null;
+	source_tier: string | null;
+	source_paper: string | null;
+	source_component_code: string | null;
+	source_series: string | null;
+	source_year: number | null;
+	answer_chain_id: string | null;
+	chain_title: string | null;
+};
+
 export type HomePagePublicData = {
 	featuredChains: LearningChain[];
 	stats: {
@@ -68,6 +108,55 @@ export type HomePagePublicData = {
 	};
 };
 
+export type QuestionBankQuestion = {
+	id: string;
+	slug: string | null;
+	title: string;
+	preview: string;
+	board: string;
+	qualification: string;
+	subject: string;
+	tier: string | null;
+	paper: string;
+	componentCode: string | null;
+	series: string | null;
+	year: number | null;
+	topicPath: string[];
+	topic: string;
+	topicId: string;
+	sourceRef: string;
+	marks: number | null;
+	command: string;
+	chainId: string | null;
+	chainTitle: string | null;
+};
+
+export type QuestionBankTopic = {
+	id: string;
+	board: string;
+	qualification: string;
+	subject: string;
+	code: string | null;
+	title: string;
+	paper: string;
+	specUrl: string | null;
+	questionCount: number;
+	chainCount: number;
+	firstQuestionId: string | null;
+	firstQuestionTitle: string | null;
+};
+
+export type QuestionBankBrowseData = {
+	chains: LearningChain[];
+	questions: QuestionBankQuestion[];
+	topics: QuestionBankTopic[];
+};
+
+const questionBankBrowsePayloadId = 'chains:browse';
+const homePublicSummaryPayloadId = 'home:public-summary';
+
+type TopicAssignableQuestion = Omit<QuestionBankQuestion, 'topicId'> & { topicId?: string };
+
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
 	if (!raw) return fallback;
 	try {
@@ -75,6 +164,172 @@ function parseJson<T>(raw: string | null | undefined, fallback: T): T {
 	} catch {
 		return fallback;
 	}
+}
+
+function parseTopicPath(raw: string | null | undefined): string[] {
+	const parsed = parseJson<unknown>(raw, []);
+	if (Array.isArray(parsed)) {
+		return parsed
+			.map((item) => (typeof item === 'string' ? cleanSingleLine(item) : ''))
+			.filter(Boolean);
+	}
+	if (typeof parsed === 'string') {
+		const cleaned = cleanSingleLine(parsed);
+		return cleaned ? [cleaned] : [];
+	}
+	return [];
+}
+
+function cleanNullable(value: string | null | undefined): string | null {
+	const cleaned = (value ?? '').replace(/\s+/g, ' ').trim();
+	return cleaned || null;
+}
+
+function questionSubjectName(row: QuestionBankQuestionRow): string {
+	const sourceSubject = cleanNullable(row.subject) ?? cleanNullable(row.source_subject);
+	const subjectArea = cleanNullable(row.subject_area);
+	const canonical =
+		canonicalCurriculumSubject(sourceSubject) ??
+		canonicalCurriculumSubject(subjectArea) ??
+		canonicalCurriculumSubject(row.paper) ??
+		canonicalCurriculumSubject(row.source_paper);
+	if (canonical && canonical !== 'Science') return canonical;
+	return subjectArea ?? sourceSubject ?? 'Science';
+}
+
+function questionBoard(row: QuestionBankQuestionRow): string {
+	return cleanNullable(row.board) ?? cleanNullable(row.source_board) ?? 'AQA';
+}
+
+function questionQualification(row: QuestionBankQuestionRow): string {
+	return cleanNullable(row.qualification) ?? cleanNullable(row.source_qualification) ?? 'GCSE';
+}
+
+function questionPaper(row: QuestionBankQuestionRow): string {
+	return cleanNullable(row.paper) ?? cleanNullable(row.source_paper) ?? 'Question paper';
+}
+
+function questionComponentCode(row: QuestionBankQuestionRow): string | null {
+	return cleanNullable(row.component_code) ?? cleanNullable(row.source_component_code);
+}
+
+function questionSeries(row: QuestionBankQuestionRow): string | null {
+	return cleanNullable(row.series) ?? cleanNullable(row.source_series);
+}
+
+function questionYear(row: QuestionBankQuestionRow): number | null {
+	return row.year ?? row.source_year ?? null;
+}
+
+function questionBankTitle(row: QuestionBankQuestionRow) {
+	const metadata = parseJson<{ title?: string; stem?: string }>(row.metadata_json, {});
+	if (metadata.title) return truncateRichText(cleanSingleLine(metadata.title), 120);
+	if (metadata.stem) return truncateRichText(cleanSingleLine(metadata.stem), 120);
+	return sentenceTitle(row.prompt_text, row.source_question_ref ?? row.id);
+}
+
+function questionBankPreview(row: QuestionBankQuestionRow) {
+	return teaserFromPrompt(row.prompt_text);
+}
+
+function questionTopic(question: TopicAssignableQuestion): string {
+	return question.topicPath.at(-1) ?? question.paper ?? question.subject;
+}
+
+function questionMatchesCurriculumTopic(
+	question: TopicAssignableQuestion,
+	topic: GcseCurriculumTopic
+): boolean {
+	if (question.subject !== topic.subject) return false;
+	if (question.board.toLowerCase() !== topic.board.toLowerCase()) return false;
+
+	const haystack = normaliseCurriculumText(
+		[
+			question.title,
+			question.preview,
+			question.paper,
+			question.componentCode,
+			question.topicPath.join(' ')
+		].join(' ')
+	);
+	return topic.aliases.some((alias) => {
+		const normalizedAlias = normaliseCurriculumText(alias);
+		return normalizedAlias.length > 0 && haystack.includes(normalizedAlias);
+	});
+}
+
+function curriculumTopicForQuestion(question: TopicAssignableQuestion): GcseCurriculumTopic | null {
+	return (
+		gcseCurriculumTopics.find((topic) => questionMatchesCurriculumTopic(question, topic)) ?? null
+	);
+}
+
+function dynamicTopicId(question: TopicAssignableQuestion): string {
+	return [
+		'imported',
+		slugifyCurriculumPart(question.board),
+		slugifyCurriculumPart(question.subject),
+		slugifyCurriculumPart(questionTopic(question) || question.paper)
+	]
+		.filter(Boolean)
+		.join('-');
+}
+
+function topicSeedForQuestion(question: TopicAssignableQuestion): QuestionBankTopic {
+	const curriculumTopic = curriculumTopicForQuestion(question);
+	if (curriculumTopic) {
+		return {
+			id: curriculumTopic.id,
+			board: curriculumTopic.board,
+			qualification: curriculumTopic.qualification,
+			subject: curriculumTopic.subject,
+			code: curriculumTopic.code,
+			title: curriculumTopic.title,
+			paper: curriculumTopic.paper,
+			specUrl: curriculumTopic.specUrl,
+			questionCount: 0,
+			chainCount: 0,
+			firstQuestionId: null,
+			firstQuestionTitle: null
+		};
+	}
+
+	const topicTitle = questionTopic(question);
+	return {
+		id: dynamicTopicId(question),
+		board: question.board,
+		qualification: question.qualification,
+		subject: question.subject,
+		code: null,
+		title: topicTitle,
+		paper: question.paper,
+		specUrl: null,
+		questionCount: 0,
+		chainCount: 0,
+		firstQuestionId: null,
+		firstQuestionTitle: null
+	};
+}
+
+function subjectSortRank(subject: string): number {
+	const order = [
+		'Biology',
+		'Chemistry',
+		'Physics',
+		'Computer Science',
+		'Geography',
+		'History',
+		'English Language',
+		'English Literature'
+	];
+	const index = order.indexOf(subject);
+	return index === -1 ? order.length : index;
+}
+
+function topicSortRank(topic: QuestionBankTopic): number {
+	const curriculumIndex = gcseCurriculumTopics.findIndex((entry) => entry.id === topic.id);
+	if (curriculumIndex !== -1) return curriculumIndex;
+	return 1000;
 }
 
 function cleanPromptText(text: string): string {
@@ -432,6 +687,140 @@ async function fetchQuestionRows() {
 	);
 }
 
+async function fetchQuestionBankRows() {
+	return queryRows<QuestionBankQuestionRow>(
+		`SELECT
+		        q.id,
+		        q.slug,
+		        q.source_document_id,
+		        q.source_question_ref,
+		        q.display_order,
+		        q.prompt_text,
+		        q.command_word,
+		        q.marks,
+		        q.board,
+		        q.qualification,
+		        q.subject,
+		        q.subject_area,
+		        q.tier,
+		        q.paper,
+		        q.component_code,
+		        q.series,
+		        q.year,
+		        q.topic_path_json,
+		        q.metadata_json,
+		        sd.board AS source_board,
+		        sd.qualification AS source_qualification,
+		        sd.subject AS source_subject,
+		        sd.tier AS source_tier,
+		        sd.paper AS source_paper,
+		        sd.component_code AS source_component_code,
+		        sd.series AS source_series,
+		        sd.year AS source_year,
+		        qac.answer_chain_id,
+		        ac.title AS chain_title
+		 FROM questions q
+		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
+		 LEFT JOIN question_answer_chains qac
+		   ON qac.question_id = q.id
+		  AND qac.needs_human_review = 0
+		 LEFT JOIN answer_chains ac
+		   ON ac.id = qac.answer_chain_id
+		  AND ac.needs_human_review = 0
+		  AND ac.status = 'published'
+		 WHERE q.needs_human_review = 0
+		   AND q.status = 'published'
+		 ORDER BY
+		   COALESCE(q.board, sd.board, 'AQA'),
+		   CASE
+		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+		     ELSE COALESCE(q.subject_area, q.subject, sd.subject, '')
+		   END,
+		   COALESCE(q.year, sd.year, 0) DESC,
+		   COALESCE(q.paper, sd.paper, ''),
+		   CASE qac.transfer_distance
+		     WHEN 'start' THEN 0
+		     WHEN 'near' THEN 1
+		     WHEN 'stretch' THEN 2
+		     WHEN 'exam_transfer' THEN 3
+		     ELSE 4
+		   END,
+		   COALESCE(qac.fit_confidence, 0) DESC,
+		   COALESCE(q.display_order, 9999),
+		   q.source_question_ref,
+		   q.id`
+	);
+}
+
+function hydrateQuestionBankQuestion(row: QuestionBankQuestionRow): QuestionBankQuestion {
+	const topicPath = parseTopicPath(row.topic_path_json);
+	const subject = questionSubjectName(row);
+	const paper = questionPaper(row);
+	const questionWithoutTopicId = {
+		id: row.id,
+		slug: row.slug,
+		title: questionBankTitle(row),
+		preview: questionBankPreview(row),
+		board: questionBoard(row),
+		qualification: questionQualification(row),
+		subject,
+		tier: cleanNullable(row.tier) ?? cleanNullable(row.source_tier),
+		paper,
+		componentCode: questionComponentCode(row),
+		series: questionSeries(row),
+		year: questionYear(row),
+		topicPath,
+		topic: topicPath.at(-1) ?? paper,
+		sourceRef: cleanNullable(row.source_question_ref) ?? row.id,
+		marks: row.marks,
+		command: cleanNullable(row.command_word) ?? 'Question',
+		chainId: cleanNullable(row.answer_chain_id),
+		chainTitle: cleanNullable(row.chain_title)
+	} satisfies Omit<QuestionBankQuestion, 'topicId'>;
+	return {
+		...questionWithoutTopicId,
+		topicId: topicSeedForQuestion(questionWithoutTopicId).id
+	};
+}
+
+function dedupeQuestionBankRows(rows: QuestionBankQuestionRow[]): QuestionBankQuestion[] {
+	const byQuestionId = new Map<string, QuestionBankQuestion>();
+	for (const row of rows) {
+		if (byQuestionId.has(row.id)) continue;
+		byQuestionId.set(row.id, hydrateQuestionBankQuestion(row));
+	}
+	return [...byQuestionId.values()];
+}
+
+function buildQuestionBankTopics(questions: QuestionBankQuestion[]): QuestionBankTopic[] {
+	const topics = new Map<string, QuestionBankTopic>();
+	const chainIdsByTopic = new Map<string, Set<string>>();
+
+	for (const question of questions) {
+		const seed = topicSeedForQuestion(question);
+		const topic = topics.get(seed.id) ?? seed;
+		topic.questionCount += 1;
+		topic.firstQuestionId ??= question.id;
+		topic.firstQuestionTitle ??= question.title;
+		if (question.chainId) {
+			const chainIds = chainIdsByTopic.get(seed.id) ?? new Set<string>();
+			chainIds.add(question.chainId);
+			chainIdsByTopic.set(seed.id, chainIds);
+			topic.chainCount = chainIds.size;
+		}
+		topics.set(seed.id, topic);
+	}
+
+	return [...topics.values()].sort(
+		(left, right) =>
+			subjectSortRank(left.subject) - subjectSortRank(right.subject) ||
+			left.board.localeCompare(right.board) ||
+			topicSortRank(left) - topicSortRank(right) ||
+			right.questionCount - left.questionCount ||
+			left.title.localeCompare(right.title)
+	);
+}
+
 async function fetchChainRow(chainId: string) {
 	const rows = await queryRows<ChainRow>(
 		`SELECT ac.id, ac.title, ac.canonical_chain_text, ac.subject, ac.subject_area,
@@ -552,8 +941,40 @@ export async function getExplorableLearningChains(): Promise<LearningChain[]> {
 		.filter((chain): chain is LearningChain => Boolean(chain));
 }
 
-export async function getHomePagePublicData(): Promise<HomePagePublicData> {
+export async function getQuestionBankQuestions(): Promise<QuestionBankQuestion[]> {
+	return dedupeQuestionBankRows(await fetchQuestionBankRows());
+}
+
+export async function getFreshQuestionBankBrowseData(): Promise<QuestionBankBrowseData> {
+	const [chains, questions] = await Promise.all([
+		getExplorableLearningChains(),
+		getQuestionBankQuestions()
+	]);
+	return {
+		chains,
+		questions,
+		topics: buildQuestionBankTopics(questions)
+	};
+}
+
+export async function getQuestionBankBrowseData(): Promise<QuestionBankBrowseData> {
+	const materialized = await getPublicRoutePayload<QuestionBankBrowseData>(
+		questionBankBrowsePayloadId
+	).catch(() => null);
+	if (materialized?.chains && materialized.questions && materialized.topics) return materialized;
+	return await getFreshQuestionBankBrowseData();
+}
+
+export async function getFreshHomePagePublicData(): Promise<HomePagePublicData> {
 	return summarizeChains(await getExplorableLearningChains());
+}
+
+export async function getHomePagePublicData(): Promise<HomePagePublicData> {
+	const materialized = await getPublicRoutePayload<HomePagePublicData>(
+		homePublicSummaryPayloadId
+	).catch(() => null);
+	if (materialized?.featuredChains && materialized.stats) return materialized;
+	return await getFreshHomePagePublicData();
 }
 
 export async function getExplorableLearningChain(chainId: string): Promise<LearningChain | null> {

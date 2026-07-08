@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from 'node:url';
+import { gzipSync } from 'node:zlib';
 import { subjectSymbol } from '../src/lib/subjectSymbols.js';
 import { d1Config, d1Rows } from './lib/d1-rest.mjs';
 
 const DEFAULT_BATCH_SIZE = 50;
+const PAYLOAD_COMPRESSION_THRESHOLD_BYTES = 1_500_000;
 
 function integerArg(name, defaultValue, minValue) {
 	const arg = process.argv.find((candidate) => candidate.startsWith(`--${name}=`));
@@ -914,6 +916,7 @@ async function executeBatch(statements, label, { rootDir, dryRun, batchSize }) {
 }
 
 function upsertPayloadStatement({ id, routeKind, routePath, payload, sourceVersion }) {
+	const { storageJson } = encodePayloadForStorage(payload);
 	return {
 		sql: `INSERT INTO public_route_payloads
 		      (id, route_kind, route_path, payload_json, source_version, updated_at)
@@ -924,63 +927,55 @@ function upsertPayloadStatement({ id, routeKind, routePath, payload, sourceVersi
 		        payload_json = excluded.payload_json,
 		        source_version = excluded.source_version,
 		        updated_at = CURRENT_TIMESTAMP`,
-		params: [id, routeKind, routePath, JSON.stringify(payload), sourceVersion ?? null]
+		params: [id, routeKind, routePath, storageJson, sourceVersion ?? null]
 	};
 }
 
-async function fetchSubjectNavigation({ rootDir }) {
-	const navigationSubjectSql = `CASE
-		WHEN LOWER(COALESCE(q.subject, q.subject_area, '')) LIKE '%english%literature%' THEN 'English Literature'
-		WHEN LOWER(COALESCE(q.subject, q.subject_area, '')) LIKE '%english%language%' THEN 'English Language'
-		ELSE COALESCE(q.subject_area, q.subject)
-	END`;
-	return await d1Rows(
-		`WITH ranked_subject_questions AS (
-			SELECT
-				${navigationSubjectSql} AS subject,
-				q.id AS questionId,
-				COUNT(*) OVER (PARTITION BY ${navigationSubjectSql}) AS questionCount,
-				ROW_NUMBER() OVER (
-					PARTITION BY ${navigationSubjectSql}
-					ORDER BY
-						CASE qac.transfer_distance
-							WHEN 'start' THEN 0
-							WHEN 'near' THEN 1
-							WHEN 'stretch' THEN 2
-							WHEN 'exam_transfer' THEN 3
-							ELSE 4
-						END,
-						qac.needs_human_review ASC,
-						COALESCE(qac.fit_confidence, 0) DESC,
-						q.id
-				) AS rowNumber
-			FROM question_answer_chains qac
-			JOIN questions q ON q.id = qac.question_id
-			JOIN answer_chains ac ON ac.id = qac.answer_chain_id
-			WHERE ${navigationSubjectSql} IS NOT NULL AND ${navigationSubjectSql} != ''
-			  AND qac.needs_human_review = 0
-			  AND q.needs_human_review = 0
-			  AND q.status = 'published'
-			  AND ac.needs_human_review = 0
-			  AND ac.status = 'published'
-		)
-		SELECT subject, questionId, questionCount
-		FROM ranked_subject_questions
-		WHERE rowNumber = 1
-		ORDER BY CASE subject
-			WHEN 'Biology' THEN 0
-			WHEN 'Chemistry' THEN 1
-			WHEN 'Physics' THEN 2
-			WHEN 'Computer Science' THEN 3
-			WHEN 'Geography' THEN 4
-			WHEN 'History' THEN 5
-			WHEN 'English Language' THEN 6
-			WHEN 'English Literature' THEN 7
-			ELSE 8
-		END, subject`,
-		[],
-		{ rootDir }
-	);
+function encodePayloadForStorage(payload) {
+	const rawJson = JSON.stringify(payload);
+	const rawBytes = Buffer.byteLength(rawJson);
+	if (rawBytes < PAYLOAD_COMPRESSION_THRESHOLD_BYTES) {
+		return {
+			storageJson: rawJson,
+			rawBytes,
+			storedBytes: rawBytes,
+			compressed: false
+		};
+	}
+
+	const compressed = gzipSync(Buffer.from(rawJson));
+	const storageJson = JSON.stringify({
+		__qcPayloadEncoding: 'gzip-base64',
+		data: compressed.toString('base64'),
+		rawBytes
+	});
+	return {
+		storageJson,
+		rawBytes,
+		storedBytes: Buffer.byteLength(storageJson),
+		compressed: true
+	};
+}
+
+async function fetchAppPublicPayloads({ rootDir }) {
+	const { createServer } = await import('vite');
+	const vite = await createServer({
+		root: rootDir,
+		logLevel: 'error',
+		appType: 'custom',
+		server: { middlewareMode: true }
+	});
+
+	try {
+		const learningChainData = await vite.ssrLoadModule('/src/lib/server/learningChainData.ts');
+		const [browseData, homeData] = await Promise.all([
+			learningChainData.getFreshQuestionBankBrowseData(),
+			learningChainData.getFreshHomePagePublicData()
+		]);
+		return { browseData, homeData };
+	} finally {
+		await vite.close();
+	}
 }
 
 async function fetchPublicChains({ rootDir }) {
@@ -1178,8 +1173,8 @@ export async function materializePublicRoutePayloads({
 	batchSize = DEFAULT_BATCH_SIZE
 } = {}) {
 	const sourceVersion = new Date().toISOString();
-	const subjectNavigation = await fetchSubjectNavigation({ rootDir });
 	const { chains, questionRowsById } = await fetchPublicChains({ rootDir });
+	const { browseData, homeData } = await fetchAppPublicPayloads({ rootDir });
 	const sourceDocumentIds = [
 		...new Set(
 			[...questionRowsById.values()].map((question) => question.source_document_id).filter(Boolean)
@@ -1188,19 +1183,24 @@ export async function materializePublicRoutePayloads({
 	const papersByDocument = await fetchPapersForQuestions({ rootDir, sourceDocumentIds });
 
 	const statements = [
-		{
-			sql: `DELETE FROM public_route_payloads WHERE route_kind IN ('layout', 'practice', 'chains', 'home')`
-		},
 		upsertPayloadStatement({
-			id: 'layout:subject-navigation',
-			routeKind: 'layout',
-			routePath: '/__layout/subject-navigation',
-			payload: subjectNavigation,
+			id: 'chains:browse',
+			routeKind: 'chains',
+			routePath: '/chains',
+			payload: browseData,
+			sourceVersion
+		}),
+		upsertPayloadStatement({
+			id: 'home:public-summary',
+			routeKind: 'home',
+			routePath: '/',
+			payload: homeData,
 			sourceVersion
 		})
 	];
 
 	let practicePayloadCount = 0;
+	const practiceStatements = [];
 	for (const chain of chains) {
 		const aliasCounts = new Map();
 		for (const question of chain.questions) {
@@ -1229,7 +1229,7 @@ export async function materializePublicRoutePayloads({
 				])
 			];
 			for (const ref of refs) {
-				statements.push(
+				practiceStatements.push(
 					upsertPayloadStatement({
 						id: practiceRoutePayloadId(chain.id, ref),
 						routeKind: 'practice',
@@ -1242,11 +1242,22 @@ export async function materializePublicRoutePayloads({
 			}
 		}
 	}
+	if (practiceStatements.length > 0) {
+		statements.push(...practiceStatements);
+	}
 
 	await executeBatch(statements, 'materialize public routes', { rootDir, dryRun, batchSize });
 	const summary = {
-		subject_navigation_items: subjectNavigation.length,
+		chains_browse_payload_raw_kb: Math.round(encodePayloadForStorage(browseData).rawBytes / 1024),
+		chains_browse_payload_stored_kb: Math.round(
+			encodePayloadForStorage(browseData).storedBytes / 1024
+		),
+		chains_browse_payload_compressed: encodePayloadForStorage(browseData).compressed,
+		home_payload_raw_kb: Math.round(encodePayloadForStorage(homeData).rawBytes / 1024),
+		home_payload_stored_kb: Math.round(encodePayloadForStorage(homeData).storedBytes / 1024),
 		chains: chains.length,
+		browse_questions: browseData.questions.length,
+		browse_topics: browseData.topics.length,
 		source_documents: sourceDocumentIds.length,
 		practice_payloads: practicePayloadCount,
 		statements: statements.length,

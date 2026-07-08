@@ -50,10 +50,7 @@
 	/>
 
 	<div class="qc-real-layout qc-question-layout">
-		<aside
-			class="qc-real-rail qc-question-rail"
-			aria-label="Questions using this method"
-		>
+		<aside class="qc-real-rail qc-question-rail" aria-label="Questions using this method">
 			<IconBackLink href={questionHref} label="Back to question" />
 			<p class="qc-real-kicker">Method</p>
 			<h1><MathText text={data.chain.title} /></h1>
@@ -77,10 +74,7 @@
 			</nav>
 		</aside>
 
-		<section
-			class="qc-real-main qc-chain-reveal-main"
-			aria-label="Method"
-		>
+		<section class="qc-real-main qc-chain-reveal-main" aria-label="Method">
 			<div class="qc-real-question-top">
 				<div>
 					<p><MathText text={data.question.sourceRef} /></p>
@@ -116,13 +110,10 @@
 
 			<ExamQuestionCard question={data.question} compact showTitle={false} />
 
-			<div
-				class="qc-action-row"
-				aria-label="Method actions"
-			>
+			<div class="qc-action-row" aria-label="Method actions">
 				<a class="qc-action-button primary" href={constellationHref}>
 					<ClipboardList size={18} aria-hidden="true" />
-					Open practice set
+					Open constellation
 				</a>
 				<a class="qc-action-button" href={practiceHref}>
 					<PenLine size={18} aria-hidden="true" />

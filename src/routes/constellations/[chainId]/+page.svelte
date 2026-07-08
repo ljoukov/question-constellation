@@ -30,8 +30,8 @@
 	<meta
 		name="description"
 		content={isEnglish
-			? 'A GCSE English question set using the same mark path.'
-			: 'A GCSE practice set: different questions using the same method.'}
+			? 'A GCSE English constellation using the same mark path.'
+			: 'A GCSE question constellation: different questions using the same method.'}
 	/>
 </svelte:head>
 
@@ -43,28 +43,22 @@
 	/>
 
 	<div class="qc-real-layout qc-question-layout">
-		<aside
-			class="qc-real-rail qc-question-rail"
-			aria-label="Practice set summary"
-		>
+		<aside class="qc-real-rail qc-question-rail" aria-label="Constellation summary">
 			<IconBackLink href={chainHref} label="Back to method" />
-			<p class="qc-real-kicker">Practice set</p>
+			<p class="qc-real-kicker">Constellation</p>
 			<h1><MathText text={data.constellation.title} /></h1>
 			<p class="qc-rail-summary"><MathText text={data.constellation.summary} /></p>
-			<ThinkingChain
-				steps={chainSteps}
-				label="Shared method"
-			/>
+			<ThinkingChain steps={chainSteps} label="Shared method" />
 		</aside>
 
-		<section class="qc-real-main qc-constellation-main" aria-label="Question set">
+		<section class="qc-real-main qc-constellation-main" aria-label="Question constellation">
 			<div class="qc-real-question-top">
 				<div>
 					<p>
 						{data.questions.length} questions · {data.startQuestion.meta.board}
 						{data.startQuestion.meta.subject}
 					</p>
-					<h2>Questions in this set</h2>
+					<h2>Questions in this constellation</h2>
 				</div>
 				<a class="qc-real-link-button" href={practiceHref}>Start practice</a>
 			</div>

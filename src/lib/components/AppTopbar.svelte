@@ -3,13 +3,12 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
-	import { Check, ChevronRight, Search } from '@lucide/svelte';
+	import { Check, Search } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import { primaryNavigationLinks, type AppTopbarLink } from '$lib/navigation';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
-	import type { AdminUser } from '$lib/server/auth/session';
 
 	type AppTopbarAction = {
 		href: string;
@@ -25,7 +24,7 @@
 	};
 
 	let {
-		subject = 'Physics',
+		subject: _subject = 'Physics',
 		subjects: _subjects = [...BROWSE_SUBJECTS],
 		searchValue = '',
 		searchPlaceholder = 'Search questions',
@@ -57,24 +56,12 @@
 	let theme = $state<ThemePreference>('auto');
 	let mobileSearchOpen = $state(false);
 	let accountMenuOpen = $state(false);
-	let appearanceMenuOpen = $state(false);
-	let appearancePinnedByClick = $state(false);
-	let accountToastMessage = $state('');
-	let accountToastTone = $state<'success' | 'error'>('success');
-	let confirmedTheme = $state<ThemePreference>('auto');
 	let accountMenuRoot: HTMLDivElement | null = null;
-	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
-	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
-	let themeSaveController: AbortController | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
 		theme = value;
-		if (!themeSaveController) confirmedTheme = value;
 	});
 	onDestroy(() => {
 		unsubscribe();
-		themeSaveController?.abort();
-		clearAppearanceCloseTimer();
-		clearAccountToastTimer();
 	});
 
 	const themeOptions: Array<{ value: ThemePreference; label: string }> = [
@@ -82,19 +69,7 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
 	];
-	const currentUser = $derived((pageState.data.user ?? null) as AdminUser | null);
-	const accountName = $derived(currentUser?.name?.trim() || currentUser?.email || 'Account');
-	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
-	const accountDetailsText = $derived(
-		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
-	);
-	const defaultSignInAction: AppTopbarAction = {
-		href: resolve('/auth/start'),
-		label: 'Sign In For Free'
-	};
-	const effectivePrimaryAction = $derived(
-		primaryAction ?? (!currentUser && showNavigation ? defaultSignInAction : undefined)
-	);
+	const appearanceIconSrc = '/brand/question-constellation-logo.svg';
 	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
@@ -107,11 +82,11 @@
 					variant: 'secondary' as const
 				}))
 		);
-		if (effectivePrimaryAction) {
+		if (primaryAction) {
 			links.push({
-				href: effectivePrimaryAction.href,
-				label: effectivePrimaryAction.label,
-				ariaLabel: effectivePrimaryAction.ariaLabel,
+				href: primaryAction.href,
+				label: primaryAction.label,
+				ariaLabel: primaryAction.ariaLabel,
 				variant: 'primary'
 			});
 		}
@@ -122,197 +97,35 @@
 			'qc-topbar',
 			mobileSearchOpen ? 'search-open' : '',
 			visibleNavLinks.length > 0 ? 'has-navigation' : '',
-			effectivePrimaryAction ? 'has-primary-action' : '',
+			primaryAction ? 'has-primary-action' : '',
 			sticky ? 'is-sticky' : 'is-static'
 		]
 			.filter(Boolean)
 			.join(' ')
 	);
 
-	function clearAppearanceCloseTimer() {
-		if (!appearanceCloseTimer) return;
-		clearTimeout(appearanceCloseTimer);
-		appearanceCloseTimer = null;
-	}
-
-	function clearAccountToastTimer() {
-		if (!accountToastTimer) return;
-		clearTimeout(accountToastTimer);
-		accountToastTimer = null;
-	}
-
-	function showAccountToast(message: string, tone: 'success' | 'error' = 'success') {
-		accountToastMessage = message;
-		accountToastTone = tone;
-		clearAccountToastTimer();
-		accountToastTimer = setTimeout(() => {
-			accountToastMessage = '';
-			accountToastTimer = null;
-		}, 2400);
-	}
-
 	function closeAccountMenu() {
-		clearAppearanceCloseTimer();
 		accountMenuOpen = false;
-		appearanceMenuOpen = false;
-		appearancePinnedByClick = false;
 	}
 
 	function toggleAccountMenu() {
-		clearAppearanceCloseTimer();
 		accountMenuOpen = !accountMenuOpen;
-		if (!accountMenuOpen) {
-			appearanceMenuOpen = false;
-			appearancePinnedByClick = false;
-		}
 	}
 
-	async function chooseTheme(value: ThemePreference) {
-		if (value === theme) {
-			closeAccountMenu();
-			return;
-		}
-
-		if (!currentUser) {
-			setThemePreference(value);
-			confirmedTheme = value;
-			closeAccountMenu();
-			return;
-		}
-
-		themeSaveController?.abort();
-		const rollbackTheme = confirmedTheme;
-		const controller = new AbortController();
-		themeSaveController = controller;
-		const timeout = setTimeout(() => controller.abort(), 8000);
+	function chooseTheme(value: ThemePreference) {
 		setThemePreference(value);
 		closeAccountMenu();
-
-		try {
-			const response = await fetch(resolve('/api/theme-preference'), {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ themePreference: value }),
-				signal: controller.signal
-			});
-
-			if (!response.ok) throw new Error(`Theme save failed with ${response.status}.`);
-			confirmedTheme = value;
-			showAccountToast('Appearance saved.');
-		} catch (error) {
-			if (themeSaveController !== controller) return;
-			console.warn('Theme preference could not be saved.', error);
-			setThemePreference(rollbackTheme);
-			showAccountToast('Could not save appearance. Restored previous theme.', 'error');
-		} finally {
-			clearTimeout(timeout);
-			if (themeSaveController === controller) themeSaveController = null;
-		}
-	}
-
-	async function writeTextToClipboard(text: string): Promise<void> {
-		if (!browser) throw new Error('Clipboard is only available in the browser.');
-
-		if (navigator.clipboard?.writeText) {
-			try {
-				await navigator.clipboard.writeText(text);
-				return;
-			} catch {
-				// Fall back to a temporary selection for browsers that block the async API.
-			}
-		}
-
-		const textarea = document.createElement('textarea');
-		textarea.value = text;
-		textarea.setAttribute('readonly', '');
-		textarea.style.position = 'fixed';
-		textarea.style.left = '-9999px';
-		textarea.style.top = '0';
-		document.body.appendChild(textarea);
-		textarea.select();
-		textarea.setSelectionRange(0, textarea.value.length);
-
-		try {
-			if (!document.execCommand('copy')) {
-				throw new Error('Copy command was rejected.');
-			}
-		} finally {
-			textarea.remove();
-		}
-	}
-
-	async function copyUserDetails() {
-		if (!currentUser || !accountDetailsText) return;
-
-		try {
-			await writeTextToClipboard(accountDetailsText);
-			showAccountToast('Copied user details to clipboard.');
-			closeAccountMenu();
-		} catch (error) {
-			console.warn('User details could not be copied.', error);
-			showAccountToast('Could not copy user details.', 'error');
-		}
-	}
-
-	function pointerSupportsHover(event: PointerEvent) {
-		return event.pointerType === 'mouse' || event.pointerType === 'pen';
-	}
-
-	function openAppearanceMenu(event: PointerEvent) {
-		if (!pointerSupportsHover(event)) return;
-		clearAppearanceCloseTimer();
-		appearanceMenuOpen = true;
-	}
-
-	function closeAppearanceMenu(event: PointerEvent) {
-		if (!pointerSupportsHover(event)) return;
-		if (appearancePinnedByClick) return;
-		clearAppearanceCloseTimer();
-		appearanceCloseTimer = setTimeout(() => {
-			appearanceMenuOpen = false;
-			appearanceCloseTimer = null;
-		}, 260);
-	}
-
-	function closeAppearanceFromOtherItem(event: PointerEvent) {
-		if (!pointerSupportsHover(event)) return;
-		clearAppearanceCloseTimer();
-		appearanceMenuOpen = false;
-		appearancePinnedByClick = false;
-	}
-
-	function toggleAppearanceMenu(event: MouseEvent) {
-		event.stopPropagation();
-		clearAppearanceCloseTimer();
-		if (appearanceMenuOpen && !appearancePinnedByClick) {
-			appearancePinnedByClick = true;
-			return;
-		}
-		const nextOpen = !appearanceMenuOpen;
-		appearanceMenuOpen = nextOpen;
-		appearancePinnedByClick = nextOpen;
 	}
 
 	function updateSearch(event: Event) {
 		onSearchChange?.((event.currentTarget as HTMLInputElement).value);
 	}
 
-	function navigateToBrowse({ q = searchValue, subject: nextSubject = subject } = {}) {
+	function navigateToBrowse({ q = searchValue } = {}) {
 		if (!browser) return;
 		const trimmedQuery = q.trim();
-		if (nextSubject.toLowerCase().includes('english')) {
-			const englishParams = new SvelteURLSearchParams();
-			if (trimmedQuery) englishParams.set('q', trimmedQuery);
-			if (nextSubject === 'English Language' || nextSubject === 'English Literature') {
-				englishParams.set('course', nextSubject);
-			}
-			const englishSuffix = englishParams.toString();
-			void goto(`${resolve('/english')}${englishSuffix ? `?${englishSuffix}` : ''}`);
-			return;
-		}
 		const params = new SvelteURLSearchParams();
 		if (trimmedQuery) params.set('q', trimmedQuery);
-		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
 		const suffix = params.toString();
 		void goto(`${resolve('/chains')}${suffix ? `?${suffix}` : ''}`);
 	}
@@ -326,7 +139,7 @@
 			return;
 		}
 		if (onSearchChange) return;
-		navigateToBrowse({ q: input?.value ?? '', subject });
+		navigateToBrowse({ q: input?.value ?? '' });
 	}
 
 	function isNavLinkActive(href: string) {
@@ -397,13 +210,13 @@
 		</button>
 	{/if}
 
-	{#if effectivePrimaryAction}
+	{#if primaryAction}
 		<a
 			class="qc-topbar-action"
-			href={effectivePrimaryAction.href}
-			aria-label={effectivePrimaryAction.ariaLabel ?? effectivePrimaryAction.label}
+			href={primaryAction.href}
+			aria-label={primaryAction.ariaLabel ?? primaryAction.label}
 		>
-			{effectivePrimaryAction.label}
+			{primaryAction.label}
 		</a>
 	{/if}
 
@@ -426,163 +239,37 @@
 		<button
 			type="button"
 			class="qc-avatar-trigger"
-			aria-label="Account menu"
+			aria-label="Appearance"
 			aria-haspopup="menu"
 			aria-expanded={accountMenuOpen}
 			onclick={toggleAccountMenu}
 		>
 			<span class="qc-avatar-pixel" aria-hidden="true">
-				<img src={avatarSrc} alt="" width="32" height="32" referrerpolicy="no-referrer" />
+				<img src={appearanceIconSrc} alt="" width="32" height="32" />
 			</span>
 		</button>
 		{#if accountMenuOpen}
-			<div class="qc-avatar-popover" role="menu" aria-label="Account">
-				<p class="qc-avatar-popover-title">Account</p>
-				{#if currentUser}
+			<div class="qc-avatar-popover" role="menu" aria-label="Appearance">
+				<p class="qc-avatar-popover-title">Appearance</p>
+				{#each themeOptions as option (option.value)}
 					<button
 						type="button"
-						class="qc-menu-user qc-menu-user-copy"
-						role="menuitem"
-						aria-label="Copy signed-in user details"
-						onclick={copyUserDetails}
-						onpointerenter={closeAppearanceFromOtherItem}
+						class="qc-menu-item qc-appearance-item"
+						class:active={theme === option.value}
+						role="menuitemradio"
+						aria-checked={theme === option.value}
+						onclick={() => chooseTheme(option.value)}
 					>
-						<strong>{accountName}</strong>
-						<span>{currentUser.email}</span>
+						<Check
+							size={15}
+							aria-hidden="true"
+							strokeWidth={2.3}
+							class={theme === option.value ? 'visible' : undefined}
+						/>
+						<span>{option.label}</span>
 					</button>
-					<a
-						class="qc-menu-item"
-						role="menuitem"
-						href={resolve('/profile')}
-						onclick={closeAccountMenu}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
-						Profile
-					</a>
-					<a
-						class="qc-menu-item"
-						role="menuitem"
-						href={resolve('/')}
-						onclick={closeAccountMenu}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
-						Home
-					</a>
-					<div class="qc-menu-separator" role="separator"></div>
-					<div
-						class="qc-menu-submenu"
-						role="none"
-						onpointerenter={openAppearanceMenu}
-						onpointerleave={closeAppearanceMenu}
-					>
-						<button
-							type="button"
-							class="qc-menu-item qc-menu-submenu-trigger"
-							role="menuitem"
-							aria-haspopup="menu"
-							aria-expanded={appearanceMenuOpen}
-							onclick={toggleAppearanceMenu}
-						>
-							<span>Appearance</span>
-							<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
-						</button>
-						{#if appearanceMenuOpen}
-							<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
-								{#each themeOptions as option (option.value)}
-									<button
-										type="button"
-										class="qc-menu-item qc-appearance-item"
-										class:active={theme === option.value}
-										role="menuitemradio"
-										aria-checked={theme === option.value}
-										onclick={() => chooseTheme(option.value)}
-									>
-										<Check
-											size={15}
-											aria-hidden="true"
-											strokeWidth={2.3}
-											class={theme === option.value ? 'visible' : undefined}
-										/>
-										<span>{option.label}</span>
-									</button>
-								{/each}
-							</div>
-						{/if}
-					</div>
-					<div class="qc-menu-separator" role="separator"></div>
-					<a
-						class="qc-menu-item danger"
-						role="menuitem"
-						href={resolve('/auth/logout')}
-						onclick={closeAccountMenu}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
-						Sign out
-					</a>
-				{:else}
-					<a
-						class="qc-menu-item"
-						role="menuitem"
-						href={resolve('/auth/start')}
-						onclick={closeAccountMenu}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
-						Sign in
-					</a>
-					<div class="qc-menu-separator" role="separator"></div>
-					<div
-						class="qc-menu-submenu"
-						role="none"
-						onpointerenter={openAppearanceMenu}
-						onpointerleave={closeAppearanceMenu}
-					>
-						<button
-							type="button"
-							class="qc-menu-item qc-menu-submenu-trigger"
-							role="menuitem"
-							aria-haspopup="menu"
-							aria-expanded={appearanceMenuOpen}
-							onclick={toggleAppearanceMenu}
-						>
-							<span>Appearance</span>
-							<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
-						</button>
-						{#if appearanceMenuOpen}
-							<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
-								{#each themeOptions as option (option.value)}
-									<button
-										type="button"
-										class="qc-menu-item qc-appearance-item"
-										class:active={theme === option.value}
-										role="menuitemradio"
-										aria-checked={theme === option.value}
-										onclick={() => chooseTheme(option.value)}
-									>
-										<Check
-											size={15}
-											aria-hidden="true"
-											strokeWidth={2.3}
-											class={theme === option.value ? 'visible' : undefined}
-										/>
-										<span>{option.label}</span>
-									</button>
-								{/each}
-							</div>
-						{/if}
-					</div>
-				{/if}
+				{/each}
 			</div>
 		{/if}
 	</div>
 </header>
-
-{#if accountToastMessage}
-	<div
-		class="qc-account-toast"
-		class:error={accountToastTone === 'error'}
-		role="status"
-		aria-live="polite"
-	>
-		{accountToastMessage}
-	</div>
-{/if}

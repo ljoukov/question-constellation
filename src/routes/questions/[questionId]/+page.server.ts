@@ -1,12 +1,8 @@
-import { getPublicQuestionData, isEnglishQuestion } from '$lib/server/questionData';
-import { error, redirect } from '@sveltejs/kit';
+import { getPublicQuestionData } from '$lib/server/questionData';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	if (await isEnglishQuestion(params.questionId)) {
-		throw redirect(307, `/questions/${encodeURIComponent(params.questionId)}/practice`);
-	}
-
 	try {
 		return await getPublicQuestionData(params.questionId);
 	} catch {

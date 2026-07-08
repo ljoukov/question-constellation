@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { pushState, replaceState } from '$app/navigation';
+	import { goto, pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
@@ -61,8 +61,11 @@
 			initialTopic: string;
 			initialKind: string;
 			initialMode: string;
+			initialActivity: string;
 			initialSearch: string;
+			initialSize: string;
 			initialStart: boolean;
+			initialReturnTo: string;
 			user: { uid: string; email: string; name: string | null; photoUrl: string | null } | null;
 		};
 	} = $props();
@@ -73,11 +76,13 @@
 	const kindOptions = untrack(
 		() => Object.entries(data.kindLabels) as Array<[RecallCardKind, string]>
 	);
+	const returnToHref = untrack(() => safeReturnPath(data.initialReturnTo));
 	const modeOptions: Array<{ value: Mode; label: string; icon: typeof Brain }> = [
-		{ value: 'recall', label: 'Recall', icon: Brain },
-		{ value: 'recognise', label: 'Recognise', icon: Target },
+		{ value: 'recall', label: 'Flashcards', icon: Brain },
+		{ value: 'recognise', label: 'Multiple choice', icon: Target },
 		{ value: 'reverse', label: 'Reverse', icon: Shuffle }
 	];
+	const stackSizeOptions = [5, 10, 15] as const;
 
 	function validSubject(value: string): SubjectFilter {
 		return subjectOptions.includes(value as SubjectFilter)
@@ -94,15 +99,37 @@
 		return modeOptions.some((option) => option.value === value) ? (value as Mode) : 'recall';
 	}
 
-	let selectedSubject = $state<SubjectFilter>(untrack(() => validSubject(data.initialSubject)));
-	let selectedTopic = $state(untrack(() => data.initialTopic));
-	let selectedKind = $state<KindFilter>(untrack(() => validKind(data.initialKind)));
-	let searchQuery = $state(untrack(() => data.initialSearch));
-	let mode = $state<Mode>(untrack(() => validMode(data.initialMode)));
-	let sessionActive = $state(untrack(() => data.initialStart && data.cards.length > 0));
+	function validStackSize(value: string | number): number {
+		const numeric = Number(value);
+		return stackSizeOptions.includes(numeric as (typeof stackSizeOptions)[number]) ? numeric : 10;
+	}
+
+	function safeReturnPath(value: string): string {
+		if (!value.startsWith('/') || value.startsWith('//')) return '/';
+		return value;
+	}
+
+	const initialSubject = untrack(() => validSubject(data.initialSubject));
+	const initialTopic = untrack(() => data.initialTopic);
+	const initialKind = untrack(() => validKind(data.initialKind));
+	const initialSearch = untrack(() => data.initialSearch);
+	const initialMode = untrack(() => validMode(data.initialMode));
+	const initialStackSize = untrack(() => validStackSize(data.initialSize));
+	const initialCardCount = untrack(
+		() => filterCards(initialSubject, initialTopic, initialKind, initialSearch).length
+	);
+
+	let selectedSubject = $state<SubjectFilter>(initialSubject);
+	let selectedTopic = $state(initialTopic);
+	let selectedKind = $state<KindFilter>(initialKind);
+	let searchQuery = $state(initialSearch);
+	let mode = $state<Mode>(initialMode);
+	let stackSize = $state(initialStackSize);
+	let sessionActive = $state(untrack(() => data.initialStart && initialCardCount > 0));
 	let sessionComplete = $state(false);
 	let cardIndex = $state(0);
-	let answeredInSession = $state(0);
+	let cardPositionInSession = $state(0);
+	let reviewedInSession = $state(0);
 	let revealed = $state(false);
 	let selectedChoice = $state<string | null>(null);
 	let progressById = $state<Record<string, RecallProgress>>({});
@@ -122,35 +149,30 @@
 		)
 	);
 	const filteredCards = $derived(
-		data.cards.filter((card) => {
-			if (selectedSubject !== 'All subjects' && card.subject !== selectedSubject) return false;
-			if (selectedTopic !== 'all' && card.topicId !== selectedTopic) return false;
-			if (selectedKind !== 'all' && card.kind !== selectedKind) return false;
-			if (!normalizedSearch) return true;
-			const topic = topicById.get(card.topicId);
-			const haystack = [
-				card.front,
-				card.back,
-				card.reverseFront,
-				card.reverseBack,
-				card.subject,
-				card.specRef,
-				card.kind,
-				topic?.title,
-				topic?.specRef
-			]
-				.filter(Boolean)
-				.join(' ')
-				.toLowerCase();
-			return normalizedSearch.split(/\s+/).every((term) => haystack.includes(term));
+		filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery)
+	);
+	const rankedCards = $derived.by(() =>
+		[...filteredCards].sort((left, right) => {
+			const leftProgress = progressById[left.id];
+			const rightProgress = progressById[right.id];
+			const leftDue = !leftProgress || leftProgress.dueAt <= Date.now();
+			const rightDue = !rightProgress || rightProgress.dueAt <= Date.now();
+			if (leftDue !== rightDue) return leftDue ? -1 : 1;
+			return (leftProgress?.lastSeenAt ?? 0) - (rightProgress?.lastSeenAt ?? 0);
 		})
 	);
-	const currentCard = $derived(filteredCards[cardIndex] ?? null);
+	const sessionCards = $derived(
+		rankedCards.slice(0, Math.min(stackSize, Math.max(0, rankedCards.length)))
+	);
+	const currentCard = $derived((sessionActive ? sessionCards : rankedCards)[cardIndex] ?? null);
 	const currentTopic = $derived(currentCard ? topicById.get(currentCard.topicId) : null);
-	const nextCard = $derived(filteredCards[cardIndex + 1] ?? null);
-	const followingCard = $derived(filteredCards[cardIndex + 2] ?? null);
+	const nextCard = $derived((sessionActive ? sessionCards : rankedCards)[cardIndex + 1] ?? null);
+	const followingCard = $derived(
+		(sessionActive ? sessionCards : rankedCards)[cardIndex + 2] ?? null
+	);
 	const currentChoices = $derived(currentCard ? answerChoices(currentCard) : []);
-	const totalCards = $derived(filteredCards.length);
+	const filteredCardCount = $derived(filteredCards.length);
+	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
 	const seenCount = $derived(filteredCards.filter((card) => progressById[card.id]?.seen).length);
 	const dueCount = $derived(
 		filteredCards.filter((card) => {
@@ -167,8 +189,16 @@
 		}).length
 	);
 	const sessionProgress = $derived(
-		totalCards === 0 ? '0%' : `${Math.min(100, (answeredInSession / totalCards) * 100)}%`
+		totalCards === 0 ? '0%' : `${Math.min(100, (cardPositionInSession / totalCards) * 100)}%`
 	);
+	const activityLabel = $derived(mode === 'recognise' ? 'Multiple choice' : 'Flashcards');
+	const completionReturnLabel = $derived.by(() => {
+		if (returnToHref.startsWith('/questions/')) return 'Back to question';
+		if (returnToHref.startsWith('/gaps/')) return 'Back to repair';
+		if (returnToHref.startsWith('/recall/')) return 'Choose another stack';
+		if (returnToHref === '/') return 'Home';
+		return 'Done';
+	});
 	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
 	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Good' : 'Review');
 	const dragProgress = $derived(Math.min(1, Math.abs(dragX) / 140));
@@ -195,15 +225,22 @@
 		const nextSubject = validSubject(params.get('subject') ?? 'All subjects');
 		const nextTopic = params.get('topic') ?? 'all';
 		const nextKind = validKind(params.get('kind') ?? 'all');
-		const nextMode = validMode(params.get('mode') ?? 'recall');
+		const nextActivity = params.get('activity') === 'mcq' ? 'mcq' : 'flashcards';
+		const nextMode = validMode(
+			params.get('mode') ?? (nextActivity === 'mcq' ? 'recognise' : 'recall')
+		);
 		const nextSearch = params.get('q') ?? '';
-		const nextSessionActive = params.get('start') === '1' && data.cards.length > 0;
+		const nextStackSize = validStackSize(params.get('size') ?? '10');
+		const nextSessionActive =
+			params.get('start') === '1' &&
+			filterCards(nextSubject, nextTopic, nextKind, nextSearch).length > 0;
 
 		untrack(() => {
 			if (selectedSubject !== nextSubject) selectedSubject = nextSubject;
 			if (selectedTopic !== nextTopic) selectedTopic = nextTopic;
 			if (selectedKind !== nextKind) selectedKind = nextKind;
 			if (mode !== nextMode) mode = nextMode;
+			if (stackSize !== nextStackSize) stackSize = nextStackSize;
 			if (searchQuery !== nextSearch) searchQuery = nextSearch;
 			if (sessionActive !== nextSessionActive) {
 				if (nextSessionActive) {
@@ -243,6 +280,32 @@
 
 	function topicFor(card: RecallCard) {
 		return topicById.get(card.topicId);
+	}
+
+	function filterCards(subject: SubjectFilter, topicId: string, kind: KindFilter, search: string) {
+		const normalized = search.trim().toLowerCase();
+		return data.cards.filter((card) => {
+			if (subject !== 'All subjects' && card.subject !== subject) return false;
+			if (topicId !== 'all' && card.topicId !== topicId) return false;
+			if (kind !== 'all' && card.kind !== kind) return false;
+			if (!normalized) return true;
+			const topic = topicById.get(card.topicId);
+			const haystack = [
+				card.front,
+				card.back,
+				card.reverseFront,
+				card.reverseBack,
+				card.subject,
+				card.specRef,
+				card.kind,
+				topic?.title,
+				topic?.specRef
+			]
+				.filter(Boolean)
+				.join(' ')
+				.toLowerCase();
+			return normalized.split(/\s+/).every((term) => haystack.includes(term));
+		});
 	}
 
 	function promptTextFor(card: RecallCard) {
@@ -286,7 +349,8 @@
 		sessionActive = true;
 		sessionComplete = false;
 		cardIndex = 0;
-		answeredInSession = 0;
+		cardPositionInSession = 0;
+		reviewedInSession = 0;
 		resetCardState();
 	}
 
@@ -294,7 +358,8 @@
 		sessionActive = false;
 		sessionComplete = false;
 		cardIndex = 0;
-		answeredInSession = 0;
+		cardPositionInSession = 0;
+		reviewedInSession = 0;
 		resetCardState();
 	}
 
@@ -306,6 +371,11 @@
 	function quitSession() {
 		quitSessionState();
 		syncRecallUrl('push', false);
+	}
+
+	function exitSession() {
+		quitSessionState();
+		void goto(returnToHref);
 	}
 
 	function resetCardState(options?: { entering?: boolean }) {
@@ -435,8 +505,9 @@
 	}
 
 	function advanceCard(countAsAnswered = false) {
-		if (countAsAnswered) answeredInSession += 1;
-		if (cardIndex + 1 >= filteredCards.length) {
+		cardPositionInSession += 1;
+		if (countAsAnswered) reviewedInSession += 1;
+		if (cardIndex + 1 >= sessionCards.length) {
 			sessionComplete = true;
 			resetCardState();
 			return;
@@ -504,8 +575,11 @@
 		if (selectedSubject !== 'All subjects') params.set('subject', selectedSubject);
 		if (selectedTopic !== 'all') params.set('topic', selectedTopic);
 		if (selectedKind !== 'all') params.set('kind', selectedKind);
+		params.set('activity', mode === 'recognise' ? 'mcq' : 'flashcards');
+		params.set('size', String(stackSize));
 		if (mode !== 'recall') params.set('mode', mode);
 		if (nextSessionActive) params.set('start', '1');
+		if (returnToHref !== '/') params.set('returnTo', returnToHref);
 		const suffix = params.toString();
 		const nextUrl = `${resolve('/recall')}${suffix ? `?${suffix}` : ''}`;
 		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
@@ -529,6 +603,11 @@
 
 	function updateMode(value: Mode) {
 		mode = value;
+		syncRecallUrl('push');
+	}
+
+	function updateStackSize(value: number) {
+		stackSize = validStackSize(value);
 		syncRecallUrl('push');
 	}
 
@@ -563,14 +642,14 @@
 				type="button"
 				class="session-icon-button"
 				aria-label="Quit recall session"
-				onclick={quitSession}
+				onclick={exitSession}
 			>
 				<X size={23} aria-hidden="true" strokeWidth={2.2} />
 			</button>
 			<div class="session-progress">
 				<div class="session-progress-text">
-					<strong>{Math.min(answeredInSession + 1, totalCards)} of {totalCards}</strong>
-					<span>{mode} · {selectedSubject}</span>
+					<strong>{Math.min(cardPositionInSession + 1, totalCards)} of {totalCards}</strong>
+					<span>{activityLabel} · {selectedSubject}</span>
 				</div>
 				<div class="session-progress-track" aria-hidden="true">
 					<span style={`width: ${sessionProgress}`}></span>
@@ -581,13 +660,18 @@
 		{#if sessionComplete}
 			<section class="session-complete">
 				<p class="recall-kicker">Session complete</p>
-				<h1>{answeredInSession} cards reviewed</h1>
+				<h1>{reviewedInSession} cards reviewed</h1>
 				<p>{steadyCount} steady cards in this filter. {dueCount} still due for review.</p>
 				<div class="session-complete-actions">
-					<button type="button" class="session-primary" onclick={startSession}>Start again</button>
-					<button type="button" class="session-secondary" onclick={quitSession}
-						>Back to setup</button
-					>
+					<button type="button" class="session-primary" onclick={exitSession}>
+						{completionReturnLabel}
+					</button>
+					<button type="button" class="session-secondary" onclick={startSession}>
+						More cards
+					</button>
+					<button type="button" class="session-secondary" onclick={quitSession}>
+						Adjust cards
+					</button>
 				</div>
 			</section>
 		{:else if currentCard}
@@ -749,12 +833,9 @@
 {:else}
 	<main class="recall-setup">
 		<AppTopbar
-			subject={selectedSubject}
-			subjects={subjectOptions}
 			searchValue={searchQuery}
 			searchPlaceholder="Search recall cards"
 			onSearchChange={updateSearch}
-			onSubjectChange={updateSubject}
 		/>
 
 		<section class="setup-shell" aria-label="Recall setup">
@@ -765,7 +846,7 @@
 					Practise the small facts, equations, tests, units, and practical hooks that one- and
 					two-mark questions usually expect.
 				</p>
-				<div class="setup-stats" aria-label="Current recall set">
+				<div class="setup-stats" aria-label="Current recall stack">
 					<div>
 						<strong>{totalCards}</strong>
 						<span>cards</span>
@@ -790,7 +871,9 @@
 						disabled={totalCards === 0}
 						onclick={startSession}
 					>
-						Start
+						{totalCards === 0
+							? 'No cards in this filter'
+							: `Start ${Math.min(stackSize, totalCards)} cards`}
 					</button>
 					<button type="button" class="setup-secondary" onclick={clearProgress}
 						>Clear progress</button
@@ -799,6 +882,22 @@
 			</div>
 
 			<div class="setup-panel">
+				<ControlSection label="Subject">
+					{#snippet icon()}
+						<Brain size={17} aria-hidden="true" strokeWidth={2.2} />
+					{/snippet}
+					<select
+						class="setup-select"
+						value={selectedSubject}
+						aria-label="Recall subject"
+						onchange={(event) => updateSubject(event.currentTarget.value)}
+					>
+						{#each subjectOptions as option (option)}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+				</ControlSection>
+
 				<ControlSection label="Mode">
 					{#snippet icon()}
 						<Brain size={17} aria-hidden="true" strokeWidth={2.2} />
@@ -814,6 +913,24 @@
 							>
 								<ModeIcon size={17} aria-hidden="true" strokeWidth={2.2} />
 								{option.label}
+							</button>
+						{/each}
+					</div>
+				</ControlSection>
+
+				<ControlSection label="Stack size">
+					{#snippet icon()}
+						<Target size={17} aria-hidden="true" strokeWidth={2.2} />
+					{/snippet}
+					<div class="setup-segment">
+						{#each stackSizeOptions as size (size)}
+							<button
+								type="button"
+								class:active={stackSize === size}
+								aria-pressed={stackSize === size}
+								onclick={() => updateStackSize(size)}
+							>
+								{size}
 							</button>
 						{/each}
 					</div>

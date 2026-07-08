@@ -9,7 +9,6 @@
 		themePreference,
 		type ThemePreference
 	} from '$lib/themePreference';
-	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import { installViewportZoomLock } from '$lib/viewportZoom';
@@ -20,39 +19,9 @@
 	let routeLoadingContentType = $state<RouteLoadingContentType>('default');
 
 	type TopbarPageData = {
-		user?: unknown;
-		dashboard?: {
-			profile?: { selectedSubject?: string };
-			subjectOptions?: string[];
-		} | null;
-		settings?: {
-			profile?: { selectedSubject?: string };
-			subjectOptions?: string[];
-		};
 		themePreference?: ThemePreference | null;
 	};
 
-	function signedInTopbarConfig(data: TopbarPageData, pathname: string) {
-		if (pathname === '/' && data.dashboard) {
-			return {
-				subject: data.dashboard.profile?.selectedSubject ?? 'Physics',
-				subjects: ['All subjects', ...(data.dashboard.subjectOptions ?? [])]
-			};
-		}
-
-		if (pathname === '/profile' && data.user) {
-			return {
-				subject: data.settings?.profile?.selectedSubject ?? 'Physics',
-				subjects: ['All subjects', ...(data.settings?.subjectOptions ?? [])]
-			};
-		}
-
-		return null;
-	}
-
-	const signedInTopbar = $derived(
-		signedInTopbarConfig(page.data as TopbarPageData, page.url.pathname)
-	);
 	const serverThemePreference = $derived(
 		validThemePreference((page.data as TopbarPageData).themePreference)
 	);
@@ -163,16 +132,9 @@
 	<meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
 </svelte:head>
 
-<div class="app-shell" class:has-persistent-topbar={Boolean(signedInTopbar)}>
+<div class="app-shell">
 	{#if showRouteLoading}
 		<RouteLoadingToast contentType={routeLoadingContentType} />
-	{/if}
-	{#if signedInTopbar}
-		<AppTopbar
-			subject={signedInTopbar.subject}
-			subjects={signedInTopbar.subjects}
-			searchPlaceholder="Search questions"
-		/>
 	{/if}
 	{@render children()}
 </div>

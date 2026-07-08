@@ -5,6 +5,7 @@ import {
 	type RecallCard,
 	type RecallSubject
 } from '$lib/recall/aqaScienceRecall';
+import { recallActivityHref, recallCoverageHref } from '$lib/recall/routes';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
 import {
 	getPracticePageData,
@@ -218,6 +219,8 @@ export type SubjectLearningLane = {
 	courseLabel: string;
 	href: string;
 	recallHref: string;
+	mcqHref: string;
+	coverageHref: string;
 	practiceHref: string;
 	gapsHref: string;
 	attemptCount: number;
@@ -1690,23 +1693,23 @@ function buildSubjectLane(
 	nextQuestion: DashboardNextQuestion | null
 ): SubjectLearningLane {
 	const confidence = confidenceForSubject(stats);
-	const supportsRecall = subjectSupportsRecall(learnerSubject.subject);
-	const recallHref = `/recall?${new URLSearchParams({
-		subject: learnerSubject.subject,
-		start: '1'
-	}).toString()}`;
-	const browseHref = englishSubjectSet.has(learnerSubject.subject)
-		? `/english?${new URLSearchParams({ course: learnerSubject.subject }).toString()}`
-		: `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
+	const recallSubjectValue = recallSubject(learnerSubject.subject);
+	const supportsRecall = recallSubjectValue !== null;
+	const recallHref = recallSubjectValue
+		? recallActivityHref(recallSubjectValue, 'flashcards')
+		: '/recall';
+	const mcqHref = recallSubjectValue ? recallActivityHref(recallSubjectValue, 'mcq') : '/recall';
+	const coverageHref = recallSubjectValue ? recallCoverageHref(recallSubjectValue) : '/recall';
+	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
 	if (openGap) {
 		primaryAction = { label: 'Fix mistake', href: openGap.href, kind: 'gap' };
-	} else if (supportsRecall && stats.recallDueCount > 0) {
-		primaryAction = { label: 'Review flashcards', href: recallHref, kind: 'recall' };
 	} else if (nextQuestion) {
-		primaryAction = { label: 'Continue practice', href: nextQuestion.href, kind: 'question' };
-	} else if (supportsRecall && stats.attemptCount + stats.recallReviewCount === 0) {
-		primaryAction = { label: 'Start flashcards', href: recallHref, kind: 'recall' };
+		primaryAction = {
+			label: stats.attemptCount === 0 ? 'Start exam question' : 'Continue practice',
+			href: nextQuestion.href,
+			kind: 'question'
+		};
 	} else {
 		primaryAction = { label: 'Browse questions', href: browseHref, kind: 'browse' };
 	}
@@ -1725,6 +1728,8 @@ function buildSubjectLane(
 		]),
 		href: browseHref,
 		recallHref,
+		mcqHref,
+		coverageHref,
 		practiceHref: nextQuestion?.href ?? browseHref,
 		gapsHref: openGap?.href ?? browseHref,
 		attemptCount: stats.attemptCount,
@@ -1830,7 +1835,8 @@ function recallPromptForQuestion(data: PracticePageData): SavedAttemptSummary['r
 	const params = new URLSearchParams({
 		subject,
 		topic: topic.id,
-		start: '1'
+		start: '1',
+		returnTo: `/questions/${encodeURIComponent(data.question.id)}/practice`
 	});
 	return {
 		href: `/recall?${params.toString()}`,

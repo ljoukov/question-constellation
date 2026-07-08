@@ -1035,7 +1035,7 @@
 				<section class="qc-english-work-panel" aria-label="Full answer">
 					<label class="qc-english-answer-box full">
 						<span>Write the full answer</span>
-						<small>Use the question on the left, then check against the mark focus.</small>
+						<small>Use the question above, then check against the mark focus.</small>
 						<ResponseRenderer
 							response={lineResponse(practice.fullLineCount)}
 							answer={fullAnswer}

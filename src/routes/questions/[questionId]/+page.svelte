@@ -28,9 +28,7 @@
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const finderHref = $derived(
-		isEnglish
-			? `${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`
-			: resolve('/chains')
+		`${resolve('/chains')}?subject=${encodeURIComponent(topbarSubject)}`
 	);
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
 	const metaItems = $derived(
