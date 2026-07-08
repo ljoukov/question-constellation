@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault } from '$lib/englishSubjects';
 	import { BookOpen, ClipboardCheck, Search, SlidersHorizontal } from '@lucide/svelte';
@@ -145,6 +147,29 @@
 		if (!marksOptions.includes(selectedMarks)) selectedMarks = 'All marks';
 	});
 
+	$effect(() => {
+		const params = page.url.searchParams;
+		const nextSearch = params.get('q') ?? '';
+		const nextBoard = params.get('board') ?? defaultBoardOption();
+		const nextCourse = params.get('course') ?? 'All English';
+		const nextPaper = params.get('paper') ?? 'All papers';
+		const nextYear = params.get('year') ?? 'All years';
+		const nextText = params.get('text') ?? 'All texts';
+		const nextType = params.get('type') ?? 'All types';
+		const nextMarks = params.get('marks') ?? 'All marks';
+
+		untrack(() => {
+			if (searchQuery !== nextSearch) searchQuery = nextSearch;
+			if (selectedBoard !== nextBoard) selectedBoard = nextBoard;
+			if (selectedCourse !== nextCourse) selectedCourse = nextCourse;
+			if (selectedPaper !== nextPaper) selectedPaper = nextPaper;
+			if (selectedYear !== nextYear) selectedYear = nextYear;
+			if (selectedText !== nextText) selectedText = nextText;
+			if (selectedType !== nextType) selectedType = nextType;
+			if (selectedMarks !== nextMarks) selectedMarks = nextMarks;
+		});
+	});
+
 	function unique(values: string[]) {
 		return [...new Set(values.filter(Boolean))].sort((left, right) => left.localeCompare(right));
 	}
@@ -173,7 +198,7 @@
 		return [...groups.values()];
 	}
 
-	function syncEnglishUrl() {
+	function syncEnglishUrl(historyMode: 'push' | 'replace' = 'replace') {
 		if (typeof window === 'undefined') return;
 		const params = new URLSearchParams();
 		const trimmedSearch = searchQuery.trim();
@@ -187,16 +212,19 @@
 		if (selectedType !== 'All types') params.set('type', selectedType);
 		if (selectedMarks !== 'All marks') params.set('marks', selectedMarks);
 		const query = params.toString();
-		window.history.replaceState(
-			window.history.state,
-			'',
-			`${resolve('/english')}${query ? `?${query}` : ''}`
-		);
+		const nextUrl = `${resolve('/english')}${query ? `?${query}` : ''}`;
+		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
+		if (nextUrl === currentUrl) return;
+		if (historyMode === 'push') {
+			pushState(nextUrl, page.state);
+			return;
+		}
+		replaceState(nextUrl, page.state);
 	}
 
 	function updateSearch(value: string) {
 		searchQuery = value;
-		syncEnglishUrl();
+		syncEnglishUrl('replace');
 	}
 
 	function updateFilter(next: {
@@ -230,7 +258,7 @@
 		if (next.text !== undefined) selectedText = next.text;
 		if (next.type !== undefined) selectedType = next.type;
 		if (next.marks !== undefined) selectedMarks = next.marks;
-		syncEnglishUrl();
+		syncEnglishUrl('push');
 	}
 
 	function clearFilters() {
@@ -242,7 +270,7 @@
 		selectedText = 'All texts';
 		selectedType = 'All types';
 		selectedMarks = 'All marks';
-		syncEnglishUrl();
+		syncEnglishUrl('push');
 	}
 
 	function questionHref(question: EnglishQuestion) {

@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import EnglishGuidedPractice from '$lib/components/EnglishGuidedPractice.svelte';
@@ -38,11 +40,19 @@
 		event: string;
 		data: string;
 	};
+	type PracticeRouteView = 'attempt' | 'result';
+	type StoredPracticeState = {
+		answerText?: string;
+		rewriteText?: string;
+		gradedAnswerText?: string;
+		gradeResult?: GradeResult | null;
+		updatedAt?: number;
+	};
 
 	let loadedQuestionId = $state('');
 	let answerText = $state('');
 	let rewriteText = $state('');
-	let checked = $state(false);
+	let gradedAnswerText = $state('');
 	let gradePhase = $state<GradePhase>('idle');
 	let gradeError = $state('');
 	let gradeResult = $state<GradeResult | null>(null);
@@ -141,14 +151,84 @@
 			])
 		) as Record<string, ExamPaperAsset>
 	);
+	const requestedPracticeView = $derived<PracticeRouteView>(
+		page.url.searchParams.get('view') === 'result' ? 'result' : 'attempt'
+	);
+	const hasCheckedResult = $derived(Boolean(gradeResult && gradedAnswerText === answerText));
+	const showCheckedResult = $derived(requestedPracticeView === 'result' && hasCheckedResult);
+
+	const practiceStoragePrefix = 'question-constellation:science-practice:v1:';
 
 	function responseFromOverlay(value: Record<string, unknown> | null | undefined) {
 		if (!value || value.kind === 'none') return null;
 		return value as ExamResponse;
 	}
 
+	function practiceStorageKey(questionId: string) {
+		return `${practiceStoragePrefix}${questionId}`;
+	}
+
+	function loadStoredPracticeState(questionId: string): StoredPracticeState | null {
+		if (typeof window === 'undefined') return null;
+		try {
+			const raw = window.sessionStorage.getItem(practiceStorageKey(questionId));
+			return raw ? (JSON.parse(raw) as StoredPracticeState) : null;
+		} catch {
+			return null;
+		}
+	}
+
+	function saveStoredPracticeState(questionId: string) {
+		if (typeof window === 'undefined') return;
+		try {
+			window.sessionStorage.setItem(
+				practiceStorageKey(questionId),
+				JSON.stringify({
+					answerText,
+					rewriteText,
+					gradedAnswerText,
+					gradeResult,
+					updatedAt: Date.now()
+				} satisfies StoredPracticeState)
+			);
+		} catch {
+			// Session storage is a convenience for browser history, not required for practice.
+		}
+	}
+
+	function updatePracticeView(view: PracticeRouteView, historyMode: 'push' | 'replace' = 'push') {
+		if (typeof window === 'undefined') return;
+		const url = new URL(page.url);
+		if (view === 'result') {
+			url.searchParams.set('view', 'result');
+		} else {
+			url.searchParams.delete('view');
+		}
+
+		const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
+		if (nextUrl === currentUrl) return;
+
+		if (historyMode === 'replace') {
+			replaceState(nextUrl, page.state);
+			return;
+		}
+		pushState(nextUrl, page.state);
+	}
+
+	function clearCheckedResult() {
+		gradedAnswerText = '';
+		gradeResult = null;
+		gradeError = '';
+		gradePhase = 'idle';
+		rewriteText = '';
+		if (requestedPracticeView === 'result') updatePracticeView('attempt', 'replace');
+	}
+
 	function setAnswerText(value: string) {
+		const invalidatesResult = gradedAnswerText.length > 0 && value !== gradedAnswerText;
 		answerText = value;
+		if (invalidatesResult) clearCheckedResult();
 	}
 
 	function setRewriteText(value: string) {
@@ -158,8 +238,8 @@
 	async function checkAnswer() {
 		if (!canCheck) return;
 
-		checked = false;
 		rewriteText = '';
+		gradedAnswerText = '';
 		gradeError = '';
 		gradeResult = null;
 		gradePhase = 'connecting';
@@ -189,7 +269,7 @@
 			console.error('[practice] answer grading failed', error);
 			gradePhase = 'error';
 			gradeError = 'Answer check failed. Please try again.';
-			checked = false;
+			updatePracticeView('attempt', 'replace');
 		}
 	}
 
@@ -271,8 +351,9 @@
 		if (message.event === 'done') {
 			gradeResult = JSON.parse(message.data) as GradeResult;
 			rewriteText = answerText;
+			gradedAnswerText = answerText;
 			gradePhase = 'done';
-			checked = true;
+			updatePracticeView('result');
 			return;
 		}
 
@@ -313,13 +394,25 @@
 		}
 
 		loadedQuestionId = data.question.id;
-		answerText = '';
-		rewriteText = '';
-		checked = false;
-		gradePhase = 'idle';
+		const storedState = loadStoredPracticeState(data.question.id);
+		answerText = storedState?.answerText ?? '';
+		rewriteText = storedState?.rewriteText ?? '';
+		gradedAnswerText = storedState?.gradedAnswerText ?? '';
+		gradeResult = storedState?.gradeResult ?? null;
+		gradePhase = gradeResult ? 'done' : 'idle';
 		gradeError = '';
-		gradeResult = null;
 		showHint = false;
+	});
+
+	$effect(() => {
+		if (loadedQuestionId !== data.question.id) return;
+		saveStoredPracticeState(data.question.id);
+	});
+
+	$effect(() => {
+		if (requestedPracticeView === 'result' && !hasCheckedResult && !isChecking) {
+			updatePracticeView('attempt', 'replace');
+		}
 	});
 </script>
 
@@ -369,7 +462,7 @@
 			</aside>
 
 			<section class="qc-real-main qc-practice-main" aria-label="Practice workspace">
-				{#if !checked}
+				{#if !showCheckedResult}
 					<div class="qc-real-question-top">
 						<div>
 							<p>

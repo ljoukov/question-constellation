@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { goto, pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import { canonicalEnglishSubject, isEnglishSubject } from '$lib/englishSubjects';
@@ -173,11 +175,32 @@
 		}
 	});
 
+	$effect(() => {
+		const params = page.url.searchParams;
+		const nextSearchQuery = params.get('q') ?? '';
+		const nextSubject = canonicalSubject(params.get('subject')) ?? 'All subjects';
+		const rawMarksFilter = params.get('marks') ?? 'all';
+		const nextMarksFilter = validMarksFilterValues.has(rawMarksFilter)
+			? (rawMarksFilter as MarksFilter)
+			: 'all';
+
+		untrack(() => {
+			if (searchQuery !== nextSearchQuery) searchQuery = nextSearchQuery;
+			if (selectedSubject !== nextSubject) selectedSubject = nextSubject;
+			if (selectedMarksFilter !== nextMarksFilter) selectedMarksFilter = nextMarksFilter;
+		});
+	});
+
 	function chainHref(chain: LearningChain) {
 		return resolve('/chains/[chainId]', { chainId: chain.id });
 	}
 
-	function syncBrowseUrl(nextSearch: string, nextSubject: string, nextMarksFilter: MarksFilter) {
+	function syncBrowseUrl(
+		nextSearch: string,
+		nextSubject: string,
+		nextMarksFilter: MarksFilter,
+		historyMode: 'push' | 'replace' = 'replace'
+	) {
 		if (typeof window === 'undefined') return;
 		const params = new SvelteURLSearchParams();
 		const trimmedSearch = nextSearch.trim();
@@ -186,28 +209,34 @@
 		if (nextMarksFilter !== 'all') params.set('marks', nextMarksFilter);
 		const query = params.toString();
 		const nextUrl = `${resolve('/chains')}${query ? `?${query}` : ''}`;
-		window.history.replaceState(window.history.state, '', nextUrl);
+		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
+		if (nextUrl === currentUrl) return;
+		if (historyMode === 'push') {
+			pushState(nextUrl, page.state);
+			return;
+		}
+		replaceState(nextUrl, page.state);
 	}
 
 	function updateSearch(value: string) {
 		searchQuery = value;
-		syncBrowseUrl(value, selectedSubject, selectedMarksFilter);
+		syncBrowseUrl(value, selectedSubject, selectedMarksFilter, 'replace');
 	}
 
 	function updateSubject(value: string) {
 		if (isEnglishSubject(value)) {
 			const course = canonicalEnglishSubject(value);
 			const suffix = course ? `?course=${encodeURIComponent(course)}` : '';
-			window.location.assign(`${resolve('/english')}${suffix}`);
+			void goto(`${resolve('/english')}${suffix}`);
 			return;
 		}
 		selectedSubject = value;
-		syncBrowseUrl(searchQuery, value, selectedMarksFilter);
+		syncBrowseUrl(searchQuery, value, selectedMarksFilter, 'push');
 	}
 
 	function updateMarksFilter(value: MarksFilter) {
 		selectedMarksFilter = value;
-		syncBrowseUrl(searchQuery, selectedSubject, value);
+		syncBrowseUrl(searchQuery, selectedSubject, value, 'push');
 	}
 
 	function accessibleText(value: string) {
