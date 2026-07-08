@@ -10,9 +10,10 @@
 - The D1 database is bound as `QUESTION_DB` for future use, but the current app intentionally uses generated server-side data only.
 - Use `scripts/dev-server.sh start|stop|restart|logs [port]` for local development. It follows the Spark tmux/log pattern but serves plain HTTP on localhost.
 - When the user says "push", push the current work to `origin/main` directly. Do not create branches other than `origin/main` unless the user explicitly asks for a separate branch or PR.
+- When the user says "deploy", unless they explicitly say otherwise, they mean push the current work to `origin/main` and then run a manual deploy.
 - The current UI pass has no login flow. Keep public question, chain, constellation, and practice routes usable without auth. If auth is reintroduced later, use this repo's own Firebase identity and allow every verified user; do not add an admin allow-list gate.
 - This app does not use shadcn components yet. Do not copy shadcn UI assumptions from Observatory Admin unless the project explicitly adopts that component system later.
-- Deployments are expected to run from Cloudflare on pushes to `origin/main`, not from GitHub Actions. Use local `wrangler deploy` only for diagnostics, first-time setup, or emergency manual repair.
+- Deployments are expected to run from Cloudflare on pushes to `origin/main`, not from GitHub Actions. Use local `wrangler deploy` when the user explicitly asks to deploy, and otherwise only for diagnostics, first-time setup, or emergency manual repair.
 - Local `.env.local` may contain Cloudflare operator credentials: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_ACCESS_TOKEN`, and `CLOUDFLARE_API_TOKEN`. Use these only to authenticate Wrangler or API calls; never upload `CLOUDFLARE_*` keys into the Worker runtime.
 - The public UI is D1/R2-backed. Deployed Workers should use native `QUESTION_DB` and `QUESTION_R2` bindings. Local Vite development should use Cloudflare REST fallback from `.env.local`; do not replace the dev server with `wrangler dev` just to get bindings.
 - Use `pnpm run import:chained` to load the currently chained question subset into D1 from `data/extracted-questions/.../semantic-chains/`.
