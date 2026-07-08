@@ -24,6 +24,7 @@ type UserProfileRow = {
 	selected_qualification: string;
 	selected_subject: string;
 	selected_tier: string;
+	theme_preference: string | null;
 	created_at: string;
 	updated_at: string;
 	last_seen_at: string;
@@ -141,7 +142,10 @@ export type UserProfile = {
 	selectedQualification: string;
 	selectedSubject: string;
 	selectedTier: string;
+	themePreference: ThemePreference;
 };
+
+export type ThemePreference = 'auto' | 'light' | 'dark';
 
 export type LearnerSubject = {
 	subject: string;
@@ -354,6 +358,7 @@ const personalTableStatements = [
 	  selected_qualification TEXT NOT NULL DEFAULT 'GCSE',
 	  selected_subject TEXT NOT NULL DEFAULT 'Biology',
 	  selected_tier TEXT NOT NULL DEFAULT 'Higher',
+	  theme_preference TEXT NOT NULL DEFAULT 'auto',
 	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	  last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -496,7 +501,16 @@ export async function ensurePersonalLearningTables(): Promise<void> {
 	for (const statement of personalTableStatements) {
 		await executeQuery(statement);
 	}
+	await ensureUserProfilesThemePreferenceColumn();
 	ensuredPersonalTables = true;
+}
+
+async function ensureUserProfilesThemePreferenceColumn(): Promise<void> {
+	const columns = await queryRows<{ name: string }>('PRAGMA table_info(user_profiles)');
+	if (columns.some((column) => column.name === 'theme_preference')) return;
+	await executeQuery(
+		`ALTER TABLE user_profiles ADD COLUMN theme_preference TEXT NOT NULL DEFAULT 'auto'`
+	);
 }
 
 function jsonString(value: unknown): string {
@@ -612,8 +626,13 @@ function toProfile(row: UserProfileRow): UserProfile {
 		selectedBoard: row.selected_board,
 		selectedQualification: row.selected_qualification,
 		selectedSubject: canonicalLearnerSubject(row.selected_subject),
-		selectedTier: row.selected_tier
+		selectedTier: row.selected_tier,
+		themePreference: safeThemePreference(row.theme_preference)
 	};
+}
+
+function safeThemePreference(value: unknown): ThemePreference {
+	return value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
 }
 
 function profileSubjects(): string[] {
@@ -882,7 +901,7 @@ function gapBandLabel(value: string): string {
 async function readUserProfile(userId: string): Promise<UserProfile> {
 	const row = await queryFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, created_at, updated_at, last_seen_at
+		        selected_subject, selected_tier, theme_preference, created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
 		[userId]
@@ -910,7 +929,7 @@ export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
 async function getOrCreateUserProfile(user: AdminUser): Promise<UserProfile> {
 	const existing = await queryFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, created_at, updated_at, last_seen_at
+		        selected_subject, selected_tier, theme_preference, created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
 		[user.uid]
@@ -928,6 +947,30 @@ async function getOrCreateUserProfile(user: AdminUser): Promise<UserProfile> {
 		[user.uid, user.email, user.name, user.photoUrl]
 	);
 	return await readUserProfile(user.uid);
+}
+
+export async function getUserThemePreference(user: AdminUser): Promise<ThemePreference> {
+	const profile = await getOrCreateUserProfile(user);
+	return profile.themePreference;
+}
+
+export async function updateUserThemePreference({
+	user,
+	themePreference
+}: {
+	user: AdminUser;
+	themePreference: ThemePreference;
+}): Promise<ThemePreference> {
+	await ensurePersonalLearningTables();
+	await upsertUserProfile(user);
+	const safePreference = safeThemePreference(themePreference);
+	await executeQuery(
+		`UPDATE user_profiles
+		 SET theme_preference = ?, updated_at = CURRENT_TIMESTAMP
+		 WHERE uid = ?`,
+		[safePreference, user.uid]
+	);
+	return safePreference;
 }
 
 export async function updateUserPreferences({

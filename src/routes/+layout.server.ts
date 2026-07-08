@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { queryRows } from '$lib/server/db';
+import { getUserThemePreference } from '$lib/server/personalLearning';
 import { getPublicRoutePayload } from '$lib/server/publicRoutePayloads';
 
 type SubjectNavigationItem = {
@@ -68,10 +69,14 @@ async function getSubjectNavigation(): Promise<SubjectNavigationItem[]> {
 }
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-	const subjectNavigation = await getSubjectNavigation().catch(() => []);
+	const [subjectNavigation, themePreference] = await Promise.all([
+		getSubjectNavigation().catch(() => []),
+		locals.user ? getUserThemePreference(locals.user).catch(() => 'auto' as const) : null
+	]);
 
 	return {
 		user: locals.user,
-		subjectNavigation
+		subjectNavigation,
+		themePreference
 	};
 };

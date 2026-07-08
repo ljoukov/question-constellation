@@ -6263,19 +6263,23 @@ textarea::placeholder {
 @media (max-width: 759px) {
 	.qc-topbar.has-navigation,
 	.qc-topbar.has-primary-action {
-		flex-wrap: wrap;
-		align-content: center;
+		flex-wrap: nowrap;
+	}
+
+	.qc-topbar.has-navigation .qc-topbar-brand,
+	.qc-topbar.has-primary-action .qc-topbar-brand {
+		flex: 0 1 auto;
+		margin-right: 0;
 	}
 
 	.qc-topbar-mobile-links {
-		order: 20;
 		display: flex;
-		flex: 1 0 100%;
+		flex: 0 1 auto;
 		align-items: center;
-		gap: 0.45rem;
+		gap: 0.32rem;
 		min-width: 0;
+		margin-left: auto;
 		overflow-x: auto;
-		padding-top: 0.08rem;
 		scrollbar-width: none;
 	}
 
@@ -6289,12 +6293,12 @@ textarea::placeholder {
 		align-items: center;
 		justify-content: center;
 		min-height: 2rem;
-		padding: 0.38rem 0.66rem;
+		padding: 0.36rem 0.56rem;
 		border: 1px solid rgba(92, 118, 130, 0.22);
 		border-radius: 999px;
 		background: color-mix(in srgb, #ffffff 82%, transparent);
 		color: #334e62;
-		font-size: 0.84rem;
+		font-size: 0.8rem;
 		font-weight: 650;
 		line-height: 1;
 		text-decoration: none;
@@ -6307,6 +6311,13 @@ textarea::placeholder {
 		background: rgba(222, 243, 235, 0.84);
 		color: #125b41;
 		font-weight: 760;
+	}
+}
+
+@media (max-width: 620px) {
+	.qc-topbar.has-navigation .qc-topbar-brand span,
+	.qc-topbar.has-primary-action .qc-topbar-brand span {
+		display: none;
 	}
 }
 

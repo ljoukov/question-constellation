@@ -61,14 +61,18 @@
 	let appearancePinnedByClick = $state(false);
 	let accountToastMessage = $state('');
 	let accountToastTone = $state<'success' | 'error'>('success');
+	let confirmedTheme = $state<ThemePreference>('auto');
 	let accountMenuRoot: HTMLDivElement | null = null;
 	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
 	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
+	let themeSaveController: AbortController | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
 		theme = value;
+		if (!themeSaveController) confirmedTheme = value;
 	});
 	onDestroy(() => {
 		unsubscribe();
+		themeSaveController?.abort();
 		clearAppearanceCloseTimer();
 		clearAccountToastTimer();
 	});
@@ -156,9 +160,47 @@
 		}
 	}
 
-	function chooseTheme(value: ThemePreference) {
+	async function chooseTheme(value: ThemePreference) {
+		if (value === theme) {
+			closeAccountMenu();
+			return;
+		}
+
+		if (!currentUser) {
+			setThemePreference(value);
+			confirmedTheme = value;
+			closeAccountMenu();
+			return;
+		}
+
+		themeSaveController?.abort();
+		const rollbackTheme = confirmedTheme;
+		const controller = new AbortController();
+		themeSaveController = controller;
+		const timeout = setTimeout(() => controller.abort(), 8000);
 		setThemePreference(value);
 		closeAccountMenu();
+
+		try {
+			const response = await fetch(resolve('/api/theme-preference'), {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ themePreference: value }),
+				signal: controller.signal
+			});
+
+			if (!response.ok) throw new Error(`Theme save failed with ${response.status}.`);
+			confirmedTheme = value;
+			showAccountToast('Appearance saved.');
+		} catch (error) {
+			if (themeSaveController !== controller) return;
+			console.warn('Theme preference could not be saved.', error);
+			setThemePreference(rollbackTheme);
+			showAccountToast('Could not save appearance. Restored previous theme.', 'error');
+		} finally {
+			clearTimeout(timeout);
+			if (themeSaveController === controller) themeSaveController = null;
+		}
 	}
 
 	async function writeTextToClipboard(text: string): Promise<void> {

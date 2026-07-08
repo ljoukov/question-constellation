@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import {
 		applyDocumentTheme,
+		setThemePreference,
 		startAutomaticThemeSync,
 		themePreference,
 		type ThemePreference
@@ -28,6 +29,7 @@
 			profile?: { selectedSubject?: string };
 			subjectOptions?: string[];
 		};
+		themePreference?: ThemePreference | null;
 	};
 
 	function signedInTopbarConfig(data: TopbarPageData, pathname: string) {
@@ -51,6 +53,13 @@
 	const signedInTopbar = $derived(
 		signedInTopbarConfig(page.data as TopbarPageData, page.url.pathname)
 	);
+	const serverThemePreference = $derived(
+		validThemePreference((page.data as TopbarPageData).themePreference)
+	);
+
+	function validThemePreference(value: unknown): ThemePreference | null {
+		return value === 'auto' || value === 'light' || value === 'dark' ? value : null;
+	}
 
 	function syncAppViewportHeight() {
 		if (typeof window === 'undefined') return;
@@ -62,6 +71,9 @@
 		let stopAutomaticThemeSync = () => {};
 		const stopViewportZoomLock = installViewportZoomLock();
 		syncAppViewportHeight();
+		if (serverThemePreference) {
+			setThemePreference(serverThemePreference);
+		}
 		window.addEventListener('resize', syncAppViewportHeight);
 		window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
 		window.visualViewport?.addEventListener('scroll', syncAppViewportHeight);
@@ -111,10 +123,18 @@
 </script>
 
 <svelte:head>
+	<meta name="qc-theme-preference" content={serverThemePreference ?? ''} />
 	<script>
 		(() => {
 			try {
-				const preference = window.localStorage.getItem('question-constellation-theme');
+				const serverPreference = document
+					.querySelector('meta[name="qc-theme-preference"]')
+					?.getAttribute('content');
+				const storedPreference = window.localStorage.getItem('question-constellation-theme');
+				const preference =
+					serverPreference === 'auto' || serverPreference === 'light' || serverPreference === 'dark'
+						? serverPreference
+						: storedPreference;
 				const mode =
 					preference === 'light' || preference === 'dark'
 						? preference
