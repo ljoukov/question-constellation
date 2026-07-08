@@ -75,6 +75,44 @@
 			detail: 'Board, subject, paper, tier, topic and mark value stay visible.'
 		}
 	];
+	const subjectEntryPoints = [
+		{
+			label: 'Biology',
+			meta: 'AQA GCSE Science',
+			detail: 'Practice sets grouped by answer method.',
+			href: `${chainsHref}?subject=Biology`
+		},
+		{
+			label: 'Chemistry',
+			meta: 'AQA GCSE Science',
+			detail: 'Questions filtered by method and mark value.',
+			href: `${chainsHref}?subject=Chemistry`
+		},
+		{
+			label: 'Physics',
+			meta: 'AQA GCSE Science',
+			detail: 'Transfer practice from public question sets.',
+			href: `${chainsHref}?subject=Physics`
+		},
+		{
+			label: 'English Language',
+			meta: 'OCR GCSE English',
+			detail: 'Paper-style finder by year, type and marks.',
+			href: `${englishHref}?course=English%20Language`
+		},
+		{
+			label: 'English Literature',
+			meta: 'OCR GCSE English',
+			detail: 'Essay and extract questions by text and paper.',
+			href: `${englishHref}?course=English%20Literature`
+		},
+		{
+			label: 'History',
+			meta: 'GCSE History',
+			detail: 'Browse through the shared question-bank filters.',
+			href: `${chainsHref}?subject=History`
+		}
+	];
 
 	const faqs = [
 		{
@@ -439,6 +477,28 @@
 						</div>
 					</aside>
 				{/if}
+			</div>
+		</section>
+
+		<section class="qc-home-section qc-home-subjects" aria-labelledby="subject-title">
+			<div class="qc-home-section-head">
+				<p class="qc-home-eyebrow">Choose a subject</p>
+				<h2 id="subject-title">Start where your exam entry lives.</h2>
+				<p>
+					Science and History use the method-led question bank. English opens the paper-style
+					finder because Language and Literature questions need course, paper, text and mark
+					filters.
+				</p>
+			</div>
+			<div class="qc-home-subject-grid">
+				{#each subjectEntryPoints as subject (subject.label)}
+					<a href={subject.href}>
+						<span>{subject.meta}</span>
+						<strong>{subject.label}</strong>
+						<small>{subject.detail}</small>
+						<ArrowRight size={16} aria-hidden="true" />
+					</a>
+				{/each}
 			</div>
 		</section>
 

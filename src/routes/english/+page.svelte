@@ -9,8 +9,7 @@
 
 	type EnglishQuestion = (typeof data.questions)[number];
 
-	const topbarSubjects = [
-		'English',
+	const questionBankSubjects = [
 		'All subjects',
 		'Science',
 		'Biology',
@@ -251,7 +250,7 @@
 		syncEnglishUrl();
 	}
 
-	function updateTopbarSubject(value: string) {
+	function updateQuestionBankSubject(value: string) {
 		if (typeof window === 'undefined' || value === 'English') return;
 		const params = new URLSearchParams();
 		if (value && value !== 'All subjects') params.set('subject', value);
@@ -289,11 +288,9 @@
 <main class="qc-real-app qc-browse-app qc-english-app">
 	<AppTopbar
 		subject="English"
-		subjects={topbarSubjects}
 		searchValue={searchQuery}
 		searchPlaceholder="Search English questions"
 		onSearchChange={updateSearch}
-		onSubjectChange={updateTopbarSubject}
 	/>
 
 	<div class="qc-browse-layout qc-english-layout">
@@ -323,6 +320,19 @@
 						<button type="button" onclick={clearFilters}>Clear</button>
 					{/if}
 				</div>
+
+				<label>
+					<span>Subject</span>
+					<select
+						value="English"
+						onchange={(event) => updateQuestionBankSubject(event.currentTarget.value)}
+					>
+						<option value="English">English</option>
+						{#each questionBankSubjects as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+				</label>
 
 				<label>
 					<span>Board</span>

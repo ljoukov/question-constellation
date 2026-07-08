@@ -439,10 +439,13 @@ const learnerSubjectOptions = [
 	'Computer Science',
 	'Geography',
 	'History',
-	'English'
+	'English Language',
+	'English Literature'
 ];
 const defaultEnabledSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
 const stemSubjectSet = new Set<string>(aqaStemCurriculum.map((entry) => entry.subject));
+const englishSubjectSet = new Set(['English Language', 'English Literature']);
+const supportedBoardNames = ['AQA', 'Edexcel', 'OCR', 'WJEC'];
 
 export async function ensurePersonalLearningTables(): Promise<void> {
 	if (ensuredPersonalTables) return;
@@ -564,7 +567,7 @@ function toProfile(row: UserProfileRow): UserProfile {
 		photoUrl: row.photo_url,
 		selectedBoard: row.selected_board,
 		selectedQualification: row.selected_qualification,
-		selectedSubject: row.selected_subject,
+		selectedSubject: canonicalLearnerSubject(row.selected_subject),
 		selectedTier: row.selected_tier
 	};
 }
@@ -581,7 +584,9 @@ function canonicalLearnerSubject(value: string | null | undefined): string {
 		return 'Computer Science';
 	if (normalized.includes('geography')) return 'Geography';
 	if (normalized.includes('history')) return 'History';
-	if (normalized.includes('english')) return 'English';
+	if (normalized.includes('english') && normalized.includes('literature')) return 'English Literature';
+	if (normalized.includes('english') && normalized.includes('language')) return 'English Language';
+	if (normalized.includes('english')) return 'English Language';
 	if (normalized.includes('biology')) return 'Biology';
 	if (normalized.includes('chemistry')) return 'Chemistry';
 	if (normalized.includes('physics')) return 'Physics';
@@ -603,8 +608,9 @@ function isStemProfileSubject(subject: string): boolean {
 	return stemSubjectSet.has(subject);
 }
 
-function safeBoard(value: string): 'AQA' {
-	return value === 'AQA' ? 'AQA' : 'AQA';
+function safeBoard(value: string): string {
+	const normalized = value.trim().toLowerCase();
+	return supportedBoardNames.find((board) => board.toLowerCase() === normalized) ?? 'AQA';
 }
 
 function safeCourse(value: string): LearnerSubject['course'] {
@@ -617,8 +623,11 @@ function safeTier(value: string): LearnerSubject['tier'] {
 	return value === 'Foundation' ? 'Foundation' : 'Higher';
 }
 
-function toLearnerSubject(row: UserProfileSubjectRow): LearnerSubject {
-	const subject = canonicalLearnerSubject(row.subject);
+function toLearnerSubject(
+	row: UserProfileSubjectRow,
+	subjectOverride?: LearnerSubject['subject']
+): LearnerSubject {
+	const subject = subjectOverride ?? canonicalLearnerSubject(row.subject);
 	return {
 		subject,
 		board: safeBoard(row.board),
@@ -634,7 +643,7 @@ function toLearnerSubject(row: UserProfileSubjectRow): LearnerSubject {
 function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSubject {
 	return {
 		subject,
-		board: 'AQA',
+		board: englishSubjectSet.has(subject) ? 'OCR' : 'AQA',
 		qualification: 'GCSE',
 		course: isStemProfileSubject(subject) ? 'Combined Science' : 'GCSE Subject',
 		tier: safeTier(profile.selectedTier),
@@ -656,9 +665,15 @@ async function listLearnerSubjects(
 		[userId]
 	);
 	const bySubject = new Map(
-		rows.map((row) => {
+		rows.flatMap((row) => {
+			if (row.subject.trim().toLowerCase() === 'english') {
+				return [
+					['English Language', toLearnerSubject(row, 'English Language')],
+					['English Literature', toLearnerSubject(row, 'English Literature')]
+				] as Array<readonly [string, LearnerSubject]>;
+			}
 			const subject = toLearnerSubject(row);
-			return [subject.subject, subject] as const;
+			return [[subject.subject, subject] as const];
 		})
 	);
 	return profileSubjects().map(
@@ -805,9 +820,10 @@ export async function updateLearnerSubjects({
 	await ensurePersonalLearningTables();
 	const normalized = profileSubjects().map((subject) => {
 		const input = subjects.find((entry) => canonicalLearnerSubject(entry.subject) === subject);
+		const defaultBoard = englishSubjectSet.has(subject) ? 'OCR' : 'AQA';
 		return {
 			subject,
-			board: safeBoard(input?.board ?? 'AQA'),
+			board: safeBoard(input?.board ?? defaultBoard),
 			qualification: 'GCSE',
 			course: isStemProfileSubject(subject)
 				? safeCourse(input?.course ?? 'Combined Science')
@@ -902,8 +918,12 @@ async function listActiveGaps(
 	limit = 6,
 	subject?: string
 ): Promise<DashboardGap[]> {
+	const subjectExpression = `CASE
+		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+		     ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
+		   END`;
 	const subjectFilter = subject
-		? `AND LOWER(COALESCE(q.subject_area, q.subject, g.subject, '')) LIKE ?`
+		? `AND LOWER(${subjectExpression}) LIKE ?`
 		: '';
 	const params: Array<string | number> = [userId];
 	if (subject) params.push(`%${subject.toLowerCase()}%`);
@@ -925,7 +945,7 @@ async function listActiveGaps(
 		   q.source_question_ref,
 		   COALESCE(q.board, g.board) AS board,
 		   COALESCE(q.qualification, g.qualification) AS qualification,
-		   COALESCE(q.subject_area, q.subject, g.subject) AS subject,
+		   ${subjectExpression} AS subject,
 		   COALESCE(q.tier, g.tier) AS tier,
 		   q.paper,
 		   q.topic_path_json,
@@ -979,13 +999,19 @@ async function listFirstActiveGapBySubject(
 		     q.source_question_ref,
 		     COALESCE(q.board, g.board) AS board,
 		     COALESCE(q.qualification, g.qualification) AS qualification,
-		     COALESCE(q.subject_area, q.subject, g.subject) AS subject,
+		     CASE
+		       WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+		       ELSE COALESCE(q.subject_area, q.subject, g.subject)
+		     END AS subject,
 		     COALESCE(q.tier, g.tier) AS tier,
 		     q.paper,
 		     q.topic_path_json,
 		     q.marks,
 		     ROW_NUMBER() OVER (
-		       PARTITION BY COALESCE(q.subject_area, q.subject, g.subject, '')
+		       PARTITION BY CASE
+		         WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+		         ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
+		       END
 		       ORDER BY
 		         CASE g.gap_band
 		           WHEN 'large_gap' THEN 0
@@ -1159,24 +1185,36 @@ async function readSubjectLearningStatsMap(
 
 	const [attemptRows, gapRows, recallRows] = await Promise.all([
 		queryRows<SubjectAttemptStatsRow>(
-			`SELECT COALESCE(q.subject_area, q.subject, '') AS subject,
+			`SELECT CASE
+			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+			          ELSE COALESCE(q.subject_area, q.subject, '')
+			        END AS subject,
 			        COUNT(*) AS attempt_count,
 			        SUM(a.awarded_marks) AS total_awarded,
 			        SUM(a.max_marks) AS total_marks
 			 FROM user_question_attempts a
 			 LEFT JOIN questions q ON q.id = a.question_id
 			 WHERE a.user_id = ?
-			 GROUP BY COALESCE(q.subject_area, q.subject, '')`,
+			 GROUP BY CASE
+			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+			          ELSE COALESCE(q.subject_area, q.subject, '')
+			        END`,
 			[userId]
 		),
 		queryRows<SubjectGapStatsRow>(
-			`SELECT COALESCE(q.subject_area, q.subject, g.subject, '') AS subject,
+			`SELECT CASE
+			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+			          ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
+			        END AS subject,
 			        COUNT(*) AS active_count
 			 FROM user_chain_gaps g
 			 LEFT JOIN questions q ON q.id = g.source_question_id
 			 WHERE g.user_id = ?
 			   AND g.status = 'active'
-			 GROUP BY COALESCE(q.subject_area, q.subject, g.subject, '')`,
+			 GROUP BY CASE
+			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+			          ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
+			        END`,
 			[userId]
 		),
 		queryRows<SubjectRecallStatsRow>(
@@ -1442,7 +1480,9 @@ function buildSubjectLane(
 		subject: learnerSubject.subject,
 		start: '1'
 	}).toString()}`;
-	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
+	const browseHref = englishSubjectSet.has(learnerSubject.subject)
+		? `/english?${new URLSearchParams({ course: learnerSubject.subject }).toString()}`
+		: `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
 	if (openGap) {
 		primaryAction = { label: 'Fix mistake', href: openGap.href, kind: 'gap' };

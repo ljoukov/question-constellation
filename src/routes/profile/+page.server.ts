@@ -69,7 +69,6 @@ function buildExamProfileOptions() {
 			'Computer Science',
 			'Geography',
 			'History',
-			'English',
 			'English Language',
 			'English Literature'
 		].map((subject) => ({
@@ -108,9 +107,6 @@ function profileSubjectMatchesPaperPage(subject: string, page: PastPaperSubjectI
 		);
 	}
 
-	if (subject === 'English') {
-		return pageSubject === 'english language' || pageSubject === 'english literature';
-	}
 	if (subject === 'English Language' || subject === 'English Literature') {
 		return pageSubject === subject.toLowerCase();
 	}

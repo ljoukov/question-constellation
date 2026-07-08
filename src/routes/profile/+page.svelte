@@ -45,7 +45,6 @@
 	const stagedBoardCount = $derived(
 		data.examProfile.boardOptions.filter((board) => !board.practiceReady).length
 	);
-	const showBoardSelect = $derived(practiceBoards.length > 1);
 
 	const enhanceProfile: SubmitFunction = () => {
 		saveStatus = 'saving';
@@ -58,6 +57,14 @@
 
 	function examProfileFor(subject: string) {
 		return data.examProfile.subjects.find((entry) => entry.subject === subject);
+	}
+
+	function boardOptionsFor(subject: LearnerSubject) {
+		return englishSubjects.has(subject.subject) ? data.examProfile.boardOptions : practiceBoards;
+	}
+
+	function showBoardSelectFor(subject: LearnerSubject) {
+		return boardOptionsFor(subject).length > 1;
 	}
 
 	function paperPagesFor(subject: LearnerSubject) {
@@ -172,14 +179,17 @@
 							</div>
 						</div>
 
-						{#if showBoardSelect}
+						{#if showBoardSelectFor(subject)}
 							<label class="qc-profile-field">
 								<span>Exam board</span>
 								<select name={`board-${index}`} bind:value={subject.board}>
-									{#each practiceBoards as board (board.id)}
+									{#each boardOptionsFor(subject) as board (board.id)}
 										<option value={board.name}>{board.name}</option>
 									{/each}
 								</select>
+								{#if englishSubjects.has(subject.subject)}
+									<small>Saved separately for Language and Literature.</small>
+								{/if}
 							</label>
 						{:else}
 							<input type="hidden" name={`board-${index}`} value={subject.board} />

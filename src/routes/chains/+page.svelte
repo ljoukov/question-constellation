@@ -221,11 +221,9 @@
 <main class="qc-real-app qc-browse-app">
 	<AppTopbar
 		subject={selectedSubject}
-		{subjects}
 		searchValue={searchQuery}
 		searchPlaceholder="Search questions or topics"
 		onSearchChange={updateSearch}
-		onSubjectChange={updateSubject}
 	/>
 
 	<div class="qc-browse-layout">
@@ -252,6 +250,15 @@
 			</div>
 
 			<section class="qc-browse-filters" aria-label="Browse filters">
+				<label class="qc-subject-filter">
+					<span>Subject</span>
+					<select value={selectedSubject} onchange={(event) => updateSubject(event.currentTarget.value)}>
+						{#each subjects as option (option)}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+				</label>
+
 				<div class="qc-mark-filter" role="group" aria-label="Question marks">
 					<span>Marks</span>
 					{#each marksFilterOptions as option (option.value)}

@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
-	import { Check, ChevronDown, ChevronRight, Search } from '@lucide/svelte';
+	import { Check, ChevronRight, Search } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
@@ -10,7 +10,7 @@
 
 	let {
 		subject = 'Physics',
-		subjects = [
+		subjects: _subjects = [
 			'All subjects',
 			'Science',
 			'Biology',
@@ -23,10 +23,10 @@
 		searchValue = '',
 		searchPlaceholder = 'Search questions',
 		showSearch = true,
-		showSubject = true,
+		showSubject: _showSubject = true,
 		onSearchChange,
 		onSearchSubmit,
-		onSubjectChange
+		onSubjectChange: _onSubjectChange
 	}: {
 		subject?: string;
 		subjects?: string[];
@@ -68,9 +68,6 @@
 	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
 	const accountDetailsText = $derived(
 		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
-	);
-	const subjectOptions = $derived(
-		subject && !subjects.includes(subject) ? [subject, ...subjects] : subjects
 	);
 
 	function clearAppearanceCloseTimer() {
@@ -203,23 +200,20 @@
 		onSearchChange?.((event.currentTarget as HTMLInputElement).value);
 	}
 
-	function updateSubject(event: Event) {
-		const value = (event.currentTarget as HTMLSelectElement).value;
-		if (onSubjectChange) {
-			onSubjectChange(value);
-			return;
-		}
-		navigateToBrowse({ subject: value });
-	}
-
 	function navigateToBrowse({ q = searchValue, subject: nextSubject = subject } = {}) {
 		if (!browser) return;
-		if (nextSubject === 'English') {
-			window.location.assign(resolve('/english'));
+		const trimmedQuery = q.trim();
+		if (nextSubject.toLowerCase().includes('english')) {
+			const englishParams = new SvelteURLSearchParams();
+			if (trimmedQuery) englishParams.set('q', trimmedQuery);
+			if (nextSubject === 'English Language' || nextSubject === 'English Literature') {
+				englishParams.set('course', nextSubject);
+			}
+			const englishSuffix = englishParams.toString();
+			window.location.assign(`${resolve('/english')}${englishSuffix ? `?${englishSuffix}` : ''}`);
 			return;
 		}
 		const params = new SvelteURLSearchParams();
-		const trimmedQuery = q.trim();
 		if (trimmedQuery) params.set('q', trimmedQuery);
 		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
 		const suffix = params.toString();
@@ -279,18 +273,6 @@
 		>
 			<Search size={19} aria-hidden="true" strokeWidth={2} />
 		</button>
-	{/if}
-
-	{#if showSubject}
-		<label class="qc-topbar-subject">
-			<span class="sr-only">Subject</span>
-			<select aria-label="Subject" value={subject} onchange={updateSubject}>
-				{#each subjectOptions as option (option)}
-					<option value={option}>{option}</option>
-				{/each}
-			</select>
-			<ChevronDown size={15} aria-hidden="true" strokeWidth={2.4} />
-		</label>
 	{/if}
 
 	<div class="qc-avatar-menu" bind:this={accountMenuRoot}>
