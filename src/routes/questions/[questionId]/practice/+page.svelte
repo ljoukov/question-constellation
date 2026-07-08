@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pushState, replaceState } from '$app/navigation';
+	import { beforeNavigate, pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
@@ -13,7 +13,22 @@
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
+	import {
+		latestPracticeDraft,
+		flushPracticeDraftQueue,
+		installPracticeDraftWindowFlush,
+		queuePracticeDraft,
+		queuedPracticeDraftForQuestion
+	} from '$lib/practiceDraftSync';
+	import {
+		isRecord,
+		recordFromRecord,
+		stringFromRecord,
+		type PracticeDraftSave,
+		type SavedPracticeDraft
+	} from '$lib/practiceDrafts';
 	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
+	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -46,6 +61,7 @@
 		rewriteText?: string;
 		gradedAnswerText?: string;
 		gradeResult?: GradeResult | null;
+		view?: PracticeRouteView;
 		updatedAt?: number;
 	};
 
@@ -156,8 +172,20 @@
 	);
 	const hasCheckedResult = $derived(Boolean(gradeResult && gradedAnswerText === answerText));
 	const showCheckedResult = $derived(requestedPracticeView === 'result' && hasCheckedResult);
+	const currentUserId = $derived(data.user?.uid ?? null);
 
 	const practiceStoragePrefix = 'question-constellation:science-practice:v1:';
+	let lastQueuedDraftSignature = '';
+
+	beforeNavigate(() => {
+		if (!currentUserId) return;
+		void flushPracticeDraftQueue(currentUserId, { keepalive: true });
+	});
+
+	onMount(() => {
+		if (!currentUserId) return undefined;
+		return installPracticeDraftWindowFlush(currentUserId);
+	});
 
 	function responseFromOverlay(value: Record<string, unknown> | null | undefined) {
 		if (!value || value.kind === 'none') return null;
@@ -165,7 +193,7 @@
 	}
 
 	function practiceStorageKey(questionId: string) {
-		return `${practiceStoragePrefix}${questionId}`;
+		return `${practiceStoragePrefix}${currentUserId ?? 'anonymous'}:${questionId}`;
 	}
 
 	function loadStoredPracticeState(questionId: string): StoredPracticeState | null {
@@ -188,12 +216,82 @@
 					rewriteText,
 					gradedAnswerText,
 					gradeResult,
+					view: requestedPracticeView,
 					updatedAt: Date.now()
 				} satisfies StoredPracticeState)
 			);
 		} catch {
 			// Session storage is a convenience for browser history, not required for practice.
 		}
+	}
+
+	function scienceStateFromDraft(draft: PracticeDraftSave | SavedPracticeDraft | null) {
+		if (!draft || draft.draftKind !== 'science-practice' || !isRecord(draft.payload)) return null;
+		const gradeResultPayload = recordFromRecord(draft.payload, 'gradeResult');
+		const view = stringFromRecord(draft.payload, 'view');
+		return {
+			answerText: stringFromRecord(draft.payload, 'answerText'),
+			rewriteText: stringFromRecord(draft.payload, 'rewriteText'),
+			gradedAnswerText: stringFromRecord(draft.payload, 'gradedAnswerText'),
+			gradeResult: gradeResultPayload ? (gradeResultPayload as GradeResult) : null,
+			view: view === 'result' ? 'result' : 'attempt',
+			updatedAt: draft.clientUpdatedAt
+		} satisfies StoredPracticeState;
+	}
+
+	function savedDraftCandidate(questionId: string) {
+		const savedDraft = data.savedDraft as SavedPracticeDraft | null;
+		return latestPracticeDraft(
+			savedDraft,
+			queuedPracticeDraftForQuestion(currentUserId, questionId)
+		);
+	}
+
+	function initialPracticeState(questionId: string) {
+		const storedState = loadStoredPracticeState(questionId);
+		const draftState = scienceStateFromDraft(savedDraftCandidate(questionId));
+		if (!storedState) return draftState;
+		if (!draftState) return storedState;
+		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
+	}
+
+	function scienceDraftPayload() {
+		return {
+			answerText,
+			rewriteText,
+			gradedAnswerText,
+			gradeResult,
+			view: requestedPracticeView
+		} satisfies Record<string, unknown>;
+	}
+
+	function scienceDraftSignature() {
+		return JSON.stringify(scienceDraftPayload());
+	}
+
+	function scienceDraft(questionId: string): PracticeDraftSave {
+		return {
+			questionId,
+			draftKind: 'science-practice',
+			answerText,
+			payload: scienceDraftPayload(),
+			clientUpdatedAt: Date.now()
+		};
+	}
+
+	function markSciencePracticeTouched() {
+		if (loadedQuestionId === data.question.id) return;
+		loadedQuestionId = data.question.id;
+		lastQueuedDraftSignature = '';
+	}
+
+	function persistSciencePracticeState() {
+		if (data.englishPractice || (loadedQuestionId && loadedQuestionId !== data.question.id)) return;
+		saveStoredPracticeState(data.question.id);
+		const signature = scienceDraftSignature();
+		if (!currentUserId || signature === lastQueuedDraftSignature) return;
+		lastQueuedDraftSignature = signature;
+		queuePracticeDraft(currentUserId, scienceDraft(data.question.id));
 	}
 
 	function updatePracticeView(view: PracticeRouteView, historyMode: 'push' | 'replace' = 'push') {
@@ -226,17 +324,22 @@
 	}
 
 	function setAnswerText(value: string) {
+		markSciencePracticeTouched();
 		const invalidatesResult = gradedAnswerText.length > 0 && value !== gradedAnswerText;
 		answerText = value;
 		if (invalidatesResult) clearCheckedResult();
+		persistSciencePracticeState();
 	}
 
 	function setRewriteText(value: string) {
+		markSciencePracticeTouched();
 		rewriteText = value;
+		persistSciencePracticeState();
 	}
 
 	async function checkAnswer() {
 		if (!canCheck) return;
+		markSciencePracticeTouched();
 
 		rewriteText = '';
 		gradedAnswerText = '';
@@ -354,6 +457,7 @@
 			gradedAnswerText = answerText;
 			gradePhase = 'done';
 			updatePracticeView('result');
+			persistSciencePracticeState();
 			return;
 		}
 
@@ -389,12 +493,13 @@
 	}
 
 	$effect(() => {
+		if (data.englishPractice) return;
 		if (loadedQuestionId === data.question.id) {
 			return;
 		}
 
 		loadedQuestionId = data.question.id;
-		const storedState = loadStoredPracticeState(data.question.id);
+		const storedState = initialPracticeState(data.question.id);
 		answerText = storedState?.answerText ?? '';
 		rewriteText = storedState?.rewriteText ?? '';
 		gradedAnswerText = storedState?.gradedAnswerText ?? '';
@@ -402,14 +507,20 @@
 		gradePhase = gradeResult ? 'done' : 'idle';
 		gradeError = '';
 		showHint = false;
+		if (storedState?.view === 'result' && storedState.gradeResult && storedState.gradedAnswerText) {
+			updatePracticeView('result', 'replace');
+		}
+		lastQueuedDraftSignature = scienceDraftSignature();
 	});
 
 	$effect(() => {
+		if (data.englishPractice) return;
 		if (loadedQuestionId !== data.question.id) return;
-		saveStoredPracticeState(data.question.id);
+		persistSciencePracticeState();
 	});
 
 	$effect(() => {
+		if (data.englishPractice) return;
 		if (requestedPracticeView === 'result' && !hasCheckedResult && !isChecking) {
 			updatePracticeView('attempt', 'replace');
 		}
@@ -427,7 +538,11 @@
 </svelte:head>
 
 {#if data.englishPractice}
-	<EnglishGuidedPractice practice={data.englishPractice} />
+	<EnglishGuidedPractice
+		practice={data.englishPractice}
+		savedDraft={data.savedDraft}
+		userId={currentUserId}
+	/>
 {:else}
 	<main class="qc-real-app qc-practice-page">
 		<AppTopbar

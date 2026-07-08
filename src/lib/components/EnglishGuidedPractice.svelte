@@ -12,6 +12,18 @@
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamResponse } from '$lib/experiments/questions/types';
 	import {
+		latestPracticeDraft,
+		queuePracticeDraft,
+		queuedPracticeDraftForQuestion
+	} from '$lib/practiceDraftSync';
+	import {
+		isRecord,
+		recordFromRecord,
+		stringFromRecord,
+		type PracticeDraftSave,
+		type SavedPracticeDraft
+	} from '$lib/practiceDrafts';
+	import {
 		Check,
 		ChevronLeft,
 		ChevronRight,
@@ -110,10 +122,22 @@
 		checkedAnswerText?: string;
 		gradeResult?: GradeResult | null;
 		gradeError?: string;
+		mode?: Mode;
+		activeStageIndex?: number;
+		view?: EnglishPracticeView;
+		model?: boolean;
 		updatedAt?: number;
 	};
 
-	let { practice }: { practice: EnglishPractice } = $props();
+	let {
+		practice,
+		savedDraft = null,
+		userId = null
+	}: {
+		practice: EnglishPractice;
+		savedDraft?: SavedPracticeDraft | null;
+		userId?: string | null;
+	} = $props();
 
 	const subjects = [...BROWSE_SUBJECTS];
 
@@ -125,6 +149,7 @@
 	let gradeError = $state('');
 	let gradeResult = $state<GradeResult | null>(null);
 	let hintOpen = $state(false);
+	let lastQueuedDraftSignature = '';
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
@@ -172,6 +197,7 @@
 	const nextAdvice = $derived(makeNextAdvice(displayGrade.criteria, answerForFeedback));
 	const modelDirection = $derived(makeModelDirection(displayGrade.criteria, answerForFeedback));
 	const hintItems = $derived(buildHints());
+	const currentUserId = $derived(userId);
 
 	function blankStepAnswers() {
 		return Object.fromEntries(practice.stages.map((stage) => [stage.id, '']));
@@ -188,7 +214,7 @@
 	}
 
 	function englishPracticeStorageKey(questionId: string) {
-		return `question-constellation:english-practice:v1:${questionId}`;
+		return `question-constellation:english-practice:v1:${currentUserId ?? 'anonymous'}:${questionId}`;
 	}
 
 	function loadStoredEnglishPracticeState(questionId: string): StoredEnglishPracticeState | null {
@@ -212,12 +238,107 @@
 					checkedAnswerText,
 					gradeResult,
 					gradeError,
+					mode,
+					activeStageIndex,
+					view: requestedPracticeView,
+					model: showModelAnswer,
 					updatedAt: Date.now()
 				} satisfies StoredEnglishPracticeState)
 			);
 		} catch {
 			// Session storage only restores browser-history state; the page still works without it.
 		}
+	}
+
+	function stringRecord(value: Record<string, unknown> | null) {
+		if (!value) return {};
+		return Object.fromEntries(
+			Object.entries(value)
+				.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+				.map(([key, text]) => [key, text])
+		);
+	}
+
+	function englishStateFromDraft(draft: PracticeDraftSave | SavedPracticeDraft | null) {
+		if (!draft || draft.draftKind !== 'english-guided' || !isRecord(draft.payload)) return null;
+		const gradeResultPayload = recordFromRecord(draft.payload, 'gradeResult');
+		const modeValue = stringFromRecord(draft.payload, 'mode');
+		const viewValue = stringFromRecord(draft.payload, 'view');
+		const modelValue = draft.payload.model;
+		const activeStageIndexValue = draft.payload.activeStageIndex;
+		return {
+			stepAnswers: stringRecord(recordFromRecord(draft.payload, 'stepAnswers')),
+			fullAnswer: stringFromRecord(draft.payload, 'fullAnswer'),
+			checkedAnswerText: stringFromRecord(draft.payload, 'checkedAnswerText'),
+			gradeResult: gradeResultPayload ? (gradeResultPayload as GradeResult) : null,
+			gradeError: stringFromRecord(draft.payload, 'gradeError'),
+			mode: modeValue === 'full' || modeValue === 'steps' ? modeValue : undefined,
+			activeStageIndex:
+				typeof activeStageIndexValue === 'number' && Number.isFinite(activeStageIndexValue)
+					? activeStageIndexValue
+					: undefined,
+			view: viewValue === 'result' ? 'result' : 'attempt',
+			model: typeof modelValue === 'boolean' ? modelValue : false,
+			updatedAt: draft.clientUpdatedAt
+		} satisfies StoredEnglishPracticeState;
+	}
+
+	function savedDraftCandidate(questionId: string) {
+		return latestPracticeDraft(
+			savedDraft,
+			queuedPracticeDraftForQuestion(currentUserId, questionId)
+		);
+	}
+
+	function initialEnglishPracticeState(questionId: string) {
+		const storedState = loadStoredEnglishPracticeState(questionId);
+		const draftState = englishStateFromDraft(savedDraftCandidate(questionId));
+		if (!storedState) return draftState;
+		if (!draftState) return storedState;
+		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
+	}
+
+	function englishDraftPayload() {
+		return {
+			stepAnswers,
+			fullAnswer,
+			checkedAnswerText,
+			gradeResult,
+			gradeError,
+			mode,
+			activeStageIndex,
+			view: requestedPracticeView,
+			model: showModelAnswer
+		} satisfies Record<string, unknown>;
+	}
+
+	function englishDraftSignature() {
+		return JSON.stringify(englishDraftPayload());
+	}
+
+	function englishDraft(questionId: string): PracticeDraftSave {
+		return {
+			questionId,
+			draftKind: 'english-guided',
+			answerText: answerForFeedback,
+			payload: englishDraftPayload(),
+			clientUpdatedAt: Date.now()
+		};
+	}
+
+	function markEnglishPracticeTouched() {
+		if (loadedQuestionId === practice.questionId) return;
+		loadedQuestionId = practice.questionId;
+		lastQueuedDraftSignature = '';
+	}
+
+	function persistEnglishPracticeState() {
+		if (loadedQuestionId && loadedQuestionId !== practice.questionId) return;
+		saveStoredEnglishPracticeState(practice.questionId);
+		const signature = englishDraftSignature();
+		if (!currentUserId || signature === lastQueuedDraftSignature) return;
+		lastQueuedDraftSignature = signature;
+		queuePracticeDraft(currentUserId, englishDraft(practice.questionId));
 	}
 
 	function updateEnglishPracticeUrl(
@@ -436,13 +557,17 @@
 
 	function updateActiveStepAnswer(value: string) {
 		if (!activeStage) return;
+		markEnglishPracticeTouched();
 		stepAnswers = { ...stepAnswers, [activeStage.id]: value };
 		clearCheckedResult();
+		persistEnglishPracticeState();
 	}
 
 	function updateFullAnswer(value: string) {
+		markEnglishPracticeTouched();
 		fullAnswer = value;
 		clearCheckedResult();
+		persistEnglishPracticeState();
 	}
 
 	function goToStage(index: number) {
@@ -464,6 +589,7 @@
 	}
 
 	function resetWork() {
+		markEnglishPracticeTouched();
 		stepAnswers = blankStepAnswers();
 		fullAnswer = '';
 		checkedAnswerText = '';
@@ -494,6 +620,7 @@
 
 	async function checkAnswer() {
 		if (!canCheck) return;
+		markEnglishPracticeTouched();
 
 		const submittedAnswer = answerForFeedback;
 		checkedAnswerText = '';
@@ -520,12 +647,14 @@
 			if (!gradeResult) throw new Error('Grading stream ended without a result.');
 			checkedAnswerText = submittedAnswer;
 			updateEnglishPracticeUrl({ view: 'result', model: false });
+			persistEnglishPracticeState();
 		} catch (error) {
 			console.error('[english-practice] model grading failed; using checklist fallback', error);
 			gradePhase = 'error';
 			gradeError = 'Live model grading is unavailable, so this check uses the mark checklist.';
 			checkedAnswerText = submittedAnswer;
 			updateEnglishPracticeUrl({ view: 'result', model: false });
+			persistEnglishPracticeState();
 		}
 	}
 
@@ -597,7 +726,7 @@
 	$effect(() => {
 		if (loadedQuestionId === practice.questionId) return;
 		loadedQuestionId = practice.questionId;
-		const storedState = loadStoredEnglishPracticeState(practice.questionId);
+		const storedState = initialEnglishPracticeState(practice.questionId);
 		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
 		fullAnswer = storedState?.fullAnswer ?? '';
 		checkedAnswerText = storedState?.checkedAnswerText ?? '';
@@ -605,11 +734,29 @@
 		gradeError = storedState?.gradeError ?? '';
 		gradePhase = gradeError ? 'error' : gradeResult ? 'done' : 'idle';
 		hintOpen = false;
+
+		const hasExplicitRouteState =
+			page.url.searchParams.has('mode') ||
+			page.url.searchParams.has('step') ||
+			page.url.searchParams.has('view') ||
+			page.url.searchParams.has('model');
+		if (storedState && !hasExplicitRouteState) {
+			updateEnglishPracticeUrl(
+				{
+					mode: storedState.mode ?? defaultMode,
+					stepIndex: storedState.activeStageIndex ?? 0,
+					view: storedState.view ?? 'attempt',
+					model: storedState.model ?? false
+				},
+				'replace'
+			);
+		}
+		lastQueuedDraftSignature = englishDraftSignature();
 	});
 
 	$effect(() => {
 		if (loadedQuestionId !== practice.questionId) return;
-		saveStoredEnglishPracticeState(practice.questionId);
+		persistEnglishPracticeState();
 	});
 
 	$effect(() => {

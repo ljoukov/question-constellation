@@ -11,6 +11,7 @@ import {
 	type ChainStep,
 	type PracticePageData
 } from '$lib/server/questionData';
+import type { PracticeDraftKind, PracticeDraftSave, SavedPracticeDraft } from '$lib/practiceDrafts';
 import type { AdminUser } from '$lib/server/auth/session';
 import { executeQuery, queryFirst, queryRows } from './db';
 
@@ -85,6 +86,15 @@ type DashboardAttemptRow = {
 	subject: string | null;
 	paper: string | null;
 	chain_title: string | null;
+};
+
+type UserQuestionDraftRow = {
+	question_id: string;
+	draft_kind: PracticeDraftKind;
+	answer_text: string;
+	draft_json: string;
+	client_updated_at: number;
+	updated_at: string;
 };
 
 type NextQuestionRow = {
@@ -378,6 +388,18 @@ const personalTableStatements = [
 	  model_version TEXT,
 	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)`,
+	`CREATE TABLE IF NOT EXISTS user_question_drafts (
+	  user_id TEXT NOT NULL,
+	  question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+	  answer_chain_id TEXT REFERENCES answer_chains(id) ON DELETE SET NULL,
+	  draft_kind TEXT NOT NULL,
+	  answer_text TEXT NOT NULL DEFAULT '',
+	  draft_json TEXT NOT NULL DEFAULT '{}',
+	  client_updated_at INTEGER NOT NULL DEFAULT 0,
+	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	  PRIMARY KEY (user_id, question_id)
+	)`,
 	`CREATE TABLE IF NOT EXISTS user_chain_gaps (
 	  id TEXT PRIMARY KEY,
 	  user_id TEXT NOT NULL,
@@ -428,6 +450,8 @@ const personalTableStatements = [
 	  ON user_question_attempts (question_id, user_id)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_question
 	  ON user_question_attempts (user_id, question_id)`,
+	`CREATE INDEX IF NOT EXISTS idx_user_question_drafts_user_updated
+	  ON user_question_drafts (user_id, updated_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_profile_subjects_user_enabled
 	  ON user_profile_subjects (user_id, enabled, subject)`,
 	`CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_status
@@ -608,9 +632,7 @@ function fallbackQuestionBoardAvailability(): QuestionBoardAvailability {
 function cloneQuestionBoardAvailability(
 	availability: QuestionBoardAvailability
 ): QuestionBoardAvailability {
-	return new Map(
-		[...availability.entries()].map(([subject, boards]) => [subject, [...boards]])
-	);
+	return new Map([...availability.entries()].map(([subject, boards]) => [subject, [...boards]]));
 }
 
 function boardSortValue(board: string) {
@@ -674,10 +696,8 @@ function availableBoardsForSubject(
 	availability?: QuestionBoardAvailability
 ): string[] {
 	const canonicalSubject = canonicalLearnerSubject(subject);
-	const boards =
-		availability?.get(canonicalSubject) ??
-		fallbackQuestionBoardsBySubject[canonicalSubject] ??
-		['AQA'];
+	const boards = availability?.get(canonicalSubject) ??
+		fallbackQuestionBoardsBySubject[canonicalSubject] ?? ['AQA'];
 	return normalizeBoardList(boards);
 }
 
@@ -689,7 +709,8 @@ function canonicalLearnerSubject(value: string | null | undefined): string {
 		return 'Computer Science';
 	if (normalized.includes('geography')) return 'Geography';
 	if (normalized.includes('history')) return 'History';
-	if (normalized.includes('english') && normalized.includes('literature')) return 'English Literature';
+	if (normalized.includes('english') && normalized.includes('literature'))
+		return 'English Literature';
 	if (normalized.includes('english') && normalized.includes('language')) return 'English Language';
 	if (normalized.includes('english')) return 'English Language';
 	if (normalized.includes('biology')) return 'Biology';
@@ -1072,9 +1093,7 @@ async function listActiveGaps(
 		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
 		     ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
 		   END`;
-	const subjectFilter = subject
-		? `AND LOWER(${subjectExpression}) LIKE ?`
-		: '';
+	const subjectFilter = subject ? `AND LOWER(${subjectExpression}) LIKE ?` : '';
 	const params: Array<string | number> = [userId];
 	if (subject) params.push(`%${subject.toLowerCase()}%`);
 	params.push(limit);
@@ -1774,6 +1793,71 @@ function recallPromptForQuestion(data: PracticePageData): SavedAttemptSummary['r
 		href: `/recall?${params.toString()}`,
 		label: `${subject} flashcards: ${topic.title}`,
 		cardCount
+	};
+}
+
+function savedDraftFromRow(row: UserQuestionDraftRow): SavedPracticeDraft {
+	return {
+		questionId: row.question_id,
+		draftKind: row.draft_kind,
+		answerText: row.answer_text,
+		payload: parseJson<Record<string, unknown>>(row.draft_json, {}),
+		clientUpdatedAt: row.client_updated_at,
+		updatedAt: row.updated_at
+	};
+}
+
+export async function getQuestionDraft(
+	userId: string,
+	questionId: string
+): Promise<SavedPracticeDraft | null> {
+	await ensurePersonalLearningTables();
+	const row = await queryFirst<UserQuestionDraftRow>(
+		`SELECT question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
+		 FROM user_question_drafts
+		 WHERE user_id = ?
+		   AND question_id = ?`,
+		[userId, questionId]
+	);
+	return row ? savedDraftFromRow(row) : null;
+}
+
+export async function saveQuestionDrafts(
+	user: AdminUser,
+	drafts: PracticeDraftSave[]
+): Promise<{ saved: Array<{ questionId: string; clientUpdatedAt: number }> }> {
+	await ensurePersonalLearningTables();
+	await upsertUserProfile(user);
+
+	for (const draft of drafts) {
+		await executeQuery(
+			`INSERT INTO user_question_drafts (
+			   user_id, question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
+			 )
+			 VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+			 ON CONFLICT(user_id, question_id) DO UPDATE SET
+			   draft_kind = excluded.draft_kind,
+			   answer_text = excluded.answer_text,
+			   draft_json = excluded.draft_json,
+			   client_updated_at = excluded.client_updated_at,
+			   updated_at = CURRENT_TIMESTAMP
+			 WHERE excluded.client_updated_at >= user_question_drafts.client_updated_at`,
+			[
+				user.uid,
+				draft.questionId,
+				draft.draftKind,
+				draft.answerText,
+				jsonString(draft.payload),
+				draft.clientUpdatedAt
+			]
+		);
+	}
+
+	return {
+		saved: drafts.map((draft) => ({
+			questionId: draft.questionId,
+			clientUpdatedAt: draft.clientUpdatedAt
+		}))
 	};
 }
 
