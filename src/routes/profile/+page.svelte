@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
@@ -30,10 +31,12 @@
 	type ToastTone = 'success' | 'error';
 
 	const autosaveDelayMs = 550;
+	const autosaveTimeoutMs = 8000;
 
 	let profileForm = $state<HTMLFormElement | null>(null);
 	let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
 	let toastTimer: ReturnType<typeof setTimeout> | null = null;
+	let saveTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
 	let activeSaveController: AbortController | null = null;
 	let changeRevision = 0;
 	let lastSavedSubjects = untrack(() => cloneSubjects(subjects));
@@ -58,8 +61,17 @@
 		saveStatus = 'saving';
 		const submittedRevision = changeRevision;
 		const submittedSubjects = cloneSubjects(subjects);
+		saveTimeoutTimer = setTimeout(() => {
+			if (activeSaveController !== controller) return;
+			controller.abort();
+			failAutosave(submittedRevision, 'Could not reach the network. Restored previous profile.');
+		}, autosaveTimeoutMs);
 
 		return async ({ result }) => {
+			if (saveTimeoutTimer) {
+				clearTimeout(saveTimeoutTimer);
+				saveTimeoutTimer = null;
+			}
 			if (activeSaveController === controller) activeSaveController = null;
 
 			if (result.type === 'success') {
@@ -71,18 +83,23 @@
 				return;
 			}
 
-			if (changeRevision === submittedRevision) {
-				subjects = cloneSubjects(lastSavedSubjects);
-			}
-			saveStatus = 'error';
-			showSaveToast('Could not save. Restored previous profile.', 'error');
+			failAutosave(submittedRevision, 'Could not save. Restored previous profile.');
 		};
 	};
 
 	$effect(() => {
+		if (!browser) return;
+		const handleOffline = () => {
+			if (autosaveTimer || activeSaveController || saveStatus === 'saving') {
+				failAutosave(changeRevision, 'You are offline. Restored previous profile.');
+			}
+		};
+		window.addEventListener('offline', handleOffline);
 		return () => {
+			window.removeEventListener('offline', handleOffline);
 			if (autosaveTimer) clearTimeout(autosaveTimer);
 			if (toastTimer) clearTimeout(toastTimer);
+			if (saveTimeoutTimer) clearTimeout(saveTimeoutTimer);
 			activeSaveController?.abort();
 		};
 	});
@@ -93,12 +110,38 @@
 
 	function queueAutosave() {
 		changeRevision += 1;
+		if (browser && !navigator.onLine) {
+			failAutosave(changeRevision, 'You are offline. Restored previous profile.');
+			return;
+		}
 		saveStatus = 'saving';
 		if (autosaveTimer) clearTimeout(autosaveTimer);
 		autosaveTimer = setTimeout(() => {
 			autosaveTimer = null;
+			if (browser && !navigator.onLine) {
+				failAutosave(changeRevision, 'You are offline. Restored previous profile.');
+				return;
+			}
 			profileForm?.requestSubmit();
 		}, autosaveDelayMs);
+	}
+
+	function failAutosave(revision: number, message: string) {
+		if (autosaveTimer) {
+			clearTimeout(autosaveTimer);
+			autosaveTimer = null;
+		}
+		if (saveTimeoutTimer) {
+			clearTimeout(saveTimeoutTimer);
+			saveTimeoutTimer = null;
+		}
+		activeSaveController?.abort();
+		activeSaveController = null;
+		if (changeRevision === revision) {
+			subjects = cloneSubjects(lastSavedSubjects);
+		}
+		saveStatus = 'error';
+		showSaveToast(message, 'error');
 	}
 
 	function showSaveToast(message: string, tone: ToastTone) {
