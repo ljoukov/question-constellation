@@ -42,6 +42,12 @@ type UserProfileSubjectRow = {
 	updated_at: string;
 };
 
+type QuestionBoardAvailabilityRow = {
+	subject: string;
+	board: string;
+	question_count: number;
+};
+
 type DashboardGapRow = {
 	id: string;
 	answer_chain_id: string;
@@ -249,6 +255,8 @@ export type LearnerProfileSettings = {
 	subjectOptions: string[];
 };
 
+export type QuestionBoardAvailability = Map<string, string[]>;
+
 export type LearnerSubjectInput = {
 	subject: string;
 	board: string;
@@ -446,6 +454,18 @@ const defaultEnabledSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
 const stemSubjectSet = new Set<string>(aqaStemCurriculum.map((entry) => entry.subject));
 const englishSubjectSet = new Set(['English Language', 'English Literature']);
 const supportedBoardNames = ['AQA', 'Edexcel', 'OCR', 'WJEC'];
+const fallbackQuestionBoardsBySubject: Record<string, string[]> = {
+	Biology: ['AQA'],
+	Chemistry: ['AQA'],
+	Physics: ['AQA'],
+	'Computer Science': ['AQA'],
+	Geography: ['AQA'],
+	History: ['AQA'],
+	'English Language': ['OCR'],
+	'English Literature': ['OCR']
+};
+
+let questionBoardAvailabilityPromise: Promise<QuestionBoardAvailability> | null = null;
 
 export async function ensurePersonalLearningTables(): Promise<void> {
 	if (ensuredPersonalTables) return;
@@ -576,6 +596,91 @@ function profileSubjects(): string[] {
 	return learnerSubjectOptions;
 }
 
+function fallbackQuestionBoardAvailability(): QuestionBoardAvailability {
+	return new Map(
+		Object.entries(fallbackQuestionBoardsBySubject).map(([subject, boards]) => [
+			subject,
+			[...boards]
+		])
+	);
+}
+
+function cloneQuestionBoardAvailability(
+	availability: QuestionBoardAvailability
+): QuestionBoardAvailability {
+	return new Map(
+		[...availability.entries()].map(([subject, boards]) => [subject, [...boards]])
+	);
+}
+
+function boardSortValue(board: string) {
+	const index = supportedBoardNames.findIndex(
+		(candidate) => candidate.toLowerCase() === board.toLowerCase()
+	);
+	return index === -1 ? supportedBoardNames.length : index;
+}
+
+function normalizeBoardList(boards: string[]) {
+	const seen = new Set<string>();
+	return boards
+		.map((board) => safeBoard(board))
+		.filter((board) => {
+			const key = board.toLowerCase();
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		})
+		.sort((left, right) => boardSortValue(left) - boardSortValue(right));
+}
+
+async function readQuestionBoardAvailability(): Promise<QuestionBoardAvailability> {
+	try {
+		const rows = await queryRows<QuestionBoardAvailabilityRow>(
+			`SELECT subject, board, question_count
+			 FROM question_board_availability
+			 WHERE qualification = 'GCSE'
+			   AND enabled = 1
+			   AND question_count > 0
+			 ORDER BY subject, board`
+		);
+
+		if (rows.length === 0) return fallbackQuestionBoardAvailability();
+
+		const availability = new Map<string, string[]>();
+		for (const row of rows) {
+			const subject = canonicalLearnerSubject(row.subject);
+			const boards = availability.get(subject) ?? [];
+			boards.push(row.board);
+			availability.set(subject, boards);
+		}
+
+		for (const [subject, boards] of availability.entries()) {
+			availability.set(subject, normalizeBoardList(boards));
+		}
+
+		return availability;
+	} catch {
+		return fallbackQuestionBoardAvailability();
+	}
+}
+
+export async function getImportedQuestionBoardAvailability(): Promise<QuestionBoardAvailability> {
+	questionBoardAvailabilityPromise ??= readQuestionBoardAvailability();
+	return cloneQuestionBoardAvailability(await questionBoardAvailabilityPromise);
+}
+
+function availableBoardsForSubject(
+	subject: string,
+	availability?: QuestionBoardAvailability
+): string[] {
+	const canonicalSubject = canonicalLearnerSubject(subject);
+	const boards =
+		availability?.get(canonicalSubject) ??
+		fallbackQuestionBoardsBySubject[canonicalSubject] ??
+		['AQA'];
+	return normalizeBoardList(boards);
+}
+
 function canonicalLearnerSubject(value: string | null | undefined): string {
 	const normalized = (value ?? '').trim().toLowerCase();
 	const matched = profileSubjects().find((subject) => subject.toLowerCase() === normalized);
@@ -613,6 +718,20 @@ function safeBoard(value: string): string {
 	return supportedBoardNames.find((board) => board.toLowerCase() === normalized) ?? 'AQA';
 }
 
+function safeBoardForSubject(
+	subject: string,
+	value: string,
+	availability?: QuestionBoardAvailability
+): string {
+	const requestedBoard = safeBoard(value);
+	const boards = availableBoardsForSubject(subject, availability);
+	return (
+		boards.find((board) => board.toLowerCase() === requestedBoard.toLowerCase()) ??
+		boards[0] ??
+		requestedBoard
+	);
+}
+
 function safeCourse(value: string): LearnerSubject['course'] {
 	if (value === 'Combined Science') return 'Combined Science';
 	if (value === 'Separate Science') return 'Separate Science';
@@ -625,12 +744,13 @@ function safeTier(value: string): LearnerSubject['tier'] {
 
 function toLearnerSubject(
 	row: UserProfileSubjectRow,
-	subjectOverride?: LearnerSubject['subject']
+	subjectOverride?: LearnerSubject['subject'],
+	boardAvailability?: QuestionBoardAvailability
 ): LearnerSubject {
 	const subject = subjectOverride ?? canonicalLearnerSubject(row.subject);
 	return {
 		subject,
-		board: safeBoard(row.board),
+		board: safeBoardForSubject(subject, row.board, boardAvailability),
 		qualification: 'GCSE',
 		course: isStemProfileSubject(subject) ? safeCourse(row.course) : 'GCSE Subject',
 		tier: safeTier(row.tier),
@@ -643,7 +763,11 @@ function toLearnerSubject(
 function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSubject {
 	return {
 		subject,
-		board: englishSubjectSet.has(subject) ? 'OCR' : 'AQA',
+		board: safeBoardForSubject(
+			subject,
+			englishSubjectSet.has(subject) ? 'OCR' : profile.selectedBoard,
+			undefined
+		),
 		qualification: 'GCSE',
 		course: isStemProfileSubject(subject) ? 'Combined Science' : 'GCSE Subject',
 		tier: safeTier(profile.selectedTier),
@@ -655,7 +779,8 @@ function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSu
 
 async function listLearnerSubjects(
 	userId: string,
-	profile: UserProfile
+	profile: UserProfile,
+	boardAvailability?: QuestionBoardAvailability
 ): Promise<LearnerSubject[]> {
 	const rows = await queryRows<UserProfileSubjectRow>(
 		`SELECT user_id, subject, board, qualification, course, tier, enabled,
@@ -668,16 +793,20 @@ async function listLearnerSubjects(
 		rows.flatMap((row) => {
 			if (row.subject.trim().toLowerCase() === 'english') {
 				return [
-					['English Language', toLearnerSubject(row, 'English Language')],
-					['English Literature', toLearnerSubject(row, 'English Literature')]
+					['English Language', toLearnerSubject(row, 'English Language', boardAvailability)],
+					['English Literature', toLearnerSubject(row, 'English Literature', boardAvailability)]
 				] as Array<readonly [string, LearnerSubject]>;
 			}
-			const subject = toLearnerSubject(row);
+			const subject = toLearnerSubject(row, undefined, boardAvailability);
 			return [[subject.subject, subject] as const];
 		})
 	);
 	return profileSubjects().map(
-		(subject) => bySubject.get(subject) ?? defaultLearnerSubject(profile, subject)
+		(subject) =>
+			bySubject.get(subject) ?? {
+				...defaultLearnerSubject(profile, subject),
+				board: safeBoardForSubject(subject, profile.selectedBoard, boardAvailability)
+			}
 	);
 }
 
@@ -792,8 +921,9 @@ export async function updateUserPreferences({
 	tier: string;
 }): Promise<void> {
 	await ensurePersonalLearningTables();
+	const boardAvailability = await getImportedQuestionBoardAvailability();
 	const safeSubject = canonicalLearnerSubject(subject);
-	const normalizedBoard = safeBoard(board);
+	const normalizedBoard = safeBoardForSubject(safeSubject, board, boardAvailability);
 	const normalizedTier = safeTier(tier);
 	const normalizedCourse = isStemProfileSubject(safeSubject) ? 'Combined Science' : 'GCSE Subject';
 	await executeQuery(
@@ -827,12 +957,13 @@ export async function updateLearnerSubjects({
 	subjects: LearnerSubjectInput[];
 }): Promise<void> {
 	await ensurePersonalLearningTables();
+	const boardAvailability = await getImportedQuestionBoardAvailability();
 	const normalized = profileSubjects().map((subject) => {
 		const input = subjects.find((entry) => canonicalLearnerSubject(entry.subject) === subject);
 		const defaultBoard = englishSubjectSet.has(subject) ? 'OCR' : 'AQA';
 		return {
 			subject,
-			board: safeBoard(input?.board ?? defaultBoard),
+			board: safeBoardForSubject(subject, input?.board ?? defaultBoard, boardAvailability),
 			qualification: 'GCSE',
 			course: isStemProfileSubject(subject)
 				? safeCourse(input?.course ?? 'Combined Science')
@@ -884,10 +1015,20 @@ export async function updateLearnerSubjects({
 }
 
 export async function getLearnerProfileSettings(user: AdminUser): Promise<LearnerProfileSettings> {
-	const profile = await getOrCreateUserProfile(user);
+	const [profile, boardAvailability] = await Promise.all([
+		getOrCreateUserProfile(user),
+		getImportedQuestionBoardAvailability()
+	]);
 	return {
-		profile,
-		subjects: await listLearnerSubjects(user.uid, profile),
+		profile: {
+			...profile,
+			selectedBoard: safeBoardForSubject(
+				profile.selectedSubject,
+				profile.selectedBoard,
+				boardAvailability
+			)
+		},
+		subjects: await listLearnerSubjects(user.uid, profile, boardAvailability),
 		subjectOptions: profileSubjects()
 	};
 }
@@ -1540,12 +1681,23 @@ function buildSubjectLane(
 }
 
 export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDashboard> {
-	const profile = await getOrCreateUserProfile(user);
-	const learnerSubjects = await listLearnerSubjects(user.uid, profile);
+	const [profile, boardAvailability] = await Promise.all([
+		getOrCreateUserProfile(user),
+		getImportedQuestionBoardAvailability()
+	]);
+	const normalizedProfile = {
+		...profile,
+		selectedBoard: safeBoardForSubject(
+			profile.selectedSubject,
+			profile.selectedBoard,
+			boardAvailability
+		)
+	};
+	const learnerSubjects = await listLearnerSubjects(user.uid, normalizedProfile, boardAvailability);
 	const enabledSubjects = learnerSubjects.filter((entry) => entry.enabled);
 	const enabledSubjectNames = enabledSubjects.map((entry) => entry.subject);
 	const primarySubject =
-		enabledSubjects.find((entry) => entry.subject === profile.selectedSubject) ??
+		enabledSubjects.find((entry) => entry.subject === normalizedProfile.selectedSubject) ??
 		enabledSubjects[0] ??
 		learnerSubjects[0];
 	const [
@@ -1577,7 +1729,7 @@ export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDas
 		null;
 
 	return {
-		profile,
+		profile: normalizedProfile,
 		learnerSubjects,
 		subjectLanes,
 		stats,
@@ -1585,7 +1737,7 @@ export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDas
 		recentAttempts,
 		nextQuestion,
 		curriculum: {
-			subject: profile.selectedSubject,
+			subject: normalizedProfile.selectedSubject,
 			specificationCode: '',
 			specificationUrl: '',
 			localSpecificationPath: '',

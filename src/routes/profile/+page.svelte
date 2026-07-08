@@ -54,9 +54,7 @@
 	}
 
 	function boardOptionsFor(subject: LearnerSubject) {
-		const options = examProfileFor(subject.subject)?.boardOptions ?? [];
-		if (options.some((board) => board.name === subject.board)) return options;
-		return [{ id: `current-${subject.board.toLowerCase()}`, name: subject.board }, ...options];
+		return examProfileFor(subject.subject)?.boardOptions ?? [];
 	}
 
 	function paperPagesFor(subject: LearnerSubject) {

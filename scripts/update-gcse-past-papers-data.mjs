@@ -7,6 +7,7 @@ if (!SOURCE_ROOT) {
 }
 const GCSE_ROOT = `${SOURCE_ROOT}/uk/past-papers/gcse`;
 const OUTPUT_PATH = 'src/lib/pastPapers/gcsePastPaperData.json';
+const INDEX_OUTPUT_PATH = 'src/lib/pastPapers/gcsePastPaperIndexData.json';
 const SUMMARY_PATH = 'tmp/gcse-past-papers-scrape-summary.json';
 
 const BOARD_IDS = ['aqa', 'edexcel', 'ocr', 'wjec'];
@@ -327,6 +328,40 @@ function summarize(pages, verificationResults) {
 	};
 }
 
+function pastPaperSubjectPath(page) {
+	return `/past-papers/gcse/${page.boardId}/${page.subjectSlug}`;
+}
+
+function buildIndexData(summary, pages) {
+	return {
+		boards: summary.boards.map((board) => ({
+			id: board.id,
+			name: board.name,
+			subjectPageCount: board.subjectPageCount
+		})),
+		pages: pages.map((page) => {
+			const years = page.entries.map((entry) => entry.year);
+			return {
+				id: page.id,
+				boardId: page.boardId,
+				boardName: page.boardName,
+				category: page.category,
+				subject: page.subject,
+				subjectSlug: page.subjectSlug,
+				tier: page.tier,
+				localPath: pastPaperSubjectPath(page),
+				entryCount: page.entries.length,
+				documentCount: page.entries.reduce(
+					(total, entry) => total + entry.documents.length,
+					0
+				),
+				firstYear: Math.min(...years),
+				latestYear: Math.max(...years)
+			};
+		})
+	};
+}
+
 async function main() {
 	const subjectPages = [];
 	for (const boardId of BOARD_IDS) {
@@ -358,15 +393,18 @@ async function main() {
 		summary,
 		pages
 	};
+	const indexData = buildIndexData(summary, pages);
 
 	await mkdir(path.dirname(OUTPUT_PATH), { recursive: true });
 	await mkdir(path.dirname(SUMMARY_PATH), { recursive: true });
 	await writeFile(OUTPUT_PATH, `${JSON.stringify(data, null, 2)}\n`);
+	await writeFile(INDEX_OUTPUT_PATH, `${JSON.stringify(indexData, null, 2)}\n`);
 	await writeFile(SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`);
 
 	console.log(
 		[
 			`Wrote ${OUTPUT_PATH}`,
+			`Wrote ${INDEX_OUTPUT_PATH}`,
 			`Subject pages: ${summary.subjectPageCount}`,
 			`Paper rows: ${summary.entryCount}`,
 			`Document cells: ${summary.documentCellCount}`,

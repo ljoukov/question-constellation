@@ -1,10 +1,13 @@
-import { getLearnerProfileSettings, updateLearnerSubjects } from '$lib/server/personalLearning';
 import {
-	gcsePastPaperBoards,
+	getImportedQuestionBoardAvailability,
+	getLearnerProfileSettings,
+	updateLearnerSubjects,
+	type QuestionBoardAvailability
+} from '$lib/server/personalLearning';
+import {
 	gcsePastPaperSubjectIndex,
-	type PastPaperBoardId,
 	type PastPaperSubjectIndex
-} from '$lib/pastPapers/gcsePastPapers';
+} from '$lib/pastPapers/gcsePastPaperIndex';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -13,10 +16,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(303, '/auth/start');
 	}
 
+	const [settings, boardAvailability] = await Promise.all([
+		getLearnerProfileSettings(locals.user),
+		getImportedQuestionBoardAvailability()
+	]);
+
 	return {
 		user: locals.user,
-		settings: await getLearnerProfileSettings(locals.user),
-		examProfile: examProfileOptions
+		settings,
+		examProfile: buildExamProfileOptions(boardAvailability)
 	};
 };
 
@@ -48,9 +56,11 @@ export const actions: Actions = {
 };
 
 const scienceProfileSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
-const examProfileOptions = buildExamProfileOptions();
+const paperBoardIdsByName = new Map(
+	gcsePastPaperSubjectIndex.map((page) => [page.boardName.toLowerCase(), page.boardId] as const)
+);
 
-function buildExamProfileOptions() {
+function buildExamProfileOptions(boardAvailability: QuestionBoardAvailability) {
 	return {
 		subjects: [
 			'Biology',
@@ -62,8 +72,14 @@ function buildExamProfileOptions() {
 			'English Language',
 			'English Literature'
 		].map((subject) => {
+			const boardNames = boardAvailability.get(subject) ?? [];
+			const boardNamesSet = new Set(boardNames.map((board) => board.toLowerCase()));
 			const paperPages = gcsePastPaperSubjectIndex
-				.filter((page) => profileSubjectMatchesPaperPage(subject, page))
+				.filter(
+					(page) =>
+						profileSubjectMatchesPaperPage(subject, page) &&
+						boardNamesSet.has(page.boardName.toLowerCase())
+				)
 				.map((page) => ({
 					boardId: page.boardId,
 					boardName: page.boardName,
@@ -81,28 +97,18 @@ function buildExamProfileOptions() {
 			return {
 				subject,
 				tierApplies: scienceProfileSubjects.has(subject),
-				boardOptions: subjectBoardOptions(paperPages),
+				boardOptions: subjectBoardOptions(boardNames),
 				paperPages
 			};
 		})
 	};
 }
 
-function subjectBoardOptions(paperPages: Array<{ boardId: PastPaperBoardId; boardName: string }>) {
-	const boardNamesById = new Map<PastPaperBoardId, string>();
-	for (const page of paperPages) {
-		boardNamesById.set(page.boardId, page.boardName);
-	}
-
-	return gcsePastPaperBoards.flatMap((board) => {
-		if (board.id === 'all' || !boardNamesById.has(board.id)) return [];
-		return [
-			{
-				id: board.id,
-				name: boardNamesById.get(board.id) ?? board.name
-			}
-		];
-	});
+function subjectBoardOptions(boardNames: string[]) {
+	return boardNames.map((name) => ({
+		id: paperBoardIdsByName.get(name.toLowerCase()) ?? name.toLowerCase().replace(/\s+/g, '-'),
+		name
+	}));
 }
 
 function profileSubjectMatchesPaperPage(subject: string, page: PastPaperSubjectIndex) {
