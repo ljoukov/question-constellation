@@ -9,6 +9,7 @@
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import { primaryNavigationLinks, type AppTopbarLink } from '$lib/navigation';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
+	import type { AdminUser } from '$lib/server/auth/session';
 
 	type AppTopbarAction = {
 		href: string;
@@ -56,12 +57,20 @@
 	let theme = $state<ThemePreference>('auto');
 	let mobileSearchOpen = $state(false);
 	let accountMenuOpen = $state(false);
+	let confirmedTheme = $state<ThemePreference>('auto');
+	let accountToastMessage = $state('');
+	let accountToastTone = $state<'success' | 'error'>('success');
 	let accountMenuRoot: HTMLDivElement | null = null;
+	let themeSaveController: AbortController | null = null;
+	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
 		theme = value;
+		if (!themeSaveController) confirmedTheme = value;
 	});
 	onDestroy(() => {
 		unsubscribe();
+		themeSaveController?.abort();
+		clearAccountToastTimer();
 	});
 
 	const themeOptions: Array<{ value: ThemePreference; label: string }> = [
@@ -69,7 +78,15 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
 	];
-	const appearanceIconSrc = '/brand/question-constellation-logo.svg';
+	const currentUser = $derived((pageState.data.user ?? null) as AdminUser | null);
+	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
+	const defaultSignInAction: AppTopbarAction = {
+		href: resolve('/auth/start'),
+		label: 'Sign In For Free'
+	};
+	const effectivePrimaryAction = $derived(
+		primaryAction ?? (!currentUser && showNavigation ? defaultSignInAction : undefined)
+	);
 	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
@@ -82,11 +99,11 @@
 					variant: 'secondary' as const
 				}))
 		);
-		if (primaryAction) {
+		if (effectivePrimaryAction) {
 			links.push({
-				href: primaryAction.href,
-				label: primaryAction.label,
-				ariaLabel: primaryAction.ariaLabel,
+				href: effectivePrimaryAction.href,
+				label: effectivePrimaryAction.label,
+				ariaLabel: effectivePrimaryAction.ariaLabel,
 				variant: 'primary'
 			});
 		}
@@ -97,12 +114,28 @@
 			'qc-topbar',
 			mobileSearchOpen ? 'search-open' : '',
 			visibleNavLinks.length > 0 ? 'has-navigation' : '',
-			primaryAction ? 'has-primary-action' : '',
+			effectivePrimaryAction ? 'has-primary-action' : '',
 			sticky ? 'is-sticky' : 'is-static'
 		]
 			.filter(Boolean)
 			.join(' ')
 	);
+
+	function clearAccountToastTimer() {
+		if (!accountToastTimer) return;
+		clearTimeout(accountToastTimer);
+		accountToastTimer = null;
+	}
+
+	function showAccountToast(message: string, tone: 'success' | 'error' = 'success') {
+		accountToastMessage = message;
+		accountToastTone = tone;
+		clearAccountToastTimer();
+		accountToastTimer = setTimeout(() => {
+			accountToastMessage = '';
+			accountToastTimer = null;
+		}, 2400);
+	}
 
 	function closeAccountMenu() {
 		accountMenuOpen = false;
@@ -112,9 +145,47 @@
 		accountMenuOpen = !accountMenuOpen;
 	}
 
-	function chooseTheme(value: ThemePreference) {
+	async function chooseTheme(value: ThemePreference) {
+		if (value === theme) {
+			closeAccountMenu();
+			return;
+		}
+
+		if (!currentUser) {
+			setThemePreference(value);
+			confirmedTheme = value;
+			closeAccountMenu();
+			return;
+		}
+
+		themeSaveController?.abort();
+		const rollbackTheme = confirmedTheme;
+		const controller = new AbortController();
+		themeSaveController = controller;
+		const timeout = setTimeout(() => controller.abort(), 8000);
 		setThemePreference(value);
 		closeAccountMenu();
+
+		try {
+			const response = await fetch(resolve('/api/theme-preference'), {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ themePreference: value }),
+				signal: controller.signal
+			});
+
+			if (!response.ok) throw new Error(`Theme save failed with ${response.status}.`);
+			confirmedTheme = value;
+			showAccountToast('Appearance saved.');
+		} catch (error) {
+			if (themeSaveController !== controller) return;
+			console.warn('Theme preference could not be saved.', error);
+			setThemePreference(rollbackTheme);
+			showAccountToast('Could not save appearance. Restored previous theme.', 'error');
+		} finally {
+			clearTimeout(timeout);
+			if (themeSaveController === controller) themeSaveController = null;
+		}
 	}
 
 	function updateSearch(event: Event) {
@@ -210,13 +281,13 @@
 		</button>
 	{/if}
 
-	{#if primaryAction}
+	{#if effectivePrimaryAction}
 		<a
 			class="qc-topbar-action"
-			href={primaryAction.href}
-			aria-label={primaryAction.ariaLabel ?? primaryAction.label}
+			href={effectivePrimaryAction.href}
+			aria-label={effectivePrimaryAction.ariaLabel ?? effectivePrimaryAction.label}
 		>
-			{primaryAction.label}
+			{effectivePrimaryAction.label}
 		</a>
 	{/if}
 
@@ -245,7 +316,7 @@
 			onclick={toggleAccountMenu}
 		>
 			<span class="qc-avatar-pixel" aria-hidden="true">
-				<img src={appearanceIconSrc} alt="" width="32" height="32" />
+				<img src={avatarSrc} alt="" width="32" height="32" referrerpolicy="no-referrer" />
 			</span>
 		</button>
 		{#if accountMenuOpen}
@@ -272,4 +343,9 @@
 			</div>
 		{/if}
 	</div>
+	{#if accountToastMessage}
+		<div class="qc-account-toast" class:error={accountToastTone === 'error'} role="status">
+			{accountToastMessage}
+		</div>
+	{/if}
 </header>
