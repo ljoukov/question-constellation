@@ -9,12 +9,10 @@
 	const visibleQuestions = $derived(chain.questions.slice(0, visibleCount));
 	const remainingCount = $derived(Math.max(0, chain.questions.length - visibleQuestions.length));
 
-	function practiceHref(ref = chain.primaryRef) {
-		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref });
-	}
-
-	function questionRouteRef(question: LearningChain['questions'][number]) {
-		return question.id ?? question.ref;
+	function practiceHref(question: LearningChain['questions'][number]) {
+		return resolve('/questions/[questionId]/practice', {
+			questionId: question.id ?? question.ref
+		});
 	}
 
 	function accessibleText(value: string) {
@@ -25,7 +23,7 @@
 <ol class="qc-chain-question-list" aria-label={`${accessibleText(chain.title)} questions`}>
 	{#each visibleQuestions as question, index (question.id ?? question.ref)}
 		<li>
-			<a class="qc-chain-question" href={practiceHref(questionRouteRef(question))}>
+			<a class="qc-chain-question" href={practiceHref(question)}>
 				<span class="qc-chain-question-index">{index + 1}</span>
 				<span class="qc-chain-question-body">
 					<span class="qc-chain-question-meta"

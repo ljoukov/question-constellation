@@ -264,11 +264,6 @@ async function loadChainVisibility(chainIds) {
 		    AND q.status = 'published'
 		    AND ac.needs_human_review = 0
 		    AND ac.status = 'published'
-		    AND EXISTS (
-		     SELECT 1
-		       FROM question_rendering_overlays qro
-		      WHERE qro.question_id = q.id
-		    )
 		  GROUP BY qac.answer_chain_id`,
 		chainIds
 	);

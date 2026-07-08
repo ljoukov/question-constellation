@@ -8,9 +8,6 @@ export function practiceRoutePayloadId(chainId: string, ref: string) {
 	return `practice:${chainId}:${ref}`;
 }
 
-export const EXPLORABLE_CHAINS_PAYLOAD_ID = 'chains:explorable';
-export const HOME_PUBLIC_SUMMARY_PAYLOAD_ID = 'home:public-summary';
-
 export async function getPublicRoutePayload<T>(id: string): Promise<T | null> {
 	const row = await queryFirst<PublicRoutePayloadRow>(
 		`SELECT payload_json

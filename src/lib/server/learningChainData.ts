@@ -1,16 +1,9 @@
 import {
-	getLearningChain,
 	getQuestionTeaser,
-	learningChains,
 	type ChainQuestionLabel,
 	type ChainQuestionTeaser,
 	type LearningChain
 } from '$lib/learningChains';
-import {
-	EXPLORABLE_CHAINS_PAYLOAD_ID,
-	getPublicRoutePayload,
-	HOME_PUBLIC_SUMMARY_PAYLOAD_ID
-} from './publicRoutePayloads';
 import { subjectSymbol } from '$lib/subjectSymbols.js';
 import { sourceDocumentSlug } from './questionExperimentData';
 import { queryRows } from './db';
@@ -186,7 +179,8 @@ function topicFromRow(row: QuestionMembershipRow) {
 }
 
 function subjectName(row: Pick<ChainRow, 'subject' | 'subject_area'>) {
-	if ((row.subject ?? '').toLowerCase().includes('english')) return row.subject ?? 'English Language';
+	if ((row.subject ?? '').toLowerCase().includes('english'))
+		return row.subject ?? 'English Language';
 	return row.subject_area ?? row.subject ?? 'Science';
 }
 
@@ -364,11 +358,6 @@ async function fetchChainRows() {
 		   AND qac.needs_human_review = 0
 		   AND q.needs_human_review = 0
 		   AND q.status = 'published'
-		   AND EXISTS (
-			SELECT 1
-			FROM question_rendering_overlays qro
-			WHERE qro.question_id = q.id
-		 )
 		 GROUP BY ac.id
 		 HAVING question_count > 0
 		 ORDER BY ac.needs_human_review ASC,
@@ -429,11 +418,6 @@ async function fetchQuestionRows() {
 		 WHERE qac.needs_human_review = 0
 		   AND q.needs_human_review = 0
 		   AND q.status = 'published'
-		   AND EXISTS (
-			SELECT 1
-			FROM question_rendering_overlays qro
-			WHERE qro.question_id = q.id
-		 )
 		 ORDER BY qac.answer_chain_id,
 		          CASE qac.transfer_distance
 		            WHEN 'start' THEN 0
@@ -462,11 +446,6 @@ async function fetchChainRow(chainId: string) {
 		   AND qac.needs_human_review = 0
 		   AND q.needs_human_review = 0
 		   AND q.status = 'published'
-		   AND EXISTS (
-			SELECT 1
-			FROM question_rendering_overlays qro
-			WHERE qro.question_id = q.id
-		   )
 		 GROUP BY ac.id
 		 HAVING question_count > 0
 		 LIMIT 1`,
@@ -527,11 +506,6 @@ async function fetchQuestionRowsForChain(chainId: string) {
 		   AND qac.needs_human_review = 0
 		   AND q.needs_human_review = 0
 		   AND q.status = 'published'
-		   AND EXISTS (
-			SELECT 1
-			FROM question_rendering_overlays qro
-			WHERE qro.question_id = q.id
-		   )
 		 ORDER BY CASE qac.transfer_distance
 		            WHEN 'start' THEN 0
 		            WHEN 'near' THEN 1
@@ -543,19 +517,6 @@ async function fetchQuestionRowsForChain(chainId: string) {
 		          q.year,
 		          q.source_question_ref`,
 		[chainId]
-	);
-}
-
-function isLearningChainArray(value: unknown): value is LearningChain[] {
-	return (
-		Array.isArray(value) &&
-		value.every(
-			(chain) =>
-				chain &&
-				typeof chain === 'object' &&
-				typeof (chain as LearningChain).id === 'string' &&
-				Array.isArray((chain as LearningChain).questions)
-		)
 	);
 }
 
@@ -572,62 +533,38 @@ function summarizeChains(chains: LearningChain[]): HomePagePublicData {
 }
 
 export async function getExplorableLearningChains(): Promise<LearningChain[]> {
-	const materialized = await getPublicRoutePayload<unknown>(EXPLORABLE_CHAINS_PAYLOAD_ID).catch(
-		() => null
-	);
-	if (isLearningChainArray(materialized)) return materialized;
+	const [chains, steps, questions] = await Promise.all([
+		fetchChainRows(),
+		fetchStepRows(),
+		fetchQuestionRows()
+	]);
 
-	try {
-		const [chains, steps, questions] = await Promise.all([
-			fetchChainRows(),
-			fetchStepRows(),
-			fetchQuestionRows()
-		]);
-
-		const stepsByChain = groupBy(steps, (step) => step.answer_chain_id);
-		const questionsByChain = groupBy(questions, (question) => question.answer_chain_id);
-		const result = chains
-			.map((chain) =>
-				buildLearningChain(
-					chain,
-					stepsByChain.get(chain.id) ?? [],
-					questionsByChain.get(chain.id) ?? []
-				)
+	const stepsByChain = groupBy(steps, (step) => step.answer_chain_id);
+	const questionsByChain = groupBy(questions, (question) => question.answer_chain_id);
+	return chains
+		.map((chain) =>
+			buildLearningChain(
+				chain,
+				stepsByChain.get(chain.id) ?? [],
+				questionsByChain.get(chain.id) ?? []
 			)
-			.filter((chain): chain is LearningChain => Boolean(chain));
-
-		return result.length > 0 ? result : learningChains;
-	} catch (error) {
-		console.error('[learningChainData] falling back to static chains', error);
-		return learningChains;
-	}
+		)
+		.filter((chain): chain is LearningChain => Boolean(chain));
 }
 
 export async function getHomePagePublicData(): Promise<HomePagePublicData> {
-	const materialized = await getPublicRoutePayload<HomePagePublicData>(
-		HOME_PUBLIC_SUMMARY_PAYLOAD_ID
-	).catch(() => null);
-	if (materialized && isLearningChainArray(materialized.featuredChains)) {
-		return materialized;
-	}
-
 	return summarizeChains(await getExplorableLearningChains());
 }
 
 export async function getExplorableLearningChain(chainId: string): Promise<LearningChain | null> {
-	try {
-		const row = await fetchChainRow(chainId);
-		if (!row) return getLearningChain(chainId);
+	const row = await fetchChainRow(chainId);
+	if (!row) return null;
 
-		const [steps, questions] = await Promise.all([
-			fetchStepRowsForChain(row.id),
-			fetchQuestionRowsForChain(row.id)
-		]);
-		return buildLearningChain(row, steps, questions);
-	} catch (error) {
-		console.error('[learningChainData] falling back to static chain', error);
-		return getLearningChain(chainId);
-	}
+	const [steps, questions] = await Promise.all([
+		fetchStepRowsForChain(row.id),
+		fetchQuestionRowsForChain(row.id)
+	]);
+	return buildLearningChain(row, steps, questions);
 }
 
 export { getQuestionTeaser };

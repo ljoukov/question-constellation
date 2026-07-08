@@ -15,12 +15,10 @@
 
 	const visibleQuestions = $derived(limit === null ? questions : questions.slice(0, limit));
 
-	function practiceHref(ref = chain.primaryRef) {
-		return resolve('/practice/[chainId]/[ref]', { chainId: chain.id, ref });
-	}
-
-	function questionRouteRef(question: LearningChain['questions'][number]) {
-		return question.id ?? question.ref;
+	function practiceHref(question: LearningChain['questions'][number]) {
+		return resolve('/questions/[questionId]/practice', {
+			questionId: question.id ?? question.ref
+		});
 	}
 
 	function accessibleText(value: string) {
@@ -30,7 +28,7 @@
 
 <div class="qc-question-card-grid" aria-label={`${accessibleText(chain.title)} question teasers`}>
 	{#each visibleQuestions as question (question.id ?? question.ref)}
-		<a class="qc-question-card" href={practiceHref(questionRouteRef(question))}>
+		<a class="qc-question-card" href={practiceHref(question)}>
 			<span class="qc-question-label"><MathText text={question.label} /></span>
 			<span class="qc-question-title"><MathText text={question.title} /></span>
 			<span class="qc-question-preview"><MathText text={question.teaser} /></span>
