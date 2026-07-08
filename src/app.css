@@ -6305,14 +6305,8 @@ textarea::placeholder {
 	}
 
 	.qc-topbar-mobile-links a:hover,
-	.qc-topbar-mobile-links a:focus-visible,
-	.qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
+	.qc-topbar-mobile-links a:focus-visible {
 		color: #0d5a3f;
-	}
-
-	.qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
-		text-decoration: underline;
-		text-underline-offset: 0.22rem;
 	}
 
 	.qc-topbar-mobile-links a.primary {
@@ -8221,8 +8215,7 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-topbar-nav a:hover,
 :root[data-theme='dark'] .qc-topbar-nav a:focus-visible,
 :root[data-theme='dark'] .qc-topbar-mobile-links a:hover,
-:root[data-theme='dark'] .qc-topbar-mobile-links a:focus-visible,
-:root[data-theme='dark'] .qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
+:root[data-theme='dark'] .qc-topbar-mobile-links a:focus-visible {
 	color: #b8f7d5;
 }
 
@@ -8744,8 +8737,7 @@ html[data-theme='dark'] .app-shell {
 	:root:not([data-theme='light']) .qc-topbar-nav a:hover,
 	:root:not([data-theme='light']) .qc-topbar-nav a:focus-visible,
 	:root:not([data-theme='light']) .qc-topbar-mobile-links a:hover,
-	:root:not([data-theme='light']) .qc-topbar-mobile-links a:focus-visible,
-	:root:not([data-theme='light']) .qc-topbar-mobile-links a[aria-current='page']:not(.primary) {
+	:root:not([data-theme='light']) .qc-topbar-mobile-links a:focus-visible {
 		color: #b8f7d5;
 	}
 

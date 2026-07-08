@@ -88,6 +88,13 @@
 	const accountDetailsText = $derived(
 		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
 	);
+	const defaultSignInAction: AppTopbarAction = {
+		href: resolve('/auth/start'),
+		label: 'Sign In For Free'
+	};
+	const effectivePrimaryAction = $derived(
+		primaryAction ?? (!currentUser && showNavigation ? defaultSignInAction : undefined)
+	);
 	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
@@ -100,11 +107,11 @@
 					variant: 'secondary' as const
 				}))
 		);
-		if (primaryAction) {
+		if (effectivePrimaryAction) {
 			links.push({
-				href: primaryAction.href,
-				label: primaryAction.label,
-				ariaLabel: primaryAction.ariaLabel,
+				href: effectivePrimaryAction.href,
+				label: effectivePrimaryAction.label,
+				ariaLabel: effectivePrimaryAction.ariaLabel,
 				variant: 'primary'
 			});
 		}
@@ -115,7 +122,7 @@
 			'qc-topbar',
 			mobileSearchOpen ? 'search-open' : '',
 			visibleNavLinks.length > 0 ? 'has-navigation' : '',
-			primaryAction ? 'has-primary-action' : '',
+			effectivePrimaryAction ? 'has-primary-action' : '',
 			sticky ? 'is-sticky' : 'is-static'
 		]
 			.filter(Boolean)
@@ -390,13 +397,13 @@
 		</button>
 	{/if}
 
-	{#if primaryAction}
+	{#if effectivePrimaryAction}
 		<a
 			class="qc-topbar-action"
-			href={primaryAction.href}
-			aria-label={primaryAction.ariaLabel ?? primaryAction.label}
+			href={effectivePrimaryAction.href}
+			aria-label={effectivePrimaryAction.ariaLabel ?? effectivePrimaryAction.label}
 		>
-			{primaryAction.label}
+			{effectivePrimaryAction.label}
 		</a>
 	{/if}
 
