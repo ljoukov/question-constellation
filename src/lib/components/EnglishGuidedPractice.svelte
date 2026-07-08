@@ -128,9 +128,7 @@
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
-	const finderHref = $derived(
-		`${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`
-	);
+	const finderHref = $derived(`${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`);
 	const defaultMode = $derived(practice.isExtended ? 'steps' : 'full');
 	const mode = $derived(parseMode(page.url.searchParams.get('mode'), defaultMode));
 	const activeStageIndex = $derived(parseStageIndex(page.url.searchParams.get('step')));

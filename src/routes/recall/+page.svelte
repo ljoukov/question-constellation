@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
@@ -58,6 +60,7 @@
 			initialSubject: string;
 			initialTopic: string;
 			initialKind: string;
+			initialMode: string;
 			initialSearch: string;
 			initialStart: boolean;
 			user: { uid: string; email: string; name: string | null; photoUrl: string | null } | null;
@@ -87,11 +90,15 @@
 		return kindOptions.some(([kind]) => kind === value) ? (value as RecallCardKind) : 'all';
 	}
 
+	function validMode(value: string): Mode {
+		return modeOptions.some((option) => option.value === value) ? (value as Mode) : 'recall';
+	}
+
 	let selectedSubject = $state<SubjectFilter>(untrack(() => validSubject(data.initialSubject)));
 	let selectedTopic = $state(untrack(() => data.initialTopic));
 	let selectedKind = $state<KindFilter>(untrack(() => validKind(data.initialKind)));
 	let searchQuery = $state(untrack(() => data.initialSearch));
-	let mode = $state<Mode>('recall');
+	let mode = $state<Mode>(untrack(() => validMode(data.initialMode)));
 	let sessionActive = $state(untrack(() => data.initialStart && data.cards.length > 0));
 	let sessionComplete = $state(false);
 	let cardIndex = $state(0);
@@ -171,6 +178,7 @@
 		if (selectedTopic === 'all') return;
 		if (availableTopics.some((topic) => topic.id === selectedTopic)) return;
 		selectedTopic = 'all';
+		syncRecallUrl('replace', sessionActive);
 	});
 
 	$effect(() => {
@@ -178,8 +186,33 @@
 		selectedTopic;
 		selectedKind;
 		searchQuery;
+		mode;
 		if (!sessionActive) cardIndex = 0;
-		syncRecallUrl();
+	});
+
+	$effect(() => {
+		const params = page.url.searchParams;
+		const nextSubject = validSubject(params.get('subject') ?? 'All subjects');
+		const nextTopic = params.get('topic') ?? 'all';
+		const nextKind = validKind(params.get('kind') ?? 'all');
+		const nextMode = validMode(params.get('mode') ?? 'recall');
+		const nextSearch = params.get('q') ?? '';
+		const nextSessionActive = params.get('start') === '1' && data.cards.length > 0;
+
+		untrack(() => {
+			if (selectedSubject !== nextSubject) selectedSubject = nextSubject;
+			if (selectedTopic !== nextTopic) selectedTopic = nextTopic;
+			if (selectedKind !== nextKind) selectedKind = nextKind;
+			if (mode !== nextMode) mode = nextMode;
+			if (searchQuery !== nextSearch) searchQuery = nextSearch;
+			if (sessionActive !== nextSessionActive) {
+				if (nextSessionActive) {
+					startSessionState();
+				} else {
+					quitSessionState();
+				}
+			}
+		});
 	});
 
 	onMount(() => {
@@ -248,7 +281,7 @@
 		return next;
 	}
 
-	function startSession() {
+	function startSessionState() {
 		if (filteredCards.length === 0) return;
 		sessionActive = true;
 		sessionComplete = false;
@@ -257,12 +290,22 @@
 		resetCardState();
 	}
 
-	function quitSession() {
+	function quitSessionState() {
 		sessionActive = false;
 		sessionComplete = false;
 		cardIndex = 0;
 		answeredInSession = 0;
 		resetCardState();
+	}
+
+	function startSession() {
+		startSessionState();
+		syncRecallUrl('push', true);
+	}
+
+	function quitSession() {
+		quitSessionState();
+		syncRecallUrl('push', false);
 	}
 
 	function resetCardState(options?: { entering?: boolean }) {
@@ -451,27 +494,52 @@
 		returnCard();
 	}
 
-	function syncRecallUrl() {
+	function syncRecallUrl(
+		historyMode: 'push' | 'replace' = 'replace',
+		nextSessionActive = sessionActive
+	) {
 		if (!browser) return;
 		const params = new URLSearchParams();
 		if (searchQuery.trim()) params.set('q', searchQuery.trim());
 		if (selectedSubject !== 'All subjects') params.set('subject', selectedSubject);
 		if (selectedTopic !== 'all') params.set('topic', selectedTopic);
 		if (selectedKind !== 'all') params.set('kind', selectedKind);
+		if (mode !== 'recall') params.set('mode', mode);
+		if (nextSessionActive) params.set('start', '1');
 		const suffix = params.toString();
-		window.history.replaceState(
-			window.history.state,
-			'',
-			`${resolve('/recall')}${suffix ? `?${suffix}` : ''}`
-		);
+		const nextUrl = `${resolve('/recall')}${suffix ? `?${suffix}` : ''}`;
+		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
+		if (nextUrl === currentUrl) return;
+		if (historyMode === 'push') {
+			pushState(nextUrl, page.state);
+			return;
+		}
+		replaceState(nextUrl, page.state);
 	}
 
 	function updateSearch(value: string) {
 		searchQuery = value;
+		syncRecallUrl('replace');
 	}
 
 	function updateSubject(value: string) {
 		selectedSubject = validSubject(value);
+		syncRecallUrl('push');
+	}
+
+	function updateMode(value: Mode) {
+		mode = value;
+		syncRecallUrl('push');
+	}
+
+	function updateKind(value: KindFilter) {
+		selectedKind = value;
+		syncRecallUrl('push');
+	}
+
+	function updateTopic(value: string) {
+		selectedTopic = value;
+		syncRecallUrl('push');
 	}
 
 	function clearProgress() {
@@ -646,9 +714,7 @@
 						<ArrowLeft size={18} aria-hidden="true" strokeWidth={2.2} />
 						Skip
 					</button>
-					<button type="button" class="session-primary" disabled>
-						Choose answer
-					</button>
+					<button type="button" class="session-primary" disabled> Choose answer </button>
 				{:else if revealed}
 					<button
 						type="button"
@@ -744,7 +810,7 @@
 								type="button"
 								class:active={mode === option.value}
 								aria-pressed={mode === option.value}
-								onclick={() => (mode = option.value)}
+								onclick={() => updateMode(option.value)}
 							>
 								<ModeIcon size={17} aria-hidden="true" strokeWidth={2.2} />
 								{option.label}
@@ -762,7 +828,7 @@
 							type="button"
 							class:active={selectedKind === 'all'}
 							aria-pressed={selectedKind === 'all'}
-							onclick={() => (selectedKind = 'all')}
+							onclick={() => updateKind('all')}
 						>
 							All
 						</button>
@@ -771,7 +837,7 @@
 								type="button"
 								class:active={selectedKind === kind}
 								aria-pressed={selectedKind === kind}
-								onclick={() => (selectedKind = kind)}
+								onclick={() => updateKind(kind)}
 							>
 								{label}
 							</button>
@@ -783,7 +849,12 @@
 					{#snippet icon()}
 						<Target size={17} aria-hidden="true" strokeWidth={2.2} />
 					{/snippet}
-					<select class="setup-select" bind:value={selectedTopic} aria-label="Specification topic">
+					<select
+						class="setup-select"
+						value={selectedTopic}
+						aria-label="Specification topic"
+						onchange={(event) => updateTopic(event.currentTarget.value)}
+					>
 						<option value="all">All topics</option>
 						{#each availableTopics as topic (topic.id)}
 							<option value={topic.id}>

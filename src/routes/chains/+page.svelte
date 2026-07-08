@@ -287,7 +287,10 @@
 			<section class="qc-browse-filters" aria-label="Browse filters">
 				<label class="qc-subject-filter">
 					<span>Subject</span>
-					<select value={selectedSubject} onchange={(event) => updateSubject(event.currentTarget.value)}>
+					<select
+						value={selectedSubject}
+						onchange={(event) => updateSubject(event.currentTarget.value)}
+					>
 						{#each subjects as option (option)}
 							<option value={option}>{option}</option>
 						{/each}
