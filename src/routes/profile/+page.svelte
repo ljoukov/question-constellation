@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
-	import { ArrowLeft, BookOpen, CheckCircle2, Save } from '@lucide/svelte';
+	import { ArrowLeft, BookOpen, CheckCircle2 } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
 	import type { PageProps } from './$types';
@@ -27,27 +27,91 @@
 	);
 
 	type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+	type ToastTone = 'success' | 'error';
+
+	const autosaveDelayMs = 550;
+
+	let profileForm = $state<HTMLFormElement | null>(null);
+	let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+	let toastTimer: ReturnType<typeof setTimeout> | null = null;
+	let activeSaveController: AbortController | null = null;
+	let changeRevision = 0;
+	let lastSavedSubjects = untrack(() => cloneSubjects(subjects));
 	let saveStatus = $state<SaveStatus>('idle');
+	let saveToastMessage = $state('');
+	let saveToastTone = $state<ToastTone>('success');
 
 	const enabledCount = $derived(subjects.filter((subject) => subject.enabled).length);
 	const saveLabel = $derived(
 		saveStatus === 'saving'
-			? 'Saving...'
+			? 'Saving profile...'
 			: saveStatus === 'saved'
-				? 'Saved'
+				? 'Profile saved'
 				: saveStatus === 'error'
-					? 'Could not save'
-					: 'Save profile'
+					? 'Could not save profile'
+					: 'Changes save automatically'
 	);
 
-	const enhanceProfile: SubmitFunction = () => {
+	const enhanceProfile: SubmitFunction = ({ controller }) => {
+		activeSaveController?.abort();
+		activeSaveController = controller;
 		saveStatus = 'saving';
-		return async ({ result, update }) => {
-			await update({ reset: false });
-			saveStatus =
-				result.type === 'success' ? 'saved' : result.type === 'failure' ? 'error' : 'idle';
+		const submittedRevision = changeRevision;
+		const submittedSubjects = cloneSubjects(subjects);
+
+		return async ({ result }) => {
+			if (activeSaveController === controller) activeSaveController = null;
+
+			if (result.type === 'success') {
+				lastSavedSubjects = submittedSubjects;
+				if (changeRevision === submittedRevision) {
+					saveStatus = 'saved';
+					showSaveToast('Profile saved', 'success');
+				}
+				return;
+			}
+
+			if (changeRevision === submittedRevision) {
+				subjects = cloneSubjects(lastSavedSubjects);
+			}
+			saveStatus = 'error';
+			showSaveToast('Could not save. Restored previous profile.', 'error');
 		};
 	};
+
+	$effect(() => {
+		return () => {
+			if (autosaveTimer) clearTimeout(autosaveTimer);
+			if (toastTimer) clearTimeout(toastTimer);
+			activeSaveController?.abort();
+		};
+	});
+
+	function cloneSubjects(nextSubjects: LearnerSubject[]) {
+		return nextSubjects.map((subject) => ({ ...subject }));
+	}
+
+	function queueAutosave() {
+		changeRevision += 1;
+		saveStatus = 'saving';
+		if (autosaveTimer) clearTimeout(autosaveTimer);
+		autosaveTimer = setTimeout(() => {
+			autosaveTimer = null;
+			profileForm?.requestSubmit();
+		}, autosaveDelayMs);
+	}
+
+	function showSaveToast(message: string, tone: ToastTone) {
+		saveToastMessage = message;
+		saveToastTone = tone;
+		if (toastTimer) clearTimeout(toastTimer);
+		toastTimer = setTimeout(
+			() => {
+				saveToastMessage = '';
+			},
+			tone === 'error' ? 4600 : 2400
+		);
+	}
 
 	function examProfileFor(subject: string) {
 		return data.examProfile.subjects.find((entry) => entry.subject === subject);
@@ -142,7 +206,14 @@
 			</div>
 		</section>
 
-		<form class="qc-profile-form" method="POST" action="?/saveProfile" use:enhance={enhanceProfile}>
+		<form
+			bind:this={profileForm}
+			class="qc-profile-form"
+			method="POST"
+			action="?/saveProfile"
+			onchange={queueAutosave}
+			use:enhance={enhanceProfile}
+		>
 			<input type="hidden" name="subjectCount" value={subjects.length} />
 
 			<div class="qc-profile-subject-list" aria-label="GCSE subjects">
@@ -224,14 +295,18 @@
 					</section>
 				{/each}
 			</div>
-
-			<div class="qc-profile-footer">
-				<p data-state={saveStatus}>{saveLabel}</p>
-				<button type="submit" class="qc-profile-save" disabled={saveStatus === 'saving'}>
-					<Save size={17} aria-hidden="true" strokeWidth={2.2} />
-					Save profile
-				</button>
-			</div>
+			<p class="sr-only" aria-live="polite">{saveLabel}</p>
 		</form>
 	</div>
+
+	{#if saveToastMessage}
+		<div
+			class="qc-profile-toast"
+			class:error={saveToastTone === 'error'}
+			role="status"
+			aria-live="polite"
+		>
+			{saveToastMessage}
+		</div>
+	{/if}
 </main>
