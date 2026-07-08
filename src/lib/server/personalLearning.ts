@@ -636,7 +636,7 @@ function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSu
 		subject,
 		board: 'AQA',
 		qualification: 'GCSE',
-		course: isStemProfileSubject(subject) ? 'Separate Science' : 'GCSE Subject',
+		course: isStemProfileSubject(subject) ? 'Combined Science' : 'GCSE Subject',
 		tier: safeTier(profile.selectedTier),
 		enabled: defaultEnabledSubjects.has(subject),
 		currentGrade: null,
@@ -771,7 +771,7 @@ export async function updateUserPreferences({
 	const safeSubject = canonicalLearnerSubject(subject);
 	const normalizedBoard = safeBoard(board);
 	const normalizedTier = safeTier(tier);
-	const normalizedCourse = isStemProfileSubject(safeSubject) ? 'Separate Science' : 'GCSE Subject';
+	const normalizedCourse = isStemProfileSubject(safeSubject) ? 'Combined Science' : 'GCSE Subject';
 	await executeQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
@@ -810,7 +810,7 @@ export async function updateLearnerSubjects({
 			board: safeBoard(input?.board ?? 'AQA'),
 			qualification: 'GCSE',
 			course: isStemProfileSubject(subject)
-				? safeCourse(input?.course ?? 'Separate Science')
+				? safeCourse(input?.course ?? 'Combined Science')
 				: 'GCSE Subject',
 			tier: safeTier(input?.tier ?? 'Higher'),
 			enabled: Boolean(input?.enabled),
