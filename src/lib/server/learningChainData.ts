@@ -11,6 +11,7 @@ import {
 	getPublicRoutePayload,
 	HOME_PUBLIC_SUMMARY_PAYLOAD_ID
 } from './publicRoutePayloads';
+import { subjectSymbol } from '$lib/subjectSymbols.js';
 import { sourceDocumentSlug } from './questionExperimentData';
 import { queryRows } from './db';
 
@@ -186,18 +187,6 @@ function topicFromRow(row: QuestionMembershipRow) {
 
 function subjectName(row: Pick<ChainRow, 'subject' | 'subject_area'>) {
 	return row.subject_area ?? row.subject ?? 'Science';
-}
-
-function subjectSymbol(subject: string) {
-	const lower = subject.toLowerCase();
-	if (lower.includes('biology')) return '🧬';
-	if (lower.includes('chemistry')) return '⚗️';
-	if (lower.includes('physics')) return '⚛️';
-	if (lower.includes('computer')) return '</>';
-	if (lower.includes('geography')) return '⌖';
-	if (lower.includes('history')) return '¶';
-	if (lower.includes('english')) return 'Aa';
-	return '✦';
 }
 
 function subjectAccent(subject: string): LearningChain['accent'] {

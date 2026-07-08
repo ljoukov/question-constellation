@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from 'node:url';
+import { subjectSymbol } from '../src/lib/subjectSymbols.js';
 import { d1Config, d1Rows } from './lib/d1-rest.mjs';
 
 const DEFAULT_BATCH_SIZE = 50;
@@ -160,18 +161,6 @@ function topicFromRow(row) {
 
 function subjectName(row) {
 	return row.subject_area ?? row.subject ?? 'Science';
-}
-
-function subjectSymbol(subject) {
-	const lower = subject.toLowerCase();
-	if (lower.includes('biology')) return 'Bio';
-	if (lower.includes('chemistry')) return 'Chem';
-	if (lower.includes('physics')) return 'Phys';
-	if (lower.includes('computer')) return '</>';
-	if (lower.includes('geography')) return 'Geo';
-	if (lower.includes('history')) return 'Hist';
-	if (lower.includes('english')) return 'Aa';
-	return '*';
 }
 
 function subjectAccent(subject) {
