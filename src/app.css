@@ -7843,6 +7843,19 @@ html[data-theme='dark'] .app-shell {
 	background: rgba(7, 20, 31, 0.72);
 }
 
+:root[data-theme='dark'] .qc-profile-back {
+	border-color: rgba(125, 211, 252, 0.34);
+	background: rgba(14, 36, 54, 0.86);
+	color: #e6f8ff;
+}
+
+:root[data-theme='dark'] .qc-profile-back:hover,
+:root[data-theme='dark'] .qc-profile-back:focus-visible {
+	border-color: rgba(86, 216, 148, 0.58);
+	background: rgba(17, 75, 66, 0.78);
+	color: #ffffff;
+}
+
 :root[data-theme='dark'] .qc-dashboard-preferences select,
 :root[data-theme='dark'] .qc-profile-subject-row select,
 :root[data-theme='dark'] .qc-profile-subject-note strong {
