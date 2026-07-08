@@ -43,6 +43,7 @@ type QuestionMetadata = {
 const OCR_BOARD = 'OCR';
 const FALLBACK_GUIDED_QUESTION_ID = 'english-lit-romeo-juliet-fate-guided';
 const SUBJECT_ORDER = ['English Language', 'English Literature'];
+const ENGLISH_SUBJECTS = new Set(SUBJECT_ORDER);
 const KNOWN_TEXTS = [
 	'Romeo and Juliet',
 	'Macbeth',
@@ -189,6 +190,12 @@ function sortSubjects(subjects: string[]) {
 	});
 }
 
+function normaliseCourseFilter(value: string | null) {
+	const trimmed = (value ?? '').trim();
+	if (ENGLISH_SUBJECTS.has(trimmed)) return trimmed;
+	return 'All English';
+}
+
 function hydrateQuestion(row: EnglishQuestionRow) {
 	const topicPath = parseJson<string[]>(row.topic_path_json, []);
 	const metadata = parseJson<QuestionMetadata>(row.metadata_json, {});
@@ -256,7 +263,10 @@ export const load: PageServerLoad = async ({ url }) => {
 			 FROM questions q
 			 JOIN source_documents sd ON sd.id = q.source_document_id
 			 WHERE q.board = ?
-			   AND (q.subject_area = 'English' OR q.subject LIKE 'English%')
+			   AND (
+			       q.subject_area IN ('English', 'English Language', 'English Literature')
+			       OR q.subject LIKE 'English%'
+			   )
 			   AND q.needs_human_review = 0
 			   AND q.status = 'published'
 			 ORDER BY COALESCE(q.year, sd.year) DESC,
@@ -271,7 +281,10 @@ export const load: PageServerLoad = async ({ url }) => {
 			`SELECT COUNT(DISTINCT q.source_document_id) AS source_documents
 			 FROM questions q
 			 WHERE q.board = ?
-			   AND (q.subject_area = 'English' OR q.subject LIKE 'English%')
+			   AND (
+			       q.subject_area IN ('English', 'English Language', 'English Literature')
+			       OR q.subject LIKE 'English%'
+			   )
 			   AND q.needs_human_review = 0
 			   AND q.status = 'published'`,
 			[OCR_BOARD]
@@ -296,7 +309,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			initialFilters: {
 				search: url.searchParams.get('q') ?? '',
 				board: url.searchParams.get('board') ?? OCR_BOARD,
-				course: url.searchParams.get('course') ?? 'All English',
+				course: normaliseCourseFilter(url.searchParams.get('course')),
 				paper: url.searchParams.get('paper') ?? 'All papers',
 				year: url.searchParams.get('year') ?? 'All years',
 				text: url.searchParams.get('text') ?? 'All texts',
@@ -322,7 +335,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			initialFilters: {
 				search: url.searchParams.get('q') ?? '',
 				board: url.searchParams.get('board') ?? OCR_BOARD,
-				course: 'All English',
+				course: normaliseCourseFilter(url.searchParams.get('course')),
 				paper: 'All papers',
 				year: 'All years',
 				text: 'All texts',

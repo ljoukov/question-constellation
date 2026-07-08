@@ -4,6 +4,7 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
+	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ClipboardList, PenLine, TriangleAlert } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -22,19 +23,11 @@
 	const constellationHref = $derived(
 		resolve('/constellations/[chainId]', { chainId: data.chain.id })
 	);
-	const isEnglish = $derived(data.question.meta.subject.toLowerCase().includes('english'));
-	const topbarSubject = $derived(isEnglish ? 'English' : data.question.meta.subject);
-	const topbarSubjects = [
-		'All subjects',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History',
-		'English'
-	];
+	const isEnglish = $derived(isEnglishSubject(data.question.meta.subject));
+	const topbarSubject = $derived(
+		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
+	);
+	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 </script>
 

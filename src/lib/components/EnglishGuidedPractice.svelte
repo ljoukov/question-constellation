@@ -5,6 +5,7 @@
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import { BROWSE_SUBJECTS, englishSubjectOrDefault } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamResponse } from '$lib/experiments/questions/types';
@@ -103,17 +104,7 @@
 
 	let { practice }: { practice: EnglishPractice } = $props();
 
-	const subjects = [
-		'English',
-		'All subjects',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History'
-	];
+	const subjects = [...BROWSE_SUBJECTS];
 
 	let loadedQuestionId = $state('');
 	let mode = $state<Mode>('steps');
@@ -128,6 +119,10 @@
 	let hintOpen = $state(false);
 
 	const question = $derived(practice.question);
+	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
+	const finderHref = $derived(
+		`${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`
+	);
 	const activeStage = $derived(practice.stages[activeStageIndex] ?? practice.stages[0]);
 	const stageProgress = $derived(
 		practice.stages.length > 0
@@ -483,11 +478,11 @@
 </svelte:head>
 
 <main class="qc-real-app qc-english-practice-app">
-	<AppTopbar subject="English" {subjects} searchPlaceholder="Search English questions" />
+	<AppTopbar subject={topbarSubject} {subjects} searchPlaceholder="Search English questions" />
 
 	<div class="qc-english-practice-layout">
 		<aside class="qc-english-practice-side" aria-label="Question and mark support">
-			<IconBackLink href={resolve('/english')} label="Back to question finder" />
+			<IconBackLink href={finderHref} label="Back to question finder" />
 			<p class="qc-real-kicker">{question.meta.qualification} {question.meta.subject}</p>
 			<h1><MathText text={question.title} /></h1>
 			<div class="qc-question-meta-stack" aria-label="Exam metadata">

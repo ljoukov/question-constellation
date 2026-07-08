@@ -55,12 +55,25 @@ export async function fetchPublicChains({
 		);
 		return results.flat().sort((left, right) => String(left.id).localeCompare(String(right.id)));
 	}
-	const subjectFilter = subject && subject !== 'all' ? 'AND ac.subject_area = ?' : '';
+	const subjectFilter =
+		subject && subject !== 'all'
+			? subject === 'English'
+				? "AND (ac.subject_area LIKE 'English%' OR ac.subject LIKE 'English%')"
+				: 'AND (ac.subject_area = ? OR ac.subject = ?)'
+			: '';
 	const chainFilter = chainIds.length ? `AND ac.id IN (${chainIds.map(() => '?').join(', ')})` : '';
-	const params = [...(subjectFilter ? [subject] : []), ...(chainIds.length ? chainIds : [])];
+	const params = [
+		...(subjectFilter && subject !== 'English' ? [subject, subject] : []),
+		...(chainIds.length ? chainIds : [])
+	];
 	const chains = await d1Rows(
 		`SELECT ac.id, ac.slug, ac.title, ac.canonical_chain_text AS canonicalChainText,
-		        ac.summary, ac.subject_area AS subjectArea, ac.broad_topic AS broadTopic,
+		        ac.summary,
+		        CASE
+		          WHEN LOWER(COALESCE(ac.subject, '')) LIKE 'english%' THEN ac.subject
+		          ELSE ac.subject_area
+		        END AS subjectArea,
+		        ac.broad_topic AS broadTopic,
 		        ac.metadata_json AS metadataJson,
 		        COUNT(DISTINCT q.id) AS publicQuestions,
 		        COUNT(DISTINCT q.source_document_id) AS publicPapers
@@ -71,7 +84,7 @@ export async function fetchPublicChains({
 		   ${subjectFilter}
 		   ${chainFilter}
 		 GROUP BY ac.id
-		 ORDER BY ac.subject_area, ac.id`,
+		 ORDER BY subjectArea, ac.id`,
 		params,
 		{ rootDir }
 	);
@@ -122,7 +135,12 @@ async function fetchExamples({ rootDir, chainIds, maxExamplesPerChain, maxMarkIt
 					`SELECT qac.answer_chain_id AS chainId, q.id AS questionId,
 					        q.source_document_id AS sourceDocumentId, q.source_question_ref AS sourceQuestionRef,
 					        q.prompt_text AS promptText, q.command_word AS commandWord,
-					        q.marks, q.subject_area AS subjectArea, qac.fit_notes AS fitNotes
+					        q.marks,
+					        CASE
+					          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+					          ELSE q.subject_area
+					        END AS subjectArea,
+					        qac.fit_notes AS fitNotes
 					 FROM question_answer_chains qac
 					 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 					 JOIN questions q ON q.id = qac.question_id

@@ -713,6 +713,15 @@ function metaLine(parts: Array<string | number | null | undefined>): string {
 		.join(' · ');
 }
 
+function subjectLabelFromColumns(
+	subject: string | null | undefined,
+	subjectArea: string | null | undefined
+): string | null {
+	return (subject ?? '').toLowerCase().includes('english')
+		? (subject ?? null)
+		: (subjectArea ?? subject ?? null);
+}
+
 function gapBandLabel(value: string): string {
 	if (value === 'closed') return 'closed';
 	if (value === 'small_gap') return 'small gap';
@@ -1059,7 +1068,10 @@ async function listRecentAttempts(userId: string, limit = 6): Promise<DashboardA
 		   a.created_at,
 		   q.prompt_text AS question_title,
 		   q.source_question_ref,
-		   COALESCE(q.subject_area, q.subject) AS subject,
+		   CASE
+		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
+		     ELSE COALESCE(q.subject_area, q.subject)
+		   END AS subject,
 		   q.paper,
 		   ac.title AS chain_title
 		 FROM user_question_attempts a
@@ -1274,7 +1286,7 @@ function nextQuestionFromRow(row: NextQuestionRow): DashboardNextQuestion {
 			row.source_question_ref,
 			row.board,
 			row.qualification,
-			row.subject_area ?? row.subject,
+			subjectLabelFromColumns(row.subject, row.subject_area),
 			row.paper,
 			row.marks ? `${row.marks} marks` : null
 		]),
@@ -1771,7 +1783,10 @@ async function readGapDetail(userId: string, gapId: string): Promise<GapDetailRo
 		   q.source_question_ref,
 		   COALESCE(q.board, g.board) AS board,
 		   COALESCE(q.qualification, g.qualification) AS qualification,
-		   COALESCE(q.subject_area, q.subject, g.subject) AS subject,
+		   CASE
+		     WHEN LOWER(COALESCE(q.subject, g.subject, '')) LIKE 'english%' THEN COALESCE(q.subject, g.subject)
+		     ELSE COALESCE(q.subject_area, q.subject, g.subject)
+		   END AS subject,
 		   COALESCE(q.tier, g.tier) AS tier,
 		   q.paper,
 		   q.topic_path_json,

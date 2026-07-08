@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ChevronDown } from '@lucide/svelte';
+	import { canonicalEnglishSubject, isEnglishSubject } from '$lib/englishSubjects';
 
 	type SubjectNavigationItem = {
 		subject: string;
@@ -17,9 +18,14 @@
 	} = $props();
 
 	function subjectHref(item: SubjectNavigationItem) {
-		return item.subject === 'English'
-			? resolve('/english')
-			: resolve('/questions/[questionId]', { questionId: item.questionId });
+		if (!isEnglishSubject(item.subject)) {
+			return resolve('/questions/[questionId]', { questionId: item.questionId });
+		}
+
+		const course = canonicalEnglishSubject(item.subject);
+		return course
+			? `${resolve('/english')}?course=${encodeURIComponent(course)}`
+			: resolve('/english');
 	}
 </script>
 

@@ -5,21 +5,13 @@
 	import { Check, ChevronRight, Search } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
 	import type { AdminUser } from '$lib/server/auth/session';
 
 	let {
 		subject = 'Physics',
-		subjects: _subjects = [
-			'All subjects',
-			'Science',
-			'Biology',
-			'Chemistry',
-			'Physics',
-			'Computer Science',
-			'Geography',
-			'History'
-		],
+		subjects: _subjects = [...BROWSE_SUBJECTS],
 		searchValue = '',
 		searchPlaceholder = 'Search questions',
 		showSearch = true,

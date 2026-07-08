@@ -2,6 +2,7 @@ import { getLearnerProfileSettings, updateLearnerSubjects } from '$lib/server/pe
 import {
 	gcsePastPaperBoards,
 	gcsePastPaperSubjectIndex,
+	type PastPaperBoardId,
 	type PastPaperSubjectIndex
 } from '$lib/pastPapers/gcsePastPapers';
 import { fail, redirect } from '@sveltejs/kit';
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		user: locals.user,
 		settings: await getLearnerProfileSettings(locals.user),
-		examProfile: buildExamProfileOptions()
+		examProfile: examProfileOptions
 	};
 };
 
@@ -46,22 +47,11 @@ export const actions: Actions = {
 	}
 };
 
-const livePracticeBoardIds = new Set(['aqa']);
 const scienceProfileSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
+const examProfileOptions = buildExamProfileOptions();
 
 function buildExamProfileOptions() {
-	const boardOptions = gcsePastPaperBoards
-		.filter((board) => board.id !== 'all')
-		.map((board) => ({
-			id: board.id,
-			name: board.name,
-			practiceReady: livePracticeBoardIds.has(board.id),
-			paperAtlasHref: `/past-papers/gcse/${board.id}`,
-			subjectPageCount: board.subjectPageCount
-		}));
-
 	return {
-		boardOptions,
 		subjects: [
 			'Biology',
 			'Chemistry',
@@ -71,10 +61,8 @@ function buildExamProfileOptions() {
 			'History',
 			'English Language',
 			'English Literature'
-		].map((subject) => ({
-			subject,
-			tierApplies: scienceProfileSubjects.has(subject),
-			paperPages: gcsePastPaperSubjectIndex
+		].map((subject) => {
+			const paperPages = gcsePastPaperSubjectIndex
 				.filter((page) => profileSubjectMatchesPaperPage(subject, page))
 				.map((page) => ({
 					boardId: page.boardId,
@@ -88,9 +76,33 @@ function buildExamProfileOptions() {
 					entryCount: page.entryCount,
 					documentCount: page.documentCount,
 					latestYear: page.latestYear
-				}))
-		}))
+				}));
+
+			return {
+				subject,
+				tierApplies: scienceProfileSubjects.has(subject),
+				boardOptions: subjectBoardOptions(paperPages),
+				paperPages
+			};
+		})
 	};
+}
+
+function subjectBoardOptions(paperPages: Array<{ boardId: PastPaperBoardId; boardName: string }>) {
+	const boardNamesById = new Map<PastPaperBoardId, string>();
+	for (const page of paperPages) {
+		boardNamesById.set(page.boardId, page.boardName);
+	}
+
+	return gcsePastPaperBoards.flatMap((board) => {
+		if (board.id === 'all' || !boardNamesById.has(board.id)) return [];
+		return [
+			{
+				id: board.id,
+				name: boardNamesById.get(board.id) ?? board.name
+			}
+		];
+	});
 }
 
 function profileSubjectMatchesPaperPage(subject: string, page: PastPaperSubjectIndex) {

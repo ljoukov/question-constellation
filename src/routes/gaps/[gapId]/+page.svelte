@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import { BROWSE_SUBJECTS, canonicalEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ArrowRight, CheckCircle2, CircleAlert, RotateCcw, Target } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -48,11 +49,7 @@
 	>);
 
 	const subject = $derived(
-		data.gapData.gap.meta.includes('Chemistry')
-			? 'Chemistry'
-			: data.gapData.gap.meta.includes('Physics')
-				? 'Physics'
-				: 'Biology'
+		subjectFromGapText(`${data.gapData.gap.meta} ${data.gapData.subjectLabel}`)
 	);
 	const allFieldsFilled = $derived(questions.every((question) => answers[question.id]?.trim()));
 	const checkingFields = $derived(
@@ -65,6 +62,17 @@
 	const recallHref = $derived(
 		`${resolve('/recall')}?subject=${encodeURIComponent(subject)}&start=1`
 	);
+
+	function subjectFromGapText(value: string) {
+		const englishSubject = canonicalEnglishSubject(value);
+		if (englishSubject) return englishSubject;
+		if (value.includes('Chemistry')) return 'Chemistry';
+		if (value.includes('Physics')) return 'Physics';
+		if (value.includes('Computer Science')) return 'Computer Science';
+		if (value.includes('Geography')) return 'Geography';
+		if (value.includes('History')) return 'History';
+		return 'Biology';
+	}
 
 	$effect.pre(() => {
 		if (activeGapId === data.gapData.gap.id) return;
@@ -170,17 +178,7 @@
 <main class="qc-real-app qc-gap-page">
 	<AppTopbar
 		{subject}
-		subjects={[
-			'All subjects',
-			'Science',
-			'Biology',
-			'Chemistry',
-			'Physics',
-			'Computer Science',
-			'Geography',
-			'History',
-			'English'
-		]}
+		subjects={[...BROWSE_SUBJECTS]}
 		searchPlaceholder="Search questions"
 	/>
 

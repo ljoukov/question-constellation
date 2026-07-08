@@ -3,8 +3,15 @@ import { getExplorableLearningChains } from '$lib/server/learningChainData';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
-	if ((url.searchParams.get('subject') ?? '').toLowerCase().includes('english')) {
-		throw redirect(307, '/english');
+	const subject = url.searchParams.get('subject') ?? '';
+	if (subject.toLowerCase().includes('english')) {
+		const course =
+			subject.toLowerCase().includes('literature')
+				? 'English Literature'
+				: subject.toLowerCase().includes('language')
+					? 'English Language'
+					: '';
+		throw redirect(307, course ? `/english?course=${encodeURIComponent(course)}` : '/english');
 	}
 
 	return {

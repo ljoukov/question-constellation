@@ -333,6 +333,8 @@ function d1SubjectFilter(value) {
 	const normalized = String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
 	if (!normalized || normalized === 'all') return 'all';
 	if (normalized === 'computer-science' || normalized === 'computing') return 'Computer Science';
+	if (normalized === 'english-language') return 'English Language';
+	if (normalized === 'english-literature') return 'English Literature';
 	if (normalized === 'geography') return 'Geography';
 	if (normalized === 'history') return 'History';
 	if (normalized === 'biology') return 'Biology';

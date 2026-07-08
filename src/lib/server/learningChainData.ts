@@ -186,6 +186,7 @@ function topicFromRow(row: QuestionMembershipRow) {
 }
 
 function subjectName(row: Pick<ChainRow, 'subject' | 'subject_area'>) {
+	if ((row.subject ?? '').toLowerCase().includes('english')) return row.subject ?? 'English Language';
 	return row.subject_area ?? row.subject ?? 'Science';
 }
 

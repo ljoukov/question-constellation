@@ -3,6 +3,7 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
+	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { BookOpen, ListChecks, PenLine, Route } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -21,20 +22,16 @@
 	const practiceHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.question.id })
 	);
-	const englishHref = $derived(resolve('/english'));
-	const isEnglish = $derived(data.question.meta.subject.toLowerCase().includes('english'));
-	const topbarSubject = $derived(isEnglish ? 'English' : data.question.meta.subject);
-	const topbarSubjects = [
-		'All subjects',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History',
-		'English'
-	];
+	const isEnglish = $derived(isEnglishSubject(data.question.meta.subject));
+	const topbarSubject = $derived(
+		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
+	);
+	const topbarSubjects = [...BROWSE_SUBJECTS];
+	const finderHref = $derived(
+		isEnglish
+			? `${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`
+			: resolve('/chains')
+	);
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
 	const metaItems = $derived(
 		[
@@ -74,7 +71,7 @@
 	<div class="qc-real-layout qc-question-layout">
 		<aside class="qc-real-rail qc-question-rail" aria-label="Question route">
 			<IconBackLink
-				href={topbarSubject === 'English' ? englishHref : resolve('/chains')}
+				href={finderHref}
 				label="Back to question finder"
 			/>
 			<p class="qc-real-kicker">

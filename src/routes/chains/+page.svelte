@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import { canonicalEnglishSubject, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 	import { untrack } from 'svelte';
@@ -19,14 +20,15 @@
 	} = $props();
 
 	const subjectOrder = [
-		'English',
 		'Science',
 		'Biology',
 		'Chemistry',
 		'Physics',
 		'Computer Science',
 		'Geography',
-		'History'
+		'History',
+		'English Language',
+		'English Literature'
 	];
 	const scienceSubjects = new Set(['Science', 'Biology', 'Chemistry', 'Physics']);
 	const marksFilterOptions = [
@@ -43,7 +45,9 @@
 
 	function canonicalSubject(value: string | null | undefined) {
 		const lower = (value ?? '').toLowerCase();
-		if (lower.includes('english')) return 'English';
+		const englishSubject = canonicalEnglishSubject(lower);
+		if (englishSubject) return englishSubject;
+		if (lower.includes('english')) return null;
 		if (lower.includes('computer science') || lower.includes('computing'))
 			return 'Computer Science';
 		if (lower.includes('geography')) return 'Geography';
@@ -191,8 +195,10 @@
 	}
 
 	function updateSubject(value: string) {
-		if (value === 'English') {
-			window.location.assign(resolve('/english'));
+		if (isEnglishSubject(value)) {
+			const course = canonicalEnglishSubject(value);
+			const suffix = course ? `?course=${encodeURIComponent(course)}` : '';
+			window.location.assign(`${resolve('/english')}${suffix}`);
 			return;
 		}
 		selectedSubject = value;

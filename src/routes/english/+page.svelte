@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import { BROWSE_SUBJECTS, englishSubjectOrDefault } from '$lib/englishSubjects';
 	import { BookOpen, ClipboardCheck, Search, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import type { PageProps } from './$types';
@@ -9,16 +10,7 @@
 
 	type EnglishQuestion = (typeof data.questions)[number];
 
-	const questionBankSubjects = [
-		'All subjects',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History'
-	];
+	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const marksOptions = [
 		'All marks',
 		'1-2 marks',
@@ -53,6 +45,9 @@
 		'All English',
 		...unique(boardScopedQuestions.map((question) => question.subject))
 	]);
+	const topbarSubject = $derived(
+		selectedCourse === 'All English' ? 'English Language' : englishSubjectOrDefault(selectedCourse)
+	);
 	const courseScopedQuestions = $derived(
 		boardScopedQuestions.filter(
 			(question) => selectedCourse === 'All English' || question.subject === selectedCourse
@@ -250,14 +245,6 @@
 		syncEnglishUrl();
 	}
 
-	function updateQuestionBankSubject(value: string) {
-		if (typeof window === 'undefined' || value === 'English') return;
-		const params = new URLSearchParams();
-		if (value && value !== 'All subjects') params.set('subject', value);
-		const query = params.toString();
-		window.location.assign(`${resolve('/chains')}${query ? `?${query}` : ''}`);
-	}
-
 	function questionHref(question: EnglishQuestion) {
 		return resolve('/questions/[questionId]/practice', {
 			questionId: question.slug || question.id
@@ -287,7 +274,8 @@
 
 <main class="qc-real-app qc-browse-app qc-english-app">
 	<AppTopbar
-		subject="English"
+		subject={topbarSubject}
+		subjects={topbarSubjects}
 		searchValue={searchQuery}
 		searchPlaceholder="Search English questions"
 		onSearchChange={updateSearch}
@@ -320,19 +308,6 @@
 						<button type="button" onclick={clearFilters}>Clear</button>
 					{/if}
 				</div>
-
-				<label>
-					<span>Subject</span>
-					<select
-						value="English"
-						onchange={(event) => updateQuestionBankSubject(event.currentTarget.value)}
-					>
-						<option value="English">English</option>
-						{#each questionBankSubjects as option}
-							<option value={option}>{option}</option>
-						{/each}
-					</select>
-				</label>
 
 				<label>
 					<span>Board</span>

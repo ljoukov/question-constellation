@@ -3,6 +3,7 @@
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
+	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { PageProps } from './$types';
 
@@ -14,19 +15,13 @@
 	const practiceHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.practiceQuestion.id })
 	);
-	const isEnglish = $derived(data.startQuestion.meta.subject.toLowerCase().includes('english'));
-	const topbarSubject = $derived(isEnglish ? 'English' : data.startQuestion.meta.subject);
-	const topbarSubjects = [
-		'All subjects',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History',
-		'English'
-	];
+	const isEnglish = $derived(isEnglishSubject(data.startQuestion.meta.subject));
+	const topbarSubject = $derived(
+		isEnglish
+			? englishSubjectOrDefault(data.startQuestion.meta.subject)
+			: data.startQuestion.meta.subject
+	);
+	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 </script>
 

@@ -8,6 +8,7 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import PracticeAnswerEditor from '$lib/components/PracticeAnswerEditor.svelte';
+	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
 	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
@@ -114,19 +115,11 @@
 			{ title: 'Reminder', text: data.chain.commonMissingLink }
 		].filter((hint): hint is { title: string; text: string } => Boolean(hint?.text))
 	);
-	const isEnglish = $derived(data.question.meta.subject.toLowerCase().includes('english'));
-	const topbarSubject = $derived(isEnglish ? 'English' : data.question.meta.subject);
-	const topbarSubjects = [
-		'All subjects',
-		'Science',
-		'Biology',
-		'Chemistry',
-		'Physics',
-		'Computer Science',
-		'Geography',
-		'History',
-		'English'
-	];
+	const isEnglish = $derived(isEnglishSubject(data.question.meta.subject));
+	const topbarSubject = $derived(
+		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
+	);
+	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 	const answerRows = $derived(
 		data.question.meta.marks >= 30 ? 16 : data.question.meta.marks >= 10 ? 12 : 8

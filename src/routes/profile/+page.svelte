@@ -12,7 +12,7 @@
 	type LearnerSubject = PageProps['data']['settings']['subjects'][number];
 
 	const scienceSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
-	const englishSubjects = new Set(['English', 'English Language', 'English Literature']);
+	const englishSubjects = new Set(['English Language', 'English Literature']);
 
 	let subjects = $state<LearnerSubject[]>(
 		untrack(() =>
@@ -39,12 +39,6 @@
 					? 'Could not save'
 					: 'Save profile'
 	);
-	const practiceBoards = $derived(
-		data.examProfile.boardOptions.filter((board) => board.practiceReady)
-	);
-	const stagedBoardCount = $derived(
-		data.examProfile.boardOptions.filter((board) => !board.practiceReady).length
-	);
 
 	const enhanceProfile: SubmitFunction = () => {
 		saveStatus = 'saving';
@@ -60,11 +54,9 @@
 	}
 
 	function boardOptionsFor(subject: LearnerSubject) {
-		return englishSubjects.has(subject.subject) ? data.examProfile.boardOptions : practiceBoards;
-	}
-
-	function showBoardSelectFor(subject: LearnerSubject) {
-		return boardOptionsFor(subject).length > 1;
+		const options = examProfileFor(subject.subject)?.boardOptions ?? [];
+		if (options.some((board) => board.name === subject.board)) return options;
+		return [{ id: `current-${subject.board.toLowerCase()}`, name: subject.board }, ...options];
 	}
 
 	function paperPagesFor(subject: LearnerSubject) {
@@ -90,7 +82,6 @@
 	}
 
 	function paperStructureLabel(subject: string) {
-		if (subject === 'English') return 'Language and Literature';
 		if (subject === 'English Language') return 'Language papers';
 		if (subject === 'English Literature') return 'Literature papers';
 		if (subject === 'History') return 'Paper and option based';
@@ -109,9 +100,6 @@
 
 	function paperLinkText(subject: LearnerSubject, pageLabel: string) {
 		if (scienceSubjects.has(subject.subject)) return 'Past papers';
-		if (subject.subject === 'English') {
-			return pageLabel.includes('Literature') ? 'Literature papers' : 'Language papers';
-		}
 		if (subject.subject === 'English Language') return 'Language papers';
 		if (subject.subject === 'English Literature') return 'Literature papers';
 		return 'Past papers';
@@ -145,8 +133,8 @@
 				<p class="qc-real-kicker">Profile</p>
 				<h1 id="profile-title">Subjects</h1>
 				<p>
-					Choose the GCSE exam entries that drive your home screen. AQA question practice is live;
-					{stagedBoardCount} more boards are staged in the paper atlas for later imports.
+					Choose the GCSE exam entries that drive your home screen and paper links. Pick the board,
+					route and tier your school uses.
 				</p>
 			</div>
 			<div class="qc-profile-summary" aria-label="Selected subjects">
@@ -179,26 +167,17 @@
 							</div>
 						</div>
 
-						{#if showBoardSelectFor(subject)}
-							<label class="qc-profile-field">
-								<span>Exam board</span>
-								<select name={`board-${index}`} bind:value={subject.board}>
-									{#each boardOptionsFor(subject) as board (board.id)}
-										<option value={board.name}>{board.name}</option>
-									{/each}
-								</select>
-								{#if englishSubjects.has(subject.subject)}
-									<small>Saved separately for Language and Literature.</small>
-								{/if}
-							</label>
-						{:else}
-							<input type="hidden" name={`board-${index}`} value={subject.board} />
-							<div class="qc-profile-subject-readout">
-								<span>Exam board</span>
-								<strong>{subject.board}</strong>
-								<small>Imported for practice</small>
-							</div>
-						{/if}
+						<label class="qc-profile-field">
+							<span>Exam board</span>
+							<select name={`board-${index}`} bind:value={subject.board}>
+								{#each boardOptionsFor(subject) as board (board.id)}
+									<option value={board.name}>{board.name}</option>
+								{/each}
+							</select>
+							{#if englishSubjects.has(subject.subject)}
+								<small>Saved separately for Language and Literature.</small>
+							{/if}
+						</label>
 
 						{#if scienceSubjects.has(subject.subject)}
 							<label class="qc-profile-field">
@@ -241,7 +220,7 @@
 									{paperLinkText(subject, page.label)}
 								</a>
 							{:else}
-								<strong>Not imported yet</strong>
+								<strong>No paper page yet</strong>
 							{/each}
 						</div>
 					</section>

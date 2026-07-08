@@ -536,6 +536,8 @@ function canonicalSubject(value) {
 	if (!normalized || normalized === 'all') return 'all';
 	if (normalized.includes('computer-science') || normalized === 'computing')
 		return 'computer-science';
+	if (normalized.includes('english-literature')) return 'english-literature';
+	if (normalized.includes('english-language')) return 'english-language';
 	if (normalized.includes('geography')) return 'geography';
 	if (normalized.includes('history')) return 'history';
 	if (normalized.includes('biology')) return 'biology';
@@ -562,7 +564,22 @@ function markSchemeDocumentIdFor(row) {
 
 function subjectAreaFor(row) {
 	const subject = row.subject_area ?? row.subject ?? manifest.subject ?? '';
-	return /english/i.test(subject) ? 'English' : subject;
+	const englishContext = [
+		row.subject_area,
+		row.subject,
+		manifest.subject,
+		row.paper,
+		row.component,
+		row.title,
+		row.source_document_id
+	]
+		.filter(Boolean)
+		.join(' ');
+	if (/english/i.test(englishContext)) {
+		if (/literature/i.test(englishContext)) return 'English Literature';
+		if (/language/i.test(englishContext)) return 'English Language';
+	}
+	return subject;
 }
 
 function documentUrl(document) {

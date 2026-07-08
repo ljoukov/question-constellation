@@ -160,6 +160,7 @@ function topicFromRow(row) {
 }
 
 function subjectName(row) {
+	if (String(row.subject ?? '').toLowerCase().includes('english')) return row.subject;
 	return row.subject_area ?? row.subject ?? 'Science';
 }
 
@@ -938,14 +939,19 @@ function upsertPayloadStatement({ id, routeKind, routePath, payload, sourceVersi
 }
 
 async function fetchSubjectNavigation({ rootDir }) {
+	const navigationSubjectSql = `CASE
+		WHEN LOWER(COALESCE(q.subject, q.subject_area, '')) LIKE '%english%literature%' THEN 'English Literature'
+		WHEN LOWER(COALESCE(q.subject, q.subject_area, '')) LIKE '%english%language%' THEN 'English Language'
+		ELSE COALESCE(q.subject_area, q.subject)
+	END`;
 	return await d1Rows(
 		`WITH ranked_subject_questions AS (
 			SELECT
-				q.subject_area AS subject,
+				${navigationSubjectSql} AS subject,
 				q.id AS questionId,
-				COUNT(*) OVER (PARTITION BY q.subject_area) AS questionCount,
+				COUNT(*) OVER (PARTITION BY ${navigationSubjectSql}) AS questionCount,
 				ROW_NUMBER() OVER (
-					PARTITION BY q.subject_area
+					PARTITION BY ${navigationSubjectSql}
 					ORDER BY
 						CASE qac.transfer_distance
 							WHEN 'start' THEN 0
@@ -961,7 +967,7 @@ async function fetchSubjectNavigation({ rootDir }) {
 			FROM question_answer_chains qac
 			JOIN questions q ON q.id = qac.question_id
 			JOIN answer_chains ac ON ac.id = qac.answer_chain_id
-			WHERE q.subject_area IS NOT NULL AND q.subject_area != ''
+			WHERE ${navigationSubjectSql} IS NOT NULL AND ${navigationSubjectSql} != ''
 			  AND qac.needs_human_review = 0
 			  AND q.needs_human_review = 0
 			  AND q.status = 'published'
@@ -975,7 +981,12 @@ async function fetchSubjectNavigation({ rootDir }) {
 			WHEN 'Biology' THEN 0
 			WHEN 'Chemistry' THEN 1
 			WHEN 'Physics' THEN 2
-			ELSE 3
+			WHEN 'Computer Science' THEN 3
+			WHEN 'Geography' THEN 4
+			WHEN 'History' THEN 5
+			WHEN 'English Language' THEN 6
+			WHEN 'English Literature' THEN 7
+			ELSE 8
 		END, subject`,
 		[],
 		{ rootDir }
