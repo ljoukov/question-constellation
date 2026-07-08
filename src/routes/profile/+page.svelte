@@ -2,7 +2,6 @@
 	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import { ArrowLeft, BookOpen, CheckCircle2 } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
@@ -221,12 +220,6 @@
 </svelte:head>
 
 <main class="qc-real-app qc-profile-page">
-	<AppTopbar
-		subject={data.settings.profile.selectedSubject}
-		showSubject={false}
-		searchPlaceholder="Search questions"
-	/>
-
 	<div class="qc-profile-layout">
 		<a class="qc-profile-back" href={resolve('/')}>
 			<ArrowLeft size={17} aria-hidden="true" strokeWidth={2.2} />

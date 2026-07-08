@@ -274,7 +274,15 @@
 
 <header class={topbarClass} aria-label="Site header">
 	<a href={resolve('/')} class="qc-topbar-brand" aria-label="Question Constellation home">
-		<img src="/brand/question-constellation-logo.svg" alt="" width="32" height="32" />
+		<img
+			src="/brand/question-constellation-logo.svg"
+			alt=""
+			width="32"
+			height="32"
+			loading="eager"
+			decoding="sync"
+			fetchpriority="high"
+		/>
 		<span>Question Constellation</span>
 	</a>
 

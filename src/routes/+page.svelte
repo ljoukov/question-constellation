@@ -163,12 +163,6 @@
 
 {#if dashboard}
 	<main class="qc-real-app qc-dashboard-page">
-		<AppTopbar
-			subject={dashboard.profile.selectedSubject}
-			subjects={['All subjects', ...dashboard.subjectOptions]}
-			searchPlaceholder="Search questions"
-		/>
-
 		<div class="qc-dashboard-layout">
 			<section class="qc-dashboard-hero" aria-labelledby="dashboard-title">
 				<div>

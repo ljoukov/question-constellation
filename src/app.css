@@ -73,8 +73,19 @@ a {
 .app-shell {
 	min-height: var(--app-viewport-height, 100vh);
 	display: flex;
+	flex-direction: column;
+	align-items: stretch;
 	justify-content: center;
 	background: var(--qc-app-surface);
+}
+
+.app-shell.has-persistent-topbar {
+	--qc-topbar-height: 4rem;
+	justify-content: flex-start;
+}
+
+.app-shell.has-persistent-topbar .qc-real-app {
+	min-height: calc(var(--app-viewport-height, 100vh) - var(--qc-topbar-height));
 }
 
 .route-loading {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import { navigating } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { onMount } from 'svelte';
 	import {
 		applyDocumentTheme,
@@ -8,6 +8,7 @@
 		themePreference,
 		type ThemePreference
 	} from '$lib/themePreference';
+	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import { installViewportZoomLock } from '$lib/viewportZoom';
@@ -16,6 +17,40 @@
 	let { children }: LayoutProps = $props();
 	let showRouteLoading = $state(false);
 	let routeLoadingContentType = $state<RouteLoadingContentType>('default');
+
+	type TopbarPageData = {
+		user?: unknown;
+		dashboard?: {
+			profile?: { selectedSubject?: string };
+			subjectOptions?: string[];
+		} | null;
+		settings?: {
+			profile?: { selectedSubject?: string };
+			subjectOptions?: string[];
+		};
+	};
+
+	function signedInTopbarConfig(data: TopbarPageData, pathname: string) {
+		if (pathname === '/' && data.dashboard) {
+			return {
+				subject: data.dashboard.profile?.selectedSubject ?? 'Physics',
+				subjects: ['All subjects', ...(data.dashboard.subjectOptions ?? [])]
+			};
+		}
+
+		if (pathname === '/profile' && data.user) {
+			return {
+				subject: data.settings?.profile?.selectedSubject ?? 'Physics',
+				subjects: ['All subjects', ...(data.settings?.subjectOptions ?? [])]
+			};
+		}
+
+		return null;
+	}
+
+	const signedInTopbar = $derived(
+		signedInTopbarConfig(page.data as TopbarPageData, page.url.pathname)
+	);
 
 	function syncAppViewportHeight() {
 		if (typeof window === 'undefined') return;
@@ -56,8 +91,11 @@
 				navigating.to.route.id,
 				navigating.to.url.pathname
 			);
-			showRouteLoading = true;
-			return;
+			const timeout = window.setTimeout(() => {
+				showRouteLoading = true;
+			}, 180);
+
+			return () => window.clearTimeout(timeout);
 		}
 
 		if (!showRouteLoading) {
@@ -66,7 +104,7 @@
 
 		const timeout = window.setTimeout(() => {
 			showRouteLoading = false;
-		}, 450);
+		}, 180);
 
 		return () => window.clearTimeout(timeout);
 	});
@@ -92,6 +130,7 @@
 		})();
 	</script>
 	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="preload" as="image" href="/brand/question-constellation-logo.svg" />
 	<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
@@ -104,9 +143,16 @@
 	<meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
 </svelte:head>
 
-<div class="app-shell">
+<div class="app-shell" class:has-persistent-topbar={Boolean(signedInTopbar)}>
 	{#if showRouteLoading}
 		<RouteLoadingToast contentType={routeLoadingContentType} />
+	{/if}
+	{#if signedInTopbar}
+		<AppTopbar
+			subject={signedInTopbar.subject}
+			subjects={signedInTopbar.subjects}
+			searchPlaceholder="Search questions"
+		/>
 	{/if}
 	{@render children()}
 </div>
