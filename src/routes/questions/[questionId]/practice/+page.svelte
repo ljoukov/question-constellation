@@ -206,7 +206,10 @@
 		}
 	}
 
-	function saveStoredPracticeState(questionId: string) {
+	function saveStoredPracticeState(
+		questionId: string,
+		overrides: Partial<StoredPracticeState> = {}
+	) {
 		if (typeof window === 'undefined') return;
 		try {
 			window.sessionStorage.setItem(
@@ -217,6 +220,7 @@
 					gradedAnswerText,
 					gradeResult,
 					view: requestedPracticeView,
+					...overrides,
 					updatedAt: Date.now()
 				} satisfies StoredPracticeState)
 			);
@@ -255,26 +259,30 @@
 		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
 	}
 
-	function scienceDraftPayload() {
+	function scienceDraftPayload(overrides: Partial<StoredPracticeState> = {}) {
 		return {
 			answerText,
 			rewriteText,
 			gradedAnswerText,
 			gradeResult,
-			view: requestedPracticeView
+			view: requestedPracticeView,
+			...overrides
 		} satisfies Record<string, unknown>;
 	}
 
-	function scienceDraftSignature() {
-		return JSON.stringify(scienceDraftPayload());
+	function scienceDraftSignature(overrides: Partial<StoredPracticeState> = {}) {
+		return JSON.stringify(scienceDraftPayload(overrides));
 	}
 
-	function scienceDraft(questionId: string): PracticeDraftSave {
+	function scienceDraft(
+		questionId: string,
+		overrides: Partial<StoredPracticeState> = {}
+	): PracticeDraftSave {
 		return {
 			questionId,
 			draftKind: 'science-practice',
-			answerText,
-			payload: scienceDraftPayload(),
+			answerText: overrides.answerText ?? answerText,
+			payload: scienceDraftPayload(overrides),
 			clientUpdatedAt: Date.now()
 		};
 	}
@@ -285,13 +293,30 @@
 		lastQueuedDraftSignature = '';
 	}
 
-	function persistSciencePracticeState() {
+	function persistSciencePracticeState(overrides: Partial<StoredPracticeState> = {}) {
 		if (data.englishPractice || (loadedQuestionId && loadedQuestionId !== data.question.id)) return;
-		saveStoredPracticeState(data.question.id);
-		const signature = scienceDraftSignature();
+		saveStoredPracticeState(data.question.id, overrides);
+		const signature = scienceDraftSignature(overrides);
 		if (!currentUserId || signature === lastQueuedDraftSignature) return;
 		lastQueuedDraftSignature = signature;
-		queuePracticeDraft(currentUserId, scienceDraft(data.question.id));
+		queuePracticeDraft(currentUserId, scienceDraft(data.question.id, overrides));
+	}
+
+	function applySciencePracticeState(storedState: StoredPracticeState | null) {
+		answerText = storedState?.answerText ?? '';
+		rewriteText = storedState?.rewriteText ?? '';
+		gradedAnswerText = storedState?.gradedAnswerText ?? '';
+		gradeResult = storedState?.gradeResult ?? null;
+		gradePhase = gradeResult ? 'done' : 'idle';
+		gradeError = '';
+		showHint = false;
+		lastQueuedDraftSignature = scienceDraftSignature({
+			answerText,
+			rewriteText,
+			gradedAnswerText,
+			gradeResult,
+			view: storedState?.view ?? requestedPracticeView
+		});
 	}
 
 	function updatePracticeView(view: PracticeRouteView, historyMode: 'push' | 'replace' = 'push') {
@@ -328,7 +353,7 @@
 		const invalidatesResult = gradedAnswerText.length > 0 && value !== gradedAnswerText;
 		answerText = value;
 		if (invalidatesResult) clearCheckedResult();
-		persistSciencePracticeState();
+		persistSciencePracticeState(invalidatesResult ? { view: 'attempt' } : {});
 	}
 
 	function setRewriteText(value: string) {
@@ -457,7 +482,7 @@
 			gradedAnswerText = answerText;
 			gradePhase = 'done';
 			updatePracticeView('result');
-			persistSciencePracticeState();
+			persistSciencePracticeState({ view: 'result' });
 			return;
 		}
 
@@ -500,17 +525,10 @@
 
 		loadedQuestionId = data.question.id;
 		const storedState = initialPracticeState(data.question.id);
-		answerText = storedState?.answerText ?? '';
-		rewriteText = storedState?.rewriteText ?? '';
-		gradedAnswerText = storedState?.gradedAnswerText ?? '';
-		gradeResult = storedState?.gradeResult ?? null;
-		gradePhase = gradeResult ? 'done' : 'idle';
-		gradeError = '';
-		showHint = false;
+		applySciencePracticeState(storedState);
 		if (storedState?.view === 'result' && storedState.gradeResult && storedState.gradedAnswerText) {
 			updatePracticeView('result', 'replace');
 		}
-		lastQueuedDraftSignature = scienceDraftSignature();
 	});
 
 	$effect(() => {

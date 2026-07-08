@@ -227,7 +227,10 @@
 		}
 	}
 
-	function saveStoredEnglishPracticeState(questionId: string) {
+	function saveStoredEnglishPracticeState(
+		questionId: string,
+		overrides: Partial<StoredEnglishPracticeState> = {}
+	) {
 		if (typeof window === 'undefined') return;
 		try {
 			window.sessionStorage.setItem(
@@ -242,6 +245,7 @@
 					activeStageIndex,
 					view: requestedPracticeView,
 					model: showModelAnswer,
+					...overrides,
 					updatedAt: Date.now()
 				} satisfies StoredEnglishPracticeState)
 			);
@@ -298,7 +302,7 @@
 		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
 	}
 
-	function englishDraftPayload() {
+	function englishDraftPayload(overrides: Partial<StoredEnglishPracticeState> = {}) {
 		return {
 			stepAnswers,
 			fullAnswer,
@@ -308,20 +312,28 @@
 			mode,
 			activeStageIndex,
 			view: requestedPracticeView,
-			model: showModelAnswer
+			model: showModelAnswer,
+			...overrides
 		} satisfies Record<string, unknown>;
 	}
 
-	function englishDraftSignature() {
-		return JSON.stringify(englishDraftPayload());
+	function englishDraftSignature(overrides: Partial<StoredEnglishPracticeState> = {}) {
+		return JSON.stringify(englishDraftPayload(overrides));
 	}
 
-	function englishDraft(questionId: string): PracticeDraftSave {
+	function englishDraft(
+		questionId: string,
+		overrides: Partial<StoredEnglishPracticeState> = {}
+	): PracticeDraftSave {
 		return {
 			questionId,
 			draftKind: 'english-guided',
-			answerText: answerForFeedback,
-			payload: englishDraftPayload(),
+			answerText:
+				overrides.fullAnswer ??
+				(typeof overrides.stepAnswers === 'object'
+					? Object.values(overrides.stepAnswers).join(' ')
+					: answerForFeedback),
+			payload: englishDraftPayload(overrides),
 			clientUpdatedAt: Date.now()
 		};
 	}
@@ -332,13 +344,34 @@
 		lastQueuedDraftSignature = '';
 	}
 
-	function persistEnglishPracticeState() {
+	function persistEnglishPracticeState(overrides: Partial<StoredEnglishPracticeState> = {}) {
 		if (loadedQuestionId && loadedQuestionId !== practice.questionId) return;
-		saveStoredEnglishPracticeState(practice.questionId);
-		const signature = englishDraftSignature();
+		saveStoredEnglishPracticeState(practice.questionId, overrides);
+		const signature = englishDraftSignature(overrides);
 		if (!currentUserId || signature === lastQueuedDraftSignature) return;
 		lastQueuedDraftSignature = signature;
-		queuePracticeDraft(currentUserId, englishDraft(practice.questionId));
+		queuePracticeDraft(currentUserId, englishDraft(practice.questionId, overrides));
+	}
+
+	function applyEnglishPracticeState(storedState: StoredEnglishPracticeState | null) {
+		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
+		fullAnswer = storedState?.fullAnswer ?? '';
+		checkedAnswerText = storedState?.checkedAnswerText ?? '';
+		gradeResult = storedState?.gradeResult ?? null;
+		gradeError = storedState?.gradeError ?? '';
+		gradePhase = gradeError ? 'error' : gradeResult ? 'done' : 'idle';
+		hintOpen = false;
+		lastQueuedDraftSignature = englishDraftSignature({
+			stepAnswers,
+			fullAnswer,
+			checkedAnswerText,
+			gradeResult,
+			gradeError,
+			mode: storedState?.mode ?? mode,
+			activeStageIndex: storedState?.activeStageIndex ?? activeStageIndex,
+			view: storedState?.view ?? requestedPracticeView,
+			model: storedState?.model ?? showModelAnswer
+		});
 	}
 
 	function updateEnglishPracticeUrl(
@@ -558,16 +591,18 @@
 	function updateActiveStepAnswer(value: string) {
 		if (!activeStage) return;
 		markEnglishPracticeTouched();
+		const invalidatesResult = checkedAnswerText.length > 0;
 		stepAnswers = { ...stepAnswers, [activeStage.id]: value };
 		clearCheckedResult();
-		persistEnglishPracticeState();
+		persistEnglishPracticeState(invalidatesResult ? { view: 'attempt', model: false } : {});
 	}
 
 	function updateFullAnswer(value: string) {
 		markEnglishPracticeTouched();
+		const invalidatesResult = checkedAnswerText.length > 0 && value !== checkedAnswerText;
 		fullAnswer = value;
 		clearCheckedResult();
-		persistEnglishPracticeState();
+		persistEnglishPracticeState(invalidatesResult ? { view: 'attempt', model: false } : {});
 	}
 
 	function goToStage(index: number) {
@@ -601,6 +636,15 @@
 			{ mode: defaultMode, stepIndex: 0, view: 'attempt', model: false },
 			'replace'
 		);
+		persistEnglishPracticeState({
+			stepAnswers,
+			fullAnswer,
+			checkedAnswerText,
+			gradeResult,
+			gradeError,
+			view: 'attempt',
+			model: false
+		});
 	}
 
 	function toggleModelDirection() {
@@ -647,14 +691,14 @@
 			if (!gradeResult) throw new Error('Grading stream ended without a result.');
 			checkedAnswerText = submittedAnswer;
 			updateEnglishPracticeUrl({ view: 'result', model: false });
-			persistEnglishPracticeState();
+			persistEnglishPracticeState({ view: 'result', model: false });
 		} catch (error) {
 			console.error('[english-practice] model grading failed; using checklist fallback', error);
 			gradePhase = 'error';
 			gradeError = 'Live model grading is unavailable, so this check uses the mark checklist.';
 			checkedAnswerText = submittedAnswer;
 			updateEnglishPracticeUrl({ view: 'result', model: false });
-			persistEnglishPracticeState();
+			persistEnglishPracticeState({ view: 'result', model: false });
 		}
 	}
 
@@ -727,13 +771,7 @@
 		if (loadedQuestionId === practice.questionId) return;
 		loadedQuestionId = practice.questionId;
 		const storedState = initialEnglishPracticeState(practice.questionId);
-		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
-		fullAnswer = storedState?.fullAnswer ?? '';
-		checkedAnswerText = storedState?.checkedAnswerText ?? '';
-		gradeResult = storedState?.gradeResult ?? null;
-		gradeError = storedState?.gradeError ?? '';
-		gradePhase = gradeError ? 'error' : gradeResult ? 'done' : 'idle';
-		hintOpen = false;
+		applyEnglishPracticeState(storedState);
 
 		const hasExplicitRouteState =
 			page.url.searchParams.has('mode') ||
@@ -751,7 +789,6 @@
 				'replace'
 			);
 		}
-		lastQueuedDraftSignature = englishDraftSignature();
 	});
 
 	$effect(() => {
