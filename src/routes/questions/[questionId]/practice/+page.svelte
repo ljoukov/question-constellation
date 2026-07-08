@@ -566,10 +566,12 @@
 		practice={data.englishPractice}
 		savedDraft={data.savedDraft}
 		userId={currentUserId}
+		user={data.user}
 	/>
 {:else}
 	<main class="qc-real-app qc-practice-page">
 		<AppTopbar
+			user={data.user}
 			subject={topbarSubject}
 			subjects={topbarSubjects}
 			searchPlaceholder="Search questions"

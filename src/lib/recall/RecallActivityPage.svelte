@@ -1,7 +1,12 @@
 <script lang="ts">
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import { recallKindLabels, type RecallCard, type RecallSubject, type RecallTopic } from './aqaScienceRecall';
+	import {
+		recallKindLabels,
+		type RecallCard,
+		type RecallSubject,
+		type RecallTopic
+	} from './aqaScienceRecall';
 	import {
 		recallActivityHref,
 		recallActivityLabel,
@@ -11,6 +16,7 @@
 		recallSubjectSlugs,
 		type RecallActivity
 	} from './routes';
+	import type { AdminUser } from '$lib/server/auth/session';
 	import { ArrowRight, BookOpenCheck, Brain, CheckSquare, Layers3, Target } from '@lucide/svelte';
 
 	let {
@@ -18,13 +24,15 @@
 		activity,
 		pageKind = 'activity',
 		cards,
-		topics
+		topics,
+		user = null
 	}: {
 		subject: RecallSubject;
 		activity: RecallActivity;
 		pageKind?: 'activity' | 'coverage';
 		cards: RecallCard[];
 		topics: RecallTopic[];
+		user?: AdminUser | null;
 	} = $props();
 
 	const title = $derived(
@@ -40,7 +48,11 @@
 		const counts = new Map<string, number>();
 		for (const card of cards) counts.set(card.kind, (counts.get(card.kind) ?? 0) + 1);
 		return [...counts.entries()]
-			.map(([kind, count]) => ({ kind, label: recallKindLabels[kind as keyof typeof recallKindLabels], count }))
+			.map(([kind, count]) => ({
+				kind,
+				label: recallKindLabels[kind as keyof typeof recallKindLabels],
+				count
+			}))
 			.sort((left, right) => right.count - left.count);
 	});
 	const subjectOptions = ['Biology', 'Chemistry', 'Physics'];
@@ -63,12 +75,14 @@
 
 <main class="recall-route-page">
 	<AppTopbar
-		subject={subject}
+		{user}
+		{subject}
 		subjects={subjectOptions}
 		showSearch={false}
 		onSubjectChange={(nextSubject) => {
 			const slug = recallSubjectSlugs[nextSubject as RecallSubject];
-			if (slug) window.location.href = `/recall/${slug}/${pageKind === 'coverage' ? 'coverage' : activity}`;
+			if (slug)
+				window.location.href = `/recall/${slug}/${pageKind === 'coverage' ? 'coverage' : activity}`;
 		}}
 	/>
 
@@ -116,8 +130,8 @@
 				{/if}
 			</div>
 			<p>
-				Use this when you want a short warm-up before exam questions or a quick check after a
-				missed factual link.
+				Use this when you want a short warm-up before exam questions or a quick check after a missed
+				factual link.
 			</p>
 			<div class="recall-route-stack-actions">
 				{#each recallStackSizeOptions as size (size)}
@@ -181,7 +195,9 @@
 						{:else}
 							<span class="recall-topic-empty">No cards yet</span>
 						{/if}
-						<a href={`/recall?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic.id)}&activity=${activity}${activity === 'mcq' ? '&mode=recognise' : ''}&returnTo=${encodeURIComponent(returnTo)}`}>
+						<a
+							href={`/recall?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic.id)}&activity=${activity}${activity === 'mcq' ? '&mode=recognise' : ''}&returnTo=${encodeURIComponent(returnTo)}`}
+						>
 							Adjust
 						</a>
 					</div>

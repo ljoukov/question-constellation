@@ -115,7 +115,7 @@
 </svelte:head>
 
 <div class="blog-shell">
-	<AppTopbar showSearch={false} showSubject={false} showNavigation />
+	<AppTopbar user={data.user} showSearch={false} showSubject={false} showNavigation />
 
 	<main class="blog-article-page">
 		<nav class="blog-breadcrumb" aria-label="Breadcrumb">

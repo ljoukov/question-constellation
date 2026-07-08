@@ -6,12 +6,14 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
+	import type { AdminUser } from '$lib/server/auth/session';
 
 	let {
 		data
 	}: {
 		data: {
 			chain: LearningChain;
+			user?: AdminUser | null;
 		};
 	} = $props();
 
@@ -31,7 +33,7 @@
 </svelte:head>
 
 <main class="qc-real-app qc-chain-page">
-	<AppTopbar subject={chain.subject} />
+	<AppTopbar user={data.user} subject={chain.subject} />
 
 	<div class="qc-chain-layout">
 		<aside class="qc-chain-side" aria-label="Question method summary">

@@ -24,6 +24,7 @@
 		type PracticeDraftSave,
 		type SavedPracticeDraft
 	} from '$lib/practiceDrafts';
+	import type { AdminUser } from '$lib/server/auth/session';
 	import {
 		Check,
 		ChevronLeft,
@@ -133,11 +134,13 @@
 	let {
 		practice,
 		savedDraft = null,
-		userId = null
+		userId = null,
+		user = null
 	}: {
 		practice: EnglishPractice;
 		savedDraft?: SavedPracticeDraft | null;
 		userId?: string | null;
+		user?: AdminUser | null;
 	} = $props();
 
 	const subjects = [...BROWSE_SUBJECTS];
@@ -857,7 +860,12 @@
 </svelte:head>
 
 <main class="qc-real-app qc-english-practice-app">
-	<AppTopbar subject={topbarSubject} {subjects} searchPlaceholder="Search English questions" />
+	<AppTopbar
+		{user}
+		subject={topbarSubject}
+		{subjects}
+		searchPlaceholder="Search English questions"
+	/>
 
 	<div class="qc-english-practice-layout">
 		<aside class="qc-english-practice-side" aria-label="Question and mark support">

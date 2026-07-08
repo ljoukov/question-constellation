@@ -2,6 +2,9 @@
 	import { resolve } from '$app/paths';
 	import { BookOpen } from '@lucide/svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 
 	const canonicalUrl = 'https://constellation.eviworld.com/past-papers';
 	const pageTitle = 'Free Past Papers | GCSE Past Papers | Question Constellation';
@@ -78,7 +81,7 @@
 </svelte:head>
 
 <div class="past-papers-shell">
-	<AppTopbar showSearch={false} showSubject={false} showNavigation />
+	<AppTopbar user={data.user} showSearch={false} showSubject={false} showNavigation />
 
 	<main class="past-papers-page">
 		<section class="past-papers-hero" aria-labelledby="past-papers-title">

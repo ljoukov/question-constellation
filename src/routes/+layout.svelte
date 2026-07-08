@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import { navigating, page } from '$app/state';
+	import { navigating } from '$app/state';
 	import { onMount } from 'svelte';
 	import {
 		applyDocumentTheme,
@@ -14,17 +14,11 @@
 	import { installViewportZoomLock } from '$lib/viewportZoom';
 	import type { LayoutProps } from './$types';
 
-	let { children }: LayoutProps = $props();
+	let { children, data }: LayoutProps = $props();
 	let showRouteLoading = $state(false);
 	let routeLoadingContentType = $state<RouteLoadingContentType>('default');
 
-	type TopbarPageData = {
-		themePreference?: ThemePreference | null;
-	};
-
-	const serverThemePreference = $derived(
-		validThemePreference((page.data as TopbarPageData).themePreference)
-	);
+	const serverThemePreference = $derived(validThemePreference(data.themePreference));
 
 	function validThemePreference(value: unknown): ThemePreference | null {
 		return value === 'auto' || value === 'light' || value === 'dark' ? value : null;

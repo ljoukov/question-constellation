@@ -10,10 +10,8 @@
 	} from '$lib/curriculum/gcseCurriculum';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
-	import type {
-		QuestionBankQuestion,
-		QuestionBankTopic
-	} from '$lib/server/learningChainData';
+	import type { QuestionBankQuestion, QuestionBankTopic } from '$lib/server/learningChainData';
+	import type { AdminUser } from '$lib/server/auth/session';
 	import { BookOpenCheck, ListTree, Network, Search } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -33,6 +31,7 @@
 			initialView: string;
 			initialTopic: string;
 			initialBoard: string;
+			user?: AdminUser | null;
 		};
 	} = $props();
 
@@ -232,11 +231,25 @@
 	$effect(() => {
 		if (!boardOptions.includes(selectedBoard)) {
 			selectedBoard = 'all';
-			syncBrowseUrl(searchQuery, selectedSubject, selectedMarksFilter, selectedView, selectedTopic, 'all');
+			syncBrowseUrl(
+				searchQuery,
+				selectedSubject,
+				selectedMarksFilter,
+				selectedView,
+				selectedTopic,
+				'all'
+			);
 		}
 		if (!visibleTopicOptions.some((topic) => topic.id === selectedTopic)) {
 			selectedTopic = 'all';
-			syncBrowseUrl(searchQuery, selectedSubject, selectedMarksFilter, selectedView, 'all', selectedBoard);
+			syncBrowseUrl(
+				searchQuery,
+				selectedSubject,
+				selectedMarksFilter,
+				selectedView,
+				'all',
+				selectedBoard
+			);
 		}
 	});
 
@@ -461,6 +474,7 @@
 
 <main class="qc-real-app qc-browse-app">
 	<AppTopbar
+		user={data.user}
 		subject={selectedSubject}
 		searchValue={searchQuery}
 		searchPlaceholder="Search questions, topics or chains"
@@ -569,7 +583,11 @@
 						<header class="qc-topic-card-head">
 							<div>
 								<p class="qc-real-kicker">
-									{metaLine([section.topic.board, section.topic.qualification, section.topic.subject])}
+									{metaLine([
+										section.topic.board,
+										section.topic.qualification,
+										section.topic.subject
+									])}
 								</p>
 								<h3>
 									<MathText text={section.topic.title} />
@@ -595,7 +613,13 @@
 						<div class="qc-topic-question-list">
 							{#each section.questions.slice(0, previewQuestionLimit) as question (question.id)}
 								<a class="qc-topic-question" href={questionHref(question)}>
-									<span>{metaLine([question.sourceRef, question.paper, question.marks ? `${question.marks} marks` : null])}</span>
+									<span
+										>{metaLine([
+											question.sourceRef,
+											question.paper,
+											question.marks ? `${question.marks} marks` : null
+										])}</span
+									>
 									<strong><MathText text={question.title} /></strong>
 									<small><MathText text={question.preview} /></small>
 									{#if question.chainTitle}
@@ -618,7 +642,8 @@
 					<button
 						type="button"
 						class="qc-show-more-chains"
-						onclick={() => (visibleCount = Math.min(visibleCount + 12, filteredTopicSections.length))}
+						onclick={() =>
+							(visibleCount = Math.min(visibleCount + 12, filteredTopicSections.length))}
 					>
 						Show more topics
 					</button>
@@ -664,11 +689,7 @@
 									{/if}
 								</span>
 							</div>
-							<QuestionTeaserGrid
-								{chain}
-								questions={matchingQuestions(chain)}
-								limit={3}
-							/>
+							<QuestionTeaserGrid {chain} questions={matchingQuestions(chain)} limit={3} />
 						</section>
 					</article>
 				{/each}

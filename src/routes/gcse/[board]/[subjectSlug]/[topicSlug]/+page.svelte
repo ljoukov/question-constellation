@@ -74,7 +74,7 @@
 </svelte:head>
 
 <main class="qc-real-app topic-page">
-	<AppTopbar subject={data.topic.subject} showSearch={false} showNavigation />
+	<AppTopbar user={data.user} subject={data.topic.subject} showSearch={false} showNavigation />
 
 	<div class="topic-layout">
 		<section class="topic-hero" aria-labelledby="topic-title">

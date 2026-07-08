@@ -833,6 +833,7 @@
 {:else}
 	<main class="recall-setup">
 		<AppTopbar
+			user={data.user}
 			searchValue={searchQuery}
 			searchPlaceholder="Search recall cards"
 			onSearchChange={updateSearch}

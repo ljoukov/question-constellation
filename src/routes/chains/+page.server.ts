@@ -1,7 +1,7 @@
 import { getQuestionBankBrowseData } from '$lib/server/learningChainData';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const browseData = await getQuestionBankBrowseData();
 
 	return {
@@ -11,6 +11,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		initialMarks: url.searchParams.get('marks') ?? 'all',
 		initialView: url.searchParams.get('view') ?? 'topics',
 		initialTopic: url.searchParams.get('topic') ?? 'all',
-		initialBoard: url.searchParams.get('board') ?? 'all'
+		initialBoard: url.searchParams.get('board') ?? 'all',
+		user: locals.user
 	};
 };

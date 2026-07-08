@@ -37,6 +37,7 @@
 
 <main class="qc-real-app qc-constellation-page">
 	<AppTopbar
+		user={data.user}
 		subject={topbarSubject}
 		subjects={topbarSubjects}
 		searchPlaceholder="Search questions"

@@ -34,7 +34,7 @@ const courseFilters: CourseFilter[] = [
 	{ id: 'humanities-social', label: 'Humanities & Social Sciences' }
 ];
 
-export const load: PageServerLoad = async ({ params, url }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const board = gcsePastPaperBoards.find((candidate) => candidate.id === params.board);
 	if (!board || board.id === 'all') {
 		throw error(404, 'GCSE past paper board not found.');
@@ -89,7 +89,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		},
 		courseFilters: filters,
 		selectedCourseId,
-		categories
+		categories,
+		user: locals.user
 	};
 };
 

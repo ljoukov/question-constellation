@@ -177,6 +177,7 @@
 
 <main class="qc-real-app qc-gap-page">
 	<AppTopbar
+		user={data.user}
 		{subject}
 		subjects={[...BROWSE_SUBJECTS]}
 		searchPlaceholder="Search questions"

@@ -11,12 +11,13 @@ function toBlogMeta(article: BlogArticle): BlogArticleMeta {
 
 const latestArticles = blogArticles.slice(0, 3).map(toBlogMeta);
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const { featuredChains, stats } = await getHomePagePublicData();
 
 	return {
 		featuredChains,
 		stats,
-		latestArticles
+		latestArticles,
+		user: locals.user
 	};
 };

@@ -94,7 +94,7 @@
 </svelte:head>
 
 <div class="blog-shell">
-	<AppTopbar showSearch={false} showSubject={false} showNavigation />
+	<AppTopbar user={data.user} showSearch={false} showSubject={false} showNavigation />
 
 	<main class="blog-page">
 		<section class="blog-hero" aria-labelledby="blog-title">

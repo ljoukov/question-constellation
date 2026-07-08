@@ -2,9 +2,12 @@ import { getQuestionChainPageData } from '$lib/server/questionData';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ locals, params }) => {
 	try {
-		return await getQuestionChainPageData(params.questionId);
+		return {
+			...(await getQuestionChainPageData(params.questionId)),
+			user: locals.user
+		};
 	} catch {
 		throw error(404, 'Question chain not found.');
 	}

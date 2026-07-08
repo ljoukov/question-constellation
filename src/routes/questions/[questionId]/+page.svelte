@@ -27,9 +27,7 @@
 		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
-	const finderHref = $derived(
-		`${resolve('/chains')}?subject=${encodeURIComponent(topbarSubject)}`
-	);
+	const finderHref = $derived(`${resolve('/chains')}?subject=${encodeURIComponent(topbarSubject)}`);
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
 	const metaItems = $derived(
 		[
@@ -61,6 +59,7 @@
 
 <main class="qc-real-app qc-question-page">
 	<AppTopbar
+		user={data.user}
 		subject={topbarSubject}
 		subjects={topbarSubjects}
 		searchPlaceholder="Search questions"
@@ -68,10 +67,7 @@
 
 	<div class="qc-real-layout qc-question-layout">
 		<aside class="qc-real-rail qc-question-rail" aria-label="Question route">
-			<IconBackLink
-				href={finderHref}
-				label="Back to question finder"
-			/>
+			<IconBackLink href={finderHref} label="Back to question finder" />
 			<p class="qc-real-kicker">
 				<MathText text={`${data.question.meta.qualification} ${data.question.meta.subject}`} />
 			</p>
@@ -106,9 +102,7 @@
 					<p><MathText text={`${data.question.sourceRef} · ${topicLabel}`} /></p>
 					<h2>Start with the exam question.</h2>
 				</div>
-				<a class="qc-real-link-button" href={chainHref}>
-					Show method
-				</a>
+				<a class="qc-real-link-button" href={chainHref}> Show method </a>
 			</div>
 
 			<ExamQuestionCard question={data.question} assetLoading="eager" />
@@ -136,9 +130,7 @@
 				<div class="qc-guidance-icon"><ListChecks size={19} aria-hidden="true" /></div>
 				<div>
 					<p class="qc-panel-label">Hidden for now</p>
-					<p>
-						The model answer and mark checklist appear on the method and practice steps.
-					</p>
+					<p>The model answer and mark checklist appear on the method and practice steps.</p>
 				</div>
 			</section>
 		</section>

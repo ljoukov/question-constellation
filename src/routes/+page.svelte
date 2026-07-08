@@ -155,7 +155,7 @@
 </svelte:head>
 
 <main class="qc-home-app">
-	<AppTopbar showSearch={false} showNavigation />
+	<AppTopbar user={data.user} showSearch={false} showNavigation />
 
 	<section class="qc-home-hero" aria-labelledby="home-title">
 		<div class="qc-home-hero-media" aria-hidden="true">

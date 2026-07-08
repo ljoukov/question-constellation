@@ -7,7 +7,7 @@ import {
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ locals, params }) => {
 	const result = getGcsePastPaperEntry(params.board, params.subjectSlug, params.paperSlug);
 	if (!result) {
 		throw error(404, 'GCSE past paper not found.');
@@ -41,6 +41,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			localPath,
 			entry,
 			relatedRows
-		}
+		},
+		user: locals.user
 	};
 };

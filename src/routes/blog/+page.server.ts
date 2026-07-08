@@ -1,5 +1,6 @@
 import { blogArticles } from '$lib/blog/articles';
 import type { BlogArticle, BlogArticleMeta } from '$lib/blog/types';
+import type { PageServerLoad } from './$types';
 
 function toMeta(article: BlogArticle): BlogArticleMeta {
 	const meta = { ...article };
@@ -7,8 +8,9 @@ function toMeta(article: BlogArticle): BlogArticleMeta {
 	return meta;
 }
 
-export function load() {
+export const load: PageServerLoad = async ({ locals }) => {
 	return {
-		articles: blogArticles.map(toMeta)
+		articles: blogArticles.map(toMeta),
+		user: locals.user
 	};
-}
+};

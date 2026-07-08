@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
-	import { Check, Search } from '@lucide/svelte';
+	import { Check } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import { primaryNavigationLinks, type AppTopbarLink } from '$lib/navigation';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
@@ -27,17 +24,18 @@
 	let {
 		subject: _subject = 'Physics',
 		subjects: _subjects = [...BROWSE_SUBJECTS],
-		searchValue = '',
-		searchPlaceholder = 'Search questions',
-		showSearch = true,
+		searchValue: _searchValue = '',
+		searchPlaceholder: _searchPlaceholder = 'Search questions',
+		showSearch: _showSearch = true,
 		showSubject: _showSubject = true,
 		showNavigation = false,
 		navLinks = primaryNavigationLinks,
 		primaryAction,
 		sticky = true,
-		onSearchChange,
-		onSearchSubmit,
-		onSubjectChange: _onSubjectChange
+		onSearchChange: _onSearchChange,
+		onSearchSubmit: _onSearchSubmit,
+		onSubjectChange: _onSubjectChange,
+		user: currentUserOverride = undefined
 	}: {
 		subject?: string;
 		subjects?: string[];
@@ -52,10 +50,10 @@
 		onSearchChange?: (value: string) => void;
 		onSearchSubmit?: (value: string) => void;
 		onSubjectChange?: (value: string) => void;
+		user?: AdminUser | null;
 	} = $props();
 
 	let theme = $state<ThemePreference>('auto');
-	let mobileSearchOpen = $state(false);
 	let accountMenuOpen = $state(false);
 	let confirmedTheme = $state<ThemePreference>('auto');
 	let accountToastMessage = $state('');
@@ -78,16 +76,25 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
 	];
-	const currentUser = $derived((pageState.data.user ?? null) as AdminUser | null);
+	const currentUser = $derived(
+		currentUserOverride === undefined
+			? ((pageState.data.user ?? null) as AdminUser | null)
+			: currentUserOverride
+	);
 	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
 	const defaultSignInAction: AppTopbarAction = {
 		href: resolve('/auth/start'),
 		label: 'Sign In For Free'
 	};
+	const effectiveShowNavigation = $derived(showNavigation || !currentUser);
 	const effectivePrimaryAction = $derived(
-		primaryAction ?? (!currentUser && showNavigation ? defaultSignInAction : undefined)
+		primaryAction ?? (!currentUser ? defaultSignInAction : undefined)
 	);
-	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
+	const visibleNavLinks = $derived.by(() => {
+		if (!effectiveShowNavigation) return [];
+		if (!currentUser) return navLinks;
+		return navLinks.filter((link) => !isSignedOutAcquisitionLink(link.href));
+	});
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
 		links.push(
@@ -112,7 +119,6 @@
 	const topbarClass = $derived(
 		[
 			'qc-topbar',
-			mobileSearchOpen ? 'search-open' : '',
 			visibleNavLinks.length > 0 ? 'has-navigation' : '',
 			effectivePrimaryAction ? 'has-primary-action' : '',
 			sticky ? 'is-sticky' : 'is-static'
@@ -188,36 +194,24 @@
 		}
 	}
 
-	function updateSearch(event: Event) {
-		onSearchChange?.((event.currentTarget as HTMLInputElement).value);
-	}
-
-	function navigateToBrowse({ q = searchValue } = {}) {
-		if (!browser) return;
-		const trimmedQuery = q.trim();
-		const params = new SvelteURLSearchParams();
-		if (trimmedQuery) params.set('q', trimmedQuery);
-		const suffix = params.toString();
-		void goto(`${resolve('/chains')}${suffix ? `?${suffix}` : ''}`);
-	}
-
-	function submitSearch(event: SubmitEvent) {
-		event.preventDefault();
-		const form = event.currentTarget as HTMLFormElement;
-		const input = form.elements.namedItem('q') as HTMLInputElement | null;
-		if (onSearchSubmit) {
-			onSearchSubmit(input?.value ?? '');
-			return;
-		}
-		if (onSearchChange) return;
-		navigateToBrowse({ q: input?.value ?? '' });
-	}
-
 	function isNavLinkActive(href: string) {
-		const currentPath = pageState.url.pathname.replace(/\/$/, '') || '/';
-		const hrefPath = href.split('?')[0].replace(/\/$/, '') || '/';
+		const currentPath = normalizeNavPath(pageState.url.pathname);
+		const hrefPath = normalizeNavPath(href);
 		if (hrefPath === '/') return currentPath === '/';
 		return currentPath === hrefPath || currentPath.startsWith(`${hrefPath}/`);
+	}
+
+	function isSignedOutAcquisitionLink(href: string) {
+		const hrefPath = normalizeNavPath(href);
+		const acquisitionPaths = ['/past-papers', '/blog'];
+		return acquisitionPaths.some((path) => hrefPath === path || hrefPath.startsWith(`${path}/`));
+	}
+
+	function normalizeNavPath(href: string) {
+		const path = href.split('?')[0].replace(/\/$/, '') || '/';
+		if (path.startsWith('./')) return `/${path.slice(2)}` || '/';
+		if (!path.startsWith('/')) return `/${path}` || '/';
+		return path;
 	}
 
 	function handleWindowClick(event: MouseEvent) {
@@ -255,30 +249,6 @@
 				</a>
 			{/each}
 		</nav>
-	{/if}
-
-	{#if showSearch}
-		<form class="qc-topbar-search" role="search" onsubmit={submitSearch}>
-			<Search size={17} aria-hidden="true" strokeWidth={2} />
-			<input
-				type="search"
-				name="q"
-				autocomplete="off"
-				placeholder={searchPlaceholder}
-				value={searchValue}
-				oninput={updateSearch}
-			/>
-		</form>
-
-		<button
-			type="button"
-			class="qc-topbar-search-button"
-			aria-label="Search questions"
-			aria-expanded={mobileSearchOpen}
-			onclick={() => (mobileSearchOpen = !mobileSearchOpen)}
-		>
-			<Search size={19} aria-hidden="true" strokeWidth={2} />
-		</button>
 	{/if}
 
 	{#if effectivePrimaryAction}
