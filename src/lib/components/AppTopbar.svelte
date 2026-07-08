@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
 	import { Check, ChevronRight, Search } from '@lucide/svelte';
@@ -202,14 +203,14 @@
 				englishParams.set('course', nextSubject);
 			}
 			const englishSuffix = englishParams.toString();
-			window.location.assign(`${resolve('/english')}${englishSuffix ? `?${englishSuffix}` : ''}`);
+			void goto(`${resolve('/english')}${englishSuffix ? `?${englishSuffix}` : ''}`);
 			return;
 		}
 		const params = new SvelteURLSearchParams();
 		if (trimmedQuery) params.set('q', trimmedQuery);
 		if (nextSubject && nextSubject !== 'All subjects') params.set('subject', nextSubject);
 		const suffix = params.toString();
-		window.location.assign(`${resolve('/chains')}${suffix ? `?${suffix}` : ''}`);
+		void goto(`${resolve('/chains')}${suffix ? `?${suffix}` : ''}`);
 	}
 
 	function submitSearch(event: SubmitEvent) {
