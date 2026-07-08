@@ -3,11 +3,18 @@ import { resolve } from '$app/paths';
 export type AppTopbarLink = {
 	href: string;
 	label: string;
+	mobileLabel?: string;
+	mobilePriority?: boolean;
 };
 
 export const primaryNavigationLinks: AppTopbarLink[] = [
 	{ href: resolve('/chains'), label: 'Question bank' },
 	{ href: resolve('/english'), label: 'English' },
-	{ href: resolve('/past-papers'), label: 'Past papers' },
-	{ href: resolve('/blog'), label: 'Blog' }
+	{
+		href: resolve('/past-papers'),
+		label: 'Past papers',
+		mobileLabel: 'Papers',
+		mobilePriority: true
+	},
+	{ href: resolve('/blog'), label: 'Blog', mobilePriority: true }
 ];

@@ -17,6 +17,13 @@
 		ariaLabel?: string;
 	};
 
+	type MobileTopbarLink = {
+		href: string;
+		label: string;
+		ariaLabel?: string;
+		variant: 'primary' | 'secondary';
+	};
+
 	let {
 		subject = 'Physics',
 		subjects: _subjects = [...BROWSE_SUBJECTS],
@@ -78,6 +85,27 @@
 		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
 	);
 	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
+	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
+		const links: MobileTopbarLink[] = [];
+		if (primaryAction) {
+			links.push({
+				href: primaryAction.href,
+				label: primaryAction.label,
+				ariaLabel: primaryAction.ariaLabel,
+				variant: 'primary'
+			});
+		}
+		links.push(
+			...visibleNavLinks
+				.filter((link) => link.mobilePriority)
+				.map((link) => ({
+					href: link.href,
+					label: link.mobileLabel ?? link.label,
+					variant: 'secondary' as const
+				}))
+		);
+		return links;
+	});
 	const topbarClass = $derived(
 		[
 			'qc-topbar',
@@ -328,6 +356,21 @@
 		>
 			{primaryAction.label}
 		</a>
+	{/if}
+
+	{#if mobileTopbarLinks.length > 0}
+		<nav class="qc-topbar-mobile-links" aria-label="Essential navigation">
+			{#each mobileTopbarLinks as link (link.href)}
+				<a
+					href={link.href}
+					aria-label={link.ariaLabel}
+					aria-current={isNavLinkActive(link.href) ? 'page' : undefined}
+					class:primary={link.variant === 'primary'}
+				>
+					{link.label}
+				</a>
+			{/each}
+		</nav>
 	{/if}
 
 	<div class="qc-avatar-menu" bind:this={accountMenuRoot}>
