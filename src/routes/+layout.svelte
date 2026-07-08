@@ -10,6 +10,7 @@
 	} from '$lib/themePreference';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
+	import { installViewportZoomLock } from '$lib/viewportZoom';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -24,6 +25,7 @@
 
 	onMount(() => {
 		let stopAutomaticThemeSync = () => {};
+		const stopViewportZoomLock = installViewportZoomLock();
 		syncAppViewportHeight();
 		window.addEventListener('resize', syncAppViewportHeight);
 		window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
@@ -41,6 +43,7 @@
 		return () => {
 			unsubscribe();
 			stopAutomaticThemeSync();
+			stopViewportZoomLock();
 			window.removeEventListener('resize', syncAppViewportHeight);
 			window.visualViewport?.removeEventListener('resize', syncAppViewportHeight);
 			window.visualViewport?.removeEventListener('scroll', syncAppViewportHeight);
