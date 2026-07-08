@@ -24,8 +24,8 @@
 	const chainsHref = resolve('/chains');
 	const pastPapersHref = resolve('/past-papers/gcse');
 	const englishHref = resolve('/english');
-	const blogHref = resolve('/blog');
 	const signInHref = resolve('/auth/start');
+	const signInAction = { href: signInHref, label: 'Sign In For Free' };
 	const profileHref = resolve('/profile');
 	const featuredChain = $derived(data.featuredChains[0] ?? null);
 	const dashboard = $derived(data.dashboard);
@@ -53,13 +53,6 @@
 	const chainCountLabel = $derived(formatCount(data.stats.chainCount));
 	const questionCountLabel = $derived(formatCount(data.stats.questionCount));
 	const subjectCountLabel = $derived(formatCount(data.stats.subjectCount));
-
-	const navLinks = [
-		{ href: chainsHref, label: 'Question bank' },
-		{ href: englishHref, label: 'English' },
-		{ href: pastPapersHref, label: 'Past papers' },
-		{ href: blogHref, label: 'Blog' }
-	];
 
 	const coverage = [
 		{
@@ -182,13 +175,15 @@
 					<p class="qc-real-kicker">Today</p>
 					<h1 id="dashboard-title">Choose what to practise, {learnerName}.</h1>
 					<p>
-						Each subject starts from the best next step: fix a known mistake, review due
-						flashcards, or continue with a real exam question.
+						Each subject starts from the best next step: fix a known mistake, review due flashcards,
+						or continue with a real exam question.
 					</p>
 				</div>
 				<a class="qc-dashboard-profile-link" href={profileHref}>
 					<span>Profile</span>
-					<strong>{subjectLanes.length || dashboard.learnerSubjects.length} selected subjects</strong>
+					<strong
+						>{subjectLanes.length || dashboard.learnerSubjects.length} selected subjects</strong
+					>
 					<ArrowRight size={16} aria-hidden="true" strokeWidth={2.2} />
 				</a>
 			</section>
@@ -264,7 +259,11 @@
 								{#if lane.openGap}
 									<a class="qc-dashboard-question-link" href={lane.openGap.href}>
 										<strong><MathText text={lane.openGap.stepText} /></strong>
-										<span><MathText text={`${lane.openGap.questionTitle} · ${lane.openGap.topic}`} /></span>
+										<span
+											><MathText
+												text={`${lane.openGap.questionTitle} · ${lane.openGap.topic}`}
+											/></span
+										>
 									</a>
 								{:else if lane.nextQuestion}
 									<a class="qc-dashboard-question-link" href={lane.nextQuestion.href}>
@@ -383,18 +382,7 @@
 	</main>
 {:else}
 	<main class="qc-home-app">
-		<header class="qc-home-topbar" aria-label="Site header">
-			<a class="qc-home-brand" href={resolve('/')} aria-label="Question Constellation home">
-				<img src="/brand/question-constellation-logo.svg" alt="" width="34" height="34" />
-				<span>Question Constellation</span>
-			</a>
-			<nav class="qc-home-nav" aria-label="Primary navigation">
-				{#each navLinks as link (link.href)}
-					<a href={link.href}>{link.label}</a>
-				{/each}
-			</nav>
-			<a class="qc-home-nav-action" href={signInHref}>Sign In For Free</a>
-		</header>
+		<AppTopbar showSearch={false} showNavigation primaryAction={signInAction} />
 
 		<section class="qc-home-hero" aria-labelledby="home-title">
 			<div class="qc-home-hero-media" aria-hidden="true">
@@ -485,9 +473,8 @@
 				<p class="qc-home-eyebrow">Choose a subject</p>
 				<h2 id="subject-title">Start where your exam entry lives.</h2>
 				<p>
-					Science and History use the method-led question bank. English opens the paper-style
-					finder because Language and Literature questions need course, paper, text and mark
-					filters.
+					Science and History use the method-led question bank. English opens the paper-style finder
+					because Language and Literature questions need course, paper, text and mark filters.
 				</p>
 			</div>
 			<div class="qc-home-subject-grid">
@@ -507,8 +494,8 @@
 				<p class="qc-home-eyebrow">Question first</p>
 				<h2 id="flow-title">The flow follows how marks are won.</h2>
 				<p>
-					Start on a concrete question, learn the method, practise similar questions, and repair
-					the steps that were missing.
+					Start on a concrete question, learn the method, practise similar questions, and repair the
+					steps that were missing.
 				</p>
 			</div>
 
@@ -541,9 +528,9 @@
 				<p class="qc-home-eyebrow">Built like an exam atlas</p>
 				<h2 id="product-title">Questions that look different can use the same method.</h2>
 				<p>
-					Question Constellation groups exam questions by the steps that earn marks.
-					That makes revision less about memorising isolated answers and more about spotting
-					transferable structure.
+					Question Constellation groups exam questions by the steps that earn marks. That makes
+					revision less about memorising isolated answers and more about spotting transferable
+					structure.
 				</p>
 				<a class="qc-home-inline-link" href={featuredConstellationHref}>
 					Open a practice set

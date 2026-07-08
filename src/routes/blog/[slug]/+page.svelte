@@ -115,7 +115,7 @@
 </svelte:head>
 
 <div class="blog-shell">
-	<AppTopbar showSearch={false} showSubject={false} />
+	<AppTopbar showSearch={false} showSubject={false} showNavigation />
 
 	<main class="blog-article-page">
 		<nav class="blog-breadcrumb" aria-label="Breadcrumb">
@@ -178,8 +178,8 @@
 					<p class="blog-kicker">Question first</p>
 					<h2>Try a GCSE question next.</h2>
 					<p>
-						Start with a real question, see the method, then practise related questions that use
-						the same logic.
+						Start with a real question, see the method, then practise related questions that use the
+						same logic.
 					</p>
 				</div>
 				<a href={resolve('/chains')}>

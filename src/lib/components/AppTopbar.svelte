@@ -7,8 +7,15 @@
 	import { onDestroy } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
+	import { primaryNavigationLinks, type AppTopbarLink } from '$lib/navigation';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
 	import type { AdminUser } from '$lib/server/auth/session';
+
+	type AppTopbarAction = {
+		href: string;
+		label: string;
+		ariaLabel?: string;
+	};
 
 	let {
 		subject = 'Physics',
@@ -17,6 +24,10 @@
 		searchPlaceholder = 'Search questions',
 		showSearch = true,
 		showSubject: _showSubject = true,
+		showNavigation = false,
+		navLinks = primaryNavigationLinks,
+		primaryAction,
+		sticky = true,
 		onSearchChange,
 		onSearchSubmit,
 		onSubjectChange: _onSubjectChange
@@ -27,6 +38,10 @@
 		searchPlaceholder?: string;
 		showSearch?: boolean;
 		showSubject?: boolean;
+		showNavigation?: boolean;
+		navLinks?: AppTopbarLink[];
+		primaryAction?: AppTopbarAction;
+		sticky?: boolean;
 		onSearchChange?: (value: string) => void;
 		onSearchSubmit?: (value: string) => void;
 		onSubjectChange?: (value: string) => void;
@@ -61,6 +76,18 @@
 	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
 	const accountDetailsText = $derived(
 		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
+	);
+	const visibleNavLinks = $derived(showNavigation ? navLinks : []);
+	const topbarClass = $derived(
+		[
+			'qc-topbar',
+			mobileSearchOpen ? 'search-open' : '',
+			visibleNavLinks.length > 0 ? 'has-navigation' : '',
+			primaryAction ? 'has-primary-action' : '',
+			sticky ? 'is-sticky' : 'is-static'
+		]
+			.filter(Boolean)
+			.join(' ')
 	);
 
 	function clearAppearanceCloseTimer() {
@@ -225,6 +252,13 @@
 		navigateToBrowse({ q: input?.value ?? '', subject });
 	}
 
+	function isNavLinkActive(href: string) {
+		const currentPath = pageState.url.pathname.replace(/\/$/, '') || '/';
+		const hrefPath = href.split('?')[0].replace(/\/$/, '') || '/';
+		if (hrefPath === '/') return currentPath === '/';
+		return currentPath === hrefPath || currentPath.startsWith(`${hrefPath}/`);
+	}
+
 	function handleWindowClick(event: MouseEvent) {
 		if (!accountMenuOpen) return;
 		if (event.target instanceof Node && accountMenuRoot?.contains(event.target)) return;
@@ -238,11 +272,21 @@
 
 <svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
 
-<header class="qc-topbar" class:search-open={mobileSearchOpen} aria-label="Site header">
+<header class={topbarClass} aria-label="Site header">
 	<a href={resolve('/')} class="qc-topbar-brand" aria-label="Question Constellation home">
 		<img src="/brand/question-constellation-logo.svg" alt="" width="32" height="32" />
 		<span>Question Constellation</span>
 	</a>
+
+	{#if visibleNavLinks.length > 0}
+		<nav class="qc-topbar-nav" aria-label="Primary navigation">
+			{#each visibleNavLinks as link (link.href)}
+				<a href={link.href} aria-current={isNavLinkActive(link.href) ? 'page' : undefined}>
+					{link.label}
+				</a>
+			{/each}
+		</nav>
+	{/if}
 
 	{#if showSearch}
 		<form class="qc-topbar-search" role="search" onsubmit={submitSearch}>
@@ -266,6 +310,16 @@
 		>
 			<Search size={19} aria-hidden="true" strokeWidth={2} />
 		</button>
+	{/if}
+
+	{#if primaryAction}
+		<a
+			class="qc-topbar-action"
+			href={primaryAction.href}
+			aria-label={primaryAction.ariaLabel ?? primaryAction.label}
+		>
+			{primaryAction.label}
+		</a>
 	{/if}
 
 	<div class="qc-avatar-menu" bind:this={accountMenuRoot}>

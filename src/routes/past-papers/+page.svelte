@@ -78,7 +78,7 @@
 </svelte:head>
 
 <div class="past-papers-shell">
-	<AppTopbar showSearch={false} showSubject={false} />
+	<AppTopbar showSearch={false} showSubject={false} showNavigation />
 
 	<main class="past-papers-page">
 		<section class="past-papers-hero" aria-labelledby="past-papers-title">
@@ -87,8 +87,7 @@
 				<div>
 					<h1 id="past-papers-title">Past Papers</h1>
 					<p>
-						Find question papers, mark schemes and inserts by qualification, exam board and
-						subject.
+						Find question papers, mark schemes and inserts by qualification, exam board and subject.
 					</p>
 				</div>
 			</div>
@@ -246,8 +245,7 @@
 
 	:global(:root[data-theme='dark']) .past-papers-shell {
 		background:
-			linear-gradient(180deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0)),
-			var(--qc-app-surface);
+			linear-gradient(180deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0)), var(--qc-app-surface);
 		color: #e5edf6;
 	}
 

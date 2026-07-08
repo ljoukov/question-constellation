@@ -80,7 +80,7 @@
 </svelte:head>
 
 <div class="past-papers-shell">
-	<AppTopbar showSearch={false} showSubject={false} />
+	<AppTopbar showSearch={false} showSubject={false} showNavigation />
 
 	<main class="past-papers-page">
 		<section class="past-papers-hero" aria-labelledby="past-papers-title">
