@@ -7937,14 +7937,15 @@ textarea::placeholder {
 
 	.qc-appearance-submenu {
 		position: absolute;
-		top: calc(100% + 0.32rem);
-		right: 0;
+		top: calc(100% + 0.42rem);
+		right: 0.25rem;
 		z-index: 3;
-		width: 100%;
+		width: min(12.5rem, calc(100vw - 2rem));
 		margin-top: 0;
+		border-radius: 0.9rem;
 		box-shadow:
-			0 10px 15px -3px rgb(15 23 42 / 10%),
-			0 4px 6px -4px rgb(15 23 42 / 10%);
+			0 18px 28px -12px rgb(15 23 42 / 26%),
+			0 8px 16px -12px rgb(15 23 42 / 24%);
 	}
 
 	.qc-bank-heading,

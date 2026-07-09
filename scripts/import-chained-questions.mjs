@@ -18,7 +18,8 @@ const baselinePath = path.join(extractionRoot, 'baseline/all-papers.json');
 const semanticDir = path.join(extractionRoot, 'semantic-chains');
 const migrationPaths = [
 	path.join(rootDir, 'migrations/0001_public_content.sql'),
-	path.join(rootDir, 'migrations/0005_public_route_payloads.sql')
+	path.join(rootDir, 'migrations/0005_public_route_payloads.sql'),
+	path.join(rootDir, 'migrations/0010_practice_read_path_indexes.sql')
 ];
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
 const experimentModelAnswersPath = path.join(

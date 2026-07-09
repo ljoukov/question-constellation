@@ -237,6 +237,7 @@ type MembershipRow = {
 
 type AssetRow = {
 	id: string;
+	question_id?: string;
 	asset_type: string;
 	source_label: string | null;
 	public_path: string | null;
@@ -248,6 +249,7 @@ type AssetRow = {
 
 type RenderingOverlayRow = {
 	id: string;
+	question_id?: string;
 	overlay_version: string;
 	provenance: string;
 	confidence: number | null;
@@ -266,15 +268,18 @@ type AssetMetadata = {
 
 type ChecklistRow = {
 	id: string;
+	question_id?: string;
 	text: string;
 	display_order: number;
 };
 
 type ModelAnswerRow = {
+	question_id?: string;
 	answer_text: string;
 };
 
 type WeakAnswerRow = {
+	question_id?: string;
 	weak_answer_text: string;
 	explanation: string | null;
 	missing_chain_step_ids_json: string;
@@ -285,6 +290,24 @@ type ConstellationRow = {
 	title: string;
 	summary: string | null;
 	answer_chain_id: string;
+};
+
+type QuestionSupplement = {
+	assets: QuestionAsset[];
+	renderingOverlay: QuestionRenderingOverlay | null;
+	checklistRows: ChecklistRow[];
+	modelAnswerRow: ModelAnswerRow | null;
+	weakAnswerRow: WeakAnswerRow | null;
+};
+
+type QuestionChainContext = {
+	row: QuestionRow;
+	membership: MembershipRow;
+	chain: AnswerChain;
+	question: Question;
+	questions: Question[];
+	constellation: Constellation;
+	nextQuestion: Question;
 };
 
 type EnglishQuestionMetadata = {
@@ -498,17 +521,66 @@ async function getPrimaryMembership(questionId: string): Promise<MembershipRow> 
 		`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
 		        qac.fit_notes, qac.needs_human_review
 		 FROM question_answer_chains qac
-		 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 		 WHERE question_id = ?
 		   AND qac.needs_human_review = 0
-		   AND ac.needs_human_review = 0
-		   AND ac.status = 'published'
+		   AND EXISTS (
+		   	SELECT 1
+		   	FROM answer_chains ac
+		   	WHERE ac.id = qac.answer_chain_id
+		   	  AND ac.needs_human_review = 0
+		   	  AND ac.status = 'published'
+		   )
 		 ORDER BY is_primary DESC, COALESCE(fit_confidence, 0) DESC
 		 LIMIT 1`,
 		[questionId]
 	);
 	if (!row) throw new Error(`Question has no answer chain: ${questionId}`);
 	return row;
+}
+
+function questionIdPlaceholders(questionIds: string[]): string {
+	return questionIds.map(() => '?').join(', ');
+}
+
+function uniqueQuestionIds(questionIds: string[]): string[] {
+	return [...new Set(questionIds.filter(Boolean))];
+}
+
+function emptyQuestionSupplement(): QuestionSupplement {
+	return {
+		assets: [],
+		renderingOverlay: null,
+		checklistRows: [],
+		modelAnswerRow: null,
+		weakAnswerRow: null
+	};
+}
+
+function ensureQuestionSupplement(
+	supplements: Map<string, QuestionSupplement>,
+	questionId: string
+): QuestionSupplement {
+	const existing = supplements.get(questionId);
+	if (existing) return existing;
+	const created = emptyQuestionSupplement();
+	supplements.set(questionId, created);
+	return created;
+}
+
+function questionAssetFromRow(row: AssetRow): QuestionAsset | null {
+	if (!row.public_path) return null;
+	const paperSize = paperAssetSize(row.metadata_json);
+
+	return {
+		id: row.id,
+		assetType: row.asset_type,
+		sourceLabel: row.source_label ?? 'Source image',
+		publicPath: row.public_path,
+		altText: row.alt_text ?? row.source_label ?? 'Question paper image',
+		required: Boolean(row.required),
+		role: row.role,
+		...paperSize
+	};
 }
 
 async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
@@ -520,42 +592,10 @@ async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
 		[questionId]
 	);
 
-	return rows
-		.filter((row) => row.public_path)
-		.map((row) => {
-			const paperSize = paperAssetSize(row.metadata_json);
-
-			return {
-				id: row.id,
-				assetType: row.asset_type,
-				sourceLabel: row.source_label ?? 'Source image',
-				publicPath: row.public_path ?? '',
-				altText: row.alt_text ?? row.source_label ?? 'Question paper image',
-				required: Boolean(row.required),
-				role: row.role,
-				...paperSize
-			};
-		});
+	return rows.map(questionAssetFromRow).filter((asset): asset is QuestionAsset => Boolean(asset));
 }
 
-export async function getQuestionRenderingOverlay(
-	questionId: string
-): Promise<QuestionRenderingOverlay | null> {
-	const row = await queryFirst<RenderingOverlayRow>(
-		`SELECT id, overlay_version, provenance, confidence, needs_human_review,
-		        render_json
-		 FROM question_rendering_overlays
-		 WHERE question_id = ?
-		 ORDER BY CASE provenance
-			WHEN 'manual' THEN 0
-			WHEN 'pdf-geometry' THEN 1
-			WHEN 'vision-extracted' THEN 2
-			ELSE 3
-		 END, overlay_version DESC
-		 LIMIT 1`,
-		[questionId]
-	);
-	if (!row) return null;
+function renderingOverlayFromRow(row: RenderingOverlayRow): QuestionRenderingOverlay {
 	const renderObject = parseJson<Record<string, unknown>>(row.render_json, {});
 
 	return {
@@ -585,6 +625,27 @@ export async function getQuestionRenderingOverlay(
 	};
 }
 
+export async function getQuestionRenderingOverlay(
+	questionId: string
+): Promise<QuestionRenderingOverlay | null> {
+	const row = await queryFirst<RenderingOverlayRow>(
+		`SELECT id, overlay_version, provenance, confidence, needs_human_review,
+		        render_json
+		 FROM question_rendering_overlays
+		 WHERE question_id = ?
+		 ORDER BY CASE provenance
+			WHEN 'manual' THEN 0
+			WHEN 'pdf-geometry' THEN 1
+			WHEN 'vision-extracted' THEN 2
+			ELSE 3
+		 END, overlay_version DESC
+		 LIMIT 1`,
+		[questionId]
+	);
+	if (!row) return null;
+	return renderingOverlayFromRow(row);
+}
+
 async function getModelAnswer(questionId: string, chain: AnswerChain): Promise<string> {
 	const row = await queryFirst<ModelAnswerRow>(
 		`SELECT answer_text
@@ -595,6 +656,10 @@ async function getModelAnswer(questionId: string, chain: AnswerChain): Promise<s
 		[questionId]
 	);
 
+	return row?.answer_text ?? chain.modelAnswer;
+}
+
+function modelAnswerFromRow(row: ModelAnswerRow | null, chain: AnswerChain): string {
 	return row?.answer_text ?? chain.modelAnswer;
 }
 
@@ -620,8 +685,7 @@ function checklistLooksUseful(rows: ChecklistRow[]): boolean {
 	return rows.length > 1 && rows.every((row) => !/\bAO\d\b/.test(row.text));
 }
 
-async function getChecklist(questionId: string, chain: AnswerChain): Promise<MarkChecklistItem[]> {
-	const rows = await getStoredChecklist(questionId);
+function checklistFromRows(rows: ChecklistRow[], chain: AnswerChain): MarkChecklistItem[] {
 	if (!checklistLooksUseful(rows)) return checklistFromSteps(chain);
 
 	return rows.map((row, index) => ({
@@ -629,6 +693,46 @@ async function getChecklist(questionId: string, chain: AnswerChain): Promise<Mar
 		text: row.text,
 		stepId: chain.steps[Math.min(index, chain.steps.length - 1)]?.id ?? chain.steps[0]?.id ?? row.id
 	}));
+}
+
+async function getChecklist(questionId: string, chain: AnswerChain): Promise<MarkChecklistItem[]> {
+	return checklistFromRows(await getStoredChecklist(questionId), chain);
+}
+
+function weakAnswerFromRow(
+	row: WeakAnswerRow | null,
+	chain: AnswerChain
+): {
+	text: string;
+	explanation: string;
+	missingStepIds: string[];
+} {
+	if (row) {
+		const rawMissing = parseJson<Array<string | number>>(row.missing_chain_step_ids_json, []);
+		const missingStepIds = rawMissing
+			.map((item) =>
+				typeof item === 'number'
+					? chain.steps[item]?.id
+					: chain.steps.find((step) => step.id === item)?.id
+			)
+			.filter((item): item is string => Boolean(item));
+
+		return {
+			text: row.weak_answer_text,
+			explanation: row.explanation?.replace(/\s+/g, ' ').trim() ?? '',
+			missingStepIds:
+				missingStepIds.length > 0 ? missingStepIds : chain.steps.slice(1).map((step) => step.id)
+		};
+	}
+
+	const missingStepIds = chain.steps
+		.slice(Math.max(1, chain.steps.length - 2))
+		.map((step) => step.id);
+	return {
+		text: 'Names the topic but skips the middle reasoning links.',
+		explanation: '',
+		missingStepIds
+	};
 }
 
 async function getWeakAnswer(
@@ -659,33 +763,97 @@ async function getWeakAnswer(
 		 LIMIT 1`,
 		[questionId]
 	);
+	return weakAnswerFromRow(row, chain);
+}
 
-	if (row) {
-		const rawMissing = parseJson<Array<string | number>>(row.missing_chain_step_ids_json, []);
-		const missingStepIds = rawMissing
-			.map((item) =>
-				typeof item === 'number'
-					? chain.steps[item]?.id
-					: chain.steps.find((step) => step.id === item)?.id
-			)
-			.filter((item): item is string => Boolean(item));
+async function getQuestionSupplements(
+	questionIds: string[]
+): Promise<Map<string, QuestionSupplement>> {
+	const ids = uniqueQuestionIds(questionIds);
+	const supplements = new Map(ids.map((id) => [id, emptyQuestionSupplement()] as const));
+	if (ids.length === 0) return supplements;
 
-		return {
-			text: row.weak_answer_text,
-			explanation: row.explanation?.replace(/\s+/g, ' ').trim() ?? '',
-			missingStepIds:
-				missingStepIds.length > 0 ? missingStepIds : chain.steps.slice(1).map((step) => step.id)
-		};
+	const placeholders = questionIdPlaceholders(ids);
+	const [assetRows, overlayRows, modelRows, checklistRows, weakRows] = await Promise.all([
+		queryRows<AssetRow & { question_id: string }>(
+			`SELECT question_id, id, asset_type, source_label, public_path, alt_text, required, role, metadata_json
+			 FROM question_assets
+			 WHERE question_id IN (${placeholders})
+			 ORDER BY question_id, required DESC, source_label, id`,
+			ids
+		),
+		queryRows<RenderingOverlayRow & { question_id: string }>(
+			`SELECT question_id, id, overlay_version, provenance, confidence, needs_human_review,
+			        render_json
+			 FROM question_rendering_overlays
+			 WHERE question_id IN (${placeholders})
+			 ORDER BY question_id,
+				CASE provenance
+					WHEN 'manual' THEN 0
+					WHEN 'pdf-geometry' THEN 1
+					WHEN 'vision-extracted' THEN 2
+					ELSE 3
+				END, overlay_version DESC`,
+			ids
+		),
+		queryRows<ModelAnswerRow & { question_id: string }>(
+			`SELECT question_id, answer_text
+			 FROM model_answers
+			 WHERE question_id IN (${placeholders})
+			 ORDER BY question_id, COALESCE(confidence, 0) DESC, id`,
+			ids
+		),
+		queryRows<ChecklistRow & { question_id: string }>(
+			`SELECT question_id, id, text, display_order
+			 FROM mark_checklist_items
+			 WHERE question_id IN (${placeholders})
+			 ORDER BY question_id, display_order`,
+			ids
+		),
+		queryRows<WeakAnswerRow & { question_id: string }>(
+			`SELECT question_id, weak_answer_text, explanation, missing_chain_step_ids_json
+			 FROM common_weak_answers
+			 WHERE question_id IN (${placeholders})
+			   AND needs_human_review = 0
+			 ORDER BY question_id,
+				CASE
+					WHEN explanation IS NOT NULL AND TRIM(explanation) <> '' THEN 0
+					ELSE 1
+				END,
+				CASE
+					WHEN missing_chain_step_ids_json IS NOT NULL
+						AND missing_chain_step_ids_json <> '[]' THEN 0
+					ELSE 1
+				END,
+				COALESCE(confidence, 0) DESC,
+				LENGTH(COALESCE(explanation, '')) DESC,
+				id`,
+			ids
+		)
+	]);
+
+	for (const row of assetRows) {
+		const asset = questionAssetFromRow(row);
+		if (!asset) continue;
+		ensureQuestionSupplement(supplements, row.question_id).assets.push(asset);
+	}
+	for (const row of overlayRows) {
+		const supplement = ensureQuestionSupplement(supplements, row.question_id);
+		supplement.renderingOverlay ??= renderingOverlayFromRow(row);
+	}
+	for (const row of modelRows) {
+		const supplement = ensureQuestionSupplement(supplements, row.question_id);
+		supplement.modelAnswerRow ??= row;
+	}
+	for (const row of checklistRows) {
+		ensureQuestionSupplement(supplements, row.question_id).checklistRows.push(row);
+	}
+	for (const row of weakRows) {
+		const supplement = ensureQuestionSupplement(supplements, row.question_id);
+		supplement.weakAnswerRow ??= row;
 	}
 
-	const missingStepIds = chain.steps
-		.slice(Math.max(1, chain.steps.length - 2))
-		.map((step) => step.id);
-	return {
-		text: 'Names the topic but skips the middle reasoning links.',
-		explanation: '',
-		missingStepIds
-	};
+	return supplements;
 }
 
 function isEnglishQuestionRow(
@@ -1239,14 +1407,15 @@ function repairChainFromSteps(chain: AnswerChain): RepairChainNode[] {
 	}));
 }
 
-async function hydrateQuestion(
+function hydrateQuestionFromSupplement(
 	row: QuestionRow,
 	chain: AnswerChain,
-	membership: MembershipRow
-): Promise<Question> {
+	membership: MembershipRow,
+	supplement: QuestionSupplement
+): Question {
 	const transferDistance = distanceFromDb(membership.transfer_distance);
-	const checklist = await getChecklist(row.id, chain);
-	const weakAnswer = await getWeakAnswer(row.id, chain);
+	const checklist = checklistFromRows(supplement.checklistRows, chain);
+	const weakAnswer = weakAnswerFromRow(supplement.weakAnswerRow, chain);
 
 	return {
 		id: row.id,
@@ -1254,8 +1423,8 @@ async function hydrateQuestion(
 		title: titleFromQuestion(row),
 		prompt: cleanPromptText(row.prompt_text),
 		context: displayContextFromRow(row),
-		assets: await getQuestionAssets(row.id),
-		renderingOverlay: await getQuestionRenderingOverlay(row.id),
+		assets: supplement.assets,
+		renderingOverlay: supplement.renderingOverlay,
 		meta: {
 			qualification: row.qualification ?? 'GCSE',
 			board: row.board ?? 'AQA',
@@ -1269,7 +1438,7 @@ async function hydrateQuestion(
 		transferDistance,
 		distanceLabel: distanceLabel(transferDistance),
 		constellationRole: constellationRole(transferDistance),
-		modelAnswer: await getModelAnswer(row.id, chain),
+		modelAnswer: modelAnswerFromRow(supplement.modelAnswerRow, chain),
 		commonWeakAnswer: weakAnswer.text,
 		commonWeakExplanation: weakAnswer.explanation,
 		weakAnswerMissingStepIds: weakAnswer.missingStepIds,
@@ -1278,6 +1447,20 @@ async function hydrateQuestion(
 		practiceDraft: weakAnswer.text,
 		whyThisFits: membership.fit_notes ?? chain.summary
 	};
+}
+
+async function hydrateQuestion(
+	row: QuestionRow,
+	chain: AnswerChain,
+	membership: MembershipRow
+): Promise<Question> {
+	const supplements = await getQuestionSupplements([row.id]);
+	return hydrateQuestionFromSupplement(
+		row,
+		chain,
+		membership,
+		supplements.get(row.id) ?? emptyQuestionSupplement()
+	);
 }
 
 async function getQuestionRow(questionId: string): Promise<QuestionRow> {
@@ -1293,6 +1476,21 @@ async function getQuestionRow(questionId: string): Promise<QuestionRow> {
 	);
 	if (!row) throw new Error(`Question not found: ${questionId}`);
 	return row;
+}
+
+async function hydrateQuestions(
+	rows: Array<QuestionRow & MembershipRow>,
+	chain: AnswerChain
+): Promise<Question[]> {
+	const supplements = await getQuestionSupplements(rows.map((row) => row.id));
+	return rows.map((row) =>
+		hydrateQuestionFromSupplement(
+			row,
+			chain,
+			row,
+			supplements.get(row.id) ?? emptyQuestionSupplement()
+		)
+	);
 }
 
 async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
@@ -1318,7 +1516,7 @@ async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
 		[chain.id]
 	);
 
-	return await Promise.all(rows.map((row) => hydrateQuestion(row, chain, row)));
+	return await hydrateQuestions(rows, chain);
 }
 
 async function getConstellationForChain(
@@ -1337,9 +1535,7 @@ async function getConstellationForChain(
 	return {
 		id: row?.id ?? chain.id,
 		title: row?.title ?? chain.title,
-		summary:
-			row?.summary ??
-			`${questions.length} questions that use the same mark-scoring method.`,
+		summary: row?.summary ?? `${questions.length} questions that use the same mark-scoring method.`,
 		chainId: chain.id,
 		questionIds: questions.map((question) => question.id)
 	};
@@ -1348,6 +1544,30 @@ async function getConstellationForChain(
 function nextQuestionAfter(questions: Question[], questionId: string): Question {
 	const index = questions.findIndex((question) => question.id === questionId);
 	return questions[(index + 1 + questions.length) % questions.length] ?? questions[0];
+}
+
+async function getQuestionChainContext(
+	questionId: string,
+	initialRow?: QuestionRow
+): Promise<QuestionChainContext> {
+	const row = initialRow ?? (await getQuestionRow(questionId));
+	const membership = await getPrimaryMembership(row.id);
+	const chain = await getChain(membership.answer_chain_id);
+	const questions = await getQuestionsForChain(chain);
+	const question =
+		questions.find((candidate) => candidate.id === row.id) ??
+		(await hydrateQuestion(row, chain, membership));
+	const constellation = await getConstellationForChain(chain, questions);
+
+	return {
+		row,
+		membership,
+		chain,
+		question,
+		questions,
+		constellation,
+		nextQuestion: nextQuestionAfter(questions, question.id)
+	};
 }
 
 export async function getNavigationData(): Promise<NavigationData> {
@@ -1397,18 +1617,13 @@ export async function getNavigationData(): Promise<NavigationData> {
 }
 
 export async function getPublicQuestionData(questionId: string): Promise<PublicQuestionData> {
-	const row = await getQuestionRow(questionId);
-	const membership = await getPrimaryMembership(row.id);
-	const chain = await getChain(membership.answer_chain_id);
-	const questions = await getQuestionsForChain(chain);
-	const question = await hydrateQuestion(row, chain, membership);
-	const constellation = await getConstellationForChain(chain, questions);
+	const context = await getQuestionChainContext(questionId);
 
 	return {
-		question,
-		chain,
-		constellation,
-		nextQuestion: nextQuestionAfter(questions, question.id)
+		question: context.question,
+		chain: context.chain,
+		constellation: context.constellation,
+		nextQuestion: context.nextQuestion
 	};
 }
 
@@ -1427,16 +1642,15 @@ export async function getAnswerChainPageData(chainId: string): Promise<AnswerCha
 }
 
 export async function getQuestionChainPageData(questionId: string): Promise<QuestionChainPageData> {
-	const publicData = await getPublicQuestionData(questionId);
-	const questions = await getQuestionsForChain(publicData.chain);
+	const context = await getQuestionChainContext(questionId);
 
 	return {
-		chain: publicData.chain,
-		startQuestion: questions[0],
-		questions,
-		constellation: publicData.constellation,
-		question: publicData.question,
-		practiceQuestion: publicData.nextQuestion
+		chain: context.chain,
+		startQuestion: context.questions[0],
+		questions: context.questions,
+		constellation: context.constellation,
+		question: context.question,
+		practiceQuestion: context.nextQuestion
 	};
 }
 
@@ -1454,15 +1668,13 @@ export async function getPracticePageData(questionId: string): Promise<PracticeP
 		return await getEnglishPracticePageDataFromRow(row);
 	}
 
-	const publicData = await getPublicQuestionData(questionId);
-	const questions = await getQuestionsForChain(publicData.chain);
-	const nextQuestion = nextQuestionAfter(questions, publicData.question.id);
+	const context = await getQuestionChainContext(questionId, row);
 
 	return {
-		question: publicData.question,
-		chain: publicData.chain,
-		constellation: publicData.constellation,
-		questions,
-		nextQuestion
+		question: context.question,
+		chain: context.chain,
+		constellation: context.constellation,
+		questions: context.questions,
+		nextQuestion: context.nextQuestion
 	};
 }

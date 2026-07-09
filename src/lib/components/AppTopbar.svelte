@@ -61,7 +61,7 @@
 	let confirmedTheme = $state<ThemePreference>('auto');
 	let accountToastMessage = $state('');
 	let accountToastTone = $state<'success' | 'error'>('success');
-	let accountMenuRoot: HTMLDivElement | null = null;
+	let accountMenuRoot = $state<HTMLDivElement | null>(null);
 	let themeSaveController: AbortController | null = null;
 	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
 	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -93,7 +93,7 @@
 	);
 	const defaultSignInAction: AppTopbarAction = {
 		href: resolve('/auth/start'),
-		label: 'Sign In For Free'
+		label: 'Sign up for free'
 	};
 	const effectiveShowNavigation = $derived(showNavigation || !currentUser);
 	const effectivePrimaryAction = $derived(
@@ -382,23 +382,23 @@
 		</nav>
 	{/if}
 
-	<div class="qc-avatar-menu" bind:this={accountMenuRoot}>
-		<button
-			type="button"
-			class="qc-avatar-trigger"
-			aria-label="Account menu"
-			aria-haspopup="menu"
-			aria-expanded={accountMenuOpen}
-			onclick={toggleAccountMenu}
-		>
-			<span class="qc-avatar-pixel" aria-hidden="true">
-				<img src={avatarSrc} alt="" width="32" height="32" referrerpolicy="no-referrer" />
-			</span>
-		</button>
-		{#if accountMenuOpen}
-			<div class="qc-avatar-popover" role="menu" aria-label="Account">
-				<p class="qc-avatar-popover-title">Account</p>
-				{#if currentUser}
+	{#if currentUser}
+		<div class="qc-avatar-menu" bind:this={accountMenuRoot}>
+			<button
+				type="button"
+				class="qc-avatar-trigger"
+				aria-label="Account menu"
+				aria-haspopup="menu"
+				aria-expanded={accountMenuOpen}
+				onclick={toggleAccountMenu}
+			>
+				<span class="qc-avatar-pixel" aria-hidden="true">
+					<img src={avatarSrc} alt="" width="32" height="32" referrerpolicy="no-referrer" />
+				</span>
+			</button>
+			{#if accountMenuOpen}
+				<div class="qc-avatar-popover" role="menu" aria-label="Account">
+					<p class="qc-avatar-popover-title">Account</p>
 					<button
 						type="button"
 						class="qc-menu-user qc-menu-user-copy"
@@ -479,62 +479,11 @@
 					>
 						Sign out
 					</a>
-				{:else}
-					<a
-						class="qc-menu-item"
-						role="menuitem"
-						href={resolve('/auth/start')}
-						onclick={closeAccountMenu}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
-						Sign in
-					</a>
-					<div class="qc-menu-separator" role="separator"></div>
-					<div
-						class="qc-menu-submenu"
-						role="none"
-						onpointerenter={openAppearanceMenu}
-						onpointerleave={closeAppearanceMenu}
-					>
-						<button
-							type="button"
-							class="qc-menu-item qc-menu-submenu-trigger"
-							role="menuitem"
-							aria-haspopup="menu"
-							aria-expanded={appearanceMenuOpen}
-							onclick={toggleAppearanceMenu}
-						>
-							<span>Appearance</span>
-							<ChevronRight size={15} aria-hidden="true" strokeWidth={2.2} />
-						</button>
-						{#if appearanceMenuOpen}
-							<div class="qc-appearance-submenu" role="menu" aria-label="Appearance">
-								{#each themeOptions as option (option.value)}
-									<button
-										type="button"
-										class="qc-menu-item qc-appearance-item"
-										class:active={theme === option.value}
-										role="menuitemradio"
-										aria-checked={theme === option.value}
-										onclick={() => chooseTheme(option.value)}
-									>
-										<Check
-											size={15}
-											aria-hidden="true"
-											strokeWidth={2.3}
-											class={theme === option.value ? 'visible' : undefined}
-										/>
-										<span>{option.label}</span>
-									</button>
-								{/each}
-							</div>
-						{/if}
-					</div>
-				{/if}
-			</div>
-		{/if}
-	</div>
-	{#if accountToastMessage}
+				</div>
+			{/if}
+		</div>
+	{/if}
+	{#if currentUser && accountToastMessage}
 		<div
 			class="qc-account-toast"
 			class:error={accountToastTone === 'error'}
