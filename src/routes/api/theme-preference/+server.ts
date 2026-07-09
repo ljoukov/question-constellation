@@ -1,4 +1,4 @@
-import { updateUserThemePreference, type ThemePreference } from '$lib/server/personalLearning';
+import { updateUserThemePreference, type ThemePreference } from '$lib/server/userTheme';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 function parseThemePreference(value: unknown): ThemePreference | null {

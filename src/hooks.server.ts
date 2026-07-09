@@ -2,7 +2,10 @@ import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
 import { clearQuestionBindings, setQuestionR2 } from '$lib/server/bindings';
-import { readAdminAuthFromCookies, type AdminUser } from '$lib/server/auth/session';
+import type { AdminUser } from '$lib/server/auth/session';
+
+const AUTH_USER_COOKIE_NAME = 'questionConstellationAuth';
+const DEV_AUTH_USER_COOKIE_NAME = 'questionConstellationDevAuth';
 
 function shouldUseReadReplicaSession(event: Parameters<Handle>[0]['event']) {
 	if (event.request.method !== 'GET' && event.request.method !== 'HEAD') return false;
@@ -24,6 +27,11 @@ function devAuthUserFromEnv(): AdminUser | null {
 	const name = env.DEV_AUTH_NAME?.trim() || 'Local learner';
 	const photoUrl = env.DEV_AUTH_PHOTO_URL?.trim() || null;
 	return { uid, email, name, photoUrl };
+}
+
+function hasReadableAuthCookie(event: Parameters<Handle>[0]['event']): boolean {
+	if (event.cookies.get(AUTH_USER_COOKIE_NAME)) return true;
+	return dev && Boolean(event.cookies.get(DEV_AUTH_USER_COOKIE_NAME));
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -51,8 +59,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const devAuthUser = devAuthUserFromEnv();
 	if (devAuthUser) {
 		event.locals.user = devAuthUser;
-	} else {
+	} else if (hasReadableAuthCookie(event)) {
 		try {
+			const { readAdminAuthFromCookies } = await import('$lib/server/auth/session');
 			const auth = await readAdminAuthFromCookies(event.cookies, event.platform?.env);
 			if (auth.status === 'ok') {
 				event.locals.user = auth.user;

@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { getUserThemePreference } from '$lib/server/personalLearning';
+import { getUserThemePreference } from '$lib/server/userTheme';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const themePreference = locals.user
