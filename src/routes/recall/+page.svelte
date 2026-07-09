@@ -27,6 +27,7 @@
 
 	type Mode = 'recall' | 'recognise' | 'reverse';
 	type Grade = 'again' | 'hard' | 'good' | 'easy';
+	type CardPresentation = 'flashcard' | 'mcq';
 	type SubjectFilter = RecallSubject | 'All subjects';
 	type KindFilter = RecallCardKind | 'all';
 	type CardMotion =
@@ -35,8 +36,10 @@
 		| 'dragging'
 		| 'returning'
 		| 'flipping'
+		| 'answering'
 		| 'exiting-left'
 		| 'exiting-right';
+	type McqFeedback = 'correct' | 'incorrect' | null;
 
 	type RecallProgress = {
 		seen: number;
@@ -132,6 +135,7 @@
 	let reviewedInSession = $state(0);
 	let revealed = $state(false);
 	let selectedChoice = $state<string | null>(null);
+	let mcqFeedback = $state<McqFeedback>(null);
 	let progressById = $state<Record<string, RecallProgress>>({});
 	let dragX = $state(0);
 	let dragY = $state(0);
@@ -171,6 +175,9 @@
 		(sessionActive ? sessionCards : rankedCards)[cardIndex + 2] ?? null
 	);
 	const currentChoices = $derived(currentCard ? answerChoices(currentCard) : []);
+	const currentPresentation = $derived<CardPresentation>(
+		currentCard ? presentationFor(currentCard) : 'flashcard'
+	);
 	const filteredCardCount = $derived(filteredCards.length);
 	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
 	const seenCount = $derived(filteredCards.filter((card) => progressById[card.id]?.seen).length);
@@ -203,6 +210,7 @@
 	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Good' : 'Review');
 	const dragProgress = $derived(Math.min(1, Math.abs(dragX) / 140));
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
+	const slowMotion = $derived(page.url.searchParams.get('debugMotion') === 'slow');
 
 	$effect(() => {
 		if (selectedTopic === 'all') return;
@@ -275,7 +283,11 @@
 		motionTimer = setTimeout(() => {
 			motionTimer = null;
 			callback();
-		}, delayMs);
+		}, motionMs(delayMs));
+	}
+
+	function motionMs(delayMs: number) {
+		return slowMotion ? delayMs * 4 : delayMs;
 	}
 
 	function topicFor(card: RecallCard) {
@@ -316,13 +328,45 @@
 		return mode === 'reverse' ? (card.reverseBack ?? card.front) : card.back;
 	}
 
+	function presentationFor(card: RecallCard): CardPresentation {
+		return mode === 'recognise' && answerChoices(card).length >= 2 ? 'mcq' : 'flashcard';
+	}
+
+	function explanationTextFor(card: RecallCard) {
+		if (card.explanation) return card.explanation;
+		const answer = answerTextFor(card);
+		const topic = topicFor(card);
+		const topicText = topic ? ` in ${topic.title}` : '';
+		const prompt = promptTextFor(card).replace(/\s+/g, ' ').trim();
+		if (card.kind === 'formula') {
+			return `${answer} is the formula that matches this recall prompt${topicText}. The other options use different quantities or relationships.`;
+		}
+		if (card.kind === 'unit') {
+			return `${answer} is the accepted unit for this quantity${topicText}. The distractors belong to different measurements.`;
+		}
+		if (card.kind === 'test-result') {
+			return `${answer} is the expected observation or result for this test. The answer must match the condition in the prompt.`;
+		}
+		if (card.kind === 'comparison') {
+			return `${answer} gives the distinguishing comparison asked for by the prompt: ${prompt}`;
+		}
+		return `${answer} is the expected AQA recall because it answers the prompt directly: ${prompt}`;
+	}
+
 	function topicCardCount(topicId: string) {
 		return data.cards.filter((card) => card.topicId === topicId).length;
 	}
 
 	function answerChoices(card: RecallCard) {
-		const choices = [card.back, ...(card.distractors ?? [])];
-		return seededShuffle(Array.from(new Set(choices)), hashString(card.id)).slice(0, 4);
+		const uniqueChoices: string[] = [];
+		for (const choice of [card.back, ...(card.distractors ?? [])]) {
+			const normalized = choice.trim();
+			if (!normalized || uniqueChoices.includes(normalized)) continue;
+			uniqueChoices.push(normalized);
+		}
+		const [answer, ...distractors] = uniqueChoices;
+		const cappedChoices = [answer, ...distractors.slice(0, 3)].filter(Boolean);
+		return seededShuffle(cappedChoices, hashString(card.id)).slice(0, 4);
 	}
 
 	function hashString(value: string) {
@@ -382,6 +426,7 @@
 		clearMotionTimer();
 		revealed = false;
 		selectedChoice = null;
+		mcqFeedback = null;
 		dragX = 0;
 		dragY = 0;
 		dragging = false;
@@ -452,14 +497,32 @@
 	}
 
 	function chooseAnswer(card: RecallCard, choice: string) {
-		if (selectedChoice) return;
+		if (selectedChoice || cardBusy || currentPresentation !== 'mcq') return;
 		selectedChoice = choice;
 		const isCorrect = choice === card.back;
-		gradeCard(card, isCorrect ? 'good' : 'again', isCorrect ? undefined : choice);
+		mcqFeedback = isCorrect ? 'correct' : 'incorrect';
+		cardMotion = 'answering';
+		afterMotion(560, () => {
+			cardMotion = 'flipping';
+			revealed = true;
+			afterMotion(560, () => {
+				cardMotion = 'idle';
+			});
+		});
+	}
+
+	function continueMcqCard() {
+		if (!currentCard || currentPresentation !== 'mcq' || !selectedChoice || !mcqFeedback || cardBusy) {
+			return;
+		}
+		const card = currentCard;
+		const grade: Grade = mcqFeedback === 'correct' ? 'good' : 'again';
+		const chosenAnswer = mcqFeedback === 'incorrect' ? selectedChoice : undefined;
+		exitCard(mcqFeedback === 'correct' ? 'right' : 'left', () => gradeCard(card, grade, chosenAnswer));
 	}
 
 	function revealCard() {
-		if (!currentCard || revealed || mode === 'recognise' || cardBusy) return;
+		if (!currentCard || revealed || currentPresentation === 'mcq' || cardBusy) return;
 		dragging = false;
 		activePointerId = null;
 		dragX = 0;
@@ -517,7 +580,9 @@
 	}
 
 	function handlePointerDown(event: PointerEvent) {
-		if (!currentCard || sessionComplete || mode === 'recognise' || cardBusy || !revealed) return;
+		if (!currentCard || sessionComplete || currentPresentation === 'mcq' || cardBusy || !revealed) {
+			return;
+		}
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
 		clearMotionTimer();
 		activePointerId = event.pointerId;
@@ -636,7 +701,7 @@
 </svelte:head>
 
 {#if sessionActive}
-	<main class="recall-session" aria-label="Recall card session">
+	<main class="recall-session" class:slow-motion={slowMotion} aria-label="Recall card session">
 		<header class="session-header">
 			<button
 				type="button"
@@ -707,8 +772,12 @@
 						class:entering={cardMotion === 'entering'}
 						class:dragging={cardMotion === 'dragging'}
 						class:returning={cardMotion === 'returning'}
+						class:answering={cardMotion === 'answering'}
 						class:flipping={cardMotion === 'flipping'}
 						class:revealed
+						class:mcq-card={currentPresentation === 'mcq'}
+						class:mcq-correct={mcqFeedback === 'correct'}
+						class:mcq-incorrect={mcqFeedback === 'incorrect'}
 						class:exiting-left={cardMotion === 'exiting-left'}
 						class:exiting-right={cardMotion === 'exiting-right'}
 						style={`--drag-x: ${dragX}px; --drag-y: ${dragY}px; --drag-rotate: ${dragRotation}deg; --drag-progress: ${dragProgress};`}
@@ -724,7 +793,7 @@
 						{/if}
 
 						<div class="card-flipper">
-							<div class="card-face front">
+							<div class="card-face front" class:mcq-front={currentPresentation === 'mcq'}>
 								<header class="card-meta">
 									<span>{currentCard.subject}</span>
 									<span>{data.kindLabels[currentCard.kind]}</span>
@@ -738,13 +807,15 @@
 									</h1>
 								</section>
 
-								{#if mode === 'recognise'}
+								{#if currentPresentation === 'mcq'}
 									<div class="choice-grid" aria-label="Answer choices">
 										{#each currentChoices as choice (choice)}
 											<button
 												type="button"
+												class:selected={selectedChoice === choice}
 												class:correct={selectedChoice !== null && choice === currentCard.back}
 												class:incorrect={selectedChoice === choice && choice !== currentCard.back}
+												disabled={selectedChoice !== null || cardBusy}
 												onclick={() => chooseAnswer(currentCard, choice)}
 											>
 												<MathText text={choice} />
@@ -771,15 +842,37 @@
 									<span>{currentCard.specRef}</span>
 								</header>
 
-								<section class="card-answer">
-									<p>Expected recall</p>
-									<div>
-										<MathText text={answerTextFor(currentCard)} />
-									</div>
-								</section>
+								{#if currentPresentation === 'mcq'}
+									<section class="card-answer mcq-answer">
+										<p>{mcqFeedback === 'correct' ? 'Correct' : 'Not this one'}</p>
+										<div class="mcq-answer-block correct-answer">
+											<span>Correct answer</span>
+											<strong><MathText text={answerTextFor(currentCard)} /></strong>
+										</div>
+										{#if selectedChoice && selectedChoice !== currentCard.back}
+											<div class="mcq-answer-block chosen-answer">
+												<span>You chose</span>
+												<strong><MathText text={selectedChoice} /></strong>
+											</div>
+										{/if}
+										<div class="mcq-explanation">
+											<span>Why</span>
+											<p><MathText text={explanationTextFor(currentCard)} /></p>
+										</div>
+									</section>
+								{:else}
+									<section class="card-answer">
+										<p>Expected recall</p>
+										<div>
+											<MathText text={answerTextFor(currentCard)} />
+										</div>
+									</section>
+								{/if}
 
 								<p class="card-gesture-hint">
-									Swipe right if you had it. Swipe left to review again.
+									{currentPresentation === 'mcq'
+										? 'Read the explanation, then continue.'
+										: 'Swipe right if you had it. Swipe left to review again.'}
 								</p>
 							</div>
 						</div>
@@ -788,17 +881,25 @@
 			</section>
 
 			<footer class="session-actions">
-				{#if mode === 'recognise'}
+				{#if currentPresentation === 'mcq'}
 					<button
 						type="button"
 						class="session-secondary"
-						disabled={cardBusy}
-						onclick={() => advanceCard(false)}
+						disabled={cardBusy || selectedChoice !== null}
+						onclick={skipCard}
 					>
 						<ArrowLeft size={18} aria-hidden="true" strokeWidth={2.2} />
 						Skip
 					</button>
-					<button type="button" class="session-primary" disabled> Choose answer </button>
+					<button
+						type="button"
+						class="session-primary"
+						disabled={!revealed || cardBusy || !selectedChoice}
+						onclick={continueMcqCard}
+					>
+						<CheckCircle2 size={18} aria-hidden="true" strokeWidth={2.2} />
+						Continue
+					</button>
 				{:else if revealed}
 					<button
 						type="button"
@@ -1188,6 +1289,19 @@
 		max-height: var(--app-viewport-height, 100dvh);
 		overflow: hidden;
 		touch-action: pan-y;
+		--recall-card-enter-duration: 360ms;
+		--recall-card-exit-duration: 360ms;
+		--recall-card-return-duration: 220ms;
+		--recall-flip-duration: 560ms;
+		--recall-answer-duration: 560ms;
+	}
+
+	.recall-session.slow-motion {
+		--recall-card-enter-duration: 1440ms;
+		--recall-card-exit-duration: 1440ms;
+		--recall-card-return-duration: 880ms;
+		--recall-flip-duration: 2240ms;
+		--recall-answer-duration: 2240ms;
 	}
 
 	.session-header {
@@ -1255,7 +1369,7 @@
 	.stack-card {
 		position: absolute;
 		width: min(100%, 42rem);
-		height: min(100%, 36rem);
+		height: min(100%, 38rem);
 		max-height: 100%;
 		border: 1px solid #0b1020;
 		background: #ffffff;
@@ -1311,15 +1425,16 @@
 		touch-action: none;
 		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
 		transition:
-			transform 220ms cubic-bezier(0.22, 0.75, 0.25, 1),
-			opacity 220ms ease;
+			transform var(--recall-card-return-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
+			opacity var(--recall-card-return-duration) ease;
 		will-change: transform, opacity;
 		perspective: 1400px;
 		-webkit-tap-highlight-color: transparent;
 	}
 
 	.stack-card.active.entering {
-		animation: promote-card 360ms cubic-bezier(0.2, 0.76, 0.18, 1) both;
+		animation: promote-card var(--recall-card-enter-duration) cubic-bezier(0.2, 0.76, 0.18, 1)
+			both;
 	}
 
 	.stack-card.active.dragging {
@@ -1331,8 +1446,8 @@
 	.stack-card.active.exiting-right {
 		opacity: 0;
 		transition:
-			transform 360ms cubic-bezier(0.22, 0.75, 0.25, 1),
-			opacity 280ms ease;
+			transform var(--recall-card-exit-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
+			opacity calc(var(--recall-card-exit-duration) * 0.78) ease;
 	}
 
 	@keyframes promote-card {
@@ -1356,8 +1471,18 @@
 		box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
 		transform-style: preserve-3d;
 		transform-origin: center center;
-		transition: transform 560ms cubic-bezier(0.2, 0.72, 0.18, 1);
+		transition: transform var(--recall-flip-duration) cubic-bezier(0.2, 0.72, 0.18, 1);
 		will-change: transform;
+	}
+
+	.stack-card.active.mcq-card.answering.mcq-correct .card-flipper {
+		animation: mcq-card-correct var(--recall-answer-duration) cubic-bezier(0.2, 0.76, 0.2, 1)
+			both;
+	}
+
+	.stack-card.active.mcq-card.answering.mcq-incorrect .card-flipper {
+		animation: mcq-card-incorrect var(--recall-answer-duration)
+			cubic-bezier(0.25, 0.75, 0.25, 1) both;
 	}
 
 	.stack-card.active.revealed .card-flipper {
@@ -1376,6 +1501,11 @@
 		-webkit-backface-visibility: hidden;
 		transform-style: preserve-3d;
 		overflow: hidden;
+	}
+
+	.card-face.mcq-front {
+		grid-template-rows: auto minmax(0, 0.84fr) auto;
+		gap: 0.8rem;
 	}
 
 	.card-face.back {
@@ -1443,6 +1573,15 @@
 		overflow-wrap: anywhere;
 	}
 
+	.mcq-front .card-prompt {
+		align-content: start;
+	}
+
+	.mcq-front .card-prompt h1 {
+		font-size: clamp(1.35rem, 3.5vw, 2.35rem);
+		line-height: 1.08;
+	}
+
 	.card-answer {
 		display: grid;
 		gap: 0.38rem;
@@ -1453,12 +1592,66 @@
 		background: #f8fcf8;
 	}
 
-	.card-answer div {
+	.card-answer > div:not(.mcq-answer-block):not(.mcq-explanation) {
 		color: #122316;
 		font-size: clamp(1.2rem, 3.5vw, 2rem);
 		font-weight: 760;
 		line-height: 1.36;
 		overflow-wrap: anywhere;
+	}
+
+	.card-answer.mcq-answer {
+		align-content: start;
+		gap: 0.72rem;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.mcq-answer-block,
+	.mcq-explanation {
+		display: grid;
+		gap: 0.28rem;
+		min-width: 0;
+	}
+
+	.mcq-answer-block span,
+	.mcq-explanation span {
+		color: #647085;
+		font-size: 0.74rem;
+		font-weight: 840;
+		text-transform: uppercase;
+	}
+
+	.mcq-answer-block strong,
+	.mcq-explanation p {
+		margin: 0;
+		color: #122316;
+		font-size: clamp(1rem, 2.5vw, 1.35rem);
+		font-weight: 700;
+		line-height: 1.3;
+		letter-spacing: 0;
+		text-transform: none;
+		overflow-wrap: anywhere;
+	}
+
+	.mcq-answer-block {
+		padding: 0.64rem 0.72rem;
+		border: 1px solid #cfd7e2;
+		background: #ffffff;
+	}
+
+	.mcq-answer-block.correct-answer {
+		border-color: #0a7a3f;
+		background: #f4fbf5;
+	}
+
+	.mcq-answer-block.chosen-answer {
+		border-color: #f1b9b3;
+		background: #fff8f7;
+	}
+
+	.mcq-explanation {
+		padding-top: 0.2rem;
 	}
 
 	.card-gesture-hint {
@@ -1470,11 +1663,14 @@
 	.choice-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-self: end;
 		gap: 0.65rem;
+		min-height: 0;
 	}
 
 	.choice-grid button {
-		min-height: 4rem;
+		min-width: 0;
+		min-height: 3.7rem;
 		padding: 0.8rem;
 		border: 1px solid #cfd7e2;
 		border-radius: 0;
@@ -1485,6 +1681,17 @@
 		line-height: 1.3;
 		text-align: left;
 		cursor: pointer;
+		overflow-wrap: anywhere;
+		transition:
+			border-color 160ms ease,
+			background 160ms ease,
+			color 160ms ease,
+			box-shadow 160ms ease,
+			transform 160ms ease;
+	}
+
+	.choice-grid button:disabled {
+		cursor: default;
 	}
 
 	.choice-grid button.correct {
@@ -1497,6 +1704,90 @@
 		border-color: #b42318;
 		background: #fff4f2;
 		color: #8f1f14;
+	}
+
+	.choice-grid button.selected.correct {
+		animation: mcq-choice-correct var(--recall-answer-duration) cubic-bezier(0.2, 0.76, 0.2, 1)
+			both;
+	}
+
+	.choice-grid button.selected.incorrect {
+		animation: mcq-choice-incorrect var(--recall-answer-duration)
+			cubic-bezier(0.25, 0.75, 0.25, 1) both;
+	}
+
+	@keyframes mcq-choice-correct {
+		0% {
+			transform: scale(1);
+			box-shadow: 0 0 0 rgba(8, 119, 59, 0);
+		}
+
+		35% {
+			transform: scale(1.018);
+			box-shadow: 0 0 0 0.32rem rgba(8, 119, 59, 0.14);
+		}
+
+		100% {
+			transform: scale(1);
+			box-shadow: 0 0 0 rgba(8, 119, 59, 0);
+		}
+	}
+
+	@keyframes mcq-choice-incorrect {
+		0%,
+		100% {
+			transform: translateX(0);
+			box-shadow: 0 0 0 rgba(180, 35, 24, 0);
+		}
+
+		20% {
+			transform: translateX(-0.22rem);
+			box-shadow: 0 0 0 0.28rem rgba(180, 35, 24, 0.12);
+		}
+
+		40% {
+			transform: translateX(0.18rem);
+		}
+
+		60% {
+			transform: translateX(-0.12rem);
+		}
+	}
+
+	@keyframes mcq-card-correct {
+		0%,
+		100% {
+			box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
+		}
+
+		36% {
+			box-shadow:
+				0 1.35rem 2.8rem rgba(15, 23, 42, 0.18),
+				0 0 0 0.36rem rgba(8, 119, 59, 0.16);
+		}
+	}
+
+	@keyframes mcq-card-incorrect {
+		0%,
+		100% {
+			transform: translateX(0);
+			box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
+		}
+
+		24% {
+			transform: translateX(-0.18rem);
+			box-shadow:
+				0 1.35rem 2.8rem rgba(15, 23, 42, 0.18),
+				0 0 0 0.32rem rgba(180, 35, 24, 0.14);
+		}
+
+		48% {
+			transform: translateX(0.14rem);
+		}
+
+		72% {
+			transform: translateX(-0.08rem);
+		}
 	}
 
 	.drag-cue {
@@ -1557,7 +1848,7 @@
 	}
 
 	.session-actions button:disabled {
-		cursor: wait;
+		cursor: default;
 		opacity: 0.62;
 	}
 
@@ -1676,8 +1967,33 @@
 		background: #0f2b1d;
 	}
 
-	:global(:root[data-theme='dark']) .card-answer div {
+	:global(:root[data-theme='dark']) .card-answer > div:not(.mcq-answer-block):not(.mcq-explanation) {
 		color: #bbf7d0;
+	}
+
+	:global(:root[data-theme='dark']) .mcq-answer-block,
+	:global(:root[data-theme='dark']) .mcq-explanation p {
+		color: #e5e7eb;
+	}
+
+	:global(:root[data-theme='dark']) .mcq-answer-block {
+		border-color: #334155;
+		background: #111c2f;
+	}
+
+	:global(:root[data-theme='dark']) .mcq-answer-block.correct-answer {
+		border-color: #22c55e;
+		background: #0f2b1d;
+	}
+
+	:global(:root[data-theme='dark']) .mcq-answer-block.chosen-answer {
+		border-color: #ef8d83;
+		background: #2d1517;
+	}
+
+	:global(:root[data-theme='dark']) .mcq-answer-block span,
+	:global(:root[data-theme='dark']) .mcq-explanation span {
+		color: #a7b4c5;
 	}
 
 	@media (max-width: 860px) {
@@ -1713,7 +2029,7 @@
 
 		.stack-card {
 			width: min(calc(100vw - 2rem), 42rem);
-			height: min(100%, 34rem);
+			height: min(100%, 42rem);
 			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
 		}
 
@@ -1730,25 +2046,167 @@
 		}
 
 		.card-stage {
-			padding: 0.85rem 1rem;
+			padding: 0.72rem 0.78rem;
+		}
+
+		.card-face {
+			gap: 0.72rem;
+			padding: 0.88rem;
+		}
+
+		.card-meta {
+			gap: 0.28rem;
+		}
+
+		.card-meta span {
+			min-height: 1.45rem;
+			padding: 0.12rem 0.34rem;
+			font-size: 0.68rem;
 		}
 
 		.card-prompt h1 {
 			font-size: clamp(1.8rem, 10vw, 3.2rem);
 		}
 
+		.mcq-front .card-prompt {
+			gap: 0.42rem;
+		}
+
+		.mcq-front .card-prompt h1 {
+			font-size: clamp(1.05rem, 5.8vw, 1.52rem);
+			line-height: 1.1;
+		}
+
 		.choice-grid {
 			grid-template-columns: 1fr;
+			gap: 0.42rem;
+		}
+
+		.choice-grid button {
+			min-height: 2.9rem;
+			padding: 0.52rem 0.58rem;
+			font-size: 0.91rem;
+			line-height: 1.18;
+		}
+
+		.card-answer.mcq-answer {
+			gap: 0.52rem;
+			padding: 0.68rem;
+		}
+
+		.mcq-answer-block {
+			padding: 0.5rem 0.56rem;
+		}
+
+		.mcq-answer-block strong,
+		.mcq-explanation p {
+			font-size: 0.96rem;
+			line-height: 1.22;
 		}
 
 		.session-actions {
 			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+			min-height: calc(4.2rem + env(safe-area-inset-bottom));
+			padding: 0.64rem 0.78rem max(0.72rem, env(safe-area-inset-bottom));
 		}
 
 		.session-actions button {
 			min-width: 0;
 			width: 100%;
+		}
+	}
+
+	@media (max-width: 620px) and (max-height: 720px) {
+		.session-header {
+			gap: 0.62rem;
+			padding: max(0.52rem, env(safe-area-inset-top)) 0.7rem 0.56rem;
+		}
+
+		.session-icon-button {
+			width: 2.3rem;
+			height: 2.3rem;
+		}
+
+		.session-progress {
+			gap: 0.3rem;
+		}
+
+		.session-progress-text {
+			font-size: 0.82rem;
+		}
+
+		.card-stage {
+			padding: 0.52rem 0.64rem;
+		}
+
+		.card-face {
+			gap: 0.52rem;
+			padding: 0.72rem;
+		}
+
+		.card-face.mcq-front {
+			grid-template-rows: auto minmax(0, 0.66fr) auto;
+		}
+
+		.mcq-front .card-prompt p {
+			display: none;
+		}
+
+		.mcq-front .card-prompt h1 {
+			font-size: clamp(0.98rem, 5.2vw, 1.3rem);
+			line-height: 1.08;
+		}
+
+		.choice-grid {
+			gap: 0.34rem;
+		}
+
+		.choice-grid button {
+			min-height: 2.55rem;
+			padding: 0.42rem 0.48rem;
+			font-size: 0.84rem;
+			line-height: 1.14;
+		}
+
+		.card-answer.mcq-answer {
+			gap: 0.42rem;
+			padding: 0.54rem;
+		}
+
+		.mcq-answer-block,
+		.mcq-explanation {
+			gap: 0.16rem;
+		}
+
+		.mcq-answer-block span,
+		.mcq-explanation span {
+			font-size: 0.64rem;
+		}
+
+		.mcq-answer-block strong,
+		.mcq-explanation p {
+			font-size: 0.86rem;
+			line-height: 1.18;
+		}
+
+		.card-gesture-hint {
+			padding-top: 0.45rem;
+			font-size: 0.7rem;
+		}
+
+		.session-actions {
+			min-height: calc(3.72rem + env(safe-area-inset-bottom));
+			padding: 0.48rem 0.64rem max(0.55rem, env(safe-area-inset-bottom));
+		}
+
+		.setup-primary,
+		.setup-secondary,
+		.session-primary,
+		.session-secondary {
+			min-height: 2.72rem;
+			padding: 0.48rem 0.62rem;
+			font-size: 0.9rem;
 		}
 	}
 

@@ -33,6 +33,7 @@ export type RecallCard = {
 	reverseFront?: string;
 	reverseBack?: string;
 	distractors?: string[];
+	explanation?: string;
 	sourceUrl: string;
 	sourceTitle: string;
 };
