@@ -11,6 +11,7 @@ declare global {
 				CHATGPT_CODEX_PROXY_API_KEY?: string;
 				CHATGPT_RESPONSES_WEBSOCKET_MODE?: string;
 				QUESTION_DB?: D1Database;
+				PERSONAL_DB?: D1Database;
 				QUESTION_R2?: R2Bucket;
 				[key: string]: unknown;
 			};
@@ -24,6 +25,7 @@ declare global {
 			user: import('$lib/server/auth/session').AdminUser | null;
 			questionDb: D1DatabaseSession | null;
 			questionDbSessionMode: 'read-replica' | 'primary' | null;
+			personalDb: D1DatabaseSession | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

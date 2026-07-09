@@ -3,6 +3,7 @@ import { getRequestEvent } from '$app/server';
 export type QuestionDbBinding = D1Database | D1DatabaseSession;
 
 let fallbackQuestionDb: QuestionDbBinding | undefined;
+let fallbackPersonalDb: QuestionDbBinding | undefined;
 let questionR2: R2Bucket | undefined;
 
 export function setQuestionDb(db: QuestionDbBinding) {
@@ -17,6 +18,18 @@ export function getQuestionDb(): QuestionDbBinding | undefined {
 	}
 }
 
+export function setPersonalDb(db: QuestionDbBinding) {
+	fallbackPersonalDb = db;
+}
+
+export function getPersonalDb(): QuestionDbBinding | undefined {
+	try {
+		return getRequestEvent().locals.personalDb ?? fallbackPersonalDb;
+	} catch {
+		return fallbackPersonalDb;
+	}
+}
+
 export function setQuestionR2(bucket: R2Bucket) {
 	questionR2 = bucket;
 }
@@ -27,5 +40,6 @@ export function getQuestionR2(): R2Bucket | undefined {
 
 export function clearQuestionBindings() {
 	fallbackQuestionDb = undefined;
+	fallbackPersonalDb = undefined;
 	questionR2 = undefined;
 }

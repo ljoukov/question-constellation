@@ -14,7 +14,13 @@ import {
 } from '$lib/server/questionData';
 import type { PracticeDraftKind, PracticeDraftSave, SavedPracticeDraft } from '$lib/practiceDrafts';
 import type { AdminUser } from '$lib/server/auth/session';
-import { executeQuery, queryFirst, queryRows } from './db';
+import {
+	executePersonalQuery,
+	queryFirst,
+	queryPersonalFirst,
+	queryPersonalRows,
+	queryRows
+} from './db';
 
 type UserProfileRow = {
 	uid: string;
@@ -349,129 +355,6 @@ export type GapFinalJudgeResult = {
 
 export type RecallReviewGrade = 'again' | 'hard' | 'good' | 'easy';
 
-let ensuredPersonalTables = false;
-
-const personalTableStatements = [
-	`CREATE TABLE IF NOT EXISTS user_profiles (
-	  uid TEXT PRIMARY KEY,
-	  email TEXT NOT NULL,
-	  name TEXT,
-	  photo_url TEXT,
-	  selected_board TEXT NOT NULL DEFAULT 'AQA',
-	  selected_qualification TEXT NOT NULL DEFAULT 'GCSE',
-	  selected_subject TEXT NOT NULL DEFAULT 'Biology',
-	  selected_tier TEXT NOT NULL DEFAULT 'Higher',
-	  theme_preference TEXT NOT NULL DEFAULT 'auto',
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`,
-	`CREATE TABLE IF NOT EXISTS user_profile_subjects (
-	  user_id TEXT NOT NULL,
-	  subject TEXT NOT NULL,
-	  board TEXT NOT NULL DEFAULT 'AQA',
-	  qualification TEXT NOT NULL DEFAULT 'GCSE',
-	  course TEXT NOT NULL DEFAULT 'Separate Science',
-	  tier TEXT NOT NULL DEFAULT 'Higher',
-	  enabled INTEGER NOT NULL DEFAULT 1,
-	  current_grade TEXT,
-	  target_grade TEXT,
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  PRIMARY KEY (user_id, subject)
-	)`,
-	`CREATE TABLE IF NOT EXISTS user_question_attempts (
-	  id TEXT PRIMARY KEY,
-	  user_id TEXT NOT NULL,
-	  question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
-	  answer_chain_id TEXT REFERENCES answer_chains(id) ON DELETE SET NULL,
-	  answer_text TEXT NOT NULL,
-	  result TEXT NOT NULL,
-	  awarded_marks INTEGER NOT NULL DEFAULT 0,
-	  max_marks INTEGER NOT NULL DEFAULT 0,
-	  present_step_ids_json TEXT NOT NULL DEFAULT '[]',
-	  missing_step_ids_json TEXT NOT NULL DEFAULT '[]',
-	  feedback_markdown TEXT NOT NULL DEFAULT '',
-	  model TEXT,
-	  model_version TEXT,
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`,
-	`CREATE TABLE IF NOT EXISTS user_question_drafts (
-	  user_id TEXT NOT NULL,
-	  question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
-	  answer_chain_id TEXT REFERENCES answer_chains(id) ON DELETE SET NULL,
-	  draft_kind TEXT NOT NULL,
-	  answer_text TEXT NOT NULL DEFAULT '',
-	  draft_json TEXT NOT NULL DEFAULT '{}',
-	  client_updated_at INTEGER NOT NULL DEFAULT 0,
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  PRIMARY KEY (user_id, question_id)
-	)`,
-	`CREATE TABLE IF NOT EXISTS user_chain_gaps (
-	  id TEXT PRIMARY KEY,
-	  user_id TEXT NOT NULL,
-	  answer_chain_id TEXT NOT NULL REFERENCES answer_chains(id) ON DELETE CASCADE,
-	  chain_step_id TEXT NOT NULL REFERENCES answer_chain_steps(id) ON DELETE CASCADE,
-	  source_question_id TEXT REFERENCES questions(id) ON DELETE SET NULL,
-	  latest_attempt_id TEXT REFERENCES user_question_attempts(id) ON DELETE SET NULL,
-	  board TEXT,
-	  qualification TEXT,
-	  subject TEXT,
-	  tier TEXT,
-	  status TEXT NOT NULL DEFAULT 'active',
-	  gap_band TEXT NOT NULL DEFAULT 'large_gap',
-	  evidence_count INTEGER NOT NULL DEFAULT 1,
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  UNIQUE (user_id, answer_chain_id, chain_step_id)
-	)`,
-	`CREATE TABLE IF NOT EXISTS user_gap_builder_runs (
-	  id TEXT PRIMARY KEY,
-	  user_id TEXT NOT NULL,
-	  gap_id TEXT NOT NULL REFERENCES user_chain_gaps(id) ON DELETE CASCADE,
-	  phase TEXT NOT NULL,
-	  guided_answers_json TEXT NOT NULL DEFAULT '{}',
-	  final_answer TEXT,
-	  result_json TEXT NOT NULL DEFAULT '{}',
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`,
-	`CREATE TABLE IF NOT EXISTS user_recall_card_reviews (
-	  user_id TEXT NOT NULL,
-	  card_id TEXT NOT NULL,
-	  subject TEXT NOT NULL,
-	  topic_id TEXT NOT NULL,
-	  mode TEXT NOT NULL DEFAULT 'recall',
-	  last_grade TEXT NOT NULL,
-	  seen_count INTEGER NOT NULL DEFAULT 1,
-	  correct_count INTEGER NOT NULL DEFAULT 0,
-	  interval_days INTEGER NOT NULL DEFAULT 0,
-	  due_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	  PRIMARY KEY (user_id, card_id)
-	)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_created
-	  ON user_question_attempts (user_id, created_at DESC)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_question
-	  ON user_question_attempts (question_id, user_id)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_question
-	  ON user_question_attempts (user_id, question_id)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_question_drafts_user_updated
-	  ON user_question_drafts (user_id, updated_at DESC)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_profile_subjects_user_enabled
-	  ON user_profile_subjects (user_id, enabled, subject)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_status
-	  ON user_chain_gaps (user_id, status, updated_at DESC)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_chain
-	  ON user_chain_gaps (user_id, answer_chain_id)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_gap_builder_runs_gap_created
-	  ON user_gap_builder_runs (gap_id, created_at DESC)`,
-	`CREATE INDEX IF NOT EXISTS idx_user_recall_card_reviews_user_due
-	  ON user_recall_card_reviews (user_id, due_at)`
-];
-
 const learnerSubjectOptions = [
 	'Biology',
 	'Chemistry',
@@ -498,23 +381,6 @@ const fallbackQuestionBoardsBySubject: Record<string, string[]> = {
 };
 
 let questionBoardAvailabilityPromise: Promise<QuestionBoardAvailability> | null = null;
-
-export async function ensurePersonalLearningTables(): Promise<void> {
-	if (ensuredPersonalTables) return;
-	for (const statement of personalTableStatements) {
-		await executeQuery(statement);
-	}
-	await ensureUserProfilesThemePreferenceColumn();
-	ensuredPersonalTables = true;
-}
-
-async function ensureUserProfilesThemePreferenceColumn(): Promise<void> {
-	const columns = await queryRows<{ name: string }>('PRAGMA table_info(user_profiles)');
-	if (columns.some((column) => column.name === 'theme_preference')) return;
-	await executeQuery(
-		`ALTER TABLE user_profiles ADD COLUMN theme_preference TEXT NOT NULL DEFAULT 'auto'`
-	);
-}
 
 function jsonString(value: unknown): string {
 	return JSON.stringify(value);
@@ -825,7 +691,7 @@ async function listLearnerSubjects(
 	profile: UserProfile,
 	boardAvailability?: QuestionBoardAvailability
 ): Promise<LearnerSubject[]> {
-	const rows = await queryRows<UserProfileSubjectRow>(
+	const rows = await queryPersonalRows<UserProfileSubjectRow>(
 		`SELECT user_id, subject, board, qualification, course, tier, enabled,
 		        current_grade, target_grade, created_at, updated_at
 		 FROM user_profile_subjects
@@ -902,7 +768,7 @@ function gapBandLabel(value: string): string {
 }
 
 async function readUserProfile(userId: string): Promise<UserProfile> {
-	const row = await queryFirst<UserProfileRow>(
+	const row = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
 		        selected_subject, selected_tier, theme_preference, created_at, updated_at, last_seen_at
 		 FROM user_profiles
@@ -914,8 +780,7 @@ async function readUserProfile(userId: string): Promise<UserProfile> {
 }
 
 export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
-	await ensurePersonalLearningTables();
-	await executeQuery(
+	await executePersonalQuery(
 		`INSERT INTO user_profiles (uid, email, name, photo_url, selected_board, selected_subject)
 		 VALUES (?, ?, ?, ?, 'AQA', 'Biology')
 		 ON CONFLICT(uid) DO UPDATE SET
@@ -930,20 +795,16 @@ export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
 }
 
 async function getOrCreateUserProfile(user: AdminUser): Promise<UserProfile> {
-	const existing = await queryFirst<UserProfileRow>(
+	const existing = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
 		        selected_subject, selected_tier, theme_preference, created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
 		[user.uid]
-	).catch(async () => {
-		await ensurePersonalLearningTables();
-		return null;
-	});
+	);
 	if (existing) return toProfile(existing);
 
-	await ensurePersonalLearningTables();
-	await executeQuery(
+	await executePersonalQuery(
 		`INSERT INTO user_profiles (uid, email, name, photo_url, selected_board, selected_subject)
 		 VALUES (?, ?, ?, ?, 'AQA', 'Biology')
 		 ON CONFLICT(uid) DO NOTHING`,
@@ -964,10 +825,9 @@ export async function updateUserThemePreference({
 	user: AdminUser;
 	themePreference: ThemePreference;
 }): Promise<ThemePreference> {
-	await ensurePersonalLearningTables();
 	await upsertUserProfile(user);
 	const safePreference = safeThemePreference(themePreference);
-	await executeQuery(
+	await executePersonalQuery(
 		`UPDATE user_profiles
 		 SET theme_preference = ?, updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?`,
@@ -987,20 +847,19 @@ export async function updateUserPreferences({
 	subject: string;
 	tier: string;
 }): Promise<void> {
-	await ensurePersonalLearningTables();
 	const boardAvailability = await getImportedQuestionBoardAvailability();
 	const safeSubject = canonicalLearnerSubject(subject);
 	const normalizedBoard = safeBoardForSubject(safeSubject, board, boardAvailability);
 	const normalizedTier = safeTier(tier);
 	const normalizedCourse = isStemProfileSubject(safeSubject) ? 'Combined Science' : 'GCSE Subject';
-	await executeQuery(
+	await executePersonalQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
 		     selected_tier = ?, updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?`,
 		[normalizedBoard, safeSubject, normalizedTier, userId]
 	);
-	await executeQuery(
+	await executePersonalQuery(
 		`INSERT INTO user_profile_subjects (
 		   user_id, subject, board, qualification, course, tier, enabled
 		 )
@@ -1023,7 +882,6 @@ export async function updateLearnerSubjects({
 	userId: string;
 	subjects: LearnerSubjectInput[];
 }): Promise<void> {
-	await ensurePersonalLearningTables();
 	const boardAvailability = await getImportedQuestionBoardAvailability();
 	const normalized = profileSubjects().map((subject) => {
 		const input = subjects.find((entry) => canonicalLearnerSubject(entry.subject) === subject);
@@ -1043,7 +901,7 @@ export async function updateLearnerSubjects({
 	});
 
 	for (const subject of normalized) {
-		await executeQuery(
+		await executePersonalQuery(
 			`INSERT INTO user_profile_subjects (
 			   user_id, subject, board, qualification, course, tier, enabled, current_grade, target_grade
 			 )
@@ -1072,7 +930,7 @@ export async function updateLearnerSubjects({
 	}
 
 	const primary = normalized.find((entry) => entry.enabled) ?? normalized[0];
-	await executeQuery(
+	await executePersonalQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
 		     selected_tier = ?, updated_at = CURRENT_TIMESTAMP
@@ -1135,45 +993,38 @@ async function listActiveGaps(
 	limit = 6,
 	subject?: string
 ): Promise<DashboardGap[]> {
-	const subjectExpression = `CASE
-		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-		     ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
-		   END`;
-	const subjectFilter = subject ? `AND LOWER(${subjectExpression}) LIKE ?` : '';
+	const subjectFilter = subject ? `AND LOWER(COALESCE(subject, '')) LIKE ?` : '';
 	const params: Array<string | number> = [userId];
 	if (subject) params.push(`%${subject.toLowerCase()}%`);
 	params.push(limit);
-	const rows = await queryRows<DashboardGapRow>(
+	const rows = await queryPersonalRows<DashboardGapRow>(
 		`SELECT
-		   g.id,
-		   g.answer_chain_id,
-		   g.chain_step_id,
-		   g.source_question_id,
-		   g.gap_band,
-		   g.evidence_count,
-		   g.updated_at,
-		   ac.title AS chain_title,
-		   ac.canonical_chain_text,
-		   s.step_text,
-		   s.display_order AS step_order,
-		   q.prompt_text AS question_title,
-		   q.source_question_ref,
-		   COALESCE(q.board, g.board) AS board,
-		   COALESCE(q.qualification, g.qualification) AS qualification,
-		   ${subjectExpression} AS subject,
-		   COALESCE(q.tier, g.tier) AS tier,
-		   q.paper,
-		   q.topic_path_json,
-		   q.marks
-		 FROM user_chain_gaps g
-		 JOIN answer_chains ac ON ac.id = g.answer_chain_id
-		 JOIN answer_chain_steps s ON s.id = g.chain_step_id
-		 LEFT JOIN questions q ON q.id = g.source_question_id
-		 WHERE g.user_id = ?
-		   AND g.status = 'active'
+		   id,
+		   answer_chain_id,
+		   chain_step_id,
+		   source_question_id,
+		   gap_band,
+		   evidence_count,
+		   updated_at,
+		   chain_title,
+		   canonical_chain_text,
+		   step_text,
+		   step_order,
+		   source_question_title AS question_title,
+		   source_question_ref,
+		   board,
+		   qualification,
+		   subject,
+		   tier,
+		   paper,
+		   topic_path_json,
+		   marks
+		 FROM user_chain_gaps
+		 WHERE user_id = ?
+		   AND status = 'active'
 		   ${subjectFilter}
 		 ORDER BY
-		   CASE g.gap_band
+		   CASE gap_band
 		     WHEN 'large_gap' THEN 0
 		     WHEN 'medium_gap' THEN 1
 		     WHEN 'small_gap' THEN 2
@@ -1196,52 +1047,43 @@ async function listFirstActiveGapBySubject(
 ): Promise<Map<string, DashboardGap>> {
 	if (subjects.length === 0) return new Map();
 	const wantedSubjects = new Set(subjects);
-	const rows = await queryRows<DashboardGapRow & { row_number: number }>(
+	const rows = await queryPersonalRows<DashboardGapRow & { row_number: number }>(
 		`WITH ranked_gaps AS (
 		   SELECT
-		     g.id,
-		     g.answer_chain_id,
-		     g.chain_step_id,
-		     g.source_question_id,
-		     g.gap_band,
-		     g.evidence_count,
-		     g.updated_at,
-		     ac.title AS chain_title,
-		     ac.canonical_chain_text,
-		     s.step_text,
-		     s.display_order AS step_order,
-		     q.prompt_text AS question_title,
-		     q.source_question_ref,
-		     COALESCE(q.board, g.board) AS board,
-		     COALESCE(q.qualification, g.qualification) AS qualification,
-		     CASE
-		       WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-		       ELSE COALESCE(q.subject_area, q.subject, g.subject)
-		     END AS subject,
-		     COALESCE(q.tier, g.tier) AS tier,
-		     q.paper,
-		     q.topic_path_json,
-		     q.marks,
+		     id,
+		     answer_chain_id,
+		     chain_step_id,
+		     source_question_id,
+		     gap_band,
+		     evidence_count,
+		     updated_at,
+		     chain_title,
+		     canonical_chain_text,
+		     step_text,
+		     step_order,
+		     source_question_title AS question_title,
+		     source_question_ref,
+		     board,
+		     qualification,
+		     subject,
+		     tier,
+		     paper,
+		     topic_path_json,
+		     marks,
 		     ROW_NUMBER() OVER (
-		       PARTITION BY CASE
-		         WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-		         ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
-		       END
+		       PARTITION BY COALESCE(subject, '')
 		       ORDER BY
-		         CASE g.gap_band
+		         CASE gap_band
 		           WHEN 'large_gap' THEN 0
 		           WHEN 'medium_gap' THEN 1
 		           WHEN 'small_gap' THEN 2
 		           ELSE 3
 		         END,
-		         g.updated_at DESC
+		         updated_at DESC
 		     ) AS row_number
-		   FROM user_chain_gaps g
-		   JOIN answer_chains ac ON ac.id = g.answer_chain_id
-		   JOIN answer_chain_steps s ON s.id = g.chain_step_id
-		   LEFT JOIN questions q ON q.id = g.source_question_id
-		   WHERE g.user_id = ?
-		     AND g.status = 'active'
+		   FROM user_chain_gaps
+		   WHERE user_id = ?
+		     AND status = 'active'
 		 )
 		 SELECT *
 		 FROM ranked_gaps
@@ -1262,29 +1104,24 @@ async function listFirstActiveGapBySubject(
 }
 
 async function listRecentAttempts(userId: string, limit = 6): Promise<DashboardAttempt[]> {
-	const rows = await queryRows<DashboardAttemptRow>(
+	const rows = await queryPersonalRows<DashboardAttemptRow>(
 		`SELECT
-		   a.id,
-		   a.question_id,
-		   a.answer_chain_id,
-		   a.result,
-		   a.awarded_marks,
-		   a.max_marks,
-		   a.missing_step_ids_json,
-		   a.created_at,
-		   q.prompt_text AS question_title,
-		   q.source_question_ref,
-		   CASE
-		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-		     ELSE COALESCE(q.subject_area, q.subject)
-		   END AS subject,
-		   q.paper,
-		   ac.title AS chain_title
-		 FROM user_question_attempts a
-		 LEFT JOIN questions q ON q.id = a.question_id
-		 LEFT JOIN answer_chains ac ON ac.id = a.answer_chain_id
-		 WHERE a.user_id = ?
-		 ORDER BY a.created_at DESC
+		   id,
+		   question_id,
+		   answer_chain_id,
+		   result,
+		   awarded_marks,
+		   max_marks,
+		   missing_step_ids_json,
+		   created_at,
+		   question_title,
+		   source_question_ref,
+		   subject,
+		   paper,
+		   chain_title
+		 FROM user_question_attempts
+		 WHERE user_id = ?
+		 ORDER BY created_at DESC
 		 LIMIT ?`,
 		[userId, limit]
 	);
@@ -1305,7 +1142,7 @@ async function listRecentAttempts(userId: string, limit = 6): Promise<DashboardA
 }
 
 async function readDashboardStats(userId: string): Promise<PersonalDashboard['stats']> {
-	const attemptStats = await queryFirst<{
+	const attemptStats = await queryPersonalFirst<{
 		attempt_count: number;
 		total_awarded: number | null;
 		total_marks: number | null;
@@ -1317,14 +1154,14 @@ async function readDashboardStats(userId: string): Promise<PersonalDashboard['st
 		 WHERE user_id = ?`,
 		[userId]
 	);
-	const gapStats = await queryRows<{ status: string; count: number }>(
+	const gapStats = await queryPersonalRows<{ status: string; count: number }>(
 		`SELECT status, COUNT(*) AS count
 		 FROM user_chain_gaps
 		 WHERE user_id = ?
 		 GROUP BY status`,
 		[userId]
 	);
-	const recallStats = await queryFirst<{ review_count: number; due_count: number }>(
+	const recallStats = await queryPersonalFirst<{ review_count: number; due_count: number }>(
 		`SELECT COUNT(*) AS review_count,
 		        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
 		 FROM user_recall_card_reviews
@@ -1402,40 +1239,26 @@ async function readSubjectLearningStatsMap(
 	);
 
 	const [attemptRows, gapRows, recallRows] = await Promise.all([
-		queryRows<SubjectAttemptStatsRow>(
-			`SELECT CASE
-			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-			          ELSE COALESCE(q.subject_area, q.subject, '')
-			        END AS subject,
+		queryPersonalRows<SubjectAttemptStatsRow>(
+			`SELECT subject,
 			        COUNT(*) AS attempt_count,
-			        SUM(a.awarded_marks) AS total_awarded,
-			        SUM(a.max_marks) AS total_marks
-			 FROM user_question_attempts a
-			 LEFT JOIN questions q ON q.id = a.question_id
-			 WHERE a.user_id = ?
-			 GROUP BY CASE
-			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-			          ELSE COALESCE(q.subject_area, q.subject, '')
-			        END`,
+			        SUM(awarded_marks) AS total_awarded,
+			        SUM(max_marks) AS total_marks
+			 FROM user_question_attempts
+			 WHERE user_id = ?
+			 GROUP BY subject`,
 			[userId]
 		),
-		queryRows<SubjectGapStatsRow>(
-			`SELECT CASE
-			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-			          ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
-			        END AS subject,
+		queryPersonalRows<SubjectGapStatsRow>(
+			`SELECT subject,
 			        COUNT(*) AS active_count
-			 FROM user_chain_gaps g
-			 LEFT JOIN questions q ON q.id = g.source_question_id
-			 WHERE g.user_id = ?
-			   AND g.status = 'active'
-			 GROUP BY CASE
-			          WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-			          ELSE COALESCE(q.subject_area, q.subject, g.subject, '')
-			        END`,
+			 FROM user_chain_gaps
+			 WHERE user_id = ?
+			   AND status = 'active'
+			 GROUP BY subject`,
 			[userId]
 		),
-		queryRows<SubjectRecallStatsRow>(
+		queryPersonalRows<SubjectRecallStatsRow>(
 			`SELECT subject,
 			        COUNT(*) AS review_count,
 			        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
@@ -1483,6 +1306,18 @@ async function readSubjectLearningStatsMap(
 
 type NextQuestionSubjectColumn = 'subject_area' | 'subject';
 
+async function listAttemptedQuestionIds(userId: string): Promise<Set<string>> {
+	const rows = await queryPersonalRows<{ question_id: string }>(
+		`SELECT question_id
+		 FROM user_question_attempts
+		 WHERE user_id = ?
+		 ORDER BY created_at DESC
+		 LIMIT 2000`,
+		[userId]
+	);
+	return new Set(rows.map((row) => row.question_id));
+}
+
 function nextQuestionFromRow(row: NextQuestionRow): DashboardNextQuestion {
 	return {
 		id: row.id,
@@ -1502,14 +1337,14 @@ function nextQuestionFromRow(row: NextQuestionRow): DashboardNextQuestion {
 }
 
 async function getNextQuestionRowsForSubjectColumn(
-	userId: string,
 	selectedSubject: string,
 	learnerSubject: LearnerSubject | undefined,
-	subjectColumn: NextQuestionSubjectColumn
+	subjectColumn: NextQuestionSubjectColumn,
+	attemptedQuestionIds: Set<string>
 ): Promise<NextQuestionRow[]> {
 	const subjectPredicate =
 		subjectColumn === 'subject_area' ? 'q.subject_area = ?' : 'q.subject = ?';
-	return await queryRows<NextQuestionRow>(
+	const rows = await queryRows<NextQuestionRow>(
 		`SELECT
 		   q.id,
 		   q.prompt_text,
@@ -1544,9 +1379,6 @@ async function getNextQuestionRowsForSubjectColumn(
 		     OR LOWER(q.tier) LIKE '%higher and foundation%'
 		     OR LOWER(q.tier) LIKE '%both%'
 		   )
-		   AND q.id NOT IN (
-		     SELECT question_id FROM user_question_attempts WHERE user_id = ?
-		   )
 		 ORDER BY
 		   CASE qac.transfer_distance
 		     WHEN 'start' THEN 0
@@ -1557,26 +1389,32 @@ async function getNextQuestionRowsForSubjectColumn(
 		   END,
 		   COALESCE(qac.fit_confidence, 0) DESC,
 		   q.id
-		 LIMIT 1`,
-		[selectedSubject, learnerSubject?.board ?? 'AQA', learnerSubject?.tier ?? 'Higher', userId]
+		 LIMIT 24`,
+		[selectedSubject, learnerSubject?.board ?? 'AQA', learnerSubject?.tier ?? 'Higher']
 	);
+	return rows.filter((row) => !attemptedQuestionIds.has(row.id));
 }
 
 async function getNextQuestion(
-	userId: string,
 	selectedSubject: string,
-	learnerSubject?: LearnerSubject
+	learnerSubject: LearnerSubject | undefined,
+	attemptedQuestionIds: Set<string>
 ): Promise<DashboardNextQuestion | null> {
 	const subjectAreaRows = await getNextQuestionRowsForSubjectColumn(
-		userId,
 		selectedSubject,
 		learnerSubject,
-		'subject_area'
+		'subject_area',
+		attemptedQuestionIds
 	);
 	const row =
 		subjectAreaRows[0] ??
 		(
-			await getNextQuestionRowsForSubjectColumn(userId, selectedSubject, learnerSubject, 'subject')
+			await getNextQuestionRowsForSubjectColumn(
+				selectedSubject,
+				learnerSubject,
+				'subject',
+				attemptedQuestionIds
+			)
 		)[0];
 	return row ? nextQuestionFromRow(row) : null;
 }
@@ -1773,15 +1611,18 @@ export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDas
 		recentAttempts,
 		subjectStatsBySubject,
 		openGapsBySubject,
-		nextQuestions
+		attemptedQuestionIds
 	] = await Promise.all([
 		readDashboardStats(user.uid),
 		listActiveGaps(user.uid),
 		listRecentAttempts(user.uid),
 		readSubjectLearningStatsMap(user.uid, enabledSubjectNames),
 		listFirstActiveGapBySubject(user.uid, enabledSubjectNames),
-		Promise.all(enabledSubjects.map((entry) => getNextQuestion(user.uid, entry.subject, entry)))
+		listAttemptedQuestionIds(user.uid)
 	]);
+	const nextQuestions = await Promise.all(
+		enabledSubjects.map((entry) => getNextQuestion(entry.subject, entry, attemptedQuestionIds))
+	);
 	const subjectLanes = enabledSubjects.map((entry, index) =>
 		buildSubjectLane(
 			entry,
@@ -1860,8 +1701,7 @@ export async function getQuestionDraft(
 	userId: string,
 	questionId: string
 ): Promise<SavedPracticeDraft | null> {
-	await ensurePersonalLearningTables();
-	const row = await queryFirst<UserQuestionDraftRow>(
+	const row = await queryPersonalFirst<UserQuestionDraftRow>(
 		`SELECT question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
 		 FROM user_question_drafts
 		 WHERE user_id = ?
@@ -1875,11 +1715,10 @@ export async function saveQuestionDrafts(
 	user: AdminUser,
 	drafts: PracticeDraftSave[]
 ): Promise<{ saved: Array<{ questionId: string; clientUpdatedAt: number }> }> {
-	await ensurePersonalLearningTables();
 	await upsertUserProfile(user);
 
 	for (const draft of drafts) {
-		await executeQuery(
+		await executePersonalQuery(
 			`INSERT INTO user_question_drafts (
 			   user_id, question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
 			 )
@@ -1924,13 +1763,14 @@ export async function recordQuestionAttempt({
 	await upsertUserProfile(user);
 	const data = await getPracticePageData(questionId);
 	const attemptId = randomId('attempt');
-	await executeQuery(
+	await executePersonalQuery(
 		`INSERT INTO user_question_attempts (
 		   id, user_id, question_id, answer_chain_id, answer_text, result,
 		   awarded_marks, max_marks, present_step_ids_json, missing_step_ids_json,
-		   feedback_markdown, model, model_version
+		   feedback_markdown, model, model_version, question_title, source_question_ref,
+		   board, qualification, subject, tier, paper, topic_path_json, chain_title
 		 )
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		[
 			attemptId,
 			user.uid,
@@ -1944,12 +1784,21 @@ export async function recordQuestionAttempt({
 			jsonString(result.missingStepIds),
 			result.feedbackMarkdown,
 			result.model,
-			result.modelVersion
+			result.modelVersion,
+			data.question.title,
+			data.question.sourceRef,
+			data.question.meta.board,
+			data.question.meta.qualification,
+			data.question.meta.subject,
+			data.question.meta.tier,
+			data.question.meta.paper,
+			jsonString([data.question.meta.topic].filter(Boolean)),
+			data.chain.title
 		]
 	);
 
 	for (const stepId of result.presentStepIds) {
-		await executeQuery(
+		await executePersonalQuery(
 			`UPDATE user_chain_gaps
 			 SET status = 'closed',
 			     gap_band = 'closed',
@@ -1982,12 +1831,17 @@ export async function recordQuestionAttempt({
 
 	for (const stepId of result.missingStepIds) {
 		const gapId = stableGapId(user.uid, data.chain.id, stepId);
-		await executeQuery(
+		const step = data.chain.steps.find((entry) => entry.id === stepId);
+		await executePersonalQuery(
 			`INSERT INTO user_chain_gaps (
 			   id, user_id, answer_chain_id, chain_step_id, source_question_id,
-			   latest_attempt_id, board, qualification, subject, tier, status, gap_band
+			   latest_attempt_id, board, qualification, subject, tier, paper, topic_path_json,
+			   marks, chain_title, canonical_chain_text, step_text, step_order,
+			   source_question_title, source_question_ref, source_prompt_text,
+			   source_context_text, source_metadata_json, source_topic_path_json,
+			   status, gap_band
 			 )
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
 			 ON CONFLICT(user_id, answer_chain_id, chain_step_id) DO UPDATE SET
 			   source_question_id = excluded.source_question_id,
 			   latest_attempt_id = excluded.latest_attempt_id,
@@ -1995,6 +1849,19 @@ export async function recordQuestionAttempt({
 			   qualification = excluded.qualification,
 			   subject = excluded.subject,
 			   tier = excluded.tier,
+			   paper = excluded.paper,
+			   topic_path_json = excluded.topic_path_json,
+			   marks = excluded.marks,
+			   chain_title = excluded.chain_title,
+			   canonical_chain_text = excluded.canonical_chain_text,
+			   step_text = excluded.step_text,
+			   step_order = excluded.step_order,
+			   source_question_title = excluded.source_question_title,
+			   source_question_ref = excluded.source_question_ref,
+			   source_prompt_text = excluded.source_prompt_text,
+			   source_context_text = excluded.source_context_text,
+			   source_metadata_json = excluded.source_metadata_json,
+			   source_topic_path_json = excluded.source_topic_path_json,
 			   status = 'active',
 			   gap_band = excluded.gap_band,
 			   evidence_count = user_chain_gaps.evidence_count + 1,
@@ -2011,12 +1878,28 @@ export async function recordQuestionAttempt({
 				data.question.meta.qualification,
 				data.question.meta.subject,
 				data.question.meta.tier,
+				data.question.meta.paper,
+				jsonString([data.question.meta.topic].filter(Boolean)),
+				data.question.meta.marks,
+				data.chain.title,
+				data.chain.canonicalText,
+				step?.label ?? stepId,
+				Math.max(
+					0,
+					data.chain.steps.findIndex((entry) => entry.id === stepId)
+				),
+				data.question.title,
+				data.question.sourceRef,
+				data.question.prompt,
+				data.question.context,
+				jsonString({ title: data.question.title }),
+				jsonString([data.question.meta.topic].filter(Boolean)),
 				result.awardedMarks <= 0 ? 'large_gap' : 'medium_gap'
 			]
 		);
 	}
 
-	const activeGaps = await queryRows<{ id: string; chain_step_id: string }>(
+	const activeGaps = await queryPersonalRows<{ id: string; chain_step_id: string }>(
 		`SELECT id, chain_step_id
 		 FROM user_chain_gaps
 		 WHERE user_id = ?
@@ -2050,42 +1933,36 @@ async function getChainSteps(chainId: string): Promise<ChainStepRow[]> {
 }
 
 async function readGapDetail(userId: string, gapId: string): Promise<GapDetailRow | null> {
-	return await queryFirst<GapDetailRow>(
+	return await queryPersonalFirst<GapDetailRow>(
 		`SELECT
-		   g.id,
-		   g.answer_chain_id,
-		   g.chain_step_id,
-		   g.source_question_id,
-		   g.status,
-		   g.gap_band,
-		   g.evidence_count,
-		   g.updated_at,
-		   ac.title AS chain_title,
-		   ac.canonical_chain_text,
-		   s.step_text,
-		   s.display_order AS step_order,
-		   q.prompt_text AS question_title,
-		   q.source_question_ref,
-		   COALESCE(q.board, g.board) AS board,
-		   COALESCE(q.qualification, g.qualification) AS qualification,
-		   CASE
-		     WHEN LOWER(COALESCE(q.subject, g.subject, '')) LIKE 'english%' THEN COALESCE(q.subject, g.subject)
-		     ELSE COALESCE(q.subject_area, q.subject, g.subject)
-		   END AS subject,
-		   COALESCE(q.tier, g.tier) AS tier,
-		   q.paper,
-		   q.topic_path_json,
-		   q.marks,
-		   q.prompt_text AS source_prompt_text,
-		   q.context_text AS source_context_text,
-		   q.metadata_json AS source_metadata_json,
-		   q.topic_path_json AS source_topic_path_json
-		 FROM user_chain_gaps g
-		 JOIN answer_chains ac ON ac.id = g.answer_chain_id
-		 JOIN answer_chain_steps s ON s.id = g.chain_step_id
-		 LEFT JOIN questions q ON q.id = g.source_question_id
-		 WHERE g.user_id = ?
-		   AND g.id = ?`,
+		   id,
+		   answer_chain_id,
+		   chain_step_id,
+		   source_question_id,
+		   status,
+		   gap_band,
+		   evidence_count,
+		   updated_at,
+		   chain_title,
+		   canonical_chain_text,
+		   step_text,
+		   step_order,
+		   source_question_title AS question_title,
+		   source_question_ref,
+		   board,
+		   qualification,
+		   subject,
+		   tier,
+		   paper,
+		   topic_path_json,
+		   marks,
+		   source_prompt_text,
+		   source_context_text,
+		   source_metadata_json,
+		   source_topic_path_json
+		 FROM user_chain_gaps
+		 WHERE user_id = ?
+		   AND id = ?`,
 		[userId, gapId]
 	);
 }
@@ -2142,13 +2019,21 @@ export async function getGapLearningData(
 	userId: string,
 	gapId: string
 ): Promise<GapLearningData | null> {
-	await ensurePersonalLearningTables();
 	const row = await readGapDetail(userId, gapId);
 	if (!row) return null;
-	const steps = await getChainSteps(row.answer_chain_id);
 	const questionData: PracticePageData | null = row.source_question_id
 		? await getPracticePageData(row.source_question_id).catch(() => null)
 		: null;
+	const steps =
+		questionData?.chain.steps.map((step, index) => ({
+			id: step.id,
+			display_order: index,
+			step_text: step.label,
+			step_role: step.role,
+			explanation: step.explanation,
+			common_omission: step.commonOmission,
+			evidence_json: jsonString(step.markEvidence ? [step.markEvidence] : [])
+		})) ?? (await getChainSteps(row.answer_chain_id));
 	const dashboardGap = {
 		...toDashboardGap(row),
 		questionTitle: questionTitle(row.source_prompt_text, row.source_metadata_json)
@@ -2282,7 +2167,7 @@ export async function judgeGapFinalAnswer({
 		? 'The missing step is now explicit. Use the same method on the next similar question.'
 		: 'The answer still needs the target missing step. Add it directly, then connect it to the next step.';
 
-	await executeQuery(
+	await executePersonalQuery(
 		`INSERT INTO user_gap_builder_runs (
 		   id, user_id, gap_id, phase, guided_answers_json, final_answer, result_json
 		 )
@@ -2296,7 +2181,7 @@ export async function judgeGapFinalAnswer({
 			jsonString({ awardedMarks, maxMarks, presentStepIds, missingStepIds, gapClosed })
 		]
 	);
-	await executeQuery(
+	await executePersonalQuery(
 		`UPDATE user_chain_gaps
 		 SET status = ?,
 		     gap_band = ?,
@@ -2349,7 +2234,7 @@ export async function recordRecallCardReview({
 	const dueAt = dueAtForInterval(intervalDays);
 	const correctIncrement = grade === 'again' ? 0 : 1;
 
-	await executeQuery(
+	await executePersonalQuery(
 		`INSERT INTO user_recall_card_reviews (
 		   user_id, card_id, subject, topic_id, mode, last_grade,
 		   seen_count, correct_count, interval_days, due_at

@@ -13,11 +13,26 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS user_profile_subjects (
+  user_id TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  board TEXT NOT NULL DEFAULT 'AQA',
+  qualification TEXT NOT NULL DEFAULT 'GCSE',
+  course TEXT NOT NULL DEFAULT 'Separate Science',
+  tier TEXT NOT NULL DEFAULT 'Higher',
+  enabled INTEGER NOT NULL DEFAULT 1,
+  current_grade TEXT,
+  target_grade TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, subject)
+);
+
 CREATE TABLE IF NOT EXISTS user_question_attempts (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
-  answer_chain_id TEXT REFERENCES answer_chains(id) ON DELETE SET NULL,
+  question_id TEXT NOT NULL,
+  answer_chain_id TEXT,
   answer_text TEXT NOT NULL,
   result TEXT NOT NULL,
   awarded_marks INTEGER NOT NULL DEFAULT 0,
@@ -27,20 +42,55 @@ CREATE TABLE IF NOT EXISTS user_question_attempts (
   feedback_markdown TEXT NOT NULL DEFAULT '',
   model TEXT,
   model_version TEXT,
+  question_title TEXT,
+  source_question_ref TEXT,
+  board TEXT,
+  qualification TEXT,
+  subject TEXT,
+  tier TEXT,
+  paper TEXT,
+  topic_path_json TEXT NOT NULL DEFAULT '[]',
+  chain_title TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_question_drafts (
+  user_id TEXT NOT NULL,
+  question_id TEXT NOT NULL,
+  answer_chain_id TEXT,
+  draft_kind TEXT NOT NULL,
+  answer_text TEXT NOT NULL DEFAULT '',
+  draft_json TEXT NOT NULL DEFAULT '{}',
+  client_updated_at INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, question_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_chain_gaps (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  answer_chain_id TEXT NOT NULL REFERENCES answer_chains(id) ON DELETE CASCADE,
-  chain_step_id TEXT NOT NULL REFERENCES answer_chain_steps(id) ON DELETE CASCADE,
-  source_question_id TEXT REFERENCES questions(id) ON DELETE SET NULL,
-  latest_attempt_id TEXT REFERENCES user_question_attempts(id) ON DELETE SET NULL,
+  answer_chain_id TEXT NOT NULL,
+  chain_step_id TEXT NOT NULL,
+  source_question_id TEXT,
+  latest_attempt_id TEXT,
   board TEXT,
   qualification TEXT,
   subject TEXT,
   tier TEXT,
+  paper TEXT,
+  topic_path_json TEXT NOT NULL DEFAULT '[]',
+  marks INTEGER,
+  chain_title TEXT NOT NULL,
+  canonical_chain_text TEXT NOT NULL DEFAULT '',
+  step_text TEXT NOT NULL,
+  step_order INTEGER NOT NULL DEFAULT 0,
+  source_question_title TEXT,
+  source_question_ref TEXT,
+  source_prompt_text TEXT,
+  source_context_text TEXT,
+  source_metadata_json TEXT,
+  source_topic_path_json TEXT NOT NULL DEFAULT '[]',
   status TEXT NOT NULL DEFAULT 'active',
   gap_band TEXT NOT NULL DEFAULT 'large_gap',
   evidence_count INTEGER NOT NULL DEFAULT 1,
@@ -53,7 +103,7 @@ CREATE TABLE IF NOT EXISTS user_chain_gaps (
 CREATE TABLE IF NOT EXISTS user_gap_builder_runs (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  gap_id TEXT NOT NULL REFERENCES user_chain_gaps(id) ON DELETE CASCADE,
+  gap_id TEXT NOT NULL,
   phase TEXT NOT NULL,
   guided_answers_json TEXT NOT NULL DEFAULT '{}',
   final_answer TEXT,
@@ -77,14 +127,26 @@ CREATE TABLE IF NOT EXISTS user_recall_card_reviews (
   PRIMARY KEY (user_id, card_id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_user_profile_subjects_user_enabled
+  ON user_profile_subjects (user_id, enabled, subject);
+
 CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_created
   ON user_question_attempts (user_id, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_user_question_attempts_question
-  ON user_question_attempts (question_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_question
+  ON user_question_attempts (user_id, question_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_question_attempts_user_subject
+  ON user_question_attempts (user_id, subject, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_user_question_drafts_user_updated
+  ON user_question_drafts (user_id, updated_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_status
   ON user_chain_gaps (user_id, status, updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_subject
+  ON user_chain_gaps (user_id, subject, status, updated_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_user_chain_gaps_user_chain
   ON user_chain_gaps (user_id, answer_chain_id);

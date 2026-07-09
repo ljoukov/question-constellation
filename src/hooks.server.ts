@@ -17,6 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.user = null;
 	event.locals.questionDb = null;
 	event.locals.questionDbSessionMode = null;
+	event.locals.personalDb = null;
 
 	if (dev) {
 		clearQuestionBindings();
@@ -26,6 +27,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 			useReadReplica ? 'first-unconstrained' : 'first-primary'
 		);
 		event.locals.questionDbSessionMode = useReadReplica ? 'read-replica' : 'primary';
+	}
+	if (!dev && event.platform?.env.PERSONAL_DB) {
+		event.locals.personalDb = event.platform.env.PERSONAL_DB.withSession('first-primary');
 	}
 	if (event.platform?.env.QUESTION_R2) {
 		setQuestionR2(event.platform.env.QUESTION_R2);

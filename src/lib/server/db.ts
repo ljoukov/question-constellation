@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
-import { QUESTION_DB_DATABASE_ID } from './cloudflareConfig';
-import { getQuestionDb } from './bindings';
+import { PERSONAL_DB_DATABASE_ID, QUESTION_DB_DATABASE_ID } from './cloudflareConfig';
+import { getPersonalDb, getQuestionDb, type QuestionDbBinding } from './bindings';
 
 export type SqlParam = string | number | null;
 
@@ -37,18 +37,23 @@ type D1RestResponse<T> = {
 	result?: D1RestQueryResult<T>[] | D1RestQueryResult<T>;
 };
 
+type DatabaseRole = 'question' | 'personal';
+
 function getLocalApiToken() {
 	return env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_ACCOUNT_ACCESS_TOKEN;
 }
 
-function getLocalD1Config() {
+function getLocalD1Config(role: DatabaseRole) {
 	const accountId = env.CLOUDFLARE_ACCOUNT_ID;
 	const apiToken = getLocalApiToken();
-	const databaseId = env.QUESTION_DB_DATABASE_ID || QUESTION_DB_DATABASE_ID;
+	const databaseId =
+		role === 'personal'
+			? env.PERSONAL_DB_DATABASE_ID || PERSONAL_DB_DATABASE_ID
+			: env.QUESTION_DB_DATABASE_ID || QUESTION_DB_DATABASE_ID;
 
 	if (!accountId || !apiToken || !databaseId) {
 		throw new Error(
-			'QUESTION_DB binding is unavailable and local D1 REST credentials are not configured.'
+			`${role === 'personal' ? 'PERSONAL_DB' : 'QUESTION_DB'} binding is unavailable and local D1 REST credentials are not configured.`
 		);
 	}
 
@@ -76,6 +81,7 @@ function summarizeSql(sql: string): string {
 }
 
 function logQueryIfNeeded(
+	role: DatabaseRole,
 	sql: string,
 	params: SqlParam[],
 	meta: D1QueryMetadata | null,
@@ -105,6 +111,7 @@ function logQueryIfNeeded(
 			servedBy: meta?.served_by ?? null,
 			region: meta?.served_by_region ?? null,
 			colo: meta?.served_by_colo ?? null,
+			database: role,
 			params: params.length,
 			sql: summarizeSql(sql)
 		})
@@ -144,11 +151,12 @@ function normalizeD1Results<T>(response: D1RestResponse<T>): {
 	};
 }
 
-export async function queryRowsWithMeta<T extends Record<string, unknown>>(
+async function queryRowsWithMetaFromDb<T extends Record<string, unknown>>(
+	role: DatabaseRole,
+	db: QuestionDbBinding | undefined,
 	sql: string,
 	params: SqlParam[] = []
 ): Promise<QueryRowsResult<T>> {
-	const db = getQuestionDb();
 	const startedAt = Date.now();
 
 	if (db) {
@@ -159,11 +167,11 @@ export async function queryRowsWithMeta<T extends Record<string, unknown>>(
 		const result = await statement.all<T>();
 		const elapsedMs = Date.now() - startedAt;
 		const meta = (result.meta ?? null) as D1QueryMetadata | null;
-		logQueryIfNeeded(sql, params, meta, elapsedMs);
+		logQueryIfNeeded(role, sql, params, meta, elapsedMs);
 		return { results: result.results ?? [], meta, elapsedMs };
 	}
 
-	const { accountId, apiToken, databaseId } = getLocalD1Config();
+	const { accountId, apiToken, databaseId } = getLocalD1Config(role);
 	const response = await fetchD1WithRetry(
 		`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
 		{
@@ -184,8 +192,22 @@ export async function queryRowsWithMeta<T extends Record<string, unknown>>(
 
 	const normalized = normalizeD1Results<T>(JSON.parse(bodyText) as D1RestResponse<T>);
 	const elapsedMs = Date.now() - startedAt;
-	logQueryIfNeeded(sql, params, normalized.meta, elapsedMs);
+	logQueryIfNeeded(role, sql, params, normalized.meta, elapsedMs);
 	return { ...normalized, elapsedMs };
+}
+
+export async function queryRowsWithMeta<T extends Record<string, unknown>>(
+	sql: string,
+	params: SqlParam[] = []
+): Promise<QueryRowsResult<T>> {
+	return await queryRowsWithMetaFromDb('question', getQuestionDb(), sql, params);
+}
+
+export async function queryPersonalRowsWithMeta<T extends Record<string, unknown>>(
+	sql: string,
+	params: SqlParam[] = []
+): Promise<QueryRowsResult<T>> {
+	return await queryRowsWithMetaFromDb('personal', getPersonalDb(), sql, params);
 }
 
 export async function queryRows<T extends Record<string, unknown>>(
@@ -195,9 +217,19 @@ export async function queryRows<T extends Record<string, unknown>>(
 	return (await queryRowsWithMeta<T>(sql, params)).results;
 }
 
-export async function executeQuery(sql: string, params: SqlParam[] = []): Promise<void> {
-	const db = getQuestionDb();
+export async function queryPersonalRows<T extends Record<string, unknown>>(
+	sql: string,
+	params: SqlParam[] = []
+): Promise<T[]> {
+	return (await queryPersonalRowsWithMeta<T>(sql, params)).results;
+}
 
+async function executeQueryForDb(
+	role: DatabaseRole,
+	db: QuestionDbBinding | undefined,
+	sql: string,
+	params: SqlParam[] = []
+): Promise<void> {
 	if (db) {
 		let statement = db.prepare(sql);
 		if (params.length > 0) {
@@ -207,7 +239,7 @@ export async function executeQuery(sql: string, params: SqlParam[] = []): Promis
 		return;
 	}
 
-	const { accountId, apiToken, databaseId } = getLocalD1Config();
+	const { accountId, apiToken, databaseId } = getLocalD1Config(role);
 	const response = await fetchD1WithRetry(
 		`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
 		{
@@ -231,10 +263,26 @@ export async function executeQuery(sql: string, params: SqlParam[] = []): Promis
 	);
 }
 
+export async function executeQuery(sql: string, params: SqlParam[] = []): Promise<void> {
+	await executeQueryForDb('question', getQuestionDb(), sql, params);
+}
+
+export async function executePersonalQuery(sql: string, params: SqlParam[] = []): Promise<void> {
+	await executeQueryForDb('personal', getPersonalDb(), sql, params);
+}
+
 export async function queryFirst<T extends Record<string, unknown>>(
 	sql: string,
 	params: SqlParam[] = []
 ): Promise<T | null> {
 	const rows = await queryRows<T>(sql, params);
+	return rows[0] ?? null;
+}
+
+export async function queryPersonalFirst<T extends Record<string, unknown>>(
+	sql: string,
+	params: SqlParam[] = []
+): Promise<T | null> {
+	const rows = await queryPersonalRows<T>(sql, params);
 	return rows[0] ?? null;
 }
