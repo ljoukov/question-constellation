@@ -1,12 +1,20 @@
-let questionDb: D1Database | undefined;
+import { getRequestEvent } from '$app/server';
+
+export type QuestionDbBinding = D1Database | D1DatabaseSession;
+
+let fallbackQuestionDb: QuestionDbBinding | undefined;
 let questionR2: R2Bucket | undefined;
 
-export function setQuestionDb(db: D1Database) {
-	questionDb = db;
+export function setQuestionDb(db: QuestionDbBinding) {
+	fallbackQuestionDb = db;
 }
 
-export function getQuestionDb(): D1Database | undefined {
-	return questionDb;
+export function getQuestionDb(): QuestionDbBinding | undefined {
+	try {
+		return getRequestEvent().locals.questionDb ?? fallbackQuestionDb;
+	} catch {
+		return fallbackQuestionDb;
+	}
 }
 
 export function setQuestionR2(bucket: R2Bucket) {
@@ -18,6 +26,6 @@ export function getQuestionR2(): R2Bucket | undefined {
 }
 
 export function clearQuestionBindings() {
-	questionDb = undefined;
+	fallbackQuestionDb = undefined;
 	questionR2 = undefined;
 }

@@ -22,6 +22,8 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: import('$lib/server/auth/session').AdminUser | null;
+			questionDb: D1DatabaseSession | null;
+			questionDbSessionMode: 'read-replica' | 'primary' | null;
 		}
 		// interface PageData {}
 		// interface PageState {}
