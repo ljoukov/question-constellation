@@ -1824,6 +1824,10 @@ textarea::placeholder {
 	z-index: 1;
 }
 
+.qc-real-app > .qc-topbar {
+	z-index: 70;
+}
+
 .qc-dashboard-page {
 	background:
 		linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0)),
@@ -10646,6 +10650,10 @@ html[data-theme='dark'] .app-shell {
 .qc-home-app > * {
 	position: relative;
 	z-index: 1;
+}
+
+.qc-home-app > .qc-topbar {
+	z-index: 70;
 }
 
 .qc-home-hero {
