@@ -292,6 +292,23 @@ type ConstellationRow = {
 	answer_chain_id: string;
 };
 
+type QuestionChainSeedRow = QuestionRow &
+	MembershipRow & {
+		chain_id: string;
+		chain_title: string;
+		chain_canonical_chain_text: string;
+		chain_summary: string | null;
+		chain_subject_area: string | null;
+		chain_broad_topic: string | null;
+		chain_metadata_json: string;
+	};
+
+type QuestionChainSeed = {
+	row: QuestionRow;
+	membership: MembershipRow;
+	chainRow: ChainRow;
+};
+
 type QuestionSupplement = {
 	assets: QuestionAsset[];
 	renderingOverlay: QuestionRenderingOverlay | null;
@@ -485,18 +502,7 @@ async function getChainSteps(chainId: string): Promise<ChainStep[]> {
 	}));
 }
 
-async function getChain(chainId: string): Promise<AnswerChain> {
-	const row = await queryFirst<ChainRow>(
-		`SELECT id, title, canonical_chain_text, summary, subject_area, broad_topic, metadata_json
-		 FROM answer_chains
-		 WHERE (id = ? OR slug = ?)
-		   AND needs_human_review = 0
-		   AND status = 'published'`,
-		[chainId, chainId]
-	);
-	if (!row) throw new Error(`Method not found: ${chainId}`);
-
-	const steps = await getChainSteps(row.id);
+function buildAnswerChain(row: ChainRow, steps: ChainStep[]): AnswerChain {
 	const commonMissingLink =
 		steps.find((step) => step.commonOmission)?.commonOmission ??
 		'Students often name the topic but miss one of the middle reasoning steps.';
@@ -516,26 +522,72 @@ async function getChain(chainId: string): Promise<AnswerChain> {
 	};
 }
 
-async function getPrimaryMembership(questionId: string): Promise<MembershipRow> {
-	const row = await queryFirst<MembershipRow>(
-		`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
-		        qac.fit_notes, qac.needs_human_review
-		 FROM question_answer_chains qac
-		 WHERE question_id = ?
+async function getChain(chainId: string): Promise<AnswerChain> {
+	const row = await queryFirst<ChainRow>(
+		`SELECT id, title, canonical_chain_text, summary, subject_area, broad_topic, metadata_json
+		 FROM answer_chains
+		 WHERE (id = ? OR slug = ?)
+		   AND needs_human_review = 0
+		   AND status = 'published'`,
+		[chainId, chainId]
+	);
+	if (!row) throw new Error(`Method not found: ${chainId}`);
+
+	return buildAnswerChain(row, await getChainSteps(row.id));
+}
+
+function seedFromRow(row: QuestionChainSeedRow): QuestionChainSeed {
+	return {
+		row,
+		membership: {
+			answer_chain_id: row.answer_chain_id,
+			transfer_distance: row.transfer_distance,
+			display_order: row.display_order,
+			fit_confidence: row.fit_confidence,
+			fit_notes: row.fit_notes,
+			needs_human_review: row.needs_human_review
+		},
+		chainRow: {
+			id: row.chain_id,
+			title: row.chain_title,
+			canonical_chain_text: row.chain_canonical_chain_text,
+			summary: row.chain_summary,
+			subject_area: row.chain_subject_area,
+			broad_topic: row.chain_broad_topic,
+			metadata_json: row.chain_metadata_json
+		}
+	};
+}
+
+async function getQuestionChainSeed(questionId: string): Promise<QuestionChainSeed> {
+	const row = await queryFirst<QuestionChainSeedRow>(
+		`SELECT q.id, q.source_question_ref, q.prompt_text, q.context_text, q.command_word, q.marks,
+		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
+		        q.topic_path_json, q.self_containment_json, q.metadata_json,
+		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
+		        qac.fit_notes, qac.needs_human_review,
+		        ac.id AS chain_id,
+		        ac.title AS chain_title,
+		        ac.canonical_chain_text AS chain_canonical_chain_text,
+		        ac.summary AS chain_summary,
+		        ac.subject_area AS chain_subject_area,
+		        ac.broad_topic AS chain_broad_topic,
+		        ac.metadata_json AS chain_metadata_json
+		 FROM questions q
+		 JOIN question_answer_chains qac ON qac.question_id = q.id
+		 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
+		 WHERE (q.id = ? OR q.slug = ?)
+		   AND q.needs_human_review = 0
+		   AND q.status = 'published'
 		   AND qac.needs_human_review = 0
-		   AND EXISTS (
-		   	SELECT 1
-		   	FROM answer_chains ac
-		   	WHERE ac.id = qac.answer_chain_id
-		   	  AND ac.needs_human_review = 0
-		   	  AND ac.status = 'published'
-		   )
-		 ORDER BY is_primary DESC, COALESCE(fit_confidence, 0) DESC
+		   AND ac.needs_human_review = 0
+		   AND ac.status = 'published'
+		 ORDER BY qac.is_primary DESC, COALESCE(qac.fit_confidence, 0) DESC
 		 LIMIT 1`,
-		[questionId]
+		[questionId, questionId]
 	);
 	if (!row) throw new Error(`Question has no answer chain: ${questionId}`);
-	return row;
+	return seedFromRow(row);
 }
 
 function questionIdPlaceholders(questionIds: string[]): string {
@@ -1483,6 +1535,14 @@ async function hydrateQuestions(
 	chain: AnswerChain
 ): Promise<Question[]> {
 	const supplements = await getQuestionSupplements(rows.map((row) => row.id));
+	return hydrateQuestionsFromSupplements(rows, chain, supplements);
+}
+
+function hydrateQuestionsFromSupplements(
+	rows: Array<QuestionRow & MembershipRow>,
+	chain: AnswerChain,
+	supplements: Map<string, QuestionSupplement>
+): Question[] {
 	return rows.map((row) =>
 		hydrateQuestionFromSupplement(
 			row,
@@ -1493,8 +1553,10 @@ async function hydrateQuestions(
 	);
 }
 
-async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
-	const rows = await queryRows<QuestionRow & MembershipRow>(
+async function getQuestionRowsForChain(
+	chainId: string
+): Promise<Array<QuestionRow & MembershipRow>> {
+	return await queryRows<QuestionRow & MembershipRow>(
 		`SELECT q.id, q.source_question_ref, q.prompt_text, q.context_text, q.command_word, q.marks,
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
 		        q.topic_path_json, q.self_containment_json, q.metadata_json,
@@ -1513,25 +1575,20 @@ async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
 			WHEN 'exam_transfer' THEN 3
 			ELSE 4
 		 END, COALESCE(qac.display_order, 999), q.year, q.source_question_ref`,
-		[chain.id]
+		[chainId]
 	);
+}
 
+async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
+	const rows = await getQuestionRowsForChain(chain.id);
 	return await hydrateQuestions(rows, chain);
 }
 
-async function getConstellationForChain(
+function buildConstellationForChain(
 	chain: AnswerChain,
-	questions: Question[]
-): Promise<Constellation> {
-	const row = await queryFirst<ConstellationRow>(
-		`SELECT id, title, summary, answer_chain_id
-		 FROM constellations
-		 WHERE answer_chain_id = ?
-		 ORDER BY confidence DESC
-		 LIMIT 1`,
-		[chain.id]
-	);
-
+	questions: Question[],
+	row: ConstellationRow | null
+): Constellation {
 	return {
 		id: row?.id ?? chain.id,
 		title: row?.title ?? chain.title,
@@ -1541,6 +1598,24 @@ async function getConstellationForChain(
 	};
 }
 
+async function getConstellationRowForChain(chainId: string): Promise<ConstellationRow | null> {
+	return await queryFirst<ConstellationRow>(
+		`SELECT id, title, summary, answer_chain_id
+		 FROM constellations
+		 WHERE answer_chain_id = ?
+		 ORDER BY confidence DESC
+		 LIMIT 1`,
+		[chainId]
+	);
+}
+
+async function getConstellationForChain(
+	chain: AnswerChain,
+	questions: Question[]
+): Promise<Constellation> {
+	return buildConstellationForChain(chain, questions, await getConstellationRowForChain(chain.id));
+}
+
 function nextQuestionAfter(questions: Question[], questionId: string): Question {
 	const index = questions.findIndex((question) => question.id === questionId);
 	return questions[(index + 1 + questions.length) % questions.length] ?? questions[0];
@@ -1548,20 +1623,30 @@ function nextQuestionAfter(questions: Question[], questionId: string): Question 
 
 async function getQuestionChainContext(
 	questionId: string,
-	initialRow?: QuestionRow
+	initialSeed?: QuestionChainSeed
 ): Promise<QuestionChainContext> {
-	const row = initialRow ?? (await getQuestionRow(questionId));
-	const membership = await getPrimaryMembership(row.id);
-	const chain = await getChain(membership.answer_chain_id);
-	const questions = await getQuestionsForChain(chain);
+	const seed = initialSeed ?? (await getQuestionChainSeed(questionId));
+	const [steps, questionRows, constellationRow] = await Promise.all([
+		getChainSteps(seed.chainRow.id),
+		getQuestionRowsForChain(seed.chainRow.id),
+		getConstellationRowForChain(seed.chainRow.id)
+	]);
+	const chain = buildAnswerChain(seed.chainRow, steps);
+	const supplements = await getQuestionSupplements(questionRows.map((row) => row.id));
+	const questions = hydrateQuestionsFromSupplements(questionRows, chain, supplements);
 	const question =
-		questions.find((candidate) => candidate.id === row.id) ??
-		(await hydrateQuestion(row, chain, membership));
-	const constellation = await getConstellationForChain(chain, questions);
+		questions.find((candidate) => candidate.id === seed.row.id) ??
+		hydrateQuestionFromSupplement(
+			seed.row,
+			chain,
+			seed.membership,
+			supplements.get(seed.row.id) ?? emptyQuestionSupplement()
+		);
+	const constellation = buildConstellationForChain(chain, questions, constellationRow);
 
 	return {
-		row,
-		membership,
+		row: seed.row,
+		membership: seed.membership,
 		chain,
 		question,
 		questions,
@@ -1663,12 +1748,13 @@ export async function getConstellationPageData(chainId: string): Promise<Constel
 }
 
 export async function getPracticePageData(questionId: string): Promise<PracticePageData> {
-	const row = await getQuestionRow(questionId);
+	const seed = await getQuestionChainSeed(questionId).catch(() => null);
+	const row = seed?.row ?? (await getQuestionRow(questionId));
 	if (isEnglishQuestionRow(row)) {
 		return await getEnglishPracticePageDataFromRow(row);
 	}
 
-	const context = await getQuestionChainContext(questionId, row);
+	const context = await getQuestionChainContext(questionId, seed ?? undefined);
 
 	return {
 		question: context.question,
