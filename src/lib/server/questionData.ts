@@ -1,4 +1,12 @@
+import { getRequestEvent } from '$app/server';
+import {
+	getVersionedPublicRoutePayload,
+	putPublicRoutePayload
+} from '$lib/server/publicRoutePayloads';
 import { queryFirst, queryRows } from './db';
+
+const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v1';
+const PRACTICE_PAGE_CACHE_KIND = 'question-practice-page';
 
 export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer' | 'unclassified';
 
@@ -334,6 +342,65 @@ type EnglishQuestionMetadata = {
 	instructions?: string[];
 	sourceQuestionRef?: string;
 };
+
+function questionPracticeRoutePayloadId(questionId: string): string {
+	return `${PRACTICE_PAGE_CACHE_KIND}:${PRACTICE_PAGE_CACHE_VERSION}:${questionId}`;
+}
+
+function questionPracticeRoutePath(questionId: string): string {
+	return `/questions/${encodeURIComponent(questionId)}/practice`;
+}
+
+function looksLikePracticePageData(value: unknown): value is PracticePageData {
+	if (!value || typeof value !== 'object') return false;
+	const candidate = value as PracticePageData;
+	return Boolean(candidate.question?.id && candidate.chain?.id && candidate.constellation?.id);
+}
+
+async function getCachedPracticePageData(questionId: string): Promise<PracticePageData | null> {
+	const cached = await getVersionedPublicRoutePayload<unknown>(
+		questionPracticeRoutePayloadId(questionId),
+		PRACTICE_PAGE_CACHE_VERSION
+	);
+	return looksLikePracticePageData(cached) ? cached : null;
+}
+
+async function putCachedPracticePageData(
+	lookupQuestionId: string,
+	data: PracticePageData
+): Promise<void> {
+	const lookupIds = uniqueQuestionIds([lookupQuestionId, data.question.id]);
+	await Promise.all(
+		lookupIds.map((questionId) =>
+			putPublicRoutePayload({
+				id: questionPracticeRoutePayloadId(questionId),
+				routeKind: PRACTICE_PAGE_CACHE_KIND,
+				routePath: questionPracticeRoutePath(questionId),
+				payload: data,
+				sourceVersion: PRACTICE_PAGE_CACHE_VERSION
+			})
+		)
+	);
+}
+
+function schedulePracticePageCacheWrite(questionId: string, data: PracticePageData): void {
+	const write = putCachedPracticePageData(questionId, data).catch((error) => {
+		console.warn('[practice-page-cache] failed to write public payload', {
+			error,
+			questionId,
+			canonicalQuestionId: data.question.id
+		});
+	});
+
+	try {
+		const ctx = getRequestEvent().platform?.ctx;
+		if (ctx) {
+			ctx.waitUntil(write);
+		}
+	} catch {
+		// Outside a request event, let the cache write run without blocking callers.
+	}
+}
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
 	if (!raw) return fallback;
@@ -1747,7 +1814,7 @@ export async function getConstellationPageData(chainId: string): Promise<Constel
 	};
 }
 
-export async function getPracticePageData(questionId: string): Promise<PracticePageData> {
+async function getFreshPracticePageData(questionId: string): Promise<PracticePageData> {
 	const seed = await getQuestionChainSeed(questionId).catch(() => null);
 	const row = seed?.row ?? (await getQuestionRow(questionId));
 	if (isEnglishQuestionRow(row)) {
@@ -1763,4 +1830,13 @@ export async function getPracticePageData(questionId: string): Promise<PracticeP
 		questions: context.questions,
 		nextQuestion: context.nextQuestion
 	};
+}
+
+export async function getPracticePageData(questionId: string): Promise<PracticePageData> {
+	const cached = await getCachedPracticePageData(questionId).catch(() => null);
+	if (cached) return cached;
+
+	const data = await getFreshPracticePageData(questionId);
+	schedulePracticePageCacheWrite(questionId, data);
+	return data;
 }

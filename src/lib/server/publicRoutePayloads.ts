@@ -1,4 +1,4 @@
-import { queryFirst } from './db';
+import { executeQuery, queryFirst } from './db';
 
 type PublicRoutePayloadRow = {
 	payload_json: string;
@@ -44,4 +44,50 @@ export async function getPublicRoutePayload<T>(id: string): Promise<T | null> {
 	const payload = JSON.parse(row.payload_json) as unknown;
 	if (isEncodedPayload(payload)) return await decodeGzipBase64Json<T>(payload);
 	return payload as T;
+}
+
+export async function getVersionedPublicRoutePayload<T>(
+	id: string,
+	sourceVersion: string
+): Promise<T | null> {
+	const row = await queryFirst<PublicRoutePayloadRow>(
+		`SELECT payload_json
+		 FROM public_route_payloads
+		 WHERE id = ?
+		   AND source_version = ?
+		 LIMIT 1`,
+		[id, sourceVersion]
+	);
+	if (!row) return null;
+	const payload = JSON.parse(row.payload_json) as unknown;
+	if (isEncodedPayload(payload)) return await decodeGzipBase64Json<T>(payload);
+	return payload as T;
+}
+
+export async function putPublicRoutePayload({
+	id,
+	routeKind,
+	routePath,
+	payload,
+	sourceVersion
+}: {
+	id: string;
+	routeKind: string;
+	routePath: string;
+	payload: unknown;
+	sourceVersion: string;
+}): Promise<void> {
+	await executeQuery(
+		`INSERT INTO public_route_payloads (
+		   id, route_kind, route_path, payload_json, source_version, updated_at
+		 )
+		 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+		 ON CONFLICT(id) DO UPDATE SET
+		   route_kind = excluded.route_kind,
+		   route_path = excluded.route_path,
+		   payload_json = excluded.payload_json,
+		   source_version = excluded.source_version,
+		   updated_at = CURRENT_TIMESTAMP`,
+		[id, routeKind, routePath, JSON.stringify(payload), sourceVersion]
+	);
 }
