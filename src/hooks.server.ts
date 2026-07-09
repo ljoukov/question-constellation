@@ -1,7 +1,8 @@
 import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
 import { clearQuestionBindings, setQuestionR2 } from '$lib/server/bindings';
-import { readAdminAuthFromCookies } from '$lib/server/auth/session';
+import { readAdminAuthFromCookies, type AdminUser } from '$lib/server/auth/session';
 
 function shouldUseReadReplicaSession(event: Parameters<Handle>[0]['event']) {
 	if (event.request.method !== 'GET' && event.request.method !== 'HEAD') return false;
@@ -11,6 +12,18 @@ function shouldUseReadReplicaSession(event: Parameters<Handle>[0]['event']) {
 	if (pathname.startsWith('/profile')) return false;
 	if (pathname.startsWith('/gaps/')) return false;
 	return true;
+}
+
+function devAuthUserFromEnv(): AdminUser | null {
+	if (!dev) return null;
+	const uid = env.DEV_AUTH_USER_ID?.trim();
+	if (!uid) return null;
+	const email =
+		env.DEV_AUTH_EMAIL?.trim().toLowerCase() ||
+		`${uid.toLowerCase().replace(/[^a-z0-9._-]+/g, '-')}@example.test`;
+	const name = env.DEV_AUTH_NAME?.trim() || 'Local learner';
+	const photoUrl = env.DEV_AUTH_PHOTO_URL?.trim() || null;
+	return { uid, email, name, photoUrl };
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -35,13 +48,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 		setQuestionR2(event.platform.env.QUESTION_R2);
 	}
 
-	try {
-		const auth = await readAdminAuthFromCookies(event.cookies, event.platform?.env);
-		if (auth.status === 'ok') {
-			event.locals.user = auth.user;
+	const devAuthUser = devAuthUserFromEnv();
+	if (devAuthUser) {
+		event.locals.user = devAuthUser;
+	} else {
+		try {
+			const auth = await readAdminAuthFromCookies(event.cookies, event.platform?.env);
+			if (auth.status === 'ok') {
+				event.locals.user = auth.user;
+			}
+		} catch (error) {
+			console.warn('Auth session could not be hydrated.', error);
 		}
-	} catch (error) {
-		console.warn('Auth session could not be hydrated.', error);
 	}
 
 	return await resolve(event);
