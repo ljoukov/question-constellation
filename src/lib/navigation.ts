@@ -8,7 +8,7 @@ export type AppTopbarLink = {
 };
 
 export const primaryNavigationLinks: AppTopbarLink[] = [
-	{ href: resolve('/chains'), label: 'Question bank' },
+	{ href: resolve('/chains'), label: 'Question bank', mobileLabel: 'Bank', mobilePriority: true },
 	{
 		href: resolve('/past-papers'),
 		label: 'Past papers',

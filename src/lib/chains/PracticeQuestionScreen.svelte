@@ -231,7 +231,7 @@
 </script>
 
 <main class="qc-real-app">
-	<AppTopbar subject={chain.subject} />
+	<AppTopbar subject={chain.subject} showNavigation />
 
 	<div class="qc-real-layout">
 		<aside class="qc-real-rail" aria-label="Related practice sequence">

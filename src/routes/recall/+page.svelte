@@ -938,6 +938,7 @@
 			searchValue={searchQuery}
 			searchPlaceholder="Search recall cards"
 			onSearchChange={updateSearch}
+			showNavigation
 		/>
 
 		<section class="setup-shell" aria-label="Recall setup">

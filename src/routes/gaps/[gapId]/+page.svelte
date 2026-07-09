@@ -181,6 +181,7 @@
 		{subject}
 		subjects={[...BROWSE_SUBJECTS]}
 		searchPlaceholder="Search questions"
+		showNavigation
 	/>
 
 	<div class="qc-gap-layout">

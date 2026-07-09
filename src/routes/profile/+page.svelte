@@ -5,6 +5,7 @@
 	import { ArrowLeft, BookOpen, CheckCircle2 } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
+	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -220,6 +221,8 @@
 </svelte:head>
 
 <main class="qc-real-app qc-profile-page">
+	<AppTopbar user={data.user} showSearch={false} showSubject={false} showNavigation />
+
 	<div class="qc-profile-layout">
 		<a class="qc-profile-back" href={resolve('/')}>
 			<ArrowLeft size={17} aria-hidden="true" strokeWidth={2.2} />

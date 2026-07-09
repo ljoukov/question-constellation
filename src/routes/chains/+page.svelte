@@ -479,6 +479,7 @@
 		searchValue={searchQuery}
 		searchPlaceholder="Search questions, topics or chains"
 		onSearchChange={updateSearch}
+		showNavigation
 	/>
 
 	<div class="qc-browse-layout">

@@ -865,6 +865,7 @@
 		subject={topbarSubject}
 		{subjects}
 		searchPlaceholder="Search English questions"
+		showNavigation
 	/>
 
 	<div class="qc-english-practice-layout">

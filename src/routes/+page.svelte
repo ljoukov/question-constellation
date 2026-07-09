@@ -95,6 +95,22 @@
 			mcqHref: null
 		},
 		{
+			label: 'Computer Science',
+			meta: 'GCSE Computer Science',
+			detail: 'Browse programming and computing concepts by exam-question route.',
+			href: `${chainsHref}?subject=Computer%20Science`,
+			flashcardsHref: null,
+			mcqHref: null
+		},
+		{
+			label: 'Geography',
+			meta: 'GCSE Geography',
+			detail: 'Find physical, human and applications questions in the bank.',
+			href: `${chainsHref}?subject=Geography`,
+			flashcardsHref: null,
+			mcqHref: null
+		},
+		{
 			label: 'History',
 			meta: 'GCSE History',
 			detail: 'Browse through the shared question-bank filters.',
@@ -103,6 +119,23 @@
 			mcqHref: null
 		}
 	];
+	const signedInSubjectEntryPoints = $derived.by(() => {
+		const profileSubjects = data.learnerSettings?.subjects ?? [];
+		const selectedSubjects = profileSubjects.filter((subject) => subject.enabled);
+		const subjectsToShow = selectedSubjects.length > 0 ? selectedSubjects : profileSubjects;
+
+		return subjectsToShow
+			.map((subject) => {
+				const entry = subjectEntryPoints.find((item) => item.label === subject.subject);
+				if (!entry) return null;
+				return {
+					...entry,
+					meta: homeProfileSubjectMeta(subject),
+					detail: entry.detail
+				};
+			})
+			.filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+	});
 
 	const faqs = [
 		{
@@ -133,6 +166,13 @@
 
 		return resolve('/chains/[chainId]', { chainId: chain.id });
 	}
+
+	function homeProfileSubjectMeta(subject: NonNullable<PageProps['data']['learnerSettings']>['subjects'][number]) {
+		const parts = [subject.board, 'GCSE'];
+		if (subject.course && subject.course !== 'GCSE Subject') parts.push(subject.course);
+		if (['Biology', 'Chemistry', 'Physics'].includes(subject.subject)) parts.push(subject.tier);
+		return parts.join(' · ');
+	}
 </script>
 
 <svelte:head>
@@ -157,6 +197,54 @@
 <main class="qc-home-app">
 	<AppTopbar user={data.user} showSearch={false} showNavigation />
 
+	{#if data.user}
+		<section
+			class="qc-home-section qc-home-subjects qc-home-signed-in-start"
+			aria-labelledby="signed-in-home-title"
+		>
+			<div class="qc-home-section-head">
+				<p class="qc-home-eyebrow">Practice</p>
+				<h1 id="signed-in-home-title">Choose a subject.</h1>
+				<p>
+					Start with flashcards, MCQ or exam questions for the subjects in your profile.
+				</p>
+				<a class="qc-home-inline-link" href={resolve('/profile')}>
+					Manage subjects
+					<ArrowRight size={17} aria-hidden="true" />
+				</a>
+			</div>
+			<div class="qc-home-subject-grid">
+				{#each signedInSubjectEntryPoints as subject (subject.label)}
+					<article>
+						<a class="qc-home-subject-main" href={subject.href}>
+							<span>{subject.meta}</span>
+							<strong>{subject.label}</strong>
+							<small>{subject.detail}</small>
+							<ArrowRight size={16} aria-hidden="true" />
+						</a>
+						<div class="qc-home-subject-actions" aria-label={`${subject.label} practice choices`}>
+							{#if subject.flashcardsHref}
+								<a href={subject.flashcardsHref}>Flashcards</a>
+							{/if}
+							{#if subject.mcqHref}
+								<a href={subject.mcqHref}>MCQ</a>
+							{/if}
+							<a href={subject.href}>Questions</a>
+						</div>
+					</article>
+				{:else}
+					<article>
+						<a class="qc-home-subject-main" href={resolve('/profile')}>
+							<span>Profile</span>
+							<strong>Select subjects</strong>
+							<small>Pick the GCSE subjects and boards your school uses.</small>
+							<ArrowRight size={16} aria-hidden="true" />
+						</a>
+					</article>
+				{/each}
+			</div>
+		</section>
+	{:else}
 	<section class="qc-home-hero" aria-labelledby="home-title">
 		<div class="qc-home-hero-media" aria-hidden="true">
 			<img
@@ -474,4 +562,5 @@
 			<a class="qc-home-button secondary" href={pastPapersHref}>Free past papers</a>
 		</div>
 	</section>
+	{/if}
 </main>

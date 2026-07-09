@@ -63,6 +63,7 @@
 		subject={topbarSubject}
 		subjects={topbarSubjects}
 		searchPlaceholder="Search questions"
+		showNavigation
 	/>
 
 	<div class="qc-real-layout qc-question-layout">

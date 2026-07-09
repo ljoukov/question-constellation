@@ -79,6 +79,7 @@
 		{subject}
 		subjects={subjectOptions}
 		showSearch={false}
+		showNavigation
 		onSubjectChange={(nextSubject) => {
 			const slug = recallSubjectSlugs[nextSubject as RecallSubject];
 			if (slug)

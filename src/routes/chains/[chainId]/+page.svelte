@@ -33,7 +33,7 @@
 </svelte:head>
 
 <main class="qc-real-app qc-chain-page">
-	<AppTopbar user={data.user} subject={chain.subject} />
+	<AppTopbar user={data.user} subject={chain.subject} showNavigation />
 
 	<div class="qc-chain-layout">
 		<aside class="qc-chain-side" aria-label="Question method summary">

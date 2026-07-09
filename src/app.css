@@ -7936,10 +7936,15 @@ textarea::placeholder {
 	}
 
 	.qc-appearance-submenu {
-		position: static;
+		position: absolute;
+		top: calc(100% + 0.32rem);
+		right: 0;
+		z-index: 3;
 		width: 100%;
-		margin-top: 0.25rem;
-		box-shadow: none;
+		margin-top: 0;
+		box-shadow:
+			0 10px 15px -3px rgb(15 23 42 / 10%),
+			0 4px 6px -4px rgb(15 23 42 / 10%);
 	}
 
 	.qc-bank-heading,
