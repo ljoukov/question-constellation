@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import QuestionTeaserGrid from '$lib/chains/QuestionTeaserGrid.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import QuestionBankQuestionCard from '$lib/components/QuestionBankQuestionCard.svelte';
 	import {
 		canonicalCurriculumSubject,
 		subjectBelongsToScience
@@ -613,20 +614,17 @@
 
 						<div class="qc-topic-question-list">
 							{#each section.questions.slice(0, previewQuestionLimit) as question (question.id)}
-								<a class="qc-topic-question" href={questionHref(question)}>
-									<span
-										>{metaLine([
-											question.sourceRef,
-											question.paper,
-											question.marks ? `${question.marks} marks` : null
-										])}</span
-									>
-									<strong><MathText text={question.title} /></strong>
-									<small><MathText text={question.preview} /></small>
-									{#if question.chainTitle}
-										<em><MathText text={question.chainTitle} /></em>
-									{/if}
-								</a>
+								<QuestionBankQuestionCard
+									href={questionHref(question)}
+									meta={metaLine([
+										question.sourceRef,
+										question.paper,
+										question.marks ? `${question.marks} marks` : null
+									])}
+									title={question.title}
+									detail={question.preview}
+									tag={question.chainTitle}
+								/>
 							{/each}
 						</div>
 					</article>

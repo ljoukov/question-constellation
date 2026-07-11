@@ -234,25 +234,32 @@ ensure_port_available_for_start() {
 auto_select_worktree_port() {
   local session_name
   local port
+  local occupying_session
   session_name="$(find_same_checkout_session || true)"
   if [[ -n "${session_name}" ]]; then
     port="$(session_port "${session_name}")"
-    if [[ -n "${port}" ]]; then
-      echo "${port}"
-      return 0
+    if [[ -z "${port}" ]]; then
+      echo "Could not determine the port for $(describe_session "${session_name}")." >&2
+      exit 1
     fi
+    echo "${port}"
+    return 0
   fi
   for ((port = WORKTREE_PORT_MIN; port <= WORKTREE_PORT_MAX; port++)); do
-    if [[ -n "$(find_session_for_port "${port}" || true)" ]]; then
+    occupying_session="$(find_session_for_port "${port}" || true)"
+    if [[ -n "${occupying_session}" ]]; then
+      echo "Port ${port} is already used by $(describe_session "${occupying_session}"); trying the next port." >&2
       continue
     fi
     if port_has_listener "${port}"; then
+      echo "Port ${port} already has a non-managed listener; trying the next port." >&2
       continue
     fi
     echo "${port}"
     return 0
   done
   echo "No available worktree dev-server ports were found for ${ROOT_DIR}." >&2
+  echo "Tried ports ${WORKTREE_PORT_MIN}-${WORKTREE_PORT_MAX}." >&2
   exit 1
 }
 
@@ -277,11 +284,17 @@ default_port_for_start() {
 kill_listeners_on_port() {
   local port="${1}"
   local pid
+  local had_pid=0
   while IFS= read -r pid; do
-    if [[ -n "${pid}" ]]; then
-      kill "${pid}" >/dev/null 2>&1 || true
+    if [[ -z "${pid}" ]]; then
+      continue
     fi
+    had_pid=1
+    kill "${pid}" >/dev/null 2>&1 || true
   done < <(listener_pids_for_port "${port}")
+  if ((had_pid == 0)); then
+    return 0
+  fi
   for _ in {1..20}; do
     if ! port_has_listener "${port}"; then
       return 0
@@ -290,6 +303,15 @@ kill_listeners_on_port() {
   done
   echo "Port ${port} is still busy after requesting shutdown." >&2
   exit 1
+}
+
+reclaim_reserved_main_port() {
+  local port_session
+  port_session="$(find_session_for_port "${MAIN_DEFAULT_PORT}" || true)"
+  if [[ -n "${port_session}" ]]; then
+    tmux kill-session -t "${port_session}" >/dev/null 2>&1 || true
+  fi
+  kill_listeners_on_port "${MAIN_DEFAULT_PORT}"
 }
 
 start_session() {
@@ -382,7 +404,7 @@ restart_session() {
   fi
 
   if ! is_worktree_repo && ((target_port == MAIN_DEFAULT_PORT)); then
-    kill_listeners_on_port "${MAIN_DEFAULT_PORT}"
+    reclaim_reserved_main_port
   fi
 
   ensure_port_available_for_start "${target_port}"
