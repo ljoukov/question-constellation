@@ -2859,6 +2859,20 @@ CREATE INDEX idx_extraction_issues_open
 
 ## Import Workflow
 
+### Corpus-Level Curriculum Notices
+
+Curriculum changes that only become clear by comparing papers across years do not belong in a
+single-paper extraction result. Store reviewed learner-facing context in `curriculum_notices`, scoped
+to its board, qualification, subject, specification, and content area, with the source-document IDs
+that support it.
+
+A future corpus-level model pass should return a short title and one or two useful sentences only
+when the context changes how a learner should interpret or use imported questions. It should not
+turn paper summaries, extraction logs, or internal review notes into learner copy. For example:
+`Earlier poetry anthology - Questions from before 2024 use OCR's earlier anthology; keep them for
+essay practice and label them clearly.` Model suggestions must be source-backed and reviewed before
+publication.
+
 1. Create an `extraction_runs` row with status `running`.
 2. Insert or reuse `source_documents` by `file_hash`.
 3. Insert `source_pages` when OCR or page text is available.

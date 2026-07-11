@@ -6,6 +6,7 @@ import {
 	type QuestionBoardAvailability
 } from '$lib/server/personalLearning';
 import { parseOcrEnglishLiteratureSelections } from '$lib/englishLiteratureProfile';
+import { getCurriculumNotices } from '$lib/server/curriculumNotices';
 import {
 	gcsePastPaperSubjectIndex,
 	type PastPaperSubjectIndex
@@ -18,15 +19,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(303, '/auth/start');
 	}
 
-	const [settings, boardAvailability] = await Promise.all([
+	const [settings, boardAvailability, curriculumNotices] = await Promise.all([
 		getLearnerProfileSettings(locals.user),
-		getImportedQuestionBoardAvailability()
+		getImportedQuestionBoardAvailability(),
+		getCurriculumNotices({
+			board: 'OCR',
+			qualification: 'GCSE',
+			subject: 'English Literature',
+			specificationCode: 'J352'
+		})
 	]);
 
 	return {
 		user: locals.user,
 		settings,
-		examProfile: buildExamProfileOptions(boardAvailability)
+		examProfile: buildExamProfileOptions(boardAvailability),
+		curriculumNotices
 	};
 };
 

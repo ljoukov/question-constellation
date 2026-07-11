@@ -37,6 +37,9 @@
 			shakespearePlay: data.settings.englishLiteratureSelections.shakespearePlay ?? ''
 		}))
 	);
+	const ocrPoetryNotices = $derived(
+		data.curriculumNotices.filter((notice) => notice.contentArea === 'poetry')
+	);
 
 	type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 	type ToastTone = 'success' | 'error';
@@ -449,16 +452,20 @@
 													{/each}
 												</select>
 												<small>All 15 poems in the selected cluster.</small>
-												<span class="ocr-literature-profile__anthology-note" role="note">
-													<span class="ocr-literature-profile__anthology-icon" aria-hidden="true">
-														<Info size={15} strokeWidth={2.2} />
+												{#each ocrPoetryNotices as notice (notice.id)}
+													<span class="ocr-literature-profile__curriculum-note" role="note">
+														<span
+															class="ocr-literature-profile__curriculum-note-icon"
+															aria-hidden="true"
+														>
+															<Info size={15} strokeWidth={2.2} />
+														</span>
+														<span>
+															<strong>{notice.title}</strong>
+															{notice.body}
+														</span>
 													</span>
-													<span>
-														<strong>Earlier poetry anthology</strong>
-														Pre-2024 OCR poetry questions use the previous anthology. They remain in the
-														question bank for essay practice and are labelled there.
-													</span>
-												</span>
+												{/each}
 											</label>
 
 											<label>
@@ -646,7 +653,7 @@
 		font-weight: 600;
 	}
 
-	.ocr-literature-profile__anthology-note {
+	.ocr-literature-profile__curriculum-note {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: 0.42rem;
@@ -660,13 +667,13 @@
 		line-height: 1.4;
 	}
 
-	.ocr-literature-profile__anthology-icon {
+	.ocr-literature-profile__curriculum-note-icon {
 		display: flex;
 		margin-top: 0.08rem;
 		color: #168458;
 	}
 
-	.ocr-literature-profile__anthology-note strong {
+	.ocr-literature-profile__curriculum-note strong {
 		display: block;
 		margin-bottom: 0.1rem;
 		color: #294557;
@@ -692,15 +699,15 @@
 	:global(:root[data-theme='dark']) .ocr-literature-profile__papers p,
 	:global(:root[data-theme='dark']) .ocr-literature-profile__papers label,
 	:global(:root[data-theme='dark']) .ocr-literature-profile__papers small,
-	:global(:root[data-theme='dark']) .ocr-literature-profile__anthology-note {
+	:global(:root[data-theme='dark']) .ocr-literature-profile__curriculum-note {
 		color: #9fb2c7;
 	}
 
-	:global(:root[data-theme='dark']) .ocr-literature-profile__anthology-note {
+	:global(:root[data-theme='dark']) .ocr-literature-profile__curriculum-note {
 		border-top-color: rgba(86, 216, 148, 0.16);
 	}
 
-	:global(:root[data-theme='dark']) .ocr-literature-profile__anthology-note strong {
+	:global(:root[data-theme='dark']) .ocr-literature-profile__curriculum-note strong {
 		color: #d9e7f3;
 	}
 
