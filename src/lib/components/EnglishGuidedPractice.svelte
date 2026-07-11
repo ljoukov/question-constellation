@@ -845,16 +845,17 @@
 
 <style>
 	.qc-step-practice-app {
-		--step-ink: #122c2a;
-		--step-muted: #607076;
-		--step-line: #c9d1d0;
-		--step-paper: #fffdf7;
-		--step-green: #087a55;
-		--step-green-soft: #eaf7f0;
+		--step-ink: var(--qc-ui-text);
+		--step-muted: var(--qc-ui-text-muted);
+		--step-line: var(--qc-ui-border-subtle);
+		--step-paper: var(--qc-ui-surface);
+		--step-green: var(--qc-ui-accent);
+		--step-green-soft: var(--qc-ui-accent-muted);
 		min-height: var(--app-viewport-height, 100vh);
 		background:
-			linear-gradient(115deg, rgba(255, 248, 222, 0.56), transparent 38%),
-			linear-gradient(295deg, rgba(255, 228, 227, 0.48), transparent 42%), #f8faf7;
+			linear-gradient(115deg, var(--qc-ui-canvas-art-primary), transparent 38%),
+			linear-gradient(295deg, var(--qc-ui-canvas-art-secondary), transparent 42%),
+			var(--qc-ui-canvas);
 		color: var(--step-ink);
 		overflow-x: clip;
 	}
@@ -874,8 +875,8 @@
 		gap: 0.95rem;
 		min-width: 0;
 		padding: clamp(1.4rem, 2.5vw, 2.35rem);
-		border-right: 1px solid rgba(63, 79, 82, 0.18);
-		background: rgba(255, 253, 247, 0.78);
+		border-right: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-translucent);
 	}
 
 	.qc-step-question :global(.qc-exam-card) {
@@ -890,15 +891,15 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		padding: 0.75rem 0.85rem;
-		border: 1px solid #9badaa;
-		background: rgba(238, 246, 241, 0.72);
-		color: #164f40;
+		border: 1px solid var(--qc-ui-border);
+		background: var(--qc-ui-accent-muted);
+		color: var(--qc-ui-accent-text);
 		text-decoration: none;
 	}
 
 	.qc-step-source-link:hover {
-		border-color: #47816f;
-		background: #eef6f1;
+		border-color: var(--qc-ui-accent);
+		background: var(--qc-ui-accent-soft);
 	}
 
 	.qc-step-source-link span {
@@ -912,7 +913,7 @@
 	}
 
 	.qc-step-source-link small {
-		color: #617572;
+		color: var(--qc-ui-text-muted);
 		font-size: 0.75rem;
 	}
 
@@ -921,7 +922,7 @@
 	.qc-step-feedback header p,
 	.qc-step-instructions > p {
 		margin: 0;
-		color: #597078;
+		color: var(--qc-ui-text-muted);
 		font-size: 0.76rem;
 		font-weight: 750;
 		letter-spacing: 0.07em;
@@ -944,8 +945,8 @@
 
 	.qc-step-meta span {
 		padding: 0.38rem 0.58rem;
-		border: 1px solid #98a7a9;
-		background: rgba(255, 255, 255, 0.52);
+		border: 1px solid var(--qc-ui-border);
+		background: var(--qc-ui-surface-subtle);
 		font-size: 0.78rem;
 		font-weight: 650;
 	}
@@ -953,7 +954,7 @@
 	.qc-step-instructions {
 		padding: 0.9rem 1rem;
 		border: 1px solid var(--step-line);
-		background: rgba(255, 255, 255, 0.55);
+		background: var(--qc-ui-surface-subtle);
 	}
 
 	.qc-step-instructions ul {
@@ -975,8 +976,8 @@
 	.qc-stepper {
 		display: grid;
 		grid-template-columns: repeat(var(--step-count), minmax(0, 1fr));
-		border: 1px solid #9ba9aa;
-		background: rgba(255, 255, 255, 0.55);
+		border: 1px solid var(--qc-ui-border);
+		background: var(--qc-ui-surface-subtle);
 		max-width: 100%;
 		min-width: 0;
 	}
@@ -991,9 +992,9 @@
 		min-height: 3.8rem;
 		padding: 0.65rem 0.45rem;
 		border: 0;
-		border-right: 1px solid #c7cece;
+		border-right: 1px solid var(--qc-ui-border-subtle);
 		background: transparent;
-		color: #48595e;
+		color: var(--qc-ui-text-secondary);
 		cursor: pointer;
 		transition:
 			background 140ms ease,
@@ -1015,8 +1016,8 @@
 	}
 
 	.qc-stepper button.active {
-		background: #f0f8f3;
-		color: #07583f;
+		background: var(--qc-ui-accent-soft);
+		color: var(--qc-ui-accent-text);
 	}
 
 	.qc-stepper button.active::after {
@@ -1024,12 +1025,12 @@
 	}
 
 	.qc-stepper button.passed {
-		color: #076448;
+		color: var(--qc-ui-accent-text);
 	}
 
 	.qc-stepper button.locked {
-		background: rgba(232, 235, 234, 0.52);
-		color: #9aa4a5;
+		background: var(--qc-ui-disabled-surface);
+		color: var(--qc-ui-disabled-text);
 		cursor: not-allowed;
 	}
 
@@ -1052,9 +1053,9 @@
 
 	.qc-step-card,
 	.qc-step-feedback {
-		border: 1px solid #7f9092;
-		background: rgba(255, 253, 247, 0.94);
-		box-shadow: 0 16px 40px rgba(31, 50, 50, 0.055);
+		border: 1px solid var(--qc-ui-border-strong);
+		background: var(--qc-ui-surface-raised);
+		box-shadow: 0 16px 40px var(--qc-ui-shadow);
 	}
 
 	.qc-step-card {
@@ -1089,8 +1090,8 @@
 		align-items: center;
 		gap: 0.38rem;
 		padding: 0.38rem 0.58rem;
-		border: 1px solid #b8c2c1;
-		color: #6b777a;
+		border: 1px solid var(--qc-ui-border-subtle);
+		color: var(--qc-ui-text-muted);
 		font-size: 0.76rem;
 		font-weight: 700;
 		white-space: nowrap;
@@ -1098,15 +1099,15 @@
 
 	.qc-step-pass-badge,
 	.qc-step-feedback > header > span.passed {
-		border-color: #75a991;
+		border-color: var(--qc-ui-accent-border);
 		background: var(--step-green-soft);
-		color: #066043;
+		color: var(--qc-ui-accent-text);
 	}
 
 	.qc-step-explanation {
 		max-width: 52rem;
 		margin: 1.15rem 0 0;
-		color: #4d6268;
+		color: var(--qc-ui-text-secondary);
 		font-size: 1rem;
 		line-height: 1.6;
 	}
@@ -1117,15 +1118,15 @@
 		gap: 0.7rem;
 		margin: 1rem 0 1.25rem;
 		padding: 0.72rem 0.82rem;
-		border-left: 3px solid #178463;
-		background: #eef6f1;
-		color: #36544c;
+		border-left: 3px solid var(--qc-ui-accent);
+		background: var(--qc-ui-accent-soft);
+		color: var(--qc-ui-text-secondary);
 		font-size: 0.88rem;
 		line-height: 1.45;
 	}
 
 	.qc-step-goal strong {
-		color: #0b6047;
+		color: var(--qc-ui-accent-text);
 	}
 
 	.qc-step-answer {
@@ -1134,15 +1135,17 @@
 	}
 
 	.qc-step-answer > span {
-		color: #182d32;
+		color: var(--qc-ui-text);
 		font-size: 1.03rem;
 		font-weight: 720;
 	}
 
 	.qc-step-answer :global(.lined-textarea) {
-		--qc-response-textarea-bg: rgba(255, 255, 255, 0.5);
-		--qc-response-caret: #087a55;
-		border-color: #8a999b;
+		--qc-response-ink: var(--qc-ui-text);
+		--qc-response-line: var(--qc-ui-border-strong);
+		--qc-response-textarea-bg: var(--qc-ui-surface-subtle);
+		--qc-response-caret: var(--qc-ui-accent);
+		border-color: var(--qc-ui-border);
 		font-size: 1rem;
 		line-height: 2rem;
 	}
@@ -1154,7 +1157,7 @@
 
 	.qc-step-action-row small {
 		max-width: 27rem;
-		color: #758185;
+		color: var(--qc-ui-text-subtle);
 		font-size: 0.78rem;
 		line-height: 1.4;
 	}
@@ -1167,9 +1170,9 @@
 		min-width: 9.25rem;
 		min-height: 2.85rem;
 		padding: 0.68rem 1.05rem;
-		border: 1px solid #075c42;
-		background: #087a55;
-		color: white;
+		border: 1px solid var(--qc-ui-accent-strong);
+		background: var(--qc-ui-accent);
+		color: var(--qc-ui-on-accent);
 		font: inherit;
 		font-size: 0.88rem;
 		font-weight: 750;
@@ -1177,28 +1180,28 @@
 	}
 
 	.qc-step-primary:hover:not(:disabled) {
-		background: #066848;
+		background: var(--qc-ui-accent-hover);
 	}
 
 	.qc-step-primary:disabled {
-		border-color: #b2bcbc;
-		background: #dce1df;
-		color: #74807e;
+		border-color: var(--qc-ui-disabled-border);
+		background: var(--qc-ui-disabled-surface);
+		color: var(--qc-ui-disabled-text);
 		cursor: not-allowed;
 	}
 
 	.qc-step-spinner {
 		width: 1rem;
 		height: 1rem;
-		border: 2px solid rgba(255, 255, 255, 0.45);
+		border: 2px solid color-mix(in srgb, var(--qc-ui-on-accent) 45%, transparent);
 		border-top-color: currentColor;
 		border-radius: 50%;
 		animation: qc-step-spin 0.75s linear infinite;
 	}
 
 	.qc-step-spinner.dark {
-		border-color: rgba(8, 122, 85, 0.2);
-		border-top-color: #087a55;
+		border-color: color-mix(in srgb, var(--qc-ui-accent) 20%, transparent);
+		border-top-color: var(--qc-ui-accent);
 	}
 
 	@keyframes qc-step-spin {
@@ -1214,7 +1217,7 @@
 	.qc-step-feedback > header {
 		padding: 1rem 1.15rem;
 		border-bottom: 1px solid var(--step-line);
-		background: rgba(247, 249, 246, 0.76);
+		background: var(--qc-ui-surface-muted);
 	}
 
 	.qc-step-feedback h3 {
@@ -1236,7 +1239,7 @@
 
 	.qc-step-error {
 		padding: 1.15rem;
-		color: #8b352f;
+		color: var(--qc-ui-danger);
 	}
 
 	.qc-step-checks {
@@ -1248,8 +1251,8 @@
 		grid-template-columns: 1.35rem minmax(0, 1fr);
 		gap: 0.75rem;
 		padding: 0.9rem 1.15rem;
-		border-bottom: 1px solid #d8dedc;
-		color: #8d9999;
+		border-bottom: 1px solid var(--qc-ui-border-subtle);
+		color: var(--qc-ui-text-subtle);
 	}
 
 	.qc-step-checks > div.met {
@@ -1262,20 +1265,20 @@
 	}
 
 	.qc-step-checks strong {
-		color: #263a3e;
+		color: var(--qc-ui-text);
 		font-size: 0.9rem;
 	}
 
 	.qc-step-checks small {
-		color: #65757a;
+		color: var(--qc-ui-text-muted);
 		font-size: 0.82rem;
 		line-height: 1.45;
 	}
 
 	.qc-step-next-improvement {
 		padding: 1rem 1.15rem 1.15rem;
-		border-left: 3px solid #b97a33;
-		background: #fff9eb;
+		border-left: 3px solid var(--qc-ui-warning);
+		background: var(--qc-ui-warning-surface);
 	}
 
 	.qc-step-next-improvement strong {
@@ -1286,7 +1289,7 @@
 
 	.qc-step-next-improvement p {
 		margin: 0.32rem 0 0;
-		color: #4b5759;
+		color: var(--qc-ui-warning-text);
 		font-size: 0.9rem;
 		line-height: 1.5;
 	}
@@ -1296,12 +1299,12 @@
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: 0.75rem;
 		padding: 0.85rem 1.15rem;
-		border-top: 1px solid #d8dedc;
-		background: #f3f7f4;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
 	}
 
 	.qc-step-coaching-note strong {
-		color: #315b4d;
+		color: var(--qc-ui-accent-text);
 		font-size: 0.75rem;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -1310,14 +1313,14 @@
 
 	.qc-step-coaching-note p {
 		margin: 0;
-		color: #526568;
+		color: var(--qc-ui-text-secondary);
 		font-size: 0.84rem;
 		line-height: 1.45;
 	}
 
 	.qc-step-footer {
 		padding-top: 0.2rem;
-		color: #718083;
+		color: var(--qc-ui-text-subtle);
 		font-size: 0.78rem;
 	}
 
@@ -1334,7 +1337,7 @@
 	}
 
 	.qc-step-footer button:hover {
-		color: #334b4b;
+		color: var(--qc-ui-text);
 	}
 
 	:global(.qc-step-workspace .qc-hint-panel) {
@@ -1348,7 +1351,7 @@
 
 		.qc-step-question {
 			border-right: 0;
-			border-bottom: 1px solid rgba(63, 79, 82, 0.18);
+			border-bottom: 1px solid var(--qc-ui-border-subtle);
 		}
 
 		.qc-step-question h1 {
@@ -1373,7 +1376,13 @@
 		.qc-stepper {
 			display: flex;
 			overflow-x: auto;
+			overflow-y: hidden;
 			overscroll-behavior-x: contain;
+			scrollbar-width: none;
+		}
+
+		.qc-stepper::-webkit-scrollbar {
+			display: none;
 		}
 
 		.qc-stepper button {
