@@ -208,6 +208,10 @@
 		font-weight: 620;
 	}
 
+	.seo-copy h2 {
+		margin-bottom: 0.55rem;
+	}
+
 	.seo-copy p {
 		max-width: 40rem;
 		margin: 0;
@@ -251,9 +255,7 @@
 
 	.seo-copy {
 		margin-top: 1.4rem;
-		padding: 1.3rem;
-		border: 1px solid #cbd7df;
-		background: rgba(255, 255, 255, 0.82);
+		padding: 1.6rem 0 0;
 	}
 
 	:global(:root[data-theme='dark']) .past-papers-shell {
@@ -277,8 +279,7 @@
 		color: #9fb0c5;
 	}
 
-	:global(:root[data-theme='dark']) .board-card,
-	:global(:root[data-theme='dark']) .seo-copy {
+	:global(:root[data-theme='dark']) .board-card {
 		border-color: #263449;
 		background: rgba(15, 23, 42, 0.78);
 	}
