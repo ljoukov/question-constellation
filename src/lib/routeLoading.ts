@@ -49,6 +49,7 @@ export function routeLoadingContentTypeForRoute(
 	if (routeId === '/constellations/[chainId]') return 'constellation';
 	if (
 		routeId === '/questions/[questionId]/practice' ||
+		routeId === '/questions/[questionId]/practice/step-by-step/[stepId]' ||
 		routeId === '/practice/[chainId]/[ref]' ||
 		routeId === '/practice/[familyId]'
 	) {
@@ -71,7 +72,7 @@ function pathContentType(pathname: string): RouteLoadingContentType {
 	if (pathname.startsWith('/chains/')) return 'answer-chain';
 	if (pathname.startsWith('/practice/')) return 'practice';
 	if (pathname.startsWith('/questions/') && pathname.endsWith('/chain')) return 'answer-chain';
-	if (pathname.startsWith('/questions/') && pathname.endsWith('/practice')) return 'practice';
+	if (pathname.startsWith('/questions/') && pathname.includes('/practice')) return 'practice';
 	if (pathname.startsWith('/questions/')) return 'question';
 	if (pathname === '/experiments/questions') return 'experiment';
 	if (pathname === '/experiments/questions/matching-stress') return 'experiment';

@@ -11,19 +11,23 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Practice question not found.');
 	}
 
-	if (practiceData.englishPractice) {
-		const firstStepId = practiceData.englishPractice.stages[0]?.id;
-		if (firstStepId) {
-			throw redirect(
-				307,
-				`/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`
-			);
-		}
+	const englishPractice = practiceData.englishPractice;
+	if (!englishPractice) {
+		throw redirect(307, `/questions/${encodeURIComponent(params.questionId)}/practice`);
+	}
+
+	if (!englishPractice.stages.some((stage) => stage.id === params.stepId)) {
+		const firstStepId = englishPractice.stages[0]?.id;
+		if (!firstStepId) throw error(404, 'Practice step not found.');
+		throw redirect(
+			307,
+			`/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`
+		);
 	}
 
 	const savedDraft = locals.user
 		? await getQuestionDraft(locals.user.uid, practiceData.question.id).catch((draftError) => {
-				console.warn('[practice-page] failed to load saved draft', {
+				console.warn('[english-step-page] failed to load saved draft', {
 					error: draftError,
 					questionId: practiceData.question.id,
 					userId: locals.user?.uid
@@ -34,6 +38,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		...practiceData,
+		englishPractice,
+		stepId: params.stepId,
 		user: locals.user,
 		savedDraft
 	};

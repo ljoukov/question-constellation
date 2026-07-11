@@ -82,7 +82,8 @@ export async function putPublicRoutePayload({
 		   id, route_kind, route_path, payload_json, source_version, updated_at
 		 )
 		 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-		 ON CONFLICT(id) DO UPDATE SET
+		 ON CONFLICT(route_path) DO UPDATE SET
+		   id = excluded.id,
 		   route_kind = excluded.route_kind,
 		   route_path = excluded.route_path,
 		   payload_json = excluded.payload_json,

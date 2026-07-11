@@ -1,18 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
-	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamResponse } from '$lib/experiments/questions/types';
-	import { markLabel, scoreFractionLabel } from '$lib/marks';
+	import { markLabel } from '$lib/marks';
 	import {
+		installPracticeDraftWindowFlush,
 		latestPracticeDraft,
 		queuePracticeDraft,
 		queuedPracticeDraftForQuestion
@@ -20,33 +19,44 @@
 	import {
 		isRecord,
 		recordFromRecord,
-		stringFromRecord,
 		type PracticeDraftSave,
 		type SavedPracticeDraft
 	} from '$lib/practiceDrafts';
 	import type { AdminUser } from '$lib/server/auth/session';
 	import {
 		Check,
-		ChevronLeft,
+		CheckCircle2,
 		ChevronRight,
 		Circle,
 		ClipboardCheck,
-		ListChecks,
-		PenLine,
+		ExternalLink,
+		LockKeyhole,
 		RotateCcw
 	} from '@lucide/svelte';
+	import { onMount } from 'svelte';
 
-	type Mode = 'steps' | 'full';
 	type GradePhase = 'idle' | 'connecting' | 'calling' | 'thinking' | 'grading' | 'done' | 'error';
-
-	type Criterion = {
-		id: string;
-		title: string;
-		detail: string;
-		marks: number;
-		found: string;
-		missing: string;
-		keywords: string[];
+	type EnglishStepGradeResult = {
+		status: 'ok';
+		decision: 'pass' | 'revise';
+		stepId: string;
+		checkedAnswer: string;
+		checks: Array<{
+			id: string;
+			label: string;
+			status: 'met' | 'not_yet';
+			feedback: string;
+		}>;
+		nextImprovement: string;
+		coachingNote: string;
+		learnerModel: {
+			observedStrength: string;
+			recurringNeed: string;
+			nextStrategy: string;
+		};
+		confidence: number;
+		model: string;
+		modelVersion: string;
 	};
 
 	type Stage = {
@@ -58,6 +68,17 @@
 		prompt: string;
 		placeholder: string;
 		goal: string;
+		successCriteria?: Array<{ id: string; label: string; description: string }>;
+		hints?: Array<{ title: string; text: string }>;
+	};
+
+	type EnglishLearnerAttempt = {
+		stepId: string;
+		stepTitle: string;
+		answer: string;
+		decision: 'pass' | 'revise';
+		checks: EnglishStepGradeResult['checks'];
+		nextImprovement: string;
 	};
 
 	type Question = {
@@ -88,117 +109,72 @@
 	type EnglishPractice = {
 		questionId: string;
 		question: Question;
-		sourceTitle: string;
+		sourcePaperUrl?: string | null;
 		instructions: string[];
-		criteria: Criterion[];
 		stages: Stage[];
-		modelAnswer: string;
-		weakAnswerText: string;
-		weakAnswerExplanation: string;
-		isExtended: boolean;
 		stepLineCount: number;
 		fullLineCount: number;
 	};
 
-	type GradeResult = {
-		status: 'ok';
-		result: 'correct' | 'partial' | 'incorrect';
-		awardedMarks: number;
-		maxMarks: number;
-		presentStepIds: string[];
-		missingStepIds: string[];
-		feedbackMarkdown: string;
-		thinkingMarkdown: string | null;
-		model: string;
-		modelVersion: string;
+	type StoredEnglishPracticeState = {
+		stepAnswers?: Record<string, string>;
+		stepResults?: Record<string, EnglishStepGradeResult>;
+		attemptHistory?: EnglishLearnerAttempt[];
+		updatedAt?: number;
 	};
 
 	type SseMessage = {
 		event: string;
 		data: string;
 	};
-	type EnglishPracticeView = 'attempt' | 'result';
-	type StoredEnglishPracticeState = {
-		stepAnswers?: Record<string, string>;
-		fullAnswer?: string;
-		checkedAnswerText?: string;
-		gradeResult?: GradeResult | null;
-		gradeError?: string;
-		mode?: Mode;
-		activeStageIndex?: number;
-		view?: EnglishPracticeView;
-		model?: boolean;
-		updatedAt?: number;
-	};
 
 	let {
 		practice,
+		stepId = '',
 		savedDraft = null,
 		userId = null,
 		user = null
 	}: {
 		practice: EnglishPractice;
+		stepId?: string;
 		savedDraft?: SavedPracticeDraft | null;
 		userId?: string | null;
 		user?: AdminUser | null;
 	} = $props();
 
 	const subjects = [...BROWSE_SUBJECTS];
-
 	let loadedQuestionId = $state('');
+	let hydrated = $state(false);
 	let stepAnswers = $state<Record<string, string>>({});
-	let fullAnswer = $state('');
-	let checkedAnswerText = $state('');
+	let stepResults = $state<Record<string, EnglishStepGradeResult>>({});
+	let attemptHistory = $state<EnglishLearnerAttempt[]>([]);
 	let gradePhase = $state<GradePhase>('idle');
 	let gradeError = $state('');
-	let gradeResult = $state<GradeResult | null>(null);
 	let hintOpen = $state(false);
 	let lastQueuedDraftSignature = '';
-	let suppressResultRouteRepair = false;
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
 	const finderHref = $derived(`${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`);
-	const defaultMode = $derived(practice.isExtended ? 'steps' : 'full');
-	const mode = $derived(parseMode(page.url.searchParams.get('mode'), defaultMode));
-	const activeStageIndex = $derived(parseStageIndex(page.url.searchParams.get('step')));
-	const requestedPracticeView = $derived<EnglishPracticeView>(
-		page.url.searchParams.get('view') === 'result' ? 'result' : 'attempt'
+	const activeStageIndex = $derived(
+		Math.max(
+			0,
+			practice.stages.findIndex((stage) => stage.id === stepId)
+		)
 	);
 	const activeStage = $derived(practice.stages[activeStageIndex] ?? practice.stages[0]);
-	const stageProgress = $derived(
-		practice.stages.length > 0
-			? Math.round(((activeStageIndex + 1) / practice.stages.length) * 100)
-			: 0
-	);
-	const draftedAnswer = $derived(buildDraftFromSteps());
-	const answerForFeedback = $derived(mode === 'full' ? fullAnswer : draftedAnswer);
-	const hasCheckedResult = $derived(
-		checkedAnswerText.trim().length > 0 && checkedAnswerText === answerForFeedback
-	);
-	const checked = $derived(requestedPracticeView === 'result' && hasCheckedResult);
-	const checkedGradeResult = $derived(checked ? gradeResult : null);
-	const deterministicGrade = $derived(gradeAnswer(answerForFeedback));
-	const displayGrade = $derived(
-		checkedGradeResult ? gradeFromModelResult(checkedGradeResult) : deterministicGrade
-	);
-	const feedbackMarkdown = $derived((checkedGradeResult?.feedbackMarkdown ?? '').trim());
-	const showModelAnswer = $derived(checked && page.url.searchParams.get('model') === '1');
-	const completedStepCount = $derived(
-		practice.stages.filter((stage) => (stepAnswers[stage.id] ?? '').trim().length > 8).length
-	);
+	const activeAnswer = $derived((stepAnswers[activeStage?.id] ?? '').trim());
+	const activeResult = $derived(validResultForStage(activeStage));
+	const activePassed = $derived(activeResult?.decision === 'pass');
+	const furthestUnlockedIndex = $derived(calculateFurthestUnlockedIndex());
 	const isChecking = $derived(
 		gradePhase === 'connecting' ||
 			gradePhase === 'calling' ||
 			gradePhase === 'thinking' ||
 			gradePhase === 'grading'
 	);
-	const canCheck = $derived(answerForFeedback.trim().length > 0 && !isChecking);
-	const markText = $derived(
-		displayGrade.score === null
-			? 'Not checked'
-			: `${checked ? 'Checked' : 'Draft'} ${scoreFractionLabel(displayGrade.score, question.meta.marks)}`
-	);
+	const canCheck = $derived(activeAnswer.length >= 8 && !isChecking);
+	const hintItems = $derived(buildStepHints(activeStage));
 	const metaChips = $derived(
 		uniqueLabels([
 			question.meta.board,
@@ -207,564 +183,306 @@
 			markLabel(question.meta.marks)
 		])
 	);
-	const nextAdvice = $derived(makeNextAdvice(displayGrade.criteria, answerForFeedback));
-	const modelDirection = $derived(makeModelDirection(displayGrade.criteria, answerForFeedback));
-	const hintItems = $derived(buildHints());
-	const currentUserId = $derived(userId);
 
 	function blankStepAnswers() {
 		return Object.fromEntries(practice.stages.map((stage) => [stage.id, '']));
 	}
 
-	function parseMode(value: string | null, fallback: Mode): Mode {
-		return value === 'steps' || value === 'full' ? value : fallback;
-	}
-
-	function parseStageIndex(value: string | null) {
-		const parsed = Number(value);
-		if (!Number.isFinite(parsed)) return 0;
-		return Math.max(0, Math.min(practice.stages.length - 1, Math.floor(parsed) - 1));
-	}
-
 	function uniqueLabels(values: Array<string | null | undefined>) {
-		const seen = new Set<string>();
+		const seen: string[] = [];
 		return values
 			.map((value) => value?.replace(/\s+/g, ' ').trim())
 			.filter((value): value is string => Boolean(value))
 			.filter((value) => {
 				const key = value.toLowerCase();
-				if (seen.has(key)) return false;
-				seen.add(key);
+				if (seen.includes(key)) return false;
+				seen.push(key);
 				return true;
 			});
 	}
 
-	function englishPracticeStorageKey(questionId: string) {
-		return `question-constellation:english-practice:v1:${currentUserId ?? 'anonymous'}:${questionId}`;
+	function lineResponse(stage: Stage): ExamResponse {
+		const isFinalStage = practice.stages.at(-1)?.id === stage.id;
+		return { kind: 'lines', count: isFinalStage ? practice.fullLineCount : practice.stepLineCount };
+	}
+
+	function stepHref(stage: Stage) {
+		return resolve('/questions/[questionId]/practice/step-by-step/[stepId]', {
+			questionId: practice.questionId,
+			stepId: stage.id
+		});
+	}
+
+	function resultMatchesAnswer(
+		result: EnglishStepGradeResult | undefined,
+		stage: Stage | undefined
+	) {
+		if (!result || !stage) return false;
+		return result.checkedAnswer.trim() === (stepAnswers[stage.id] ?? '').trim();
+	}
+
+	function validResultForStage(stage: Stage | undefined) {
+		if (!stage) return null;
+		const result = stepResults[stage.id];
+		return resultMatchesAnswer(result, stage) ? result : null;
+	}
+
+	function stagePassed(stage: Stage, index: number) {
+		if (index > furthestUnlockedIndex) return false;
+		return validResultForStage(stage)?.decision === 'pass';
+	}
+
+	function calculateFurthestUnlockedIndex() {
+		if (practice.stages.length === 0) return 0;
+		let unlocked = 0;
+		for (let index = 0; index < practice.stages.length - 1; index += 1) {
+			const stage = practice.stages[index];
+			if (validResultForStage(stage)?.decision !== 'pass') break;
+			unlocked = index + 1;
+		}
+		return unlocked;
+	}
+
+	function englishPracticeStorageKey(questionId: string, version = 'v3') {
+		return `question-constellation:english-practice:${version}:${userId ?? 'anonymous'}:${questionId}`;
 	}
 
 	function loadStoredEnglishPracticeState(questionId: string): StoredEnglishPracticeState | null {
 		if (typeof window === 'undefined') return null;
-		try {
-			const raw = window.sessionStorage.getItem(englishPracticeStorageKey(questionId));
-			return raw ? (JSON.parse(raw) as StoredEnglishPracticeState) : null;
-		} catch {
-			return null;
+		for (const version of ['v3', 'v2', 'v1']) {
+			try {
+				const raw = window.sessionStorage.getItem(englishPracticeStorageKey(questionId, version));
+				if (raw) return JSON.parse(raw) as StoredEnglishPracticeState;
+			} catch {
+				// Try the older state before giving up.
+			}
 		}
+		return null;
 	}
 
-	function saveStoredEnglishPracticeState(
-		questionId: string,
-		overrides: Partial<StoredEnglishPracticeState> = {}
-	) {
+	function saveStoredEnglishPracticeState(questionId: string) {
 		if (typeof window === 'undefined') return;
 		try {
 			window.sessionStorage.setItem(
 				englishPracticeStorageKey(questionId),
-				JSON.stringify({
-					stepAnswers,
-					fullAnswer,
-					checkedAnswerText,
-					gradeResult,
-					gradeError,
-					mode,
-					activeStageIndex,
-					view: requestedPracticeView,
-					model: showModelAnswer,
-					...overrides,
-					updatedAt: Date.now()
-				} satisfies StoredEnglishPracticeState)
+				JSON.stringify({ stepAnswers, stepResults, attemptHistory, updatedAt: Date.now() })
 			);
 		} catch {
-			// Session storage only restores browser-history state; the page still works without it.
+			// The page remains usable without session-history restoration.
 		}
 	}
 
 	function stringRecord(value: Record<string, unknown> | null) {
 		if (!value) return {};
 		return Object.fromEntries(
-			Object.entries(value)
-				.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
-				.map(([key, text]) => [key, text])
+			Object.entries(value).filter(
+				(entry): entry is [string, string] => typeof entry[1] === 'string'
+			)
 		);
+	}
+
+	function gradeResultRecord(value: Record<string, unknown> | null) {
+		if (!value) return {};
+		return Object.fromEntries(
+			Object.entries(value).filter(
+				(entry): entry is [string, EnglishStepGradeResult] =>
+					isRecord(entry[1]) &&
+					(entry[1].decision === 'pass' || entry[1].decision === 'revise') &&
+					typeof entry[1].checkedAnswer === 'string' &&
+					Array.isArray(entry[1].checks)
+			)
+		);
+	}
+
+	function learnerAttemptList(value: unknown): EnglishLearnerAttempt[] {
+		if (!Array.isArray(value)) return [];
+		return value
+			.filter(
+				(item): item is EnglishLearnerAttempt =>
+					isRecord(item) &&
+					typeof item.stepId === 'string' &&
+					typeof item.stepTitle === 'string' &&
+					typeof item.answer === 'string' &&
+					(item.decision === 'pass' || item.decision === 'revise') &&
+					Array.isArray(item.checks) &&
+					typeof item.nextImprovement === 'string'
+			)
+			.slice(-16);
 	}
 
 	function englishStateFromDraft(draft: PracticeDraftSave | SavedPracticeDraft | null) {
 		if (!draft || draft.draftKind !== 'english-guided' || !isRecord(draft.payload)) return null;
-		const gradeResultPayload = recordFromRecord(draft.payload, 'gradeResult');
-		const modeValue = stringFromRecord(draft.payload, 'mode');
-		const viewValue = stringFromRecord(draft.payload, 'view');
-		const modelValue = draft.payload.model;
-		const activeStageIndexValue = draft.payload.activeStageIndex;
 		return {
 			stepAnswers: stringRecord(recordFromRecord(draft.payload, 'stepAnswers')),
-			fullAnswer: stringFromRecord(draft.payload, 'fullAnswer'),
-			checkedAnswerText: stringFromRecord(draft.payload, 'checkedAnswerText'),
-			gradeResult: gradeResultPayload ? (gradeResultPayload as GradeResult) : null,
-			gradeError: stringFromRecord(draft.payload, 'gradeError'),
-			mode: modeValue === 'full' || modeValue === 'steps' ? modeValue : undefined,
-			activeStageIndex:
-				typeof activeStageIndexValue === 'number' && Number.isFinite(activeStageIndexValue)
-					? activeStageIndexValue
-					: undefined,
-			view: viewValue === 'result' ? 'result' : 'attempt',
-			model: typeof modelValue === 'boolean' ? modelValue : false,
+			stepResults: gradeResultRecord(recordFromRecord(draft.payload, 'stepResults')),
+			attemptHistory: learnerAttemptList(draft.payload.attemptHistory),
 			updatedAt: draft.clientUpdatedAt
 		} satisfies StoredEnglishPracticeState;
 	}
 
-	function savedDraftCandidate(questionId: string) {
-		return latestPracticeDraft(
-			savedDraft,
-			queuedPracticeDraftForQuestion(currentUserId, questionId)
-		);
-	}
-
 	function initialEnglishPracticeState(questionId: string) {
 		const storedState = loadStoredEnglishPracticeState(questionId);
-		const draftState = englishStateFromDraft(savedDraftCandidate(questionId));
+		const draftState = englishStateFromDraft(
+			latestPracticeDraft(savedDraft, queuedPracticeDraftForQuestion(userId, questionId))
+		);
 		if (!storedState) return draftState;
 		if (!draftState) return storedState;
 		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
 	}
 
-	function englishDraftPayload(overrides: Partial<StoredEnglishPracticeState> = {}) {
-		return {
-			stepAnswers,
-			fullAnswer,
-			checkedAnswerText,
-			gradeResult,
-			gradeError,
-			mode,
-			activeStageIndex,
-			view: requestedPracticeView,
-			model: showModelAnswer,
-			...overrides
-		} satisfies Record<string, unknown>;
+	function draftPayload() {
+		return { stepAnswers, stepResults, attemptHistory } satisfies Record<string, unknown>;
 	}
 
-	function englishDraftSignature(overrides: Partial<StoredEnglishPracticeState> = {}) {
-		return JSON.stringify(englishDraftPayload(overrides));
-	}
-
-	function englishDraft(
-		questionId: string,
-		overrides: Partial<StoredEnglishPracticeState> = {}
-	): PracticeDraftSave {
-		return {
-			questionId,
-			draftKind: 'english-guided',
-			answerText:
-				overrides.fullAnswer ??
-				(typeof overrides.stepAnswers === 'object'
-					? Object.values(overrides.stepAnswers).join(' ')
-					: answerForFeedback),
-			payload: englishDraftPayload(overrides),
-			clientUpdatedAt: Date.now()
-		};
-	}
-
-	function markEnglishPracticeTouched() {
-		if (loadedQuestionId === practice.questionId) return;
-		loadedQuestionId = practice.questionId;
-		lastQueuedDraftSignature = '';
-	}
-
-	function persistEnglishPracticeState(overrides: Partial<StoredEnglishPracticeState> = {}) {
-		if (loadedQuestionId && loadedQuestionId !== practice.questionId) return;
-		saveStoredEnglishPracticeState(practice.questionId, overrides);
-		const signature = englishDraftSignature(overrides);
-		if (!currentUserId || signature === lastQueuedDraftSignature) return;
+	function persistState() {
+		if (!hydrated || loadedQuestionId !== practice.questionId) return;
+		saveStoredEnglishPracticeState(practice.questionId);
+		if (!userId) return;
+		const signature = JSON.stringify(draftPayload());
+		if (signature === lastQueuedDraftSignature) return;
 		lastQueuedDraftSignature = signature;
-		queuePracticeDraft(currentUserId, englishDraft(practice.questionId, overrides));
-	}
-
-	function applyEnglishPracticeState(storedState: StoredEnglishPracticeState | null) {
-		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
-		fullAnswer = storedState?.fullAnswer ?? '';
-		checkedAnswerText = storedState?.checkedAnswerText ?? '';
-		gradeResult = storedState?.gradeResult ?? null;
-		gradeError = storedState?.gradeError ?? '';
-		gradePhase = gradeError ? 'error' : gradeResult ? 'done' : 'idle';
-		hintOpen = false;
-		lastQueuedDraftSignature = englishDraftSignature({
-			stepAnswers,
-			fullAnswer,
-			checkedAnswerText,
-			gradeResult,
-			gradeError,
-			mode: storedState?.mode ?? mode,
-			activeStageIndex: storedState?.activeStageIndex ?? activeStageIndex,
-			view: storedState?.view ?? requestedPracticeView,
-			model: storedState?.model ?? showModelAnswer
+		queuePracticeDraft(userId, {
+			questionId: practice.questionId,
+			draftKind: 'english-guided',
+			answerText: practice.stages
+				.map((stage) => (stepAnswers[stage.id] ?? '').trim())
+				.filter(Boolean)
+				.join('\n\n'),
+			payload: draftPayload(),
+			clientUpdatedAt: Date.now()
 		});
 	}
 
-	function updateEnglishPracticeUrl(
-		next: {
-			mode?: Mode;
-			stepIndex?: number;
-			view?: EnglishPracticeView;
-			model?: boolean;
-		},
-		historyMode: 'push' | 'replace' = 'push'
-	): Promise<void> {
-		if (typeof window === 'undefined') return Promise.resolve();
-		const url = new URL(page.url);
-		const nextMode = next.mode ?? mode;
-		const nextStepIndex = Math.max(
-			0,
-			Math.min(practice.stages.length - 1, next.stepIndex ?? activeStageIndex)
+	function invalidateFromStage(index: number) {
+		const invalidatedIds = practice.stages.slice(index).map((stage) => stage.id);
+		stepResults = Object.fromEntries(
+			Object.entries(stepResults).filter(([id]) => !invalidatedIds.includes(id))
 		);
-		const nextView = next.view ?? requestedPracticeView;
-		const nextModel = next.model ?? showModelAnswer;
-
-		if (nextMode === defaultMode) {
-			url.searchParams.delete('mode');
-		} else {
-			url.searchParams.set('mode', nextMode);
-		}
-
-		if (nextMode === 'steps' && nextStepIndex > 0) {
-			url.searchParams.set('step', String(nextStepIndex + 1));
-		} else {
-			url.searchParams.delete('step');
-		}
-
-		if (nextView === 'result') {
-			url.searchParams.set('view', 'result');
-		} else {
-			url.searchParams.delete('view');
-		}
-
-		if (nextModel && nextView === 'result') {
-			url.searchParams.set('model', '1');
-		} else {
-			url.searchParams.delete('model');
-		}
-
-		const nextUrl = `${url.pathname}${url.search}${url.hash}`;
-		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
-		if (nextUrl === currentUrl) return Promise.resolve();
-
-		return goto(nextUrl, {
-			replaceState: historyMode === 'replace',
-			noScroll: true,
-			keepFocus: true
-		});
 	}
 
-	function runWithResultRouteRepairSuppressed(navigate: () => Promise<void>) {
-		suppressResultRouteRepair = true;
-		void navigate().finally(() => {
-			suppressResultRouteRepair = false;
-		});
-	}
-
-	function clearCheckedResult({ updateUrl = true }: { updateUrl?: boolean } = {}) {
-		checkedAnswerText = '';
-		gradeResult = null;
-		gradeError = '';
-		gradePhase = 'idle';
-		if (updateUrl && (requestedPracticeView === 'result' || showModelAnswer)) {
-			updateEnglishPracticeUrl({ view: 'attempt', model: false }, 'replace');
-		}
-	}
-
-	function lineResponse(count: number): ExamResponse {
-		return { kind: 'lines', count };
-	}
-
-	function buildDraftFromSteps() {
-		return practice.stages
-			.map((stage) => (stepAnswers[stage.id] ?? '').trim())
-			.filter(Boolean)
-			.join(' ');
-	}
-
-	function keywordList(value: string) {
-		return [
-			...new Set(
-				value
-					.toLowerCase()
-					.match(/[a-z][a-z'-]{3,}/g)
-					?.filter((word) => !['that', 'this', 'with', 'from', 'question'].includes(word)) ?? []
-			)
-		].slice(0, 14);
-	}
-
-	function includesAny(text: string, terms: string[]) {
-		const lower = text.toLowerCase();
-		return terms.some((term) => lower.includes(term.toLowerCase()));
-	}
-
-	function criterionPresent(criterion: Criterion, index: number, answer: string) {
-		const trimmed = answer.trim();
-		if (!trimmed) return false;
-		if (practice.criteria.length === 1) return true;
-
-		const lowerTitle = `${criterion.title} ${criterion.detail}`.toLowerCase();
-		const taskKeywords = keywordList(`${question.title} ${question.prompt}`);
-		const contextKeywords = keywordList(question.context);
-		const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
-
-		if (index === 0 && (includesAny(trimmed, taskKeywords) || wordCount >= 18)) return true;
-		if (/\bevidence|reference|quotation|source|extract|textual\b/.test(lowerTitle)) {
-			return /["']/.test(trimmed) || includesAny(trimmed, contextKeywords.slice(0, 10));
-		}
-		if (/\bmethod|language|structure|form|effect|analysis|dramatic\b/.test(lowerTitle)) {
-			return includesAny(trimmed, [
-				'suggest',
-				'imply',
-				'connot',
-				'audience',
-				'reader',
-				'language',
-				'structure',
-				'form',
-				'method',
-				'effect'
-			]);
-		}
-		if (/\bcontext|expression|spag|spelling|punctuation|grammar|accuracy\b/.test(lowerTitle)) {
-			return wordCount >= (practice.isExtended ? 50 : 12);
-		}
-		return includesAny(trimmed, criterion.keywords) || wordCount >= 30;
-	}
-
-	function gradeAnswer(answer: string): {
-		score: number | null;
-		criteria: Array<Criterion & { present: boolean }>;
-	} {
-		const trimmed = answer.trim();
-		const criteria = practice.criteria.map((criterion, index) => ({
-			...criterion,
-			present: criterionPresent(criterion, index, trimmed)
-		}));
-		if (!trimmed) return { score: null, criteria };
-		return {
-			score: Math.min(
-				question.meta.marks,
-				criteria.reduce((sum, criterion) => sum + (criterion.present ? criterion.marks : 0), 0)
-			),
-			criteria
-		};
-	}
-
-	function gradeFromModelResult(result: GradeResult): {
-		score: number | null;
-		criteria: Array<Criterion & { present: boolean }>;
-	} {
-		const presentStepIds = new Set(result.presentStepIds);
-		return {
-			score: result.awardedMarks,
-			criteria: practice.criteria.map((criterion) => ({
-				...criterion,
-				present: presentStepIds.has(criterion.id)
-			}))
-		};
-	}
-
-	function makeNextAdvice(criteria: Array<Criterion & { present: boolean }>, answer: string) {
-		if (!answer.trim()) return 'Start with one sentence that answers the exact question.';
-		const missing = criteria.find((criterion) => !criterion.present);
-		return missing
-			? missing.missing
-			: 'Now tighten expression and make the strongest evidence do more analytical work.';
-	}
-
-	function makeModelDirection(criteria: Array<Criterion & { present: boolean }>, answer: string) {
-		const model = practice.modelAnswer.trim();
-		if (!model) return 'No model direction is published for this question yet.';
-		if (!answer.trim()) return model;
-		const missing = criteria.filter((criterion) => !criterion.present);
-		if (missing.length === 0) {
-			return `Your answer has the main ingredients. A cleaner model direction is: ${model}`;
-		}
-		return `Keep what is working, then add ${missing
-			.slice(0, 2)
-			.map((criterion) => criterion.title.toLowerCase())
-			.join(' and ')}. Model direction: ${model}`;
-	}
-
-	function buildHints() {
-		return [
-			activeStage
-				? {
-						title: activeStage.shortTitle,
-						text: activeStage.goal
-					}
-				: null,
-			practice.weakAnswerExplanation
-				? {
-						title: 'Common trap',
-						text: `Avoid this: ${practice.weakAnswerExplanation}`
-					}
-				: null,
-			practice.weakAnswerText
-				? {
-						title: 'Weak answer',
-						text: `Do not stop at: ${practice.weakAnswerText}`
-					}
-				: null
-		].filter((item): item is { title: string; text: string } => Boolean(item?.text));
-	}
-
-	function setMode(nextMode: Mode) {
-		if (nextMode === 'full' && !fullAnswer.trim() && draftedAnswer.trim()) {
-			fullAnswer = draftedAnswer;
-		}
-		runWithResultRouteRepairSuppressed(async () => {
-			clearCheckedResult({ updateUrl: false });
-			persistEnglishPracticeState({
-				mode: nextMode,
-				activeStageIndex: nextMode === 'steps' ? activeStageIndex : 0,
-				view: 'attempt',
-				model: false
-			});
-			await updateEnglishPracticeUrl(
-				{
-					mode: nextMode,
-					stepIndex: nextMode === 'steps' ? activeStageIndex : 0,
-					view: 'attempt'
-				},
-				'push'
-			);
-		});
-	}
-
-	function updateActiveStepAnswer(value: string) {
+	function updateActiveAnswer(value: string) {
 		if (!activeStage) return;
-		markEnglishPracticeTouched();
-		const invalidatesResult = checkedAnswerText.length > 0;
 		stepAnswers = { ...stepAnswers, [activeStage.id]: value };
-		clearCheckedResult();
-		persistEnglishPracticeState(invalidatesResult ? { view: 'attempt', model: false } : {});
-	}
-
-	function updateFullAnswer(value: string) {
-		markEnglishPracticeTouched();
-		const invalidatesResult = checkedAnswerText.length > 0 && value !== checkedAnswerText;
-		fullAnswer = value;
-		clearCheckedResult();
-		persistEnglishPracticeState(invalidatesResult ? { view: 'attempt', model: false } : {});
-	}
-
-	function goToStage(index: number) {
-		const nextIndex = Math.max(0, Math.min(practice.stages.length - 1, index));
-		runWithResultRouteRepairSuppressed(async () => {
-			clearCheckedResult({ updateUrl: false });
-			hintOpen = false;
-			await updateEnglishPracticeUrl(
-				{ mode: 'steps', stepIndex: nextIndex, view: 'attempt', model: false },
-				'push'
-			);
-		});
-	}
-
-	function nextStage() {
-		if (activeStageIndex < practice.stages.length - 1) {
-			goToStage(activeStageIndex + 1);
-			return;
-		}
-		setMode('full');
-	}
-
-	function resetWork() {
-		markEnglishPracticeTouched();
-		stepAnswers = blankStepAnswers();
-		fullAnswer = '';
-		checkedAnswerText = '';
-		gradeResult = null;
-		gradeError = '';
+		invalidateFromStage(activeStageIndex);
 		gradePhase = 'idle';
-		hintOpen = false;
-		updateEnglishPracticeUrl(
-			{ mode: defaultMode, stepIndex: 0, view: 'attempt', model: false },
-			'replace'
-		);
-		persistEnglishPracticeState({
-			stepAnswers,
-			fullAnswer,
-			checkedAnswerText,
-			gradeResult,
-			gradeError,
-			view: 'attempt',
-			model: false
-		});
+		gradeError = '';
+		persistState();
 	}
 
-	function toggleModelDirection() {
-		if (!checked) return;
-		updateEnglishPracticeUrl({ view: 'result', model: !showModelAnswer }, 'push');
+	function openStage(index: number) {
+		if (index < 0 || index >= practice.stages.length || index > furthestUnlockedIndex) return;
+		gradePhase = 'idle';
+		gradeError = '';
+		hintOpen = false;
+		void goto(stepHref(practice.stages[index]), { noScroll: true, keepFocus: false });
+	}
+
+	function continueToNextStage() {
+		if (!activePassed) return;
+		const nextStage = practice.stages[activeStageIndex + 1];
+		if (nextStage) openStage(activeStageIndex + 1);
+	}
+
+	function resetPractice() {
+		stepAnswers = blankStepAnswers();
+		stepResults = {};
+		attemptHistory = [];
+		gradePhase = 'idle';
+		gradeError = '';
+		hintOpen = false;
+		persistState();
+		const firstStage = practice.stages[0];
+		if (firstStage) void goto(stepHref(firstStage), { replaceState: true, noScroll: true });
+	}
+
+	function buildStepHints(stage: Stage | undefined) {
+		if (!stage) return [];
+		if (stage.hints?.length) return stage.hints;
+		const hintsByStep: Record<string, Array<{ title: string; text: string }>> = {
+			task: [
+				{
+					title: 'Find the contrast',
+					text: 'Name the clearest difference between the two characters before explaining why it matters.'
+				},
+				{
+					title: 'Build an argument',
+					text: 'Move beyond a list of traits: what does the contrast allow the writer to reveal or criticise?'
+				},
+				{
+					title: 'Sentence frame',
+					text: 'The writer contrasts ___ with ___ to suggest that ___.'
+				}
+			],
+			evidence: [
+				{
+					title: 'Choose one detail',
+					text: 'Select a short quotation, action, or moment that directly supports the argument you passed.'
+				},
+				{
+					title: 'Make it analysable',
+					text: 'Prefer evidence containing a particular word, behaviour, or contrast you can examine closely.'
+				}
+			],
+			method: [
+				{
+					title: 'Zoom in',
+					text: 'Explain how a word, behaviour, narrative choice, structure, or contrast creates meaning.'
+				},
+				{
+					title: 'Avoid technique spotting',
+					text: 'Naming a method is not enough. Connect the choice to a precise impression or idea.'
+				}
+			],
+			wider: [
+				{
+					title: 'Choose another moment',
+					text: 'Find a precise event elsewhere in the text that develops the same argument.'
+				},
+				{
+					title: 'Add something new',
+					text: 'Use the wider moment to extend or complicate the interpretation, not simply repeat it.'
+				}
+			],
+			'full-answer': [
+				{
+					title: 'Keep one argument',
+					text: 'Use the responses you have already passed as building blocks for one sustained answer.'
+				},
+				{
+					title: 'Check the journey',
+					text: 'Move from argument to evidence, analyse the writer’s choice, then connect to the wider text.'
+				}
+			]
+		};
+		return (
+			hintsByStep[stage.id] ?? [
+				{ title: stage.shortTitle, text: stage.revealedText },
+				{ title: 'What good looks like', text: stage.goal }
+			]
+		);
 	}
 
 	function statusText(phase: GradePhase) {
 		if (phase === 'connecting') return 'Starting check';
-		if (phase === 'calling') return 'Checking answer';
-		if (phase === 'thinking') return 'Reading against the mark scheme';
+		if (phase === 'calling') return 'Checking your step';
+		if (phase === 'thinking') return 'Reading your response';
 		if (phase === 'grading') return 'Preparing feedback';
-		if (phase === 'done') return 'Checked';
-		if (phase === 'error') return 'Checklist fallback';
-		return 'Check answer';
-	}
-
-	async function checkAnswer() {
-		if (!canCheck) return;
-		markEnglishPracticeTouched();
-
-		const submittedAnswer = answerForFeedback;
-		checkedAnswerText = '';
-		gradeError = '';
-		gradeResult = null;
-		gradePhase = 'connecting';
-		updateEnglishPracticeUrl({ view: 'attempt', model: false }, 'replace');
-
-		try {
-			const response = await fetch(
-				resolve('/api/questions/[questionId]/grade', { questionId: practice.questionId }),
-				{
-					method: 'POST',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({ answer: submittedAnswer })
-				}
-			);
-
-			if (!response.ok || !response.body) {
-				throw new Error(`Grading request failed with ${response.status}`);
-			}
-
-			await readSseStream(response.body);
-			if (!gradeResult) throw new Error('Grading stream ended without a result.');
-			checkedAnswerText = submittedAnswer;
-			updateEnglishPracticeUrl({ view: 'result', model: false });
-			persistEnglishPracticeState({ view: 'result', model: false });
-		} catch (error) {
-			console.error('[english-practice] model grading failed; using checklist fallback', error);
-			gradePhase = 'error';
-			gradeError = 'Live model grading is unavailable, so this check uses the mark checklist.';
-			checkedAnswerText = submittedAnswer;
-			updateEnglishPracticeUrl({ view: 'result', model: false });
-			persistEnglishPracticeState({ view: 'result', model: false });
-		}
+		return 'Checking your step';
 	}
 
 	function parseSseBlock(block: string): SseMessage | null {
 		const lines = block.split(/\r?\n/);
 		let event = 'message';
 		const dataLines: string[] = [];
-
 		for (const rawLine of lines) {
 			if (!rawLine || rawLine.startsWith(':')) continue;
 			const separatorIndex = rawLine.indexOf(':');
 			const field = separatorIndex === -1 ? rawLine : rawLine.slice(0, separatorIndex);
 			let value = separatorIndex === -1 ? '' : rawLine.slice(separatorIndex + 1);
 			if (value.startsWith(' ')) value = value.slice(1);
-
 			if (field === 'event') event = value;
 			if (field === 'data') dataLines.push(value);
 		}
-
 		if (dataLines.length === 0) return null;
 		return { event, data: dataLines.join('\n') };
 	}
@@ -775,91 +493,131 @@
 			if (status.phase === 'calling' || status.phase === 'thinking' || status.phase === 'grading') {
 				gradePhase = status.phase;
 			}
-			return;
+			return null;
 		}
-
-		if (message.event === 'done') {
-			gradeResult = JSON.parse(message.data) as GradeResult;
-			gradePhase = 'done';
-			return;
-		}
-
-		if (message.event === 'error') {
-			throw new Error('Model grading stream returned an error.');
-		}
+		if (message.event === 'done') return JSON.parse(message.data) as EnglishStepGradeResult;
+		if (message.event === 'error') throw new Error('The step checker returned an error.');
+		return null;
 	}
 
 	async function readSseStream(body: ReadableStream<Uint8Array>) {
 		const reader = body.getReader();
 		const decoder = new TextDecoder();
 		let buffer = '';
-
+		let result: EnglishStepGradeResult | null = null;
 		while (true) {
 			const { done, value } = await reader.read();
 			buffer += decoder.decode(value, { stream: !done });
-
 			let separatorIndex = buffer.indexOf('\n\n');
 			while (separatorIndex !== -1) {
 				const block = buffer.slice(0, separatorIndex);
 				buffer = buffer.slice(separatorIndex + 2);
 				const message = parseSseBlock(block);
-				if (message) handleSseMessage(message);
+				if (message) result = handleSseMessage(message) ?? result;
 				separatorIndex = buffer.indexOf('\n\n');
 			}
-
 			if (done) break;
 		}
-
 		const trailingMessage = parseSseBlock(buffer.trim());
-		if (trailingMessage) handleSseMessage(trailingMessage);
+		if (trailingMessage) result = handleSseMessage(trailingMessage) ?? result;
+		return result;
+	}
+
+	async function checkActiveStep() {
+		if (!activeStage || !canCheck) return;
+		gradeError = '';
+		gradePhase = 'connecting';
+		try {
+			const response = await fetch(
+				resolve('/api/questions/[questionId]/grade-step', {
+					questionId: practice.questionId
+				}),
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({
+						stepId: activeStage.id,
+						answer: activeAnswer,
+						stepAnswers,
+						attemptHistory
+					})
+				}
+			);
+			if (!response.ok || !response.body) {
+				throw new Error(`Step check failed with ${response.status}`);
+			}
+			const result = await readSseStream(response.body);
+			if (!result) throw new Error('The step check ended without feedback.');
+			stepResults = { ...stepResults, [activeStage.id]: result };
+			attemptHistory = [
+				...attemptHistory,
+				{
+					stepId: activeStage.id,
+					stepTitle: activeStage.title,
+					answer: activeAnswer,
+					decision: result.decision,
+					checks: result.checks,
+					nextImprovement: result.nextImprovement
+				}
+			].slice(-16);
+			gradePhase = 'done';
+			persistState();
+		} catch (error) {
+			console.error('[english-step-practice] step check failed', error);
+			gradePhase = 'error';
+			gradeError =
+				'This step could not be checked right now. Your response is saved—please try again.';
+		}
+	}
+
+	function primaryAction() {
+		if (activePassed) {
+			continueToNextStage();
+			return;
+		}
+		void checkActiveStep();
+	}
+
+	function primaryLabel() {
+		if (isChecking) return statusText(gradePhase);
+		if (activePassed) {
+			return activeStageIndex === practice.stages.length - 1 ? 'Practice complete' : 'Continue';
+		}
+		return activeResult?.decision === 'revise' ? 'Check again' : 'Check step';
 	}
 
 	$effect(() => {
 		if (loadedQuestionId === practice.questionId) return;
 		loadedQuestionId = practice.questionId;
+		hydrated = false;
 		const storedState = initialEnglishPracticeState(practice.questionId);
-		applyEnglishPracticeState(storedState);
-
-		const hasExplicitRouteState =
-			page.url.searchParams.has('mode') ||
-			page.url.searchParams.has('step') ||
-			page.url.searchParams.has('view') ||
-			page.url.searchParams.has('model');
-		if (storedState && !hasExplicitRouteState) {
-			updateEnglishPracticeUrl(
-				{
-					mode: storedState.mode ?? defaultMode,
-					stepIndex: storedState.activeStageIndex ?? 0,
-					view: storedState.view ?? 'attempt',
-					model: storedState.model ?? false
-				},
-				'replace'
-			);
-		}
+		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
+		stepResults = storedState?.stepResults ?? {};
+		attemptHistory = storedState?.attemptHistory ?? [];
+		lastQueuedDraftSignature = JSON.stringify({ stepAnswers, stepResults, attemptHistory });
+		hydrated = true;
 	});
 
 	$effect(() => {
-		if (loadedQuestionId !== practice.questionId) return;
-		persistEnglishPracticeState();
-	});
-
-	$effect(() => {
-		if (suppressResultRouteRepair) return;
-		if (requestedPracticeView === 'result' && !hasCheckedResult && !isChecking) {
-			updateEnglishPracticeUrl({ view: 'attempt', model: false }, 'replace');
+		if (!hydrated || activeStageIndex <= furthestUnlockedIndex) return;
+		const unlockedStage = practice.stages[furthestUnlockedIndex];
+		if (unlockedStage) {
+			void goto(stepHref(unlockedStage), { replaceState: true, noScroll: true });
 		}
 	});
+
+	onMount(() => installPracticeDraftWindowFlush(userId));
 </script>
 
 <svelte:head>
-	<title>{question.title} practice | Question Constellation</title>
+	<title>{question.title} step-by-step practice | Question Constellation</title>
 	<meta
 		name="description"
-		content="Practise a GCSE English question by building an answer step by step or writing the full answer, then checking it against the mark focus."
+		content="Build a GCSE English answer one checked step at a time, then combine the steps into a complete response."
 	/>
 </svelte:head>
 
-<main class="qc-real-app qc-english-practice-app">
+<main class="qc-step-practice-app">
 	<AppTopbar
 		{user}
 		subject={topbarSubject}
@@ -868,12 +626,12 @@
 		showNavigation
 	/>
 
-	<div class="qc-english-practice-layout">
-		<aside class="qc-english-practice-side" aria-label="Question and mark support">
+	<div class="qc-step-practice-layout">
+		<aside class="qc-step-question" aria-label="Question">
 			<IconBackLink href={finderHref} label="Back to question finder" />
-			<p class="qc-real-kicker">{question.meta.qualification} {question.meta.subject}</p>
+			<p class="qc-step-eyebrow">{question.meta.qualification} {question.meta.subject}</p>
 			<h1>Question {question.sourceRef}</h1>
-			<div class="qc-question-meta-stack" aria-label="Exam metadata">
+			<div class="qc-step-meta" aria-label="Exam information">
 				{#each metaChips as chip (chip)}
 					<span>{chip}</span>
 				{/each}
@@ -887,795 +645,778 @@
 				assetLoading="eager"
 			/>
 
+			{#if practice.sourcePaperUrl}
+				<a
+					class="qc-step-source-link"
+					href={practice.sourcePaperUrl}
+					target="_blank"
+					rel="noreferrer"
+				>
+					<span>
+						<strong>Open the full source paper</strong>
+						<small>Use it whenever you need the printed source text.</small>
+					</span>
+					<ExternalLink size={16} aria-hidden="true" />
+				</a>
+			{/if}
+
 			{#if practice.instructions.length > 0}
-				<section class="qc-english-support-panel">
-					<p class="qc-panel-label">Question instructions</p>
+				<section class="qc-step-instructions">
+					<p>Question instructions</p>
 					<ul>
-						{#each practice.instructions as instruction}
+						{#each practice.instructions as instruction (instruction)}
 							<li><MathText text={instruction} /></li>
 						{/each}
 					</ul>
 				</section>
 			{/if}
-
-			<section class="qc-english-support-panel" aria-label="Mark focus">
-				<div class="qc-english-section-title">
-					<ListChecks size={18} aria-hidden="true" />
-					<h2>Mark focus</h2>
-				</div>
-				<ol class="qc-english-criteria-list">
-					{#each displayGrade.criteria as criterion}
-						<li class:present={criterion.present}>
-							{#if criterion.present}
-								<Check size={17} aria-hidden="true" />
-							{:else}
-								<Circle size={17} aria-hidden="true" />
-							{/if}
-							<span><MathText text={criterion.title} /></span>
-							<em>{criterion.marks}</em>
-						</li>
-					{/each}
-				</ol>
-			</section>
 		</aside>
 
-		<section class="qc-english-practice-main" aria-label="Guided answer workspace">
-			<div class="qc-english-main-head">
-				<div>
-					<p class="qc-real-kicker">Guided answer</p>
-					<h2>
-						{practice.isExtended
-							? 'Build the answer, then check it.'
-							: 'Write the answer, then check it.'}
-					</h2>
-				</div>
-				<strong class="qc-english-score">{markText}</strong>
-			</div>
-
-			<div class="qc-english-mode-tabs" role="tablist" aria-label="Practice mode">
-				<button
-					type="button"
-					class:active={mode === 'steps'}
-					aria-selected={mode === 'steps'}
-					role="tab"
-					onclick={() => setMode('steps')}
-				>
-					<ListChecks size={17} aria-hidden="true" />
-					Step build
-				</button>
-				<button
-					type="button"
-					class:active={mode === 'full'}
-					aria-selected={mode === 'full'}
-					role="tab"
-					onclick={() => setMode('full')}
-				>
-					<PenLine size={17} aria-hidden="true" />
-					Full answer
-				</button>
-			</div>
+		<section class="qc-step-workspace" aria-label="Step-by-step answer practice">
+			<nav
+				class="qc-stepper"
+				aria-label="Answer steps"
+				style={`--step-count: ${practice.stages.length}`}
+			>
+				{#each practice.stages as stage, index (stage.id)}
+					{@const locked = index > furthestUnlockedIndex}
+					{@const passed = stagePassed(stage, index)}
+					<button
+						type="button"
+						class:active={index === activeStageIndex}
+						class:passed
+						class:locked
+						disabled={locked}
+						onclick={() => openStage(index)}
+						aria-current={index === activeStageIndex ? 'step' : undefined}
+						aria-label={locked ? `${stage.shortTitle}, locked` : `Open ${stage.shortTitle}`}
+					>
+						<span class="qc-step-number">
+							{#if passed}
+								<Check size={15} strokeWidth={2.7} aria-hidden="true" />
+							{:else if locked}
+								<LockKeyhole size={13} aria-hidden="true" />
+							{:else}
+								{index + 1}
+							{/if}
+						</span>
+						<strong>{stage.shortTitle}</strong>
+					</button>
+				{/each}
+			</nav>
 
 			<HintPanel hints={hintItems} bind:open={hintOpen} />
 
-			{#if mode === 'steps'}
-				<section class="qc-english-work-panel" aria-label="Step build">
-					{#if practice.stages.length > 1}
-						<div class="qc-english-stepper" aria-label="Answer build stages">
-							{#each practice.stages as stage, index}
-								<button
-									type="button"
-									class:active={index === activeStageIndex}
-									class:complete={(stepAnswers[stage.id] ?? '').trim().length > 8}
-									onclick={() => goToStage(index)}
-									aria-label={`Open ${stage.title}`}
-								>
-									<span>{index + 1}</span>
-									<strong>{stage.shortTitle}</strong>
-								</button>
-							{/each}
+			{#if activeStage}
+				<section class="qc-step-card" aria-labelledby="active-step-title">
+					<header class="qc-step-card-head">
+						<div>
+							<p>Step {activeStageIndex + 1} of {practice.stages.length}</p>
+							<h2 id="active-step-title">{activeStage.title}</h2>
 						</div>
+						{#if activePassed}
+							<span class="qc-step-pass-badge">
+								<CheckCircle2 size={17} aria-hidden="true" />
+								Passed
+							</span>
+						{/if}
+					</header>
 
-						<div class="qc-english-progress" aria-hidden="true">
-							<div style={`width: ${stageProgress}%`}></div>
-						</div>
-					{/if}
+					<p class="qc-step-explanation"><MathText text={activeStage.revealedText} /></p>
+					<p class="qc-step-goal">
+						<strong>For this step</strong>
+						<span><MathText text={activeStage.goal} /></span>
+					</p>
 
-					{#if activeStage}
-						<section class="qc-english-current-step">
-							<div class="qc-english-section-title">
-								<ClipboardCheck size={18} aria-hidden="true" />
-								<h3>{activeStage.title}</h3>
-							</div>
-							<p><MathText text={activeStage.revealedText} /></p>
-						</section>
-
-						<label class="qc-english-answer-box">
-							<span><MathText text={activeStage.prompt} /></span>
-							<small><MathText text={activeStage.goal} /></small>
-							<ResponseRenderer
-								response={lineResponse(practice.stepLineCount)}
-								answer={stepAnswers[activeStage.id] ?? ''}
-								onAnswerChange={updateActiveStepAnswer}
-							/>
-						</label>
-					{/if}
-
-					<div class="qc-english-actions">
-						<button
-							type="button"
-							class="qc-english-secondary"
-							onclick={() => goToStage(activeStageIndex - 1)}
-							disabled={activeStageIndex === 0}
-						>
-							<ChevronLeft size={18} aria-hidden="true" />
-							Back
-						</button>
-						<button type="button" class="qc-english-primary" onclick={nextStage}>
-							{#if activeStageIndex === practice.stages.length - 1}
-								<PenLine size={18} aria-hidden="true" />
-								Full answer
-							{:else}
-								<ChevronRight size={18} aria-hidden="true" />
-								Next part
-							{/if}
-						</button>
-					</div>
-				</section>
-
-				<section class="qc-english-draft" aria-label="Working answer">
-					<div class="qc-english-section-title">
-						<ClipboardCheck size={18} aria-hidden="true" />
-						<h3>Working answer</h3>
-					</div>
-					{#if draftedAnswer}
-						<ol>
-							{#each practice.stages as stage, index}
-								<li class:empty={!(stepAnswers[stage.id] ?? '').trim()}>
-									<span>{index + 1}</span>
-									<p><MathText text={(stepAnswers[stage.id] ?? '').trim() || stage.goal} /></p>
-								</li>
-							{/each}
-						</ol>
-					{:else}
-						<p>Your notes collect here, then move into the full answer box.</p>
-					{/if}
-				</section>
-			{:else}
-				<section class="qc-english-work-panel" aria-label="Full answer">
-					<label class="qc-english-answer-box full">
-						<span>Write the full answer</span>
-						<small>Use the question above, then check against the mark focus.</small>
+					<label class="qc-step-answer">
+						<span><MathText text={activeStage.prompt} /></span>
 						<ResponseRenderer
-							response={lineResponse(practice.fullLineCount)}
-							answer={fullAnswer}
-							onAnswerChange={updateFullAnswer}
+							response={lineResponse(activeStage)}
+							answer={stepAnswers[activeStage.id] ?? ''}
+							onAnswerChange={updateActiveAnswer}
 						/>
 					</label>
 
-					<div class="qc-english-actions">
+					<div class="qc-step-action-row">
+						<small>
+							{activeAnswer.length < 8 && !activePassed
+								? 'Write a meaningful response before checking.'
+								: activePassed
+									? 'This step has met the required standard.'
+									: 'Your response will be checked against this step only.'}
+						</small>
 						<button
 							type="button"
-							class="qc-english-primary"
-							onclick={checkAnswer}
-							disabled={!canCheck}
+							class="qc-step-primary"
+							onclick={primaryAction}
+							disabled={activePassed ? activeStageIndex === practice.stages.length - 1 : !canCheck}
 						>
 							{#if isChecking}
-								<span class="loading-spinner button-spinner" aria-hidden="true"></span>
-								{statusText(gradePhase)}
+								<span class="qc-step-spinner" aria-hidden="true"></span>
+							{:else if activePassed && activeStageIndex < practice.stages.length - 1}
+								<ChevronRight size={18} aria-hidden="true" />
 							{:else}
 								<ClipboardCheck size={18} aria-hidden="true" />
-								Check answer
 							{/if}
+							{primaryLabel()}
 						</button>
 					</div>
 				</section>
+
+				{#if isChecking || gradeError || activeResult}
+					<section class="qc-step-feedback" aria-live="polite" aria-label="Feedback">
+						<header>
+							<div>
+								<p>Feedback</p>
+								<h3>
+									{activeResult?.decision === 'pass'
+										? 'Step passed'
+										: activeResult
+											? 'Revise this step'
+											: isChecking
+												? statusText(gradePhase)
+												: 'Check unavailable'}
+								</h3>
+							</div>
+							{#if activeResult}
+								<span class:passed={activeResult.decision === 'pass'}>
+									{activeResult.decision === 'pass' ? 'Ready to continue' : 'Not ready yet'}
+								</span>
+							{/if}
+						</header>
+
+						{#if isChecking}
+							<div class="qc-step-checking">
+								<span class="qc-step-spinner dark" aria-hidden="true"></span>
+								<p>{statusText(gradePhase)}…</p>
+							</div>
+						{:else if gradeError}
+							<p class="qc-step-error">{gradeError}</p>
+						{:else if activeResult}
+							<div class="qc-step-checks">
+								{#each activeResult.checks as check (check.id)}
+									<div class:met={check.status === 'met'}>
+										{#if check.status === 'met'}
+											<CheckCircle2 size={20} aria-hidden="true" />
+										{:else}
+											<Circle size={20} aria-hidden="true" />
+										{/if}
+										<span>
+											<strong>{check.label}</strong>
+											<small>{check.feedback}</small>
+										</span>
+									</div>
+								{/each}
+							</div>
+							<div class="qc-step-next-improvement">
+								<strong
+									>{activeResult.decision === 'pass' ? 'Carry forward' : 'Next improvement'}</strong
+								>
+								<p>{activeResult.nextImprovement}</p>
+							</div>
+							{#if activeResult.coachingNote}
+								<div class="qc-step-coaching-note">
+									<strong
+										>{attemptHistory.length > 1
+											? 'Your learning pattern'
+											: 'Your current focus'}</strong
+									>
+									<p>{activeResult.coachingNote}</p>
+								</div>
+							{/if}
+						{/if}
+					</section>
+				{/if}
 			{/if}
 
-			<section class="qc-english-feedback-panel" aria-label="Answer feedback">
-				<div class="qc-english-section-title">
-					<ClipboardCheck size={18} aria-hidden="true" />
-					<h3>{checked ? 'Feedback' : 'Draft check'}</h3>
-				</div>
-
-				{#if isChecking}
-					<p class="qc-english-status">{statusText(gradePhase)}.</p>
-				{:else if gradeError}
-					<p class="qc-english-status warning">{gradeError}</p>
-				{:else if !answerForFeedback.trim()}
-					<p class="qc-english-status">Write one step or a full answer to see what is missing.</p>
-				{/if}
-
-				{#if feedbackMarkdown}
-					<MarkdownContent markdown={feedbackMarkdown} class="qc-english-feedback-markdown" />
-				{/if}
-
-				<div class="qc-english-feedback-grid">
-					{#each displayGrade.criteria as criterion}
-						<div class:present={criterion.present}>
-							{#if criterion.present}
-								<Check size={18} aria-hidden="true" />
-							{:else}
-								<Circle size={18} aria-hidden="true" />
-							{/if}
-							<span>
-								<strong><MathText text={criterion.title} /></strong>
-								<small
-									><MathText
-										text={criterion.present ? criterion.found : criterion.missing}
-									/></small
-								>
-							</span>
-						</div>
-					{/each}
-				</div>
-
-				<div class="qc-english-next-step">
-					<strong>Next best fix</strong>
-					<p><MathText text={nextAdvice} /></p>
-				</div>
-
-				{#if checked || gradeError}
-					<button
-						type="button"
-						class="qc-english-secondary qc-english-model-toggle"
-						onclick={toggleModelDirection}
-					>
-						{showModelAnswer ? 'Hide model direction' : 'Show model direction'}
-					</button>
-					{#if showModelAnswer}
-						<p class="qc-english-model-direction"><MathText text={modelDirection} /></p>
-					{/if}
-				{/if}
-			</section>
-
-			<div class="qc-english-bottom-actions">
-				<span>{completedStepCount}/{practice.stages.length} steps drafted</span>
-				<button type="button" class="qc-english-reset" onclick={resetWork}>
-					<RotateCcw size={18} aria-hidden="true" />
-					Reset
+			<footer class="qc-step-footer">
+				<span
+					>{practice.stages.filter((stage) => validResultForStage(stage)?.decision === 'pass')
+						.length}/{practice.stages.length} steps passed</span
+				>
+				<button type="button" onclick={resetPractice}>
+					<RotateCcw size={16} aria-hidden="true" />
+					Reset practice
 				</button>
-			</div>
+			</footer>
 		</section>
 	</div>
 </main>
 
 <style>
-	.qc-english-practice-layout {
+	.qc-step-practice-app {
+		--step-ink: #122c2a;
+		--step-muted: #607076;
+		--step-line: #c9d1d0;
+		--step-paper: #fffdf7;
+		--step-green: #087a55;
+		--step-green-soft: #eaf7f0;
+		min-height: var(--app-viewport-height, 100vh);
+		background:
+			linear-gradient(115deg, rgba(255, 248, 222, 0.56), transparent 38%),
+			linear-gradient(295deg, rgba(255, 228, 227, 0.48), transparent 42%), #f8faf7;
+		color: var(--step-ink);
+		overflow-x: clip;
+	}
+
+	.qc-step-practice-layout {
 		display: grid;
-		width: min(100%, 91rem);
+		grid-template-columns: minmax(24rem, 32rem) minmax(0, 1fr);
+		width: min(100%, 94rem);
+		min-width: 0;
+		min-height: calc(var(--app-viewport-height, 100vh) - 4rem);
 		margin: 0 auto;
 	}
 
-	.qc-english-practice-side,
-	.qc-english-practice-main {
+	.qc-step-question {
 		display: grid;
 		align-content: start;
-		min-width: 0;
-	}
-
-	.qc-english-practice-side {
 		gap: 0.95rem;
-		overflow-x: hidden;
-		padding: clamp(1.1rem, 2.5vw, 2rem);
-		border-bottom: 1px solid rgba(105, 129, 143, 0.15);
-		background: color-mix(in srgb, #ffffff 58%, transparent);
-		backdrop-filter: blur(16px);
-	}
-
-	.qc-english-practice-main {
-		gap: 1rem;
-		padding: clamp(1rem, 2.4vw, 2rem);
-	}
-
-	.qc-english-practice-side h1 {
-		margin: 0;
-		color: #123f35;
-		font-size: clamp(1.45rem, 2.8vw, 2.25rem);
-		font-weight: 520;
-		letter-spacing: 0;
-		line-height: 1.06;
-	}
-
-	.qc-english-support-panel,
-	.qc-english-work-panel,
-	.qc-english-draft,
-	.qc-english-feedback-panel {
-		display: grid;
-		gap: 0.85rem;
-		width: min(100%, 980px);
-		padding: clamp(0.85rem, 1.8vw, 1.1rem);
-		border: 1px solid #102033;
-		background: color-mix(in srgb, #ffffff 64%, transparent);
-		backdrop-filter: blur(14px);
-	}
-
-	.qc-english-support-panel ul,
-	.qc-english-draft ol,
-	.qc-english-criteria-list {
-		display: grid;
-		gap: 0.55rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.qc-english-support-panel li {
-		color: #26394f;
-		font-size: 0.92rem;
-		line-height: 1.38;
-	}
-
-	.qc-english-main-head,
-	.qc-english-bottom-actions {
-		display: flex;
-		align-items: start;
-		justify-content: space-between;
-		gap: 1rem;
-		width: min(100%, 980px);
 		min-width: 0;
+		padding: clamp(1.4rem, 2.5vw, 2.35rem);
+		border-right: 1px solid rgba(63, 79, 82, 0.18);
+		background: rgba(255, 253, 247, 0.78);
 	}
 
-	.qc-english-main-head h2,
-	.qc-english-section-title h2,
-	.qc-english-section-title h3 {
-		margin: 0;
-		color: #102033;
-		font-size: clamp(1.08rem, 2vw, 1.32rem);
-		font-weight: 480;
-		line-height: 1.2;
-	}
-
-	.qc-english-section-title {
-		display: flex;
-		align-items: center;
-		gap: 0.52rem;
-		color: #0d5a3f;
-	}
-
-	.qc-english-section-title :global(svg) {
-		flex: 0 0 auto;
-		color: #168458;
-	}
-
-	.qc-english-score {
-		display: inline-flex;
-		align-items: center;
-		min-height: 2rem;
-		padding: 0.34rem 0.62rem;
-		border: 1px solid rgba(92, 118, 130, 0.32);
-		background: #ffffff;
-		color: #244b68;
-		font-size: 0.82rem;
-		font-weight: 520;
-		line-height: 1.1;
-		white-space: nowrap;
-	}
-
-	.qc-english-mode-tabs {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		width: min(100%, 980px);
-		border: 1px solid #102033;
-		background: color-mix(in srgb, #ffffff 68%, transparent);
-	}
-
-	.qc-english-mode-tabs button,
-	.qc-english-stepper button,
-	.qc-english-primary,
-	.qc-english-secondary,
-	.qc-english-reset {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.42rem;
-		min-height: 2.55rem;
-		border: 0;
-		background: transparent;
-		color: #102033;
-		font: inherit;
-		font-size: 0.9rem;
-		font-weight: 520;
-		line-height: 1.1;
-		cursor: pointer;
-	}
-
-	.qc-english-mode-tabs button + button {
-		border-left: 1px solid #102033;
-	}
-
-	.qc-english-mode-tabs button.active {
-		background: #edfaf3;
-		color: #0d5a3f;
-	}
-
-	.qc-english-stepper {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(5.2rem, 1fr));
-		border: 1px solid #102033;
-		background: #ffffff;
-	}
-
-	.qc-english-stepper button {
-		flex-direction: column;
-		gap: 0.12rem;
-		min-height: 3.35rem;
-		padding: 0.38rem;
-		border-left: 1px solid rgba(16, 32, 51, 0.22);
-	}
-
-	.qc-english-stepper button:first-child {
-		border-left: 0;
-	}
-
-	.qc-english-stepper button.active,
-	.qc-english-stepper button.complete {
-		background: #edfaf3;
-		color: #0d5a3f;
-	}
-
-	.qc-english-stepper button span,
-	.qc-english-draft li span {
-		display: inline-grid;
-		width: 1.34rem;
-		height: 1.34rem;
-		place-items: center;
-		border: 1px solid currentColor;
-		font-size: 0.78rem;
-		font-weight: 620;
-	}
-
-	.qc-english-stepper button strong {
+	.qc-step-question :global(.qc-exam-card) {
 		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.76rem;
-		line-height: 1.05;
-	}
-
-	.qc-english-progress {
-		height: 0.42rem;
-		overflow: hidden;
-		background: #d9e0ea;
-	}
-
-	.qc-english-progress div {
-		height: 100%;
-		background: linear-gradient(90deg, #168458, #2f73bd);
-		transition: width 0.2s ease;
-	}
-
-	.qc-english-current-step {
-		display: grid;
-		gap: 0.55rem;
-		padding-bottom: 0.85rem;
-		border-bottom: 1px solid rgba(16, 32, 51, 0.22);
-	}
-
-	.qc-english-current-step p,
-	.qc-english-draft > p,
-	.qc-english-next-step p,
-	.qc-english-model-direction,
-	.qc-english-status {
-		margin: 0;
-		color: #526778;
-		font-size: 0.96rem;
-		font-weight: 400;
-		line-height: 1.42;
+		min-width: 0;
 		overflow-wrap: anywhere;
 	}
 
-	.qc-english-answer-box {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.qc-english-answer-box span {
-		color: #102033;
-		font-size: 0.96rem;
-		font-weight: 620;
-	}
-
-	.qc-english-answer-box small {
-		color: #64748b;
-		font-size: 0.86rem;
-		line-height: 1.35;
-	}
-
-	.qc-english-answer-box :global(.lined-textarea) {
-		margin-top: 0.35rem;
-		color: #111827;
-		font-size: 1rem;
-	}
-
-	.qc-english-actions {
+	.qc-step-source-link {
 		display: flex;
-		flex-wrap: nowrap;
-		gap: 0.7rem;
+		align-items: center;
 		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.75rem 0.85rem;
+		border: 1px solid #9badaa;
+		background: rgba(238, 246, 241, 0.72);
+		color: #164f40;
+		text-decoration: none;
 	}
 
-	.qc-english-primary,
-	.qc-english-secondary,
-	.qc-english-reset {
-		padding: 0.58rem 0.82rem;
-		border: 1px solid #102033;
-		background: #ffffff;
+	.qc-step-source-link:hover {
+		border-color: #47816f;
+		background: #eef6f1;
 	}
 
-	.qc-english-primary {
-		margin-left: auto;
-		border-color: #168458;
-		background: #168458;
-		color: #ffffff;
+	.qc-step-source-link span {
+		display: grid;
+		gap: 0.12rem;
+		min-width: 0;
 	}
 
-	.qc-english-secondary,
-	.qc-english-reset {
-		color: #0d5a3f;
+	.qc-step-source-link strong {
+		font-size: 0.84rem;
 	}
 
-	.qc-english-primary:disabled,
-	.qc-english-secondary:disabled {
-		border-color: #94a3b8;
-		background: #eef2f7;
-		color: #64748b;
+	.qc-step-source-link small {
+		color: #617572;
+		font-size: 0.75rem;
+	}
+
+	.qc-step-eyebrow,
+	.qc-step-card-head p,
+	.qc-step-feedback header p,
+	.qc-step-instructions > p {
+		margin: 0;
+		color: #597078;
+		font-size: 0.76rem;
+		font-weight: 750;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+	}
+
+	.qc-step-question h1 {
+		margin: -0.2rem 0 0;
+		font-family: Georgia, 'Times New Roman', serif;
+		font-size: clamp(2rem, 3vw, 2.75rem);
+		font-weight: 500;
+		letter-spacing: -0.04em;
+	}
+
+	.qc-step-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+	}
+
+	.qc-step-meta span {
+		padding: 0.38rem 0.58rem;
+		border: 1px solid #98a7a9;
+		background: rgba(255, 255, 255, 0.52);
+		font-size: 0.78rem;
+		font-weight: 650;
+	}
+
+	.qc-step-instructions {
+		padding: 0.9rem 1rem;
+		border: 1px solid var(--step-line);
+		background: rgba(255, 255, 255, 0.55);
+	}
+
+	.qc-step-instructions ul {
+		margin: 0.55rem 0 0;
+		padding-left: 1.1rem;
+		color: var(--step-muted);
+		font-size: 0.88rem;
+	}
+
+	.qc-step-workspace {
+		display: grid;
+		align-content: start;
+		gap: 1.1rem;
+		min-width: 0;
+		max-width: 100%;
+		padding: clamp(1.4rem, 3.4vw, 3rem);
+	}
+
+	.qc-stepper {
+		display: grid;
+		grid-template-columns: repeat(var(--step-count), minmax(0, 1fr));
+		border: 1px solid #9ba9aa;
+		background: rgba(255, 255, 255, 0.55);
+		max-width: 100%;
+		min-width: 0;
+	}
+
+	.qc-stepper button {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.48rem;
+		min-width: 0;
+		min-height: 3.8rem;
+		padding: 0.65rem 0.45rem;
+		border: 0;
+		border-right: 1px solid #c7cece;
+		background: transparent;
+		color: #48595e;
+		cursor: pointer;
+		transition:
+			background 140ms ease,
+			color 140ms ease;
+	}
+
+	.qc-stepper button:last-child {
+		border-right: 0;
+	}
+
+	.qc-stepper button::after {
+		position: absolute;
+		right: -1px;
+		bottom: -1px;
+		left: -1px;
+		height: 3px;
+		content: '';
+		background: transparent;
+	}
+
+	.qc-stepper button.active {
+		background: #f0f8f3;
+		color: #07583f;
+	}
+
+	.qc-stepper button.active::after {
+		background: var(--step-green);
+	}
+
+	.qc-stepper button.passed {
+		color: #076448;
+	}
+
+	.qc-stepper button.locked {
+		background: rgba(232, 235, 234, 0.52);
+		color: #9aa4a5;
 		cursor: not-allowed;
 	}
 
-	.qc-english-draft li {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0.62rem;
-		padding-top: 0.55rem;
-		border-top: 1px solid rgba(16, 32, 51, 0.18);
-	}
-
-	.qc-english-draft li span {
-		background: #edfaf3;
-		color: #0d5a3f;
-	}
-
-	.qc-english-draft li p {
-		margin: 0;
-		color: #102033;
-		font-size: 0.94rem;
-		line-height: 1.42;
-		overflow-wrap: anywhere;
-	}
-
-	.qc-english-draft li.empty p {
-		color: #7a8796;
-	}
-
-	.qc-english-criteria-list li,
-	.qc-english-feedback-grid > div {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
-		gap: 0.58rem;
-		align-items: start;
-		padding-top: 0.55rem;
-		border-top: 1px solid rgba(16, 32, 51, 0.18);
-		color: #102033;
-	}
-
-	.qc-english-feedback-grid > div {
-		grid-template-columns: auto minmax(0, 1fr);
-	}
-
-	.qc-english-criteria-list :global(svg),
-	.qc-english-feedback-grid :global(svg) {
-		margin-top: 0.12rem;
-		color: #94a3b8;
-	}
-
-	.qc-english-criteria-list li.present :global(svg),
-	.qc-english-feedback-grid > div.present :global(svg) {
-		color: #168458;
-	}
-
-	.qc-english-criteria-list span,
-	.qc-english-feedback-grid strong,
-	.qc-english-next-step strong {
-		color: #102033;
-		font-size: 0.92rem;
-		font-weight: 620;
-		line-height: 1.22;
-	}
-
-	.qc-english-criteria-list em {
-		color: #27415f;
+	.qc-stepper strong {
+		overflow: hidden;
 		font-size: 0.82rem;
-		font-style: normal;
-		font-weight: 620;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.qc-english-feedback-grid {
+	.qc-step-number {
 		display: grid;
-		gap: 0.58rem;
+		place-items: center;
+		width: 1.45rem;
+		height: 1.45rem;
+		border: 1px solid currentColor;
+		font-size: 0.72rem;
+		font-weight: 750;
 	}
 
-	.qc-english-feedback-grid small {
-		display: block;
-		margin-top: 0.18rem;
-		color: #526778;
-		font-size: 0.84rem;
-		line-height: 1.34;
+	.qc-step-card,
+	.qc-step-feedback {
+		border: 1px solid #7f9092;
+		background: rgba(255, 253, 247, 0.94);
+		box-shadow: 0 16px 40px rgba(31, 50, 50, 0.055);
 	}
 
-	.qc-english-status.warning {
-		color: #8a4a10;
+	.qc-step-card {
+		padding: clamp(1.2rem, 2.5vw, 2rem);
 	}
 
-	:global(.qc-english-feedback-markdown) {
-		--markdown-text: #344054;
-		--markdown-strong: #102033;
-		padding: 0.7rem 0;
-		border-top: 1px solid rgba(16, 32, 51, 0.18);
-		border-bottom: 1px solid rgba(16, 32, 51, 0.18);
-	}
-
-	.qc-english-next-step {
-		padding-top: 0.7rem;
-		border-top: 1px solid rgba(16, 32, 51, 0.18);
-	}
-
-	.qc-english-model-toggle {
-		justify-self: start;
-	}
-
-	.qc-english-model-direction {
-		padding: 0.85rem;
-		border: 1px solid rgba(16, 32, 51, 0.24);
-		background: #ffffff;
-	}
-
-	.qc-english-bottom-actions {
+	.qc-step-card-head,
+	.qc-step-feedback > header,
+	.qc-step-action-row,
+	.qc-step-footer {
+		display: flex;
 		align-items: center;
-		color: #526778;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.qc-step-card-head h2,
+	.qc-step-feedback h3 {
+		margin: 0.22rem 0 0;
+		font-family: Georgia, 'Times New Roman', serif;
+		font-weight: 500;
+		letter-spacing: -0.025em;
+	}
+
+	.qc-step-card-head h2 {
+		font-size: clamp(1.55rem, 2.6vw, 2.2rem);
+	}
+
+	.qc-step-pass-badge,
+	.qc-step-feedback > header > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.38rem;
+		padding: 0.38rem 0.58rem;
+		border: 1px solid #b8c2c1;
+		color: #6b777a;
+		font-size: 0.76rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.qc-step-pass-badge,
+	.qc-step-feedback > header > span.passed {
+		border-color: #75a991;
+		background: var(--step-green-soft);
+		color: #066043;
+	}
+
+	.qc-step-explanation {
+		max-width: 52rem;
+		margin: 1.15rem 0 0;
+		color: #4d6268;
+		font-size: 1rem;
+		line-height: 1.6;
+	}
+
+	.qc-step-goal {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.7rem;
+		margin: 1rem 0 1.25rem;
+		padding: 0.72rem 0.82rem;
+		border-left: 3px solid #178463;
+		background: #eef6f1;
+		color: #36544c;
+		font-size: 0.88rem;
+		line-height: 1.45;
+	}
+
+	.qc-step-goal strong {
+		color: #0b6047;
+	}
+
+	.qc-step-answer {
+		display: grid;
+		gap: 0.65rem;
+	}
+
+	.qc-step-answer > span {
+		color: #182d32;
+		font-size: 1.03rem;
+		font-weight: 720;
+	}
+
+	.qc-step-answer :global(.lined-textarea) {
+		--qc-response-textarea-bg: rgba(255, 255, 255, 0.5);
+		--qc-response-caret: #087a55;
+		border-color: #8a999b;
+		font-size: 1rem;
+		line-height: 2rem;
+	}
+
+	.qc-step-action-row {
+		align-items: flex-end;
+		margin-top: 1.15rem;
+	}
+
+	.qc-step-action-row small {
+		max-width: 27rem;
+		color: #758185;
+		font-size: 0.78rem;
+		line-height: 1.4;
+	}
+
+	.qc-step-primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.48rem;
+		min-width: 9.25rem;
+		min-height: 2.85rem;
+		padding: 0.68rem 1.05rem;
+		border: 1px solid #075c42;
+		background: #087a55;
+		color: white;
+		font: inherit;
+		font-size: 0.88rem;
+		font-weight: 750;
+		cursor: pointer;
+	}
+
+	.qc-step-primary:hover:not(:disabled) {
+		background: #066848;
+	}
+
+	.qc-step-primary:disabled {
+		border-color: #b2bcbc;
+		background: #dce1df;
+		color: #74807e;
+		cursor: not-allowed;
+	}
+
+	.qc-step-spinner {
+		width: 1rem;
+		height: 1rem;
+		border: 2px solid rgba(255, 255, 255, 0.45);
+		border-top-color: currentColor;
+		border-radius: 50%;
+		animation: qc-step-spin 0.75s linear infinite;
+	}
+
+	.qc-step-spinner.dark {
+		border-color: rgba(8, 122, 85, 0.2);
+		border-top-color: #087a55;
+	}
+
+	@keyframes qc-step-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.qc-step-feedback {
+		overflow: hidden;
+	}
+
+	.qc-step-feedback > header {
+		padding: 1rem 1.15rem;
+		border-bottom: 1px solid var(--step-line);
+		background: rgba(247, 249, 246, 0.76);
+	}
+
+	.qc-step-feedback h3 {
+		font-size: 1.38rem;
+	}
+
+	.qc-step-checking {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		padding: 1.5rem 1.15rem;
+		color: var(--step-muted);
+	}
+
+	.qc-step-checking p,
+	.qc-step-error {
+		margin: 0;
+	}
+
+	.qc-step-error {
+		padding: 1.15rem;
+		color: #8b352f;
+	}
+
+	.qc-step-checks {
+		display: grid;
+	}
+
+	.qc-step-checks > div {
+		display: grid;
+		grid-template-columns: 1.35rem minmax(0, 1fr);
+		gap: 0.75rem;
+		padding: 0.9rem 1.15rem;
+		border-bottom: 1px solid #d8dedc;
+		color: #8d9999;
+	}
+
+	.qc-step-checks > div.met {
+		color: var(--step-green);
+	}
+
+	.qc-step-checks span {
+		display: grid;
+		gap: 0.22rem;
+	}
+
+	.qc-step-checks strong {
+		color: #263a3e;
 		font-size: 0.9rem;
 	}
 
-	@media (min-width: 900px) {
-		.qc-english-practice-layout {
-			grid-template-columns: minmax(22rem, 30rem) minmax(0, 1fr);
+	.qc-step-checks small {
+		color: #65757a;
+		font-size: 0.82rem;
+		line-height: 1.45;
+	}
+
+	.qc-step-next-improvement {
+		padding: 1rem 1.15rem 1.15rem;
+		border-left: 3px solid #b97a33;
+		background: #fff9eb;
+	}
+
+	.qc-step-next-improvement strong {
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.qc-step-next-improvement p {
+		margin: 0.32rem 0 0;
+		color: #4b5759;
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.qc-step-coaching-note {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.75rem;
+		padding: 0.85rem 1.15rem;
+		border-top: 1px solid #d8dedc;
+		background: #f3f7f4;
+	}
+
+	.qc-step-coaching-note strong {
+		color: #315b4d;
+		font-size: 0.75rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.qc-step-coaching-note p {
+		margin: 0;
+		color: #526568;
+		font-size: 0.84rem;
+		line-height: 1.45;
+	}
+
+	.qc-step-footer {
+		padding-top: 0.2rem;
+		color: #718083;
+		font-size: 0.78rem;
+	}
+
+	.qc-step-footer button {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.42rem;
+		padding: 0.35rem;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+	}
+
+	.qc-step-footer button:hover {
+		color: #334b4b;
+	}
+
+	:global(.qc-step-workspace .qc-hint-panel) {
+		margin: -0.1rem 0 0;
+	}
+
+	@media (max-width: 920px) {
+		.qc-step-practice-layout {
+			grid-template-columns: 1fr;
 		}
 
-		.qc-english-practice-side {
-			position: sticky;
-			top: 4rem;
-			max-height: calc(var(--app-viewport-height, 100vh) - 4rem);
-			overflow-y: auto;
-			align-self: start;
-			border-right: 1px solid rgba(105, 129, 143, 0.16);
-			border-bottom: 0;
+		.qc-step-question {
+			border-right: 0;
+			border-bottom: 1px solid rgba(63, 79, 82, 0.18);
+		}
+
+		.qc-step-question h1 {
+			font-size: 2rem;
 		}
 	}
 
-	@media (max-width: 700px) {
-		.qc-english-practice-layout {
-			display: block;
+	@media (max-width: 640px) {
+		.qc-step-practice-layout,
+		.qc-step-question,
+		.qc-step-workspace {
 			width: 100%;
 			max-width: 100%;
+			min-width: 0;
 		}
 
-		.qc-english-practice-side {
-			padding: 1rem 0.9rem;
+		.qc-step-question,
+		.qc-step-workspace {
+			padding: 1rem;
 		}
 
-		.qc-english-practice-main {
-			padding: 0.9rem 0.7rem 1.6rem;
+		.qc-stepper {
+			display: flex;
+			overflow-x: auto;
+			overscroll-behavior-x: contain;
 		}
 
-		.qc-english-practice-side .qc-english-support-panel {
-			display: none;
+		.qc-stepper button {
+			flex: 0 0 4.75rem;
+			flex-direction: column;
+			min-height: 3.35rem;
+			gap: 0.2rem;
 		}
 
-		.qc-english-main-head,
-		.qc-english-bottom-actions {
+		.qc-stepper strong {
+			overflow: visible;
+			font-size: 0.7rem;
+			text-overflow: clip;
+		}
+
+		.qc-step-card {
+			padding: 1rem;
+		}
+
+		.qc-step-card-head,
+		.qc-step-feedback > header,
+		.qc-step-action-row {
 			align-items: stretch;
 			flex-direction: column;
 		}
 
-		.qc-english-score {
-			width: fit-content;
+		.qc-step-pass-badge,
+		.qc-step-feedback > header > span {
+			align-self: flex-start;
 		}
 
-		.qc-english-actions {
-			align-items: center;
-			gap: 0.65rem;
+		.qc-step-goal {
+			grid-template-columns: 1fr;
+			gap: 0.2rem;
 		}
 
-		.qc-english-actions .qc-english-primary,
-		.qc-english-actions .qc-english-secondary {
-			flex: 0 1 auto;
-			min-width: 0;
-		}
-	}
-
-	@media (max-width: 430px) {
-		.qc-english-practice-side h1 {
-			font-size: 1.55rem;
+		.qc-step-coaching-note {
+			grid-template-columns: 1fr;
+			gap: 0.25rem;
 		}
 
-		.qc-english-support-panel,
-		.qc-english-work-panel,
-		.qc-english-draft,
-		.qc-english-feedback-panel {
-			padding: 0.75rem;
+		.qc-step-primary {
+			width: 100%;
 		}
-
-		.qc-english-stepper button strong {
-			font-size: 0.7rem;
-		}
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-practice-side,
-	:global(:root[data-theme='dark']) .qc-english-support-panel,
-	:global(:root[data-theme='dark']) .qc-english-work-panel,
-	:global(:root[data-theme='dark']) .qc-english-draft,
-	:global(:root[data-theme='dark']) .qc-english-feedback-panel {
-		border-color: rgba(148, 163, 184, 0.28);
-		background: rgba(7, 20, 31, 0.7);
-		color: #eaf4ff;
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-practice-side h1,
-	:global(:root[data-theme='dark']) .qc-english-main-head h2,
-	:global(:root[data-theme='dark']) .qc-english-section-title h2,
-	:global(:root[data-theme='dark']) .qc-english-section-title h3,
-	:global(:root[data-theme='dark']) .qc-english-answer-box span,
-	:global(:root[data-theme='dark']) .qc-english-feedback-grid strong,
-	:global(:root[data-theme='dark']) .qc-english-next-step strong,
-	:global(:root[data-theme='dark']) .qc-english-criteria-list span,
-	:global(:root[data-theme='dark']) .qc-english-draft li p {
-		color: #f8fafc;
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-current-step p,
-	:global(:root[data-theme='dark']) .qc-english-draft > p,
-	:global(:root[data-theme='dark']) .qc-english-feedback-grid small,
-	:global(:root[data-theme='dark']) .qc-english-next-step p,
-	:global(:root[data-theme='dark']) .qc-english-model-direction,
-	:global(:root[data-theme='dark']) .qc-english-status,
-	:global(:root[data-theme='dark']) .qc-english-answer-box small,
-	:global(:root[data-theme='dark']) .qc-english-bottom-actions,
-	:global(:root[data-theme='dark']) .qc-english-support-panel li {
-		color: #a9bbcc;
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-score,
-	:global(:root[data-theme='dark']) .qc-english-mode-tabs,
-	:global(:root[data-theme='dark']) .qc-english-mode-tabs button,
-	:global(:root[data-theme='dark']) .qc-english-stepper,
-	:global(:root[data-theme='dark']) .qc-english-stepper button,
-	:global(:root[data-theme='dark']) .qc-english-secondary,
-	:global(:root[data-theme='dark']) .qc-english-reset,
-	:global(:root[data-theme='dark']) .qc-english-model-direction {
-		border-color: rgba(226, 232, 240, 0.42);
-		background: #071426;
-		color: #eaf4ff;
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-answer-box :global(.lined-textarea) {
-		color: #f8fafc;
-		background-image: linear-gradient(
-			to bottom,
-			transparent calc(100% - 1px),
-			rgba(248, 248, 242, 0.72) 0
-		);
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-mode-tabs button.active,
-	:global(:root[data-theme='dark']) .qc-english-stepper button.active,
-	:global(:root[data-theme='dark']) .qc-english-stepper button.complete {
-		background: rgba(86, 216, 148, 0.16);
-		color: #b8f7d5;
-	}
-
-	:global(:root[data-theme='dark']) .qc-english-primary {
-		border-color: #56d894;
-		background: #56d894;
-		color: #052d1c;
 	}
 </style>

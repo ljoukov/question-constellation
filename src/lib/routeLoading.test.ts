@@ -23,6 +23,11 @@ describe('route loading copy', () => {
 		expect(
 			routeLoadingMessageFor(routeLoadingContentTypeForRoute('/questions/[questionId]/practice'))
 		).toBe('Loading practice...');
+		expect(
+			routeLoadingMessageFor(
+				routeLoadingContentTypeForRoute('/questions/[questionId]/practice/step-by-step/[stepId]')
+			)
+		).toBe('Loading practice...');
 	});
 
 	it('maps non-question routes away from question copy', () => {

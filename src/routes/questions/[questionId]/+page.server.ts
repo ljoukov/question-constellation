@@ -1,14 +1,6 @@
-import { getPublicQuestionData } from '$lib/server/questionData';
-import { error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
-	try {
-		return {
-			...(await getPublicQuestionData(params.questionId)),
-			user: locals.user
-		};
-	} catch {
-		throw error(404, 'Question not found.');
-	}
+export const load: PageServerLoad = ({ params }) => {
+	throw redirect(307, `/questions/${encodeURIComponent(params.questionId)}/practice`);
 };

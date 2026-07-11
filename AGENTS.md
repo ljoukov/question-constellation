@@ -43,3 +43,17 @@ Open signed-in routes such as `http://localhost:5173/`, `http://localhost:5173/p
 When `.env.local` also contains `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ACCOUNT_ACCESS_TOKEN`, and `PERSONAL_DB_DATABASE_ID`, local dev uses the Cloudflare D1 REST fallback for personal reads and writes. That lets you reproduce a production user's state by setting `DEV_AUTH_USER_ID` to that user's real uid. Do not print or commit those Cloudflare credentials.
 
 This override is gated by SvelteKit `dev`; it is ignored in deployed Workers. Production auth still uses the sealed Firebase session cookie.
+
+## English Literature Practice Validation
+
+When changing English Literature step-by-step practice, validate the teaching experience through the real browser flow, not only through unit tests.
+
+- Simulate a capable GCSE Grade 5-6 learner aiming for Grades 8-9. The coach should teach the missing analytical move without writing the learner's answer for them.
+- Inspect at least 10 questions spanning different papers and task shapes: poetry comparison, two-extract comparison, extract plus wider text, whole-text judgement, and single-text analysis. Confirm that stage names, goals, success criteria, and hints fit the exact question.
+- Run at least five realistic inputs, including blank or irrelevant work, plausible-but-vague work, partially successful work, a feedback-driven retry, and secure work. Click through the interface and record the exact input, decision, check feedback, and unlock behavior.
+- Replay representative scenarios four times with slightly varied wording. Decisions may vary at the margin, but the missing skill, pass threshold, and next action should remain educationally consistent.
+- Check every success criterion independently. Feedback must cite what the learner actually wrote, identify only the missing move, avoid moving the goalposts after a retry, and acknowledge a repaired weakness.
+- Ground grading in the imported raw mark-scheme rows. Use examiner-report guidance only when it exists for that question or paper; never invent examiner commentary. Treat indicative content as examples rather than mandatory answers, and do not invent or silently correct quotations.
+- Verify that later stages stay locked until the active step passes, passed stages remain reviewable, reset works, and direct question URLs redirect to the first step-by-step stage.
+- Inspect desktop and mobile layouts for clipping, overflow, unstable heights, and readable feedback. Content quality and task correctness take priority over decorative polish.
+- Use `scripts/dev-server.sh` for local development, then run the relevant unit tests, `pnpm run check`, and the production build before push or deploy.
