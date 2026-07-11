@@ -10,6 +10,7 @@
 		type ThemePreference
 	} from '$lib/themePreference';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
+	import AnalyticsTracker from '$lib/analytics/AnalyticsTracker.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import type { LayoutProps } from './$types';
 
@@ -124,6 +125,7 @@
 </svelte:head>
 
 <div class="app-shell">
+	<AnalyticsTracker />
 	{#if showRouteLoading}
 		<RouteLoadingToast contentType={routeLoadingContentType} />
 	{/if}

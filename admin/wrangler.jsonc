@@ -1,0 +1,36 @@
+{
+	"$schema": "../node_modules/wrangler/config-schema.json",
+	"name": "constellation-admin",
+	"compatibility_date": "2026-05-23",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare",
+		"not_found_handling": "404-page",
+		"run_worker_first": true
+	},
+	"vars": {
+		"ADMIN_USERNAME": "admin"
+	},
+	"d1_databases": [
+		{
+			"binding": "ANALYTICS_DB",
+			"database_name": "question-constellation-analytics",
+			"database_id": "d989edc1-26d8-4bd6-83f1-97b09c4d50a2"
+		}
+	],
+	"workflows": [
+		{
+			"name": "constellation-admin-summary",
+			"binding": "ANALYTICS_SUMMARY_WORKFLOW",
+			"class_name": "AnalyticsSummaryWorkflow"
+		}
+	],
+	"triggers": {
+		"crons": ["17 4 * * *"]
+	},
+	"observability": {
+		"logs": { "enabled": true, "invocation_logs": true }
+	}
+}

@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { getPracticePageData, type PracticePageData } from '$lib/server/questionData';
 import { configureChatGptCodexProxy, type LlmStreamEvent, type LlmTextModelId } from '@ljoukov/llm';
+import { startModelAnalytics } from '$lib/server/analytics';
 
 const GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
 const GRADING_THINKING_LEVEL = 'medium';
@@ -347,10 +348,18 @@ export async function gradeQuestionAnswerStreaming({
 	onDelta?: (delta: GradeStreamDelta) => void;
 }): Promise<QuestionGradeResult> {
 	let stage: QuestionGradeStage = 'load_question';
+	let modelAnalytics: ReturnType<typeof startModelAnalytics> | null = null;
 	try {
 		const data = await loadQuestionForGrading(questionId);
 		stage = 'build_prompt';
 		const prompt = buildGradePrompt(data, studentAnswer);
+		modelAnalytics = startModelAnalytics({
+			feature: 'question_answer_grading',
+			model: GRADING_MODEL,
+			thinkingLevel: GRADING_THINKING_LEVEL,
+			prompt,
+			modelInput: { questionId, studentAnswer }
+		});
 		stage = 'configure_llm_env';
 		configureLlmProcessEnv(platformEnv, GRADING_MODEL);
 		onDelta?.({ type: 'status', phase: 'calling' });
@@ -397,6 +406,14 @@ export async function gradeQuestionAnswerStreaming({
 		const llmResult = await call.result;
 		const finalText = rawText.trim() ? rawText : llmResult.text;
 		const finalThoughts = thoughtText.trim() ? thoughtText : llmResult.thoughts;
+		modelAnalytics.complete({
+			modelVersion: llmResult.modelVersion,
+			output: finalText,
+			reasoning: finalThoughts,
+			usage: llmResult.usage,
+			costUsd: llmResult.costUsd,
+			metadata: { questionId }
+		});
 		stage = 'parse_result';
 		return {
 			...parseGradeResponse(finalText, data),
@@ -404,6 +421,7 @@ export async function gradeQuestionAnswerStreaming({
 			modelVersion: llmResult.modelVersion
 		};
 	} catch (error) {
+		modelAnalytics?.fail(error, { metadata: { questionId, stage } });
 		throw new QuestionGradeRuntimeError(stage, error);
 	}
 }

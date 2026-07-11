@@ -12,6 +12,7 @@ import type {
 	ExperimentQuestionGradeResult
 } from '$lib/experiments/questions/gradingTypes';
 import type { LlmTextModelId, LlmThinkingLevel } from '@ljoukov/llm';
+import { startModelAnalytics } from '$lib/server/analytics';
 
 const DEFAULT_MODEL = 'chatgpt-gpt-5.3-codex-spark';
 const DEFAULT_THINKING_LEVEL = 'medium';
@@ -1945,6 +1946,7 @@ export async function gradeExperimentQuestionAnswers({
 	);
 
 	if (llmGradeable.length > 0) {
+		let modelAnalytics: ReturnType<typeof startModelAnalytics> | null = null;
 		try {
 			const model = gradingModel(modelOverride);
 			const thinking = selectedThinkingLevel(thinkingLevelOverride);
@@ -1955,6 +1957,13 @@ export async function gradeExperimentQuestionAnswers({
 			onDelta?.({ type: 'status', phase: 'calling' });
 			const { streamText } = await import('@ljoukov/llm');
 			const prompt = buildPrompt(llmGradeable, answers);
+			modelAnalytics = startModelAnalytics({
+				feature: 'experiment_question_grading',
+				model,
+				thinkingLevel: thinking ?? 'none',
+				prompt,
+				modelInput: { paperSlug, ref, answers }
+			});
 			if (includeDebugPrompt) debugPrompt = prompt;
 			const call = streamText({
 				model,
@@ -1965,12 +1974,14 @@ export async function gradeExperimentQuestionAnswers({
 			});
 
 			let rawText = '';
+			let thoughtText = '';
 			let sawThought = true;
 			let sawResponse = false;
 			onDelta?.({ type: 'status', phase: 'thinking' });
 			for await (const event of call.events) {
 				if (event.type !== 'delta') continue;
 				if (event.channel === 'thought') {
+					thoughtText += event.text;
 					if (!sawThought) {
 						sawThought = true;
 						onDelta?.({ type: 'status', phase: 'thinking' });
@@ -1991,8 +2002,17 @@ export async function gradeExperimentQuestionAnswers({
 			modelVersion = result.modelVersion;
 			modelUsage = result.usage;
 			modelCostUsd = result.costUsd;
+			modelAnalytics.complete({
+				modelVersion: result.modelVersion,
+				output: rawText.trim() || result.text,
+				reasoning: thoughtText.trim() || result.thoughts,
+				usage: result.usage,
+				costUsd: result.costUsd,
+				metadata: { paperSlug, ref, questionCount: llmGradeable.length }
+			});
 			modelResults = parseModelJson(rawText.trim() || result.text).results ?? [];
 		} catch (error) {
+			modelAnalytics?.fail(error, { metadata: { paperSlug, ref } });
 			throw new QuestionGradeRuntimeError('stream_events', error);
 		}
 	} else if (answered.length > 0) {

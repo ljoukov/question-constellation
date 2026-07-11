@@ -6,6 +6,7 @@ import {
 } from '$lib/server/questionData';
 import { type LlmStreamEvent, type LlmTextModelId } from '@ljoukov/llm';
 import { z } from 'zod';
+import { startModelAnalytics } from '$lib/server/analytics';
 
 const STEP_GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.6-sol-fast';
 const STEP_GRADING_THINKING_LEVEL = 'medium';
@@ -598,55 +599,74 @@ export async function gradeEnglishPracticeStepStreaming({
 		stepAnswers,
 		attemptHistory
 	});
-
-	configureLlmProcessEnv(platformEnv, STEP_GRADING_MODEL);
-	onDelta?.({ type: 'status', phase: 'calling' });
-	const { streamText } = await import('@ljoukov/llm');
-	const call = streamText({
+	const modelAnalytics = startModelAnalytics({
+		feature: 'english_step_grading',
 		model: STEP_GRADING_MODEL,
-		input: prompt,
 		thinkingLevel: STEP_GRADING_THINKING_LEVEL,
-		signal,
-		telemetry: false
+		prompt,
+		modelInput: { questionId, stepId, studentAnswer, stepAnswers, attemptHistory }
 	});
-	onDelta?.({ type: 'status', phase: 'thinking' });
 
-	let rawText = '';
-	let sawResponse = false;
-	let pendingSummaryDelta = '';
-	const flushSummaryDelta = () => {
-		if (!pendingSummaryDelta) return;
-		onDelta?.({
-			type: 'status',
-			phase: sawResponse ? 'grading' : 'thinking',
-			summaryDelta: pendingSummaryDelta
+	try {
+		configureLlmProcessEnv(platformEnv, STEP_GRADING_MODEL);
+		onDelta?.({ type: 'status', phase: 'calling' });
+		const { streamText } = await import('@ljoukov/llm');
+		const call = streamText({
+			model: STEP_GRADING_MODEL,
+			input: prompt,
+			thinkingLevel: STEP_GRADING_THINKING_LEVEL,
+			signal,
+			telemetry: false
 		});
-		pendingSummaryDelta = '';
-	};
-	for await (const event of call.events) {
-		handleStreamEvent(event, {
-			onThought(text) {
-				pendingSummaryDelta += text;
-				if (pendingSummaryDelta.length >= 64 || /[.!?]\s*$/.test(pendingSummaryDelta)) {
+		onDelta?.({ type: 'status', phase: 'thinking' });
+
+		let rawText = '';
+		let thoughtText = '';
+		let sawResponse = false;
+		let pendingSummaryDelta = '';
+		const flushSummaryDelta = () => {
+			if (!pendingSummaryDelta) return;
+			onDelta?.({
+				type: 'status',
+				phase: sawResponse ? 'grading' : 'thinking',
+				summaryDelta: pendingSummaryDelta
+			});
+			pendingSummaryDelta = '';
+		};
+		for await (const event of call.events) {
+			handleStreamEvent(event, {
+				onThought(text) {
+					thoughtText += text;
+					pendingSummaryDelta += text;
+					if (pendingSummaryDelta.length >= 64 || /[.!?]\s*$/.test(pendingSummaryDelta)) {
+						flushSummaryDelta();
+					}
+				},
+				onResponse(text) {
+					rawText += text;
+					if (sawResponse) return;
 					flushSummaryDelta();
+					sawResponse = true;
+					onDelta?.({ type: 'status', phase: 'grading' });
 				}
-			},
-			onResponse(text) {
-				rawText += text;
-				if (sawResponse) return;
-				flushSummaryDelta();
-				sawResponse = true;
-				onDelta?.({ type: 'status', phase: 'grading' });
-			}
-		});
-	}
-	flushSummaryDelta();
+			});
+		}
+		flushSummaryDelta();
 
-	const llmResult = await call.result;
-	return parseEnglishStepGradeResponse(
-		rawText.trim() || llmResult.text,
-		stage,
-		studentAnswer,
-		llmResult.modelVersion
-	);
+		const llmResult = await call.result;
+		const finalText = rawText.trim() || llmResult.text;
+		const finalReasoning = thoughtText.trim() || llmResult.thoughts;
+		modelAnalytics.complete({
+			modelVersion: llmResult.modelVersion,
+			output: finalText,
+			reasoning: finalReasoning,
+			usage: llmResult.usage,
+			costUsd: llmResult.costUsd,
+			metadata: { questionId, stepId }
+		});
+		return parseEnglishStepGradeResponse(finalText, stage, studentAnswer, llmResult.modelVersion);
+	} catch (error) {
+		modelAnalytics.fail(error, { metadata: { questionId, stepId } });
+		throw error;
+	}
 }

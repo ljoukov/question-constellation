@@ -20,6 +20,16 @@
 - No Worker runtime secrets are required for the current public UI.
 - For full-screen visual pages, keep the shell stable with `min-height: var(--app-viewport-height, 100vh)`, flex column layout, and `flex: 1 1 auto; min-height: 0` for main content regions. Keep background art in stable CSS layers or explicit `aspect-ratio` containers so image or icon loading cannot shift layout.
 
+## Product Analytics
+
+- Analytics is a core internal product-feedback surface. The public app writes first-party journey data to the `ANALYTICS_DB` D1 binding (`question-constellation-analytics`); schema changes belong in `migrations/analytics/`. Keep `development` and `production` traffic explicitly tagged and filterable.
+- New public routes are automatically covered by the root `AnalyticsTracker`; do not add page-specific view listeners. It records page views/leaves, visible time, scroll depth, delegated clicks, submits, ordinary input changes, browser/device/network hints, anonymous/session ids, authenticated identity, sanitized request headers, IP, and Cloudflare request context.
+- Prefer semantic HTML for interactive controls. Use `data-analytics-label` when the visible label is ambiguous, `data-analytics-redact` for any additional sensitive field, and `data-analytics-ignore` only when an entire subtree must not be recorded. Password, token, card, OTP, hidden, and file inputs are always redacted; never weaken these exclusions or store cookies/authorization headers.
+- All learner-facing runtime model calls must use `startModelAnalytics` from `src/lib/server/analytics.ts`. Record the feature name, exact model and thinking level, raw prompt/model input, output, available reasoning, model version, usage, cost, duration, outcome, and error. Request reasoning for supported models and collect thought-channel text; analytics failures must never fail the learner action.
+- The separate `admin/` SvelteKit app is the analytics explorer and uses shadcn-svelte components. Keep its information architecture journey-first: identity/session -> ordered events -> model runs -> raw evidence. It reads the same D1 binding, fails closed in production without Basic Auth or Cloudflare Access configuration, and must remain `noindex`.
+- AI overviews are D1-backed jobs (`analytics_ai_summaries`) generated with `chatgpt-gpt-5.6-sol` through the ChatGPT subscription proxy. The create endpoint returns immediately, uses `waitUntil` to enqueue `ANALYTICS_SUMMARY_WORKFLOW`, stores its source snapshot/prompt/reasoning/result/usage, and lets the UI poll the job row. Keep the direct generation path only as the local Vite fallback; deployed model work can exceed the 30-second `waitUntil` lifetime and must remain in the durable Cloudflare Workflow.
+- When changing analytics, run a real local journey in the public app, confirm D1 rows for session/events/model runs and environment, then open `admin/` and verify filters, timeline readability, raw prompt/reasoning inspection, and AI-summary refresh. Do not deploy either Worker unless the user explicitly asks to deploy.
+
 ## Local Signed-In Testing
 
 Use the dev auth override when you need to test authorized pages without Google OAuth.
