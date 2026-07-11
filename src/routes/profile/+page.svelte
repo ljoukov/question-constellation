@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import { ArrowLeft, BookOpen, CheckCircle2 } from '@lucide/svelte';
+	import { ArrowLeft, BookOpen, CheckCircle2, Info } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -449,6 +449,16 @@
 													{/each}
 												</select>
 												<small>All 15 poems in the selected cluster.</small>
+												<span class="ocr-literature-profile__anthology-note" role="note">
+													<span class="ocr-literature-profile__anthology-icon" aria-hidden="true">
+														<Info size={15} strokeWidth={2.2} />
+													</span>
+													<span>
+														<strong>Earlier poetry anthology</strong>
+														Pre-2024 OCR poetry questions use the previous anthology. They remain in the
+														question bank for essay practice and are labelled there.
+													</span>
+												</span>
 											</label>
 
 											<label>
@@ -622,6 +632,7 @@
 
 	.ocr-literature-profile__papers label {
 		display: grid;
+		align-content: start;
 		gap: 0.3rem;
 		min-width: 0;
 		color: #405465;
@@ -633,6 +644,33 @@
 		color: #66788b;
 		font-size: 0.7rem;
 		font-weight: 600;
+	}
+
+	.ocr-literature-profile__anthology-note {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.42rem;
+		align-items: start;
+		margin-top: 0.2rem;
+		padding-top: 0.55rem;
+		border-top: 1px solid rgba(22, 132, 88, 0.16);
+		color: #526778;
+		font-size: 0.7rem;
+		font-weight: 560;
+		line-height: 1.4;
+	}
+
+	.ocr-literature-profile__anthology-icon {
+		display: flex;
+		margin-top: 0.08rem;
+		color: #168458;
+	}
+
+	.ocr-literature-profile__anthology-note strong {
+		display: block;
+		margin-bottom: 0.1rem;
+		color: #294557;
+		font-weight: 760;
 	}
 
 	:global(:root[data-theme='dark']) .ocr-literature-profile {
@@ -653,8 +691,17 @@
 	:global(:root[data-theme='dark']) .ocr-literature-profile__heading h3 + p,
 	:global(:root[data-theme='dark']) .ocr-literature-profile__papers p,
 	:global(:root[data-theme='dark']) .ocr-literature-profile__papers label,
-	:global(:root[data-theme='dark']) .ocr-literature-profile__papers small {
+	:global(:root[data-theme='dark']) .ocr-literature-profile__papers small,
+	:global(:root[data-theme='dark']) .ocr-literature-profile__anthology-note {
 		color: #9fb2c7;
+	}
+
+	:global(:root[data-theme='dark']) .ocr-literature-profile__anthology-note {
+		border-top-color: rgba(86, 216, 148, 0.16);
+	}
+
+	:global(:root[data-theme='dark']) .ocr-literature-profile__anthology-note strong {
+		color: #d9e7f3;
 	}
 
 	:global(:root[data-theme='dark']) .ocr-literature-profile__progress,

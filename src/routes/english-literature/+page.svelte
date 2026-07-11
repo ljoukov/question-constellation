@@ -18,11 +18,6 @@
 	});
 
 	const incompleteProfile = $derived(data.hub.selectionCount < 4);
-	const earlierAnthologyCount = $derived(
-		data.hub.sections
-			.find((section) => section.id === 'poetry')
-			?.questions.filter((question) => question.formatTone === 'anthology').length ?? 0
-	);
 
 	function questionHref(question: (typeof data.hub.sections)[number]['questions'][number]) {
 		return resolve('/questions/[questionId]', { questionId: question.slug || question.id });
@@ -120,19 +115,6 @@
 						<p class="qc-panel-label">{data.hub.selectionCount}/4 course choices configured</p>
 						<p>Add the missing school choices in your profile to see every relevant question.</p>
 						<a class="qc-real-link-button" href={resolve('/profile')}>Finish profile</a>
-					</div>
-				</section>
-			{/if}
-
-			{#if earlierAnthologyCount > 0}
-				<section class="qc-warning-panel">
-					<div class="qc-guidance-icon"><BookOpenCheck size={18} aria-hidden="true" /></div>
-					<div>
-						<p class="qc-panel-label">Earlier poetry anthology</p>
-						<p>
-							Pre-2024 poetry questions used an earlier OCR anthology. They remain useful for essay
-							practice and are labelled below.
-						</p>
 					</div>
 				</section>
 			{/if}
