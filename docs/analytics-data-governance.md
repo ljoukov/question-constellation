@@ -37,8 +37,8 @@ This is the pre-deployment inventory for the first-party analytics system. The d
 ## Access controls
 
 - `admin/` is a separate Worker and is `noindex`, `nofollow`, `noarchive` at HTML and response-header levels.
-- Production fails closed unless a Basic Auth secret is present or Cloudflare Access supplies an email included in `ADMIN_ALLOWED_EMAILS`.
-- Local development may run unprotected only when neither mechanism is configured.
+- Production and local development use the same server-side Firebase Google redirect flow as the public app. Every page and API request verifies the encrypted session and checks the Firebase UID against the two-entry admin allow-list.
+- Missing Firebase configuration fails closed. Unauthenticated pages redirect to the login screen, unauthenticated APIs return 401, and authenticated but unapproved users receive access denied.
 - No Cloudflare operator token or database credential is uploaded as a Worker runtime variable.
 
 ## Retention policy

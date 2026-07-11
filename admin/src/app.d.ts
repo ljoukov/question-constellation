@@ -25,9 +25,9 @@ declare global {
 			env: {
 				ANALYTICS_DB?: AnalyticsD1Database;
 				ANALYTICS_SUMMARY_WORKFLOW?: AnalyticsSummaryWorkflowBinding;
-				ADMIN_USERNAME?: string;
-				ADMIN_PASSWORD?: string;
-				ADMIN_ALLOWED_EMAILS?: string;
+				GOOGLE_SERVICE_ACCOUNT_JSON?: string;
+				GOOGLE_API_KEY?: string;
+				AUTH_COOKIE_SECRET?: string;
 				CHATGPT_CODEX_PROXY_URL?: string;
 				CHATGPT_CODEX_PROXY_API_KEY?: string;
 				CHATGPT_RESPONSES_WEBSOCKET_MODE?: string;
@@ -40,6 +40,7 @@ declare global {
 		interface Locals {
 			analyticsDb: AnalyticsD1DatabaseSession | null;
 			adminIdentity: string | null;
+			adminUser: import('$lib/server/auth/session').AdminUser | null;
 		}
 	}
 }

@@ -8,7 +8,6 @@
 		"build": "npm run gen && vite build && node scripts/patch-cloudflare-worker.mjs",
 		"check": "npm run gen && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"gen": "wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts",
-		"password": "node scripts/derive-admin-password.mjs",
 		"deploy": "wrangler deploy"
 	},
 	"devDependencies": {
@@ -22,6 +21,7 @@
 		"@tailwindcss/vite": "^4.1.18",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
+		"jose": "^6.2.3",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
 		"shadcn-svelte": "^1.4.1",
@@ -33,6 +33,7 @@
 		"tw-animate-css": "^1.4.0",
 		"typescript": "^6.0.2",
 		"vite": "^8.0.16",
-		"wrangler": "^4.81.0"
+		"wrangler": "^4.81.0",
+		"zod": "^4.4.3"
 	}
 }

@@ -20,6 +20,7 @@
 		Gauge,
 		Globe2,
 		Laptop2,
+		LogOut,
 		MousePointerClick,
 		Network,
 		PanelLeft,
@@ -189,7 +190,10 @@
 			<div class="flex items-center gap-2">
 				<span class="size-2 rounded-full bg-emerald-500"></span>Live D1 connection
 			</div>
-			<div class="truncate">Signed in as {data.adminIdentity}</div>
+			<div class="truncate">Signed in as {data.adminUser?.name || data.adminIdentity}</div>
+			<a class="flex items-center gap-2 hover:text-foreground" href="/auth/logout"
+				><LogOut class="size-3.5" />Sign out</a
+			>
 		</div>
 	</aside>
 
@@ -209,7 +213,12 @@
 			<div class="flex items-center gap-2">
 				<Badge variant={data.filters.environment === 'production' ? 'default' : 'secondary'}
 					>{environmentLabel(data.filters.environment)}</Badge
-				><Badge variant="outline">Last {data.filters.days} days</Badge>
+				><Badge variant="outline">Last {data.filters.days} days</Badge><Button
+					variant="ghost"
+					size="icon-sm"
+					href="/auth/logout"
+					aria-label="Sign out"><LogOut /></Button
+				>
 			</div>
 		</header>
 
@@ -617,68 +626,69 @@
 						{#if item.journey_kind === 'event'}
 							{@const event = item}
 							<article class="timeline-row">
-							<div
-								class:event-click={event.event_type === 'click'}
-								class:event-input={event.event_type === 'input_change'}
-								class:event-leave={event.event_type === 'page_leave'}
-								class="timeline-dot"
-							></div>
-							<div class="min-w-0 flex-1 pb-5">
-								<div class="flex flex-wrap items-center gap-2">
-									<Badge variant="outline">{event.event_type}</Badge><span
-										class="text-xs text-muted-foreground">{date(event.occurred_at)}</span
-									><code class="ml-auto">{event.path}</code>
-								</div>
-								{#if event.element_text || event.element_selector}<p class="mt-2 text-sm">
-										<b>{event.element_text || event.element_name || event.element_tag}</b>
-										<code>{event.element_selector}</code>
-									</p>{/if}{#if event.input_value !== null}<div
-										class="mt-2 grid gap-2 rounded-md bg-muted p-3 text-xs sm:grid-cols-[120px_1fr_auto_1fr]"
-									>
-										<span class="font-medium">{event.input_name || event.input_type}</span><del
-											class="whitespace-pre-wrap text-destructive"
-											>{event.previous_value || '∅'}</del
-										><span>→</span><ins class="whitespace-pre-wrap text-emerald-600 no-underline"
-											>{event.input_value}</ins
+								<div
+									class:event-click={event.event_type === 'click'}
+									class:event-input={event.event_type === 'input_change'}
+									class:event-leave={event.event_type === 'page_leave'}
+									class="timeline-dot"
+								></div>
+								<div class="min-w-0 flex-1 pb-5">
+									<div class="flex flex-wrap items-center gap-2">
+										<Badge variant="outline">{event.event_type}</Badge><span
+											class="text-xs text-muted-foreground">{date(event.occurred_at)}</span
+										><code class="ml-auto">{event.path}</code>
+									</div>
+									{#if event.element_text || event.element_selector}<p class="mt-2 text-sm">
+											<b>{event.element_text || event.element_name || event.element_tag}</b>
+											<code>{event.element_selector}</code>
+										</p>{/if}{#if event.input_value !== null}<div
+											class="mt-2 grid gap-2 rounded-md bg-muted p-3 text-xs sm:grid-cols-[120px_1fr_auto_1fr]"
 										>
-									</div>{/if}
-								<div class="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-									{#if event.duration_ms !== null}<span>{duration(event.duration_ms)} on page</span
-										>{/if}{#if event.engaged_ms !== null}<span
-											>{duration(event.engaged_ms)} visible</span
-										>{/if}{#if event.scroll_depth_percent !== null}<span
-											>{event.scroll_depth_percent}% scroll</span
-										>{/if}
+											<span class="font-medium">{event.input_name || event.input_type}</span><del
+												class="whitespace-pre-wrap text-destructive"
+												>{event.previous_value || '∅'}</del
+											><span>→</span><ins class="whitespace-pre-wrap text-emerald-600 no-underline"
+												>{event.input_value}</ins
+											>
+										</div>{/if}
+									<div class="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+										{#if event.duration_ms !== null}<span
+												>{duration(event.duration_ms)} on page</span
+											>{/if}{#if event.engaged_ms !== null}<span
+												>{duration(event.engaged_ms)} visible</span
+											>{/if}{#if event.scroll_depth_percent !== null}<span
+												>{event.scroll_depth_percent}% scroll</span
+											>{/if}
+									</div>
+									<details class="mt-2">
+										<summary>Raw event + Cloudflare request</summary>
+										<pre>{pretty({
+												event,
+												properties: event.properties_json,
+												cloudflare: event.request_cf_json,
+												headers: event.headers_json
+											})}</pre>
+									</details>
 								</div>
-								<details class="mt-2">
-									<summary>Raw event + Cloudflare request</summary>
-									<pre>{pretty({
-											event,
-											properties: event.properties_json,
-											cloudflare: event.request_cf_json,
-											headers: event.headers_json
-										})}</pre>
-								</details>
-							</div>
 							</article>
 						{:else}
 							{@const run = item}
 							<article class="timeline-row">
-							<div class="timeline-dot event-model"></div>
-							<div class="min-w-0 flex-1 pb-5">
-								<div class="flex items-center gap-2">
-									<Badge>model run</Badge><strong class="text-sm">{run.feature}</strong><span
-										class="text-xs text-muted-foreground">{duration(run.duration_ms)}</span
-									><Button
-										class="ml-auto"
-										size="xs"
-										variant="outline"
-										href={queryUrl({ run: String(run.run_id), session: null })}
-										>Inspect <ExternalLink /></Button
-									>
+								<div class="timeline-dot event-model"></div>
+								<div class="min-w-0 flex-1 pb-5">
+									<div class="flex items-center gap-2">
+										<Badge>model run</Badge><strong class="text-sm">{run.feature}</strong><span
+											class="text-xs text-muted-foreground">{duration(run.duration_ms)}</span
+										><Button
+											class="ml-auto"
+											size="xs"
+											variant="outline"
+											href={queryUrl({ run: String(run.run_id), session: null })}
+											>Inspect <ExternalLink /></Button
+										>
+									</div>
+									<p class="mt-2 text-xs text-muted-foreground">{run.model} · {run.status}</p>
 								</div>
-								<p class="mt-2 text-xs text-muted-foreground">{run.model} · {run.status}</p>
-							</div>
 							</article>
 						{/if}
 					{/each}

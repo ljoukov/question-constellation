@@ -10,9 +10,6 @@
 		"not_found_handling": "404-page",
 		"run_worker_first": true
 	},
-	"vars": {
-		"ADMIN_USERNAME": "admin"
-	},
 	"d1_databases": [
 		{
 			"binding": "ANALYTICS_DB",

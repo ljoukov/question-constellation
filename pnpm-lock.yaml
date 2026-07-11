@@ -123,6 +123,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      jose:
+        specifier: ^6.2.3
+        version: 6.2.3
       prettier:
         specifier: ^3.8.1
         version: 3.8.3
@@ -159,6 +162,9 @@ importers:
       wrangler:
         specifier: ^4.81.0
         version: 4.94.0(@cloudflare/workers-types@4.20260523.1)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
 packages:
 

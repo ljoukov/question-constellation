@@ -170,6 +170,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	return {
 		adminIdentity: locals.adminIdentity,
+		adminUser: locals.adminUser,
 		filters: { days, search, path, eventType, environment, identity },
 		summary: summaryRows[0] ?? {
 			sessions: 0,
