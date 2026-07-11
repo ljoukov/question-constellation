@@ -14,7 +14,9 @@ type CurriculumNoticeRow = {
 };
 
 export type CurriculumNoticeEvidence = {
-	sourceDocumentId: string;
+	sourceType?: string;
+	label?: string;
+	sourceDocumentId?: string;
 	sourceUrl?: string;
 };
 
@@ -86,8 +88,11 @@ function parseEvidence(raw: string): CurriculumNoticeEvidence[] {
 			(item): item is CurriculumNoticeEvidence =>
 				typeof item === 'object' &&
 				item !== null &&
-				typeof item.sourceDocumentId === 'string' &&
-				(typeof item.sourceUrl === 'string' || item.sourceUrl === undefined)
+				(typeof item.sourceType === 'string' || item.sourceType === undefined) &&
+				(typeof item.label === 'string' || item.label === undefined) &&
+				(typeof item.sourceDocumentId === 'string' || item.sourceDocumentId === undefined) &&
+				(typeof item.sourceUrl === 'string' || item.sourceUrl === undefined) &&
+				(typeof item.sourceDocumentId === 'string' || typeof item.sourceUrl === 'string')
 		);
 	} catch {
 		return [];

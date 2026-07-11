@@ -176,8 +176,20 @@ function stableQuestionId(sourceDocumentId, sourceQuestionRef) {
 	return `${paperSlug}-${slugify(sourceQuestionRef)}`;
 }
 
+function subjectForDocument(document, fallbackDocument = null) {
+	return String(
+		document?.subject ?? fallbackDocument?.subject ?? document?.subjectArea ?? ''
+	).trim();
+}
+
+function subjectAreaForDocument(document, fallbackDocument = null) {
+	const subject = subjectForDocument(document, fallbackDocument);
+	if (subject === 'English Language' || subject === 'English Literature') return subject;
+	return document?.subjectArea || fallbackDocument?.subjectArea || subject || null;
+}
+
 function subjectAreaForPaper(paper) {
-	return paper.sourceDocument?.subjectArea ?? paper.sourceDocument?.subject ?? 'Physics';
+	return subjectAreaForDocument(paper.sourceDocument) ?? 'Physics';
 }
 
 function subjectForPaper(paper) {
@@ -479,7 +491,7 @@ function upsertStatement(table, columns, values, conflictColumn = 'id') {
 	};
 }
 
-function sourceDocumentStatement(doc) {
+function sourceDocumentStatement(doc, fallbackDocument = null) {
 	return upsertStatement(
 		'source_documents',
 		[
@@ -506,8 +518,8 @@ function sourceDocumentStatement(doc) {
 			doc.docType,
 			doc.board ?? 'AQA',
 			doc.qualification ?? 'GCSE',
-			doc.subject ?? doc.subjectArea ?? null,
-			doc.subjectArea ?? doc.subject ?? null,
+			subjectForDocument(doc, fallbackDocument) || null,
+			subjectAreaForDocument(doc, fallbackDocument),
 			doc.tier ?? 'Higher',
 			doc.paper ?? null,
 			doc.componentCode ?? null,
@@ -2214,9 +2226,9 @@ const statements = [];
 const chainUseCount = new Map();
 for (const paper of papers) {
 	statements.push(sourceDocumentStatement(paper.sourceDocument));
-	statements.push(sourceDocumentStatement(paper.markSchemeDocument));
+	statements.push(sourceDocumentStatement(paper.markSchemeDocument, paper.sourceDocument));
 	for (const supportingDocument of paper.supportingDocuments ?? []) {
-		statements.push(sourceDocumentStatement(supportingDocument));
+		statements.push(sourceDocumentStatement(supportingDocument, paper.sourceDocument));
 	}
 	const questions = [...paper.questions]
 		.sort((a, b) => compareQuestionRefs(a.sourceQuestionRef, b.sourceQuestionRef))

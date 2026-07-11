@@ -98,7 +98,7 @@ function buildExamProfileOptions(boardAvailability: QuestionBoardAvailability) {
 			'English Language',
 			'English Literature'
 		].map((subject) => {
-			const boardNames = boardAvailability.get(subject) ?? [];
+			const boardNames = requiredBoardNames(boardAvailability, subject);
 			const boardNamesSet = new Set(boardNames.map((board) => board.toLowerCase()));
 			const paperPages = gcsePastPaperSubjectIndex
 				.filter(
@@ -128,6 +128,12 @@ function buildExamProfileOptions(boardAvailability: QuestionBoardAvailability) {
 			};
 		})
 	};
+}
+
+function requiredBoardNames(availability: QuestionBoardAvailability, subject: string) {
+	const boardNames = availability.get(subject);
+	if (!boardNames?.length) throw new Error(`No imported board availability for ${subject}.`);
+	return boardNames;
 }
 
 function subjectBoardOptions(boardNames: string[]) {

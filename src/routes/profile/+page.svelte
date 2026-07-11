@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import { ArrowLeft, BookOpen, CheckCircle2, Info } from '@lucide/svelte';
+	import { ArrowLeft, BookOpen, CheckCircle2, ExternalLink, Info } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -40,6 +40,10 @@
 	const ocrPoetryNotices = $derived(
 		data.curriculumNotices.filter((notice) => notice.contentArea === 'poetry')
 	);
+	const officialNoticeSource = (notice: (typeof ocrPoetryNotices)[number]) =>
+		notice.evidence.find(
+			(evidence) => evidence.sourceType === 'official_board_update' && evidence.sourceUrl
+		);
 
 	type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 	type ToastTone = 'success' | 'error';
@@ -453,6 +457,7 @@
 												</select>
 												<small>All 15 poems in the selected cluster.</small>
 												{#each ocrPoetryNotices as notice (notice.id)}
+													{@const source = officialNoticeSource(notice)}
 													<span class="ocr-literature-profile__curriculum-note" role="note">
 														<span
 															class="ocr-literature-profile__curriculum-note-icon"
@@ -463,6 +468,17 @@
 														<span>
 															<strong>{notice.title}</strong>
 															{notice.body}
+															{#if source?.sourceUrl}
+																<a
+																	class="ocr-literature-profile__curriculum-source"
+																	href={source.sourceUrl}
+																	target="_blank"
+																	rel="noreferrer"
+																>
+																	{source.label ?? 'Official source'}
+																	<ExternalLink size={11} strokeWidth={2.2} aria-hidden="true" />
+																</a>
+															{/if}
 														</span>
 													</span>
 												{/each}
@@ -680,6 +696,17 @@
 		font-weight: 760;
 	}
 
+	.ocr-literature-profile__curriculum-source {
+		display: inline-flex;
+		gap: 0.2rem;
+		align-items: center;
+		margin-top: 0.24rem;
+		color: #0f704a;
+		font-weight: 700;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.14rem;
+	}
+
 	:global(:root[data-theme='dark']) .ocr-literature-profile {
 		border-color: rgba(86, 216, 148, 0.28);
 		background:
@@ -709,6 +736,10 @@
 
 	:global(:root[data-theme='dark']) .ocr-literature-profile__curriculum-note strong {
 		color: #d9e7f3;
+	}
+
+	:global(:root[data-theme='dark']) .ocr-literature-profile__curriculum-source {
+		color: #78dbaa;
 	}
 
 	:global(:root[data-theme='dark']) .ocr-literature-profile__progress,

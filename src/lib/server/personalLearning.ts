@@ -384,16 +384,6 @@ const defaultEnabledSubjects = new Set(['Biology', 'Chemistry', 'Physics']);
 const stemSubjectSet = new Set<string>(aqaStemCurriculum.map((entry) => entry.subject));
 const englishSubjectSet = new Set(['English Language', 'English Literature']);
 const supportedBoardNames = ['AQA', 'Edexcel', 'OCR', 'WJEC'];
-const fallbackQuestionBoardsBySubject: Record<string, string[]> = {
-	Biology: ['AQA'],
-	Chemistry: ['AQA'],
-	Physics: ['AQA'],
-	'Computer Science': ['AQA'],
-	Geography: ['AQA'],
-	History: ['AQA'],
-	'English Language': ['OCR'],
-	'English Literature': ['OCR']
-};
 
 let questionBoardAvailabilityPromise: Promise<QuestionBoardAvailability> | null = null;
 
@@ -523,15 +513,6 @@ function profileSubjects(): string[] {
 	return learnerSubjectOptions;
 }
 
-function fallbackQuestionBoardAvailability(): QuestionBoardAvailability {
-	return new Map(
-		Object.entries(fallbackQuestionBoardsBySubject).map(([subject, boards]) => [
-			subject,
-			[...boards]
-		])
-	);
-}
-
 function cloneQuestionBoardAvailability(
 	availability: QuestionBoardAvailability
 ): QuestionBoardAvailability {
@@ -559,34 +540,35 @@ function normalizeBoardList(boards: string[]) {
 }
 
 async function readQuestionBoardAvailability(): Promise<QuestionBoardAvailability> {
-	try {
-		const rows = await queryRows<QuestionBoardAvailabilityRow>(
-			`SELECT subject, board, question_count
-			 FROM question_board_availability
-			 WHERE qualification = 'GCSE'
-			   AND enabled = 1
-			   AND question_count > 0
-			 ORDER BY subject, board`
-		);
+	const rows = await queryRows<QuestionBoardAvailabilityRow>(
+		`SELECT subject, board, question_count
+		 FROM question_board_availability
+		 WHERE qualification = 'GCSE'
+		   AND enabled = 1
+		   AND question_count > 0
+		 ORDER BY subject, board`
+	);
 
-		if (rows.length === 0) return fallbackQuestionBoardAvailability();
-
-		const availability = new Map<string, string[]>();
-		for (const row of rows) {
-			const subject = canonicalLearnerSubject(row.subject);
-			const boards = availability.get(subject) ?? [];
-			boards.push(row.board);
-			availability.set(subject, boards);
-		}
-
-		for (const [subject, boards] of availability.entries()) {
-			availability.set(subject, normalizeBoardList(boards));
-		}
-
-		return availability;
-	} catch {
-		return fallbackQuestionBoardAvailability();
+	const availability = new Map<string, string[]>();
+	for (const row of rows) {
+		const subject = canonicalLearnerSubject(row.subject);
+		const boards = availability.get(subject) ?? [];
+		boards.push(row.board);
+		availability.set(subject, boards);
 	}
+
+	for (const [subject, boards] of availability.entries()) {
+		availability.set(subject, normalizeBoardList(boards));
+	}
+
+	const missingSubjects = profileSubjects().filter((subject) => !availability.get(subject)?.length);
+	if (missingSubjects.length > 0) {
+		throw new Error(
+			`question_board_availability is missing current GCSE rows for: ${missingSubjects.join(', ')}`
+		);
+	}
+
+	return availability;
 }
 
 export async function getImportedQuestionBoardAvailability(): Promise<QuestionBoardAvailability> {
@@ -596,11 +578,13 @@ export async function getImportedQuestionBoardAvailability(): Promise<QuestionBo
 
 function availableBoardsForSubject(
 	subject: string,
-	availability?: QuestionBoardAvailability
+	availability: QuestionBoardAvailability
 ): string[] {
 	const canonicalSubject = canonicalLearnerSubject(subject);
-	const boards = availability?.get(canonicalSubject) ??
-		fallbackQuestionBoardsBySubject[canonicalSubject] ?? ['AQA'];
+	const boards = availability.get(canonicalSubject);
+	if (!boards?.length) {
+		throw new Error(`No imported board availability for ${canonicalSubject}.`);
+	}
 	return normalizeBoardList(boards);
 }
 
@@ -645,15 +629,11 @@ function safeBoard(value: string): string {
 function safeBoardForSubject(
 	subject: string,
 	value: string,
-	availability?: QuestionBoardAvailability
+	availability: QuestionBoardAvailability
 ): string {
 	const requestedBoard = safeBoard(value);
 	const boards = availableBoardsForSubject(subject, availability);
-	return (
-		boards.find((board) => board.toLowerCase() === requestedBoard.toLowerCase()) ??
-		boards[0] ??
-		requestedBoard
-	);
+	return boards.find((board) => board.toLowerCase() === requestedBoard.toLowerCase()) ?? boards[0];
 }
 
 function safeCourse(value: string): LearnerSubject['course'] {
@@ -668,10 +648,9 @@ function safeTier(value: string): LearnerSubject['tier'] {
 
 function toLearnerSubject(
 	row: UserProfileSubjectRow,
-	subjectOverride?: LearnerSubject['subject'],
-	boardAvailability?: QuestionBoardAvailability
+	boardAvailability: QuestionBoardAvailability
 ): LearnerSubject {
-	const subject = subjectOverride ?? canonicalLearnerSubject(row.subject);
+	const subject = canonicalLearnerSubject(row.subject);
 	return {
 		subject,
 		board: safeBoardForSubject(subject, row.board, boardAvailability),
@@ -684,13 +663,17 @@ function toLearnerSubject(
 	};
 }
 
-function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSubject {
+function defaultLearnerSubject(
+	profile: UserProfile,
+	subject: string,
+	boardAvailability: QuestionBoardAvailability
+): LearnerSubject {
 	return {
 		subject,
 		board: safeBoardForSubject(
 			subject,
 			englishSubjectSet.has(subject) ? 'OCR' : profile.selectedBoard,
-			undefined
+			boardAvailability
 		),
 		qualification: 'GCSE',
 		course: isStemProfileSubject(subject) ? 'Combined Science' : 'GCSE Subject',
@@ -704,7 +687,7 @@ function defaultLearnerSubject(profile: UserProfile, subject: string): LearnerSu
 async function listLearnerSubjects(
 	userId: string,
 	profile: UserProfile,
-	boardAvailability?: QuestionBoardAvailability
+	boardAvailability: QuestionBoardAvailability
 ): Promise<LearnerSubject[]> {
 	const rows = await queryPersonalRows<UserProfileSubjectRow>(
 		`SELECT user_id, subject, board, qualification, course, tier, enabled,
@@ -714,23 +697,14 @@ async function listLearnerSubjects(
 		[userId]
 	);
 	const bySubject = new Map(
-		rows.flatMap((row) => {
-			if (row.subject.trim().toLowerCase() === 'english') {
-				return [
-					['English Language', toLearnerSubject(row, 'English Language', boardAvailability)],
-					['English Literature', toLearnerSubject(row, 'English Literature', boardAvailability)]
-				] as Array<readonly [string, LearnerSubject]>;
-			}
-			const subject = toLearnerSubject(row, undefined, boardAvailability);
-			return [[subject.subject, subject] as const];
+		rows.map((row) => {
+			const subject = toLearnerSubject(row, boardAvailability);
+			return [subject.subject, subject] as const;
 		})
 	);
 	return profileSubjects().map(
 		(subject) =>
-			bySubject.get(subject) ?? {
-				...defaultLearnerSubject(profile, subject),
-				board: safeBoardForSubject(subject, profile.selectedBoard, boardAvailability)
-			}
+			bySubject.get(subject) ?? defaultLearnerSubject(profile, subject, boardAvailability)
 	);
 }
 
@@ -764,15 +738,6 @@ function metaLine(parts: Array<string | number | null | undefined>): string {
 		.map((part) => (typeof part === 'number' ? String(part) : part))
 		.filter((part): part is string => Boolean(part && part.trim()))
 		.join(' · ');
-}
-
-function subjectLabelFromColumns(
-	subject: string | null | undefined,
-	subjectArea: string | null | undefined
-): string | null {
-	return (subject ?? '').toLowerCase().includes('english')
-		? (subject ?? null)
-		: (subjectArea ?? subject ?? null);
 }
 
 function gapBandLabel(value: string): string {
@@ -1402,7 +1367,7 @@ function nextQuestionFromRow(row: NextQuestionRow): DashboardNextQuestion {
 			row.source_question_ref,
 			row.board,
 			row.qualification,
-			subjectLabelFromColumns(row.subject, row.subject_area),
+			row.subject_area ?? row.subject,
 			row.paper,
 			row.marks ? `${row.marks} marks` : null
 		]),

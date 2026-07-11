@@ -434,8 +434,6 @@ function topicFromRow(row: QuestionMembershipRow) {
 }
 
 function subjectName(row: Pick<ChainRow, 'subject' | 'subject_area'>) {
-	if ((row.subject ?? '').toLowerCase().includes('english'))
-		return row.subject ?? 'English Language';
 	return row.subject_area ?? row.subject ?? 'Science';
 }
 
@@ -732,10 +730,7 @@ async function fetchQuestionBankRows() {
 		   AND q.status = 'published'
 		 ORDER BY
 		   COALESCE(q.board, sd.board, 'AQA'),
-		   CASE
-		     WHEN LOWER(COALESCE(q.subject, '')) LIKE 'english%' THEN q.subject
-		     ELSE COALESCE(q.subject_area, q.subject, sd.subject, '')
-		   END,
+		   COALESCE(q.subject_area, q.subject, sd.subject, ''),
 		   COALESCE(q.year, sd.year, 0) DESC,
 		   COALESCE(q.paper, sd.paper, ''),
 		   CASE qac.transfer_distance
@@ -960,9 +955,11 @@ export async function getFreshQuestionBankBrowseData(): Promise<QuestionBankBrow
 export async function getQuestionBankBrowseData(): Promise<QuestionBankBrowseData> {
 	const materialized = await getPublicRoutePayload<QuestionBankBrowseData>(
 		questionBankBrowsePayloadId
-	).catch(() => null);
-	if (materialized?.chains && materialized.questions && materialized.topics) return materialized;
-	return await getFreshQuestionBankBrowseData();
+	);
+	if (!materialized?.chains || !materialized.questions || !materialized.topics) {
+		throw new Error(`Missing current public route payload: ${questionBankBrowsePayloadId}`);
+	}
+	return materialized;
 }
 
 export async function getFreshHomePagePublicData(): Promise<HomePagePublicData> {
@@ -970,11 +967,11 @@ export async function getFreshHomePagePublicData(): Promise<HomePagePublicData> 
 }
 
 export async function getHomePagePublicData(): Promise<HomePagePublicData> {
-	const materialized = await getPublicRoutePayload<HomePagePublicData>(
-		homePublicSummaryPayloadId
-	).catch(() => null);
-	if (materialized?.featuredChains && materialized.stats) return materialized;
-	return await getFreshHomePagePublicData();
+	const materialized = await getPublicRoutePayload<HomePagePublicData>(homePublicSummaryPayloadId);
+	if (!materialized?.featuredChains || !materialized.stats) {
+		throw new Error(`Missing current public route payload: ${homePublicSummaryPayloadId}`);
+	}
+	return materialized;
 }
 
 export async function getExplorableLearningChain(chainId: string): Promise<LearningChain | null> {

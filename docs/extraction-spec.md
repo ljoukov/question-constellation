@@ -2869,9 +2869,10 @@ that support it.
 A future corpus-level model pass should return a short title and one or two useful sentences only
 when the context changes how a learner should interpret or use imported questions. It should not
 turn paper summaries, extraction logs, or internal review notes into learner copy. For example:
-`Earlier poetry anthology - Questions from before 2024 use OCR's earlier anthology; keep them for
-essay practice and label them clearly.` Model suggestions must be source-backed and reviewed before
-publication.
+`Earlier poetry anthology - OCR first assessed its revised anthology in June 2024. Earlier questions
+use the previous version; this question bank keeps them for essay practice.` Official facts and
+product policy must be attributed separately. Model suggestions must be source-backed and reviewed
+before publication.
 
 1. Create an `extraction_runs` row with status `running`.
 2. Insert or reuse `source_documents` by `file_hash`.

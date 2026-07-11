@@ -98,8 +98,9 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 // TODO(curriculum-notices): add a reviewed corpus-level pass after several papers can be compared.
 // Ask for a short learner-facing title and one or two sentences only when the context changes how
 // imported questions should be used, and require supporting source-document IDs. Do not turn paper
-// summaries or extraction notes into notices. Example: "Earlier poetry anthology - Questions from
-// before 2024 use OCR's earlier anthology; keep them for essay practice and label them clearly."
+// summaries or extraction notes into notices. Attribute official dates separately from product
+// policy. Example: "OCR first assessed its revised anthology in June 2024. Earlier questions use
+// the previous version; this question bank keeps them for essay practice."
 // A single-paper extraction must not infer a curriculum transition by itself.
 const importedSourceDocumentIds = skipImported
 	? await loadImportedSourceDocumentIds(manifest.rows ?? [])
