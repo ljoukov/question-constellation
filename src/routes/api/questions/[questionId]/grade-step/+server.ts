@@ -39,7 +39,10 @@ const requestSchema = z.object({
 });
 
 function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: EnglishStepGradeDelta) {
-	send({ event: 'status', data: JSON.stringify({ phase: delta.phase }) });
+	send({
+		event: 'status',
+		data: JSON.stringify({ phase: delta.phase, summaryDelta: delta.summaryDelta })
+	});
 }
 
 export const POST: RequestHandler = async ({ params, request, platform }) => {

@@ -18,3 +18,4 @@ minimumReleaseAgeExclude:
   - '@openai/codex@0.142.4-linux-x64'
   - '@openai/codex@0.142.4-win32-arm64'
   - '@openai/codex@0.142.4-win32-x64'
+  - '@ljoukov/llm@7.0.25'

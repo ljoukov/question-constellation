@@ -128,6 +128,9 @@ describe('English step grading', () => {
 		expect(prompt).toContain('[level-descriptor] Use precise references and sustained analysis.');
 		expect(prompt).toContain('No examiner-report guidance is available for this question.');
 		expect(prompt).toContain('Task:\nAusten contrasts Bingley’s openness');
+		expect(prompt).toContain('naming a thematic driver on each side');
+		expect(prompt).toContain('A required-scope check is not met merely because');
+		expect(prompt).toContain('materially misreads the supplied context');
 	});
 
 	it('requires every configured check before returning pass', () => {

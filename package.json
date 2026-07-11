@@ -90,7 +90,7 @@
 		"wrangler": "^4.81.0"
 	},
 	"dependencies": {
-		"@ljoukov/llm": "7.0.23",
+		"@ljoukov/llm": "7.0.25",
 		"@lucide/svelte": "^1.16.0",
 		"@openai/codex-sdk": "0.142.4",
 		"jose": "^6.2.3",

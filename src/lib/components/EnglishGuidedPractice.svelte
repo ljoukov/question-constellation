@@ -33,7 +33,7 @@
 		LockKeyhole,
 		RotateCcw
 	} from '@lucide/svelte';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 
 	type GradePhase = 'idle' | 'connecting' | 'calling' | 'thinking' | 'grading' | 'done' | 'error';
 	type EnglishStepGradeResult = {
@@ -150,8 +150,16 @@
 	let attemptHistory = $state<EnglishLearnerAttempt[]>([]);
 	let gradePhase = $state<GradePhase>('idle');
 	let gradeError = $state('');
+	let gradeReasoningSummary = $state('');
 	let hintOpen = $state(false);
+	let feedbackPanel = $state<HTMLElement | null>(null);
 	let lastQueuedDraftSignature = '';
+	const gradingProgressSteps = [
+		'Connecting',
+		'Loading guidance',
+		'Reviewing your response',
+		'Preparing feedback'
+	];
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
@@ -175,6 +183,8 @@
 	);
 	const canCheck = $derived(activeAnswer.length >= 8 && !isChecking);
 	const hintItems = $derived(buildStepHints(activeStage));
+	const progressStepIndex = $derived(gradePhaseProgressIndex(gradePhase));
+	const visibleReasoningSummary = $derived(readableReasoningSummary(gradeReasoningSummary));
 	const metaChips = $derived(
 		uniqueLabels([
 			question.meta.board,
@@ -366,6 +376,7 @@
 		invalidateFromStage(activeStageIndex);
 		gradePhase = 'idle';
 		gradeError = '';
+		gradeReasoningSummary = '';
 		persistState();
 	}
 
@@ -373,6 +384,7 @@
 		if (index < 0 || index >= practice.stages.length || index > furthestUnlockedIndex) return;
 		gradePhase = 'idle';
 		gradeError = '';
+		gradeReasoningSummary = '';
 		hintOpen = false;
 		void goto(stepHref(practice.stages[index]), { noScroll: true, keepFocus: false });
 	}
@@ -389,6 +401,7 @@
 		attemptHistory = [];
 		gradePhase = 'idle';
 		gradeError = '';
+		gradeReasoningSummary = '';
 		hintOpen = false;
 		persistState();
 		const firstStage = practice.stages[0];
@@ -463,11 +476,40 @@
 	}
 
 	function statusText(phase: GradePhase) {
-		if (phase === 'connecting') return 'Starting check';
-		if (phase === 'calling') return 'Checking your step';
-		if (phase === 'thinking') return 'Reading your response';
+		if (phase === 'connecting') return 'Connecting to the checker';
+		if (phase === 'calling') return 'Loading the question guidance';
+		if (phase === 'thinking') return 'Reviewing your response';
 		if (phase === 'grading') return 'Preparing feedback';
 		return 'Checking your step';
+	}
+
+	function gradePhaseProgressIndex(phase: GradePhase) {
+		if (phase === 'connecting') return 0;
+		if (phase === 'calling') return 1;
+		if (phase === 'thinking') return 2;
+		if (phase === 'grading') return 3;
+		return -1;
+	}
+
+	function readableReasoningSummary(value: string) {
+		const cleaned = value
+			.replace(/```[\s\S]*?```/g, '')
+			.replace(/^#{1,6}\s+/gm, '')
+			.replace(/\*\*/g, '')
+			.replace(/`/g, '')
+			.trim();
+		if (!cleaned) return '';
+		const safeSentences = (cleaned.match(/[^.!?]+[.!?]+/g) ?? [])
+			.map((sentence) => sentence.replace(/\s+/g, ' ').trim())
+			.filter(
+				(sentence) =>
+					!/(?:^|\s)(?:I|we)\s/i.test(sentence) &&
+					!/(?:JSON|output format|instructions?|system prompt)/i.test(sentence)
+			);
+		const latestSummary = safeSentences.slice(-2).join(' ');
+		return latestSummary.length > 420
+			? `${latestSummary.slice(0, 417).trimEnd()}…`
+			: latestSummary;
 	}
 
 	function parseSseBlock(block: string): SseMessage | null {
@@ -489,9 +531,15 @@
 
 	function handleSseMessage(message: SseMessage) {
 		if (message.event === 'status') {
-			const status = JSON.parse(message.data) as { phase?: GradePhase };
+			const status = JSON.parse(message.data) as {
+				phase?: GradePhase;
+				summaryDelta?: string;
+			};
 			if (status.phase === 'calling' || status.phase === 'thinking' || status.phase === 'grading') {
 				gradePhase = status.phase;
+			}
+			if (status.summaryDelta) {
+				gradeReasoningSummary = `${gradeReasoningSummary}${status.summaryDelta}`.slice(-3000);
 			}
 			return null;
 		}
@@ -526,7 +574,10 @@
 	async function checkActiveStep() {
 		if (!activeStage || !canCheck) return;
 		gradeError = '';
+		gradeReasoningSummary = '';
 		gradePhase = 'connecting';
+		await tick();
+		feedbackPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 		try {
 			const response = await fetch(
 				resolve('/api/questions/[questionId]/grade-step', {
@@ -590,6 +641,9 @@
 		if (loadedQuestionId === practice.questionId) return;
 		loadedQuestionId = practice.questionId;
 		hydrated = false;
+		gradePhase = 'idle';
+		gradeError = '';
+		gradeReasoningSummary = '';
 		const storedState = initialEnglishPracticeState(practice.questionId);
 		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
 		stepResults = storedState?.stepResults ?? {};
@@ -672,7 +726,19 @@
 			{/if}
 		</aside>
 
-		<section class="qc-step-workspace" aria-label="Step-by-step answer practice">
+		<section
+			class="qc-step-workspace"
+			class:hydrating={!hydrated}
+			aria-label="Step-by-step answer practice"
+			aria-busy={!hydrated}
+			inert={!hydrated}
+		>
+			{#if !hydrated}
+				<div class="qc-step-hydrating" role="status">
+					<span class="qc-step-spinner dark" aria-hidden="true"></span>
+					Preparing the practice controls…
+				</div>
+			{/if}
 			<nav
 				class="qc-stepper"
 				aria-label="Answer steps"
@@ -764,7 +830,12 @@
 				</section>
 
 				{#if isChecking || gradeError || activeResult}
-					<section class="qc-step-feedback" aria-live="polite" aria-label="Feedback">
+					<section
+						class="qc-step-feedback"
+						aria-live="polite"
+						aria-label="Feedback"
+						bind:this={feedbackPanel}
+					>
 						<header>
 							<div>
 								<p>Feedback</p>
@@ -787,8 +858,36 @@
 
 						{#if isChecking}
 							<div class="qc-step-checking">
-								<span class="qc-step-spinner dark" aria-hidden="true"></span>
-								<p>{statusText(gradePhase)}…</p>
+								<div class="qc-step-checking-head">
+									<span class="qc-step-spinner dark" aria-hidden="true"></span>
+									<span>
+										<strong>{statusText(gradePhase)}</strong>
+										<small>The coach is checking this step only.</small>
+									</span>
+								</div>
+								<ol class="qc-step-progress-list" aria-label="Check progress">
+									{#each gradingProgressSteps as progressStep, index (progressStep)}
+										<li
+											class:current={index === progressStepIndex}
+											class:complete={index < progressStepIndex}
+										>
+											<span aria-hidden="true">
+												{#if index < progressStepIndex}
+													<Check size={12} strokeWidth={2.8} />
+												{:else}
+													{index + 1}
+												{/if}
+											</span>
+											{progressStep}
+										</li>
+									{/each}
+								</ol>
+								{#if visibleReasoningSummary}
+									<div class="qc-step-reasoning-summary">
+										<strong>What the coach is checking</strong>
+										<p>{visibleReasoningSummary}</p>
+									</div>
+								{/if}
 							</div>
 						{:else if gradeError}
 							<p class="qc-step-error">{gradeError}</p>
@@ -971,6 +1070,17 @@
 		min-width: 0;
 		max-width: 100%;
 		padding: clamp(1.4rem, 3.4vw, 3rem);
+	}
+
+	.qc-step-hydrating {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.7rem 0.8rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
+		color: var(--qc-ui-text-muted);
+		font-size: 0.82rem;
 	}
 
 	.qc-stepper {
@@ -1225,11 +1335,100 @@
 	}
 
 	.qc-step-checking {
+		display: grid;
+		gap: 1rem;
+		padding: 1.5rem 1.15rem;
+		color: var(--step-muted);
+	}
+
+	.qc-step-checking-head {
 		display: flex;
 		align-items: center;
 		gap: 0.7rem;
-		padding: 1.5rem 1.15rem;
-		color: var(--step-muted);
+	}
+
+	.qc-step-checking-head > span:last-child {
+		display: grid;
+		gap: 0.15rem;
+	}
+
+	.qc-step-checking-head strong {
+		color: var(--qc-ui-text);
+		font-size: 0.9rem;
+	}
+
+	.qc-step-checking-head small {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.76rem;
+	}
+
+	.qc-step-progress-list {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.6rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.qc-step-progress-list li {
+		display: grid;
+		grid-template-columns: 1.35rem minmax(0, 1fr);
+		align-items: center;
+		gap: 0.4rem;
+		min-width: 0;
+		color: var(--qc-ui-text-subtle);
+		font-size: 0.72rem;
+		line-height: 1.25;
+	}
+
+	.qc-step-progress-list li > span {
+		display: grid;
+		place-items: center;
+		width: 1.35rem;
+		height: 1.35rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		font-size: 0.66rem;
+		font-weight: 750;
+	}
+
+	.qc-step-progress-list li.current {
+		color: var(--qc-ui-accent-text);
+		font-weight: 720;
+	}
+
+	.qc-step-progress-list li.current > span {
+		border-color: var(--qc-ui-accent);
+		background: var(--qc-ui-accent-muted);
+	}
+
+	.qc-step-progress-list li.complete {
+		color: var(--qc-ui-text-muted);
+	}
+
+	.qc-step-progress-list li.complete > span {
+		border-color: var(--qc-ui-accent-border);
+		color: var(--qc-ui-accent-text);
+	}
+
+	.qc-step-reasoning-summary {
+		padding: 0.75rem 0.85rem;
+		border-left: 3px solid var(--qc-ui-accent);
+		background: var(--qc-ui-accent-soft);
+	}
+
+	.qc-step-reasoning-summary strong {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.72rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.qc-step-checking .qc-step-reasoning-summary p {
+		margin: 0.35rem 0 0;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.84rem;
+		line-height: 1.45;
 	}
 
 	.qc-step-checking p,
@@ -1422,6 +1621,10 @@
 		.qc-step-coaching-note {
 			grid-template-columns: 1fr;
 			gap: 0.25rem;
+		}
+
+		.qc-step-progress-list {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
 		.qc-step-primary {

@@ -7,7 +7,7 @@ import {
 import { type LlmStreamEvent, type LlmTextModelId } from '@ljoukov/llm';
 import { z } from 'zod';
 
-const STEP_GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.5-fast';
+const STEP_GRADING_MODEL: LlmTextModelId = 'chatgpt-gpt-5.6-sol-fast';
 const STEP_GRADING_THINKING_LEVEL = 'medium';
 
 export type EnglishStepCheck = {
@@ -49,6 +49,7 @@ export type EnglishLearnerAttempt = {
 export type EnglishStepGradeDelta = {
 	type: 'status';
 	phase: 'calling' | 'thinking' | 'grading';
+	summaryDelta?: string;
 };
 
 type StepCriterion = {
@@ -469,6 +470,9 @@ export function buildEnglishStepGradePrompt({
 		passingStandard,
 		'Pass only when every listed check is clearly met. A vague, partial, unsupported, generic, or merely named idea does not pass.',
 		'For a Task step, a broad moral such as "conflict is bad" or "forgiveness heals people" is not yet an interpretive argument unless the learner adds a precise, arguable insight about what the writer reveals.',
+		'For a comparison Task step, naming a thematic driver on each side—such as generational conflict, status, politics, or authority—or adding "they have different causes" still only identifies content. Interpretive significance requires an explicit implication about relationships, values, power, identity, society, or another precise idea the writers reveal.',
+		'A required-scope check is not met merely because the learner repeats phrases such as "in the extract and elsewhere" or "across the text". The actual claim must fit the supplied extract context and establish a defensible route through every required part of the task.',
+		'If your own feedback identifies that a claim contradicts or materially misreads the supplied context, that check must be not_yet. Never describe a factual or scope mismatch and mark the same check met.',
 		'Judge each check independently. If three checks are met and one is missing, mark only that one not_yet.',
 		'Once every check is clearly met, return pass even if the response could still be polished. Do not move the goalposts between retries.',
 		'',
@@ -491,6 +495,9 @@ export function buildEnglishStepGradePrompt({
 		'',
 		'Example 3 — method response: "The inclusive pronoun makes the reader feel involved and shows shared responsibility."',
 		'If the current step requires analysis in both texts, mark close analysis and precise effect met, but mark the second-text method and method comparison not_yet. The next action should request only the missing comparative clause.',
+		'',
+		'Example 4 — extract-and-wider task response: "The character is submissive to authority in the extract and elsewhere."',
+		'If the supplied extract context instead shows the character resisting authority, mark required scope not_yet even though the response says "in the extract and elsewhere". Keep any independently met focus or interpretation checks met, and ask the learner to make the extract and wider text do accurate, distinct jobs.',
 		'',
 		'Return JSON only, with exactly this shape:',
 		'{',
@@ -602,25 +609,38 @@ export async function gradeEnglishPracticeStepStreaming({
 		signal,
 		telemetry: false
 	});
+	onDelta?.({ type: 'status', phase: 'thinking' });
 
 	let rawText = '';
-	let sawThought = false;
 	let sawResponse = false;
+	let pendingSummaryDelta = '';
+	const flushSummaryDelta = () => {
+		if (!pendingSummaryDelta) return;
+		onDelta?.({
+			type: 'status',
+			phase: sawResponse ? 'grading' : 'thinking',
+			summaryDelta: pendingSummaryDelta
+		});
+		pendingSummaryDelta = '';
+	};
 	for await (const event of call.events) {
 		handleStreamEvent(event, {
-			onThought() {
-				if (sawThought) return;
-				sawThought = true;
-				onDelta?.({ type: 'status', phase: 'thinking' });
+			onThought(text) {
+				pendingSummaryDelta += text;
+				if (pendingSummaryDelta.length >= 64 || /[.!?]\s*$/.test(pendingSummaryDelta)) {
+					flushSummaryDelta();
+				}
 			},
 			onResponse(text) {
 				rawText += text;
 				if (sawResponse) return;
+				flushSummaryDelta();
 				sawResponse = true;
 				onDelta?.({ type: 'status', phase: 'grading' });
 			}
 		});
 	}
+	flushSummaryDelta();
 
 	const llmResult = await call.result;
 	return parseEnglishStepGradeResponse(
