@@ -14,4 +14,15 @@ describe('root viewport meta', () => {
 		expect(appHtml).toContain('name="viewport"');
 		expect(appHtml).toContain(`content="${LOCKED_VIEWPORT}"`);
 	});
+
+	it('installs the active zoom lock during global client startup', () => {
+		const srcRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+		const clientHooks = readFileSync(resolve(srcRoot, 'hooks.client.ts'), 'utf8');
+		const appCss = readFileSync(resolve(srcRoot, 'app.css'), 'utf8');
+
+		expect(clientHooks).toContain("import { installViewportZoomLock } from '$lib/viewportZoom'");
+		expect(clientHooks).toContain('export const init: ClientInit');
+		expect(clientHooks).toContain('installViewportZoomLock();');
+		expect(appCss).toContain('touch-action: pan-x pan-y;');
+	});
 });
