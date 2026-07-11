@@ -27,7 +27,11 @@
 		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
-	const finderHref = $derived(`${resolve('/chains')}?subject=${encodeURIComponent(topbarSubject)}`);
+	const finderHref = $derived(
+		data.user && topbarSubject === 'English Literature'
+			? resolve('/english-literature')
+			: `${resolve('/chains')}?subject=${encodeURIComponent(topbarSubject)}`
+	);
 	const topicLabel = $derived(data.question.meta.topic.split(':')[0] ?? data.question.meta.topic);
 	const metaItems = $derived(
 		[
