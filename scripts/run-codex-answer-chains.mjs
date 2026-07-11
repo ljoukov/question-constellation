@@ -18,8 +18,8 @@ Optional:
   --existing-chain-input-root=<audited-json-root>
   --work-dir=tmp/codex-answer-chains/<source-id>
   --summary=tmp/codex-answer-chains/<source-id>/codex-chain-summary.json
-  --model=gpt-5.5
-  --thinking-level=xhigh
+  --model=gpt-5.6-sol
+  --thinking-level=max
   --skip-chain-style-judge
   --run-legacy-chain-style-judge
   --allow-shared-chain-updates
@@ -60,8 +60,8 @@ const summaryPath = path.resolve(
 );
 const existingChainsPath = stringArg('existing-chains', '');
 const existingChainInputRoot = stringArg('existing-chain-input-root', '');
-const model = stringArg('model', 'gpt-5.5');
-const thinkingLevel = stringArg('thinking-level', 'xhigh');
+const model = stringArg('model', 'gpt-5.6-sol');
+const thinkingLevel = stringArg('thinking-level', 'max');
 const runLegacyChainStyleJudge = hasArg('run-legacy-chain-style-judge');
 const skipChainStyleJudge = hasArg('skip-chain-style-judge') || !runLegacyChainStyleJudge;
 const allowSharedChainUpdates = hasArg('allow-shared-chain-updates');

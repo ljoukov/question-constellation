@@ -34,7 +34,7 @@ export async function runCodexSdkTurn({
 	eventsPath,
 	lastMessagePath,
 	summaryPath,
-	model = 'gpt-5.5',
+	model = 'gpt-5.6-sol',
 	thinkingLevel = 'medium',
 	timeoutMs = 3_600_000,
 	networkAccessEnabled = false,

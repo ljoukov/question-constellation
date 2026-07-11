@@ -1359,6 +1359,15 @@ function mechanicalSummary(candidate, options = {}) {
 	};
 }
 
+function expectsOcrEnglishAlphabeticPartRef(sourceDocumentId, ref) {
+	const componentMatch = String(sourceDocumentId ?? '').match(/^ocr-j352-(01|02)-qp-/);
+	const refMatch = String(ref ?? '').match(/^(\d{2})\./);
+	if (!componentMatch || !refMatch) return false;
+	const parentNumber = Number(refMatch[1]);
+	const lastAlphabeticParent = componentMatch[1] === '01' ? 6 : 3;
+	return parentNumber >= 1 && parentNumber <= lastAlphabeticParent;
+}
+
 function deterministicIssuesFor(candidate, options = {}) {
 	const findings = [];
 	const sourceDocumentId = candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? null;
@@ -1412,6 +1421,14 @@ function deterministicIssuesFor(candidate, options = {}) {
 				field: 'sourceQuestionRef',
 				severity: 'error',
 				evidence: ref
+			});
+		}
+		if (expectsOcrEnglishAlphabeticPartRef(sourceDocumentId, ref) && !/^\d{2}\.1[ab]$/.test(ref)) {
+			issues.push({
+				code: 'ocr_english_alphabetic_part_ref_lost',
+				field: 'sourceQuestionRef',
+				severity: 'error',
+				evidence: `${ref} should preserve the printed (a)/(b) label as NN.1a or NN.1b.`
 			});
 		}
 		if (!String(question.promptText ?? '').trim()) {
@@ -1652,6 +1669,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 			});
 		}
 		for (const issue of contextTextDuplicateBlockIssues(question)) issues.push(issue);
+		for (const issue of choiceTableDuplicatesRenderedTableIssues(question)) issues.push(issue);
 		for (const issue of copyrightPlaceholderMediaIssues(question)) issues.push(issue);
 		for (const issue of learnerVisibleSourceProvenanceIssues(question)) issues.push(issue);
 		for (const issue of genericFigureCropPromptTextIssues(question)) issues.push(issue);
@@ -2892,6 +2910,48 @@ function contextTextDuplicateBlockIssues(question) {
 	];
 }
 
+function choiceTableDuplicatesRenderedTableIssues(question) {
+	const response = question.response;
+	if (
+		response?.kind !== 'choice-table' ||
+		!Array.isArray(response.rows) ||
+		response.rows.length < 2
+	) {
+		return [];
+	}
+	const responseRows = response.rows.map((row) =>
+		(Array.isArray(row) ? row : []).map((cell) => normalizedRenderText(cell))
+	);
+	if (responseRows.some((row) => row.length < 2 || row.some((cell) => !cell))) return [];
+	for (const field of ['stemBlocks', 'leadBlocks', 'promptBlocks', 'afterResponseBlocks']) {
+		for (const [index, block] of (question[field] ?? []).entries()) {
+			if (!['table', 'structured-table'].includes(block?.kind) || !Array.isArray(block.rows))
+				continue;
+			const blockRows = block.rows.map((row) =>
+				(Array.isArray(row) ? row : []).map((cell) => normalizedRenderText(cell?.text ?? cell))
+			);
+			const matchingRows = responseRows.filter((responseRow) =>
+				blockRows.some(
+					(blockRow) =>
+						blockRow.length >= responseRow.length &&
+						responseRow.every((cell, cellIndex) => cell === blockRow[cellIndex])
+				)
+			).length;
+			if (matchingRows === responseRows.length) {
+				return [
+					{
+						code: 'choice_table_duplicates_rendered_table',
+						field: `${field}[${index}]/response`,
+						severity: 'error',
+						evidence: `${question.sourceQuestionRef ?? 'unknown'} renders the same ${responseRows.length} table rows as both a source block and a choice-table response.`
+					}
+				];
+			}
+		}
+	}
+	return [];
+}
+
 function questionRequiresDiagramResponse(question) {
 	const text = learnerVisibleQuestionText(question);
 	const gradingText = [
@@ -3332,17 +3392,34 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		return issues;
 	}
 	if (['06.5', '06.6'].includes(ref)) {
-		const hasSurveyContext =
-			/15\s*year|over\s+15\s+years/.test(visibleText) &&
-			(/400\s*000/.test(visibleText) ||
-				/800\s*000/.test(visibleText) ||
-				/million women/.test(visibleText));
+		const hasSurveySetup = (text) =>
+			/(?:15\s*-?\s*year|over\s+15\s+years)/.test(text) &&
+			(/400\s*000/.test(text) || /800\s*000/.test(text) || /million women/.test(text));
+		const hasSurveyContext = hasSurveySetup(visibleText);
 		if (!hasSurveyContext) {
 			issues.push({
 				code: 'known_survey_context_missing',
 				field: 'stemBlocks/contextText',
 				severity: 'error',
 				evidence: `${ref} must include the Million Women survey setup, duration, cohort size, and controlled-factor context.`
+			});
+		}
+		const contextOnly = String(question.contextText ?? '').toLowerCase();
+		const renderedBlocksOnly = [
+			...(question.stemBlocks ?? []).map(blockSearchText),
+			...(question.leadBlocks ?? []).map(blockSearchText),
+			...(question.promptBlocks ?? []).map(blockSearchText),
+			...(question.afterResponseBlocks ?? []).map(blockSearchText)
+		]
+			.filter(Boolean)
+			.join('\n')
+			.toLowerCase();
+		if (hasSurveySetup(contextOnly) && hasSurveySetup(renderedBlocksOnly)) {
+			issues.push({
+				code: 'known_survey_context_duplicated',
+				field: 'contextText/stemBlocks',
+				severity: 'error',
+				evidence: `${ref} repeats the Million Women survey setup in contextText and rendered blocks.`
 			});
 		}
 	}

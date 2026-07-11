@@ -19,15 +19,15 @@ Optional:
   --existing-chains=<existing-chain-context.json>
   --existing-chain-input-root=<audited-json-root>
   --work-root=tmp/codex-production-import/<source-id>
-  --model=gpt-5.5
-  --extraction-model=gpt-5.5
-  --extraction-thinking-level=high
-  --chain-model=gpt-5.5
-  --chain-thinking-level=xhigh
-  --judge-model=gpt-5.5
-  --judge-thinking-level=high
-  --solvability-model=gpt-5.5
-  --solvability-thinking-level=xhigh
+  --model=gpt-5.6-sol
+  --extraction-model=gpt-5.6-sol
+  --extraction-thinking-level=max
+  --chain-model=gpt-5.6-sol
+  --chain-thinking-level=max
+  --judge-model=gpt-5.6-sol
+  --judge-thinking-level=max
+  --solvability-model=gpt-5.6-sol
+  --solvability-thinking-level=max
   --solvability-timeout-ms=7200000
   --expected-marks=100
   --expected-questions=46
@@ -223,8 +223,8 @@ function extractionCommand() {
 		`--output=${rawOutputPath}`,
 		`--summary=${extractionSummaryPath}`,
 		`--work-dir=${path.join(workRoot, 'codex-extraction')}`,
-		`--model=${stringArg('extraction-model', stringArg('model', 'gpt-5.5'))}`,
-		`--thinking-level=${stringArg('extraction-thinking-level', stringArg('thinking-level', 'high'))}`,
+		`--model=${stringArg('extraction-model', stringArg('model', 'gpt-5.6-sol'))}`,
+		`--thinking-level=${stringArg('extraction-thinking-level', stringArg('thinking-level', 'max'))}`,
 		`--timeout-ms=${stringArg('extraction-timeout-ms', stringArg('timeout-ms', '7200000'))}`
 	];
 	forwardCommonExtractionArgs(args);
@@ -244,8 +244,8 @@ function extractionJudgeCommand() {
 		`--work-dir=${path.join(workRoot, 'extraction-judge')}`,
 		`--output=${extractionJudgeOutputPath}`,
 		`--summary=${extractionJudgeSummaryPath}`,
-		`--model=${stringArg('judge-model', stringArg('model', 'gpt-5.5'))}`,
-		`--thinking-level=${stringArg('judge-thinking-level', 'high')}`,
+		`--model=${stringArg('judge-model', stringArg('model', 'gpt-5.6-sol'))}`,
+		`--thinking-level=${stringArg('judge-thinking-level', 'max')}`,
 		`--timeout-ms=${stringArg('judge-timeout-ms', stringArg('timeout-ms', '7200000'))}`
 	];
 	forwardString(args, 'expected-marks');
@@ -261,8 +261,8 @@ function chainCommand() {
 		`--output=${reconciledOutputPath}`,
 		`--summary=${chainSummaryPath}`,
 		`--work-dir=${path.join(workRoot, 'codex-chains')}`,
-		`--model=${stringArg('chain-model', stringArg('model', 'gpt-5.5'))}`,
-		`--thinking-level=${stringArg('chain-thinking-level', 'xhigh')}`,
+		`--model=${stringArg('chain-model', stringArg('model', 'gpt-5.6-sol'))}`,
+		`--thinking-level=${stringArg('chain-thinking-level', 'max')}`,
 		`--timeout-ms=${stringArg('chain-timeout-ms', stringArg('timeout-ms', '7200000'))}`
 	];
 	forwardString(args, 'existing-chains');
@@ -295,8 +295,8 @@ function codexSolvabilityCommand() {
 		`--work-dir=${path.join(workRoot, 'codex-solvability')}`,
 		`--output=${solvabilityOutputPath}`,
 		`--summary=${solvabilitySummaryPath}`,
-		`--model=${stringArg('solvability-model', stringArg('model', 'gpt-5.5'))}`,
-		`--thinking-level=${stringArg('solvability-thinking-level', 'xhigh')}`,
+		`--model=${stringArg('solvability-model', stringArg('model', 'gpt-5.6-sol'))}`,
+		`--thinking-level=${stringArg('solvability-thinking-level', 'max')}`,
 		`--timeout-ms=${stringArg('solvability-timeout-ms', stringArg('timeout-ms', '7200000'))}`
 	];
 	if (minScore) args.push(`--min-score=${minScore}`);
@@ -321,8 +321,8 @@ function prepareImportReadyCommand({
 	];
 	if (includeLegacySolvability) {
 		args.push('--run-solvability');
-		args.push(`--model=${stringArg('solvability-model', stringArg('model', 'gpt-5.5'))}`);
-		args.push(`--thinking-level=${stringArg('solvability-thinking-level', 'xhigh')}`);
+		args.push(`--model=${stringArg('solvability-model', stringArg('model', 'gpt-5.6-sol'))}`);
+		args.push(`--thinking-level=${stringArg('solvability-thinking-level', 'max')}`);
 		forwardString(args, 'min-solvability-score');
 		forwardString(args, 'concurrency');
 	}

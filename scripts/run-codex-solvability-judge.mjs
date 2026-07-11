@@ -24,8 +24,8 @@ Optional:
   --question=07.1
   --max-questions=10
   --min-score=0.8
-  --model=gpt-5.5
-  --thinking-level=xhigh
+  --model=gpt-5.6-sol
+  --thinking-level=max
   --timeout-ms=7200000
   --target-only
   --force
@@ -53,8 +53,8 @@ const summaryPath = path.resolve(
 const questionArg = stringArg('question', '');
 const maxQuestions = optionalIntegerArg('max-questions');
 const minScore = numberArg('min-score', 0.8);
-const model = stringArg('model', 'gpt-5.5');
-const thinkingLevel = stringArg('thinking-level', 'xhigh');
+const model = stringArg('model', 'gpt-5.6-sol');
+const thinkingLevel = stringArg('thinking-level', 'max');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const includePriorContext = !hasArg('target-only');
 const dryRun = hasArg('dry-run');

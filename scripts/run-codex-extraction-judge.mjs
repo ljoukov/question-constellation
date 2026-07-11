@@ -21,8 +21,8 @@ Optional:
   --summary=tmp/codex-extraction-judge/<source-id>/codex-judge-summary.json
   --expected-marks=<n>
   --expected-questions=46
-  --model=gpt-5.5
-  --thinking-level=high
+  --model=gpt-5.6-sol
+  --thinking-level=max
   --timeout-ms=7200000
   --force
   --dry-run`;
@@ -48,8 +48,8 @@ const summaryPath = path.resolve(
 	rootDir,
 	stringArg('summary', path.join(workDir, 'codex-judge-summary.json'))
 );
-const model = stringArg('model', 'gpt-5.5');
-const thinkingLevel = stringArg('thinking-level', 'high');
+const model = stringArg('model', 'gpt-5.6-sol');
+const thinkingLevel = stringArg('thinking-level', 'max');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const expectedMarks = integerArg('expected-marks', null, 1);
 const expectedQuestions = integerArg('expected-questions', null, 1);

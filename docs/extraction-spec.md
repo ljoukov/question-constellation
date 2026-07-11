@@ -438,10 +438,13 @@ pnpm run extract:production -- \
   --series="November 2020" \
   --year=2020 \
   --existing-chain-input-root=tmp/import-ready-extracted/aqa-separate-science-higher \
-  --model=gpt-5.5 \
-  --extraction-thinking-level=high \
-  --chain-thinking-level=xhigh
+  --model=gpt-5.6-sol \
+  --extraction-thinking-level=max \
+  --chain-thinking-level=max
 ```
+
+Production Codex imports use the non-fast GPT-5.6 Sol model with `max` reasoning. Keep the fast
+variant for latency-sensitive interactive product flows; do not use it for offline paper imports.
 
 The orchestrator writes a summary under
 `tmp/codex-production-import/<source-document-id>/codex-production-import-summary.json`. It defaults
@@ -457,8 +460,8 @@ To run the Codex SDK solvability gate directly against an import-ready artifact:
 pnpm run codex:solvability-judge -- \
   --input=tmp/codex-production-import/<source-document-id>/import-ready/<source-document-id>.json \
   --source-document-id=<source-document-id> \
-  --model=gpt-5.5 \
-  --thinking-level=xhigh
+  --model=gpt-5.6-sol \
+  --thinking-level=max
 ```
 
 For AQA GCSE Computer Science, Geography, and History imports, first build the paper manifest from
@@ -492,7 +495,7 @@ pnpm run codex:production-import:batch -- \
   --skip-imported \
   --existing-chain-max-examples=4 \
   --existing-chain-max-mark-items=4 \
-  --model=gpt-5.5 \
+  --model=gpt-5.6-sol \
   --concurrency=8 \
   --solvability-concurrency=2 \
   --paper-attempts=2
@@ -806,7 +809,8 @@ Required local tools are:
 - `pdftotext` to provide the model with deterministic text/ref scouts before visual inspection and
   bounding boxes for deterministic figure cropping.
 - A targeted answer-line detector over rendered crops and/or PDF drawing commands.
-- Codex CLI/SDK auth for `gpt-5.5` subscription-backed extraction, judge, and chain runs.
+- Codex CLI/SDK auth for non-fast `gpt-5.6-sol` subscription-backed extraction, judge, and chain
+  runs at `max` reasoning.
 - `@ljoukov/llm` only for explicitly requested legacy diagnostics or repair runs, not the default
   production import path.
 
@@ -837,8 +841,9 @@ cleaner event logging, usage accounting, final-message capture, and timeouts. Th
 generic `OPENAI_*` variables and `CODEX_API_KEY` from the subscription environment so a local
 `.env.local` cannot accidentally switch production imports to API-key auth. Set `CODEX_API_KEY`, or
 set `CODEX_USE_OPENAI_API_KEY=true` with `OPENAI_API_KEY`, only for an explicitly intended API-key
-diagnostic. The default Codex model name is `gpt-5.5`; the old `chatgpt-gpt-5.5` model identifier is
-for `@ljoukov/llm` calls and is not the Codex CLI model name.
+diagnostic. The default production Codex model name is `gpt-5.6-sol`; the old
+`chatgpt-gpt-5.5` model identifier is for legacy `@ljoukov/llm` calls and is not the Codex CLI model
+name.
 
 The PDF extraction runner prepares a clean isolated directory containing only:
 
@@ -1631,9 +1636,9 @@ manifest series repair, the current audit artifact is
 passed, 0 warnings, and 0 failures across 6 Computer Science, 15 Geography, and 79 History rows.
 Earlier failing artifacts are preserved only as diagnostics.
 
-Use phase-specific model and reasoning overrides when benchmarking. Codex extraction defaults to
-`gpt-5.5` with high reasoning for quality; answer-chain reconciliation defaults to `gpt-5.5` with
-xhigh reasoning. Do not optimize cost ahead of extraction quality. Record wall time,
+Use phase-specific model and reasoning overrides when benchmarking. Codex extraction, independent
+judging, answer-chain reconciliation, and solvability review default to non-fast `gpt-5.6-sol` with
+`max` reasoning. Do not optimize cost ahead of extraction quality. Record wall time,
 command actions, failed actions, input/cached/output/reasoning tokens, question count, mark total,
 validation results, chain results, solvability results, D1 dry-run results, and artifact paths.
 

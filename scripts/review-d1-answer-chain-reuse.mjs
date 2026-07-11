@@ -27,8 +27,8 @@ Optional:
   --output=tmp/codex-d1-chain-reuse-review/review-plan.full.json
   --summary=tmp/codex-d1-chain-reuse-review/summary.json
   --input-plan=tmp/codex-d1-chain-reuse-review/review-plan.full.json
-  --model=gpt-5.5
-  --thinking-level=xhigh
+  --model=gpt-5.6-sol
+  --thinking-level=max
   --timeout-ms=7200000
   --repair-attempts=1
   --dotenv=/path/to/.env.local      optional env file for Cloudflare/Codex credentials
@@ -55,8 +55,8 @@ const outputPath = path.resolve(
 );
 const summaryPath = path.resolve(rootDir, stringArg('summary', path.join(workDir, 'summary.json')));
 const inputPlanPath = stringArg('input-plan', '');
-const model = stringArg('model', 'gpt-5.5');
-const thinkingLevel = stringArg('thinking-level', 'xhigh');
+const model = stringArg('model', 'gpt-5.6-sol');
+const thinkingLevel = stringArg('thinking-level', 'max');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const repairAttempts = integerArg('repair-attempts', 1, 0);
 const dotenvPath = stringArg('dotenv', '');

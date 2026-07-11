@@ -556,7 +556,8 @@ requireIncludes(
 		'question-paper.pdf',
 		'mark-scheme.pdf',
 		'events.jsonl',
-		'gpt-5.5',
+		'gpt-5.6-sol',
+		"Preserve the paper's printed subpart labels in sourceQuestionRef",
 		'Do not duplicate learner-visible setup',
 		'Use image-label-zones only when the response surface is a real extracted/rendered image asset',
 		'Do not count the gaps between rules and do not subtract one from the number of rules',
@@ -736,7 +737,7 @@ requireIncludes(
 		'run-legacy-chain-style-judge',
 		'skip-chain-style-judge',
 		'events.jsonl',
-		'xhigh'
+		'max'
 	],
 	'Codex answer-chain runner'
 );
@@ -767,7 +768,9 @@ requireIncludes(
 		'--skip-d1-conflict-check',
 		"stringArg('extraction-thinking-level'",
 		"stringArg('chain-thinking-level'",
-		"stringArg('solvability-thinking-level'"
+		"stringArg('solvability-thinking-level'",
+		'gpt-5.6-sol',
+		'max'
 	],
 	'Codex production import orchestrator'
 );
@@ -805,8 +808,8 @@ requireIncludes(
 		'inspect the local image file under assets/',
 		'assetCopyPairs',
 		'--target-only',
-		'gpt-5.5',
-		'xhigh'
+		'gpt-5.6-sol',
+		'max'
 	],
 	'Codex solvability judge'
 );
@@ -1681,6 +1684,24 @@ if (
 	});
 }
 
+const ocrAlphabeticRefPath = path.join(helperNormalizeDir, 'ocr-alphabetic-ref-loss.json');
+const ocrAlphabeticRefCandidate = JSON.parse(readText(helperFragmentsNormalized));
+ocrAlphabeticRefCandidate.sourceDocument.id = 'ocr-j352-01-qp-jun24';
+ocrAlphabeticRefCandidate.questions[0].sourceQuestionRef = '01.1';
+ocrAlphabeticRefCandidate.questions[1].sourceQuestionRef = '01.2';
+writeFileSync(ocrAlphabeticRefPath, JSON.stringify(ocrAlphabeticRefCandidate, null, 2));
+const ocrAlphabeticRefFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${ocrAlphabeticRefPath}`,
+	'--expected-marks=3',
+	'--expected-questions=2'
+]);
+if (!ocrAlphabeticRefFailure.includes('ocr_english_alphabetic_part_ref_lost')) {
+	fail('Codex helper validation did not reject lost OCR English (a)/(b) source refs.', {
+		ocrAlphabeticRefFailure
+	});
+}
+
 const invalidImageLabelExtractionPath = path.join(helperNormalizeDir, 'invalid-image-label.json');
 writeFileSync(
 	invalidImageLabelExtractionPath,
@@ -1771,6 +1792,61 @@ const duplicateRenderFailure = runNodeScriptExpectFailure('scripts/codex-import-
 if (!duplicateRenderFailure.includes('render_block_duplicate_text')) {
 	fail('Codex helper validation did not reject duplicated learner-visible render text.', {
 		duplicateRenderFailure
+	});
+}
+
+const duplicateChoiceTablePath = path.join(helperNormalizeDir, 'duplicate-choice-table.json');
+writeFileSync(
+	duplicateChoiceTablePath,
+	JSON.stringify(
+		{
+			sourceDocument: { id: 'test-paper', docType: 'question_paper', pageCount: 6 },
+			markSchemeDocument: { id: 'test-ms', docType: 'mark_scheme', pageCount: 2 },
+			questions: [
+				{
+					sourceQuestionRef: '01.4',
+					promptText: 'Select the anomalous value from Table 1.',
+					marks: 1,
+					pageStart: 4,
+					pageEnd: 4,
+					stemBlocks: [
+						{
+							kind: 'table',
+							label: 'Table 1',
+							columns: ['Temperature', 'Test 1', 'Test 2', 'Mean'],
+							rows: [
+								['20', '18.5', '19.3', '18.9'],
+								['45', '1.9', '14.2', '2.1']
+							]
+						}
+					],
+					response: {
+						kind: 'choice-table',
+						columns: ['Temperature', 'Test 1', 'Test 2'],
+						rows: [
+							['20', '18.5', '19.3'],
+							['45', '1.9', '14.2']
+						],
+						correctAnswers: [{ targetId: 'selected-cell', correctAnswer: '14.2' }]
+					},
+					markSchemeItems: [{ itemType: 'mark', text: '14.2 selected.', marks: 1 }],
+					markChecklist: [{ text: 'Selects 14.2.', markSchemeItemIndexes: [0] }]
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const duplicateChoiceTableFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${duplicateChoiceTablePath}`,
+	'--expected-marks=1',
+	'--expected-questions=1'
+]);
+if (!duplicateChoiceTableFailure.includes('choice_table_duplicates_rendered_table')) {
+	fail('Codex helper validation did not reject a source table repeated as a choice-table.', {
+		duplicateChoiceTableFailure
 	});
 }
 
@@ -2788,6 +2864,35 @@ const missingSurveyContextFailure = runNodeScriptExpectFailure('scripts/codex-im
 if (!missingSurveyContextFailure.includes('known_survey_context_missing')) {
 	fail('Codex helper validation did not reject missing Million Women survey context.', {
 		missingSurveyContextFailure
+	});
+}
+
+const duplicatedSurveyContextPath = path.join(helperNormalizeDir, 'duplicated-survey-context.json');
+const duplicatedSurveyContextCandidate = JSON.parse(readText(missingSurveyContextPath));
+duplicatedSurveyContextCandidate.questions[0].contextText =
+	'15-year Million Women study with 800 000 participants and controlled factors.';
+duplicatedSurveyContextCandidate.questions[0].stemBlocks = [
+	{
+		kind: 'paragraph',
+		text: 'The Million Women survey ran for over 15 years and included two groups of 400 000 women.'
+	}
+];
+writeFileSync(
+	duplicatedSurveyContextPath,
+	JSON.stringify(duplicatedSurveyContextCandidate, null, 2)
+);
+const duplicatedSurveyContextFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${duplicatedSurveyContextPath}`,
+		'--expected-marks=2',
+		'--expected-questions=1'
+	]
+);
+if (!duplicatedSurveyContextFailure.includes('known_survey_context_duplicated')) {
+	fail('Codex helper validation did not reject duplicated Million Women survey context.', {
+		duplicatedSurveyContextFailure
 	});
 }
 

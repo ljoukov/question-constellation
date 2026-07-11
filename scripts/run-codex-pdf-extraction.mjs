@@ -45,8 +45,8 @@ Optional:
   --work-dir=tmp/codex-pdf-extraction/<source-id>
   --output=tmp/codex-pdf-extraction/<source-id>/normalized-extraction.json
   --summary=tmp/codex-pdf-extraction/<source-id>/codex-extraction-summary.json
-  --model=gpt-5.5
-  --thinking-level=high
+  --model=gpt-5.6-sol
+  --thinking-level=max
   --timeout-ms=7200000
   --allow-unpublishable-source-drops
   --reuse-existing-extraction
@@ -82,8 +82,8 @@ const summaryPath = path.resolve(
 	rootDir,
 	stringArg('summary', path.join(workDir, 'codex-summary.json'))
 );
-const model = stringArg('model', 'gpt-5.5');
-const thinkingLevel = stringArg('thinking-level', 'high');
+const model = stringArg('model', 'gpt-5.6-sol');
+const thinkingLevel = stringArg('thinking-level', 'max');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const expectedMarks = integerArg('expected-marks', null, 1);
 const expectedQuestions = integerArg('expected-questions', null, 1);
@@ -396,10 +396,10 @@ function buildExtractionPrompt() {
 											'',
 											'Known fragile checks for Biology Paper 1 November 2020: verify response controls and figure crops from rendered pages before final validation.',
 											'Exact line-count expectations from rendered source/judge evidence are: 01.2 = 4, 01.3 = 4 including the final X answer line, 01.5 = 2, 01.6 = 2, 01.7 = 1, 01.8 = 2, 02.1 = 4, 02.3 = 14, 02.4 = 1, 02.5 = 6 with one Name of process line plus five Explanation lines, 03.1 = 2, 03.2 = 6, 03.3 = 5 including the final Ratio = 1 : line, 03.4 = 1, 03.6 = 8 total with Stage 1 = 4 / Stage 2 = 2 / Stage 3 = 2, 04.2 = 7, 04.3 = 2, 04.4 = 6, 04.5 = 4, 04.6 = 4, 04.7 = 6, 04.8 = 2, 05.1 = 1, 05.2 = 2, 05.3 = 1, 05.4 = 12 total across the two reason/explanation fields, 05.5 = 5, 05.6 = 5, 06.1 = 4, 06.2 = 5 including the final Percentage decrease answer line, 06.3 = 5 including the final Relative risk answer line, 06.4 = 6, 06.5 = 4, 06.6 = 2, 06.7 = 10, 07.1 = 7, 07.2 = 4, 07.3 = 16, and 07.4 = 3. If your extraction undercounts any visible ruled lines, repair before validation.',
-											'Also verify Q01.1 has a keyed answer for every visible equation blank, but selfContainedPromptText must not reveal the completed equation; it should ask the learner to complete the word equation and leave the blanks in the response control. Preserve Table 1 with the official superheader/unit "Rate of photosynthesis in cm3/hour" wherever it renders, and include the printed final-answer unit in Q01.3 as "X = ... cm3/hour". Verify Q02.4 mark-scheme/checklist/model grading support includes the official allowed answer "diffusion" as well as osmosis. For Q01.4, do not use an asset-canvas table crop; use the structural Table 1 plus a choice/choice-table response for the anomalous value.',
+											'Also verify Q01.1 has a keyed answer for every visible equation blank, but selfContainedPromptText must not reveal the completed equation; it should ask the learner to complete the word equation and leave the blanks in the response control. Preserve Table 1 with the official superheader/unit "Rate of photosynthesis in cm3/hour" wherever it renders, and include the printed final-answer unit in Q01.3 as "X = ... cm3/hour". Verify Q02.4 mark-scheme/checklist/model grading support includes the official allowed answer "diffusion" as well as osmosis. For Q01.4, do not use an asset-canvas table crop and do not render Table 1 twice. Prefer one full choice-table response containing all official columns, including Mean, with the anomalous value keyed; if a separate structural Table 1 block is necessary, use a non-table choice response that does not repeat its cells.',
 											'Verify Figure 2 includes the complete Mesophyll cell label, Figure 3 includes the full Capillary label, Figure 4 includes the full key including Water molecules and Nitrate ions, Figure 5 includes complete bacterial/liver/mesophyll cell diagrams and scale bars, Figure 6 includes the full cell-cycle chart and Stage 1 label, Figure 9 includes the full Nodules label and arrows, and both Figure 10 uses include the full graph key below the graph plus axes, curve labels/legend, and complete graph extent.',
 											'Use precise figure-only crops: a crop must not include the following source prompt, mark label, answer lines, or unrelated question text. If an embedded image includes the complete figure/key/axes, prefer it. If you must render-crop, keep the crop inside the figure boundary while preserving labels/keys. At the 180 DPI render used by pdf-tools, good approximate clean crop sizes are Figure 2 about 1000x560, Figure 4 about 1130x650, Figure 5 about 1240x520, and repeated Figure 10 about 1000x1000. For this paper, do not make Figure 2 taller than needed for the Stomata label, do not include Q02.2 text; do not include Q02.4 text in Figure 4; do not include Q03.1 text in Figure 5; and do not include Q06.4 prompt text in the repeated Figure 10 crop.',
-											'For 03.1, 03.2, 06.1, 06.4, and 06.5, split the official any-two/any-three mark scheme into independently awardable 1-mark rows. For Q06.5 and Q06.6, carry the visible Million Women survey setup into contextText/stemBlocks/selfContainedPromptText, including the 15-year duration, the two 400 000-person groups / 800 000 total cohort, the exclusion of existing liver disease, and the alcohol-consumption controlled-factor context. For Q01.9, preserve the graph plotting mark scheme exactly: all mean points plotted correctly earns 2 marks, and 3 or 4 correct plots earns 1 mark; do not change this to two correct points.',
+											'For 03.1, 03.2, 06.1, 06.4, and 06.5, split the official any-two/any-three mark scheme into independently awardable 1-mark rows. For Q06.5 and Q06.6, carry the visible Million Women survey setup into stemBlocks and selfContainedPromptText, including the 15-year duration, the two 400 000-person groups / 800 000 total cohort, the exclusion of existing liver disease, and the alcohol-consumption controlled-factor context. Leave contextText null when those learner-visible blocks already contain the setup; never add a compact summary that repeats them. For Q01.9, preserve the graph plotting mark scheme exactly: all mean points plotted correctly earns 2 marks, and 3 or 4 correct plots earns 1 mark; do not change this to two correct points.',
 											'For Q02.3, Q06.7, and Q07.3, include the official level-of-response mark bands/descriptors as markSchemeItems/guidance, including Level 1 and Level 2, alongside the indicative content; do not replace level descriptors with isolated one-mark rows.'
 										].join('\n')
 									: '';
@@ -764,6 +764,7 @@ Task: extract the whole paper into structured JSON for downstream import. Focus 
 
 Required extraction coverage:
 - Atomic sourceQuestionRef values, parentSourceQuestionRef, displayOrder, pageStart/pageEnd, marks, command words, prompt text, self-contained prompt text, context/stem/lead/prompt blocks, response controls, response-line counts, assets, figure/table dependencies, formulae/equations, markSchemeItems, markChecklist, modelAnswer or fixed response answer keys, review flags, and provenance notes.
+- Preserve the paper's printed subpart labels in sourceQuestionRef. Do not silently turn alphabetic parts such as (a) and (b) into numeric sibling refs such as .1 and .2. For a top-level question 1 with printed parts (a) and (b) but no printed decimal sub-number, use the app's stable form 01.1a and 01.1b; printed numeric subparts such as 01.1 and 01.2 stay numeric.
 - ${expectedQuestionLine}
 - ${expectedMarkLine}
 - Omit withdrawn questions, replacement notices, statistics-only rows, mean-mark rows, and anything lacking the original prompt plus positive marking criteria.

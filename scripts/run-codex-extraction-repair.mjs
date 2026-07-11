@@ -23,8 +23,8 @@ Optional:
   --summary=tmp/codex-extraction-repair/<source-id>/codex-repair-summary.json
   --expected-marks=100
   --expected-questions=46
-  --model=gpt-5.5
-  --thinking-level=high
+  --model=gpt-5.6-sol
+  --thinking-level=max
   --timeout-ms=7200000
   --force
   --dry-run`;
@@ -56,8 +56,8 @@ const summaryPath = path.resolve(
 	rootDir,
 	stringArg('summary', path.join(workDir, 'codex-repair-summary.json'))
 );
-const model = stringArg('model', 'gpt-5.5');
-const thinkingLevel = stringArg('thinking-level', 'high');
+const model = stringArg('model', 'gpt-5.6-sol');
+const thinkingLevel = stringArg('thinking-level', 'max');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const expectedMarks = integerArg('expected-marks', 100, 1);
 const expectedQuestions = integerArg('expected-questions', null, 1);
