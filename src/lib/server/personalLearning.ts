@@ -15,6 +15,11 @@ import {
 import type { PracticeDraftKind, PracticeDraftSave, SavedPracticeDraft } from '$lib/practiceDrafts';
 import type { AdminUser } from '$lib/server/auth/session';
 import {
+	emptyOcrEnglishLiteratureSelections,
+	type EnglishLiteratureSelectionInput,
+	type EnglishLiteratureSelections
+} from '$lib/englishLiteratureProfile';
+import {
 	executePersonalQuery,
 	queryFirst,
 	queryPersonalFirst,
@@ -49,6 +54,15 @@ type UserProfileSubjectRow = {
 	target_grade: string | null;
 	created_at: string;
 	updated_at: string;
+};
+
+type EnglishLiteratureSelectionsRow = {
+	board: string;
+	specification_code: string;
+	modern_text: string | null;
+	nineteenth_century_novel: string | null;
+	poetry_cluster: string | null;
+	shakespeare_play: string | null;
 };
 
 type QuestionBoardAvailabilityRow = {
@@ -276,6 +290,7 @@ export type LearnerProfileSettings = {
 	profile: UserProfile;
 	subjects: LearnerSubject[];
 	subjectOptions: string[];
+	englishLiteratureSelections: EnglishLiteratureSelections;
 };
 
 export type QuestionBoardAvailability = Map<string, string[]>;
@@ -939,11 +954,70 @@ export async function updateLearnerSubjects({
 	);
 }
 
+export async function updateEnglishLiteratureSelections({
+	userId,
+	selections
+}: {
+	userId: string;
+	selections: EnglishLiteratureSelectionInput;
+}): Promise<void> {
+	await executePersonalQuery(
+		`INSERT INTO user_english_literature_selections (
+		   user_id, board, specification_code, modern_text, nineteenth_century_novel,
+		   poetry_cluster, shakespeare_play
+		 )
+		 VALUES (?, 'OCR', 'J352', ?, ?, ?, ?)
+		 ON CONFLICT(user_id) DO UPDATE SET
+		   board = excluded.board,
+		   specification_code = excluded.specification_code,
+		   modern_text = excluded.modern_text,
+		   nineteenth_century_novel = excluded.nineteenth_century_novel,
+		   poetry_cluster = excluded.poetry_cluster,
+		   shakespeare_play = excluded.shakespeare_play,
+		   updated_at = CURRENT_TIMESTAMP`,
+		[
+			userId,
+			selections.modernText,
+			selections.nineteenthCenturyNovel,
+			selections.poetryCluster,
+			selections.shakespearePlay
+		]
+	);
+}
+
+async function getEnglishLiteratureSelections(
+	userId: string
+): Promise<EnglishLiteratureSelections> {
+	const row = await queryPersonalFirst<EnglishLiteratureSelectionsRow>(
+		`SELECT board, specification_code, modern_text, nineteenth_century_novel,
+		        poetry_cluster, shakespeare_play
+		 FROM user_english_literature_selections
+		 WHERE user_id = ?`,
+		[userId]
+	);
+
+	if (!row) return emptyOcrEnglishLiteratureSelections();
+
+	return {
+		board: 'OCR',
+		specificationCode: 'J352',
+		modernText: row.modern_text,
+		nineteenthCenturyNovel: row.nineteenth_century_novel,
+		poetryCluster: row.poetry_cluster,
+		shakespearePlay: row.shakespeare_play
+	};
+}
+
 export async function getLearnerProfileSettings(user: AdminUser): Promise<LearnerProfileSettings> {
 	const [profile, boardAvailability] = await Promise.all([
 		getOrCreateUserProfile(user),
 		getImportedQuestionBoardAvailability()
 	]);
+	const [subjects, englishLiteratureSelections] = await Promise.all([
+		listLearnerSubjects(user.uid, profile, boardAvailability),
+		getEnglishLiteratureSelections(user.uid)
+	]);
+
 	return {
 		profile: {
 			...profile,
@@ -953,8 +1027,9 @@ export async function getLearnerProfileSettings(user: AdminUser): Promise<Learne
 				boardAvailability
 			)
 		},
-		subjects: await listLearnerSubjects(user.uid, profile, boardAvailability),
-		subjectOptions: profileSubjects()
+		subjects,
+		subjectOptions: profileSubjects(),
+		englishLiteratureSelections
 	};
 }
 

@@ -1,9 +1,11 @@
 import {
 	getImportedQuestionBoardAvailability,
 	getLearnerProfileSettings,
+	updateEnglishLiteratureSelections,
 	updateLearnerSubjects,
 	type QuestionBoardAvailability
 } from '$lib/server/personalLearning';
+import { parseOcrEnglishLiteratureSelections } from '$lib/englishLiteratureProfile';
 import {
 	gcsePastPaperSubjectIndex,
 	type PastPaperSubjectIndex
@@ -45,11 +47,27 @@ export const actions: Actions = {
 			currentGrade: String(form.get(`currentGrade-${index}`) ?? '').trim() || null,
 			targetGrade: String(form.get(`targetGrade-${index}`) ?? '').trim() || null
 		}));
-
-		await updateLearnerSubjects({
-			userId: locals.user.uid,
-			subjects
+		const englishLiteratureSelections = parseOcrEnglishLiteratureSelections({
+			modernText: form.get('ocrEnglishLiteratureModernText'),
+			nineteenthCenturyNovel: form.get('ocrEnglishLiteratureNineteenthCenturyNovel'),
+			poetryCluster: form.get('ocrEnglishLiteraturePoetryCluster'),
+			shakespearePlay: form.get('ocrEnglishLiteratureShakespearePlay')
 		});
+
+		if (!englishLiteratureSelections) {
+			return fail(400, { message: 'Choose valid OCR English Literature texts.' });
+		}
+
+		await Promise.all([
+			updateLearnerSubjects({
+				userId: locals.user.uid,
+				subjects
+			}),
+			updateEnglishLiteratureSelections({
+				userId: locals.user.uid,
+				selections: englishLiteratureSelections
+			})
+		]);
 
 		return { saved: true };
 	}
