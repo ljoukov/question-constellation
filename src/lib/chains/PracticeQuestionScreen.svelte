@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { page as pageState } from '$app/state';
 	import { resolve } from '$app/paths';
+	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
 	import ExamPaper from '$lib/experiments/questions/components/ExamPaper.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
@@ -13,6 +16,17 @@
 	} from '$lib/experiments/questions/gradingTypes';
 	import type { ExamPaper as ExamPaperData } from '$lib/experiments/questions/types';
 	import type { LearningChain } from '$lib/learningChains';
+	import type { AdminUser } from '$lib/server/auth/session';
+	import {
+		classifyRequestFailure,
+		fetchWithResponseTimeout,
+		InterruptedRequestError,
+		readStreamChunkWithTimeout,
+		requestErrorFromResponse,
+		ServerRequestError,
+		type RequestFailure
+	} from '$lib/requestFailure';
+	import { onMount } from 'svelte';
 
 	type SubmitPhase = 'idle' | 'submitting' | 'thinking' | 'grading';
 
@@ -40,11 +54,20 @@
 	const selectedRef = $derived(initialRef);
 	let answers = $state<Record<string, string>>({});
 	let submitPhase = $state<SubmitPhase>('idle');
-	let submitError = $state('');
+	let submitFailure = $state<RequestFailure | null>(null);
 	let gradeResponse = $state<ExperimentGradeResponse | null>(null);
 	let hintOpen = $state(false);
 	let patternOpen = $state(false);
 	let lastInitialRef = $state<string | null>(null);
+	let authDialogOpen = $state(false);
+	const pendingCheckKey = 'question-constellation:pending-model-check:v1';
+	const answerStorageKey = $derived(
+		`question-constellation:chain-practice:v1:${chain.id}:${paper.id}`
+	);
+	const currentUser = $derived((pageState.data.user ?? null) as AdminUser | null);
+	const signInHref = $derived(
+		authStartHref(`${pageState.url.pathname}${pageState.url.search}${pageState.url.hash}`)
+	);
 
 	const activeQuestion = $derived(
 		chain.questions.find((question) => questionMatchesRef(question, selectedRef)) ?? firstQuestion
@@ -104,9 +127,9 @@
 			return;
 		}
 		if (lastInitialRef === initialRef) return;
-		answers = {};
+		answers = readStoredAnswers();
 		submitPhase = 'idle';
-		submitError = '';
+		submitFailure = null;
 		gradeResponse = null;
 		hintOpen = false;
 		patternOpen = false;
@@ -115,8 +138,63 @@
 
 	function setAnswer(ref: string, answer: string) {
 		answers = { ...answers, [ref]: answer };
+		persistAnswers();
 		if (gradeResponse?.results.some((result) => result.ref === ref)) {
 			gradeResponse = null;
+		}
+	}
+
+	function readStoredAnswers() {
+		if (typeof window === 'undefined') return {};
+		try {
+			const stored = JSON.parse(window.sessionStorage.getItem(answerStorageKey) ?? '{}');
+			return stored && typeof stored === 'object' ? (stored as Record<string, string>) : {};
+		} catch {
+			return {};
+		}
+	}
+
+	function persistAnswers() {
+		if (typeof window === 'undefined') return;
+		try {
+			window.sessionStorage.setItem(answerStorageKey, JSON.stringify(answers));
+		} catch {
+			// Keep the current in-memory answer usable when storage is unavailable.
+		}
+	}
+
+	function prepareAuthRedirect() {
+		persistAnswers();
+		window.sessionStorage.setItem(
+			pendingCheckKey,
+			JSON.stringify({
+				kind: 'chain-practice',
+				paperId: paper.id,
+				ref: focusedRef,
+				createdAt: Date.now()
+			})
+		);
+	}
+
+	function consumePendingCheck() {
+		if (!currentUser || typeof window === 'undefined') return false;
+		try {
+			const pending = JSON.parse(window.sessionStorage.getItem(pendingCheckKey) ?? 'null') as {
+				kind?: string;
+				paperId?: string;
+				ref?: string;
+				createdAt?: number;
+			} | null;
+			if (pending?.kind !== 'chain-practice') return false;
+			window.sessionStorage.removeItem(pendingCheckKey);
+			return (
+				pending.paperId === paper.id &&
+				pending.ref === focusedRef &&
+				Date.now() - Number(pending.createdAt ?? 0) < 30 * 60 * 1000
+			);
+		} catch {
+			window.sessionStorage.removeItem(pendingCheckKey);
+			return false;
 		}
 	}
 
@@ -144,7 +222,7 @@
 		return { event, data: dataLines.join('\n') };
 	}
 
-	function applyProgressEvent(event: string, dataText: string) {
+	function applyProgressEvent(event: string, dataText: string, reference: string | null) {
 		if (event === 'status') {
 			const payload = JSON.parse(dataText) as { phase?: string };
 			if (payload.phase === 'thinking') submitPhase = 'thinking';
@@ -158,8 +236,11 @@
 			return;
 		}
 		if (event === 'error') {
-			const payload = JSON.parse(dataText) as { message?: string };
-			throw new Error(payload.message ?? 'Unable to check this answer right now.');
+			const payload = JSON.parse(dataText) as { error?: string; message?: string };
+			throw new ServerRequestError(payload.message ?? 'Unable to check this answer right now.', {
+				code: payload.error,
+				reference
+			});
 		}
 	}
 
@@ -170,9 +251,10 @@
 		}
 
 		const decoder = new TextDecoder();
+		const reference = response.headers.get('cf-ray') ?? response.headers.get('x-request-id');
 		let buffer = '';
 		while (true) {
-			const { value, done } = await reader.read();
+			const { value, done } = await readStreamChunkWithTimeout(reader);
 			if (done) break;
 			buffer += decoder.decode(value, { stream: true });
 
@@ -182,7 +264,7 @@
 				buffer = buffer.slice(boundary + 2);
 				if (rawEvent) {
 					const { event, data: dataText } = parseSseEvent(rawEvent);
-					applyProgressEvent(event, dataText);
+					applyProgressEvent(event, dataText, reference);
 				}
 				boundary = buffer.indexOf('\n\n');
 			}
@@ -192,22 +274,28 @@
 		const rawEvent = buffer.trim();
 		if (rawEvent) {
 			const { event, data: dataText } = parseSseEvent(rawEvent);
-			applyProgressEvent(event, dataText);
+			applyProgressEvent(event, dataText, reference);
 		}
 	}
 
 	async function submitForGrading() {
 		if (!canSubmit) return;
+		if (!currentUser) {
+			persistAnswers();
+			authDialogOpen = true;
+			return;
+		}
 		submitPhase = 'submitting';
-		submitError = '';
+		submitFailure = null;
 		gradeResponse = null;
+		let streamStarted = false;
 
 		const payload = Object.fromEntries(
 			focusedParts.map((part) => [part.ref, (answers[part.ref] ?? '').trim()])
 		);
 
 		try {
-			const response = await fetch(
+			const response = await fetchWithResponseTimeout(
 				`/api/experiments/questions/${paper.id}/${encodeURIComponent(focusedRef)}/grade`,
 				{
 					method: 'POST',
@@ -215,19 +303,37 @@
 					body: JSON.stringify({ answers: payload })
 				}
 			);
-
-			if (!response.ok) {
-				throw new Error(await response.text());
+			if (response.status === 401) {
+				submitPhase = 'idle';
+				authDialogOpen = true;
+				return;
 			}
 
+			if (!response.ok) {
+				throw await requestErrorFromResponse(response, 'Answer check request failed.');
+			}
+
+			streamStarted = true;
 			await readGradingStream(response);
+			if (!gradeResponse) {
+				throw new InterruptedRequestError('The answer check ended without feedback.');
+			}
 		} catch (error) {
 			console.error('[practice-question] grading failed', error);
-			submitError = 'Unable to check this answer right now.';
+			submitFailure = classifyRequestFailure(error, {
+				action: 'finish checking this answer',
+				serverLabel: 'The answer checker',
+				streamStarted
+			});
 		} finally {
 			submitPhase = 'idle';
 		}
 	}
+
+	onMount(() => {
+		answers = readStoredAnswers();
+		if (consumePendingCheck()) window.setTimeout(() => void submitForGrading(), 0);
+	});
 </script>
 
 <main class="qc-real-app">
@@ -286,10 +392,11 @@
 					{canSubmit}
 					{isSubmitting}
 					{submitLabel}
-					{submitError}
+					{submitFailure}
 					onAnswerChange={setAnswer}
 					onDismissGrade={dismissGrade}
 					onSubmitGrade={submitForGrading}
+					onRetrySubmit={submitForGrading}
 				/>
 			{:else}
 				<p class="qc-real-missing">This question is not available in the current paper.</p>
@@ -308,3 +415,10 @@
 		</section>
 	</div>
 </main>
+
+<AuthRequiredDialog
+	open={authDialogOpen}
+	href={signInHref}
+	onDismiss={() => (authDialogOpen = false)}
+	onSignIn={prepareAuthRedirect}
+/>

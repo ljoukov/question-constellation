@@ -1,15 +1,24 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, canonicalEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ArrowRight, CheckCircle2, CircleAlert, RotateCcw, Target } from '@lucide/svelte';
 	import type { PageProps } from './$types';
+	import {
+		classifyRequestFailure,
+		fetchWithResponseTimeout,
+		requestErrorFromResponse,
+		type RequestFailure
+	} from '$lib/requestFailure';
 
 	type FieldStatus = 'idle' | 'checking' | 'correct' | 'partial' | 'incorrect' | 'error';
 	type FieldResult = {
 		status: FieldStatus;
 		feedback: string;
+		failure?: RequestFailure | null;
 	};
 	type Phase = 'build' | 'memory' | 'compose' | 'feedback' | 'model';
 	type FinalResult = {
@@ -30,8 +39,10 @@
 	let fieldResultOverrides = $state<Record<string, FieldResult>>({});
 	let finalAnswer = $state('');
 	let finalResult = $state<FinalResult | null>(null);
-	let finalError = $state('');
+	let finalFailure = $state<RequestFailure | null>(null);
 	let checkingFinal = $state(false);
+	let hydratedGapId = $state('');
+	const gapStorageKey = $derived(`question-constellation:gap-practice:v1:${data.gapData.gap.id}`);
 
 	const questions = $derived(data.gapData.presentation.questions);
 	const defaultAnswers = $derived(
@@ -81,10 +92,72 @@
 		fieldResultOverrides = {};
 		finalAnswer = '';
 		finalResult = null;
-		finalError = '';
+		finalFailure = null;
 		checkingFinal = false;
 		phase = 'build';
 	});
+
+	$effect(() => {
+		if (
+			typeof window === 'undefined' ||
+			hydratedGapId !== data.gapData.gap.id ||
+			activeGapId !== data.gapData.gap.id
+		)
+			return;
+		persistGapState();
+	});
+
+	$effect(() => {
+		if (typeof window === 'undefined' || hydratedGapId === data.gapData.gap.id) return;
+		const gapId = data.gapData.gap.id;
+		try {
+			const stored = JSON.parse(window.sessionStorage.getItem(gapStorageKey) ?? 'null') as {
+				phase?: Phase;
+				answers?: Record<string, string>;
+				fieldResults?: Record<string, FieldResult>;
+				finalAnswer?: string;
+				finalResult?: FinalResult | null;
+			} | null;
+			if (stored) {
+				answerOverrides = stored.answers ?? {};
+				fieldResultOverrides = stored.fieldResults ?? {};
+				finalAnswer = stored.finalAnswer ?? '';
+				finalResult = stored.finalResult ?? null;
+				phase = stored.phase ?? 'build';
+			}
+		} catch {
+			// Start clean if this browser cannot read the saved practice state.
+		} finally {
+			hydratedGapId = gapId;
+		}
+	});
+
+	function persistGapState() {
+		if (typeof window === 'undefined') return;
+		try {
+			window.sessionStorage.setItem(
+				gapStorageKey,
+				JSON.stringify({
+					phase,
+					answers: answerOverrides,
+					fieldResults: fieldResultOverrides,
+					finalAnswer,
+					finalResult
+				})
+			);
+		} catch {
+			// The current in-memory practice remains usable if storage is unavailable.
+		}
+	}
+
+	function retryOrSignIn(failure: RequestFailure, retry: () => void) {
+		if (failure.kind !== 'auth') {
+			retry();
+			return;
+		}
+		persistGapState();
+		window.location.assign(authStartHref(`${window.location.pathname}${window.location.search}`));
+	}
 
 	function fieldResult(questionId: string): FieldResult {
 		return fieldResults[questionId] ?? { status: 'idle', feedback: '' };
@@ -95,19 +168,19 @@
 		const question = questions.find((entry) => entry.id === questionId);
 		fieldResultOverrides = {
 			...fieldResultOverrides,
-			[questionId]: { status: 'idle', feedback: question?.hint ?? '' }
+			[questionId]: { status: 'idle', feedback: question?.hint ?? '', failure: null }
 		};
 	}
 
 	async function checkField(questionId: string) {
 		const answer = answers[questionId]?.trim() ?? '';
-		if (!answer) return;
+		if (!answer) return false;
 		fieldResultOverrides = {
 			...fieldResultOverrides,
-			[questionId]: { status: 'checking', feedback: 'Checking...' }
+			[questionId]: { status: 'checking', feedback: 'Checking...', failure: null }
 		};
 		try {
-			const response = await fetch(
+			const response = await fetchWithResponseTimeout(
 				resolve('/api/gaps/[gapId]/guided-field-grade', { gapId: data.gapData.gap.id }),
 				{
 					method: 'POST',
@@ -115,7 +188,9 @@
 					body: JSON.stringify({ questionId, answer })
 				}
 			);
-			if (!response.ok) throw new Error(`Field check failed with ${response.status}`);
+			if (!response.ok) {
+				throw await requestErrorFromResponse(response, 'Guided step check failed.');
+			}
 			const result = (await response.json()) as {
 				status: 'ok';
 				result: 'correct' | 'partial' | 'incorrect';
@@ -123,35 +198,45 @@
 			};
 			fieldResultOverrides = {
 				...fieldResultOverrides,
-				[questionId]: { status: result.result, feedback: result.feedback }
+				[questionId]: { status: result.result, feedback: result.feedback, failure: null }
 			};
+			return true;
 		} catch (error) {
 			console.error('Gap field check failed.', error);
 			fieldResultOverrides = {
 				...fieldResultOverrides,
-				[questionId]: { status: 'error', feedback: 'Could not check this answer.' }
+				[questionId]: {
+					status: 'error',
+					feedback: '',
+					failure: classifyRequestFailure(error, {
+						action: 'check this step',
+						serverLabel: 'The answer checker'
+					})
+				}
 			};
+			return false;
 		}
 	}
 
 	async function submitBuild(event: SubmitEvent) {
 		event.preventDefault();
 		if (!allFieldsFilled || checkingFields) return;
+		let allChecksCompleted = true;
 		for (const question of questions) {
-			await checkField(question.id);
+			if (!(await checkField(question.id))) allChecksCompleted = false;
 		}
-		phase = 'memory';
+		if (allChecksCompleted) phase = 'memory';
 	}
 
-	async function submitFinal(event: SubmitEvent) {
-		event.preventDefault();
+	async function submitFinal(event?: SubmitEvent) {
+		event?.preventDefault();
 		const answer = finalAnswer.trim();
 		if (!answer || checkingFinal) return;
 		checkingFinal = true;
-		finalError = '';
+		finalFailure = null;
 		finalResult = null;
 		try {
-			const response = await fetch(
+			const response = await fetchWithResponseTimeout(
 				resolve('/api/gaps/[gapId]/guided-grade', { gapId: data.gapData.gap.id }),
 				{
 					method: 'POST',
@@ -159,12 +244,17 @@
 					body: JSON.stringify({ answer, guidedAnswers: answers })
 				}
 			);
-			if (!response.ok) throw new Error(`Final check failed with ${response.status}`);
+			if (!response.ok) {
+				throw await requestErrorFromResponse(response, 'Final answer check failed.');
+			}
 			finalResult = (await response.json()) as FinalResult;
 			phase = 'feedback';
 		} catch (error) {
 			console.error('Gap final check failed.', error);
-			finalError = 'Could not check this answer right now.';
+			finalFailure = classifyRequestFailure(error, {
+				action: 'check this rewrite',
+				serverLabel: 'The answer checker'
+			});
 		} finally {
 			checkingFinal = false;
 		}
@@ -209,21 +299,35 @@
 				</div>
 				<form class="qc-gap-questions" onsubmit={submitBuild}>
 					{#each data.gapData.presentation.questions as question, index (question.id)}
+						{@const currentFieldResult = fieldResult(question.id)}
 						<label class="qc-gap-question">
 							<span class="qc-gap-number">{index + 1}</span>
 							<span class="qc-gap-question-text"><MathText text={question.question} /></span>
 							<textarea
 								rows="1"
 								value={answers[question.id] ?? ''}
-								class={`qc-gap-short-answer ${fieldResult(question.id).status}`}
+								class={`qc-gap-short-answer ${currentFieldResult.status}`}
 								placeholder="Type a short answer"
 								oninput={(event) =>
 									updateAnswer(question.id, (event.currentTarget as HTMLTextAreaElement).value)}
 								onblur={() => checkField(question.id)}
 							></textarea>
-							<small class={`qc-gap-feedback ${fieldResult(question.id).status}`}>
-								{fieldResult(question.id).feedback}
-							</small>
+							{#if currentFieldResult.failure}
+								<RequestFailureNotice
+									failure={currentFieldResult.failure}
+									onRetry={() =>
+										retryOrSignIn(currentFieldResult.failure!, () => void checkField(question.id))}
+									retrying={currentFieldResult.status === 'checking'}
+									retryLabel={currentFieldResult.failure.kind === 'auth'
+										? 'Sign in again'
+										: 'Retry step'}
+									compact
+								/>
+							{:else}
+								<small class={`qc-gap-feedback ${currentFieldResult.status}`}>
+									{currentFieldResult.feedback}
+								</small>
+							{/if}
 						</label>
 					{/each}
 					<footer class="qc-gap-footer">
@@ -255,8 +359,13 @@
 						bind:value={finalAnswer}
 						placeholder="Write the improved answer..."
 					></textarea>
-					{#if finalError}
-						<p class="qc-gap-error">{finalError}</p>
+					{#if finalFailure}
+						<RequestFailureNotice
+							failure={finalFailure}
+							onRetry={() => retryOrSignIn(finalFailure!, () => void submitFinal())}
+							retrying={checkingFinal}
+							retryLabel={finalFailure.kind === 'auth' ? 'Sign in again' : 'Retry check'}
+						/>
 					{/if}
 					<footer class="qc-gap-footer">
 						<span

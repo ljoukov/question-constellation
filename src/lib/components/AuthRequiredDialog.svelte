@@ -1,5 +1,7 @@
 <script lang="ts">
 	import GoogleSignInButton from '$lib/components/GoogleSignInButton.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import { X } from '@lucide/svelte';
 	import { tick } from 'svelte';
 
 	let {
@@ -44,8 +46,15 @@
 			tabindex="-1"
 			bind:this={panel}
 		>
-			<p class="auth-dialog-kicker">Your work is safe</p>
-			<h2 id="auth-dialog-title">{title}</h2>
+			<header class="auth-dialog-header">
+				<div>
+					<p class="auth-dialog-kicker">Your work is safe</p>
+					<h2 id="auth-dialog-title">{title}</h2>
+				</div>
+				<IconButton label="Close sign-in dialog" onclick={onDismiss}>
+					<X size={19} strokeWidth={2.3} aria-hidden="true" />
+				</IconButton>
+			</header>
 			<p>
 				Your answer stays on this device. Sign in only when you are ready for the coach to check it;
 				we will bring you back here and start the check automatically.
@@ -94,12 +103,25 @@
 		text-transform: uppercase;
 	}
 
+	.auth-dialog-header {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.auth-dialog-header > div {
+		display: grid;
+		gap: 0.45rem;
+		min-width: 0;
+	}
+
 	.auth-dialog h2 {
 		margin: 0;
-		font-family: Georgia, 'Times New Roman', serif;
+		font-family: inherit;
 		font-size: clamp(1.65rem, 5vw, 2.1rem);
-		font-weight: 500;
-		letter-spacing: -0.035em;
+		font-weight: 750;
+		letter-spacing: -0.025em;
 	}
 
 	.auth-dialog > p:not(.auth-dialog-kicker),

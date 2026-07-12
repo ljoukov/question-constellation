@@ -7,6 +7,7 @@
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
@@ -26,6 +27,15 @@
 		type SavedPracticeDraft
 	} from '$lib/practiceDrafts';
 	import type { AdminUser } from '$lib/server/auth/session';
+	import {
+		classifyRequestFailure,
+		fetchWithResponseTimeout,
+		InterruptedRequestError,
+		readStreamChunkWithTimeout,
+		requestErrorFromResponse,
+		ServerRequestError,
+		type RequestFailure
+	} from '$lib/requestFailure';
 	import {
 		Check,
 		CheckCircle2,
@@ -152,7 +162,7 @@
 	let stepResults = $state<Record<string, EnglishStepGradeResult>>({});
 	let attemptHistory = $state<EnglishLearnerAttempt[]>([]);
 	let gradePhase = $state<GradePhase>('idle');
-	let gradeError = $state('');
+	let gradeFailure = $state<RequestFailure | null>(null);
 	let gradeReasoningSummary = $state('');
 	let hintOpen = $state(false);
 	let feedbackPanel = $state<HTMLElement | null>(null);
@@ -443,7 +453,7 @@
 		stepAnswers = { ...stepAnswers, [activeStage.id]: value };
 		invalidateFromStage(activeStageIndex);
 		gradePhase = 'idle';
-		gradeError = '';
+		gradeFailure = null;
 		gradeReasoningSummary = '';
 		persistState();
 	}
@@ -451,7 +461,7 @@
 	function openStage(index: number) {
 		if (index < 0 || index >= practice.stages.length || index > furthestUnlockedIndex) return;
 		gradePhase = 'idle';
-		gradeError = '';
+		gradeFailure = null;
 		gradeReasoningSummary = '';
 		hintOpen = false;
 		void goto(stepHref(practice.stages[index]), { noScroll: true, keepFocus: false });
@@ -468,7 +478,7 @@
 		stepResults = {};
 		attemptHistory = [];
 		gradePhase = 'idle';
-		gradeError = '';
+		gradeFailure = null;
 		gradeReasoningSummary = '';
 		hintOpen = false;
 		persistState();
@@ -595,7 +605,7 @@
 		return { event, data: dataLines.join('\n') };
 	}
 
-	function handleSseMessage(message: SseMessage) {
+	function handleSseMessage(message: SseMessage, reference: string | null) {
 		if (message.event === 'status') {
 			const status = JSON.parse(message.data) as {
 				phase?: GradePhase;
@@ -610,30 +620,36 @@
 			return null;
 		}
 		if (message.event === 'done') return JSON.parse(message.data) as EnglishStepGradeResult;
-		if (message.event === 'error') throw new Error('The step checker returned an error.');
+		if (message.event === 'error') {
+			const payload = JSON.parse(message.data) as { error?: string; message?: string };
+			throw new ServerRequestError(payload.message ?? 'The step checker returned an error.', {
+				code: payload.error,
+				reference
+			});
+		}
 		return null;
 	}
 
-	async function readSseStream(body: ReadableStream<Uint8Array>) {
+	async function readSseStream(body: ReadableStream<Uint8Array>, reference: string | null) {
 		const reader = body.getReader();
 		const decoder = new TextDecoder();
 		let buffer = '';
 		let result: EnglishStepGradeResult | null = null;
 		while (true) {
-			const { done, value } = await reader.read();
+			const { done, value } = await readStreamChunkWithTimeout(reader);
 			buffer += decoder.decode(value, { stream: !done });
 			let separatorIndex = buffer.indexOf('\n\n');
 			while (separatorIndex !== -1) {
 				const block = buffer.slice(0, separatorIndex);
 				buffer = buffer.slice(separatorIndex + 2);
 				const message = parseSseBlock(block);
-				if (message) result = handleSseMessage(message) ?? result;
+				if (message) result = handleSseMessage(message, reference) ?? result;
 				separatorIndex = buffer.indexOf('\n\n');
 			}
 			if (done) break;
 		}
 		const trailingMessage = parseSseBlock(buffer.trim());
-		if (trailingMessage) result = handleSseMessage(trailingMessage) ?? result;
+		if (trailingMessage) result = handleSseMessage(trailingMessage, reference) ?? result;
 		return result;
 	}
 
@@ -643,13 +659,14 @@
 			openAuthDialog();
 			return;
 		}
-		gradeError = '';
+		gradeFailure = null;
 		gradeReasoningSummary = '';
 		gradePhase = 'connecting';
+		let streamStarted = false;
 		await tick();
 		feedbackPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 		try {
-			const response = await fetch(
+			const response = await fetchWithResponseTimeout(
 				resolve('/api/questions/[questionId]/grade-step', {
 					questionId: practice.questionId
 				}),
@@ -670,10 +687,14 @@
 				return;
 			}
 			if (!response.ok || !response.body) {
-				throw new Error(`Step check failed with ${response.status}`);
+				throw await requestErrorFromResponse(response, 'Step check request failed.');
 			}
-			const result = await readSseStream(response.body);
-			if (!result) throw new Error('The step check ended without feedback.');
+			streamStarted = true;
+			const result = await readSseStream(
+				response.body,
+				response.headers.get('cf-ray') ?? response.headers.get('x-request-id')
+			);
+			if (!result) throw new InterruptedRequestError('The step check ended without feedback.');
 			stepResults = { ...stepResults, [activeStage.id]: result };
 			attemptHistory = [
 				...attemptHistory,
@@ -691,8 +712,11 @@
 		} catch (error) {
 			console.error('[english-step-practice] step check failed', error);
 			gradePhase = 'error';
-			gradeError =
-				'This step could not be checked right now. Your response is saved—please try again.';
+			gradeFailure = classifyRequestFailure(error, {
+				action: 'finish checking this step',
+				serverLabel: 'The answer checker',
+				streamStarted
+			});
 		}
 	}
 
@@ -717,7 +741,7 @@
 		loadedQuestionId = practice.questionId;
 		hydrated = false;
 		gradePhase = 'idle';
-		gradeError = '';
+		gradeFailure = null;
 		gradeReasoningSummary = '';
 		const storedState = initialEnglishPracticeState(practice.questionId);
 		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
@@ -916,7 +940,7 @@
 					</div>
 				</section>
 
-				{#if isChecking || gradeError || activeResult}
+				{#if isChecking || gradeFailure || activeResult}
 					<section
 						class="qc-step-feedback"
 						aria-live="polite"
@@ -976,8 +1000,14 @@
 									</div>
 								{/if}
 							</div>
-						{:else if gradeError}
-							<p class="qc-step-error">{gradeError}</p>
+						{:else if gradeFailure}
+							<div class="qc-step-failure">
+								<RequestFailureNotice
+									failure={gradeFailure}
+									onRetry={() => void checkActiveStep()}
+									retryLabel="Retry check"
+								/>
+							</div>
 						{:else if activeResult}
 							<div class="qc-step-checks">
 								{#each activeResult.checks as check (check.id)}
@@ -1276,8 +1306,7 @@
 		gap: 1rem;
 	}
 
-	.qc-step-card-head h2,
-	.qc-step-feedback h3 {
+	.qc-step-card-head h2 {
 		margin: 0.22rem 0 0;
 		font-family: Georgia, 'Times New Roman', serif;
 		font-weight: 500;
@@ -1425,7 +1454,11 @@
 	}
 
 	.qc-step-feedback h3 {
-		font-size: 1.38rem;
+		margin: 0.22rem 0 0;
+		font-family: inherit;
+		font-size: 1.2rem;
+		font-weight: 750;
+		letter-spacing: -0.01em;
 	}
 
 	.qc-step-checking {
@@ -1525,14 +1558,12 @@
 		line-height: 1.45;
 	}
 
-	.qc-step-checking p,
-	.qc-step-error {
+	.qc-step-checking p {
 		margin: 0;
 	}
 
-	.qc-step-error {
-		padding: 1.15rem;
-		color: var(--qc-ui-danger);
+	.qc-step-failure {
+		padding: 1rem;
 	}
 
 	.qc-step-checks {

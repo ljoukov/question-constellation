@@ -1,8 +1,9 @@
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { clearQuestionBindings, setQuestionR2 } from '$lib/server/bindings';
 import type { AdminUser } from '$lib/server/auth/session';
+import { classifyRequestFailure, ServerRequestError } from '$lib/requestFailure';
 
 const AUTH_USER_COOKIE_NAME = 'questionConstellationAuth';
 const DEV_AUTH_USER_COOKIE_NAME = 'questionConstellationDevAuth';
@@ -76,4 +77,24 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	return await resolve(event);
+};
+
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+	if (status === 404) return { message: 'Page not found.' };
+	const reference = event.request.headers.get('cf-ray') ?? crypto.randomUUID();
+	console.error('[page-request] unexpected server failure', {
+		reference,
+		status,
+		pathname: event.url.pathname,
+		error
+	});
+	const failure = classifyRequestFailure(
+		new ServerRequestError(message || 'The page could not be loaded.', { reference }),
+		{
+			action: 'load this page',
+			serverLabel: 'Question Constellation',
+			online: true
+		}
+	);
+	return { message: failure.message, failure };
 };

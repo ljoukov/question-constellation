@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { ExamPaperAsset, ExamQuestionBlock } from '../types';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
+	import { diagnoseResourceLoadFailure, type RequestFailure } from '$lib/requestFailure';
 	import MathText from './MathText.svelte';
 
 	let {
@@ -11,9 +13,31 @@
 	} = $props();
 
 	let failedAssetIds = $state<Set<string>>(new Set());
+	let assetFailures = $state<Record<string, RequestFailure>>({});
+	let retryVersions = $state<Record<string, number>>({});
 
-	function markImageFailed(assetId: string) {
+	async function markImageFailed(assetId: string, src: string) {
 		failedAssetIds = new Set([...failedAssetIds, assetId]);
+		assetFailures = {
+			...assetFailures,
+			[assetId]: await diagnoseResourceLoadFailure(src, {
+				action: 'load this question image',
+				serverLabel: 'The image service'
+			})
+		};
+	}
+
+	function retryImage(assetId: string) {
+		failedAssetIds = new Set([...failedAssetIds].filter((id) => id !== assetId));
+		assetFailures = Object.fromEntries(
+			Object.entries(assetFailures).filter(([id]) => id !== assetId)
+		);
+		retryVersions = { ...retryVersions, [assetId]: (retryVersions[assetId] ?? 0) + 1 };
+	}
+
+	function retrySrc(src: string, assetId: string) {
+		const version = retryVersions[assetId] ?? 0;
+		return version === 0 ? src : `${src}${src.includes('?') ? '&' : '?'}qc-retry=${version}`;
 	}
 </script>
 
@@ -24,8 +48,19 @@
 	{#if asset && !failedAssetIds.has(block.assetId)}
 		<figure class="exam-figure" style={`--figure-width: ${block.width ?? asset.width ?? 360}px`}>
 			<figcaption>{block.label ?? asset.label}</figcaption>
-			<img src={asset.src} alt={asset.alt} onerror={() => markImageFailed(block.assetId)} />
+			<img
+				src={retrySrc(asset.src, block.assetId)}
+				alt={asset.alt}
+				onerror={() => void markImageFailed(block.assetId, asset.src)}
+			/>
 		</figure>
+	{:else if asset && assetFailures[block.assetId]}
+		<RequestFailureNotice
+			failure={assetFailures[block.assetId]}
+			onRetry={() => retryImage(block.assetId)}
+			retryLabel="Retry image"
+			compact
+		/>
 	{:else}
 		<p class="missing-asset">
 			{asset

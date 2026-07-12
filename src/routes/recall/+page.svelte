@@ -3,7 +3,9 @@
 	import { goto, pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type {
@@ -12,6 +14,12 @@
 		RecallSubject,
 		RecallTopic
 	} from '$lib/recall/aqaScienceRecall';
+	import {
+		flushRecallReviewQueue,
+		queueRecallReview,
+		type RecallReviewFlushResult
+	} from '$lib/recallReviewSync';
+	import type { RequestFailure } from '$lib/requestFailure';
 	import {
 		ArrowLeft,
 		Brain,
@@ -145,6 +153,9 @@
 	let activePointerId = $state<number | null>(null);
 	let cardMotion = $state<CardMotion>('idle');
 	let motionTimer: ReturnType<typeof setTimeout> | null = null;
+	let recallSyncFailure = $state<RequestFailure | null>(null);
+	let recallSyncPendingCount = $state(0);
+	let recallSyncing = $state(false);
 
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
 	const availableTopics = $derived(
@@ -267,10 +278,35 @@
 		} catch {
 			progressById = {};
 		}
+		if (data.user) void flushRecallSync();
+		const retrySync = () => void flushRecallSync();
+		window.addEventListener('online', retrySync);
+		window.addEventListener('focus', retrySync);
 		return () => {
 			clearMotionTimer();
+			window.removeEventListener('online', retrySync);
+			window.removeEventListener('focus', retrySync);
 		};
 	});
+
+	async function flushRecallSync() {
+		if (!data.user || recallSyncing) return;
+		recallSyncing = true;
+		const result: RecallReviewFlushResult = await flushRecallReviewQueue(data.user.uid);
+		recallSyncFailure = result.failure;
+		recallSyncPendingCount = result.pendingCount;
+		recallSyncing = false;
+	}
+
+	function retryRecallSync() {
+		if (recallSyncFailure?.kind === 'auth') {
+			window.location.assign(
+				authStartHref(`${window.location.pathname}${window.location.search}${window.location.hash}`)
+			);
+			return;
+		}
+		void flushRecallSync();
+	}
 
 	function clearMotionTimer() {
 		if (!motionTimer) return;
@@ -483,16 +519,9 @@
 
 	function syncRecallReview(card: RecallCard, grade: Grade) {
 		if (!browser || !data.user) return;
-		void fetch(resolve('/api/recall/review'), {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({
-				cardId: card.id,
-				grade,
-				mode
-			})
-		}).catch((error) => {
-			console.warn('Recall review sync failed.', error);
+		queueRecallReview(data.user.uid, { cardId: card.id, grade, mode });
+		void flushRecallSync().catch((error) => {
+			console.warn('Recall review sync failed unexpectedly.', error);
 		});
 	}
 
@@ -512,13 +541,21 @@
 	}
 
 	function continueMcqCard() {
-		if (!currentCard || currentPresentation !== 'mcq' || !selectedChoice || !mcqFeedback || cardBusy) {
+		if (
+			!currentCard ||
+			currentPresentation !== 'mcq' ||
+			!selectedChoice ||
+			!mcqFeedback ||
+			cardBusy
+		) {
 			return;
 		}
 		const card = currentCard;
 		const grade: Grade = mcqFeedback === 'correct' ? 'good' : 'again';
 		const chosenAnswer = mcqFeedback === 'incorrect' ? selectedChoice : undefined;
-		exitCard(mcqFeedback === 'correct' ? 'right' : 'left', () => gradeCard(card, grade, chosenAnswer));
+		exitCard(mcqFeedback === 'correct' ? 'right' : 'left', () =>
+			gradeCard(card, grade, chosenAnswer)
+		);
 	}
 
 	function revealCard() {
@@ -1089,7 +1126,38 @@
 	</main>
 {/if}
 
+{#if recallSyncFailure}
+	<div class="recall-sync-failure">
+		<RequestFailureNotice
+			failure={recallSyncFailure}
+			onRetry={retryRecallSync}
+			retrying={recallSyncing}
+			retryLabel={recallSyncFailure.kind === 'auth'
+				? 'Sign in again'
+				: `Retry ${recallSyncPendingCount === 1 ? 'review' : `${recallSyncPendingCount} reviews`}`}
+			compact
+		/>
+	</div>
+{/if}
+
 <style>
+	.recall-sync-failure {
+		position: fixed;
+		z-index: 100;
+		right: 1rem;
+		bottom: max(1rem, env(safe-area-inset-bottom));
+		width: min(31rem, calc(100vw - 2rem));
+	}
+
+	@media (max-width: 560px) {
+		.recall-sync-failure {
+			left: 0.75rem;
+			right: 0.75rem;
+			bottom: max(0.75rem, env(safe-area-inset-bottom));
+			width: auto;
+		}
+	}
+
 	.recall-setup,
 	.recall-session {
 		width: 100%;
@@ -1434,8 +1502,7 @@
 	}
 
 	.stack-card.active.entering {
-		animation: promote-card var(--recall-card-enter-duration) cubic-bezier(0.2, 0.76, 0.18, 1)
-			both;
+		animation: promote-card var(--recall-card-enter-duration) cubic-bezier(0.2, 0.76, 0.18, 1) both;
 	}
 
 	.stack-card.active.dragging {
@@ -1477,13 +1544,12 @@
 	}
 
 	.stack-card.active.mcq-card.answering.mcq-correct .card-flipper {
-		animation: mcq-card-correct var(--recall-answer-duration) cubic-bezier(0.2, 0.76, 0.2, 1)
-			both;
+		animation: mcq-card-correct var(--recall-answer-duration) cubic-bezier(0.2, 0.76, 0.2, 1) both;
 	}
 
 	.stack-card.active.mcq-card.answering.mcq-incorrect .card-flipper {
-		animation: mcq-card-incorrect var(--recall-answer-duration)
-			cubic-bezier(0.25, 0.75, 0.25, 1) both;
+		animation: mcq-card-incorrect var(--recall-answer-duration) cubic-bezier(0.25, 0.75, 0.25, 1)
+			both;
 	}
 
 	.stack-card.active.revealed .card-flipper {
@@ -1708,13 +1774,12 @@
 	}
 
 	.choice-grid button.selected.correct {
-		animation: mcq-choice-correct var(--recall-answer-duration) cubic-bezier(0.2, 0.76, 0.2, 1)
-			both;
+		animation: mcq-choice-correct var(--recall-answer-duration) cubic-bezier(0.2, 0.76, 0.2, 1) both;
 	}
 
 	.choice-grid button.selected.incorrect {
-		animation: mcq-choice-incorrect var(--recall-answer-duration)
-			cubic-bezier(0.25, 0.75, 0.25, 1) both;
+		animation: mcq-choice-incorrect var(--recall-answer-duration) cubic-bezier(0.25, 0.75, 0.25, 1)
+			both;
 	}
 
 	@keyframes mcq-choice-correct {
@@ -1968,7 +2033,9 @@
 		background: #0f2b1d;
 	}
 
-	:global(:root[data-theme='dark']) .card-answer > div:not(.mcq-answer-block):not(.mcq-explanation) {
+	:global(:root[data-theme='dark'])
+		.card-answer
+		> div:not(.mcq-answer-block):not(.mcq-explanation) {
 		color: #bbf7d0;
 	}
 

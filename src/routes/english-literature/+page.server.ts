@@ -17,12 +17,13 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 		locals.user ? getLearnerProfileSettings(locals.user) : getDefaultLearnerProfileSettings(),
 		getQuestionBankBrowseData()
 	]);
-	const settings = locals.user
-		? baseSettings
-		: anonymousProfileSettings(
-				baseSettings,
-				parseAnonymousLearnerProfileCookie(cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME))
-			);
+	const localProfile = parseAnonymousLearnerProfileCookie(
+		cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME)
+	);
+	const settings = anonymousProfileSettings(
+		baseSettings,
+		!locals.user || localProfile?.pendingSync ? localProfile : null
+	);
 	const literatureSubject = settings.subjects.find(
 		(subject) => subject.subject === 'English Literature'
 	);

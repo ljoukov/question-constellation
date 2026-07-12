@@ -1,4 +1,10 @@
 import type { PracticeDraftSave, SavedPracticeDraft } from '$lib/practiceDrafts';
+import { clearBackgroundSyncIssue, reportBackgroundSyncIssue } from '$lib/backgroundSync';
+import {
+	classifyRequestFailure,
+	fetchWithResponseTimeout,
+	requestErrorFromResponse
+} from '$lib/requestFailure';
 
 const queueKeyPrefix = 'question-constellation:practice-draft-queue:v1:';
 const flushDelayMs = 20_000;
@@ -17,6 +23,23 @@ function storageAvailable() {
 
 function queueKey(userId: string) {
 	return `${queueKeyPrefix}${userId}`;
+}
+
+function syncIssueId(userId: string) {
+	return `practice-drafts:${userId}`;
+}
+
+function reportDraftSyncFailure(userId: string, error: unknown) {
+	reportBackgroundSyncIssue({
+		id: syncIssueId(userId),
+		failure: classifyRequestFailure(error, {
+			action: 'sync your saved answer',
+			serverLabel: 'Answer sync'
+		}),
+		retry: async () => {
+			await flushPracticeDraftQueue(userId);
+		}
+	});
 }
 
 function readQueue(userId: string): Queue {
@@ -111,24 +134,34 @@ export async function flushPracticeDraftQueue(
 	const drafts = Object.values(queue).sort(
 		(left, right) => left.clientUpdatedAt - right.clientUpdatedAt
 	);
-	if (drafts.length === 0) return true;
+	if (drafts.length === 0) {
+		clearBackgroundSyncIssue(syncIssueId(userId));
+		return true;
+	}
 
 	const batchSize = options.keepalive ? maxKeepaliveBatchSize : maxBatchSize;
 	for (const batch of chunk(drafts, batchSize)) {
 		let response: Response;
 		try {
-			response = await fetch(draftEndpoint, {
+			response = await fetchWithResponseTimeout(draftEndpoint, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ drafts: batch }),
 				keepalive: options.keepalive
 			});
-		} catch {
+		} catch (error) {
+			if (!options.keepalive) reportDraftSyncFailure(userId, error);
 			scheduleFlush(userId);
 			return false;
 		}
 
 		if (!response.ok) {
+			if (!options.keepalive) {
+				reportDraftSyncFailure(
+					userId,
+					await requestErrorFromResponse(response, 'Answer draft sync failed.')
+				);
+			}
 			scheduleFlush(userId);
 			return false;
 		}
@@ -136,7 +169,11 @@ export async function flushPracticeDraftQueue(
 		removeSentDrafts(userId, batch);
 	}
 
-	if (Object.keys(readQueue(userId)).length > 0) scheduleFlush(userId);
+	if (Object.keys(readQueue(userId)).length > 0) {
+		scheduleFlush(userId);
+	} else {
+		clearBackgroundSyncIssue(syncIssueId(userId));
+	}
 	return true;
 }
 

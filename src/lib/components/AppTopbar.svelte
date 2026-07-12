@@ -2,10 +2,17 @@
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
+	import { authStartHref } from '$lib/authReturn';
 	import { Check, ChevronRight } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { primaryNavigationLinks, type AppTopbarLink } from '$lib/navigation';
+	import {
+		classifyRequestFailure,
+		requestErrorFromResponse,
+		type RequestFailure
+	} from '$lib/requestFailure';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
 	import type { AdminUser } from '$lib/server/auth/session';
 
@@ -61,8 +68,10 @@
 	let confirmedTheme = $state<ThemePreference>('auto');
 	let accountToastMessage = $state('');
 	let accountToastTone = $state<'success' | 'error'>('success');
+	let themeFailure = $state<RequestFailure | null>(null);
+	let pendingTheme = $state<ThemePreference | null>(null);
 	let accountMenuRoot = $state<HTMLDivElement | null>(null);
-	let themeSaveController: AbortController | null = null;
+	let themeSaveController = $state<AbortController | null>(null);
 	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
 	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
@@ -188,10 +197,16 @@
 		}
 
 		themeSaveController?.abort();
+		pendingTheme = value;
+		themeFailure = null;
 		const rollbackTheme = confirmedTheme;
 		const controller = new AbortController();
 		themeSaveController = controller;
-		const timeout = setTimeout(() => controller.abort(), 8000);
+		let timedOut = false;
+		const timeout = setTimeout(() => {
+			timedOut = true;
+			controller.abort();
+		}, 8000);
 		setThemePreference(value);
 		closeAccountMenu();
 
@@ -203,18 +218,38 @@
 				signal: controller.signal
 			});
 
-			if (!response.ok) throw new Error(`Theme save failed with ${response.status}.`);
+			if (!response.ok) {
+				throw await requestErrorFromResponse(response, 'Appearance save request failed.');
+			}
 			confirmedTheme = value;
+			pendingTheme = null;
+			themeFailure = null;
 			showAccountToast('Appearance saved.');
 		} catch (error) {
 			if (themeSaveController !== controller) return;
 			console.warn('Theme preference could not be saved.', error);
 			setThemePreference(rollbackTheme);
-			showAccountToast('Could not save appearance. Restored previous theme.', 'error');
+			themeFailure = classifyRequestFailure(error, {
+				action: 'save this appearance setting',
+				serverLabel: 'Appearance sync',
+				timedOut
+			});
+			showAccountToast(`${themeFailure.title}. Restored the previous theme.`, 'error');
 		} finally {
 			clearTimeout(timeout);
 			if (themeSaveController === controller) themeSaveController = null;
 		}
+	}
+
+	function retryThemeSave() {
+		if (themeFailure?.kind === 'auth') {
+			window.location.assign(
+				authStartHref(`${pageState.url.pathname}${pageState.url.search}${pageState.url.hash}`)
+			);
+			return;
+		}
+		if (!pendingTheme) return;
+		void chooseTheme(pendingTheme);
 	}
 
 	async function writeTextToClipboard(text: string): Promise<void> {
@@ -493,4 +528,33 @@
 			{accountToastMessage}
 		</div>
 	{/if}
+	{#if currentUser && themeFailure}
+		<div class="qc-topbar-request-failure">
+			<RequestFailureNotice
+				failure={themeFailure}
+				onRetry={retryThemeSave}
+				retrying={Boolean(themeSaveController)}
+				retryLabel={themeFailure.kind === 'auth' ? 'Sign in again' : 'Retry save'}
+				compact
+			/>
+		</div>
+	{/if}
 </header>
+
+<style>
+	.qc-topbar-request-failure {
+		position: fixed;
+		z-index: 90;
+		top: 4.75rem;
+		right: clamp(0.85rem, 2.4vw, 1.5rem);
+		width: min(31rem, calc(100vw - 1.7rem));
+	}
+
+	@media (max-width: 560px) {
+		.qc-topbar-request-failure {
+			left: 0.75rem;
+			right: 0.75rem;
+			width: auto;
+		}
+	}
+</style>

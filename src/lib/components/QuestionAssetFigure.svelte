@@ -1,4 +1,6 @@
 <script lang="ts">
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
+	import { diagnoseResourceLoadFailure, type RequestFailure } from '$lib/requestFailure';
 	type QuestionAsset = {
 		publicPath: string;
 		altText: string;
@@ -22,6 +24,14 @@
 	);
 
 	let dialog: HTMLDialogElement | undefined;
+	let imageFailure = $state<RequestFailure | null>(null);
+	let retryVersion = $state(0);
+	let diagnosing = $state(false);
+	const imageSrc = $derived(
+		retryVersion === 0
+			? asset.publicPath
+			: `${asset.publicPath}${asset.publicPath.includes('?') ? '&' : '?'}qc-retry=${retryVersion}`
+	);
 
 	function openDialog() {
 		dialog?.showModal();
@@ -34,17 +44,49 @@
 	function closeOnBackdrop(event: MouseEvent) {
 		if (event.target === dialog) closeDialog();
 	}
+
+	async function handleImageFailure() {
+		if (diagnosing) return;
+		diagnosing = true;
+		closeDialog();
+		imageFailure = await diagnoseResourceLoadFailure(asset.publicPath, {
+			action: 'load this question image',
+			serverLabel: 'The image service'
+		});
+		diagnosing = false;
+	}
+
+	function retryImage() {
+		imageFailure = null;
+		retryVersion += 1;
+	}
 </script>
 
 <figure style={paperStyle}>
-	<button
-		class="asset-open-button"
-		type="button"
-		onclick={openDialog}
-		aria-label={`Open ${asset.sourceLabel} full screen`}
-	>
-		<img class="asset-thumbnail" src={asset.publicPath} alt={asset.altText} {loading} />
-	</button>
+	{#if imageFailure}
+		<RequestFailureNotice
+			failure={imageFailure}
+			onRetry={retryImage}
+			retrying={diagnosing}
+			retryLabel="Retry image"
+			compact
+		/>
+	{:else}
+		<button
+			class="asset-open-button"
+			type="button"
+			onclick={openDialog}
+			aria-label={`Open ${asset.sourceLabel} full screen`}
+		>
+			<img
+				class="asset-thumbnail"
+				src={imageSrc}
+				alt={asset.altText}
+				{loading}
+				onerror={handleImageFailure}
+			/>
+		</button>
+	{/if}
 	<figcaption>{asset.sourceLabel}</figcaption>
 </figure>
 
@@ -58,6 +100,12 @@
 		<button class="asset-dialog-close" type="button" onclick={closeDialog} aria-label="Close image">
 			x
 		</button>
-		<img class="asset-dialog-image" src={asset.publicPath} alt={asset.altText} loading="eager" />
+		<img
+			class="asset-dialog-image"
+			src={imageSrc}
+			alt={asset.altText}
+			loading="eager"
+			onerror={handleImageFailure}
+		/>
 	</div>
 </dialog>

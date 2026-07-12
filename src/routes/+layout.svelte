@@ -11,6 +11,8 @@
 	} from '$lib/themePreference';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import AnalyticsTracker from '$lib/analytics/AnalyticsTracker.svelte';
+	import BackgroundSyncStatus from '$lib/components/BackgroundSyncStatus.svelte';
+	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import LocalLearnerStateSync from '$lib/components/LocalLearnerStateSync.svelte';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import type { LayoutProps } from './$types';
@@ -127,6 +129,8 @@
 
 <div class="app-shell">
 	<AnalyticsTracker />
+	<BackgroundSyncStatus />
+	<ConnectionStatus />
 	<LocalLearnerStateSync user={data.user} />
 	{#if showRouteLoading}
 		<RouteLoadingToast contentType={routeLoadingContentType} />

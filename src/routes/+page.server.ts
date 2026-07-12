@@ -21,19 +21,21 @@ function toBlogMeta(article: BlogArticle): BlogArticleMeta {
 const latestArticles = blogArticles.slice(0, 3).map(toBlogMeta);
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-	const [publicData, learnerSettings] = await Promise.all([
+	const [publicData, baseLearnerSettings] = await Promise.all([
 		getHomePagePublicData(),
 		locals.user
 			? getLearnerProfileSettings(locals.user).catch(() => null)
-			: getDefaultLearnerProfileSettings()
-					.then((settings) =>
-						anonymousProfileSettings(
-							settings,
-							parseAnonymousLearnerProfileCookie(cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME))
-						)
-					)
-					.catch(() => null)
+			: getDefaultLearnerProfileSettings().catch(() => null)
 	]);
+	const localProfile = parseAnonymousLearnerProfileCookie(
+		cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME)
+	);
+	const learnerSettings = baseLearnerSettings
+		? anonymousProfileSettings(
+				baseLearnerSettings,
+				!locals.user || localProfile?.pendingSync ? localProfile : null
+			)
+		: null;
 
 	return {
 		featuredChains: publicData.featuredChains,

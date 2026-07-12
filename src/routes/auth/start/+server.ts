@@ -30,11 +30,20 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 	clearAdminSessionCookie(cookies);
 	clearDevAdminSessionCookie(cookies);
 	const continueUri = new URL('/auth/continue', url);
-	continueUri.searchParams.set('next', safeAuthReturnPath(url.searchParams.get('next')));
-	const authUri = await createGoogleAuthUri({
-		continueUri,
-		platformEnv: platform?.env
-	});
-	setAuthSessionIdCookie(cookies, authUri.sessionId);
-	return clientSideRedirect(new URL(authUri.authUri));
+	const next = safeAuthReturnPath(url.searchParams.get('next'));
+	continueUri.searchParams.set('next', next);
+	try {
+		const authUri = await createGoogleAuthUri({
+			continueUri,
+			platformEnv: platform?.env
+		});
+		setAuthSessionIdCookie(cookies, authUri.sessionId);
+		return clientSideRedirect(new URL(authUri.authUri));
+	} catch (error) {
+		console.error('[auth-start] Google sign-in could not be started.', error);
+		const problemUrl = new URL('/auth/relogin', url);
+		problemUrl.searchParams.set('next', next);
+		problemUrl.searchParams.set('issue', 'auth_start_failed');
+		return clientSideRedirect(problemUrl);
+	}
 };

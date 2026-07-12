@@ -2,6 +2,7 @@
 	import { ArrowRight } from '@lucide/svelte';
 	import { authStartHref } from '$lib/authReturn';
 	import GoogleSignInButton from '$lib/components/GoogleSignInButton.svelte';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -20,6 +21,9 @@
 		</div>
 		<h1>Sign in required</h1>
 		<p>Sign in to sync your learning and use answer checking.</p>
+		{#if data.authFailure}
+			<RequestFailureNotice failure={data.authFailure} compact />
+		{/if}
 		{#if data.devLoginEnabled}
 			<form class="auth-form" method="POST">
 				<input type="hidden" name="next" value={form?.next ?? data.next} />
@@ -34,6 +38,9 @@
 				</button>
 			</form>
 		{/if}
-		<GoogleSignInButton href={authStartHref(data.next)} />
+		<GoogleSignInButton
+			href={authStartHref(data.next)}
+			label={data.authFailure ? 'Try Google again' : 'Sign in with Google'}
+		/>
 	</section>
 </main>

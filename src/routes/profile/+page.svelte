@@ -2,13 +2,24 @@
 	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import { authStartHref } from '$lib/authReturn';
 	import { ArrowLeft, BookOpen, CheckCircle2, ExternalLink, Info } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
-	import { saveAnonymousLearnerProfile } from '$lib/anonymousLearnerProfile';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
+	import {
+		markAnonymousLearnerProfileSynced,
+		saveAnonymousLearnerProfile,
+		type AnonymousLearnerProfile
+	} from '$lib/anonymousLearnerProfile';
 	import { ocrEnglishLiteratureOptions } from '$lib/englishLiteratureProfile';
+	import {
+		classifyRequestFailure,
+		ResponseRequestError,
+		type RequestFailure
+	} from '$lib/requestFailure';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -60,13 +71,11 @@
 	let saveTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
 	let activeSaveController: AbortController | null = null;
 	let changeRevision = 0;
-	let lastSavedSubjects = untrack(() => cloneSubjects(subjects));
-	let lastSavedEnglishLiteratureSelections = untrack(() =>
-		cloneEnglishLiteratureSelections(englishLiteratureSelections)
-	);
 	let saveStatus = $state<SaveStatus>('idle');
 	let saveToastMessage = $state('');
 	let saveToastTone = $state<ToastTone>('success');
+	let saveFailure = $state<RequestFailure | null>(null);
+	let pendingLocalProfile = $state<AnonymousLearnerProfile | null>(null);
 
 	const enabledCount = $derived(subjects.filter((subject) => subject.enabled).length);
 	const englishLiteratureSelectionCount = $derived(
@@ -94,17 +103,18 @@
 		activeSaveController = controller;
 		saveStatus = 'saving';
 		const submittedRevision = changeRevision;
-		const submittedSubjects = cloneSubjects(subjects);
-		const submittedEnglishLiteratureSelections = cloneEnglishLiteratureSelections(
-			englishLiteratureSelections
-		);
 		saveTimeoutTimer = setTimeout(() => {
 			if (activeSaveController !== controller) return;
 			controller.abort();
-			failAutosave(submittedRevision, 'Could not reach the network. Restored previous profile.');
+			handleAutosaveFailure(
+				submittedRevision,
+				new DOMException('Profile save timed out.', 'AbortError'),
+				true
+			);
 		}, autosaveTimeoutMs);
 
 		return async ({ result }) => {
+			if (activeSaveController !== controller) return;
 			if (saveTimeoutTimer) {
 				clearTimeout(saveTimeoutTimer);
 				saveTimeoutTimer = null;
@@ -112,16 +122,22 @@
 			if (activeSaveController === controller) activeSaveController = null;
 
 			if (result.type === 'success') {
-				lastSavedSubjects = submittedSubjects;
-				lastSavedEnglishLiteratureSelections = submittedEnglishLiteratureSelections;
 				if (changeRevision === submittedRevision) {
 					saveStatus = 'saved';
+					saveFailure = null;
+					if (pendingLocalProfile) markAnonymousLearnerProfileSynced(pendingLocalProfile);
 					showSaveToast('Profile saved', 'success');
 				}
 				return;
 			}
 
-			failAutosave(submittedRevision, 'Could not save. Restored previous profile.');
+			const resultError =
+				result.type === 'error' && !result.status
+					? result.error
+					: new ResponseRequestError('Profile save request failed.', {
+							status: result.status || 500
+						});
+			handleAutosaveFailure(submittedRevision, resultError);
 		};
 	};
 
@@ -129,7 +145,7 @@
 		if (!browser) return;
 		const handleOffline = () => {
 			if (autosaveTimer || activeSaveController || saveStatus === 'saving') {
-				failAutosave(changeRevision, 'You are offline. Restored previous profile.');
+				handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 			}
 		};
 		window.addEventListener('offline', handleOffline);
@@ -152,6 +168,7 @@
 
 	function queueAutosave() {
 		changeRevision += 1;
+		persistCurrentProfileLocally();
 		if (!data.user) {
 			saveStatus = 'saving';
 			if (autosaveTimer) clearTimeout(autosaveTimer);
@@ -162,7 +179,7 @@
 			return;
 		}
 		if (browser && !navigator.onLine) {
-			failAutosave(changeRevision, 'You are offline. Restored previous profile.');
+			handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 			return;
 		}
 		saveStatus = 'saving';
@@ -170,7 +187,7 @@
 		autosaveTimer = setTimeout(() => {
 			autosaveTimer = null;
 			if (browser && !navigator.onLine) {
-				failAutosave(changeRevision, 'You are offline. Restored previous profile.');
+				handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 				return;
 			}
 			profileForm?.requestSubmit();
@@ -178,7 +195,14 @@
 	}
 
 	function saveLocalProfile() {
-		saveAnonymousLearnerProfile({
+		persistCurrentProfileLocally();
+		saveFailure = null;
+		saveStatus = 'saved';
+		showSaveToast('Profile saved on this device', 'success');
+	}
+
+	function persistCurrentProfileLocally() {
+		pendingLocalProfile = saveAnonymousLearnerProfile({
 			subjects: cloneSubjects(subjects),
 			englishLiteratureSelections: {
 				board: 'OCR',
@@ -186,15 +210,10 @@
 				...cloneEnglishLiteratureSelections(englishLiteratureSelections)
 			}
 		});
-		lastSavedSubjects = cloneSubjects(subjects);
-		lastSavedEnglishLiteratureSelections = cloneEnglishLiteratureSelections(
-			englishLiteratureSelections
-		);
-		saveStatus = 'saved';
-		showSaveToast('Profile saved on this device', 'success');
+		return pendingLocalProfile;
 	}
 
-	function failAutosave(revision: number, message: string) {
+	function handleAutosaveFailure(revision: number, error: unknown, timedOut = false) {
 		if (autosaveTimer) {
 			clearTimeout(autosaveTimer);
 			autosaveTimer = null;
@@ -203,16 +222,37 @@
 			clearTimeout(saveTimeoutTimer);
 			saveTimeoutTimer = null;
 		}
-		activeSaveController?.abort();
+		const controller = activeSaveController;
 		activeSaveController = null;
-		if (changeRevision === revision) {
-			subjects = cloneSubjects(lastSavedSubjects);
-			englishLiteratureSelections = cloneEnglishLiteratureSelections(
-				lastSavedEnglishLiteratureSelections
-			);
-		}
+		controller?.abort();
+		if (changeRevision !== revision) return;
 		saveStatus = 'error';
-		showSaveToast(message, 'error');
+		saveFailure = classifyRequestFailure(error, {
+			action: 'save this profile',
+			serverLabel: 'Profile sync',
+			timedOut
+		});
+		showSaveToast(`${saveFailure.title}. Changes remain on this device.`, 'error');
+	}
+
+	function retryProfileSave() {
+		if (!data.user) {
+			saveLocalProfile();
+			return;
+		}
+		if (saveFailure?.kind === 'auth') {
+			window.location.assign(
+				authStartHref(`${window.location.pathname}${window.location.search}${window.location.hash}`)
+			);
+			return;
+		}
+		if (browser && !navigator.onLine) {
+			handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
+			return;
+		}
+		saveFailure = null;
+		saveStatus = 'saving';
+		profileForm?.requestSubmit();
 	}
 
 	function showSaveToast(message: string, tone: ToastTone) {
@@ -555,6 +595,16 @@
 					</section>
 				{/each}
 			</div>
+			{#if saveFailure}
+				<div class="qc-profile-save-failure">
+					<RequestFailureNotice
+						failure={saveFailure}
+						onRetry={retryProfileSave}
+						retrying={saveStatus === 'saving'}
+						retryLabel={saveFailure.kind === 'auth' ? 'Sign in again' : 'Retry save'}
+					/>
+				</div>
+			{/if}
 			<p class="sr-only" aria-live="polite">{saveLabel}</p>
 		</form>
 	</div>
@@ -572,6 +622,10 @@
 </main>
 
 <style>
+	.qc-profile-save-failure {
+		margin-top: 1rem;
+	}
+
 	.ocr-literature-profile {
 		grid-column: 1 / -1;
 		min-width: 0;

@@ -12,6 +12,7 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import PracticeAnswerEditor from '$lib/components/PracticeAnswerEditor.svelte';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
@@ -30,6 +31,15 @@
 		type SavedPracticeDraft
 	} from '$lib/practiceDrafts';
 	import { markLabel } from '$lib/marks';
+	import {
+		classifyRequestFailure,
+		fetchWithResponseTimeout,
+		InterruptedRequestError,
+		readStreamChunkWithTimeout,
+		requestErrorFromResponse,
+		ServerRequestError,
+		type RequestFailure
+	} from '$lib/requestFailure';
 	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
@@ -73,7 +83,7 @@
 	let rewriteText = $state('');
 	let gradedAnswerText = $state('');
 	let gradePhase = $state<GradePhase>('idle');
-	let gradeError = $state('');
+	let gradeFailure = $state<RequestFailure | null>(null);
 	let gradeResult = $state<GradeResult | null>(null);
 	let showHint = $state(false);
 	let authDialogOpen = $state(false);
@@ -377,7 +387,7 @@
 		gradedAnswerText = storedState?.gradedAnswerText ?? '';
 		gradeResult = storedState?.gradeResult ?? null;
 		gradePhase = gradeResult ? 'done' : 'idle';
-		gradeError = '';
+		gradeFailure = null;
 		showHint = false;
 		lastQueuedDraftSignature = migratedAnonymousState
 			? ''
@@ -413,7 +423,7 @@
 	function clearCheckedResult() {
 		gradedAnswerText = '';
 		gradeResult = null;
-		gradeError = '';
+		gradeFailure = null;
 		gradePhase = 'idle';
 		rewriteText = '';
 		if (requestedPracticeView === 'result') updatePracticeView('attempt', 'replace');
@@ -443,12 +453,13 @@
 
 		rewriteText = '';
 		gradedAnswerText = '';
-		gradeError = '';
+		gradeFailure = null;
 		gradeResult = null;
 		gradePhase = 'connecting';
+		let streamStarted = false;
 
 		try {
-			const response = await fetch(
+			const response = await fetchWithResponseTimeout(
 				resolve('/api/questions/[questionId]/grade', { questionId: data.question.id }),
 				{
 					method: 'POST',
@@ -465,18 +476,26 @@
 			}
 
 			if (!response.ok || !response.body) {
-				throw new Error(`Grading request failed with ${response.status}`);
+				throw await requestErrorFromResponse(response, 'Answer check request failed.');
 			}
 
-			await readSseStream(response.body);
+			streamStarted = true;
+			await readSseStream(
+				response.body,
+				response.headers.get('cf-ray') ?? response.headers.get('x-request-id')
+			);
 
 			if (!gradeResult) {
-				throw new Error('Grading stream ended without a result.');
+				throw new InterruptedRequestError('The answer check ended without a result.');
 			}
 		} catch (error) {
 			console.error('[practice] answer grading failed', error);
 			gradePhase = 'error';
-			gradeError = 'Answer check failed. Please try again.';
+			gradeFailure = classifyRequestFailure(error, {
+				action: 'finish checking this answer',
+				serverLabel: 'The answer checker',
+				streamStarted
+			});
 			updatePracticeView('attempt', 'replace');
 		}
 	}
@@ -539,7 +558,7 @@
 		return { event, data: dataLines.join('\n') };
 	}
 
-	function handleSseMessage(message: SseMessage) {
+	function handleSseMessage(message: SseMessage, reference: string | null) {
 		if (message.event === 'status') {
 			const status = JSON.parse(message.data) as { phase?: GradePhase };
 			if (status.phase === 'calling' || status.phase === 'thinking' || status.phase === 'grading') {
@@ -567,18 +586,21 @@
 		}
 
 		if (message.event === 'error') {
-			gradePhase = 'error';
-			gradeError = 'Answer check failed. Please try again.';
+			const payload = JSON.parse(message.data) as { error?: string; message?: string };
+			throw new ServerRequestError(payload.message ?? 'The answer checker returned an error.', {
+				code: payload.error,
+				reference
+			});
 		}
 	}
 
-	async function readSseStream(body: ReadableStream<Uint8Array>) {
+	async function readSseStream(body: ReadableStream<Uint8Array>, reference: string | null) {
 		const reader = body.getReader();
 		const decoder = new TextDecoder();
 		let buffer = '';
 
 		while (true) {
-			const { done, value } = await reader.read();
+			const { done, value } = await readStreamChunkWithTimeout(reader);
 			buffer += decoder.decode(value, { stream: !done });
 
 			let separatorIndex = buffer.indexOf('\n\n');
@@ -586,7 +608,7 @@
 				const block = buffer.slice(0, separatorIndex);
 				buffer = buffer.slice(separatorIndex + 2);
 				const message = parseSseBlock(block);
-				if (message) handleSseMessage(message);
+				if (message) handleSseMessage(message, reference);
 				separatorIndex = buffer.indexOf('\n\n');
 			}
 
@@ -594,7 +616,7 @@
 		}
 
 		const trailingMessage = parseSseBlock(buffer.trim());
-		if (trailingMessage) handleSseMessage(trailingMessage);
+		if (trailingMessage) handleSseMessage(trailingMessage, reference);
 	}
 
 	$effect(() => {
@@ -737,14 +759,12 @@
 						</section>
 					{/if}
 
-					{#if gradeError}
-						<section class="qc-status-panel error" aria-live="polite">
-							<CircleAlert size={19} aria-hidden="true" />
-							<div>
-								<p class="qc-panel-label">Could not check</p>
-								<p>{gradeError}</p>
-							</div>
-						</section>
+					{#if gradeFailure}
+						<RequestFailureNotice
+							failure={gradeFailure}
+							onRetry={() => void checkAnswer()}
+							retryLabel="Retry check"
+						/>
 					{/if}
 				{:else}
 					<div class="qc-real-question-top">

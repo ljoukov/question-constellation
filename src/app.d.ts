@@ -2,6 +2,11 @@
 // for information about these interfaces
 declare global {
 	namespace App {
+		interface Error {
+			message: string;
+			failure?: import('$lib/requestFailure').RequestFailure;
+		}
+
 		interface Platform {
 			env: {
 				GOOGLE_SERVICE_ACCOUNT_JSON?: string;

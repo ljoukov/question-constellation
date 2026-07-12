@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BlockRenderer from './BlockRenderer.svelte';
+	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import MathText from './MathText.svelte';
 	import QuestionNumber from './QuestionNumber.svelte';
 	import ResponseRenderer from './ResponseRenderer.svelte';
@@ -7,6 +8,7 @@
 	import { resolvePaperDependencies } from '../paperUtils';
 	import type { ExperimentQuestionGradeResult } from '../gradingTypes';
 	import type { ExamPaper } from '../types';
+	import type { RequestFailure } from '$lib/requestFailure';
 
 	let {
 		paper,
@@ -16,9 +18,11 @@
 		isSubmitting = false,
 		submitLabel = 'Submit',
 		submitError = '',
+		submitFailure = null,
 		onAnswerChange,
 		onDismissGrade,
-		onSubmitGrade
+		onSubmitGrade,
+		onRetrySubmit
 	}: {
 		paper: ExamPaper;
 		answers?: Record<string, string>;
@@ -27,9 +31,11 @@
 		isSubmitting?: boolean;
 		submitLabel?: string;
 		submitError?: string;
+		submitFailure?: RequestFailure | null;
 		onAnswerChange?: (ref: string, answer: string) => void;
 		onDismissGrade?: (ref: string) => void;
 		onSubmitGrade?: () => void;
+		onRetrySubmit?: () => void;
 	} = $props();
 
 	function marksLabel(result: ExperimentQuestionGradeResult) {
@@ -39,7 +45,10 @@
 	}
 
 	const showSubmit = $derived(
-		isSubmitting || Boolean(submitError) || Object.keys(gradingResults).length === 0
+		isSubmitting ||
+			Boolean(submitError) ||
+			Boolean(submitFailure) ||
+			Object.keys(gradingResults).length === 0
 	);
 	const displayPaper = $derived(resolvePaperDependencies(paper));
 	const hasHeader = $derived(
@@ -200,6 +209,15 @@
 				</button>
 				{#if submitError}
 					<p class="submit-error">{submitError}</p>
+				{/if}
+				{#if submitFailure}
+					<RequestFailureNotice
+						failure={submitFailure}
+						onRetry={onRetrySubmit ?? onSubmitGrade}
+						retrying={isSubmitting}
+						retryLabel="Retry check"
+						compact
+					/>
 				{/if}
 			</section>
 		{/if}

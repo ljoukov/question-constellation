@@ -31,12 +31,13 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 			specificationCode: 'J352'
 		})
 	]);
-	const settings = locals.user
-		? baseSettings
-		: anonymousProfileSettings(
-				baseSettings,
-				parseAnonymousLearnerProfileCookie(cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME))
-			);
+	const localProfile = parseAnonymousLearnerProfileCookie(
+		cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME)
+	);
+	const settings = anonymousProfileSettings(
+		baseSettings,
+		!locals.user || localProfile?.pendingSync ? localProfile : null
+	);
 
 	return {
 		user: locals.user,
