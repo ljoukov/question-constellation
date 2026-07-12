@@ -15,7 +15,7 @@ describe('/auth/logout', () => {
 		} as unknown as Parameters<typeof GET>[0]);
 		const body = await response.text();
 
-		expect(cookies.set).toHaveBeenCalledTimes(3);
+		expect(cookies.set).toHaveBeenCalledTimes(4);
 		expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
 		expect(body).toContain("url='https://constellation.eviworld.com/'");
 		expect(body).not.toContain('/auth/relogin');

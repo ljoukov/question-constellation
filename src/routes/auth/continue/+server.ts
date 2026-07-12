@@ -2,8 +2,10 @@ import { getRuntimeEnv } from '$lib/server/env';
 import { signInWithGoogleRedirect, verifyFirebaseIdToken } from '$lib/server/auth/firebase';
 import {
 	clearAdminSessionCookie,
+	clearAuthReturnPathCookie,
 	clearAuthSessionIdCookie,
 	createAdminSession,
+	AUTH_RETURN_PATH_COOKIE_NAME,
 	AUTH_SESSION_ID_COOKIE_NAME,
 	setAdminSessionCookie
 } from '$lib/server/auth/session';
@@ -19,7 +21,7 @@ function authProblemUrl(url: URL, next: string, issue: string) {
 }
 
 export const GET: RequestHandler = async ({ url, cookies, platform }) => {
-	const next = safeAuthReturnPath(url.searchParams.get('next'));
+	const next = safeAuthReturnPath(cookies.get(AUTH_RETURN_PATH_COOKIE_NAME));
 	const code = url.searchParams.get('code');
 	if (!code) {
 		return clientSideRedirect(authProblemUrl(url, next, 'auth_expired'));
@@ -44,12 +46,14 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 	} catch (error) {
 		console.error('[auth-continue] Google sign-in could not be completed.', error);
 		clearAuthSessionIdCookie(cookies);
+		clearAuthReturnPathCookie(cookies);
 		clearAdminSessionCookie(cookies);
 		return clientSideRedirect(authProblemUrl(url, next, 'auth_continue_failed'));
 	}
 	const email = (token.email ?? signIn.email ?? '').toLowerCase();
 	if (!email) {
 		clearAuthSessionIdCookie(cookies);
+		clearAuthReturnPathCookie(cookies);
 		clearAdminSessionCookie(cookies);
 		return clientSideRedirect(new URL('/auth/denied', url));
 	}
@@ -65,6 +69,7 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 	});
 
 	clearAuthSessionIdCookie(cookies);
+	clearAuthReturnPathCookie(cookies);
 	try {
 		await setAdminSessionCookie(cookies, session, env.authCookieSecret);
 	} catch (error) {

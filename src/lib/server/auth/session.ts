@@ -6,6 +6,7 @@ import type { Cookies } from '@sveltejs/kit';
 import { z } from 'zod';
 
 export const AUTH_SESSION_ID_COOKIE_NAME = 'questionConstellationAuthSession';
+export const AUTH_RETURN_PATH_COOKIE_NAME = 'questionConstellationAuthReturnPath';
 
 const AUTH_USER_COOKIE_NAME = 'questionConstellationAuth';
 const DEV_AUTH_USER_COOKIE_NAME = 'questionConstellationDevAuth';
@@ -64,6 +65,28 @@ export function setAuthSessionIdCookie(cookies: Cookies, sessionId: string): voi
 		secure: dev ? false : true,
 		expires: new Date(Date.now() + maxAge * 1000),
 		maxAge
+	});
+}
+
+export function setAuthReturnPathCookie(cookies: Cookies, returnPath: string): void {
+	const maxAge = 20 * 60;
+	cookies.set(AUTH_RETURN_PATH_COOKIE_NAME, returnPath, {
+		path: '/auth/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: dev ? false : true,
+		expires: new Date(Date.now() + maxAge * 1000),
+		maxAge
+	});
+}
+
+export function clearAuthReturnPathCookie(cookies: Cookies): void {
+	cookies.set(AUTH_RETURN_PATH_COOKIE_NAME, '', {
+		path: '/auth/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: dev ? false : true,
+		expires: new Date(0)
 	});
 }
 

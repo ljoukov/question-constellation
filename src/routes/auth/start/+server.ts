@@ -2,6 +2,7 @@ import { createGoogleAuthUri } from '$lib/server/auth/firebase';
 import {
 	clearAdminSessionCookie,
 	clearDevAdminSessionCookie,
+	setAuthReturnPathCookie,
 	setAuthSessionIdCookie
 } from '$lib/server/auth/session';
 import { clientSideRedirect } from '$lib/server/http';
@@ -31,13 +32,13 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 	clearDevAdminSessionCookie(cookies);
 	const continueUri = new URL('/auth/continue', url);
 	const next = safeAuthReturnPath(url.searchParams.get('next'));
-	continueUri.searchParams.set('next', next);
 	try {
 		const authUri = await createGoogleAuthUri({
 			continueUri,
 			platformEnv: platform?.env
 		});
 		setAuthSessionIdCookie(cookies, authUri.sessionId);
+		setAuthReturnPathCookie(cookies, next);
 		return clientSideRedirect(new URL(authUri.authUri));
 	} catch (error) {
 		console.error('[auth-start] Google sign-in could not be started.', error);

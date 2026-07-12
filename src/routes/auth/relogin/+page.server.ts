@@ -1,6 +1,7 @@
 import { dev } from '$app/environment';
 import {
 	clearAdminSessionCookie,
+	clearAuthReturnPathCookie,
 	clearAuthSessionIdCookie,
 	clearDevAdminSessionCookie,
 	setDevAdminSessionCookie
@@ -22,6 +23,7 @@ function safeNext(value: FormDataEntryValue | string | null): string {
 
 export const load: PageServerLoad = async ({ cookies, url }) => {
 	clearAuthSessionIdCookie(cookies);
+	clearAuthReturnPathCookie(cookies);
 	clearAdminSessionCookie(cookies);
 	clearDevAdminSessionCookie(cookies);
 
@@ -74,6 +76,7 @@ export const actions: Actions = {
 
 		const env = getRuntimeEnv(platform?.env);
 		clearAuthSessionIdCookie(cookies);
+		clearAuthReturnPathCookie(cookies);
 		clearAdminSessionCookie(cookies);
 		await setDevAdminSessionCookie(cookies, email, env.authCookieSecret);
 		throw redirect(303, next);
