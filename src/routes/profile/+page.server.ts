@@ -1,26 +1,28 @@
 import {
+	getDefaultLearnerProfileSettings,
 	getImportedQuestionBoardAvailability,
 	getLearnerProfileSettings,
 	updateEnglishLiteratureSelections,
 	updateLearnerSubjects,
 	type QuestionBoardAvailability
 } from '$lib/server/personalLearning';
+import {
+	ANONYMOUS_PROFILE_COOKIE_NAME,
+	anonymousProfileSettings,
+	parseAnonymousLearnerProfileCookie
+} from '$lib/anonymousLearnerProfile';
 import { parseOcrEnglishLiteratureSelections } from '$lib/englishLiteratureProfile';
 import { getCurriculumNotices } from '$lib/server/curriculumNotices';
 import {
 	gcsePastPaperSubjectIndex,
 	type PastPaperSubjectIndex
 } from '$lib/pastPapers/gcsePastPaperIndex';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		throw redirect(303, '/auth/start');
-	}
-
-	const [settings, boardAvailability, curriculumNotices] = await Promise.all([
-		getLearnerProfileSettings(locals.user),
+export const load: PageServerLoad = async ({ cookies, locals }) => {
+	const [baseSettings, boardAvailability, curriculumNotices] = await Promise.all([
+		locals.user ? getLearnerProfileSettings(locals.user) : getDefaultLearnerProfileSettings(),
 		getImportedQuestionBoardAvailability(),
 		getCurriculumNotices({
 			board: 'OCR',
@@ -29,6 +31,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			specificationCode: 'J352'
 		})
 	]);
+	const settings = locals.user
+		? baseSettings
+		: anonymousProfileSettings(
+				baseSettings,
+				parseAnonymousLearnerProfileCookie(cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME))
+			);
 
 	return {
 		user: locals.user,

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { ArrowRight, LogIn } from '@lucide/svelte';
+	import { ArrowRight } from '@lucide/svelte';
+	import { authStartHref } from '$lib/authReturn';
+	import GoogleSignInButton from '$lib/components/GoogleSignInButton.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -18,7 +19,7 @@
 			<span class="brand-text"><span>Question</span><span>Constellation</span></span>
 		</div>
 		<h1>Sign in required</h1>
-		<p>Use an authorized Google account to access your learning memory.</p>
+		<p>Sign in to sync your learning and use answer checking.</p>
 		{#if data.devLoginEnabled}
 			<form class="auth-form" method="POST">
 				<input type="hidden" name="next" value={form?.next ?? data.next} />
@@ -33,9 +34,6 @@
 				</button>
 			</form>
 		{/if}
-		<a class="btn blue" href={resolve('/auth/start')}>
-			<LogIn size={20} />
-			Sign in with Google
-		</a>
+		<GoogleSignInButton href={authStartHref(data.next)} />
 	</section>
 </main>

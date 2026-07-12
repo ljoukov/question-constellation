@@ -5,6 +5,7 @@ import {
 	setAuthSessionIdCookie
 } from '$lib/server/auth/session';
 import { clientSideRedirect } from '$lib/server/http';
+import { safeAuthReturnPath } from '$lib/authReturn';
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
@@ -29,6 +30,7 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 	clearAdminSessionCookie(cookies);
 	clearDevAdminSessionCookie(cookies);
 	const continueUri = new URL('/auth/continue', url);
+	continueUri.searchParams.set('next', safeAuthReturnPath(url.searchParams.get('next')));
 	const authUri = await createGoogleAuthUri({
 		continueUri,
 		platformEnv: platform?.env

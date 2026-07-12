@@ -2,8 +2,10 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { authStartHref } from '$lib/authReturn';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
 	import EnglishGuidedPractice from '$lib/components/EnglishGuidedPractice.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
@@ -74,6 +76,8 @@
 	let gradeError = $state('');
 	let gradeResult = $state<GradeResult | null>(null);
 	let showHint = $state(false);
+	let authDialogOpen = $state(false);
+	let migratedAnonymousState = false;
 
 	const questionIndex = $derived(
 		data.questions.findIndex((question) => question.id === data.question.id)
@@ -179,8 +183,10 @@
 	const hasCheckedResult = $derived(Boolean(gradeResult && gradedAnswerText === answerText));
 	const showCheckedResult = $derived(requestedPracticeView === 'result' && hasCheckedResult);
 	const currentUserId = $derived(data.user?.uid ?? null);
+	const signInHref = $derived(authStartHref(`${page.url.pathname}${page.url.search}`));
 
 	const practiceStoragePrefix = 'question-constellation:science-practice:v1:';
+	const pendingGradeStorageKey = 'question-constellation:pending-model-check:v1';
 	let lastQueuedDraftSignature = '';
 
 	beforeNavigate(() => {
@@ -189,8 +195,13 @@
 	});
 
 	onMount(() => {
-		if (!currentUserId) return undefined;
-		return installPracticeDraftWindowFlush(currentUserId);
+		const cleanup = installPracticeDraftWindowFlush(currentUserId);
+		if (currentUserId && migratedAnonymousState) {
+			persistSciencePracticeState();
+			void flushPracticeDraftQueue(currentUserId);
+		}
+		if (consumePendingScienceGrade()) window.setTimeout(() => void checkAnswer(), 0);
+		return cleanup;
 	});
 
 	function responseFromOverlay(value: Record<string, unknown> | null | undefined) {
@@ -198,14 +209,17 @@
 		return value as ExamResponse;
 	}
 
-	function practiceStorageKey(questionId: string) {
-		return `${practiceStoragePrefix}${currentUserId ?? 'anonymous'}:${questionId}`;
+	function practiceStorageKey(questionId: string, identity = currentUserId ?? 'anonymous') {
+		return `${practiceStoragePrefix}${identity}:${questionId}`;
 	}
 
-	function loadStoredPracticeState(questionId: string): StoredPracticeState | null {
+	function loadStoredPracticeState(
+		questionId: string,
+		identity = currentUserId ?? 'anonymous'
+	): StoredPracticeState | null {
 		if (typeof window === 'undefined') return null;
 		try {
-			const raw = window.sessionStorage.getItem(practiceStorageKey(questionId));
+			const raw = window.sessionStorage.getItem(practiceStorageKey(questionId, identity));
 			return raw ? (JSON.parse(raw) as StoredPracticeState) : null;
 		} catch {
 			return null;
@@ -259,10 +273,16 @@
 
 	function initialPracticeState(questionId: string) {
 		const storedState = loadStoredPracticeState(questionId);
+		const anonymousState = currentUserId ? loadStoredPracticeState(questionId, 'anonymous') : null;
 		const draftState = scienceStateFromDraft(savedDraftCandidate(questionId));
-		if (!storedState) return draftState;
-		if (!draftState) return storedState;
-		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
+		const candidates = [storedState, anonymousState, draftState].filter(
+			(candidate): candidate is StoredPracticeState => Boolean(candidate)
+		);
+		const newest = candidates.sort(
+			(left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0)
+		)[0];
+		migratedAnonymousState = Boolean(currentUserId && anonymousState && newest === anonymousState);
+		return newest ?? null;
 	}
 
 	function scienceDraftPayload(overrides: Partial<StoredPracticeState> = {}) {
@@ -308,6 +328,49 @@
 		queuePracticeDraft(currentUserId, scienceDraft(data.question.id, overrides));
 	}
 
+	function openAuthDialog() {
+		persistSciencePracticeState();
+		authDialogOpen = true;
+	}
+
+	function prepareScienceAuthRedirect() {
+		if (typeof window === 'undefined') return;
+		persistSciencePracticeState();
+		window.sessionStorage.setItem(
+			pendingGradeStorageKey,
+			JSON.stringify({
+				kind: 'science',
+				questionId: data.question.id,
+				answer: answerText,
+				createdAt: Date.now()
+			})
+		);
+	}
+
+	function consumePendingScienceGrade() {
+		if (!currentUserId || typeof window === 'undefined') return false;
+		try {
+			const raw = window.sessionStorage.getItem(pendingGradeStorageKey);
+			if (!raw) return false;
+			const pending = JSON.parse(raw) as {
+				kind?: string;
+				questionId?: string;
+				answer?: string;
+				createdAt?: number;
+			};
+			const matches =
+				pending.kind === 'science' &&
+				pending.questionId === data.question.id &&
+				pending.answer === answerText &&
+				Date.now() - Number(pending.createdAt ?? 0) < 30 * 60 * 1000;
+			window.sessionStorage.removeItem(pendingGradeStorageKey);
+			return matches;
+		} catch {
+			window.sessionStorage.removeItem(pendingGradeStorageKey);
+			return false;
+		}
+	}
+
 	function applySciencePracticeState(storedState: StoredPracticeState | null) {
 		answerText = storedState?.answerText ?? '';
 		rewriteText = storedState?.rewriteText ?? '';
@@ -316,13 +379,15 @@
 		gradePhase = gradeResult ? 'done' : 'idle';
 		gradeError = '';
 		showHint = false;
-		lastQueuedDraftSignature = scienceDraftSignature({
-			answerText,
-			rewriteText,
-			gradedAnswerText,
-			gradeResult,
-			view: storedState?.view ?? requestedPracticeView
-		});
+		lastQueuedDraftSignature = migratedAnonymousState
+			? ''
+			: scienceDraftSignature({
+					answerText,
+					rewriteText,
+					gradedAnswerText,
+					gradeResult,
+					view: storedState?.view ?? requestedPracticeView
+				});
 	}
 
 	function updatePracticeView(view: PracticeRouteView, historyMode: 'push' | 'replace' = 'push') {
@@ -371,6 +436,10 @@
 	async function checkAnswer() {
 		if (!canCheck) return;
 		markSciencePracticeTouched();
+		if (!data.user) {
+			openAuthDialog();
+			return;
+		}
 
 		rewriteText = '';
 		gradedAnswerText = '';
@@ -389,6 +458,11 @@
 					body: JSON.stringify({ answer: answerText })
 				}
 			);
+			if (response.status === 401) {
+				gradePhase = 'idle';
+				openAuthDialog();
+				return;
+			}
 
 			if (!response.ok || !response.body) {
 				throw new Error(`Grading request failed with ${response.status}`);
@@ -801,4 +875,13 @@
 			</section>
 		</div>
 	</main>
+{/if}
+
+{#if !data.englishPractice}
+	<AuthRequiredDialog
+		open={authDialogOpen}
+		href={signInHref}
+		onDismiss={() => (authDialogOpen = false)}
+		onSignIn={prepareScienceAuthRedirect}
+	/>
 {/if}

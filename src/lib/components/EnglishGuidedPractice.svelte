@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
@@ -11,6 +13,7 @@
 	import type { ExamResponse } from '$lib/experiments/questions/types';
 	import { markLabel } from '$lib/marks';
 	import {
+		flushPracticeDraftQueue,
 		installPracticeDraftWindowFlush,
 		latestPracticeDraft,
 		queuePracticeDraft,
@@ -153,7 +156,10 @@
 	let gradeReasoningSummary = $state('');
 	let hintOpen = $state(false);
 	let feedbackPanel = $state<HTMLElement | null>(null);
+	let authDialogOpen = $state(false);
+	let migratedAnonymousState = false;
 	let lastQueuedDraftSignature = '';
+	const pendingGradeStorageKey = 'question-constellation:pending-model-check:v1';
 	const gradingProgressSteps = [
 		'Connecting',
 		'Loading guidance',
@@ -185,6 +191,7 @@
 	const hintItems = $derived(buildStepHints(activeStage));
 	const progressStepIndex = $derived(gradePhaseProgressIndex(gradePhase));
 	const visibleReasoningSummary = $derived(readableReasoningSummary(gradeReasoningSummary));
+	const signInHref = $derived(authStartHref(stepHref(activeStage)));
 	const metaChips = $derived(
 		uniqueLabels([
 			question.meta.board,
@@ -253,15 +260,24 @@
 		return unlocked;
 	}
 
-	function englishPracticeStorageKey(questionId: string, version = 'v3') {
-		return `question-constellation:english-practice:${version}:${userId ?? 'anonymous'}:${questionId}`;
+	function englishPracticeStorageKey(
+		questionId: string,
+		version = 'v3',
+		identity = userId ?? 'anonymous'
+	) {
+		return `question-constellation:english-practice:${version}:${identity}:${questionId}`;
 	}
 
-	function loadStoredEnglishPracticeState(questionId: string): StoredEnglishPracticeState | null {
+	function loadStoredEnglishPracticeState(
+		questionId: string,
+		identity = userId ?? 'anonymous'
+	): StoredEnglishPracticeState | null {
 		if (typeof window === 'undefined') return null;
 		for (const version of ['v3', 'v2', 'v1']) {
 			try {
-				const raw = window.sessionStorage.getItem(englishPracticeStorageKey(questionId, version));
+				const raw = window.sessionStorage.getItem(
+					englishPracticeStorageKey(questionId, version, identity)
+				);
 				if (raw) return JSON.parse(raw) as StoredEnglishPracticeState;
 			} catch {
 				// Try the older state before giving up.
@@ -332,12 +348,18 @@
 
 	function initialEnglishPracticeState(questionId: string) {
 		const storedState = loadStoredEnglishPracticeState(questionId);
+		const anonymousState = userId ? loadStoredEnglishPracticeState(questionId, 'anonymous') : null;
 		const draftState = englishStateFromDraft(
 			latestPracticeDraft(savedDraft, queuedPracticeDraftForQuestion(userId, questionId))
 		);
-		if (!storedState) return draftState;
-		if (!draftState) return storedState;
-		return (draftState.updatedAt ?? 0) >= (storedState.updatedAt ?? 0) ? draftState : storedState;
+		const candidates = [storedState, anonymousState, draftState].filter(
+			(candidate): candidate is StoredEnglishPracticeState => Boolean(candidate)
+		);
+		const newest = candidates.sort(
+			(left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0)
+		)[0];
+		migratedAnonymousState = Boolean(userId && anonymousState && newest === anonymousState);
+		return newest ?? null;
 	}
 
 	function draftPayload() {
@@ -361,6 +383,52 @@
 			payload: draftPayload(),
 			clientUpdatedAt: Date.now()
 		});
+	}
+
+	function openAuthDialog() {
+		persistState();
+		authDialogOpen = true;
+	}
+
+	function prepareAuthRedirect() {
+		if (typeof window === 'undefined' || !activeStage) return;
+		persistState();
+		window.sessionStorage.setItem(
+			pendingGradeStorageKey,
+			JSON.stringify({
+				kind: 'english-step',
+				questionId: practice.questionId,
+				stepId: activeStage.id,
+				answer: activeAnswer,
+				createdAt: Date.now()
+			})
+		);
+	}
+
+	function consumePendingGrade() {
+		if (!userId || typeof window === 'undefined' || !activeStage) return false;
+		try {
+			const raw = window.sessionStorage.getItem(pendingGradeStorageKey);
+			if (!raw) return false;
+			const pending = JSON.parse(raw) as {
+				kind?: string;
+				questionId?: string;
+				stepId?: string;
+				answer?: string;
+				createdAt?: number;
+			};
+			const matches =
+				pending.kind === 'english-step' &&
+				pending.questionId === practice.questionId &&
+				pending.stepId === activeStage.id &&
+				pending.answer?.trim() === activeAnswer &&
+				Date.now() - Number(pending.createdAt ?? 0) < 30 * 60 * 1000;
+			window.sessionStorage.removeItem(pendingGradeStorageKey);
+			return matches;
+		} catch {
+			window.sessionStorage.removeItem(pendingGradeStorageKey);
+			return false;
+		}
 	}
 
 	function invalidateFromStage(index: number) {
@@ -507,9 +575,7 @@
 					!/(?:JSON|output format|instructions?|system prompt)/i.test(sentence)
 			);
 		const latestSummary = safeSentences.slice(-2).join(' ');
-		return latestSummary.length > 420
-			? `${latestSummary.slice(0, 417).trimEnd()}…`
-			: latestSummary;
+		return latestSummary.length > 420 ? `${latestSummary.slice(0, 417).trimEnd()}…` : latestSummary;
 	}
 
 	function parseSseBlock(block: string): SseMessage | null {
@@ -573,6 +639,10 @@
 
 	async function checkActiveStep() {
 		if (!activeStage || !canCheck) return;
+		if (!user) {
+			openAuthDialog();
+			return;
+		}
 		gradeError = '';
 		gradeReasoningSummary = '';
 		gradePhase = 'connecting';
@@ -594,6 +664,11 @@
 					})
 				}
 			);
+			if (response.status === 401) {
+				gradePhase = 'idle';
+				openAuthDialog();
+				return;
+			}
 			if (!response.ok || !response.body) {
 				throw new Error(`Step check failed with ${response.status}`);
 			}
@@ -648,7 +723,9 @@
 		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
 		stepResults = storedState?.stepResults ?? {};
 		attemptHistory = storedState?.attemptHistory ?? [];
-		lastQueuedDraftSignature = JSON.stringify({ stepAnswers, stepResults, attemptHistory });
+		lastQueuedDraftSignature = migratedAnonymousState
+			? ''
+			: JSON.stringify({ stepAnswers, stepResults, attemptHistory });
 		hydrated = true;
 	});
 
@@ -660,7 +737,17 @@
 		}
 	});
 
-	onMount(() => installPracticeDraftWindowFlush(userId));
+	onMount(() => {
+		const cleanup = installPracticeDraftWindowFlush(userId);
+		if (userId && migratedAnonymousState) {
+			persistState();
+			void flushPracticeDraftQueue(userId);
+		}
+		if (consumePendingGrade()) {
+			window.setTimeout(() => void checkActiveStep(), 0);
+		}
+		return cleanup;
+	});
 </script>
 
 <svelte:head>
@@ -941,6 +1028,13 @@
 		</section>
 	</div>
 </main>
+
+<AuthRequiredDialog
+	open={authDialogOpen}
+	href={signInHref}
+	onDismiss={() => (authDialogOpen = false)}
+	onSignIn={prepareAuthRedirect}
+/>
 
 <style>
 	.qc-step-practice-app {

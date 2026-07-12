@@ -9,14 +9,10 @@ import { getRuntimeEnv } from '$lib/server/env';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
+import { safeAuthReturnPath } from '$lib/authReturn';
 
 function safeNext(value: FormDataEntryValue | string | null): string {
-	const raw = typeof value === 'string' ? value : null;
-	if (!raw || !raw.startsWith('/') || raw.startsWith('//')) {
-		return '/';
-	}
-
-	return raw;
+	return safeAuthReturnPath(typeof value === 'string' ? value : null);
 }
 
 export const load: PageServerLoad = async ({ cookies, url }) => {

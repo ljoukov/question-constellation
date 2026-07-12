@@ -73,6 +73,8 @@ function gradingRuntimeDiagnostics(platformEnv: unknown) {
 }
 
 export const POST: RequestHandler = async ({ locals, params, request, platform }) => {
+	if (!locals.user) return json({ error: 'authentication_required' }, { status: 401 });
+	const user = locals.user;
 	let questionId: string;
 	try {
 		questionId = paramsSchema.parse(params).questionId;
@@ -109,21 +111,19 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 				onDelta: (delta) => sendDelta(send, delta)
 			});
 			let savedAttempt = null;
-			if (locals.user) {
-				try {
-					savedAttempt = await recordQuestionAttempt({
-						user: locals.user,
-						questionId,
-						answer: body.answer,
-						result
-					});
-				} catch (error) {
-					console.warn('[question-grade] failed to save personal attempt', {
-						error,
-						questionId,
-						userId: locals.user.uid
-					});
-				}
+			try {
+				savedAttempt = await recordQuestionAttempt({
+					user,
+					questionId,
+					answer: body.answer,
+					result
+				});
+			} catch (error) {
+				console.warn('[question-grade] failed to save personal attempt', {
+					error,
+					questionId,
+					userId: user.uid
+				});
 			}
 
 			send({

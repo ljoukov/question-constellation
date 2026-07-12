@@ -45,7 +45,8 @@ function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: Engl
 	});
 }
 
-export const POST: RequestHandler = async ({ params, request, platform }) => {
+export const POST: RequestHandler = async ({ locals, params, request, platform }) => {
+	if (!locals.user) return json({ error: 'authentication_required' }, { status: 401 });
 	let questionId: string;
 	let body: z.infer<typeof requestSchema>;
 	try {

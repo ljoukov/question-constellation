@@ -44,7 +44,8 @@ function errorResponse(error: unknown, paperSlug: string, ref: string) {
 	};
 }
 
-export const POST: RequestHandler = async ({ params, request, platform }) => {
+export const POST: RequestHandler = async ({ locals, params, request, platform }) => {
+	if (!locals.user) return json({ error: 'authentication_required' }, { status: 401 });
 	const parsedParams = paramsSchema.safeParse(params);
 	if (!parsedParams.success) {
 		return json({ error: 'invalid_params', issues: parsedParams.error.issues }, { status: 400 });
@@ -103,9 +104,7 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
 			answers: body.answers,
 			platformEnv: platform?.env,
 			signal: request.signal,
-			includeDebugPrompt:
-				body.includeDebugPrompt === true &&
-				allowOverrides,
+			includeDebugPrompt: body.includeDebugPrompt === true && allowOverrides,
 			modelOverride: allowOverrides ? body.model : undefined,
 			thinkingLevelOverride: allowOverrides ? body.thinkingLevel : undefined
 		});

@@ -998,6 +998,29 @@ export async function getLearnerProfileSettings(user: AdminUser): Promise<Learne
 	};
 }
 
+export async function getDefaultLearnerProfileSettings(): Promise<LearnerProfileSettings> {
+	const boardAvailability = await getImportedQuestionBoardAvailability();
+	const profile: UserProfile = {
+		uid: 'anonymous',
+		email: '',
+		name: null,
+		photoUrl: null,
+		selectedBoard: 'AQA',
+		selectedQualification: 'GCSE',
+		selectedSubject: 'Biology',
+		selectedTier: 'Higher',
+		themePreference: 'auto'
+	};
+	return {
+		profile,
+		subjects: profileSubjects().map((subject) =>
+			defaultLearnerSubject(profile, subject, boardAvailability)
+		),
+		subjectOptions: profileSubjects(),
+		englishLiteratureSelections: emptyOcrEnglishLiteratureSelections()
+	};
+}
+
 function toDashboardGap(row: DashboardGapRow): DashboardGap {
 	const topic = topicLabel(row.topic_path_json, row.subject ?? 'GCSE science');
 	return {

@@ -8,9 +8,11 @@ import {
 	setAdminSessionCookie
 } from '$lib/server/auth/session';
 import { clientSideRedirect } from '$lib/server/http';
+import { safeAuthReturnPath } from '$lib/authReturn';
 import { error, type RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ url, cookies, platform }) => {
+	const next = safeAuthReturnPath(url.searchParams.get('next'));
 	const code = url.searchParams.get('code');
 	if (!code) {
 		throw error(400, 'Missing Google OAuth code.');
@@ -47,5 +49,5 @@ export const GET: RequestHandler = async ({ url, cookies, platform }) => {
 
 	clearAuthSessionIdCookie(cookies);
 	await setAdminSessionCookie(cookies, session, env.authCookieSecret);
-	return clientSideRedirect(new URL('/', url));
+	return clientSideRedirect(new URL(next, url));
 };

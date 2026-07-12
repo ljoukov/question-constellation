@@ -7,6 +7,7 @@
 	import { untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
+	import { saveAnonymousLearnerProfile } from '$lib/anonymousLearnerProfile';
 	import { ocrEnglishLiteratureOptions } from '$lib/englishLiteratureProfile';
 	import type { PageProps } from './$types';
 
@@ -75,13 +76,20 @@
 		saveStatus === 'saving'
 			? 'Saving profile...'
 			: saveStatus === 'saved'
-				? 'Profile saved'
+				? data.user
+					? 'Profile saved'
+					: 'Profile saved on this device'
 				: saveStatus === 'error'
 					? 'Could not save profile'
 					: 'Changes save automatically'
 	);
 
-	const enhanceProfile: SubmitFunction = ({ controller }) => {
+	const enhanceProfile: SubmitFunction = ({ controller, cancel }) => {
+		if (!data.user) {
+			cancel();
+			saveLocalProfile();
+			return;
+		}
 		activeSaveController?.abort();
 		activeSaveController = controller;
 		saveStatus = 'saving';
@@ -144,6 +152,15 @@
 
 	function queueAutosave() {
 		changeRevision += 1;
+		if (!data.user) {
+			saveStatus = 'saving';
+			if (autosaveTimer) clearTimeout(autosaveTimer);
+			autosaveTimer = setTimeout(() => {
+				autosaveTimer = null;
+				saveLocalProfile();
+			}, autosaveDelayMs);
+			return;
+		}
 		if (browser && !navigator.onLine) {
 			failAutosave(changeRevision, 'You are offline. Restored previous profile.');
 			return;
@@ -158,6 +175,23 @@
 			}
 			profileForm?.requestSubmit();
 		}, autosaveDelayMs);
+	}
+
+	function saveLocalProfile() {
+		saveAnonymousLearnerProfile({
+			subjects: cloneSubjects(subjects),
+			englishLiteratureSelections: {
+				board: 'OCR',
+				specificationCode: 'J352',
+				...cloneEnglishLiteratureSelections(englishLiteratureSelections)
+			}
+		});
+		lastSavedSubjects = cloneSubjects(subjects);
+		lastSavedEnglishLiteratureSelections = cloneEnglishLiteratureSelections(
+			englishLiteratureSelections
+		);
+		saveStatus = 'saved';
+		showSaveToast('Profile saved on this device', 'success');
 	}
 
 	function failAutosave(revision: number, message: string) {
