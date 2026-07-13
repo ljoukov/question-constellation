@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
@@ -9,9 +10,13 @@
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ChevronDown, ClipboardList, PenLine, TriangleAlert } from '@lucide/svelte';
+	import { slide } from 'svelte/transition';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	let markingPointsOpen = $state(false);
+	const markingPointsRevealDurationMs =
+		browser && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
 
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
@@ -86,23 +91,40 @@
 				<p><MathText text={data.question.modelAnswer} /></p>
 			</section>
 
-			<details class="qc-answer-panel qc-mark-details">
-				<summary>
+			<section
+				class="qc-answer-panel qc-mark-details"
+				class:is-open={markingPointsOpen}
+			>
+				<button
+					type="button"
+					class="qc-mark-details-toggle"
+					aria-expanded={markingPointsOpen}
+					aria-controls="marking-points-list"
+					onclick={() => (markingPointsOpen = !markingPointsOpen)}
+				>
 					<span class="qc-panel-label">Marking points</span>
 					<span class="qc-mark-details-action">
 						Show {data.question.checklist.length}
 						<ChevronDown size={17} strokeWidth={2} aria-hidden="true" />
 					</span>
-				</summary>
-				<ol class="qc-checklist">
-					{#each data.question.checklist as item, index (item.id)}
-						<li>
-							<span>{index + 1}</span>
-							<MathText text={item.text} />
-						</li>
-					{/each}
-				</ol>
-			</details>
+				</button>
+				{#if markingPointsOpen}
+					<div
+						id="marking-points-list"
+						class="qc-mark-details-content"
+						transition:slide={{ duration: markingPointsRevealDurationMs }}
+					>
+						<ol class="qc-checklist">
+							{#each data.question.checklist as item, index (item.id)}
+								<li>
+									<span>{index + 1}</span>
+									<MathText text={item.text} />
+								</li>
+							{/each}
+						</ol>
+					</div>
+				{/if}
+			</section>
 
 			{#if showWeakAnswer}
 				<section class="qc-warning-panel">
