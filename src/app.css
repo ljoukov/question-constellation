@@ -7343,6 +7343,10 @@ textarea::placeholder {
 	list-style: none;
 }
 
+.qc-mark-details:not([open]) {
+	gap: 0;
+}
+
 .qc-mark-details summary::-webkit-details-marker {
 	display: none;
 }
@@ -7370,6 +7374,10 @@ textarea::placeholder {
 .qc-mark-details[open] summary {
 	padding-bottom: 0.72rem;
 	border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.qc-mark-details .qc-checklist li:first-child {
+	border-top: 0;
 }
 
 .qc-weak-answer-copy {
