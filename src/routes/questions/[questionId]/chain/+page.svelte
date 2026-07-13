@@ -74,6 +74,7 @@
 				{#if data.chain.illustration}
 					<ChainIllustration
 						illustration={data.chain.illustration}
+						eager
 						showCaption={false}
 						expandable
 					/>
@@ -159,7 +160,7 @@
 				</div>
 
 				{#if data.chain.illustration}
-					<ChainIllustration illustration={data.chain.illustration} />
+					<ChainIllustration illustration={data.chain.illustration} eager />
 				{/if}
 
 				<section class="qc-answer-panel">

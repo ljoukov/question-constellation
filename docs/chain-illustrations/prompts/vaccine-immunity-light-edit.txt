@@ -1,0 +1,11 @@
+Use case: scientific-educational
+Asset type: exact light-mode counterpart for an in-app GCSE reasoning-chain illustration
+Input image: the supplied image is the sole edit target.
+Primary request: Convert ONLY the visual theme from dark mode to a refined light mode. Preserve the illustration as the same image, not a reinterpretation.
+Scene/backdrop: replace the deep navy atlas background with a warm off-white to very pale blue medical-atlas background and a subtle light-grey/cyan grid.
+Style/medium: preserve the luminous medical textbook cutaway and elegant scientific illustration style, accurate and accessible for GCSE.
+Composition/framing: preserve the exact 16:9 composition, central anatomical figure, four numbered callouts, arrows, crop, spacing, hierarchy, and all object positions.
+Color palette: use dark navy ink for typography and outlines, oxygen cyan/teal accents, natural skin and tissue colours, cool blue immune cells, and restrained red pathogen accents. Maintain excellent contrast on the light background.
+Text invariants: preserve every title, number, heading, microcopy line, and its spelling verbatim; do not rewrite, abbreviate, add, delete, or move text.
+Scientific invariants: preserve the injection/antigen scene, matching antibodies, memory cells, and rapid pathogen neutralisation exactly.
+Constraints: theme and lighting edit only; same subjects, causal sequence, labels, typography scale, equations if any, borders, arrows, and visual anchors. No new content, no removed content, no watermark, no logo, no decorative clutter. The dark and light versions must feel like exact theme variants of one illustration.

@@ -5,6 +5,7 @@ import { hasExplainedWeakAnswer, useIllustratedChainLayout } from './chainPresen
 const illustration: ChainIllustration = {
 	id: 'test-illustration',
 	src: '/images/chains/test.webp',
+	lightSrc: '/images/chains/test-light.webp',
 	alt: 'A four-step answer chain.',
 	caption: 'One → two → three → four.',
 	width: 1600,

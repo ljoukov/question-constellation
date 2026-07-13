@@ -1,9 +1,9 @@
 # Chain illustration selection
 
-Each selected chain was checked against its current published questions, mark-scheme rows,
-checklists and model answers before illustration. Two independent images were generated from the
-same prompt for each subject. The six compressed candidates remain in `candidates/`; the three
-selected assets and their R2 metadata are declared in `manifest.json`.
+For the original manual calibration set, each selected chain was checked against its current
+published questions, mark-scheme rows, checklists and model answers before illustration. Two
+independent images were generated from the same prompt for each subject. Those historical files
+remain in `candidates/`; new automated runs use the dark-generation/light-edit flow below.
 
 ## Selected chains
 
@@ -28,35 +28,50 @@ pnpm run generate:chain-illustrations -- --chain-id=<id> --publish
 ```
 
 `scripts/generate-chain-illustrations.mjs` reads final public evidence from D1, runs the semantic
-reuse gate, generates A and B concurrently from the same prompt, runs deterministic image checks
-and a fresh visual judge, including an explicit cross-panel consistency audit, then uploads only a
-passing winner to an immutable R2 key. Without `--publish`, it leaves the reviewed candidates and
-job record under `tmp/chain-illustrations/`.
+reuse gate, generates one dark illustration from scratch, then sends that exact image back to the
+image model as the input for a light-mode edit. It runs deterministic checks and a fresh visual
+judge over both images, including explicit cross-panel and cross-theme consistency audits, then
+uploads only a passing pair to immutable theme-specific R2 keys. Without `--publish`, it leaves the
+two reviewed variants and job record under `tmp/chain-illustrations/`.
 
-The production import accepts `--generate-chain-illustrations` only with `--import`. A single-paper
-run considers chains touched by that source document; a batch waits until every paper finishes and
-runs one deduplicated cohort. Image failure does not block the underlying question import unless
-`--require-chain-illustrations` is explicitly set.
+Every real production `--import` runs this phase automatically. A single-paper run considers chains
+touched by that source document; a batch suppresses the child passes, waits until every paper
+finishes, and runs one deduplicated cohort. `--generate-chain-illustrations` remains accepted as a
+compatibility flag, while `--skip-chain-illustrations` is the explicit opt-out. Image failure does
+not block the underlying question import unless `--require-chain-illustrations` is explicitly set.
 
-The first automation batch should remain capped at 20 mechanically eligible pre-candidates,
-processed as pairs only after the semantic gate accepts them. Rejections are not backfilled merely
-to hit a quota. Review the first 20 eventual winners as a calibration set before making publication
-unattended by default.
+Automatic batches remain capped at 20 mechanically eligible pre-candidates. Each accepted chain
+produces exactly one dark generation and one derived light edit; it does not generate independent
+alternatives or select a winner. Rejections are not backfilled merely to hit a quota. Continue to
+review the first 20 eventual theme pairs as a calibration set for the prompts and visual QA gates.
 
 ## Stable visual language
 
 - 16:9 landscape, generated at `2048x1152`, with iPad-safe margins and a legibility check at
   `1024x576`.
-- Deep navy scientific-atlas background, subtle grid, restrained luminous glow, accurate subject
-  cutaways, and minimal verbatim text.
+- Dark variant: deep navy scientific-atlas background, subtle grid, restrained luminous glow,
+  accurate subject cutaways, and minimal verbatim text.
+- Light variant: the same composition, objects, states, arrows and text, edited onto pale atlas
+  surfaces with dark typography and contrast-adjusted versions of the same semantic colours.
 - Two to four numbered panels in one clear direction. Never pad to four; never show a return loop.
-- Repeated objects and before/after states must remain internally consistent across every panel in
-  the same event.
+- Pass the three-second, text-hidden test: the pictures alone should recover the ordered mechanism
+  through objects, spatial direction, semantic colour and visible physical state changes.
+- Establish the shared system or subject once. Give every stage a different mechanism-specific
+  visual anchor; never repeat the same full transformer, body, apparatus, background or camera view
+  as the dominant picture in several boxes.
+- Prefer cutaways, motion, obstruction, heat, shape matching and concrete before/after outcomes over
+  generic gauges or decorative repetition. End at a recognisable consequence such as energy
+  reaching homes, a pathogen being neutralised or a material resisting deformation.
+- Repeated objects and before/after states must remain internally consistent, but continuity must
+  support the mechanism rather than become the main visual.
+- Use full GCSE terminology in learner-facing copy. Never emit opaque shorthand such as `p.d.`;
+  small correct equations may support an already visible link but must never replace it.
 - Route the atlas by subject and mechanism: biological/medical/cellular/ecology, molecular/materials/
   apparatus/energy, or electrical/mechanics/waves/nuclear/measurement.
 - No marketing composition, logo, watermark, exam-board branding, decorative legend, extra step,
   invented equation, or unsupported causal claim.
 
 Every accepted source step must be mapped exactly once to a visual panel and supported for every
-public member. The source fingerprint, exact prompts, both candidate hashes, hard checks, judge
-scores, and selection rationale are retained in the job artifact and D1 generation metadata.
+public member. The source fingerprint, exact dark-generation and light-edit prompts, both variant
+hashes, derivation link, hard checks, and visual/cross-theme judge scores are retained in the job
+artifact and D1 generation metadata.

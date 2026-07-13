@@ -1,0 +1,11 @@
+Use case: scientific-educational
+Asset type: exact light-mode counterpart for an in-app GCSE reasoning-chain illustration
+Input image: the supplied image is the sole edit target.
+Primary request: Convert ONLY the visual theme from dark mode to a refined light mode. Preserve the illustration as the same image, not a reinterpretation.
+Scene/backdrop: replace the deep navy power-grid atlas background with a warm off-white to very pale blue technical-atlas background and a subtle light-grey/cyan grid. Keep the power station, landscape, pylons and homes fully legible.
+Style/medium: preserve the luminous scientific engineering cutaway style, realistic transformer and cable textures, and accessible GCSE textbook precision.
+Composition/framing: preserve the exact 16:9 composition: the single panoramic National Grid journey across the top and the four numbered causal stages across the bottom. Preserve crop, spacing, hierarchy, arrows, and every object position.
+Color palette: use dark navy ink for typography and outlines, electric cyan/teal for energy flow, copper cable and transformer coils, restrained amber/orange for heat, natural landscape/building colours, and green only for the final efficiency check. Maintain excellent contrast on the light background.
+Text invariants: preserve every title, number, heading, microcopy line, equation, subscript, and its spelling verbatim; do not rewrite, abbreviate, add, delete, or move text.
+Scientific invariants: preserve the transformer cutaway raising potential difference, reduced current in the cable with P = VI, reduced cable heating with P_loss = I²R, and the concrete endpoint of more energy reaching homes.
+Constraints: theme and lighting edit only; same subjects, causal sequence, labels, typography scale, equations, borders, arrows, and four distinct visual anchors. Never repeat the transformer across the stages. No gauges. No new content, no removed content, no watermark, no logo, no decorative clutter. The dark and light versions must feel like exact theme variants of one illustration.
