@@ -1,0 +1,35 @@
+Create a polished 16:9 landscape educational infographic for an iPad GCSE science app. Generate it from scratch; do not imitate or include any existing image.
+
+STYLE / MEDIUM
+Luminous electrical-engineering atlas mixed with elegant scientific illustration: accurate, cinematic, and accessible to a GCSE student. Deep navy technical-atlas backdrop with a very subtle grid; precision cutaways; glowing energy paths; restrained depth. Palette: dark navy, high-voltage cyan, electric blue, cable copper, heat-loss amber-red, and efficient-output green. High-end editorial finish, not a marketing poster.
+
+LEARNING OBJECTIVE
+Make this four-link causal chain easy to reconstruct from memory: a step-up transformer raises potential difference, which lowers current for the same transmitted power, reducing cable heating and increasing grid efficiency.
+
+COMPOSITION
+Wide 16:9 layout with generous margins. A single National Grid journey is the visual anchor: power station and step-up transformer, long transmission cables on pylons, then homes. Arrange exactly four numbered callout panels around that journey in a single left-to-right reading path. Connect only 1 → 2 → 3 → 4 with clear cyan arrows. Do not draw an arrow from 4 back to 1. Each panel must contain one dominant scientific visual and very little text.
+
+TITLE — render verbatim
+"WHY DOES THE GRID STEP UP VOLTAGE?"
+
+FOUR PANELS — render these labels verbatim, with the numbered labels large and readable
+1  "POTENTIAL DIFFERENCE UP"
+   "The transformer raises voltage"
+2  "CURRENT DOWN"
+   "The same power needs less current"
+3  "LESS CABLE HEATING"
+   "Less energy is wasted"
+4  "HIGHER EFFICIENCY"
+   "More energy reaches consumers"
+
+SCIENTIFIC VISUALS
+Panel 1: clear cutaway of a step-up transformer near a generator, with more turns on the output coil and a bright high-voltage transmission line; labels must not introduce additional text.
+Panel 2: the same transmitted power shown as a thinner, calmer cyan current flow in the cable. If equations appear at all, use only a small, correct "P = VI" as supporting notation, never as another step.
+Panel 3: a transmission-cable cross-section with very little amber heat escaping compared with a faint ghosted high-current alternative; the main message must be reduced resistive heating. If notation appears, use only a small, correct "P_loss = I²R".
+Panel 4: the energy path reaches a row of illuminated homes with a strong green efficiency cue and minimal wasted heat.
+
+TYPOGRAPHY
+Bold condensed sans-serif capitals for the title and panel headings; compact clean sans-serif for the one-line explanations. Strong hierarchy and excellent legibility at iPad size. Keep all text horizontal.
+
+HARD CONSTRAINTS
+Exactly four numbered steps. No fifth step, no legend, no extra captions, no logos, no decorative prose, no repeated numbers, no circular loop, no misspellings. The causal path must be immediately understandable even before reading the small lines. Do not imply that electricity travels faster, that power is increased, or that the transformer creates energy.

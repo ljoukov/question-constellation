@@ -40,6 +40,16 @@ Optional:
   --skip-d1-conflict-check
   --allow-shared-chain-updates
   --skip-r2-upload
+  --generate-chain-illustrations  run the evidence-gated 16:9 illustration phase after D1 import
+  --require-chain-illustrations   make illustration failure fail the paper import
+  --chain-illustration-max-chains=5
+  --chain-illustration-planner-model=gpt-5.6-sol
+  --chain-illustration-planner-thinking-level=max
+  --chain-illustration-judge-model=gpt-5.6-sol
+  --chain-illustration-judge-thinking-level=max
+  --chain-illustration-image-model=chatgpt-gpt-image-2
+  --chain-illustration-image-timeout-ms=7200000
+  --force-chain-illustrations     regenerate even when a primary illustration exists
   --allow-visible-source-mismatch
   --allow-unpublishable-source-drops
   --reuse-existing-extraction
@@ -89,6 +99,16 @@ const noImportCheck = hasArg('no-import-check');
 const importToD1 = hasArg('import');
 const checkExisting = !noImportCheck && !hasArg('skip-d1-conflict-check');
 const uploadR2Assets = importToD1 && !hasArg('skip-r2-upload');
+const generateChainIllustrations =
+	hasArg('generate-chain-illustrations') || hasArg('require-chain-illustrations');
+const requireChainIllustrations = hasArg('require-chain-illustrations');
+const chainIllustrationSummaryPath = path.join(workRoot, 'chain-illustrations', 'summary.json');
+
+if (generateChainIllustrations && (!importToD1 || noImportCheck)) {
+	throw new Error(
+		'--generate-chain-illustrations requires a real D1 import: use --import without --no-import-check.'
+	);
+}
 
 for (const filePath of [questionPaperPath, markSchemePath, ...supportingDocumentPaths]) {
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
@@ -114,7 +134,12 @@ const plan = {
 	solvabilityOutputPath: runCodexSolvability ? relative(solvabilityOutputPath) : null,
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
 	checkExisting,
-	uploadR2Assets
+	uploadR2Assets,
+	generateChainIllustrations,
+	requireChainIllustrations,
+	chainIllustrationSummaryPath: generateChainIllustrations
+		? relative(chainIllustrationSummaryPath)
+		: null
 };
 
 if (dryRun) {
@@ -166,6 +191,13 @@ try {
 			status: 'passed'
 		});
 	}
+	if (generateChainIllustrations) {
+		steps.push(
+			runOptionalInherited(chainIllustrationCommand(), 'answer-chain illustration generation', {
+				required: requireChainIllustrations
+			})
+		);
+	}
 	const summary = {
 		status: 'passed',
 		startedAt,
@@ -176,7 +208,8 @@ try {
 		solvabilitySummary: readJsonIfExists(solvabilitySummaryPath),
 		extractionSummary: readJsonIfExists(extractionSummaryPath),
 		extractionJudgeSummary: readJsonIfExists(extractionJudgeSummaryPath),
-		chainSummary: readJsonIfExists(chainSummaryPath)
+		chainSummary: readJsonIfExists(chainSummaryPath),
+		chainIllustrationSummary: readJsonIfExists(chainIllustrationSummaryPath)
 	};
 	writeJson(summaryPath, summary);
 	console.log(JSON.stringify({ ...summary, summary: relative(summaryPath) }, null, 2));
@@ -191,7 +224,8 @@ try {
 		extractionSummary: readJsonIfExists(extractionSummaryPath),
 		extractionJudgeSummary: readJsonIfExists(extractionJudgeSummaryPath),
 		chainSummary: readJsonIfExists(chainSummaryPath),
-		solvabilitySummary: readJsonIfExists(solvabilitySummaryPath)
+		solvabilitySummary: readJsonIfExists(solvabilitySummaryPath),
+		chainIllustrationSummary: readJsonIfExists(chainIllustrationSummaryPath)
 	};
 	writeJson(summaryPath, summary);
 	console.error(JSON.stringify({ ...summary, summary: relative(summaryPath) }, null, 2));
@@ -210,7 +244,8 @@ function plannedCommands() {
 					codexSolvabilityCommand(),
 					...(noImportCheck ? [] : [prepareImportReadyCommand()])
 				]
-			: [prepareImportReadyCommand({ includeLegacySolvability: runLegacySolvability })])
+			: [prepareImportReadyCommand({ includeLegacySolvability: runLegacySolvability })]),
+		...(generateChainIllustrations ? [chainIllustrationCommand()] : [])
 	].map((command) => command.map(String));
 }
 
@@ -284,6 +319,27 @@ function uploadAssetsCommand() {
 		`--referenced-baseline=${reconciledOutputPath}`,
 		`--source-document-id=${sourceDocumentId}`
 	];
+}
+
+function chainIllustrationCommand() {
+	const args = [
+		'scripts/generate-chain-illustrations.mjs',
+		`--source-document-id=${sourceDocumentId}`,
+		`--max-chains=${stringArg('chain-illustration-max-chains', '5')}`,
+		`--work-root=${path.join(workRoot, 'chain-illustrations')}`,
+		`--planner-model=${stringArg('chain-illustration-planner-model', 'gpt-5.6-sol')}`,
+		`--planner-thinking-level=${stringArg('chain-illustration-planner-thinking-level', 'max')}`,
+		`--judge-model=${stringArg('chain-illustration-judge-model', 'gpt-5.6-sol')}`,
+		`--judge-thinking-level=${stringArg('chain-illustration-judge-thinking-level', 'max')}`,
+		`--image-model=${stringArg('chain-illustration-image-model', 'chatgpt-gpt-image-2')}`,
+		`--image-timeout-ms=${stringArg('chain-illustration-image-timeout-ms', stringArg('timeout-ms', '7200000'))}`,
+		`--timeout-ms=${stringArg('chain-illustration-timeout-ms', stringArg('timeout-ms', '7200000'))}`,
+		'--publish'
+	];
+	if (requireChainIllustrations) args.push('--require');
+	args.push('--replace-work-root');
+	if (hasArg('force-chain-illustrations')) args.push('--include-existing');
+	return args;
 }
 
 function codexSolvabilityCommand() {
@@ -574,6 +630,19 @@ function runInherited(args, label) {
 		throw new Error(`${label} failed with exit code ${result.status ?? result.signal}.`);
 	}
 	return { label, status: 'passed' };
+}
+
+function runOptionalInherited(args, label, { required = false } = {}) {
+	try {
+		return runInherited(args, label);
+	} catch (error) {
+		if (required) throw error;
+		return {
+			label,
+			status: 'failed-optional',
+			error: error instanceof Error ? error.message : String(error)
+		};
+	}
 }
 
 function runJson(args, label) {

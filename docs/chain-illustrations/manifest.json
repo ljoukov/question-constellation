@@ -1,0 +1,63 @@
+{
+	"version": 1,
+	"styleKey": "luminous-scientific-atlas-v1",
+	"illustrations": [
+		{
+			"id": "chain-illustration-vaccine-immunity-v1",
+			"answerChainId": "bio-chain-vaccine-antigen-antibodies-memory-immunity",
+			"sourceQuestionId": "8464b1h-jun24-03-3",
+			"localPath": "docs/chain-illustrations/candidates/vaccine-immunity-b.webp",
+			"promptPath": "docs/chain-illustrations/prompts/vaccine-immunity.txt",
+			"r2Key": "images/chains/vaccine-immunity-v1.webp",
+			"publicPath": "/images/chains/vaccine-immunity-v1.webp",
+			"altText": "Four-step luminous diagram showing a harmless vaccine antigen, specific antibodies, memory cells and a faster response on later exposure.",
+			"caption": "Harmless antigen → specific antibodies → memory cells → faster response.",
+			"width": 1672,
+			"height": 941,
+			"selectedCandidate": "docs/chain-illustrations/candidates/vaccine-immunity-b.webp",
+			"candidates": [
+				"docs/chain-illustrations/candidates/vaccine-immunity-a.webp",
+				"docs/chain-illustrations/candidates/vaccine-immunity-b.webp"
+			],
+			"selectionRationale": "Candidate B makes the injection, one-way 1-to-4 path and rapid later neutralisation clearest while keeping every label correct."
+		},
+		{
+			"id": "chain-illustration-alloy-hardness-v1",
+			"answerChainId": "chem-chain-alloy-hardness-distorted-layers",
+			"sourceQuestionId": "8464c1h-jun22-05-3",
+			"localPath": "docs/chain-illustrations/candidates/alloy-hardness-a.webp",
+			"promptPath": "docs/chain-illustrations/prompts/alloy-hardness.txt",
+			"r2Key": "images/chains/alloy-hardness-v1.webp",
+			"publicPath": "/images/chains/alloy-hardness-v1.webp",
+			"altText": "Four-step luminous materials diagram showing different-sized atoms, distorted metal layers, blocked layer sliding and a harder alloy.",
+			"caption": "Different-sized atoms → distorted layers → less sliding → harder alloy.",
+			"width": 1672,
+			"height": 941,
+			"selectedCandidate": "docs/chain-illustrations/candidates/alloy-hardness-a.webp",
+			"candidates": [
+				"docs/chain-illustrations/candidates/alloy-hardness-a.webp",
+				"docs/chain-illustrations/candidates/alloy-hardness-b.webp"
+			],
+			"selectionRationale": "Candidate A shows the atomic obstruction and the undented hardness test most directly, without adding an extra text label."
+		},
+		{
+			"id": "chain-illustration-step-up-grid-v1",
+			"answerChainId": "physics-chain-grid-transformer-efficiency",
+			"sourceQuestionId": "aqa-8464p1h-qp-jun22-01.4",
+			"localPath": "docs/chain-illustrations/candidates/step-up-grid-b.webp",
+			"promptPath": "docs/chain-illustrations/prompts/step-up-grid.txt",
+			"r2Key": "images/chains/step-up-grid-v1.webp",
+			"publicPath": "/images/chains/step-up-grid-v1.webp",
+			"altText": "Four-step luminous engineering diagram showing stepped-up potential difference, lower current, less cable heating and higher grid efficiency.",
+			"caption": "Potential difference up → current down → less cable heating → higher efficiency.",
+			"width": 1672,
+			"height": 941,
+			"selectedCandidate": "docs/chain-illustrations/candidates/step-up-grid-b.webp",
+			"candidates": [
+				"docs/chain-illustrations/candidates/step-up-grid-a.webp",
+				"docs/chain-illustrations/candidates/step-up-grid-b.webp"
+			],
+			"selectionRationale": "Candidate B has the cleanest left-to-right grid journey, transformer cutaway and reduced-heating comparison at iPad size."
+		}
+	]
+}

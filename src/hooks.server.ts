@@ -57,7 +57,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (!dev && event.platform?.env.ANALYTICS_DB) {
 		event.locals.analyticsDb = event.platform.env.ANALYTICS_DB.withSession('first-primary');
 	}
-	if (event.platform?.env.QUESTION_R2) {
+	if (!dev && event.platform?.env.QUESTION_R2) {
 		setQuestionR2(event.platform.env.QUESTION_R2);
 	}
 

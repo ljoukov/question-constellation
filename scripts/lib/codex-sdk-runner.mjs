@@ -39,7 +39,10 @@ export async function runCodexSdkTurn({
 	timeoutMs = 3_600_000,
 	networkAccessEnabled = false,
 	webSearchMode = 'disabled',
-	additionalDirectories = []
+	additionalDirectories = [],
+	outputSchema,
+	sandboxMode = 'workspace-write',
+	environmentMode = 'inherited'
 }) {
 	mkdirSync(workDir, { recursive: true });
 	mkdirSync(path.dirname(eventsPath), { recursive: true });
@@ -58,11 +61,11 @@ export async function runCodexSdkTurn({
 	let failedError = null;
 	try {
 		const apiKey = codexApiKey();
-		const codex = new Codex(codexOptions(apiKey));
+		const codex = new Codex(codexOptions(apiKey, environmentMode));
 		const thread = codex.startThread({
 			model,
 			modelReasoningEffort: thinkingLevel,
-			sandboxMode: 'workspace-write',
+			sandboxMode,
 			approvalPolicy: 'never',
 			workingDirectory: workDir,
 			skipGitRepoCheck: true,
@@ -70,7 +73,10 @@ export async function runCodexSdkTurn({
 			webSearchMode,
 			additionalDirectories
 		});
-		const streamed = await thread.runStreamed(prompt, { signal: controller.signal });
+		const streamed = await thread.runStreamed(prompt, {
+			signal: controller.signal,
+			...(outputSchema ? { outputSchema } : {})
+		});
 		for await (const event of streamed.events) {
 			events.push(event);
 			writeFileSync(eventsPath, `${JSON.stringify(event)}\n`, { flag: 'a' });
@@ -113,12 +119,45 @@ function codexApiKey() {
 	return useOpenAiKey ? (process.env.OPENAI_API_KEY ?? undefined) : undefined;
 }
 
-function codexOptions(apiKey) {
-	if (!apiKey) return { env: codexSubscriptionEnvironment() };
+function codexOptions(apiKey, environmentMode) {
+	if (!apiKey) {
+		return {
+			env:
+				environmentMode === 'minimal'
+					? codexMinimalSubscriptionEnvironment()
+					: codexSubscriptionEnvironment()
+		};
+	}
 	return {
 		apiKey,
 		env: codexEnvironment(apiKey)
 	};
+}
+
+function codexMinimalSubscriptionEnvironment() {
+	const allowedNames = [
+		'PATH',
+		'HOME',
+		'SHELL',
+		'USER',
+		'LOGNAME',
+		'TMPDIR',
+		'TEMP',
+		'TMP',
+		'LANG',
+		'LC_ALL',
+		'HTTP_PROXY',
+		'HTTPS_PROXY',
+		'NO_PROXY',
+		'CODEX_HOME',
+		'CHATGPT_CODEX_PROXY_URL',
+		'CHATGPT_CODEX_PROXY_API_KEY'
+	];
+	const env = {};
+	for (const name of allowedNames) {
+		if (process.env[name] !== undefined) env[name] = process.env[name];
+	}
+	return env;
 }
 
 function codexSubscriptionEnvironment() {

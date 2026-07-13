@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit';
 import { getQuestionR2 } from './bindings';
 import { QUESTION_R2_BUCKET_NAME } from './cloudflareConfig';
 
-const R2_ROUTE_PREFIX = 'papers/';
+const R2_ROUTE_PREFIXES = ['papers/', 'chains/'];
 const R2_KEY_PREFIX = 'images/';
 
 function contentTypeForKey(key: string): string {
@@ -37,7 +37,11 @@ function getLocalR2Config() {
 }
 
 export function getR2ObjectKey(routeKey: string | undefined): string {
-	if (!routeKey || !routeKey.startsWith(R2_ROUTE_PREFIX) || routeKey.includes('..')) {
+	if (
+		!routeKey ||
+		!R2_ROUTE_PREFIXES.some((prefix) => routeKey.startsWith(prefix)) ||
+		routeKey.includes('..')
+	) {
 		throw error(404, 'Image not found.');
 	}
 

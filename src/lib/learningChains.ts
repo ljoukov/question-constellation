@@ -1,3 +1,5 @@
+import type { ChainIllustration } from '$lib/chains/chainIllustration';
+
 export type ChainQuestionLabel =
 	| 'Start here'
 	| 'Similar'
@@ -32,6 +34,7 @@ export type LearningChain = {
 	weakLink: string;
 	primaryRef: string;
 	accent: 'green' | 'blue' | 'amber';
+	illustration: ChainIllustration | null;
 	questions: ChainQuestionTeaser[];
 };
 
@@ -54,6 +57,7 @@ export const learningChains: LearningChain[] = [
 		weakLink: 'Students often jump from temperature to pressure without explaining collisions.',
 		primaryRef: '03.3',
 		accent: 'green',
+		illustration: null,
 		questions: [
 			{
 				ref: '03.1',
@@ -99,6 +103,7 @@ export const learningChains: LearningChain[] = [
 		weakLink: 'Students mention half-life but do not count how many half-lives have passed.',
 		primaryRef: '04.4',
 		accent: 'amber',
+		illustration: null,
 		questions: [
 			{
 				ref: '04.4',
@@ -136,6 +141,7 @@ export const learningChains: LearningChain[] = [
 		weakLink: 'Students name the component but miss how the circuit quantities change.',
 		primaryRef: '06.2',
 		accent: 'blue',
+		illustration: null,
 		questions: [
 			{
 				ref: '06.2',

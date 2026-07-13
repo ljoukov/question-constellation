@@ -2864,6 +2864,48 @@ CREATE INDEX idx_extraction_issues_open
 
 ## Import Workflow
 
+### Optional Post-Publication Chain Illustrations
+
+Illustration generation is a separate, D1-backed phase after question and chain publication. Keep
+the extraction candidate, answer-chain reconciliation schemas, and `run-codex-answer-chains.mjs`
+text-only. An illustration is derived from the final public chain plus the evidence for every public
+member; it is not part of the source-paper extraction.
+
+Use `pnpm run generate:chain-illustrations` directly, or pass
+`--generate-chain-illustrations --import` to the Codex production import. The batch importer runs
+this phase once after its paper cohort completes so shared chains are deduplicated. Illustration
+failure is non-blocking by default; `--require-chain-illustrations` makes it fail the import.
+
+The automatic phase must fail closed at each gate:
+
+1. Prefilter to clean published Biology, Chemistry, or Physics chains with two to five ordered
+   steps, at least two clean questions from two source papers, chain and membership confidence of
+   at least `0.85`, and complete clean mark/model/checklist artifacts.
+2. Have an evidence reviewer map every stored source step for every public member to either an exact
+   prompt-given excerpt or an existing mark-scheme row. Reject missing steps, different endpoints,
+   branches, question-specific links, dangling evidence references, recall-only groups, and
+   level-of-response questions. Multiple papers alone never prove semantic reuse.
+3. Reduce the accepted chain to two to four visual panels without padding. Chains of at most four
+   steps map one-to-one. A five-step chain may merge one adjacent pair only when both scoring ideas
+   remain explicit and every source step still appears exactly once in order.
+4. Generate two independent `2048x1152` WebP candidates from the identical prompt and without a
+   reference image. Use the subject/subdomain version of the luminous scientific-atlas style, a deep
+   navy grid, minimal verbatim labels, one unambiguous path, and iPad-safe margins.
+5. Reject files that do not decode, are below `1536x864`, or fall outside a 1.5% tolerance around
+   `16:9`. A fresh-context visual judge then checks scientific accuracy, evidence fidelity, exact
+   labels and numbers, cross-panel consistency for every repeated state, sequence clarity, 1024x576
+   legibility, and the absence of extra claims, loops, panels, logos, or watermarks. Publish neither
+   candidate unless it scores at least `18/20` with full correctness, evidence, and text scores.
+6. Hash the chain, ordered steps, public memberships, prompts, mark rows, models, and checklists.
+   Recheck that fingerprint after generation. Upload only the winner to an immutable R2 key, verify
+   the uploaded bytes, and only then promote its `answer_chain_illustrations` row. A changed source
+   fingerprint must be regenerated rather than silently reusing stale art.
+
+The stable reusable prompt and validation logic live in
+`scripts/lib/chain-illustration-pipeline.mjs`. Generation uses the subscription-backed
+`chatgpt-gpt-image-2` path in the outer Node process; Codex is used for evidence planning and
+independent visual QA. No image-generation secret belongs in the Worker runtime.
+
 ### Corpus-Level Curriculum Notices
 
 Curriculum changes that only become clear by comparing papers across years do not belong in a

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import ChainQuestionList from '$lib/chains/ChainQuestionList.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
@@ -49,6 +50,10 @@
 				<p class="qc-real-kicker"><MathText text={chain.topic} /></p>
 				<h2>Questions using this method</h2>
 			</div>
+
+			{#if chain.illustration}
+				<ChainIllustration illustration={chain.illustration} eager />
+			{/if}
 
 			<ChainQuestionList {chain} />
 		</section>

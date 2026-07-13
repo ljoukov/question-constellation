@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
@@ -84,6 +85,10 @@
 				</div>
 				<a class="qc-real-link-button" href={currentPracticeHref}>Practise this question</a>
 			</div>
+
+			{#if data.chain.illustration}
+				<ChainIllustration illustration={data.chain.illustration} />
+			{/if}
 
 			<section class="qc-answer-panel">
 				<p class="qc-panel-label">Model answer</p>

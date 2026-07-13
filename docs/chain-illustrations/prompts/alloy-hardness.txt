@@ -1,0 +1,35 @@
+Create a polished 16:9 landscape educational infographic for an iPad GCSE science app. Generate it from scratch; do not imitate or include any existing image.
+
+STYLE / MEDIUM
+Luminous materials-science atlas mixed with elegant scientific illustration: accurate, tactile, cinematic, and accessible to a GCSE student. Deep navy technical-atlas backdrop with a very subtle grid; glowing atomic structures; crisp cutaway detail; restrained depth. Palette: dark navy, copper-orange metal atoms, cool cyan lattice lines, zinc-white contrasting atoms, and amber stress highlights. High-end editorial finish, not a marketing poster.
+
+LEARNING OBJECTIVE
+Make this transferable four-link mechanism easy to reconstruct from memory: different-sized atoms distort regular metal layers, so the layers slide less easily and the alloy is harder.
+
+COMPOSITION
+Wide 16:9 layout with generous margins. A large central atomic lattice is the visual anchor, evolving from regular layers on the left into an alloy lattice with different-sized atoms on the right. Arrange exactly four numbered callout panels around it in a single clockwise reading path: 1 upper-left, 2 upper-right, 3 lower-right, 4 lower-left. Connect only 1 → 2 → 3 → 4 with clear cyan arrows. Do not draw an arrow from 4 back to 1. Each panel must contain one dominant scientific visual and very little text.
+
+TITLE — render verbatim
+"WHY ARE ALLOYS HARDER?"
+
+FOUR PANELS — render these labels verbatim, with the numbered labels large and readable
+1  "DIFFERENT-SIZED ATOMS"
+   "An alloy mixes atom sizes"
+2  "LAYERS DISTORT"
+   "The regular rows are disrupted"
+3  "LAYERS CAN'T SLIDE"
+   "The atoms block movement"
+4  "ALLOY IS HARDER"
+   "More force is needed to deform it"
+
+SCIENTIFIC VISUALS
+Panel 1: close-up of a regular metallic lattice containing a few visibly larger and smaller atoms; do not show molecules or ionic bonds.
+Panel 2: those different-sized atoms locally bend and disrupt otherwise ordered atomic layers.
+Panel 3: a shear force arrow tries to move one layer, but the mismatched atoms physically obstruct the slip; make the blocked motion unmistakable.
+Panel 4: a clean metal sample resisting a press or indentation, with minimal deformation; connect the macroscopic hardness back to the locked atomic layers.
+
+TYPOGRAPHY
+Bold condensed sans-serif capitals for the title and panel headings; compact clean sans-serif for the one-line explanations. Strong hierarchy and excellent legibility at iPad size. Keep all text horizontal.
+
+HARD CONSTRAINTS
+Exactly four numbered steps. No fifth step, no legend, no extra captions, no logos, no decorative prose, no repeated numbers, no circular loop, no misspellings. The causal path must be immediately understandable even before reading the small lines. Do not suggest that individual atoms become stronger; hardness comes from inhibited layer sliding.

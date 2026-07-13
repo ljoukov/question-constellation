@@ -1,9 +1,11 @@
 import { getRequestEvent } from '$app/server';
+import type { ChainIllustration } from '$lib/chains/chainIllustration';
 import {
 	getVersionedPublicRoutePayload,
 	putPublicRoutePayload
 } from '$lib/server/publicRoutePayloads';
 import { gcsePastPaperData } from '$lib/pastPapers/gcsePastPapers';
+import { getPublishedChainIllustration } from './chainIllustrations';
 import { queryFirst, queryRows } from './db';
 
 const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v3';
@@ -113,6 +115,7 @@ export type AnswerChain = {
 	steps: ChainStep[];
 	commonMissingLink: string;
 	modelAnswer: string;
+	illustration: ChainIllustration | null;
 };
 
 export type Constellation = {
@@ -630,7 +633,11 @@ async function getChainSteps(chainId: string): Promise<ChainStep[]> {
 	}));
 }
 
-function buildAnswerChain(row: ChainRow, steps: ChainStep[]): AnswerChain {
+function buildAnswerChain(
+	row: ChainRow,
+	steps: ChainStep[],
+	illustration: ChainIllustration | null
+): AnswerChain {
 	const commonMissingLink =
 		steps.find((step) => step.commonOmission)?.commonOmission ??
 		'Students often name the topic but miss one of the middle reasoning steps.';
@@ -646,7 +653,8 @@ function buildAnswerChain(row: ChainRow, steps: ChainStep[]): AnswerChain {
 			`Use this method when a ${row.subject_area ?? 'science'} question asks for the same ordered reasoning steps.`,
 		steps,
 		commonMissingLink,
-		modelAnswer: steps.map((step) => step.short).join(' -> ')
+		modelAnswer: steps.map((step) => step.short).join(' -> '),
+		illustration
 	};
 }
 
@@ -661,7 +669,11 @@ async function getChain(chainId: string): Promise<AnswerChain> {
 	);
 	if (!row) throw new Error(`Method not found: ${chainId}`);
 
-	return buildAnswerChain(row, await getChainSteps(row.id));
+	const [steps, illustration] = await Promise.all([
+		getChainSteps(row.id),
+		getPublishedChainIllustration(row.id)
+	]);
+	return buildAnswerChain(row, steps, illustration);
 }
 
 function seedFromRow(row: QuestionChainSeedRow): QuestionChainSeed {
@@ -2292,7 +2304,8 @@ function buildEnglishDiagnosticChain(
 			weakAnswer.explanation ||
 			criteria[0]?.missing ||
 			'Answer the exact question before checking.',
-		modelAnswer
+		modelAnswer,
+		illustration: null
 	};
 }
 
@@ -2558,12 +2571,13 @@ async function getQuestionChainContext(
 	initialSeed?: QuestionChainSeed
 ): Promise<QuestionChainContext> {
 	const seed = initialSeed ?? (await getQuestionChainSeed(questionId));
-	const [steps, questionRows, constellationRow] = await Promise.all([
+	const [steps, questionRows, constellationRow, illustration] = await Promise.all([
 		getChainSteps(seed.chainRow.id),
 		getQuestionRowsForChain(seed.chainRow.id),
-		getConstellationRowForChain(seed.chainRow.id)
+		getConstellationRowForChain(seed.chainRow.id),
+		getPublishedChainIllustration(seed.chainRow.id)
 	]);
-	const chain = buildAnswerChain(seed.chainRow, steps);
+	const chain = buildAnswerChain(seed.chainRow, steps, illustration);
 	const supplements = await getQuestionSupplements(questionRows.map((row) => row.id));
 	const questions = hydrateQuestionsFromSupplements(questionRows, chain, supplements);
 	const question =

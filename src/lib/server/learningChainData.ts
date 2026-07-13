@@ -12,6 +12,7 @@ import {
 	type GcseCurriculumTopic
 } from '$lib/curriculum/gcseCurriculum';
 import { subjectSymbol } from '$lib/subjectSymbols.js';
+import { getPublishedChainIllustration } from './chainIllustrations';
 import { sourceDocumentSlug } from './questionExperimentData';
 import { queryRows } from './db';
 import { getPublicRoutePayload } from './publicRoutePayloads';
@@ -594,6 +595,7 @@ function buildLearningChain(
 			'Use each link in the chain before jumping to the final answer.',
 		primaryRef: firstQuestion.id,
 		accent: subjectAccent(subject),
+		illustration: null,
 		questions: sortedQuestions.map((question) => toQuestionTeaser(question, steps))
 	};
 }
@@ -982,7 +984,13 @@ export async function getExplorableLearningChain(chainId: string): Promise<Learn
 		fetchStepRowsForChain(row.id),
 		fetchQuestionRowsForChain(row.id)
 	]);
-	return buildLearningChain(row, steps, questions);
+	const chain = buildLearningChain(row, steps, questions);
+	if (!chain) return null;
+
+	return {
+		...chain,
+		illustration: await getPublishedChainIllustration(row.id)
+	};
 }
 
 export { getQuestionTeaser };

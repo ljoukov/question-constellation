@@ -1,0 +1,35 @@
+Create a polished 16:9 landscape educational infographic for an iPad GCSE science app. Generate it from scratch; do not imitate or include any existing image.
+
+STYLE / MEDIUM
+Luminous medical textbook cutaway mixed with elegant scientific illustration: accurate, memorable, cinematic, and accessible to a GCSE student. Deep navy medical-atlas backdrop with a very subtle grid; crisp glowing edges; restrained depth and detail; no photoreal gore. Palette: dark navy, immune cyan, antibody white-blue, vaccine teal, pathogen crimson, and small amber highlights. High-end editorial finish, not a marketing poster.
+
+LEARNING OBJECTIVE
+Make this four-link causal chain easy to reconstruct from memory: a harmless antigen triggers specific antibodies and memory cells, so later exposure produces a faster response.
+
+COMPOSITION
+Wide 16:9 layout with generous margins. One centered translucent upper-body medical figure acts as the visual anchor. Arrange exactly four numbered callout panels around the figure in a single clockwise reading path: 1 upper-left, 2 upper-right, 3 lower-right, 4 lower-left. Connect only 1 → 2 → 3 → 4 with clear cyan arrows. Do not draw an arrow from 4 back to 1. Each panel must contain one dominant scientific visual and very little text.
+
+TITLE — render verbatim
+"HOW DOES A VACCINE CREATE IMMUNITY?"
+
+FOUR PANELS — render these labels verbatim, with the numbered labels large and readable
+1  "HARMLESS ANTIGEN"
+   "Vaccine primes the immune system"
+2  "SPECIFIC ANTIBODIES"
+   "White blood cells make a match"
+3  "MEMORY CELLS REMAIN"
+   "Ready for the same pathogen"
+4  "FASTER RESPONSE NEXT TIME"
+   "Pathogen stopped before illness"
+
+SCIENTIFIC VISUALS
+Panel 1: a clean vaccine injection into the upper arm, with harmless antigen fragments entering; never show an intact dangerous disease being injected.
+Panel 2: one lymphocyte and clearly matching Y-shaped antibodies binding the same antigen shapes.
+Panel 3: a small persistent group of luminous memory cells, visually quieter and long-lived.
+Panel 4: later live pathogens being rapidly surrounded and neutralised by many matching antibodies before illness develops.
+
+TYPOGRAPHY
+Bold condensed sans-serif capitals for the title and panel headings; compact clean sans-serif for the one-line explanations. Strong hierarchy and excellent legibility at iPad size. Keep all text horizontal.
+
+HARD CONSTRAINTS
+Exactly four numbered steps. No fifth step, no legend, no extra captions, no logos, no decorative prose, no repeated numbers, no circular loop, no misspellings. The causal path must be immediately understandable even before reading the small lines. Keep anatomy and immune-cell depictions scientifically plausible but simplified.

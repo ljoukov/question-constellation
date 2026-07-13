@@ -1,6 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
+/** @typedef {string | number | boolean | null} D1Parameter */
+/** @typedef {{ rootDir?: string }} D1QueryOptions */
+/** @typedef {{ binding?: string, database_id?: string }} WranglerD1Database */
+/** @typedef {{ d1_databases?: WranglerD1Database[] }} WranglerConfig */
+
+/** @param {string} filePath */
 export function loadDotEnvFile(filePath) {
 	if (!existsSync(filePath)) return;
 	for (const line of readFileSync(filePath, 'utf8').split(/\r?\n/)) {
@@ -21,20 +27,26 @@ export function loadDotEnvFile(filePath) {
 	}
 }
 
+/**
+ * @param {string} [rootDir]
+ * @returns {WranglerConfig}
+ */
 export function readWranglerConfig(rootDir = process.cwd()) {
 	const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
 	if (!existsSync(wranglerPath)) return {};
 	const raw = readFileSync(wranglerPath, 'utf8')
 		.replace(/^\s*\/\/.*$/gm, '')
 		.replace(/\/\*[\s\S]*?\*\//g, '');
-	return JSON.parse(raw);
+	return /** @type {WranglerConfig} */ (JSON.parse(raw));
 }
 
+/** @param {string} [rootDir] */
 export function loadD1Env(rootDir = process.cwd()) {
 	loadDotEnvFile(path.join(rootDir, '.env'));
 	loadDotEnvFile(path.join(rootDir, '.env.local'));
 }
 
+/** @param {string} [rootDir] */
 export function d1Config(rootDir = process.cwd()) {
 	loadD1Env(rootDir);
 	const wranglerConfig = readWranglerConfig(rootDir);
@@ -49,6 +61,15 @@ export function d1Config(rootDir = process.cwd()) {
 	return { accountId, apiToken, databaseId };
 }
 
+/**
+ * D1 responses are generic because each caller supplies a different SELECT shape.
+ *
+ * @template [Row=any]
+ * @param {string} sql
+ * @param {D1Parameter[]} [params]
+ * @param {D1QueryOptions} [options]
+ * @returns {Promise<{ results: Row[], meta: unknown }>}
+ */
 export async function d1Query(sql, params = [], { rootDir = process.cwd() } = {}) {
 	const { accountId, apiToken, databaseId } = d1Config(rootDir);
 	const response = await fetch(
@@ -77,6 +98,13 @@ export async function d1Query(sql, params = [], { rootDir = process.cwd() } = {}
 	};
 }
 
+/**
+ * @template [Row=any]
+ * @param {string} sql
+ * @param {D1Parameter[]} [params]
+ * @param {D1QueryOptions} [options]
+ * @returns {Promise<Row[]>}
+ */
 export async function d1Rows(sql, params = [], options = {}) {
 	return (await d1Query(sql, params, options)).results;
 }

@@ -82,7 +82,8 @@ const practiceData: PracticePageData = {
 			}
 		],
 		commonMissingLink: 'current',
-		modelAnswer: ''
+		modelAnswer: '',
+		illustration: null
 	},
 	constellation: {
 		id: 'transformer-efficiency',
