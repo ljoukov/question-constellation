@@ -53,42 +53,79 @@ async function normalizeIllustration(entry, manifest) {
 	const id = requiredString(entry.id, 'illustration.id');
 	const answerChainId = requiredString(entry.answerChainId, `${id}.answerChainId`);
 	const sourceQuestionId = requiredString(entry.sourceQuestionId, `${id}.sourceQuestionId`);
-	const localPath = resolveProjectPath(entry.localPath, `${id}.localPath`);
-	const promptPath = resolveProjectPath(entry.promptPath, `${id}.promptPath`);
-	const r2Key = requiredString(entry.r2Key, `${id}.r2Key`);
-	const publicPath = requiredString(entry.publicPath, `${id}.publicPath`);
-	const expectedPublicPath = `/images/${r2Key.replace(/^images\//, '')}`;
-	if (!r2Key.startsWith('images/chains/') || !r2Key.endsWith('.webp')) {
-		throw new Error(`${id}.r2Key must be a WebP key under images/chains/.`);
+	const darkLocalPath = resolveProjectPath(entry.localPath, `${id}.localPath`);
+	const lightLocalPath = resolveProjectPath(entry.lightLocalPath, `${id}.lightLocalPath`);
+	const darkPromptPath = resolveProjectPath(entry.promptPath, `${id}.promptPath`);
+	const lightPromptPath = resolveProjectPath(entry.lightPromptPath, `${id}.lightPromptPath`);
+	const darkR2Key = requiredString(entry.r2Key, `${id}.r2Key`);
+	const lightR2Key = requiredString(entry.lightR2Key, `${id}.lightR2Key`);
+	const darkPublicPath = requiredString(entry.publicPath, `${id}.publicPath`);
+	const lightPublicPath = requiredString(entry.lightPublicPath, `${id}.lightPublicPath`);
+	for (const [theme, r2Key, publicPath] of [
+		['dark', darkR2Key, darkPublicPath],
+		['light', lightR2Key, lightPublicPath]
+	]) {
+		const expectedPublicPath = `/images/${r2Key.replace(/^images\//, '')}`;
+		if (!r2Key.startsWith('images/chains/') || !r2Key.endsWith('.webp')) {
+			throw new Error(`${id}.${theme}R2Key must be a WebP key under images/chains/.`);
+		}
+		if (publicPath !== expectedPublicPath) {
+			throw new Error(`${id}.${theme}PublicPath must be ${expectedPublicPath}.`);
+		}
 	}
-	if (publicPath !== expectedPublicPath) {
-		throw new Error(`${id}.publicPath must be ${expectedPublicPath}.`);
-	}
-	const hardCheck = await hardImageCheck(localPath, { rootDir });
-	if (hardCheck.status !== 'passed') {
-		throw new Error(`${id} failed image checks: ${hardCheck.issues.join(' ')}`);
-	}
-	if (hardCheck.width !== entry.width || hardCheck.height !== entry.height) {
-		throw new Error(
-			`${id} dimensions are ${hardCheck.width}x${hardCheck.height}, not ${entry.width}x${entry.height}.`
-		);
+	const [darkCheck, lightCheck] = await Promise.all(
+		[darkLocalPath, lightLocalPath].map((localPath) => hardImageCheck(localPath, { rootDir }))
+	);
+	for (const [theme, hardCheck, expectedSha256] of [
+		['dark', darkCheck, entry.assetSha256],
+		['light', lightCheck, entry.lightAssetSha256]
+	]) {
+		if (hardCheck.status !== 'passed') {
+			throw new Error(`${id} ${theme} failed image checks: ${hardCheck.issues.join(' ')}`);
+		}
+		if (hardCheck.width !== entry.width || hardCheck.height !== entry.height) {
+			throw new Error(
+				`${id} ${theme} dimensions are ${hardCheck.width}x${hardCheck.height}, not ${entry.width}x${entry.height}.`
+			);
+		}
+		if (expectedSha256 && hardCheck.sha256 !== expectedSha256) {
+			throw new Error(`${id} ${theme} SHA-256 does not match the manifest.`);
+		}
 	}
 	return {
 		id,
 		answerChainId,
 		sourceQuestionId,
-		localPath,
-		promptText: readFileSync(promptPath, 'utf8').trim(),
-		r2Key,
-		publicPath,
 		altText: requiredString(entry.altText, `${id}.altText`),
 		caption: requiredString(entry.caption, `${id}.caption`),
-		width: hardCheck.width,
-		height: hardCheck.height,
 		styleKey: requiredString(manifest.styleKey, 'manifest.styleKey'),
+		generationModel: entry.lightGenerationModel ?? 'codex-imagegen',
+		dark: {
+			localPath: darkLocalPath,
+			promptText: readFileSync(darkPromptPath, 'utf8').trim(),
+			r2Key: darkR2Key,
+			publicPath: darkPublicPath,
+			width: darkCheck.width,
+			height: darkCheck.height,
+			assetSha256: darkCheck.sha256
+		},
+		light: {
+			localPath: lightLocalPath,
+			promptText: readFileSync(lightPromptPath, 'utf8').trim(),
+			r2Key: lightR2Key,
+			publicPath: lightPublicPath,
+			width: lightCheck.width,
+			height: lightCheck.height,
+			assetSha256: lightCheck.sha256,
+			derivedFromAssetSha256: darkCheck.sha256
+		},
 		generationMetadata: {
 			manifestVersion: manifest.version,
-			generatedBy: entry.generatedBy ?? 'codex-imagegen',
+			generatedBy: entry.generatedBy ?? 'curated-theme-pair-manifest',
+			prompts: {
+				dark: { promptText: readFileSync(darkPromptPath, 'utf8').trim() },
+				light: { promptText: readFileSync(lightPromptPath, 'utf8').trim() }
+			},
 			selectedCandidate: entry.selectedCandidate,
 			candidates: entry.candidates,
 			selectionRationale: entry.selectionRationale
@@ -110,8 +147,9 @@ console.log(
 			illustrations: items.map((item) => ({
 				id: item.id,
 				answerChainId: item.answerChainId,
-				r2Key: item.r2Key,
-				dimensions: `${item.width}x${item.height}`
+				darkR2Key: item.dark.r2Key,
+				lightR2Key: item.light.r2Key,
+				dimensions: `${item.dark.width}x${item.dark.height}`
 			})),
 			skipR2,
 			skipD1

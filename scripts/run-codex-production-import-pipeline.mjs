@@ -40,7 +40,8 @@ Optional:
   --skip-d1-conflict-check
   --allow-shared-chain-updates
   --skip-r2-upload
-  --generate-chain-illustrations  run the evidence-gated 16:9 illustration phase after D1 import
+  --generate-chain-illustrations  compatibility flag; real D1 imports generate illustrations by default
+  --skip-chain-illustrations      opt out of the automatic post-import illustration phase
   --require-chain-illustrations   make illustration failure fail the paper import
   --chain-illustration-max-chains=5
   --chain-illustration-planner-model=gpt-5.6-sol
@@ -99,14 +100,21 @@ const noImportCheck = hasArg('no-import-check');
 const importToD1 = hasArg('import');
 const checkExisting = !noImportCheck && !hasArg('skip-d1-conflict-check');
 const uploadR2Assets = importToD1 && !hasArg('skip-r2-upload');
-const generateChainIllustrations =
+const explicitlyGenerateChainIllustrations =
 	hasArg('generate-chain-illustrations') || hasArg('require-chain-illustrations');
+const skipChainIllustrations = hasArg('skip-chain-illustrations');
+const generateChainIllustrations = !skipChainIllustrations && importToD1 && !noImportCheck;
 const requireChainIllustrations = hasArg('require-chain-illustrations');
 const chainIllustrationSummaryPath = path.join(workRoot, 'chain-illustrations', 'summary.json');
 
-if (generateChainIllustrations && (!importToD1 || noImportCheck)) {
+if (explicitlyGenerateChainIllustrations && (!importToD1 || noImportCheck)) {
 	throw new Error(
 		'--generate-chain-illustrations requires a real D1 import: use --import without --no-import-check.'
+	);
+}
+if (skipChainIllustrations && explicitlyGenerateChainIllustrations) {
+	throw new Error(
+		'--skip-chain-illustrations cannot be combined with --generate-chain-illustrations or --require-chain-illustrations.'
 	);
 }
 
@@ -135,6 +143,7 @@ const plan = {
 	importMode: noImportCheck ? 'none' : importToD1 ? 'write' : 'dry-run',
 	checkExisting,
 	uploadR2Assets,
+	skipChainIllustrations,
 	generateChainIllustrations,
 	requireChainIllustrations,
 	chainIllustrationSummaryPath: generateChainIllustrations

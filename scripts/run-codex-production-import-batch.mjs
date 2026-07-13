@@ -33,8 +33,9 @@ Options:
   --existing-chain-max-chains=<n>
   --allow-unpublishable-source-drops
   --reuse-existing-extraction
-  --generate-chain-illustrations       run one deduplicated post-import image batch
-  --require-chain-illustrations        fail the batch if an accepted chain has no winner
+  --generate-chain-illustrations       compatibility flag; real D1 imports generate by default
+  --skip-chain-illustrations           opt out of automatic post-import illustration generation
+  --require-chain-illustrations        fail the batch if an accepted chain has no passing pair
   --chain-illustration-max-chains=20
   --force-chain-illustrations
   --dry-run
@@ -90,14 +91,22 @@ const existingChainContextRoot = path.resolve(
 const existingChainMaxExamples = integerArg('existing-chain-max-examples', 4, 0);
 const existingChainMaxMarkItems = integerArg('existing-chain-max-mark-items', 4, 0);
 const existingChainMaxChains = integerArg('existing-chain-max-chains', 0, 0);
-const generateChainIllustrations =
+const explicitlyGenerateChainIllustrations =
 	hasArg('generate-chain-illustrations') || hasArg('require-chain-illustrations');
+const skipChainIllustrations = hasArg('skip-chain-illustrations');
+const generateChainIllustrations =
+	!skipChainIllustrations && hasArg('import') && !hasArg('no-import-check');
 const requireChainIllustrations = hasArg('require-chain-illustrations');
 let chainIllustrationResult = null;
 
-if (generateChainIllustrations && (!hasArg('import') || hasArg('no-import-check'))) {
+if (explicitlyGenerateChainIllustrations && (!hasArg('import') || hasArg('no-import-check'))) {
 	throw new Error(
 		'--generate-chain-illustrations requires a real D1 import: use --import without --no-import-check.'
+	);
+}
+if (skipChainIllustrations && explicitlyGenerateChainIllustrations) {
+	throw new Error(
+		'--skip-chain-illustrations cannot be combined with --generate-chain-illustrations or --require-chain-illustrations.'
 	);
 }
 
@@ -377,6 +386,9 @@ function productionCommand(row, paper) {
 	]) {
 		if (hasArg(flag)) args.push(`--${flag}`);
 	}
+	// The outer batch owns the one deduplicated illustration pass. Prevent each
+	// single-paper child from launching its automatic post-import pass.
+	args.push('--skip-chain-illustrations');
 	return args;
 }
 

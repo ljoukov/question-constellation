@@ -223,6 +223,9 @@ export async function loadChainIllustrationCandidates({
 		           AND ai.status = 'published'
 		           AND ai.needs_human_review = 0
 		           AND ai.is_primary = 1
+		           AND ai.light_r2_key IS NOT NULL
+		           AND ai.light_public_path IS NOT NULL
+		           AND ai.light_asset_sha256 IS NOT NULL
 		         LIMIT 1) AS existingSourceFingerprint,
 		        (SELECT ai.id
 		         FROM answer_chain_illustrations ai
@@ -230,6 +233,9 @@ export async function loadChainIllustrationCandidates({
 		           AND ai.status = 'published'
 		           AND ai.needs_human_review = 0
 		           AND ai.is_primary = 1
+		           AND ai.light_r2_key IS NOT NULL
+		           AND ai.light_public_path IS NOT NULL
+		           AND ai.light_asset_sha256 IS NOT NULL
 		         LIMIT 1) AS existingIllustrationId
 		 FROM answer_chains ac
 		 WHERE ${filters.join('\n AND ')}
@@ -238,7 +244,7 @@ export async function loadChainIllustrationCandidates({
 			{ rootDir }
 		)
 	);
-	if (!chains.length) return { eligible: [], rejected: [] };
+	if (!chains.length) return { eligible: [], rejected: [], skippedFresh: [] };
 
 	const ids = chains.map((chain) => chain.id);
 	const stepsByChain = groupBy(await fetchSteps(ids, rootDir), (row) => row.chainId);
