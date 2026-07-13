@@ -3,7 +3,13 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { LearningChain } from '$lib/learningChains';
 
-	let { chain }: { chain: LearningChain } = $props();
+	let {
+		chain,
+		showTeasers = true
+	}: {
+		chain: LearningChain;
+		showTeasers?: boolean;
+	} = $props();
 
 	let visibleCount = $state(12);
 	const visibleQuestions = $derived(chain.questions.slice(0, visibleCount));
@@ -18,6 +24,11 @@
 	function accessibleText(value: string) {
 		return value.replace(/\s*<=>\s*/g, ' ⇌ ').replace(/\s*(?:->|⟶|⇒|)\s*/g, ' → ');
 	}
+
+	function questionMarkLabel(marks: number | null | undefined) {
+		if (!showTeasers && marks === 1) return '1 mark';
+		return `${marks ?? '?'} marks`;
+	}
 </script>
 
 <ol class="qc-chain-question-list" aria-label={`${accessibleText(chain.title)} questions`}>
@@ -28,11 +39,13 @@
 				<span class="qc-chain-question-body">
 					<span class="qc-chain-question-meta"
 						><MathText
-							text={`${question.label} · ${question.command} · ${question.marks ?? '?'} marks`}
+							text={`${question.label} · ${question.command} · ${questionMarkLabel(question.marks)}`}
 						/></span
 					>
 					<span class="qc-chain-question-title"><MathText text={question.title} /></span>
-					<span class="qc-chain-question-teaser"><MathText text={question.teaser} /></span>
+					{#if showTeasers}
+						<span class="qc-chain-question-teaser"><MathText text={question.teaser} /></span>
+					{/if}
 				</span>
 				<span class="qc-chain-question-action">Open question</span>
 			</a>
