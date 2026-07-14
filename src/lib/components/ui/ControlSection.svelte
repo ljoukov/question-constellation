@@ -29,8 +29,8 @@
 		display: grid;
 		gap: 0.75rem;
 		padding: 1rem;
-		border-bottom: 1px solid #d9e0ea;
-		background: #ffffff;
+		border-bottom: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
 		box-shadow: none;
 	}
 
@@ -42,7 +42,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.55rem;
-		color: #102033;
+		color: var(--qc-ui-text);
 		font-size: 0.92rem;
 		font-weight: 820;
 		line-height: 1.2;
@@ -50,19 +50,6 @@
 
 	.qc-control-title :global(svg) {
 		flex: 0 0 auto;
-		color: #168458;
-	}
-
-	:global(:root[data-theme='dark']) .qc-control-section {
-		border-bottom-color: #334155;
-		background: #0f172a;
-	}
-
-	:global(:root[data-theme='dark']) .qc-control-title {
-		color: #e5e7eb;
-	}
-
-	:global(:root[data-theme='dark']) .qc-control-title :global(svg) {
-		color: #86efac;
+		color: var(--qc-ui-accent);
 	}
 </style>

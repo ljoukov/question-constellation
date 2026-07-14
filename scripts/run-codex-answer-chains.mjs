@@ -3,6 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { copyCodexImportHelperBundle } from './lib/codex-import-helper-bundle.mjs';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
 
 const rootDir = process.cwd();
@@ -238,10 +239,7 @@ function prepareWorkDir() {
 	}
 	mkdirSync(workDir, { recursive: true });
 	copyFileSync(inputPath, path.join(workDir, 'extraction.json'));
-	copyFileSync(
-		path.join(rootDir, 'scripts/codex-import-helper.mjs'),
-		path.join(workDir, 'helper.mjs')
-	);
+	copyCodexImportHelperBundle({ rootDir, workDir });
 	copyFileSync(
 		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
 		path.join(workDir, 'answer-chain-specificity.mjs')

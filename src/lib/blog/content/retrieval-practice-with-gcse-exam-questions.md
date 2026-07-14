@@ -5,7 +5,7 @@
   'shortTitle': 'Retrieval practice',
   'description': 'How GCSE students can use retrieval practice with exam questions, mark schemes and answer chains instead of only rereading notes.',
   'standfirst': 'Retrieval practice is powerful, but GCSE students also need to retrieve in the shape the exam expects.',
-  'category': 'Learning science',
+  'category': 'Revision research',
   'publishedAt': '2026-06-20',
   'readMinutes': 6,
   'tags': ['retrieval practice', 'exam questions', 'GCSE revision'],

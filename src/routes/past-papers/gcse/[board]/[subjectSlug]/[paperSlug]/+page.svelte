@@ -127,29 +127,20 @@
 
 	<main class="past-papers-page">
 		<nav class="breadcrumb" aria-label="Breadcrumb">
-			<a href={resolve('/past-papers/gcse')}>GCSE Past Papers</a>
+			<a href={resolve('/past-papers/gcse')}>GCSE</a>
 			<span aria-hidden="true">/</span>
 			<a href={resolve(`/past-papers/gcse/${data.page.boardId}`)}>{data.page.boardName}</a>
 			<span aria-hidden="true">/</span>
 			<a href={subjectPath}>{data.page.pageLabel}</a>
-			<span aria-hidden="true">/</span>
-			<span>{data.page.entry.paper} {data.page.entry.series} {data.page.entry.year}</span>
 		</nav>
 
 		<section class="paper-hero" aria-labelledby="paper-title">
-			<p class="paper-kicker">{data.page.category}</p>
-			<div class="paper-hero-grid">
-				<div>
-					<h1 id="paper-title">{paperTitle}</h1>
-					<p>{pageDescription}</p>
-				</div>
-			</div>
+			<h1 id="paper-title">{paperTitle}</h1>
 		</section>
 
 		<section class="download-section" aria-labelledby="download-title">
 			<div class="section-heading">
-				<h2 id="download-title">Download PDFs</h2>
-				<p>Open the official paper files in a new tab.</p>
+				<h2 id="download-title">Files</h2>
 			</div>
 
 			<div class="document-grid">
@@ -173,7 +164,7 @@
 						</span>
 						<span>
 							<strong>{documentText(document)}</strong>
-							<small>{documentLabel(document)}</small>
+							<small>PDF · opens in a new tab</small>
 						</span>
 						<Download size={17} aria-hidden="true" strokeWidth={2.2} />
 					</a>
@@ -184,12 +175,9 @@
 
 		{#if data.page.relatedRows.length > 0}
 			<section class="related-section" aria-labelledby="related-title">
-				<div class="section-heading">
-					<h2 id="related-title">More {data.page.pageLabel} papers</h2>
-					<p>
-						Browse nearby papers for the same subject, tier and exam board.
-						<a href={subjectPath}>Open all {data.page.pageLabel} past papers</a>.
-					</p>
+				<div class="section-heading related-heading">
+					<h2 id="related-title">More papers</h2>
+					<a href={subjectPath}>View all {data.page.pageLabel}</a>
 				</div>
 
 				<PastPaperDownloadRows rows={data.page.relatedRows} />
@@ -237,19 +225,6 @@
 		border-bottom: 1px solid rgba(105, 129, 143, 0.15);
 	}
 
-	.paper-kicker {
-		margin: 0 0 0.65rem;
-		color: #168458;
-		font-size: 0.78rem;
-		font-weight: 620;
-		letter-spacing: 0;
-		text-transform: uppercase;
-	}
-
-	.paper-hero-grid {
-		max-width: 56rem;
-	}
-
 	.paper-hero h1 {
 		margin: 0;
 		color: #123f35;
@@ -257,18 +232,6 @@
 		line-height: 1.06;
 		font-weight: 520;
 		letter-spacing: 0;
-	}
-
-	.paper-hero p,
-	.section-heading p {
-		color: #526778;
-		font-weight: 400;
-		line-height: 1.42;
-	}
-
-	.paper-hero p {
-		margin: 0.75rem 0 0;
-		font-size: 0.96rem;
 	}
 
 	.download-section,
@@ -289,16 +252,18 @@
 		font-weight: 620;
 	}
 
-	.section-heading p {
-		max-width: 43rem;
-		margin: 0;
-		font-size: 0.95rem;
-	}
-
 	.section-heading a {
 		color: #0f6b3d;
 		text-decoration: underline;
 		text-underline-offset: 0.18em;
+	}
+
+	.related-heading {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.65rem 1rem;
+		align-items: baseline;
 	}
 
 	.document-grid {
@@ -383,14 +348,11 @@
 		border-color: rgba(148, 163, 184, 0.22);
 	}
 
-	:global(:root[data-theme='dark']) .paper-kicker,
 	:global(:root[data-theme='dark']) .breadcrumb a,
 	:global(:root[data-theme='dark']) .section-heading a {
 		color: #7dd3a1;
 	}
 
-	:global(:root[data-theme='dark']) .paper-hero p,
-	:global(:root[data-theme='dark']) .section-heading p,
 	:global(:root[data-theme='dark']) .breadcrumb,
 	:global(:root[data-theme='dark']) .document-card small {
 		color: #9fb0c5;

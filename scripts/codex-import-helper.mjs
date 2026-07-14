@@ -12,6 +12,14 @@ import {
 	writeFileSync
 } from 'node:fs';
 import path from 'node:path';
+import {
+	deriveQuestionCardTitle,
+	questionCardTitleIssues,
+	QUESTION_CARD_TITLE_CONTRACT,
+	QUESTION_CARD_TITLE_MAX_CHARS,
+	QUESTION_CARD_TITLE_MAX_WORDS,
+	QUESTION_CARD_TITLE_MIN_WORDS
+} from './question-card-title.js';
 import { answerChainSpecificityIssues } from './answer-chain-specificity.mjs';
 
 const rootDir = process.cwd();
@@ -683,6 +691,16 @@ function positiveInteger(...values) {
 	return null;
 }
 
+function questionAnswerEvidenceText(question, modelAnswer = question?.modelAnswer) {
+	return [
+		typeof modelAnswer === 'string' ? modelAnswer : modelAnswer?.answerText,
+		...(question?.markSchemeItems ?? []).map((item) => item?.text),
+		...(question?.markChecklist ?? []).map((item) => item?.text)
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.join('\n');
+}
+
 function normalizeQuestion(question, index, sourceDocument) {
 	const promptText = String(question.promptText ?? question.sourceQuestionRef ?? '').trim();
 	const contextBlocks = normalizedContextBlocks(question);
@@ -712,6 +730,13 @@ function normalizeQuestion(question, index, sourceDocument) {
 	return {
 		id: question.id ?? null,
 		sourceQuestionRef: question.sourceQuestionRef,
+		cardTitle: deriveQuestionCardTitle({
+			cardTitle: question.cardTitle,
+			promptText,
+			selfContainedPromptText: question.selfContainedPromptText,
+			answerText: questionAnswerEvidenceText(question, normalizedModelAnswer),
+			fallback: question.sourceQuestionRef
+		}),
 		parentSourceQuestionRef:
 			question.parentSourceQuestionRef ?? parentRef(question.sourceQuestionRef),
 		displayOrder: question.displayOrder ?? index + 1,
@@ -1415,6 +1440,33 @@ function deterministicIssuesFor(candidate, options = {}) {
 	for (const question of candidate.questions ?? []) {
 		const issues = [];
 		const ref = question.sourceQuestionRef ?? 'unknown';
+		const cardTitle = String(question.cardTitle ?? '').trim();
+		if (cardTitle) {
+			for (const code of questionCardTitleIssues(cardTitle, {
+				promptText: [question.promptText, question.selfContainedPromptText]
+					.filter(Boolean)
+					.join('\n'),
+				answerText: questionAnswerEvidenceText(question)
+			})) {
+				issues.push({
+					code: `question_card_title_${code}`,
+					field: 'cardTitle',
+					severity: 'error',
+					evidence: `${QUESTION_CARD_TITLE_CONTRACT}: ${QUESTION_CARD_TITLE_MIN_WORDS}-${QUESTION_CARD_TITLE_MAX_WORDS} words, <=${QUESTION_CARD_TITLE_MAX_CHARS} chars`
+				});
+			}
+		}
+		const promptAfterMarkBoundary = String(question.promptText ?? '').match(
+			/\[\s*\d+(?:\.\d+)?\s*marks?\s*\]([\s\S]+)$/i
+		)?.[1];
+		if (promptAfterMarkBoundary?.trim()) {
+			issues.push({
+				code: 'question_prompt_text_after_mark_boundary',
+				field: 'promptText',
+				severity: 'error',
+				evidence: promptAfterMarkBoundary.trim().slice(0, 180)
+			});
+		}
 		if (!/^\d{2}\.\d{1,2}[a-z]?$/.test(ref)) {
 			issues.push({
 				code: 'invalid_question_ref',

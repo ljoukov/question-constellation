@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ChevronLeft, ChevronRight, Lightbulb, X } from '@lucide/svelte';
 	import { slide } from 'svelte/transition';
@@ -16,6 +17,9 @@
 	} = $props();
 
 	let activeIndex = $state(0);
+	const hintBodyId = $props.id();
+	const revealDurationMs =
+		browser && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
 
 	const hintItems = $derived(
 		hints
@@ -42,7 +46,13 @@
 
 {#if hintItems.length > 0}
 	<section class="qc-hint-panel" aria-label="Hint">
-		<button type="button" class="qc-hint-toggle" onclick={() => (open = !open)}>
+		<button
+			type="button"
+			class="qc-hint-toggle"
+			aria-expanded={open}
+			aria-controls={hintBodyId}
+			onclick={() => (open = !open)}
+		>
 			{#if open}
 				<X size={17} aria-hidden="true" />
 				Hide hint
@@ -53,7 +63,7 @@
 		</button>
 
 		{#if open && activeHint}
-			<div class="qc-hint-body" transition:slide={{ duration: 180 }}>
+			<div id={hintBodyId} class="qc-hint-body" transition:slide={{ duration: revealDurationMs }}>
 				<header>
 					<p>
 						{activeHint.title || (hasMultipleHints ? `Hint ${activeIndex + 1}` : 'Hint')}

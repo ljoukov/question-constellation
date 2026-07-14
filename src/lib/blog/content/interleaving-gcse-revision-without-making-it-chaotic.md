@@ -5,7 +5,7 @@
   'shortTitle': 'Interleaving GCSE revision',
   'description': 'How to use interleaving in GCSE revision by mixing related exam questions through answer chains instead of random topic hopping.',
   'standfirst': 'Interleaving works best when the mix is meaningful. Answer chains give students a way to mix questions without losing the thread.',
-  'category': 'Learning science',
+  'category': 'Revision research',
   'publishedAt': '2026-06-28',
   'readMinutes': 5,
   'tags': ['interleaving', 'GCSE revision', 'transfer'],

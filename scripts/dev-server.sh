@@ -9,15 +9,31 @@ WORKTREE_PORT_MAX=5179
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 WORKTREE_BASE_DIR="${HOME}/.codex/worktrees"
 SCRIPT_NAME="$(basename "$0")"
+APP_SUBDIR="${3:-}"
+
+if [[ -n "${APP_SUBDIR}" ]]; then
+  if [[ "${APP_SUBDIR}" == /* || "${APP_SUBDIR}" == *".."* ]]; then
+    echo "app directory must be a relative workspace path: ${APP_SUBDIR}" >&2
+    exit 2
+  fi
+  RUN_DIR="$(cd "${ROOT_DIR}/${APP_SUBDIR}" 2>/dev/null && pwd -P || true)"
+  if [[ -z "${RUN_DIR}" || ! -f "${RUN_DIR}/package.json" ]]; then
+    echo "app directory does not contain a package.json: ${APP_SUBDIR}" >&2
+    exit 2
+  fi
+else
+  RUN_DIR="${ROOT_DIR}"
+fi
 
 usage() {
   cat <<EOF >&2
 Usage:
-  ${SCRIPT_NAME} <start|stop|restart|logs> [port]
+  ${SCRIPT_NAME} <start|stop|restart|logs> [port] [app-directory]
 
 Examples:
   ${SCRIPT_NAME} start
   ${SCRIPT_NAME} restart 5173
+  ${SCRIPT_NAME} start 4174 marketing
   ${SCRIPT_NAME} stop
   ${SCRIPT_NAME} logs
 
@@ -25,6 +41,7 @@ Notes:
   - Main checkout defaults to http://localhost:${MAIN_DEFAULT_PORT}/.
   - Worktree checkouts auto-select a free port in ${WORKTREE_PORT_MIN}-${WORKTREE_PORT_MAX}.
   - Each port gets its own tmux session and log file.
+  - Pass a workspace app directory such as 'marketing' to serve a sibling SvelteKit app.
 EOF
 }
 
@@ -154,7 +171,7 @@ session_belongs_to_current_checkout() {
   local target_path
   local current_checkout_path
   target_path="$(normalize_path "$(session_path "${session_name}")")"
-  current_checkout_path="$(normalize_path "${ROOT_DIR}")"
+  current_checkout_path="$(normalize_path "${RUN_DIR}")"
   [[ -n "${target_path}" && "${target_path}" == "${current_checkout_path}" ]]
 }
 
@@ -339,7 +356,7 @@ start_session() {
 
   session_name="$(session_name_for_port "${port}")"
   log_file="$(log_file_for_port "${port}")"
-  command="$(printf 'cd %q && %q run dev -- --host 127.0.0.1 --port %q 2>&1 | tee %q' "${ROOT_DIR}" "$(package_runner)" "${port}" "${log_file}")"
+  command="$(printf 'cd %q && %q run dev -- --host 127.0.0.1 --port %q 2>&1 | tee %q' "${RUN_DIR}" "$(package_runner)" "${port}" "${log_file}")"
   tmux new-session -d -s "${session_name}" "${command}"
 
   echo "Started ${session_name}"

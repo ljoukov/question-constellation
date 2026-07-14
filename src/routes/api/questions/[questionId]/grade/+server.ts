@@ -1,5 +1,6 @@
 import { gradeQuestionAnswerStreaming, type GradeStreamDelta } from '$lib/server/answerGrading';
 import { recordQuestionAttempt } from '$lib/server/personalLearning';
+import { recordQuestionAttemptEvidence } from '$lib/server/subjectLearning';
 import { createSseStream, sseResponse } from '$lib/server/sse';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
@@ -19,7 +20,26 @@ const paramsSchema = z.object({
 });
 
 const requestSchema = z.object({
-	answer: z.string().trim().min(1, 'answer is required').max(5000)
+	answer: z.string().trim().min(1, 'answer is required').max(5000),
+	attemptId: z.string().trim().min(1).max(128),
+	sourceSessionId: z.string().trim().min(1).max(128),
+	responseDurationMs: z
+		.number()
+		.int()
+		.min(0)
+		.max(6 * 60 * 60 * 1000)
+		.nullable(),
+	assistance: z
+		.object({
+			hintOpened: z.boolean().default(false),
+			markingPointsViewed: z.boolean().default(false),
+			feedbackRewrite: z.boolean().default(false)
+		})
+		.default({
+			hintOpened: false,
+			markingPointsViewed: false,
+			feedbackRewrite: false
+		})
 });
 
 function sendDelta(send: ReturnType<typeof createSseStream>['send'], delta: GradeStreamDelta) {
@@ -116,8 +136,20 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 					user,
 					questionId,
 					answer: body.answer,
-					result
+					result,
+					attemptId: body.attemptId
 				});
+				if (savedAttempt) {
+					await recordQuestionAttemptEvidence({
+						user,
+						attemptId: savedAttempt.id,
+						questionId,
+						result,
+						assistance: body.assistance,
+						sourceSessionId: body.sourceSessionId,
+						responseDurationMs: body.responseDurationMs
+					});
+				}
 			} catch (error) {
 				console.warn('[question-grade] failed to save personal attempt', {
 					error,

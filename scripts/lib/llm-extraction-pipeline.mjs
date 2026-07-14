@@ -5,6 +5,14 @@ import path from 'node:path';
 import { z } from 'zod';
 import { generateJson, loadLocalEnv, runToolLoop, tool } from '@ljoukov/llm';
 import {
+	deriveQuestionCardTitle,
+	questionCardTitleIssues,
+	QUESTION_CARD_TITLE_CONTRACT,
+	QUESTION_CARD_TITLE_MAX_CHARS,
+	QUESTION_CARD_TITLE_MAX_WORDS,
+	QUESTION_CARD_TITLE_MIN_WORDS
+} from '../../src/lib/questionCardTitle.js';
+import {
 	answerChainSpecificityIssues,
 	chainSpecificityIssueSummary
 } from '../answer-chain-specificity.mjs';
@@ -51,6 +59,7 @@ const PRODUCTION_EXTRACTION_CONTRACT = [
 	'Production extraction contract:',
 	'- Return import-shaped JSON with sourceDocument, markSchemeDocument, supportingDocuments, questions, render blocks, response objects, assets, markSchemeItems, markChecklist, written-response modelAnswer, answerChain, commonWeakAnswers, and review flags.',
 	'- Extract every independently marked subquestion. Do not create question rows for unmarked parent stems.',
+	`- Give every question a cardTitle using ${QUESTION_CARD_TITLE_CONTRACT}: ${QUESTION_CARD_TITLE_MIN_WORDS}-${QUESTION_CARD_TITLE_MAX_WORDS} words and at most ${QUESTION_CARD_TITLE_MAX_CHARS} characters, focused on the distinctive concept, method, relationship, or process. Read the complete atomic task before its mark boundary, then write a new noun-style semantic label; never take the first N words of the question or copy the command sentence after merely deleting "Describe/Explain how/why". The first word must never be an exam command or an interrogative such as How, Why, What, Which, or Where: "Describe gonorrhoea vaccine action" is invalid; use "Vaccine protection against gonorrhoea". For calculations name the method or relationship, not the answer blank: use "Chromatography Rf value calculation", not "The Rf value for the blue colour". When a task has paired instructions, name their shared concept rather than selecting the later "give/use/tick" clause. Use only information given in the question: if hardness is revealed only by the mark scheme, "Why alloying makes aluminium harder" is invalid; use "Adding other metals to aluminium". A response instruction such as "Tick one box" is never the subject. Write a complete label rather than cutting the prompt at the word limit: use "Crude oil: fractional distillation", not "How crude oil is separated into fractions by fractional". Do not copy the question, reveal the answer, include marks, or depend on pronouns such as "this" without naming the concept.`,
 	'- Do not create learner-facing question rows for withdrawn questions, replacement notices, statistics-only rows, or source entries that lack the original prompt and positive marking criteria.',
 	'- Preserve render structure in stemBlocks, leadBlocks, promptBlocks, response, afterResponseBlocks, and assets. Use response objects for choices, tick boxes, matching, equation blanks, image labels, and drawing boxes.',
 	'- Use only app-supported response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box.',
@@ -161,6 +170,7 @@ const RenderSchema = z.object({
 
 const CoreQuestionSchema = z.object({
 	sourceQuestionRef: z.string(),
+	cardTitle: z.string().optional(),
 	promptText: z.string(),
 	marks: z.number().nullable(),
 	commandWord: z.string().nullable(),
@@ -196,6 +206,7 @@ export const ExtractionCandidateSchema = z.object({
 	questions: z.array(
 		z.object({
 			sourceQuestionRef: z.string(),
+			cardTitle: z.string().optional(),
 			parentQuestionRef: z.string().nullable().optional(),
 			displayOrder: z.number().nullable().optional(),
 			promptText: z.string(),
@@ -933,6 +944,7 @@ export const FullPaperExtractionSchema = z.object({
 		z.object({
 			id: z.string().nullable(),
 			sourceQuestionRef: z.string(),
+			cardTitle: z.string().optional(),
 			parentSourceQuestionRef: z.string().nullable(),
 			displayOrder: z.number(),
 			promptText: z.string(),
@@ -1034,6 +1046,7 @@ export const LlmFullPaperExtractionSchema = z.object({
 		z.object({
 			id: z.string().nullable(),
 			sourceQuestionRef: z.string(),
+			cardTitle: z.string().optional(),
 			parentSourceQuestionRef: z.string().nullable(),
 			displayOrder: z.number(),
 			promptText: z.string(),
@@ -1182,6 +1195,17 @@ const CompactModelAnswerSchema = z.union([
 	z.string()
 ]);
 
+function questionAnswerEvidenceText(question) {
+	const modelAnswer = question?.modelAnswer;
+	return [
+		typeof modelAnswer === 'string' ? modelAnswer : modelAnswer?.answerText,
+		...(question?.markSchemeItems ?? []).map((item) => item?.text),
+		...(question?.markChecklist ?? []).map((item) => item?.text)
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.join('\n');
+}
+
 function normalizeCompactQuestion(value) {
 	if (!value || typeof value !== 'object') return value;
 	const sourceQuestionRef =
@@ -1193,6 +1217,13 @@ function normalizeCompactQuestion(value) {
 	return {
 		...value,
 		sourceQuestionRef,
+		cardTitle: deriveQuestionCardTitle({
+			cardTitle: value.cardTitle,
+			promptText: value.promptText,
+			selfContainedPromptText: value.selfContainedPromptText,
+			answerText: questionAnswerEvidenceText(value),
+			fallback: sourceQuestionRef
+		}),
 		parentSourceQuestionRef:
 			value.parentSourceQuestionRef ?? value.parentQuestionNumber ?? value.parentRef ?? null,
 		pageStart,
@@ -1207,6 +1238,7 @@ const CompactQuestionSchema = z.preprocess(
 	z.object({
 		id: z.string().nullable().optional(),
 		sourceQuestionRef: z.string(),
+		cardTitle: z.string(),
 		parentSourceQuestionRef: z.string().nullable().optional(),
 		promptText: z.string(),
 		selfContainedPromptText: z.string().nullable().optional(),
@@ -3032,6 +3064,7 @@ function compactQuestionToFull(question, index, chunk) {
 	return {
 		id: question.id ?? null,
 		sourceQuestionRef: question.sourceQuestionRef,
+		cardTitle: question.cardTitle,
 		parentSourceQuestionRef: question.parentSourceQuestionRef ?? null,
 		displayOrder: index + 1,
 		promptText,
@@ -3108,6 +3141,7 @@ function extractionSpecPrompt(extractionSpec) {
 	void extractionSpec;
 	return [
 		'Vision-stage extraction contract: extract factual source evidence only. Do not generate answerChain fields in this stage.',
+		`Return cardTitle for every question: an intentionally written ${QUESTION_CARD_TITLE_MIN_WORDS}-${QUESTION_CARD_TITLE_MAX_WORDS} word, <=${QUESTION_CARD_TITLE_MAX_CHARS} character noun-style label naming the distinctive concept, method, relationship, or process. Read the full atomic task before its mark boundary and synthesize a label; do not truncate a prompt to the word limit or copy the command sentence after merely deleting its opening command. The first word must not be an exam command or How, Why, What, Which, or Where. Bad: "Describe gonorrhoea vaccine action". Good: "Vaccine protection against gonorrhoea". For calculations name the transferable method or relationship, not the answer field: "Chromatography Rf value calculation" is good and "The Rf value for the blue colour" is bad. Combine paired instructions under one concept; never let a later give/use/tick instruction override the main task. Use only information already given in the question: if hardness appears only in the answer, "Why alloying makes aluminium harder" is bad and "Adding other metals to aluminium" is good. Ignore response mechanics such as "Tick one box" when naming the subject. "Crude oil: fractional distillation" is good and "How crude oil is separated into fractions by fractional" is bad. Do not copy the question, reveal its answer, include marks, or use an unresolved pronoun such as "this" as the subject.`,
 		'Recover learner-visible prompt/context, response controls, required images/tables/graphs, positive mark-scheme evidence, checklist items, answer keys or model answers, provenance, confidence, and review flags.',
 		'Do not return specification references, assessment objectives, or topic taxonomy; the script sets topicPath to [] and specRef to null in this phase.',
 		'Keep exact values, table entries, answer keys, and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.',
@@ -3160,6 +3194,7 @@ export function buildFullPaperPrompt({
 		'Extract every independently marked subquestion. Do not create rows for unmarked parent stems. Carry parent context into contextText/selfContainedPromptText where needed.',
 		'Do not extract withdrawn questions, replacement notices, statistics-only rows, or mean-mark/max-mark lines as learner-facing questions. If the official materials do not include the original prompt and positive marking criteria, omit that subquestion rather than inventing a placeholder prompt, response, or answer chain.',
 		'Return compact source-grounded question data. No extra JSON keys. Checklist items should be one short sentence each. Mark-scheme items should be concise positive marking evidence, not long explanations. The script deterministically adds source-document metadata and render defaults. Preserve visible prompt text in promptText/contextText and use contextBlocks plus response objects for tables, MCQ/tick boxes/matching/equation blanks/image labels/drawing boxes/written lines.',
+		`For each question, return cardTitle under ${QUESTION_CARD_TITLE_CONTRACT}: ${QUESTION_CARD_TITLE_MIN_WORDS}-${QUESTION_CARD_TITLE_MAX_WORDS} words, no more than ${QUESTION_CARD_TITLE_MAX_CHARS} characters, as a noun-style label focused on its distinctive concept, method, relationship, or process. Read the complete atomic task before its mark boundary and synthesize a label; never take a word-limit slice or copy the command sentence after merely deleting its opening command. Its first word must never be an exam command or How, Why, What, Which, or Where; "Describe gonorrhoea vaccine action" is invalid and "Vaccine protection against gonorrhoea" is valid. For a calculation name the method or relationship rather than its answer blank: "Solution concentration calculation" is valid and "The concentration of sodium chloride in g/dm3" is invalid. Combine paired instructions under one concept, and never let a later give/use/tick clause become the title. Use only information given in the question: if hardness is answer-only, "Why alloying makes aluminium harder" is invalid and "Adding other metals to aluminium" is valid. Ignore low-information response mechanics such as "Tick one box". "Crude oil: fractional distillation" is valid and "How crude oil is separated into fractions by fractional" is invalid. It must not copy the prompt, reveal the answer, include marks, or depend on unresolved pronouns/figure labels. Preserve enough source context to distinguish nearby questions.`,
 		'Do not put answers from previous subquestions into learner-visible promptText or promptBlocks. If a later subquestion is ambiguous outside the original sequence, put resolved context only in selfContainedPromptText/contextText for standalone grading and keep promptBlocks faithful to the printed prompt.',
 		'When a marked question has printed setup/context before the actual instruction, put that setup in contextText/contextBlocks and set promptText to only the marked instruction. selfContainedPromptText may combine context and instruction. The renderer shows contextBlocks/stemBlocks before promptBlocks, so do not duplicate the same sentence in both.',
 		'Use only these response.kind values: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For tick-one or multiple-choice boxes, use kind "choice" with options and response.correctAnswers. For blank printed grids that the learner must complete or draw on, use drawing-box with response.grid { rows, columns } and rowLabels/columnLabels when visible; verify the grid visually instead of inferring it from code or OCR.',
@@ -4212,13 +4247,21 @@ export function normalizeExtractedQuestionForImport(question) {
 	const chainResolution = normalizeQuestionChainResolution(question.chainResolution);
 	const answerChain = normalizeQuestionAnswerChainForImport(question.answerChain);
 	const commonWeakAnswers = normalizeCommonWeakAnswers(question.commonWeakAnswers);
+	const cardTitle = deriveQuestionCardTitle({
+		cardTitle: question.cardTitle,
+		promptText: question.promptText,
+		selfContainedPromptText: question.selfContainedPromptText,
+		answerText: questionAnswerEvidenceText(question),
+		fallback: question.sourceQuestionRef
+	});
 	const normalizedQuestion =
 		response === question.response &&
 		chainResolution === question.chainResolution &&
 		answerChain === question.answerChain &&
-		commonWeakAnswers === question.commonWeakAnswers
+		commonWeakAnswers === question.commonWeakAnswers &&
+		cardTitle === question.cardTitle
 			? question
-			: { ...question, response, chainResolution, answerChain, commonWeakAnswers };
+			: { ...question, cardTitle, response, chainResolution, answerChain, commonWeakAnswers };
 	const withoutDuplicateFixedModelAnswer = shouldDropFixedResponseModelAnswer(normalizedQuestion)
 		? { ...normalizedQuestion, modelAnswer: null }
 		: normalizedQuestion;
@@ -4771,6 +4814,8 @@ export function deterministicCandidateIssues(candidate, options = {}) {
 	const findings = [];
 	for (const question of candidate.questions ?? []) {
 		const issues = [
+			...questionCardTitleQualityIssues(question),
+			...atomicPromptBoundaryIssues(question),
 			...(includeAnswerChainIssues
 				? [
 						...answerChainIdentityIssues(question),
@@ -4806,6 +4851,37 @@ export function deterministicCandidateIssues(candidate, options = {}) {
 		});
 	}
 	return findings;
+}
+
+function questionCardTitleQualityIssues(question) {
+	const cardTitle = String(question.cardTitle ?? '').trim();
+	if (!cardTitle) return [];
+	return questionCardTitleIssues(cardTitle, {
+		promptText: [question.promptText, question.selfContainedPromptText].filter(Boolean).join('\n'),
+		answerText: questionAnswerEvidenceText(question)
+	}).map((code) => ({
+		severity: 'error',
+		code: `question_card_title_${code}`,
+		field: 'cardTitle',
+		evidence: cardTitle,
+		message: `cardTitle must follow ${QUESTION_CARD_TITLE_CONTRACT}: ${QUESTION_CARD_TITLE_MIN_WORDS}-${QUESTION_CARD_TITLE_MAX_WORDS} words, at most ${QUESTION_CARD_TITLE_MAX_CHARS} characters, and name the question's concept, method, or process without copying its exam command.`
+	}));
+}
+
+function atomicPromptBoundaryIssues(question) {
+	const prompt = String(question.promptText ?? '');
+	const markBoundary = prompt.match(/\[\s*\d+(?:\.\d+)?\s*marks?\s*\]([\s\S]+)$/i);
+	if (!markBoundary?.[1]?.trim()) return [];
+	return [
+		{
+			severity: 'error',
+			code: 'question_prompt_text_after_mark_boundary',
+			field: 'promptText',
+			evidence: markBoundary[1].trim().slice(0, 180),
+			message:
+				'Atomic promptText continues after its own mark boundary. Remove following sibling-question setup or move genuine context before the marked instruction.'
+		}
+	];
 }
 
 function answerChainIdentityIssues(question) {

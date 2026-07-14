@@ -4,7 +4,7 @@
   'title': 'Question Constellation vs Cognito',
   'shortTitle': 'vs Cognito',
   'description': 'Question Constellation vs Cognito for GCSE revision: exam-answer chains, mark checklists and transfer practice compared with video-led science and maths revision.',
-  'standfirst': 'Cognito is strong for learning science and maths topics. Question Constellation is built for the moment after that, when a student needs to write answers that match the mark scheme.',
+  'standfirst': 'Cognito is strong for studying science and maths topics. Question Constellation is built for the moment after that, when a student needs to write answers that match the mark scheme.',
   'category': 'Comparison',
   'publishedAt': '2026-04-09',
   'readMinutes': 5,
@@ -60,8 +60,8 @@ If the student cannot yet explain the content, Cognito may be the better first s
 
 ## Best way to use both
 
-Use Cognito to learn or refresh the topic. Then use Question Constellation to practise a question, reveal the chain, rewrite the answer and try a related transfer question.
+Use Cognito to study or refresh the topic. Then use Question Constellation to practise a question, reveal the chain, rewrite the answer and try a related transfer question.
 
 ## Verdict
 
-Cognito is a strong science and maths learning resource. Question Constellation is more focused: exam questions, answer chains, mark checklists and transfer practice. The best choice depends on whether the student needs topic teaching or exam-answer repair.
+Cognito is a strong science and maths study resource. Question Constellation is more focused: exam questions, answer chains, mark checklists and transfer practice. The best choice depends on whether the student needs topic teaching or exam-answer improvement.

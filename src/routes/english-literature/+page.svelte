@@ -4,6 +4,11 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import QuestionBankQuestionCard from '$lib/components/QuestionBankQuestionCard.svelte';
 	import type { OcrLiteratureArea } from '$lib/englishLiteratureHub';
+	import {
+		ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR,
+		englishLiteratureChoiceAnchor,
+		profileAnchorHref
+	} from '$lib/profileNavigation';
 	import { BookOpenCheck, FileText } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -18,6 +23,23 @@
 	});
 
 	const incompleteProfile = $derived(data.hub.selectionCount < 4);
+	const profilePath = resolve('/profile');
+	const courseTextsProfileHref = profileAnchorHref(
+		profilePath,
+		ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR
+	);
+	const firstMissingCourseArea = $derived(
+		data.hub.sections.find((section) => !section.selection)?.id ?? null
+	);
+	const finishProfileHref = $derived(
+		firstMissingCourseArea
+			? profileAnchorHref(profilePath, englishLiteratureChoiceAnchor(firstMissingCourseArea))
+			: courseTextsProfileHref
+	);
+
+	function courseChoiceProfileHref(area: OcrLiteratureArea) {
+		return profileAnchorHref(profilePath, englishLiteratureChoiceAnchor(area));
+	}
 
 	function questionHref(question: (typeof data.hub.sections)[number]['questions'][number]) {
 		return resolve('/questions/[questionId]', { questionId: question.slug || question.id });
@@ -96,7 +118,7 @@
 				{/each}
 			</nav>
 
-			<a class="qc-browse-start" href={resolve('/profile')}>Change course texts</a>
+			<a class="qc-browse-start" href={courseTextsProfileHref}>Change course texts</a>
 		</aside>
 
 		<section class="qc-browse-feed" aria-label="Your English Literature question bank">
@@ -114,7 +136,7 @@
 					<div>
 						<p class="qc-panel-label">{data.hub.selectionCount}/4 course choices configured</p>
 						<p>Add the missing school choices in your profile to see every relevant question.</p>
-						<a class="qc-real-link-button" href={resolve('/profile')}>Finish profile</a>
+						<a class="qc-real-link-button" href={finishProfileHref}>Finish profile</a>
 					</div>
 				</section>
 			{/if}
@@ -164,7 +186,8 @@
 					{:else}
 						<section class="qc-bank-empty">
 							<span>This course choice has not been set.</span>
-							<a class="qc-real-link-button" href={resolve('/profile')}>Choose it in your profile</a
+							<a class="qc-real-link-button" href={courseChoiceProfileHref(section.id)}
+								>Choose it in your profile</a
 							>
 						</section>
 					{/if}

@@ -233,6 +233,111 @@
 			}
 		},
 		{
+			"name": "period frequency reciprocal formulas are reusable",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-period-frequency-calculation",
+				"title": "Calculate period or frequency",
+				"canonicalChainText": "Identify the known wave quantity, use f = 1/T or T = 1/f, and give the missing value with its unit.",
+				"summary": "Use the reciprocal relationship between period and frequency.",
+				"steps": [
+					{
+						"stepText": "Use f = 1/T or T = 1/f to calculate the missing value.",
+						"stepRole": "calculation"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "kinetic energy symbolic formula is reusable",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-kinetic-energy-speed-calculation",
+				"title": "Calculate speed from kinetic energy",
+				"canonicalChainText": "Use Ek = 1/2 m v^2, rearrange for speed, then square-root and give the unit.",
+				"summary": "Rearrange the kinetic energy equation for speed.",
+				"steps": [
+					{
+						"stepText": "Substitute the known quantities into $E_k=\\frac{1}{2}mv^2$.",
+						"stepRole": "calculation"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "elastic energy symbolic formula variants are reusable",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-spring-elastic-potential-energy-rearrange-extension",
+				"title": "Calculate spring extension from energy",
+				"canonicalChainText": "Substitute into E = 1/2 k e^2, rearrange for e squared, then square-root.",
+				"summary": "Rearrange the elastic energy equation for extension.",
+				"steps": [
+					{
+						"stepText": "Substitute into E = 1/2 k e squared.",
+						"stepRole": "calculation"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "balanced photosynthesis equation is fixed reusable knowledge",
+			"context": {
+				"commandWord": "Write"
+			},
+			"answerChain": {
+				"id": "bio-chain-photosynthesis-balanced-equation-recall",
+				"title": "Recall the balanced photosynthesis equation",
+				"canonicalChainText": "photosynthesis equation -> 6CO2 + 6H2O -> C6H12O6 + 6O2",
+				"summary": "Recall the fixed balanced symbol equation.",
+				"steps": [
+					{
+						"stepText": "Select or write 6CO2 + 6H2O -> C6H12O6 + 6O2.",
+						"stepRole": "conclusion"
+					}
+				]
+			},
+			"expect": {
+				"blockingCodes": [],
+				"warningCodes": []
+			}
+		},
+		{
+			"name": "worked values remain rejected when a reusable formula is also present",
+			"context": {
+				"commandWord": "Calculate"
+			},
+			"answerChain": {
+				"id": "physics-chain-period-frequency-calculation",
+				"title": "Calculate frequency",
+				"canonicalChainText": "Use f = 1/T, substitute T = 0.0025 s, and calculate f = 400 Hz.",
+				"summary": "Use the reciprocal relationship.",
+				"steps": []
+			},
+			"expect": {
+				"blockingCodes": ["chain_numeric_substitution"],
+				"warningCodes": []
+			}
+		},
+		{
 			"name": "alpha particle constants are review-only unless a daughter-specific substitution appears",
 			"context": {
 				"commandWord": "Complete"

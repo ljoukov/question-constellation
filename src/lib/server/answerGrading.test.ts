@@ -249,6 +249,36 @@ describe('answer grading prompt and parser', () => {
 		expect(result.feedbackMarkdown).toContain('heating-loss');
 	});
 
+	it('makes present and missing steps disjoint when the grader overlaps them', () => {
+		const result = parseGradeResponse(
+			[
+				'%AWARDED_MARKS%: 1',
+				'%PRESENT_STEP_IDS%: pd,current',
+				'%MISSING_STEP_IDS%: current,heating-loss',
+				'%FEEDBACK%: Add the missing links.'
+			].join('\n'),
+			practiceData
+		);
+
+		expect(result.presentStepIds).toEqual(['pd']);
+		expect(result.missingStepIds).toEqual(['current', 'heating-loss']);
+	});
+
+	it('treats an omitted step as missing when both lists are otherwise populated', () => {
+		const result = parseGradeResponse(
+			[
+				'%AWARDED_MARKS%: 1',
+				'%PRESENT_STEP_IDS%: pd',
+				'%MISSING_STEP_IDS%: heating-loss',
+				'%FEEDBACK%: Add the missing links.'
+			].join('\n'),
+			practiceData
+		);
+
+		expect(result.presentStepIds).toEqual(['pd']);
+		expect(result.missingStepIds).toEqual(['current', 'heating-loss']);
+	});
+
 	it('downgrades inconsistent correct labels when a diagnostic step is still missing', () => {
 		const result = parseGradeResponse(
 			[
@@ -265,7 +295,10 @@ describe('answer grading prompt and parser', () => {
 
 		expect(result.result).toBe('partial');
 		expect(result.awardedMarks).toBe(31);
-		expect(result.missingStepIds).toEqual(['english-chain-romeo-juliet-fate-step-context']);
+		expect(result.missingStepIds).toEqual([
+			'english-chain-romeo-juliet-fate-step-method',
+			'english-chain-romeo-juliet-fate-step-context'
+		]);
 	});
 });
 

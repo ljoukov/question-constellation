@@ -1,4 +1,5 @@
 import { aqaStemCurriculum, getAqaStemSubject, subjectTopicMatches } from '$lib/curriculum/aqaStem';
+import { getCurriculumProfileSnapshot } from '$lib/server/curriculumCatalog';
 import {
 	recallCards,
 	recallCurriculumTopics,
@@ -7,6 +8,7 @@ import {
 } from '$lib/recall/aqaScienceRecall';
 import { recallActivityHref, recallCoverageHref } from '$lib/recall/routes';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
+import { enabledProfileCombinationForQuestion } from '$lib/learning/profileQuestionCompatibility';
 import {
 	getPracticePageData,
 	type ChainStep,
@@ -63,12 +65,6 @@ type EnglishLiteratureSelectionsRow = {
 	nineteenth_century_novel: string | null;
 	poetry_cluster: string | null;
 	shakespeare_play: string | null;
-};
-
-type QuestionBoardAvailabilityRow = {
-	subject: string;
-	board: string;
-	question_count: number;
 };
 
 type DashboardGapRow = {
@@ -138,6 +134,7 @@ type NextQuestionRow = {
 
 type GapDetailRow = DashboardGapRow & {
 	status: string;
+	course: string | null;
 	source_prompt_text: string | null;
 	source_context_text: string | null;
 	source_metadata_json: string | null;
@@ -336,6 +333,11 @@ export type GapLearningData = {
 		prompt: string;
 		href: string | null;
 	};
+	followUpQuestion: {
+		id: string;
+		title: string;
+		href: string;
+	} | null;
 	chain: {
 		id: string;
 		title: string;
@@ -360,6 +362,7 @@ export type GapFieldJudgeResult = {
 };
 
 export type GapFinalJudgeResult = {
+	runId: string;
 	awardedMarks: number;
 	maxMarks: number;
 	summary: string;
@@ -540,31 +543,17 @@ function normalizeBoardList(boards: string[]) {
 }
 
 async function readQuestionBoardAvailability(): Promise<QuestionBoardAvailability> {
-	const rows = await queryRows<QuestionBoardAvailabilityRow>(
-		`SELECT subject, board, question_count
-		 FROM question_board_availability
-		 WHERE qualification = 'GCSE'
-		   AND enabled = 1
-		   AND question_count > 0
-		 ORDER BY subject, board`
-	);
-
+	const snapshot = await getCurriculumProfileSnapshot();
 	const availability = new Map<string, string[]>();
-	for (const row of rows) {
-		const subject = canonicalLearnerSubject(row.subject);
-		const boards = availability.get(subject) ?? [];
-		boards.push(row.board);
-		availability.set(subject, boards);
-	}
-
-	for (const [subject, boards] of availability.entries()) {
-		availability.set(subject, normalizeBoardList(boards));
+	for (const entry of snapshot.subjects) {
+		const subject = canonicalLearnerSubject(entry.subject);
+		availability.set(subject, normalizeBoardList(entry.boards.map((board) => board.name)));
 	}
 
 	const missingSubjects = profileSubjects().filter((subject) => !availability.get(subject)?.length);
 	if (missingSubjects.length > 0) {
 		throw new Error(
-			`question_board_availability is missing current GCSE rows for: ${missingSubjects.join(', ')}`
+			`The curriculum profile snapshot is missing supported GCSE combinations for: ${missingSubjects.join(', ')}`
 		);
 	}
 
@@ -1093,7 +1082,7 @@ async function listActiveGaps(
 		     WHEN 'small_gap' THEN 2
 		     ELSE 3
 		   END,
-		   g.updated_at DESC
+			   updated_at DESC
 		 LIMIT ?`,
 		params
 	);
@@ -1562,8 +1551,8 @@ function confidenceForSubject(stats: SubjectLearningStats): {
 	if (stats.activeGapCount > 0) {
 		return {
 			percent,
-			label: 'Mistakes to fix',
-			detail: `${stats.activeGapCount} ${stats.activeGapCount === 1 ? 'step needs' : 'steps need'} repair.`
+			label: 'Gaps to close',
+			detail: `${stats.activeGapCount} ${stats.activeGapCount === 1 ? 'step needs' : 'steps need'} another pass.`
 		};
 	}
 	if (stats.recallDueCount > 0) {
@@ -1604,7 +1593,7 @@ function buildSubjectLane(
 	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
 	if (openGap) {
-		primaryAction = { label: 'Fix mistake', href: openGap.href, kind: 'gap' };
+		primaryAction = { label: 'Close the gap', href: openGap.href, kind: 'gap' };
 	} else if (nextQuestion) {
 		primaryAction = {
 			label: stats.attemptCount === 0 ? 'Start exam question' : 'Continue practice',
@@ -1816,24 +1805,59 @@ export async function recordQuestionAttempt({
 	user,
 	questionId,
 	answer,
-	result
+	result,
+	attemptId: requestedAttemptId
 }: {
 	user: AdminUser;
 	questionId: string;
 	answer: string;
 	result: QuestionGradeResult;
-}): Promise<SavedAttemptSummary> {
+	attemptId?: string;
+}): Promise<SavedAttemptSummary | null> {
 	await upsertUserProfile(user);
-	const data = await getPracticePageData(questionId);
-	const attemptId = randomId('attempt');
-	await executePersonalQuery(
+	const [data, sourceRows, settings] = await Promise.all([
+		getPracticePageData(questionId),
+		queryRows<{
+			board: string | null;
+			qualification: string | null;
+			subject: string | null;
+			subject_area: string | null;
+			component_code: string | null;
+			tier: string | null;
+		}>(
+			`SELECT board, qualification, subject, subject_area, component_code, tier
+			 FROM questions
+			 WHERE id = ?
+			 LIMIT 1`,
+			[questionId]
+		),
+		getLearnerProfileSettings(user)
+	]);
+	const sourceRow = sourceRows[0];
+	if (!sourceRow) return null;
+	const learnerSubject = enabledProfileCombinationForQuestion(settings.subjects, {
+		board: sourceRow.board,
+		qualification: sourceRow.qualification,
+		subject: sourceRow.subject,
+		subjectArea: sourceRow.subject_area,
+		componentCode: sourceRow.component_code,
+		tier: sourceRow.tier
+	});
+	if (!learnerSubject) return null;
+	const storedSubject = learnerSubject.subject;
+	const storedCourse = learnerSubject.course;
+	const storedTier = learnerSubject.tier;
+	const attemptId = requestedAttemptId ?? randomId('attempt');
+	const insertedAttempt = await queryPersonalFirst<{ id: string }>(
 		`INSERT INTO user_question_attempts (
 		   id, user_id, question_id, answer_chain_id, answer_text, result,
 		   awarded_marks, max_marks, present_step_ids_json, missing_step_ids_json,
 		   feedback_markdown, model, model_version, question_title, source_question_ref,
-		   board, qualification, subject, tier, paper, topic_path_json, chain_title
+		   board, qualification, subject, course, tier, paper, topic_path_json, chain_title
 		 )
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		 ON CONFLICT(id) DO NOTHING
+		 RETURNING id`,
 		[
 			attemptId,
 			user.uid,
@@ -1850,29 +1874,22 @@ export async function recordQuestionAttempt({
 			result.modelVersion,
 			data.question.title,
 			data.question.sourceRef,
-			data.question.meta.board,
-			data.question.meta.qualification,
-			data.question.meta.subject,
-			data.question.meta.tier,
+			learnerSubject.board,
+			learnerSubject.qualification,
+			storedSubject,
+			storedCourse,
+			storedTier,
 			data.question.meta.paper,
 			jsonString([data.question.meta.topic].filter(Boolean)),
 			data.chain.title
 		]
 	);
-
-	for (const stepId of result.presentStepIds) {
-		await executePersonalQuery(
-			`UPDATE user_chain_gaps
-			 SET status = 'closed',
-			     gap_band = 'closed',
-			     latest_attempt_id = ?,
-			     updated_at = CURRENT_TIMESTAMP,
-			     last_seen_at = CURRENT_TIMESTAMP
-			 WHERE user_id = ?
-			   AND answer_chain_id = ?
-			   AND chain_step_id = ?`,
-			[attemptId, user.uid, data.chain.id, stepId]
+	if (!insertedAttempt) {
+		const existing = await queryPersonalFirst<{ id: string }>(
+			`SELECT id FROM user_question_attempts WHERE id = ? AND user_id = ? AND question_id = ?`,
+			[attemptId, user.uid, questionId]
 		);
+		if (!existing) throw new Error('Attempt id is already in use.');
 	}
 
 	const shouldUseRecallInsteadOfGap =
@@ -1898,19 +1915,20 @@ export async function recordQuestionAttempt({
 		await executePersonalQuery(
 			`INSERT INTO user_chain_gaps (
 			   id, user_id, answer_chain_id, chain_step_id, source_question_id,
-			   latest_attempt_id, board, qualification, subject, tier, paper, topic_path_json,
+			   latest_attempt_id, board, qualification, subject, course, tier, paper, topic_path_json,
 			   marks, chain_title, canonical_chain_text, step_text, step_order,
 			   source_question_title, source_question_ref, source_prompt_text,
 			   source_context_text, source_metadata_json, source_topic_path_json,
 			   status, gap_band
 			 )
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
 			 ON CONFLICT(user_id, answer_chain_id, chain_step_id) DO UPDATE SET
 			   source_question_id = excluded.source_question_id,
 			   latest_attempt_id = excluded.latest_attempt_id,
 			   board = excluded.board,
 			   qualification = excluded.qualification,
 			   subject = excluded.subject,
+			   course = excluded.course,
 			   tier = excluded.tier,
 			   paper = excluded.paper,
 			   topic_path_json = excluded.topic_path_json,
@@ -1925,9 +1943,24 @@ export async function recordQuestionAttempt({
 			   source_context_text = excluded.source_context_text,
 			   source_metadata_json = excluded.source_metadata_json,
 			   source_topic_path_json = excluded.source_topic_path_json,
-			   status = 'active',
-			   gap_band = excluded.gap_band,
-			   evidence_count = user_chain_gaps.evidence_count + 1,
+			   status = CASE
+			     WHEN user_chain_gaps.latest_attempt_id = excluded.latest_attempt_id
+			     THEN user_chain_gaps.status
+			     ELSE 'active'
+			   END,
+			   gap_band = CASE
+			     WHEN user_chain_gaps.latest_attempt_id = excluded.latest_attempt_id
+			     THEN user_chain_gaps.gap_band
+			     ELSE excluded.gap_band
+			   END,
+			   evidence_count = CASE
+			     WHEN user_chain_gaps.latest_attempt_id = excluded.latest_attempt_id
+			     THEN user_chain_gaps.evidence_count
+			     WHEN COALESCE(user_chain_gaps.course, '') = COALESCE(excluded.course, '')
+			      AND COALESCE(user_chain_gaps.tier, '') = COALESCE(excluded.tier, '')
+			     THEN user_chain_gaps.evidence_count + 1
+			     ELSE 1
+			   END,
 			   updated_at = CURRENT_TIMESTAMP,
 			   last_seen_at = CURRENT_TIMESTAMP`,
 			[
@@ -1937,10 +1970,11 @@ export async function recordQuestionAttempt({
 				stepId,
 				questionId,
 				attemptId,
-				data.question.meta.board,
-				data.question.meta.qualification,
-				data.question.meta.subject,
-				data.question.meta.tier,
+				learnerSubject.board,
+				learnerSubject.qualification,
+				storedSubject,
+				storedCourse,
+				storedTier,
 				data.question.meta.paper,
 				jsonString([data.question.meta.topic].filter(Boolean)),
 				data.question.meta.marks,
@@ -1967,8 +2001,10 @@ export async function recordQuestionAttempt({
 		 FROM user_chain_gaps
 		 WHERE user_id = ?
 		   AND answer_chain_id = ?
+		   AND course = ?
+		   AND tier = ?
 		   AND status = 'active'`,
-		[user.uid, data.chain.id]
+		[user.uid, data.chain.id, storedCourse, storedTier]
 	);
 	const missing = new Set(result.missingStepIds);
 
@@ -2015,6 +2051,7 @@ async function readGapDetail(userId: string, gapId: string): Promise<GapDetailRo
 		   board,
 		   qualification,
 		   subject,
+		   course,
 		   tier,
 		   paper,
 		   topic_path_json,
@@ -2047,7 +2084,7 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 	if (previous && previous.id !== target.id) {
 		questions.push({
 			id: 'previous-link',
-			question: `What idea comes just before "${shortStepText(target.step_text)}"?`,
+			question: 'What earlier cause or idea starts this part of the explanation?',
 			expectedAnswer: previous.step_text,
 			hint: previous.common_omission ?? 'Use the earlier cause in the method.',
 			focusStepId: previous.id
@@ -2056,7 +2093,14 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 
 	questions.push({
 		id: 'missing-link',
-		question: `What missing step needs to be added for "${shortStepText(target.step_text)}"?`,
+		question:
+			previous && previous.id !== target.id && next && next.id !== target.id
+				? `What link connects "${shortStepText(previous.step_text)}" to "${shortStepText(next.step_text)}"?`
+				: previous && previous.id !== target.id
+					? `What does "${shortStepText(previous.step_text)}" lead to?`
+					: next && next.id !== target.id
+						? `What causes "${shortStepText(next.step_text)}"?`
+						: 'What missing cause or process completes this answer?',
 		expectedAnswer: target.step_text,
 		hint:
 			target.common_omission ??
@@ -2076,6 +2120,106 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 	}
 
 	return questions.slice(0, 3);
+}
+
+function normalizedScopeValue(value: string | null | undefined): string {
+	return (value ?? '').trim().toLowerCase();
+}
+
+export type GapFollowUpScope = {
+	board: string | null;
+	qualification: string | null;
+	subject: string | null;
+	course: string | null;
+	tier: string | null;
+};
+
+function scienceSubjectArea(value: string | null | undefined): string | null {
+	const normalizedValue = normalizedScopeValue(value);
+	if (normalizedValue.includes('biology')) return 'biology';
+	if (normalizedValue.includes('chemistry')) return 'chemistry';
+	if (normalizedValue.includes('physics')) return 'physics';
+	return null;
+}
+
+function questionScienceSubjectArea(question: PracticePageData['question']): string | null {
+	return (
+		scienceSubjectArea(question.meta.subjectArea) ??
+		scienceSubjectArea(question.meta.subject) ??
+		scienceSubjectArea(question.meta.paper)
+	);
+}
+
+function isCombinedScienceQuestion(question: PracticePageData['question']): boolean {
+	const courseText = normalizedScopeValue(`${question.meta.subject} ${question.meta.paper}`);
+	return (
+		courseText.includes('combined science') ||
+		courseText.includes('trilogy') ||
+		courseText.includes('synergy')
+	);
+}
+
+function isGenericScienceSubject(value: string | null | undefined): boolean {
+	const subject = normalizedScopeValue(value);
+	return subject === 'science' || subject.includes('combined science');
+}
+
+function acceptsEveryTier(value: string): boolean {
+	return (
+		!value ||
+		value === 'all' ||
+		value.includes('both') ||
+		(value.includes('foundation') && value.includes('higher'))
+	);
+}
+
+export function isQuestionInGapScope(
+	row: GapFollowUpScope,
+	question: PracticePageData['question'],
+	sourceQuestion: PracticePageData['question'] | null = null
+): boolean {
+	if (
+		(row.board && normalizedScopeValue(question.meta.board) !== normalizedScopeValue(row.board)) ||
+		(row.qualification &&
+			normalizedScopeValue(question.meta.qualification) !== normalizedScopeValue(row.qualification))
+	) {
+		return false;
+	}
+
+	const requiredScienceArea =
+		scienceSubjectArea(row.subject) ??
+		(sourceQuestion ? questionScienceSubjectArea(sourceQuestion) : null);
+	if (requiredScienceArea && questionScienceSubjectArea(question) !== requiredScienceArea) {
+		return false;
+	}
+	if (row.subject && !requiredScienceArea && !isGenericScienceSubject(row.subject)) {
+		const questionSubject = normalizedScopeValue(
+			question.meta.subjectArea ?? question.meta.subject
+		);
+		if (questionSubject !== normalizedScopeValue(row.subject)) return false;
+	}
+
+	const questionTier = normalizedScopeValue(question.meta.tier);
+	const learnerTier = normalizedScopeValue(row.tier);
+	if (learnerTier && !acceptsEveryTier(questionTier) && questionTier !== learnerTier) {
+		return false;
+	}
+
+	const explicitCourse = normalizedScopeValue(row.course);
+	const course =
+		explicitCourse === 'combined science' || explicitCourse === 'separate science'
+			? explicitCourse
+			: sourceQuestion
+				? isCombinedScienceQuestion(sourceQuestion)
+					? 'combined science'
+					: questionScienceSubjectArea(sourceQuestion)
+						? 'separate science'
+						: explicitCourse
+				: explicitCourse;
+	if (course === 'combined science' && !isCombinedScienceQuestion(question)) return false;
+	if (course === 'separate science' && isCombinedScienceQuestion(question)) return false;
+
+	return true;
 }
 
 export async function getGapLearningData(
@@ -2108,6 +2252,12 @@ export async function getGapLearningData(
 	}));
 	const guidedQuestions = buildGuidedQuestions(row, steps);
 	const targetStep = steps.find((step) => step.id === row.chain_step_id) ?? steps[0];
+	const followUpQuestion =
+		questionData?.questions.find(
+			(question) =>
+				question.id !== row.source_question_id &&
+				isQuestionInGapScope(row, question, questionData.question)
+		) ?? null;
 
 	return {
 		gap: dashboardGap,
@@ -2120,10 +2270,19 @@ export async function getGapLearningData(
 				? `/questions/${encodeURIComponent(row.source_question_id)}/practice`
 				: null
 		},
+		followUpQuestion: followUpQuestion
+			? {
+					id: followUpQuestion.id,
+					title: followUpQuestion.title,
+					href: `/questions/${encodeURIComponent(followUpQuestion.id)}/practice`
+				}
+			: null,
 		chain: {
 			id: row.answer_chain_id,
 			title: row.chain_title,
-			href: `/chains/${encodeURIComponent(row.answer_chain_id)}`,
+			href: row.source_question_id
+				? `/questions/${encodeURIComponent(row.source_question_id)}/chain`
+				: `/constellations/${encodeURIComponent(row.answer_chain_id)}`,
 			steps: chainSteps
 		},
 		presentation: {
@@ -2201,12 +2360,14 @@ export async function judgeGapFinalAnswer({
 	userId,
 	gapId,
 	answer,
-	guidedAnswers
+	guidedAnswers,
+	submissionId
 }: {
 	userId: string;
 	gapId: string;
 	answer: string;
 	guidedAnswers: Record<string, string>;
+	submissionId?: string;
 }): Promise<GapFinalJudgeResult | null> {
 	const data = await getGapLearningData(userId, gapId);
 	if (!data) return null;
@@ -2229,14 +2390,17 @@ export async function judgeGapFinalAnswer({
 	const summary = gapClosed
 		? 'The missing step is now explicit. Use the same method on the next similar question.'
 		: 'The answer still needs the target missing step. Add it directly, then connect it to the next step.';
+	const runId = submissionId ?? randomId('gaprun');
 
-	await executePersonalQuery(
+	const insertedRun = await queryPersonalFirst<{ id: string }>(
 		`INSERT INTO user_gap_builder_runs (
 		   id, user_id, gap_id, phase, guided_answers_json, final_answer, result_json
 		 )
-		 VALUES (?, ?, ?, 'final_check', ?, ?, ?)`,
+		 VALUES (?, ?, ?, 'final_check', ?, ?, ?)
+		 ON CONFLICT(id) DO NOTHING
+		 RETURNING id`,
 		[
-			randomId('gaprun'),
+			runId,
 			userId,
 			gapId,
 			jsonString(guidedAnswers),
@@ -2244,6 +2408,14 @@ export async function judgeGapFinalAnswer({
 			jsonString({ awardedMarks, maxMarks, presentStepIds, missingStepIds, gapClosed })
 		]
 	);
+	if (!insertedRun) {
+		const existing = await queryPersonalFirst<{ id: string }>(
+			`SELECT id FROM user_gap_builder_runs
+			 WHERE id = ? AND user_id = ? AND gap_id = ? AND final_answer = ?`,
+			[runId, userId, gapId, answer]
+		);
+		if (!existing) throw new Error('Gap response id is already in use.');
+	}
 	await executePersonalQuery(
 		`UPDATE user_chain_gaps
 		 SET status = ?,
@@ -2252,10 +2424,16 @@ export async function judgeGapFinalAnswer({
 		     last_seen_at = CURRENT_TIMESTAMP
 		 WHERE user_id = ?
 		   AND id = ?`,
-		[gapClosed ? 'closed' : 'active', gapClosed ? 'closed' : 'small_gap', userId, gapId]
+		[
+			gapClosed ? 'awaiting_check' : 'active',
+			gapClosed ? 'awaiting_check' : 'small_gap',
+			userId,
+			gapId
+		]
 	);
 
 	return {
+		runId,
 		awardedMarks,
 		maxMarks,
 		summary,
@@ -2265,15 +2443,15 @@ export async function judgeGapFinalAnswer({
 	};
 }
 
-function intervalDaysForRecallGrade(grade: RecallReviewGrade): number {
-	if (grade === 'easy') return 7;
-	if (grade === 'good') return 3;
-	if (grade === 'hard') return 1;
-	return 0;
+function intervalDaysForRecallGrade(grade: RecallReviewGrade, previousInterval = 0): number {
+	if (grade === 'easy') return Math.max(3, previousInterval * 3 || 3);
+	if (grade === 'good') return Math.max(1, previousInterval * 2 || 1);
+	if (grade === 'hard') return Math.max(0.25, previousInterval * 1.2 || 0.25);
+	return 5 / (24 * 60);
 }
 
-function dueAtForInterval(intervalDays: number): string {
-	return new Date(Date.now() + intervalDays * 24 * 60 * 60 * 1000)
+function dueAtForInterval(intervalDays: number, fromTime = Date.now()): string {
+	return new Date(fromTime + intervalDays * 24 * 60 * 60 * 1000)
 		.toISOString()
 		.slice(0, 19)
 		.replace('T', ' ');
@@ -2293,37 +2471,82 @@ export async function recordRecallCardReview({
 	await upsertUserProfile(user);
 	const card: RecallCard | undefined = recallCards.find((entry) => entry.id === cardId);
 	if (!card) return null;
-	const intervalDays = intervalDaysForRecallGrade(grade);
-	const dueAt = dueAtForInterval(intervalDays);
-	const correctIncrement = grade === 'again' ? 0 : 1;
+	const settings = await getLearnerProfileSettings(user);
+	const learnerSubject = settings.subjects.find(
+		(entry) => entry.enabled && entry.subject === card.subject
+	);
+	if (!learnerSubject) return null;
+	const evidenceRows = await queryPersonalRows<{
+		outcome: string;
+		occurred_at: string;
+		metadata_json: string;
+	}>(
+		`SELECT outcome, occurred_at, metadata_json
+		 FROM user_learning_evidence
+		 WHERE user_id = ?
+			   AND component_kind = 'recall_card'
+			   AND component_id = ?
+			   AND course = ?
+			   AND tier = ?
+			 ORDER BY occurred_at, id`,
+		[user.uid, card.id, learnerSubject.course, learnerSubject.tier]
+	);
+	const reviews = evidenceRows
+		.map((row) => ({
+			row,
+			metadata: parseJson<{ grade?: string; mode?: string }>(row.metadata_json, {})
+		}))
+		.filter(
+			(entry): entry is typeof entry & { metadata: { grade: RecallReviewGrade; mode?: string } } =>
+				['again', 'hard', 'good', 'easy'].includes(entry.metadata.grade ?? '')
+		);
+	if (reviews.length === 0) return null;
+	let intervalDays = 0;
+	for (const review of reviews) {
+		intervalDays = intervalDaysForRecallGrade(review.metadata.grade, intervalDays);
+	}
+	const latest = reviews.at(-1)!;
+	const latestTime = Date.parse(latest.row.occurred_at);
+	const dueAt = dueAtForInterval(
+		intervalDays,
+		Number.isFinite(latestTime) ? latestTime : Date.now()
+	);
+	const correctCount = reviews.filter((review) => review.metadata.grade !== 'again').length;
+	const latestGrade = latest.metadata.grade;
+	const latestMode = latest.metadata.mode ?? mode;
 
 	await executePersonalQuery(
 		`INSERT INTO user_recall_card_reviews (
-		   user_id, card_id, subject, topic_id, mode, last_grade,
+		   user_id, card_id, subject, course, tier, topic_id, mode, last_grade,
 		   seen_count, correct_count, interval_days, due_at
 		 )
-		 VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		 ON CONFLICT(user_id, card_id) DO UPDATE SET
 		   subject = excluded.subject,
+		   course = excluded.course,
+		   tier = excluded.tier,
 		   topic_id = excluded.topic_id,
 		   mode = excluded.mode,
 		   last_grade = excluded.last_grade,
-		   seen_count = user_recall_card_reviews.seen_count + 1,
-		   correct_count = user_recall_card_reviews.correct_count + ?,
+		   seen_count = excluded.seen_count,
+		   correct_count = excluded.correct_count,
 		   interval_days = excluded.interval_days,
 		   due_at = excluded.due_at,
-		   updated_at = CURRENT_TIMESTAMP`,
+		   updated_at = CURRENT_TIMESTAMP
+		 WHERE excluded.seen_count >= user_recall_card_reviews.seen_count`,
 		[
 			user.uid,
 			card.id,
 			card.subject,
+			learnerSubject.course,
+			learnerSubject.tier,
 			card.topicId,
-			mode,
-			grade,
-			correctIncrement,
+			latestMode,
+			latestGrade,
+			reviews.length,
+			correctCount,
 			intervalDays,
-			dueAt,
-			correctIncrement
+			dueAt
 		]
 	);
 

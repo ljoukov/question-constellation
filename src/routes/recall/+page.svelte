@@ -8,12 +8,19 @@
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
 	import type {
 		RecallCard,
 		RecallCardKind,
 		RecallSubject,
 		RecallTopic
 	} from '$lib/recall/aqaScienceRecall';
+	import {
+		readRecallSession,
+		recallSessionStorageKey,
+		type RecallSessionScope,
+		type StoredRecallSession
+	} from '$lib/recall/sessionState';
 	import {
 		flushRecallReviewQueue,
 		queueRecallReview,
@@ -33,7 +40,7 @@
 	} from '@lucide/svelte';
 	import { onMount, untrack } from 'svelte';
 
-	type Mode = 'recall' | 'recognise' | 'reverse';
+	type Mode = 'mixed' | 'recall' | 'recognise' | 'reverse';
 	type Grade = 'again' | 'hard' | 'good' | 'easy';
 	type CardPresentation = 'flashcard' | 'mcq';
 	type SubjectFilter = RecallSubject | 'All subjects';
@@ -77,23 +84,37 @@
 			initialSize: string;
 			initialStart: boolean;
 			initialReturnTo: string;
+			serverProgress: Array<{
+				cardId: string;
+				lastGrade: string;
+				seenCount: number;
+				correctCount: number;
+				intervalDays: number;
+				dueAt: string;
+				updatedAt: string;
+			}>;
 			user: { uid: string; email: string; name: string | null; photoUrl: string | null } | null;
 		};
 	} = $props();
 
-	const storageKey = 'question-constellation.recall-progress.v1';
+	const storageKey = untrack(
+		() => `question-constellation.recall-progress.v2:${data.user?.uid ?? 'anonymous'}`
+	);
+	const sessionStorageKey = untrack(() => recallSessionStorageKey(data.user?.uid ?? 'anonymous'));
 	const topicById = untrack(() => new Map(data.topics.map((topic) => [topic.id, topic])));
+	const cardById = untrack(() => new Map(data.cards.map((card) => [card.id, card])));
 	const subjectOptions = untrack(() => Array.from(data.subjects));
 	const kindOptions = untrack(
 		() => Object.entries(data.kindLabels) as Array<[RecallCardKind, string]>
 	);
 	const returnToHref = untrack(() => safeReturnPath(data.initialReturnTo));
 	const modeOptions: Array<{ value: Mode; label: string; icon: typeof Brain }> = [
+		{ value: 'mixed', label: 'Quick recall', icon: Layers3 },
 		{ value: 'recall', label: 'Flashcards', icon: Brain },
 		{ value: 'recognise', label: 'Multiple choice', icon: Target },
 		{ value: 'reverse', label: 'Reverse', icon: Shuffle }
 	];
-	const stackSizeOptions = [5, 10, 15] as const;
+	const stackSizeOptions = [5, 8, 10, 15] as const;
 
 	function validSubject(value: string): SubjectFilter {
 		return subjectOptions.includes(value as SubjectFilter)
@@ -116,8 +137,17 @@
 	}
 
 	function safeReturnPath(value: string): string {
-		if (!value.startsWith('/') || value.startsWith('//')) return '/';
+		if (!value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value))
+			return '/';
 		return value;
+	}
+
+	function parseServerDate(value: string): number {
+		const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(value)
+			? `${value.replace(' ', 'T')}Z`
+			: value;
+		const parsed = Date.parse(normalized);
+		return Number.isFinite(parsed) ? parsed : 0;
 	}
 
 	const initialSubject = untrack(() => validSubject(data.initialSubject));
@@ -128,6 +158,17 @@
 	const initialStackSize = untrack(() => validStackSize(data.initialSize));
 	const initialCardCount = untrack(
 		() => filterCards(initialSubject, initialTopic, initialKind, initialSearch).length
+	);
+	const initialProgress = untrack(() => progressFromServer(data.serverProgress));
+	const initialSessionCardIds = untrack(() =>
+		data.initialStart
+			? rankCards(
+					filterCards(initialSubject, initialTopic, initialKind, initialSearch),
+					initialProgress
+				)
+					.slice(0, Math.min(initialStackSize, initialCardCount))
+					.map((card) => card.id)
+			: []
 	);
 
 	let selectedSubject = $state<SubjectFilter>(initialSubject);
@@ -141,10 +182,13 @@
 	let cardIndex = $state(0);
 	let cardPositionInSession = $state(0);
 	let reviewedInSession = $state(0);
+	let rememberedInSession = $state(0);
+	let returningSoonerInSession = $state(0);
 	let revealed = $state(false);
 	let selectedChoice = $state<string | null>(null);
 	let mcqFeedback = $state<McqFeedback>(null);
-	let progressById = $state<Record<string, RecallProgress>>({});
+	let progressById = $state<Record<string, RecallProgress>>(initialProgress);
+	let sessionCardIds = $state<string[]>(initialSessionCardIds);
 	let dragX = $state(0);
 	let dragY = $state(0);
 	let dragStartX = $state(0);
@@ -156,6 +200,12 @@
 	let recallSyncFailure = $state<RequestFailure | null>(null);
 	let recallSyncPendingCount = $state(0);
 	let recallSyncing = $state(false);
+	let reducedMotion = $state(false);
+	let sessionHydrated = $state(false);
+	let recallSessionId = $state(
+		untrack(() => (data.initialStart ? createActivityId('recall-session') : ''))
+	);
+	let cardStartedAt = $state(untrack(() => (data.initialStart ? Date.now() : 0)));
 
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
 	const availableTopics = $derived(
@@ -166,18 +216,9 @@
 	const filteredCards = $derived(
 		filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery)
 	);
-	const rankedCards = $derived.by(() =>
-		[...filteredCards].sort((left, right) => {
-			const leftProgress = progressById[left.id];
-			const rightProgress = progressById[right.id];
-			const leftDue = !leftProgress || leftProgress.dueAt <= Date.now();
-			const rightDue = !rightProgress || rightProgress.dueAt <= Date.now();
-			if (leftDue !== rightDue) return leftDue ? -1 : 1;
-			return (leftProgress?.lastSeenAt ?? 0) - (rightProgress?.lastSeenAt ?? 0);
-		})
-	);
+	const rankedCards = $derived(rankCards(filteredCards, progressById));
 	const sessionCards = $derived(
-		rankedCards.slice(0, Math.min(stackSize, Math.max(0, rankedCards.length)))
+		sessionCardIds.map((id) => cardById.get(id)).filter((card): card is RecallCard => Boolean(card))
 	);
 	const currentCard = $derived((sessionActive ? sessionCards : rankedCards)[cardIndex] ?? null);
 	const currentTopic = $derived(currentCard ? topicById.get(currentCard.topicId) : null);
@@ -189,6 +230,7 @@
 	const currentPresentation = $derived<CardPresentation>(
 		currentCard ? presentationFor(currentCard) : 'flashcard'
 	);
+	const currentExplanation = $derived(currentCard ? explanationTextFor(currentCard) : null);
 	const filteredCardCount = $derived(filteredCards.length);
 	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
 	const seenCount = $derived(filteredCards.filter((card) => progressById[card.id]?.seen).length);
@@ -209,19 +251,47 @@
 	const sessionProgress = $derived(
 		totalCards === 0 ? '0%' : `${Math.min(100, (cardPositionInSession / totalCards) * 100)}%`
 	);
-	const activityLabel = $derived(mode === 'recognise' ? 'Multiple choice' : 'Flashcards');
+	const activityLabel = $derived(
+		mode === 'mixed' ? 'Quick recall' : mode === 'recognise' ? 'Multiple choice' : 'Flashcards'
+	);
+	const signedInSubjectHandoff = $derived(
+		Boolean(data.user && returnToHref.startsWith('/subjects/'))
+	);
 	const completionReturnLabel = $derived.by(() => {
 		if (returnToHref.startsWith('/questions/')) return 'Back to question';
-		if (returnToHref.startsWith('/gaps/')) return 'Back to repair';
+		if (returnToHref.startsWith('/gaps/')) return 'Back to gap';
 		if (returnToHref.startsWith('/recall/')) return 'Choose another stack';
+		if (signedInSubjectHandoff) return 'See what’s next';
+		if (returnToHref.startsWith('/subjects/')) return 'Back to subject';
 		if (returnToHref === '/') return 'Home';
 		return 'Done';
+	});
+	const completionSummary = $derived.by(() => {
+		if (reviewedInSession === 0) {
+			return 'No answers were recorded, so your next recommendation is unchanged.';
+		}
+		const result =
+			returningSoonerInSession === 0
+				? `${rememberedInSession} remembered today.`
+				: `${rememberedInSession} remembered today; ${returningSoonerInSession} will return sooner.`;
+		return signedInSubjectHandoff
+			? `${result} Your subject page will use this evidence to choose what comes next.`
+			: `${result} Your answers are saved.`;
 	});
 	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
 	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Good' : 'Review');
 	const dragProgress = $derived(Math.min(1, Math.abs(dragX) / 140));
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 	const slowMotion = $derived(page.url.searchParams.get('debugMotion') === 'slow');
+	const sessionAnnouncement = $derived.by(() => {
+		if (sessionComplete) return `Session complete. ${reviewedInSession} prompts checked.`;
+		if (!currentCard) return '';
+		if (!revealed) return `Card ${cardPositionInSession + 1} of ${totalCards}.`;
+		if (currentPresentation === 'mcq') {
+			return `${mcqFeedback === 'correct' ? 'Correct.' : 'Not this one.'} Answer shown.`;
+		}
+		return 'Answer shown.';
+	});
 
 	$effect(() => {
 		if (selectedTopic === 'all') return;
@@ -271,13 +341,94 @@
 		});
 	});
 
+	$effect(() => {
+		if (!browser || !sessionHydrated || !sessionActive || sessionComplete) return;
+		if (sessionCardIds.length === 0 || !recallSessionId) return;
+		const snapshot: StoredRecallSession = {
+			version: 1,
+			scope: currentSessionScope(),
+			cardIds: [...sessionCardIds],
+			cardIndex,
+			cardPositionInSession,
+			reviewedInSession,
+			rememberedInSession,
+			returningSoonerInSession,
+			revealed: revealed || selectedChoice !== null,
+			selectedChoice,
+			mcqFeedback,
+			sessionId: recallSessionId,
+			updatedAt: Date.now()
+		};
+		try {
+			window.localStorage.setItem(sessionStorageKey, JSON.stringify(snapshot));
+		} catch {
+			// Recall still works when storage is unavailable.
+		}
+	});
+
 	onMount(() => {
+		let localProgress: Record<string, RecallProgress> = {};
 		try {
 			const raw = window.localStorage.getItem(storageKey);
-			if (raw) progressById = JSON.parse(raw) as Record<string, RecallProgress>;
+			if (raw) localProgress = JSON.parse(raw) as Record<string, RecallProgress>;
 		} catch {
-			progressById = {};
+			localProgress = {};
 		}
+		const merged = { ...localProgress };
+		for (const remote of data.serverProgress) {
+			const remoteSeenAt = parseServerDate(remote.updatedAt);
+			const local = merged[remote.cardId];
+			if (local && local.lastSeenAt > remoteSeenAt) continue;
+			const grade = ['again', 'hard', 'good', 'easy'].includes(remote.lastGrade)
+				? (remote.lastGrade as Grade)
+				: 'again';
+			merged[remote.cardId] = {
+				seen: remote.seenCount,
+				correct: remote.correctCount,
+				streak: grade === 'again' ? 0 : Math.max(1, local?.streak ?? 1),
+				intervalDays: remote.intervalDays,
+				dueAt: parseServerDate(remote.dueAt),
+				lastGrade: grade,
+				lastSeenAt: remoteSeenAt,
+				wrongChoices: local?.wrongChoices ?? {}
+			};
+		}
+		progressById = merged;
+		const eligibleCards = filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery);
+		let restoredSession: StoredRecallSession | null = null;
+		if (data.initialStart && eligibleCards.length > 0) {
+			try {
+				restoredSession = readRecallSession(
+					window.localStorage.getItem(sessionStorageKey),
+					currentSessionScope(),
+					new Set(eligibleCards.map((card) => card.id))
+				);
+			} catch {
+				restoredSession = null;
+			}
+		}
+		if (restoredSession) {
+			sessionCardIds = restoredSession.cardIds;
+			cardIndex = restoredSession.cardIndex;
+			cardPositionInSession = restoredSession.cardPositionInSession;
+			reviewedInSession = restoredSession.reviewedInSession;
+			rememberedInSession = restoredSession.rememberedInSession;
+			returningSoonerInSession = restoredSession.returningSoonerInSession;
+			revealed = restoredSession.revealed;
+			selectedChoice = restoredSession.selectedChoice;
+			mcqFeedback = restoredSession.mcqFeedback;
+			recallSessionId = restoredSession.sessionId;
+			cardMotion = 'idle';
+			cardStartedAt = Date.now();
+		} else if (data.initialStart && eligibleCards.length > 0) {
+			sessionCardIds = rankCards(eligibleCards, merged)
+				.slice(0, Math.min(stackSize, eligibleCards.length))
+				.map((card) => card.id);
+			clearPersistedSession();
+		}
+		sessionHydrated = true;
+		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (Object.keys(merged).length > 0) saveProgress(merged);
 		if (data.user) void flushRecallSync();
 		const retrySync = () => void flushRecallSync();
 		window.addEventListener('online', retrySync);
@@ -323,7 +474,60 @@
 	}
 
 	function motionMs(delayMs: number) {
+		if (reducedMotion) return 0;
 		return slowMotion ? delayMs * 4 : delayMs;
+	}
+
+	function progressFromServer(rows: typeof data.serverProgress): Record<string, RecallProgress> {
+		const progress: Record<string, RecallProgress> = {};
+		for (const remote of rows) {
+			const grade = ['again', 'hard', 'good', 'easy'].includes(remote.lastGrade)
+				? (remote.lastGrade as Grade)
+				: 'again';
+			progress[remote.cardId] = {
+				seen: remote.seenCount,
+				correct: remote.correctCount,
+				streak: grade === 'again' ? 0 : 1,
+				intervalDays: remote.intervalDays,
+				dueAt: parseServerDate(remote.dueAt),
+				lastGrade: grade,
+				lastSeenAt: parseServerDate(remote.updatedAt),
+				wrongChoices: {}
+			};
+		}
+		return progress;
+	}
+
+	function rankCards(cards: RecallCard[], progress: Record<string, RecallProgress>) {
+		return [...cards].sort((left, right) => {
+			const leftProgress = progress[left.id];
+			const rightProgress = progress[right.id];
+			const leftDue = !leftProgress || leftProgress.dueAt <= Date.now();
+			const rightDue = !rightProgress || rightProgress.dueAt <= Date.now();
+			if (leftDue !== rightDue) return leftDue ? -1 : 1;
+			return (leftProgress?.lastSeenAt ?? 0) - (rightProgress?.lastSeenAt ?? 0);
+		});
+	}
+
+	function currentSessionScope(): RecallSessionScope {
+		return {
+			subject: selectedSubject,
+			topic: selectedTopic,
+			kind: selectedKind,
+			mode,
+			stackSize,
+			search: searchQuery.trim(),
+			returnTo: returnToHref
+		};
+	}
+
+	function clearPersistedSession() {
+		if (!browser) return;
+		try {
+			window.localStorage.removeItem(sessionStorageKey);
+		} catch {
+			// Recall still works when storage is unavailable.
+		}
 	}
 
 	function topicFor(card: RecallCard) {
@@ -365,28 +569,14 @@
 	}
 
 	function presentationFor(card: RecallCard): CardPresentation {
-		return mode === 'recognise' && answerChoices(card).length >= 2 ? 'mcq' : 'flashcard';
+		const useRecognition =
+			mode === 'recognise' || (mode === 'mixed' && cardPositionInSession % 3 === 1);
+		return useRecognition && answerChoices(card).length >= 2 ? 'mcq' : 'flashcard';
 	}
 
-	function explanationTextFor(card: RecallCard) {
-		if (card.explanation) return card.explanation;
-		const answer = answerTextFor(card);
-		const topic = topicFor(card);
-		const topicText = topic ? ` in ${topic.title}` : '';
-		const prompt = promptTextFor(card).replace(/\s+/g, ' ').trim();
-		if (card.kind === 'formula') {
-			return `${answer} is the formula that matches this recall prompt${topicText}. The other options use different quantities or relationships.`;
-		}
-		if (card.kind === 'unit') {
-			return `${answer} is the accepted unit for this quantity${topicText}. The distractors belong to different measurements.`;
-		}
-		if (card.kind === 'test-result') {
-			return `${answer} is the expected observation or result for this test. The answer must match the condition in the prompt.`;
-		}
-		if (card.kind === 'comparison') {
-			return `${answer} gives the distinguishing comparison asked for by the prompt: ${prompt}`;
-		}
-		return `${answer} is the expected AQA recall because it answers the prompt directly: ${prompt}`;
+	function explanationTextFor(card: RecallCard): string | null {
+		const explanation = card.explanation?.trim();
+		return explanation || null;
 	}
 
 	function topicCardCount(topicId: string) {
@@ -426,20 +616,31 @@
 
 	function startSessionState() {
 		if (filteredCards.length === 0) return;
+		recallSessionId = createActivityId('recall-session');
+		sessionCardIds = rankedCards
+			.slice(0, Math.min(stackSize, rankedCards.length))
+			.map((card) => card.id);
 		sessionActive = true;
 		sessionComplete = false;
 		cardIndex = 0;
 		cardPositionInSession = 0;
 		reviewedInSession = 0;
+		rememberedInSession = 0;
+		returningSoonerInSession = 0;
 		resetCardState();
 	}
 
 	function quitSessionState() {
+		clearPersistedSession();
 		sessionActive = false;
+		sessionCardIds = [];
 		sessionComplete = false;
 		cardIndex = 0;
 		cardPositionInSession = 0;
 		reviewedInSession = 0;
+		rememberedInSession = 0;
+		returningSoonerInSession = 0;
+		recallSessionId = '';
 		resetCardState();
 	}
 
@@ -448,12 +649,8 @@
 		syncRecallUrl('push', true);
 	}
 
-	function quitSession() {
-		quitSessionState();
-		syncRecallUrl('push', false);
-	}
-
 	function exitSession() {
+		void flushRecallSync();
 		quitSessionState();
 		void goto(returnToHref);
 	}
@@ -467,6 +664,7 @@
 		dragY = 0;
 		dragging = false;
 		activePointerId = null;
+		cardStartedAt = sessionActive && !sessionComplete ? Date.now() : 0;
 		cardMotion = options?.entering ? 'entering' : 'idle';
 		if (options?.entering) {
 			afterMotion(360, () => {
@@ -478,7 +676,11 @@
 	function saveProgress(nextProgress: Record<string, RecallProgress>) {
 		progressById = nextProgress;
 		if (!browser) return;
-		window.localStorage.setItem(storageKey, JSON.stringify(nextProgress));
+		try {
+			window.localStorage.setItem(storageKey, JSON.stringify(nextProgress));
+		} catch {
+			// Keep the active session usable when storage is unavailable.
+		}
 	}
 
 	function gradeCard(card: RecallCard, grade: Grade, chosenAnswer?: string) {
@@ -513,13 +715,23 @@
 				wrongChoices
 			}
 		});
+		if (grade === 'again') returningSoonerInSession += 1;
+		else rememberedInSession += 1;
 		syncRecallReview(card, grade);
 		advanceCard(true);
 	}
 
 	function syncRecallReview(card: RecallCard, grade: Grade) {
 		if (!browser || !data.user) return;
-		queueRecallReview(data.user.uid, { cardId: card.id, grade, mode });
+		const reviewMode: Exclude<Mode, 'mixed'> =
+			mode === 'mixed' ? (currentPresentation === 'mcq' ? 'recognise' : 'recall') : mode;
+		queueRecallReview(data.user.uid, {
+			cardId: card.id,
+			grade,
+			mode: reviewMode,
+			sourceSessionId: recallSessionId || createActivityId('recall-session'),
+			responseDurationMs: responseDurationMs(cardStartedAt)
+		});
 		void flushRecallSync().catch((error) => {
 			console.warn('Recall review sync failed unexpectedly.', error);
 		});
@@ -609,6 +821,7 @@
 		if (countAsAnswered) reviewedInSession += 1;
 		if (cardIndex + 1 >= sessionCards.length) {
 			sessionComplete = true;
+			clearPersistedSession();
 			resetCardState();
 			return;
 		}
@@ -750,30 +963,37 @@
 			</button>
 			<div class="session-progress">
 				<div class="session-progress-text">
-					<strong>{Math.min(cardPositionInSession + 1, totalCards)} of {totalCards}</strong>
-					<span>{activityLabel} · {selectedSubject}</span>
+					<strong>
+						{sessionComplete
+							? activityLabel
+							: `${Math.min(cardPositionInSession + 1, totalCards)} of ${totalCards}`}
+					</strong>
+					<span>{sessionComplete ? selectedSubject : `${activityLabel} · ${selectedSubject}`}</span>
 				</div>
 				<div class="session-progress-track" aria-hidden="true">
 					<span style={`width: ${sessionProgress}`}></span>
 				</div>
 			</div>
 		</header>
+		<p class="sr-only" aria-live="polite" aria-atomic="true">{sessionAnnouncement}</p>
 
 		{#if sessionComplete}
 			<section class="session-complete">
 				<p class="recall-kicker">Session complete</p>
-				<h1>{reviewedInSession} cards reviewed</h1>
-				<p>{steadyCount} steady cards in this filter. {dueCount} still due for review.</p>
+				<h1>
+					{reviewedInSession}
+					{reviewedInSession === 1 ? 'prompt' : 'prompts'} checked
+				</h1>
+				<p>{completionSummary}</p>
 				<div class="session-complete-actions">
 					<button type="button" class="session-primary" onclick={exitSession}>
 						{completionReturnLabel}
 					</button>
-					<button type="button" class="session-secondary" onclick={startSession}>
-						More cards
-					</button>
-					<button type="button" class="session-secondary" onclick={quitSession}>
-						Adjust cards
-					</button>
+					{#if !signedInSubjectHandoff}
+						<button type="button" class="session-secondary" onclick={startSession}>
+							Another set
+						</button>
+					{/if}
 				</div>
 			</section>
 		{:else if currentCard}
@@ -781,7 +1001,6 @@
 				class="card-stage"
 				class:flipping-stack={cardMotion === 'flipping'}
 				class:moving-stack={['dragging', 'exiting-left', 'exiting-right'].includes(cardMotion)}
-				aria-live="polite"
 			>
 				{#if followingCard}
 					<article class="stack-card preview two" aria-hidden="true"></article>
@@ -791,15 +1010,12 @@
 					<article class="stack-card preview one" aria-hidden="true">
 						<div class="card-face front">
 							<header class="card-meta">
-								<span>{nextCard.subject}</span>
 								<span>{data.kindLabels[nextCard.kind]}</span>
-								<span>{nextCard.specRef}</span>
 							</header>
 							<section class="card-prompt">
 								<p>{topic?.title ?? 'AQA Science'}</p>
 								<h1><MathText text={promptTextFor(nextCard)} /></h1>
 							</section>
-							<p class="card-gesture-hint">Next card</p>
 						</div>
 					</article>
 				{/if}
@@ -830,11 +1046,14 @@
 						{/if}
 
 						<div class="card-flipper">
-							<div class="card-face front" class:mcq-front={currentPresentation === 'mcq'}>
+							<div
+								class="card-face front"
+								class:mcq-front={currentPresentation === 'mcq'}
+								aria-hidden={revealed}
+								inert={revealed}
+							>
 								<header class="card-meta">
-									<span>{currentCard.subject}</span>
 									<span>{data.kindLabels[currentCard.kind]}</span>
-									<span>{currentCard.specRef}</span>
 								</header>
 
 								<section class="card-prompt">
@@ -860,7 +1079,6 @@
 										{/each}
 									</div>
 								{:else}
-									<p class="card-gesture-hint">Tap the card to flip and reveal.</p>
 									<button
 										type="button"
 										class="card-reveal-hitbox"
@@ -872,11 +1090,9 @@
 								{/if}
 							</div>
 
-							<div class="card-face back" aria-hidden={!revealed}>
+							<div class="card-face back" aria-hidden={!revealed} inert={!revealed}>
 								<header class="card-meta">
-									<span>{currentCard.subject}</span>
 									<span>{data.kindLabels[currentCard.kind]}</span>
-									<span>{currentCard.specRef}</span>
 								</header>
 
 								{#if currentPresentation === 'mcq'}
@@ -892,25 +1108,21 @@
 												<strong><MathText text={selectedChoice} /></strong>
 											</div>
 										{/if}
-										<div class="mcq-explanation">
-											<span>Why</span>
-											<p><MathText text={explanationTextFor(currentCard)} /></p>
-										</div>
+										{#if currentExplanation}
+											<div class="mcq-explanation">
+												<span>Why</span>
+												<p><MathText text={currentExplanation} /></p>
+											</div>
+										{/if}
 									</section>
 								{:else}
 									<section class="card-answer">
-										<p>Expected recall</p>
+										<p>Answer</p>
 										<div>
 											<MathText text={answerTextFor(currentCard)} />
 										</div>
 									</section>
 								{/if}
-
-								<p class="card-gesture-hint">
-									{currentPresentation === 'mcq'
-										? 'Read the explanation, then continue.'
-										: 'Swipe right if you had it. Swipe left to review again.'}
-								</p>
 							</div>
 						</div>
 					</article>
@@ -975,7 +1187,6 @@
 			searchValue={searchQuery}
 			searchPlaceholder="Search recall cards"
 			onSearchChange={updateSearch}
-			showNavigation
 		/>
 
 		<section class="setup-shell" aria-label="Recall setup">
@@ -1478,8 +1689,7 @@
 		opacity: 0.18;
 	}
 
-	.stack-card.preview .card-meta,
-	.stack-card.preview .card-gesture-hint {
+	.stack-card.preview .card-meta {
 		opacity: 0.78;
 	}
 
@@ -1620,8 +1830,7 @@
 	}
 
 	.card-prompt p,
-	.card-answer p,
-	.card-gesture-hint {
+	.card-answer p {
 		margin: 0;
 		color: #647085;
 		font-size: 0.78rem;
@@ -1719,12 +1928,6 @@
 
 	.mcq-explanation {
 		padding-top: 0.2rem;
-	}
-
-	.card-gesture-hint {
-		padding-top: 0.75rem;
-		border-top: 1px solid #d9e0ea;
-		text-transform: none;
 	}
 
 	.choice-grid {
@@ -1978,7 +2181,6 @@
 	:global(:root[data-theme='dark']) .session-progress-text,
 	:global(:root[data-theme='dark']) .card-prompt p,
 	:global(:root[data-theme='dark']) .card-answer p,
-	:global(:root[data-theme='dark']) .card-gesture-hint,
 	:global(:root[data-theme='dark']) .session-complete p:not(.recall-kicker) {
 		color: #a7b4c5;
 	}
@@ -2258,11 +2460,6 @@
 			line-height: 1.18;
 		}
 
-		.card-gesture-hint {
-			padding-top: 0.45rem;
-			font-size: 0.7rem;
-		}
-
 		.session-actions {
 			min-height: calc(3.72rem + env(safe-area-inset-bottom));
 			padding: 0.48rem 0.64rem max(0.55rem, env(safe-area-inset-bottom));
@@ -2292,5 +2489,16 @@
 
 	:global(:root[data-theme='dark']) .stack-card.preview {
 		box-shadow: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.stack-card,
+		.card-flipper,
+		.card-face,
+		.session-progress-track span,
+		.choice-grid button {
+			animation: none !important;
+			transition-duration: 0.01ms !important;
+		}
 	}
 </style>

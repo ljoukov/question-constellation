@@ -1,4 +1,5 @@
 export type StemSubject = 'Biology' | 'Chemistry' | 'Physics' | 'Combined Science';
+export type StemScienceCourse = 'Combined Science' | 'Separate Science';
 
 export type StemCurriculumTopic = {
 	id: string;
@@ -239,6 +240,53 @@ export const aqaStemCurriculum: StemCurriculumSubject[] = [
 ];
 
 export const stemSubjectOptions = aqaStemCurriculum.map((subject) => subject.subject);
+
+const combinedSpecificationUrl = `${sourceBase}/subjects/science/gcse/science-8464/specification`;
+const combinedSectionBySubject = {
+	Biology: '4',
+	Chemistry: '5',
+	Physics: '6'
+} as const;
+const combinedSubjectPath = {
+	Biology: 'biology-subject-content',
+	Chemistry: 'chemistry-subject-content',
+	Physics: 'physics-subject-content'
+} as const;
+
+/**
+ * Returns the official top-level curriculum for the learner's actual AQA science course.
+ * Combined Science reuses the co-teachable chapter names, but has its own specification,
+ * section codes and component ids. Physics-only Space physics and the separate Chemistry
+ * key-ideas chapter are deliberately excluded.
+ */
+export function getAqaStemSubjectForCourse(
+	subject: 'Biology' | 'Chemistry' | 'Physics',
+	course: StemScienceCourse
+): StemCurriculumSubject {
+	const separate = getAqaStemSubject(subject);
+	if (course === 'Separate Science') return separate;
+	const section = combinedSectionBySubject[subject];
+	const excludedTitles = new Set(
+		subject === 'Physics' ? ['Space physics'] : subject === 'Chemistry' ? ['Key ideas'] : []
+	);
+	return {
+		...separate,
+		specificationCode: '8464',
+		specificationUrl: combinedSpecificationUrl,
+		localSpecificationPath: '',
+		topics: separate.topics
+			.filter((topic) => !excludedTitles.has(topic.title))
+			.map((topic) => ({
+				...topic,
+				id: `aqa-gcse-combined-science-${subject.toLowerCase()}-${topic.id.replace(
+					/^aqa-gcse-(?:biology|chemistry|physics)-/,
+					''
+				)}`,
+				code: `${section}.${topic.code.split('.').slice(1).join('.')}`,
+				specUrl: `${combinedSpecificationUrl}/${combinedSubjectPath[subject]}`
+			}))
+	};
+}
 
 export function getAqaStemSubject(subject: string | null | undefined): StemCurriculumSubject {
 	const normalized = (subject ?? '').trim().toLowerCase();

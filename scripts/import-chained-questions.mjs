@@ -4,9 +4,30 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import {
+	deriveQuestionCardTitle,
+	QUESTION_CARD_TITLE_CONTRACT
+} from '../src/lib/questionCardTitle.js';
+import {
 	blockingAnswerChainSpecificityIssues,
 	chainSpecificityIssueSummary
 } from './answer-chain-specificity.mjs';
+import {
+	CHAINED_IMPORT_OWNER,
+	chainSummaryForImport,
+	childOwnershipSql,
+	importConflictDiagnosticStatements,
+	importOwnershipSql,
+	modelAnswerSupportingMarkSchemeIds,
+	scopedChildReconciliationStatements,
+	upsertStatement
+} from './lib/chained-import-preservation.mjs';
+import {
+	applyScopedChainRepairs,
+	applyScopedQuestionRepairs,
+	atomicQuestionPromptForImport
+} from './lib/scoped-chained-content-repairs.mjs';
+import { aqaScienceTopicFieldsForImport } from './lib/aqa-science-topic-mapping.mjs';
+import { invalidateQuestionPracticePayloadsStatement } from './lib/public-route-materialization-scope.mjs';
 import { materializePublicRoutePayloads } from './materialize-public-route-payloads.mjs';
 
 const rootDir = process.cwd();
@@ -26,6 +47,10 @@ const experimentModelAnswersPath = path.join(
 	rootDir,
 	'data/model-answers/experiment-written-model-answers.json'
 );
+const scopedContentRepairsPath = path.join(
+	rootDir,
+	'scripts/repairs/illustrated-science-question-fixes.json'
+);
 const experimentSourceDocumentIds = new Set([
 	'aqa-8464b1h-qp-jun18',
 	'aqa-8464b1h-qp-jun19',
@@ -37,6 +62,7 @@ const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const schemaOnly = args.has('--schema-only');
 const skipSchema = args.has('--skip-schema');
+const applySchemaRequested = schemaOnly || args.has('--apply-schema');
 const includeExperimentPapers = !args.has('--no-experiment-papers');
 const onlyExperimentPapers = args.has('--only-experiment-papers');
 const batchSize = integerArg('batch-size', 50, 1);
@@ -130,11 +156,6 @@ function firstText(...values) {
 	return null;
 }
 
-function extractMarks(text) {
-	const match = String(text ?? '').match(/\[(\d+)\s+marks?\]/i);
-	return match ? Number(match[1]) : null;
-}
-
 const reviewedExperimentModelAnswers = new Map(
 	(readOptionalJson(experimentModelAnswersPath, { answers: [] }).answers ?? []).map((answer) => [
 		answer.questionId,
@@ -194,17 +215,21 @@ function modelAnswerForImport(question, renderingOverlay) {
 }
 
 function titleFromQuestion(question) {
-	const text =
-		firstText(question.prompt_text, question.self_contained_prompt_text, question.id) ??
-		question.id;
-	const cleaned = text
-		.replace(/\[[^\]]*marks?\]/gi, '')
-		.split('\n')
-		.map((line) => line.trim())
-		.filter((line) => line && !/^figure\s+\d+$/i.test(line) && !/^table\s+\d+$/i.test(line))
-		.at(-1);
-	const base = cleaned || text.replace(/\s+/g, ' ');
-	return base.length > 96 ? `${base.slice(0, 93).trim()}...` : base;
+	const prompt = atomicQuestionPrompt(question);
+	return deriveQuestionCardTitle({
+		cardTitle: firstText(question.card_title, question.cardTitle),
+		promptText: prompt,
+		selfContainedPromptText: question.self_contained_prompt_text,
+		answerText: firstText(
+			question.model_answer?.answer_text,
+			...(question.mark_scheme_items ?? []).map((item) => item.text)
+		),
+		fallback: question.id
+	});
+}
+
+function atomicQuestionPrompt(question) {
+	return atomicQuestionPromptForImport(question) || question.id;
 }
 
 function contextText(question) {
@@ -770,13 +795,7 @@ function isPromptStartLine(line) {
 }
 
 function promptSourceText(question) {
-	const prompt = firstText(question.prompt_text);
-	const selfContained = firstText(question.self_contained_prompt_markdown);
-	if (prompt && extractMarks(prompt) !== null) return prompt;
-	if (selfContained && extractMarks(selfContained) !== null) return selfContained;
-	return (
-		firstText(prompt, question.self_contained_prompt_text, question.full_prompt_text) ?? question.id
-	);
+	return atomicQuestionPrompt(question);
 }
 
 function removeParentStemPrefix(text, question) {
@@ -1219,6 +1238,7 @@ function renderingOverlayForQuestion(question) {
 			sourcePageEnd: question.page_end ?? null
 		},
 		metadata: {
+			import_owner: CHAINED_IMPORT_OWNER,
 			source: 'baseline-fallback',
 			source_constraints: question.source_constraints ?? [],
 			structured_constraints: question.structured_constraints ?? [],
@@ -1349,72 +1369,82 @@ async function executeBatch(statements, label) {
 
 	for (let index = 0; index < statements.length; index += batchSize) {
 		const batch = statements.slice(index, index + batchSize);
-		const response = await fetch(d1QueryUrl, {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${apiToken}`,
-				'Content-Type': 'application/json',
-				Accept: 'application/json'
-			},
-			body: JSON.stringify({ batch })
-		});
-		const bodyText = await response.text();
-		if (!response.ok) {
-			throw new Error(
-				`D1 batch failed (${label} ${index + 1}-${index + batch.length}): ${response.status} ${response.statusText}: ${bodyText}`
-			);
-		}
-		const body = JSON.parse(bodyText);
-		if (!body.success) {
-			throw new Error(
-				`D1 batch failed (${label} ${index + 1}-${index + batch.length}): ${JSON.stringify(body.errors ?? body)}`
-			);
-		}
-		const failed = (body.result ?? []).find((result) => result?.success === false);
-		if (failed) {
-			throw new Error(
-				`D1 batch statement failed (${label} ${index + 1}-${index + batch.length}): ${JSON.stringify(failed)}`
-			);
-		}
+		await sendD1Batch(batch, `${label} ${index + 1}-${index + batch.length}`);
 		console.log(
 			`${label}: ${Math.min(index + batch.length, statements.length)}/${statements.length}`
 		);
 	}
 }
 
-async function executeSequential(statements, label) {
+async function executeAtomicBatch(statements, label) {
 	if (statements.length === 0 || dryRun) return;
+	await sendD1Batch(statements, label);
+	console.log(`${label}: ${statements.length}/${statements.length} atomically`);
+}
 
-	for (const [index, statement] of statements.entries()) {
-		const response = await fetch(d1QueryUrl, {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${apiToken}`,
-				'Content-Type': 'application/json',
-				Accept: 'application/json'
-			},
-			body: JSON.stringify(statement)
-		});
-		const bodyText = await response.text();
-		if (!response.ok) {
-			throw new Error(
-				`D1 statement failed (${label} ${index + 1}/${statements.length}): ${response.status} ${response.statusText}: ${bodyText}`
-			);
-		}
-		const body = JSON.parse(bodyText);
-		if (!body.success) {
-			throw new Error(
-				`D1 statement failed (${label} ${index + 1}/${statements.length}): ${JSON.stringify(body.errors ?? body)}`
-			);
-		}
-		const result = Array.isArray(body.result) ? body.result[0] : body.result;
-		if (result?.success === false) {
-			throw new Error(
-				`D1 statement failed (${label} ${index + 1}/${statements.length}): ${JSON.stringify(result)}`
-			);
-		}
-		console.log(`${label}: ${index + 1}/${statements.length}`);
+async function sendD1Batch(statements, label) {
+	const batch = statements.map(({ sql, params }) => ({ sql, ...(params ? { params } : {}) }));
+	const response = await fetch(d1QueryUrl, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${apiToken}`,
+			'Content-Type': 'application/json',
+			Accept: 'application/json'
+		},
+		body: JSON.stringify({ batch })
+	});
+	const bodyText = await response.text();
+	if (!response.ok) {
+		throw new Error(
+			`D1 batch failed (${label}): ${response.status} ${response.statusText}: ${bodyText}`
+		);
 	}
+	const body = JSON.parse(bodyText);
+	if (!body.success) {
+		throw new Error(`D1 batch failed (${label}): ${JSON.stringify(body.errors ?? body)}`);
+	}
+	const failed = (body.result ?? []).find((result) => result?.success === false);
+	if (failed) {
+		throw new Error(`D1 batch statement failed (${label}): ${JSON.stringify(failed)}`);
+	}
+	return body.result ?? [];
+}
+
+async function reconciliationDiagnostics(statements) {
+	if (!statements.length) return [];
+	const results = await sendD1Batch(
+		statements.map((statement) => ({ sql: statement.diagnosticSql, params: statement.params })),
+		'reconcile diagnostics'
+	);
+	return statements.map((statement, index) => ({
+		table: statement.reconcileTable,
+		parent_scope_count: statement.parentScopeCount,
+		retained_row_count: statement.retainedRowCount,
+		owned_stale_cleanup: Number(results[index]?.results?.[0]?.owned_stale_count ?? 0),
+		preserved_ambiguity: Number(results[index]?.results?.[0]?.preserved_unowned_count ?? 0)
+	}));
+}
+
+async function conflictDiagnostics(statements) {
+	if (!statements.length) return [];
+	const results = await sendD1Batch(
+		statements.map((statement) => ({ sql: statement.diagnosticSql, params: statement.params })),
+		'import ownership conflict diagnostics'
+	);
+	return statements.map((statement, index) => {
+		const row = results[index]?.results?.[0] ?? {};
+		const conflictIds = String(row.blocking_conflict_ids ?? '')
+			.split(',')
+			.filter(Boolean);
+		return {
+			table: statement.conflictTable,
+			conflict_target: statement.conflictColumns,
+			planned_row_count: statement.plannedRowCount,
+			blocking_conflicts: Number(row.blocking_conflict_count ?? 0),
+			blocking_conflict_ids: conflictIds.slice(0, 20),
+			blocking_conflict_ids_omitted: Math.max(0, conflictIds.length - 20)
+		};
+	});
 }
 
 async function applySchema() {
@@ -1425,43 +1455,6 @@ async function applySchema() {
 			`schema ${path.basename(migrationPath)}`
 		);
 	}
-}
-
-async function clearPublicTables() {
-	const tables = [
-		'public_route_payloads',
-		'constellation_questions',
-		'constellations',
-		'common_weak_answers',
-		'question_answer_chains',
-		'cross_subject_chain_family_members',
-		'cross_subject_chain_families',
-		'chain_family_members',
-		'chain_families',
-		'answer_chain_steps',
-		'answer_chains',
-		'model_answers',
-		'mark_checklist_items',
-		'mark_scheme_items',
-		'question_response_answer_keys',
-		'question_rendering_overlays',
-		'question_assets',
-		'questions',
-		'source_documents',
-		'content_imports'
-	];
-	await executeSequential(
-		tables.map((table) => ({ sql: `DELETE FROM ${table}` })),
-		'clear'
-	);
-}
-
-function insertStatement(table, columns, values) {
-	const placeholders = columns.map(() => '?').join(', ');
-	return {
-		sql: `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`,
-		params: values
-	};
 }
 
 function stableSqlId(value) {
@@ -1507,7 +1500,7 @@ function insertResponseAnswerKeyStatements(insertStatements, question, rendering
 	).entries()) {
 		if (!targetId || typeof correctAnswer !== 'string' || !correctAnswer.trim()) continue;
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'question_response_answer_keys',
 				[
 					'id',
@@ -1527,8 +1520,18 @@ function insertResponseAnswerKeyStatements(insertStatements, question, rendering
 					correctAnswer.trim(),
 					responseAnswerKeyOrder(response, targetId, index + 1),
 					json([], []),
-					json({ source: 'rendering_overlay_correct_answers' }, {})
-				]
+					json(
+						{
+							source: 'rendering_overlay_correct_answers',
+							import_owner: CHAINED_IMPORT_OWNER
+						},
+						{}
+					)
+				],
+				{
+					conflictColumns: ['question_id', 'response_kind', 'target_id'],
+					updateWhereSql: childOwnershipSql('question_response_answer_keys')
+				}
 			)
 		);
 	}
@@ -1542,13 +1545,24 @@ function semanticChainIdForConstellation(constellation) {
 	);
 }
 
-const baseline = readJson(baselinePath);
+const scopedContentRepairs = readOptionalJson(scopedContentRepairsPath, {
+	questions: [],
+	chains: []
+});
+const rawBaseline = readJson(baselinePath);
+const baseline = {
+	...rawBaseline,
+	questions: applyScopedQuestionRepairs(rawBaseline.questions ?? [], scopedContentRepairs)
+};
 const semanticFiles = ['biology', 'chemistry', 'physics'].map((subject) =>
 	readJson(path.join(semanticDir, `${subject}.json`))
 );
 const allQuestions = new Map((baseline.questions ?? []).map((question) => [question.id, question]));
 const sourceDocuments = new Map((baseline.source_documents ?? []).map((doc) => [doc.id, doc]));
-const chains = semanticFiles.flatMap((semantic) => semantic.answer_chain_candidates ?? []);
+const chains = applyScopedChainRepairs(
+	semanticFiles.flatMap((semantic) => semantic.answer_chain_candidates ?? []),
+	scopedContentRepairs
+);
 const promptSpecificSemanticChains = chains
 	.map((chain) => ({
 		chain,
@@ -1805,8 +1819,17 @@ for (const question of importedQuestions) {
 const importedMemberships = memberships.filter((membership) =>
 	importedQuestionIds.has(membership.question_id)
 );
+const primaryChainIdByQuestionId = new Map(
+	importedMemberships
+		.filter((membership) => membership.is_primary)
+		.map((membership) => [membership.question_id, membership.answer_chain_id])
+);
+const importedChainIds = new Set(
+	importedMemberships.map((membership) => membership.answer_chain_id)
+);
+const importedChains = chains.filter((chain) => importedChainIds.has(chain.id));
 const importedConstellations = constellations.filter((constellation) =>
-	chains.some((chain) => chain.id === semanticChainIdForConstellation(constellation))
+	importedChainIds.has(semanticChainIdForConstellation(constellation))
 );
 
 console.log(
@@ -1817,8 +1840,8 @@ console.log(
 			schema_only: schemaOnly,
 			include_experiment_papers: includeExperimentPapers,
 			only_experiment_papers: onlyExperimentPapers,
-			chains: chains.length,
-			chain_families: chains.length,
+			chains: importedChains.length,
+			chain_families: importedChains.length,
 			constellations: importedConstellations.length,
 			chained_questions: chainedQuestionIds.size,
 			experiment_paper_questions: experimentQuestionIds.size,
@@ -1835,19 +1858,22 @@ console.log(
 	)
 );
 
-if (!skipSchema) {
+if (applySchemaRequested && skipSchema) {
+	throw new Error('--skip-schema cannot be combined with --apply-schema or --schema-only.');
+}
+
+if (applySchemaRequested) {
 	await applySchema();
 }
 
 if (!schemaOnly) {
-	await clearPublicTables();
 	const insertStatements = [];
 
 	for (const sourceDocumentId of neededSourceDocumentIds) {
 		const doc = sourceDocuments.get(sourceDocumentId);
 		if (!doc) continue;
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'source_documents',
 				[
 					'id',
@@ -1885,20 +1911,23 @@ if (!schemaOnly) {
 					doc.file_path ?? null,
 					doc.file_hash ?? null,
 					doc.page_count ?? null,
-					json(doc.metadata, {})
-				]
+					json({ ...(doc.metadata ?? {}), import_owner: CHAINED_IMPORT_OWNER }, {})
+				],
+				{ updateWhereSql: importOwnershipSql('source_documents') }
 			)
 		);
 	}
 
 	for (const question of importedQuestions) {
-		const prompt = firstText(
-			question.prompt_text,
-			question.self_contained_prompt_text,
-			question.full_prompt_text
-		);
+		const prompt = atomicQuestionPrompt(question);
+		const cardTitle = titleFromQuestion(question);
+		const suppliedCardTitle = firstText(question.card_title, question.cardTitle);
+		const topicFields = aqaScienceTopicFieldsForImport({
+			...question,
+			answerChainId: primaryChainIdByQuestionId.get(question.id) ?? null
+		});
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'questions',
 				[
 					'id',
@@ -1955,8 +1984,8 @@ if (!schemaOnly) {
 					question.component_code ?? null,
 					question.series ?? null,
 					question.year ?? null,
-					json(question.topic_path, []),
-					question.spec_ref ?? null,
+					json(topicFields.topicPath, []),
+					topicFields.specRef ?? null,
 					question.page_start ?? null,
 					question.page_end ?? null,
 					question.answer_format ?? null,
@@ -1968,22 +1997,32 @@ if (!schemaOnly) {
 					question.status ?? 'draft',
 					json(
 						{
-							title: titleFromQuestion(question),
+							...(question.metadata ?? {}),
+							import_owner: CHAINED_IMPORT_OWNER,
+							title: cardTitle,
+							card_title: cardTitle,
+							card_title_contract: QUESTION_CARD_TITLE_CONTRACT,
+							card_title_provenance: suppliedCardTitle ? 'extracted' : 'derived-from-atomic-prompt',
 							figure_refs: question.figure_refs ?? [],
 							table_refs: question.table_refs ?? [],
 							visual_dependency: question.visual_dependency ?? 'none',
 							full_prompt_text: question.full_prompt_text ?? null,
-							structured_constraints: question.structured_constraints ?? []
+							structured_constraints: question.structured_constraints ?? [],
+							topic_mapping_provenance: topicFields.provenance
 						},
 						{}
 					)
-				]
+				],
+				{
+					preserveColumns: ['status'],
+					updateWhereSql: importOwnershipSql('questions')
+				}
 			)
 		);
 
 		const renderingOverlay = renderingOverlayForQuestion(question);
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'question_rendering_overlays',
 				[
 					'id',
@@ -2006,14 +2045,18 @@ if (!schemaOnly) {
 					question.question_segmentation_confidence ?? null,
 					bool(question.needs_human_review ?? true),
 					json(renderingOverlay, {})
-				]
+				],
+				{
+					conflictColumns: ['question_id', 'overlay_version'],
+					updateWhereSql: childOwnershipSql('question_rendering_overlays')
+				}
 			)
 		);
 		insertResponseAnswerKeyStatements(insertStatements, question, renderingOverlay);
 
 		for (const [index, asset] of questionAssets(question).entries()) {
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'question_assets',
 					[
 						'id',
@@ -2049,15 +2092,16 @@ if (!schemaOnly) {
 						asset.public_path ?? null,
 						asset.extraction_confidence ?? null,
 						bool(asset.needs_human_review),
-						json(asset.metadata, {})
-					]
+						json({ ...(asset.metadata ?? {}), import_owner: CHAINED_IMPORT_OWNER }, {})
+					],
+					{ updateWhereSql: childOwnershipSql('question_assets') }
 				)
 			);
 		}
 
 		for (const [index, item] of (question.mark_scheme_items ?? []).entries()) {
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'mark_scheme_items',
 					[
 						'id',
@@ -2081,8 +2125,9 @@ if (!schemaOnly) {
 						item.marks ?? null,
 						item.source_ref ?? null,
 						item.confidence ?? null,
-						json(item.metadata, {})
-					]
+						json({ ...(item.metadata ?? {}), import_owner: CHAINED_IMPORT_OWNER }, {})
+					],
+					{ updateWhereSql: childOwnershipSql('mark_scheme_items') }
 				)
 			);
 		}
@@ -2092,7 +2137,7 @@ if (!schemaOnly) {
 				(itemIndex) => `${question.id}-ms-${Number(itemIndex) + 1}`
 			);
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'mark_checklist_items',
 					[
 						'id',
@@ -2113,15 +2158,21 @@ if (!schemaOnly) {
 						json(markSchemeItemIds, []),
 						item.confidence ?? null,
 						bool(item.needs_human_review)
-					]
+					],
+					{ updateWhereSql: childOwnershipSql('mark_checklist_items') }
 				)
 			);
 		}
 
 		const modelAnswer = modelAnswerForImport(question, renderingOverlay);
 		if (modelAnswer?.answer_text) {
+			const supportingMarkSchemeItemIds = modelAnswerSupportingMarkSchemeIds(
+				question.id,
+				(question.mark_scheme_items ?? []).length,
+				modelAnswer
+			);
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'model_answers',
 					[
 						'id',
@@ -2137,18 +2188,19 @@ if (!schemaOnly) {
 						question.id,
 						modelAnswer.answer_text,
 						modelAnswer.derivation ?? 'generated_from_mark_scheme',
-						json(modelAnswer.supporting_mark_scheme_item_ids, []),
+						json(supportingMarkSchemeItemIds, []),
 						modelAnswer.confidence ?? null,
 						bool(modelAnswer.needs_human_review)
-					]
+					],
+					{ updateWhereSql: childOwnershipSql('model_answers') }
 				)
 			);
 		}
 	}
 
-	for (const chain of chains) {
+	for (const chain of importedChains) {
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'answer_chains',
 				[
 					'id',
@@ -2174,7 +2226,7 @@ if (!schemaOnly) {
 					'Combined Science',
 					chain.subject_area ?? null,
 					chain.broad_topic_metadata ?? null,
-					chain.why_questions_share_chain ?? chain.why_same_chain ?? null,
+					chainSummaryForImport(chain),
 					'extraction_agent',
 					chain.confidence ?? null,
 					bool(chain.needs_human_review),
@@ -2182,6 +2234,8 @@ if (!schemaOnly) {
 					chain.status ?? 'draft',
 					json(
 						{
+							import_owner: CHAINED_IMPORT_OWNER,
+							source: 'semantic-chain-candidate',
 							why_questions_share_chain:
 								chain.why_questions_share_chain ?? chain.why_same_chain ?? null,
 							why_not_keyword_grouping:
@@ -2191,13 +2245,17 @@ if (!schemaOnly) {
 						},
 						{}
 					)
-				]
+				],
+				{
+					preserveColumns: ['status'],
+					updateWhereSql: importOwnershipSql('answer_chains')
+				}
 			)
 		);
 
 		for (const [index, step] of (chain.steps ?? []).entries()) {
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'answer_chain_steps',
 					[
 						'id',
@@ -2211,7 +2269,7 @@ if (!schemaOnly) {
 						'evidence_json'
 					],
 					[
-						`${chain.id}-step-${index + 1}`,
+						step.id ?? `${chain.id}-step-${index + 1}`,
 						chain.id,
 						index + 1,
 						step.step_text,
@@ -2220,15 +2278,19 @@ if (!schemaOnly) {
 						step.common_omission ?? null,
 						json(step.supported_by_mark_scheme_item_ids, []),
 						json(evidenceForStep(step), [])
-					]
+					],
+					{
+						conflictColumns: ['answer_chain_id', 'display_order'],
+						updateWhereSql: childOwnershipSql('answer_chain_steps')
+					}
 				)
 			);
 		}
 
 		const familyId = `${chain.id}-family`;
-		const familySummary = chain.why_questions_share_chain ?? chain.why_same_chain ?? null;
+		const familySummary = chainSummaryForImport(chain);
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'chain_families',
 				[
 					'id',
@@ -2258,6 +2320,7 @@ if (!schemaOnly) {
 					json(chain.review_notes, []),
 					json(
 						{
+							import_owner: CHAINED_IMPORT_OWNER,
 							source: 'semantic-chain-candidate',
 							answer_chain_id: chain.id,
 							canonical_chain_text: chain.canonical_chain_text,
@@ -2268,9 +2331,13 @@ if (!schemaOnly) {
 						},
 						{}
 					)
-				]
+				],
+				{
+					preserveColumns: ['status'],
+					updateWhereSql: importOwnershipSql('chain_families')
+				}
 			),
-			insertStatement(
+			upsertStatement(
 				'chain_family_members',
 				[
 					'id',
@@ -2290,15 +2357,25 @@ if (!schemaOnly) {
 					'primary',
 					familySummary,
 					chain.confidence ?? null,
-					json({ source: 'semantic-chain-candidate' }, {})
-				]
+					json(
+						{
+							import_owner: CHAINED_IMPORT_OWNER,
+							source: 'semantic-chain-candidate'
+						},
+						{}
+					)
+				],
+				{
+					conflictColumns: ['chain_family_id', 'answer_chain_id'],
+					updateWhereSql: childOwnershipSql('chain_family_members')
+				}
 			)
 		);
 	}
 
 	for (const membership of importedMemberships) {
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'question_answer_chains',
 				[
 					'id',
@@ -2324,8 +2401,12 @@ if (!schemaOnly) {
 					membership.display_order ?? null,
 					bool(membership.needs_human_review),
 					json(membership.review_notes, []),
-					json(membership.metadata, {})
-				]
+					json({ ...(membership.metadata ?? {}), import_owner: CHAINED_IMPORT_OWNER }, {})
+				],
+				{
+					conflictColumns: ['question_id', 'answer_chain_id'],
+					updateWhereSql: childOwnershipSql('question_answer_chains')
+				}
 			)
 		);
 	}
@@ -2333,7 +2414,7 @@ if (!schemaOnly) {
 	for (const constellation of importedConstellations) {
 		const chainId = semanticChainIdForConstellation(constellation);
 		insertStatements.push(
-			insertStatement(
+			upsertStatement(
 				'constellations',
 				[
 					'id',
@@ -2373,6 +2454,8 @@ if (!schemaOnly) {
 					constellation.status ?? 'draft',
 					json(
 						{
+							import_owner: CHAINED_IMPORT_OWNER,
+							source: 'semantic-constellation-candidate',
 							why_not_keyword_grouping:
 								constellation.why_not_keyword_grouping ??
 								constellation.why_not_keyword_group ??
@@ -2382,7 +2465,11 @@ if (!schemaOnly) {
 						},
 						{}
 					)
-				]
+				],
+				{
+					preserveColumns: ['status'],
+					updateWhereSql: importOwnershipSql('constellations')
+				}
 			)
 		);
 
@@ -2390,7 +2477,7 @@ if (!schemaOnly) {
 		for (const [index, question] of questions.entries()) {
 			if (!importedQuestionIds.has(question.question_id)) continue;
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'constellation_questions',
 					[
 						'id',
@@ -2416,8 +2503,12 @@ if (!schemaOnly) {
 						question.rationale ?? question.fit_rationale ?? null,
 						question.fit_confidence ?? question.confidence ?? null,
 						bool(question.needs_human_review),
-						json({ raw: question }, {})
-					]
+						json({ raw: question, import_owner: CHAINED_IMPORT_OWNER }, {})
+					],
+					{
+						conflictColumns: ['constellation_id', 'question_id'],
+						updateWhereSql: childOwnershipSql('constellation_questions')
+					}
 				)
 			);
 		}
@@ -2427,7 +2518,7 @@ if (!schemaOnly) {
 		for (const [index, weakAnswer] of (question.common_weak_answers ?? []).entries()) {
 			if (!weakAnswer.weak_answer_text) continue;
 			insertStatements.push(
-				insertStatement(
+				upsertStatement(
 					'common_weak_answers',
 					[
 						'id',
@@ -2447,46 +2538,119 @@ if (!schemaOnly) {
 						weakAnswer.weak_answer_text,
 						json(weakAnswer.missing_step_indexes ?? [], []),
 						weakAnswer.explanation ?? null,
-						'agent',
+						CHAINED_IMPORT_OWNER,
 						weakAnswer.confidence ?? null,
 						bool(weakAnswer.needs_human_review)
-					]
+					],
+					{ updateWhereSql: childOwnershipSql('common_weak_answers') }
 				)
 			);
 		}
 	}
 
-	insertStatements.push(
-		insertStatement(
-			'content_imports',
-			['id', 'source', 'question_count', 'chain_count', 'constellation_count', 'metadata_json'],
-			[
-				`chained-aqa-${new Date().toISOString()}`,
-				'data/extracted-questions/aqa-combined-science-trilogy-higher/semantic-chains',
-				importedQuestionIds.size,
-				chains.length,
-				importedConstellations.length,
-				json(
-					{
-						baseline_file: path.relative(rootDir, baselinePath),
-						semantic_files: ['biology.json', 'chemistry.json', 'physics.json'].map((file) =>
-							path.relative(rootDir, path.join(semanticDir, file))
-						),
-						imported_chained_question_count: chainedQuestionIds.size,
-						imported_experiment_paper_question_count: experimentQuestionIds.size,
-						imported_membership_count: importedMemberships.length,
-						rendering_overlay_count: importedQuestionIds.size,
-						experiment_source_document_ids: Array.from(experimentSourceDocumentIds),
-						cross_subject_chain_family_count: 0
-					},
-					{}
-				)
-			]
-		)
+	const contentImportStatement = upsertStatement(
+		'content_imports',
+		['id', 'source', 'question_count', 'chain_count', 'constellation_count', 'metadata_json'],
+		[
+			`chained-aqa-${new Date().toISOString()}`,
+			'data/extracted-questions/aqa-combined-science-trilogy-higher/semantic-chains',
+			importedQuestionIds.size,
+			importedChains.length,
+			importedConstellations.length,
+			json(
+				{
+					import_owner: CHAINED_IMPORT_OWNER,
+					baseline_file: path.relative(rootDir, baselinePath),
+					semantic_files: ['biology.json', 'chemistry.json', 'physics.json'].map((file) =>
+						path.relative(rootDir, path.join(semanticDir, file))
+					),
+					imported_chained_question_count: chainedQuestionIds.size,
+					imported_experiment_paper_question_count: experimentQuestionIds.size,
+					imported_membership_count: importedMemberships.length,
+					rendering_overlay_count: importedQuestionIds.size,
+					experiment_source_document_ids: Array.from(experimentSourceDocumentIds),
+					cross_subject_chain_family_count: 0
+				},
+				{}
+			)
+		]
 	);
 
-	await executeBatch(insertStatements, 'insert');
-	await materializePublicRoutePayloads({ rootDir, dryRun, batchSize });
+	const reconciliationStatements = scopedChildReconciliationStatements({
+		statements: insertStatements,
+		importedQuestionIds: [...importedQuestionIds],
+		importedChainIds: [...importedChainIds],
+		importedChainFamilyIds: importedChains.map((chain) => `${chain.id}-family`),
+		importedConstellationIds: importedConstellations.map((constellation) => constellation.id)
+	});
+	const conflictStatements = importConflictDiagnosticStatements({
+		statements: insertStatements
+	});
+	const cleanupDiagnostics = await reconciliationDiagnostics(reconciliationStatements);
+	const ownershipConflictDiagnostics = await conflictDiagnostics(conflictStatements);
+	const blockingConflicts = ownershipConflictDiagnostics.filter(
+		(diagnostic) => diagnostic.blocking_conflicts > 0
+	);
+	console.log(
+		JSON.stringify(
+			{
+				mode: dryRun ? 'dry-run-plan' : 'write-plan',
+				upsert_statements: insertStatements.length,
+				planned_membership_upserts: importedMemberships.length,
+				reconciliation_statements: reconciliationStatements.length,
+				owned_stale_cleanup: cleanupDiagnostics.filter(
+					(diagnostic) => diagnostic.owned_stale_cleanup > 0
+				),
+				preserved_ambiguity: cleanupDiagnostics.filter(
+					(diagnostic) => diagnostic.preserved_ambiguity > 0
+				),
+				blocking_conflicts: blockingConflicts,
+				public_route_materialization: blockingConflicts.length
+					? 'blocked: planned writes conflict with rows owned by another or unknown pipeline'
+					: dryRun
+						? 'skipped: remote rows do not represent the planned post-import state'
+						: 'runs after ownership-guarded upserts and transactional owned-row cleanup'
+			},
+			null,
+			2
+		)
+	);
+	if (blockingConflicts.length) {
+		const message = `Import blocked by ${blockingConflicts.reduce(
+			(total, diagnostic) => total + diagnostic.blocking_conflicts,
+			0
+		)} import-row ownership conflict(s). Resolve or explicitly adopt those rows before importing.`;
+		if (dryRun) {
+			console.error(message);
+			process.exitCode = 1;
+		} else {
+			throw new Error(message);
+		}
+	} else if (!dryRun) {
+		// Upserts are additive, ownership-guarded, and idempotent. A failed later chunk may leave an
+		// earlier owned row refreshed, but no stale row has yet been deleted, so retry is safe and the
+		// bank is never stripped. Renamed steps replace their owned UNIQUE slot inside one SQL upsert.
+		// Only after every upsert succeeds do we atomically remove proven-owned stale rows.
+		await executeBatch(insertStatements, 'upsert');
+		await executeAtomicBatch(reconciliationStatements, 'reconcile importer-owned child rows');
+		await executeAtomicBatch(
+			[invalidateQuestionPracticePayloadsStatement([...importedQuestionIds])],
+			'invalidate changed question practice caches'
+		);
+		await materializePublicRoutePayloads({
+			rootDir,
+			dryRun: false,
+			batchSize,
+			ownedChainIds: [...importedChainIds]
+		});
+		await executeBatch([contentImportStatement], 'record successful import');
+	}
 }
 
-console.log('Import complete.');
+console.log(
+	dryRun && process.exitCode
+		? 'Dry-run found blocking ownership conflicts; no writes were performed.'
+		: dryRun
+			? 'Dry-run plan complete; no writes or public-route materialization were performed.'
+			: 'Import complete.'
+);

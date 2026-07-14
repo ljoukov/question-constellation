@@ -2,6 +2,12 @@ node_modules
 
 # Output
 data/
+!data/
+data/*
+!data/curricula/
+data/curricula/*
+!data/curricula/source-manifest.json
+!data/curricula/curriculum-catalog.json
 tmp/
 .output
 .vercel

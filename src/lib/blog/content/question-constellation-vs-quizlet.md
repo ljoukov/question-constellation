@@ -40,7 +40,7 @@
 
 | Feature           | Question Constellation                                                      | Quizlet                                                          |
 | ----------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Main use          | Exam questions, answer chains and mark-scheme repair                        | Flashcards, study sets and memory games for terms and facts      |
+| Main use          | Exam questions, answer chains and mark-scheme improvement                   | Flashcards, study sets and memory games for terms and facts      |
 | Best content type | Multi-mark written answers, applied science questions and question families | Definitions, vocabulary, equations, dates and factual recall     |
 | Practice shape    | Attempt an exam response, then compare it to the chain and checklist        | Recall a term or answer, often from a card set                   |
 | Strength          | Helps students turn knowledge into mark-scoring answer structure            | Helps students build fast recall for facts and vocabulary        |

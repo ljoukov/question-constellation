@@ -42,7 +42,7 @@
 | -------------- | ------------------------------------------------------------ | --------------------------------------------------------------- |
 | Main use       | Public GCSE questions with answer chains and mark checklists | Free curriculum explainers, revision guides, videos and quizzes |
 | Strength       | Exam-answer structure and transfer between question families | Accessible explanations for first learning and revision         |
-| Question depth | Focused on exam-style answering and mark-scheme language     | Good for topic checks, with lighter answer repair               |
+| Question depth | Focused on exam-style answering and mark-scheme language     | Good for topic checks, with lighter answer improvement          |
 | Best moment    | When a student needs to practise how to answer               | When a student needs to understand or refresh the topic         |
 | Best fit       | Students preparing for mark-scored answers                   | Students building the knowledge base before exam practice       |
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Download, FileCheck2, FileText, Layers } from '@lucide/svelte';
-	import type { PastPaperDocument, PastPaperDownloadRow } from './gcsePastPapers';
+	import { ArrowRight } from '@lucide/svelte';
+	import type { PastPaperDownloadRow } from './gcsePastPapers';
 
 	let {
 		rows,
@@ -9,21 +9,6 @@
 		rows: PastPaperDownloadRow[];
 		showPageLabel?: boolean;
 	} = $props();
-
-	function documentText(document: PastPaperDocument) {
-		if (document.type === 'questionPaper') return 'Question paper';
-		if (document.type === 'markScheme') return 'Mark scheme';
-		if (document.type === 'insert') return 'Insert';
-		return document.label;
-	}
-
-	function documentClass(document: PastPaperDocument) {
-		return `document-link document-${document.type}`;
-	}
-
-	function documentAriaLabel(row: PastPaperDownloadRow, document: PastPaperDocument) {
-		return `${row.pageLabel} ${row.year} ${row.series} ${row.paper} ${documentText(document)} PDF`;
-	}
 
 	function paperPageLabel(row: PastPaperDownloadRow) {
 		return `${row.pageLabel} ${row.paper} ${row.series} ${row.year} past papers`;
@@ -36,11 +21,7 @@
 			<div class="paper-meta">
 				<span class="paper-year">{row.year}</span>
 				<span>{row.series}</span>
-				<strong>
-					<!-- eslint-disable svelte/no-navigation-without-resolve -->
-					<a class="paper-detail-link" href={row.paperLocalPath}>{paperPageLabel(row)}</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				</strong>
+				<strong>{row.paper}</strong>
 				{#if showPageLabel}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a class="paper-page-link" href={row.localPath}>{row.pageLabel}</a>
@@ -48,29 +29,12 @@
 				{/if}
 			</div>
 
-			<div class="document-links">
-				{#each row.documents as document (document.url + document.label)}
-					<!-- eslint-disable svelte/no-navigation-without-resolve -->
-					<a
-						class={documentClass(document)}
-						href={document.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label={documentAriaLabel(row, document)}
-					>
-						{#if document.type === 'markScheme'}
-							<FileCheck2 size={15} aria-hidden="true" strokeWidth={2.2} />
-						{:else if document.type === 'insert'}
-							<Layers size={15} aria-hidden="true" strokeWidth={2.2} />
-						{:else}
-							<FileText size={15} aria-hidden="true" strokeWidth={2.2} />
-						{/if}
-						<span>{documentText(document)}</span>
-						<Download size={14} aria-hidden="true" strokeWidth={2.2} />
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				{/each}
-			</div>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -->
+			<a class="paper-detail-link" href={row.paperLocalPath} aria-label={paperPageLabel(row)}>
+				Open files
+				<ArrowRight size={15} aria-hidden="true" strokeWidth={2.2} />
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</article>
 	{/each}
 </div>
@@ -83,7 +47,7 @@
 
 	.paper-row {
 		display: grid;
-		grid-template-columns: minmax(17rem, 1fr) minmax(18rem, 1.2fr);
+		grid-template-columns: minmax(17rem, 1fr) auto;
 		gap: 0.8rem;
 		align-items: center;
 		padding: 0.65rem 1rem;
@@ -121,16 +85,23 @@
 	}
 
 	.paper-detail-link {
-		color: inherit;
-		font-weight: 400;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		min-height: 2rem;
+		padding: 0.38rem 0.6rem;
+		border: 1px solid #b8d0c2;
+		background: #ffffff;
+		color: #0f6b3d;
+		font-size: 0.84rem;
+		font-weight: 820;
 		text-decoration: none;
 	}
 
 	.paper-detail-link:hover,
 	.paper-detail-link:focus-visible {
-		color: #0f6b3d;
-		text-decoration: underline;
-		text-underline-offset: 0.18em;
+		border-color: #0f6b3d;
+		background: #f3faf6;
 	}
 
 	.paper-year {
@@ -142,47 +113,6 @@
 		background: #f8fafb;
 		color: #132033;
 		font-weight: 900;
-	}
-
-	.document-links {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.42rem;
-	}
-
-	.document-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.38rem;
-		min-height: 2rem;
-		padding: 0.38rem 0.54rem;
-		border: 1px solid #cbd7df;
-		background: #ffffff;
-		color: #183047;
-		font-size: 0.82rem;
-		font-weight: 820;
-	}
-
-	.document-link:hover,
-	.document-link:focus-visible {
-		border-color: #10253a;
-		background: #f6fafb;
-	}
-
-	.document-questionPaper {
-		border-color: #b8d0c2;
-		color: #0f6b3d;
-	}
-
-	.document-markScheme {
-		border-color: #bfcee6;
-		color: #1d4f91;
-	}
-
-	.document-insert {
-		border-color: #ead295;
-		color: #795719;
 	}
 
 	:global(:root[data-theme='dark']) .paper-table,
@@ -202,25 +132,27 @@
 		color: #7dd3a1;
 	}
 
-	:global(:root[data-theme='dark']) .paper-detail-link:hover,
-	:global(:root[data-theme='dark']) .paper-detail-link:focus-visible {
-		color: #7dd3a1;
-	}
-
-	:global(:root[data-theme='dark']) .document-link,
+	:global(:root[data-theme='dark']) .paper-detail-link,
 	:global(:root[data-theme='dark']) .paper-year {
 		border-color: #334155;
 		background: #0f172a;
 		color: #dbe7f3;
 	}
 
-	@media (max-width: 860px) {
+	:global(:root[data-theme='dark']) .paper-detail-link:hover,
+	:global(:root[data-theme='dark']) .paper-detail-link:focus-visible {
+		border-color: #7dd3a1;
+		background: #111d33;
+		color: #7dd3a1;
+	}
+
+	@media (max-width: 620px) {
 		.paper-row {
 			grid-template-columns: 1fr;
 		}
 
-		.document-links {
-			justify-content: flex-start;
+		.paper-detail-link {
+			justify-self: start;
 		}
 	}
 
@@ -236,11 +168,6 @@
 		.paper-meta strong,
 		.paper-page-link {
 			grid-column: 1 / -1;
-		}
-
-		.document-link {
-			flex: 1 1 9rem;
-			justify-content: center;
 		}
 	}
 </style>

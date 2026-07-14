@@ -18,15 +18,86 @@
 		title?: string;
 	} = $props();
 
+	let backdrop = $state<HTMLElement | null>(null);
 	let panel = $state<HTMLElement | null>(null);
 
 	$effect(() => {
-		if (!open) return;
-		void tick().then(() => panel?.focus());
+		if (!open || typeof document === 'undefined') return;
+		const focusOrigin =
+			document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		const inerted: Array<{
+			element: HTMLElement;
+			inert: boolean;
+			ariaHidden: string | null;
+		}> = [];
+		let cancelled = false;
+
+		void tick().then(() => {
+			if (cancelled || !open || !panel || !backdrop) return;
+			for (const sibling of Array.from(backdrop.parentElement?.children ?? [])) {
+				if (!(sibling instanceof HTMLElement) || sibling === backdrop) continue;
+				inerted.push({
+					element: sibling,
+					inert: sibling.inert,
+					ariaHidden: sibling.getAttribute('aria-hidden')
+				});
+				sibling.inert = true;
+				sibling.setAttribute('aria-hidden', 'true');
+			}
+			focusableElements()[0]?.focus() ?? panel.focus();
+		});
+
+		return () => {
+			cancelled = true;
+			for (const snapshot of inerted) {
+				snapshot.element.inert = snapshot.inert;
+				if (snapshot.ariaHidden === null) snapshot.element.removeAttribute('aria-hidden');
+				else snapshot.element.setAttribute('aria-hidden', snapshot.ariaHidden);
+			}
+			void tick().then(() => {
+				if (!open && focusOrigin?.isConnected) focusOrigin.focus();
+			});
+		};
 	});
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (open && event.key === 'Escape') onDismiss();
+		if (!open) return;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			onDismiss();
+			return;
+		}
+		if (event.key !== 'Tab' || !panel) return;
+		const focusable = focusableElements();
+		if (focusable.length === 0) {
+			event.preventDefault();
+			panel.focus();
+			return;
+		}
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (
+			event.shiftKey &&
+			(document.activeElement === first || !panel.contains(document.activeElement))
+		) {
+			event.preventDefault();
+			last.focus();
+		} else if (
+			!event.shiftKey &&
+			(document.activeElement === last || !panel.contains(document.activeElement))
+		) {
+			event.preventDefault();
+			first.focus();
+		}
+	}
+
+	function focusableElements(): HTMLElement[] {
+		if (!panel) return [];
+		return Array.from(
+			panel.querySelectorAll<HTMLElement>(
+				'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+			)
+		).filter((element) => !element.hidden && element.getAttribute('aria-hidden') !== 'true');
 	}
 </script>
 
@@ -36,6 +107,7 @@
 	<div
 		class="auth-dialog-backdrop"
 		role="presentation"
+		bind:this={backdrop}
 		onclick={(event) => event.target === event.currentTarget && onDismiss()}
 	>
 		<div
@@ -43,29 +115,23 @@
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="auth-dialog-title"
+			aria-describedby="auth-dialog-description"
 			tabindex="-1"
 			bind:this={panel}
 		>
 			<header class="auth-dialog-header">
-				<div>
-					<p class="auth-dialog-kicker">Your work is safe</p>
-					<h2 id="auth-dialog-title">{title}</h2>
-				</div>
+				<h2 id="auth-dialog-title">{title}</h2>
 				<IconButton label="Close sign-in dialog" onclick={onDismiss}>
 					<X size={19} strokeWidth={2.3} aria-hidden="true" />
 				</IconButton>
 			</header>
-			<p>
-				Your answer stays on this device. Sign in only when you are ready for the coach to check it;
-				we will bring you back here and start the check automatically.
+			<p id="auth-dialog-description">
+				Your answer stays here. After sign-in, you will return and the check will start.
 			</p>
 			<div class="auth-dialog-actions">
 				<GoogleSignInButton {href} onclick={onSignIn} />
 				<button type="button" onclick={onDismiss}>Keep editing</button>
 			</div>
-			<small
-				>Browsing, choosing your course and writing answers remain available without an account.</small
-			>
 		</div>
 	</div>
 {/if}
@@ -94,26 +160,11 @@
 		color: var(--qc-ui-text);
 	}
 
-	.auth-dialog-kicker {
-		margin: 0;
-		color: var(--qc-ui-accent-text);
-		font-size: 0.74rem;
-		font-weight: 800;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
 	.auth-dialog-header {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 1rem;
 		align-items: start;
-	}
-
-	.auth-dialog-header > div {
-		display: grid;
-		gap: 0.45rem;
-		min-width: 0;
 	}
 
 	.auth-dialog h2 {
@@ -124,8 +175,7 @@
 		letter-spacing: -0.025em;
 	}
 
-	.auth-dialog > p:not(.auth-dialog-kicker),
-	.auth-dialog small {
+	.auth-dialog > p {
 		margin: 0;
 		color: var(--qc-ui-text-muted);
 		line-height: 1.55;
@@ -154,7 +204,4 @@
 		color: var(--qc-ui-text);
 	}
 
-	.auth-dialog small {
-		font-size: 0.78rem;
-	}
 </style>

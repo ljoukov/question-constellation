@@ -1,11 +1,7 @@
 import { isEnglishSubject } from '$lib/englishSubjects';
-import type { ChainIllustration } from './chainIllustration';
 
-export function useIllustratedChainLayout(
-	subject: string | null | undefined,
-	illustration: ChainIllustration | null | undefined
-) {
-	return Boolean(illustration) && !isEnglishSubject(subject);
+export function useFocusedChainLayout(subject: string | null | undefined) {
+	return !isEnglishSubject(subject);
 }
 
 export function hasExplainedWeakAnswer(

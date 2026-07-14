@@ -31,6 +31,23 @@ const VARIABLE_ASSIGNMENT_PATTERN =
 	/(?:^|[\s$,(])(?:[A-Za-z](?:_\{?[A-Za-z0-9]+\}?|_[A-Za-z0-9]+)?|E_\{?e\}?|\\Delta\s*[A-Za-z]+)\s*=\s*[-+]?(?:\d|\.\d)(?!\s*[A-Za-z_])/i;
 const CONCRETE_UNIT_PATTERN =
 	/(?:\d+(?:\.\d+)?|\.\d+)\s*(?:%|\\mathrm|\\text|J\b|N\b|kg\b|g\b|m\b|cm\b|mm\b|s\b|A\b|V\b|W\b|Hz\b|Pa\b|kPa\b|N\/m\b)/i;
+const HALF_COEFFICIENT_SOURCE = String.raw`(?:\\frac\s*\{\s*1\s*\}\s*\{\s*2\s*\}|1\s*\/\s*2|0\.5|\.5|½)`;
+const OPTIONAL_MULTIPLY_SOURCE = String.raw`(?:\s*(?:\\times|[x*×·])\s*|\s*)`;
+const SQUARED_SOURCE = String.raw`(?:\^\s*\{?\s*2\s*\}?|²|\s+squared)`;
+const REUSABLE_SYMBOLIC_FORMULA_PATTERNS = [
+	new RegExp(
+		String.raw`\bE(?:\s*_\s*\{?\s*e\s*\}?|e)?\s*=\s*${HALF_COEFFICIENT_SOURCE}${OPTIONAL_MULTIPLY_SOURCE}k${OPTIONAL_MULTIPLY_SOURCE}e\s*${SQUARED_SOURCE}`,
+		'gi'
+	),
+	new RegExp(
+		String.raw`\bE(?:\s*_\s*\{?\s*k\s*\}?|k)?\s*=\s*${HALF_COEFFICIENT_SOURCE}${OPTIONAL_MULTIPLY_SOURCE}m${OPTIONAL_MULTIPLY_SOURCE}v\s*${SQUARED_SOURCE}`,
+		'gi'
+	),
+	/\bf\s*=\s*1\s*\/\s*T\b/gi,
+	/\bT\s*=\s*1\s*\/\s*f\b/gi
+];
+const PHOTOSYNTHESIS_EQUATION_PATTERN =
+	/6\s*C\s*O\s*(?:_?\s*\{?\s*2\s*\}?|₂)\s*\+\s*6\s*H\s*(?:_?\s*\{?\s*2\s*\}?|₂)\s*O\s*(?:->|→|=|\\rightarrow|\\to)\s*C\s*(?:_?\s*\{?\s*6\s*\}?|₆)\s*H\s*(?:_?\s*\{?\s*12\s*\}?|₁₂)\s*O\s*(?:_?\s*\{?\s*6\s*\}?|₆)\s*\+\s*6\s*O\s*(?:_?\s*\{?\s*2\s*\}?|₂)/gi;
 
 function firstPresent(object, keys) {
 	for (const key of keys) {
@@ -51,13 +68,16 @@ function normalizeNumberToken(value) {
 		.toLowerCase();
 }
 
+function maskReusableSymbolicFormulae(text) {
+	let masked = String(text ?? '');
+	for (const pattern of REUSABLE_SYMBOLIC_FORMULA_PATTERNS) {
+		masked = masked.replace(pattern, ' reusable symbolic formula ');
+	}
+	return masked;
+}
+
 function textForNumberAudit(text) {
-	return String(text ?? '')
-		.replace(
-			/\bE_\{?e\}?\s*=\s*(?:\\frac\{1\}\{2\}|1\/2|0\.5)\s*k\s*e\^?2\b/gi,
-			'E_e = half k e squared'
-		)
-		.replace(/\bE\s*=\s*(?:\\frac\{1\}\{2\}|1\/2|0\.5)\s*m\s*v\^?2\b/gi, 'E = half m v squared')
+	return maskReusableSymbolicFormulae(text)
 		.replace(/_\{?[A-Za-z]?\d+\}?/g, '_n')
 		.replace(/\b([A-Za-z])(\d+)\b/g, '$1_n');
 }
@@ -73,6 +93,14 @@ function reusableNumericFactOnly(text, numbers) {
 		return false;
 	}
 	return numbers.every((token) => normalizeNumberToken(token) === '4');
+}
+
+function fixedPhotosynthesisEquationOnly(text) {
+	PHOTOSYNTHESIS_EQUATION_PATTERN.lastIndex = 0;
+	if (!PHOTOSYNTHESIS_EQUATION_PATTERN.test(text)) return false;
+	PHOTOSYNTHESIS_EQUATION_PATTERN.lastIndex = 0;
+	const remainingText = text.replace(PHOTOSYNTHESIS_EQUATION_PATTERN, ' ');
+	return concreteNumbers(remainingText).length === 0;
 }
 
 function reusableCalculationConstantOnly(text, numbers) {
@@ -164,6 +192,7 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			(SUBSTITUTION_PATTERN.test(auditText) && (numbers.length > 0 || hasConcreteUnit));
 		const shouldWarnForReusableFact = reusableNumericFactOnly(auditText, numbers);
 		const usesReusableCalculationConstant = reusableCalculationConstantOnly(auditText, numbers);
+		const usesFixedScientificEquation = fixedPhotosynthesisEquationOnly(auditText);
 
 		if (hasSubstitution) {
 			issues.push({
@@ -181,7 +210,8 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			numbers.length > 0 &&
 			calculationLike &&
 			!shouldWarnForReusableFact &&
-			!usesReusableCalculationConstant
+			!usesReusableCalculationConstant &&
+			!usesFixedScientificEquation
 		) {
 			issues.push({
 				severity: 'error',
@@ -195,7 +225,12 @@ export function answerChainSpecificityIssues(chain, context = {}) {
 			continue;
 		}
 
-		if (numbers.length > 0 && (field.core || hasConcreteUnit) && !usesReusableCalculationConstant) {
+		if (
+			numbers.length > 0 &&
+			(field.core || hasConcreteUnit) &&
+			!usesReusableCalculationConstant &&
+			!usesFixedScientificEquation
+		) {
 			issues.push({
 				severity: 'warning',
 				code: 'chain_numeric_review',

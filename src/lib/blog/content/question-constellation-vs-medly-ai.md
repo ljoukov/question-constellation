@@ -75,13 +75,13 @@ If a student can explain the topic but still loses marks, Question Constellation
 
 A practical workflow is simple:
 
-1. Use a tutor or content resource to learn the topic.
+1. Use a tutor or content resource to study the topic.
 2. Open a Question Constellation page for a real GCSE question.
 3. Try the answer before reading the chain.
 4. Reveal the chain and compare it with the mark checklist.
 5. Practise another question that uses the same chain.
 
-This keeps the two jobs separate: learn the content, then repair the exam answer.
+This keeps the two jobs separate: study the content, then improve the exam answer.
 
 ## Verdict
 

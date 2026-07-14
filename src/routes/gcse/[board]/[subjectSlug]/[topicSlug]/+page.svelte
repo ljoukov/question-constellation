@@ -100,54 +100,20 @@
 				<h2 id="topic-questions">
 					{data.topic.questionCount} exam {questionWord}
 				</h2>
-				<p>Start with a real question, then open the method when you are ready.</p>
+				<p>Choose a real question and try it for yourself.</p>
 			</div>
 
 			<div class="question-list" role="list">
 				{#each data.topic.questions as question (question.id)}
 					<article class="question-row" role="listitem">
-						<div>
-							<a href={resolve('/questions/[questionId]', { questionId: question.id })}>
-								<MathText text={question.title} />
-							</a>
-							<p><MathText text={question.meta} /></p>
-						</div>
-						{#if question.chainId && question.chainTitle}
-							<a
-								class="chain-link"
-								href={resolve('/chains/[chainId]', { chainId: question.chainId })}
-							>
-								<MathText text={question.chainTitle} />
-							</a>
-						{/if}
+						<a href={resolve('/questions/[questionId]', { questionId: question.id })}>
+							<MathText text={question.title} />
+						</a>
+						<p><MathText text={question.meta} /></p>
 					</article>
 				{/each}
 			</div>
 		</section>
-
-		{#if data.topic.chains.length > 0}
-			<section class="topic-section" aria-labelledby="topic-chains">
-				<div class="section-heading">
-					<h2 id="topic-chains">Reusable methods</h2>
-					<p>Questions in this topic often reuse the same mark-scoring steps.</p>
-				</div>
-
-				<div class="chain-grid" role="list">
-					{#each data.topic.chains as chain (chain.id)}
-						<div role="listitem">
-							<a class="chain-card" href={resolve('/chains/[chainId]', { chainId: chain.id })}>
-								<strong><MathText text={chain.title} /></strong>
-								<span
-									>{chain.questionCount} linked {chain.questionCount === 1
-										? 'question'
-										: 'questions'}</span
-								>
-							</a>
-						</div>
-					{/each}
-				</div>
-			</section>
-		{/if}
 	</div>
 </main>
 
@@ -241,9 +207,7 @@
 
 	.question-row {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.42fr);
-		gap: 1rem;
-		align-items: center;
+		gap: 0.22rem;
 		padding: 0.78rem 0;
 		border-bottom: 1px solid #e8eef3;
 	}
@@ -266,44 +230,6 @@
 		font-size: 0.88rem;
 	}
 
-	.chain-link {
-		justify-self: end;
-		font-size: 0.86rem;
-		text-align: right;
-	}
-
-	.chain-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-		gap: 0.7rem;
-	}
-
-	.chain-card {
-		display: grid;
-		gap: 0.35rem;
-		padding: 0.8rem;
-		border: 1px solid #cddbe4;
-		background: #ffffff;
-		color: #10253a;
-		text-decoration: none;
-	}
-
-	.chain-card:hover,
-	.chain-card:focus-visible {
-		border-color: #10253a;
-		background: #f6fafb;
-	}
-
-	.chain-card strong {
-		font-size: 0.95rem;
-		font-weight: 820;
-	}
-
-	.chain-card span {
-		color: #526778;
-		font-size: 0.84rem;
-	}
-
 	:global(:root[data-theme='dark']) .topic-page {
 		background:
 			linear-gradient(180deg, rgba(15, 23, 42, 0.52), rgba(15, 23, 42, 0)), var(--qc-app-surface);
@@ -318,16 +244,14 @@
 
 	:global(:root[data-theme='dark']) .topic-hero h1,
 	:global(:root[data-theme='dark']) .section-heading h2,
-	:global(:root[data-theme='dark']) .question-row a,
-	:global(:root[data-theme='dark']) .chain-card {
+	:global(:root[data-theme='dark']) .question-row a {
 		color: #e5edf6;
 	}
 
 	:global(:root[data-theme='dark']) .breadcrumb,
 	:global(:root[data-theme='dark']) .topic-hero p,
 	:global(:root[data-theme='dark']) .section-heading p,
-	:global(:root[data-theme='dark']) .question-row p,
-	:global(:root[data-theme='dark']) .chain-card span {
+	:global(:root[data-theme='dark']) .question-row p {
 		color: #9fb0c5;
 	}
 
@@ -335,28 +259,5 @@
 	:global(:root[data-theme='dark']) .question-row a:hover,
 	:global(:root[data-theme='dark']) .question-row a:focus-visible {
 		color: #7dd3a1;
-	}
-
-	:global(:root[data-theme='dark']) .chain-card {
-		border-color: #334155;
-		background: #0f172a;
-	}
-
-	:global(:root[data-theme='dark']) .chain-card:hover,
-	:global(:root[data-theme='dark']) .chain-card:focus-visible {
-		border-color: #7dd3a1;
-		background: #111d33;
-	}
-
-	@media (max-width: 760px) {
-		.question-row {
-			grid-template-columns: 1fr;
-			gap: 0.42rem;
-		}
-
-		.chain-link {
-			justify-self: start;
-			text-align: left;
-		}
 	}
 </style>

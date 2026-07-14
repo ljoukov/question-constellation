@@ -1,0 +1,393 @@
+{
+	"schemaVersion": "scoped-science-content-repair/v3",
+	"chains": [
+		{
+			"id": "physics-chain-grid-transformer-efficiency",
+			"stepMode": "reviewed-extension",
+			"canonical_chain_text": "step-up potential difference -> lower current -> less cable heating -> higher efficiency",
+			"summary": "Higher potential difference lowers current and cable heating, so more energy reaches consumers.",
+			"steps": [
+				{
+					"id": "physics-chain-grid-transformer-efficiency-step-1",
+					"step_text": "Step-up potential difference"
+				},
+				{
+					"id": "physics-chain-grid-transformer-efficiency-step-2",
+					"step_text": "Lower current"
+				},
+				{
+					"id": "physics-chain-grid-transformer-efficiency-step-3",
+					"step_text": "Less cable heating"
+				},
+				{
+					"id": "physics-chain-grid-transformer-efficiency-step-4",
+					"step_text": "Higher efficiency",
+					"step_role": "conclusion"
+				}
+			]
+		}
+	],
+	"stepPatches": [
+		{
+			"chain_id": "physics-chain-circuit-power-pd-current-calculation",
+			"step_id": "physics-chain-circuit-power-pd-current-calculation-step-2",
+			"common_omission": "Treats kilo- or milli-prefixed values as though they were already in base units."
+		},
+		{
+			"chain_id": "physics-chain-work-done-force-distance-calculation",
+			"step_id": "physics-chain-work-done-force-distance-calculation-step-2",
+			"common_omission": "Treats a millimetre value as though it were already in metres."
+		},
+		{
+			"chain_id": "physics-chain-ohms-law-calculation",
+			"step_id": "physics-chain-ohms-law-calculation-step-2",
+			"common_omission": "Treats a milliamp value as though it were already in amps."
+		}
+	],
+	"questions": [
+		{
+			"id": "8464b1h-nov20-04-2",
+			"source_document_id": "aqa-8464b1h-qp-nov20",
+			"source_question_ref": "04.2",
+			"prompt_text": "Gonorrhoea is a bacterial disease.\nA new vaccine is being developed against gonorrhoea.\n\nDescribe how a vaccine would work to prevent gonorrhoea.\n[4 marks]",
+			"self_contained_prompt_text": "Gonorrhoea is a bacterial disease.\nA new vaccine is being developed against gonorrhoea.\n\nDescribe how a vaccine would work to prevent gonorrhoea.\n[4 marks]",
+			"full_prompt_text": "Gonorrhoea is a bacterial disease.\nA new vaccine is being developed against gonorrhoea.\n\nDescribe how a vaccine would work to prevent gonorrhoea.\n[4 marks]",
+			"card_title": "Vaccine protection against gonorrhoea",
+			"mark_scheme_items": [
+				{
+					"item_type": "mark",
+					"text": "A dead, inactive or weakened form of the pathogen, or its antigens, is introduced.",
+					"marks": 1,
+					"source_ref": "MS 04.2 point 1",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 16, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "White blood cells are stimulated to produce antibodies.",
+					"marks": 1,
+					"source_ref": "MS 04.2 point 2",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 16, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "Memory cells are made and remain.",
+					"marks": 1,
+					"source_ref": "MS 04.2 point 3",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 16, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "On re-exposure, specific antibodies are made very quickly and in large quantities.",
+					"marks": 1,
+					"source_ref": "MS 04.2 point 4",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 16, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "Pathogens are killed before their population becomes large enough to cause disease.",
+					"marks": 1,
+					"source_ref": "MS 04.2 point 5",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 16, "credit_rule": "any_four" }
+				}
+			],
+			"mark_checklist": [
+				{
+					"text": "State that a dead/inactive/weakened pathogen or its antigens are introduced.",
+					"required": true,
+					"mark_scheme_item_indexes": [0],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that white blood cells are stimulated to produce antibodies.",
+					"required": true,
+					"mark_scheme_item_indexes": [1],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that memory cells are made or remain.",
+					"required": true,
+					"mark_scheme_item_indexes": [2],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "Explain that on re-exposure specific antibodies are produced quickly/in large quantities, killing the pathogen before it causes disease.",
+					"required": true,
+					"mark_scheme_item_indexes": [3, 4],
+					"confidence": 0.9,
+					"needs_human_review": false
+				}
+			],
+			"model_answer": {
+				"answer_text": "The vaccine introduces a harmless form of the gonorrhoea pathogen or its antigens. White blood cells produce specific antibodies and memory cells remain. If the person is exposed again, memory cells trigger rapid production of specific antibodies, killing the bacteria before they can build up enough to cause disease.",
+				"derivation": "source_repaired_mark_scheme",
+				"confidence": 0.9,
+				"needs_human_review": false,
+				"supporting_mark_scheme_item_indexes": [0, 1, 2, 3, 4]
+			}
+		},
+		{
+			"id": "8464b1h-jun24-03-3",
+			"source_document_id": "aqa-8464b1h-qp-jun24",
+			"source_question_ref": "03.3",
+			"prompt_text": "Describe how the measles vaccine helps a person to become immune to the\nmeasles pathogen.\n[4 marks]",
+			"parent_stem": "This question is about communicable diseases.\nMeasles is a communicable disease caused by a pathogen.",
+			"self_contained_prompt_text": "This question is about communicable diseases.\nMeasles is a communicable disease caused by a pathogen.\n\nDescribe how the measles vaccine helps a person to become immune to the\nmeasles pathogen.\n[4 marks]",
+			"self_contained_prompt_markdown": "This question is about communicable diseases.\nMeasles is a communicable disease caused by a pathogen.\n\nDescribe how the measles vaccine helps a person to become immune to the\nmeasles pathogen.\n[4 marks]",
+			"full_prompt_text": "This question is about communicable diseases.\nMeasles is a communicable disease caused by a pathogen.\n\nDescribe how the measles vaccine helps a person to become immune to the\nmeasles pathogen.\n[4 marks]",
+			"context_blocks": [
+				{
+					"kind": "parent_stem",
+					"text": "This question is about communicable diseases.\nMeasles is a communicable disease caused by a pathogen.",
+					"required": true
+				}
+			],
+			"self_containment": {
+				"status": "self_contained",
+				"is_self_contained": true,
+				"requires_context": false,
+				"requires_assets": false,
+				"added_context": null,
+				"required_asset_labels": [],
+				"rationale": "Prompt can be practised without unrelated paper context.",
+				"confidence": 0.9
+			},
+			"question_segmentation_confidence": 0.94,
+			"review_notes": [
+				"Atomic question 03.3 ends at the [4 marks] boundary on page 10. The norovirus setup on page 11 belongs to question 03.4 and must not be carried backward."
+			],
+			"card_title": "Measles vaccine immunity",
+			"mark_scheme_items": [
+				{
+					"item_type": "mark",
+					"text": "The vaccine contains dead, inactive or weakened measles pathogen, or measles antigens.",
+					"marks": 1,
+					"source_ref": "MS 03.3 point 1",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 13, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "White blood cells produce antibodies.",
+					"marks": 1,
+					"source_ref": "MS 03.3 point 2",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 13, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "The antibodies are specific for the measles virus or pathogen.",
+					"marks": 1,
+					"source_ref": "MS 03.3 point 3",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 13, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "Memory cells are made.",
+					"marks": 1,
+					"source_ref": "MS 03.3 point 4",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 13, "credit_rule": "any_four" }
+				},
+				{
+					"item_type": "mark",
+					"text": "On secondary exposure, antibodies are produced faster or in larger quantities.",
+					"marks": 1,
+					"source_ref": "MS 03.3 point 5",
+					"confidence": 0.94,
+					"metadata": { "source_repaired": true, "page_start": 13, "credit_rule": "any_four" }
+				}
+			],
+			"mark_checklist": [
+				{
+					"text": "State that the vaccine contains dead/inactive/weakened measles pathogen/virus or measles antigens.",
+					"required": true,
+					"mark_scheme_item_indexes": [0],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that white blood cells/lymphocytes produce antibodies.",
+					"required": true,
+					"mark_scheme_item_indexes": [1],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that the antibodies are specific/correct for measles.",
+					"required": true,
+					"mark_scheme_item_indexes": [2],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that memory cells are made and on secondary exposure antibodies are produced faster or in larger quantities.",
+					"required": true,
+					"mark_scheme_item_indexes": [3, 4],
+					"confidence": 0.9,
+					"needs_human_review": false
+				}
+			],
+			"model_answer": {
+				"answer_text": "The measles vaccine contains dead, inactive or weakened measles pathogen, or measles antigens. White blood cells produce specific antibodies and memory cells are made. If the person is later exposed to measles, antibodies are produced faster and in larger amounts, so the pathogen is destroyed before illness develops.",
+				"derivation": "source_repaired_mark_scheme",
+				"confidence": 0.9,
+				"needs_human_review": false,
+				"supporting_mark_scheme_item_indexes": [0, 1, 2, 3, 4]
+			}
+		},
+		{
+			"id": "8464c1h-jun22-05-3",
+			"source_document_id": "aqa-8464c1h-qp-jun22",
+			"source_question_ref": "05.3",
+			"prompt_text": "An alloy of aluminium contains small amounts of other metals.\nExplain why other metals are added to aluminium.\n[4 marks]",
+			"self_contained_prompt_text": "This question is about structure and bonding.\nAn alloy of aluminium contains small amounts of other metals.\nExplain why other metals are added to aluminium.\n[4 marks]",
+			"full_prompt_text": "This question is about structure and bonding.\nAn alloy of aluminium contains small amounts of other metals.\nExplain why other metals are added to aluminium.\n[4 marks]",
+			"card_title": "Adding other metals to aluminium",
+			"mark_scheme_items": [
+				{
+					"item_type": "mark",
+					"text": "Other metal atoms have different sizes to aluminium atoms.",
+					"marks": 1,
+					"source_ref": "AQA-8464C1H-MS-JUN22.txt:715-725 point 1",
+					"confidence": 0.9,
+					"metadata": { "page_start": 14, "raw_block": false, "repaired_from_source": true }
+				},
+				{
+					"item_type": "mark",
+					"text": "The layers of aluminium atoms are distorted.",
+					"marks": 1,
+					"source_ref": "AQA-8464C1H-MS-JUN22.txt:715-725 point 2",
+					"confidence": 0.9,
+					"metadata": { "page_start": 14, "raw_block": false, "repaired_from_source": true }
+				},
+				{
+					"item_type": "mark",
+					"text": "The layers, or atoms, cannot slide over each other easily.",
+					"marks": 1,
+					"source_ref": "AQA-8464C1H-MS-JUN22.txt:715-725 point 3",
+					"confidence": 0.9,
+					"metadata": { "page_start": 14, "raw_block": false, "repaired_from_source": true }
+				},
+				{
+					"item_type": "mark",
+					"text": "This makes the alloy harder or stronger.",
+					"marks": 1,
+					"source_ref": "AQA-8464C1H-MS-JUN22.txt:715-725 point 4",
+					"confidence": 0.9,
+					"metadata": { "page_start": 14, "raw_block": false, "repaired_from_source": true }
+				}
+			],
+			"mark_checklist": [
+				{
+					"text": "State that the added metal atoms are different sizes from aluminium atoms.",
+					"required": true,
+					"mark_scheme_item_indexes": [0],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that the different-sized atoms distort the layers of aluminium atoms.",
+					"required": true,
+					"mark_scheme_item_indexes": [1],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "State that the layers cannot slide, or cannot slide over each other easily.",
+					"required": true,
+					"mark_scheme_item_indexes": [2],
+					"confidence": 0.9,
+					"needs_human_review": false
+				},
+				{
+					"text": "Link the reduced sliding to the alloy being harder or stronger.",
+					"required": true,
+					"mark_scheme_item_indexes": [3],
+					"confidence": 0.9,
+					"needs_human_review": false
+				}
+			],
+			"model_answer": {
+				"answer_text": "The other metal atoms are different sizes from aluminium atoms. This distorts the layers of aluminium atoms, so the layers cannot slide over each other easily. This makes the alloy harder or stronger.",
+				"derivation": "source_mark_scheme_repair",
+				"confidence": 0.9,
+				"needs_human_review": false,
+				"supporting_mark_scheme_item_indexes": [0, 1, 2, 3]
+			}
+		},
+		{
+			"id": "8464c1h-nov21-04-3",
+			"source_document_id": "aqa-8464c1h-qp-nov21",
+			"source_question_ref": "04.3",
+			"prompt_text": "Explain why steel is harder than iron.\n[3 marks]",
+			"self_contained_prompt_text": "Carbon can exist in a number of different structures.\nExplain why steel is harder than iron.\n[3 marks]",
+			"full_prompt_text": "Carbon can exist in a number of different structures.\nExplain why steel is harder than iron.\n[3 marks]",
+			"card_title": "Why steel is harder than iron",
+			"mark_scheme_items": [
+				{
+					"item_type": "mark",
+					"text": "Carbon atoms have different sizes to iron atoms or ions.",
+					"marks": 1,
+					"source_ref": "MS 04.3 point 1",
+					"confidence": 0.94,
+					"metadata": { "page_start": 12, "raw_block": false, "source_repaired": true }
+				},
+				{
+					"item_type": "mark",
+					"text": "Carbon atoms distort the layers of iron atoms or ions.",
+					"marks": 1,
+					"source_ref": "MS 04.3 point 2",
+					"confidence": 0.94,
+					"metadata": { "page_start": 12, "raw_block": false, "source_repaired": true }
+				},
+				{
+					"item_type": "mark",
+					"text": "The layers cannot slide over each other easily.",
+					"marks": 1,
+					"source_ref": "MS 04.3 point 3",
+					"confidence": 0.94,
+					"metadata": { "page_start": 12, "raw_block": false, "source_repaired": true }
+				}
+			],
+			"mark_checklist": [
+				{
+					"text": "State that carbon atoms are a different size from iron atoms or ions.",
+					"required": true,
+					"mark_scheme_item_indexes": [0],
+					"confidence": 0.94,
+					"needs_human_review": false
+				},
+				{
+					"text": "Explain that the different-sized carbon atoms distort the iron layers.",
+					"required": true,
+					"mark_scheme_item_indexes": [1],
+					"confidence": 0.94,
+					"needs_human_review": false
+				},
+				{
+					"text": "Link the distorted layers to the layers being unable to slide easily.",
+					"required": true,
+					"mark_scheme_item_indexes": [2],
+					"confidence": 0.94,
+					"needs_human_review": false
+				}
+			],
+			"model_answer": {
+				"answer_text": "Carbon atoms are a different size from iron atoms. The carbon atoms distort the layers of iron atoms, so the layers cannot slide over each other easily.",
+				"derivation": "source_repaired_mark_scheme",
+				"confidence": 0.94,
+				"needs_human_review": false,
+				"supporting_mark_scheme_item_indexes": [0, 1, 2]
+			}
+		}
+	]
+}

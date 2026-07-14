@@ -10,7 +10,7 @@
 	const filterOptions = [
 		{ label: 'All', value: 'all' },
 		{ label: 'Comparisons', value: 'Comparison' },
-		{ label: 'Learning science', value: 'Learning science' },
+		{ label: 'Revision research', value: 'Revision research' },
 		{ label: 'Exam technique', value: 'Exam technique' }
 	] as const;
 	type BlogFilter = (typeof filterOptions)[number]['value'];
@@ -23,7 +23,7 @@
 	const canonicalUrl = 'https://constellation.eviworld.com/blog';
 	const pageTitle = 'Question Constellation Blog | GCSE Revision Comparisons and Exam Technique';
 	const pageDescription =
-		'Comparisons, GCSE revision guides and learning-science notes from Question Constellation, a public question bank organized around real questions and mark-scoring methods.';
+		'Comparisons, GCSE revision guides and revision-research notes from Question Constellation, a public question bank organized around real questions and mark-scoring methods.';
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -102,7 +102,7 @@
 				<p class="blog-kicker">GCSE revision notes</p>
 				<h1 id="blog-title">Question Constellation Blog</h1>
 				<p>
-					Comparisons, exam-technique guides and learning-science notes for students who want
+					Comparisons, exam-technique guides and revision-research notes for students who want
 					questions, mark checklists and methods to do more of the work.
 				</p>
 				<a class="blog-hero-link" href={resolve('/past-papers/gcse')}>

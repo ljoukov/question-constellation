@@ -11,6 +11,7 @@ describe('auth return paths', () => {
 	it('rejects external and protocol-relative return targets', () => {
 		expect(safeAuthReturnPath('https://example.com')).toBe('/');
 		expect(safeAuthReturnPath('//example.com')).toBe('/');
+		expect(safeAuthReturnPath('/\\example.com')).toBe('/');
 		expect(safeAuthReturnPath('/safe\nLocation: https://example.com')).toBe('/');
 	});
 });

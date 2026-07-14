@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { BookOpen } from '@lucide/svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import type { PageData } from './$types';
 
@@ -84,42 +83,23 @@
 
 	<main class="past-papers-page">
 		<section class="past-papers-hero" aria-labelledby="past-papers-title">
-			<p class="past-papers-kicker">GCSE paper atlas</p>
-			<div class="past-papers-hero-grid">
-				<div>
-					<h1 id="past-papers-title">GCSE Past Papers</h1>
-					<p>
-						Download GCSE question papers, mark schemes and inserts across AQA, Edexcel, OCR and
-						WJEC.
-					</p>
-				</div>
-			</div>
+			<h1 id="past-papers-title">GCSE past papers</h1>
+			<p>Choose your exam board.</p>
 		</section>
 
 		<section class="subject-directory" aria-labelledby="subject-directory-title">
 			<div class="section-heading">
-				<h2 id="subject-directory-title">Choose Your Exam Board</h2>
+				<h2 id="subject-directory-title">Exam boards</h2>
 			</div>
 
 			<div class="board-grid">
 				{#each data.boards as board (board.id)}
 					<a class="board-card" href={resolve('/past-papers/gcse/[board]', { board: board.id })}>
-						<span class="board-card-title">
-							<BookOpen size={18} aria-hidden="true" strokeWidth={2.2} />
-							<span>{board.name} GCSE Past Papers</span>
-						</span>
-						<span class="board-card-copy">Subjects, tiers and mark schemes</span>
+						<span class="board-card-title">{board.name}</span>
+						<span class="board-card-copy">Past papers and mark schemes</span>
 					</a>
 				{/each}
 			</div>
-		</section>
-
-		<section class="seo-copy" aria-label="About GCSE past papers">
-			<h2>Free GCSE Past Papers And Mark Schemes</h2>
-			<p>
-				Use this directory to find GCSE past papers by exam board, subject, tier and year. The
-				download pages include question papers, mark schemes and inserts where they are available.
-			</p>
 		</section>
 	</main>
 </div>
@@ -147,19 +127,6 @@
 		border-bottom: 1px solid rgba(105, 129, 143, 0.15);
 	}
 
-	.past-papers-kicker {
-		margin: 0 0 0.65rem;
-		color: #168458;
-		font-size: 0.78rem;
-		font-weight: 620;
-		letter-spacing: 0;
-		text-transform: uppercase;
-	}
-
-	.past-papers-hero-grid {
-		max-width: 48rem;
-	}
-
 	.past-papers-hero h1 {
 		margin: 0;
 		color: #123f35;
@@ -169,8 +136,7 @@
 		letter-spacing: 0;
 	}
 
-	.past-papers-hero p,
-	.seo-copy p {
+	.past-papers-hero p {
 		color: #526778;
 		font-weight: 400;
 		line-height: 1.42;
@@ -188,8 +154,7 @@
 		text-underline-offset: 0.18em;
 	}
 
-	.subject-directory,
-	.seo-copy {
+	.subject-directory {
 		padding-top: 1.6rem;
 	}
 
@@ -201,21 +166,10 @@
 		margin-bottom: 0.8rem;
 	}
 
-	.section-heading h2,
-	.seo-copy h2 {
+	.section-heading h2 {
 		margin: 0;
 		font-size: 1.08rem;
 		font-weight: 620;
-	}
-
-	.seo-copy h2 {
-		margin-bottom: 0.55rem;
-	}
-
-	.seo-copy p {
-		max-width: 40rem;
-		margin: 0;
-		font-size: 0.95rem;
 	}
 
 	.board-grid {
@@ -253,11 +207,6 @@
 		font-size: 0.9rem;
 	}
 
-	.seo-copy {
-		margin-top: 1.4rem;
-		padding: 1.6rem 0 0;
-	}
-
 	:global(:root[data-theme='dark']) .past-papers-shell {
 		background: #020617;
 		color: #e5edf6;
@@ -267,14 +216,12 @@
 		border-color: rgba(148, 163, 184, 0.22);
 	}
 
-	:global(:root[data-theme='dark']) .past-papers-kicker,
 	:global(:root[data-theme='dark']) .board-card:hover .board-card-title,
 	:global(:root[data-theme='dark']) .board-card:focus-visible .board-card-title {
 		color: #7dd3a1;
 	}
 
 	:global(:root[data-theme='dark']) .past-papers-hero p,
-	:global(:root[data-theme='dark']) .seo-copy p,
 	:global(:root[data-theme='dark']) .board-card-copy {
 		color: #9fb0c5;
 	}
@@ -286,8 +233,7 @@
 
 	:global(:root[data-theme='dark']) .board-card-title,
 	:global(:root[data-theme='dark']) .past-papers-hero h1,
-	:global(:root[data-theme='dark']) .section-heading h2,
-	:global(:root[data-theme='dark']) .seo-copy h2 {
+	:global(:root[data-theme='dark']) .section-heading h2 {
 		color: #e5edf6;
 	}
 

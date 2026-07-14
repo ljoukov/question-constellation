@@ -9,6 +9,7 @@ import {
 	anonymousProfileSettings,
 	parseAnonymousLearnerProfileCookie
 } from '$lib/anonymousLearnerProfile';
+import { profileAnchorHref, profileSubjectAnchor } from '$lib/profileNavigation';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -29,7 +30,7 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 	);
 
 	if (!literatureSubject?.enabled || literatureSubject.board !== 'OCR') {
-		throw redirect(303, '/profile');
+		throw redirect(303, profileAnchorHref('/profile', profileSubjectAnchor('English Literature')));
 	}
 
 	return {

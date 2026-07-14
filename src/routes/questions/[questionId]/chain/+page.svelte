@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
-	import { hasExplainedWeakAnswer, useIllustratedChainLayout } from '$lib/chains/chainPresentation';
+	import { hasExplainedWeakAnswer, useFocusedChainLayout } from '$lib/chains/chainPresentation';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
@@ -36,9 +36,7 @@
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
-	const useFocusedLayout = $derived(
-		useIllustratedChainLayout(data.question.meta.subject, data.chain.illustration)
-	);
+	const useFocusedLayout = $derived(useFocusedChainLayout(data.question.meta.subject));
 	const showWeakAnswer = $derived(
 		hasExplainedWeakAnswer(data.question.commonWeakAnswer, data.question.commonWeakExplanation)
 	);
@@ -61,7 +59,6 @@
 		subject={topbarSubject}
 		subjects={topbarSubjects}
 		searchPlaceholder="Search questions"
-		showNavigation
 	/>
 
 	{#if useFocusedLayout}
@@ -70,31 +67,32 @@
 
 			<ExamQuestionCard question={data.question} compact showTitle={false} />
 
-			<section class="qc-chain-answer-explanation" aria-labelledby="answer-chain-title">
-				<header class="qc-chain-focus-header">
-					<p class="qc-real-kicker">Answer chain</p>
-					<h1 id="answer-chain-title"><MathText text={data.chain.title} /></h1>
-				</header>
+			<div class="qc-chain-answer-core">
+				<section class="qc-chain-answer-explanation" aria-labelledby="answer-chain-title">
+					<header class="qc-chain-focus-header">
+						<p class="qc-real-kicker">Answer chain</p>
+						<h1 id="answer-chain-title"><MathText text={data.chain.title} /></h1>
+					</header>
 
-				{#if data.chain.illustration}
-					<ChainIllustration
-						illustration={data.chain.illustration}
-						eager
-						showCaption={false}
-						expandable
-					/>
-				{/if}
-			</section>
+					{#if data.chain.illustration}
+						<ChainIllustration
+							illustration={data.chain.illustration}
+							eager
+							showCaption={false}
+							expandable
+						/>
+					{:else}
+						<ThinkingChain steps={chainSteps} label="Answer chain" />
+					{/if}
+				</section>
 
-			<section class="qc-answer-panel">
-				<p class="qc-panel-label">Full-mark answer</p>
-				<p><MathText text={data.question.modelAnswer} /></p>
-			</section>
+				<section class="qc-answer-panel qc-chain-full-answer">
+					<p class="qc-panel-label">Full-mark answer</p>
+					<p><MathText text={data.question.modelAnswer} /></p>
+				</section>
+			</div>
 
-			<section
-				class="qc-answer-panel qc-mark-details"
-				class:is-open={markingPointsOpen}
-			>
+			<section class="qc-answer-panel qc-mark-details" class:is-open={markingPointsOpen}>
 				<button
 					type="button"
 					class="qc-mark-details-toggle"
@@ -104,7 +102,7 @@
 				>
 					<span class="qc-panel-label">Marking points</span>
 					<span class="qc-mark-details-action">
-						Show {data.question.checklist.length}
+						{markingPointsOpen ? 'Hide' : `Show ${data.question.checklist.length}`}
 						<ChevronDown size={17} strokeWidth={2} aria-hidden="true" />
 					</span>
 				</button>
@@ -142,7 +140,7 @@
 			<div class="qc-action-row" aria-label="Method actions">
 				<a class="qc-action-button primary" href={constellationHref}>
 					<ClipboardList size={18} aria-hidden="true" />
-					Choose another question
+					See {data.questions.length} related questions
 				</a>
 			</div>
 		</div>
@@ -202,13 +200,18 @@
 					</ol>
 				</section>
 
-				<section class="qc-warning-panel">
-					<TriangleAlert size={19} aria-hidden="true" />
-					<div>
-						<p class="qc-panel-label">Common weak answer</p>
-						<p><MathText text={data.question.commonWeakAnswer} /></p>
-					</div>
-				</section>
+				{#if showWeakAnswer}
+					<section class="qc-warning-panel">
+						<TriangleAlert size={19} aria-hidden="true" />
+						<div>
+							<p class="qc-panel-label">Why this loses marks</p>
+							<p class="qc-weak-answer-example">
+								<MathText text={data.question.commonWeakAnswer} />
+							</p>
+							<p><MathText text={data.question.commonWeakExplanation} /></p>
+						</div>
+					</section>
+				{/if}
 
 				<ExamQuestionCard question={data.question} compact showTitle={false} />
 

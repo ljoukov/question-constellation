@@ -5,7 +5,10 @@
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, canonicalEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import { ArrowRight, CheckCircle2, CircleAlert, RotateCcw, Target } from '@lucide/svelte';
+	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
+	import { learnerSubjectHref } from '$lib/learning/subjects';
+	import { ArrowRight, CheckCircle2, ChevronDown, CircleAlert, RotateCcw } from '@lucide/svelte';
+	import { slide } from 'svelte/transition';
 	import type { PageProps } from './$types';
 	import {
 		classifyRequestFailure,
@@ -20,7 +23,7 @@
 		feedback: string;
 		failure?: RequestFailure | null;
 	};
-	type Phase = 'build' | 'memory' | 'compose' | 'feedback' | 'model';
+	type Phase = 'build' | 'compose' | 'feedback';
 	type FinalResult = {
 		status: 'ok';
 		awardedMarks: number;
@@ -41,8 +44,18 @@
 	let finalResult = $state<FinalResult | null>(null);
 	let finalFailure = $state<RequestFailure | null>(null);
 	let checkingFinal = $state(false);
+	let modelAnswerOpen = $state(false);
 	let hydratedGapId = $state('');
-	const gapStorageKey = $derived(`question-constellation:gap-practice:v1:${data.gapData.gap.id}`);
+	let resultPanel: HTMLElement | undefined = $state();
+	let focusedResultSignature = '';
+	let activitySessionId = createActivityId('gap-session');
+	let responseStartedAt = Date.now();
+	let pendingSubmissionId = '';
+	let pendingSubmissionSignature = '';
+	let pendingResponseDurationMs: number | null = null;
+	const gapStorageKey = $derived(
+		`question-constellation:gap-practice:v2:${data.gapData.gap.id}:${encodeURIComponent(data.gapData.gap.updatedAt)}`
+	);
 
 	const questions = $derived(data.gapData.presentation.questions);
 	const defaultAnswers = $derived(
@@ -50,7 +63,7 @@
 	);
 	const defaultFieldResults = $derived(
 		Object.fromEntries(
-			questions.map((question) => [question.id, { status: 'idle', feedback: question.hint }])
+			questions.map((question) => [question.id, { status: 'idle', feedback: '' }])
 		) as Record<string, FieldResult>
 	);
 	const answers = $derived({ ...defaultAnswers, ...answerOverrides });
@@ -70,9 +83,8 @@
 	const missingSteps = $derived(new Set(finalResult?.missingStepIds ?? []));
 	const sourceHref = $derived(data.gapData.question.href ?? resolve('/'));
 	const chainHref = $derived(data.gapData.chain.href);
-	const recallHref = $derived(
-		`${resolve('/recall')}?subject=${encodeURIComponent(subject)}&start=1`
-	);
+	const subjectHref = $derived(learnerSubjectHref(subject));
+	const followUpHref = $derived(data.gapData.followUpQuestion?.href ?? subjectHref);
 
 	function subjectFromGapText(value: string) {
 		const englishSubject = canonicalEnglishSubject(value);
@@ -94,6 +106,12 @@
 		finalResult = null;
 		finalFailure = null;
 		checkingFinal = false;
+		modelAnswerOpen = false;
+		activitySessionId = createActivityId('gap-session');
+		responseStartedAt = Date.now();
+		pendingSubmissionId = '';
+		pendingSubmissionSignature = '';
+		pendingResponseDurationMs = null;
 		phase = 'build';
 	});
 
@@ -117,12 +135,22 @@
 				fieldResults?: Record<string, FieldResult>;
 				finalAnswer?: string;
 				finalResult?: FinalResult | null;
+				activitySessionId?: string;
+				responseStartedAt?: number;
+				pendingSubmissionId?: string;
+				pendingSubmissionSignature?: string;
+				pendingResponseDurationMs?: number | null;
 			} | null;
 			if (stored) {
 				answerOverrides = stored.answers ?? {};
 				fieldResultOverrides = stored.fieldResults ?? {};
 				finalAnswer = stored.finalAnswer ?? '';
 				finalResult = stored.finalResult ?? null;
+				activitySessionId = stored.activitySessionId || activitySessionId;
+				responseStartedAt = stored.responseStartedAt ?? responseStartedAt;
+				pendingSubmissionId = stored.pendingSubmissionId ?? '';
+				pendingSubmissionSignature = stored.pendingSubmissionSignature ?? '';
+				pendingResponseDurationMs = stored.pendingResponseDurationMs ?? null;
 				phase = stored.phase ?? 'build';
 			}
 		} catch {
@@ -130,6 +158,18 @@
 		} finally {
 			hydratedGapId = gapId;
 		}
+	});
+
+	$effect(() => {
+		if (phase !== 'feedback' || !finalResult || !resultPanel || typeof window === 'undefined')
+			return;
+		const signature = `${data.gapData.gap.id}:${finalAnswer}:${finalResult.awardedMarks}`;
+		if (signature === focusedResultSignature) return;
+		focusedResultSignature = signature;
+		window.requestAnimationFrame(() => {
+			resultPanel?.focus({ preventScroll: true });
+			resultPanel?.scrollIntoView({ block: 'start', behavior: 'auto' });
+		});
 	});
 
 	function persistGapState() {
@@ -142,7 +182,12 @@
 					answers: answerOverrides,
 					fieldResults: fieldResultOverrides,
 					finalAnswer,
-					finalResult
+					finalResult,
+					activitySessionId,
+					responseStartedAt,
+					pendingSubmissionId,
+					pendingSubmissionSignature,
+					pendingResponseDurationMs
 				})
 			);
 		} catch {
@@ -165,10 +210,9 @@
 
 	function updateAnswer(questionId: string, value: string) {
 		answerOverrides = { ...answerOverrides, [questionId]: value };
-		const question = questions.find((entry) => entry.id === questionId);
 		fieldResultOverrides = {
 			...fieldResultOverrides,
-			[questionId]: { status: 'idle', feedback: question?.hint ?? '', failure: null }
+			[questionId]: { status: 'idle', feedback: '', failure: null }
 		};
 	}
 
@@ -200,7 +244,7 @@
 				...fieldResultOverrides,
 				[questionId]: { status: result.result, feedback: result.feedback, failure: null }
 			};
-			return true;
+			return result.result === 'correct';
 		} catch (error) {
 			console.error('Gap field check failed.', error);
 			fieldResultOverrides = {
@@ -225,7 +269,7 @@
 		for (const question of questions) {
 			if (!(await checkField(question.id))) allChecksCompleted = false;
 		}
-		if (allChecksCompleted) phase = 'memory';
+		if (allChecksCompleted) phase = 'compose';
 	}
 
 	async function submitFinal(event?: SubmitEvent) {
@@ -233,15 +277,29 @@
 		const answer = finalAnswer.trim();
 		if (!answer || checkingFinal) return;
 		checkingFinal = true;
+		modelAnswerOpen = false;
 		finalFailure = null;
 		finalResult = null;
+		const submissionSignature = JSON.stringify({ answer, guidedAnswers: answers });
+		if (!pendingSubmissionId || pendingSubmissionSignature !== submissionSignature) {
+			pendingSubmissionId = createActivityId('gap-response');
+			pendingSubmissionSignature = submissionSignature;
+			pendingResponseDurationMs = responseDurationMs(responseStartedAt);
+			persistGapState();
+		}
 		try {
 			const response = await fetchWithResponseTimeout(
 				resolve('/api/gaps/[gapId]/guided-grade', { gapId: data.gapData.gap.id }),
 				{
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({ answer, guidedAnswers: answers })
+					body: JSON.stringify({
+						answer,
+						guidedAnswers: answers,
+						submissionId: pendingSubmissionId,
+						sourceSessionId: activitySessionId,
+						responseDurationMs: pendingResponseDurationMs
+					})
 				}
 			);
 			if (!response.ok) {
@@ -262,7 +320,7 @@
 </script>
 
 <svelte:head>
-	<title>Fix mistake | {data.gapData.chain.title}</title>
+	<title>Close the gap | {data.gapData.chain.title}</title>
 </svelte:head>
 
 <main class="qc-real-app qc-gap-page">
@@ -271,22 +329,20 @@
 		{subject}
 		subjects={[...BROWSE_SUBJECTS]}
 		searchPlaceholder="Search questions"
-		showNavigation
 	/>
 
 	<div class="qc-gap-layout">
 		<aside class="qc-gap-context" aria-label="Gap context">
 			<p class="qc-real-kicker">{data.gapData.subjectLabel}</p>
-			<h1><MathText text={data.gapData.gap.stepText} /></h1>
-			<p><MathText text={`${data.gapData.gap.chainTitle} · ${data.gapData.gap.topic}`} /></p>
+			<h1><MathText text={data.gapData.gap.chainTitle} /></h1>
+			<p><MathText text={data.gapData.gap.topic} /></p>
 			<div class="qc-gap-context-actions">
 				<a href={sourceHref}>Original question</a>
-				<a href={chainHref}>Method</a>
-				<a href={recallHref}>Flashcards</a>
+				<a href={chainHref}>Answer chain</a>
 			</div>
 		</aside>
 
-		<section class="qc-gap-workspace" aria-label="Fix mistake builder">
+		<section class="qc-gap-workspace" aria-label="Close the gap">
 			<header class="qc-gap-header">
 				<span>{subject}</span>
 				<h2><MathText text={data.gapData.question.title} /></h2>
@@ -294,7 +350,7 @@
 
 			{#if phase === 'build'}
 				<div class="qc-gap-section-bar">
-					<strong>Build the missing steps</strong>
+					<strong>Complete the chain</strong>
 					<span>{allFieldsFilled ? 'Ready' : 'In progress'}</span>
 				</div>
 				<form class="qc-gap-questions" onsubmit={submitBuild}>
@@ -310,7 +366,6 @@
 								placeholder="Type a short answer"
 								oninput={(event) =>
 									updateAnswer(question.id, (event.currentTarget as HTMLTextAreaElement).value)}
-								onblur={() => checkField(question.id)}
 							></textarea>
 							{#if currentFieldResult.failure}
 								<RequestFailureNotice
@@ -323,7 +378,7 @@
 										: 'Retry step'}
 									compact
 								/>
-							{:else}
+							{:else if currentFieldResult.feedback}
 								<small class={`qc-gap-feedback ${currentFieldResult.status}`}>
 									{currentFieldResult.feedback}
 								</small>
@@ -335,9 +390,9 @@
 						<button type="submit" disabled={!allFieldsFilled || checkingFields}>Next</button>
 					</footer>
 				</form>
-			{:else if phase === 'memory'}
+			{:else if phase === 'compose'}
 				<section class="qc-gap-memory">
-					<p class="qc-panel-label">Method reminder</p>
+					<p class="qc-panel-label">Answer chain</p>
 					<div>
 						{#each data.gapData.chain.steps as step (step.id)}
 							<span class:target={step.id === data.gapData.presentation.targetStepId}>
@@ -346,11 +401,6 @@
 						{/each}
 					</div>
 				</section>
-				<footer class="qc-gap-footer">
-					<span>Now turn the method into full sentences.</span>
-					<button type="button" onclick={() => (phase = 'compose')}>Write answer</button>
-				</footer>
-			{:else if phase === 'compose'}
 				<form class="qc-gap-compose" onsubmit={submitFinal}>
 					<label for="gap-final-answer">{data.gapData.presentation.answerPrompt}</label>
 					<textarea
@@ -381,7 +431,13 @@
 					<p class="qc-panel-label">Your rewrite</p>
 					<p><MathText text={finalAnswer} /></p>
 				</section>
-				<section class="qc-gap-result" class:closed={finalResult.gapClosed}>
+				<section
+					bind:this={resultPanel}
+					class="qc-gap-result"
+					class:closed={finalResult.gapClosed}
+					tabindex="-1"
+					aria-live="polite"
+				>
 					{#if finalResult.gapClosed}
 						<CheckCircle2 size={21} aria-hidden="true" />
 					{:else}
@@ -399,6 +455,7 @@
 						<span
 							class:present={presentSteps.has(step.id)}
 							class:missing={missingSteps.has(step.id)}
+							aria-label={`${presentSteps.has(step.id) ? 'Present' : 'Missing'}: ${step.short}`}
 						>
 							{#if presentSteps.has(step.id)}
 								<CheckCircle2 size={15} aria-hidden="true" />
@@ -409,27 +466,45 @@
 						</span>
 					{/each}
 				</div>
-				<footer class="qc-gap-footer">
-					<span>{finalResult.gapClosed ? 'Mistake fixed.' : 'Try the rewrite once more.'}</span>
+				<section class="qc-gap-model">
+					<button
+						class="qc-gap-model-toggle"
+						class:open={modelAnswerOpen}
+						type="button"
+						aria-expanded={modelAnswerOpen}
+						aria-controls="gap-model-answer"
+						onclick={() => (modelAnswerOpen = !modelAnswerOpen)}
+					>
+						<span class="qc-panel-label">Model answer</span>
+						<ChevronDown size={17} aria-hidden="true" />
+					</button>
+					{#if modelAnswerOpen}
+						<div
+							id="gap-model-answer"
+							class="qc-gap-model-content"
+							transition:slide={{ duration: 180 }}
+						>
+							<p><MathText text={data.gapData.presentation.modelAnswer} /></p>
+						</div>
+					{/if}
+				</section>
+				<footer class="qc-gap-footer" class:completed={finalResult.gapClosed}>
+					{#if !finalResult.gapClosed}
+						<span>Try the rewrite once more.</span>
+					{/if}
 					{#if finalResult.gapClosed}
-						<button type="button" onclick={() => (phase = 'model')}>Model answer</button>
+						<div class="qc-gap-footer-actions">
+							<a href={followUpHref}>
+								{data.gapData.followUpQuestion ? 'Try a fresh question' : 'See next step'}
+								<ArrowRight size={16} aria-hidden="true" />
+							</a>
+						</div>
 					{:else}
 						<button type="button" onclick={() => (phase = 'compose')}>
 							<RotateCcw size={16} aria-hidden="true" />
 							Try again
 						</button>
 					{/if}
-				</footer>
-			{:else}
-				<section class="qc-gap-model">
-					<p class="qc-panel-label">Model answer</p>
-					<p><MathText text={data.gapData.presentation.modelAnswer} /></p>
-				</section>
-				<footer class="qc-gap-footer">
-					<a href={sourceHref}>
-						Back to practice
-						<ArrowRight size={16} aria-hidden="true" />
-					</a>
 				</footer>
 			{/if}
 		</section>

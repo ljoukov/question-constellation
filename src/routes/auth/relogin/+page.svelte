@@ -20,7 +20,7 @@
 			<span class="brand-text"><span>Question</span><span>Constellation</span></span>
 		</div>
 		<h1>Sign in required</h1>
-		<p>Sign in to sync your learning and use answer checking.</p>
+		<p>Sign in to sync your progress and use answer checking.</p>
 		{#if data.authFailure}
 			<RequestFailureNotice failure={data.authFailure} compact />
 		{/if}

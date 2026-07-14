@@ -1,4 +1,4 @@
-export type BlogCategory = 'Comparison' | 'Learning science' | 'Exam technique';
+export type BlogCategory = 'Comparison' | 'Revision research' | 'Exam technique';
 
 export type BlogFaq = {
 	question: string;

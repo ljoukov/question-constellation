@@ -2,6 +2,11 @@
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import {
+	deriveQuestionCardTitle,
+	questionCardTitleIssues,
+	QUESTION_CARD_TITLE_CONTRACT
+} from '../src/lib/questionCardTitle.js';
 import { ALLOWED_STEP_ROLES, publicChainStyleIssues } from './lib/answer-chain-style.mjs';
 import { d1Query, d1Rows } from './lib/d1-rest.mjs';
 import { loadDefaultEnv, loadDotEnvFile, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
@@ -683,7 +688,18 @@ async function applyPlan(plan) {
 				{ rootDir }
 			);
 			questionsPublished += Number(questionResult.meta?.changes ?? 0);
-			const title = questionTitleFromPrompt(exampleByQuestionId.get(questionId)?.promptText ?? '');
+			const example = exampleByQuestionId.get(questionId);
+			const title = deriveQuestionCardTitle({
+				promptText: example?.promptText,
+				selfContainedPromptText: example?.selfContainedPromptText,
+				answerText: [
+					...(example?.modelAnswers ?? []).map((answer) => answer?.answerText),
+					...(example?.markSchemeItems ?? []).map((item) => item?.text)
+				]
+					.filter(Boolean)
+					.join('\n'),
+				fallback: example?.sourceQuestionRef ?? questionId
+			});
 			if (title) {
 				questionTitlesUpdated += await updateQuestionMetadataTitle(questionId, title);
 			}
@@ -714,12 +730,44 @@ async function applyPlan(plan) {
 }
 
 async function updateQuestionMetadataTitle(questionId, title) {
-	const rows = await d1Rows(`SELECT metadata_json FROM questions WHERE id = ?`, [questionId], {
-		rootDir
-	});
+	const rows = await d1Rows(
+		`SELECT q.metadata_json, q.prompt_text, q.self_contained_prompt_text,
+		        (SELECT ma.answer_text
+		           FROM model_answers ma
+		          WHERE ma.question_id = q.id AND ma.needs_human_review = 0
+		          ORDER BY ma.confidence DESC
+		          LIMIT 1) AS answer_text
+		   FROM questions q
+		  WHERE q.id = ?`,
+		[questionId],
+		{ rootDir }
+	);
 	const metadata = safeParseJson(rows[0]?.metadata_json, {});
-	if (metadata.title === title) return 0;
-	metadata.title = title;
+	const validation = {
+		promptText: [rows[0]?.prompt_text, rows[0]?.self_contained_prompt_text]
+			.filter(Boolean)
+			.join('\n'),
+		answerText: rows[0]?.answer_text
+	};
+	const validExistingCardTitle = validQuestionCardTitle(metadata.card_title, validation);
+	const validExistingLegacyTitle = validQuestionCardTitle(metadata.title, validation);
+	const preservedTitle = validExistingCardTitle ?? validExistingLegacyTitle;
+	const nextTitle = preservedTitle ?? title;
+	const nextLegacyTitle = validExistingLegacyTitle ?? nextTitle;
+	const nextCardTitle = validExistingCardTitle ?? preservedTitle ?? nextTitle;
+	if (
+		metadata.title === nextLegacyTitle &&
+		metadata.card_title === nextCardTitle &&
+		metadata.card_title_contract === QUESTION_CARD_TITLE_CONTRACT
+	) {
+		return 0;
+	}
+	metadata.title = nextLegacyTitle;
+	metadata.card_title = nextCardTitle;
+	metadata.card_title_contract = QUESTION_CARD_TITLE_CONTRACT;
+	metadata.card_title_provenance = preservedTitle
+		? (metadata.card_title_provenance ?? 'preserved-curated')
+		: 'derived-from-atomic-prompt';
 	const result = await d1Query(
 		`UPDATE questions SET metadata_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
 		[JSON.stringify(metadata), questionId],
@@ -728,34 +776,9 @@ async function updateQuestionMetadataTitle(questionId, title) {
 	return Number(result.meta?.changes ?? 0);
 }
 
-function questionTitleFromPrompt(promptText) {
-	const cleaned = String(promptText ?? '')
-		.replace(/\[[^\]]*\bmarks?\b[^\]]*\]/gi, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
-	if (!cleaned) return '';
-	const commandPattern =
-		/(?:explain|describe|give|state|calculate|determine|compare|name|suggest|evaluate|use|write|draw|measure|identify|complete|what|which|why|how)\b/i;
-	const command = cleaned.match(
-		/\b(?:explain|describe|give|state|calculate|determine|compare|name|suggest|evaluate|write|draw|measure|identify|complete|what|which|why|how)\b.*?(?=\s+Tick\b|\s+Use the equation\b|\s+Give your answer\b|\s+[A-Z][A-Za-z ]+=|$)/i
-	)?.[0];
-	if (command) return truncateTitle(command);
-	const sentence = cleaned
-		.split(/(?<=[.?!])\s+/)
-		.find(
-			(part) =>
-				commandPattern.test(part) && !/^(?:tick|use the equation|give your answer)\b/i.test(part)
-		);
-	if (sentence) return truncateTitle(sentence);
-	return truncateTitle(cleaned);
-}
-
-function truncateTitle(title) {
-	const normalized = String(title ?? '')
-		.replace(/\s+/g, ' ')
-		.trim();
-	if (normalized.length <= 120) return normalized;
-	return `${normalized.slice(0, 117).trim()}...`;
+function validQuestionCardTitle(value, validation = {}) {
+	const title = String(value ?? '').trim();
+	return title && questionCardTitleIssues(title, validation).length === 0 ? title : null;
 }
 
 function safeParseJson(raw, fallback) {

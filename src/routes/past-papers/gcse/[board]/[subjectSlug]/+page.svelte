@@ -96,27 +96,19 @@
 
 	<main class="past-papers-page">
 		<nav class="breadcrumb" aria-label="Breadcrumb">
-			<a href={resolve('/past-papers/gcse')}>GCSE Past Papers</a>
+			<a href={resolve('/past-papers/gcse')}>GCSE</a>
 			<span aria-hidden="true">/</span>
 			<a href={resolve(`/past-papers/gcse/${data.page.boardId}`)}>{data.page.boardName}</a>
-			<span aria-hidden="true">/</span>
-			<span>{data.page.subject}{data.page.tier ? ` ${data.page.tier}` : ''}</span>
 		</nav>
 
 		<section class="subject-hero" aria-labelledby="subject-title">
-			<p class="subject-kicker">{data.page.category}</p>
-			<div class="subject-hero-grid">
-				<div>
-					<h1 id="subject-title">{data.page.pageLabel} Past Papers</h1>
-					<p>{data.page.description || pageDescription}</p>
-				</div>
-			</div>
+			<h1 id="subject-title">{data.page.pageLabel} past papers</h1>
+			<p>{data.page.rows.length} papers · {firstYear}–{latestYear}</p>
 		</section>
 
 		<section class="download-section" aria-labelledby="download-title">
 			<div class="section-heading">
-				<h2 id="download-title">Download Papers</h2>
-				<p>Question papers, mark schemes and inserts are listed where they are available.</p>
+				<h2 id="download-title">Choose a paper</h2>
 			</div>
 
 			{#if data.page.paperFilters.length > 1}
@@ -188,19 +180,6 @@
 		border-bottom: 1px solid rgba(105, 129, 143, 0.15);
 	}
 
-	.subject-kicker {
-		margin: 0 0 0.65rem;
-		color: #168458;
-		font-size: 0.78rem;
-		font-weight: 620;
-		letter-spacing: 0;
-		text-transform: uppercase;
-	}
-
-	.subject-hero-grid {
-		max-width: 52rem;
-	}
-
 	.subject-hero h1 {
 		margin: 0;
 		color: #123f35;
@@ -210,8 +189,7 @@
 		letter-spacing: 0;
 	}
 
-	.subject-hero p,
-	.section-heading p {
+	.subject-hero p {
 		color: #526778;
 		font-weight: 400;
 		line-height: 1.42;
@@ -237,12 +215,6 @@
 		margin: 0;
 		font-size: 1.08rem;
 		font-weight: 620;
-	}
-
-	.section-heading p {
-		max-width: 40rem;
-		margin: 0;
-		font-size: 0.95rem;
 	}
 
 	.paper-filter {
@@ -291,13 +263,11 @@
 		border-color: rgba(148, 163, 184, 0.22);
 	}
 
-	:global(:root[data-theme='dark']) .subject-kicker,
 	:global(:root[data-theme='dark']) .breadcrumb a {
 		color: #7dd3a1;
 	}
 
 	:global(:root[data-theme='dark']) .subject-hero p,
-	:global(:root[data-theme='dark']) .section-heading p,
 	:global(:root[data-theme='dark']) .breadcrumb {
 		color: #9fb0c5;
 	}

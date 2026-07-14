@@ -21,7 +21,9 @@ class MemoryStorage {
 const review = (cardId: string) => ({
 	cardId,
 	grade: 'good' as const,
-	mode: 'recall' as const
+	mode: 'recall' as const,
+	sourceSessionId: 'recall-session-1',
+	responseDurationMs: 4_200
 });
 
 describe('recall review sync queue', () => {
@@ -51,6 +53,10 @@ describe('recall review sync queue', () => {
 
 		await expect(flush).resolves.toMatchObject({ ok: true, pendingCount: 0 });
 		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({
+			sourceSessionId: 'recall-session-1',
+			responseDurationMs: 4_200
+		});
 		expect(pendingRecallReviewCount('user-1')).toBe(0);
 	});
 

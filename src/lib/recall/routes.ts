@@ -18,7 +18,7 @@ const subjectBySlug = new Map(
 	Object.entries(recallSubjectSlugs).map(([subject, slug]) => [slug, subject as RecallSubject])
 );
 
-export const recallStackSizeOptions = [5, 10, 15] as const;
+export const recallStackSizeOptions = [5, 8, 10, 15] as const;
 
 export function recallSubjectFromSlug(value: string | null | undefined): RecallSubject | null {
 	if (!value) return null;

@@ -10,6 +10,8 @@ export type RecallReviewSave = {
 	cardId: string;
 	grade: 'again' | 'hard' | 'good' | 'easy';
 	mode: 'recall' | 'recognise' | 'reverse';
+	sourceSessionId: string;
+	responseDurationMs: number | null;
 	createdAt: number;
 };
 
@@ -75,9 +77,13 @@ export async function flushRecallReviewQueue(userId: string): Promise<RecallRevi
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
+					reviewId: review.id,
 					cardId: review.cardId,
 					grade: review.grade,
-					mode: review.mode
+					mode: review.mode,
+					sourceSessionId: review.sourceSessionId,
+					responseDurationMs: review.responseDurationMs,
+					createdAt: review.createdAt
 				})
 			});
 			if (!response.ok) {

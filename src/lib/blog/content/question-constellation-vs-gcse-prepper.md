@@ -30,7 +30,7 @@
       },
       {
         'question': 'Should students use AI marking?',
-        'answer': 'AI marking can be useful when it is checked against mark criteria, but students should still learn the answer structure.'
+        'answer': 'AI marking can be useful when it is checked against mark criteria, but students should still practise the answer structure.'
       }
     ]
 }

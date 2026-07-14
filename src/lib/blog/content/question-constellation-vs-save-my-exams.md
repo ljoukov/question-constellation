@@ -41,7 +41,7 @@
 | Feature           | Question Constellation                                                            | Save My Exams                                                   |
 | ----------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | Main use          | Practise real questions and see the answer chain behind mark-scoring responses    | Revision notes, topic questions, past papers and model answers  |
-| Content style     | Compact question pages, mark checklists, weak-answer repair and related questions | Polished topic resources for independent revision               |
+| Content style     | Compact question pages, mark checklists, weak-answer improvement and related questions | Polished topic resources for independent revision               |
 | Best moment       | After the student knows the topic but needs to turn it into marks                 | When the student needs a topic explanation or worked resource   |
 | Transfer practice | Built around constellations of questions that use the same reasoning chain        | Strong topic coverage, with transfer mostly left to the student |
 | Best fit          | Students who want to spot hidden structure in exam questions                      | Students who want an organized revision library                 |
@@ -54,7 +54,7 @@ Question Constellation puts the model answer beside the chain and checklist. The
 
 ## Where Save My Exams fits
 
-Save My Exams is a strong resource when the student needs notes, worked examples, topic questions and organized revision material. It helps students build or repair knowledge before exam practice.
+Save My Exams is a strong resource when the student needs notes, worked examples, topic questions and organized revision material. It helps students build or refresh knowledge before exam practice.
 
 Question Constellation starts later in the revision loop. It asks: can the student use that knowledge in a mark-scored answer?
 
@@ -64,4 +64,4 @@ Use Save My Exams to revise the topic. Then use Question Constellation to attemp
 
 ## Verdict
 
-Save My Exams is a revision library. Question Constellation is an answer-chain practice surface. The combination can work well: learn the material, then practise how the marks are won.
+Save My Exams is a revision library. Question Constellation is an answer-chain practice surface. The combination can work well: study the material, then practise how the marks are won.

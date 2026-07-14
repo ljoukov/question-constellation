@@ -4,11 +4,13 @@ import {
 	type ChainQuestionTeaser,
 	type LearningChain
 } from '$lib/learningChains';
+import { deriveQuestionCardTitle } from '$lib/questionCardTitle.js';
 import {
 	canonicalCurriculumSubject,
 	gcseCurriculumTopics,
 	normaliseCurriculumText,
 	slugifyCurriculumPart,
+	subjectBelongsToScience,
 	type GcseCurriculumTopic
 } from '$lib/curriculum/gcseCurriculum';
 import { subjectSymbol } from '$lib/subjectSymbols.js';
@@ -153,6 +155,33 @@ export type QuestionBankBrowseData = {
 	topics: QuestionBankTopic[];
 };
 
+export type QuestionBankBrowseFilters = {
+	search: string;
+	subject: string;
+	marks: string;
+	topic: string;
+	board: string;
+	page: number;
+};
+
+export type QuestionBankBrowseSection = {
+	topic: QuestionBankTopic;
+	questions: QuestionBankQuestion[];
+};
+
+export type QuestionBankBrowsePageData = {
+	filters: QuestionBankBrowseFilters;
+	sections: QuestionBankBrowseSection[];
+	subjects: string[];
+	boards: string[];
+	topicOptions: Array<Pick<QuestionBankTopic, 'id' | 'title'>>;
+	totalQuestions: number;
+	resultStart: number;
+	resultEnd: number;
+	page: number;
+	pageCount: number;
+};
+
 const questionBankBrowsePayloadId = 'chains:browse';
 const homePublicSummaryPayloadId = 'home:public-summary';
 
@@ -223,10 +252,15 @@ function questionYear(row: QuestionBankQuestionRow): number | null {
 }
 
 function questionBankTitle(row: QuestionBankQuestionRow) {
-	const metadata = parseJson<{ title?: string; stem?: string }>(row.metadata_json, {});
-	if (metadata.title) return truncateRichText(cleanSingleLine(metadata.title), 120);
-	if (metadata.stem) return truncateRichText(cleanSingleLine(metadata.stem), 120);
-	return sentenceTitle(row.prompt_text, row.source_question_ref ?? row.id);
+	const metadata = parseJson<{ title?: string; card_title?: string; stem?: string }>(
+		row.metadata_json,
+		{}
+	);
+	return deriveQuestionCardTitle({
+		cardTitle: metadata.card_title ?? metadata.title,
+		promptText: row.prompt_text,
+		fallback: metadata.stem ?? row.source_question_ref ?? row.id
+	});
 }
 
 function questionBankPreview(row: QuestionBankQuestionRow) {
@@ -406,27 +440,18 @@ function truncateRichText(text: string, maxLength: number) {
 	return `${snippet}...`;
 }
 
-function sentenceTitle(text: string, fallback: string) {
-	const cleaned = cleanPromptText(text);
-	const sentence =
-		cleaned.match(
-			/(?:Explain|Calculate|Determine|Describe|Give|State|What|Which|Why|How|Name|Suggest|Compare|Draw|Complete|Use)\b[^.?!]*(?:[.?!]|$)/i
-		)?.[0] ??
-		cleaned.split(/(?<=[.?!])\s+/)[0] ??
-		fallback;
-	const normalized = sentence.replace(/\s+/g, ' ').trim() || fallback;
-	return truncateRichText(normalized, 74);
-}
-
 function teaserFromPrompt(text: string) {
 	const cleaned = cleanPromptText(text);
 	return truncateRichText(cleaned, 132);
 }
 
 function titleFromQuestion(row: QuestionMembershipRow) {
-	const metadata = parseJson<{ title?: string }>(row.metadata_json, {});
-	if (metadata.title) return metadata.title;
-	return sentenceTitle(row.prompt_text, row.source_question_ref);
+	const metadata = parseJson<{ title?: string; card_title?: string }>(row.metadata_json, {});
+	return deriveQuestionCardTitle({
+		cardTitle: metadata.card_title ?? metadata.title,
+		promptText: row.prompt_text,
+		fallback: row.source_question_ref
+	});
 }
 
 function topicFromRow(row: QuestionMembershipRow) {
@@ -906,10 +931,44 @@ async function fetchQuestionRowsForChain(chainId: string) {
 	);
 }
 
+const homeFeaturedChainIds = [
+	'bio-chain-vaccine-antigen-antibodies-memory-immunity',
+	'chem-chain-alloy-hardness-distorted-layers',
+	'physics-chain-grid-transformer-efficiency'
+] as const;
+
+function homeQuestionScore(question: ChainQuestionTeaser) {
+	const marks = question.marks ?? 0;
+	const extendedExplanation = marks >= 3 && marks <= 6 ? 20 : 0;
+	const explanationCommand = /^(?:describe|explain|evaluate|justify|suggest)$/i.test(
+		question.command
+	)
+		? 8
+		: 0;
+	return extendedExplanation + explanationCommand + marks;
+}
+
+function featuredHomeChains(chains: LearningChain[]) {
+	const preferred = homeFeaturedChainIds
+		.map((chainId) => chains.find((chain) => chain.id === chainId))
+		.filter((chain): chain is LearningChain => Boolean(chain));
+	const selected = [...preferred, ...chains.filter((chain) => !preferred.includes(chain))].slice(
+		0,
+		3
+	);
+
+	return selected.map((chain) => ({
+		...chain,
+		questions: [...chain.questions].sort(
+			(questionA, questionB) => homeQuestionScore(questionB) - homeQuestionScore(questionA)
+		)
+	}));
+}
+
 function summarizeChains(chains: LearningChain[]): HomePagePublicData {
 	const subjects = new Set(chains.map((chain) => chain.subject).filter(Boolean));
 	return {
-		featuredChains: chains.slice(0, 3),
+		featuredChains: featuredHomeChains(chains),
 		stats: {
 			chainCount: chains.length,
 			questionCount: chains.reduce((total, chain) => total + chain.questions.length, 0),
@@ -962,6 +1021,180 @@ export async function getQuestionBankBrowseData(): Promise<QuestionBankBrowseDat
 		throw new Error(`Missing current public route payload: ${questionBankBrowsePayloadId}`);
 	}
 	return materialized;
+}
+
+const questionBankPageSize = 24;
+const questionBankMarksFilters = new Set(['all', '1-2', '3-4', '5-6', '7+']);
+const questionBankSubjectOrder = [
+	'Science',
+	'Biology',
+	'Chemistry',
+	'Physics',
+	'Computer Science',
+	'Geography',
+	'History',
+	'English Language',
+	'English Literature'
+];
+
+function browseSubjectMatches(candidate: string, selected: string) {
+	if (selected === 'All subjects') return true;
+	if (selected === 'Science') return subjectBelongsToScience(candidate);
+	return candidate === selected;
+}
+
+function browseMarksMatch(marks: number | null, selected: string) {
+	if (selected === 'all') return true;
+	if (marks === null) return false;
+	if (selected === '1-2') return marks >= 1 && marks <= 2;
+	if (selected === '3-4') return marks >= 3 && marks <= 4;
+	if (selected === '5-6') return marks >= 5 && marks <= 6;
+	return selected === '7+' ? marks >= 7 : true;
+}
+
+function browseQuestionSearchText(question: QuestionBankQuestion) {
+	return normaliseCurriculumText(
+		[
+			question.title,
+			question.preview,
+			question.board,
+			question.subject,
+			question.paper,
+			question.componentCode,
+			question.series,
+			question.sourceRef,
+			question.topicPath.join(' '),
+			question.chainTitle
+		]
+			.filter(Boolean)
+			.join(' ')
+	);
+}
+
+function fallbackBrowseTopic(question: QuestionBankQuestion): QuestionBankTopic {
+	return {
+		id: question.topicId,
+		board: question.board,
+		qualification: question.qualification,
+		subject: question.subject,
+		code: null,
+		title: question.topic,
+		paper: question.paper,
+		specUrl: null,
+		questionCount: 0,
+		chainCount: 0,
+		firstQuestionId: question.id,
+		firstQuestionTitle: question.title
+	};
+}
+
+/**
+ * Produces the small, server-filtered payload used by the public question bank.
+ * The complete materialized bank remains server-side instead of being serialized
+ * into every phone and tablet response.
+ */
+export async function getQuestionBankBrowsePageData(
+	input: Partial<QuestionBankBrowseFilters>
+): Promise<QuestionBankBrowsePageData> {
+	const browseData = await getQuestionBankBrowseData();
+	const search = cleanSingleLine(input.search ?? '').slice(0, 120);
+	const requestedSubject = cleanSingleLine(input.subject ?? '');
+	const availableSubjectSet = new Set(browseData.questions.map((question) => question.subject));
+	const canonicalSubject = canonicalCurriculumSubject(requestedSubject);
+	const subject =
+		requestedSubject === 'Science'
+			? 'Science'
+			: canonicalSubject &&
+				  canonicalSubject !== 'Science' &&
+				  availableSubjectSet.has(canonicalSubject)
+				? canonicalSubject
+				: availableSubjectSet.has(requestedSubject)
+					? requestedSubject
+					: 'All subjects';
+	const subjects = [
+		'All subjects',
+		...questionBankSubjectOrder.filter((candidate) => {
+			if (candidate === 'Science') {
+				return [...availableSubjectSet].some((available) => subjectBelongsToScience(available));
+			}
+			return availableSubjectSet.has(candidate);
+		}),
+		...[...availableSubjectSet]
+			.filter((candidate) => !questionBankSubjectOrder.includes(candidate))
+			.sort((left, right) => left.localeCompare(right))
+	];
+
+	const subjectQuestions = browseData.questions.filter((question) =>
+		browseSubjectMatches(question.subject, subject)
+	);
+	const boards = [
+		'all',
+		...[...new Set(subjectQuestions.map((question) => question.board))].sort((left, right) =>
+			left.localeCompare(right)
+		)
+	];
+	const board = boards.includes(input.board ?? '') ? (input.board as string) : 'all';
+	const topicCandidates = browseData.topics.filter(
+		(topic) =>
+			browseSubjectMatches(topic.subject, subject) &&
+			(board === 'all' || topic.board === board) &&
+			topic.questionCount > 0
+	);
+	const requestedTopic = cleanSingleLine(input.topic ?? 'all') || 'all';
+	const topic =
+		requestedTopic === 'all' || topicCandidates.some((candidate) => candidate.id === requestedTopic)
+			? requestedTopic
+			: 'all';
+	const marks = questionBankMarksFilters.has(input.marks ?? '') ? (input.marks as string) : 'all';
+	const searchTerms = normaliseCurriculumText(search).split(/\s+/).filter(Boolean);
+
+	const filteredQuestions = subjectQuestions.filter((question) => {
+		if (board !== 'all' && question.board !== board) return false;
+		if (topic !== 'all' && question.topicId !== topic) return false;
+		if (!browseMarksMatch(question.marks, marks)) return false;
+		if (searchTerms.length === 0) return true;
+		const haystack = browseQuestionSearchText(question);
+		return searchTerms.every((term) => haystack.includes(term));
+	});
+	const totalQuestions = filteredQuestions.length;
+	const pageCount = Math.max(1, Math.ceil(totalQuestions / questionBankPageSize));
+	const requestedPage = Number.isFinite(input.page) ? Math.floor(input.page as number) : 1;
+	const page = Math.min(Math.max(1, requestedPage), pageCount);
+	const pageQuestions = filteredQuestions.slice(
+		(page - 1) * questionBankPageSize,
+		page * questionBankPageSize
+	);
+	const resultStart = totalQuestions === 0 ? 0 : (page - 1) * questionBankPageSize + 1;
+	const resultEnd = Math.min(page * questionBankPageSize, totalQuestions);
+	const topicById = new Map(browseData.topics.map((candidate) => [candidate.id, candidate]));
+	const sectionByTopicId = new Map<string, QuestionBankBrowseSection>();
+	for (const question of pageQuestions) {
+		const existing = sectionByTopicId.get(question.topicId);
+		if (existing) {
+			existing.questions.push(question);
+			continue;
+		}
+		sectionByTopicId.set(question.topicId, {
+			topic: topicById.get(question.topicId) ?? fallbackBrowseTopic(question),
+			questions: [question]
+		});
+	}
+
+	return {
+		filters: { search, subject, marks, topic, board, page },
+		sections: [...sectionByTopicId.values()],
+		subjects,
+		boards,
+		topicOptions: topicCandidates.map((candidate) => ({
+			id: candidate.id,
+			title: candidate.title
+		})),
+		totalQuestions,
+		resultStart,
+		resultEnd,
+		page,
+		pageCount
+	};
 }
 
 export async function getFreshHomePagePublicData(): Promise<HomePagePublicData> {

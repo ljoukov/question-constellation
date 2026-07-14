@@ -60,7 +60,7 @@ Answer chains make that structure visible.
 
 ## Best way to use both
 
-Use Seneca for a course pass through the topic. Use Question Constellation for question practice, weak-answer repair and transfer.
+Use Seneca for a course pass through the topic. Use Question Constellation for question practice, weak-answer improvement and transfer.
 
 ## Verdict
 

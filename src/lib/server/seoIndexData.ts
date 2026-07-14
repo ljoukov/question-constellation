@@ -16,8 +16,6 @@ type QuestionSeoRow = {
 	series: string | null;
 	year: number | null;
 	topic_path_json: string | null;
-	answer_chain_id: string | null;
-	chain_title: string | null;
 };
 
 type ChainSeoRow = {
@@ -34,8 +32,6 @@ export type SeoTopicQuestion = {
 	title: string;
 	meta: string;
 	marks: number | null;
-	chainId: string | null;
-	chainTitle: string | null;
 };
 
 export type SeoTopicPage = {
@@ -52,7 +48,6 @@ export type SeoTopicPage = {
 	description: string;
 	questionCount: number;
 	questions: SeoTopicQuestion[];
-	chains: Array<{ id: string; title: string; questionCount: number }>;
 };
 
 const PUBLIC_QUESTION_WHERE = `
@@ -154,9 +149,7 @@ async function fetchPublicQuestionSeoRows() {
 		        COALESCE(q.paper, sd.paper) AS paper,
 		        COALESCE(q.series, sd.series) AS series,
 		        COALESCE(q.year, sd.year) AS year,
-		        q.topic_path_json,
-		        qac.answer_chain_id,
-		        ac.title AS chain_title
+		        q.topic_path_json
 		 FROM questions q
 		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
 		 JOIN question_answer_chains qac
@@ -208,13 +201,13 @@ export async function getPublicChainSitemapEntries(): Promise<SitemapEntry[]> {
 		);
 
 		return rows.map((row) => ({
-			path: `/chains/${encodePathSegment(row.id)}`,
+			path: `/constellations/${encodePathSegment(row.id)}`,
 			changefreq: 'monthly',
 			priority: row.question_count > 1 ? '0.76' : '0.68'
 		}));
 	} catch {
 		return learningChains.map((chain) => ({
-			path: `/chains/${encodePathSegment(chain.id)}`,
+			path: `/constellations/${encodePathSegment(chain.id)}`,
 			changefreq: 'monthly',
 			priority: chain.questions.length > 1 ? '0.72' : '0.62'
 		}));
@@ -261,10 +254,9 @@ function buildTopicPages(rows: QuestionSeoRow[]) {
 				topic,
 				topicSlug,
 				title: `${board} GCSE ${subject} ${topic} questions`,
-				description: `Practise ${board} GCSE ${subject} ${topic} exam questions, mark-scheme links, and reusable answer chains.`,
+				description: `Practise ${board} GCSE ${subject} ${topic} exam questions with clear paper details and marking support.`,
 				questionCount: 0,
-				questions: [],
-				chains: []
+				questions: []
 			};
 			groups.set(id, group);
 			seenQuestionIdsByGroup.set(id, new Set());
@@ -279,28 +271,12 @@ function buildTopicPages(rows: QuestionSeoRow[]) {
 			sourceRef: normalizeWhitespace(row.source_question_ref),
 			title: questionTitle(row),
 			meta: questionMeta(row),
-			marks: row.marks,
-			chainId: row.answer_chain_id,
-			chainTitle: normalizeWhitespace(row.chain_title) || null
+			marks: row.marks
 		});
 	}
 
 	for (const group of groups.values()) {
 		group.questionCount = group.questions.length;
-		const chainCounts = new Map<string, { id: string; title: string; questionCount: number }>();
-		for (const question of group.questions) {
-			if (!question.chainId || !question.chainTitle) continue;
-			const chain = chainCounts.get(question.chainId) ?? {
-				id: question.chainId,
-				title: question.chainTitle,
-				questionCount: 0
-			};
-			chain.questionCount += 1;
-			chainCounts.set(question.chainId, chain);
-		}
-		group.chains = Array.from(chainCounts.values()).sort(
-			(a, b) => b.questionCount - a.questionCount || a.title.localeCompare(b.title)
-		);
 		group.questions.sort((a, b) => a.title.localeCompare(b.title));
 	}
 

@@ -44,7 +44,7 @@
 | Access route  | Direct public pages, no school subscription needed for core browsing                     | Usually accessed through a school subscription                                  |
 | Learning mode | Question first, then chain, checklist and related transfer questions                     | Video first, then checks and assignments                                        |
 | Strength      | Exam-answer transfer, especially where similar questions hide the same reasoning pattern | Broad GCSE coverage and concise teacher-friendly videos                         |
-| Best fit      | Independent exam practice and mark-scheme repair                                         | Schools that want a broad video library for classes and homework                |
+| Best fit      | Independent exam practice and mark-scheme improvement                                    | Schools that want a broad video library for classes and homework                |
 
 ## What makes the products different
 

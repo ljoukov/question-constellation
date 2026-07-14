@@ -3,7 +3,16 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { blockingIssues, deterministicCandidateIssues } from './lib/llm-extraction-pipeline.mjs';
+import {
+	deriveQuestionCardTitle,
+	QUESTION_CARD_TITLE_CONTRACT
+} from '../src/lib/questionCardTitle.js';
+import {
+	blockingIssues,
+	deterministicCandidateIssues,
+	normalizeExtractedQuestionForImport
+} from './lib/llm-extraction-pipeline.mjs';
+import { aqaScienceTopicFieldsForImport } from './lib/aqa-science-topic-mapping.mjs';
 
 const rootDir = process.cwd();
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
@@ -1234,11 +1243,38 @@ function chainIdFor(answerChain, subjectArea = null) {
 	return `${chainPrefixForSubject(subjectArea)}-${base}-${shortHash(answerChain.canonicalChainText)}`;
 }
 
+function questionAnswerEvidenceText(question) {
+	return [
+		question.modelAnswer?.answerText,
+		...(question.markSchemeItems ?? []).map((item) => item?.text),
+		...(question.markChecklist ?? []).map((item) => item?.text)
+	]
+		.filter((value) => typeof value === 'string' && value.trim())
+		.join('\n');
+}
+
 function addQuestionStatements(statements, paper, question, chainUseCount, options = {}) {
 	const sourceDocumentId = paper.sourceDocument.id;
 	const subjectArea = subjectAreaForPaper(paper);
 	const subject = subjectForPaper(paper);
 	const questionId = question.id || stableQuestionId(sourceDocumentId, question.sourceQuestionRef);
+	const cardTitle = deriveQuestionCardTitle({
+		cardTitle: question.cardTitle,
+		promptText: question.promptText,
+		selfContainedPromptText: question.selfContainedPromptText,
+		answerText: questionAnswerEvidenceText(question),
+		fallback: question.sourceQuestionRef
+	});
+	const topicFields = aqaScienceTopicFieldsForImport({
+		...question,
+		id: questionId,
+		sourceDocumentId,
+		sourceQuestionRef: question.sourceQuestionRef,
+		sourceSubject: subject,
+		subjectArea,
+		componentCode: paper.sourceDocument.componentCode,
+		answerChainId: question.answerChain ? chainIdFor(question.answerChain, subjectArea) : null
+	});
 	const reviewNotes = [...(question.reviewNotes ?? [])];
 	const { statements: assetRows, assetIdsByLabel } = assetStatements(
 		question,
@@ -1303,8 +1339,8 @@ function addQuestionStatements(statements, paper, question, chainUseCount, optio
 				paper.sourceDocument.componentCode ?? null,
 				paper.sourceDocument.series ?? null,
 				paper.sourceDocument.year ?? null,
-				json(question.topicPath, []),
-				question.specRef ?? null,
+				json(topicFields.topicPath, []),
+				topicFields.specRef ?? null,
 				question.pageStart ?? null,
 				question.pageEnd ?? null,
 				question.response?.kind ?? null,
@@ -1323,8 +1359,15 @@ function addQuestionStatements(statements, paper, question, chainUseCount, optio
 				json(
 					{
 						source: 'llm-vision-extracted',
+						title: cardTitle,
+						card_title: cardTitle,
+						card_title_contract: QUESTION_CARD_TITLE_CONTRACT,
+						card_title_provenance: question.cardTitle
+							? 'codex-extraction'
+							: 'derived-from-atomic-prompt',
 						visual_review_required: question.needsHumanReview,
-						parent_source_question_ref: question.parentSourceQuestionRef ?? null
+						parent_source_question_ref: question.parentSourceQuestionRef ?? null,
+						topic_mapping_provenance: topicFields.provenance
 					},
 					{}
 				)
@@ -1666,7 +1709,12 @@ function loadPapers() {
 		? papers
 		: papers.filter(({ fileName, paper }) => paperMatchesSelection(fileName, paper));
 	if (!selected.length) throw new Error(`No extracted paper matched ${paperArg}.`);
-	return selected.map(({ paper }) => paper);
+	return selected.map(({ paper }) => ({
+		...paper,
+		questions: (paper.questions ?? []).map((question) =>
+			normalizeExtractedQuestionForImport(question)
+		)
+	}));
 }
 
 function listExtractionFiles(dir, includeNested) {

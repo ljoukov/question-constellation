@@ -44,7 +44,7 @@
 | Best question type | Applied, multi-step and written-response questions  | Short recall checks and knowledge questions                  |
 | Feedback focus     | What reasoning link the answer missed               | Whether the learner selected or recalled the expected answer |
 | Student habit      | Deliberate exam practice sessions                   | Frequent low-friction quiz routines                          |
-| Best fit           | Students who need to repair exam answers            | Students who need regular knowledge reinforcement            |
+| Best fit           | Students who need to improve exam answers           | Students who need regular knowledge reinforcement            |
 
 ## Recall and written answers
 

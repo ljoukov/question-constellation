@@ -157,20 +157,32 @@ export function parseGradeResponse(rawText: string, data: PracticePageData): Que
 		Number.parseInt(readField(rawText, 'AWARDED_MARKS') ?? '', 10),
 		maxMarks
 	);
-	let presentStepIds = normalizeListField(readField(rawText, 'PRESENT_STEP_IDS'), allowedIds);
-	let missingStepIds = normalizeListField(readField(rawText, 'MISSING_STEP_IDS'), allowedIds);
+	const stepIds = data.chain.steps.map((step) => step.id);
+	const parsedPresent = normalizeListField(readField(rawText, 'PRESENT_STEP_IDS'), allowedIds);
+	const parsedMissing = normalizeListField(readField(rawText, 'MISSING_STEP_IDS'), allowedIds);
+	const present = new Set(parsedPresent);
+	const missing = new Set(parsedMissing);
 
-	if (presentStepIds.length === 0 && missingStepIds.length === 0) {
-		missingStepIds = data.chain.steps.map((step) => step.id);
+	if (present.size === 0 && missing.size === 0) {
+		for (const stepId of stepIds) missing.add(stepId);
+	} else if (missing.size === 0) {
+		for (const stepId of stepIds) {
+			if (!present.has(stepId)) missing.add(stepId);
+		}
+	} else if (present.size === 0) {
+		for (const stepId of stepIds) {
+			if (!missing.has(stepId)) present.add(stepId);
+		}
+	} else {
+		// Missing wins any overlap, and an omitted step is missing until the grader proves it present.
+		for (const stepId of missing) present.delete(stepId);
+		for (const stepId of stepIds) {
+			if (!present.has(stepId) && !missing.has(stepId)) missing.add(stepId);
+		}
 	}
-	if (missingStepIds.length === 0 && presentStepIds.length > 0) {
-		const present = new Set(presentStepIds);
-		missingStepIds = data.chain.steps.map((step) => step.id).filter((id) => !present.has(id));
-	}
-	if (presentStepIds.length === 0 && missingStepIds.length > 0) {
-		const missing = new Set(missingStepIds);
-		presentStepIds = data.chain.steps.map((step) => step.id).filter((id) => !missing.has(id));
-	}
+
+	const presentStepIds = stepIds.filter((stepId) => present.has(stepId));
+	const missingStepIds = stepIds.filter((stepId) => missing.has(stepId));
 
 	const correctThreshold = Math.ceil(maxMarks * 0.85);
 	const result: QuestionGradeResult['result'] =
@@ -309,7 +321,7 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 		`%PRESENT_STEP_IDS%: comma-separated exact ids from the list, or ${NONE}`,
 		`%MISSING_STEP_IDS%: comma-separated exact ids from the list, or ${NONE}`,
 		'%FEEDBACK%:',
-		'Short Markdown feedback in 3-5 bullets. Include the mark reason, what already earns credit, and the highest-value next repair.',
+		'Short Markdown feedback in 3-5 bullets. Include the mark reason, what already earns credit, and the highest-value next improvement.',
 		'When helpful, include one improved sentence that stays close to the student answer rather than a full replacement essay.',
 		'Use "correct" only for a secure high-scoring answer with no missing diagnostic step, "partial" for any meaningful credit below that or with any missing step, and "incorrect" for no meaningful credit.',
 		'',

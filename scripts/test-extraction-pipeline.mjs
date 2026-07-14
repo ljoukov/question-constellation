@@ -1,12 +1,25 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { copyCodexImportHelperBundle } from './lib/codex-import-helper-bundle.mjs';
 
 const rootDir = process.cwd();
 const packagePath = path.join(rootDir, 'package.json');
+
+const isolatedHelperDir = mkdtempSync(path.join(os.tmpdir(), 'qc-helper-bundle-'));
+try {
+	copyCodexImportHelperBundle({ rootDir, workDir: isolatedHelperDir });
+	execFileSync(process.execPath, ['helper.mjs', '--help'], {
+		cwd: isolatedHelperDir,
+		stdio: ['ignore', 'ignore', 'pipe']
+	});
+} finally {
+	rmSync(isolatedHelperDir, { recursive: true, force: true });
+}
 
 function fail(message, details = null) {
 	console.error(JSON.stringify({ status: 'failed', message, details }, null, 2));
@@ -79,6 +92,12 @@ const codexExtractionRepairSource = readText(
 const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-answer-chains.mjs'));
 const chainIllustrationCandidateSource = readText(
 	path.join(rootDir, 'scripts/lib/chain-illustration-candidates.mjs')
+);
+const chainIllustrationPipelineSource = readText(
+	path.join(rootDir, 'scripts/lib/chain-illustration-pipeline.mjs')
+);
+const chainIllustrationGeneratorSource = readText(
+	path.join(rootDir, 'scripts/generate-chain-illustrations.mjs')
 );
 const codexSolvabilityJudgeSource = readText(
 	path.join(rootDir, 'scripts/run-codex-solvability-judge.mjs')
@@ -287,6 +306,10 @@ requireIncludes(
 		'allowQuestionGranularity',
 		'Do not start or extract sibling subquestions',
 		'If an atomic subquestion number/prompt first appears on a lookahead page, omit it from this chunk',
+		'cardTitle',
+		'distinctive concept, method, relationship, or process',
+		'question_card_title_',
+		'question_prompt_text_after_mark_boundary',
 		'withdrawn questions, replacement notices, statistics-only rows',
 		'stage_extraction_questions',
 		'validate_staged_extraction',
@@ -765,6 +788,36 @@ requireIncludes(
 	],
 	'Chain illustration candidate gate'
 );
+requireIncludes(
+	chainIllustrationGeneratorSource,
+	[
+		"action: 'generate'",
+		"action: 'edit'",
+		'styleImages:',
+		"path.join(jobDir, 'dark.webp')",
+		"path.join(jobDir, 'light.webp')",
+		'no-passing-pair',
+		'derivedFromAssetSha256'
+	],
+	'Chain illustration dark/light generator'
+);
+requireExcludes(
+	chainIllustrationGeneratorSource,
+	["['A', 'B']", 'judge.winner', 'winnerPath'],
+	'Chain illustration dark/light generator'
+);
+requireIncludes(
+	chainIllustrationPipelineSource,
+	[
+		'chain-illustration-job/v2',
+		'light-mode sibling',
+		'strict theme conversion',
+		'cross-theme consistency audit',
+		'compositionMatch',
+		'scientificMeaningMatch'
+	],
+	'Chain illustration dark/light prompts'
+);
 
 requireIncludes(
 	codexProductionImportSource,
@@ -911,6 +964,8 @@ requireIncludes(
 		'sharedIncomingChains',
 		'allow-shared-chain-updates',
 		'validateRenderJsonForApp',
+		'normalizeExtractedQuestionForImport',
+		'card_title_contract',
 		'asset-canvas assetId must be a string',
 		'image-label-zones needs at least one target zone'
 	],
@@ -5701,6 +5756,87 @@ if (
 	});
 }
 
+const contaminatedQuestionIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '04.2',
+				cardTitle: 'Describe how a vaccine would work to prevent gonorrhoea',
+				promptText:
+					'Describe how a vaccine would work to prevent gonorrhoea.\n[4 marks]\nAnother disease caused by bacteria is salmonella food poisoning.',
+				marks: null,
+				commandWord: 'Describe',
+				response: { kind: 'none' },
+				assets: [],
+				markSchemeItems: [],
+				markChecklist: [],
+				modelAnswer: null,
+				answerChain: null
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+const contaminatedQuestionIssueCodes = contaminatedQuestionIssues.flatMap((finding) =>
+	finding.issues.map((issue) => issue.code)
+);
+if (
+	!contaminatedQuestionIssueCodes.includes('question_card_title_starts_with_command') ||
+	!contaminatedQuestionIssueCodes.includes('question_prompt_text_after_mark_boundary')
+) {
+	fail('Question card-title and atomic prompt boundary validation did not reject contamination.', {
+		contaminatedQuestionIssueCodes
+	});
+}
+
+const normalizedQuestionWithCardTitle = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '04.2',
+	cardTitle: 'Describe gonorrhoea vaccine action',
+	promptText: 'Describe how a vaccine would work to prevent gonorrhoea.\n[4 marks]',
+	selfContainedPromptText:
+		'Gonorrhoea is a bacterial disease.\nDescribe how a vaccine would work to prevent gonorrhoea.\n[4 marks]',
+	response: { kind: 'lines' },
+	assets: [],
+	markSchemeItems: [],
+	markChecklist: [],
+	modelAnswer: null,
+	answerChain: null
+});
+if (normalizedQuestionWithCardTitle.cardTitle !== 'Vaccine protection against gonorrhoea') {
+	fail('Import normalization did not derive a concise process-focused card title.', {
+		normalizedQuestionWithCardTitle
+	});
+}
+
+const commandRemainderTitleIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '04.5',
+				cardTitle: 'Plants infected with tobacco mosaic virus grow slowly',
+				promptText: 'Explain why plants infected with tobacco mosaic virus grow slowly.',
+				marks: 3,
+				commandWord: 'Explain',
+				response: { kind: 'lines' },
+				assets: [],
+				markSchemeItems: [],
+				markChecklist: [],
+				modelAnswer: null,
+				answerChain: null
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+const commandRemainderTitleCodes = commandRemainderTitleIssues.flatMap((finding) =>
+	finding.issues.map((issue) => issue.code)
+);
+if (!commandRemainderTitleCodes.includes('question_card_title_copies_command_remainder')) {
+	fail('Card-title validation accepted an exam sentence with only its command opener removed.', {
+		commandRemainderTitleCodes
+	});
+}
+
 const numericTitleIssues = pipelineModule.deterministicCandidateIssues({
 	questions: [
 		{
@@ -8233,7 +8369,6 @@ const codexIllustrationSingleDryRun = JSON.parse(
 		'--source-document-id=aqa-test-qp-jun26',
 		'--skip-solvability',
 		'--import',
-		'--generate-chain-illustrations',
 		'--chain-illustration-max-chains=7',
 		'--dry-run'
 	])
@@ -8268,6 +8403,46 @@ if (
 		codexIllustrationSingleDryRun,
 		codexSingleCommands
 	});
+}
+const codexIllustrationSingleCompatibilityDryRun = JSON.parse(
+	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
+		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
+		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
+		'--source-document-id=aqa-test-qp-jun26',
+		'--skip-solvability',
+		'--import',
+		'--generate-chain-illustrations',
+		'--dry-run'
+	])
+);
+if (codexIllustrationSingleCompatibilityDryRun.plan?.generateChainIllustrations !== true) {
+	fail(
+		'Codex single-paper importer no longer accepts the illustration compatibility flag.',
+		codexIllustrationSingleCompatibilityDryRun
+	);
+}
+const codexIllustrationSingleSkippedDryRun = JSON.parse(
+	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
+		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
+		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
+		'--source-document-id=aqa-test-qp-jun26',
+		'--skip-solvability',
+		'--import',
+		'--skip-chain-illustrations',
+		'--dry-run'
+	])
+);
+if (
+	codexIllustrationSingleSkippedDryRun.plan?.skipChainIllustrations !== true ||
+	codexIllustrationSingleSkippedDryRun.plan?.generateChainIllustrations !== false ||
+	(codexIllustrationSingleSkippedDryRun.commands ?? []).some(
+		(command) => command[0] === 'scripts/generate-chain-illustrations.mjs'
+	)
+) {
+	fail(
+		'Codex single-paper importer did not honor --skip-chain-illustrations.',
+		codexIllustrationSingleSkippedDryRun
+	);
 }
 const missingIllustrationImportFailure = runNodeScriptExpectFailure(
 	'scripts/run-codex-production-import-pipeline.mjs',
@@ -8306,7 +8481,6 @@ const codexIllustrationBatchDryRun = JSON.parse(
 		`--data-root=${productionBatchDataRoot}`,
 		'--all',
 		'--import',
-		'--generate-chain-illustrations',
 		'--chain-illustration-max-chains=11',
 		'--dry-run'
 	])
@@ -8319,6 +8493,7 @@ if (
 	codexBatchPaperCommands.some(
 		(command) =>
 			!command.includes('--import') ||
+			!command.includes('--skip-chain-illustrations') ||
 			command.some((value) => value.includes('generate-chain-illustrations'))
 	) ||
 	!codexBatchImageCommand.includes('scripts/generate-chain-illustrations.mjs') ||
@@ -8332,6 +8507,27 @@ if (
 		codexBatchPaperCommands,
 		codexBatchImageCommand
 	});
+}
+const codexIllustrationBatchSkippedDryRun = JSON.parse(
+	runNodeScript('scripts/run-codex-production-import-batch.mjs', [
+		`--manifest=${productionBatchManifestPath}`,
+		`--data-root=${productionBatchDataRoot}`,
+		'--all',
+		'--import',
+		'--skip-chain-illustrations',
+		'--dry-run'
+	])
+);
+if (
+	codexIllustrationBatchSkippedDryRun.chainIllustrations !== null ||
+	(codexIllustrationBatchSkippedDryRun.planned ?? []).some(
+		(paper) => !paper.command?.includes('--skip-chain-illustrations')
+	)
+) {
+	fail(
+		'Codex batch importer did not honor --skip-chain-illustrations.',
+		codexIllustrationBatchSkippedDryRun
+	);
 }
 const productionBatchDryRun = JSON.parse(
 	runNodeScript('scripts/run-production-extraction-batch.mjs', [

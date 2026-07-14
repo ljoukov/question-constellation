@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { authStartHref } from '$lib/authReturn';
-	import ThinkingChain from '$lib/chains/ThinkingChain.svelte';
+	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
 	import EnglishGuidedPractice from '$lib/components/EnglishGuidedPractice.svelte';
@@ -15,6 +16,8 @@
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
+	import { learnerSubjectHref } from '$lib/learning/subjects';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
 	import {
 		latestPracticeDraft,
@@ -30,7 +33,6 @@
 		type PracticeDraftSave,
 		type SavedPracticeDraft
 	} from '$lib/practiceDrafts';
-	import { markLabel } from '$lib/marks';
 	import {
 		classifyRequestFailure,
 		fetchWithResponseTimeout,
@@ -40,8 +42,9 @@
 		ServerRequestError,
 		type RequestFailure
 	} from '$lib/requestFailure';
-	import { ArrowRight, CheckCircle2, CircleAlert, Target, Zap } from '@lucide/svelte';
+	import { ArrowRight, CheckCircle2, ChevronDown, CircleAlert } from '@lucide/svelte';
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -75,6 +78,13 @@
 		gradedAnswerText?: string;
 		gradeResult?: GradeResult | null;
 		view?: PracticeRouteView;
+		activitySessionId?: string;
+		responseStartedAt?: number;
+		pendingAttemptId?: string;
+		pendingAttemptSignature?: string;
+		pendingResponseDurationMs?: number | null;
+		hintUsed?: boolean;
+		markingPointsUsed?: boolean;
 		updatedAt?: number;
 	};
 
@@ -86,8 +96,22 @@
 	let gradeFailure = $state<RequestFailure | null>(null);
 	let gradeResult = $state<GradeResult | null>(null);
 	let showHint = $state(false);
+	let showMarkingPoints = $state(false);
+	let hintUsed = $state(false);
+	let markingPointsUsed = $state(false);
 	let authDialogOpen = $state(false);
+	let checkingRewrite = $state(false);
 	let migratedAnonymousState = false;
+	let practiceQuestionList: HTMLElement | undefined = $state();
+	let resultHeader: HTMLElement | undefined = $state();
+	let lastFocusedResultSignature = '';
+	let activitySessionId = '';
+	let responseStartedAt = 0;
+	let pendingAttemptId = '';
+	let pendingAttemptSignature = '';
+	let pendingResponseDurationMs: number | null = null;
+	const markingPointsRevealDurationMs =
+		browser && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
 
 	const questionIndex = $derived(
 		data.questions.findIndex((question) => question.id === data.question.id)
@@ -105,15 +129,16 @@
 	const resultTitle = $derived(
 		`${includedItems.length} of ${data.question.checklist.length} steps found`
 	);
-	const previousHref = $derived(
-		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
-	);
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
 	);
 	const nextQuestionHref = $derived(
 		resolve('/questions/[questionId]/practice', { questionId: data.nextQuestion.id })
 	);
+	const constellationHref = $derived(
+		resolve('/constellations/[chainId]', { chainId: data.chain.id })
+	);
+	const isLastQuestion = $derived(questionIndex === data.questions.length - 1);
 	const isChecking = $derived(
 		gradePhase === 'connecting' ||
 			gradePhase === 'calling' ||
@@ -141,34 +166,38 @@
 	);
 	const practiceHints = $derived(
 		[
-			weakAnswerExplanation
-				? { title: 'Common trap', text: `Avoid this: ${weakAnswerExplanation}` }
-				: null,
-			hintMissingLinks.length > 0
-				? { title: 'Missing step', text: `Use this step: ${hintMissingLinks.join(' -> ')}.` }
-				: null,
-			data.question.commonWeakAnswer.trim()
-				? {
-						title: 'Weak answer',
-						text: `Do not stop at: ${data.question.commonWeakAnswer.replace(/\s+/g, ' ').trim()}`
-					}
-				: null,
-			{ title: 'Reminder', text: data.chain.commonMissingLink }
-		].filter((hint): hint is { title: string; text: string } => Boolean(hint?.text))
+			{
+				title: 'Hint',
+				text:
+					hintMissingLinks.length > 0
+						? `Include: ${hintMissingLinks.join(' → ')}.`
+						: weakAnswerExplanation || data.chain.commonMissingLink
+			}
+		].filter((hint) => Boolean(hint.text))
 	);
 	const isEnglish = $derived(isEnglishSubject(data.question.meta.subject));
 	const topbarSubject = $derived(
-		isEnglish ? englishSubjectOrDefault(data.question.meta.subject) : data.question.meta.subject
+		isEnglish
+			? englishSubjectOrDefault(data.question.meta.subject)
+			: (data.question.meta.subjectArea ?? data.question.meta.subject)
+	);
+	const subjectHubHref = $derived(learnerSubjectHref(topbarSubject));
+	const usesSignedInSubjectBack = $derived(Boolean(data.user && !isEnglish));
+	const practiceBackHref = $derived(usesSignedInSubjectBack ? subjectHubHref : questionHref);
+	const practiceBackLabel = $derived(
+		usesSignedInSubjectBack ? `Back to ${topbarSubject}` : 'Back to question'
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
-	const questionMetaSummary = $derived(
-		[data.question.sourceRef, data.question.meta.paper, markLabel(data.question.meta.marks)]
-			.filter(Boolean)
-			.join(' · ')
-	);
-	const chainSteps = $derived(data.chain.steps.map((step) => step.short));
 	const answerRows = $derived(
-		data.question.meta.marks >= 30 ? 16 : data.question.meta.marks >= 10 ? 12 : 8
+		data.question.meta.marks >= 30
+			? 14
+			: data.question.meta.marks >= 10
+				? 10
+				: data.question.meta.marks >= 6
+					? 6
+					: data.question.meta.marks >= 5
+						? 5
+						: 4
 	);
 	const structuredResponse = $derived(
 		responseFromOverlay(data.question.renderingOverlay?.responseInteraction)
@@ -191,7 +220,9 @@
 		page.url.searchParams.get('view') === 'result' ? 'result' : 'attempt'
 	);
 	const hasCheckedResult = $derived(Boolean(gradeResult && gradedAnswerText === answerText));
-	const showCheckedResult = $derived(requestedPracticeView === 'result' && hasCheckedResult);
+	const showCheckedResult = $derived(
+		requestedPracticeView === 'result' && (hasCheckedResult || checkingRewrite)
+	);
 	const currentUserId = $derived(data.user?.uid ?? null);
 	const signInHref = $derived(authStartHref(`${page.url.pathname}${page.url.search}`));
 
@@ -204,13 +235,31 @@
 		void flushPracticeDraftQueue(currentUserId, { keepalive: true });
 	});
 
+	function scrollActiveQuestionIntoView() {
+		if (typeof window === 'undefined') return;
+		window.requestAnimationFrame(() => {
+			if (!window.matchMedia('(max-width: 980px)').matches) return;
+			practiceQuestionList
+				?.querySelector<HTMLElement>('.active')
+				?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
+		});
+	}
+
 	onMount(() => {
 		const cleanup = installPracticeDraftWindowFlush(currentUserId);
+		scrollActiveQuestionIntoView();
 		if (currentUserId && migratedAnonymousState) {
 			persistSciencePracticeState();
 			void flushPracticeDraftQueue(currentUserId);
 		}
-		if (consumePendingScienceGrade()) window.setTimeout(() => void checkAnswer(), 0);
+		const pendingFeedbackRewrite = consumePendingScienceGrade();
+		if (pendingFeedbackRewrite !== null) {
+			checkingRewrite = pendingFeedbackRewrite;
+			window.setTimeout(async () => {
+				await checkAnswer(pendingFeedbackRewrite);
+				checkingRewrite = false;
+			}, 0);
+		}
 		return cleanup;
 	});
 
@@ -250,6 +299,13 @@
 					gradedAnswerText,
 					gradeResult,
 					view: requestedPracticeView,
+					activitySessionId,
+					responseStartedAt,
+					pendingAttemptId,
+					pendingAttemptSignature,
+					pendingResponseDurationMs,
+					hintUsed,
+					markingPointsUsed,
 					...overrides,
 					updatedAt: Date.now()
 				} satisfies StoredPracticeState)
@@ -269,6 +325,8 @@
 			gradedAnswerText: stringFromRecord(draft.payload, 'gradedAnswerText'),
 			gradeResult: gradeResultPayload ? (gradeResultPayload as GradeResult) : null,
 			view: view === 'result' ? 'result' : 'attempt',
+			hintUsed: draft.payload.hintUsed === true,
+			markingPointsUsed: draft.payload.markingPointsUsed === true,
 			updatedAt: draft.clientUpdatedAt
 		} satisfies StoredPracticeState;
 	}
@@ -302,6 +360,13 @@
 			gradedAnswerText,
 			gradeResult,
 			view: requestedPracticeView,
+			activitySessionId,
+			responseStartedAt,
+			pendingAttemptId,
+			pendingAttemptSignature,
+			pendingResponseDurationMs,
+			hintUsed,
+			markingPointsUsed,
 			...overrides
 		} satisfies Record<string, unknown>;
 	}
@@ -343,8 +408,44 @@
 		authDialogOpen = true;
 	}
 
+	function currentAssistance(feedbackRewrite = false) {
+		return {
+			hintOpened: hintUsed,
+			markingPointsViewed: markingPointsUsed,
+			feedbackRewrite
+		};
+	}
+
+	function toggleMarkingPoints() {
+		showMarkingPoints = !showMarkingPoints;
+		if (showMarkingPoints) markingPointsUsed = true;
+		persistSciencePracticeState();
+	}
+
+	function ensurePendingAttempt(feedbackRewrite = false) {
+		if (!activitySessionId) activitySessionId = createActivityId('science-session');
+		if (!responseStartedAt) responseStartedAt = Date.now();
+		const assistance = currentAssistance(feedbackRewrite);
+		const signature = JSON.stringify({ answer: answerText, assistance });
+		if (!pendingAttemptId || pendingAttemptSignature !== signature) {
+			pendingAttemptId = createActivityId('attempt');
+			pendingAttemptSignature = signature;
+			pendingResponseDurationMs = responseDurationMs(responseStartedAt);
+			persistSciencePracticeState();
+		}
+		return {
+			attemptId: pendingAttemptId,
+			sourceSessionId: activitySessionId,
+			responseDurationMs: pendingResponseDurationMs,
+			assistance
+		};
+	}
+
 	function prepareScienceAuthRedirect() {
 		if (typeof window === 'undefined') return;
+		const pendingAttempt = ensurePendingAttempt(
+			requestedPracticeView === 'result' || checkingRewrite
+		);
 		persistSciencePracticeState();
 		window.sessionStorage.setItem(
 			pendingGradeStorageKey,
@@ -352,20 +453,25 @@
 				kind: 'science',
 				questionId: data.question.id,
 				answer: answerText,
+				...pendingAttempt,
 				createdAt: Date.now()
 			})
 		);
 	}
 
-	function consumePendingScienceGrade() {
-		if (!currentUserId || typeof window === 'undefined') return false;
+	function consumePendingScienceGrade(): boolean | null {
+		if (!currentUserId || typeof window === 'undefined') return null;
 		try {
 			const raw = window.sessionStorage.getItem(pendingGradeStorageKey);
-			if (!raw) return false;
+			if (!raw) return null;
 			const pending = JSON.parse(raw) as {
 				kind?: string;
 				questionId?: string;
 				answer?: string;
+				attemptId?: string;
+				sourceSessionId?: string;
+				responseDurationMs?: number | null;
+				assistance?: ReturnType<typeof currentAssistance>;
 				createdAt?: number;
 			};
 			const matches =
@@ -374,10 +480,21 @@
 				pending.answer === answerText &&
 				Date.now() - Number(pending.createdAt ?? 0) < 30 * 60 * 1000;
 			window.sessionStorage.removeItem(pendingGradeStorageKey);
-			return matches;
+			if (matches) {
+				hintUsed = pending.assistance?.hintOpened ?? hintUsed;
+				markingPointsUsed = pending.assistance?.markingPointsViewed ?? markingPointsUsed;
+				pendingAttemptId = pending.attemptId ?? '';
+				activitySessionId = pending.sourceSessionId || activitySessionId;
+				pendingResponseDurationMs = pending.responseDurationMs ?? null;
+				pendingAttemptSignature = JSON.stringify({
+					answer: pending.answer,
+					assistance: pending.assistance ?? currentAssistance(false)
+				});
+			}
+			return matches ? (pending.assistance?.feedbackRewrite ?? false) : null;
 		} catch {
 			window.sessionStorage.removeItem(pendingGradeStorageKey);
-			return false;
+			return null;
 		}
 	}
 
@@ -389,6 +506,18 @@
 		gradePhase = gradeResult ? 'done' : 'idle';
 		gradeFailure = null;
 		showHint = false;
+		showMarkingPoints = false;
+		hintUsed = storedState?.hintUsed ?? false;
+		markingPointsUsed = storedState?.markingPointsUsed ?? false;
+		activitySessionId = storedState?.activitySessionId || createActivityId('science-session');
+		responseStartedAt =
+			storedState?.responseStartedAt &&
+			responseDurationMs(storedState.responseStartedAt, Date.now()) !== null
+				? storedState.responseStartedAt
+				: Date.now();
+		pendingAttemptId = storedState?.pendingAttemptId ?? '';
+		pendingAttemptSignature = storedState?.pendingAttemptSignature ?? '';
+		pendingResponseDurationMs = storedState?.pendingResponseDurationMs ?? null;
 		lastQueuedDraftSignature = migratedAnonymousState
 			? ''
 			: scienceDraftSignature({
@@ -432,6 +561,12 @@
 	function setAnswerText(value: string) {
 		markSciencePracticeTouched();
 		const invalidatesResult = gradedAnswerText.length > 0 && value !== gradedAnswerText;
+		if (pendingAttemptId && value !== answerText) {
+			pendingAttemptId = '';
+			pendingAttemptSignature = '';
+			pendingResponseDurationMs = null;
+			responseStartedAt = Date.now();
+		}
 		answerText = value;
 		if (invalidatesResult) clearCheckedResult();
 		persistSciencePracticeState(invalidatesResult ? { view: 'attempt' } : {});
@@ -443,7 +578,22 @@
 		persistSciencePracticeState();
 	}
 
-	async function checkAnswer() {
+	async function checkRewrite() {
+		const rewrittenAnswer = rewriteText.trim();
+		if (!rewrittenAnswer || isChecking) return;
+		answerText = rewrittenAnswer;
+		pendingAttemptId = '';
+		pendingAttemptSignature = '';
+		pendingResponseDurationMs = null;
+		responseStartedAt = Date.now();
+		gradedAnswerText = '';
+		checkingRewrite = true;
+		persistSciencePracticeState({ answerText: rewrittenAnswer, view: 'result' });
+		await checkAnswer(true);
+		checkingRewrite = false;
+	}
+
+	async function checkAnswer(preserveVisibleResult = false) {
 		if (!canCheck) return;
 		markSciencePracticeTouched();
 		if (!data.user) {
@@ -451,12 +601,13 @@
 			return;
 		}
 
-		rewriteText = '';
+		if (!preserveVisibleResult) rewriteText = '';
 		gradedAnswerText = '';
 		gradeFailure = null;
-		gradeResult = null;
+		if (!preserveVisibleResult) gradeResult = null;
 		gradePhase = 'connecting';
 		let streamStarted = false;
+		const pendingAttempt = ensurePendingAttempt(preserveVisibleResult || checkingRewrite);
 
 		try {
 			const response = await fetchWithResponseTimeout(
@@ -466,7 +617,10 @@
 					headers: {
 						'content-type': 'application/json'
 					},
-					body: JSON.stringify({ answer: answerText })
+					body: JSON.stringify({
+						answer: answerText,
+						...pendingAttempt
+					})
 				}
 			);
 			if (response.status === 401) {
@@ -501,16 +655,13 @@
 	}
 
 	function shortChecklistText(text: string) {
-		return text
+		const cleaned = text
 			.replace(/^Say that /, '')
 			.replace(/^Say /, '')
 			.replace(/^Mention /, '')
 			.replace(/^Explain that /, '')
 			.replace(/\.$/, '');
-	}
-
-	function isNodeMissing(stepId: string | null) {
-		return stepId ? missingStepIds.has(stepId) : false;
+		return cleaned ? `${cleaned.charAt(0).toUpperCase()}${cleaned.slice(1)}` : cleaned;
 	}
 
 	function statusDescriptionForPhase(phase: GradePhase) {
@@ -626,6 +777,7 @@
 		}
 
 		loadedQuestionId = data.question.id;
+		scrollActiveQuestionIntoView();
 		const storedState = initialPracticeState(data.question.id);
 		applySciencePracticeState(storedState);
 		if (storedState?.view === 'result' && storedState.gradeResult && storedState.gradedAnswerText) {
@@ -640,10 +792,35 @@
 	});
 
 	$effect(() => {
+		if (data.englishPractice || loadedQuestionId !== data.question.id || !showHint || hintUsed)
+			return;
+		hintUsed = true;
+		persistSciencePracticeState();
+	});
+
+	$effect(() => {
 		if (data.englishPractice) return;
 		if (requestedPracticeView === 'result' && !hasCheckedResult && !isChecking) {
 			updatePracticeView('attempt', 'replace');
 		}
+	});
+
+	$effect(() => {
+		if (
+			!showCheckedResult ||
+			!gradeResult ||
+			!resultHeader ||
+			isChecking ||
+			typeof window === 'undefined'
+		)
+			return;
+		const signature = `${data.question.id}:${gradedAnswerText}:${gradeResult.awardedMarks}`;
+		if (signature === lastFocusedResultSignature) return;
+		lastFocusedResultSignature = signature;
+		window.requestAnimationFrame(() => {
+			resultHeader?.focus({ preventScroll: true });
+			resultHeader?.scrollIntoView({ block: 'start', behavior: 'auto' });
+		});
 	});
 </script>
 
@@ -652,8 +829,8 @@
 	<meta
 		name="description"
 		content={isEnglish
-			? 'Write, check, and repair a GCSE English answer against the mark focus.'
-			: 'Write, check, and repair a GCSE answer against the mark-scoring method.'}
+			? 'Write and check a GCSE English answer against the mark focus.'
+			: 'Write and check a GCSE answer against the mark-scoring method.'}
 	/>
 </svelte:head>
 
@@ -671,53 +848,47 @@
 			subject={topbarSubject}
 			subjects={topbarSubjects}
 			searchPlaceholder="Search questions"
-			showNavigation
 		/>
 
-		<div class="qc-real-layout qc-question-layout">
+		<div class="qc-real-layout qc-question-layout" class:singleton={data.questions.length === 1}>
 			<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
-				<IconBackLink href={previousHref} label="Back to method" />
-				<p class="qc-real-kicker">Guided practice</p>
-				<h1><MathText text={data.constellation.title} /></h1>
-				<div class="qc-practice-progress" aria-label="Practice progress">
-					<span>Question {questionNumber} of {data.questions.length}</span>
-					<div class="qc-practice-progress-track" aria-hidden="true">
-						<span class="qc-practice-progress-fill" style={`width: ${progressPercent}`}></span>
+				<IconBackLink href={practiceBackHref} label={practiceBackLabel} />
+				<p class="qc-real-kicker"><MathText text={data.question.meta.subject} /></p>
+				<h1>{data.questions.length > 1 ? 'Practice set' : 'Exam practice'}</h1>
+				{#if data.questions.length > 1}
+					<div class="qc-practice-progress" aria-label="Practice progress">
+						<span>Question {questionNumber} of {data.questions.length}</span>
+						<div class="qc-practice-progress-track" aria-hidden="true">
+							<span class="qc-practice-progress-fill" style={`width: ${progressPercent}`}></span>
+						</div>
 					</div>
-				</div>
-				<nav class="qc-real-chain-list" aria-label="Practice questions">
-					{#each data.questions as question, index (question.id)}
-						<a
-							class:active={question.id === data.question.id}
-							href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
-						>
-							<span>{index + 1}</span>
-							<span><MathText text={question.title} /></span>
-							<small>{question.distanceLabel}</small>
-						</a>
-					{/each}
-				</nav>
+				{/if}
+				{#if data.questions.length > 1}
+					<nav
+						bind:this={practiceQuestionList}
+						class="qc-real-chain-list"
+						aria-label="Practice questions"
+					>
+						{#each data.questions as question, index (question.id)}
+							<a
+								class:active={question.id === data.question.id}
+								aria-current={question.id === data.question.id ? 'page' : undefined}
+								href={resolve('/questions/[questionId]/practice', { questionId: question.id })}
+							>
+								<span>{index + 1}</span>
+								<span><MathText text={question.title} /></span>
+								<small>{question.distanceLabel}</small>
+							</a>
+						{/each}
+					</nav>
+				{/if}
 			</aside>
 
 			<section class="qc-real-main qc-practice-main" aria-label="Practice workspace">
 				{#if !showCheckedResult}
-					<div class="qc-real-question-top">
-						<div>
-							<p>
-								<MathText text={questionMetaSummary} />
-							</p>
-							<h2>Write the answer, then check it.</h2>
-						</div>
-					</div>
+					<ExamQuestionCard question={data.question} showTitle={false} assetLoading="eager" />
 
 					<HintPanel hints={practiceHints} bind:open={showHint} />
-
-					<ExamQuestionCard
-						question={data.question}
-						showTitle={false}
-						showHeader={false}
-						showMeta={false}
-					/>
 
 					<section class="qc-practice-answer-card">
 						<PracticeAnswerEditor
@@ -735,7 +906,7 @@
 							<button
 								class="qc-action-button primary"
 								type="button"
-								onclick={checkAnswer}
+								onclick={() => void checkAnswer()}
 								disabled={!canCheck}
 							>
 								{#if isChecking}
@@ -746,8 +917,38 @@
 									Check answer
 								{/if}
 							</button>
+							<button
+								class="qc-action-button"
+								type="button"
+								aria-expanded={showMarkingPoints}
+								aria-controls="practice-marking-points"
+								onclick={toggleMarkingPoints}
+							>
+								{showMarkingPoints ? 'Hide marking points' : 'Use marking points'}
+							</button>
 						</div>
 					</section>
+
+					{#if showMarkingPoints}
+						<section
+							id="practice-marking-points"
+							class="qc-practice-static-checklist"
+							transition:slide={{ duration: markingPointsRevealDurationMs }}
+						>
+							<header>
+								<p class="qc-panel-label">Mark your answer</p>
+								<p>Compare your answer with each point.</p>
+							</header>
+							<ol>
+								{#each data.question.checklist as item, index (item.id)}
+									<li>
+										<span>{index + 1}</span>
+										<MathText text={shortChecklistText(item.text)} />
+									</li>
+								{/each}
+							</ol>
+						</section>
+					{/if}
 
 					{#if isChecking}
 						<section class="qc-status-panel" aria-live="polite">
@@ -767,34 +968,84 @@
 						/>
 					{/if}
 				{:else}
-					<div class="qc-real-question-top">
-						<div>
-							<p><MathText text={data.question.sourceRef} /></p>
-							<h2>{resultTitle}</h2>
-						</div>
-						<a class="qc-real-link-button" href={previousHref}> Review method </a>
-					</div>
+					<header
+						bind:this={resultHeader}
+						class="qc-practice-result-header"
+						tabindex="-1"
+						aria-live="polite"
+					>
+						<p class="qc-real-kicker"><MathText text={data.question.sourceRef} /></p>
+						<h2>
+							{hasMissingLinks
+								? resultTitle
+								: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
+						</h2>
+						{#if hasMissingLinks}
+							<p>
+								<strong>
+									{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ??
+										data.question.meta.marks}
+									marks
+								</strong>
+								Complete the missing links below.
+							</p>
+						{/if}
+					</header>
 
-					<ThinkingChain
-						steps={chainSteps}
-						label="Checked method"
-						note={hasMissingLinks ? 'Missing steps are shown below.' : 'The method is complete.'}
-					/>
+					{#if hasMissingLinks}
+						<details class="qc-practice-detail qc-practice-original-question">
+							<summary>
+								Original question
+								<ChevronDown size={17} aria-hidden="true" />
+							</summary>
+							<ExamQuestionCard
+								question={data.question}
+								compact
+								showHeader={false}
+								showMeta={false}
+								showTitle={false}
+								assetLoading="eager"
+							/>
+						</details>
+					{/if}
 
-					<section class="qc-repair-panel">
-						<p class="qc-panel-label">Fix the method</p>
-						<div class="qc-repair-chain" aria-label="Method reminder">
-							{#each data.question.repairChain as node (node.id)}
-								<span class:missing={isNodeMissing(node.stepId)}>
-									{#if node.icon === 'zap'}
-										<Zap size={16} aria-hidden="true" />
+					{#if data.chain.illustration}
+						<ChainIllustration
+							illustration={data.chain.illustration}
+							eager
+							showCaption={false}
+							expandable
+						/>
+					{/if}
+
+					<section class="qc-chain-result" aria-label="Checked answer chain">
+						<p class="qc-panel-label">Answer chain</p>
+						<ol>
+							{#each data.question.checklist as item, index (item.id)}
+								<li
+									class:present={presentStepIds.has(item.stepId)}
+									class:missing={missingStepIds.has(item.stepId)}
+								>
+									<span class="qc-chain-result-index">{index + 1}</span>
+									{#if presentStepIds.has(item.stepId)}
+										<CheckCircle2 size={18} aria-hidden="true" />
 									{:else}
-										<Target size={16} aria-hidden="true" />
+										<CircleAlert size={18} aria-hidden="true" />
 									{/if}
-									<MathText text={node.label} />
-								</span>
+									<span>
+										<span class="sr-only">
+											{presentStepIds.has(item.stepId) ? 'Present: ' : 'Missing: '}
+										</span>
+										<MathText text={shortChecklistText(item.text)} />
+									</span>
+									{#if missingStepIds.has(item.stepId) && gapHrefByStepId.get(item.stepId)}
+										<a class="qc-inline-gap-link" href={gapHrefByStepId.get(item.stepId)}>
+											Practise this step
+										</a>
+									{/if}
+								</li>
 							{/each}
-						</div>
+						</ol>
 					</section>
 
 					<section class="qc-practice-answer-card">
@@ -810,87 +1061,68 @@
 								placeholder="Rewrite your answer..."
 								onValueChange={setRewriteText}
 							/>
+							<div class="qc-practice-actions">
+								<button
+									class="qc-action-button primary"
+									type="button"
+									onclick={checkRewrite}
+									disabled={!rewriteText.trim() || isChecking}
+								>
+									<CheckCircle2 size={18} aria-hidden="true" />
+									{isChecking ? 'Checking...' : 'Check rewrite'}
+								</button>
+							</div>
 						{:else}
 							<p class="qc-practice-answer-label">Your checked answer</p>
 							<p class="qc-checked-answer">{answerText}</p>
 						{/if}
 					</section>
 
-					<section class="qc-feedback-stack" aria-label="Answer feedback">
-						<section class="qc-result-summary">
-							<p class="qc-panel-label">Checked answer</p>
-							<p>
-								{gradeResult?.awardedMarks ?? 0} of {gradeResult?.maxMarks ??
-									data.question.meta.marks}
-								marks. {missingItems.length === 0
-									? 'All required steps are present.'
-									: 'Add the missing steps to complete the answer.'}
-							</p>
-						</section>
+					{#if !hasMissingLinks}
+						<div class="qc-practice-actions qc-check-next-actions" aria-label="Next action">
+							<a
+								class="qc-action-button primary"
+								href={!isLastQuestion
+									? nextQuestionHref
+									: data.user
+										? subjectHubHref
+										: constellationHref}
+							>
+								{isLastQuestion ? 'Finish set' : 'Next question'}
+								<ArrowRight size={18} aria-hidden="true" />
+							</a>
+						</div>
+					{/if}
 
-						<section class="qc-answer-panel">
-							<p class="qc-panel-label">You included ({includedItems.length})</p>
-							{#if includedItems.length > 0}
-								<ul class="qc-result-list">
-									{#each includedItems as item (item.id)}
-										<li>
-											<CheckCircle2 size={18} aria-hidden="true" />
-											<span><MathText text={shortChecklistText(item.text)} /></span>
-										</li>
-									{/each}
-								</ul>
-							{:else}
-								<p>No checklist steps were confirmed yet.</p>
-							{/if}
-						</section>
-
-						{#if missingItems.length > 0}
-							<section class="qc-answer-panel missing">
-								<p class="qc-panel-label">Missing ({missingItems.length})</p>
-								<ul class="qc-result-list">
-									{#each missingItems as item (item.id)}
-										<li>
-											<CircleAlert size={18} aria-hidden="true" />
-											<span><MathText text={shortChecklistText(item.text)} /></span>
-											{#if gapHrefByStepId.get(item.stepId)}
-												<a class="qc-inline-repair-link" href={gapHrefByStepId.get(item.stepId)}>
-													Fix this step
-												</a>
-											{/if}
-										</li>
-									{/each}
-								</ul>
-							</section>
-						{/if}
-
-						{#if recallPrompt}
-							<section class="qc-answer-panel recall">
-								<p class="qc-panel-label">Flashcard repair</p>
+					{#if recallPrompt && hasMissingLinks}
+						<section class="qc-quick-recall">
+							<div>
+								<p class="qc-panel-label">Quick recall</p>
 								<p>
-									This looks like a small recall gap. Practise {recallPrompt.cardCount}
-									cards for {recallPrompt.label.replace(/^.*?:\s*/, '')}.
+									{recallPrompt.cardCount} cards for {recallPrompt.label.replace(/^.*?:\s*/, '')}
 								</p>
-								<a class="qc-action-button primary compact" href={recallPrompt.href}>
-									Review flashcards
-								</a>
-							</section>
-						{/if}
+							</div>
+							<a href={recallPrompt.href}>Open flashcards</a>
+						</section>
+					{/if}
 
-						{#if feedbackMarkdown}
-							<section class="qc-answer-panel">
-								<p class="qc-panel-label">Feedback</p>
-								<MarkdownContent markdown={feedbackMarkdown} class="qc-feedback-markdown" />
-							</section>
-						{/if}
-					</section>
+					{#if feedbackMarkdown}
+						<details class="qc-practice-detail">
+							<summary>
+								Detailed feedback
+								<ChevronDown size={17} aria-hidden="true" />
+							</summary>
+							<MarkdownContent markdown={feedbackMarkdown} class="qc-feedback-markdown" />
+						</details>
+					{/if}
 
-					<div class="qc-practice-actions qc-check-next-actions" aria-label="Next actions">
-						<a class="qc-action-button primary" href={nextQuestionHref}>
-							<ArrowRight size={18} aria-hidden="true" />
-							Next question
-						</a>
-						<a class="qc-action-button" href={previousHref}>Review method</a>
-					</div>
+					<details class="qc-practice-detail">
+						<summary>
+							Full-mark answer
+							<ChevronDown size={17} aria-hidden="true" />
+						</summary>
+						<p><MathText text={data.question.modelAnswer} /></p>
+					</details>
 				{/if}
 			</section>
 		</div>

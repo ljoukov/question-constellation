@@ -1,10 +1,19 @@
 import { judgeGapFinalAnswer } from '$lib/server/personalLearning';
+import { recordGapOutcomeEvidence } from '$lib/server/subjectLearning';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
 
 const requestSchema = z.object({
 	answer: z.string().trim().min(1).max(5000),
-	guidedAnswers: z.record(z.string(), z.string().max(400)).default({})
+	guidedAnswers: z.record(z.string(), z.string().max(400)).default({}),
+	submissionId: z.string().trim().min(1).max(128),
+	sourceSessionId: z.string().trim().min(1).max(128),
+	responseDurationMs: z
+		.number()
+		.int()
+		.min(0)
+		.max(6 * 60 * 60 * 1000)
+		.nullable()
 });
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
@@ -29,12 +38,20 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		userId: locals.user.uid,
 		gapId: params.gapId,
 		answer: body.answer,
-		guidedAnswers: body.guidedAnswers
+		guidedAnswers: body.guidedAnswers,
+		submissionId: body.submissionId
 	});
 
 	if (!result) {
 		return json({ error: 'not_found' }, { status: 404 });
 	}
+	await recordGapOutcomeEvidence({
+		user: locals.user,
+		gapId: params.gapId,
+		result,
+		sourceSessionId: body.sourceSessionId,
+		responseDurationMs: body.responseDurationMs
+	});
 
 	return json({ status: 'ok', ...result });
 };

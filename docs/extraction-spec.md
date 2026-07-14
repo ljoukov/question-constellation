@@ -189,6 +189,14 @@ For each question or subquestion, extract:
 - Prompt text.
 - Self-contained prompt text: the practice-ready formulation with any required parent stem,
   scenario, method, source text, or figure/table reference carried forward.
+- Question-card title: a deliberately written standalone label under
+  `concept-method-process-v2`. It must name the distinctive concept, method, relationship, or
+  process in 3-9 words and no more than 64 characters. Read the complete atomic task before its
+  mark boundary and synthesize the label; never take the first N words, copy the task with only its
+  command opener removed, start with an exam command or `How`/`Why`/`What`, let a secondary
+  `give`/`use`/`tick` instruction override the main task, or reveal an outcome found only in the
+  mark scheme. Persist the accepted value as `metadata_json.card_title`, with
+  `card_title_contract` and provenance alongside it.
 - Self-containment metadata: whether the printed atomic prompt is already self-contained, requires
   prior context, requires assets, or requires both.
 - Command word, such as `explain`, `describe`, `calculate`, `evaluate`, or `state`.
@@ -2864,17 +2872,47 @@ CREATE INDEX idx_extraction_issues_open
 
 ## Import Workflow
 
-### Optional Post-Publication Chain Illustrations
+### Chained-bank updates are additive and scope-reconciling
+
+`pnpm run import:chained` must never clear the public bank or replay the schema during an ordinary
+run. It upserts only the selected questions and the chains reached by their memberships, preserves
+review-controlled publication status, then removes obsolete importer-owned child rows only inside
+those imported question and chain IDs. All replacement rows are written first; the scoped child
+cleanup is one transactional D1 batch. Unrelated questions, chains, manually published workflow
+state, and `answer_chain_illustrations` rows remain untouched.
+
+Every parent and child write is preflighted against its primary and secondary unique keys. An
+existing row is mutable only when it carries this importer's explicit owner marker; an unknown,
+legacy, curated, or foreign owner is preserved, and a conflicting planned write aborts the whole
+import before the first mutation. Adoption is therefore an explicit, hash-checked repair operation
+rather than an inference from a shared question id, chain id, generated id pattern, or old
+`extraction_agent` label.
+
+Schema application is an explicit maintenance action: use `--apply-schema` with an import, or
+`--schema-only` without one. Never treat either flag as part of a routine or subset refresh. A
+`--dry-run` reports the proposed upserts, current scoped stale-child counts, preserved ambiguity,
+and ownership conflicts; it performs no writes and deliberately skips public-route materialization
+because the remote database still represents the pre-import state.
+
+The current D1 bank predates explicit ownership and deliberately remains blocked from a broad
+chained import. Apply reviewed one-off content through `scripts/reimport-scoped-chained-questions.mjs`
+with exact question/chain ids. Any future ownership handoff must use a tracked row manifest with
+canonical content hashes and declared allowed differences; never blanket-tag legacy rows.
+
+### Automatic Post-Publication Chain Illustrations
 
 Illustration generation is a separate, D1-backed phase after question and chain publication. Keep
 the extraction candidate, answer-chain reconciliation schemas, and `run-codex-answer-chains.mjs`
 text-only. An illustration is derived from the final public chain plus the evidence for every public
 member; it is not part of the source-paper extraction.
 
-Use `pnpm run generate:chain-illustrations` directly, or pass
-`--generate-chain-illustrations --import` to the Codex production import. The batch importer runs
-this phase once after its paper cohort completes so shared chains are deduplicated. Illustration
-failure is non-blocking by default; `--require-chain-illustrations` makes it fail the import.
+Use `pnpm run generate:chain-illustrations` directly when repairing or calibrating a known chain.
+Every real Codex production `--import` runs the illustration phase automatically after its D1 write;
+`--generate-chain-illustrations` remains accepted as a compatibility flag. Use
+`--skip-chain-illustrations` only for an intentional opt-out. The batch importer suppresses each
+single-paper child pass and runs one deduplicated phase after its paper cohort completes so shared
+chains are generated once. Illustration failure is non-blocking by default;
+`--require-chain-illustrations` makes it fail the import.
 
 The automatic phase must fail closed at each gate:
 
@@ -2887,19 +2925,30 @@ The automatic phase must fail closed at each gate:
    level-of-response questions. Multiple papers alone never prove semantic reuse.
 3. Reduce the accepted chain to two to four visual panels without padding. Chains of at most four
    steps map one-to-one. A five-step chain may merge one adjacent pair only when both scoring ideas
-   remain explicit and every source step still appears exactly once in order.
-4. Generate two independent `2048x1152` WebP candidates from the identical prompt and without a
-   reference image. Use the subject/subdomain version of the luminous scientific-atlas style, a deep
-   navy grid, minimal verbatim labels, one unambiguous path, and iPad-safe margins.
-5. Reject files that do not decode, are below `1536x864`, or fall outside a 1.5% tolerance around
-   `16:9`. A fresh-context visual judge then checks scientific accuracy, evidence fidelity, exact
-   labels and numbers, cross-panel consistency for every repeated state, sequence clarity, 1024x576
-   legibility, and the absence of extra claims, loops, panels, logos, or watermarks. Publish neither
-   candidate unless it scores at least `18/20` with full correctness, evidence, and text scores.
+   remain explicit and every source step still appears exactly once in order. The semantic plan must
+   define one coherent system or subject, one unique mechanism-specific visual anchor per stage, and
+   the meaning a learner should recover from each stage with all text hidden. Reject unexplained
+   abbreviations, repeated dominant hero views, generic gauges standing in for mechanisms, and
+   conclusions without a concrete visible outcome.
+4. Generate one dark-mode `2048x1152` WebP from scratch with no reference image. Use the
+   subject/subdomain version of the luminous scientific-atlas style, a deep navy grid, minimal
+   verbatim labels, one unambiguous path, and iPad-safe margins. Then pass that exact generated image
+   back to the image model with `action: edit` to produce its light-mode sibling. The edit may change
+   surfaces, text contrast, shadows, highlights, and glow only; it must preserve composition, objects,
+   states, arrows, equations, wording, panel geometry, sequence, and scientific meaning.
+5. Reject either file if it does not decode, is below `1536x864`, falls outside a 1.5% tolerance
+   around `16:9`, or has different dimensions from its sibling. A fresh-context visual judge then
+   checks both variants for scientific accuracy, evidence fidelity, exact labels and numbers,
+   sequence clarity, 1024x576 legibility, distinct causal visuals, text-hidden comprehension, clear
+   terminology, absence of dominant repetition, and the absence of extra claims, loops, panels,
+   logos, or watermarks. It also runs a strict cross-theme consistency audit. Publish the pair only
+   when both variants score at least `18/20` with full correctness, evidence, and text scores, every
+   hard visual-learning flag passes, and cross-theme preservation scores `4/4`.
 6. Hash the chain, ordered steps, public memberships, prompts, mark rows, models, and checklists.
-   Recheck that fingerprint after generation. Upload only the winner to an immutable R2 key, verify
-   the uploaded bytes, and only then promote its `answer_chain_illustrations` row. A changed source
-   fingerprint must be regenerated rather than silently reusing stale art.
+   Recheck that fingerprint after generation. Upload both variants to immutable theme-specific R2
+   keys, verify both uploaded byte streams, and only then promote their shared
+   `answer_chain_illustrations` record. A changed source fingerprint must be regenerated rather than
+   silently reusing stale art.
 
 The stable reusable prompt and validation logic live in
 `scripts/lib/chain-illustration-pipeline.mjs`. Generation uses the subscription-backed

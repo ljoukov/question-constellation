@@ -4,23 +4,27 @@
 	let {
 		steps,
 		label = 'Method',
-		note = ''
+		note = '',
+		showLabel = true
 	}: {
 		steps: string[];
 		label?: string;
 		note?: string;
+		showLabel?: boolean;
 	} = $props();
 
 	const accents = ['#168458', '#2f73bd', '#d08a1d', '#7a62c7'];
 </script>
 
 <section class="qc-thinking-chain" aria-label={label}>
-	<header>
-		<p>{label}</p>
-		{#if note}
-			<span>{note}</span>
-		{/if}
-	</header>
+	{#if showLabel}
+		<header>
+			<p>{label}</p>
+			{#if note}
+				<span>{note}</span>
+			{/if}
+		</header>
+	{/if}
 
 	<ol>
 		{#each steps as step, index}

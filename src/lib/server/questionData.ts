@@ -1,5 +1,6 @@
 import { getRequestEvent } from '$app/server';
 import type { ChainIllustration } from '$lib/chains/chainIllustration';
+import { deriveQuestionCardTitle, questionCardTitleIssues } from '$lib/questionCardTitle.js';
 import {
 	getVersionedPublicRoutePayload,
 	putPublicRoutePayload
@@ -8,7 +9,7 @@ import { gcsePastPaperData } from '$lib/pastPapers/gcsePastPapers';
 import { getPublishedChainIllustration } from './chainIllustrations';
 import { queryFirst, queryRows } from './db';
 
-const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v3';
+const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v5';
 const PRACTICE_PAGE_CACHE_KIND = 'question-practice-page';
 
 export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer' | 'unclassified';
@@ -17,6 +18,7 @@ export type ExamMeta = {
 	qualification: string;
 	board: string;
 	subject: string;
+	subjectArea?: string;
 	tier: string;
 	paper: string;
 	topic: string;
@@ -256,6 +258,7 @@ type QuestionRow = {
 	id: string;
 	source_question_ref: string;
 	prompt_text: string;
+	self_contained_prompt_text: string | null;
 	context_text: string | null;
 	command_word: string | null;
 	marks: number | null;
@@ -418,7 +421,21 @@ function questionPracticeRoutePath(questionId: string): string {
 function looksLikePracticePageData(value: unknown): value is PracticePageData {
 	if (!value || typeof value !== 'object') return false;
 	const candidate = value as PracticePageData;
-	return Boolean(candidate.question?.id && candidate.chain?.id && candidate.constellation?.id);
+	const illustration = candidate.chain?.illustration;
+	const hasCompleteIllustrationPair =
+		!illustration || Boolean(illustration.src && illustration.lightSrc);
+	const hasSafeQuestionTitles =
+		Boolean(candidate.englishPractice) ||
+		(Boolean(candidate.question && hasSafeQuestionCardTitle(candidate.question)) &&
+			Array.isArray(candidate.questions) &&
+			candidate.questions.every(hasSafeQuestionCardTitle));
+	return Boolean(
+		candidate.question?.id &&
+		candidate.chain?.id &&
+		candidate.constellation?.id &&
+		hasCompleteIllustrationPair &&
+		hasSafeQuestionTitles
+	);
 }
 
 async function getCachedPracticePageData(questionId: string): Promise<PracticePageData | null> {
@@ -546,25 +563,13 @@ function iconForStep(text: string, role: string): RepairChainNode['icon'] {
 }
 
 function titleFromQuestion(row: QuestionRow): string {
-	const metadata = parseJson<{ title?: string }>(row.metadata_json, {});
-	if (metadata.title) return metadata.title;
-
-	const lines = cleanPromptText(row.prompt_text)
-		.split('\n')
-		.map((part) => part.replace(/\s+/g, ' ').trim())
-		.filter(Boolean)
-		.filter(
-			(line) => !/^(?:choose (?:the )?answers? from the box|complete the sentence)\.?$/i.test(line)
-		);
-
-	const questionLine = lines.find((line) => line.endsWith('?'));
-	const commandLine = lines.find((line) =>
-		/^(?:explain|describe|give|state|calculate|determine|compare|name|suggest|evaluate|use|write|draw|measure|identify|what|which|why|how)\b/i.test(
-			line
-		)
-	);
-	const title = questionLine ?? commandLine ?? lines.at(-1) ?? row.id;
-	return title.length > 120 ? `${title.slice(0, 117).trim()}...` : title;
+	const metadata = parseJson<{ title?: string; card_title?: string }>(row.metadata_json, {});
+	return deriveQuestionCardTitle({
+		cardTitle: metadata.card_title ?? metadata.title,
+		promptText: row.prompt_text,
+		selfContainedPromptText: row.self_contained_prompt_text,
+		fallback: row.id
+	});
 }
 
 function topicFromRow(row: QuestionRow): string {
@@ -701,7 +706,8 @@ function seedFromRow(row: QuestionChainSeedRow): QuestionChainSeed {
 
 async function getQuestionChainSeed(questionId: string): Promise<QuestionChainSeed> {
 	const row = await queryFirst<QuestionChainSeedRow>(
-		`SELECT q.id, q.source_question_ref, q.prompt_text, q.context_text, q.command_word, q.marks,
+		`SELECT q.id, q.source_question_ref, q.prompt_text, q.self_contained_prompt_text,
+		        q.context_text, q.command_word, q.marks,
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
 		        q.topic_path_json, q.self_containment_json, q.metadata_json,
 		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
@@ -2426,6 +2432,7 @@ function hydrateQuestionFromSupplement(
 			qualification: row.qualification ?? 'GCSE',
 			board: row.board ?? 'AQA',
 			subject: row.subject ?? 'Combined Science',
+			subjectArea: row.subject_area ?? undefined,
 			tier: row.tier ?? 'Higher',
 			paper: row.paper ?? 'Question paper',
 			topic: topicFromRow(row),
@@ -2462,7 +2469,8 @@ async function hydrateQuestion(
 
 async function getQuestionRow(questionId: string): Promise<QuestionRow> {
 	const row = await queryFirst<QuestionRow>(
-		`SELECT id, source_question_ref, prompt_text, context_text, command_word, marks, board,
+		`SELECT id, source_question_ref, prompt_text, self_contained_prompt_text,
+		        context_text, command_word, marks, board,
 		        qualification, subject, subject_area, tier, paper, topic_path_json,
 		        self_containment_json, metadata_json
 		 FROM questions
@@ -2502,7 +2510,8 @@ async function getQuestionRowsForChain(
 	chainId: string
 ): Promise<Array<QuestionRow & MembershipRow>> {
 	return await queryRows<QuestionRow & MembershipRow>(
-		`SELECT q.id, q.source_question_ref, q.prompt_text, q.context_text, q.command_word, q.marks,
+		`SELECT q.id, q.source_question_ref, q.prompt_text, q.self_contained_prompt_text,
+		        q.context_text, q.command_word, q.marks,
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
 		        q.topic_path_json, q.self_containment_json, q.metadata_json,
 		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
@@ -2564,6 +2573,15 @@ async function getConstellationForChain(
 function nextQuestionAfter(questions: Question[], questionId: string): Question {
 	const index = questions.findIndex((question) => question.id === questionId);
 	return questions[(index + 1 + questions.length) % questions.length] ?? questions[0];
+}
+
+function hasSafeQuestionCardTitle(question: Question): boolean {
+	return (
+		questionCardTitleIssues(question.title, {
+			promptText: question.prompt,
+			answerText: question.modelAnswer
+		}).length === 0
+	);
 }
 
 async function getQuestionChainContext(
@@ -2701,13 +2719,21 @@ async function getFreshPracticePageData(questionId: string): Promise<PracticePag
 	}
 
 	const context = await getQuestionChainContext(questionId, seed ?? undefined);
+	const questions = context.questions.filter(hasSafeQuestionCardTitle);
+	const question = questions.find((candidate) => candidate.id === context.question.id);
+	if (!question) {
+		throw new Error(`Question title has not passed learner-facing review: ${context.question.id}`);
+	}
 
 	return {
-		question: context.question,
+		question,
 		chain: context.chain,
-		constellation: context.constellation,
-		questions: context.questions,
-		nextQuestion: context.nextQuestion
+		constellation: {
+			...context.constellation,
+			questionIds: questions.map((candidate) => candidate.id)
+		},
+		questions,
+		nextQuestion: nextQuestionAfter(questions, question.id)
 	};
 }
 

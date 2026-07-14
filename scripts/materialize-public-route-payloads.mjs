@@ -2,8 +2,10 @@
 
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { deriveQuestionCardTitle } from '../src/lib/questionCardTitle.js';
 import { subjectSymbol } from '../src/lib/subjectSymbols.js';
 import { d1Config, d1Rows } from './lib/d1-rest.mjs';
+import { deleteStalePracticePayloadsStatement } from './lib/public-route-materialization-scope.mjs';
 
 const DEFAULT_BATCH_SIZE = 50;
 const PAYLOAD_COMPRESSION_THRESHOLD_BYTES = 1_500_000;
@@ -131,26 +133,18 @@ function truncateRichText(text, maxLength) {
 	return `${snippet}...`;
 }
 
-function sentenceTitle(text, fallback) {
-	const cleaned = cleanPromptText(text);
-	const sentence =
-		cleaned.match(
-			/(?:Explain|Calculate|Determine|Describe|Give|State|What|Which|Why|How|Name|Suggest|Compare|Draw|Complete|Use)\b[^.?!]*(?:[.?!]|$)/i
-		)?.[0] ??
-		cleaned.split(/(?<=[.?!])\s+/)[0] ??
-		fallback;
-	const normalized = sentence.replace(/\s+/g, ' ').trim() || fallback;
-	return truncateRichText(normalized, 74);
-}
-
 function teaserFromPrompt(text) {
 	return truncateRichText(cleanPromptText(text), 132);
 }
 
 function titleFromQuestion(row) {
 	const metadata = parseJson(row.metadata_json, {});
-	if (metadata.title) return metadata.title;
-	return sentenceTitle(row.prompt_text, row.source_question_ref);
+	return deriveQuestionCardTitle({
+		cardTitle: metadata.card_title ?? metadata.title,
+		promptText: row.prompt_text,
+		selfContainedPromptText: row.self_contained_prompt_text,
+		fallback: row.source_question_ref
+	});
 }
 
 function topicFromRow(row) {
@@ -1018,6 +1012,7 @@ async function fetchPublicChains({ rootDir }) {
 		d1Rows(
 			`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order,
 			        q.id, q.source_document_id, q.source_question_ref, q.prompt_text,
+			        q.self_contained_prompt_text,
 			        q.command_word, q.marks, q.subject, q.subject_area, q.paper,
 			        q.series, q.year, q.topic_path_json, q.metadata_json,
 			        sd.board AS source_board, sd.qualification AS source_qualification,
@@ -1170,10 +1165,15 @@ async function fetchPapersForQuestions({ rootDir, sourceDocumentIds }) {
 export async function materializePublicRoutePayloads({
 	rootDir = process.cwd(),
 	dryRun = false,
-	batchSize = DEFAULT_BATCH_SIZE
+	batchSize = DEFAULT_BATCH_SIZE,
+	ownedChainIds = null
 } = {}) {
 	const sourceVersion = new Date().toISOString();
 	const { chains, questionRowsById } = await fetchPublicChains({ rootDir });
+	const ownedChainIdSet = Array.isArray(ownedChainIds) ? new Set(ownedChainIds) : null;
+	const materializedChains = ownedChainIdSet
+		? chains.filter((chain) => ownedChainIdSet.has(chain.id))
+		: chains;
 	const { browseData, homeData } = await fetchAppPublicPayloads({ rootDir });
 	const sourceDocumentIds = [
 		...new Set(
@@ -1182,7 +1182,7 @@ export async function materializePublicRoutePayloads({
 	].sort();
 	const papersByDocument = await fetchPapersForQuestions({ rootDir, sourceDocumentIds });
 
-	const statements = [
+	const visibilityStatements = [
 		upsertPayloadStatement({
 			id: 'chains:browse',
 			routeKind: 'chains',
@@ -1201,7 +1201,8 @@ export async function materializePublicRoutePayloads({
 
 	let practicePayloadCount = 0;
 	const practiceStatements = [];
-	for (const chain of chains) {
+	const practicePayloadIds = [];
+	for (const chain of materializedChains) {
 		const aliasCounts = new Map();
 		for (const question of chain.questions) {
 			for (const alias of [question.ref, question.sourceRef].filter(Boolean)) {
@@ -1229,24 +1230,47 @@ export async function materializePublicRoutePayloads({
 				])
 			];
 			for (const ref of refs) {
+				const payloadId = practiceRoutePayloadId(chain.id, ref);
 				practiceStatements.push(
 					upsertPayloadStatement({
-						id: practiceRoutePayloadId(chain.id, ref),
+						id: payloadId,
 						routeKind: 'practice',
 						routePath: practiceRoutePath(chain.id, ref),
 						payload,
 						sourceVersion
 					})
 				);
+				practicePayloadIds.push(payloadId);
 				practicePayloadCount += 1;
 			}
 		}
 	}
-	if (practiceStatements.length > 0) {
-		statements.push(...practiceStatements);
+	const cleanupStatements = [];
+	if (ownedChainIdSet?.size) {
+		cleanupStatements.push(
+			deleteStalePracticePayloadsStatement([...ownedChainIdSet], practicePayloadIds)
+		);
 	}
 
-	await executeBatch(statements, 'materialize public routes', { rootDir, dryRun, batchSize });
+	// Finish practice payloads before exposing their new browse/home summaries. Pruning runs last,
+	// so a failed generation leaves the previous complete route set available for a safe retry.
+	await executeBatch(practiceStatements, 'materialize owned practice routes', {
+		rootDir,
+		dryRun,
+		batchSize
+	});
+	await executeBatch(visibilityStatements, 'materialize browse and home routes', {
+		rootDir,
+		dryRun,
+		batchSize
+	});
+	await executeBatch(cleanupStatements, 'prune stale owned practice routes', {
+		rootDir,
+		dryRun,
+		batchSize
+	});
+	const statementCount =
+		practiceStatements.length + visibilityStatements.length + cleanupStatements.length;
 	const summary = {
 		chains_browse_payload_raw_kb: Math.round(encodePayloadForStorage(browseData).rawBytes / 1024),
 		chains_browse_payload_stored_kb: Math.round(
@@ -1255,12 +1279,12 @@ export async function materializePublicRoutePayloads({
 		chains_browse_payload_compressed: encodePayloadForStorage(browseData).compressed,
 		home_payload_raw_kb: Math.round(encodePayloadForStorage(homeData).rawBytes / 1024),
 		home_payload_stored_kb: Math.round(encodePayloadForStorage(homeData).storedBytes / 1024),
-		chains: chains.length,
+		chains: materializedChains.length,
 		browse_questions: browseData.questions.length,
 		browse_topics: browseData.topics.length,
 		source_documents: sourceDocumentIds.length,
 		practice_payloads: practicePayloadCount,
-		statements: statements.length,
+		statements: statementCount,
 		dry_run: dryRun
 	};
 	console.log(JSON.stringify(summary, null, 2));

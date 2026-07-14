@@ -9,11 +9,18 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
 	const gapData = await getGapLearningData(locals.user.uid, params.gapId);
 	if (!gapData) {
-		throw error(404, 'Learning gap not found.');
+		throw error(404, 'Practice step not found.');
 	}
+	const learnerGapData = {
+		...gapData,
+		presentation: {
+			...gapData.presentation,
+			questions: gapData.presentation.questions.map(({ id, question }) => ({ id, question }))
+		}
+	};
 
 	return {
 		user: locals.user,
-		gapData
+		gapData: learnerGapData
 	};
 };

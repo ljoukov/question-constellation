@@ -120,7 +120,7 @@ function subjectGroupsForPages(pages: PastPaperSubjectIndex[]): SubjectGroup[] {
 			localPath: page.localPath,
 			entryCount: page.entryCount,
 			documentCount: page.documentCount,
-			label: page.tier ?? 'Papers'
+			label: page.tier ?? 'View papers'
 		});
 		groups.set(id, group);
 	}

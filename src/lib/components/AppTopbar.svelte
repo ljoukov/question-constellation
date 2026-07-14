@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
 	import { authStartHref } from '$lib/authReturn';
@@ -97,14 +96,11 @@
 	);
 	const accountName = $derived(currentUser?.name?.trim() || currentUser?.email || 'Account');
 	const avatarSrc = $derived(currentUser?.photoUrl ?? '/brand/avatar-bottts.svg');
-	const accountDetailsText = $derived(
-		currentUser ? `${accountName}\n${currentUser.email}\nUser ID: ${currentUser.uid}` : ''
-	);
-	const defaultSignInAction: AppTopbarAction = {
-		href: resolve('/auth/start'),
+	const defaultSignInAction = $derived<AppTopbarAction>({
+		href: authStartHref(`${pageState.url.pathname}${pageState.url.search}${pageState.url.hash}`),
 		label: 'Sign up for free'
-	};
-	const effectiveShowNavigation = $derived(showNavigation || !currentUser);
+	});
+	const effectiveShowNavigation = $derived(showNavigation);
 	const effectivePrimaryAction = $derived(
 		primaryAction ?? (!currentUser ? defaultSignInAction : undefined)
 	);
@@ -252,50 +248,6 @@
 		void chooseTheme(pendingTheme);
 	}
 
-	async function writeTextToClipboard(text: string): Promise<void> {
-		if (!browser) throw new Error('Clipboard is only available in the browser.');
-
-		if (navigator.clipboard?.writeText) {
-			try {
-				await navigator.clipboard.writeText(text);
-				return;
-			} catch {
-				// Fall back to a temporary selection for browsers that block the async API.
-			}
-		}
-
-		const textarea = document.createElement('textarea');
-		textarea.value = text;
-		textarea.setAttribute('readonly', '');
-		textarea.style.position = 'fixed';
-		textarea.style.left = '-9999px';
-		textarea.style.top = '0';
-		document.body.appendChild(textarea);
-		textarea.select();
-		textarea.setSelectionRange(0, textarea.value.length);
-
-		try {
-			if (!document.execCommand('copy')) {
-				throw new Error('Copy command was rejected.');
-			}
-		} finally {
-			textarea.remove();
-		}
-	}
-
-	async function copyUserDetails() {
-		if (!currentUser || !accountDetailsText) return;
-
-		try {
-			await writeTextToClipboard(accountDetailsText);
-			showAccountToast('Copied user details to clipboard.');
-			closeAccountMenu();
-		} catch (error) {
-			console.warn('User details could not be copied.', error);
-			showAccountToast('Could not copy user details.', 'error');
-		}
-	}
-
 	function pointerSupportsHover(event: PointerEvent) {
 		return event.pointerType === 'mouse' || event.pointerType === 'pen';
 	}
@@ -434,17 +386,10 @@
 			{#if accountMenuOpen}
 				<div class="qc-avatar-popover" role="menu" aria-label="Account">
 					<p class="qc-avatar-popover-title">Account</p>
-					<button
-						type="button"
-						class="qc-menu-user qc-menu-user-copy"
-						role="menuitem"
-						aria-label="Copy signed-in user details"
-						onclick={copyUserDetails}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
+					<div class="qc-menu-user" role="none">
 						<strong>{accountName}</strong>
 						<span>{currentUser.email}</span>
-					</button>
+					</div>
 					<a
 						class="qc-menu-item"
 						role="menuitem"

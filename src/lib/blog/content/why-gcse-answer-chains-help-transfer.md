@@ -5,7 +5,7 @@
   'shortTitle': 'Answer chains and transfer',
   'description': 'Why answer chains can help GCSE students transfer reasoning between questions that look different but reward the same logic.',
   'standfirst': 'Students often revise topics, then meet a question that looks unfamiliar. Answer chains give them a compact way to spot the reusable logic inside the question.',
-  'category': 'Learning science',
+  'category': 'Revision research',
   'publishedAt': '2026-06-17',
   'readMinutes': 6,
   'tags': ['answer chains', 'transfer', 'GCSE science'],
