@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { SignedInLearningHome } from '$lib/learning/viewTypes';
-	import { ArrowRight, ChevronRight, Settings2, Sparkles } from '@lucide/svelte';
+	import { ArrowRight, Settings2, Sparkles } from '@lucide/svelte';
 
 	let { dashboard }: { dashboard: SignedInLearningHome } = $props();
 
@@ -11,12 +11,6 @@
 			dashboard.weeklySummary.closedGapCount >
 			0
 	);
-
-	function scopeSummary(subject: SignedInLearningHome['subjects'][number]) {
-		return subject.scope.status === 'all'
-			? `Scope · all ${subject.scope.totalCount} ${subject.scope.unitPlural}`
-			: `Scope · ${subject.scope.includedCount} of ${subject.scope.totalCount} ${subject.scope.unitPlural}`;
-	}
 
 	function hasProgress(subject: SignedInLearningHome['subjects'][number]) {
 		return (
@@ -30,7 +24,9 @@
 	function progressSummary(subject: SignedInLearningHome['subjects'][number]) {
 		if (subject.scope.status === 'not_set') return null;
 		if (hasProgress(subject)) return subject.progress.coverageLabel;
-		return 'Not enough evidence yet';
+		return subject.scope.status === 'all'
+			? `All ${subject.scope.totalCount} ${subject.scope.unitPlural}`
+			: `${subject.scope.includedCount} of ${subject.scope.totalCount} ${subject.scope.unitPlural}`;
 	}
 
 	function weeklySummary() {
@@ -49,18 +45,15 @@
 			.join(' · ');
 	}
 
-	function actionLabel(subject: SignedInLearningHome['subjects'][number]) {
-		if (!subject.nextAction.available) {
-			return subject.nextAction.id === 'foundation-not-ready'
-				? 'Review profile'
-				: `View ${subject.scope.unitPlural}`;
-		}
-		if (subject.nextAction.kind !== 'scope') {
-			return 'Start';
-		}
-		return subject.scope.status === 'not_set'
-			? `Choose ${subject.scope.unitPlural}`
-			: `Change ${subject.scope.unitPlural}`;
+	function cardHref(subject: SignedInLearningHome['subjects'][number]) {
+		return subject.scope.status === 'not_set' || subject.nextAction.kind === 'scope'
+			? subject.nextAction.href
+			: subject.href;
+	}
+
+	function cardActionLabel(subject: SignedInLearningHome['subjects'][number]) {
+		if (subject.scope.status === 'not_set') return 'Set up';
+		return subject.nextAction.kind === 'scope' ? 'Adjust' : 'Open';
 	}
 
 	function setupPrompt(subject: SignedInLearningHome['subjects'][number]) {
@@ -92,13 +85,6 @@
 				<p>{weeklySummary()}</p>
 			</section>
 		{/if}
-
-		<nav class="qc-subject-actions qc-learning-resources" aria-label="Course settings">
-			<a class="qc-action-button compact" href={resolve('/profile')}>
-				<Settings2 size={18} aria-hidden="true" />
-				Subjects and exam boards
-			</a>
-		</nav>
 	</aside>
 
 	<section class="qc-learning-main" aria-labelledby="subjects-heading">
@@ -108,34 +94,25 @@
 
 		<div class="qc-dashboard-subjects">
 			{#each dashboard.subjects as lane (lane.subject)}
-				<article
+				<a
 					class="qc-subject-card"
 					class:setup={lane.scope.status === 'not_set'}
 					data-action={lane.nextAction.kind}
+					href={cardHref(lane)}
 				>
 					<header>
 						<div>
-							<a href={lane.href}><h3>{lane.subject}</h3></a>
+							<h3>{lane.subject}</h3>
 							<p>{lane.courseLabel}</p>
 							{#if progressSummary(lane)}
 								<p class="qc-subject-card-progress">{progressSummary(lane)}</p>
 							{/if}
 						</div>
-						{#if lane.scope.status !== 'not_set' && lane.scope.href !== lane.nextAction.href}
-							<a class="qc-action-button compact" href={lane.scope.href}>
-								{scopeSummary(lane)}
-								<ChevronRight size={14} aria-hidden="true" />
-							</a>
-						{/if}
 					</header>
 
 					<div class="qc-subject-next">
 						<span>
-							{lane.scope.status === 'not_set'
-								? 'Set up'
-								: lane.nextAction.kind === 'scope'
-									? 'Adjust course content'
-									: 'Next'}
+							{lane.scope.status === 'not_set' ? 'Set up' : 'Next'}
 							{#if lane.nextAction.durationMinutes}
 								· {lane.nextAction.durationMinutes} min{/if}
 						</span>
@@ -145,15 +122,12 @@
 					</div>
 
 					<div class="qc-subject-actions">
-						<a
-							class={lane.nextAction.available ? 'qc-dashboard-action' : 'qc-action-button compact'}
-							href={lane.nextAction.href}
-						>
-							{actionLabel(lane)}
+						<span class="qc-dashboard-action">
+							{cardActionLabel(lane)}
 							<ArrowRight size={16} aria-hidden="true" />
-						</a>
+						</span>
 					</div>
-				</article>
+				</a>
 			{:else}
 				<article class="qc-dashboard-panel primary">
 					<h2>Add your subjects</h2>
@@ -163,4 +137,11 @@
 			{/each}
 		</div>
 	</section>
+
+	<nav class="qc-subject-actions qc-learning-resources" aria-label="Course settings">
+		<a class="qc-action-button compact" href={resolve('/profile')}>
+			<Settings2 size={18} aria-hidden="true" />
+			Subjects and exam boards
+		</a>
+	</nav>
 </section>

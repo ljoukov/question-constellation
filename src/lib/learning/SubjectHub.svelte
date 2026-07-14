@@ -11,7 +11,6 @@
 		ChevronRight,
 		Clock3,
 		Compass,
-		ExternalLink,
 		Layers3,
 		Target
 	} from '@lucide/svelte';
@@ -49,6 +48,23 @@
 		if (kind === 'apply_chain') return Layers3;
 		if (kind === 'scope') return Compass;
 		return BookOpenCheck;
+	}
+
+	function actionLabel(action: SignedInSubjectView['nextAction']) {
+		if (!action.available) {
+			return action.id === 'foundation-not-ready'
+				? 'Review profile'
+				: `Change ${subject.scope.unitPlural}`;
+		}
+		if (action.kind === 'scope') {
+			return scopeReady
+				? `Change ${subject.scope.unitPlural}`
+				: `Choose ${subject.scope.unitPlural}`;
+		}
+		if (action.kind === 'recall') return 'Start recall';
+		if (action.kind === 'close_gap') return 'Close this gap';
+		if (action.kind === 'apply_chain') return 'Start question';
+		return 'Choose a question';
 	}
 
 	const RecommendedIcon = $derived(actionIcon(subject.nextAction.kind));
@@ -116,17 +132,9 @@
 				<a
 					class={subject.nextAction.available ? 'qc-dashboard-action' : 'qc-action-button compact'}
 					href={subject.nextAction.href}
-					aria-label={`${subject.nextAction.kind === 'scope' ? 'Choose' : 'Start'} ${subject.subject}: ${subject.nextAction.title}`}
+					aria-label={`${actionLabel(subject.nextAction)}: ${subject.nextAction.title}`}
 				>
-					{!subject.nextAction.available
-						? subject.nextAction.id === 'foundation-not-ready'
-							? 'Review profile'
-							: `View ${subject.scope.unitPlural}`
-						: subject.nextAction.kind === 'scope'
-							? scopeReady
-								? `Change ${subject.scope.unitPlural}`
-								: `Choose ${subject.scope.unitPlural}`
-							: 'Start'}
+					{actionLabel(subject.nextAction)}
 					<ArrowRight size={17} aria-hidden="true" />
 				</a>
 				{#if subject.nextAction.durationMinutes}
@@ -158,10 +166,11 @@
 							<a
 								class="qc-action-button compact"
 								href={action.href}
-								aria-label={`Start ${subject.subject}: ${action.title}`}
+								aria-label={`${actionLabel(action)}: ${action.title}`}
 								data-analytics-label={`${subject.subject} ${action.kind}`}
 							>
-								Start <ChevronRight size={15} aria-hidden="true" />
+								{actionLabel(action)}
+								<ChevronRight size={15} aria-hidden="true" />
 							</a>
 						</article>
 					{/each}
@@ -240,7 +249,7 @@
 										<li>
 											<span>{index + 1}</span>
 											<div>
-												<strong>{topic.code} · {topic.title}</strong>
+												<strong>{topic.title}</strong>
 												<p>{topic.stateLabel}</p>
 											</div>
 										</li>
@@ -253,20 +262,4 @@
 			</section>
 		{/if}
 	</div>
-
-	<nav class="qc-subject-actions qc-learning-resources" aria-label={`${subject.subject} resources`}>
-		<a class="qc-action-button compact" href={resolve('/past-papers/gcse')}>
-			Past papers <ArrowRight size={16} aria-hidden="true" />
-		</a>
-		{#if subject.specification.url}
-			<a
-				class="qc-action-button compact"
-				href={subject.specification.url}
-				target="_blank"
-				rel="noreferrer"
-			>
-				Official {subject.board} specification <ExternalLink size={14} aria-hidden="true" />
-			</a>
-		{/if}
-	</nav>
 </div>

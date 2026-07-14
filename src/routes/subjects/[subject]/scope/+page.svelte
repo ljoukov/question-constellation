@@ -32,9 +32,7 @@
 			form && 'selectedTopicIds' in form && Array.isArray(form.selectedTopicIds)
 				? form.selectedTopicIds.map(String)
 				: null;
-		return (failedTopicIds ?? savedIds).filter((id) =>
-			validTopicIds.has(id)
-		);
+		return (failedTopicIds ?? savedIds).filter((id) => validTopicIds.has(id));
 	});
 	let scopeMode = $state<'all' | 'selected'>(initialMode === 'all' ? 'all' : 'selected');
 	let selectedIds = $state<string[]>([...initialIds]);
@@ -50,8 +48,8 @@
 	const specificationLabel = $derived(data.curriculum.label);
 	const selectionChanged = $derived(
 		scopeMode !== savedMode ||
-		selectedIds.length !== savedIds.length ||
-		selectedIds.some((id) => !savedIds.includes(id))
+			selectedIds.length !== savedIds.length ||
+			selectedIds.some((id) => !savedIds.includes(id))
 	);
 	const selectionComplete = $derived(
 		scopeMode === 'all'
@@ -155,12 +153,7 @@
 
 							<li class="qc-scope-option-row">
 								<label class="qc-scope-option">
-									<input
-										type="radio"
-										name="scopeMode"
-										value="selected"
-										bind:group={scopeMode}
-									/>
+									<input type="radio" name="scopeMode" value="selected" bind:group={scopeMode} />
 									<div>
 										<h2>Choose {scopeNoun}</h2>
 										<p>Use the specification sections you have covered.</p>
@@ -223,7 +216,7 @@
 													toggleTopic(group.id, topic.id, event.currentTarget.checked)}
 											/>
 											<div>
-												<h2>{topic.code} · {topic.title}</h2>
+												<h2>{topic.title}</h2>
 											</div>
 										</label>
 									</li>

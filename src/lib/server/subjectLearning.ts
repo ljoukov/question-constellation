@@ -1390,22 +1390,34 @@ function fallbackSubjectAction(
 	subject: LearnerSubject,
 	scope: CurriculumScopeView
 ): LearningActionView {
+	const unitSingular = scope.unitPlural.replace(/s$/, '');
+	const canExpandSelection = scope.status === 'selected' && scope.includedCount < scope.totalCount;
 	return {
-		id: `scope-unavailable:${subject.subject}`,
-		kind: 'subject',
-		eyebrow: 'Practice availability',
-		title:
-			scope.status === 'selected'
-				? 'Practice for this selection is being prepared'
-				: 'Reviewed practice for this course is being prepared',
-		detail:
-			scope.status === 'selected'
-				? `No eligible reviewed question currently matches ${courseLabel(subject)} and your selected ${scope.unitPlural}.`
-				: `No eligible reviewed question currently matches ${courseLabel(subject)}.`,
-		reason: 'We will not recommend a question from outside this course.',
+		id: `scope-adjust:${subject.subject}`,
+		kind: 'scope',
+		eyebrow: canExpandSelection ? 'No matching question yet' : 'Check your selection',
+		title: canExpandSelection ? `Add another ${unitSingular}` : `Review your ${scope.unitPlural}`,
+		detail: canExpandSelection
+			? `Include another ${unitSingular} your class has covered to see more practice.`
+			: `No practice question matches the current ${scope.unitPlural}. Check that this reflects what your class has covered.`,
+		reason: 'Suggested questions always stay inside the official course content you include.',
 		durationMinutes: null,
 		href: scope.href ?? profileAnchorHref('/profile', profileSubjectAnchor(subject.subject)),
-		available: false
+		available: true
+	};
+}
+
+function ocrEnglishLiteraturePracticeAction(): LearningActionView {
+	return {
+		id: 'english-literature:choose-question',
+		kind: 'subject',
+		eyebrow: 'Next',
+		title: 'Choose an essay question',
+		detail: 'Questions for your four course texts, grouped by the task format in each paper.',
+		reason: 'Only questions for the texts and poetry cluster selected in your profile are shown.',
+		durationMinutes: null,
+		href: '/english-literature',
+		available: true
 	};
 }
 
@@ -1414,7 +1426,7 @@ function unavailableFoundationAction(): LearningActionView {
 		id: 'foundation-not-ready',
 		kind: 'subject',
 		eyebrow: 'Course availability',
-		title: 'Foundation practice is being prepared',
+		title: 'Foundation questions are not available yet',
 		detail: 'The current reviewed science question and recall bank is Higher tier only.',
 		reason: 'We will not use Higher-only material as Foundation evidence.',
 		durationMinutes: null,
@@ -1461,6 +1473,7 @@ async function buildSubjectView(
 		curriculum &&
 		scope.status !== 'not_set' &&
 		scope.status !== 'not_available' &&
+		!usesProfileCourseConfiguration &&
 		!foundationUnavailable
 			? await readQuestionCandidates(subject, curriculum.specificationId, scope)
 			: [];
@@ -1541,11 +1554,17 @@ async function buildSubjectView(
 	const secureCount = includedTopicViews.filter((topic) => topic.state === 'secure').length;
 	const dueCardCount = includedTopicViews.reduce((sum, topic) => sum + topic.dueCount, 0);
 	const examAnswerCount = scopedAttempts.filter((attempt) => attempt.max_marks >= 3).length;
-	const nextAction = foundationUnavailable
-		? unavailableFoundationAction()
-		: scope.status === 'not_set'
-			? scopeSetupAction(subject, scope, profileCourseScope?.configuration ?? null)
-			: (recommendedAction ?? fallbackSubjectAction(subject, scope));
+	const englishLiteratureCourseIsComplete =
+		usesProfileCourseConfiguration &&
+		profileCourseScope?.configuration.selectedCount ===
+			profileCourseScope?.configuration.totalCount;
+	const nextAction = englishLiteratureCourseIsComplete
+		? ocrEnglishLiteraturePracticeAction()
+		: foundationUnavailable
+			? unavailableFoundationAction()
+			: scope.status === 'not_set'
+				? scopeSetupAction(subject, scope, profileCourseScope?.configuration ?? null)
+				: (recommendedAction ?? fallbackSubjectAction(subject, scope));
 	const total = scope.status === 'not_available' ? 0 : scope.includedCount;
 	const coverageLabel =
 		scope.status === 'not_set'
@@ -1563,7 +1582,9 @@ async function buildSubjectView(
 	return {
 		subject: subject.subject,
 		slug: learnerSubjectHref(subject.subject).split('/').at(-1) ?? '',
-		href: learnerSubjectHref(subject.subject),
+		href: usesProfileCourseConfiguration
+			? '/english-literature'
+			: learnerSubjectHref(subject.subject),
 		board: subject.board,
 		qualification: subject.qualification,
 		course: subject.course,

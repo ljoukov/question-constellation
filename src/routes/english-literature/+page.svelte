@@ -6,10 +6,9 @@
 	import type { OcrLiteratureArea } from '$lib/englishLiteratureHub';
 	import {
 		ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR,
-		englishLiteratureChoiceAnchor,
 		profileAnchorHref
 	} from '$lib/profileNavigation';
-	import { BookOpenCheck, FileText } from '@lucide/svelte';
+	import { BookOpenCheck } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -22,24 +21,11 @@
 		shakespeare: initialVisibleCount
 	});
 
-	const incompleteProfile = $derived(data.hub.selectionCount < 4);
 	const profilePath = resolve('/profile');
 	const courseTextsProfileHref = profileAnchorHref(
 		profilePath,
 		ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR
 	);
-	const firstMissingCourseArea = $derived(
-		data.hub.sections.find((section) => !section.selection)?.id ?? null
-	);
-	const finishProfileHref = $derived(
-		firstMissingCourseArea
-			? profileAnchorHref(profilePath, englishLiteratureChoiceAnchor(firstMissingCourseArea))
-			: courseTextsProfileHref
-	);
-
-	function courseChoiceProfileHref(area: OcrLiteratureArea) {
-		return profileAnchorHref(profilePath, englishLiteratureChoiceAnchor(area));
-	}
 
 	function questionHref(question: (typeof data.hub.sections)[number]['questions'][number]) {
 		return resolve('/questions/[questionId]', { questionId: question.slug || question.id });
@@ -118,7 +104,7 @@
 				{/each}
 			</nav>
 
-			<a class="qc-browse-start" href={courseTextsProfileHref}>Change course texts</a>
+			<a class="qc-action-button compact" href={courseTextsProfileHref}>Change course texts</a>
 		</aside>
 
 		<section class="qc-browse-feed" aria-label="Your English Literature question bank">
@@ -130,19 +116,8 @@
 				<BookOpenCheck size={22} aria-hidden="true" strokeWidth={2.1} />
 			</div>
 
-			{#if incompleteProfile}
-				<section class="qc-warning-panel">
-					<div class="qc-guidance-icon"><BookOpenCheck size={18} aria-hidden="true" /></div>
-					<div>
-						<p class="qc-panel-label">{data.hub.selectionCount}/4 course choices configured</p>
-						<p>Add the missing school choices in your profile to see every relevant question.</p>
-						<a class="qc-real-link-button" href={finishProfileHref}>Finish profile</a>
-					</div>
-				</section>
-			{/if}
-
 			{#each data.hub.sections as section (section.id)}
-				<article id={section.id} class="qc-browse-chain qc-topic-card">
+				<article id={section.id} class="qc-dashboard-panel qc-topic-card">
 					<header class="qc-topic-card-head">
 						<div>
 							<p class="qc-real-kicker">{section.paperLabel} · {section.category}</p>
@@ -155,51 +130,35 @@
 						</div>
 					</header>
 
-					{#if section.selection}
-						<div class="qc-topic-question-list">
-							{#each section.questions.slice(0, visibleCounts[section.id]) as question (question.id)}
-								<QuestionBankQuestionCard
-									href={questionHref(question)}
-									meta={metaLine([
-										seriesLabel(question.series, question.year),
-										question.componentCode,
-										question.marks ? `${question.marks} marks` : 'Essay task',
-										question.sourceRef
-									])}
-									title={promptHeading(question)}
-									detail={promptDetail(question)}
-									tag={metaLine([question.questionType, question.formatNote])}
-								/>
-							{/each}
-						</div>
+					<div class="qc-topic-question-list">
+						{#each section.questions.slice(0, visibleCounts[section.id]) as question (question.id)}
+							<QuestionBankQuestionCard
+								href={questionHref(question)}
+								meta={metaLine([
+									seriesLabel(question.series, question.year),
+									question.componentCode,
+									question.marks ? `${question.marks} marks` : 'Essay task',
+									question.sourceRef
+								])}
+								title={promptHeading(question)}
+								detail={promptDetail(question)}
+								tag={metaLine([question.questionType, question.formatNote])}
+							/>
+						{/each}
+					</div>
 
-						{#if visibleCounts[section.id] < section.questions.length}
-							<button
-								type="button"
-								class="qc-show-more-chains"
-								onclick={() => showMore(section.id, section.questions.length)}
-							>
-								Show older {section.selection} questions ({section.questions.length -
-									visibleCounts[section.id]} remaining)
-							</button>
-						{/if}
-					{:else}
-						<section class="qc-bank-empty">
-							<span>This course choice has not been set.</span>
-							<a class="qc-real-link-button" href={courseChoiceProfileHref(section.id)}
-								>Choose it in your profile</a
-							>
-						</section>
+					{#if visibleCounts[section.id] < section.questions.length}
+						<button
+							type="button"
+							class="qc-show-more-chains"
+							onclick={() => showMore(section.id, section.questions.length)}
+						>
+							Show older {section.selection} questions ({section.questions.length -
+								visibleCounts[section.id]} remaining)
+						</button>
 					{/if}
 				</article>
 			{/each}
-
-			<div class="qc-action-row">
-				<a class="qc-action-button" href={resolve('/past-papers/gcse/ocr/english-literature')}>
-					<FileText size={17} aria-hidden="true" />
-					Open the full paper archive
-				</a>
-			</div>
 		</section>
 	</div>
 </main>

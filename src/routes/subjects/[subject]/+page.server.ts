@@ -12,6 +12,12 @@ export const load: PageServerLoad = async ({ locals, params, url, platform }) =>
 	if (!subjectName) throw error(404, 'Subject not found.');
 	const subject = await getSignedInSubjectView(locals.user, subjectName);
 	if (!subject) throw error(404, 'This subject is not enabled in your profile.');
+	if (subject.subject === 'English Literature' && subject.board === 'OCR') {
+		throw redirect(
+			303,
+			subject.scope.status === 'not_set' ? subject.nextAction.href : subject.href
+		);
+	}
 	if (
 		subject.scope.status !== 'not_set' &&
 		subject.alternatives.filter((action) => action.available).length >= 2 &&

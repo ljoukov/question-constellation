@@ -682,7 +682,7 @@ describe('signed-in subject action integrity', () => {
 		expect(JSON.stringify(view)).not.toContain('out-of-scope-gap');
 	});
 
-	it('uses a quiet course-scoped unavailable state instead of the generic chain browser', async () => {
+	it('offers a course-scoped selection check instead of a dead end or the generic chain browser', async () => {
 		mocks.getLearnerProfileSettings.mockResolvedValue(learnerSettings('Geography', 'AQA'));
 		mocks.getCurriculumOffering.mockResolvedValue(
 			curriculumOffering({
@@ -694,7 +694,10 @@ describe('signed-in subject action integrity', () => {
 						title: 'Topics',
 						kind: 'group',
 						displayOrder: 0,
-						components: [curriculumComponent('geography-topic-1', '3.1', 'Natural hazards', 0)]
+						components: [
+							curriculumComponent('geography-topic-1', '3.1', 'Natural hazards', 0),
+							curriculumComponent('geography-topic-2', '3.2', 'Urban issues', 1)
+						]
 					}
 				]
 			})
@@ -709,8 +712,8 @@ describe('signed-in subject action integrity', () => {
 			specification_code: '8035',
 			specification_version: '1.0',
 			official_source_url: 'https://example.test/specification',
-			scope_mode: 'all',
-			selected_component_ids_json: '[]',
+			scope_mode: 'selected',
+			selected_component_ids_json: '["geography-topic-1"]',
 			updated_at: '2026-07-14 00:00:00'
 		});
 		mocks.queryPersonalRows.mockResolvedValue([]);
@@ -719,11 +722,13 @@ describe('signed-in subject action integrity', () => {
 		const view = await getSignedInSubjectView(testUser, 'Geography');
 
 		expect(view?.nextAction).toMatchObject({
-			id: 'scope-unavailable:Geography',
-			available: false,
+			id: 'scope-adjust:Geography',
+			kind: 'scope',
+			title: 'Add another topic',
+			available: true,
 			href: '/subjects/geography/scope'
 		});
-		expect(view?.nextAction.detail).toContain('AQA · GCSE');
+		expect(view?.nextAction.detail).toContain('Include another topic');
 		expect(JSON.stringify(view)).not.toContain('/chains');
 	});
 
@@ -825,13 +830,17 @@ describe('signed-in subject action integrity', () => {
 			href: '/profile#profile-english-literature-course-texts'
 		});
 		expect(view?.nextAction).toMatchObject({
-			id: 'scope-unavailable:English Literature',
-			available: false,
-			href: '/profile#profile-english-literature-course-texts'
+			id: 'english-literature:choose-question',
+			kind: 'subject',
+			title: 'Choose an essay question',
+			available: true,
+			href: '/english-literature'
 		});
-		expect(view?.nextAction.detail).toContain('selected course texts');
+		expect(view?.href).toBe('/english-literature');
+		expect(view?.nextAction.detail).toContain('four course texts');
 		expect(JSON.stringify(view)).not.toContain('/chains');
 		expect(mocks.queryPersonalFirst).not.toHaveBeenCalled();
+		expect(mocks.queryRows).not.toHaveBeenCalled();
 	});
 });
 

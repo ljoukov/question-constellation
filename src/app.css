@@ -2295,7 +2295,16 @@ textarea::placeholder {
 	padding: 0.8rem;
 	border: 1px solid rgba(105, 129, 143, 0.18);
 	background: rgba(255, 255, 255, 0.78);
+	color: inherit;
+	text-decoration: none;
 	backdrop-filter: blur(18px);
+}
+
+.qc-subject-card:hover,
+.qc-subject-card:focus-visible {
+	border-color: #168458;
+	box-shadow: 0 0 0 2px rgba(22, 132, 88, 0.16);
+	outline: 0;
 }
 
 .qc-subject-card[data-action='gap'] {
@@ -12674,118 +12683,6 @@ html[data-theme='dark'] .app-shell {
 	gap: 0.65rem;
 }
 
-.qc-bank-search {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
-	gap: 0.55rem;
-	align-items: center;
-	min-height: 2.75rem;
-	padding: 0 0.75rem;
-	border: 1px solid rgba(74, 100, 116, 0.3);
-	border-radius: 0.62rem;
-	background: color-mix(in srgb, #ffffff 86%, transparent);
-	color: #526778;
-	box-shadow: 0 5px 14px rgba(28, 55, 64, 0.045);
-}
-
-.qc-bank-search input {
-	width: 100%;
-	min-width: 0;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: #102033;
-	font: inherit;
-	font-size: 0.94rem;
-	outline: 0;
-}
-
-.qc-bank-filter-toggle {
-	display: none;
-	align-items: center;
-	justify-content: flex-start;
-	gap: 0.55rem;
-	min-height: 2.45rem;
-	padding: 0.56rem 0.72rem;
-	border: 1px solid rgba(74, 100, 116, 0.3);
-	border-radius: 0.62rem;
-	background: color-mix(in srgb, #ffffff 72%, transparent);
-	color: #102033;
-	font: inherit;
-	font-size: 0.9rem;
-	box-shadow: 0 5px 14px rgba(28, 55, 64, 0.045);
-	cursor: pointer;
-}
-
-.qc-bank-filter-toggle > span {
-	display: grid;
-	gap: 0.12rem;
-	min-width: 0;
-	text-align: left;
-}
-
-.qc-bank-filter-toggle strong {
-	font-size: 0.9rem;
-	font-weight: 560;
-	line-height: 1.15;
-}
-
-.qc-bank-filter-toggle small {
-	max-width: min(68vw, 30rem);
-	overflow: hidden;
-	color: #526778;
-	font-size: 0.76rem;
-	font-weight: 430;
-	line-height: 1.2;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.qc-bank-filter-form {
-	display: grid;
-	gap: 0.65rem;
-	width: 100%;
-	padding: 0.78rem;
-	border: 1px solid rgba(74, 100, 116, 0.22);
-	border-radius: 0.82rem;
-	background: color-mix(in srgb, #ffffff 56%, transparent);
-	box-shadow: 0 10px 24px rgba(28, 55, 64, 0.04);
-}
-
-.qc-bank-filter-form .qc-subject-filter {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr);
-	gap: 0.38rem;
-	width: 100%;
-	padding: 0;
-	border: 0;
-	background: transparent;
-}
-
-.qc-bank-filter-form .qc-subject-filter > span {
-	padding: 0;
-	font-size: 0.8rem;
-}
-
-.qc-bank-filter-form .qc-subject-filter select {
-	width: 100%;
-	min-height: 2.5rem;
-	border-color: rgba(74, 100, 116, 0.3);
-	border-radius: 0.52rem;
-	background: color-mix(in srgb, #ffffff 90%, transparent);
-}
-
-.qc-bank-search-submit {
-	width: 100%;
-}
-
-.qc-bank-clear {
-	justify-self: start;
-	color: #315a76;
-	font-size: 0.86rem;
-	text-underline-offset: 0.18em;
-}
-
 .qc-bank-pagination {
 	display: flex;
 	align-items: center;
@@ -12797,19 +12694,6 @@ html[data-theme='dark'] .app-shell {
 .qc-bank-pagination > span {
 	color: #526778;
 	font-size: 0.88rem;
-}
-
-.qc-browse-app .qc-topic-card {
-	border-color: rgba(74, 100, 116, 0.24);
-	border-radius: 0.82rem;
-	background: color-mix(in srgb, #ffffff 58%, transparent);
-	box-shadow: 0 12px 28px rgba(28, 55, 64, 0.05);
-}
-
-.qc-browse-app .qc-topic-card:hover,
-.qc-browse-app .qc-topic-card:focus-within {
-	border-color: rgba(22, 132, 88, 0.52);
-	box-shadow: 0 12px 28px rgba(28, 55, 64, 0.07);
 }
 
 .qc-topic-show-all {
@@ -13208,15 +13092,6 @@ html[data-theme='dark'] .app-shell {
 		padding-bottom: 0;
 	}
 
-	.qc-bank-filter-toggle {
-		display: inline-flex;
-		justify-self: start;
-	}
-
-	.qc-browse-filters:not(.mobile-open) {
-		display: none;
-	}
-
 	.qc-home-simplified .qc-home-hero-content {
 		grid-template-columns: minmax(0, 1fr);
 		gap: 1.6rem;
@@ -13316,8 +13191,6 @@ html[data-theme='dark'] .app-shell {
 	}
 }
 
-:root[data-theme='dark'] .qc-bank-search,
-:root[data-theme='dark'] .qc-bank-filter-form,
 :root[data-theme='dark'] .qc-topic-question,
 :root[data-theme='dark'] .qc-bank-method-questions a,
 :root[data-theme='dark'] .qc-constellation-method,
@@ -13333,19 +13206,6 @@ html[data-theme='dark'] .app-shell {
 	border-top-color: rgba(226, 232, 240, 0.24);
 }
 
-:root[data-theme='dark'] .qc-bank-filter-toggle,
-:root[data-theme='dark'] .qc-browse-app .qc-topic-card {
-	border-color: rgba(148, 163, 184, 0.34);
-	background: rgba(7, 20, 31, 0.62);
-	box-shadow: none;
-}
-
-:root[data-theme='dark'] .qc-bank-filter-toggle small {
-	color: #a9bbcc;
-}
-
-:root[data-theme='dark'] .qc-bank-search input,
-:root[data-theme='dark'] .qc-bank-filter-toggle,
 :root[data-theme='dark'] .qc-topic-question,
 :root[data-theme='dark'] .qc-bank-method-questions a,
 :root[data-theme='dark'] .qc-constellation-method > button,
@@ -13390,8 +13250,6 @@ html[data-theme='dark'] .app-shell {
 }
 
 @media (prefers-color-scheme: dark) {
-	:root:not([data-theme='light']) .qc-bank-search,
-	:root:not([data-theme='light']) .qc-bank-filter-form,
 	:root:not([data-theme='light']) .qc-topic-question,
 	:root:not([data-theme='light']) .qc-bank-method-questions a,
 	:root:not([data-theme='light']) .qc-constellation-method,
@@ -13407,19 +13265,6 @@ html[data-theme='dark'] .app-shell {
 		border-top-color: rgba(226, 232, 240, 0.24);
 	}
 
-	:root:not([data-theme='light']) .qc-bank-filter-toggle,
-	:root:not([data-theme='light']) .qc-browse-app .qc-topic-card {
-		border-color: rgba(148, 163, 184, 0.34);
-		background: rgba(7, 20, 31, 0.62);
-		box-shadow: none;
-	}
-
-	:root:not([data-theme='light']) .qc-bank-filter-toggle small {
-		color: #a9bbcc;
-	}
-
-	:root:not([data-theme='light']) .qc-bank-search input,
-	:root:not([data-theme='light']) .qc-bank-filter-toggle,
 	:root:not([data-theme='light']) .qc-topic-question,
 	:root:not([data-theme='light']) .qc-bank-method-questions a,
 	:root:not([data-theme='light']) .qc-constellation-method > button,
@@ -13468,191 +13313,6 @@ html[data-theme='dark'] .app-shell {
 	.qc-constellation-method > button svg,
 	.qc-practice-detail summary svg {
 		transition: none;
-	}
-}
-
-/* Personal product shell: keep the proven activity components intact while giving
-   their entry surfaces the same Living Paper hierarchy as the question flow. */
-.qc-home-learning-layout {
-	width: min(100%, 82rem);
-}
-
-.qc-home-learning-layout .qc-learning-heading h1 {
-	font-family:
-		Iowan Old Style,
-		Baskerville,
-		Georgia,
-		'Times New Roman',
-		serif;
-	font-size: clamp(2.25rem, 5vw, 4.35rem);
-	font-weight: 500;
-	letter-spacing: -0.035em;
-	line-height: 0.98;
-}
-
-.qc-home-learning-layout .qc-dashboard-section-head h2 {
-	font-size: clamp(1.25rem, 2.5vw, 1.8rem);
-}
-
-.qc-home-learning-layout .qc-dashboard-subjects {
-	gap: 0.9rem;
-}
-
-.qc-home-learning-layout .qc-subject-card {
-	position: relative;
-	isolation: isolate;
-	padding: 1rem;
-	border-color: color-mix(in srgb, var(--qc-ui-border-subtle) 78%, transparent);
-	background:
-		radial-gradient(
-			25rem 12rem at 105% -15%,
-			color-mix(in srgb, var(--qc-ui-accent-muted) 68%, transparent),
-			transparent 68%
-		),
-		color-mix(in srgb, var(--qc-ui-surface-raised) 95%, transparent);
-	box-shadow:
-		0 0.15rem 0 color-mix(in srgb, var(--qc-ui-accent) 22%, transparent),
-		0 0.8rem 2rem color-mix(in srgb, var(--qc-ui-shadow) 78%, transparent);
-}
-
-.qc-home-learning-layout .qc-subject-card::before {
-	content: '';
-	position: absolute;
-	top: -1px;
-	left: 1rem;
-	z-index: 1;
-	width: 3.4rem;
-	height: 0.22rem;
-	background: var(--qc-ui-accent);
-	pointer-events: none;
-}
-
-.qc-home-learning-layout .qc-subject-card[data-action='gap']::before {
-	background: var(--qc-ui-danger);
-}
-
-.qc-home-learning-layout .qc-subject-card header > div > a h3 {
-	font-size: 1.2rem;
-}
-
-.qc-home-learning-layout .qc-subject-card header > .qc-action-button {
-	min-height: 2.45rem;
-	padding-inline: 0.65rem;
-	border-color: color-mix(in srgb, var(--qc-ui-accent-border) 56%, transparent);
-	background: color-mix(in srgb, var(--qc-ui-accent-muted) 72%, transparent);
-	color: var(--qc-ui-accent-text);
-}
-
-.qc-home-learning-layout .qc-subject-next {
-	padding-top: 0.7rem;
-	border-top: 1px dotted color-mix(in srgb, var(--qc-ui-border) 52%, transparent);
-}
-
-.qc-home-learning-layout .qc-subject-next strong {
-	font-size: 1rem;
-}
-
-.qc-subject-hub-layout .qc-dashboard-panel.primary {
-	position: relative;
-	isolation: isolate;
-	min-height: 12.5rem;
-	align-content: center;
-	padding: clamp(1rem, 2.5vw, 1.45rem);
-	border-color: color-mix(in srgb, var(--qc-ui-accent-border) 66%, transparent);
-	background:
-		radial-gradient(
-			34rem 18rem at 100% 0%,
-			color-mix(in srgb, var(--qc-ui-accent-muted) 84%, transparent),
-			transparent 70%
-		),
-		color-mix(in srgb, var(--qc-ui-surface-raised) 96%, transparent);
-	box-shadow:
-		0.2rem 0 0 color-mix(in srgb, var(--qc-ui-accent) 68%, transparent),
-		0 1rem 2.6rem color-mix(in srgb, var(--qc-ui-shadow) 82%, transparent);
-}
-
-.qc-subject-hub-layout .qc-dashboard-panel.primary h2 {
-	font-family:
-		Iowan Old Style,
-		Baskerville,
-		Georgia,
-		'Times New Roman',
-		serif;
-	font-size: clamp(1.45rem, 3.2vw, 2.15rem);
-	font-weight: 560;
-	letter-spacing: -0.018em;
-}
-
-.qc-subject-hub-layout .qc-learning-action-grid .qc-dashboard-panel,
-.qc-subject-hub-layout .qc-subject-progress-panel {
-	background: color-mix(in srgb, var(--qc-ui-surface-translucent) 88%, transparent);
-}
-
-@media (min-width: 720px) {
-	.qc-home-learning-layout {
-		grid-template-areas:
-			'sidebar'
-			'main';
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: auto auto;
-		gap: 1.5rem;
-	}
-
-	.qc-home-learning-layout .qc-learning-sidebar {
-		position: static;
-		display: grid;
-		grid-template-areas:
-			'home-heading home-week'
-			'home-resources home-week';
-		grid-template-columns: minmax(0, 1fr) minmax(17rem, 20rem);
-		gap: 0.65rem 1.5rem;
-		align-items: end;
-	}
-
-	.qc-home-learning-layout .qc-learning-heading {
-		grid-area: home-heading;
-		padding-bottom: 0;
-		border-bottom: 0;
-	}
-
-	.qc-home-learning-layout .qc-learning-sidebar > .qc-dashboard-panel {
-		grid-area: home-week;
-		align-self: end;
-		min-height: 6.4rem;
-	}
-
-	.qc-home-learning-layout .qc-learning-resources {
-		grid-area: home-resources;
-		position: static;
-		align-self: start;
-		justify-self: start;
-	}
-
-	.qc-home-learning-layout .qc-dashboard-subjects {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-
-	.qc-home-learning-layout .qc-subject-card {
-		grid-template-columns: minmax(0, 1fr) auto;
-		grid-template-rows: auto 1fr auto;
-		align-items: start;
-		min-height: 13rem;
-	}
-
-	.qc-home-learning-layout .qc-subject-card header,
-	.qc-home-learning-layout .qc-subject-next {
-		grid-column: 1 / -1;
-	}
-
-	.qc-home-learning-layout .qc-subject-actions {
-		grid-column: 1 / -1;
-		align-self: end;
-	}
-}
-
-@media (max-width: 719px) {
-	.qc-home-learning-layout .qc-learning-heading h1 {
-		font-size: clamp(2.45rem, 12vw, 3.55rem);
 	}
 }
 

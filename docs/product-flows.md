@@ -195,6 +195,29 @@ Any retained-chain surface should grow after practice, not before it.
 
 ## Primary UX Flows
 
+### Returning signed-in learner
+
+The signed-in home is a return surface, not an acquisition landing page. It should stay subordinate to the public question-first product loop.
+
+1. The student arrives at home and sees a compact weekly summary plus their subjects.
+2. Every subject card is one obvious target with a visible action: `Open` for its activity hub, `Set up` for an unconfigured course, or `Adjust` for a scope change.
+3. The card shows one current next step chosen from the learner evidence already stored for that subject.
+4. Opening a subject shows the recommended action first, then a small number of genuine alternatives:
+   - recall a specific included topic;
+   - close a confirmed knowledge gap;
+   - answer a question that applies a useful answer chain.
+5. If course coverage is not configured, the card says `Set up` and opens the official-curriculum selection directly.
+6. English Literature uses its selected OCR course texts to open `Choose an essay question`; it does not pass through the science-oriented recommendation pipeline.
+
+Design requirements:
+
+- Do not hide the action behind an apparently inert card.
+- Do not place duplicate configuration buttons inside and beside the same card.
+- Keep course settings after the subjects on mobile and in the quieter sidebar position on larger screens.
+- Past-paper links belong to public acquisition and SEO surfaces, not the signed-in next-action flow.
+- If no question matches a narrow curriculum selection, offer a concrete scope adjustment instead of a dead `being prepared` state.
+- Preserve official specification identifiers in data, but show learner-facing topic names rather than raw codes such as `4.1` as if they were chapter numbers.
+
 ### Flow A: Public Question To Constellation
 
 1. Student lands on a public question page.
