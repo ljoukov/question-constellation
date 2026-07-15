@@ -38,4 +38,26 @@ describe('AQA science recall curriculum', () => {
 			).toBeGreaterThanOrEqual(5);
 		}
 	});
+
+	it('gives the pilot MCQs concise explanations and feedback for every distractor', () => {
+		const pilotIds = ['bio-nucleus-function', 'chem-isotope-definition', 'phys-parallel-pd'];
+
+		for (const id of pilotIds) {
+			const card = recallCards.find((candidate) => candidate.id === id);
+			expect(card, `missing pilot card ${id}`).toBeDefined();
+			expect(card?.explanation?.trim(), `missing explanation for ${id}`).toBeTruthy();
+			expect(card?.explanation?.length, `overlong explanation for ${id}`).toBeLessThanOrEqual(180);
+
+			for (const distractor of card?.distractors ?? []) {
+				expect(
+					card?.choiceFeedback?.[distractor]?.trim(),
+					`missing feedback for “${distractor}” on ${id}`
+				).toBeTruthy();
+			}
+
+			expect(Object.keys(card?.choiceFeedback ?? {}).sort()).toEqual(
+				[...(card?.distractors ?? [])].sort()
+			);
+		}
+	});
 });

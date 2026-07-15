@@ -9,6 +9,7 @@
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
+	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
 	import type {
 		RecallCard,
 		RecallCardKind,
@@ -28,9 +29,10 @@
 	} from '$lib/recallReviewSync';
 	import type { RequestFailure } from '$lib/requestFailure';
 	import {
-		ArrowLeft,
+		ArrowRight,
 		Brain,
 		CheckCircle2,
+		CircleX,
 		Eye,
 		Layers3,
 		RotateCcw,
@@ -107,7 +109,7 @@
 	const kindOptions = untrack(
 		() => Object.entries(data.kindLabels) as Array<[RecallCardKind, string]>
 	);
-	const returnToHref = untrack(() => safeReturnPath(data.initialReturnTo));
+	const returnToHref = untrack(() => safeInternalReturnPath(data.initialReturnTo) ?? '/');
 	const modeOptions: Array<{ value: Mode; label: string; icon: typeof Brain }> = [
 		{ value: 'mixed', label: 'Quick recall', icon: Layers3 },
 		{ value: 'recall', label: 'Flashcards', icon: Brain },
@@ -134,12 +136,6 @@
 	function validStackSize(value: string | number): number {
 		const numeric = Number(value);
 		return stackSizeOptions.includes(numeric as (typeof stackSizeOptions)[number]) ? numeric : 10;
-	}
-
-	function safeReturnPath(value: string): string {
-		if (!value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value))
-			return '/';
-		return value;
 	}
 
 	function parseServerDate(value: string): number {
@@ -201,6 +197,8 @@
 	let recallSyncPendingCount = $state(0);
 	let recallSyncing = $state(false);
 	let reducedMotion = $state(false);
+	let mcqResultHeading = $state<HTMLElement | null>(null);
+	let currentPromptHeading = $state<HTMLHeadingElement | null>(null);
 	let sessionHydrated = $state(false);
 	let recallSessionId = $state(
 		untrack(() => (data.initialStart ? createActivityId('recall-session') : ''))
@@ -231,6 +229,11 @@
 		currentCard ? presentationFor(currentCard) : 'flashcard'
 	);
 	const currentExplanation = $derived(currentCard ? explanationTextFor(currentCard) : null);
+	const currentChoiceFeedback = $derived(
+		currentCard && selectedChoice
+			? (currentCard.choiceFeedback?.[selectedChoice]?.trim() ?? null)
+			: null
+	);
 	const filteredCardCount = $derived(filteredCards.length);
 	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
 	const seenCount = $derived(filteredCards.filter((card) => progressById[card.id]?.seen).length);
@@ -287,9 +290,7 @@
 		if (sessionComplete) return `Session complete. ${reviewedInSession} prompts checked.`;
 		if (!currentCard) return '';
 		if (!revealed) return `Card ${cardPositionInSession + 1} of ${totalCards}.`;
-		if (currentPresentation === 'mcq') {
-			return `${mcqFeedback === 'correct' ? 'Correct.' : 'Not this one.'} Answer shown.`;
-		}
+		if (currentPresentation === 'mcq') return '';
 		return 'Answer shown.';
 	});
 
@@ -427,7 +428,12 @@
 			clearPersistedSession();
 		}
 		sessionHydrated = true;
-		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const syncMotionPreference = () => {
+			reducedMotion = motionPreference.matches;
+		};
+		syncMotionPreference();
+		motionPreference.addEventListener('change', syncMotionPreference);
 		if (Object.keys(merged).length > 0) saveProgress(merged);
 		if (data.user) void flushRecallSync();
 		const retrySync = () => void flushRecallSync();
@@ -435,6 +441,7 @@
 		window.addEventListener('focus', retrySync);
 		return () => {
 			clearMotionTimer();
+			motionPreference.removeEventListener('change', syncMotionPreference);
 			window.removeEventListener('online', retrySync);
 			window.removeEventListener('focus', retrySync);
 		};
@@ -647,6 +654,11 @@
 	function startSession() {
 		startSessionState();
 		syncRecallUrl('push', true);
+		requestAnimationFrame(() => focusCurrentPrompt());
+	}
+
+	function focusCurrentPrompt() {
+		requestAnimationFrame(() => currentPromptHeading?.focus({ preventScroll: true }));
 	}
 
 	function exitSession() {
@@ -669,6 +681,7 @@
 		if (options?.entering) {
 			afterMotion(360, () => {
 				cardMotion = 'idle';
+				focusCurrentPrompt();
 			});
 		}
 	}
@@ -748,6 +761,7 @@
 			revealed = true;
 			afterMotion(560, () => {
 				cardMotion = 'idle';
+				requestAnimationFrame(() => mcqResultHeading?.focus({ preventScroll: true }));
 			});
 		});
 	}
@@ -999,6 +1013,8 @@
 		{:else if currentCard}
 			<section
 				class="card-stage"
+				class:mcq-stage={currentPresentation === 'mcq'}
+				class:showing-result={currentPresentation === 'mcq' && revealed}
 				class:flipping-stack={cardMotion === 'flipping'}
 				class:moving-stack={['dragging', 'exiting-left', 'exiting-right'].includes(cardMotion)}
 			>
@@ -1010,7 +1026,7 @@
 					<article class="stack-card preview one" aria-hidden="true">
 						<div class="card-face front">
 							<header class="card-meta">
-								<span>{data.kindLabels[nextCard.kind]}</span>
+								<span class="card-visual-cue" aria-hidden="true">{nextCard.visualCue}</span>
 							</header>
 							<section class="card-prompt">
 								<p>{topic?.title ?? 'AQA Science'}</p>
@@ -1029,6 +1045,10 @@
 						class:flipping={cardMotion === 'flipping'}
 						class:revealed
 						class:mcq-card={currentPresentation === 'mcq'}
+						class:compact-mcq-result={currentPresentation === 'mcq' &&
+							revealed &&
+							!currentExplanation &&
+							!currentChoiceFeedback}
 						class:mcq-correct={mcqFeedback === 'correct'}
 						class:mcq-incorrect={mcqFeedback === 'incorrect'}
 						class:exiting-left={cardMotion === 'exiting-left'}
@@ -1053,18 +1073,27 @@
 								inert={revealed}
 							>
 								<header class="card-meta">
-									<span>{data.kindLabels[currentCard.kind]}</span>
+									<span class="card-visual-cue" aria-hidden="true">{currentCard.visualCue}</span>
+									<span class="sr-only">Card type: {data.kindLabels[currentCard.kind]}.</span>
 								</header>
 
 								<section class="card-prompt">
 									<p>{currentTopic?.title ?? 'AQA Science'}</p>
-									<h1>
+									<h1
+										id={`recall-prompt-${currentCard.id}`}
+										tabindex="-1"
+										bind:this={currentPromptHeading}
+									>
 										<MathText text={promptTextFor(currentCard)} />
 									</h1>
 								</section>
 
 								{#if currentPresentation === 'mcq'}
-									<div class="choice-grid" aria-label="Answer choices">
+									<div
+										class="choice-grid"
+										role="group"
+										aria-labelledby={`recall-prompt-${currentCard.id}`}
+									>
 										{#each currentChoices as choice (choice)}
 											<button
 												type="button"
@@ -1090,32 +1119,58 @@
 								{/if}
 							</div>
 
-							<div class="card-face back" aria-hidden={!revealed} inert={!revealed}>
-								<header class="card-meta">
-									<span>{data.kindLabels[currentCard.kind]}</span>
-								</header>
-
+							<div
+								class="card-face back"
+								class:mcq-result-face={currentPresentation === 'mcq'}
+								aria-hidden={!revealed}
+								inert={!revealed}
+							>
 								{#if currentPresentation === 'mcq'}
-									<section class="card-answer mcq-answer">
-										<p>{mcqFeedback === 'correct' ? 'Correct' : 'Not this one'}</p>
-										<div class="mcq-answer-block correct-answer">
-											<span>Correct answer</span>
+									<header
+										class="mcq-result-status"
+										class:correct={mcqFeedback === 'correct'}
+										class:incorrect={mcqFeedback === 'incorrect'}
+										tabindex="-1"
+										aria-describedby={`mcq-answer-${currentCard.id}`}
+										bind:this={mcqResultHeading}
+									>
+										<span class="mcq-result-icon" aria-hidden="true">
+											{#if mcqFeedback === 'correct'}
+												<CheckCircle2 size={25} strokeWidth={2.4} />
+											{:else}
+												<CircleX size={25} strokeWidth={2.4} />
+											{/if}
+										</span>
+										<h1>{mcqFeedback === 'correct' ? 'That’s right' : 'Not quite'}</h1>
+									</header>
+
+									<section class="card-answer mcq-answer" aria-label="Answer feedback">
+										<div class="mcq-key-answer" id={`mcq-answer-${currentCard.id}`}>
+											<span>Answer</span>
 											<strong><MathText text={answerTextFor(currentCard)} /></strong>
 										</div>
-										{#if selectedChoice && selectedChoice !== currentCard.back}
-											<div class="mcq-answer-block chosen-answer">
-												<span>You chose</span>
-												<strong><MathText text={selectedChoice} /></strong>
-											</div>
-										{/if}
+
 										{#if currentExplanation}
 											<div class="mcq-explanation">
-												<span>Why</span>
 												<p><MathText text={currentExplanation} /></p>
+											</div>
+										{/if}
+
+										{#if selectedChoice && selectedChoice !== currentCard.back}
+											<div class="mcq-choice-review">
+												<span>Your choice</span>
+												<strong><MathText text={selectedChoice} /></strong>
+												{#if currentChoiceFeedback}
+													<p><MathText text={currentChoiceFeedback} /></p>
+												{/if}
 											</div>
 										{/if}
 									</section>
 								{:else}
+									<header class="card-meta">
+										<span class="card-visual-cue" aria-hidden="true">{currentCard.visualCue}</span>
+										<span class="sr-only">Card type: {data.kindLabels[currentCard.kind]}.</span>
+									</header>
 									<section class="card-answer">
 										<p>Answer</p>
 										<div>
@@ -1129,26 +1184,33 @@
 				{/key}
 			</section>
 
-			<footer class="session-actions">
+			<footer
+				class="session-actions"
+				class:mcq-result-actions={currentPresentation === 'mcq' && revealed}
+				class:mcq-choice-actions={currentPresentation === 'mcq' && !revealed}
+			>
 				{#if currentPresentation === 'mcq'}
-					<button
-						type="button"
-						class="session-secondary"
-						disabled={cardBusy || selectedChoice !== null}
-						onclick={skipCard}
-					>
-						<ArrowLeft size={18} aria-hidden="true" strokeWidth={2.2} />
-						Skip
-					</button>
-					<button
-						type="button"
-						class="session-primary"
-						disabled={!revealed || cardBusy || !selectedChoice}
-						onclick={continueMcqCard}
-					>
-						<CheckCircle2 size={18} aria-hidden="true" strokeWidth={2.2} />
-						Continue
-					</button>
+					{#if revealed}
+						<button
+							type="button"
+							class="session-primary session-next"
+							disabled={cardBusy || !selectedChoice}
+							onclick={continueMcqCard}
+						>
+							{cardIndex + 1 >= sessionCards.length ? 'See results' : 'Next card'}
+							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
+						</button>
+					{:else}
+						<button
+							type="button"
+							class="session-secondary"
+							disabled={cardBusy || selectedChoice !== null}
+							onclick={skipCard}
+						>
+							Skip card
+							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
+						</button>
+					{/if}
 				{:else if revealed}
 					<button
 						type="button"
@@ -1657,6 +1719,10 @@
 		overflow: hidden;
 	}
 
+	.card-stage.mcq-stage .stack-card {
+		height: min(100%, 32rem);
+	}
+
 	.stack-card.preview {
 		pointer-events: none;
 		border-color: rgba(11, 16, 32, 0.18);
@@ -1689,6 +1755,10 @@
 		opacity: 0.18;
 	}
 
+	.card-stage.showing-result .stack-card.preview {
+		opacity: 0;
+	}
+
 	.stack-card.preview .card-meta {
 		opacity: 0.78;
 	}
@@ -1705,7 +1775,8 @@
 		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
 		transition:
 			transform var(--recall-card-return-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
-			opacity var(--recall-card-return-duration) ease;
+			opacity var(--recall-card-return-duration) ease,
+			height 360ms cubic-bezier(0.22, 0.75, 0.25, 1);
 		will-change: transform, opacity;
 		perspective: 1400px;
 		-webkit-tap-highlight-color: transparent;
@@ -1718,6 +1789,10 @@
 	.stack-card.active.dragging {
 		cursor: grabbing;
 		transition: none;
+	}
+
+	.stack-card.active.mcq-card {
+		touch-action: pan-y;
 	}
 
 	.stack-card.active.exiting-left,
@@ -1766,6 +1841,14 @@
 		transform: rotateY(-180deg);
 	}
 
+	.stack-card.active.revealed.mcq-card {
+		height: min(100%, 22rem);
+	}
+
+	.stack-card.active.revealed.mcq-card.compact-mcq-result {
+		height: min(100%, 18rem);
+	}
+
 	.card-face {
 		position: absolute;
 		inset: 0;
@@ -1781,8 +1864,26 @@
 	}
 
 	.card-face.mcq-front {
-		grid-template-rows: auto minmax(0, 0.84fr) auto;
-		gap: 0.8rem;
+		grid-template-rows: auto auto auto;
+		align-content: start;
+		gap: clamp(0.85rem, 2.4vh, 1.35rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-color: var(--qc-ui-border-strong) transparent;
+		scrollbar-gutter: stable;
+		scrollbar-width: thin;
+	}
+
+	.card-face.mcq-front::-webkit-scrollbar {
+		width: 0.4rem;
+	}
+
+	.card-face.mcq-front::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.card-face.mcq-front::-webkit-scrollbar-thumb {
+		background: var(--qc-ui-border-strong);
 	}
 
 	.card-face.back {
@@ -1810,16 +1911,16 @@
 		gap: 0.42rem;
 	}
 
-	.card-meta span {
+	.card-meta .card-visual-cue {
 		display: inline-flex;
 		align-items: center;
-		min-height: 1.7rem;
-		padding: 0.18rem 0.48rem;
-		border: 1px solid #d9e0ea;
-		background: #ffffff;
-		color: #172033;
-		font-size: 0.78rem;
-		font-weight: 820;
+		justify-content: center;
+		width: 3.45rem;
+		height: 3.45rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
+		font-size: 2.15rem;
+		line-height: 1;
 	}
 
 	.card-prompt {
@@ -1842,20 +1943,23 @@
 	.card-prompt h1 {
 		margin: 0;
 		color: #050811;
-		font-size: clamp(2rem, 6vw, 4.4rem);
-		font-weight: 900;
-		line-height: 1.02;
+		font-size: clamp(1.9rem, 4.8vw, 3.8rem);
+		font-weight: 650;
+		line-height: 1.18;
 		letter-spacing: 0;
 		overflow-wrap: anywhere;
 	}
 
 	.mcq-front .card-prompt {
-		align-content: start;
+		align-content: center;
+		gap: 0.5rem;
 	}
 
 	.mcq-front .card-prompt h1 {
-		font-size: clamp(1.35rem, 3.5vw, 2.35rem);
-		line-height: 1.08;
+		max-width: 34ch;
+		font-size: clamp(1.65rem, 3.8vw, 2.55rem);
+		font-weight: 500;
+		line-height: 1.32;
 	}
 
 	.card-answer {
@@ -1868,7 +1972,7 @@
 		background: #f8fcf8;
 	}
 
-	.card-answer > div:not(.mcq-answer-block):not(.mcq-explanation) {
+	.card-answer:not(.mcq-answer) > div {
 		color: #122316;
 		font-size: clamp(1.2rem, 3.5vw, 2rem);
 		font-weight: 760;
@@ -1877,63 +1981,134 @@
 	}
 
 	.card-answer.mcq-answer {
+		border: 0;
+		background: transparent;
 		align-content: start;
-		gap: 0.72rem;
+		gap: 1rem;
+		padding: 0 0.1rem 0.15rem 0;
 		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-gutter: stable;
 		-webkit-overflow-scrolling: touch;
 	}
 
-	.mcq-answer-block,
-	.mcq-explanation {
-		display: grid;
-		gap: 0.28rem;
-		min-width: 0;
+	.card-face.mcq-result-face {
+		grid-template-rows: auto minmax(0, 1fr);
+		gap: 1rem;
+		background: var(--qc-ui-surface-muted);
 	}
 
-	.mcq-answer-block span,
-	.mcq-explanation span {
-		color: #647085;
-		font-size: 0.74rem;
-		font-weight: 840;
+	.mcq-result-status {
+		display: flex;
+		align-items: center;
+		gap: 0.72rem;
+		min-width: 0;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid var(--qc-ui-border-subtle);
+		outline: none;
+	}
+
+	.mcq-result-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		width: 2.55rem;
+		height: 2.55rem;
+		place-items: center;
+		border: 1px solid currentColor;
+		border-radius: 999px;
+	}
+
+	.mcq-result-status.correct {
+		color: var(--qc-ui-accent-text);
+	}
+
+	.mcq-result-status.correct .mcq-result-icon {
+		background: var(--qc-ui-accent-muted);
+	}
+
+	.mcq-result-status.incorrect {
+		color: var(--qc-ui-danger);
+	}
+
+	.mcq-result-status.incorrect .mcq-result-icon {
+		background: color-mix(in srgb, var(--qc-ui-danger) 10%, var(--qc-ui-surface));
+	}
+
+	.mcq-key-answer > span,
+	.mcq-choice-review > span {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.78rem;
+		font-weight: 650;
+		letter-spacing: 0.05em;
 		text-transform: uppercase;
 	}
 
-	.mcq-answer-block strong,
-	.mcq-explanation p {
+	.mcq-result-status h1 {
 		margin: 0;
-		color: #122316;
-		font-size: clamp(1rem, 2.5vw, 1.35rem);
+		color: currentColor;
+		font-size: clamp(1.35rem, 3.8vw, 1.9rem);
 		font-weight: 700;
-		line-height: 1.3;
+		line-height: 1.15;
+	}
+
+	.mcq-key-answer,
+	.mcq-explanation,
+	.mcq-choice-review {
+		display: grid;
+		gap: 0.3rem;
+		min-width: 0;
+	}
+
+	.mcq-explanation p,
+	.mcq-choice-review p {
+		margin: 0;
+		color: var(--qc-ui-text-secondary);
+		font-size: clamp(1rem, 2vw, 1.08rem);
+		font-weight: 450;
+		line-height: 1.5;
 		letter-spacing: 0;
 		text-transform: none;
 		overflow-wrap: anywhere;
 	}
 
-	.mcq-answer-block {
-		padding: 0.64rem 0.72rem;
-		border: 1px solid #cfd7e2;
-		background: #ffffff;
+	.mcq-key-answer {
+		padding: 0.2rem 0 0.2rem 0.9rem;
+		border-left: 0.22rem solid var(--qc-ui-accent);
 	}
 
-	.mcq-answer-block.correct-answer {
-		border-color: #0a7a3f;
-		background: #f4fbf5;
-	}
-
-	.mcq-answer-block.chosen-answer {
-		border-color: #f1b9b3;
-		background: #fff8f7;
+	.mcq-key-answer strong,
+	.mcq-choice-review strong {
+		margin: 0;
+		color: var(--qc-ui-text);
+		font-size: clamp(1.08rem, 2.5vw, 1.38rem);
+		font-weight: 600;
+		line-height: 1.42;
+		overflow-wrap: anywhere;
 	}
 
 	.mcq-explanation {
-		padding-top: 0.2rem;
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.mcq-choice-review {
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.mcq-choice-review strong {
+		color: var(--qc-ui-danger);
+		font-size: clamp(1rem, 2.2vw, 1.12rem);
+	}
+
+	.mcq-choice-review p {
+		color: var(--qc-ui-text-secondary);
 	}
 
 	.choice-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		align-self: end;
+		align-self: start;
 		gap: 0.65rem;
 		min-height: 0;
 	}
@@ -1942,13 +2117,14 @@
 		min-width: 0;
 		min-height: 3.7rem;
 		padding: 0.8rem;
-		border: 1px solid #cfd7e2;
+		border: 1px solid var(--qc-ui-border-subtle);
 		border-radius: 0;
-		background: #ffffff;
-		color: #111827;
+		background: var(--qc-ui-surface-raised);
+		color: var(--qc-ui-text);
 		font: inherit;
-		font-weight: 760;
-		line-height: 1.3;
+		font-size: clamp(1rem, 2vw, 1.08rem);
+		font-weight: 500;
+		line-height: 1.45;
 		text-align: left;
 		cursor: pointer;
 		overflow-wrap: anywhere;
@@ -1965,15 +2141,15 @@
 	}
 
 	.choice-grid button.correct {
-		border-color: #08602c;
-		background: #f4fbf5;
-		color: #075323;
+		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
+		color: var(--qc-ui-accent-text);
 	}
 
 	.choice-grid button.incorrect {
-		border-color: #b42318;
-		background: #fff4f2;
-		color: #8f1f14;
+		border-color: var(--qc-ui-danger);
+		background: color-mix(in srgb, var(--qc-ui-danger) 9%, var(--qc-ui-surface));
+		color: var(--qc-ui-danger);
 	}
 
 	.choice-grid button.selected.correct {
@@ -2009,17 +2185,25 @@
 			box-shadow: 0 0 0 rgba(180, 35, 24, 0);
 		}
 
-		20% {
-			transform: translateX(-0.22rem);
-			box-shadow: 0 0 0 0.28rem rgba(180, 35, 24, 0.12);
+		16% {
+			transform: translateX(-0.52rem);
+			box-shadow: 0 0 0 0.24rem rgba(180, 35, 24, 0.14);
 		}
 
-		40% {
-			transform: translateX(0.18rem);
+		33% {
+			transform: translateX(0.44rem);
 		}
 
-		60% {
-			transform: translateX(-0.12rem);
+		50% {
+			transform: translateX(-0.34rem);
+		}
+
+		68% {
+			transform: translateX(0.22rem);
+		}
+
+		84% {
+			transform: translateX(-0.1rem);
 		}
 	}
 
@@ -2039,23 +2223,13 @@
 	@keyframes mcq-card-incorrect {
 		0%,
 		100% {
-			transform: translateX(0);
 			box-shadow: 0 1.35rem 2.8rem rgba(15, 23, 42, 0.18);
 		}
 
-		24% {
-			transform: translateX(-0.18rem);
+		32% {
 			box-shadow:
 				0 1.35rem 2.8rem rgba(15, 23, 42, 0.18),
-				0 0 0 0.32rem rgba(180, 35, 24, 0.14);
-		}
-
-		48% {
-			transform: translateX(0.14rem);
-		}
-
-		72% {
-			transform: translateX(-0.08rem);
+				0 0 0 0.28rem rgba(180, 35, 24, 0.16);
 		}
 	}
 
@@ -2121,6 +2295,27 @@
 		opacity: 0.62;
 	}
 
+	.session-actions.mcq-result-actions,
+	.session-actions.mcq-choice-actions {
+		grid-template-columns: minmax(0, 18rem);
+	}
+
+	.session-actions.mcq-result-actions button,
+	.session-actions.mcq-choice-actions button {
+		font-weight: 650;
+	}
+
+	.session-next {
+		justify-content: space-between;
+	}
+
+	.session-icon-button:focus-visible,
+	.choice-grid button:focus-visible,
+	.session-actions button:focus-visible {
+		outline: 3px solid var(--qc-ui-accent-border);
+		outline-offset: 3px;
+	}
+
 	.session-complete {
 		align-self: center;
 		justify-self: center;
@@ -2163,7 +2358,7 @@
 	:global(:root[data-theme='dark']) .setup-chip-grid button,
 	:global(:root[data-theme='dark']) .setup-select,
 	:global(:root[data-theme='dark']) .choice-grid button,
-	:global(:root[data-theme='dark']) .card-meta span {
+	:global(:root[data-theme='dark']) .card-meta .card-visual-cue {
 		border-color: #334155;
 		background: #0f172a;
 		color: #e5e7eb;
@@ -2235,35 +2430,58 @@
 		background: #0f2b1d;
 	}
 
-	:global(:root[data-theme='dark'])
-		.card-answer
-		> div:not(.mcq-answer-block):not(.mcq-explanation) {
+	:global(:root[data-theme='dark']) .card-answer:not(.mcq-answer) > div {
 		color: #bbf7d0;
 	}
 
-	:global(:root[data-theme='dark']) .mcq-answer-block,
-	:global(:root[data-theme='dark']) .mcq-explanation p {
-		color: #e5e7eb;
+	:global(:root[data-theme='dark']) .card-face.mcq-result-face {
+		background: var(--qc-ui-surface-muted);
 	}
 
-	:global(:root[data-theme='dark']) .mcq-answer-block {
-		border-color: #334155;
-		background: #111c2f;
+	:global(:root[data-theme='dark']) .card-answer.mcq-answer {
+		border: 0;
+		background: transparent;
 	}
 
-	:global(:root[data-theme='dark']) .mcq-answer-block.correct-answer {
-		border-color: #22c55e;
-		background: #0f2b1d;
+	:global(:root[data-theme='dark']) .choice-grid button.correct {
+		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
+		color: var(--qc-ui-accent-text);
 	}
 
-	:global(:root[data-theme='dark']) .mcq-answer-block.chosen-answer {
-		border-color: #ef8d83;
-		background: #2d1517;
+	:global(:root[data-theme='dark']) .choice-grid button.incorrect {
+		border-color: var(--qc-ui-danger);
+		background: color-mix(in srgb, var(--qc-ui-danger) 12%, var(--qc-ui-surface));
+		color: var(--qc-ui-danger);
 	}
 
-	:global(:root[data-theme='dark']) .mcq-answer-block span,
-	:global(:root[data-theme='dark']) .mcq-explanation span {
-		color: #a7b4c5;
+	@media (min-width: 621px) and (max-height: 820px) {
+		.card-stage {
+			padding: 0.85rem 1rem;
+		}
+
+		.card-face {
+			gap: 0.65rem;
+			padding: 1rem;
+		}
+
+		.card-face.mcq-result-face {
+			gap: 0.58rem;
+		}
+
+		.mcq-result-status {
+			padding-bottom: 0.54rem;
+		}
+
+		.card-answer.mcq-answer {
+			gap: 0.54rem;
+		}
+
+		.mcq-key-answer,
+		.mcq-explanation,
+		.mcq-choice-review {
+			padding: 0.58rem 0.68rem;
+		}
 	}
 
 	@media (max-width: 860px) {
@@ -2303,6 +2521,10 @@
 			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
 		}
 
+		.card-stage.mcq-stage .stack-card {
+			height: min(100%, 42rem);
+		}
+
 		.card-flipper {
 			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
 		}
@@ -2328,14 +2550,15 @@
 			gap: 0.28rem;
 		}
 
-		.card-meta span {
-			min-height: 1.45rem;
-			padding: 0.12rem 0.34rem;
-			font-size: 0.68rem;
+		.card-meta .card-visual-cue {
+			width: 3.2rem;
+			height: 3.2rem;
+			font-size: 2rem;
 		}
 
 		.card-prompt h1 {
-			font-size: clamp(1.8rem, 10vw, 3.2rem);
+			font-size: clamp(1.55rem, 7.5vw, 2.35rem);
+			line-height: 1.22;
 		}
 
 		.mcq-front .card-prompt {
@@ -2343,8 +2566,8 @@
 		}
 
 		.mcq-front .card-prompt h1 {
-			font-size: clamp(1.05rem, 5.8vw, 1.52rem);
-			line-height: 1.1;
+			font-size: clamp(1.55rem, 6.3vw, 2rem);
+			line-height: 1.32;
 		}
 
 		.choice-grid {
@@ -2353,25 +2576,48 @@
 		}
 
 		.choice-grid button {
-			min-height: 2.9rem;
-			padding: 0.52rem 0.58rem;
-			font-size: 0.91rem;
-			line-height: 1.18;
+			min-height: 3.35rem;
+			padding: 0.66rem 0.7rem;
+			font-size: 1.05rem;
+			line-height: 1.42;
 		}
 
 		.card-answer.mcq-answer {
 			gap: 0.52rem;
-			padding: 0.68rem;
+			padding: 0 0.05rem 0.1rem 0;
 		}
 
-		.mcq-answer-block {
-			padding: 0.5rem 0.56rem;
+		.card-face.mcq-result-face {
+			gap: 0.68rem;
 		}
 
-		.mcq-answer-block strong,
+		.mcq-result-status {
+			gap: 0.58rem;
+			padding-bottom: 0.62rem;
+		}
+
+		.mcq-result-icon {
+			width: 2.25rem;
+			height: 2.25rem;
+		}
+
+		.mcq-key-answer {
+			padding: 0.15rem 0 0.15rem 0.75rem;
+		}
+
+		.mcq-explanation,
+		.mcq-choice-review {
+			padding-top: 0.72rem;
+		}
+
+		.mcq-key-answer strong {
+			font-size: 1.08rem;
+			line-height: 1.42;
+		}
+
 		.mcq-explanation p {
-			font-size: 0.96rem;
-			line-height: 1.22;
+			font-size: 1rem;
+			line-height: 1.5;
 		}
 
 		.session-actions {
@@ -2385,6 +2631,11 @@
 			min-width: 0;
 			width: 100%;
 		}
+
+		.session-actions.mcq-result-actions,
+		.session-actions.mcq-choice-actions {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 
 	@media (max-width: 620px) and (max-height: 720px) {
@@ -2394,8 +2645,8 @@
 		}
 
 		.session-icon-button {
-			width: 2.3rem;
-			height: 2.3rem;
+			width: 2.75rem;
+			height: 2.75rem;
 		}
 
 		.session-progress {
@@ -2415,17 +2666,13 @@
 			padding: 0.72rem;
 		}
 
-		.card-face.mcq-front {
-			grid-template-rows: auto minmax(0, 0.66fr) auto;
-		}
-
 		.mcq-front .card-prompt p {
 			display: none;
 		}
 
 		.mcq-front .card-prompt h1 {
-			font-size: clamp(0.98rem, 5.2vw, 1.3rem);
-			line-height: 1.08;
+			font-size: clamp(1.45rem, 5.9vw, 1.75rem);
+			line-height: 1.3;
 		}
 
 		.choice-grid {
@@ -2433,31 +2680,49 @@
 		}
 
 		.choice-grid button {
-			min-height: 2.55rem;
-			padding: 0.42rem 0.48rem;
-			font-size: 0.84rem;
-			line-height: 1.14;
+			min-height: 3.1rem;
+			padding: 0.52rem 0.58rem;
+			font-size: 1.05rem;
+			line-height: 1.38;
 		}
 
 		.card-answer.mcq-answer {
 			gap: 0.42rem;
-			padding: 0.54rem;
+			padding: 0 0.04rem 0.08rem 0;
 		}
 
-		.mcq-answer-block,
-		.mcq-explanation {
-			gap: 0.16rem;
+		.card-face.mcq-result-face {
+			gap: 0.48rem;
 		}
 
-		.mcq-answer-block span,
-		.mcq-explanation span {
-			font-size: 0.64rem;
+		.mcq-result-status {
+			padding-bottom: 0.45rem;
 		}
 
-		.mcq-answer-block strong,
+		.mcq-key-answer > span,
+		.mcq-choice-review > span {
+			font-size: 0.74rem;
+		}
+
+		.mcq-key-answer {
+			gap: 0.2rem;
+			padding: 0.12rem 0 0.12rem 0.68rem;
+		}
+
+		.mcq-explanation,
+		.mcq-choice-review {
+			gap: 0.2rem;
+			padding-top: 0.58rem;
+		}
+
+		.mcq-key-answer strong {
+			font-size: 1.05rem;
+			line-height: 1.38;
+		}
+
 		.mcq-explanation p {
-			font-size: 0.86rem;
-			line-height: 1.18;
+			font-size: 1rem;
+			line-height: 1.45;
 		}
 
 		.session-actions {
@@ -2469,7 +2734,7 @@
 		.setup-secondary,
 		.session-primary,
 		.session-secondary {
-			min-height: 2.72rem;
+			min-height: 2.75rem;
 			padding: 0.48rem 0.62rem;
 			font-size: 0.9rem;
 		}
@@ -2496,7 +2761,8 @@
 		.card-flipper,
 		.card-face,
 		.session-progress-track span,
-		.choice-grid button {
+		.choice-grid button,
+		.drag-cue {
 			animation: none !important;
 			transition-duration: 0.01ms !important;
 		}

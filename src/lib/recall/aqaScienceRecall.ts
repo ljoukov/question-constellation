@@ -1,3 +1,5 @@
+import { isApprovedRecallVisualCueForSubject, recallVisualCueFor } from './visualCues.js';
+
 export const recallSubjects = ['All subjects', 'Biology', 'Chemistry', 'Physics'] as const;
 
 export type RecallSubject = Exclude<(typeof recallSubjects)[number], 'All subjects'>;
@@ -28,12 +30,14 @@ export type RecallCard = {
 	topicId: string;
 	specRef: string;
 	kind: RecallCardKind;
+	visualCue: string;
 	front: string;
 	back: string;
 	reverseFront?: string;
 	reverseBack?: string;
 	distractors?: string[];
 	explanation?: string;
+	choiceFeedback?: Record<string, string>;
 	sourceUrl: string;
 	sourceTitle: string;
 };
@@ -264,15 +268,22 @@ export const recallCurriculumTopics: RecallTopic[] = [
 ];
 
 function recallCard(
-	card: Omit<RecallCard, 'board' | 'qualification' | 'sourceUrl' | 'sourceTitle'>
+	card: Omit<RecallCard, 'board' | 'qualification' | 'sourceUrl' | 'sourceTitle' | 'visualCue'> & {
+		visualCue?: string;
+	}
 ) {
 	const source = sourceBySubject[card.subject];
+	const visualCue = card.visualCue ?? recallVisualCueFor(card.id);
+	if (!isApprovedRecallVisualCueForSubject(visualCue, card.subject)) {
+		throw new Error(`Recall card ${card.id} has an invalid visual cue`);
+	}
 	return {
 		board: 'AQA',
 		qualification: 'GCSE',
 		sourceUrl: source.url,
 		sourceTitle: source.title,
-		...card
+		...card,
+		visualCue
 	} satisfies RecallCard;
 }
 
@@ -307,7 +318,17 @@ export const recallCards: RecallCard[] = [
 			'It is where aerobic respiration happens.',
 			'It makes proteins on its surface.',
 			'It absorbs light for photosynthesis.'
-		]
+		],
+		explanation:
+			'The nucleus contains DNA. Those genetic instructions direct the cell’s activities, including which proteins it makes.',
+		choiceFeedback: {
+			'It is where aerobic respiration happens.':
+				'Aerobic respiration happens in mitochondria, where energy is released for the cell.',
+			'It makes proteins on its surface.':
+				'Ribosomes make proteins. The nucleus stores the genetic instructions for making them.',
+			'It absorbs light for photosynthesis.':
+				'Chloroplasts contain chlorophyll that absorbs light for photosynthesis.'
+		}
 	}),
 	recallCard({
 		id: 'bio-mitochondria-function',
@@ -694,7 +715,17 @@ export const recallCards: RecallCard[] = [
 			'Atoms with the same neutrons but different protons.',
 			'Ions with opposite charges.',
 			'Molecules with shared electron pairs.'
-		]
+		],
+		explanation:
+			'The proton number fixes the element. Changing only the neutron number changes the mass, giving a different isotope of that element.',
+		choiceFeedback: {
+			'Atoms with the same neutrons but different protons.':
+				'Different proton numbers mean different elements, even when the neutron numbers match.',
+			'Ions with opposite charges.':
+				'Ions form when electrons are gained or lost. Isotopes differ in their numbers of neutrons.',
+			'Molecules with shared electron pairs.':
+				'Shared electron pairs describe covalent bonds between atoms, not isotopes.'
+		}
 	}),
 	recallCard({
 		id: 'chem-subatomic-charges',
@@ -1191,7 +1222,17 @@ export const recallCards: RecallCard[] = [
 			'Current is the same through every branch.',
 			'Potential difference is shared between branches.',
 			'Charge stops flowing in each branch.'
-		]
+		],
+		explanation:
+			'Each parallel branch is connected across the same two points of the supply, so every branch gets the full supply potential difference.',
+		choiceFeedback: {
+			'Current is the same through every branch.':
+				'Current splits between parallel branches. The split depends on the resistance of each branch.',
+			'Potential difference is shared between branches.':
+				'Potential difference is shared between components in series, not between parallel branches.',
+			'Charge stops flowing in each branch.':
+				'Charge continues to flow through every complete branch of a parallel circuit.'
+		}
 	}),
 	recallCard({
 		id: 'phys-density-equation',
