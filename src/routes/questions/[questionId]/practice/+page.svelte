@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -12,11 +11,16 @@
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import MarkSchemeDisclosure from '$lib/components/MarkSchemeDisclosure.svelte';
 	import PracticeAnswerEditor from '$lib/components/PracticeAnswerEditor.svelte';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
+	import {
+		fixedChoiceAnswerIsCorrect,
+		resolvePracticeResultPresentation
+	} from '$lib/learning/practiceResult';
 	import { learnerSubjectHref } from '$lib/learning/subjects';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
 	import {
@@ -44,7 +48,6 @@
 	} from '$lib/requestFailure';
 	import { ArrowRight, CheckCircle2, ChevronDown, CircleAlert } from '@lucide/svelte';
 	import { onMount } from 'svelte';
-	import { slide } from 'svelte/transition';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -110,16 +113,30 @@
 	let pendingAttemptId = '';
 	let pendingAttemptSignature = '';
 	let pendingResponseDurationMs: number | null = null;
-	const markingPointsRevealDurationMs =
-		browser && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
-
 	const questionIndex = $derived(
 		data.questions.findIndex((question) => question.id === data.question.id)
 	);
 	const questionNumber = $derived(questionIndex + 1);
 	const progressPercent = $derived(`${((questionNumber || 1) / data.questions.length) * 100}%`);
-	const presentStepIds = $derived(new Set(gradeResult?.presentStepIds ?? []));
-	const missingStepIds = $derived(new Set(gradeResult?.missingStepIds ?? []));
+	const isChoiceResponse = $derived(
+		data.question.renderingOverlay?.responseInteraction?.kind === 'choice'
+	);
+	const choiceAnswerCorrect = $derived(
+		fixedChoiceAnswerIsCorrect(
+			data.question.renderingOverlay?.responseInteraction,
+			gradedAnswerText || answerText
+		)
+	);
+	const resultPresentation = $derived(
+		resolvePracticeResultPresentation({
+			gradeResult,
+			checklistStepIds: data.question.checklist.map((item) => item.stepId),
+			choiceResponse: isChoiceResponse,
+			choiceAnswerCorrect
+		})
+	);
+	const presentStepIds = $derived(resultPresentation.presentStepIds);
+	const missingStepIds = $derived(resultPresentation.missingStepIds);
 	const includedItems = $derived(
 		data.question.checklist.filter((item) => presentStepIds.has(item.stepId))
 	);
@@ -149,7 +166,8 @@
 	const statusText = $derived(statusLabelForPhase(gradePhase));
 	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
 	const feedbackMarkdown = $derived((gradeResult?.feedbackMarkdown ?? '').trim());
-	const hasMissingLinks = $derived(missingItems.length > 0);
+	const hasMissingLinks = $derived(resultPresentation.repairKind === 'rewrite');
+	const choiceNeedsRetry = $derived(resultPresentation.repairKind === 'retry_choice');
 	const gapHrefByStepId = $derived(
 		new Map((gradeResult?.savedAttempt?.activeGaps ?? []).map((gap) => [gap.stepId, gap.href]))
 	);
@@ -416,9 +434,9 @@
 		};
 	}
 
-	function toggleMarkingPoints() {
-		showMarkingPoints = !showMarkingPoints;
-		if (showMarkingPoints) markingPointsUsed = true;
+	function recordMarkSchemeReveal() {
+		if (markingPointsUsed) return;
+		markingPointsUsed = true;
 		persistSciencePracticeState();
 	}
 
@@ -556,6 +574,12 @@
 		gradePhase = 'idle';
 		rewriteText = '';
 		if (requestedPracticeView === 'result') updatePracticeView('attempt', 'replace');
+	}
+
+	function retryChoice() {
+		clearCheckedResult();
+		setAnswerText('');
+		persistSciencePracticeState({ answerText: '', view: 'attempt' });
 	}
 
 	function setAnswerText(value: string) {
@@ -917,37 +941,18 @@
 									Check answer
 								{/if}
 							</button>
-							<button
-								class="qc-action-button"
-								type="button"
-								aria-expanded={showMarkingPoints}
-								aria-controls="practice-marking-points"
-								onclick={toggleMarkingPoints}
-							>
-								{showMarkingPoints ? 'Hide marking points' : 'Use marking points'}
-							</button>
 						</div>
 					</section>
 
-					{#if showMarkingPoints}
-						<section
-							id="practice-marking-points"
-							class="qc-practice-static-checklist"
-							transition:slide={{ duration: markingPointsRevealDurationMs }}
-						>
-							<header>
-								<p class="qc-panel-label">Mark your answer</p>
-								<p>Compare your answer with each point.</p>
-							</header>
-							<ol>
-								{#each data.question.checklist as item, index (item.id)}
-									<li>
-										<span>{index + 1}</span>
-										<MathText text={shortChecklistText(item.text)} />
-									</li>
-								{/each}
-							</ol>
-						</section>
+					{#if !isChoiceResponse && data.question.checklist.length > 0}
+						<MarkSchemeDisclosure
+							points={data.question.checklist.map((item) => ({
+								id: item.id,
+								text: shortChecklistText(item.text)
+							}))}
+							bind:open={showMarkingPoints}
+							onReveal={recordMarkSchemeReveal}
+						/>
 					{/if}
 
 					{#if isChecking}
@@ -976,9 +981,11 @@
 					>
 						<p class="qc-real-kicker"><MathText text={data.question.sourceRef} /></p>
 						<h2>
-							{hasMissingLinks
-								? resultTitle
-								: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
+							{choiceNeedsRetry
+								? 'Not quite'
+								: hasMissingLinks
+									? resultTitle
+									: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
 						</h2>
 						{#if hasMissingLinks}
 							<p>
@@ -1009,7 +1016,7 @@
 						</details>
 					{/if}
 
-					{#if data.chain.illustration}
+					{#if data.chain.illustration && !isChoiceResponse}
 						<ChainIllustration
 							illustration={data.chain.illustration}
 							eager
@@ -1018,35 +1025,37 @@
 						/>
 					{/if}
 
-					<section class="qc-chain-result" aria-label="Checked answer chain">
-						<p class="qc-panel-label">Answer chain</p>
-						<ol>
-							{#each data.question.checklist as item, index (item.id)}
-								<li
-									class:present={presentStepIds.has(item.stepId)}
-									class:missing={missingStepIds.has(item.stepId)}
-								>
-									<span class="qc-chain-result-index">{index + 1}</span>
-									{#if presentStepIds.has(item.stepId)}
-										<CheckCircle2 size={18} aria-hidden="true" />
-									{:else}
-										<CircleAlert size={18} aria-hidden="true" />
-									{/if}
-									<span>
-										<span class="sr-only">
-											{presentStepIds.has(item.stepId) ? 'Present: ' : 'Missing: '}
+					{#if !isChoiceResponse}
+						<section class="qc-chain-result" aria-label="Checked answer chain">
+							<p class="qc-panel-label">Answer chain</p>
+							<ol>
+								{#each data.question.checklist as item, index (item.id)}
+									<li
+										class:present={presentStepIds.has(item.stepId)}
+										class:missing={missingStepIds.has(item.stepId)}
+									>
+										<span class="qc-chain-result-index">{index + 1}</span>
+										{#if presentStepIds.has(item.stepId)}
+											<CheckCircle2 size={18} aria-hidden="true" />
+										{:else}
+											<CircleAlert size={18} aria-hidden="true" />
+										{/if}
+										<span>
+											<span class="sr-only">
+												{presentStepIds.has(item.stepId) ? 'Present: ' : 'Missing: '}
+											</span>
+											<MathText text={shortChecklistText(item.text)} />
 										</span>
-										<MathText text={shortChecklistText(item.text)} />
-									</span>
-									{#if missingStepIds.has(item.stepId) && gapHrefByStepId.get(item.stepId)}
-										<a class="qc-inline-gap-link" href={gapHrefByStepId.get(item.stepId)}>
-											Practise this step
-										</a>
-									{/if}
-								</li>
-							{/each}
-						</ol>
-					</section>
+										{#if missingStepIds.has(item.stepId) && gapHrefByStepId.get(item.stepId)}
+											<a class="qc-inline-gap-link" href={gapHrefByStepId.get(item.stepId)}>
+												Practise this step
+											</a>
+										{/if}
+									</li>
+								{/each}
+							</ol>
+						</section>
+					{/if}
 
 					<section class="qc-practice-answer-card">
 						{#if hasMissingLinks}
@@ -1078,7 +1087,13 @@
 						{/if}
 					</section>
 
-					{#if !hasMissingLinks}
+					{#if choiceNeedsRetry}
+						<div class="qc-practice-actions qc-check-next-actions" aria-label="Retry answer">
+							<button class="qc-action-button primary" type="button" onclick={retryChoice}>
+								Try again
+							</button>
+						</div>
+					{:else if !hasMissingLinks}
 						<div class="qc-practice-actions qc-check-next-actions" aria-label="Next action">
 							<a
 								class="qc-action-button primary"
@@ -1118,7 +1133,11 @@
 
 					<details class="qc-practice-detail">
 						<summary>
-							Full-mark answer
+							{isChoiceResponse
+								? choiceNeedsRetry
+									? 'Correct answer'
+									: 'Why this answer is correct'
+								: 'Full-mark answer'}
 							<ChevronDown size={17} aria-hidden="true" />
 						</summary>
 						<p><MathText text={data.question.modelAnswer} /></p>
