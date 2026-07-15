@@ -23,6 +23,14 @@
 		type StoredRecallSession
 	} from '$lib/recall/sessionState';
 	import {
+		mixedRecallPresentation,
+		recallControlModel,
+		recallReviewDecision,
+		type RecallMcqFeedback,
+		type RecallPresentation,
+		type RecallReviewIntent
+	} from '$lib/recall/sessionControls';
+	import {
 		flushRecallReviewQueue,
 		queueRecallReview,
 		type RecallReviewFlushResult
@@ -44,7 +52,6 @@
 
 	type Mode = 'mixed' | 'recall' | 'recognise' | 'reverse';
 	type Grade = 'again' | 'hard' | 'good' | 'easy';
-	type CardPresentation = 'flashcard' | 'mcq';
 	type SubjectFilter = RecallSubject | 'All subjects';
 	type KindFilter = RecallCardKind | 'all';
 	type CardMotion =
@@ -56,7 +63,6 @@
 		| 'answering'
 		| 'exiting-left'
 		| 'exiting-right';
-	type McqFeedback = 'correct' | 'incorrect' | null;
 
 	type RecallProgress = {
 		seen: number;
@@ -182,7 +188,7 @@
 	let returningSoonerInSession = $state(0);
 	let revealed = $state(false);
 	let selectedChoice = $state<string | null>(null);
-	let mcqFeedback = $state<McqFeedback>(null);
+	let mcqFeedback = $state<RecallMcqFeedback>(null);
 	let progressById = $state<Record<string, RecallProgress>>(initialProgress);
 	let sessionCardIds = $state<string[]>(initialSessionCardIds);
 	let dragX = $state(0);
@@ -198,7 +204,10 @@
 	let recallSyncing = $state(false);
 	let reducedMotion = $state(false);
 	let mcqResultHeading = $state<HTMLElement | null>(null);
+	let flashcardResultHeading = $state<HTMLElement | null>(null);
 	let currentPromptHeading = $state<HTMLHeadingElement | null>(null);
+	let leavingSession = $state(false);
+	let recallSyncPromise: Promise<void> | null = null;
 	let sessionHydrated = $state(false);
 	let recallSessionId = $state(
 		untrack(() => (data.initialStart ? createActivityId('recall-session') : ''))
@@ -225,7 +234,7 @@
 		(sessionActive ? sessionCards : rankedCards)[cardIndex + 2] ?? null
 	);
 	const currentChoices = $derived(currentCard ? answerChoices(currentCard) : []);
-	const currentPresentation = $derived<CardPresentation>(
+	const currentPresentation = $derived<RecallPresentation>(
 		currentCard ? presentationFor(currentCard) : 'flashcard'
 	);
 	const currentExplanation = $derived(currentCard ? explanationTextFor(currentCard) : null);
@@ -254,35 +263,36 @@
 	const sessionProgress = $derived(
 		totalCards === 0 ? '0%' : `${Math.min(100, (cardPositionInSession / totalCards) * 100)}%`
 	);
+	const currentControls = $derived(
+		recallControlModel({
+			presentation: currentPresentation,
+			revealed,
+			isLastCard: cardIndex + 1 >= sessionCards.length
+		})
+	);
 	const activityLabel = $derived(
 		mode === 'mixed' ? 'Quick recall' : mode === 'recognise' ? 'Multiple choice' : 'Flashcards'
-	);
-	const signedInSubjectHandoff = $derived(
-		Boolean(data.user && returnToHref.startsWith('/subjects/'))
 	);
 	const completionReturnLabel = $derived.by(() => {
 		if (returnToHref.startsWith('/questions/')) return 'Back to question';
 		if (returnToHref.startsWith('/gaps/')) return 'Back to gap';
 		if (returnToHref.startsWith('/recall/')) return 'Choose another stack';
-		if (signedInSubjectHandoff) return 'See what’s next';
-		if (returnToHref.startsWith('/subjects/')) return 'Back to subject';
-		if (returnToHref === '/') return 'Home';
+		if (returnToHref.startsWith('/subjects/')) {
+			return selectedSubject === 'All subjects'
+				? 'Back to subject'
+				: `Continue in ${selectedSubject}`;
+		}
+		if (returnToHref === '/') return 'Back home';
 		return 'Done';
 	});
 	const completionSummary = $derived.by(() => {
 		if (reviewedInSession === 0) {
-			return 'No answers were recorded, so your next recommendation is unchanged.';
+			return 'No cards were checked.';
 		}
-		const result =
-			returningSoonerInSession === 0
-				? `${rememberedInSession} remembered today.`
-				: `${rememberedInSession} remembered today; ${returningSoonerInSession} will return sooner.`;
-		return signedInSubjectHandoff
-			? `${result} Your subject page will use this evidence to choose what comes next.`
-			: `${result} Your answers are saved.`;
+		return `${rememberedInSession} remembered · ${returningSoonerInSession} to repeat`;
 	});
 	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
-	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Good' : 'Review');
+	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Next' : 'Repeat');
 	const dragProgress = $derived(Math.min(1, Math.abs(dragX) / 140));
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 	const slowMotion = $derived(page.url.searchParams.get('debugMotion') === 'slow');
@@ -447,13 +457,21 @@
 		};
 	});
 
-	async function flushRecallSync() {
-		if (!data.user || recallSyncing) return;
+	function flushRecallSync(): Promise<void> {
+		if (!data.user) return Promise.resolve();
+		if (recallSyncPromise) return recallSyncPromise;
+
 		recallSyncing = true;
-		const result: RecallReviewFlushResult = await flushRecallReviewQueue(data.user.uid);
-		recallSyncFailure = result.failure;
-		recallSyncPendingCount = result.pendingCount;
-		recallSyncing = false;
+		recallSyncPromise = flushRecallReviewQueue(data.user.uid)
+			.then((result: RecallReviewFlushResult) => {
+				recallSyncFailure = result.failure;
+				recallSyncPendingCount = result.pendingCount;
+			})
+			.finally(() => {
+				recallSyncing = false;
+				recallSyncPromise = null;
+			});
+		return recallSyncPromise;
 	}
 
 	function retryRecallSync() {
@@ -575,10 +593,13 @@
 		return mode === 'reverse' ? (card.reverseBack ?? card.front) : card.back;
 	}
 
-	function presentationFor(card: RecallCard): CardPresentation {
-		const useRecognition =
-			mode === 'recognise' || (mode === 'mixed' && cardPositionInSession % 3 === 1);
-		return useRecognition && answerChoices(card).length >= 2 ? 'mcq' : 'flashcard';
+	function presentationFor(card: RecallCard): RecallPresentation {
+		const hasMultipleChoiceOptions = answerChoices(card).length >= 2;
+		if (mode === 'recognise') return hasMultipleChoiceOptions ? 'mcq' : 'flashcard';
+		if (mode === 'mixed') {
+			return mixedRecallPresentation(cardPositionInSession, hasMultipleChoiceOptions);
+		}
+		return 'flashcard';
 	}
 
 	function explanationTextFor(card: RecallCard): string | null {
@@ -661,10 +682,16 @@
 		requestAnimationFrame(() => currentPromptHeading?.focus({ preventScroll: true }));
 	}
 
-	function exitSession() {
-		void flushRecallSync();
-		quitSessionState();
-		void goto(returnToHref);
+	async function exitSession() {
+		if (leavingSession) return;
+		leavingSession = true;
+		clearPersistedSession();
+		try {
+			await flushRecallSync();
+			await goto(returnToHref, { replaceState: true });
+		} finally {
+			leavingSession = false;
+		}
 	}
 
 	function resetCardState(options?: { entering?: boolean }) {
@@ -766,24 +793,6 @@
 		});
 	}
 
-	function continueMcqCard() {
-		if (
-			!currentCard ||
-			currentPresentation !== 'mcq' ||
-			!selectedChoice ||
-			!mcqFeedback ||
-			cardBusy
-		) {
-			return;
-		}
-		const card = currentCard;
-		const grade: Grade = mcqFeedback === 'correct' ? 'good' : 'again';
-		const chosenAnswer = mcqFeedback === 'incorrect' ? selectedChoice : undefined;
-		exitCard(mcqFeedback === 'correct' ? 'right' : 'left', () =>
-			gradeCard(card, grade, chosenAnswer)
-		);
-	}
-
 	function revealCard() {
 		if (!currentCard || revealed || currentPresentation === 'mcq' || cardBusy) return;
 		dragging = false;
@@ -794,6 +803,7 @@
 		revealed = true;
 		afterMotion(560, () => {
 			cardMotion = 'idle';
+			requestAnimationFrame(() => flashcardResultHeading?.focus({ preventScroll: true }));
 		});
 	}
 
@@ -820,14 +830,20 @@
 		afterMotion(360, afterExit);
 	}
 
-	function skipCard() {
-		exitCard('left', () => advanceCard(false));
-	}
-
-	function gradeCurrentCard(grade: Grade) {
-		if (!currentCard) return;
+	function reviewCurrentCard(intent: RecallReviewIntent) {
+		if (!currentCard || !revealed || cardBusy) return;
 		const card = currentCard;
-		exitCard(grade === 'again' ? 'left' : 'right', () => gradeCard(card, grade));
+		const decision = recallReviewDecision({
+			presentation: currentPresentation,
+			mcqFeedback,
+			intent
+		});
+		if (!decision) return;
+		const chosenAnswer =
+			currentPresentation === 'mcq' && mcqFeedback === 'incorrect'
+				? (selectedChoice ?? undefined)
+				: undefined;
+		exitCard(decision.direction, () => gradeCard(card, decision.grade, chosenAnswer));
 	}
 
 	function advanceCard(countAsAnswered = false) {
@@ -844,7 +860,7 @@
 	}
 
 	function handlePointerDown(event: PointerEvent) {
-		if (!currentCard || sessionComplete || currentPresentation === 'mcq' || cardBusy || !revealed) {
+		if (!currentCard || sessionComplete || cardBusy || !revealed) {
 			return;
 		}
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -878,7 +894,7 @@
 		dragging = false;
 		activePointerId = null;
 		if (shouldAct) {
-			gradeCurrentCard(direction === 'right' ? 'good' : 'again');
+			reviewCurrentCard(direction === 'right' ? 'next' : 'repeat');
 		} else {
 			returnCard();
 		}
@@ -966,54 +982,74 @@
 
 {#if sessionActive}
 	<main class="recall-session" class:slow-motion={slowMotion} aria-label="Recall card session">
-		<header class="session-header">
-			<button
-				type="button"
-				class="session-icon-button"
-				aria-label="Quit recall session"
-				onclick={exitSession}
-			>
-				<X size={23} aria-hidden="true" strokeWidth={2.2} />
-			</button>
+		<header class="session-header" class:complete={sessionComplete}>
+			{#if !sessionComplete}
+				<button
+					type="button"
+					class="session-icon-button"
+					aria-label="Quit recall session"
+					disabled={leavingSession}
+					onclick={exitSession}
+				>
+					<X size={23} aria-hidden="true" strokeWidth={2.2} />
+				</button>
+			{/if}
 			<div class="session-progress">
 				<div class="session-progress-text">
 					<strong>
 						{sessionComplete
-							? activityLabel
+							? `${activityLabel} complete`
 							: `${Math.min(cardPositionInSession + 1, totalCards)} of ${totalCards}`}
 					</strong>
 					<span>{sessionComplete ? selectedSubject : `${activityLabel} · ${selectedSubject}`}</span>
 				</div>
-				<div class="session-progress-track" aria-hidden="true">
-					<span style={`width: ${sessionProgress}`}></span>
-				</div>
+				{#if !sessionComplete}
+					<div class="session-progress-track" aria-hidden="true">
+						<span style={`width: ${sessionProgress}`}></span>
+					</div>
+				{/if}
 			</div>
 		</header>
 		<p class="sr-only" aria-live="polite" aria-atomic="true">{sessionAnnouncement}</p>
 
-		{#if sessionComplete}
+		{#if !sessionHydrated}
+			<section class="session-resuming" aria-live="polite">
+				<span class="session-resuming-mark" aria-hidden="true"></span>
+				<p>Preparing your set…</p>
+			</section>
+		{:else if sessionComplete}
 			<section class="session-complete">
-				<p class="recall-kicker">Session complete</p>
+				<span class="completion-mark" aria-hidden="true">
+					<CheckCircle2 size={34} strokeWidth={2.2} />
+				</span>
+				<p class="recall-kicker">Set complete</p>
 				<h1>
 					{reviewedInSession}
-					{reviewedInSession === 1 ? 'prompt' : 'prompts'} checked
+					{reviewedInSession === 1 ? 'card' : 'cards'} done
 				</h1>
-				<p>{completionSummary}</p>
+				<p class="completion-outcome">{completionSummary}</p>
 				<div class="session-complete-actions">
-					<button type="button" class="session-primary" onclick={exitSession}>
+					<button
+						type="button"
+						class="session-primary"
+						disabled={leavingSession}
+						onclick={exitSession}
+					>
 						{completionReturnLabel}
 					</button>
-					{#if !signedInSubjectHandoff}
-						<button type="button" class="session-secondary" onclick={startSession}>
-							Another set
-						</button>
-					{/if}
+					<button
+						type="button"
+						class="session-secondary"
+						disabled={leavingSession}
+						onclick={startSession}
+					>
+						Another set
+					</button>
 				</div>
 			</section>
 		{:else if currentCard}
 			<section
 				class="card-stage"
-				class:mcq-stage={currentPresentation === 'mcq'}
 				class:showing-result={currentPresentation === 'mcq' && revealed}
 				class:flipping-stack={cardMotion === 'flipping'}
 				class:moving-stack={['dragging', 'exiting-left', 'exiting-right'].includes(cardMotion)}
@@ -1045,10 +1081,6 @@
 						class:flipping={cardMotion === 'flipping'}
 						class:revealed
 						class:mcq-card={currentPresentation === 'mcq'}
-						class:compact-mcq-result={currentPresentation === 'mcq' &&
-							revealed &&
-							!currentExplanation &&
-							!currentChoiceFeedback}
 						class:mcq-correct={mcqFeedback === 'correct'}
 						class:mcq-incorrect={mcqFeedback === 'incorrect'}
 						class:exiting-left={cardMotion === 'exiting-left'}
@@ -1172,7 +1204,7 @@
 										<span class="sr-only">Card type: {data.kindLabels[currentCard.kind]}.</span>
 									</header>
 									<section class="card-answer">
-										<p>Answer</p>
+										<p tabindex="-1" bind:this={flashcardResultHeading}>Answer</p>
 										<div>
 											<MathText text={answerTextFor(currentCard)} />
 										</div>
@@ -1186,57 +1218,37 @@
 
 			<footer
 				class="session-actions"
-				class:mcq-result-actions={currentPresentation === 'mcq' && revealed}
-				class:mcq-choice-actions={currentPresentation === 'mcq' && !revealed}
+				class:prompt-actions={currentControls.phase === 'prompt'}
+				class:result-actions={currentControls.phase === 'result'}
 			>
-				{#if currentPresentation === 'mcq'}
-					{#if revealed}
-						<button
-							type="button"
-							class="session-primary session-next"
-							disabled={cardBusy || !selectedChoice}
-							onclick={continueMcqCard}
-						>
-							{cardIndex + 1 >= sessionCards.length ? 'See results' : 'Next card'}
-							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
-						</button>
-					{:else}
-						<button
-							type="button"
-							class="session-secondary"
-							disabled={cardBusy || selectedChoice !== null}
-							onclick={skipCard}
-						>
-							Skip card
-							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
-						</button>
-					{/if}
-				{:else if revealed}
+				{#if currentControls.phase === 'result'}
 					<button
 						type="button"
-						class="session-secondary danger"
+						class="session-secondary"
 						disabled={cardBusy}
-						onclick={() => gradeCurrentCard('again')}
+						aria-label="Repeat this card sooner"
+						onclick={() => reviewCurrentCard('repeat')}
 					>
 						<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
-						Review again
+						{currentControls.repeatLabel}
 					</button>
 					<button
 						type="button"
-						class="session-primary"
+						class="session-primary session-next"
 						disabled={cardBusy}
-						onclick={() => gradeCurrentCard('good')}
+						onclick={() => reviewCurrentCard('next')}
 					>
-						<CheckCircle2 size={18} aria-hidden="true" strokeWidth={2.2} />
-						Had it
+						{currentControls.nextLabel}
+						<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
 					</button>
-				{:else}
-					<button type="button" class="session-secondary" disabled={cardBusy} onclick={skipCard}>
-						Skip
-					</button>
+				{:else if currentControls.action === 'reveal'}
 					<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
 						<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
-						Reveal
+						{currentControls.label}
+					</button>
+				{:else}
+					<button type="button" class="session-instruction" disabled>
+						{currentControls.label}
 					</button>
 				{/if}
 			</footer>
@@ -1536,7 +1548,8 @@
 	.setup-primary,
 	.setup-secondary,
 	.session-primary,
-	.session-secondary {
+	.session-secondary,
+	.session-instruction {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -1569,9 +1582,12 @@
 		color: #0b45d9;
 	}
 
-	.session-secondary.danger {
-		border-color: #b42318;
-		color: #8f1f14;
+	.session-instruction {
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
+		color: var(--qc-ui-text-muted);
+		box-shadow: none;
+		cursor: default;
 	}
 
 	.setup-panel {
@@ -1656,6 +1672,10 @@
 		background: #ffffff;
 	}
 
+	.session-header.complete {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
 	.session-icon-button {
 		display: inline-grid;
 		width: 2.65rem;
@@ -1719,10 +1739,6 @@
 		overflow: hidden;
 	}
 
-	.card-stage.mcq-stage .stack-card {
-		height: min(100%, 32rem);
-	}
-
 	.stack-card.preview {
 		pointer-events: none;
 		border-color: rgba(11, 16, 32, 0.18);
@@ -1775,8 +1791,7 @@
 		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
 		transition:
 			transform var(--recall-card-return-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
-			opacity var(--recall-card-return-duration) ease,
-			height 360ms cubic-bezier(0.22, 0.75, 0.25, 1);
+			opacity var(--recall-card-return-duration) ease;
 		will-change: transform, opacity;
 		perspective: 1400px;
 		-webkit-tap-highlight-color: transparent;
@@ -1839,14 +1854,6 @@
 
 	.stack-card.active.revealed .card-flipper {
 		transform: rotateY(-180deg);
-	}
-
-	.stack-card.active.revealed.mcq-card {
-		height: min(100%, 22rem);
-	}
-
-	.stack-card.active.revealed.mcq-card.compact-mcq-result {
-		height: min(100%, 18rem);
 	}
 
 	.card-face {
@@ -2295,14 +2302,16 @@
 		opacity: 0.62;
 	}
 
-	.session-actions.mcq-result-actions,
-	.session-actions.mcq-choice-actions {
+	.session-actions .session-instruction:disabled {
+		opacity: 1;
+	}
+
+	.session-actions.prompt-actions {
 		grid-template-columns: minmax(0, 18rem);
 	}
 
-	.session-actions.mcq-result-actions button,
-	.session-actions.mcq-choice-actions button {
-		font-weight: 650;
+	.session-actions.result-actions {
+		grid-template-columns: repeat(2, minmax(0, 12rem));
 	}
 
 	.session-next {
@@ -2316,13 +2325,58 @@
 		outline-offset: 3px;
 	}
 
+	.session-resuming {
+		align-self: center;
+		justify-self: center;
+		display: grid;
+		justify-items: center;
+		gap: 0.75rem;
+		color: var(--qc-ui-text-muted);
+	}
+
+	.session-resuming p {
+		margin: 0;
+		font-weight: 650;
+	}
+
+	.session-resuming-mark {
+		width: 2.35rem;
+		height: 2.35rem;
+		border: 0.22rem solid var(--qc-ui-border-subtle);
+		border-top-color: var(--qc-ui-accent);
+		border-radius: 999px;
+		animation: recall-loading 720ms linear infinite;
+	}
+
+	@keyframes recall-loading {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
 	.session-complete {
 		align-self: center;
 		justify-self: center;
 		display: grid;
-		gap: 1rem;
+		justify-items: center;
+		gap: 0.85rem;
 		width: min(calc(100% - 2rem), 42rem);
+		max-height: calc(100% - 2rem);
 		padding: clamp(1.2rem, 3vw, 2rem);
+		overflow-y: auto;
+		text-align: center;
+		overscroll-behavior: contain;
+	}
+
+	.completion-mark {
+		display: inline-grid;
+		width: 4rem;
+		height: 4rem;
+		place-items: center;
+		border: 1px solid var(--qc-ui-accent-border);
+		border-radius: 999px;
+		background: var(--qc-ui-accent-muted);
+		color: var(--qc-ui-accent-text);
 	}
 
 	.session-complete h1 {
@@ -2336,6 +2390,18 @@
 	.session-complete p:not(.recall-kicker) {
 		margin: 0;
 		color: #465568;
+	}
+
+	.session-complete .completion-outcome {
+		font-size: clamp(1rem, 2.4vw, 1.15rem);
+		font-weight: 620;
+	}
+
+	.session-complete-actions {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		width: min(100%, 30rem);
+		margin-top: 0.35rem;
 	}
 
 	:global(:root[data-theme='dark']) .recall-setup,
@@ -2499,6 +2565,11 @@
 			padding: 0.85rem;
 		}
 
+		.session-complete-actions {
+			grid-template-columns: minmax(0, 1fr);
+			width: 100%;
+		}
+
 		.setup-copy h1 {
 			font-size: clamp(1.85rem, 10vw, 2.75rem);
 		}
@@ -2519,10 +2590,6 @@
 			width: min(calc(100vw - 2rem), 42rem);
 			height: min(100%, 42rem);
 			box-shadow: 0 1rem 2.2rem rgba(15, 23, 42, 0.18);
-		}
-
-		.card-stage.mcq-stage .stack-card {
-			height: min(100%, 42rem);
 		}
 
 		.card-flipper {
@@ -2632,9 +2699,12 @@
 			width: 100%;
 		}
 
-		.session-actions.mcq-result-actions,
-		.session-actions.mcq-choice-actions {
+		.session-actions.prompt-actions {
 			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.session-actions.result-actions {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
@@ -2733,7 +2803,8 @@
 		.setup-primary,
 		.setup-secondary,
 		.session-primary,
-		.session-secondary {
+		.session-secondary,
+		.session-instruction {
 			min-height: 2.75rem;
 			padding: 0.48rem 0.62rem;
 			font-size: 0.9rem;
@@ -2762,7 +2833,8 @@
 		.card-face,
 		.session-progress-track span,
 		.choice-grid button,
-		.drag-cue {
+		.drag-cue,
+		.session-resuming-mark {
 			animation: none !important;
 			transition-duration: 0.01ms !important;
 		}
