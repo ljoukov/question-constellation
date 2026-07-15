@@ -13,6 +13,7 @@ import {
 	normalizeExtractedQuestionForImport
 } from './lib/llm-extraction-pipeline.mjs';
 import { aqaScienceTopicFieldsForImport } from './lib/aqa-science-topic-mapping.mjs';
+import { choiceMaxSelectionsForImport } from './lib/chained-question-response.mjs';
 
 const rootDir = process.cwd();
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
@@ -760,15 +761,15 @@ function normalizeResponse(response, assetIdsByLabel, reviewNotes, question = nu
 		};
 	}
 	if (response.kind === 'choice') {
+		const options = (response.options ?? response.choiceOptions ?? [])
+			.map(choiceOptionString)
+			.filter(Boolean);
+		const maxSelections = choiceMaxSelectionsForImport(response, options.length, correctAnswers);
 		return {
 			kind: 'choice',
-			options: (response.options ?? response.choiceOptions ?? [])
-				.map(choiceOptionString)
-				.filter(Boolean),
+			options,
 			layout: response.layout ?? 'vertical',
-			...(response.maxSelections && response.maxSelections > 1
-				? { maxSelections: response.maxSelections }
-				: {}),
+			...(maxSelections > 1 ? { maxSelections } : {}),
 			...(correctAnswers ? { correctAnswers } : {})
 		};
 	}

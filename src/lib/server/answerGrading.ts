@@ -342,6 +342,95 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 	].join('\n');
 }
 
+function normalizedFixedAnswer(value: string): string {
+	return value
+		.toLowerCase()
+		.normalize('NFKC')
+		.replace(/[^a-z0-9]+/g, ' ')
+		.trim();
+}
+
+function choiceAnswerKeyValues(response: Record<string, unknown>): string[] {
+	const correctAnswers = response.correctAnswers;
+	if (Array.isArray(correctAnswers)) {
+		return correctAnswers
+			.map((answer) =>
+				answer && typeof answer === 'object'
+					? String((answer as Record<string, unknown>).correctAnswer ?? '')
+					: ''
+			)
+			.map((answer) => answer.trim())
+			.filter(Boolean);
+	}
+	if (!correctAnswers || typeof correctAnswers !== 'object') return [];
+	return Object.values(correctAnswers)
+		.filter((answer): answer is string => typeof answer === 'string')
+		.map((answer) => answer.trim())
+		.filter(Boolean);
+}
+
+/** Fixed-choice controls have exact source-grounded keys and must not invoke an LLM. */
+export function deterministicChoiceGrade(
+	data: PracticePageData,
+	studentAnswer: string
+): QuestionGradeResult | null {
+	const response = data.question.renderingOverlay?.responseInteraction;
+	if (!response || response.kind !== 'choice') return null;
+	const expected = choiceAnswerKeyValues(response);
+	if (!expected.length) return null;
+
+	const selected = studentAnswer
+		.split(/\r?\n/)
+		.map((answer) => answer.trim())
+		.filter(Boolean);
+	const normalizedSelected = new Set(selected.map(normalizedFixedAnswer));
+	const normalizedExpected = new Set(expected.map(normalizedFixedAnswer));
+	const credited = expected.filter((answer) =>
+		normalizedSelected.has(normalizedFixedAnswer(answer))
+	);
+	const incorrectSelectionCount = [...normalizedSelected].filter(
+		(answer) => !normalizedExpected.has(answer)
+	).length;
+	const maxMarks = data.question.meta.marks;
+	const gradeableMarks = Math.min(maxMarks, Math.max(1, expected.length));
+	const creditedAfterPenalty = Math.max(0, credited.length - incorrectSelectionCount);
+	const isCorrect = credited.length === expected.length && selected.length === expected.length;
+	const proportionalMarks = Math.floor((creditedAfterPenalty / expected.length) * gradeableMarks);
+	const awardedMarks = isCorrect
+		? maxMarks
+		: Math.min(Math.max(0, maxMarks - 1), proportionalMarks);
+	const result: QuestionGradeResult['result'] = isCorrect
+		? 'correct'
+		: awardedMarks > 0
+			? 'partial'
+			: 'incorrect';
+	const answerLabel = expected.map((answer) => `**${answer}**`).join(' and ');
+	const keyIdea = data.question.modelAnswer.trim();
+
+	return {
+		status: 'ok',
+		result,
+		awardedMarks,
+		maxMarks,
+		// A fixed-choice response is reliable evidence for the question, but it does not
+		// show which individual reasoning-chain steps the learner can construct.
+		presentStepIds: [],
+		missingStepIds: [],
+		feedbackMarkdown: [
+			isCorrect
+				? `- **${maxMarks}/${maxMarks}** Correct.`
+				: `- **${awardedMarks}/${maxMarks}** Not quite.`,
+			`- Correct answer${expected.length === 1 ? '' : 's'}: ${answerLabel}.`,
+			keyIdea ? `- Key idea: ${keyIdea}` : ''
+		]
+			.filter(Boolean)
+			.join('\n'),
+		thinkingMarkdown: null,
+		model: 'deterministic',
+		modelVersion: 'fixed-choice-v1'
+	};
+}
+
 export async function loadQuestionForGrading(questionId: string): Promise<PracticePageData> {
 	return await getPracticePageData(questionId);
 }
@@ -363,6 +452,11 @@ export async function gradeQuestionAnswerStreaming({
 	let modelAnalytics: ReturnType<typeof startModelAnalytics> | null = null;
 	try {
 		const data = await loadQuestionForGrading(questionId);
+		const deterministicResult = deterministicChoiceGrade(data, studentAnswer);
+		if (deterministicResult) {
+			onDelta?.({ type: 'status', phase: 'grading' });
+			return deterministicResult;
+		}
 		stage = 'build_prompt';
 		const prompt = buildGradePrompt(data, studentAnswer);
 		modelAnalytics = startModelAnalytics({

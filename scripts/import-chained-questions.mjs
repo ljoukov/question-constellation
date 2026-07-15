@@ -28,6 +28,10 @@ import {
 } from './lib/scoped-chained-content-repairs.mjs';
 import { aqaScienceTopicFieldsForImport } from './lib/aqa-science-topic-mapping.mjs';
 import { invalidateQuestionPracticePayloadsStatement } from './lib/public-route-materialization-scope.mjs';
+import {
+	cleanLegacyChoiceOption,
+	explicitChainedQuestionResponse
+} from './lib/chained-question-response.mjs';
 import { materializePublicRoutePayloads } from './materialize-public-route-payloads.mjs';
 
 const rootDir = process.cwd();
@@ -811,7 +815,11 @@ function removeResponseLinesFromPrompt(text, response) {
 	if (!lines.length) return '';
 
 	if (response.kind === 'choice' || response.kind === 'choice-table') {
-		const index = lines.findIndex((line) => /\b(?:tick|choose)\b.*\b(?:one box|one)\b/i.test(line));
+		const index = lines.findIndex((line) =>
+			/\b(?:tick|choose)\b.*\b(?:one|two|three|four|\d+)\b.*\b(?:box(?:es)?|option(?:s)?)\b/i.test(
+				line
+			)
+		);
 		if (index >= 0) return lines.slice(0, index + 1).join('\n');
 	}
 
@@ -843,17 +851,25 @@ function isAnswerLine(line) {
 
 function extractChoiceInteraction(question, sourceText) {
 	const text = sourceConstraintText(question);
-	if (
-		!/\btick\b[\s\S]{0,20}\bone box\b/i.test(text) &&
-		!/\bchoose\b[\s\S]{0,30}\bone\b/i.test(text)
-	) {
+	const instruction = text.match(
+		/\b(?:tick|choose)\b[\s\S]{0,30}\b(one|two|three|four|\d+)\b[\s\S]{0,12}\b(?:box(?:es)?|option(?:s)?)\b/i
+	);
+	if (!instruction) {
 		return null;
 	}
+	const countWords = { one: 1, two: 2, three: 3, four: 4 };
+	const parsedSelectionCount =
+		countWords[instruction[1].toLowerCase()] ?? Number.parseInt(instruction[1], 10);
+	const selectionCount =
+		Number.isInteger(parsedSelectionCount) && parsedSelectionCount > 0 ? parsedSelectionCount : 1;
 
 	const optionLines = promptLinesAfterInstruction(
 		sourceText ?? question.prompt_text ?? '',
-		/\b(?:tick|choose)\b.*\b(?:one box|one)\b/i
-	).map(stripListMarker);
+		/\b(?:tick|choose)\b.*\b(?:one|two|three|four|\d+)\b.*\b(?:box(?:es)?|option(?:s)?)\b/i
+	)
+		.map(stripListMarker)
+		.map(cleanLegacyChoiceOption)
+		.filter(Boolean);
 	const splitRows = optionLines.map(splitPaperColumns).filter((row) => row.length > 0);
 	const tableWidth = splitRows[0]?.length ?? 0;
 
@@ -874,18 +890,20 @@ function extractChoiceInteraction(question, sourceText) {
 	if (splitRows.length === 1 && splitRows[0].length > 1) {
 		return {
 			kind: 'choice',
-			mode: 'single',
+			mode: selectionCount === 1 ? 'single' : 'multiple',
 			options: splitRows[0].map(withInlineMath),
 			layout: 'horizontal',
+			maxSelections: selectionCount,
 			provenance: 'prompt-text-heuristic'
 		};
 	}
 
 	return {
 		kind: 'choice',
-		mode: 'single',
+		mode: selectionCount === 1 ? 'single' : 'multiple',
 		options: optionLines.map(withInlineMath),
 		layout: 'vertical',
+		maxSelections: selectionCount,
 		provenance: optionLines.length > 0 ? 'prompt-text-heuristic' : 'constraint-only'
 	};
 }
@@ -1179,6 +1197,7 @@ function fallbackLineCount(question) {
 
 function responseInteraction(question, sourceText) {
 	return (
+		explicitChainedQuestionResponse(question) ??
 		extractImageLabelZonesInteraction(question, sourceText) ??
 		extractAssetCanvasInteraction(question, sourceText) ??
 		extractEquationBlankInteraction(question, sourceText) ??

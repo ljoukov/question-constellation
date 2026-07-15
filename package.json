@@ -39,6 +39,7 @@
 		"extract:production:batch": "node scripts/run-production-extraction-batch.mjs",
 		"verify:production-extraction": "node scripts/verify-production-extraction-run.mjs",
 		"import:chained": "node scripts/import-chained-questions.mjs",
+		"repair:question-response": "node scripts/repair-scoped-question-response.mjs",
 		"import:curricula": "node scripts/import-curriculum-catalog.mjs",
 		"materialize:public-routes": "node scripts/materialize-public-route-payloads.mjs",
 		"import:vision": "node scripts/import-physics-vision.mjs",

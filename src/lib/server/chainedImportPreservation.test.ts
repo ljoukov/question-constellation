@@ -710,7 +710,8 @@ describe('additive chained imports', () => {
 			  ('practice:owned-chain:keep', 'practice', '/practice/owned-chain/keep'),
 			  ('practice:owned-chain:stale', 'practice', '/practice/owned-chain/stale'),
 			  ('practice:foreign-chain:keep', 'practice', '/practice/foreign-chain/keep'),
-			  ('question-practice-page:question-practice-page-v3:changed-question', 'question-practice-page', '/questions/changed-question/practice'),
+			  ('question-practice-page:question-practice-page-v5:changed-question', 'question-practice-page', '/questions/changed-question/practice'),
+			  ('question-practice-page:future-cache-version:changed-question', 'question-practice-page', '/questions/changed-question/practice'),
 			  ('question-practice-page:question-practice-page-v3:other-question', 'question-practice-page', '/questions/other-question/practice'),
 			  ('chains:browse', 'chains', '/chains'),
 			  ('home:public-summary', 'home', '/');
@@ -728,6 +729,15 @@ describe('additive chained imports', () => {
 			{ id: 'question-practice-page:question-practice-page-v3:other-question' }
 		]);
 		database.close();
+	});
+
+	it('keeps the base rendering-overlay migration additive when schema setup is replayed', () => {
+		const migration = readFileSync(
+			path.join(rootDir, 'migrations/0001_public_content.sql'),
+			'utf8'
+		);
+		expect(migration).toContain('CREATE TABLE IF NOT EXISTS question_rendering_overlays');
+		expect(migration).not.toMatch(/DROP TABLE IF EXISTS question_rendering_overlays/i);
 	});
 
 	it('removes only proven-owned stale rows and preserves other-pipeline children on the same question', () => {
@@ -1162,6 +1172,18 @@ describe('scoped chained repair contract', () => {
 		expect(repairedQuestions.get('8464c1h-jun22-05-3')?.card_title).toBe(
 			'Adding other metals to aluminium'
 		);
+		const plantTissue = repairedQuestions.get('8464b1h-jun24-04-6');
+		if (!plantTissue) throw new Error('Scoped plant-tissue question was not found.');
+		expect(plantTissue.answer_format).toBe('choice');
+		expect(plantTissue.response).toMatchObject({
+			kind: 'choice',
+			options: ['Epidermis', 'Meristem', 'Mesophyll', 'Phloem'],
+			maxSelections: 1,
+			correctAnswers: { answer: 'Meristem' }
+		});
+		expect(plantTissue.prompt_text).not.toContain('Phloem');
+		expect(plantTissue.prompt_text).not.toMatch(/\b10\s*$/);
+		expect(plantTissue.model_answer).toBeNull();
 	});
 
 	it('removes following-sibling setup if the generated baseline regresses', () => {

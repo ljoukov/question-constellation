@@ -86,9 +86,9 @@ CREATE TABLE IF NOT EXISTS question_assets (
   metadata_json TEXT NOT NULL DEFAULT '{}'
 );
 
-DROP TABLE IF EXISTS question_rendering_overlays;
-
-CREATE TABLE question_rendering_overlays (
+-- This migration is also used by the import tooling to ensure the base schema exists. Keep it
+-- additive: replaying it must never erase reviewed response controls from a populated question bank.
+CREATE TABLE IF NOT EXISTS question_rendering_overlays (
   id TEXT PRIMARY KEY,
   question_id TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
   source_document_id TEXT NOT NULL REFERENCES source_documents(id) ON DELETE CASCADE,

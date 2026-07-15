@@ -23,8 +23,8 @@ export function invalidateQuestionPracticePayloadsStatement(questionIds) {
 	return {
 		sql: `DELETE FROM public_route_payloads
 		      WHERE route_kind = 'question-practice-page'
-		        AND id IN (
-		          SELECT 'question-practice-page:question-practice-page-v3:' || CAST(value AS TEXT)
+		        AND route_path IN (
+		          SELECT '/questions/' || CAST(value AS TEXT) || '/practice'
 		          FROM json_each(?)
 		        )`,
 		params: [JSON.stringify(questionIds)]

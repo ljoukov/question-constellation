@@ -1,4 +1,9 @@
-import { buildGradePrompt, configureLlmProcessEnv, parseGradeResponse } from './answerGrading';
+import {
+	buildGradePrompt,
+	configureLlmProcessEnv,
+	deterministicChoiceGrade,
+	parseGradeResponse
+} from './answerGrading';
 import { env as privateEnv } from '$env/dynamic/private';
 import type { PracticePageData } from './questionData';
 import { describe, expect, it } from 'vitest';
@@ -200,7 +205,93 @@ const englishPracticeData: PracticePageData = {
 	}
 };
 
+const choicePracticeData: PracticePageData = {
+	...practiceData,
+	question: {
+		...practiceData.question,
+		id: '8464b1h-jun24-04-6',
+		prompt: 'Which tissue in the cut stem will differentiate into new root cells?',
+		renderingOverlay: {
+			id: 'plant-choice-overlay',
+			version: 'manual-v1',
+			provenance: 'manual',
+			confidence: 1,
+			needsHumanReview: false,
+			stemBlocks: [],
+			promptBlocks: [],
+			responseInteraction: {
+				kind: 'choice',
+				options: ['Epidermis', 'Meristem', 'Mesophyll', 'Phloem'],
+				maxSelections: 1,
+				correctAnswers: { answer: 'Meristem' }
+			},
+			afterResponseBlocks: [],
+			assets: [],
+			layout: {},
+			metadata: {}
+		},
+		meta: { ...practiceData.question.meta, marks: 1 },
+		modelAnswer: 'Plant stem cells -> Meristem tissue'
+	},
+	chain: {
+		...practiceData.chain,
+		steps: practiceData.chain.steps.slice(0, 2)
+	}
+};
+
 describe('answer grading prompt and parser', () => {
+	it('grades an exact fixed choice deterministically without model output', () => {
+		const correct = deterministicChoiceGrade(choicePracticeData, 'Meristem');
+		expect(correct).toMatchObject({
+			result: 'correct',
+			awardedMarks: 1,
+			maxMarks: 1,
+			presentStepIds: [],
+			missingStepIds: [],
+			model: 'deterministic',
+			modelVersion: 'fixed-choice-v1'
+		});
+		expect(correct?.feedbackMarkdown).toContain('Correct answer: **Meristem**');
+
+		const wrong = deterministicChoiceGrade(choicePracticeData, 'Phloem');
+		expect(wrong).toMatchObject({
+			result: 'incorrect',
+			awardedMarks: 0,
+			maxMarks: 1,
+			presentStepIds: [],
+			missingStepIds: [],
+			model: 'deterministic'
+		});
+		expect(wrong?.feedbackMarkdown).toContain('Not quite');
+	});
+
+	it('does not display full marks for an incomplete multi-select answer', () => {
+		const multiSelect = structuredClone(choicePracticeData);
+		multiSelect.question.renderingOverlay!.responseInteraction = {
+			kind: 'choice',
+			options: ['A', 'B', 'C'],
+			maxSelections: 2,
+			correctAnswers: [
+				{ targetId: 'first', correctAnswer: 'A' },
+				{ targetId: 'second', correctAnswer: 'B' }
+			]
+		};
+		const incomplete = deterministicChoiceGrade(multiSelect, 'A');
+		expect(incomplete).toMatchObject({
+			result: 'incorrect',
+			awardedMarks: 0,
+			maxMarks: 1
+		});
+
+		multiSelect.question.meta.marks = 2;
+		const duplicated = deterministicChoiceGrade(multiSelect, 'A\nB\nB');
+		expect(duplicated).toMatchObject({
+			result: 'partial',
+			awardedMarks: 1,
+			maxMarks: 2
+		});
+	});
+
 	it('builds a selection-oriented prompt from real question fields', () => {
 		const prompt = buildGradePrompt(
 			practiceData,

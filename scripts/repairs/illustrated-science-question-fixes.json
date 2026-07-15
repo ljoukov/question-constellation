@@ -388,6 +388,54 @@
 				"needs_human_review": false,
 				"supporting_mark_scheme_item_indexes": [0, 1, 2]
 			}
+		},
+		{
+			"id": "8464b1h-jun24-04-6",
+			"source_document_id": "aqa-8464b1h-qp-jun24",
+			"source_question_ref": "04.6",
+			"prompt_text": "The person cut a stem from one of the tomato plants.\nThe cut stem was placed in soil to grow new roots.\n\nWhich tissue in the cut stem will differentiate into new root cells?\n[1 mark]\nTick (✓) one box.",
+			"self_contained_prompt_text": "The person cut a stem from one of the tomato plants.\nThe cut stem was placed in soil to grow new roots.\n\nWhich tissue in the cut stem will differentiate into new root cells?\n[1 mark]\nTick (✓) one box.",
+			"self_contained_prompt_markdown": "The person cut a stem from one of the tomato plants.\nThe cut stem was placed in soil to grow new roots.\n\nWhich tissue in the cut stem will differentiate into new root cells?\n[1 mark]\nTick (✓) one box.",
+			"full_prompt_text": "The person cut a stem from one of the tomato plants.\nThe cut stem was placed in soil to grow new roots.\n\nWhich tissue in the cut stem will differentiate into new root cells?\n[1 mark]\nTick (✓) one box.",
+			"parent_stem": null,
+			"context_blocks": [],
+			"answer_format": "choice",
+			"source_constraints": ["Tick (✓) one box."],
+			"structured_constraints": ["Tick (✓) one box."],
+			"card_title": "Plant tissue forming new roots",
+			"response": {
+				"kind": "choice",
+				"options": ["Epidermis", "Meristem", "Mesophyll", "Phloem"],
+				"layout": "vertical",
+				"maxSelections": 1,
+				"correctAnswers": { "answer": "Meristem" },
+				"provenance": "manual-source-review"
+			},
+			"mark_scheme_items": [
+				{
+					"item_type": "answer",
+					"text": "Meristem.",
+					"marks": 1,
+					"source_ref": "AQA-8464B1H-MS-JUN24 04.6",
+					"confidence": 1,
+					"metadata": { "page_start": 16, "raw_block": false, "source_repaired": true }
+				}
+			],
+			"mark_checklist": [
+				{
+					"text": "Select Meristem.",
+					"required": true,
+					"mark_scheme_item_indexes": [0],
+					"confidence": 1,
+					"needs_human_review": false
+				}
+			],
+			"model_answer": null,
+			"question_segmentation_confidence": 1,
+			"needs_human_review": false,
+			"review_notes": [
+				"Response options and answer key were checked against the June 2024 question paper and mark scheme; the trailing OCR page number was removed."
+			]
 		}
 	]
 }
