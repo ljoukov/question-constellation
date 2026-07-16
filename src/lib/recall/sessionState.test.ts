@@ -17,11 +17,13 @@ const scope: RecallSessionScope = {
 	returnTo: '/subjects/biology'
 };
 
+const cardContentKeys = ['card-1@1:hash-one', 'card-2@4:hash-two'];
+
 function snapshot(overrides: Partial<StoredRecallSession> = {}): StoredRecallSession {
 	return {
-		version: 1,
+		version: 2,
 		scope,
-		cardIds: ['card-1', 'card-2'],
+		cardContentKeys,
 		cardIndex: 1,
 		cardPositionInSession: 1,
 		reviewedInSession: 1,
@@ -37,12 +39,12 @@ function snapshot(overrides: Partial<StoredRecallSession> = {}): StoredRecallSes
 }
 
 describe('recall session persistence', () => {
-	it('restores the exact active stack and position', () => {
+	it('restores the exact active content identities and position', () => {
 		const stored = snapshot({ revealed: true });
 		expect(
-			readRecallSession(JSON.stringify(stored), scope, new Set(stored.cardIds), 11_000)
+			readRecallSession(JSON.stringify(stored), scope, new Set(stored.cardContentKeys), 11_000)
 		).toMatchObject({
-			cardIds: ['card-1', 'card-2'],
+			cardContentKeys,
 			cardIndex: 1,
 			cardPositionInSession: 1,
 			revealed: true,
@@ -57,7 +59,7 @@ describe('recall session persistence', () => {
 			mcqFeedback: 'correct'
 		});
 		expect(
-			readRecallSession(JSON.stringify(stored), scope, new Set(stored.cardIds), 11_000)
+			readRecallSession(JSON.stringify(stored), scope, new Set(stored.cardContentKeys), 11_000)
 		).toMatchObject({ revealed: true, selectedChoice: 'Mitochondria', mcqFeedback: 'correct' });
 	});
 
@@ -67,7 +69,7 @@ describe('recall session persistence', () => {
 			readRecallSession(
 				JSON.stringify(stored),
 				scope,
-				new Set(stored.cardIds),
+				new Set(stored.cardContentKeys),
 				stored.updatedAt + RECALL_SESSION_MAX_AGE_MS + 1
 			)
 		).toBeNull();
@@ -75,18 +77,48 @@ describe('recall session persistence', () => {
 			readRecallSession(
 				JSON.stringify(stored),
 				{ ...scope, topic: 'infection-and-response' },
-				new Set(stored.cardIds),
+				new Set(stored.cardContentKeys),
 				11_000
 			)
 		).toBeNull();
 		expect(
-			readRecallSession(JSON.stringify(stored), scope, new Set(['card-1']), 11_000)
+			readRecallSession(JSON.stringify(stored), scope, new Set([cardContentKeys[0]]), 11_000)
+		).toBeNull();
+	});
+
+	it('invalidates an active stack when a stable card id is revised', () => {
+		const stored = snapshot({
+			cardContentKeys: ['card-1@1:old-hash'],
+			cardIndex: 0,
+			cardPositionInSession: 0,
+			reviewedInSession: 0,
+			rememberedInSession: 0
+		});
+		expect(
+			readRecallSession(
+				JSON.stringify(stored),
+				scope,
+				new Set(['card-1@2:new-hash']),
+				11_000
+			)
+		).toBeNull();
+	});
+
+	it('rejects legacy id-only snapshots', () => {
+		const legacy = {
+			...snapshot(),
+			version: 1,
+			cardIds: ['card-1', 'card-2'],
+			cardContentKeys: undefined
+		};
+		expect(
+			readRecallSession(JSON.stringify(legacy), scope, new Set(cardContentKeys), 11_000)
 		).toBeNull();
 	});
 
 	it('scopes storage by learner identity without exposing it as a path segment', () => {
 		expect(recallSessionStorageKey('student/name@example.test')).toBe(
-			'question-constellation.recall-session.v1:student%2Fname%40example.test'
+			'question-constellation.recall-session.v2:student%2Fname%40example.test'
 		);
 	});
 });

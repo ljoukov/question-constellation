@@ -1,0 +1,10 @@
+Use case: scientific-educational
+Asset type: reusable 16:9 landscape reasoning-chain illustration for an iPad GCSE science app
+Primary request: Visualise how opposed forces determine acceleration, in exactly four numbered left-to-right panels.
+Style/medium: luminous mechanics atlas on deep navy; elegant accurate scientific textbook illustration; one precision trolley on a horizontal track; cyan, red, and restrained green light.
+Composition:
+1 "FORCES COMBINE" — the same trolley, a longer cyan applied-force arrow to the right and a shorter red resistive-force arrow to the left.
+2 "RESULTANT FORCE" — the same trolley with one green rightward resultant arrow that is visibly shorter than the cyan applied-force arrow in panel 1.
+3 "MASS STAYS FIXED" — the same trolley and same size; a clean leader from the label "m CONSTANT" to the trolley body.
+4 "ACCELERATION FOLLOWS" — the same trolley with a larger resultant-force arrow and a correspondingly larger acceleration arrow; show the universal relation "F_resultant = ma" below, visually detached from any one arrow.
+Constraints: no numerical/example values; no extra vector-subtraction inset; every force arrow has exactly one direction; no mass cage or lock drawn around the trolley; no changed trolley identity or size; no extra prose, logo, or watermark. The causal chain must remain graspable with the headings covered.

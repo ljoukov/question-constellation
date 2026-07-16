@@ -1,5 +1,5 @@
 import { buildOcrEnglishLiteratureHub } from '$lib/englishLiteratureHub';
-import { getQuestionBankBrowseData } from '$lib/server/learningChainData';
+import { getQuestionBankQuestionsForSubject } from '$lib/server/learningChainData';
 import {
 	getDefaultLearnerProfileSettings,
 	getLearnerProfileSettings
@@ -18,9 +18,9 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-	const [baseSettings, browseData] = await Promise.all([
+	const [baseSettings, questions] = await Promise.all([
 		locals.user ? getLearnerProfileSettings(locals.user) : getDefaultLearnerProfileSettings(),
-		getQuestionBankBrowseData()
+		getQuestionBankQuestionsForSubject('OCR', 'English Literature')
 	]);
 	const localProfile = parseAnonymousLearnerProfileCookie(
 		cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME)
@@ -49,6 +49,6 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 
 	return {
 		user: locals.user,
-		hub: buildOcrEnglishLiteratureHub(settings.englishLiteratureSelections, browseData.questions)
+		hub: buildOcrEnglishLiteratureHub(settings.englishLiteratureSelections, questions)
 	};
 };

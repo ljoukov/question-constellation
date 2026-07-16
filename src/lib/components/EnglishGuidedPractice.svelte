@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
@@ -9,10 +10,15 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault } from '$lib/englishSubjects';
+	import { withEnglishPracticeContext } from '$lib/englishPracticeNavigation';
+	import { shouldShowEnglishSourcePaper } from '$lib/englishSourceAvailability';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamResponse } from '$lib/experiments/questions/types';
+	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
+	import { learnerSubjectHref } from '$lib/learning/subjects';
 	import { markLabel } from '$lib/marks';
+	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
 	import {
 		flushPracticeDraftQueue,
 		installPracticeDraftWindowFlush,
@@ -22,6 +28,7 @@
 	} from '$lib/practiceDraftSync';
 	import {
 		isRecord,
+		numberFromRecord,
 		recordFromRecord,
 		type PracticeDraftSave,
 		type SavedPracticeDraft
@@ -46,13 +53,14 @@
 		LockKeyhole,
 		RotateCcw
 	} from '@lucide/svelte';
-	import { onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 
 	type GradePhase = 'idle' | 'connecting' | 'calling' | 'thinking' | 'grading' | 'done' | 'error';
 	type EnglishStepGradeResult = {
 		status: 'ok';
 		decision: 'pass' | 'revise';
 		stepId: string;
+		stepTitle: string;
 		checkedAnswer: string;
 		checks: Array<{
 			id: string;
@@ -133,12 +141,24 @@
 		stepAnswers?: Record<string, string>;
 		stepResults?: Record<string, EnglishStepGradeResult>;
 		attemptHistory?: EnglishLearnerAttempt[];
+		activitySessionId?: string;
+		responseStartedAt?: number;
+		pendingCheckId?: string;
+		pendingCheckSignature?: string;
+		pendingResponseDurationMs?: number | null;
 		updatedAt?: number;
 	};
 
 	type SseMessage = {
 		event: string;
 		data: string;
+	};
+	type EnglishGradeRequest = {
+		sequence: number;
+		questionId: string;
+		stageId: string;
+		stageTitle: string;
+		answer: string;
 	};
 
 	let {
@@ -157,6 +177,7 @@
 
 	const subjects = [...BROWSE_SUBJECTS];
 	let loadedQuestionId = $state('');
+	let stepperElement = $state<HTMLElement | null>(null);
 	let hydrated = $state(false);
 	let stepAnswers = $state<Record<string, string>>({});
 	let stepResults = $state<Record<string, EnglishStepGradeResult>>({});
@@ -167,8 +188,16 @@
 	let hintOpen = $state(false);
 	let feedbackPanel = $state<HTMLElement | null>(null);
 	let authDialogOpen = $state(false);
+	let hintUsed = $state(false);
+	let activitySessionId = $state('');
+	let responseStartedAt = $state(0);
+	let pendingCheckId = $state('');
+	let pendingCheckSignature = $state('');
+	let pendingResponseDurationMs = $state<number | null>(null);
 	let migratedAnonymousState = false;
 	let lastQueuedDraftSignature = '';
+	let gradeRequestSequence = 0;
+	let activeGradeController: AbortController | null = null;
 	const pendingGradeStorageKey = 'question-constellation:pending-model-check:v1';
 	const gradingProgressSteps = [
 		'Connecting',
@@ -180,6 +209,30 @@
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
 	const finderHref = $derived(`${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`);
+	const requestedReturnTo = $derived(safeInternalReturnPath(page.url.searchParams.get('returnTo')));
+	const signedSubjectHref = $derived(
+		topbarSubject === 'English Literature' && question.meta.board === 'OCR'
+			? resolve('/english-literature')
+			: learnerSubjectHref(topbarSubject)
+	);
+	const completionHref = $derived(user ? (requestedReturnTo ?? signedSubjectHref) : finderHref);
+	const backHref = $derived(user ? (requestedReturnTo ?? signedSubjectHref) : finderHref);
+	const backLabel = $derived(
+		user && requestedReturnTo?.startsWith('/questions/')
+			? 'Back to question'
+			: user
+				? `Back to ${topbarSubject}`
+				: 'Back to question finder'
+	);
+	const showSourcePaperLink = $derived(
+		shouldShowEnglishSourcePaper({
+			sourcePaperUrl: practice.sourcePaperUrl,
+			signedIn: Boolean(user),
+			prompt: question.prompt,
+			context: question.context,
+			hasAssets: Boolean(question.assets?.length)
+		})
+	);
 	const activeStageIndex = $derived(
 		Math.max(
 			0,
@@ -234,10 +287,11 @@
 	}
 
 	function stepHref(stage: Stage) {
-		return resolve('/questions/[questionId]/practice/step-by-step/[stepId]', {
+		const path = resolve('/questions/[questionId]/practice/step-by-step/[stepId]', {
 			questionId: practice.questionId,
 			stepId: stage.id
 		});
+		return withEnglishPracticeContext(path, page.url.searchParams);
 	}
 
 	function resultMatchesAnswer(
@@ -301,7 +355,17 @@
 		try {
 			window.sessionStorage.setItem(
 				englishPracticeStorageKey(questionId),
-				JSON.stringify({ stepAnswers, stepResults, attemptHistory, updatedAt: Date.now() })
+				JSON.stringify({
+					stepAnswers,
+					stepResults,
+					attemptHistory,
+					activitySessionId,
+					responseStartedAt,
+					pendingCheckId,
+					pendingCheckSignature,
+					pendingResponseDurationMs,
+					updatedAt: Date.now()
+				})
 			);
 		} catch {
 			// The page remains usable without session-history restoration.
@@ -352,6 +416,18 @@
 			stepAnswers: stringRecord(recordFromRecord(draft.payload, 'stepAnswers')),
 			stepResults: gradeResultRecord(recordFromRecord(draft.payload, 'stepResults')),
 			attemptHistory: learnerAttemptList(draft.payload.attemptHistory),
+			activitySessionId:
+				typeof draft.payload.activitySessionId === 'string'
+					? draft.payload.activitySessionId
+					: undefined,
+			responseStartedAt: numberFromRecord(draft.payload, 'responseStartedAt') ?? undefined,
+			pendingCheckId:
+				typeof draft.payload.pendingCheckId === 'string' ? draft.payload.pendingCheckId : undefined,
+			pendingCheckSignature:
+				typeof draft.payload.pendingCheckSignature === 'string'
+					? draft.payload.pendingCheckSignature
+					: undefined,
+			pendingResponseDurationMs: numberFromRecord(draft.payload, 'pendingResponseDurationMs'),
 			updatedAt: draft.clientUpdatedAt
 		} satisfies StoredEnglishPracticeState;
 	}
@@ -373,7 +449,16 @@
 	}
 
 	function draftPayload() {
-		return { stepAnswers, stepResults, attemptHistory } satisfies Record<string, unknown>;
+		return {
+			stepAnswers,
+			stepResults,
+			attemptHistory,
+			activitySessionId,
+			responseStartedAt,
+			pendingCheckId,
+			pendingCheckSignature,
+			pendingResponseDurationMs
+		} satisfies Record<string, unknown>;
 	}
 
 	function persistState() {
@@ -400,8 +485,32 @@
 		authDialogOpen = true;
 	}
 
+	function ensurePendingCheck() {
+		if (!activeStage) return null;
+		if (!activitySessionId) activitySessionId = createActivityId('english-session');
+		if (!responseStartedAt) responseStartedAt = Date.now();
+		const signature = JSON.stringify({
+			stepId: activeStage.id,
+			answer: activeAnswer,
+			hintUsed
+		});
+		if (!pendingCheckId || pendingCheckSignature !== signature) {
+			pendingCheckId = createActivityId('english-step');
+			pendingCheckSignature = signature;
+			pendingResponseDurationMs = responseDurationMs(responseStartedAt);
+			persistState();
+		}
+		return {
+			checkId: pendingCheckId,
+			sourceSessionId: activitySessionId,
+			responseDurationMs: pendingResponseDurationMs,
+			hintOpened: hintUsed
+		};
+	}
+
 	function prepareAuthRedirect() {
 		if (typeof window === 'undefined' || !activeStage) return;
+		const pendingCheck = ensurePendingCheck();
 		persistState();
 		window.sessionStorage.setItem(
 			pendingGradeStorageKey,
@@ -410,6 +519,7 @@
 				questionId: practice.questionId,
 				stepId: activeStage.id,
 				answer: activeAnswer,
+				...pendingCheck,
 				createdAt: Date.now()
 			})
 		);
@@ -425,6 +535,10 @@
 				questionId?: string;
 				stepId?: string;
 				answer?: string;
+				checkId?: string;
+				sourceSessionId?: string;
+				responseDurationMs?: number | null;
+				hintOpened?: boolean;
 				createdAt?: number;
 			};
 			const matches =
@@ -434,6 +548,17 @@
 				pending.answer?.trim() === activeAnswer &&
 				Date.now() - Number(pending.createdAt ?? 0) < 30 * 60 * 1000;
 			window.sessionStorage.removeItem(pendingGradeStorageKey);
+			if (matches) {
+				hintUsed = pending.hintOpened ?? hintUsed;
+				pendingCheckId = pending.checkId ?? '';
+				pendingCheckSignature = JSON.stringify({
+					stepId: pending.stepId,
+					answer: pending.answer?.trim(),
+					hintUsed: pending.hintOpened ?? hintUsed
+				});
+				activitySessionId = pending.sourceSessionId || activitySessionId;
+				pendingResponseDurationMs = pending.responseDurationMs ?? null;
+			}
 			return matches;
 		} catch {
 			window.sessionStorage.removeItem(pendingGradeStorageKey);
@@ -448,10 +573,30 @@
 		);
 	}
 
+	function invalidateGradeRequest() {
+		gradeRequestSequence += 1;
+		activeGradeController?.abort('English practice changed');
+		activeGradeController = null;
+	}
+
+	function gradeRequestIsCurrent(request: EnglishGradeRequest) {
+		return (
+			request.sequence === gradeRequestSequence &&
+			request.questionId === practice.questionId &&
+			request.stageId === activeStage?.id &&
+			request.answer === activeAnswer
+		);
+	}
+
 	function updateActiveAnswer(value: string) {
 		if (!activeStage) return;
+		if (value !== (stepAnswers[activeStage.id] ?? '')) invalidateGradeRequest();
 		stepAnswers = { ...stepAnswers, [activeStage.id]: value };
 		invalidateFromStage(activeStageIndex);
+		pendingCheckId = '';
+		pendingCheckSignature = '';
+		pendingResponseDurationMs = null;
+		if (!responseStartedAt) responseStartedAt = Date.now();
 		gradePhase = 'idle';
 		gradeFailure = null;
 		gradeReasoningSummary = '';
@@ -460,10 +605,16 @@
 
 	function openStage(index: number) {
 		if (index < 0 || index >= practice.stages.length || index > furthestUnlockedIndex) return;
+		invalidateGradeRequest();
 		gradePhase = 'idle';
 		gradeFailure = null;
 		gradeReasoningSummary = '';
 		hintOpen = false;
+		hintUsed = false;
+		responseStartedAt = Date.now();
+		pendingCheckId = '';
+		pendingCheckSignature = '';
+		pendingResponseDurationMs = null;
 		void goto(stepHref(practice.stages[index]), { noScroll: true, keepFocus: false });
 	}
 
@@ -474,6 +625,7 @@
 	}
 
 	function resetPractice() {
+		invalidateGradeRequest();
 		stepAnswers = blankStepAnswers();
 		stepResults = {};
 		attemptHistory = [];
@@ -481,6 +633,12 @@
 		gradeFailure = null;
 		gradeReasoningSummary = '';
 		hintOpen = false;
+		hintUsed = false;
+		activitySessionId = createActivityId('english-session');
+		responseStartedAt = Date.now();
+		pendingCheckId = '';
+		pendingCheckSignature = '';
+		pendingResponseDurationMs = null;
 		persistState();
 		const firstStage = practice.stages[0];
 		if (firstStage) void goto(stepHref(firstStage), { replaceState: true, noScroll: true });
@@ -605,7 +763,12 @@
 		return { event, data: dataLines.join('\n') };
 	}
 
-	function handleSseMessage(message: SseMessage, reference: string | null) {
+	function handleSseMessage(
+		message: SseMessage,
+		reference: string | null,
+		request: EnglishGradeRequest
+	) {
+		if (!gradeRequestIsCurrent(request)) return null;
 		if (message.event === 'status') {
 			const status = JSON.parse(message.data) as {
 				phase?: GradePhase;
@@ -630,7 +793,11 @@
 		return null;
 	}
 
-	async function readSseStream(body: ReadableStream<Uint8Array>, reference: string | null) {
+	async function readSseStream(
+		body: ReadableStream<Uint8Array>,
+		reference: string | null,
+		request: EnglishGradeRequest
+	) {
 		const reader = body.getReader();
 		const decoder = new TextDecoder();
 		let buffer = '';
@@ -643,13 +810,15 @@
 				const block = buffer.slice(0, separatorIndex);
 				buffer = buffer.slice(separatorIndex + 2);
 				const message = parseSseBlock(block);
-				if (message) result = handleSseMessage(message, reference) ?? result;
+				if (message) result = handleSseMessage(message, reference, request) ?? result;
 				separatorIndex = buffer.indexOf('\n\n');
 			}
 			if (done) break;
 		}
 		const trailingMessage = parseSseBlock(buffer.trim());
-		if (trailingMessage) result = handleSseMessage(trailingMessage, reference) ?? result;
+		if (trailingMessage) {
+			result = handleSseMessage(trailingMessage, reference, request) ?? result;
+		}
 		return result;
 	}
 
@@ -663,24 +832,42 @@
 		gradeReasoningSummary = '';
 		gradePhase = 'connecting';
 		let streamStarted = false;
+		const pendingCheck = ensurePendingCheck();
+		if (!pendingCheck) return;
+		activeGradeController?.abort('Superseded by a new step check');
+		const controller = new AbortController();
+		activeGradeController = controller;
+		const request: EnglishGradeRequest = {
+			sequence: ++gradeRequestSequence,
+			questionId: practice.questionId,
+			stageId: activeStage.id,
+			stageTitle: activeStage.title,
+			answer: activeAnswer
+		};
+		const submittedStepAnswers = { ...stepAnswers };
+		const submittedAttemptHistory = [...attemptHistory];
 		await tick();
+		if (!gradeRequestIsCurrent(request)) return;
 		feedbackPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 		try {
 			const response = await fetchWithResponseTimeout(
 				resolve('/api/questions/[questionId]/grade-step', {
-					questionId: practice.questionId
+					questionId: request.questionId
 				}),
 				{
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({
-						stepId: activeStage.id,
-						answer: activeAnswer,
-						stepAnswers,
-						attemptHistory
-					})
+						stepId: request.stageId,
+						answer: request.answer,
+						stepAnswers: submittedStepAnswers,
+						attemptHistory: submittedAttemptHistory,
+						...pendingCheck
+					}),
+					signal: controller.signal
 				}
 			);
+			if (!gradeRequestIsCurrent(request)) return;
 			if (response.status === 401) {
 				gradePhase = 'idle';
 				openAuthDialog();
@@ -692,16 +879,18 @@
 			streamStarted = true;
 			const result = await readSseStream(
 				response.body,
-				response.headers.get('cf-ray') ?? response.headers.get('x-request-id')
+				response.headers.get('cf-ray') ?? response.headers.get('x-request-id'),
+				request
 			);
+			if (!gradeRequestIsCurrent(request)) return;
 			if (!result) throw new InterruptedRequestError('The step check ended without feedback.');
-			stepResults = { ...stepResults, [activeStage.id]: result };
+			stepResults = { ...stepResults, [request.stageId]: result };
 			attemptHistory = [
 				...attemptHistory,
 				{
-					stepId: activeStage.id,
-					stepTitle: activeStage.title,
-					answer: activeAnswer,
+					stepId: request.stageId,
+					stepTitle: request.stageTitle,
+					answer: request.answer,
 					decision: result.decision,
 					checks: result.checks,
 					nextImprovement: result.nextImprovement
@@ -710,6 +899,7 @@
 			gradePhase = 'done';
 			persistState();
 		} catch (error) {
+			if (controller.signal.aborted || !gradeRequestIsCurrent(request)) return;
 			console.error('[english-step-practice] step check failed', error);
 			gradePhase = 'error';
 			gradeFailure = classifyRequestFailure(error, {
@@ -717,12 +907,19 @@
 				serverLabel: 'The answer checker',
 				streamStarted
 			});
+		} finally {
+			if (activeGradeController === controller) activeGradeController = null;
 		}
 	}
 
 	function primaryAction() {
 		if (activePassed) {
-			continueToNextStage();
+			if (activeStageIndex === practice.stages.length - 1) {
+				persistState();
+				void goto(completionHref);
+			} else {
+				continueToNextStage();
+			}
 			return;
 		}
 		void checkActiveStep();
@@ -731,13 +928,14 @@
 	function primaryLabel() {
 		if (isChecking) return statusText(gradePhase);
 		if (activePassed) {
-			return activeStageIndex === practice.stages.length - 1 ? 'Practice complete' : 'Continue';
+			return activeStageIndex === practice.stages.length - 1 ? 'Finish practice' : 'Continue';
 		}
 		return activeResult?.decision === 'revise' ? 'Check again' : 'Check step';
 	}
 
 	$effect(() => {
 		if (loadedQuestionId === practice.questionId) return;
+		invalidateGradeRequest();
 		loadedQuestionId = practice.questionId;
 		hydrated = false;
 		gradePhase = 'idle';
@@ -747,10 +945,32 @@
 		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
 		stepResults = storedState?.stepResults ?? {};
 		attemptHistory = storedState?.attemptHistory ?? [];
-		lastQueuedDraftSignature = migratedAnonymousState
-			? ''
-			: JSON.stringify({ stepAnswers, stepResults, attemptHistory });
+		activitySessionId = storedState?.activitySessionId || createActivityId('english-session');
+		responseStartedAt =
+			storedState?.responseStartedAt &&
+			responseDurationMs(storedState.responseStartedAt, Date.now()) !== null
+				? storedState.responseStartedAt
+				: Date.now();
+		pendingCheckId = storedState?.pendingCheckId ?? '';
+		pendingCheckSignature = storedState?.pendingCheckSignature ?? '';
+		pendingResponseDurationMs = storedState?.pendingResponseDurationMs ?? null;
+		lastQueuedDraftSignature = migratedAnonymousState ? '' : JSON.stringify(draftPayload());
 		hydrated = true;
+	});
+
+	beforeNavigate(({ to }) => {
+		if (to?.url.pathname !== page.url.pathname) invalidateGradeRequest();
+	});
+
+	onDestroy(invalidateGradeRequest);
+
+	$effect(() => {
+		if (!hintOpen || hintUsed) return;
+		hintUsed = true;
+		pendingCheckId = '';
+		pendingCheckSignature = '';
+		pendingResponseDurationMs = null;
+		persistState();
 	});
 
 	$effect(() => {
@@ -759,6 +979,20 @@
 		if (unlockedStage) {
 			void goto(stepHref(unlockedStage), { replaceState: true, noScroll: true });
 		}
+	});
+
+	$effect(() => {
+		activeStageIndex;
+		if (!hydrated || !stepperElement) return;
+		void tick().then(() => {
+			const activeButton = stepperElement?.querySelector<HTMLElement>('[aria-current="step"]');
+			if (!activeButton) return;
+			activeButton.scrollIntoView({
+				block: 'nearest',
+				inline: 'nearest',
+				behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+			});
+		});
 	});
 
 	onMount(() => {
@@ -793,7 +1027,7 @@
 
 	<div class="qc-step-practice-layout">
 		<aside class="qc-step-question" aria-label="Question">
-			<IconBackLink href={finderHref} label="Back to question finder" />
+			<IconBackLink href={backHref} label={backLabel} />
 			<p class="qc-step-eyebrow">{question.meta.qualification} {question.meta.subject}</p>
 			<h1>Question {question.sourceRef}</h1>
 			<div class="qc-step-meta" aria-label="Exam information">
@@ -810,7 +1044,7 @@
 				assetLoading="eager"
 			/>
 
-			{#if practice.sourcePaperUrl}
+			{#if showSourcePaperLink && practice.sourcePaperUrl}
 				<a
 					class="qc-step-source-link"
 					href={practice.sourcePaperUrl}
@@ -851,6 +1085,7 @@
 				</div>
 			{/if}
 			<nav
+				bind:this={stepperElement}
 				class="qc-stepper"
 				aria-label="Answer steps"
 				style={`--step-count: ${practice.stages.length}`}
@@ -894,7 +1129,7 @@
 						{#if activePassed}
 							<span class="qc-step-pass-badge">
 								<CheckCircle2 size={17} aria-hidden="true" />
-								Passed
+								Complete
 							</span>
 						{/if}
 					</header>
@@ -915,22 +1150,22 @@
 					</label>
 
 					<div class="qc-step-action-row">
-						<small>
-							{activeAnswer.length < 8 && !activePassed
-								? 'Write a meaningful response before checking.'
-								: activePassed
-									? 'This step has met the required standard.'
+						{#if !activePassed}
+							<small>
+								{activeAnswer.length < 8
+									? 'Write a meaningful response before checking.'
 									: 'Your response will be checked against this step only.'}
-						</small>
+							</small>
+						{/if}
 						<button
 							type="button"
 							class="qc-step-primary"
 							onclick={primaryAction}
-							disabled={activePassed ? activeStageIndex === practice.stages.length - 1 : !canCheck}
+							disabled={!activePassed && !canCheck}
 						>
 							{#if isChecking}
 								<span class="qc-step-spinner" aria-hidden="true"></span>
-							{:else if activePassed && activeStageIndex < practice.stages.length - 1}
+							{:else if activePassed}
 								<ChevronRight size={18} aria-hidden="true" />
 							{:else}
 								<ClipboardCheck size={18} aria-hidden="true" />
@@ -952,19 +1187,14 @@
 								<p>Feedback</p>
 								<h3>
 									{activeResult?.decision === 'pass'
-										? 'Step passed'
+										? 'What worked'
 										: activeResult
-											? 'Revise this step'
+											? 'What to improve'
 											: isChecking
 												? statusText(gradePhase)
 												: 'Check unavailable'}
 								</h3>
 							</div>
-							{#if activeResult}
-								<span class:passed={activeResult.decision === 'pass'}>
-									{activeResult.decision === 'pass' ? 'Ready to continue' : 'Not ready yet'}
-								</span>
-							{/if}
 						</header>
 
 						{#if isChecking}
@@ -1026,16 +1256,14 @@
 							</div>
 							<div class="qc-step-next-improvement">
 								<strong
-									>{activeResult.decision === 'pass' ? 'Carry forward' : 'Next improvement'}</strong
+									>{activeResult.decision === 'pass' ? 'Use this next' : 'Next improvement'}</strong
 								>
 								<p>{activeResult.nextImprovement}</p>
 							</div>
 							{#if activeResult.coachingNote}
 								<div class="qc-step-coaching-note">
 									<strong
-										>{attemptHistory.length > 1
-											? 'Your learning pattern'
-											: 'Your current focus'}</strong
+										>{attemptHistory.length > 1 ? 'Pattern to keep' : 'Your current focus'}</strong
 									>
 									<p>{activeResult.coachingNote}</p>
 								</div>
@@ -1048,7 +1276,7 @@
 			<footer class="qc-step-footer">
 				<span
 					>{practice.stages.filter((stage) => validResultForStage(stage)?.decision === 'pass')
-						.length}/{practice.stages.length} steps passed</span
+						.length}/{practice.stages.length} complete</span
 				>
 				<button type="button" onclick={resetPractice}>
 					<RotateCcw size={16} aria-hidden="true" />
@@ -1194,6 +1422,7 @@
 		min-width: 0;
 		max-width: 100%;
 		padding: clamp(1.4rem, 3.4vw, 3rem);
+		container: english-step-workspace / inline-size;
 	}
 
 	.qc-step-hydrating {
@@ -1285,6 +1514,20 @@
 		font-weight: 750;
 	}
 
+	@container english-step-workspace (max-width: 36rem) {
+		.qc-stepper button {
+			flex-direction: column;
+			gap: 0.2rem;
+		}
+
+		.qc-stepper strong {
+			overflow: visible;
+			text-align: center;
+			text-overflow: clip;
+			white-space: normal;
+		}
+	}
+
 	.qc-step-card,
 	.qc-step-feedback {
 		border: 1px solid var(--qc-ui-border-strong);
@@ -1317,8 +1560,7 @@
 		font-size: clamp(1.55rem, 2.6vw, 2.2rem);
 	}
 
-	.qc-step-pass-badge,
-	.qc-step-feedback > header > span {
+	.qc-step-pass-badge {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.38rem;
@@ -1330,8 +1572,7 @@
 		white-space: nowrap;
 	}
 
-	.qc-step-pass-badge,
-	.qc-step-feedback > header > span.passed {
+	.qc-step-pass-badge {
 		border-color: var(--qc-ui-accent-border);
 		background: var(--step-green-soft);
 		color: var(--qc-ui-accent-text);
@@ -1400,6 +1641,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.48rem;
+		margin-left: auto;
 		min-width: 9.25rem;
 		min-height: 2.85rem;
 		padding: 0.68rem 1.05rem;
@@ -1733,8 +1975,7 @@
 			flex-direction: column;
 		}
 
-		.qc-step-pass-badge,
-		.qc-step-feedback > header > span {
+		.qc-step-pass-badge {
 			align-self: flex-start;
 		}
 
@@ -1754,6 +1995,7 @@
 
 		.qc-step-primary {
 			width: 100%;
+			margin-left: 0;
 		}
 	}
 </style>

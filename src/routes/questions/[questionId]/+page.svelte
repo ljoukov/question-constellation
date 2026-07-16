@@ -5,19 +5,32 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
 	import { ArrowRight, Eye } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	const learnerSubject = $derived(
+		learnerSubjectForQuestion({
+			subject: data.question.meta.subject,
+			subjectArea: data.question.meta.subjectArea,
+			paper: data.question.meta.paper
+		}) ?? data.question.meta.subject
+	);
 	const browseHref = $derived(
-		`${resolve('/chains')}?subject=${encodeURIComponent(data.question.meta.subject)}`
+		data.user
+			? learnerSubjectHref(learnerSubject)
+			: `${resolve('/chains')}?subject=${encodeURIComponent(data.question.meta.subject)}`
+	);
+	const browseLabel = $derived(
+		data.user ? `Back to ${learnerSubject}` : `Back to ${data.question.meta.subject} questions`
 	);
 	const chainHref = $derived(
 		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
 	);
 	const practiceHref = $derived(
-		resolve('/questions/[questionId]/practice', { questionId: data.question.id })
+		`${resolve('/questions/[questionId]/practice', { questionId: data.question.id })}?entry=question&returnTo=${encodeURIComponent(`/questions/${encodeURIComponent(data.question.id)}`)}`
 	);
 	const contextLine = $derived(
 		[
@@ -44,14 +57,10 @@
 </svelte:head>
 
 <main class="qc-real-app qc-public-question-page">
-	<AppTopbar
-		user={data.user}
-		subject={data.question.meta.subject}
-		subjects={[...BROWSE_SUBJECTS]}
-	/>
+	<AppTopbar user={data.user} subject={learnerSubject} subjects={[...BROWSE_SUBJECTS]} />
 
 	<div class="qc-public-question-shell">
-		<IconBackLink href={browseHref} label={`Back to ${data.question.meta.subject} questions`} />
+		<IconBackLink href={browseHref} label={browseLabel} />
 
 		<header class="qc-public-question-header">
 			<p class="qc-real-kicker"><MathText text={contextLine} /></p>
@@ -66,11 +75,13 @@
 		/>
 
 		<div class="qc-public-question-actions" aria-label="Question actions">
-			<a class="qc-action-button primary" href={practiceHref}>
-				Try this question
-				<ArrowRight size={18} aria-hidden="true" />
-			</a>
-			<a class="qc-action-button" href={chainHref}>
+			{#if !data.user || data.practiceAvailable}
+				<a class="qc-action-button primary" href={practiceHref}>
+					Try this question
+					<ArrowRight size={18} aria-hidden="true" />
+				</a>
+			{/if}
+			<a class:primary={Boolean(data.user && !data.practiceAvailable)} class="qc-action-button" href={chainHref}>
 				<Eye size={18} aria-hidden="true" />
 				Show answer chain
 			</a>

@@ -1,4 +1,8 @@
 import { saveQuestionDrafts } from '$lib/server/personalLearning';
+import {
+	practiceDraftBatchWithinSyncLimit,
+	practiceDraftPayloadWithinSyncLimit
+} from '$lib/practiceDrafts';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
 
@@ -10,14 +14,19 @@ const draftSchema = z
 		payload: z.record(z.string(), z.unknown()).default({}),
 		clientUpdatedAt: z.number().int().nonnegative()
 	})
-	.refine((draft) => JSON.stringify(draft.payload).length <= 30_000, {
+	.refine((draft) => practiceDraftPayloadWithinSyncLimit(draft.payload), {
 		message: 'Draft payload is too large.',
 		path: ['payload']
 	});
 
-const requestSchema = z.object({
-	drafts: z.array(draftSchema).min(1).max(50)
-});
+const requestSchema = z
+	.object({
+		drafts: z.array(draftSchema).min(1).max(50)
+	})
+	.refine((request) => practiceDraftBatchWithinSyncLimit(request.drafts), {
+		message: 'Draft batch payload is too large.',
+		path: ['drafts']
+	});
 
 export const POST: RequestHandler = async ({ locals, request }) => {
 	if (!locals.user) {

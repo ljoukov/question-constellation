@@ -1,0 +1,1155 @@
+{
+  "schemaVersion": "recall-card-bundle-v2",
+  "promptVersion": "recall-card-compiler-v5",
+  "run": {
+    "id": "combined-higher-biology-cell-structure-compiler-v5",
+    "startedAt": "2026-07-15T21:06:35.636Z",
+    "finishedAt": "2026-07-15T21:12:29.806Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": false
+    }
+  },
+  "source": {
+    "catalogSchemaVersion": "1",
+    "catalogPath": "data/curricula/curriculum-catalog.json",
+    "fingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+    "specification": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Combined Science: Trilogy",
+      "course": "Combined Science",
+      "specificationCode": "8464",
+      "version": "1.1",
+      "title": "AQA GCSE Combined Science: Trilogy (8464)",
+      "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+      "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+      "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+      "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+    },
+    "component": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "code": "4.1.1",
+      "title": "Cell structure",
+      "kind": "section",
+      "subjectArea": "Biology",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 20,
+      "sourcePageEnd": 22
+    },
+    "topicComponent": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4",
+      "code": "4.1",
+      "title": "Cell biology",
+      "kind": "chapter",
+      "subjectArea": "Biology",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 20,
+      "sourcePageEnd": 25
+    },
+    "pageStart": 20,
+    "pageEnd": 22
+  },
+  "cards": [
+    {
+      "id": "bio-eukaryotic-genetic-material-nucleus",
+      "conceptKey": "eukaryotic-genetic-material-location",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🧬",
+      "front": "Where is genetic material enclosed in plant and animal cells?",
+      "back": "In a nucleus.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Nuclear enclosure distinguishes these eukaryotic cells from prokaryotic bacterial cells.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-eukaryotic-genetic-material-nucleus:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "In a nucleus.",
+          "isCorrect": true,
+          "feedback": "Plant and animal cells have their genetic material enclosed in a nucleus.",
+          "misconception": null
+        },
+        {
+          "id": "bio-eukaryotic-genetic-material-nucleus:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "In a single DNA loop.",
+          "isCorrect": false,
+          "feedback": "A single DNA loop is the genetic material arrangement in bacterial cells.",
+          "misconception": "Applies the bacterial single-DNA-loop arrangement to eukaryotic cells."
+        },
+        {
+          "id": "bio-eukaryotic-genetic-material-nucleus:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "In one or more plasmids.",
+          "isCorrect": false,
+          "feedback": "Plasmids are small DNA rings that may occur in bacterial cells, while plant and animal genetic material is enclosed in a nucleus.",
+          "misconception": "Applies possible bacterial plasmids to the location of eukaryotic genetic material."
+        },
+        {
+          "id": "bio-eukaryotic-genetic-material-nucleus:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Not enclosed in a nucleus.",
+          "isCorrect": false,
+          "feedback": "Bacterial genetic material is not enclosed in a nucleus; plant and animal genetic material is.",
+          "misconception": "Applies the prokaryotic lack of nuclear enclosure to eukaryotic cells."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-eukaryotic-genetic-material-nucleus:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Plant and animal cells (eukaryotic cells) have a cell membrane, cytoplasm and genetic material enclosed in a nucleus. Bacterial cells (prokaryotic cells) are much smaller in comparison. They have cytoplasm and a cell membrane surrounded by a cell wall. The genetic material is not enclosed in a nucleus. It is a single DNA loop and there may be one or more small rings of DNA called plasmids.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "bb7677853d59893e7d520a4cb838a911dc600677cfc4b130e56bfe6aad010c6f",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "fffddc836dd855373e21291320a01a94d6dac23a1615221b308112bfd73489b8",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-eukaryotic-genetic-material-nucleus",
+          "accepted": true,
+          "reason": "The nucleus location and all eukaryote–prokaryote corrections follow the supplied specification text. The exact back matches choice a, while the distractors diagnose distinct bacterial-feature confusions.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-eukaryotic-genetic-material-nucleus",
+          "accepted": true,
+          "reason": "The DNA cue only repeats the front's explicit genetic-material topic and gives no location information.",
+          "replacementCue": "🧬"
+        }
+      }
+    },
+    {
+      "id": "bio-bacterial-genetic-material-loop",
+      "conceptKey": "bacterial-genetic-material-form",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🦠",
+      "front": "What form does the bacterial cell's genetic material take?",
+      "back": "A single DNA loop.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Small DNA rings called plasmids may also occur in the cell.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-bacterial-genetic-material-loop:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "A single DNA loop.",
+          "isCorrect": true,
+          "feedback": "The bacterial cell's genetic material is a single DNA loop.",
+          "misconception": null
+        },
+        {
+          "id": "bio-bacterial-genetic-material-loop:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Genetic material enclosed in a nucleus.",
+          "isCorrect": false,
+          "feedback": "Plant and animal cells enclose genetic material in a nucleus; bacterial cells do not.",
+          "misconception": "Transfers the eukaryotic nuclear arrangement to a prokaryotic cell."
+        },
+        {
+          "id": "bio-bacterial-genetic-material-loop:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Only small plasmid rings.",
+          "isCorrect": false,
+          "feedback": "Plasmids are possible small DNA rings; bacterial genetic material is stated as a single DNA loop.",
+          "misconception": "Treats possible plasmids as the only bacterial genetic material."
+        },
+        {
+          "id": "bio-bacterial-genetic-material-loop:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "A cell membrane surrounded by a cell wall.",
+          "isCorrect": false,
+          "feedback": "The membrane and surrounding wall are bacterial cell structures; the genetic material is stated separately as a single DNA loop.",
+          "misconception": "Confuses the membrane and cell wall with bacterial genetic material."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-bacterial-genetic-material-loop:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Plant and animal cells (eukaryotic cells) have a cell membrane, cytoplasm and genetic material enclosed in a nucleus. Bacterial cells (prokaryotic cells) are much smaller in comparison. They have cytoplasm and a cell membrane surrounded by a cell wall. The genetic material is not enclosed in a nucleus. It is a single DNA loop and there may be one or more small rings of DNA called plasmids.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "bb7677853d59893e7d520a4cb838a911dc600677cfc4b130e56bfe6aad010c6f",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "2e7ba19b9fb7c55425f097d4a1ec2cf127b5e159b273057add2a6d3257b9d5b3",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-bacterial-genetic-material-loop",
+          "accepted": true,
+          "reason": "The single DNA loop and optional plasmid distinction are directly supported. The exact back matches choice a, and the distractors separately test nuclear enclosure, plasmid-only, and cell-boundary confusions.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-bacterial-genetic-material-loop",
+          "accepted": true,
+          "reason": "The bacterium cue only repeats the front's explicit bacterial context and does not reveal the genetic material's form.",
+          "replacementCue": "🦠"
+        }
+      }
+    },
+    {
+      "id": "bio-plant-vacuole-cell-sap",
+      "conceptKey": "plant-vacuole-contents",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🌿",
+      "front": "What fills the permanent vacuole often found in plant cells?",
+      "back": "Cell sap.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This vacuole is an additional part often present in plant cells.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-plant-vacuole-cell-sap:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Cell sap.",
+          "isCorrect": true,
+          "feedback": "The permanent vacuole in plant cells is filled with cell sap.",
+          "misconception": null
+        },
+        {
+          "id": "bio-plant-vacuole-cell-sap:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Cytoplasm.",
+          "isCorrect": false,
+          "feedback": "Cytoplasm is listed as a cell part; cell sap fills the permanent vacuole.",
+          "misconception": "Confuses cytoplasm with the contents of the permanent vacuole."
+        },
+        {
+          "id": "bio-plant-vacuole-cell-sap:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Cellulose.",
+          "isCorrect": false,
+          "feedback": "Cellulose makes the plant and algal cell wall, not the vacuole's contents.",
+          "misconception": "Confuses cell-wall material with vacuole contents."
+        },
+        {
+          "id": "bio-plant-vacuole-cell-sap:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Chloroplasts.",
+          "isCorrect": false,
+          "feedback": "Chloroplasts are plant-cell parts alongside the vacuole; they do not fill it.",
+          "misconception": "Confuses another plant-cell structure with vacuole contents."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-plant-vacuole-cell-sap:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Most animal cells have the following parts: • a nucleus • cytoplasm • a cell membrane • mitochondria • ribosomes. In addition to the parts found in animal cells, plant cells often have: • chloroplasts • a permanent vacuole filled with cell sap. Plant and algal cells also have a cell wall made of cellulose, which strengthens the cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "5d4e7c1b24f372c833612792082b5523663106fd7ad24f128912b89f2a9f068e",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "0edcb8963e61d053350b26789cd5c9de6943c7325e5e4c0376ed7b2eed1ed58e",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-plant-vacuole-cell-sap",
+          "accepted": true,
+          "reason": "The specification explicitly states that the permanent plant-cell vacuole is filled with cell sap. Choice a exactly matches the back, and the other choices diagnose distinct plant-cell component confusions.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-plant-vacuole-cell-sap",
+          "accepted": true,
+          "reason": "The plant cue only repeats the front's explicit plant-cell context and gives no information about vacuole contents.",
+          "replacementCue": "🌿"
+        }
+      }
+    },
+    {
+      "id": "bio-plant-algal-cell-wall-cellulose",
+      "conceptKey": "plant-algal-cell-wall-material",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🌿",
+      "front": "What are plant and algal cell walls made of?",
+      "back": "Cellulose.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The cellulose cell wall strengthens the cell.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-plant-algal-cell-wall-cellulose:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Cellulose.",
+          "isCorrect": true,
+          "feedback": "Plant and algal cells have a cell wall made of cellulose.",
+          "misconception": null
+        },
+        {
+          "id": "bio-plant-algal-cell-wall-cellulose:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Cell sap.",
+          "isCorrect": false,
+          "feedback": "Cell sap fills the permanent vacuole; the cell wall is made of cellulose.",
+          "misconception": "Confuses vacuole contents with cell-wall material."
+        },
+        {
+          "id": "bio-plant-algal-cell-wall-cellulose:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Cell membrane.",
+          "isCorrect": false,
+          "feedback": "A cell membrane is listed separately as a cell part; the plant and algal cell wall is made of cellulose.",
+          "misconception": "Treats the cell membrane as the material forming the cell wall."
+        },
+        {
+          "id": "bio-plant-algal-cell-wall-cellulose:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Cytoplasm.",
+          "isCorrect": false,
+          "feedback": "Cytoplasm is listed as a cell part, whereas the plant and algal cell wall is made of cellulose.",
+          "misconception": "Confuses cell contents with cell-wall material."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-plant-algal-cell-wall-cellulose:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Most animal cells have the following parts: • a nucleus • cytoplasm • a cell membrane • mitochondria • ribosomes. In addition to the parts found in animal cells, plant cells often have: • chloroplasts • a permanent vacuole filled with cell sap. Plant and algal cells also have a cell wall made of cellulose, which strengthens the cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "5d4e7c1b24f372c833612792082b5523663106fd7ad24f128912b89f2a9f068e",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "980c13482bb7a33ef9fb87843503769c0fdc3f3005e2cb10aeb8e1af7d847f02",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-plant-algal-cell-wall-cellulose",
+          "accepted": true,
+          "reason": "The cellulose composition and strengthening role are explicitly supported. The exact back matches choice a, with concise distractors covering vacuole, membrane, and cytoplasm confusions.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-plant-algal-cell-wall-cellulose",
+          "accepted": true,
+          "reason": "The plant cue repeats context already explicit in the front without indicating the cell-wall material.",
+          "replacementCue": "🌿"
+        }
+      }
+    },
+    {
+      "id": "bio-animal-cell-differentiation-early",
+      "conceptKey": "animal-cell-differentiation-timing",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "process",
+      "visualCue": "🧫",
+      "front": "When do most types of animal cells differentiate?",
+      "back": "At an early stage.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Many plant cell types instead retain the ability to differentiate throughout life.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-animal-cell-differentiation-early:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "At an early stage.",
+          "isCorrect": true,
+          "feedback": "Most types of animal cell differentiate at an early stage.",
+          "misconception": null
+        },
+        {
+          "id": "bio-animal-cell-differentiation-early:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Throughout life.",
+          "isCorrect": false,
+          "feedback": "Many plant cell types retain differentiation ability throughout life; most animal cell types differentiate early.",
+          "misconception": "Transfers the lifelong differentiation pattern of many plant cells to animal cells."
+        },
+        {
+          "id": "bio-animal-cell-differentiation-early:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "In mature animals only.",
+          "isCorrect": false,
+          "feedback": "In mature animals, cell division is mainly restricted to repair and replacement; most animal cell types differentiate early.",
+          "misconception": "Confuses mature-animal cell division with the timing of differentiation."
+        },
+        {
+          "id": "bio-animal-cell-differentiation-early:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "After becoming specialised.",
+          "isCorrect": false,
+          "feedback": "A cell becomes specialised as it differentiates and acquires different sub-cellular structures.",
+          "misconception": "Reverses the relationship between differentiation and specialisation."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-animal-cell-differentiation-early:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "As an organism develops, cells differentiate to form different types of cells. • Most types of animal cell differentiate at an early stage. • Many types of plant cells retain the ability to differentiate throughout life. In mature animals, cell division is mainly restricted to repair and replacement. As a cell differentiates it acquires different sub-cellular structures to enable it to carry out a certain function. It has become a specialised cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "0b0b2006e245b3c5f7f771550da5224f2e7cd0d2bca940717d78204c695aed60",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "eaf44680d6e6b388c30acdb83cfc026b6c954191ec57f1f831497b58130ba419",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-animal-cell-differentiation-early",
+          "accepted": true,
+          "reason": "The timing claim and plant-cell comparison are stated in the supplied text. The exact back matches choice a, and the distractors diagnose plant-pattern transfer, division confusion, and reversed specialisation order.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-animal-cell-differentiation-early",
+          "accepted": true,
+          "reason": "The generic cell-culture cue does not indicate when animal-cell differentiation occurs or distinguish the options.",
+          "replacementCue": "🧫"
+        }
+      }
+    },
+    {
+      "id": "bio-mature-animal-cell-division-repair-replacement",
+      "conceptKey": "mature-animal-cell-division-role",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "process",
+      "visualCue": "🧫",
+      "front": "What is cell division mainly restricted to in mature animals?",
+      "back": "Repair and replacement.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This differs from differentiation, which most animal cell types undergo at an early stage.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-mature-animal-cell-division-repair-replacement:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Repair and replacement.",
+          "isCorrect": true,
+          "feedback": "In mature animals, cell division is mainly restricted to repair and replacement.",
+          "misconception": null
+        },
+        {
+          "id": "bio-mature-animal-cell-division-repair-replacement:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Differentiation throughout life.",
+          "isCorrect": false,
+          "feedback": "Many plant cells retain the ability to differentiate throughout life; mature-animal cell division is mainly for repair and replacement.",
+          "misconception": "Transfers a plant-cell differentiation ability to mature-animal cell division."
+        },
+        {
+          "id": "bio-mature-animal-cell-division-repair-replacement:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Formation of different cell types.",
+          "isCorrect": false,
+          "feedback": "Differentiation forms different cell types as an organism develops; mature-animal cell division is mainly restricted to repair and replacement.",
+          "misconception": "Confuses the outcome of differentiation with the main role of division in mature animals."
+        },
+        {
+          "id": "bio-mature-animal-cell-division-repair-replacement:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Acquisition of different sub-cellular structures.",
+          "isCorrect": false,
+          "feedback": "A cell acquires different sub-cellular structures as it differentiates, not as the stated restriction on mature-animal cell division.",
+          "misconception": "Confuses structural changes during differentiation with mature-animal cell division."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-mature-animal-cell-division-repair-replacement:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "As an organism develops, cells differentiate to form different types of cells. • Most types of animal cell differentiate at an early stage. • Many types of plant cells retain the ability to differentiate throughout life. In mature animals, cell division is mainly restricted to repair and replacement. As a cell differentiates it acquires different sub-cellular structures to enable it to carry out a certain function. It has become a specialised cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "0b0b2006e245b3c5f7f771550da5224f2e7cd0d2bca940717d78204c695aed60",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "84ba6be38e6d65f691ed3eeb9c784daa22d0b54839df649bf0c78c0c5ae0d6e1",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-mature-animal-cell-division-repair-replacement",
+          "accepted": true,
+          "reason": "The specification directly restricts mature-animal cell division mainly to repair and replacement. The exact back matches choice a, and each distractor identifies a different confusion with differentiation.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-mature-animal-cell-division-repair-replacement",
+          "accepted": true,
+          "reason": "The generic cell-culture cue adds no information about the main role of cell division in mature animals.",
+          "replacementCue": "🧫"
+        }
+      }
+    },
+    {
+      "id": "bio-differentiation-subcellular-structures",
+      "conceptKey": "cell-differentiation-structural-change",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "process",
+      "visualCue": "🧫",
+      "front": "What does a cell acquire as it differentiates for a certain function?",
+      "back": "Different sub-cellular structures.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Acquiring these structures makes the cell specialised.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-differentiation-subcellular-structures:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Different sub-cellular structures.",
+          "isCorrect": true,
+          "feedback": "A differentiating cell acquires different sub-cellular structures to carry out a certain function.",
+          "misconception": null
+        },
+        {
+          "id": "bio-differentiation-subcellular-structures:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Different types of cells.",
+          "isCorrect": false,
+          "feedback": "Differentiation forms different cell types, but an individual differentiating cell acquires different sub-cellular structures.",
+          "misconception": "Confuses the result of differentiation across cells with what one cell acquires."
+        },
+        {
+          "id": "bio-differentiation-subcellular-structures:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Repair and replacement.",
+          "isCorrect": false,
+          "feedback": "Repair and replacement restrict cell division in mature animals; they are not structures acquired during differentiation.",
+          "misconception": "Confuses the role of mature-animal cell division with structural change during differentiation."
+        },
+        {
+          "id": "bio-differentiation-subcellular-structures:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "The ability to differentiate throughout life.",
+          "isCorrect": false,
+          "feedback": "Many plant cells retain this ability throughout life; it is not what a differentiating cell acquires.",
+          "misconception": "Confuses a retained plant-cell ability with structures acquired during differentiation."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-differentiation-subcellular-structures:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "As an organism develops, cells differentiate to form different types of cells. • Most types of animal cell differentiate at an early stage. • Many types of plant cells retain the ability to differentiate throughout life. In mature animals, cell division is mainly restricted to repair and replacement. As a cell differentiates it acquires different sub-cellular structures to enable it to carry out a certain function. It has become a specialised cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "0b0b2006e245b3c5f7f771550da5224f2e7cd0d2bca940717d78204c695aed60",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "2d3c3b6b815b802f65db4ef9a8359789e1372aaa8676326aa21e7be4cf5a194b",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-differentiation-subcellular-structures",
+          "accepted": true,
+          "reason": "The acquired sub-cellular structures and resulting specialisation are explicitly supported. Choice a exactly matches the back, and the distractors distinguish outcomes, division roles, and retained differentiation ability.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-differentiation-subcellular-structures",
+          "accepted": true,
+          "reason": "The generic cell-culture cue does not reveal what a differentiating cell acquires or eliminate any option.",
+          "replacementCue": "🧫"
+        }
+      }
+    },
+    {
+      "id": "bio-electron-microscope-magnification-resolution",
+      "conceptKey": "electron-vs-light-microscope-capability",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "comparison",
+      "visualCue": "🔬",
+      "front": "How does an electron microscope compare with a light microscope?",
+      "back": "It has much higher magnification and resolving power.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This allows cells to be studied in much finer detail.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-electron-microscope-magnification-resolution:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "It has much higher magnification and resolving power.",
+          "isCorrect": true,
+          "feedback": "Both magnification and resolving power are much higher in an electron microscope.",
+          "misconception": null
+        },
+        {
+          "id": "bio-electron-microscope-magnification-resolution:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "It has higher magnification but lower resolving power.",
+          "isCorrect": false,
+          "feedback": "Both magnification and resolving power are much higher, rather than resolving power being lower.",
+          "misconception": "Assumes greater magnification comes with lower resolving power."
+        },
+        {
+          "id": "bio-electron-microscope-magnification-resolution:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "It has lower magnification but higher resolving power.",
+          "isCorrect": false,
+          "feedback": "Both magnification and resolving power are much higher, rather than magnification being lower.",
+          "misconception": "Assumes greater resolving power comes with lower magnification."
+        },
+        {
+          "id": "bio-electron-microscope-magnification-resolution:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "It has the same magnification and resolving power.",
+          "isCorrect": false,
+          "feedback": "An electron microscope has much higher magnification and resolving power than a light microscope.",
+          "misconception": "Assumes electron and light microscopes have equal capabilities."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-electron-microscope-magnification-resolution:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "An electron microscope has much higher magnification and resolving power than a light microscope. This means that it can be used to study cells in much finer detail. This has enabled biologists to see and understand many more sub-cellular structures.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "faa2d440b6536c6ac65c520af785a7bc32ca20ad6527306e3ec0bf642f4557b8",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "b6f7ae9378f7ab78ce59c29d39613a3e595cf9feea364722c850f8425351818f",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+        "generatedAt": "2026-07-15T21:12:29.806Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-electron-microscope-magnification-resolution",
+          "accepted": true,
+          "reason": "The paired comparison in magnification and resolving power, plus its finer-detail consequence, is stated verbatim in the evidence. The exact back matches choice a and the distractors test distinct comparison errors.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-electron-microscope-magnification-resolution",
+          "accepted": true,
+          "reason": "The microscope cue only repeats the front's explicit microscope topic and does not indicate either comparative capability.",
+          "replacementCue": "🔬"
+        }
+      }
+    }
+  ]
+}

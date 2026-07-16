@@ -1,0 +1,183 @@
+{
+  "status": "accepted",
+  "plan": {
+    "status": "generation_requested",
+    "runId": "combined-higher-physics-energy-stores-compiler-v5",
+    "workDir": "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5",
+    "artifactDir": "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5",
+    "catalog": "data/curricula/curriculum-catalog.json",
+    "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+    "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+    "subject": "Physics",
+    "pageRange": [
+      122,
+      124
+    ],
+    "pageTextCharacters": 4667,
+    "sourceFingerprint": "fd5bda3ad7a773cfa0ed2a710e0213e6e366da4d3f84d99a6c75bc6117ed07c4",
+    "count": 8,
+    "targets": [
+      {
+        "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "isPrimary": true,
+        "confidence": 1,
+        "reviewed": true,
+        "mappingSource": "recall-card-compiler-v2"
+      }
+    ],
+    "models": {
+      "generator": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "fullReviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "cueReviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      }
+    },
+    "promptVersion": "recall-card-compiler-v5"
+  },
+  "run": {
+    "id": "combined-higher-physics-energy-stores-compiler-v5",
+    "startedAt": "2026-07-15T21:06:35.681Z",
+    "finishedAt": "2026-07-15T21:13:23.287Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": false
+    }
+  },
+  "counts": {
+    "generated": 8,
+    "accepted": 7,
+    "rejected": 1,
+    "cueReplacementsReviewed": 0
+  },
+  "artifacts": [
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/plan.json",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/source-evidence.json",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/generation-prompt.txt",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/candidate-cards.json",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/full-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/full-review.json",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/cue-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/cue-review.json",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/accepted-cards.json",
+    "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/rejected-cards.json"
+  ],
+  "durableArtifacts": [
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/accepted-cards.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/candidate-cards.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/cue-review-codex-run-summary.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/cue-review-model-output.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/cue-review-prompt.txt",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/cue-review.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/full-review-codex-run-summary.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/full-review-model-output.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/full-review-prompt.txt",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/full-review.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/generation-codex-run-summary.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/generation-model-output.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/generation-prompt.txt",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/plan.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/rejected-cards.json",
+    "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/source-evidence.json"
+  ],
+  "acceptedArtifact": "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/accepted-cards.json",
+  "acceptedArtifactHash": "cfe9e32cd0877c538b74c41781a8dbe87b9a8ae01e043c69ffaff75af4340398",
+  "codex": {
+    "generator": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f679a-5c6c-77a1-ab2a-e226ba09572b",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/generation",
+      "startedAt": "2026-07-15T21:06:36.483Z",
+      "finishedAt": "2026-07-15T21:11:34.798Z",
+      "durationSeconds": 298.316,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 15469,
+        "cached_input_tokens": 0,
+        "output_tokens": 21083,
+        "reasoning_output_tokens": 17865
+      },
+      "failedCommands": []
+    },
+    "fullReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f679e-e9bd-7002-983b-a3b84f9b7ff4",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/full-review",
+      "startedAt": "2026-07-15T21:11:34.819Z",
+      "finishedAt": "2026-07-15T21:13:05.182Z",
+      "durationSeconds": 90.363,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 17926,
+        "cached_input_tokens": 0,
+        "output_tokens": 5483,
+        "reasoning_output_tokens": 4660
+      },
+      "failedCommands": []
+    },
+    "cueReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f67a0-48f4-7122-bdf6-27125c368312",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-physics-energy-stores-compiler-v5/cue-review",
+      "startedAt": "2026-07-15T21:13:05.186Z",
+      "finishedAt": "2026-07-15T21:13:23.285Z",
+      "durationSeconds": 18.1,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 15961,
+        "cached_input_tokens": 0,
+        "output_tokens": 856,
+        "reasoning_output_tokens": 516
+      },
+      "failedCommands": []
+    },
+    "replacementCueReviewer": null
+  }
+}

@@ -1,7 +1,7 @@
 import {
 	recallCards,
 	recallCurriculumTopics,
-	type RecallCard,
+	type RecallCardDefinition,
 	type RecallSubject,
 	type RecallTopic
 } from './aqaScienceRecall';
@@ -75,6 +75,6 @@ export function recallTopicsForSubject(subject: RecallSubject): RecallTopic[] {
 	return recallCurriculumTopics.filter((topic) => topic.subject === subject);
 }
 
-export function recallCardsForSubject(subject: RecallSubject): RecallCard[] {
+export function recallCardsForSubject(subject: RecallSubject): RecallCardDefinition[] {
 	return recallCards.filter((card) => card.subject === subject);
 }

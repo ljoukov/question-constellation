@@ -6,21 +6,27 @@ import path from 'node:path';
 import {
 	CHAIN_ILLUSTRATION_SCHEMA_VERSION,
 	CHAIN_ILLUSTRATION_STYLE_KEY,
+	buildFreshDarkRegenerationPrompt,
+	buildFreshLightEditRetryPrompt,
 	buildGenerationPrompt,
 	buildLightEditPrompt,
 	buildLightEditStylePrompt,
 	buildPlannerPrompt,
 	buildStylePrompt,
+	darkVisualJudgePrompt,
+	darkVisualJudgeSchema,
+	lightEditJudgePrompt,
+	lightEditJudgeSchema,
 	semanticPlanSchema,
 	sha256,
 	slugify,
 	validateSemanticPlan,
-	validateVisualJudge,
-	visualJudgePrompt,
-	visualJudgeSchema
+	validateDarkVisualJudge,
+	validateLightEditJudge
 } from './lib/chain-illustration-pipeline.mjs';
 import { loadChainIllustrationCandidates } from './lib/chain-illustration-candidates.mjs';
 import {
+	buildIllustrationProvenance,
 	createIpadPreview,
 	fileSha256,
 	hardImageCheck,
@@ -50,6 +56,7 @@ Options:
   --judge-model=gpt-5.6-sol
   --judge-thinking-level=max
   --image-model=chatgpt-gpt-image-2
+  --max-generation-attempts=3              each retry is a fresh no-reference dark generation
   --timeout-ms=7200000
   --image-timeout-ms=7200000
   --publish                                upload passing dark/light pairs to R2 and D1
@@ -78,6 +85,7 @@ const plannerThinkingLevel = stringArg('planner-thinking-level', 'max');
 const judgeModel = stringArg('judge-model', 'gpt-5.6-sol');
 const judgeThinkingLevel = stringArg('judge-thinking-level', 'max');
 const imageModel = stringArg('image-model', 'chatgpt-gpt-image-2');
+const maxGenerationAttempts = integerArg('max-generation-attempts', 3, 1);
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const imageTimeoutMs = integerArg('image-timeout-ms', timeoutMs, 1);
 const publish = hasArg('publish');
@@ -109,6 +117,7 @@ const plan = {
 	judgeModel,
 	judgeThinkingLevel,
 	imageModel,
+	maxGenerationAttempts,
 	imageTimeoutMs,
 	publish,
 	requirePairs,
@@ -228,115 +237,141 @@ try {
 async function generateValidateAndMaybePublish(candidate, decision) {
 	const jobDir = path.join(workRoot, slugify(candidate.id));
 	mkdirSync(jobDir, { recursive: true });
-	const darkPromptText = buildGenerationPrompt(candidate, decision);
+	const baseDarkPromptText = buildGenerationPrompt(candidate, decision);
 	const darkStylePrompt = buildStylePrompt(candidate);
 	const lightPromptText = buildLightEditPrompt(candidate, decision);
 	const lightStylePrompt = buildLightEditStylePrompt(candidate);
-	const darkPromptSha256 = sha256(`${darkStylePrompt}\n\n${darkPromptText}`);
-	const lightPromptSha256 = sha256(`${lightStylePrompt}\n\n${lightPromptText}`);
-	const promptSha256 = sha256(`${darkPromptSha256}\n${lightPromptSha256}`);
 	writeFileSync(path.join(jobDir, 'dark-style-prompt.txt'), `${darkStylePrompt}\n`);
-	writeFileSync(path.join(jobDir, 'dark-image-prompt.txt'), `${darkPromptText}\n`);
+	writeFileSync(path.join(jobDir, 'dark-image-prompt.txt'), `${baseDarkPromptText}\n`);
 	writeFileSync(path.join(jobDir, 'light-style-prompt.txt'), `${lightStylePrompt}\n`);
 	writeFileSync(path.join(jobDir, 'light-edit-prompt.txt'), `${lightPromptText}\n`);
 	writeJson(path.join(jobDir, 'decision.json'), decision);
 
 	try {
-		const dark = await generateDarkIllustration({
-			jobDir,
-			stylePrompt: darkStylePrompt,
-			promptText: darkPromptText
-		});
-		const light = await generateLightIllustration({
-			dark,
-			jobDir,
-			stylePrompt: lightStylePrompt,
-			promptText: lightPromptText
-		});
-		const generated = [dark, light];
-		for (const entry of generated) {
-			entry.previewPath = await createIpadPreview(
-				entry.filePath,
-				path.join(jobDir, `${entry.theme}-ipad.webp`),
-				{ rootDir }
+		const darkAttempts = [];
+		let acceptedDarkAttempt = null;
+		let darkPromptText = baseDarkPromptText;
+		for (let attemptNumber = 1; attemptNumber <= maxGenerationAttempts; attemptNumber += 1) {
+			const attemptDir = path.join(
+				jobDir,
+				`dark-attempt-${String(attemptNumber).padStart(2, '0')}`
 			);
+			mkdirSync(attemptDir, { recursive: true });
+			writeFileSync(path.join(attemptDir, 'dark-image-prompt.txt'), `${darkPromptText}\n`);
+			const attempt = await generateAndJudgeDarkAttempt({
+				attemptNumber,
+				attemptDir,
+				candidate,
+				decision,
+				darkStylePrompt,
+				darkPromptText
+			});
+			darkAttempts.push(attempt);
+			writeJson(path.join(attemptDir, 'attempt.json'), darkAttemptSummary(attempt));
+			if (attempt.status === 'passed') {
+				acceptedDarkAttempt = attempt;
+				break;
+			}
+			if (attemptNumber < maxGenerationAttempts) {
+				darkPromptText = buildFreshDarkRegenerationPrompt(baseDarkPromptText, {
+					judge: attempt.judge,
+					hardChecks: { dark: attempt.hardCheck }
+				});
+				writeFileSync(
+					path.join(jobDir, `retry-${String(attemptNumber + 1).padStart(2, '0')}-dark-prompt.txt`),
+					`${darkPromptText}\n`
+				);
+			}
 		}
-		const hardEntries = await Promise.all(
-			generated.map(async (entry) => [
-				entry.theme,
-				await hardImageCheck(entry.filePath, { rootDir })
-			])
-		);
-		const hardChecks = Object.fromEntries(hardEntries);
-		if (
-			hardChecks.dark.status === 'passed' &&
-			hardChecks.light.status === 'passed' &&
-			(hardChecks.dark.width !== hardChecks.light.width ||
-				hardChecks.dark.height !== hardChecks.light.height)
-		) {
-			hardChecks.light = {
-				...hardChecks.light,
-				status: 'failed',
-				issues: [
-					...hardChecks.light.issues,
-					`Light edit dimensions ${hardChecks.light.width}x${hardChecks.light.height} do not match dark original ${hardChecks.dark.width}x${hardChecks.dark.height}.`
-				]
-			};
-		}
-		if (
-			hardChecks.dark.status === 'passed' &&
-			hardChecks.light.status === 'passed' &&
-			hardChecks.dark.sha256 === hardChecks.light.sha256
-		) {
-			hardChecks.light = {
-				...hardChecks.light,
-				status: 'failed',
-				issues: [...hardChecks.light.issues, 'Light edit is byte-identical to the dark original.']
-			};
-		}
-		writeJson(path.join(jobDir, 'hard-image-checks.json'), hardChecks);
-		if (Object.values(hardChecks).some((check) => check.status !== 'passed')) {
-			return {
+		if (!acceptedDarkAttempt) {
+			const lastAttempt = darkAttempts.at(-1);
+			const job = {
 				chainId: candidate.id,
 				status: 'no-passing-pair',
-				stage: 'hard-image-checks',
-				hardChecks
+				stage: lastAttempt?.stage ?? 'dark-generation-attempts',
+				darkAttempts: darkAttempts.map(darkAttemptSummary),
+				hardChecks: { dark: lastAttempt?.hardCheck },
+				judge: { dark: lastAttempt?.judge ?? null }
 			};
+			writeJson(path.join(jobDir, 'job.json'), job);
+			return job;
 		}
 
-		const judgeInput = [
-			{ type: 'text', text: visualJudgePrompt(candidate, decision, hardChecks) },
-			...generated.map((entry) => ({ type: 'local_image', path: entry.previewPath }))
-		];
-		const judgeRun = await runCodexSdkTurn({
-			prompt: judgeInput,
-			workDir: jobDir,
-			eventsPath: path.join(jobDir, 'judge-events.jsonl'),
-			lastMessagePath: path.join(jobDir, 'judge-last-message.json'),
-			summaryPath: path.join(jobDir, 'judge-run-summary.json'),
-			model: judgeModel,
-			thinkingLevel: judgeThinkingLevel,
-			timeoutMs,
-			outputSchema: visualJudgeSchema(),
-			sandboxMode: 'read-only',
-			environmentMode: 'minimal'
-		});
-		const judge = parseJsonResponse(judgeRun.finalResponse, 'visual judge');
-		writeJson(path.join(jobDir, 'judge.json'), judge);
-		const judgeValidation = validateVisualJudge(judge, hardChecks, decision.visualSteps);
-		writeJson(path.join(jobDir, 'judge-validation.json'), judgeValidation);
-		if (judgeValidation.status !== 'passed') {
-			throw new Error(`Visual judge failed validation: ${judgeValidation.issues.join(' ')}`);
+		const lightAttempts = [];
+		let acceptedLightAttempt = null;
+		let currentLightPromptText = lightPromptText;
+		for (let attemptNumber = 1; attemptNumber <= maxGenerationAttempts; attemptNumber += 1) {
+			const attemptDir = path.join(
+				jobDir,
+				`light-attempt-${String(attemptNumber).padStart(2, '0')}`
+			);
+			mkdirSync(attemptDir, { recursive: true });
+			writeFileSync(path.join(attemptDir, 'light-edit-prompt.txt'), `${currentLightPromptText}\n`);
+			const attempt = await generateAndJudgeLightAttempt({
+				attemptNumber,
+				attemptDir,
+				candidate,
+				decision,
+				dark: acceptedDarkAttempt.dark,
+				darkPreviewPath: acceptedDarkAttempt.dark.previewPath,
+				darkHardCheck: acceptedDarkAttempt.hardCheck,
+				lightStylePrompt,
+				lightPromptText: currentLightPromptText
+			});
+			lightAttempts.push(attempt);
+			writeJson(path.join(attemptDir, 'attempt.json'), lightAttemptSummary(attempt));
+			if (attempt.status === 'passed') {
+				acceptedLightAttempt = attempt;
+				break;
+			}
+			if (attemptNumber < maxGenerationAttempts) {
+				currentLightPromptText = buildFreshLightEditRetryPrompt(lightPromptText, {
+					judge: attempt.judge,
+					hardChecks: { light: attempt.hardCheck }
+				});
+				writeFileSync(
+					path.join(jobDir, `retry-${String(attemptNumber + 1).padStart(2, '0')}-light-prompt.txt`),
+					`${currentLightPromptText}\n`
+				);
+			}
 		}
-		if (!judge.pass) {
-			return {
+		if (!acceptedLightAttempt) {
+			const lastAttempt = lightAttempts.at(-1);
+			const job = {
 				chainId: candidate.id,
 				status: 'no-passing-pair',
-				stage: 'visual-judge',
-				judge,
-				hardChecks
+				stage: lastAttempt?.stage ?? 'light-edit-attempts',
+				darkAttempts: darkAttempts.map(darkAttemptSummary),
+				lightAttempts: lightAttempts.map(lightAttemptSummary),
+				hardChecks: {
+					dark: acceptedDarkAttempt.hardCheck,
+					light: lastAttempt?.hardCheck
+				},
+				judge: {
+					dark: acceptedDarkAttempt.judge,
+					light: lastAttempt?.judge ?? null
+				}
 			};
+			writeJson(path.join(jobDir, 'job.json'), job);
+			return job;
 		}
+
+		const dark = acceptedDarkAttempt.dark;
+		const light = acceptedLightAttempt.light;
+		const hardChecks = {
+			dark: acceptedDarkAttempt.hardCheck,
+			light: acceptedLightAttempt.hardCheck
+		};
+		const judge = {
+			dark: acceptedDarkAttempt.judge,
+			light: acceptedLightAttempt.judge
+		};
+		const selectedDarkPromptText = acceptedDarkAttempt.darkPromptText;
+		const selectedLightPromptText = acceptedLightAttempt.lightPromptText;
+		const generated = [dark, light];
+		const darkPromptSha256 = sha256(`${darkStylePrompt}\n\n${selectedDarkPromptText}`);
+		const lightPromptSha256 = sha256(`${lightStylePrompt}\n\n${selectedLightPromptText}`);
+		const promptSha256 = sha256(`${darkPromptSha256}\n${lightPromptSha256}`);
 
 		const fresh = await loadChainIllustrationCandidates({
 			rootDir,
@@ -374,7 +409,7 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				width: hardChecks.dark.width,
 				height: hardChecks.dark.height,
 				assetSha256: darkAssetSha256,
-				promptText: `${darkStylePrompt}\n\n${darkPromptText}`,
+				promptText: `${darkStylePrompt}\n\n${selectedDarkPromptText}`,
 				promptSha256: darkPromptSha256
 			},
 			light: {
@@ -384,7 +419,7 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				width: hardChecks.light.width,
 				height: hardChecks.light.height,
 				assetSha256: lightAssetSha256,
-				promptText: `${lightStylePrompt}\n\n${lightPromptText}`,
+				promptText: `${lightStylePrompt}\n\n${selectedLightPromptText}`,
 				promptSha256: lightPromptSha256,
 				derivedFromAssetSha256: darkAssetSha256
 			},
@@ -398,17 +433,25 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				prompts: {
 					dark: {
 						stylePrompt: darkStylePrompt,
-						instructionPrompt: darkPromptText,
+						instructionPrompt: selectedDarkPromptText,
 						sha256: darkPromptSha256
 					},
 					light: {
 						stylePrompt: lightStylePrompt,
-						instructionPrompt: lightPromptText,
+						instructionPrompt: selectedLightPromptText,
 						sha256: lightPromptSha256
 					}
 				},
 				sourceFingerprint: candidate.sourceFingerprint,
 				generatedAt: new Date().toISOString(),
+				generationAttempts: {
+					dark: acceptedDarkAttempt.attemptNumber,
+					light: acceptedLightAttempt.attemptNumber
+				},
+				attempts: {
+					dark: darkAttempts.map(darkAttemptSummary),
+					light: lightAttempts.map(lightAttemptSummary)
+				},
 				decision,
 				variants: generated.map((entry) => ({
 					theme: entry.theme,
@@ -420,6 +463,20 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				validation: judge
 			}
 		};
+		item.generationMetadata.provenance = buildIllustrationProvenance(item, {
+			hardChecks,
+			modelVisualAudit: {
+				status: 'passed',
+				model: judgeModel,
+				outputSha256: sha256(JSON.stringify(judge)),
+				notes:
+					'Dark-original QA passed before light editing; the light edit then passed a separate strict pair-preservation audit. This is not a human audit.'
+			},
+			humanAudit: {
+				status: 'not_performed',
+				notes: 'Automated generation path; no human audit was claimed.'
+			}
+		});
 		if (publish) await publishChainIllustration(item, { rootDir });
 		const job = {
 			chainId: candidate.id,
@@ -440,7 +497,14 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 			sourceFingerprint: candidate.sourceFingerprint,
 			judge,
 			hardChecks,
-			judgeRun: stripFinalResponse(judgeRun)
+			attempts: {
+				dark: darkAttempts.map(darkAttemptSummary),
+				light: lightAttempts.map(lightAttemptSummary)
+			},
+			judgeRuns: {
+				dark: stripFinalResponse(acceptedDarkAttempt.judgeRun),
+				light: stripFinalResponse(acceptedLightAttempt.judgeRun)
+			}
 		};
 		writeJson(path.join(jobDir, 'job.json'), job);
 		return job;
@@ -454,6 +518,216 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 		if (requirePairs) throw error;
 		return job;
 	}
+}
+
+async function generateAndJudgeDarkAttempt({
+	attemptNumber,
+	attemptDir,
+	candidate,
+	decision,
+	darkStylePrompt,
+	darkPromptText
+}) {
+	const dark = await generateDarkIllustration({
+		jobDir: attemptDir,
+		stylePrompt: darkStylePrompt,
+		promptText: darkPromptText
+	});
+	dark.previewPath = await createIpadPreview(
+		dark.filePath,
+		path.join(attemptDir, 'dark-ipad.webp'),
+		{ rootDir }
+	);
+	const hardCheck = await hardImageCheck(dark.filePath, { rootDir });
+	writeJson(path.join(attemptDir, 'hard-image-check.json'), hardCheck);
+	if (hardCheck.status !== 'passed') {
+		return {
+			attemptNumber,
+			status: 'failed',
+			stage: 'dark-hard-image-check',
+			darkPromptText,
+			darkPromptSha256: sha256(`${darkStylePrompt}\n\n${darkPromptText}`),
+			dark,
+			hardCheck,
+			judge: null,
+			judgeValidation: null,
+			judgeRun: null
+		};
+	}
+
+	const judgeInput = [
+		{ type: 'text', text: darkVisualJudgePrompt(candidate, decision, hardCheck) },
+		{ type: 'local_image', path: dark.previewPath }
+	];
+	const judgeRun = await runVisualJudge({
+		judgeInput,
+		attemptDir,
+		outputSchema: darkVisualJudgeSchema()
+	});
+	const judge = parseJsonResponse(judgeRun.finalResponse, 'dark visual judge');
+	writeJson(path.join(attemptDir, 'judge.json'), judge);
+	const judgeValidation = validateDarkVisualJudge(judge, hardCheck, decision.visualSteps);
+	writeJson(path.join(attemptDir, 'judge-validation.json'), judgeValidation);
+	if (judgeValidation.status !== 'passed') {
+		throw new Error(`Dark visual judge contract failed: ${judgeValidation.issues.join(' ')}`);
+	}
+	return {
+		attemptNumber,
+		status: judge.pass ? 'passed' : 'failed',
+		stage: 'dark-visual-judge',
+		darkPromptText,
+		darkPromptSha256: sha256(`${darkStylePrompt}\n\n${darkPromptText}`),
+		dark,
+		hardCheck,
+		judge,
+		judgeValidation,
+		judgeRun
+	};
+}
+
+async function generateAndJudgeLightAttempt({
+	attemptNumber,
+	attemptDir,
+	candidate,
+	decision,
+	dark,
+	darkPreviewPath,
+	darkHardCheck,
+	lightStylePrompt,
+	lightPromptText
+}) {
+	const light = await generateLightIllustration({
+		dark,
+		jobDir: attemptDir,
+		stylePrompt: lightStylePrompt,
+		promptText: lightPromptText
+	});
+	light.previewPath = await createIpadPreview(
+		light.filePath,
+		path.join(attemptDir, 'light-ipad.webp'),
+		{ rootDir }
+	);
+	const rawLightHardCheck = await hardImageCheck(light.filePath, { rootDir });
+	const hardCheck = enforceLightPairFileChecks(darkHardCheck, rawLightHardCheck);
+	const hardChecks = { dark: darkHardCheck, light: hardCheck };
+	writeJson(path.join(attemptDir, 'hard-image-checks.json'), hardChecks);
+	if (hardCheck.status !== 'passed') {
+		return {
+			attemptNumber,
+			status: 'failed',
+			stage: 'light-hard-image-check',
+			lightPromptText,
+			lightPromptSha256: sha256(`${lightStylePrompt}\n\n${lightPromptText}`),
+			light,
+			hardCheck,
+			judge: null,
+			judgeValidation: null,
+			judgeRun: null
+		};
+	}
+
+	const judgeInput = [
+		{ type: 'text', text: lightEditJudgePrompt(candidate, decision, hardChecks) },
+		{ type: 'local_image', path: darkPreviewPath },
+		{ type: 'local_image', path: light.previewPath }
+	];
+	const judgeRun = await runVisualJudge({
+		judgeInput,
+		attemptDir,
+		outputSchema: lightEditJudgeSchema()
+	});
+	const judge = parseJsonResponse(judgeRun.finalResponse, 'light-edit visual judge');
+	writeJson(path.join(attemptDir, 'judge.json'), judge);
+	const judgeValidation = validateLightEditJudge(judge, hardChecks, decision.visualSteps);
+	writeJson(path.join(attemptDir, 'judge-validation.json'), judgeValidation);
+	if (judgeValidation.status !== 'passed') {
+		throw new Error(`Light-edit visual judge contract failed: ${judgeValidation.issues.join(' ')}`);
+	}
+	return {
+		attemptNumber,
+		status: judge.pass ? 'passed' : 'failed',
+		stage: 'light-edit-visual-judge',
+		lightPromptText,
+		lightPromptSha256: sha256(`${lightStylePrompt}\n\n${lightPromptText}`),
+		light,
+		hardCheck,
+		judge,
+		judgeValidation,
+		judgeRun
+	};
+}
+
+async function runVisualJudge({ judgeInput, attemptDir, outputSchema }) {
+	return runCodexSdkTurn({
+		prompt: judgeInput,
+		workDir: attemptDir,
+		eventsPath: path.join(attemptDir, 'judge-events.jsonl'),
+		lastMessagePath: path.join(attemptDir, 'judge-last-message.json'),
+		summaryPath: path.join(attemptDir, 'judge-run-summary.json'),
+		model: judgeModel,
+		thinkingLevel: judgeThinkingLevel,
+		timeoutMs,
+		outputSchema,
+		sandboxMode: 'read-only',
+		environmentMode: 'minimal'
+	});
+}
+
+function enforceLightPairFileChecks(darkHardCheck, lightHardCheck) {
+	const issues = [...(lightHardCheck.issues ?? [])];
+	if (
+		darkHardCheck.status === 'passed' &&
+		lightHardCheck.status === 'passed' &&
+		(darkHardCheck.width !== lightHardCheck.width || darkHardCheck.height !== lightHardCheck.height)
+	) {
+		issues.push(
+			`Light edit dimensions ${lightHardCheck.width}x${lightHardCheck.height} do not match accepted dark master ${darkHardCheck.width}x${darkHardCheck.height}.`
+		);
+	}
+	if (
+		darkHardCheck.status === 'passed' &&
+		lightHardCheck.status === 'passed' &&
+		darkHardCheck.sha256 === lightHardCheck.sha256
+	) {
+		issues.push('Light edit is byte-identical to the accepted dark master.');
+	}
+	return {
+		...lightHardCheck,
+		status: issues.length ? 'failed' : lightHardCheck.status,
+		issues
+	};
+}
+
+function darkAttemptSummary(attempt) {
+	return {
+		attemptNumber: attempt.attemptNumber,
+		status: attempt.status,
+		stage: attempt.stage,
+		darkPromptSha256: attempt.darkPromptSha256,
+		asset: attempt.dark
+			? { path: relative(attempt.dark.filePath), sha256: fileSha256(attempt.dark.filePath) }
+			: null,
+		hardCheck: attempt.hardCheck,
+		judge: attempt.judge,
+		judgeValidation: attempt.judgeValidation,
+		judgeRun: attempt.judgeRun ? stripFinalResponse(attempt.judgeRun) : null
+	};
+}
+
+function lightAttemptSummary(attempt) {
+	return {
+		attemptNumber: attempt.attemptNumber,
+		status: attempt.status,
+		stage: attempt.stage,
+		lightPromptSha256: attempt.lightPromptSha256,
+		asset: attempt.light
+			? { path: relative(attempt.light.filePath), sha256: fileSha256(attempt.light.filePath) }
+			: null,
+		hardCheck: attempt.hardCheck,
+		judge: attempt.judge,
+		judgeValidation: attempt.judgeValidation,
+		judgeRun: attempt.judgeRun ? stripFinalResponse(attempt.judgeRun) : null
+	};
 }
 
 async function generateDarkIllustration({ jobDir, stylePrompt, promptText }) {

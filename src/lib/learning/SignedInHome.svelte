@@ -112,8 +112,8 @@
 
 					<div class="qc-subject-next">
 						<span>
-							{lane.scope.status === 'not_set' ? 'Set up' : 'Next'}
-							{#if lane.nextAction.durationMinutes}
+							Next
+							{#if lane.scope.status !== 'not_set' && lane.nextAction.durationMinutes}
 								· {lane.nextAction.durationMinutes} min{/if}
 						</span>
 						<strong>
@@ -138,10 +138,12 @@
 		</div>
 	</section>
 
-	<nav class="qc-subject-actions qc-learning-resources" aria-label="Course settings">
-		<a class="qc-action-button compact" href={resolve('/profile')}>
-			<Settings2 size={18} aria-hidden="true" />
-			Subjects and exam boards
-		</a>
-	</nav>
+	{#if dashboard.subjects.length > 0}
+		<nav class="qc-subject-actions qc-learning-resources" aria-label="Course settings">
+			<a class="qc-action-button compact" href={resolve('/profile')}>
+				<Settings2 size={18} aria-hidden="true" />
+				Subjects and exam boards
+			</a>
+		</nav>
+	{/if}
 </section>

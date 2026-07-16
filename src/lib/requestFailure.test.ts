@@ -1,11 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
 	classifyRequestFailure,
+	fetchWithResponseTimeout,
 	InterruptedRequestError,
 	requestErrorFromResponse,
 	RequestTimeoutError,
 	ServerRequestError
 } from './requestFailure';
+
+afterEach(() => {
+	vi.unstubAllGlobals();
+});
 
 describe('request failure classification', () => {
 	it('distinguishes an offline browser from a reachable server failure', async () => {
@@ -69,5 +74,24 @@ describe('request failure classification', () => {
 
 		const throttled = await requestErrorFromResponse(new Response('', { status: 429 }));
 		expect(classifyRequestFailure(throttled, { online: true }).kind).toBe('busy');
+	});
+});
+
+describe('fetchWithResponseTimeout', () => {
+	it('keeps the caller abort signal linked after response headers arrive', async () => {
+		const fetchSignals: AbortSignal[] = [];
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+				if (init?.signal) fetchSignals.push(init.signal);
+				return new Response('stream body');
+			})
+		);
+		const caller = new AbortController();
+		await fetchWithResponseTimeout('/stream', { signal: caller.signal });
+		expect(fetchSignals[0]?.aborted).toBe(false);
+
+		caller.abort('answer changed');
+		expect(fetchSignals[0]?.aborted).toBe(true);
 	});
 });

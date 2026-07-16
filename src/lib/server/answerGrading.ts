@@ -181,8 +181,15 @@ export function parseGradeResponse(rawText: string, data: PracticePageData): Que
 		}
 	}
 
-	const presentStepIds = stepIds.filter((stepId) => present.has(stepId));
-	const missingStepIds = stepIds.filter((stepId) => missing.has(stepId));
+	const parsedPresentStepIds = stepIds.filter((stepId) => present.has(stepId));
+	const parsedMissingStepIds = stepIds.filter((stepId) => missing.has(stepId));
+	const diagnosticsSupportedByMarkStructure = stepIds.length <= maxMarks;
+	const fullMarkClassificationIsConsistent =
+		awardedMarks < maxMarks || parsedMissingStepIds.length === 0;
+	const keepStepDiagnostics =
+		diagnosticsSupportedByMarkStructure && fullMarkClassificationIsConsistent;
+	const presentStepIds = keepStepDiagnostics ? parsedPresentStepIds : [];
+	const missingStepIds = keepStepDiagnostics ? parsedMissingStepIds : [];
 
 	const correctThreshold = Math.ceil(maxMarks * 0.85);
 	const result: QuestionGradeResult['result'] =
@@ -210,14 +217,27 @@ function stepSelectionList(data: PracticePageData): string {
 	const isEnglish = isEnglishPracticeQuestion(data);
 	return data.chain.steps
 		.map((step, index) => {
-			const checklistItem = data.question.checklist.find((item) => item.stepId === step.id);
+			const methodItem =
+				data.question.checklistSource === 'method'
+					? data.question.checklist.find((item) => item.stepId === step.id)
+					: null;
 			return [
 				`${index + 1}. id: ${step.id}`,
 				`   ${isEnglish ? 'diagnostic criterion' : 'chain link'}: ${step.label}`,
-				`   mark/checklist point: ${checklistItem?.text ?? step.markEvidence}`
+				`   evidence: ${methodItem?.text ?? step.markEvidence ?? step.label}`
 			].join('\n');
 		})
 		.join('\n');
+}
+
+function officialMarkSchemeList(data: PracticePageData): string {
+	if (data.question.checklistSource !== 'official' || data.question.checklist.length === 0) {
+		return '';
+	}
+	return [
+		'Official mark-scheme points (use these to decide the mark; do not treat their order as a mapping to chain-step ids):',
+		...data.question.checklist.map((item, index) => `${index + 1}. ${item.text}`)
+	].join('\n');
 }
 
 function compactPromptValue(value: unknown): string {
@@ -295,7 +315,7 @@ function buildQuestionContext(data: PracticePageData): string {
 	const parts = [
 		data.question.context ? `Question context:\n${data.question.context}` : '',
 		`Question prompt:\n${data.question.prompt}`,
-		`Model answer:\n${data.question.modelAnswer}`,
+		data.question.modelAnswer ? `Model answer:\n${data.question.modelAnswer}` : '',
 		`Common weak answer:\n${data.question.commonWeakAnswer}`,
 		data.question.commonWeakExplanation
 			? `Why that weak answer fails:\n${data.question.commonWeakExplanation}`
@@ -336,6 +356,7 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 		'',
 		`${isEnglish ? 'Diagnostic criteria' : 'Answer-chain steps'} to select from:`,
 		stepSelectionList(data),
+		officialMarkSchemeList(data),
 		'',
 		'Student answer:',
 		studentAnswer

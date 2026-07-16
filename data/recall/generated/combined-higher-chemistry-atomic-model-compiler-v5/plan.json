@@ -1,0 +1,44 @@
+{
+  "status": "generation_requested",
+  "runId": "combined-higher-chemistry-atomic-model-compiler-v5",
+  "workDir": "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5",
+  "artifactDir": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5",
+  "catalog": "data/curricula/curriculum-catalog.json",
+  "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+  "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+  "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+  "subject": "Chemistry",
+  "pageRange": [
+    68,
+    71
+  ],
+  "pageTextCharacters": 6683,
+  "sourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+  "count": 8,
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "models": {
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    }
+  },
+  "promptVersion": "recall-card-compiler-v5"
+}

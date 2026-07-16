@@ -1,0 +1,7 @@
+Use case: scientific-educational
+Asset type: exact light-mode counterpart for an accepted 16:9 GCSE science reasoning-chain illustration.
+Input image: the sole referenced image is the accepted DARK MASTER and the edit target.
+Primary request: switch only the visual theme from dark mode to light mode.
+Change only: replace the deep navy background and dark panel surfaces with warm ivory/very pale blue-white medical-atlas paper surfaces; use a very subtle pale cyan grid; change light text to dark navy where contrast requires it; soften glows and shadows for a bright interface. Preserve the established cyan, green, red, orange, copper, object, and diagram colours with only luminance adjustments required for WCAG-style legibility.
+Preserve exactly: 16:9 crop; every panel boundary and position; every object, circuit connection, spring, trolley, cart, arrow, bracket, leader, equation, number, title, heading, microcopy, colour identity, relative size, direction, spacing, and scientific relationship. Text must remain character-for-character in the same location.
+Constraints: do not add, delete, move, redraw, restage, resize, relabel, reorder, reinterpret, or repair anything. No new text, object, decoration, logo, or watermark. The result must look like the exact same accepted illustration with only its app theme switched to light.

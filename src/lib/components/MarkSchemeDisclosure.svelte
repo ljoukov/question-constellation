@@ -7,10 +7,14 @@
 
 	let {
 		points,
+		marks,
+		source = 'official',
 		open = $bindable(false),
 		onReveal
 	}: {
 		points: Array<{ id: string; text: string }>;
+		marks: number;
+		source?: 'official' | 'method';
 		open?: boolean;
 		onReveal?: () => void;
 	} = $props();
@@ -20,6 +24,8 @@
 		browser && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const revealDurationMs = prefersReducedMotion ? 0 : 180;
 	let body: HTMLElement | undefined = $state();
+	const isMethod = $derived(source === 'method');
+	const disclosureLabel = $derived(isMethod ? 'Answer method' : 'Marking points');
 
 	async function toggle() {
 		open = !open;
@@ -35,7 +41,7 @@
 	}
 </script>
 
-<section class="qc-hint-panel" aria-label="Mark scheme">
+<section class="qc-hint-panel" aria-label={disclosureLabel}>
 	<button
 		type="button"
 		class="qc-hint-toggle"
@@ -45,11 +51,11 @@
 	>
 		{#if open}
 			<X size={17} aria-hidden="true" />
-			Hide mark scheme
+			Hide {disclosureLabel.toLowerCase()}
 		{:else}
 			<ListChecks size={17} aria-hidden="true" />
-			Show mark scheme · {points.length}
-			{points.length === 1 ? 'point' : 'points'}
+			Show {disclosureLabel.toLowerCase()} · {marks}
+			{marks === 1 ? 'mark' : 'marks'}
 		{/if}
 	</button>
 
@@ -61,8 +67,12 @@
 			transition:slide={{ duration: revealDurationMs }}
 		>
 			<header>
-				<p class="qc-panel-label">Mark scheme</p>
-				<p>Check your answer against each point.</p>
+				<p class="qc-panel-label">{disclosureLabel}</p>
+				<p>
+					{isMethod
+						? 'Use these reasoning steps to improve your answer.'
+						: 'Check your answer against the credited points.'}
+				</p>
 			</header>
 			<ol>
 				{#each points as point, index (point.id)}

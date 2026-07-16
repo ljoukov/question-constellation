@@ -1,5 +1,6 @@
 import { getRequestEvent } from '$app/server';
 import type { ChainIllustration } from '$lib/chains/chainIllustration';
+import { deriveEnglishQuestionCardTitle } from '$lib/englishQuestionCardTitle';
 import { deriveQuestionCardTitle, questionCardTitleIssues } from '$lib/questionCardTitle.js';
 import {
 	getVersionedPublicRoutePayload,
@@ -9,7 +10,7 @@ import { gcsePastPaperData } from '$lib/pastPapers/gcsePastPapers';
 import { getPublishedChainIllustration } from './chainIllustrations';
 import { queryFirst, queryRows } from './db';
 
-const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v5';
+const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v10';
 const PRACTICE_PAGE_CACHE_KIND = 'question-practice-page';
 
 export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer' | 'unclassified';
@@ -93,6 +94,7 @@ export type Question = {
 	context: string;
 	assets: QuestionAsset[];
 	renderingOverlay: QuestionRenderingOverlay | null;
+	answerFormat?: string | null;
 	meta: ExamMeta;
 	transferDistance: TransferDistance;
 	distanceLabel: string;
@@ -102,6 +104,7 @@ export type Question = {
 	commonWeakExplanation: string;
 	weakAnswerMissingStepIds: string[];
 	checklist: MarkChecklistItem[];
+	checklistSource?: 'official' | 'method';
 	repairChain: RepairChainNode[];
 	practiceDraft: string;
 	whyThisFits: string;
@@ -262,6 +265,7 @@ type QuestionRow = {
 	context_text: string | null;
 	command_word: string | null;
 	marks: number | null;
+	answer_format: string | null;
 	board: string | null;
 	qualification: string | null;
 	subject: string | null;
@@ -425,10 +429,9 @@ function looksLikePracticePageData(value: unknown): value is PracticePageData {
 	const hasCompleteIllustrationPair =
 		!illustration || Boolean(illustration.src && illustration.lightSrc);
 	const hasSafeQuestionTitles =
-		Boolean(candidate.englishPractice) ||
-		(Boolean(candidate.question && hasSafeQuestionCardTitle(candidate.question)) &&
-			Array.isArray(candidate.questions) &&
-			candidate.questions.every(hasSafeQuestionCardTitle));
+		Boolean(candidate.question && hasSafeQuestionCardTitle(candidate.question)) &&
+		Array.isArray(candidate.questions) &&
+		candidate.questions.every(hasSafeQuestionCardTitle);
 	return Boolean(
 		candidate.question?.id &&
 		candidate.chain?.id &&
@@ -564,12 +567,23 @@ function iconForStep(text: string, role: string): RepairChainNode['icon'] {
 
 function titleFromQuestion(row: QuestionRow): string {
 	const metadata = parseJson<{ title?: string; card_title?: string }>(row.metadata_json, {});
-	return deriveQuestionCardTitle({
+	const genericTitle = deriveQuestionCardTitle({
 		cardTitle: metadata.card_title ?? metadata.title,
 		promptText: row.prompt_text,
 		selfContainedPromptText: row.self_contained_prompt_text,
 		fallback: row.id
 	});
+	if (genericTitle !== 'Unlabelled science question') return genericTitle;
+
+	if (/^English (?:Language|Literature)$/i.test(row.subject ?? '')) {
+		const englishTitle = deriveEnglishQuestionCardTitle({
+			promptText: row.prompt_text,
+			topicPath: parseJson<string[]>(row.topic_path_json, [])
+		});
+		if (englishTitle) return englishTitle;
+	}
+
+	return genericTitle;
 }
 
 function topicFromRow(row: QuestionRow): string {
@@ -578,12 +592,13 @@ function topicFromRow(row: QuestionRow): string {
 	return row.subject_area ?? row.paper ?? 'GCSE science';
 }
 
-function cleanPromptText(text: string): string {
+export function cleanPromptText(text: string): string {
 	return text
 		.split(/\r?\n/)
 		.filter((line) => !/^\s*\[\s*\d+\s*marks?\s*\]\s*$/i.test(line))
 		.filter((line) => !/^\s*(?:figure|table)\s+\d+\s*$/i.test(line))
 		.join('\n')
+		.replace(/([a-z0-9,;])\s*\n(?:[ \t]*\n)*[ \t]*([a-z])/g, '$1 $2')
 		.trim();
 }
 
@@ -707,7 +722,7 @@ function seedFromRow(row: QuestionChainSeedRow): QuestionChainSeed {
 async function getQuestionChainSeed(questionId: string): Promise<QuestionChainSeed> {
 	const row = await queryFirst<QuestionChainSeedRow>(
 		`SELECT q.id, q.source_question_ref, q.prompt_text, q.self_contained_prompt_text,
-		        q.context_text, q.command_word, q.marks,
+		        q.context_text, q.command_word, q.marks, q.answer_format,
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
 		        q.topic_path_json, q.self_containment_json, q.metadata_json,
 		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
@@ -844,21 +859,17 @@ export async function getQuestionRenderingOverlay(
 	return renderingOverlayFromRow(row);
 }
 
-async function getModelAnswer(questionId: string, chain: AnswerChain): Promise<string> {
-	const row = await queryFirst<ModelAnswerRow>(
-		`SELECT answer_text
-		 FROM model_answers
-		 WHERE question_id = ?
-		 ORDER BY confidence DESC
-		 LIMIT 1`,
-		[questionId]
-	);
-
-	return row?.answer_text ?? chain.modelAnswer;
+export function learnerFacingModelAnswer(value: string | null | undefined): string {
+	const answer = value?.replace(/\s+/g, ' ').trim() ?? '';
+	if (!answer) return '';
+	if (/\bAO\d\b/i.test(answer)) return '';
+	if (/^(?:allow|accept|ignore|reject|credit|do not accept)\b/i.test(answer)) return '';
+	if (/^\d+(?:\.\d+)+\s+.*\b(?:AO\d|mark)\b/i.test(answer)) return '';
+	return answer;
 }
 
-function modelAnswerFromRow(row: ModelAnswerRow | null, chain: AnswerChain): string {
-	return row?.answer_text ?? chain.modelAnswer;
+function modelAnswerFromRow(row: ModelAnswerRow | null): string {
+	return learnerFacingModelAnswer(row?.answer_text);
 }
 
 function checklistFromSteps(chain: AnswerChain): MarkChecklistItem[] {
@@ -899,21 +910,34 @@ async function getStoredMarkSchemeItems(
 }
 
 function checklistLooksUseful(rows: ChecklistRow[]): boolean {
-	return rows.length > 1 && rows.every((row) => !/\bAO\d\b/.test(row.text));
+	return (
+		rows.length > 0 &&
+		rows.every((row) => row.text.trim().length > 0 && !/\bAO\d\b/i.test(row.text))
+	);
 }
 
-function checklistFromRows(rows: ChecklistRow[], chain: AnswerChain): MarkChecklistItem[] {
-	if (!checklistLooksUseful(rows)) return checklistFromSteps(chain);
+function checklistFromRows(
+	rows: ChecklistRow[],
+	chain: AnswerChain
+): { items: MarkChecklistItem[]; source: 'official' | 'method' } {
+	if (!checklistLooksUseful(rows)) {
+		return { items: checklistFromSteps(chain), source: 'method' };
+	}
 
-	return rows.map((row, index) => ({
-		id: row.id,
-		text: row.text,
-		stepId: chain.steps[Math.min(index, chain.steps.length - 1)]?.id ?? chain.steps[0]?.id ?? row.id
-	}));
+	return {
+		items: rows.map((row) => ({
+			id: row.id,
+			text: row.text,
+			// Official mark-scheme rows and explanatory chain steps are different
+			// structures. Keep the row id until the importer supplies an explicit link.
+			stepId: row.id
+		})),
+		source: 'official'
+	};
 }
 
 async function getChecklist(questionId: string, chain: AnswerChain): Promise<MarkChecklistItem[]> {
-	return checklistFromRows(await getStoredChecklist(questionId), chain);
+	return checklistFromRows(await getStoredChecklist(questionId), chain).items;
 }
 
 function weakAnswerFromRow(
@@ -1017,6 +1041,7 @@ async function getQuestionSupplements(
 			`SELECT question_id, answer_text
 			 FROM model_answers
 			 WHERE question_id IN (${placeholders})
+			   AND needs_human_review = 0
 			 ORDER BY question_id, COALESCE(confidence, 0) DESC, id`,
 			ids
 		),
@@ -2417,7 +2442,8 @@ function hydrateQuestionFromSupplement(
 	supplement: QuestionSupplement
 ): Question {
 	const transferDistance = distanceFromDb(membership.transfer_distance);
-	const checklist = checklistFromRows(supplement.checklistRows, chain);
+	const checklistPresentation = checklistFromRows(supplement.checklistRows, chain);
+	const checklist = checklistPresentation.items;
 	const weakAnswer = weakAnswerFromRow(supplement.weakAnswerRow, chain);
 
 	return {
@@ -2428,6 +2454,7 @@ function hydrateQuestionFromSupplement(
 		context: displayContextFromRow(row),
 		assets: supplement.assets,
 		renderingOverlay: supplement.renderingOverlay,
+		answerFormat: row.answer_format,
 		meta: {
 			qualification: row.qualification ?? 'GCSE',
 			board: row.board ?? 'AQA',
@@ -2442,11 +2469,12 @@ function hydrateQuestionFromSupplement(
 		transferDistance,
 		distanceLabel: distanceLabel(transferDistance),
 		constellationRole: constellationRole(transferDistance),
-		modelAnswer: modelAnswerFromRow(supplement.modelAnswerRow, chain),
+		modelAnswer: modelAnswerFromRow(supplement.modelAnswerRow),
 		commonWeakAnswer: weakAnswer.text,
 		commonWeakExplanation: weakAnswer.explanation,
 		weakAnswerMissingStepIds: weakAnswer.missingStepIds,
 		checklist,
+		checklistSource: checklistPresentation.source,
 		repairChain: repairChainFromSteps(chain),
 		practiceDraft: weakAnswer.text,
 		whyThisFits: membership.fit_notes ?? chain.summary
@@ -2470,7 +2498,7 @@ async function hydrateQuestion(
 async function getQuestionRow(questionId: string): Promise<QuestionRow> {
 	const row = await queryFirst<QuestionRow>(
 		`SELECT id, source_question_ref, prompt_text, self_contained_prompt_text,
-		        context_text, command_word, marks, board,
+		        context_text, command_word, marks, answer_format, board,
 		        qualification, subject, subject_area, tier, paper, topic_path_json,
 		        self_containment_json, metadata_json
 		 FROM questions
@@ -2511,7 +2539,7 @@ async function getQuestionRowsForChain(
 ): Promise<Array<QuestionRow & MembershipRow>> {
 	return await queryRows<QuestionRow & MembershipRow>(
 		`SELECT q.id, q.source_question_ref, q.prompt_text, q.self_contained_prompt_text,
-		        q.context_text, q.command_word, q.marks,
+		        q.context_text, q.command_word, q.marks, q.answer_format,
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
 		        q.topic_path_json, q.self_containment_json, q.metadata_json,
 		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,

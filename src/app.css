@@ -2307,7 +2307,7 @@ textarea::placeholder {
 	outline: 0;
 }
 
-.qc-subject-card[data-action='gap'] {
+.qc-subject-card[data-action='close_gap'] {
 	border-color: rgba(180, 35, 24, 0.26);
 }
 
@@ -2775,8 +2775,11 @@ textarea::placeholder {
 }
 
 .qc-profile-save:disabled {
-	cursor: wait;
-	opacity: 0.66;
+	cursor: default;
+	border-color: var(--qc-ui-border-subtle);
+	background: var(--qc-ui-surface-muted);
+	color: var(--qc-ui-text-muted);
+	opacity: 1;
 }
 
 .qc-gap-layout {
@@ -8006,15 +8009,26 @@ textarea::placeholder {
 	justify-self: center;
 }
 
-.qc-scope-option h2,
+.qc-scope-option strong,
 .qc-scope-option p {
 	margin: 0;
 }
 
-.qc-scope-option h2 {
+.qc-scope-option strong {
+	display: block;
 	color: var(--qc-ui-text);
 	font-size: 1rem;
+	font-weight: 620;
 	line-height: 1.2;
+}
+
+.qc-scope-save-bar {
+	position: sticky;
+	top: calc(var(--qc-topbar-height, 4rem) + 0.5rem);
+	z-index: 2;
+	padding: 0.75rem 1rem;
+	border-block: 1px solid var(--qc-ui-border-subtle);
+	background: var(--qc-ui-surface-raised);
 }
 
 .qc-scope-option p {
@@ -8304,10 +8318,6 @@ textarea::placeholder {
 		gap: 0.45rem;
 	}
 
-	.qc-subject-card.setup .qc-subject-next strong {
-		display: none;
-	}
-
 	.qc-profile-layout {
 		padding-inline: 0.85rem;
 	}
@@ -8540,7 +8550,7 @@ textarea::placeholder {
 	}
 }
 
-@media (max-width: 380px) {
+@media (max-width: 430px) {
 	.qc-subject-progress-panel .qc-dashboard-panel-head {
 		flex-wrap: wrap;
 	}
@@ -8552,8 +8562,23 @@ textarea::placeholder {
 }
 
 @media (max-width: 430px) {
-	.qc-topbar-brand span {
+	.qc-topbar:not(.is-signed-in) .qc-topbar-brand span {
 		display: none;
+	}
+
+	.qc-subject-stats:not(.single) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.qc-subject-stats:not(.single) div {
+		grid-template-columns: minmax(4rem, auto) minmax(0, 1fr);
+		align-items: baseline;
+		border-right: 0;
+		border-bottom: 1px solid rgba(105, 129, 143, 0.16);
+	}
+
+	.qc-subject-stats:not(.single) div:last-child {
+		border-bottom: 0;
 	}
 
 	.qc-practice-actions .qc-action-button {
@@ -9876,9 +9901,9 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-browse-chain,
 :root[data-theme='dark'] .qc-thinking-chain {
-	border-color: rgba(226, 232, 240, 0.72);
-	background: rgba(7, 20, 31, 0.68);
-	color: #eaf4ff;
+	border-color: var(--qc-ui-border-subtle);
+	background: color-mix(in srgb, var(--qc-ui-surface-raised) 86%, transparent);
+	color: var(--qc-ui-text);
 	backdrop-filter: blur(14px);
 }
 
@@ -9901,9 +9926,9 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-thinking-chain li,
 :root[data-theme='dark'] .qc-chain-question-index,
 :root[data-theme='dark'] .qc-thinking-step-number {
-	border-color: #f8f8f2;
-	background: #050505;
-	color: #f8f8f2;
+	border-color: var(--qc-ui-border-subtle);
+	background: var(--qc-ui-surface-raised);
+	color: var(--qc-ui-text);
 }
 
 :root[data-theme='dark'] .qc-chain-title,

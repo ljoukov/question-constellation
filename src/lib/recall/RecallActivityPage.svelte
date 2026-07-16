@@ -3,7 +3,7 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { AdminUser } from '$lib/server/auth/session';
 	import { ArrowRight, Brain, CheckSquare } from '@lucide/svelte';
-	import type { RecallCard, RecallSubject, RecallTopic } from './aqaScienceRecall';
+	import type { RecallCardDefinition, RecallSubject, RecallTopic } from './aqaScienceRecall';
 	import {
 		recallActivityHref,
 		recallActivityLabel,
@@ -23,7 +23,7 @@
 		subject: RecallSubject;
 		activity: RecallActivity;
 		pageKind?: 'activity' | 'coverage';
-		cards: RecallCard[];
+		cards: RecallCardDefinition[];
 		topics: RecallTopic[];
 		user?: AdminUser | null;
 	} = $props();

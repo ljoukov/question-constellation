@@ -292,23 +292,22 @@ export async function fetchWithResponseTimeout(
 	init: RequestInit = {},
 	timeoutMs = 12_000
 ) {
-	const controller = new AbortController();
+	const timeoutController = new AbortController();
 	let timedOut = false;
-	const forwardAbort = () => controller.abort(init.signal?.reason);
-	if (init.signal?.aborted) forwardAbort();
-	else init.signal?.addEventListener('abort', forwardAbort, { once: true });
+	const signal = init.signal
+		? AbortSignal.any([init.signal, timeoutController.signal])
+		: timeoutController.signal;
 	const timeout = setTimeout(() => {
 		timedOut = true;
-		controller.abort();
+		timeoutController.abort();
 	}, timeoutMs);
 	try {
-		return await fetch(input, { ...init, signal: controller.signal });
+		return await fetch(input, { ...init, signal });
 	} catch (error) {
 		if (timedOut) throw new RequestTimeoutError();
 		throw error;
 	} finally {
 		clearTimeout(timeout);
-		init.signal?.removeEventListener('abort', forwardAbort);
 	}
 }
 

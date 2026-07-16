@@ -6,16 +6,25 @@ export type RecallControlModel =
 	| {
 			phase: 'prompt';
 			layout: 'single';
-			label: 'Show answer' | 'Choose an answer';
-			action: 'reveal' | 'instruction';
-			disabled: boolean;
+			label: 'Show answer';
+			action: 'reveal';
+	  }
+	| {
+			phase: 'prompt';
+			layout: 'none';
+			action: 'choose';
 	  }
 	| {
 			phase: 'result';
-			layout: 'split';
-			repeatLabel: 'Repeat';
+			layout: 'single' | 'split';
+			repeatLabel?: 'Repeat';
 			nextLabel: 'Next card' | 'See results';
 	  };
+
+export type ExplicitReverseRecallCard = {
+	reverseFront?: string | null;
+	reverseBack?: string | null;
+};
 
 export type RecallReviewDecision = {
 	grade: 'again' | 'good';
@@ -42,26 +51,61 @@ export function recallControlModel({
 		return presentation === 'mcq'
 			? {
 					phase: 'prompt',
-					layout: 'single',
-					label: 'Choose an answer',
-					action: 'instruction',
-					disabled: true
+					layout: 'none',
+					action: 'choose'
 				}
 			: {
 					phase: 'prompt',
 					layout: 'single',
 					label: 'Show answer',
-					action: 'reveal',
-					disabled: false
+					action: 'reveal'
 				};
 	}
 
 	return {
 		phase: 'result',
-		layout: 'split',
-		repeatLabel: 'Repeat',
+		layout: presentation === 'mcq' ? 'single' : 'split',
+		...(presentation === 'flashcard' ? { repeatLabel: 'Repeat' as const } : {}),
 		nextLabel: isLastCard ? 'See results' : 'Next card'
 	};
+}
+
+export function explicitReversePair(
+	card: ExplicitReverseRecallCard
+): { front: string; back: string } | null {
+	const front = card.reverseFront?.trim();
+	const back = card.reverseBack?.trim();
+	return front && back ? { front, back } : null;
+}
+
+export function cardsEligibleForRecallMode<T extends ExplicitReverseRecallCard>(
+	cards: T[],
+	mode: string
+): T[] {
+	return mode === 'reverse' ? cards.filter((card) => explicitReversePair(card) !== null) : cards;
+}
+
+export function shuffledRecallChoices<T>(
+	items: T[],
+	cardContentKey: string,
+	sessionId: string
+): T[] {
+	const next = [...items];
+	let state = hashString(`${sessionId}\u0000${cardContentKey}`) || 1;
+	for (let index = next.length - 1; index > 0; index -= 1) {
+		state = (state * 1664525 + 1013904223) >>> 0;
+		const swapIndex = state % (index + 1);
+		[next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+	}
+	return next;
+}
+
+function hashString(value: string): number {
+	let hash = 0;
+	for (let index = 0; index < value.length; index += 1) {
+		hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+	}
+	return hash;
 }
 
 export function recallReviewDecision({

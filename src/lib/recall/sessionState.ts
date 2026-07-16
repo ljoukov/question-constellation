@@ -11,9 +11,9 @@ export type RecallSessionScope = {
 };
 
 export type StoredRecallSession = {
-	version: 1;
+	version: 2;
 	scope: RecallSessionScope;
-	cardIds: string[];
+	cardContentKeys: string[];
 	cardIndex: number;
 	cardPositionInSession: number;
 	reviewedInSession: number;
@@ -26,7 +26,7 @@ export type StoredRecallSession = {
 	updatedAt: number;
 };
 
-const storagePrefix = 'question-constellation.recall-session.v1';
+const storagePrefix = 'question-constellation.recall-session.v2';
 
 export function recallSessionStorageKey(identity: string): string {
 	return `${storagePrefix}:${encodeURIComponent(identity || 'anonymous')}`;
@@ -35,7 +35,7 @@ export function recallSessionStorageKey(identity: string): string {
 export function readRecallSession(
 	raw: string | null,
 	expectedScope: RecallSessionScope,
-	validCardIds: ReadonlySet<string>,
+	validCardContentKeys: ReadonlySet<string>,
 	now = Date.now()
 ): StoredRecallSession | null {
 	if (!raw) return null;
@@ -46,16 +46,22 @@ export function readRecallSession(
 	} catch {
 		return null;
 	}
-	if (!isRecord(value) || value.version !== 1 || !isRecord(value.scope)) return null;
+	if (!isRecord(value) || value.version !== 2 || !isRecord(value.scope)) return null;
 	if (!scopeMatches(value.scope, expectedScope)) return null;
 	if (!isFiniteNumber(value.updatedAt) || now - value.updatedAt > RECALL_SESSION_MAX_AGE_MS) {
 		return null;
 	}
-	if (!Array.isArray(value.cardIds) || value.cardIds.length === 0) return null;
-	if (!value.cardIds.every((id) => typeof id === 'string' && validCardIds.has(id))) return null;
-	if (new Set(value.cardIds).size !== value.cardIds.length) return null;
-	if (!isIndex(value.cardIndex, value.cardIds.length)) return null;
-	if (!isIndex(value.cardPositionInSession, value.cardIds.length)) return null;
+	if (!Array.isArray(value.cardContentKeys) || value.cardContentKeys.length === 0) return null;
+	if (
+		!value.cardContentKeys.every(
+			(key) => typeof key === 'string' && validCardContentKeys.has(key)
+		)
+	) {
+		return null;
+	}
+	if (new Set(value.cardContentKeys).size !== value.cardContentKeys.length) return null;
+	if (!isIndex(value.cardIndex, value.cardContentKeys.length)) return null;
+	if (!isIndex(value.cardPositionInSession, value.cardContentKeys.length)) return null;
 	if (!isCount(value.reviewedInSession, value.cardPositionInSession)) return null;
 	if (!isCount(value.rememberedInSession, value.reviewedInSession)) return null;
 	if (!isCount(value.returningSoonerInSession, value.reviewedInSession)) return null;
@@ -75,9 +81,9 @@ export function readRecallSession(
 	if (typeof value.sessionId !== 'string' || !value.sessionId) return null;
 
 	return {
-		version: 1,
+		version: 2,
 		scope: expectedScope,
-		cardIds: value.cardIds,
+		cardContentKeys: value.cardContentKeys,
 		cardIndex: value.cardIndex,
 		cardPositionInSession: value.cardPositionInSession,
 		reviewedInSession: value.reviewedInSession,

@@ -1,0 +1,140 @@
+{
+  "reviews": [
+    {
+      "cardId": "chem-atom-smallest-part",
+      "accepted": true,
+      "reason": "The atom definition and supporting symbol examples are directly stated in the source. The three distractors diagnose distinct confusions with symbols, elements and substances.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-compound-fixed-proportions",
+      "accepted": true,
+      "reason": "The answer exactly captures the source definition of elements being chemically combined in fixed proportions. Distractors independently test chemical versus physical combination and fixed versus variable proportions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-mixture-combination-properties",
+      "accepted": true,
+      "reason": "Both linked defining features—no chemical combination and unchanged chemical properties—are explicitly supported. The balanced distractors diagnose each feature separately and together.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-plum-pudding-model-structure",
+      "accepted": true,
+      "reason": "The answer reproduces the specified plum pudding structure precisely. The alternatives distinguish charge reversal, Bohr's model and the earlier indivisible-sphere model using source-grounded feedback.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-alpha-scattering-mass-location",
+      "accepted": true,
+      "reason": "The answer exactly identifies the source conclusion that atomic mass is concentrated at the centre in the nucleus. Each alternative gives a distinct incorrect mass location with a grounded correction.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-bohr-specific-electron-orbits",
+      "accepted": true,
+      "reason": "Bohr's addition of electron orbits at specific distances is stated exactly. The distractors cleanly diagnose confusion with the plum pudding, indivisible-sphere and initial nuclear models.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-neutral-atom-particle-balance",
+      "accepted": true,
+      "reason": "The source directly links equal electron and proton numbers with an atom having no overall charge. The alternatives diagnose excess or deficient electrons and confusion with neutrons.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "chem-mass-number-particle-sum",
+      "accepted": true,
+      "reason": "The answer exactly expresses mass number as the sum of proton and neutron numbers. The alternatives distinctly test each common incorrect inclusion or substitution involving electrons.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    }
+  ]
+}

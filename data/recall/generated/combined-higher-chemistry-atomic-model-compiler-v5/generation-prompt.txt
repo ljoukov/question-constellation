@@ -1,0 +1,212 @@
+You compile concise GCSE science recall cards from one supplied extract of an official exam-board specification. The card must be useful for both unaided recall and four-choice recognition.
+
+Evidence and scope:
+- Use only scientific claims directly supported by the supplied official PDF page text, including every choice's feedback and misconception correction.
+- Test one precise examinable concept per card. Do not combine loosely related facts.
+- Copy one exact, self-contained, contiguous sourceExcerpt from the supplied page text. Preserve every word and symbol; whitespace alone may be collapsed.
+- PDF text can contain column labels or split equation typography. Never reconstruct, tidy, or paraphrase an excerpt. Use a shorter contiguous passage that still supports every claim, or choose a different concept.
+- The front, exact answer, explanation, reverse form and any memory tip must be supportable from that quote.
+- Do not invent source IDs, pages, curriculum mappings, provenance, revisions or hashes. The compiler adds those deterministically.
+
+Learner-facing writing:
+- front: a direct standalone question, normally no more than 18 words. Never mention buttons, choices or selecting an answer.
+- back: the exact compact answer, normally no more than 22 words. It is also the text of the one correct choice.
+- explanation: one short sentence that adds the useful why, relationship or distinction; do not merely repeat back.
+- memoryTip: null unless the same source evidence supports a brief extra connection that genuinely aids retrieval. Do not invent mnemonics or repeat the answer.
+- reverseFront and reverseBack: both null unless reversing the card creates a distinct, unambiguous retrieval task. Never make a tautological reverse.
+
+Recognition choices:
+- Supply exactly four unique choices: the exact back plus three plausible diagnostic distractors.
+- Each distractor must represent a different likely misconception, not random nonsense or a grammar/length giveaway.
+- Every choice needs concise feedback. Explain the relevant distinction without labels such as "correct answer" or repetitive praise.
+- The correct choice has misconception null. Every distractor names its specific misconception.
+- Keep choices parallel in grammar, specificity and approximate length where the science permits.
+
+Use a stable kebab-case id prefixed bio-, chem- or phys-, and a stable subject-local conceptKey. Supported card kinds: definition, formula, process, test-result, unit, practical, fact, comparison.
+
+For every card, output a visualCue field containing exactly one familiar Unicode emoji from the approved list below.
+
+The cue is a quick visual landmark for the scientific context. It is decorative, not an answer hint.
+- Prefer a literal object or broad topic already explicit in the question. Example: a question explicitly about the heart may use 🫀.
+- Never encode the correct answer, formula, result, trend, unit, process step, or a clue that eliminates a distractor.
+- If a specific emoji would help solve the question, move up to a broader topic cue.
+- Use exactly one approved grapheme: no emoji pairs, words, numbers, flags, skin tones, jokes, metaphors, or correctness symbols such as ✅, ❌ or ❓.
+- The cue must be recognisable to a UK student aged 14–16 without explanation.
+
+Write the complete question, answer and distractors first. Only then choose visualCue. Audit it against all of that text as if the cue were visible before the choices:
+1. Does it depict or name a noun, apparatus, measurement, quantity, result, property, relationship or process that appears in the answer but is not already explicit in the question?
+2. Does it make any distractor look impossible or make the correct option easier to select?
+If either answer might be yes, reject that cue and try the neutral fallback. The replacement itself must pass the same semantic check; never assume any fallback is automatically safe. Do not rely on the card kind or topic name alone.
+
+Return JSON only with a top-level cards array. Every card must contain exactly:
+id, conceptKey, kind, visualCue, front, back, reverseFront, reverseBack, explanation, memoryTip, choices, evidence.
+Each choice contains choiceKey, text, isCorrect, feedback and misconception.
+Evidence contains sourceExcerpt and supports. Include back and explanation, plus choice:<choiceKey>:feedback for all four choices and choice:<choiceKey>:misconception for each distractor. Add front, reverse or memoryTip only when the quote supports that field. This makes every learner-facing correction independently auditable.
+
+Compiler contract: recall-card-bundle-v2 / recall-card-compiler-v5
+
+Approved Chemistry cues: ⚛️ 🔗 ⚖️ 🧪 🧂 🔥 ⚡ 🧊 ⏱️ ⛽ 📏 🫧 ♻️ 🌡️ 📘
+Neutral fallback candidate: 📘
+
+Generate 8 cards.
+Subject: Chemistry
+Topic ID: aqa-gcse-combined-science-trilogy-8464-v1.1:5-1
+Specification reference: 5.1.1
+Official source metadata (compiler-owned; do not copy IDs into cards):
+{"specification":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1","board":"AQA","qualification":"GCSE","subject":"Combined Science: Trilogy","course":"Combined Science","specificationCode":"8464","version":"1.1","title":"AQA GCSE Combined Science: Trilogy (8464)","landingUrl":"https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification","pdfUrl":"https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf","localPath":"data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf","sha256":"d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"},"component":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1","parentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:5-1","code":"5.1.1","title":"A simple model of the atom, symbols, relative atomic mass, electronic charge and isotopes","kind":"section","subjectArea":"Chemistry","tier":["Foundation","Higher"],"sourcePageStart":68,"sourcePageEnd":71},"topicComponent":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1:5-1","parentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:5","code":"5.1","title":"Atomic structure and the periodic table","kind":"chapter","subjectArea":"Chemistry","tier":["Foundation","Higher"],"sourcePageStart":67,"sourcePageEnd":74},"pageStart":68,"pageEnd":71,"sourceFingerprint":"a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d"}
+Reviewed curriculum targets (compiler-owned; use only to judge scope):
+[{"offeringId":"aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher","curriculumComponentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1","topicComponentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:5-1","isPrimary":true,"confidence":1,"reviewed":true,"mappingSource":"recall-card-compiler-v2"}]
+
+Official curriculum PDF page text. sourceExcerpt must be copied exactly from here:
+<official_curriculum>
+5.1.1 A simple model of the atom, symbols, relative atomic mass,
+electronic charge and isotopes
+5.1.1.1 Atoms, elements and compounds
+Content Key opportunities for
+skills development
+All substances are made of atoms. An atom is the smallest part of
+an element that can exist.
+Atoms of each element are represented by a chemical symbol, eg
+O represents an atom of oxygen, Na represents an atom of sodium.
+There are about 100 different elements. Elements are shown in the
+periodic table.
+Compounds are formed from elements by chemical reactions.
+Chemical reactions always involve the formation of one or more
+new substances, and often involve a detectable energy change.
+Compounds contain two or more elements chemically combined in
+fixed proportions and can be represented by formulae using the
+symbols of the atoms from which they were formed. Compounds
+can only be separated into elements by chemical reactions.
+Chemical reactions can be represented by word equations or
+equations using symbols and formulae.
+Students will be supplied with a periodic table for the exam and
+should be able to:
+• use the names and symbols of the first 20 elements in the
+periodic table, the elements in Groups 1 and 7, and other
+elements in this specification
+• name compounds of these elements from given formulae or
+symbol equations
+• write word equations for the reactions in this specification
+• write formulae and balanced chemical equations for the
+reactions in this specification.
+(HT only) write balanced half equations and ionic equations where
+appropriate.
+68 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration
+5.1.1.2 Mixtures
+Content Key opportunities for
+skills development
+A mixture consists of two or more elements or compounds not
+chemically combined together. The chemical properties of each
+substance in the mixture are unchanged.
+Mixtures can be separated by physical processes such as filtration,
+crystallisation, simple distillation, fractional distillation and
+chromatography. These physical processes do not involve chemical
+reactions and no new substances are made.
+Students should be able to:
+• describe, explain and give examples of the specified
+processes of separation
+• suggest suitable separation and purification techniques for
+mixtures when given appropriate information.
+WS 2.2, 2.3
+AT 4
+Safe use of a range of
+equipment to separate
+chemical mixtures.
+5.1.1.3 The development of the model of the atom (common content with physics)
+Content Key opportunities for
+skills development
+New experimental evidence may lead to a scientific model being
+changed or replaced.
+Before the discovery of the electron, atoms were thought to be tiny
+spheres that could not be divided.
+The discovery of the electron led to the plum pudding model of the
+atom. The plum pudding model suggested that the atom is a ball of
+positive charge with negative electrons embedded in it.
+The results from the alpha particle scattering experiment led to the
+conclusion that the mass of an atom was concentrated at the centre
+(nucleus) and that the nucleus was charged. This nuclear model
+replaced the plum pudding model.
+Niels Bohr adapted the nuclear model by suggesting that electrons
+orbit the nucleus at specific distances. The theoretical calculations
+of Bohr agreed with experimental observations.
+Later experiments led to the idea that the positive charge of any
+nucleus could be subdivided into a whole number of smaller
+particles, each particle having the same amount of positive charge.
+The name proton was given to these particles.
+The experimental work of James Chadwick provided the evidence
+to show the existence of neutrons within the nucleus. This was
+about 20 years after the nucleus became an accepted scientific
+idea.
+Students should be able to describe:
+WS 1.1, 1.6
+This historical context
+provides an opportunity for
+students to show an
+understanding of why and
+describe how scientific
+methods and theories
+develop over time.
+WS 1.2
+AQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019
+Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 69
+Content Key opportunities for
+skills development
+• why the new evidence from the scattering experiment led to a
+change in the atomic model
+WS 1.1
+• the difference between the plum pudding model of the atom
+and the nuclear model of the atom.
+WS 1.2
+Details of experimental work supporting the Bohr model are not
+required.
+Details of Chadwick’s experimental work are not required.
+5.1.1.4 Relative electrical charges of subatomic particles
+Content Key opportunities for
+skills development
+The relative electrical charges of the particles in atoms are:
+In an atom, the number of electrons is equal to the number of
+protons in the nucleus. Atoms have no overall electrical charge.
+The number of protons in an atom of an element is its atomic
+number. All atoms of a particular element have the same number of
+protons. Atoms of different elements have different numbers of
+protons.
+Students should be able to use the nuclear model to describe
+atoms.
+WS 1.2
+70 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration
+5.1.1.5 Size and mass of atoms
+Content Key opportunities for
+skills development
+Atoms are very small, having a radius of about 0.1 nm (1 x 10-10 m).
+The radius of a nucleus is less than 1/10 000 of that of the atom
+(about 1 x 10-14 m).
+Almost all of the mass of an atom is in the nucleus.
+The relative masses of protons, neutrons and electrons are:
+The sum of the protons and neutrons in an atom is its mass
+number.
+Atoms of the same element can have different numbers of
+neutrons; these atoms are called isotopes of that element.
+Atoms can be represented as shown in this example:
+Students should be able to calculate the numbers of protons,
+neutrons and electrons in an atom or ion, given its atomic number
+and mass number.
+WS 4.3, 4
+Use SI units and the prefix
+nano.
+MS 1b
+Recognise expressions in
+standard form.
+Students should be able to relate size and scale of atoms to objects
+in the physical world.
+MS 1d
+5.1.1.6 Relative atomic mass
+Content Key opportunities for
+skills development
+The relative atomic mass of an element is an average value that
+takes account of the abundance of the isotopes of the element.
+Students should be able to calculate the relative atomic mass of an
+element given the percentage abundance of its isotopes.
+AQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019
+Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 71
+
+</official_curriculum>

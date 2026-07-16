@@ -1,0 +1,12 @@
+Use case: scientific-educational
+Asset type: reusable 16:9 landscape reasoning-chain illustration for an iPad GCSE science app
+Primary request: Visualise current in a physically correct parallel circuit, in exactly four numbered left-to-right panels.
+Style/medium: luminous electrical-engineering atlas on deep navy; elegant accurate GCSE textbook schematic; copper wires, cyan current glow, restrained green for the sum.
+Fixed circuit in every panel: two vertical rails and exactly three horizontal component paths. TOP path has the same visible battery in all panels, + on LEFT and − on RIGHT. MIDDLE path has lamp 1. BOTTOM path has identical lamp 2.
+Critical geometry: the bottom lamp branch is literally the lowest copper in each circuit. Each vertical rail terminates flush at its round junction with the bottom branch. No copper line, stub, tail, terminal, or glow may protrude even slightly below either bottom junction.
+Composition:
+1 "PARALLEL BRANCHES" — both lamps span the same rails; no arrows.
+2 "SAME POTENTIAL DIFFERENCE" — matching horizontal double-ended cyan brackets directly across middle and bottom lamp branches; no current arrows.
+3 "IDENTICAL BRANCHES, EQUAL CURRENTS" — equal RIGHTWARD branch arrows labelled "BRANCH I₂" and "BRANCH I₃"; show "I₂ = I₃".
+4 "BRANCH CURRENTS ADD" — one DOWNWARD arrow on the upper-left common supply rail from the battery + terminal toward the first branch; "TOTAL I₁" leader ends on that arrow. RIGHTWARD arrows and labels "BRANCH I₂" and "BRANCH I₃" sit on their own lamp branches. Show "I₁ = I₂ + I₃" separately below.
+Constraints: no other arrows; no numbers; no fourth path; no bare bypass; no dangling conductors; no misplaced labels; no extra prose, logo, or watermark.

@@ -27,9 +27,7 @@
 
 	const includedTopics = $derived(subject.topics.filter((topic) => topic.included));
 	const otherActions = $derived(
-		subject.alternatives.filter(
-			(action) => action.available && action.kind !== subject.nextAction.kind
-		)
+		subject.alternatives.filter((action) => action.available && action.id !== subject.nextAction.id)
 	);
 	const scopeReady = $derived(subject.scope.status !== 'not_set');
 	const showProgress = $derived(
@@ -61,10 +59,15 @@
 				? `Change ${subject.scope.unitPlural}`
 				: `Choose ${subject.scope.unitPlural}`;
 		}
+		if (action.id.startsWith('quick:')) return 'Answer question';
 		if (action.kind === 'recall') return 'Start recall';
 		if (action.kind === 'close_gap') return 'Close this gap';
 		if (action.kind === 'apply_chain') return 'Start question';
 		return 'Choose a question';
+	}
+
+	function actionTitle(action: SignedInSubjectView['nextAction']) {
+		return action.kind === 'recall' ? action.title.replace(/\s+recall$/i, '') : action.title;
 	}
 
 	const RecommendedIcon = $derived(actionIcon(subject.nextAction.kind));
@@ -78,14 +81,6 @@
 			<p class="qc-real-kicker">{subject.courseLabel}</p>
 			<h1 id="subject-title">{subject.subject}</h1>
 		</header>
-
-		{#if subject.scope.href && scopeReady}
-			<a class="qc-dashboard-profile-link" href={subject.scope.href}>
-				<span>Included course content</span>
-				<strong>{subject.scope.label}</strong>
-				<ChevronRight size={18} aria-hidden="true" />
-			</a>
-		{/if}
 	</aside>
 
 	<div class="qc-learning-main">
@@ -97,7 +92,7 @@
 			<header class="qc-dashboard-panel-head">
 				<div>
 					<p class="qc-panel-label">{subject.nextAction.eyebrow}</p>
-					<h2 id="recommended-heading">{subject.nextAction.title}</h2>
+					<h2 id="recommended-heading">{actionTitle(subject.nextAction)}</h2>
 				</div>
 				<RecommendedIcon size={22} aria-hidden="true" strokeWidth={2.2} />
 			</header>
@@ -159,7 +154,7 @@
 						{@const ActionIcon = actionIcon(action.kind)}
 						<article class="qc-dashboard-panel">
 							<header class="qc-dashboard-panel-head">
-								<h2>{action.title}</h2>
+								<h2>{actionTitle(action)}</h2>
 								<ActionIcon size={20} aria-hidden="true" strokeWidth={2.2} />
 							</header>
 							<p>{action.detail}</p>
@@ -181,37 +176,32 @@
 		{#if showProgress}
 			<section
 				class="qc-dashboard-panel qc-subject-progress-panel"
-				aria-labelledby="picture-heading"
+				aria-labelledby="subject-progress-heading"
 			>
 				<header class="qc-dashboard-panel-head">
-					<div>
-						<p class="qc-panel-label">Your progress</p>
-						<h2 id="picture-heading">
-							{hasSubjectEvidence ? 'Current picture' : 'Not enough evidence yet'}
-						</h2>
-					</div>
+					<h2 id="subject-progress-heading">Your progress</h2>
 					{#if hasSubjectEvidence}
 						<span class="qc-subject-confidence">{subject.progress.evidenceLabel}</span>
 					{/if}
 				</header>
 
 				{#if !hasSubjectEvidence}
-					<p>The suggested activity will start building this picture.</p>
+					<p>Nothing checked yet. Start the suggested activity to see your progress here.</p>
 				{:else}
 					<div class="qc-subject-stats" class:single={subject.topics.length === 0}>
 						{#if subject.topics.length > 0}
 							<div>
 								<strong>{subject.progress.coverageCount} of {subject.progress.coverageTotal}</strong
 								>
-								<span>With evidence</span>
+								<span>Practised</span>
 							</div>
 							<div>
 								<strong>{subject.progress.secureCount}</strong>
-								<span>Strong evidence</span>
+								<span>Looks secure</span>
 							</div>
 							<div>
 								<strong>{subject.progress.dueCount}</strong>
-								<span>Due another check</span>
+								<span>Review due</span>
 							</div>
 						{:else}
 							<div>
@@ -231,10 +221,9 @@
 							aria-controls="subject-curriculum-progress"
 							onclick={() => (curriculumProgressOpen = !curriculumProgressOpen)}
 						>
-							<span class="qc-panel-label">Course progress</span>
+							<span class="qc-panel-label">Progress by {subject.scope.unitSingular}</span>
 							<span class="qc-mark-details-action">
-								{curriculumProgressOpen ? 'Hide' : 'Show'}
-								{includedTopics.length} included
+								{curriculumProgressOpen ? 'Hide details' : 'Show details'}
 								<ChevronDown size={17} aria-hidden="true" />
 							</span>
 						</button>
@@ -262,4 +251,14 @@
 			</section>
 		{/if}
 	</div>
+
+	{#if subject.scope.href && scopeReady && subject.nextAction.kind !== 'scope'}
+		<nav class="qc-learning-resources" aria-label="Course settings">
+			<a class="qc-dashboard-profile-link" href={subject.scope.href}>
+				<span>Included course content</span>
+				<strong>{subject.scope.label}</strong>
+				<ChevronRight size={18} aria-hidden="true" />
+			</a>
+		</nav>
+	{/if}
 </div>

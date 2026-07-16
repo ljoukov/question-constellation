@@ -1,0 +1,10 @@
+Use case: scientific-educational
+Asset type: reusable 16:9 landscape reasoning-chain illustration for an iPad GCSE science app
+Primary request: Visualise momentum redistribution in a same-direction rear-end collision, in exactly four numbered left-to-right panels.
+Style/medium: luminous mechanics-and-motion atlas on deep navy; elegant accurate scientific textbook illustration; the same orange rear cart and blue front cart throughout; crisp cyan/orange arrows.
+Composition:
+1 "TOTAL STAYS THE SAME" — before collision, orange rear cart has a longer rightward arrow and blue front cart a shorter one. Below, show two stacked total-momentum bars with identical overall start and end points. Label them "BEFORE TOTAL" and "AFTER TOTAL". The BEFORE bar has a visibly longer orange segment and shorter blue segment; the AFTER bar has a visibly shorter orange segment and longer blue segment. Only the colour boundary moves; total bar length is exactly equal.
+2 "ONE OBJECT GAINS" — blue cart: a longer solid rightward arrow over a shorter dashed former arrow.
+3 "THE OTHER LOSES" — orange cart: a shorter solid rightward arrow over a longer dashed former arrow; retain the blue cart's gained solid rightward arrow, quieter but clearly present.
+4 "VELOCITIES CHANGE" — coherent separated after-collision state with both carts moving right; blue has the longer rightward arrow and orange the shorter.
+Constraints: no numerical/example masses or speeds; every motion arrow points right; preserve cart colours, sizes, and identity; no overlap in the final state; no extra equations, prose, logo, or watermark. The equal total and changed contributions must be graspable with the headings covered.

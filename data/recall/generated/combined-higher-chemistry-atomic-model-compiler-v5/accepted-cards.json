@@ -1,0 +1,1155 @@
+{
+  "schemaVersion": "recall-card-bundle-v2",
+  "promptVersion": "recall-card-compiler-v5",
+  "run": {
+    "id": "combined-higher-chemistry-atomic-model-compiler-v5",
+    "startedAt": "2026-07-15T21:06:35.430Z",
+    "finishedAt": "2026-07-15T21:15:37.211Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": false
+    }
+  },
+  "source": {
+    "catalogSchemaVersion": "1",
+    "catalogPath": "data/curricula/curriculum-catalog.json",
+    "fingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+    "specification": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Combined Science: Trilogy",
+      "course": "Combined Science",
+      "specificationCode": "8464",
+      "version": "1.1",
+      "title": "AQA GCSE Combined Science: Trilogy (8464)",
+      "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+      "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+      "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+      "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+    },
+    "component": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "code": "5.1.1",
+      "title": "A simple model of the atom, symbols, relative atomic mass, electronic charge and isotopes",
+      "kind": "section",
+      "subjectArea": "Chemistry",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 68,
+      "sourcePageEnd": 71
+    },
+    "topicComponent": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5",
+      "code": "5.1",
+      "title": "Atomic structure and the periodic table",
+      "kind": "chapter",
+      "subjectArea": "Chemistry",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 67,
+      "sourcePageEnd": 74
+    },
+    "pageStart": 68,
+    "pageEnd": 71
+  },
+  "cards": [
+    {
+      "id": "chem-atom-smallest-part",
+      "conceptKey": "atom-definition-smallest-part",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "What is the smallest part of an element that can exist?",
+      "back": "An atom.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "O and Na are chemical symbols representing atoms of oxygen and sodium.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-atom-smallest-part:atom",
+          "displayOrder": 0,
+          "choiceKey": "atom",
+          "text": "An atom.",
+          "isCorrect": true,
+          "feedback": "An atom is defined as the smallest part of an element that can exist.",
+          "misconception": null
+        },
+        {
+          "id": "chem-atom-smallest-part:chemical-symbol",
+          "displayOrder": 1,
+          "choiceKey": "chemical-symbol",
+          "text": "A chemical symbol.",
+          "isCorrect": false,
+          "feedback": "A chemical symbol represents an atom; it is not the atom named by the definition.",
+          "misconception": "Confuses an atom with the chemical symbol representing it."
+        },
+        {
+          "id": "chem-atom-smallest-part:element",
+          "displayOrder": 2,
+          "choiceKey": "element",
+          "text": "An element.",
+          "isCorrect": false,
+          "feedback": "The definition makes the atom the smallest part of an element.",
+          "misconception": "Confuses an element with its smallest part."
+        },
+        {
+          "id": "chem-atom-smallest-part:substance",
+          "displayOrder": 3,
+          "choiceKey": "substance",
+          "text": "A substance.",
+          "isCorrect": false,
+          "feedback": "Substances are made of atoms; the smallest part named here is an atom.",
+          "misconception": "Confuses a substance made of atoms with the smallest part of an element."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-atom-smallest-part:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "All substances are made of atoms. An atom is the smallest part of an element that can exist. Atoms of each element are represented by a chemical symbol, eg O represents an atom of oxygen, Na represents an atom of sodium.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "a4f54bba89f3f6dca3f12ff28cee05d8d35342922622530da123ded4c11bdfb5",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:atom:feedback",
+            "choice:chemical-symbol:feedback",
+            "choice:element:feedback",
+            "choice:substance:feedback",
+            "choice:chemical-symbol:misconception",
+            "choice:element:misconception",
+            "choice:substance:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "8a50d31cbd73b36aa84f1e01ef377a21170f962f13d574f24b42e8130aebf6ba",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-atom-smallest-part",
+          "accepted": true,
+          "reason": "The atom definition and supporting symbol examples are directly stated in the source. The three distractors diagnose distinct confusions with symbols, elements and substances.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-atom-smallest-part",
+          "accepted": true,
+          "reason": "The book cue is semantically neutral and provides no information that distinguishes the answer or distractors.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "chem-compound-fixed-proportions",
+      "conceptKey": "compound-composition-fixed-proportions",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "How are the elements in a compound combined?",
+      "back": "Chemically, in fixed proportions.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Compounds can be represented by formulae built from their atoms’ symbols.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-compound-fixed-proportions:chemical-fixed",
+          "displayOrder": 0,
+          "choiceKey": "chemical-fixed",
+          "text": "Chemically, in fixed proportions.",
+          "isCorrect": true,
+          "feedback": "Compounds contain two or more elements chemically combined in fixed proportions.",
+          "misconception": null
+        },
+        {
+          "id": "chem-compound-fixed-proportions:chemical-variable",
+          "displayOrder": 1,
+          "choiceKey": "chemical-variable",
+          "text": "Chemically, in variable proportions.",
+          "isCorrect": false,
+          "feedback": "The combination is chemical, but its proportions are fixed rather than variable.",
+          "misconception": "Treats a compound’s fixed element proportions as variable."
+        },
+        {
+          "id": "chem-compound-fixed-proportions:physical-fixed",
+          "displayOrder": 2,
+          "choiceKey": "physical-fixed",
+          "text": "Physically, in fixed proportions.",
+          "isCorrect": false,
+          "feedback": "The proportions are fixed, but the elements are chemically rather than physically combined.",
+          "misconception": "Treats a compound’s chemical combination as physical."
+        },
+        {
+          "id": "chem-compound-fixed-proportions:physical-variable",
+          "displayOrder": 3,
+          "choiceKey": "physical-variable",
+          "text": "Physically, in variable proportions.",
+          "isCorrect": false,
+          "feedback": "Both features are reversed: the combination is chemical and the proportions are fixed.",
+          "misconception": "Reverses both the chemical-combination and fixed-proportion requirements."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-compound-fixed-proportions:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "Compounds contain two or more elements chemically combined in fixed proportions and can be represented by formulae using the symbols of the atoms from which they were formed.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "b9f784271246c93596f7baa45a7f7606ca7d66644c9af3a7ef83d60e8d3461ca",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:chemical-fixed:feedback",
+            "choice:chemical-variable:feedback",
+            "choice:physical-fixed:feedback",
+            "choice:physical-variable:feedback",
+            "choice:chemical-variable:misconception",
+            "choice:physical-fixed:misconception",
+            "choice:physical-variable:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "2b9bbfe77a2464bed219eed1369d48cfa058e4cd9e966c5213e23b9bb32b584c",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-compound-fixed-proportions",
+          "accepted": true,
+          "reason": "The answer exactly captures the source definition of elements being chemically combined in fixed proportions. Distractors independently test chemical versus physical combination and fixed versus variable proportions.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-compound-fixed-proportions",
+          "accepted": true,
+          "reason": "The book cue is semantically neutral and provides no information about chemical combination or fixed proportions.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "chem-mixture-combination-properties",
+      "conceptKey": "mixture-combination-and-properties",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "What happens to substances and their chemical properties in a mixture?",
+      "back": "They are not chemically combined, and their chemical properties are unchanged.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A mixture contains two or more elements or compounds.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-mixture-combination-properties:not-chemical-unchanged",
+          "displayOrder": 0,
+          "choiceKey": "not-chemical-unchanged",
+          "text": "They are not chemically combined, and their chemical properties are unchanged.",
+          "isCorrect": true,
+          "feedback": "Mixture substances are not chemically combined and retain unchanged chemical properties.",
+          "misconception": null
+        },
+        {
+          "id": "chem-mixture-combination-properties:chemical-unchanged",
+          "displayOrder": 1,
+          "choiceKey": "chemical-unchanged",
+          "text": "They are chemically combined, and their chemical properties are unchanged.",
+          "isCorrect": false,
+          "feedback": "Their properties stay unchanged, but mixture substances are not chemically combined.",
+          "misconception": "Treats substances in a mixture as chemically combined."
+        },
+        {
+          "id": "chem-mixture-combination-properties:not-chemical-changed",
+          "displayOrder": 2,
+          "choiceKey": "not-chemical-changed",
+          "text": "They are not chemically combined, and their chemical properties change.",
+          "isCorrect": false,
+          "feedback": "The lack of chemical combination is right, but each substance’s chemical properties remain unchanged.",
+          "misconception": "Assumes mixing changes each substance’s chemical properties."
+        },
+        {
+          "id": "chem-mixture-combination-properties:chemical-changed",
+          "displayOrder": 3,
+          "choiceKey": "chemical-changed",
+          "text": "They are chemically combined, and their chemical properties change.",
+          "isCorrect": false,
+          "feedback": "Both points conflict: the substances are not chemically combined and their chemical properties are unchanged.",
+          "misconception": "Reverses both defining features of a mixture."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-mixture-combination-properties:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "A mixture consists of two or more elements or compounds not chemically combined together. The chemical properties of each substance in the mixture are unchanged.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "1ee76d3e975feb53c836abbfebc35fc1d33d401a7de2633d437594e684913c64",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:not-chemical-unchanged:feedback",
+            "choice:chemical-unchanged:feedback",
+            "choice:not-chemical-changed:feedback",
+            "choice:chemical-changed:feedback",
+            "choice:chemical-unchanged:misconception",
+            "choice:not-chemical-changed:misconception",
+            "choice:chemical-changed:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "e81bd7b5091be1944abdeae44b82c0ba5ed07abc00ba5cac140b86f075effb60",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-mixture-combination-properties",
+          "accepted": true,
+          "reason": "Both linked defining features—no chemical combination and unchanged chemical properties—are explicitly supported. The balanced distractors diagnose each feature separately and together.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-mixture-combination-properties",
+          "accepted": true,
+          "reason": "The book cue is semantically neutral and provides no information about combination or property changes.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "chem-plum-pudding-model-structure",
+      "conceptKey": "plum-pudding-model-structure",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "What did the plum pudding model suggest about an atom?",
+      "back": "A ball of positive charge with negative electrons embedded in it.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The electron’s discovery led to this model; beforehand, atoms were thought to be indivisible spheres.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-plum-pudding-model-structure:positive-ball-negative-electrons",
+          "displayOrder": 0,
+          "choiceKey": "positive-ball-negative-electrons",
+          "text": "A ball of positive charge with negative electrons embedded in it.",
+          "isCorrect": true,
+          "feedback": "Positive charge forms the ball, with negative electrons embedded in it.",
+          "misconception": null
+        },
+        {
+          "id": "chem-plum-pudding-model-structure:negative-ball-positive-particles",
+          "displayOrder": 1,
+          "choiceKey": "negative-ball-positive-particles",
+          "text": "A ball of negative charge with positive particles embedded in it.",
+          "isCorrect": false,
+          "feedback": "The ball was positive, and the embedded particles were negative electrons.",
+          "misconception": "Reverses the charges of the ball and embedded particles."
+        },
+        {
+          "id": "chem-plum-pudding-model-structure:charged-nucleus-orbits",
+          "displayOrder": 2,
+          "choiceKey": "charged-nucleus-orbits",
+          "text": "A charged nucleus with electrons orbiting at specific distances.",
+          "isCorrect": false,
+          "feedback": "Specific electron orbits were Bohr’s later adaptation of the nuclear model.",
+          "misconception": "Confuses the plum pudding model with Bohr’s adapted nuclear model."
+        },
+        {
+          "id": "chem-plum-pudding-model-structure:indivisible-sphere",
+          "displayOrder": 3,
+          "choiceKey": "indivisible-sphere",
+          "text": "A tiny sphere that could not be divided.",
+          "isCorrect": false,
+          "feedback": "The indivisible sphere was the idea before the electron was discovered.",
+          "misconception": "Confuses the plum pudding model with the pre-electron indivisible-sphere model."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-plum-pudding-model-structure:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "Before the discovery of the electron, atoms were thought to be tiny spheres that could not be divided. The discovery of the electron led to the plum pudding model of the atom. The plum pudding model suggested that the atom is a ball of positive charge with negative electrons embedded in it. The results from the alpha particle scattering experiment led to the conclusion that the mass of an atom was concentrated at the centre (nucleus) and that the nucleus was charged. This nuclear model replaced the plum pudding model. Niels Bohr adapted the nuclear model by suggesting that electrons orbit the nucleus at specific distances. The theoretical calculations of Bohr agreed with experimental observations.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "787897b0df6c005fde5f337fe0b0f36da8bb0ef1dc44f04c0462ca472e8b5fd2",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:positive-ball-negative-electrons:feedback",
+            "choice:negative-ball-positive-particles:feedback",
+            "choice:charged-nucleus-orbits:feedback",
+            "choice:indivisible-sphere:feedback",
+            "choice:negative-ball-positive-particles:misconception",
+            "choice:charged-nucleus-orbits:misconception",
+            "choice:indivisible-sphere:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "eefdddf5e0748c6ef1bf92d55fcacf5c56cc6d027e689100859770796aa2aae3",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-plum-pudding-model-structure",
+          "accepted": true,
+          "reason": "The answer reproduces the specified plum pudding structure precisely. The alternatives distinguish charge reversal, Bohr's model and the earlier indivisible-sphere model using source-grounded feedback.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-plum-pudding-model-structure",
+          "accepted": true,
+          "reason": "The book cue is semantically neutral and provides no information about the model's charges or structure.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "chem-alpha-scattering-mass-location",
+      "conceptKey": "alpha-scattering-atomic-mass-location",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "test-result",
+      "visualCue": "📘",
+      "front": "What did alpha particle scattering reveal about an atom’s mass?",
+      "back": "It was concentrated at the centre, in the nucleus.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The resulting nuclear model replaced the plum pudding model.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-alpha-scattering-mass-location:central-nucleus",
+          "displayOrder": 0,
+          "choiceKey": "central-nucleus",
+          "text": "It was concentrated at the centre, in the nucleus.",
+          "isCorrect": true,
+          "feedback": "The scattering results placed the atom’s mass at its centre, the nucleus.",
+          "misconception": null
+        },
+        {
+          "id": "chem-alpha-scattering-mass-location:evenly-spread",
+          "displayOrder": 1,
+          "choiceKey": "evenly-spread",
+          "text": "It was spread evenly throughout the atom.",
+          "isCorrect": false,
+          "feedback": "The experiment led to concentrated mass at the centre, not an even spread.",
+          "misconception": "Assumes atomic mass is distributed throughout the atom."
+        },
+        {
+          "id": "chem-alpha-scattering-mass-location:orbiting-electrons",
+          "displayOrder": 2,
+          "choiceKey": "orbiting-electrons",
+          "text": "It was concentrated in electrons orbiting the nucleus.",
+          "isCorrect": false,
+          "feedback": "The mass was concentrated in the nucleus; electrons orbit the nucleus at specific distances.",
+          "misconception": "Assigns the atom’s concentrated mass to its electrons instead of its nucleus."
+        },
+        {
+          "id": "chem-alpha-scattering-mass-location:outer-edge",
+          "displayOrder": 3,
+          "choiceKey": "outer-edge",
+          "text": "It was concentrated near the atom’s outer edge.",
+          "isCorrect": false,
+          "feedback": "The stated location is the atom’s centre rather than its outer edge.",
+          "misconception": "Moves the concentration of atomic mass from the centre to the outer edge."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-alpha-scattering-mass-location:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "The results from the alpha particle scattering experiment led to the conclusion that the mass of an atom was concentrated at the centre (nucleus) and that the nucleus was charged. This nuclear model replaced the plum pudding model. Niels Bohr adapted the nuclear model by suggesting that electrons orbit the nucleus at specific distances.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "e0517ff6509812efd75539f4436bf113a0201652c60afcf37fcf439b37c0f584",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:central-nucleus:feedback",
+            "choice:evenly-spread:feedback",
+            "choice:orbiting-electrons:feedback",
+            "choice:outer-edge:feedback",
+            "choice:evenly-spread:misconception",
+            "choice:orbiting-electrons:misconception",
+            "choice:outer-edge:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "8624b06fd00757f400ecb04dff52abba36ca4f35facceff15a3e2009b90b4c3e",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-alpha-scattering-mass-location",
+          "accepted": true,
+          "reason": "The answer exactly identifies the source conclusion that atomic mass is concentrated at the centre in the nucleus. Each alternative gives a distinct incorrect mass location with a grounded correction.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-alpha-scattering-mass-location",
+          "accepted": true,
+          "reason": "The book cue is semantically neutral and provides no information about where atomic mass is concentrated.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "chem-bohr-specific-electron-orbits",
+      "conceptKey": "bohr-specific-electron-orbits",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "fact",
+      "visualCue": "📘",
+      "front": "How did Niels Bohr adapt the nuclear model?",
+      "back": "He suggested electrons orbit the nucleus at specific distances.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Bohr’s theoretical calculations agreed with experimental observations.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-bohr-specific-electron-orbits:specific-orbits",
+          "displayOrder": 0,
+          "choiceKey": "specific-orbits",
+          "text": "He suggested electrons orbit the nucleus at specific distances.",
+          "isCorrect": true,
+          "feedback": "Bohr added electrons orbiting the nucleus at specific distances.",
+          "misconception": null
+        },
+        {
+          "id": "chem-bohr-specific-electron-orbits:embedded-electrons",
+          "displayOrder": 1,
+          "choiceKey": "embedded-electrons",
+          "text": "He placed negative electrons inside a ball of positive charge.",
+          "isCorrect": false,
+          "feedback": "Embedded electrons in positive charge describe the plum pudding model, not Bohr’s adaptation.",
+          "misconception": "Confuses Bohr’s nuclear model with the plum pudding model."
+        },
+        {
+          "id": "chem-bohr-specific-electron-orbits:indivisible-spheres",
+          "displayOrder": 2,
+          "choiceKey": "indivisible-spheres",
+          "text": "He kept atoms as tiny spheres that could not be divided.",
+          "isCorrect": false,
+          "feedback": "Indivisible tiny spheres were the idea before the electron was discovered.",
+          "misconception": "Confuses Bohr’s model with the pre-electron indivisible-sphere idea."
+        },
+        {
+          "id": "chem-bohr-specific-electron-orbits:scattering-nucleus",
+          "displayOrder": 3,
+          "choiceKey": "scattering-nucleus",
+          "text": "He concluded atomic mass was concentrated in a charged nucleus.",
+          "isCorrect": false,
+          "feedback": "Central mass and a charged nucleus came from scattering; Bohr added specific electron orbits.",
+          "misconception": "Confuses Bohr’s adaptation with the scattering experiment’s nuclear conclusion."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-bohr-specific-electron-orbits:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "Before the discovery of the electron, atoms were thought to be tiny spheres that could not be divided. The discovery of the electron led to the plum pudding model of the atom. The plum pudding model suggested that the atom is a ball of positive charge with negative electrons embedded in it. The results from the alpha particle scattering experiment led to the conclusion that the mass of an atom was concentrated at the centre (nucleus) and that the nucleus was charged. This nuclear model replaced the plum pudding model. Niels Bohr adapted the nuclear model by suggesting that electrons orbit the nucleus at specific distances. The theoretical calculations of Bohr agreed with experimental observations.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "787897b0df6c005fde5f337fe0b0f36da8bb0ef1dc44f04c0462ca472e8b5fd2",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:specific-orbits:feedback",
+            "choice:embedded-electrons:feedback",
+            "choice:indivisible-spheres:feedback",
+            "choice:scattering-nucleus:feedback",
+            "choice:embedded-electrons:misconception",
+            "choice:indivisible-spheres:misconception",
+            "choice:scattering-nucleus:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "7f9074f8686c32c0e631809d35f2545765ae8956e55a59200d63f685632336ee",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-bohr-specific-electron-orbits",
+          "accepted": true,
+          "reason": "Bohr's addition of electron orbits at specific distances is stated exactly. The distractors cleanly diagnose confusion with the plum pudding, indivisible-sphere and initial nuclear models.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-bohr-specific-electron-orbits",
+          "accepted": true,
+          "reason": "The book cue is semantically neutral and provides no information about Bohr's adaptation.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "chem-neutral-atom-particle-balance",
+      "conceptKey": "neutral-atom-electron-proton-balance",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "fact",
+      "visualCue": "⚡",
+      "front": "Why does an atom have no overall electrical charge?",
+      "back": "It has equal numbers of electrons and protons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The equality compares electrons in the atom with protons in its nucleus.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-neutral-atom-particle-balance:equal-electrons-protons",
+          "displayOrder": 0,
+          "choiceKey": "equal-electrons-protons",
+          "text": "It has equal numbers of electrons and protons.",
+          "isCorrect": true,
+          "feedback": "Equal electron and proton numbers accompany no overall charge in an atom.",
+          "misconception": null
+        },
+        {
+          "id": "chem-neutral-atom-particle-balance:more-electrons",
+          "displayOrder": 1,
+          "choiceKey": "more-electrons",
+          "text": "It has more electrons than protons.",
+          "isCorrect": false,
+          "feedback": "No overall charge is linked to equal, not greater, electron and proton numbers.",
+          "misconception": "Assumes more electrons than protons still gives no overall charge."
+        },
+        {
+          "id": "chem-neutral-atom-particle-balance:fewer-electrons",
+          "displayOrder": 2,
+          "choiceKey": "fewer-electrons",
+          "text": "It has fewer electrons than protons.",
+          "isCorrect": false,
+          "feedback": "No overall charge is linked to equal, not fewer, electron and proton numbers.",
+          "misconception": "Assumes fewer electrons than protons still gives no overall charge."
+        },
+        {
+          "id": "chem-neutral-atom-particle-balance:equal-electrons-neutrons",
+          "displayOrder": 3,
+          "choiceKey": "equal-electrons-neutrons",
+          "text": "It has equal numbers of electrons and neutrons.",
+          "isCorrect": false,
+          "feedback": "The required equality is between electrons and protons, not electrons and neutrons.",
+          "misconception": "Balances electrons against neutrons instead of protons."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-neutral-atom-particle-balance:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "In an atom, the number of electrons is equal to the number of protons in the nucleus. Atoms have no overall electrical charge.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "931c06f78e91ff875f68a7ce72926c78b9950724e7037c7c424e275f64f2dd0c",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:equal-electrons-protons:feedback",
+            "choice:more-electrons:feedback",
+            "choice:fewer-electrons:feedback",
+            "choice:equal-electrons-neutrons:feedback",
+            "choice:more-electrons:misconception",
+            "choice:fewer-electrons:misconception",
+            "choice:equal-electrons-neutrons:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "52c936bba2e71007738d292e188640692259caa5b3839367bb2c424803babf03",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-neutral-atom-particle-balance",
+          "accepted": true,
+          "reason": "The source directly links equal electron and proton numbers with an atom having no overall charge. The alternatives diagnose excess or deficient electrons and confusion with neutrons.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-neutral-atom-particle-balance",
+          "accepted": true,
+          "reason": "The electrical cue only reflects the electrical-charge topic already explicit in the front and does not identify the required particle balance.",
+          "replacementCue": "⚡"
+        }
+      }
+    },
+    {
+      "id": "chem-mass-number-particle-sum",
+      "conceptKey": "mass-number-protons-neutrons",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "kind": "formula",
+      "visualCue": "⚖️",
+      "front": "How is an atom’s mass number calculated from its particles?",
+      "back": "Add the numbers of protons and neutrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Electrons are excluded from the mass-number sum.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "chem-mass-number-particle-sum:protons-neutrons",
+          "displayOrder": 0,
+          "choiceKey": "protons-neutrons",
+          "text": "Add the numbers of protons and neutrons.",
+          "isCorrect": true,
+          "feedback": "Mass number is the sum of an atom’s protons and neutrons.",
+          "misconception": null
+        },
+        {
+          "id": "chem-mass-number-particle-sum:protons-electrons",
+          "displayOrder": 1,
+          "choiceKey": "protons-electrons",
+          "text": "Add the numbers of protons and electrons.",
+          "isCorrect": false,
+          "feedback": "The stated sum uses neutrons with protons; electrons are not included.",
+          "misconception": "Substitutes electrons for neutrons in the mass-number sum."
+        },
+        {
+          "id": "chem-mass-number-particle-sum:neutrons-electrons",
+          "displayOrder": 2,
+          "choiceKey": "neutrons-electrons",
+          "text": "Add the numbers of neutrons and electrons.",
+          "isCorrect": false,
+          "feedback": "The stated sum uses protons with neutrons; electrons do not replace protons.",
+          "misconception": "Substitutes electrons for protons in the mass-number sum."
+        },
+        {
+          "id": "chem-mass-number-particle-sum:all-three-particles",
+          "displayOrder": 3,
+          "choiceKey": "all-three-particles",
+          "text": "Add the numbers of protons, neutrons and electrons.",
+          "isCorrect": false,
+          "feedback": "Only proton and neutron numbers form the stated sum; electrons are excluded.",
+          "misconception": "Incorrectly includes electrons in addition to protons and neutrons."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "chem-mass-number-particle-sum:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "pageStart": 68,
+          "pageEnd": 71,
+          "sourceExcerpt": "The sum of the protons and neutrons in an atom is its mass number.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "d8b73f19c6d1667f400190010756a0c66d63129284dcf76a3fdef56a27ce2499",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:protons-neutrons:feedback",
+            "choice:protons-electrons:feedback",
+            "choice:neutrons-electrons:feedback",
+            "choice:all-three-particles:feedback",
+            "choice:protons-electrons:misconception",
+            "choice:neutrons-electrons:misconception",
+            "choice:all-three-particles:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "1560b96d0fbbbdbc250bf612dbe559fa25dad261d75c3447e742aaa3127077ea",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v5",
+        "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+        "generatedAt": "2026-07-15T21:15:37.211Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "chem-mass-number-particle-sum",
+          "accepted": true,
+          "reason": "The answer exactly expresses mass number as the sum of proton and neutron numbers. The alternatives distinctly test each common incorrect inclusion or substitution involving electrons.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "chem-mass-number-particle-sum",
+          "accepted": true,
+          "reason": "The scale cue only reflects mass already explicit in the front and does not identify which particles must be added.",
+          "replacementCue": "⚖️"
+        }
+      }
+    }
+  ]
+}

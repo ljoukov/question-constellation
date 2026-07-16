@@ -22,7 +22,7 @@ export type RecallTopic = {
 	paper: 'Paper 1' | 'Paper 2' | 'Both papers';
 };
 
-export type RecallCard = {
+export type RecallCardDefinition = {
 	id: string;
 	board: 'AQA';
 	qualification: 'GCSE';
@@ -37,9 +37,31 @@ export type RecallCard = {
 	reverseBack?: string;
 	distractors?: string[];
 	explanation?: string;
+	memoryTip?: string;
 	choiceFeedback?: Record<string, string>;
+	choiceMisconceptions?: Record<string, string>;
 	sourceUrl: string;
 	sourceTitle: string;
+};
+
+/**
+ * A learner-facing card is always tied to one exact curriculum offering and
+ * one immutable content identity. The unscoped definitions below are authoring
+ * data only; server catalog hydration adds these fields before a card can enter
+ * a signed-in session or produce learner evidence.
+ */
+export type RecallCard = RecallCardDefinition & {
+	offeringId: string;
+	curriculumComponentId: string;
+	topicComponentId: string;
+	contentRevision: number;
+	contentHash: string;
+	/**
+	 * Server-owned identifiers for every recognition choice, keyed by the exact
+	 * learner-facing text. Clients may return an identifier, but never define
+	 * what it means.
+	 */
+	choiceKeys: Record<string, string>;
 };
 
 export const recallKindLabels: Record<RecallCardKind, string> = {
@@ -268,7 +290,10 @@ export const recallCurriculumTopics: RecallTopic[] = [
 ];
 
 function recallCard(
-	card: Omit<RecallCard, 'board' | 'qualification' | 'sourceUrl' | 'sourceTitle' | 'visualCue'> & {
+	card: Omit<
+		RecallCardDefinition,
+		'board' | 'qualification' | 'sourceUrl' | 'sourceTitle' | 'visualCue'
+	> & {
 		visualCue?: string;
 	}
 ) {
@@ -284,10 +309,10 @@ function recallCard(
 		sourceTitle: source.title,
 		...card,
 		visualCue
-	} satisfies RecallCard;
+	} satisfies RecallCardDefinition;
 }
 
-export const recallCards: RecallCard[] = [
+export const recallCards: RecallCardDefinition[] = [
 	recallCard({
 		id: 'bio-eukaryote-prokaryote',
 		subject: 'Biology',

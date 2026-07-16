@@ -4,6 +4,7 @@ import {
 	type ChainQuestionTeaser,
 	type LearningChain
 } from '$lib/learningChains';
+import { deriveEnglishQuestionCardTitle } from '$lib/englishQuestionCardTitle';
 import { deriveQuestionCardTitle } from '$lib/questionCardTitle.js';
 import {
 	canonicalCurriculumSubject,
@@ -256,11 +257,22 @@ function questionBankTitle(row: QuestionBankQuestionRow) {
 		row.metadata_json,
 		{}
 	);
-	return deriveQuestionCardTitle({
+	const genericTitle = deriveQuestionCardTitle({
 		cardTitle: metadata.card_title ?? metadata.title,
 		promptText: row.prompt_text,
 		fallback: metadata.stem ?? row.source_question_ref ?? row.id
 	});
+	if (genericTitle !== 'Unlabelled science question') return genericTitle;
+
+	if (/^English (?:Language|Literature)$/i.test(questionSubjectName(row))) {
+		const englishTitle = deriveEnglishQuestionCardTitle({
+			promptText: row.prompt_text,
+			topicPath: parseJson<string[]>(row.topic_path_json, [])
+		});
+		if (englishTitle) return englishTitle;
+	}
+
+	return genericTitle;
 }
 
 function questionBankPreview(row: QuestionBankQuestionRow) {
@@ -712,7 +724,8 @@ async function fetchQuestionRows() {
 	);
 }
 
-async function fetchQuestionBankRows() {
+async function fetchQuestionBankRows(filter?: { board: string; subject: string }) {
+	const exactProfileClause = filter ? '\n\t\t   AND q.board = ?\n\t\t   AND q.subject = ?' : '';
 	return queryRows<QuestionBankQuestionRow>(
 		`SELECT
 		        q.id,
@@ -755,6 +768,7 @@ async function fetchQuestionBankRows() {
 		  AND ac.status = 'published'
 		 WHERE q.needs_human_review = 0
 		   AND q.status = 'published'
+		   ${exactProfileClause}
 		 ORDER BY
 		   COALESCE(q.board, sd.board, 'AQA'),
 		   COALESCE(q.subject_area, q.subject, sd.subject, ''),
@@ -770,7 +784,8 @@ async function fetchQuestionBankRows() {
 		   COALESCE(qac.fit_confidence, 0) DESC,
 		   COALESCE(q.display_order, 9999),
 		   q.source_question_ref,
-		   q.id`
+		   q.id`,
+		filter ? [filter.board, filter.subject] : []
 	);
 }
 
@@ -999,6 +1014,17 @@ export async function getExplorableLearningChains(): Promise<LearningChain[]> {
 
 export async function getQuestionBankQuestions(): Promise<QuestionBankQuestion[]> {
 	return dedupeQuestionBankRows(await fetchQuestionBankRows());
+}
+
+/**
+ * Signed-in subject hubs should read their current reviewed questions directly.
+ * They must not inherit the deliberately small/stale public browse snapshot.
+ */
+export async function getQuestionBankQuestionsForSubject(
+	board: string,
+	subject: string
+): Promise<QuestionBankQuestion[]> {
+	return dedupeQuestionBankRows(await fetchQuestionBankRows({ board, subject }));
 }
 
 export async function getFreshQuestionBankBrowseData(): Promise<QuestionBankBrowseData> {

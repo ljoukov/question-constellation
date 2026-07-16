@@ -16,6 +16,8 @@
 		RecallSubject,
 		RecallTopic
 	} from '$lib/recall/aqaScienceRecall';
+	import { recallCardContentKey } from '$lib/recall/contentIdentity';
+	import { rankCanonicalRecallCards } from '$lib/recall/personalization';
 	import {
 		readRecallSession,
 		recallSessionStorageKey,
@@ -23,9 +25,12 @@
 		type StoredRecallSession
 	} from '$lib/recall/sessionState';
 	import {
+		cardsEligibleForRecallMode,
+		explicitReversePair,
 		mixedRecallPresentation,
 		recallControlModel,
 		recallReviewDecision,
+		shuffledRecallChoices,
 		type RecallMcqFeedback,
 		type RecallPresentation,
 		type RecallReviewIntent
@@ -73,6 +78,8 @@
 		lastGrade: Grade;
 		lastSeenAt: number;
 		wrongChoices: Record<string, number>;
+		wrongChoiceCount: number;
+		repeatedMisconceptionCount: number;
 	};
 
 	let {
@@ -100,17 +107,22 @@
 				intervalDays: number;
 				dueAt: string;
 				updatedAt: string;
+				wrongChoiceCount: number;
+				repeatedMisconceptionCount: number;
 			}>;
 			user: { uid: string; email: string; name: string | null; photoUrl: string | null } | null;
 		};
 	} = $props();
 
 	const storageKey = untrack(
-		() => `question-constellation.recall-progress.v2:${data.user?.uid ?? 'anonymous'}`
+		() => `question-constellation.recall-progress.v3:${data.user?.uid ?? 'anonymous'}`
 	);
 	const sessionStorageKey = untrack(() => recallSessionStorageKey(data.user?.uid ?? 'anonymous'));
 	const topicById = untrack(() => new Map(data.topics.map((topic) => [topic.id, topic])));
 	const cardById = untrack(() => new Map(data.cards.map((card) => [card.id, card])));
+	const cardByContentKey = untrack(
+		() => new Map(data.cards.map((card) => [recallCardContentKey(card), card]))
+	);
 	const subjectOptions = untrack(() => Array.from(data.subjects));
 	const kindOptions = untrack(
 		() => Object.entries(data.kindLabels) as Array<[RecallCardKind, string]>
@@ -158,18 +170,19 @@
 	const initialSearch = untrack(() => data.initialSearch);
 	const initialMode = untrack(() => validMode(data.initialMode));
 	const initialStackSize = untrack(() => validStackSize(data.initialSize));
-	const initialCardCount = untrack(
-		() => filterCards(initialSubject, initialTopic, initialKind, initialSearch).length
+	const initialEligibleCards = untrack(() =>
+		cardsEligibleForRecallMode(
+			filterCards(initialSubject, initialTopic, initialKind, initialSearch),
+			initialMode
+		)
 	);
+	const initialCardCount = initialEligibleCards.length;
 	const initialProgress = untrack(() => progressFromServer(data.serverProgress));
-	const initialSessionCardIds = untrack(() =>
+	const initialSessionCardContentKeys = untrack(() =>
 		data.initialStart
-			? rankCards(
-					filterCards(initialSubject, initialTopic, initialKind, initialSearch),
-					initialProgress
-				)
+			? rankCards(initialEligibleCards, initialProgress)
 					.slice(0, Math.min(initialStackSize, initialCardCount))
-					.map((card) => card.id)
+					.map(recallCardContentKey)
 			: []
 	);
 
@@ -190,7 +203,7 @@
 	let selectedChoice = $state<string | null>(null);
 	let mcqFeedback = $state<RecallMcqFeedback>(null);
 	let progressById = $state<Record<string, RecallProgress>>(initialProgress);
-	let sessionCardIds = $state<string[]>(initialSessionCardIds);
+	let sessionCardContentKeys = $state<string[]>(initialSessionCardContentKeys);
 	let dragX = $state(0);
 	let dragY = $state(0);
 	let dragStartX = $state(0);
@@ -220,12 +233,19 @@
 			(topic) => selectedSubject === 'All subjects' || topic.subject === selectedSubject
 		)
 	);
-	const filteredCards = $derived(
+	const matchingCards = $derived(
 		filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery)
 	);
+	const reverseCardCount = $derived(cardsEligibleForRecallMode(matchingCards, 'reverse').length);
+	const visibleModeOptions = $derived(
+		modeOptions.filter((option) => option.value !== 'reverse' || reverseCardCount > 0)
+	);
+	const filteredCards = $derived(cardsEligibleForRecallMode(matchingCards, mode));
 	const rankedCards = $derived(rankCards(filteredCards, progressById));
 	const sessionCards = $derived(
-		sessionCardIds.map((id) => cardById.get(id)).filter((card): card is RecallCard => Boolean(card))
+		sessionCardContentKeys
+			.map((key) => cardByContentKey.get(key))
+			.filter((card): card is RecallCard => Boolean(card))
 	);
 	const currentCard = $derived((sessionActive ? sessionCards : rankedCards)[cardIndex] ?? null);
 	const currentTopic = $derived(currentCard ? topicById.get(currentCard.topicId) : null);
@@ -238,6 +258,7 @@
 		currentCard ? presentationFor(currentCard) : 'flashcard'
 	);
 	const currentExplanation = $derived(currentCard ? explanationTextFor(currentCard) : null);
+	const currentMemoryTip = $derived(currentCard ? memoryTipFor(currentCard) : null);
 	const currentChoiceFeedback = $derived(
 		currentCard && selectedChoice
 			? (currentCard.choiceFeedback?.[selectedChoice]?.trim() ?? null)
@@ -245,16 +266,18 @@
 	);
 	const filteredCardCount = $derived(filteredCards.length);
 	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
-	const seenCount = $derived(filteredCards.filter((card) => progressById[card.id]?.seen).length);
+	const seenCount = $derived(
+		filteredCards.filter((card) => progressById[recallCardContentKey(card)]?.seen).length
+	);
 	const dueCount = $derived(
 		filteredCards.filter((card) => {
-			const progress = progressById[card.id];
+			const progress = progressById[recallCardContentKey(card)];
 			return !progress || progress.dueAt <= Date.now();
 		}).length
 	);
 	const steadyCount = $derived(
 		filteredCards.filter((card) => {
-			const progress = progressById[card.id];
+			const progress = progressById[recallCardContentKey(card)];
 			return (
 				progress && ['good', 'easy'].includes(progress.lastGrade) && progress.intervalDays >= 1
 			);
@@ -321,6 +344,12 @@
 	});
 
 	$effect(() => {
+		if (mode !== 'reverse' || reverseCardCount > 0) return;
+		mode = 'recall';
+		syncRecallUrl('replace', false);
+	});
+
+	$effect(() => {
 		const params = page.url.searchParams;
 		const nextSubject = validSubject(params.get('subject') ?? 'All subjects');
 		const nextTopic = params.get('topic') ?? 'all';
@@ -333,7 +362,10 @@
 		const nextStackSize = validStackSize(params.get('size') ?? '10');
 		const nextSessionActive =
 			params.get('start') === '1' &&
-			filterCards(nextSubject, nextTopic, nextKind, nextSearch).length > 0;
+			cardsEligibleForRecallMode(
+				filterCards(nextSubject, nextTopic, nextKind, nextSearch),
+				nextMode
+			).length > 0;
 
 		untrack(() => {
 			if (selectedSubject !== nextSubject) selectedSubject = nextSubject;
@@ -354,11 +386,11 @@
 
 	$effect(() => {
 		if (!browser || !sessionHydrated || !sessionActive || sessionComplete) return;
-		if (sessionCardIds.length === 0 || !recallSessionId) return;
+		if (sessionCardContentKeys.length === 0 || !recallSessionId) return;
 		const snapshot: StoredRecallSession = {
-			version: 1,
+			version: 2,
 			scope: currentSessionScope(),
-			cardIds: [...sessionCardIds],
+			cardContentKeys: [...sessionCardContentKeys],
 			cardIndex,
 			cardPositionInSession,
 			reviewedInSession,
@@ -387,13 +419,16 @@
 		}
 		const merged = { ...localProgress };
 		for (const remote of data.serverProgress) {
+			const remoteCard = cardById.get(remote.cardId);
+			if (!remoteCard) continue;
+			const progressKey = recallCardContentKey(remoteCard);
 			const remoteSeenAt = parseServerDate(remote.updatedAt);
-			const local = merged[remote.cardId];
+			const local = merged[progressKey];
 			if (local && local.lastSeenAt > remoteSeenAt) continue;
 			const grade = ['again', 'hard', 'good', 'easy'].includes(remote.lastGrade)
 				? (remote.lastGrade as Grade)
 				: 'again';
-			merged[remote.cardId] = {
+			merged[progressKey] = {
 				seen: remote.seenCount,
 				correct: remote.correctCount,
 				streak: grade === 'again' ? 0 : Math.max(1, local?.streak ?? 1),
@@ -401,25 +436,37 @@
 				dueAt: parseServerDate(remote.dueAt),
 				lastGrade: grade,
 				lastSeenAt: remoteSeenAt,
-				wrongChoices: local?.wrongChoices ?? {}
+				wrongChoices: local?.wrongChoices ?? {},
+				wrongChoiceCount: Math.max(
+					remote.wrongChoiceCount,
+					Object.values(local?.wrongChoices ?? {}).reduce((sum, count) => sum + count, 0)
+				),
+				repeatedMisconceptionCount: Math.max(
+					remote.repeatedMisconceptionCount,
+					...Object.values(local?.wrongChoices ?? {}),
+					0
+				)
 			};
 		}
 		progressById = merged;
-		const eligibleCards = filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery);
+		const eligibleCards = cardsEligibleForRecallMode(
+			filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery),
+			mode
+		);
 		let restoredSession: StoredRecallSession | null = null;
 		if (data.initialStart && eligibleCards.length > 0) {
 			try {
 				restoredSession = readRecallSession(
 					window.localStorage.getItem(sessionStorageKey),
 					currentSessionScope(),
-					new Set(eligibleCards.map((card) => card.id))
+					new Set(eligibleCards.map(recallCardContentKey))
 				);
 			} catch {
 				restoredSession = null;
 			}
 		}
 		if (restoredSession) {
-			sessionCardIds = restoredSession.cardIds;
+			sessionCardContentKeys = restoredSession.cardContentKeys;
 			cardIndex = restoredSession.cardIndex;
 			cardPositionInSession = restoredSession.cardPositionInSession;
 			reviewedInSession = restoredSession.reviewedInSession;
@@ -432,9 +479,9 @@
 			cardMotion = 'idle';
 			cardStartedAt = Date.now();
 		} else if (data.initialStart && eligibleCards.length > 0) {
-			sessionCardIds = rankCards(eligibleCards, merged)
+			sessionCardContentKeys = rankCards(eligibleCards, merged)
 				.slice(0, Math.min(stackSize, eligibleCards.length))
-				.map((card) => card.id);
+				.map(recallCardContentKey);
 			clearPersistedSession();
 		}
 		sessionHydrated = true;
@@ -506,10 +553,12 @@
 	function progressFromServer(rows: typeof data.serverProgress): Record<string, RecallProgress> {
 		const progress: Record<string, RecallProgress> = {};
 		for (const remote of rows) {
+			const card = cardById.get(remote.cardId);
+			if (!card) continue;
 			const grade = ['again', 'hard', 'good', 'easy'].includes(remote.lastGrade)
 				? (remote.lastGrade as Grade)
 				: 'again';
-			progress[remote.cardId] = {
+			progress[recallCardContentKey(card)] = {
 				seen: remote.seenCount,
 				correct: remote.correctCount,
 				streak: grade === 'again' ? 0 : 1,
@@ -517,21 +566,35 @@
 				dueAt: parseServerDate(remote.dueAt),
 				lastGrade: grade,
 				lastSeenAt: parseServerDate(remote.updatedAt),
-				wrongChoices: {}
+				wrongChoices: {},
+				wrongChoiceCount: remote.wrongChoiceCount,
+				repeatedMisconceptionCount: remote.repeatedMisconceptionCount
 			};
 		}
 		return progress;
 	}
 
 	function rankCards(cards: RecallCard[], progress: Record<string, RecallProgress>) {
-		return [...cards].sort((left, right) => {
-			const leftProgress = progress[left.id];
-			const rightProgress = progress[right.id];
-			const leftDue = !leftProgress || leftProgress.dueAt <= Date.now();
-			const rightDue = !rightProgress || rightProgress.dueAt <= Date.now();
-			if (leftDue !== rightDue) return leftDue ? -1 : 1;
-			return (leftProgress?.lastSeenAt ?? 0) - (rightProgress?.lastSeenAt ?? 0);
-		});
+		return rankCanonicalRecallCards(
+			cards,
+			Object.fromEntries(
+				Object.entries(progress).map(([key, value]) => [
+					key,
+					{
+						seenCount: value.seen,
+						dueAt: value.dueAt,
+						lastSeenAt: value.lastSeenAt,
+						wrongChoiceCount:
+							value.wrongChoiceCount ??
+							Object.values(value.wrongChoices ?? {}).reduce((sum, count) => sum + count, 0),
+						repeatedMisconceptionCount:
+							value.repeatedMisconceptionCount ??
+							Math.max(...Object.values(value.wrongChoices ?? {}), 0)
+					}
+				])
+			),
+			Date.now()
+		);
 	}
 
 	function currentSessionScope(): RecallSessionScope {
@@ -586,11 +649,11 @@
 	}
 
 	function promptTextFor(card: RecallCard) {
-		return mode === 'reverse' ? (card.reverseFront ?? card.back) : card.front;
+		return mode === 'reverse' ? (explicitReversePair(card)?.front ?? '') : card.front;
 	}
 
 	function answerTextFor(card: RecallCard) {
-		return mode === 'reverse' ? (card.reverseBack ?? card.front) : card.back;
+		return mode === 'reverse' ? (explicitReversePair(card)?.back ?? '') : card.back;
 	}
 
 	function presentationFor(card: RecallCard): RecallPresentation {
@@ -607,6 +670,11 @@
 		return explanation || null;
 	}
 
+	function memoryTipFor(card: RecallCard): string | null {
+		const tip = card.memoryTip?.trim();
+		return tip || null;
+	}
+
 	function topicCardCount(topicId: string) {
 		return data.cards.filter((card) => card.topicId === topicId).length;
 	}
@@ -620,34 +688,18 @@
 		}
 		const [answer, ...distractors] = uniqueChoices;
 		const cappedChoices = [answer, ...distractors.slice(0, 3)].filter(Boolean);
-		return seededShuffle(cappedChoices, hashString(card.id)).slice(0, 4);
-	}
-
-	function hashString(value: string) {
-		let hash = 0;
-		for (let index = 0; index < value.length; index += 1) {
-			hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
-		}
-		return hash;
-	}
-
-	function seededShuffle<T>(items: T[], seed: number) {
-		const next = [...items];
-		let state = seed || 1;
-		for (let index = next.length - 1; index > 0; index -= 1) {
-			state = (state * 1664525 + 1013904223) >>> 0;
-			const swapIndex = state % (index + 1);
-			[next[index], next[swapIndex]] = [next[swapIndex], next[index]];
-		}
-		return next;
+		return shuffledRecallChoices(cappedChoices, recallCardContentKey(card), recallSessionId).slice(
+			0,
+			4
+		);
 	}
 
 	function startSessionState() {
 		if (filteredCards.length === 0) return;
 		recallSessionId = createActivityId('recall-session');
-		sessionCardIds = rankedCards
+		sessionCardContentKeys = rankedCards
 			.slice(0, Math.min(stackSize, rankedCards.length))
-			.map((card) => card.id);
+			.map(recallCardContentKey);
 		sessionActive = true;
 		sessionComplete = false;
 		cardIndex = 0;
@@ -661,7 +713,7 @@
 	function quitSessionState() {
 		clearPersistedSession();
 		sessionActive = false;
-		sessionCardIds = [];
+		sessionCardContentKeys = [];
 		sessionComplete = false;
 		cardIndex = 0;
 		cardPositionInSession = 0;
@@ -725,7 +777,8 @@
 
 	function gradeCard(card: RecallCard, grade: Grade, chosenAnswer?: string) {
 		const now = Date.now();
-		const previous = progressById[card.id];
+		const progressKey = recallCardContentKey(card);
+		const previous = progressById[progressKey];
 		const wasCorrect = grade !== 'again';
 		const previousInterval = previous?.intervalDays ?? 0;
 		const intervalDays =
@@ -737,14 +790,14 @@
 						? Math.max(1, previousInterval * 2 || 1)
 						: Math.max(3, previousInterval * 3 || 3);
 		const wrongChoices = { ...(previous?.wrongChoices ?? {}) };
-		if (!wasCorrect && chosenAnswer) {
+		if (!wasCorrect && chosenAnswer && chosenAnswer !== card.back) {
 			wrongChoices[chosenAnswer] = (wrongChoices[chosenAnswer] ?? 0) + 1;
 		}
 		const dueDelay = grade === 'again' ? 1000 * 60 * 5 : intervalDays * 24 * 60 * 60 * 1000;
 
 		saveProgress({
 			...progressById,
-			[card.id]: {
+			[progressKey]: {
 				seen: (previous?.seen ?? 0) + 1,
 				correct: (previous?.correct ?? 0) + (wasCorrect ? 1 : 0),
 				streak: wasCorrect ? (previous?.streak ?? 0) + 1 : 0,
@@ -752,23 +805,31 @@
 				dueAt: now + dueDelay,
 				lastGrade: grade,
 				lastSeenAt: now,
-				wrongChoices
+				wrongChoices,
+				wrongChoiceCount: Object.values(wrongChoices).reduce((sum, count) => sum + count, 0),
+				repeatedMisconceptionCount: Math.max(...Object.values(wrongChoices), 0)
 			}
 		});
 		if (grade === 'again') returningSoonerInSession += 1;
 		else rememberedInSession += 1;
-		syncRecallReview(card, grade);
+		syncRecallReview(card, grade, chosenAnswer ?? null);
 		advanceCard(true);
 	}
 
-	function syncRecallReview(card: RecallCard, grade: Grade) {
+	function syncRecallReview(card: RecallCard, grade: Grade, selectedAnswer: string | null) {
 		if (!browser || !data.user) return;
 		const reviewMode: Exclude<Mode, 'mixed'> =
 			mode === 'mixed' ? (currentPresentation === 'mcq' ? 'recognise' : 'recall') : mode;
 		queueRecallReview(data.user.uid, {
 			cardId: card.id,
+			contentRevision: card.contentRevision,
+			contentHash: card.contentHash,
 			grade,
 			mode: reviewMode,
+			selectedChoiceKey:
+				reviewMode === 'recognise' && selectedAnswer
+					? (card.choiceKeys[selectedAnswer] ?? null)
+					: null,
 			sourceSessionId: recallSessionId || createActivityId('recall-session'),
 			responseDurationMs: responseDurationMs(cardStartedAt)
 		});
@@ -839,10 +900,7 @@
 			intent
 		});
 		if (!decision) return;
-		const chosenAnswer =
-			currentPresentation === 'mcq' && mcqFeedback === 'incorrect'
-				? (selectedChoice ?? undefined)
-				: undefined;
+		const chosenAnswer = currentPresentation === 'mcq' ? (selectedChoice ?? undefined) : undefined;
 		exitCard(decision.direction, () => gradeCard(card, decision.grade, chosenAnswer));
 	}
 
@@ -1046,6 +1104,19 @@
 						Another set
 					</button>
 				</div>
+				{#if recallSyncFailure}
+					<div class="completion-sync">
+						<RequestFailureNotice
+							failure={recallSyncFailure}
+							onRetry={retryRecallSync}
+							retrying={recallSyncing}
+							retryLabel={recallSyncFailure.kind === 'auth'
+								? 'Sign in again'
+								: `Retry ${recallSyncPendingCount === 1 ? 'review' : `${recallSyncPendingCount} reviews`}`}
+							compact
+						/>
+					</div>
+				{/if}
 			</section>
 		{:else if currentCard}
 			<section
@@ -1205,9 +1276,20 @@
 									</header>
 									<section class="card-answer">
 										<p tabindex="-1" bind:this={flashcardResultHeading}>Answer</p>
-										<div>
+										<div class="flashcard-answer-text">
 											<MathText text={answerTextFor(currentCard)} />
 										</div>
+										{#if currentExplanation}
+											<div class="flashcard-explanation">
+												<MathText text={currentExplanation} />
+											</div>
+										{/if}
+										{#if currentMemoryTip}
+											<div class="flashcard-memory-tip">
+												<span>Remember</span>
+												<MathText text={currentMemoryTip} />
+											</div>
+										{/if}
 									</section>
 								{/if}
 							</div>
@@ -1216,42 +1298,43 @@
 				{/key}
 			</section>
 
-			<footer
-				class="session-actions"
-				class:prompt-actions={currentControls.phase === 'prompt'}
-				class:result-actions={currentControls.phase === 'result'}
-			>
-				{#if currentControls.phase === 'result'}
-					<button
-						type="button"
-						class="session-secondary"
-						disabled={cardBusy}
-						aria-label="Repeat this card sooner"
-						onclick={() => reviewCurrentCard('repeat')}
-					>
-						<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
-						{currentControls.repeatLabel}
-					</button>
-					<button
-						type="button"
-						class="session-primary session-next"
-						disabled={cardBusy}
-						onclick={() => reviewCurrentCard('next')}
-					>
-						{currentControls.nextLabel}
-						<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
-					</button>
-				{:else if currentControls.action === 'reveal'}
-					<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
-						<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
-						{currentControls.label}
-					</button>
-				{:else}
-					<button type="button" class="session-instruction" disabled>
-						{currentControls.label}
-					</button>
-				{/if}
-			</footer>
+			{#if currentControls.layout !== 'none'}
+				<footer
+					class="session-actions"
+					class:prompt-actions={currentControls.phase === 'prompt'}
+					class:result-actions={currentControls.phase === 'result'}
+					class:single-action={currentControls.layout === 'single'}
+				>
+					{#if currentControls.phase === 'result'}
+						{#if currentControls.layout === 'split'}
+							<button
+								type="button"
+								class="session-secondary"
+								disabled={cardBusy}
+								aria-label="Repeat this card sooner"
+								onclick={() => reviewCurrentCard('repeat')}
+							>
+								<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
+								{currentControls.repeatLabel}
+							</button>
+						{/if}
+						<button
+							type="button"
+							class="session-primary session-next"
+							disabled={cardBusy}
+							onclick={() => reviewCurrentCard('next')}
+						>
+							{currentControls.nextLabel}
+							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
+						</button>
+					{:else if currentControls.action === 'reveal'}
+						<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
+							<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
+							{currentControls.label}
+						</button>
+					{/if}
+				</footer>
+			{/if}
 		{/if}
 	</main>
 {:else}
@@ -1328,7 +1411,7 @@
 						<Brain size={17} aria-hidden="true" strokeWidth={2.2} />
 					{/snippet}
 					<div class="setup-segment">
-						{#each modeOptions as option (option.value)}
+						{#each visibleModeOptions as option (option.value)}
 							{@const ModeIcon = option.icon}
 							<button
 								type="button"
@@ -1411,7 +1494,7 @@
 	</main>
 {/if}
 
-{#if recallSyncFailure}
+{#if recallSyncFailure && !sessionActive}
 	<div class="recall-sync-failure">
 		<RequestFailureNotice
 			failure={recallSyncFailure}
@@ -1432,6 +1515,11 @@
 		right: 1rem;
 		bottom: max(1rem, env(safe-area-inset-bottom));
 		width: min(31rem, calc(100vw - 2rem));
+	}
+
+	.completion-sync {
+		width: min(100%, 34rem);
+		margin-top: 0.5rem;
 	}
 
 	@media (max-width: 560px) {
@@ -1548,8 +1636,7 @@
 	.setup-primary,
 	.setup-secondary,
 	.session-primary,
-	.session-secondary,
-	.session-instruction {
+	.session-secondary {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -1580,14 +1667,6 @@
 		border: 1.5px solid #0b57eb;
 		background: #ffffff;
 		color: #0b45d9;
-	}
-
-	.session-instruction {
-		border: 1px solid var(--qc-ui-border-subtle);
-		background: var(--qc-ui-surface-muted);
-		color: var(--qc-ui-text-muted);
-		box-shadow: none;
-		cursor: default;
 	}
 
 	.setup-panel {
@@ -1979,12 +2058,36 @@
 		background: #f8fcf8;
 	}
 
-	.card-answer:not(.mcq-answer) > div {
+	.flashcard-answer-text {
 		color: #122316;
 		font-size: clamp(1.2rem, 3.5vw, 2rem);
 		font-weight: 760;
 		line-height: 1.36;
 		overflow-wrap: anywhere;
+	}
+
+	.flashcard-explanation,
+	.flashcard-memory-tip {
+		max-width: 42rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+		color: var(--qc-ui-text-secondary);
+		font-size: clamp(0.98rem, 2vw, 1.08rem);
+		font-weight: 450;
+		line-height: 1.5;
+	}
+
+	.flashcard-memory-tip {
+		display: grid;
+		gap: 0.2rem;
+	}
+
+	.flashcard-memory-tip > span {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.76rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
 	}
 
 	.card-answer.mcq-answer {
@@ -2302,16 +2405,16 @@
 		opacity: 0.62;
 	}
 
-	.session-actions .session-instruction:disabled {
-		opacity: 1;
-	}
-
 	.session-actions.prompt-actions {
 		grid-template-columns: minmax(0, 18rem);
 	}
 
 	.session-actions.result-actions {
 		grid-template-columns: repeat(2, minmax(0, 12rem));
+	}
+
+	.session-actions.single-action {
+		grid-template-columns: minmax(0, 18rem);
 	}
 
 	.session-next {
@@ -2436,6 +2539,10 @@
 	:global(:root[data-theme='dark']) .card-prompt h1,
 	:global(:root[data-theme='dark']) .session-complete h1 {
 		color: #f8fafc;
+	}
+
+	:global(:root[data-theme='dark']) .recall-kicker {
+		color: var(--qc-ui-accent-text);
 	}
 
 	:global(:root[data-theme='dark']) .setup-copy p:not(.recall-kicker),
@@ -2706,6 +2813,10 @@
 		.session-actions.result-actions {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
+
+		.session-actions.single-action {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 
 	@media (max-width: 620px) and (max-height: 720px) {
@@ -2803,8 +2914,7 @@
 		.setup-primary,
 		.setup-secondary,
 		.session-primary,
-		.session-secondary,
-		.session-instruction {
+		.session-secondary {
 			min-height: 2.75rem;
 			padding: 0.48rem 0.62rem;
 			font-size: 0.9rem;

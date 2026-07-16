@@ -5,6 +5,7 @@ import {
 	RECALL_VISUAL_CUE_REVIEW_SYSTEM_PROMPT,
 	approvedRecallVisualCuesBySubject,
 	buildRecallCardGenerationPrompt,
+	buildRecallCardVisualCueBatchReviewPrompt,
 	buildRecallCardVisualCueReviewPrompt,
 	validateGeneratedRecallCardVisualCue,
 	validateGeneratedRecallCardVisualCueReview
@@ -28,6 +29,14 @@ describe('recall card generation prompt', () => {
 		expect(prompt).toContain('make any distractor look impossible');
 		expect(prompt).toContain('Neutral fallback candidate: 📘');
 		expect(prompt).toContain('replacement itself must pass the same semantic check');
+		expect(prompt).toContain('choice:<choiceKey>:feedback');
+		expect(prompt).toContain('choice:<choiceKey>:misconception');
+		expect(prompt).toContain('Include front, back and explanation');
+		expect(prompt).toContain('Include reverse whenever a reverse pair is present');
+		expect(prompt).toContain('every learner-facing claim and correction independently auditable');
+		expect(prompt).toContain('exact, self-contained, contiguous sourceExcerpt');
+		expect(prompt).toContain('Never reconstruct, tidy, or paraphrase an excerpt');
+		expect(prompt).toContain('recall-card-bundle-v2 / recall-card-compiler-v6');
 		expect(prompt).toContain('<official_curriculum>');
 		expect(prompt).toContain('The heart pumps blood around the body.');
 		for (const cue of approvedRecallVisualCuesBySubject.Biology) expect(prompt).toContain(cue);
@@ -67,6 +76,7 @@ describe('recall card generation prompt', () => {
 		expect(reviewPrompt).toContain('helps eliminate even one distractor');
 		expect(reviewPrompt).toContain('<candidate_card>');
 		expect(reviewPrompt).toContain('Neutral fallback candidate: 📘');
+		expect(reviewPrompt).toContain('exactly these fields:');
 		expect(
 			validateGeneratedRecallCardVisualCueReview(
 				card,
@@ -103,6 +113,26 @@ describe('recall card generation prompt', () => {
 		expect(() => buildRecallCardVisualCueReviewPrompt(card, 'Biology')).toThrow(
 			'does not match the import job subject'
 		);
+	});
+
+	it('uses distinct, non-contradictory response contracts for single and batch cue review', () => {
+		const card = {
+			id: 'phys-density-equation',
+			subject: 'Physics',
+			visualCue: '⚙️',
+			front: 'What is the density equation?',
+			back: 'ρ = m / V',
+			choices: [
+				{ text: 'ρ = m / V' },
+				{ text: 'P = E / t' },
+				{ text: 'F = ke' },
+				{ text: 'a = Δv / t' }
+			]
+		};
+		const batchPrompt = buildRecallCardVisualCueBatchReviewPrompt([card], 'Physics');
+		expect(RECALL_VISUAL_CUE_REVIEW_SYSTEM_PROMPT).not.toContain('exactly these fields');
+		expect(batchPrompt).toContain('Return JSON only with a reviews array');
+		expect(batchPrompt).not.toContain('Return JSON only with exactly these fields');
 	});
 
 	it('rejects unsupported subjects before producing a generation prompt', () => {

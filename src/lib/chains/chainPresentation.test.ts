@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { hasExplainedWeakAnswer, useFocusedChainLayout } from './chainPresentation';
+import {
+	hasDistinctMarkingPoints,
+	hasExplainedWeakAnswer,
+	useFocusedChainLayout
+} from './chainPresentation';
 
 describe('chain presentation', () => {
 	it('uses the focused answer layout for non-English subjects', () => {
@@ -22,5 +26,11 @@ describe('chain presentation', () => {
 		).toBe(true);
 		expect(hasExplainedWeakAnswer('Names the topic.', '')).toBe(false);
 		expect(hasExplainedWeakAnswer('', 'Missing the causal link.')).toBe(false);
+	});
+
+	it('does not repeat a method-derived checklist beneath the same method', () => {
+		expect(hasDistinctMarkingPoints('method', 5)).toBe(false);
+		expect(hasDistinctMarkingPoints('official', 5)).toBe(true);
+		expect(hasDistinctMarkingPoints('official', 0)).toBe(false);
 	});
 });

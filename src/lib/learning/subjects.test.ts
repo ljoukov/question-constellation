@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	isScienceLearnerSubject,
+	learnerSubjectForQuestion,
 	learnerSubjectFromSlug,
 	learnerSubjectHref,
 	learnerSubjectScopeHref,
@@ -21,5 +22,21 @@ describe('learner subject routes', () => {
 		expect(isScienceLearnerSubject('History')).toBe(false);
 		expect(officialScienceCurriculum('Chemistry')?.specificationCode).toBe('8462');
 		expect(officialScienceCurriculum('History')).toBeNull();
+	});
+
+	it('recovers the learner subject from combined-science paper metadata', () => {
+		expect(
+			learnerSubjectForQuestion({
+				subject: 'Combined Science',
+				paper: 'Biology Paper 1'
+			})
+		).toBe('Biology');
+		expect(
+			learnerSubjectForQuestion({
+				subject: 'Combined Science',
+				subjectArea: 'Chemistry',
+				paper: 'Paper 1'
+			})
+		).toBe('Chemistry');
 	});
 });

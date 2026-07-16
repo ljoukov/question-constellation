@@ -8,8 +8,11 @@ import {
 export type RecallReviewSave = {
 	id: string;
 	cardId: string;
+	contentRevision: number;
+	contentHash: string;
 	grade: 'again' | 'hard' | 'good' | 'easy';
 	mode: 'recall' | 'recognise' | 'reverse';
+	selectedChoiceKey: string | null;
 	sourceSessionId: string;
 	responseDurationMs: number | null;
 	createdAt: number;
@@ -19,9 +22,10 @@ export type RecallReviewFlushResult = {
 	ok: boolean;
 	failure: RequestFailure | null;
 	pendingCount: number;
+	discardedCount: number;
 };
 
-const queueKeyPrefix = 'question-constellation:recall-review-queue:v1:';
+const queueKeyPrefix = 'question-constellation:recall-review-queue:v3:';
 
 function queueKey(userId: string) {
 	return `${queueKeyPrefix}${userId}`;
@@ -31,7 +35,7 @@ function readQueue(userId: string): RecallReviewSave[] {
 	if (typeof window === 'undefined') return [];
 	try {
 		const parsed = JSON.parse(window.localStorage.getItem(queueKey(userId)) ?? '[]');
-		return Array.isArray(parsed) ? (parsed as RecallReviewSave[]) : [];
+		return Array.isArray(parsed) ? parsed.filter(isRecallReviewSave) : [];
 	} catch {
 		return [];
 	}
@@ -69,9 +73,12 @@ export function pendingRecallReviewCount(userId: string) {
 }
 
 export async function flushRecallReviewQueue(userId: string): Promise<RecallReviewFlushResult> {
+	let discardedCount = 0;
 	while (true) {
 		const review = readQueue(userId)[0];
-		if (!review) return { ok: true, failure: null, pendingCount: 0 };
+		if (!review) {
+			return { ok: true, failure: null, pendingCount: 0, discardedCount };
+		}
 		try {
 			const response = await fetchWithResponseTimeout('/api/recall/review', {
 				method: 'POST',
@@ -79,13 +86,24 @@ export async function flushRecallReviewQueue(userId: string): Promise<RecallRevi
 				body: JSON.stringify({
 					reviewId: review.id,
 					cardId: review.cardId,
+					contentRevision: review.contentRevision,
+					contentHash: review.contentHash,
 					grade: review.grade,
 					mode: review.mode,
+					selectedChoiceKey: review.selectedChoiceKey,
 					sourceSessionId: review.sourceSessionId,
 					responseDurationMs: review.responseDurationMs,
 					createdAt: review.createdAt
 				})
 			});
+			if (isTerminalReviewResponse(response)) {
+				writeQueue(
+					userId,
+					readQueue(userId).filter((queuedReview) => queuedReview.id !== review.id)
+				);
+				discardedCount += 1;
+				continue;
+			}
 			if (!response.ok) {
 				throw await requestErrorFromResponse(response, 'Recall progress sync failed.');
 			}
@@ -101,8 +119,59 @@ export async function flushRecallReviewQueue(userId: string): Promise<RecallRevi
 					action: 'sync this recall progress',
 					serverLabel: 'Recall sync'
 				}),
-				pendingCount
+				pendingCount,
+				discardedCount
 			};
 		}
 	}
+}
+
+function isRecallReviewSave(value: unknown): value is RecallReviewSave {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+	const review = value as Partial<RecallReviewSave>;
+	return (
+		typeof review.id === 'string' &&
+		review.id === review.id.trim() &&
+		review.id.length >= 1 &&
+		review.id.length <= 128 &&
+		typeof review.cardId === 'string' &&
+		review.cardId === review.cardId.trim() &&
+		review.cardId.length >= 1 &&
+		Number.isInteger(review.contentRevision) &&
+		(review.contentRevision ?? 0) >= 1 &&
+		typeof review.contentHash === 'string' &&
+		review.contentHash === review.contentHash.trim() &&
+		review.contentHash.length >= 1 &&
+		review.contentHash.length <= 256 &&
+		['again', 'hard', 'good', 'easy'].includes(review.grade ?? '') &&
+		['recall', 'recognise', 'reverse'].includes(review.mode ?? '') &&
+		(review.mode === 'recognise'
+			? typeof review.selectedChoiceKey === 'string' &&
+				review.selectedChoiceKey === review.selectedChoiceKey.trim() &&
+				review.selectedChoiceKey.length >= 1 &&
+				review.selectedChoiceKey.length <= 64
+			: review.selectedChoiceKey === null) &&
+		typeof review.sourceSessionId === 'string' &&
+		review.sourceSessionId === review.sourceSessionId.trim() &&
+		review.sourceSessionId.length >= 1 &&
+		review.sourceSessionId.length <= 128 &&
+		(review.responseDurationMs === null ||
+			(typeof review.responseDurationMs === 'number' &&
+				Number.isInteger(review.responseDurationMs) &&
+				review.responseDurationMs >= 0 &&
+				review.responseDurationMs <= 6 * 60 * 60 * 1000)) &&
+		typeof review.createdAt === 'number' &&
+		Number.isInteger(review.createdAt) &&
+		review.createdAt > 0 &&
+		review.createdAt >= Date.UTC(2020, 0, 1) &&
+		review.createdAt <= Date.now() + 5 * 60 * 1000
+	);
+}
+
+function isTerminalReviewResponse(response: Response): boolean {
+	return (
+		response.status >= 400 &&
+		response.status < 500 &&
+		![401, 403, 408, 425, 429].includes(response.status)
+	);
 }

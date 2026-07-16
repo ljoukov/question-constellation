@@ -22,6 +22,7 @@ export type EnglishStepGradeResult = {
 	status: 'ok';
 	decision: 'pass' | 'revise';
 	stepId: string;
+	stepTitle: string;
 	checkedAnswer: string;
 	checks: EnglishStepCheck[];
 	nextImprovement: string;
@@ -365,6 +366,7 @@ export function parseEnglishStepGradeResponse(
 		status: 'ok',
 		decision: parsed.decision === 'pass' && allChecksMet ? 'pass' : 'revise',
 		stepId: stage.id,
+		stepTitle: stage.title,
 		checkedAnswer,
 		checks,
 		nextImprovement: parsed.nextImprovement,

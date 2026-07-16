@@ -26,6 +26,7 @@ import {
 	validateHistoricalPrompt
 } from './lib/curated-chain-illustration-backfill.mjs';
 import {
+	buildIllustrationProvenance,
 	createIpadPreview,
 	fileSha256,
 	hardImageCheck,
@@ -534,6 +535,20 @@ async function buildAndJudgePair(preparedItem) {
 				]
 			}
 		};
+		publishItem.generationMetadata.provenance = buildIllustrationProvenance(publishItem, {
+			hardChecks,
+			modelVisualAudit: {
+				status: judge.pass ? 'passed' : 'failed',
+				model: judgeModel,
+				outputSha256: sha256(JSON.stringify(judge)),
+				notes:
+					'Independent model visual QA; any historical-baseline waiver is stored separately and is not a human audit.'
+			},
+			humanAudit: entry.humanAudit ?? {
+				status: 'not_recorded',
+				notes: 'No structured human-audit identity was recorded in the historical manifest.'
+			}
+		});
 		const job = {
 			chainId: candidate.id,
 			status: 'ready',

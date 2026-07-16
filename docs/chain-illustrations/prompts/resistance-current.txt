@@ -1,0 +1,27 @@
+Create a brand-new polished 16:9 landscape reasoning-chain illustration for an iPad GCSE science app. Do not use, imitate, or edit any previous image.
+
+STYLE
+Luminous electrical-engineering atlas on a deep navy technical-grid background. Accurate battery, resistor cutaway, copper conductors, restrained cyan CONVENTIONAL-CURRENT ribbons/arrows, and green only for the increased-current outcome. Elegant scientific textbook finish, not a marketing poster.
+
+LEARNING OBJECTIVE
+Make this transferable chain visible before it is read: with potential difference fixed, lower resistance gives a larger current.
+
+COMPOSITION
+Exactly three numbered left-to-right panels with the same simple single-loop circuit. Each panel has a recognizable battery at top with + LEFT and − RIGHT, and a resistor cutaway at bottom. All conventional-current arrows leave +, travel DOWN the left rail, RIGHT through the resistor, and UP the right rail toward −.
+Panel 1: fixed supply, “V FIXED” label with leader touching the battery, high resistance represented by many scattering obstacles.
+Panel 2: same supply, fewer scattering obstacles, detached plaque I = V/R.
+Panel 3: same supply and low resistance; a visibly thicker/brighter/faster continuous conventional-current light ribbon passes through one fixed dashed timing gate, and a series ammeter needle is higher without numbers.
+
+TEXT — render exactly
+1  POTENTIAL DIFFERENCE FIXED
+2  RESISTANCE FALLS
+3  CURRENT RISES
+MORE CHARGE CARRIERS EACH SECOND
+
+SPECIFIC VALIDATION CORRECTIONS
+Do not draw any particle, ball, bead, electron, minus symbol, carrier sphere, or microscopic moving object anywhere. Show current only as continuous labelled conventional-current arrows/ribbons and temporal motion ticks. This prevents electron-flow/current-direction confusion and prevents implying that carrier density increases.
+Do not put a voltmeter/V device in series. Use a real battery; V FIXED is only a label with leader.
+All current ribbons and any inset/timing marks must follow the same clockwise conventional-current direction.
+Panel 3 may increase ribbon thickness, brightness, motion streak frequency, and meter deflection—but not the number/density of particles, because there are no particles.
+
+No question-specific/example values or numerical scale readings. Only universal V, I, R and I = V/R. No extra steps, invented units, decorative prose, logo, or watermark.

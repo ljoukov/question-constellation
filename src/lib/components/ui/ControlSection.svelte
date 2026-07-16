@@ -44,7 +44,7 @@
 		gap: 0.55rem;
 		color: var(--qc-ui-text);
 		font-size: 0.92rem;
-		font-weight: 820;
+		font-weight: 650;
 		line-height: 1.2;
 	}
 

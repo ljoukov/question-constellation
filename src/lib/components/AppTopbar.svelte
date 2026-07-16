@@ -133,6 +133,7 @@
 	const topbarClass = $derived(
 		[
 			'qc-topbar',
+			currentUser ? 'is-signed-in' : '',
 			visibleNavLinks.length > 0 ? 'has-navigation' : '',
 			effectivePrimaryAction ? 'has-primary-action' : '',
 			sticky ? 'is-sticky' : 'is-static'

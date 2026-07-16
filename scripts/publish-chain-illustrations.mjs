@@ -3,8 +3,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { loadD1Env } from './lib/d1-rest.mjs';
+import { loadChainIllustrationCandidates } from './lib/chain-illustration-candidates.mjs';
 import {
 	assertPublishedIllustrationSource,
+	buildIllustrationProvenance,
 	hardImageCheck,
 	publishChainIllustration
 } from './lib/chain-illustration-publisher.mjs';
@@ -25,6 +27,15 @@ function requiredString(value, label) {
 		throw new Error(`${label} must be a non-empty string.`);
 	}
 	return value.trim();
+}
+
+function optionalSha256(value, label) {
+	if (value === undefined || value === null || value === '') return undefined;
+	const digest = requiredString(value, label);
+	if (!/^[a-f0-9]{64}$/.test(digest)) {
+		throw new Error(`${label} must be a lowercase SHA-256 digest.`);
+	}
+	return digest;
 }
 
 function resolveProjectPath(relativePath, label) {
@@ -57,10 +68,20 @@ async function normalizeIllustration(entry, manifest) {
 	const lightLocalPath = resolveProjectPath(entry.lightLocalPath, `${id}.lightLocalPath`);
 	const darkPromptPath = resolveProjectPath(entry.promptPath, `${id}.promptPath`);
 	const lightPromptPath = resolveProjectPath(entry.lightPromptPath, `${id}.lightPromptPath`);
+	const darkPromptText = readFileSync(darkPromptPath, 'utf8').trim();
+	const lightPromptText = readFileSync(lightPromptPath, 'utf8').trim();
+	const darkPromptSha256 = optionalSha256(entry.promptSha256, `${id}.promptSha256`);
+	const lightPromptSha256 = optionalSha256(entry.lightPromptSha256, `${id}.lightPromptSha256`);
 	const darkR2Key = requiredString(entry.r2Key, `${id}.r2Key`);
 	const lightR2Key = requiredString(entry.lightR2Key, `${id}.lightR2Key`);
 	const darkPublicPath = requiredString(entry.publicPath, `${id}.publicPath`);
 	const lightPublicPath = requiredString(entry.lightPublicPath, `${id}.lightPublicPath`);
+	const sourceFingerprint = entry.sourceFingerprint
+		? requiredString(entry.sourceFingerprint, `${id}.sourceFingerprint`)
+		: undefined;
+	if (sourceFingerprint && !/^[a-f0-9]{64}$/.test(sourceFingerprint)) {
+		throw new Error(`${id}.sourceFingerprint must be a lowercase SHA-256 digest.`);
+	}
 	for (const [theme, r2Key, publicPath] of [
 		['dark', darkR2Key, darkPublicPath],
 		['light', lightR2Key, lightPublicPath]
@@ -71,6 +92,9 @@ async function normalizeIllustration(entry, manifest) {
 		}
 		if (publicPath !== expectedPublicPath) {
 			throw new Error(`${id}.${theme}PublicPath must be ${expectedPublicPath}.`);
+		}
+		if (sourceFingerprint && !r2Key.includes(`/${sourceFingerprint.slice(0, 16)}-`)) {
+			throw new Error(`${id}.${theme}R2Key must contain the current source fingerprint prefix.`);
 		}
 	}
 	const [darkCheck, lightCheck] = await Promise.all(
@@ -92,17 +116,47 @@ async function normalizeIllustration(entry, manifest) {
 			throw new Error(`${id} ${theme} SHA-256 does not match the manifest.`);
 		}
 	}
-	return {
+	const declaredDarkDerivation = optionalSha256(
+		entry.lightDerivedFromAssetSha256,
+		`${id}.lightDerivedFromAssetSha256`
+	);
+	if (declaredDarkDerivation && declaredDarkDerivation !== darkCheck.sha256) {
+		throw new Error(`${id}.lightDerivedFromAssetSha256 must match the verified dark asset.`);
+	}
+	const imageGeneration = entry.imageGeneration;
+	if (imageGeneration !== undefined) {
+		if (!imageGeneration || typeof imageGeneration !== 'object' || Array.isArray(imageGeneration)) {
+			throw new Error(`${id}.imageGeneration must be an object.`);
+		}
+		const darkCallId = requiredString(
+			imageGeneration.darkCallId,
+			`${id}.imageGeneration.darkCallId`
+		);
+		const lightCallId = requiredString(
+			imageGeneration.lightCallId,
+			`${id}.imageGeneration.lightCallId`
+		);
+		const lightDerivedFromDarkCallId = requiredString(
+			imageGeneration.lightDerivedFromDarkCallId,
+			`${id}.imageGeneration.lightDerivedFromDarkCallId`
+		);
+		if (lightDerivedFromDarkCallId !== darkCallId || lightCallId === darkCallId) {
+			throw new Error(`${id}.imageGeneration must record the light edit's dark source call.`);
+		}
+	}
+	const item = {
 		id,
 		answerChainId,
 		sourceQuestionId,
+		sourceFingerprint,
 		altText: requiredString(entry.altText, `${id}.altText`),
 		caption: requiredString(entry.caption, `${id}.caption`),
 		styleKey: requiredString(manifest.styleKey, 'manifest.styleKey'),
-		generationModel: entry.lightGenerationModel ?? 'codex-imagegen',
+		generationModel: entry.generationTool ?? entry.lightGenerationModel ?? 'codex-imagegen',
 		dark: {
 			localPath: darkLocalPath,
-			promptText: readFileSync(darkPromptPath, 'utf8').trim(),
+			promptText: darkPromptText,
+			promptSha256: darkPromptSha256,
 			r2Key: darkR2Key,
 			publicPath: darkPublicPath,
 			width: darkCheck.width,
@@ -111,7 +165,8 @@ async function normalizeIllustration(entry, manifest) {
 		},
 		light: {
 			localPath: lightLocalPath,
-			promptText: readFileSync(lightPromptPath, 'utf8').trim(),
+			promptText: lightPromptText,
+			promptSha256: lightPromptSha256,
 			r2Key: lightR2Key,
 			publicPath: lightPublicPath,
 			width: lightCheck.width,
@@ -122,21 +177,51 @@ async function normalizeIllustration(entry, manifest) {
 		generationMetadata: {
 			manifestVersion: manifest.version,
 			generatedBy: entry.generatedBy ?? 'curated-theme-pair-manifest',
+			generationTool: entry.generationTool,
+			imageGeneration,
 			prompts: {
-				dark: { promptText: readFileSync(darkPromptPath, 'utf8').trim() },
-				light: { promptText: readFileSync(lightPromptPath, 'utf8').trim() }
+				dark: { promptText: darkPromptText, sha256: darkPromptSha256 },
+				light: { promptText: lightPromptText, sha256: lightPromptSha256 }
 			},
 			selectedCandidate: entry.selectedCandidate,
 			candidates: entry.candidates,
 			selectionRationale: entry.selectionRationale
 		}
 	};
+	item.generationMetadata.provenance = buildIllustrationProvenance(item, {
+		hardChecks: { dark: darkCheck, light: lightCheck },
+		modelVisualAudit: entry.modelVisualAudit ?? {
+			status: 'not_recorded',
+			notes: 'The curated manifest does not claim a model visual audit.'
+		},
+		humanAudit: entry.humanAudit ?? {
+			status: 'not_recorded',
+			notes: 'No structured human-audit record was present in this manifest entry.'
+		}
+	});
+	return item;
 }
 
 const manifest = readManifest();
 const items = await Promise.all(
 	manifest.illustrations.map((entry) => normalizeIllustration(entry, manifest))
 );
+const fingerprintedItems = items.filter((item) => item.sourceFingerprint);
+if (fingerprintedItems.length) {
+	const current = await loadChainIllustrationCandidates({
+		rootDir,
+		chainIds: fingerprintedItems.map((item) => item.answerChainId),
+		limit: 0,
+		includeExisting: true
+	});
+	const currentById = new Map(current.eligible.map((candidate) => [candidate.id, candidate]));
+	for (const item of fingerprintedItems) {
+		const candidate = currentById.get(item.answerChainId);
+		if (!candidate || candidate.sourceFingerprint !== item.sourceFingerprint) {
+			throw new Error(`${item.id} source evidence changed; refusing to publish a stale asset.`);
+		}
+	}
+}
 for (const item of items) await assertPublishedIllustrationSource(item, { rootDir });
 
 console.log(

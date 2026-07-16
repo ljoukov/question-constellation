@@ -10,3 +10,10 @@ export function hasExplainedWeakAnswer(
 ) {
 	return Boolean(answer?.trim() && explanation?.trim());
 }
+
+export function hasDistinctMarkingPoints(
+	checklistSource: 'official' | 'method' | null | undefined,
+	itemCount: number
+) {
+	return checklistSource !== 'method' && itemCount > 0;
+}

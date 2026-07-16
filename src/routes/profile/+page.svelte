@@ -406,7 +406,7 @@
 												<option value={tier.name}>{tier.name}</option>
 											{/each}
 											{#if !tierOptionsFor(subject).some((tier) => tier.name === 'Foundation')}
-												<option value="Foundation" disabled>Foundation — being prepared</option>
+												<option value="Foundation" disabled>Foundation — not available yet</option>
 											{/if}
 										</select>
 									</label>

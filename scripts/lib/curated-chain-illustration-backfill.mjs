@@ -452,7 +452,8 @@ export function validateHistoricalBaselineWaiver(judge) {
 			'causalChangesVisible',
 			'noDominantRepetition',
 			'terminologyClear',
-			'compositionPlanFollowed'
+			'compositionPlanFollowed',
+			'noQuestionSpecificValues'
 		]) {
 			if (variant[field] !== true) issues.push(`${variant.theme} ${field} must remain true`);
 		}

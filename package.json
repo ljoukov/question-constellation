@@ -41,6 +41,8 @@
 		"import:chained": "node scripts/import-chained-questions.mjs",
 		"repair:question-response": "node scripts/repair-scoped-question-response.mjs",
 		"import:curricula": "node scripts/import-curriculum-catalog.mjs",
+		"generate:recall-cards": "node scripts/generate-recall-cards.mjs",
+		"import:recall-cards": "node scripts/import-recall-cards.mjs",
 		"materialize:public-routes": "node scripts/materialize-public-route-payloads.mjs",
 		"import:vision": "node scripts/import-physics-vision.mjs",
 		"import:physics-vision": "node scripts/import-physics-vision.mjs",
@@ -72,6 +74,7 @@
 		"test:extraction-pipeline": "node scripts/test-extraction-pipeline.mjs",
 		"eval:extraction-pipeline-llm": "node scripts/eval-extraction-pipeline-llm.mjs --run-llm",
 		"test:unit": "vitest",
+		"test:recall-pipeline": "vitest --run src/lib/recall/recallCardGenerationPrompt.test.ts src/lib/recall/recallCardBundle.test.ts src/lib/recall/recallCurriculumEvidence.test.ts src/lib/recall/recallCardImport.test.ts src/lib/recall/recallCatalogGuards.test.ts",
 		"test": "vitest --run",
 		"gen": "npm run clean:adapter && wrangler types --env-file .env.example && prettier --write worker-configuration.d.ts"
 	},

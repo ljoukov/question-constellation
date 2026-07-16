@@ -3,6 +3,12 @@ import {
 	approvedRecallVisualCuesBySubject,
 	isApprovedRecallVisualCueForSubject
 } from '../../src/lib/recall/visualCues.js';
+import {
+	RECALL_BUNDLE_SCHEMA_VERSION,
+	RECALL_CARD_KINDS,
+	RECALL_PROMPT_VERSION,
+	RECALL_REVIEW_CHECKS
+} from './recall-card-bundle.mjs';
 
 const neutralFallbackCueBySubject = Object.freeze({
 	Biology: '📘',
@@ -39,31 +45,69 @@ If either answer might be yes, reject that cue and try the neutral fallback. The
 `.trim();
 
 export const RECALL_CARD_GENERATION_SYSTEM_PROMPT = `
-You create concise GCSE science recall cards grounded only in the supplied official exam-board curriculum extract.
+You compile concise GCSE science recall cards from one supplied extract of an official exam-board specification. The card must be useful for both unaided recall and four-choice recognition.
 
-Each card must test one precise, examinable idea. Write a direct question, a compact correct answer, three plausible distractors that diagnose distinct misconceptions, and a short explanation. Do not introduce knowledge absent from the supplied curriculum evidence.
+Evidence and scope:
+- Use only scientific claims directly supported by the supplied official PDF page text, including every choice's feedback and misconception correction.
+- Test one precise examinable concept per card. Do not combine loosely related facts.
+- Copy one exact, self-contained, contiguous sourceExcerpt from the supplied page text. Preserve every word and symbol; whitespace alone may be collapsed.
+- PDF text can contain column labels or split equation typography. Never reconstruct, tidy, or paraphrase an excerpt. Use a shorter contiguous passage that still supports every claim, or choose a different concept.
+- The front, exact answer, explanation, reverse form and any memory tip must be supportable from that quote.
+- Do not invent source IDs, pages, curriculum mappings, provenance, revisions or hashes. The compiler adds those deterministically.
+
+Learner-facing writing:
+- front: a direct standalone question, normally no more than 18 words. Never mention buttons, choices or selecting an answer.
+- back: the exact compact answer, normally no more than 22 words. It is also the text of the one correct choice.
+- explanation: one short sentence that adds the useful why, relationship or distinction; do not merely repeat back.
+- memoryTip: null unless the same source evidence supports a brief extra connection that genuinely aids retrieval. Do not invent mnemonics or repeat the answer.
+- reverseFront and reverseBack: both null unless reversing the card creates a distinct, unambiguous retrieval task. Never make a tautological reverse.
+
+Recognition choices:
+- Supply exactly four unique choices: the exact back plus three plausible diagnostic distractors.
+- Each distractor must represent a different likely misconception, not random nonsense or a grammar/length giveaway.
+- Every choice needs concise feedback. Explain the relevant distinction without labels such as "correct answer" or repetitive praise.
+- The correct choice has misconception null. Every distractor names its specific misconception.
+- Keep choices parallel in grammar, specificity and approximate length where the science permits.
+
+Use a stable kebab-case id prefixed bio-, chem- or phys-, and a stable subject-local conceptKey. Supported card kinds: ${RECALL_CARD_KINDS.join(', ')}.
 
 ${RECALL_VISUAL_CUE_PROMPT}
 
-Return JSON only. Every card must contain:
-id, subject, topicId, specRef, kind, visualCue, front, back, distractors, explanation.
+Return JSON only with a top-level cards array. Every card must contain exactly:
+id, conceptKey, kind, visualCue, front, back, reverseFront, reverseBack, explanation, memoryTip, choices, evidence.
+Each choice contains choiceKey, text, isCorrect, feedback and misconception.
+Evidence contains sourceExcerpt and supports. Include front, back and explanation, plus choice:<choiceKey>:feedback for all four choices and choice:<choiceKey>:misconception for each distractor. Include reverse whenever a reverse pair is present, and memoryTip whenever a tip is present. This makes every learner-facing claim and correction independently auditable.
+`.trim();
+
+export const RECALL_FULL_REVIEW_SYSTEM_PROMPT = `
+You are an independent GCSE science recall-card reviewer. You did not generate the candidates. Review each complete card against the supplied official PDF text and deterministic curriculum mapping. Do not rewrite or silently repair a card.
+
+Accept a card only when every check below is true:
+${RECALL_REVIEW_CHECKS.map((check) => `- ${check}`).join('\n')}
+
+Interpret the checks strictly:
+- one compact examinable concept, suitable for low-mark retrieval practice;
+- every positive scientific claim, including every choice's feedback and misconception correction, is supported by the exact source quote and page text;
+- the back is precise enough for an exam-board answer and exactly matches one choice;
+- the other three choices are plausible, mutually distinct misconceptions with no obvious length or grammar clue;
+- feedback is concise, choice-specific and explanatory rather than repetitive;
+- the front, answer, choices and explanation are comfortable to scan on a phone;
+- a reverse pair is present only when distinct and unambiguous;
+- a memory tip is absent unless it adds an evidence-grounded retrieval connection;
+- the supplied component, topic and offering targets genuinely cover the concept.
+
+Return JSON only with one review per candidate and no unknown card IDs. Each review contains cardId, accepted, reason, checks and issues. checks must contain exactly the named checks above. accepted may be true only when every check is true and issues is empty. Give concise auditable reasons, not private reasoning traces.
 `.trim();
 
 export const RECALL_VISUAL_CUE_REVIEW_SYSTEM_PROMPT = `
 You are the independent safety reviewer for a generated GCSE science recall card. Review only its visualCue after the full card has been written.
 
 Assume the learner sees the cue before answering. Reject it if it supplies any correct-answer content not already explicit in the front, helps select the answer, or helps eliminate even one distractor. Matching the topic is not enough. If uncertain, reject it and propose the neutral fallback, but apply the same semantic test to that replacement too.
-
-Return JSON only with exactly these fields:
-accepted: boolean
-reason: one concise sentence
-replacementCue: the original cue when accepted, otherwise one subject-approved replacement candidate that must be reviewed again after it is applied
 `.trim();
 
 /**
- * Build the reusable prompt for a future curriculum-grounded recall import.
- * The current deck remains curated source data; this function prevents a
- * later importer from inventing a second visual-cue contract.
+ * Build the reusable prompt for the curriculum-grounded recall compiler.
+ * Curated fallback cards and generated cards share one visual-cue contract.
  *
  * @param {{
  *   subject: string;
@@ -71,6 +115,8 @@ replacementCue: the original cue when accepted, otherwise one subject-approved r
  *   specRef: string;
  *   officialCurriculumExcerpt: string;
  *   count: number;
+ *   source?: unknown;
+ *   curriculumTargets?: unknown[];
  * }} input
  */
 export function buildRecallCardGenerationPrompt({
@@ -78,7 +124,9 @@ export function buildRecallCardGenerationPrompt({
 	topicId,
 	specRef,
 	officialCurriculumExcerpt,
-	count
+	count,
+	source = null,
+	curriculumTargets = []
 }) {
 	if (!subject || !topicId || !specRef || !officialCurriculumExcerpt) {
 		throw new Error(
@@ -92,6 +140,8 @@ export function buildRecallCardGenerationPrompt({
 
 	return `${RECALL_CARD_GENERATION_SYSTEM_PROMPT}
 
+Compiler contract: ${RECALL_BUNDLE_SCHEMA_VERSION} / ${RECALL_PROMPT_VERSION}
+
 Approved ${subject} cues: ${cueContract.cues.join(' ')}
 Neutral fallback candidate: ${cueContract.fallback}
 
@@ -99,11 +149,40 @@ Generate ${count} card${count === 1 ? '' : 's'}.
 Subject: ${subject}
 Topic ID: ${topicId}
 Specification reference: ${specRef}
+Official source metadata (compiler-owned; do not copy IDs into cards):
+${JSON.stringify(source)}
+Reviewed curriculum targets (compiler-owned; use only to judge scope):
+${JSON.stringify(curriculumTargets)}
 
-Official curriculum evidence:
+Official curriculum PDF page text. sourceExcerpt must be copied exactly from here:
 <official_curriculum>
 ${officialCurriculumExcerpt}
 </official_curriculum>`;
+}
+
+/**
+ * @param {{cards:unknown[], evidence:unknown, targets:unknown[]}} input
+ */
+export function buildRecallCardFullReviewPrompt({ cards, evidence, targets }) {
+	if (!Array.isArray(cards) || cards.length === 0) {
+		throw new Error('Full review requires at least one complete recall card.');
+	}
+	if (!evidence || typeof evidence !== 'object') {
+		throw new Error('Full review requires official curriculum evidence.');
+	}
+	return `${RECALL_FULL_REVIEW_SYSTEM_PROMPT}
+
+<official_evidence>
+${JSON.stringify(evidence)}
+</official_evidence>
+
+<reviewed_curriculum_targets>
+${JSON.stringify(targets)}
+</reviewed_curriculum_targets>
+
+<candidate_cards>
+${JSON.stringify(cards)}
+</candidate_cards>`;
 }
 
 /**
@@ -131,12 +210,55 @@ export function buildRecallCardVisualCueReviewPrompt(card, expectedSubject) {
 
 	return `${RECALL_VISUAL_CUE_REVIEW_SYSTEM_PROMPT}
 
+Return JSON only with exactly these fields:
+accepted: boolean
+reason: one concise sentence
+replacementCue: the original cue when accepted, otherwise one subject-approved replacement candidate that must be reviewed again after it is applied
+
 Subject-approved cues: ${cues.join(' ')}
 Neutral fallback candidate: ${fallback}
 
 <candidate_card>
 ${JSON.stringify(card)}
 </candidate_card>`;
+}
+
+/**
+ * Review a batch in one independent turn while retaining the exact full-card
+ * semantic test used by the single-card compatibility helper above.
+ *
+ * @param {unknown[]} cards
+ * @param {unknown} expectedSubject
+ */
+export function buildRecallCardVisualCueBatchReviewPrompt(cards, expectedSubject) {
+	if (!Array.isArray(cards) || cards.length === 0) {
+		throw new Error('Cue review requires at least one complete recall card.');
+	}
+	const { cues, fallback } = subjectCueContract(expectedSubject);
+	for (const card of cards) {
+		if (!card || typeof card !== 'object') {
+			throw new Error('Generated card subject does not match the cue-review subject.');
+		}
+		const candidate = /** @type {Record<string, unknown>} */ (card);
+		if (candidate.subject !== expectedSubject) {
+			throw new Error('Generated card subject does not match the cue-review subject.');
+		}
+		if (!candidate.front || !candidate.back || !Array.isArray(candidate.choices)) {
+			throw new Error('Cue review requires each complete card and its four choices.');
+		}
+	}
+	return `${RECALL_VISUAL_CUE_REVIEW_SYSTEM_PROMPT}
+
+Return JSON only with a reviews array. Include exactly one item per card with:
+cardId, accepted, reason, replacementCue.
+When accepted, replacementCue must equal the existing visualCue. When rejected, replacementCue is one subject-approved candidate; it is not accepted until a new independent review checks the complete updated card.
+
+Subject-approved cues: ${cues.join(' ')}
+Neutral fallback candidate: ${fallback}
+
+<candidate_cards>
+${JSON.stringify(cards)}
+</candidate_cards>`;
 }
 
 /** @param {unknown} card @param {unknown} expectedSubject */

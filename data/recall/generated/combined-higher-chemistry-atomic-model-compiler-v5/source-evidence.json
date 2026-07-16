@@ -1,0 +1,62 @@
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "course": "Combined Science",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "component": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+    "code": "5.1.1",
+    "title": "A simple model of the atom, symbols, relative atomic mass, electronic charge and isotopes",
+    "kind": "section",
+    "subjectArea": "Chemistry",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 68,
+    "sourcePageEnd": 71
+  },
+  "topicComponent": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5",
+    "code": "5.1",
+    "title": "Atomic structure and the periodic table",
+    "kind": "chapter",
+    "subjectArea": "Chemistry",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 67,
+    "sourcePageEnd": 74
+  },
+  "pageStart": 68,
+  "pageEnd": 71,
+  "sourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+  "catalogSchemaVersion": "1",
+  "catalogPath": "data/curricula/curriculum-catalog.json",
+  "subject": "Chemistry",
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "pageText": "5.1.1 A simple model of the atom, symbols, relative atomic mass,\nelectronic charge and isotopes\n5.1.1.1 Atoms, elements and compounds\nContent Key opportunities for\nskills development\nAll substances are made of atoms. An atom is the smallest part of\nan element that can exist.\nAtoms of each element are represented by a chemical symbol, eg\nO represents an atom of oxygen, Na represents an atom of sodium.\nThere are about 100 different elements. Elements are shown in the\nperiodic table.\nCompounds are formed from elements by chemical reactions.\nChemical reactions always involve the formation of one or more\nnew substances, and often involve a detectable energy change.\nCompounds contain two or more elements chemically combined in\nfixed proportions and can be represented by formulae using the\nsymbols of the atoms from which they were formed. Compounds\ncan only be separated into elements by chemical reactions.\nChemical reactions can be represented by word equations or\nequations using symbols and formulae.\nStudents will be supplied with a periodic table for the exam and\nshould be able to:\n• use the names and symbols of the first 20 elements in the\nperiodic table, the elements in Groups 1 and 7, and other\nelements in this specification\n• name compounds of these elements from given formulae or\nsymbol equations\n• write word equations for the reactions in this specification\n• write formulae and balanced chemical equations for the\nreactions in this specification.\n(HT only) write balanced half equations and ionic equations where\nappropriate.\n68 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n5.1.1.2 Mixtures\nContent Key opportunities for\nskills development\nA mixture consists of two or more elements or compounds not\nchemically combined together. The chemical properties of each\nsubstance in the mixture are unchanged.\nMixtures can be separated by physical processes such as filtration,\ncrystallisation, simple distillation, fractional distillation and\nchromatography. These physical processes do not involve chemical\nreactions and no new substances are made.\nStudents should be able to:\n• describe, explain and give examples of the specified\nprocesses of separation\n• suggest suitable separation and purification techniques for\nmixtures when given appropriate information.\nWS 2.2, 2.3\nAT 4\nSafe use of a range of\nequipment to separate\nchemical mixtures.\n5.1.1.3 The development of the model of the atom (common content with physics)\nContent Key opportunities for\nskills development\nNew experimental evidence may lead to a scientific model being\nchanged or replaced.\nBefore the discovery of the electron, atoms were thought to be tiny\nspheres that could not be divided.\nThe discovery of the electron led to the plum pudding model of the\natom. The plum pudding model suggested that the atom is a ball of\npositive charge with negative electrons embedded in it.\nThe results from the alpha particle scattering experiment led to the\nconclusion that the mass of an atom was concentrated at the centre\n(nucleus) and that the nucleus was charged. This nuclear model\nreplaced the plum pudding model.\nNiels Bohr adapted the nuclear model by suggesting that electrons\norbit the nucleus at specific distances. The theoretical calculations\nof Bohr agreed with experimental observations.\nLater experiments led to the idea that the positive charge of any\nnucleus could be subdivided into a whole number of smaller\nparticles, each particle having the same amount of positive charge.\nThe name proton was given to these particles.\nThe experimental work of James Chadwick provided the evidence\nto show the existence of neutrons within the nucleus. This was\nabout 20 years after the nucleus became an accepted scientific\nidea.\nStudents should be able to describe:\nWS 1.1, 1.6\nThis historical context\nprovides an opportunity for\nstudents to show an\nunderstanding of why and\ndescribe how scientific\nmethods and theories\ndevelop over time.\nWS 1.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 69\nContent Key opportunities for\nskills development\n• why the new evidence from the scattering experiment led to a\nchange in the atomic model\nWS 1.1\n• the difference between the plum pudding model of the atom\nand the nuclear model of the atom.\nWS 1.2\nDetails of experimental work supporting the Bohr model are not\nrequired.\nDetails of Chadwick’s experimental work are not required.\n5.1.1.4 Relative electrical charges of subatomic particles\nContent Key opportunities for\nskills development\nThe relative electrical charges of the particles in atoms are:\nIn an atom, the number of electrons is equal to the number of\nprotons in the nucleus. Atoms have no overall electrical charge.\nThe number of protons in an atom of an element is its atomic\nnumber. All atoms of a particular element have the same number of\nprotons. Atoms of different elements have different numbers of\nprotons.\nStudents should be able to use the nuclear model to describe\natoms.\nWS 1.2\n70 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n5.1.1.5 Size and mass of atoms\nContent Key opportunities for\nskills development\nAtoms are very small, having a radius of about 0.1 nm (1 x 10-10 m).\nThe radius of a nucleus is less than 1/10 000 of that of the atom\n(about 1 x 10-14 m).\nAlmost all of the mass of an atom is in the nucleus.\nThe relative masses of protons, neutrons and electrons are:\nThe sum of the protons and neutrons in an atom is its mass\nnumber.\nAtoms of the same element can have different numbers of\nneutrons; these atoms are called isotopes of that element.\nAtoms can be represented as shown in this example:\nStudents should be able to calculate the numbers of protons,\nneutrons and electrons in an atom or ion, given its atomic number\nand mass number.\nWS 4.3, 4\nUse SI units and the prefix\nnano.\nMS 1b\nRecognise expressions in\nstandard form.\nStudents should be able to relate size and scale of atoms to objects\nin the physical world.\nMS 1d\n5.1.1.6 Relative atomic mass\nContent Key opportunities for\nskills development\nThe relative atomic mass of an element is an average value that\ntakes account of the abundance of the isotopes of the element.\nStudents should be able to calculate the relative atomic mass of an\nelement given the percentage abundance of its isotopes.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 71\n"
+}

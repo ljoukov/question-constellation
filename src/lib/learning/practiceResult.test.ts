@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { fixedChoiceAnswerIsCorrect, resolvePracticeResultPresentation } from './practiceResult';
+import {
+	fixedChoiceAnswerIsCorrect,
+	fixedChoiceCorrectAnswers,
+	resolvePracticeResultPresentation
+} from './practiceResult';
 
 describe('practice result presentation', () => {
 	it('never asks for a rewrite when the answer earned full marks', () => {
@@ -18,8 +22,9 @@ describe('practice result presentation', () => {
 
 		expect(result.fullMarks).toBe(true);
 		expect(result.repairKind).toBe('none');
-		expect([...result.presentStepIds]).toEqual(['plant-stem-cells', 'meristem']);
-		expect([...result.missingStepIds]).toEqual([]);
+		expect([...result.presentStepIds]).toEqual(['meristem']);
+		expect([...result.missingStepIds]).toEqual(['plant-stem-cells']);
+		expect(result.showStepDiagnostics).toBe(false);
 	});
 
 	it('uses a choice retry rather than a rewrite after an incorrect selection', () => {
@@ -39,6 +44,25 @@ describe('practice result presentation', () => {
 		expect(result.repairKind).toBe('retry_choice');
 	});
 
+	it('shows full-mark diagnostics only when every step was explicitly found', () => {
+		const result = resolvePracticeResultPresentation({
+			gradeResult: {
+				result: 'correct',
+				awardedMarks: 4,
+				maxMarks: 4,
+				presentStepIds: ['step-1', 'step-2'],
+				missingStepIds: []
+			},
+			checklistStepIds: ['step-1', 'step-2'],
+			choiceResponse: false,
+			choiceAnswerCorrect: null
+		});
+
+		expect(result.fullMarks).toBe(true);
+		expect(result.showStepDiagnostics).toBe(true);
+		expect(result.repairKind).toBe('none');
+	});
+
 	it('keeps the rewrite flow for an incomplete written answer', () => {
 		const result = resolvePracticeResultPresentation({
 			gradeResult: {
@@ -55,6 +79,7 @@ describe('practice result presentation', () => {
 
 		expect(result.repairKind).toBe('rewrite');
 		expect([...result.missingStepIds]).toEqual(['step-2']);
+		expect(result.showStepDiagnostics).toBe(true);
 	});
 
 	it('does not accept a rounded full mark for an incomplete multi-select answer', () => {
@@ -79,5 +104,15 @@ describe('practice result presentation', () => {
 		expect(choiceAnswerCorrect).toBe(false);
 		expect(result.fullMarks).toBe(false);
 		expect(result.repairKind).toBe('retry_choice');
+	});
+
+	it('exposes the exact source-grounded answer text for the result disclosure', () => {
+		expect(
+			fixedChoiceCorrectAnswers({
+				kind: 'choice',
+				correctAnswers: { first: 'Meristem', second: 'Xylem' }
+			})
+		).toEqual(['Meristem', 'Xylem']);
+		expect(fixedChoiceCorrectAnswers({ kind: 'text' })).toEqual([]);
 	});
 });

@@ -1,0 +1,52 @@
+{
+  "reviews": [
+    {
+      "cardId": "chem-atom-smallest-part",
+      "accepted": true,
+      "reason": "The book cue is semantically neutral and provides no information that distinguishes the answer or distractors.",
+      "replacementCue": "📘"
+    },
+    {
+      "cardId": "chem-compound-fixed-proportions",
+      "accepted": true,
+      "reason": "The book cue is semantically neutral and provides no information about chemical combination or fixed proportions.",
+      "replacementCue": "📘"
+    },
+    {
+      "cardId": "chem-mixture-combination-properties",
+      "accepted": true,
+      "reason": "The book cue is semantically neutral and provides no information about combination or property changes.",
+      "replacementCue": "📘"
+    },
+    {
+      "cardId": "chem-plum-pudding-model-structure",
+      "accepted": true,
+      "reason": "The book cue is semantically neutral and provides no information about the model's charges or structure.",
+      "replacementCue": "📘"
+    },
+    {
+      "cardId": "chem-alpha-scattering-mass-location",
+      "accepted": true,
+      "reason": "The book cue is semantically neutral and provides no information about where atomic mass is concentrated.",
+      "replacementCue": "📘"
+    },
+    {
+      "cardId": "chem-bohr-specific-electron-orbits",
+      "accepted": true,
+      "reason": "The book cue is semantically neutral and provides no information about Bohr's adaptation.",
+      "replacementCue": "📘"
+    },
+    {
+      "cardId": "chem-neutral-atom-particle-balance",
+      "accepted": true,
+      "reason": "The electrical cue only reflects the electrical-charge topic already explicit in the front and does not identify the required particle balance.",
+      "replacementCue": "⚡"
+    },
+    {
+      "cardId": "chem-mass-number-particle-sum",
+      "accepted": true,
+      "reason": "The scale cue only reflects mass already explicit in the front and does not identify which particles must be added.",
+      "replacementCue": "⚖️"
+    }
+  ]
+}

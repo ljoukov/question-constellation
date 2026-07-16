@@ -1,4 +1,5 @@
 import { isEnglishSubject } from '$lib/englishSubjects';
+import { supportsLearnerPracticeInput } from '$lib/learning/practiceEligibility';
 import { getQuestionChainPageData } from '$lib/server/questionData';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -15,6 +16,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 		return {
 			...questionData,
+			practiceAvailable: supportsLearnerPracticeInput({
+				answerFormat: questionData.question.answerFormat,
+				prompt: questionData.question.prompt,
+				responseKind:
+					typeof questionData.question.renderingOverlay?.responseInteraction?.kind === 'string'
+						? questionData.question.renderingOverlay.responseInteraction.kind
+						: null
+			}),
 			user: locals.user
 		};
 	} catch (loadError) {

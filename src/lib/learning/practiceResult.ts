@@ -16,8 +16,10 @@ function normalizedFixedAnswer(value: string) {
 		.trim();
 }
 
-function fixedChoiceAnswerKey(response: Record<string, unknown> | null | undefined) {
-	if (!response || response.kind !== 'choice') return null;
+export function fixedChoiceCorrectAnswers(
+	response: Record<string, unknown> | null | undefined
+): string[] {
+	if (!response || response.kind !== 'choice') return [];
 	const rawAnswers = response.correctAnswers;
 	const answers = Array.isArray(rawAnswers)
 		? rawAnswers.map((answer) =>
@@ -28,8 +30,7 @@ function fixedChoiceAnswerKey(response: Record<string, unknown> | null | undefin
 		: rawAnswers && typeof rawAnswers === 'object'
 			? Object.values(rawAnswers).map((answer) => (typeof answer === 'string' ? answer : ''))
 			: [];
-	const normalized = answers.map(normalizedFixedAnswer).filter(Boolean);
-	return normalized.length > 0 ? normalized : null;
+	return answers.map((answer) => answer.trim()).filter(Boolean);
 }
 
 /** Returns null when no source-grounded key is available. */
@@ -37,8 +38,9 @@ export function fixedChoiceAnswerIsCorrect(
 	response: Record<string, unknown> | null | undefined,
 	studentAnswer: string
 ): boolean | null {
-	const expected = fixedChoiceAnswerKey(response);
-	if (!expected) return null;
+	const answers = fixedChoiceCorrectAnswers(response);
+	if (answers.length === 0) return null;
+	const expected = answers.map(normalizedFixedAnswer).filter(Boolean);
 	const selected = studentAnswer.split(/\r?\n/).map(normalizedFixedAnswer).filter(Boolean);
 	if (selected.length !== expected.length) return false;
 	const selectedAnswers = new Set(selected);
@@ -68,16 +70,26 @@ export function resolvePracticeResultPresentation({
 				? gradeResult.result === 'correct'
 				: choiceAnswerCorrect)
 	);
-	const presentStepIds = new Set(
-		fullMarks ? checklistStepIds : (gradeResult?.presentStepIds ?? [])
+	const presentStepIds = new Set(gradeResult?.presentStepIds ?? []);
+	const missingStepIds = new Set(gradeResult?.missingStepIds ?? []);
+	const everyStepClassified = checklistStepIds.every(
+		(stepId) => presentStepIds.has(stepId) || missingStepIds.has(stepId)
 	);
-	const missingStepIds = new Set(fullMarks ? [] : (gradeResult?.missingStepIds ?? []));
+	const fullMarkClassificationIsConsistent =
+		!fullMarks || checklistStepIds.every((stepId) => presentStepIds.has(stepId));
+	const showStepDiagnostics = Boolean(
+		gradeResult &&
+			!choiceResponse &&
+			checklistStepIds.length > 0 &&
+			everyStepClassified &&
+			fullMarkClassificationIsConsistent
+	);
 	const repairKind: PracticeRepairKind =
 		!gradeResult || fullMarks
 			? 'none'
 			: choiceResponse
 				? 'retry_choice'
-				: missingStepIds.size > 0
+				: showStepDiagnostics && missingStepIds.size > 0
 					? 'rewrite'
 					: 'none';
 
@@ -85,6 +97,7 @@ export function resolvePracticeResultPresentation({
 		fullMarks,
 		presentStepIds,
 		missingStepIds,
+		showStepDiagnostics,
 		repairKind
 	};
 }

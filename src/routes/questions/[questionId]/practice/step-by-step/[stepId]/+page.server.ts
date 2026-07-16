@@ -1,9 +1,10 @@
 import { getPracticePageData } from '$lib/server/questionData';
 import { getQuestionDraft } from '$lib/server/questionDrafts';
+import { withEnglishPracticeContext } from '$lib/englishPracticeNavigation';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	let practiceData: Awaited<ReturnType<typeof getPracticePageData>>;
 	try {
 		practiceData = await getPracticePageData(params.questionId);
@@ -19,9 +20,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!englishPractice.stages.some((stage) => stage.id === params.stepId)) {
 		const firstStepId = englishPractice.stages[0]?.id;
 		if (!firstStepId) throw error(404, 'Practice step not found.');
+		const stepPath = `/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`;
 		throw redirect(
 			307,
-			`/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`
+			withEnglishPracticeContext(stepPath, url.searchParams)
 		);
 	}
 

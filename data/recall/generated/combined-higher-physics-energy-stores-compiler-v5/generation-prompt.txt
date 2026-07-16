@@ -1,0 +1,194 @@
+You compile concise GCSE science recall cards from one supplied extract of an official exam-board specification. The card must be useful for both unaided recall and four-choice recognition.
+
+Evidence and scope:
+- Use only scientific claims directly supported by the supplied official PDF page text, including every choice's feedback and misconception correction.
+- Test one precise examinable concept per card. Do not combine loosely related facts.
+- Copy one exact, self-contained, contiguous sourceExcerpt from the supplied page text. Preserve every word and symbol; whitespace alone may be collapsed.
+- PDF text can contain column labels or split equation typography. Never reconstruct, tidy, or paraphrase an excerpt. Use a shorter contiguous passage that still supports every claim, or choose a different concept.
+- The front, exact answer, explanation, reverse form and any memory tip must be supportable from that quote.
+- Do not invent source IDs, pages, curriculum mappings, provenance, revisions or hashes. The compiler adds those deterministically.
+
+Learner-facing writing:
+- front: a direct standalone question, normally no more than 18 words. Never mention buttons, choices or selecting an answer.
+- back: the exact compact answer, normally no more than 22 words. It is also the text of the one correct choice.
+- explanation: one short sentence that adds the useful why, relationship or distinction; do not merely repeat back.
+- memoryTip: null unless the same source evidence supports a brief extra connection that genuinely aids retrieval. Do not invent mnemonics or repeat the answer.
+- reverseFront and reverseBack: both null unless reversing the card creates a distinct, unambiguous retrieval task. Never make a tautological reverse.
+
+Recognition choices:
+- Supply exactly four unique choices: the exact back plus three plausible diagnostic distractors.
+- Each distractor must represent a different likely misconception, not random nonsense or a grammar/length giveaway.
+- Every choice needs concise feedback. Explain the relevant distinction without labels such as "correct answer" or repetitive praise.
+- The correct choice has misconception null. Every distractor names its specific misconception.
+- Keep choices parallel in grammar, specificity and approximate length where the science permits.
+
+Use a stable kebab-case id prefixed bio-, chem- or phys-, and a stable subject-local conceptKey. Supported card kinds: definition, formula, process, test-result, unit, practical, fact, comparison.
+
+For every card, output a visualCue field containing exactly one familiar Unicode emoji from the approved list below.
+
+The cue is a quick visual landmark for the scientific context. It is decorative, not an answer hint.
+- Prefer a literal object or broad topic already explicit in the question. Example: a question explicitly about the heart may use 🫀.
+- Never encode the correct answer, formula, result, trend, unit, process step, or a clue that eliminates a distractor.
+- If a specific emoji would help solve the question, move up to a broader topic cue.
+- Use exactly one approved grapheme: no emoji pairs, words, numbers, flags, skin tones, jokes, metaphors, or correctness symbols such as ✅, ❌ or ❓.
+- The cue must be recognisable to a UK student aged 14–16 without explanation.
+
+Write the complete question, answer and distractors first. Only then choose visualCue. Audit it against all of that text as if the cue were visible before the choices:
+1. Does it depict or name a noun, apparatus, measurement, quantity, result, property, relationship or process that appears in the answer but is not already explicit in the question?
+2. Does it make any distractor look impossible or make the correct option easier to select?
+If either answer might be yes, reject that cue and try the neutral fallback. The replacement itself must pass the same semantic check; never assume any fallback is automatically safe. Do not rely on the card kind or topic name alone.
+
+Return JSON only with a top-level cards array. Every card must contain exactly:
+id, conceptKey, kind, visualCue, front, back, reverseFront, reverseBack, explanation, memoryTip, choices, evidence.
+Each choice contains choiceKey, text, isCorrect, feedback and misconception.
+Evidence contains sourceExcerpt and supports. Include back and explanation, plus choice:<choiceKey>:feedback for all four choices and choice:<choiceKey>:misconception for each distractor. Add front, reverse or memoryTip only when the quote supports that field. This makes every learner-facing correction independently auditable.
+
+Compiler contract: recall-card-bundle-v2 / recall-card-compiler-v5
+
+Approved Physics cues: ⚙️ ⚡ 🔗 🔌 🔋 📈 🔀 ☢️ 🏃 🏋️ 🏎️ 🎳 🚗 🌊 🌈 🧲 🌌 🏔️ ⚛️ ⚖️ 🌡️ 📘
+Neutral fallback candidate: 📘
+
+Generate 8 cards.
+Subject: Physics
+Topic ID: aqa-gcse-combined-science-trilogy-8464-v1.1:6-1
+Specification reference: 6.1.1
+Official source metadata (compiler-owned; do not copy IDs into cards):
+{"specification":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1","board":"AQA","qualification":"GCSE","subject":"Combined Science: Trilogy","course":"Combined Science","specificationCode":"8464","version":"1.1","title":"AQA GCSE Combined Science: Trilogy (8464)","landingUrl":"https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification","pdfUrl":"https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf","localPath":"data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf","sha256":"d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"},"component":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1","parentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:6-1","code":"6.1.1","title":"Energy changes in a system, and the ways energy is stored before and after such changes","kind":"section","subjectArea":"Physics","tier":["Foundation","Higher"],"sourcePageStart":122,"sourcePageEnd":124},"topicComponent":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1:6-1","parentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:6","code":"6.1","title":"Energy","kind":"chapter","subjectArea":"Physics","tier":["Foundation","Higher"],"sourcePageStart":121,"sourcePageEnd":126},"pageStart":122,"pageEnd":124,"sourceFingerprint":"fd5bda3ad7a773cfa0ed2a710e0213e6e366da4d3f84d99a6c75bc6117ed07c4"}
+Reviewed curriculum targets (compiler-owned; use only to judge scope):
+[{"offeringId":"aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher","curriculumComponentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1","topicComponentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:6-1","isPrimary":true,"confidence":1,"reviewed":true,"mappingSource":"recall-card-compiler-v2"}]
+
+Official curriculum PDF page text. sourceExcerpt must be copied exactly from here:
+<official_curriculum>
+6.1.1 Energy changes in a system, and the ways energy is stored
+before and after such changes
+6.1.1.1 Energy stores and systems
+Content Key opportunities for
+skills development
+A system is an object or group of objects.
+There are changes in the way energy is stored when a system
+changes.
+Students should be able to describe all the changes involved in the
+way energy is stored when a system changes, for common
+situations. For example:
+• an object projected upwards
+• a moving object hitting an obstacle
+• an object accelerated by a constant force
+• a vehicle slowing down
+• bringing water to a boil in an electric kettle.
+Throughout this section on Energy students should be able to
+calculate the changes in energy involved when a system is changed
+by:
+• heating
+• work done by forces
+• work done when a current flows
+The link between work done
+(energy transfer) and
+current flow in a circuit is
+covered in Work done and
+energy transfer (page 146).
+WS 4.5
+• use calculations to show on a common scale how the overall
+energy in a system is redistributed when the system is
+changed.
+WS 1.2, 4.3, 4.5, 4.6
+MS 1a, c, 3b, c
+6.1.1.2 Changes in energy
+Content Key opportunities for
+skills development
+Students should be able to calculate the amount of energy
+associated with a moving object, a stretched spring and an object
+raised above ground level.
+WS 1.2, 4.3, 4.4, 4.6
+MS 1a, c, 3b, c
+122 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration
+Content Key opportunities for
+skills development
+The kinetic energy of a moving object can be calculated using the
+equation:
+kinetic energy = 0.5 × mass × speed
+2
+Ek = 1
+2
+m v2
+kinetic energy, Ek, in joules, J
+mass, m, in kilograms, kg
+speed, v, in metres per second, m/s
+The amount of elastic potential energy stored in a stretched spring
+can be calculated using the equation:
+MS 3b, c
+Students should be able to
+recall and apply this
+equation.
+elastic potential energy = 0.5 × spring constant × extension
+2
+Ee = 1
+2
+k e2
+(assuming the limit of proportionality has not been exceeded)
+elastic potential energy, Ee, in joules, J
+spring constant, k, in newtons per metre, N/m
+extension, e, in metres, m
+The amount of gravitational potential energy gained by an object
+raised above ground level can be calculated using the equation:
+MS 3b, c
+Students should be able to
+apply this equation which is
+given on the Physics
+equation sheet.
+g . p . e . = mass × gravitational f ield strength × height
+Ep = m g h
+gravitational potential energy, Ep, in joules, J
+mass, m, in kilograms, kg
+gravitational field strength, g, in newtons per kilogram, N/kg (In any
+calculation the value of the gravitational field strength (g) will be
+given).
+height, h, in metres, m
+MS 3b, c
+Students should be able to
+recall and apply this
+equation.
+AT 1
+Investigate the transfer of
+energy from a gravitational
+potential energy store to a
+kinetic energy store.
+6.1.1.3 Energy changes in systems
+Content Key opportunities for
+skills development
+The amount of energy stored in or released from a system as its
+temperature changes can be calculated using the equation:
+AQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019
+Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 123
+Content Key opportunities for
+skills development
+change in thermal energy = mass × speci f ic heat capacity
+× temperature change
+∆ E = m c ∆ θ
+change in thermal energy, ∆E, in joules, J
+mass, m, in kilograms, kg
+specific heat capacity, c, in joules per kilogram per degree Celsius,
+J/kg °C
+temperature change, ∆θ, in degrees Celsius, °C
+The specific heat capacity of a substance is the amount of energy
+required to raise the temperature of one kilogram of the substance
+by one degree Celsius.
+MS 3b, c
+Students should be able to
+apply this equation which is
+given on the Physics
+equation sheet.
+This equation and specific
+heat capacity are also
+included in Temperature
+changes in a system and
+specific heat capacity (page
+137).
+Required practical activity 14: an investigation to determine the specific heat capacity of one or
+more materials. The investigation will involve linking the decrease of one energy store (or work
+done) to the increase in temperature and subsequent increase in thermal energy stored.
+AT skills covered by this practical activity: physics AT 1 and 5.
+This practical activity also provides opportunities to develop WS and MS. Details of all skills are
+given in Key opportunities for skills development (page 184).
+124 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration
+
+</official_curriculum>

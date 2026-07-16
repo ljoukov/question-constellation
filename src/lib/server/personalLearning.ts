@@ -6,6 +6,7 @@ import {
 	type RecallCard,
 	type RecallSubject
 } from '$lib/recall/aqaScienceRecall';
+import { recallEvidenceComponentId } from '$lib/server/recallCatalog';
 import { recallActivityHref, recallCoverageHref } from '$lib/recall/routes';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
 import { enabledProfileCombinationForQuestion } from '$lib/learning/profileQuestionCompatibility';
@@ -1217,7 +1218,9 @@ async function readDashboardStats(userId: string): Promise<PersonalDashboard['st
 		`SELECT COUNT(*) AS review_count,
 		        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
 		 FROM user_recall_card_reviews
-		 WHERE user_id = ?`,
+		 WHERE user_id = ?
+		   AND content_revision IS NOT NULL
+		   AND content_hash IS NOT NULL`,
 		[userId]
 	);
 	const gapCount = (status: string) => gapStats.find((row) => row.status === status)?.count ?? 0;
@@ -1316,6 +1319,8 @@ async function readSubjectLearningStatsMap(
 			        SUM(CASE WHEN due_at <= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) AS due_count
 			 FROM user_recall_card_reviews
 			 WHERE user_id = ?
+			   AND content_revision IS NOT NULL
+			   AND content_hash IS NOT NULL
 			 GROUP BY subject`,
 			[userId]
 		)
@@ -2071,6 +2076,37 @@ function shortStepText(text: string): string {
 	return text.replace(/\.$/, '').replace(/^The /, '').replace(/^A /, '').replace(/^An /, '');
 }
 
+function chainStepLabel(text: string): string {
+	const value = shortStepText(text).trim();
+	if (!value) return 'the next idea';
+	if (/^[A-Z][a-z]/.test(value)) return `${value[0].toLowerCase()}${value.slice(1)}`;
+	return value;
+}
+
+export function gapGuidedQuestionPrompt({
+	kind,
+	previous,
+	target,
+	next
+}: {
+	kind: 'previous' | 'missing' | 'next';
+	previous?: string | null;
+	target: string;
+	next?: string | null;
+}): string {
+	const previousLabel = previous ? chainStepLabel(previous) : null;
+	const targetLabel = chainStepLabel(target);
+	const nextLabel = next ? chainStepLabel(next) : null;
+	if (kind === 'previous') return `Add the step immediately before: ${targetLabel}`;
+	if (kind === 'next') return `Add the next step after: ${targetLabel}`;
+	if (previousLabel && nextLabel) {
+		return `Complete the missing link: ${previousLabel} → ? → ${nextLabel}`;
+	}
+	if (previousLabel) return `Add the next step after: ${previousLabel}`;
+	if (nextLabel) return `Add the step immediately before: ${nextLabel}`;
+	return 'Add the missing process that completes the explanation.';
+}
+
 function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuidedQuestion[] {
 	const index = Math.max(
 		0,
@@ -2079,12 +2115,20 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 	const target = steps[index];
 	const previous = steps[Math.max(0, index - 1)];
 	const next = steps[Math.min(steps.length - 1, index + 1)];
+	const hasPrevious = Boolean(previous && previous.id !== target.id);
+	const hasNext = Boolean(next && next.id !== target.id);
 	const questions: GapGuidedQuestion[] = [];
 
-	if (previous && previous.id !== target.id) {
+	// At a chain boundary, asking for the neighbour as well as the missing step creates
+	// two reciprocal prompts whose wording gives both answers away. Keep the wider
+	// three-step reconstruction only when the missing idea genuinely sits between two links.
+	if (hasPrevious && hasNext && previous) {
 		questions.push({
 			id: 'previous-link',
-			question: 'What earlier cause or idea starts this part of the explanation?',
+			question: gapGuidedQuestionPrompt({
+				kind: 'previous',
+				target: target.step_text
+			}),
 			expectedAnswer: previous.step_text,
 			hint: previous.common_omission ?? 'Use the earlier cause in the method.',
 			focusStepId: previous.id
@@ -2093,14 +2137,12 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 
 	questions.push({
 		id: 'missing-link',
-		question:
-			previous && previous.id !== target.id && next && next.id !== target.id
-				? `What link connects "${shortStepText(previous.step_text)}" to "${shortStepText(next.step_text)}"?`
-				: previous && previous.id !== target.id
-					? `What does "${shortStepText(previous.step_text)}" lead to?`
-					: next && next.id !== target.id
-						? `What causes "${shortStepText(next.step_text)}"?`
-						: 'What missing cause or process completes this answer?',
+		question: gapGuidedQuestionPrompt({
+			kind: 'missing',
+			previous: hasPrevious ? previous.step_text : null,
+			target: target.step_text,
+			next: hasNext ? next.step_text : null
+		}),
 		expectedAnswer: target.step_text,
 		hint:
 			target.common_omission ??
@@ -2109,10 +2151,13 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 		focusStepId: target.id
 	});
 
-	if (next && next.id !== target.id) {
+	if (hasPrevious && hasNext && next) {
 		questions.push({
 			id: 'next-link',
-			question: `What does that step lead to next?`,
+			question: gapGuidedQuestionPrompt({
+				kind: 'next',
+				target: target.step_text
+			}),
 			expectedAnswer: next.step_text,
 			hint: next.common_omission ?? 'Connect the missing idea to the next mark-scoring step.',
 			focusStepId: next.id
@@ -2267,7 +2312,7 @@ export async function getGapLearningData(
 			title: questionTitle(row.source_prompt_text, row.source_metadata_json),
 			prompt: row.source_prompt_text ?? row.question_title ?? row.chain_title,
 			href: row.source_question_id
-				? `/questions/${encodeURIComponent(row.source_question_id)}/practice`
+				? `/questions/${encodeURIComponent(row.source_question_id)}`
 				: null
 		},
 		followUpQuestion: followUpQuestion
@@ -2291,7 +2336,7 @@ export async function getGapLearningData(
 			questions: guidedQuestions,
 			memoryChain: chainSteps.map((step) => step.short).join(' -> '),
 			answerPrompt: `Rewrite the original answer and make "${shortStepText(targetStep.step_text)}" explicit.`,
-			modelAnswer: questionData?.question.modelAnswer ?? row.canonical_chain_text,
+			modelAnswer: questionData?.question.modelAnswer ?? '',
 			maxMarks: Math.max(1, row.marks ?? guidedQuestions.length),
 			targetStepId: row.chain_step_id
 		}
@@ -2459,18 +2504,16 @@ function dueAtForInterval(intervalDays: number, fromTime = Date.now()): string {
 
 export async function recordRecallCardReview({
 	user,
-	cardId,
+	card,
 	grade,
 	mode
 }: {
 	user: AdminUser;
-	cardId: string;
+	card: RecallCard;
 	grade: RecallReviewGrade;
 	mode: string;
 }): Promise<{ status: 'ok'; dueAt: string; intervalDays: number } | null> {
 	await upsertUserProfile(user);
-	const card: RecallCard | undefined = recallCards.find((entry) => entry.id === cardId);
-	if (!card) return null;
 	const settings = await getLearnerProfileSettings(user);
 	const learnerSubject = settings.subjects.find(
 		(entry) => entry.enabled && entry.subject === card.subject
@@ -2489,16 +2532,34 @@ export async function recordRecallCardReview({
 			   AND course = ?
 			   AND tier = ?
 			 ORDER BY occurred_at, id`,
-		[user.uid, card.id, learnerSubject.course, learnerSubject.tier]
+		[user.uid, recallEvidenceComponentId(card), learnerSubject.course, learnerSubject.tier]
 	);
 	const reviews = evidenceRows
 		.map((row) => ({
 			row,
-			metadata: parseJson<{ grade?: string; mode?: string }>(row.metadata_json, {})
+			metadata: parseJson<{
+				grade?: string;
+				mode?: string;
+				contentRevision?: number | null;
+				contentHash?: string | null;
+			}>(row.metadata_json, {})
 		}))
 		.filter(
-			(entry): entry is typeof entry & { metadata: { grade: RecallReviewGrade; mode?: string } } =>
-				['again', 'hard', 'good', 'easy'].includes(entry.metadata.grade ?? '')
+			(
+				entry
+			): entry is typeof entry & {
+				metadata: {
+					grade: RecallReviewGrade;
+					mode?: string;
+					contentRevision?: number | null;
+					contentHash?: string | null;
+				};
+			} => ['again', 'hard', 'good', 'easy'].includes(entry.metadata.grade ?? '')
+		)
+		.filter(
+			(entry) =>
+				entry.metadata.contentHash === card.contentHash &&
+				entry.metadata.contentRevision === card.contentRevision
 		);
 	if (reviews.length === 0) return null;
 	let intervalDays = 0;
@@ -2514,14 +2575,15 @@ export async function recordRecallCardReview({
 	const correctCount = reviews.filter((review) => review.metadata.grade !== 'again').length;
 	const latestGrade = latest.metadata.grade;
 	const latestMode = latest.metadata.mode ?? mode;
+	const scopeKey = `${learnerSubject.course}|${learnerSubject.tier}`;
 
 	await executePersonalQuery(
 		`INSERT INTO user_recall_card_reviews (
-		   user_id, card_id, subject, course, tier, topic_id, mode, last_grade,
-		   seen_count, correct_count, interval_days, due_at
+		   user_id, card_id, scope_key, subject, course, tier, topic_id, mode, last_grade,
+		   seen_count, correct_count, interval_days, due_at, content_revision, content_hash
 		 )
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		 ON CONFLICT(user_id, card_id) DO UPDATE SET
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		 ON CONFLICT(user_id, card_id, scope_key) DO UPDATE SET
 		   subject = excluded.subject,
 		   course = excluded.course,
 		   tier = excluded.tier,
@@ -2532,11 +2594,16 @@ export async function recordRecallCardReview({
 		   correct_count = excluded.correct_count,
 		   interval_days = excluded.interval_days,
 		   due_at = excluded.due_at,
+		   content_revision = excluded.content_revision,
+		   content_hash = excluded.content_hash,
 		   updated_at = CURRENT_TIMESTAMP
-		 WHERE excluded.seen_count >= user_recall_card_reviews.seen_count`,
+		 WHERE user_recall_card_reviews.content_revision IS NOT excluded.content_revision
+		    OR user_recall_card_reviews.content_hash IS NOT excluded.content_hash
+		    OR excluded.seen_count >= user_recall_card_reviews.seen_count`,
 		[
 			user.uid,
 			card.id,
+			scopeKey,
 			card.subject,
 			learnerSubject.course,
 			learnerSubject.tier,
@@ -2546,7 +2613,9 @@ export async function recordRecallCardReview({
 			reviews.length,
 			correctCount,
 			intervalDays,
-			dueAt
+			dueAt,
+			card.contentRevision,
+			card.contentHash
 		]
 	);
 

@@ -1,0 +1,142 @@
+{
+  "reviews": [
+    {
+      "cardId": "phys-system-definition",
+      "accepted": true,
+      "reason": "The definition matches the specification exactly, and the distractors diagnose distinct scope and energy-change confusions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-energy-change-processes",
+      "accepted": true,
+      "reason": "The answer reproduces the three listed processes, with concise distractors distinguishing each required form of work or heating.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-kinetic-energy-equation",
+      "accepted": true,
+      "reason": "The equation is exact, its square-law explanation follows directly from it, and the distractors target distinct algebraic errors.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-elastic-potential-energy-equation",
+      "accepted": false,
+      "reason": "The explanation states an unqualified fourfold increase when extension doubles, although the source restricts the equation to cases where the limit of proportionality has not been exceeded.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": false,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": [
+        "The doubling-extension explanation omits the equation's stated limit-of-proportionality condition."
+      ]
+    },
+    {
+      "cardId": "phys-elastic-equation-proportional-limit",
+      "accepted": true,
+      "reason": "The applicability condition matches the source exactly, and the distractors distinguish reversal, omission, and confusion with spring constant.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-gravitational-potential-energy-equation",
+      "accepted": true,
+      "reason": "The answer exactly states Ep = mgh, and the distractors diagnose an added half-factor and incorrectly squared variables.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-thermal-energy-change-equation",
+      "accepted": true,
+      "reason": "The equation matches the specification, and each distractor isolates a different erroneous division of one required factor.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-specific-heat-capacity-definition",
+      "accepted": true,
+      "reason": "The definition preserves the specified energy, one-kilogram, and one-degree quantities, with distinct diagnostic distractors.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    }
+  ]
+}

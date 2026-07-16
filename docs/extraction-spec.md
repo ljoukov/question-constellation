@@ -2944,11 +2944,27 @@ The automatic phase must fail closed at each gate:
    logos, or watermarks. It also runs a strict cross-theme consistency audit. Publish the pair only
    when both variants score at least `18/20` with full correctness, evidence, and text scores, every
    hard visual-learning flag passes, and cross-theme preservation scores `4/4`.
+   The judge owns the persistent structured glitch catalogue: ambiguous symbol placement, wrong
+   conductor association, bypass topology, invalid equations, repeated-object identity/size drift,
+   force-removal direction, conventional-current/electron-direction confusion, and
+   question-specific numbers. Symbols require an unambiguous leader or immediate physical target;
+   equations must be visually separate from conductor/object labels. A failed deterministic or
+   visual attempt is discarded as a pair. Retry with a brand-new dark generation and no reference
+   image; append only the exact observed defects and the catalogue rules actually triggered. Never
+   patch or edit a failed dark image, and do not create a light variant until a dark original passes
+   its independent single-image judge. Lock that accepted dark as the source for all light attempts.
+   If a light edit fails, discard it and make a fresh edit from the accepted dark, never from the
+   failed light.
 6. Hash the chain, ordered steps, public memberships, prompts, mark rows, models, and checklists.
    Recheck that fingerprint after generation. Upload both variants to immutable theme-specific R2
    keys, verify both uploaded byte streams, and only then promote their shared
    `answer_chain_illustrations` record. A changed source fingerprint must be regenerated rather than
-   silently reusing stale art.
+   silently reusing stale art. Generation metadata must retain prompt hashes, both asset hashes, the
+   dark-to-light derivation-record hash, deterministic hard-check snapshots, the model visual-audit
+   identity/output hash, and an explicit human-audit record. `not_performed` or `not_recorded` is a
+   valid honest human-audit state; never describe model QA as human review. Content-addressed IDs may
+   change when assets change. Existing D1 replacement triggers must leave the new row as the sole
+   published primary and demote the former primary to a non-primary draft.
 
 The stable reusable prompt and validation logic live in
 `scripts/lib/chain-illustration-pipeline.mjs`. Generation uses the subscription-backed

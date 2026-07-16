@@ -4,6 +4,103 @@ export const CHAIN_ILLUSTRATION_SCHEMA_VERSION = 'chain-illustration-job/v2';
 export const CHAIN_ILLUSTRATION_STYLE_KEY = 'luminous-scientific-atlas-v2';
 
 /**
+ * Persistent visual failure taxonomy. The base image prompt intentionally stays compact; this
+ * catalogue belongs to the independent judge and only the rules for defects it actually finds are
+ * copied into a fresh-regeneration prompt.
+ */
+export const CHAIN_ILLUSTRATION_GLITCH_CATALOGUE = Object.freeze({
+	ambiguous_symbol_or_label_placement: Object.freeze({
+		label: 'Ambiguous symbol or label placement',
+		judgeRule:
+			'Fail any symbol, current label, quantity label or leader that can plausibly refer to more than one object, branch or location. Every symbol must have an unambiguous leader or sit directly beside the exact physical quantity/location it names. Equations must be visually separated from conductor and object labels.',
+		observedExamples: Object.freeze([
+			'a total-current equation or label placed beside the lower branch so it appears to label that branch',
+			'a bidirectional subtraction arrow that leaves the intended resultant direction ambiguous'
+		]),
+		regenerationRule:
+			'Give every symbol or quantity label one unmistakable target using a short leader or immediate adjacency. Keep equations in a separate equation region, never floating on a conductor or between possible targets.'
+	}),
+	conductor_association: Object.freeze({
+		label: 'Wrong conductor or branch association',
+		judgeRule:
+			'Fail when a current, charge, voltage, field, force or energy cue is visually attached to the wrong conductor, branch, component or body, including cues placed between two candidates.',
+		observedExamples: Object.freeze([
+			'a potential-difference cue drawn along one rail instead of across the intended branch'
+		]),
+		regenerationRule:
+			'Attach each flow, arrow and quantity cue to the exact intended conductor, branch, component or body; leave enough space that it cannot be read as belonging to a neighbour.'
+	}),
+	bypass_topology: Object.freeze({
+		label: 'Bypass or invalid topology',
+		judgeRule:
+			'Fail any wire, connector, meter, pipe or pathway that accidentally bypasses the mechanism, shorts a component, breaks continuity, or uses an instrument in a scientifically invalid topology.',
+		observedExamples: Object.freeze([
+			'a source disappearing in a later stage and leaving a bare bypass wire',
+			'circuit rails dangling below the final junction instead of ending in a complete circuit'
+		]),
+		regenerationRule:
+			'Draw one physically valid, continuous topology. Do not create a bypass or short circuit; connect measuring instruments in the scientifically correct place and make every junction explicit.'
+	}),
+	dimensional_equation_errors: Object.freeze({
+		label: 'Dimensionally or algebraically invalid equation',
+		judgeRule:
+			'Fail a malformed, dimensionally inconsistent or contextually false equation, including an equality between unlike quantities or a formula visually fused with a component label.',
+		observedExamples: Object.freeze([
+			'a resultant-force arrow shown equal in magnitude to the applied-force arrow even though a non-zero resistive force is also shown'
+		]),
+		regenerationRule:
+			'Use only the approved universal equation in a clean, self-contained equation box. Check algebra, dimensions, symbols and subscripts; do not merge the equation with a physical label.'
+	}),
+	repeated_object_identity_or_size_drift: Object.freeze({
+		label: 'Repeated-object identity, count or size drift',
+		judgeRule:
+			'Fail when the same object silently changes identity, scale, count, density, direction or baseline state across stages unless that exact change is the approved mechanism. In particular, do not imply that carriers, particles or objects are created merely to show a faster rate.',
+		observedExamples: Object.freeze([
+			'equal before-and-after total-momentum bars that retain the same object contribution split while the surrounding arrows claim momentum transfer',
+			'a repeated object or system resetting to an incompatible earlier state between panels',
+			'after-collision objects overlapping or moving in directions incoherent with the shown collision',
+			'carrier-count inflation used to depict a higher current or reaction rate'
+		]),
+		regenerationRule:
+			'Keep repeated objects recognisably identical in scale, count, density and baseline state unless the approved step changes that property. Show a higher rate with motion, spacing in time or a counting gate—not by inventing more objects.'
+	}),
+	force_removal_direction: Object.freeze({
+		label: 'Wrong direction after force removal',
+		judgeRule:
+			'Fail when removing a force shows continued loading, sideways motion, ambiguous axes or recovery away from equilibrium instead of a clear return toward the equilibrium state.',
+		observedExamples: Object.freeze([
+			'a force-removal or recovery arrow pointing away from the marked equilibrium state'
+		]),
+		regenerationRule:
+			'When the applied force is removed, show the restoring motion on one registered axis pointing back toward the clearly marked equilibrium state. Remove loading arrows rather than rotating or continuing them.'
+	}),
+	conventional_current_or_electron_direction_confusion: Object.freeze({
+		label: 'Conventional-current and electron-direction confusion',
+		judgeRule:
+			'Fail inconsistent current arrows around one circuit, an electron depiction moving in the conventional-current direction, or unlabeled carrier beads whose direction makes current semantics ambiguous. If both are shown, electron flow must be explicitly labelled and opposite conventional current.',
+		observedExamples: Object.freeze([
+			'conventional-current arrows changing direction between panels without a polarity change'
+		]),
+		regenerationRule:
+			'Use one consistent conventional-current direction around the complete circuit. If electrons are shown, label them explicitly and point them oppositely; otherwise avoid electron-like beads and show current rate with neutral flow cues.'
+	}),
+	question_specific_numbers: Object.freeze({
+		label: 'Question-specific or invented numbers',
+		judgeRule:
+			'Fail any given value, worked substitution, intermediate result, final answer, one-question unit or invented example scale. Permit only panel ordinals and universal notation valid for every attached question.',
+		observedExamples: Object.freeze([
+			'a value copied from one member question even though the illustration is reused by questions with different values'
+		]),
+		regenerationRule:
+			'Remove every example or question-specific value and unit. Keep only panel ordinals and universal symbols, equations, constants or ratios that remain valid for every attached question.'
+	})
+});
+
+export const CHAIN_ILLUSTRATION_GLITCH_IDS = Object.freeze(
+	Object.keys(CHAIN_ILLUSTRATION_GLITCH_CATALOGUE)
+);
+
+/**
  * @typedef {object} ChainStep
  * @property {string} id
  * @property {number} displayOrder
@@ -121,7 +218,15 @@ export const CHAIN_ILLUSTRATION_STYLE_KEY = 'luminous-scientific-atlas-v2';
  */
 
 /** @typedef {{ decisions?: SemanticDecision[] }} SemanticPlan */
-/** @typedef {Record<string, { status?: string } | undefined>} HardImageChecks */
+/** @typedef {Record<string, { status?: string, issues?: string[] } | undefined>} HardImageChecks */
+
+/**
+ * @typedef {object} GlitchFinding
+ * @property {keyof typeof CHAIN_ILLUSTRATION_GLITCH_CATALOGUE} glitchId
+ * @property {('dark' | 'light')[]} themes
+ * @property {number[]} panelOrders
+ * @property {string} defect
+ */
 
 /**
  * @typedef {object} VisualJudgeVariant
@@ -140,6 +245,7 @@ export const CHAIN_ILLUSTRATION_STYLE_KEY = 'luminous-scientific-atlas-v2';
  * @property {boolean} noDominantRepetition
  * @property {boolean} terminologyClear
  * @property {boolean} compositionPlanFollowed
+ * @property {boolean} noQuestionSpecificValues
  * @property {{order: number, dominantVisual: string, visibleCausalEvidence: string, understandableWithoutText: boolean, defects: string[]}[]} panelAudits
  * @property {number} total
  * @property {string[]} defects
@@ -149,6 +255,7 @@ export const CHAIN_ILLUSTRATION_STYLE_KEY = 'luminous-scientific-atlas-v2';
  * @typedef {object} VisualJudge
  * @property {VisualJudgeVariant[]} [variants]
  * @property {{compositionMatch: boolean, contentMatch: boolean, textMatch: boolean, scientificMeaningMatch: boolean, score: number, defects: string[]}} crossThemeConsistency
+ * @property {GlitchFinding[]} glitchFindings
  * @property {boolean} pass
  * @property {string} rationale
  */
@@ -276,6 +383,7 @@ Non-negotiable acceptance rules:
 - A five-step chain may merge exactly one adjacent pair only if both scoring ideas remain explicit in one panel. Every source step must appear exactly once, in order.
 - Reject chains that are only recall labels, formatting instructions, a worked answer, or visually misleading abstractions.
 - The plan must remain transferable across the attached contexts; do not turn it into an illustration of only the representative question.
+- Never plan question-specific or illustrative numerical values. Do not copy given values, substitutions, intermediate results, final answers, one-question units or arbitrary example scales from any attached question. Panel ordinal numbers are allowed. A universal equation, symbol, formula constant or ratio is allowed only when it is correct and useful for every chain member.
 - Headings should be short, concrete and reconstruct the causal chain. Microcopy must be at most ten words.
 - Alt text and caption must state the full approved chain without adding facts.
 
@@ -288,6 +396,7 @@ Visual-learning gate for every accepted plan:
 - Make the endpoint concrete when possible: show the organism, material or consumer outcome rather than an abstract success meter.
 - Use full student-facing terminology. Never use unexplained shorthand such as "p.d."; write "potential difference" or an equally clear full phrase.
 - Small, correct GCSE equations may support an approved causal link when they explain it visually, but must not become an extra step.
+- Keep all planned visuals and learner-facing text numerically transferable: no sample measurements or worked-example numbers. Use qualitative comparisons or universal symbols instead, and include a formula constant or ratio only when it applies unchanged to every attached question.
 - Choose compositionMode deliberately: continuous-journey for a process through a system, single-subject-state-progression for one object changing state, or linked-distinct-scenes when the causal steps require different scales or subjects.
 - visualAnchor names the memorable whole-image subject; continuousPath states how the eye travels through the mechanism; visualWithoutTextSummary states what a learner can retell after seeing the art for three seconds with all wording hidden.
 - For each panel, distinctVisualAnchor must name its unique hero visual, and textHiddenMeaning must say exactly what a learner should infer before reading.
@@ -716,6 +825,8 @@ TRANSFER GOAL
 Make this mechanism reconstructable across the attached exam contexts, without overfitting to one question:
 - ${contexts}
 
+The contexts are evidence, not worked examples. Never copy their given values, substitutions, intermediate values, final numerical answers, one-question units or arbitrary example scales into the image. Do not invent example numbers. Use qualitative comparisons or universal symbols instead. The required panel ordinal numbers 1–${decision.visualSteps.length} are the only non-scientific numbers that may appear.
+
 VISUAL-LEARNING OBJECTIVE
 Optimise for immediate grasp, memorisation and deeper understanding through complementary visual channels: whole-system context, mechanism-specific close-ups, spatial direction, semantic colour, and visible state change. Run a three-second test: if every word and number were covered, the pictures alone must still let a GCSE learner retell the causal sequence.
 
@@ -729,7 +840,7 @@ Build one coherent 16:9 composition with ${decision.visualSteps.length} numbered
 
 Each stage must have a unique visual silhouette and mechanism-specific dominant visual. Prefer physical cutaways, microscopic views, before/after contrasts, visible flow and concrete outcomes. A gauge, dashboard, checkmark or generic success icon may only support a physical explanation; it may never be the main visual evidence. Generous iPad-safe margins. The sequence must remain clear at 1024×576.
 
-Where stages revisit one event, keep colours, directions, identities and quantities scientifically consistent. Never reset or contradict an earlier state merely to illustrate the next link.
+Where stages revisit one event, keep colours, directions, identities and qualitative relationships scientifically consistent. Never reset or contradict an earlier state merely to illustrate the next link.
 
 TITLE — verbatim: "${decision.title}"
 
@@ -743,7 +854,58 @@ TYPOGRAPHY
 Keep text minimal and horizontal. Render the title, numbers, headings and microcopy exactly as supplied. Use full learner-facing terminology—never invent or shorten wording into unexplained abbreviations. Make every label readable after downscaling to an iPad-width preview.
 
 HARD CONSTRAINTS
-Exactly ${decision.visualSteps.length} stages and numbers. No extra stage, fifth step, legend, logo, exam-board branding, watermark, circular arrow, decorative prose, unsupported claim, internally inconsistent repeated state, unexplained shorthand, repeated dominant imagery, text-dependent stage, or scientifically misleading metaphor. This is an in-app explanatory illustration, not a marketing page.`;
+Exactly ${decision.visualSteps.length} stages and ordinal panel numbers. No extra stage, fifth step, legend, logo, exam-board branding, watermark, circular arrow, decorative prose, unsupported claim, internally inconsistent repeated state, unexplained shorthand, repeated dominant imagery, text-dependent stage, or scientifically misleading metaphor. This is an in-app explanatory illustration, not a marketing page.`;
+}
+
+/**
+ * Build the next dark prompt after a dark original fails deterministic or visual QA. The original
+ * prompt remains the complete source of truth; this suffix contains only defects observed on the
+ * failed attempt and catalogue rules explicitly triggered by the judge.
+ *
+ * @param {string} basePrompt
+ * @param {{judge?: VisualJudge | {glitchFindings?: GlitchFinding[]} | null, hardChecks?: HardImageChecks | null}} [failure]
+ */
+export function buildFreshDarkRegenerationPrompt(basePrompt, failure = {}) {
+	const judge = failure.judge;
+	const findings = Array.isArray(judge?.glitchFindings)
+		? judge.glitchFindings.filter((finding) =>
+				CHAIN_ILLUSTRATION_GLITCH_IDS.includes(finding?.glitchId)
+			)
+		: [];
+	const triggeredIds = [...new Set(findings.map((finding) => finding.glitchId))];
+	const exactDefects = uniqueNonEmptyLines([
+		...findings.map(
+			(finding) =>
+				`${finding.themes?.join('+') || 'pair'}${finding.panelOrders?.length ? ` panel ${finding.panelOrders.join(',')}` : ''}: ${finding.defect}`
+		),
+		...Object.entries(failure.hardChecks ?? {}).flatMap(([theme, check]) =>
+			(check?.issues ?? []).map((issue) => `${theme} file check: ${issue}`)
+		)
+	]);
+	const defectLines = exactDefects.length
+		? exactDefects.map((defect) => `- ${defect}`).join('\n')
+		: '- The dark original failed QA without a usable defect description; make a wholly independent rendering and satisfy every base constraint.';
+	const triggeredRules = triggeredIds.length
+		? triggeredIds
+				.map(
+					(glitchId) =>
+						`- ${glitchId}: ${CHAIN_ILLUSTRATION_GLITCH_CATALOGUE[glitchId].regenerationRule}`
+				)
+				.join('\n')
+		: '- No catalogue-specific rule was triggered; do not import rules for unrelated failure modes.';
+
+	return `${String(basePrompt ?? '').trim()}
+
+FRESH REGENERATION AFTER QA FAILURE
+Generate a brand-new DARK ORIGINAL from scratch. No previous image is supplied. This is never an edit, patch, variation, trace, restyle or reconstruction of the failed image; do not try to preserve its composition.
+
+CORRECT THESE EXACT OBSERVED DEFECTS
+${defectLines}
+
+ONLY THE TRIGGERED ADDITIONAL GLITCH RULES
+${triggeredRules}
+
+Keep every other approved semantic, visual-learning, wording and transfer constraint from the base prompt unchanged.`;
 }
 
 /**
@@ -762,7 +924,7 @@ ${decision.visualSteps.map((step) => `${step.order}. "${step.heading}" / "${step
 PRESERVE EXACTLY
 - The 16:9 canvas, crop, camera, composition, panel positions, spacing and reading path.
 - Every scientific object, its geometry, count, state, direction, relative size and relationship.
-- Every arrow, connector, equation and semantic subject colour.
+- Every arrow, connector, universal equation or symbol, and semantic subject colour.
 - The title, panel numbers, headings and microcopy character-for-character, in the same locations.
 - The scientific meaning and the same internally consistent event across panels.
 
@@ -773,7 +935,201 @@ CHANGE ONLY THE THEME
 - Keep all meaning-bearing accent colours recognisably the same; adjust luminance only when needed for contrast.
 
 HARD CONSTRAINTS
-Do not add, remove, move, crop, reorder, relabel, restage or reinterpret anything. Do not change wording, line meaning, object identity, quantities, arrow direction, panel count, number sequence or scientific claim. No new legend, prose, logo, watermark, border decoration or background object. The result must look like the exact same illustration switched from dark mode to light mode.`;
+Do not add or reproduce a question-specific, worked-example or invented numerical value. Preserve only equations, symbols, formula constants and ratios that are already present and valid across every chain member. Do not add, remove, move, crop, reorder, relabel, restage or reinterpret anything else. Do not change wording, line meaning, object identity, qualitative relationship, arrow direction, panel count, ordinal number sequence or scientific claim. No new legend, prose, logo, watermark, border decoration or background object. The result must look like the exact same illustration switched from dark mode to light mode.`;
+}
+
+/**
+ * @param {string} basePrompt
+ * @param {{judge?: {glitchFindings?: GlitchFinding[]} | null, hardChecks?: HardImageChecks | null}} [failure]
+ */
+export function buildFreshLightEditRetryPrompt(basePrompt, failure = {}) {
+	const findings = Array.isArray(failure.judge?.glitchFindings)
+		? failure.judge.glitchFindings.filter((finding) =>
+				CHAIN_ILLUSTRATION_GLITCH_IDS.includes(finding?.glitchId)
+			)
+		: [];
+	const triggeredIds = [...new Set(findings.map((finding) => finding.glitchId))];
+	const exactDefects = uniqueNonEmptyLines([
+		...findings.map(
+			(finding) =>
+				`light${finding.panelOrders?.length ? ` panel ${finding.panelOrders.join(',')}` : ''}: ${finding.defect}`
+		),
+		...Object.entries(failure.hardChecks ?? {}).flatMap(([theme, check]) =>
+			(check?.issues ?? []).map((issue) => `${theme} file check: ${issue}`)
+		)
+	]);
+	return `${String(basePrompt ?? '').trim()}
+
+FRESH LIGHT EDIT AFTER QA FAILURE
+Create a new light edit directly from the attached ACCEPTED DARK MASTER. The failed light image is not supplied and must not be imitated, patched, restyled or edited.
+
+CORRECT THESE OBSERVED DEFECTS
+${exactDefects.length ? exactDefects.map((defect) => `- ${defect}`).join('\n') : '- No catalogue-specific visual defect was recorded; independently reapply the strict theme-only edit.'}
+
+ONLY THE TRIGGERED ADDITIONAL GLITCH RULES
+${triggeredIds.length ? triggeredIds.map((glitchId) => `- ${glitchId}: ${CHAIN_ILLUSTRATION_GLITCH_CATALOGUE[glitchId].regenerationRule}`).join('\n') : '- No catalogue-specific rule was triggered.'}`;
+}
+
+/**
+ * @param {ChainIllustrationCandidate} candidate
+ * @param {SemanticDecision} decision
+ * @param {{status?: string, issues?: string[]}} hardCheck
+ */
+export function darkVisualJudgePrompt(candidate, decision, hardCheck) {
+	return `You are the independent visual QA judge for one newly generated DARK ORIGINAL GCSE answer-chain illustration. Inspect the single attached image. It has no reference image and must pass before any light edit is allowed. Return only the requested structured QA data.
+
+GROUND TRUTH CHAIN: ${candidate.canonicalChainText}
+REQUIRED TITLE: ${decision.title}
+REQUIRED COMPOSITION MODE: ${decision.compositionMode}
+WHOLE-IMAGE VISUAL ANCHOR: ${decision.visualAnchor}
+REQUIRED CONTINUOUS PATH: ${decision.continuousPath}
+THREE-SECOND TEXT-HIDDEN RETELLING: ${decision.visualWithoutTextSummary}
+REQUIRED PANELS:
+${decision.visualSteps.map((step) => `${step.order}. ${step.heading} / ${step.microcopy} — anchor: ${step.distinctVisualAnchor}; visual: ${step.visual}; without text: ${step.textHiddenMeaning}`).join('\n')}
+
+SOURCE EVIDENCE:
+${visualJudgeEvidence(candidate, decision)}
+
+AUTOMATIC DARK FILE CHECK:
+${JSON.stringify(hardCheck, null, 2)}
+
+Audit scientific accuracy, evidence fidelity, exact text, one-way sequence, iPad legibility, text-hidden comprehension, distinct mechanism visuals, internal identity/state/direction consistency, clear terminology, and numeric transferability. Exactly one panelAudit must correspond to every required panel in order. Any visible defect belongs in variant.defects/panelAudits and, when it matches the catalogue below, in one concise structured glitchFindings row.
+
+STRUCTURED GLITCH CATALOGUE
+${glitchCatalogueJudgeText()}
+
+The symbol-placement contract is strict: every symbol or current label needs an unambiguous leader or immediate adjacency to the exact physical quantity and location it names. Equations must occupy a visually separate equation region and must not read as labels for a conductor, branch or object.
+
+Score the dark variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Return all seven hard booleans and panelAudits. It passes only at least 18/20, full scientificAccuracy/evidenceFidelity/textExactness, all hard booleans true, every panel understandable without text, no defects, and no glitch finding. Set the top-level pass to the same value as variant.pass.`;
+}
+
+export function darkVisualJudgeSchema() {
+	const pairSchema = visualJudgeSchema();
+	return {
+		type: 'object',
+		additionalProperties: false,
+		required: ['variant', 'glitchFindings', 'pass', 'rationale'],
+		properties: {
+			variant: variantSchemaForTheme(pairSchema.properties.variants.items, 'dark'),
+			glitchFindings: pairSchema.properties.glitchFindings,
+			pass: { type: 'boolean' },
+			rationale: { type: 'string' }
+		}
+	};
+}
+
+/**
+ * @param {unknown} judge
+ * @param {{status?: string, issues?: string[]}} hardCheck
+ * @param {VisualStep[]} approvedVisualSteps
+ */
+export function validateDarkVisualJudge(judge, hardCheck, approvedVisualSteps) {
+	const record = isPlainRecord(judge) ? judge : {};
+	const issues = [];
+	if (!isPlainRecord(record.variant) || record.variant.theme !== 'dark') {
+		issues.push('Dark judge must return one dark variant.');
+		return { status: 'failed', issues };
+	}
+	const findings = /** @type {GlitchFinding[]} */ (
+		Array.isArray(record.glitchFindings) ? record.glitchFindings : []
+	);
+	for (const finding of findings) {
+		if (!Array.isArray(finding?.themes) || finding.themes.some((theme) => theme !== 'dark')) {
+			issues.push('Dark judge glitch findings may name only the dark theme.');
+		}
+	}
+	const synthetic = /** @type {VisualJudge} */ ({
+		variants: [
+			/** @type {VisualJudgeVariant} */ (record.variant),
+			perfectJudgeVariant('light', approvedVisualSteps)
+		],
+		crossThemeConsistency: perfectCrossThemeConsistency(),
+		glitchFindings: findings,
+		pass: record.pass,
+		rationale: record.rationale
+	});
+	const validation = validateVisualJudge(
+		synthetic,
+		{ dark: hardCheck, light: { status: 'passed' } },
+		approvedVisualSteps
+	);
+	issues.push(...validation.issues);
+	return { status: issues.length ? 'failed' : 'passed', issues };
+}
+
+/**
+ * @param {ChainIllustrationCandidate} candidate
+ * @param {SemanticDecision} decision
+ * @param {HardImageChecks} hardChecks
+ */
+export function lightEditJudgePrompt(candidate, decision, hardChecks) {
+	return `You are the independent visual QA judge for a LIGHT EDIT of an already accepted dark GCSE answer-chain illustration. Inspect two attached images in order: ACCEPTED DARK MASTER, then NEW LIGHT EDIT. Treat the dark image as the approved content reference; judge only whether the light edit is correct, legible, and a strict theme-only conversion. Return only the requested structured QA data.
+
+GROUND TRUTH CHAIN: ${candidate.canonicalChainText}
+REQUIRED TITLE: ${decision.title}
+REQUIRED PANELS:
+${decision.visualSteps.map((step) => `${step.order}. ${step.heading} / ${step.microcopy} — ${step.textHiddenMeaning}`).join('\n')}
+
+AUTOMATIC FILE CHECKS:
+${JSON.stringify(hardChecks, null, 2)}
+
+The light edit must keep the dark master's exact canvas, crop, panel geometry, objects, counts, states, directions, equations, wording, sequence, and scientific meaning. Only background/surface tone, text contrast, shadows, highlights, and glow may change. Audit the light image at iPad size using the same scientific, evidence, text-hidden, terminology, state-consistency, and numeric-transferability thresholds as the accepted dark. Return one light variant audit and a strict crossThemeConsistency audit.
+
+STRUCTURED GLITCH CATALOGUE
+${glitchCatalogueJudgeText()}
+
+Every structured finding must name only the light theme. The symbol-placement contract remains strict and equations stay separate from physical labels. The pair passes only when the light variant meets the 18/20/full-correctness thresholds with all hard booleans true and no defects/findings, and cross-theme preservation is 4/4 with every match boolean true.`;
+}
+
+export function lightEditJudgeSchema() {
+	const pairSchema = visualJudgeSchema();
+	return {
+		type: 'object',
+		additionalProperties: false,
+		required: ['variant', 'crossThemeConsistency', 'glitchFindings', 'pass', 'rationale'],
+		properties: {
+			variant: variantSchemaForTheme(pairSchema.properties.variants.items, 'light'),
+			crossThemeConsistency: pairSchema.properties.crossThemeConsistency,
+			glitchFindings: pairSchema.properties.glitchFindings,
+			pass: { type: 'boolean' },
+			rationale: { type: 'string' }
+		}
+	};
+}
+
+/**
+ * @param {unknown} judge
+ * @param {HardImageChecks} hardChecks
+ * @param {VisualStep[]} approvedVisualSteps
+ */
+export function validateLightEditJudge(judge, hardChecks, approvedVisualSteps) {
+	const record = isPlainRecord(judge) ? judge : {};
+	const issues = [];
+	if (!isPlainRecord(record.variant) || record.variant.theme !== 'light') {
+		issues.push('Light-edit judge must return one light variant.');
+		return { status: 'failed', issues };
+	}
+	const findings = /** @type {GlitchFinding[]} */ (
+		Array.isArray(record.glitchFindings) ? record.glitchFindings : []
+	);
+	for (const finding of findings) {
+		if (!Array.isArray(finding?.themes) || finding.themes.some((theme) => theme !== 'light')) {
+			issues.push('Light-edit glitch findings may name only the light theme.');
+		}
+	}
+	const synthetic = /** @type {VisualJudge} */ ({
+		variants: [
+			perfectJudgeVariant('dark', approvedVisualSteps),
+			/** @type {VisualJudgeVariant} */ (record.variant)
+		],
+		crossThemeConsistency: record.crossThemeConsistency,
+		glitchFindings: findings,
+		pass: record.pass,
+		rationale: record.rationale
+	});
+	const validation = validateVisualJudge(synthetic, hardChecks, approvedVisualSteps);
+	issues.push(...validation.issues);
+	return { status: issues.length ? 'failed' : 'passed', issues };
 }
 
 /**
@@ -829,6 +1185,7 @@ Hard requirements for each theme variant:
 - causal changes are physically visible rather than represented only by labels, arrows, gauges, dashboard dials, checkmarks or generic icons;
 - the complete system/background is established once rather than decoratively copied into several panels;
 - student-facing wording uses full clear terminology with no unexplained shorthand such as "p.d.";
+- no given, example, substitution, intermediate-result, final-answer, one-question-unit or arbitrary-scale numerical value appears. Panel ordinal numbers are allowed. Equations, symbols, formula constants and ratios are allowed only when they apply unchanged to every attached question;
 - the final outcome is concrete whenever the approved mechanism has a visible organism, material, apparatus or consumer outcome;
 - readable and unclipped at 1024×576 iPad preview size;
 - no logo, watermark, extra legend, fifth step, or misleading metaphor.
@@ -840,20 +1197,32 @@ Hard visual-learning failures regardless of the numeric score:
 - only a gauge needle, caption or arrow changes while the physical mechanism remains visually absent;
 - a stage requires its microcopy to explain what the picture means;
 - an unexplained abbreviation appears in learner-facing text;
+- any question-specific or invented example number appears, even if it is scientifically plausible in isolation;
 - an abstract efficiency/success meter replaces a concrete available outcome.
 
-Run an explicit cross-panel consistency audit. Compare every repeated object, state, vector, label and quantity. Panels are not independent examples unless the approved plan says so. A reset or contradiction between depictions of the same event is a scientific-accuracy and evidence-fidelity failure, even when each isolated panel looks plausible.
+Run an explicit cross-panel consistency audit. Compare every repeated object, state, vector, label and qualitative or universal quantitative relationship. Panels are not independent examples unless the approved plan says so. A reset or contradiction between depictions of the same event is a scientific-accuracy and evidence-fidelity failure, even when each isolated panel looks plausible. Compare every displayed number against all source questions: if it is not an ordinal panel number or part of a universal equation, symbol, formula constant or ratio valid for every chain member, noQuestionSpecificValues must be false.
 
 Then run a strict cross-theme consistency audit. The light image must keep the dark original's exact panel geometry, composition, objects, counts, states, arrows, equations, wording, sequence and scientific meaning. Only background/surface tone, text contrast, shadows, highlights and glow may change. A moved object, rewritten label, changed arrow, restaged scene or altered scientific state is a failure even when the light image is attractive.
 
-Score each theme variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Also return the hard booleans textIndependentMeaning, distinctVisualAnchors, causalChangesVisible, noDominantRepetition, terminologyClear and compositionPlanFollowed. A variant passes only with at least 18/20, full scores for scientificAccuracy/evidenceFidelity/textExactness, all six hard booleans true, and every panelAudit understandable without text. Score crossThemeConsistency 0-4; the pair passes only at 4/4 with compositionMatch, contentMatch, textMatch and scientificMeaningMatch all true, and with both variants passing. Prefer immediate visual understanding and correctness over spectacle.`;
+STRUCTURED GLITCH CATALOGUE
+Audit every entry below independently. For every triggered entry, add one concise glitchFindings row using its exact glitchId, all affected themes, the affected panel orders (or an empty array for a whole-image defect), and a concrete description of what is visibly wrong. Do not report an entry that is not visibly triggered.
+${Object.entries(CHAIN_ILLUSTRATION_GLITCH_CATALOGUE)
+	.map(
+		([glitchId, entry]) =>
+			`- ${glitchId}: ${entry.judgeRule}\n  Previously observed examples to recognise (judge guidance only): ${entry.observedExamples.join('; ')}.`
+	)
+	.join('\n')}
+
+The symbol-placement contract is strict: every symbol or current label needs an unambiguous leader or immediate adjacency to the exact physical quantity and location it names. Equations must occupy a visually separate equation region and must not read as labels for a conductor, branch or object.
+
+Score each theme variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Also return the seven hard booleans textIndependentMeaning, distinctVisualAnchors, causalChangesVisible, noDominantRepetition, terminologyClear, compositionPlanFollowed and noQuestionSpecificValues. A variant passes only with at least 18/20, full scores for scientificAccuracy/evidenceFidelity/textExactness, all seven hard booleans true, every panelAudit understandable without text, and no glitch finding affecting that theme. Score crossThemeConsistency 0-4; the pair passes only at 4/4 with compositionMatch, contentMatch, textMatch and scientificMeaningMatch all true, with both variants passing, and with an empty glitchFindings array. Prefer immediate visual understanding and correctness over spectacle.`;
 }
 
 export function visualJudgeSchema() {
 	return {
 		type: 'object',
 		additionalProperties: false,
-		required: ['variants', 'crossThemeConsistency', 'pass', 'rationale'],
+		required: ['variants', 'crossThemeConsistency', 'glitchFindings', 'pass', 'rationale'],
 		properties: {
 			variants: {
 				type: 'array',
@@ -878,6 +1247,7 @@ export function visualJudgeSchema() {
 						'noDominantRepetition',
 						'terminologyClear',
 						'compositionPlanFollowed',
+						'noQuestionSpecificValues',
 						'panelAudits',
 						'total',
 						'defects'
@@ -898,6 +1268,7 @@ export function visualJudgeSchema() {
 						noDominantRepetition: { type: 'boolean' },
 						terminologyClear: { type: 'boolean' },
 						compositionPlanFollowed: { type: 'boolean' },
+						noQuestionSpecificValues: { type: 'boolean' },
 						panelAudits: {
 							type: 'array',
 							items: {
@@ -944,6 +1315,25 @@ export function visualJudgeSchema() {
 					defects: { type: 'array', items: { type: 'string' } }
 				}
 			},
+			glitchFindings: {
+				type: 'array',
+				items: {
+					type: 'object',
+					additionalProperties: false,
+					required: ['glitchId', 'themes', 'panelOrders', 'defect'],
+					properties: {
+						glitchId: { type: 'string', enum: [...CHAIN_ILLUSTRATION_GLITCH_IDS] },
+						themes: {
+							type: 'array',
+							minItems: 1,
+							maxItems: 2,
+							items: { type: 'string', enum: ['dark', 'light'] }
+						},
+						panelOrders: { type: 'array', items: { type: 'integer' } },
+						defect: { type: 'string' }
+					}
+				}
+			},
 			pass: { type: 'boolean' },
 			rationale: { type: 'string' }
 		}
@@ -960,6 +1350,36 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 	const expectedAuditOrders = Array.isArray(approvedVisualSteps)
 		? approvedVisualSteps.map((step) => step.order)
 		: [];
+	const expectedAuditOrderSet = new Set(expectedAuditOrders);
+	const glitchFindings = Array.isArray(judge?.glitchFindings) ? judge.glitchFindings : [];
+	if (!Array.isArray(judge?.glitchFindings)) {
+		issues.push('Judge must return a glitchFindings array.');
+	}
+	for (const [index, finding] of glitchFindings.entries()) {
+		const prefix = `glitchFindings[${index}]`;
+		if (!CHAIN_ILLUSTRATION_GLITCH_IDS.includes(finding?.glitchId)) {
+			issues.push(`${prefix}: unknown glitchId ${String(finding?.glitchId ?? '')}.`);
+		}
+		const themes = Array.isArray(finding?.themes) ? finding.themes : [];
+		if (
+			themes.length < 1 ||
+			themes.length > 2 ||
+			new Set(themes).size !== themes.length ||
+			themes.some((theme) => theme !== 'dark' && theme !== 'light')
+		) {
+			issues.push(`${prefix}: themes must name dark and/or light exactly once.`);
+		}
+		const panelOrders = Array.isArray(finding?.panelOrders) ? finding.panelOrders : [];
+		if (
+			new Set(panelOrders).size !== panelOrders.length ||
+			panelOrders.some((order) => !Number.isInteger(order) || !expectedAuditOrderSet.has(order))
+		) {
+			issues.push(`${prefix}: panelOrders must contain only approved panel orders.`);
+		}
+		if (!String(finding?.defect ?? '').trim()) {
+			issues.push(`${prefix}: defect must describe the visible failure.`);
+		}
+	}
 	const approvedAuditContractValid =
 		expectedAuditOrders.length >= 2 &&
 		expectedAuditOrders.length <= 4 &&
@@ -978,6 +1398,21 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 		issues.push('Judge must return exactly the dark and light variants.');
 	}
 	for (const row of rows) {
+		const themeFindings = glitchFindings.filter((finding) => finding?.themes?.includes(row.theme));
+		const hardBooleanFields = /** @type {const} */ ([
+			'textIndependentMeaning',
+			'distinctVisualAnchors',
+			'causalChangesVisible',
+			'noDominantRepetition',
+			'terminologyClear',
+			'compositionPlanFollowed',
+			'noQuestionSpecificValues'
+		]);
+		for (const field of hardBooleanFields) {
+			if (typeof row[field] !== 'boolean') {
+				issues.push(`${row.theme}: ${field} must be a boolean.`);
+			}
+		}
 		const expectedTotal =
 			row.scientificAccuracy +
 			row.evidenceFidelity +
@@ -1047,6 +1482,7 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 			row.noDominantRepetition &&
 			row.terminologyClear &&
 			row.compositionPlanFollowed &&
+			row.noQuestionSpecificValues &&
 			panelAuditAnchorsDistinct &&
 			auditTerminologyClear &&
 			panelAuditPass
@@ -1055,6 +1491,7 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 		const eligible =
 			hardPass &&
 			visualLearningPass &&
+			themeFindings.length === 0 &&
 			Array.isArray(row.defects) &&
 			row.defects.length === 0 &&
 			row.total >= 18 &&
@@ -1063,6 +1500,14 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 			row.textExactness === 3;
 		if (row.pass !== eligible)
 			issues.push(`${row.theme}: pass does not follow the hard threshold.`);
+		if (
+			row.noQuestionSpecificValues === false &&
+			!themeFindings.some((finding) => finding.glitchId === 'question_specific_numbers')
+		) {
+			issues.push(
+				`${row.theme}: question_specific_numbers finding is required when numeric transferability fails.`
+			);
+		}
 	}
 	if (
 		rows.length === 2 &&
@@ -1093,7 +1538,10 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 		crossTheme?.defects?.length === 0
 	);
 	const expectedPass =
-		rows.length === 2 && rows.every((row) => row.pass === true) && crossThemePass;
+		rows.length === 2 &&
+		rows.every((row) => row.pass === true) &&
+		crossThemePass &&
+		glitchFindings.length === 0;
 	if (judge?.pass !== expectedPass) {
 		issues.push('Pair pass does not follow the variant and cross-theme thresholds.');
 	}
@@ -1173,4 +1621,106 @@ function normalizeVisualAnchor(value) {
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, ' ')
 		.trim();
+}
+
+/** @param {unknown[]} values */
+function uniqueNonEmptyLines(values) {
+	const seen = new Set();
+	const lines = [];
+	for (const value of values) {
+		const line = oneLine(value);
+		if (!line) continue;
+		const key = line.toLowerCase();
+		if (seen.has(key)) continue;
+		seen.add(key);
+		lines.push(line);
+	}
+	return lines;
+}
+
+/** @param {ChainIllustrationCandidate} candidate @param {SemanticDecision} decision */
+function visualJudgeEvidence(candidate, decision) {
+	return JSON.stringify(
+		{
+			steps: candidate.steps,
+			questions: candidate.members.map((member) => ({
+				questionId: member.questionId,
+				sourceDocumentId: member.sourceDocumentId,
+				promptText: member.promptText,
+				selfContainedPromptText: member.selfContainedPromptText,
+				markSchemeItems: member.markSchemeItems,
+				modelAnswers: member.modelAnswers
+			})),
+			plannerEvidenceMap: decision.evidenceByQuestion
+		},
+		null,
+		2
+	);
+}
+
+function glitchCatalogueJudgeText() {
+	return Object.entries(CHAIN_ILLUSTRATION_GLITCH_CATALOGUE)
+		.map(
+			([glitchId, entry]) =>
+				`- ${glitchId}: ${entry.judgeRule}\n  Previously observed examples to recognise (judge guidance only): ${entry.observedExamples.join('; ')}.`
+		)
+		.join('\n');
+}
+
+/** @param {any} schema @param {'dark' | 'light'} theme */
+function variantSchemaForTheme(schema, theme) {
+	return {
+		...schema,
+		properties: {
+			...schema.properties,
+			theme: { type: 'string', enum: [theme] }
+		}
+	};
+}
+
+/** @param {'dark' | 'light'} theme @param {VisualStep[]} steps */
+function perfectJudgeVariant(theme, steps) {
+	return {
+		theme,
+		pass: true,
+		scientificAccuracy: 4,
+		evidenceFidelity: 4,
+		textExactness: 3,
+		sequenceClarity: 3,
+		ipadLegibility: 2,
+		mnemonicCoherence: 2,
+		appStyleFit: 2,
+		textIndependentMeaning: true,
+		distinctVisualAnchors: true,
+		causalChangesVisible: true,
+		noDominantRepetition: true,
+		terminologyClear: true,
+		compositionPlanFollowed: true,
+		noQuestionSpecificValues: true,
+		panelAudits: steps.map((step) => ({
+			order: step.order,
+			dominantVisual: step.distinctVisualAnchor,
+			visibleCausalEvidence: step.textHiddenMeaning,
+			understandableWithoutText: true,
+			defects: []
+		})),
+		total: 20,
+		defects: []
+	};
+}
+
+function perfectCrossThemeConsistency() {
+	return {
+		compositionMatch: true,
+		contentMatch: true,
+		textMatch: true,
+		scientificMeaningMatch: true,
+		score: 4,
+		defects: []
+	};
+}
+
+/** @param {unknown} value @returns {value is Record<string, any>} */
+function isPlainRecord(value) {
+	return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }

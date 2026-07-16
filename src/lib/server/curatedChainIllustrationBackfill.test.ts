@@ -135,6 +135,7 @@ describe('curated historical illustration theme-pair backfill', () => {
 			noDominantRepetition: true,
 			terminologyClear: true,
 			compositionPlanFollowed: true,
+			noQuestionSpecificValues: true,
 			panelAudits: [
 				{
 					order: 1,
@@ -157,6 +158,10 @@ describe('curated historical illustration theme-pair backfill', () => {
 			}
 		};
 		expect(validateHistoricalBaselineWaiver(judge).status).toBe('passed');
+
+		judge.variants[0].noQuestionSpecificValues = false;
+		expect(validateHistoricalBaselineWaiver(judge).status).toBe('failed');
+		judge.variants[0].noQuestionSpecificValues = true;
 
 		judge.variants[1].defects.push('Light-only regression.');
 		expect(validateHistoricalBaselineWaiver(judge).status).toBe('failed');

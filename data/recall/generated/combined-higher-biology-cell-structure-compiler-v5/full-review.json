@@ -1,0 +1,140 @@
+{
+  "reviews": [
+    {
+      "cardId": "bio-eukaryotic-genetic-material-nucleus",
+      "accepted": true,
+      "reason": "The nucleus location and all eukaryote–prokaryote corrections follow the supplied specification text. The exact back matches choice a, while the distractors diagnose distinct bacterial-feature confusions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-bacterial-genetic-material-loop",
+      "accepted": true,
+      "reason": "The single DNA loop and optional plasmid distinction are directly supported. The exact back matches choice a, and the distractors separately test nuclear enclosure, plasmid-only, and cell-boundary confusions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-plant-vacuole-cell-sap",
+      "accepted": true,
+      "reason": "The specification explicitly states that the permanent plant-cell vacuole is filled with cell sap. Choice a exactly matches the back, and the other choices diagnose distinct plant-cell component confusions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-plant-algal-cell-wall-cellulose",
+      "accepted": true,
+      "reason": "The cellulose composition and strengthening role are explicitly supported. The exact back matches choice a, with concise distractors covering vacuole, membrane, and cytoplasm confusions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-animal-cell-differentiation-early",
+      "accepted": true,
+      "reason": "The timing claim and plant-cell comparison are stated in the supplied text. The exact back matches choice a, and the distractors diagnose plant-pattern transfer, division confusion, and reversed specialisation order.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-mature-animal-cell-division-repair-replacement",
+      "accepted": true,
+      "reason": "The specification directly restricts mature-animal cell division mainly to repair and replacement. The exact back matches choice a, and each distractor identifies a different confusion with differentiation.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-differentiation-subcellular-structures",
+      "accepted": true,
+      "reason": "The acquired sub-cellular structures and resulting specialisation are explicitly supported. Choice a exactly matches the back, and the distractors distinguish outcomes, division roles, and retained differentiation ability.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-electron-microscope-magnification-resolution",
+      "accepted": true,
+      "reason": "The paired comparison in magnification and resolving power, plus its finer-detail consequence, is stated verbatim in the evidence. The exact back matches choice a and the distractors test distinct comparison errors.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    }
+  ]
+}

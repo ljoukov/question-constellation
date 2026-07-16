@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EnglishLiteratureSelections } from '$lib/englishLiteratureProfile';
+import type { RecallCard } from '$lib/recall/aqaScienceRecall';
+import { clearRecallCatalogCacheForTests } from './recallCatalog';
 
 const mocks = vi.hoisted(() => ({
 	executePersonalQuery: vi.fn(),
@@ -25,15 +27,21 @@ vi.mock('./curriculumCatalog', () => ({
 
 import {
 	CurriculumScopeValidationError,
+	getRecallReviewEvidenceReceipt,
+	getRecallReviewSnapshot,
 	getSignedInSubjectView,
 	officialTopicForQuestion,
+	recordEnglishStepAttemptEvidence,
+	recordLearnerEvidence,
 	recordQuestionAttemptEvidence,
+	recordRecallReviewEvidence,
 	supportsTextPracticeRecommendation,
 	validatedCurriculumScopeSelection
 } from './subjectLearning';
 
 beforeEach(() => {
 	for (const mock of Object.values(mocks)) mock.mockReset();
+	clearRecallCatalogCacheForTests();
 });
 
 const topics = [
@@ -225,7 +233,79 @@ function mockBiologyGapSubject({
 		if (sql.includes('FROM user_chain_gaps')) return gaps;
 		return [];
 	});
-	mocks.queryRows.mockResolvedValue([]);
+	mockGeneratedBiologyRecallCatalog();
+}
+
+function mockGeneratedBiologyRecallCatalog(
+	offeringId = 'aqa-8464:higher',
+	topicComponentId = 'biology-topic-4-1',
+	topicCode = '4.1',
+	topicTitle = 'Cell biology'
+) {
+	const answer = 'The nucleus contains the genetic material.';
+	const base = {
+		card_id: 'generated-biology-recall',
+		concept_key: 'nucleus-genetic-material',
+		subject: 'Biology',
+		kind: 'fact',
+		visual_cue: '🧬',
+		front: 'What does the nucleus contain?',
+		back: answer,
+		reverse_front: null,
+		reverse_back: null,
+		explanation: 'The nucleus stores the cell’s genetic material.',
+		memory_tip: null,
+		content_revision: 1,
+		content_hash: 'b'.repeat(64),
+		provenance_json: '{}',
+		offering_id: offeringId,
+		curriculum_component_id: `${topicComponentId}-leaf`,
+		topic_component_id: topicComponentId,
+		target_code: `${topicCode}.1`,
+		topic_code: topicCode,
+		topic_title: topicTitle,
+		source_url: 'https://example.test/specification',
+		source_title: 'AQA GCSE Biology',
+		choice_key: 'correct',
+		choice_text: answer,
+		choice_order: 0,
+		is_correct: 1,
+		choice_feedback: 'Yes. The nucleus stores genetic material.',
+		choice_misconception: null
+	};
+	const choices = [
+		base,
+		{
+			...base,
+			choice_key: 'wrong-a',
+			choice_text: 'It releases energy by respiration.',
+			choice_order: 1,
+			is_correct: 0,
+			choice_feedback: 'That is the role of mitochondria.',
+			choice_misconception: 'Confuses the nucleus with mitochondria.'
+		},
+		{
+			...base,
+			choice_key: 'wrong-b',
+			choice_text: 'It controls movement into the cell.',
+			choice_order: 2,
+			is_correct: 0,
+			choice_feedback: 'That is the role of the cell membrane.',
+			choice_misconception: 'Confuses the nucleus with the cell membrane.'
+		},
+		{
+			...base,
+			choice_key: 'wrong-c',
+			choice_text: 'It absorbs light for photosynthesis.',
+			choice_order: 3,
+			is_correct: 0,
+			choice_feedback: 'That is the role of chloroplasts.',
+			choice_misconception: 'Confuses the nucleus with chloroplasts.'
+		}
+	];
+	mocks.queryRows.mockImplementation(async (sql: string) =>
+		sql.includes('FROM recall_cards c') ? choices : []
+	);
 }
 
 describe('official curriculum question resolution', () => {
@@ -391,6 +471,22 @@ describe('signed-in subject action integrity', () => {
 				self_contained_prompt_text: null
 			})
 		).toBe(true);
+		expect(
+			supportsTextPracticeRecommendation({
+				answer_format: null,
+				prompt_text: 'Tick (✓) one box. Which tissue forms new root cells?',
+				self_contained_prompt_text: null,
+				response_kind: null
+			})
+		).toBe(false);
+		expect(
+			supportsTextPracticeRecommendation({
+				answer_format: null,
+				prompt_text: 'Tick (✓) one box. Which tissue forms new root cells?',
+				self_contained_prompt_text: null,
+				response_kind: 'choice'
+			})
+		).toBe(true);
 	});
 
 	it('names a recall recommendation with the topic first', async () => {
@@ -428,7 +524,7 @@ describe('signed-in subject action integrity', () => {
 			updated_at: '2026-07-14 00:00:00'
 		});
 		mocks.queryPersonalRows.mockResolvedValue([]);
-		mocks.queryRows.mockResolvedValue([]);
+		mockGeneratedBiologyRecallCatalog();
 
 		const view = await getSignedInSubjectView(testUser, 'Biology');
 
@@ -524,7 +620,7 @@ describe('signed-in subject action integrity', () => {
 			return null;
 		});
 		mocks.queryPersonalRows.mockResolvedValue([]);
-		mocks.queryRows.mockResolvedValue([]);
+		mockGeneratedBiologyRecallCatalog();
 
 		await getSignedInSubjectView(testUser, 'Biology');
 		const storedDecision = mocks.executePersonalQuery.mock.calls.find(([sql]) =>
@@ -682,6 +778,37 @@ describe('signed-in subject action integrity', () => {
 		expect(JSON.stringify(view)).not.toContain('out-of-scope-gap');
 	});
 
+	it('keeps recall available even when a chapter has evidence and nothing is due', async () => {
+		mockBiologyGapSubject({
+			selectedTopicIds: ['biology-topic-4-1'],
+			states: [
+				{
+					curriculum_component_id: 'biology-topic-4-1',
+					component_kind: 'curriculum_topic',
+					component_id: 'biology-topic-4-1',
+					state: 'secure',
+					uncertainty: 'low',
+					evidence_count: 4,
+					next_check_at: null
+				}
+			],
+			gaps: []
+		});
+
+		const view = await getSignedInSubjectView(testUser, 'Biology');
+		const recallAction = [view?.nextAction, ...(view?.alternatives ?? [])].find(
+			(action) => action?.id === 'recall:biology-topic-4-1'
+		);
+
+		expect(recallAction).toMatchObject({
+			kind: 'recall',
+			available: true,
+			title: 'Cell biology recall'
+		});
+		expect(recallAction?.href).toContain('activity=flashcards');
+		expect(recallAction?.href).toContain('mode=mixed');
+	});
+
 	it('offers a course-scoped selection check instead of a dead end or the generic chain browser', async () => {
 		mocks.getLearnerProfileSettings.mockResolvedValue(learnerSettings('Geography', 'AQA'));
 		mocks.getCurriculumOffering.mockResolvedValue(
@@ -724,11 +851,11 @@ describe('signed-in subject action integrity', () => {
 		expect(view?.nextAction).toMatchObject({
 			id: 'scope-adjust:Geography',
 			kind: 'scope',
-			title: 'Add another topic',
+			title: 'Review your sections',
 			available: true,
 			href: '/subjects/geography/scope'
 		});
-		expect(view?.nextAction.detail).toContain('Include another topic');
+		expect(view?.nextAction.detail).toContain('Add more only if your class has covered it');
 		expect(JSON.stringify(view)).not.toContain('/chains');
 	});
 
@@ -865,7 +992,10 @@ describe('question-attempt learner evidence attribution', () => {
 				]
 			})
 		);
-		mocks.queryPersonalFirst.mockResolvedValue(null);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string, params: unknown[]) =>
+			sql.includes('INSERT INTO user_learning_evidence') ? { id: params[0] } : null
+		);
+		mocks.queryPersonalRows.mockResolvedValue([]);
 		mocks.queryRows.mockImplementation(async (sql: string) => {
 			if (sql.includes('FROM questions q')) {
 				return [
@@ -1014,5 +1144,457 @@ describe('question-attempt learner evidence attribution', () => {
 		expect(gapUpdates[0][0]).toContain("SET status = 'closed'");
 		expect(gapUpdates[0][0]).toContain("COALESCE(source_question_id, '') <> ?");
 		expect(gapUpdates[0][1].at(-1)).toBe('combined-biology-question');
+	});
+
+	it('records a deterministic fixed-choice answer as recognition evidence', async () => {
+		mockCombinedBiologyAttempt();
+
+		await recordQuestionAttemptEvidence({
+			user: testUser,
+			attemptId: 'fixed-choice-attempt',
+			questionId: 'combined-biology-question',
+			result: {
+				status: 'ok',
+				result: 'correct',
+				awardedMarks: 1,
+				maxMarks: 1,
+				presentStepIds: [],
+				missingStepIds: [],
+				feedbackMarkdown: '',
+				thinkingMarkdown: null,
+				model: 'deterministic',
+				modelVersion: 'fixed-choice-v1'
+			}
+		});
+
+		const evidenceWrites = mocks.queryPersonalFirst.mock.calls.filter(([sql]) =>
+			String(sql).includes('INSERT INTO user_learning_evidence')
+		);
+		expect(evidenceWrites).toHaveLength(1);
+		expect(evidenceWrites[0][1][11]).toBe('multiple_choice');
+	});
+});
+
+describe('recall learner evidence', () => {
+	it('repairs derived state on an idempotent retry and rejects an evidence-id collision', async () => {
+		const evidenceRow = {
+			id: 'recall_review-retry',
+			evidence_kind: 'flashcard_self_rating',
+			outcome: 'correct',
+			occurred_at: '2026-07-15T00:00:00.000Z',
+			source_item_id: 'card-1',
+			independent: 0,
+			supersedes_evidence_id: null
+		};
+		mocks.queryPersonalRows.mockResolvedValue([evidenceRow]);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string) => {
+			if (sql.includes('INSERT INTO user_learning_evidence')) return null;
+			if (sql.includes('matches_write')) return { matches_write: 1 };
+			return null;
+		});
+
+		const input = {
+			id: evidenceRow.id,
+			user: testUser,
+			subject: 'Biology' as const,
+			course: 'Combined Science',
+			tier: 'Higher',
+			topic: topics[0],
+			curriculumComponentId: 'spec:4-1-1',
+			componentKind: 'recall_card',
+			componentId: `card-1@1:${'a'.repeat(64)}`,
+			componentTitle: 'Card one',
+			evidenceKind: 'flashcard_self_rating' as const,
+			outcome: 'correct' as const,
+			independent: false,
+			sourceItemId: 'card-1',
+			sourceSessionId: 'session-1'
+		};
+
+		await recordLearnerEvidence(input);
+
+		expect(
+			mocks.queryPersonalFirst.mock.calls.some(([sql]) => String(sql).includes('matches_write'))
+		).toBe(true);
+		const stateWrite = mocks.executePersonalQuery.mock.calls.find(([sql]) =>
+			String(sql).includes('INSERT INTO user_learner_component_states')
+		);
+		expect(stateWrite?.[0]).toContain(
+			'excluded.evidence_count > user_learner_component_states.evidence_count'
+		);
+
+		mocks.executePersonalQuery.mockClear();
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string) => {
+			if (sql.includes('INSERT INTO user_learning_evidence')) return null;
+			if (sql.includes('matches_write')) return { matches_write: 0 };
+			return null;
+		});
+		await expect(recordLearnerEvidence(input)).rejects.toThrow(
+			'already belongs to a different write'
+		);
+		expect(mocks.executePersonalQuery).not.toHaveBeenCalled();
+	});
+
+	it('stores the exact leaf target while rolling learner state up to its official topic', async () => {
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('Biology', 'AQA', emptyEnglishLiteratureSelections, 'Separate Science')
+		);
+		mocks.getCurriculumOffering.mockResolvedValue(
+			curriculumOffering({
+				subject: 'Biology',
+				course: 'Separate Science',
+				specificationCode: '8461',
+				groups: [
+					{
+						id: 'biology-chapters',
+						title: 'Chapters',
+						kind: 'group',
+						displayOrder: 0,
+						components: [curriculumComponent('aqa-8461:4-3', '4.3', 'Infection and response', 0)]
+					}
+				]
+			})
+		);
+		mocks.queryPersonalFirst.mockResolvedValue({ id: 'recall_review-1' });
+		mocks.queryPersonalRows.mockResolvedValue([]);
+		mocks.executePersonalQuery.mockResolvedValue(undefined);
+
+		const card = {
+			id: 'vaccination-memory-response',
+			board: 'AQA',
+			qualification: 'GCSE',
+			subject: 'Biology',
+			topicId: 'biology-infection-response',
+			specRef: '4.3.1.7',
+			kind: 'process',
+			visualCue: '💉',
+			front: 'What happens after vaccination?',
+			back: 'Memory cells trigger a faster specific antibody response.',
+			distractors: ['A', 'B', 'C'],
+			explanation: 'Memory cells remain after the first exposure.',
+			sourceUrl: 'https://example.test/specification',
+			sourceTitle: 'AQA GCSE Biology',
+			offeringId: 'aqa-8461:higher',
+			curriculumComponentId: 'aqa-8461:4-3-1-7',
+			topicComponentId: 'aqa-8461:4-3',
+			contentRevision: 2,
+			contentHash: 'a'.repeat(64),
+			choiceKeys: {
+				'Memory cells trigger a faster specific antibody response.': 'correct',
+				A: 'wrong-a',
+				B: 'wrong-b',
+				C: 'wrong-c'
+			},
+			choiceMisconceptions: { A: 'Confuses antibodies with red blood cells.' }
+		} satisfies RecallCard;
+
+		await recordRecallReviewEvidence({
+			user: testUser,
+			reviewId: 'review-1',
+			card,
+			grade: 'again',
+			mode: 'recognise',
+			selectedChoice: {
+				key: 'wrong-a',
+				text: 'A',
+				isCorrect: false,
+				misconception: 'Confuses antibodies with red blood cells.'
+			},
+			sourceSessionId: 'session-1',
+			responseDurationMs: 8_000,
+			createdAt: Date.UTC(2026, 6, 15)
+		});
+
+		const evidenceWrite = mocks.queryPersonalFirst.mock.calls.find(([sql]) =>
+			String(sql).includes('INSERT INTO user_learning_evidence')
+		);
+		expect(evidenceWrite).toBeDefined();
+		const evidenceParams = evidenceWrite![1] as unknown[];
+		expect(evidenceParams[7]).toBe(card.curriculumComponentId);
+		expect(evidenceParams[8]).toBe('recall_card');
+		expect(evidenceParams[9]).toBe(`${card.id}@${card.contentRevision}:${card.contentHash}`);
+		expect(evidenceParams[12]).toBe('incorrect');
+		expect(JSON.parse(String(evidenceParams[23]))).toMatchObject({
+			offeringId: card.offeringId,
+			curriculumComponentId: card.curriculumComponentId,
+			topicComponentId: card.topicComponentId,
+			contentRevision: card.contentRevision,
+			contentHash: card.contentHash,
+			selectedChoiceKey: 'wrong-a',
+			selectedChoiceCorrect: false,
+			selectedChoiceMisconception: 'Confuses antibodies with red blood cells.'
+		});
+
+		const stateEvidenceRead = mocks.queryPersonalRows.mock.calls.find(([sql]) =>
+			String(sql).includes('FROM user_learning_evidence')
+		);
+		expect(stateEvidenceRead?.[1]).toEqual([
+			testUser.uid,
+			'Biology',
+			'Separate Science',
+			'Higher',
+			card.curriculumComponentId,
+			'recall_card',
+			`${card.id}@${card.contentRevision}:${card.contentHash}`
+		]);
+
+		const stateWrite = mocks.executePersonalQuery.mock.calls.find(([sql]) =>
+			String(sql).includes('INSERT INTO user_learner_component_states')
+		);
+		expect((stateWrite?.[1] as unknown[])[6]).toBe(card.topicComponentId);
+	});
+
+	it('reads an idempotency receipt only inside the authenticated learner partition', async () => {
+		mocks.queryPersonalFirst.mockResolvedValue({
+			source_item_id: 'card-1',
+			source_session_id: 'session-1',
+			response_duration_ms: 4_000,
+			occurred_at: '2026-07-15T00:00:00.000Z',
+			metadata_json: JSON.stringify({
+				contentRevision: 2,
+				contentHash: 'a'.repeat(64),
+				grade: 'again',
+				mode: 'recognise',
+				selectedChoiceKey: 'wrong-a'
+			})
+		});
+
+		await expect(getRecallReviewEvidenceReceipt(testUser.uid, 'review-1')).resolves.toEqual({
+			cardId: 'card-1',
+			contentRevision: 2,
+			contentHash: 'a'.repeat(64),
+			grade: 'again',
+			mode: 'recognise',
+			selectedChoiceKey: 'wrong-a',
+			sourceSessionId: 'session-1',
+			responseDurationMs: 4_000,
+			createdAt: Date.UTC(2026, 6, 15)
+		});
+		const [sql, params] = mocks.queryPersonalFirst.mock.calls.at(-1)!;
+		expect(String(sql)).toContain('WHERE user_id = ? AND id = ?');
+		expect(params).toEqual([testUser.uid, 'recall_review-1']);
+	});
+
+	it('returns choice diagnostics only for the current canonical card content', async () => {
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('Biology', 'AQA', emptyEnglishLiteratureSelections, 'Separate Science')
+		);
+		const card = {
+			id: 'cell-location',
+			board: 'AQA',
+			qualification: 'GCSE',
+			subject: 'Biology',
+			topicId: 'biology-cell-biology',
+			specRef: '4.1.1',
+			kind: 'fact',
+			visualCue: '🧬',
+			front: 'Where is genetic material enclosed?',
+			back: 'Nucleus',
+			distractors: ['Cytoplasm'],
+			choiceKeys: { Nucleus: 'correct', Cytoplasm: 'wrong-location' },
+			sourceUrl: 'https://example.test/specification',
+			sourceTitle: 'AQA GCSE Biology',
+			offeringId: 'aqa-8461:higher',
+			curriculumComponentId: 'aqa-8461:4-1-1',
+			topicComponentId: 'aqa-8461:4-1',
+			contentRevision: 2,
+			contentHash: 'a'.repeat(64)
+		} satisfies RecallCard;
+		mocks.queryPersonalRows.mockImplementation(async (sql: string) => {
+			if (sql.includes('FROM user_recall_card_reviews')) {
+				return [
+					{
+						card_id: card.id,
+						topic_id: card.topicId,
+						last_grade: 'again',
+						seen_count: 3,
+						correct_count: 1,
+						interval_days: 0,
+						due_at: '2026-07-15 00:00:00',
+						content_revision: card.contentRevision,
+						content_hash: card.contentHash,
+						updated_at: '2026-07-15 00:00:00'
+					}
+				];
+			}
+			if (sql.includes('WITH choice_counts')) {
+				return [
+					{
+						card_id: card.id,
+						content_revision: card.contentRevision,
+						content_hash: card.contentHash,
+						wrong_choice_count: 3,
+						repeated_misconception_count: 2
+					},
+					{
+						card_id: card.id,
+						content_revision: 1,
+						content_hash: 'retired-content',
+						wrong_choice_count: 20,
+						repeated_misconception_count: 20
+					}
+				];
+			}
+			return [];
+		});
+
+		await expect(getRecallReviewSnapshot(testUser, 'Biology', [card])).resolves.toEqual([
+			expect.objectContaining({
+				card_id: card.id,
+				wrong_choice_count: 3,
+				repeated_misconception_count: 2
+			})
+		]);
+		expect(
+			mocks.queryPersonalRows.mock.calls.every(([, params]) => params[0] === testUser.uid)
+		).toBe(true);
+	});
+});
+
+describe('English guided-practice learner evidence', () => {
+	it('stores one idempotent stage result plus reusable skill evidence on the official curriculum', async () => {
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('English Literature', 'OCR', {
+				board: 'OCR',
+				specificationCode: 'J352',
+				modernText: 'An Inspector Calls',
+				nineteenthCenturyNovel: 'A Christmas Carol',
+				poetryCluster: 'Conflict',
+				shakespearePlay: 'Macbeth'
+			})
+		);
+		mocks.getCurriculumOffering.mockResolvedValue(
+			curriculumOffering({
+				subject: 'English Literature',
+				board: 'OCR',
+				specificationCode: 'J352',
+				groups: [
+					{
+						id: 'course-texts',
+						title: 'Course texts',
+						kind: 'option_group',
+						displayOrder: 0,
+						components: [curriculumComponent('ocr-macbeth', '02-macbeth', 'Macbeth', 0)]
+					}
+				]
+			})
+		);
+		mocks.queryRows.mockImplementation(async (sql: string) => {
+			if (sql.includes('FROM questions q')) {
+				return [
+					{
+						id: 'ocr-macbeth-question',
+						board: 'OCR',
+						qualification: 'GCSE',
+						subject: 'English Literature',
+						subject_area: 'English Literature',
+						component_code: 'J352/02',
+						tier: null,
+						spec_ref: '02-macbeth',
+						topic_path_json: JSON.stringify(['Macbeth']),
+						marks: 40,
+						answer_chain_id: 'english-chain-1',
+						transfer_distance: 'start'
+					}
+				];
+			}
+			if (sql.includes('mapped_ancestors')) {
+				return [{ curriculum_component_id: 'ocr-macbeth' }];
+			}
+			return [];
+		});
+		const insertedEvidenceIds = new Set<string>();
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string, params: unknown[]) => {
+			if (sql.includes('INSERT INTO user_learning_evidence')) {
+				const id = String(params[0]);
+				if (insertedEvidenceIds.has(id)) return null;
+				insertedEvidenceIds.add(id);
+				return { id };
+			}
+			if (sql.includes('matches_write')) return { matches_write: 1 };
+			return null;
+		});
+		mocks.queryPersonalRows.mockResolvedValue([]);
+
+		const result = {
+			status: 'ok' as const,
+			decision: 'revise' as const,
+			stepId: 'method',
+			stepTitle: 'Analyse the writer’s method',
+			checkedAnswer: 'The violent verb shows Macbeth becoming more ruthless.',
+			checks: [
+				{
+					id: 'meaningful-method',
+					label: 'Meaningful method',
+					status: 'met' as const,
+					feedback: 'The response identifies the violent verb.'
+				},
+				{
+					id: 'argument-link',
+					label: 'Argument link',
+					status: 'not_yet' as const,
+					feedback: 'Connect this change to the central argument.'
+				}
+			],
+			nextImprovement: 'Link the verb to the argument about ambition.',
+			coachingNote: 'Method selection is precise; the argument link is still inconsistent.',
+			learnerModel: {
+				observedStrength: 'Precise method selection',
+				recurringNeed: 'Argument links',
+				nextStrategy: 'End each method point by returning to the thesis.'
+			},
+			confidence: 0.9,
+			model: 'test-model',
+			modelVersion: 'test-version'
+		};
+
+		for (let run = 0; run < 2; run += 1) {
+			await recordEnglishStepAttemptEvidence({
+				user: testUser,
+				checkId: 'english-step-check-1',
+				questionId: 'ocr-macbeth-question',
+				stepId: 'method',
+				result,
+				hintOpened: true,
+				sourceSessionId: 'english-session-1',
+				responseDurationMs: 42_000
+			});
+		}
+
+		expect([...insertedEvidenceIds]).toEqual([
+			'english_english-step-check-1',
+			'english_english-step-check-1_meaningful-method',
+			'english_english-step-check-1_argument-link'
+		]);
+		const evidenceWrites = mocks.queryPersonalFirst.mock.calls.filter(([sql]) =>
+			String(sql).includes('INSERT INTO user_learning_evidence')
+		);
+		const stageWrite = evidenceWrites[0][1] as unknown[];
+		expect(stageWrite.slice(2, 11)).toEqual([
+			'English Literature',
+			'OCR',
+			'GCSE',
+			'GCSE Subject',
+			'Higher',
+			'ocr-macbeth',
+			'english_practice_step',
+			'english-chain-1:method',
+			'Analyse the writer’s method'
+		]);
+		expect(JSON.parse(String(stageWrite[23]))).toMatchObject({
+			guided: true,
+			hintOpened: true,
+			learnerModel: {
+				recurringNeed: 'Argument links'
+			}
+		});
+		const stateWrites = mocks.executePersonalQuery.mock.calls.filter(([sql]) =>
+			String(sql).includes('INSERT INTO user_learner_component_states')
+		);
+		expect(stateWrites).toHaveLength(6);
+		for (const [sql, params] of stateWrites) {
+			expect((String(sql).match(/\?/g) ?? []).length).toBe((params as unknown[]).length);
+			expect((params as unknown[]).slice(1, 4)).toEqual(['English Literature', 'OCR', 'GCSE']);
+		}
 	});
 });

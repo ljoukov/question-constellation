@@ -8,6 +8,9 @@ data/*
 data/curricula/*
 !data/curricula/source-manifest.json
 !data/curricula/curriculum-catalog.json
+!data/recall/
+!data/recall/generated/
+!data/recall/generated/**
 tmp/
 .output
 .vercel

@@ -1,0 +1,25 @@
+Create a brand-new polished 16:9 landscape reasoning-chain illustration for an iPad GCSE science app. Do not use, imitate, or edit any previous image.
+
+STYLE
+Luminous materials-and-mechanics atlas on a deep navy technical-grid background. Accurate vertical spring deformation, simple endpoint references, green recovery motion, muted crimson permanent change. Elegant scientific textbook finish.
+
+LEARNING OBJECTIVE
+Distinguish elastic from inelastic deformation only after the load/force is removed.
+
+COMPOSITION
+Exactly three numbered left-to-right panels using the same vertical spring and fixed top support.
+Panel 1: empty bottom hook with a large air gap; hand holds detached load far left; faint former load silhouette under hook has a diagonal strike-through. No arrow/vector.
+Panel 2: one SOLID recovered shorter spring only. Below its current lower hook, place a cyan dashed horizontal line labelled visually as the FORMER STRETCHED ENDPOINT. Draw one vertical green arrow UP from that lower dashed line to the current hook. Do not draw any second/ghost spring.
+Panel 3: one SOLID permanently stretched longer spring only. Place a cyan dashed horizontal ORIGINAL ENDPOINT line crossing the spring much higher than its solid lower hook. Draw a red vertical bracket from the dashed line down to the real lower hook. Do not draw any second/ghost spring.
+
+TEXT — render exactly
+1  REMOVE THE FORCE
+2  RETURNS = ELASTIC
+3  STAYS CHANGED = INELASTIC
+RETURNS TO ORIGINAL LENGTH
+REMAINS LONGER / PERMANENT CHANGE
+
+SPECIFIC VALIDATION CORRECTION
+Never draw ghost coils, outline coils, a second spring, stacked spring segments, or side-by-side springs. Use only one solid spring plus horizontal endpoint lines and vertical arrow/bracket. Panel 1 has no arrow at all.
+
+No example values, equation, fourth step, logo, watermark, or decorative prose.

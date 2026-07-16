@@ -1,13 +1,26 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+	CHAIN_ILLUSTRATION_GLITCH_CATALOGUE,
+	CHAIN_ILLUSTRATION_GLITCH_IDS,
+	buildFreshDarkRegenerationPrompt,
+	buildFreshLightEditRetryPrompt,
 	buildGenerationPrompt,
 	buildLightEditPrompt,
 	buildLightEditStylePrompt,
+	buildPlannerPrompt,
 	buildStylePrompt,
+	darkVisualJudgePrompt,
+	darkVisualJudgeSchema,
+	lightEditJudgePrompt,
+	lightEditJudgeSchema,
 	sourceFingerprint,
+	validateDarkVisualJudge,
+	validateLightEditJudge,
 	validateSemanticPlan,
 	validateVisualJudge,
-	visualJudgePrompt
+	visualJudgePrompt,
+	visualJudgeSchema
 } from '../../../scripts/lib/chain-illustration-pipeline.mjs';
 import { mechanicalBlockers } from '../../../scripts/lib/chain-illustration-candidates.mjs';
 
@@ -129,25 +142,138 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			issues: []
 		});
 		const prompt = buildGenerationPrompt(candidate, decision);
+		const plannerPrompt = buildPlannerPrompt([candidate]);
 		expect(prompt).toContain('16:9 landscape');
 		expect(prompt).toContain('4 numbered stages or callouts');
 		expect(prompt).toContain('Do not use any previous image');
 		expect(prompt).toContain('three-second test');
 		expect(prompt).toContain('Do not copy the same complete background');
 		expect(prompt).toContain('MEANING WITH ALL TEXT HIDDEN');
+		expect(prompt).toContain('Never copy their given values');
+		expect(prompt).toContain('Use qualitative comparisons or universal symbols instead');
+		expect(plannerPrompt).toContain(
+			'Never plan question-specific or illustrative numerical values'
+		);
+		expect(plannerPrompt).toContain('correct and useful for every chain member');
 		expect(
 			visualJudgePrompt(candidate, decision, {
 				dark: { status: 'passed' },
 				light: { status: 'passed' }
 			})
 		).toContain('cross-theme consistency audit');
+		expect(
+			visualJudgePrompt(candidate, decision, {
+				dark: { status: 'passed' },
+				light: { status: 'passed' }
+			})
+		).toContain('noQuestionSpecificValues must be false');
 		expect(buildStylePrompt(candidate)).toContain('mechanics and motion atlas');
 		expect(buildLightEditStylePrompt(candidate)).toContain('light-mode scientific atlas');
 		const lightPrompt = buildLightEditPrompt(candidate, decision);
 		expect(lightPrompt).toContain('strict theme conversion');
 		expect(lightPrompt).toContain('PRESERVE EXACTLY');
 		expect(lightPrompt).toContain('same locations');
+		expect(lightPrompt).toContain('Do not add or reproduce a question-specific');
 		expect(sourceFingerprint(candidate)).toHaveLength(64);
+	});
+
+	it('keeps the full glitch catalogue in the judge and only triggered rules in a fresh retry', () => {
+		expect(CHAIN_ILLUSTRATION_GLITCH_IDS).toEqual([
+			'ambiguous_symbol_or_label_placement',
+			'conductor_association',
+			'bypass_topology',
+			'dimensional_equation_errors',
+			'repeated_object_identity_or_size_drift',
+			'force_removal_direction',
+			'conventional_current_or_electron_direction_confusion',
+			'question_specific_numbers'
+		]);
+		const judgePrompt = visualJudgePrompt(candidate, decision, {
+			dark: { status: 'passed' },
+			light: { status: 'passed' }
+		});
+		for (const glitchId of CHAIN_ILLUSTRATION_GLITCH_IDS as ReadonlyArray<
+			keyof typeof CHAIN_ILLUSTRATION_GLITCH_CATALOGUE
+		>) {
+			expect(judgePrompt).toContain(glitchId);
+			expect(CHAIN_ILLUSTRATION_GLITCH_CATALOGUE[glitchId].judgeRule).not.toBe('');
+			expect(CHAIN_ILLUSTRATION_GLITCH_CATALOGUE[glitchId].observedExamples.length).toBeGreaterThan(
+				0
+			);
+		}
+		expect(judgePrompt).toContain('Previously observed examples to recognise');
+		expect(judgePrompt).toContain('Equations must occupy a visually separate equation region');
+
+		const retry = buildFreshDarkRegenerationPrompt(buildGenerationPrompt(candidate, decision), {
+			judge: {
+				glitchFindings: [
+					{
+						glitchId: 'bypass_topology',
+						themes: ['dark', 'light'],
+						panelOrders: [2],
+						defect: 'A wire bridges the resistor in panel 2.'
+					}
+				],
+				variants: [],
+				crossThemeConsistency: {
+					compositionMatch: true,
+					contentMatch: true,
+					textMatch: true,
+					scientificMeaningMatch: true,
+					score: 4,
+					defects: ['Do not copy this cross-theme duplicate defect.']
+				},
+				pass: false,
+				rationale: 'Invalid circuit topology. Do not copy this unstructured duplicate defect.'
+			}
+		});
+		expect(retry).toContain('brand-new DARK ORIGINAL from scratch');
+		expect(retry).toContain('No previous image is supplied');
+		expect(retry).toContain('never an edit');
+		expect(retry).toContain('bypass_topology');
+		expect(retry).toContain('A wire bridges the resistor in panel 2.');
+		expect(retry).not.toContain('force_removal_direction:');
+		expect(retry).not.toContain('question_specific_numbers:');
+		expect(retry).not.toContain('total-current equation or label placed beside the lower branch');
+		expect(retry).not.toContain('Do not copy this unstructured duplicate defect.');
+		expect(retry).not.toContain('Do not copy this cross-theme duplicate defect.');
+
+		const lightRetry = buildFreshLightEditRetryPrompt(buildLightEditPrompt(candidate, decision), {
+			judge: {
+				glitchFindings: [
+					{
+						glitchId: 'ambiguous_symbol_or_label_placement',
+						themes: ['light'],
+						panelOrders: [4],
+						defect: 'The total-current label appears to name the lower branch.'
+					}
+				]
+			}
+		});
+		expect(lightRetry).toContain('attached ACCEPTED DARK MASTER');
+		expect(lightRetry).toContain('failed light image is not supplied');
+		expect(lightRetry).toContain('The total-current label appears to name the lower branch.');
+		expect(lightRetry).not.toContain('value copied from one member question');
+	});
+
+	it('gates the light edit behind an accepted dark and retries it only from that master', () => {
+		const source = readFileSync('scripts/generate-chain-illustrations.mjs', 'utf8');
+		const darkPhaseStart = source.indexOf('const darkAttempts = []');
+		const darkAcceptanceGate = source.indexOf('if (!acceptedDarkAttempt)');
+		const lightPhaseStart = source.indexOf('const lightAttempts = []');
+		expect(darkPhaseStart).toBeGreaterThan(-1);
+		expect(darkAcceptanceGate).toBeGreaterThan(darkPhaseStart);
+		expect(lightPhaseStart).toBeGreaterThan(darkAcceptanceGate);
+
+		const darkRunnerStart = source.indexOf('async function generateAndJudgeDarkAttempt');
+		const lightRunnerStart = source.indexOf('async function generateAndJudgeLightAttempt');
+		const darkRunner = source.slice(darkRunnerStart, lightRunnerStart);
+		expect(darkRunner).toContain('darkVisualJudgePrompt');
+		expect(darkRunner).not.toContain('generateLightIllustration');
+		expect(source).toContain('dark: acceptedDarkAttempt.dark');
+		expect(source).toContain('buildFreshLightEditRetryPrompt(lightPromptText');
+		expect(source).not.toContain('validationIssues:');
+		expect(source).not.toContain('generateAndJudgeAttempt');
 	});
 
 	it('rejects a visual plan that reorders or drops source steps', () => {
@@ -303,6 +429,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 					noDominantRepetition: true,
 					terminologyClear: true,
 					compositionPlanFollowed: true,
+					noQuestionSpecificValues: true,
 					panelAudits: steps.map((step, index) => ({
 						order: index + 1,
 						dominantVisual: step.stepText,
@@ -329,6 +456,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 					noDominantRepetition: true,
 					terminologyClear: true,
 					compositionPlanFollowed: true,
+					noQuestionSpecificValues: true,
 					panelAudits: steps.map((step, index) => ({
 						order: index + 1,
 						dominantVisual: step.stepText,
@@ -348,14 +476,81 @@ describe('chain illustration evidence and prompt pipeline', () => {
 				score: 4,
 				defects: []
 			},
+			glitchFindings: [],
 			pass: true,
 			rationale: 'Both variants are correct and the light edit changes only the theme.'
 		};
 		const hardChecks = { dark: { status: 'passed' }, light: { status: 'passed' } };
+		const variantSchema = visualJudgeSchema().properties.variants.items;
+		expect(variantSchema.required).toContain('noQuestionSpecificValues');
+		expect(variantSchema.properties.noQuestionSpecificValues).toEqual({ type: 'boolean' });
 		expect(validateVisualJudge(judge, hardChecks, decision.visualSteps)).toEqual({
 			status: 'passed',
 			issues: []
 		});
+
+		const darkJudge = {
+			variant: structuredClone(judge.variants[0]),
+			glitchFindings: [],
+			pass: true,
+			rationale: 'The dark original passes independently before any light edit.'
+		};
+		expect(darkVisualJudgePrompt(candidate, decision, hardChecks.dark)).toContain(
+			'must pass before any light edit is allowed'
+		);
+		expect(darkVisualJudgeSchema().properties.variant.properties.theme.enum).toEqual(['dark']);
+		expect(validateDarkVisualJudge(darkJudge, hardChecks.dark, decision.visualSteps)).toEqual({
+			status: 'passed',
+			issues: []
+		});
+
+		const lightJudge = {
+			variant: structuredClone(judge.variants[1]),
+			crossThemeConsistency: structuredClone(judge.crossThemeConsistency),
+			glitchFindings: [],
+			pass: true,
+			rationale: 'The light edit exactly preserves the accepted dark master.'
+		};
+		expect(lightEditJudgePrompt(candidate, decision, hardChecks)).toContain(
+			'ACCEPTED DARK MASTER, then NEW LIGHT EDIT'
+		);
+		expect(lightEditJudgeSchema().properties.variant.properties.theme.enum).toEqual(['light']);
+		expect(validateLightEditJudge(lightJudge, hardChecks, decision.visualSteps)).toEqual({
+			status: 'passed',
+			issues: []
+		});
+
+		const invalidDarkThemeFinding = structuredClone(darkJudge) as any;
+		invalidDarkThemeFinding.glitchFindings = [
+			{
+				glitchId: 'bypass_topology',
+				themes: ['light'],
+				panelOrders: [1],
+				defect: 'Wrong theme in the dark-only audit.'
+			}
+		];
+		invalidDarkThemeFinding.variant.pass = false;
+		invalidDarkThemeFinding.pass = false;
+		expect(
+			validateDarkVisualJudge(
+				invalidDarkThemeFinding,
+				hardChecks.dark,
+				decision.visualSteps
+			).issues.join(' ')
+		).toContain('may name only the dark theme');
+		const missingNumericTransferabilityAudit = structuredClone(judge);
+		delete (
+			missingNumericTransferabilityAudit.variants[0] as { noQuestionSpecificValues?: boolean }
+		).noQuestionSpecificValues;
+		missingNumericTransferabilityAudit.variants[0].pass = false;
+		missingNumericTransferabilityAudit.pass = false;
+		expect(
+			validateVisualJudge(
+				missingNumericTransferabilityAudit,
+				hardChecks,
+				decision.visualSteps
+			).issues.join(' ')
+		).toContain('noQuestionSpecificValues must be a boolean');
 
 		for (const invalidAudits of [
 			judge.variants[0].panelAudits.slice(0, -1),
@@ -402,10 +597,22 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			'distinctVisualAnchors',
 			'causalChangesVisible',
 			'noDominantRepetition',
-			'terminologyClear'
+			'terminologyClear',
+			'compositionPlanFollowed',
+			'noQuestionSpecificValues'
 		] as const) {
-			const rejected = structuredClone(judge);
+			const rejected: any = structuredClone(judge);
 			rejected.variants[0][hardFailure] = false;
+			if (hardFailure === 'noQuestionSpecificValues') {
+				rejected.glitchFindings = [
+					{
+						glitchId: 'question_specific_numbers',
+						themes: ['dark'],
+						panelOrders: [2],
+						defect: 'Panel 2 contains a value copied from one question.'
+					}
+				];
+			}
 			rejected.variants[0].pass = false;
 			rejected.pass = false;
 			expect(validateVisualJudge(rejected, hardChecks, decision.visualSteps)).toEqual({

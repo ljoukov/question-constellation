@@ -1,4 +1,9 @@
-import type { PracticeDraftSave, SavedPracticeDraft } from '$lib/practiceDrafts';
+import {
+	practiceDraftBatchWithinSyncLimit,
+	practiceDraftPayloadWithinSyncLimit,
+	type PracticeDraftSave,
+	type SavedPracticeDraft
+} from '$lib/practiceDrafts';
 import { clearBackgroundSyncIssue, reportBackgroundSyncIssue } from '$lib/backgroundSync';
 import {
 	classifyRequestFailure,
@@ -10,6 +15,7 @@ const queueKeyPrefix = 'question-constellation:practice-draft-queue:v1:';
 const flushDelayMs = 20_000;
 const maxBatchSize = 50;
 const maxKeepaliveBatchSize = 10;
+const maxKeepaliveBodyBytes = 60 * 1024;
 const draftEndpoint = '/api/question-drafts';
 
 const flushTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -42,6 +48,22 @@ function reportDraftSyncFailure(userId: string, error: unknown) {
 	});
 }
 
+function reportOversizedDraft(userId: string) {
+	reportBackgroundSyncIssue({
+		id: syncIssueId(userId),
+		failure: {
+			kind: 'invalid',
+			title: "Couldn't sync this saved answer",
+			message:
+				'This long practice history is still saved in this browser, but it is too large to sync to another device. Resetting the practice will create a smaller cloud draft.',
+			retryable: false,
+			reference: null,
+			status: 400
+		},
+		retry: () => {}
+	});
+}
+
 function readQueue(userId: string): Queue {
 	if (!storageAvailable()) return {};
 	try {
@@ -66,12 +88,41 @@ function writeQueue(userId: string, queue: Queue) {
 	}
 }
 
-function chunk<T>(items: T[], size: number) {
-	const chunks: T[][] = [];
-	for (let index = 0; index < items.length; index += size) {
-		chunks.push(items.slice(index, index + size));
+function draftRequestBody(drafts: PracticeDraftSave[]) {
+	return JSON.stringify({ drafts });
+}
+
+function draftRequestBodyBytes(drafts: PracticeDraftSave[]) {
+	return new TextEncoder().encode(draftRequestBody(drafts)).byteLength;
+}
+
+export function practiceDraftSyncBatches(
+	drafts: PracticeDraftSave[],
+	options: { keepalive?: boolean } = {}
+) {
+	const batches: PracticeDraftSave[][] = [];
+	const deferred: PracticeDraftSave[] = [];
+	const maxItems = options.keepalive ? maxKeepaliveBatchSize : maxBatchSize;
+	let current: PracticeDraftSave[] = [];
+
+	for (const draft of drafts) {
+		if (options.keepalive && draftRequestBodyBytes([draft]) > maxKeepaliveBodyBytes) {
+			deferred.push(draft);
+			continue;
+		}
+		const candidate = [...current, draft];
+		const candidateFits =
+			candidate.length <= maxItems &&
+			practiceDraftBatchWithinSyncLimit(candidate) &&
+			(!options.keepalive || draftRequestBodyBytes(candidate) <= maxKeepaliveBodyBytes);
+		if (!candidateFits && current.length > 0) {
+			batches.push(current);
+			current = [];
+		}
+		current.push(draft);
 	}
-	return chunks;
+	if (current.length > 0) batches.push(current);
+	return { batches, deferred };
 }
 
 function scheduleFlush(userId: string) {
@@ -104,6 +155,10 @@ export function latestPracticeDraft(
 
 export function queuePracticeDraft(userId: string | null | undefined, draft: PracticeDraftSave) {
 	if (!userId) return;
+	if (!practiceDraftPayloadWithinSyncLimit(draft.payload)) {
+		reportOversizedDraft(userId);
+		return;
+	}
 	const queue = readQueue(userId);
 	const previous = queue[draft.questionId];
 	if (previous && previous.clientUpdatedAt > draft.clientUpdatedAt) return;
@@ -131,22 +186,31 @@ export async function flushPracticeDraftQueue(
 ) {
 	if (!userId || typeof fetch === 'undefined') return true;
 	const queue = readQueue(userId);
-	const drafts = Object.values(queue).sort(
+	const queuedDrafts = Object.values(queue).sort(
 		(left, right) => left.clientUpdatedAt - right.clientUpdatedAt
 	);
-	if (drafts.length === 0) {
+	if (queuedDrafts.length === 0) {
 		clearBackgroundSyncIssue(syncIssueId(userId));
 		return true;
 	}
+	const oversizedDrafts = queuedDrafts.filter(
+		(draft) => !practiceDraftPayloadWithinSyncLimit(draft.payload)
+	);
+	if (oversizedDrafts.length > 0) {
+		removeSentDrafts(userId, oversizedDrafts);
+		if (!options.keepalive) reportOversizedDraft(userId);
+	}
+	const drafts = queuedDrafts.filter((draft) => practiceDraftPayloadWithinSyncLimit(draft.payload));
+	if (drafts.length === 0) return oversizedDrafts.length === 0;
 
-	const batchSize = options.keepalive ? maxKeepaliveBatchSize : maxBatchSize;
-	for (const batch of chunk(drafts, batchSize)) {
+	const { batches } = practiceDraftSyncBatches(drafts, options);
+	for (const batch of batches) {
 		let response: Response;
 		try {
 			response = await fetchWithResponseTimeout(draftEndpoint, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ drafts: batch }),
+				body: draftRequestBody(batch),
 				keepalive: options.keepalive
 			});
 		} catch (error) {
@@ -171,10 +235,10 @@ export async function flushPracticeDraftQueue(
 
 	if (Object.keys(readQueue(userId)).length > 0) {
 		scheduleFlush(userId);
-	} else {
+	} else if (oversizedDrafts.length === 0) {
 		clearBackgroundSyncIssue(syncIssueId(userId));
 	}
-	return true;
+	return oversizedDrafts.length === 0;
 }
 
 export function installPracticeDraftWindowFlush(userId: string | null | undefined) {

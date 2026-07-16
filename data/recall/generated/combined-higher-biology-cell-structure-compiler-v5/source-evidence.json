@@ -1,0 +1,62 @@
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "course": "Combined Science",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "component": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+    "code": "4.1.1",
+    "title": "Cell structure",
+    "kind": "section",
+    "subjectArea": "Biology",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 20,
+    "sourcePageEnd": 22
+  },
+  "topicComponent": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4",
+    "code": "4.1",
+    "title": "Cell biology",
+    "kind": "chapter",
+    "subjectArea": "Biology",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 20,
+    "sourcePageEnd": 25
+  },
+  "pageStart": 20,
+  "pageEnd": 22,
+  "sourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+  "catalogSchemaVersion": "1",
+  "catalogPath": "data/curricula/curriculum-catalog.json",
+  "subject": "Biology",
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "pageText": "4.1 Cell biology\nCells are the basic unit of all forms of life. In this section we explore how structural differences\nbetween types of cells enables them to perform specific functions within the organism. These\ndifferences in cells are controlled by genes in the nucleus. For an organism to grow, cells must\ndivide by mitosis producing two new identical cells. If cells are isolated at an early stage of growth\nbefore they have become too specialised, they can retain their ability to grow into a range of\ndifferent types of cells. This phenomenon has led to the development of stem cell technology. This\nis a new branch of medicine that allows doctors to repair damaged organs by growing new tissue\nfrom stem cells.\n4.1.1 Cell structure\n4.1.1.1 Eukaryotes and prokaryotes\nContent Key opportunities for\nskills development\nPlant and animal cells (eukaryotic cells) have a cell membrane,\ncytoplasm and genetic material enclosed in a nucleus.\nBacterial cells (prokaryotic cells) are much smaller in comparison.\nThey have cytoplasm and a cell membrane surrounded by a cell\nwall. The genetic material is not enclosed in a nucleus. It is a single\nDNA loop and there may be one or more small rings of DNA called\nplasmids.\nStudents should be able to demonstrate an understanding of the\nscale and size of cells and be able to make order of magnitude\ncalculations, including the use of standard form.\nMS 1b, 2a, 2h\nWS 4.4\nUse prefixes centi, milli,\nmicro and nano.\n20 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n4.1.1.2 Animal and plant cells\nContent Key opportunities for\nskills development\nStudents should be able to explain how the main sub-cellular\nstructures, including the nucleus, cell membranes, mitochondria,\nchloroplasts in plant cells and plasmids in bacterial cells are related\nto their functions.\nMost animal cells have the following parts:\n• a nucleus\n• cytoplasm\n• a cell membrane\n• mitochondria\n• ribosomes.\nIn addition to the parts found in animal cells, plant cells often have:\n• chloroplasts\n• a permanent vacuole filled with cell sap.\nPlant and algal cells also have a cell wall made of cellulose, which\nstrengthens the cell.\nWS 1.2\nRecognise, draw and\ninterpret images of cells.\nStudents should be able to use estimations and explain when they\nshould be used to judge the relative size or area of sub-cellular\nstructures.\nMS 1d, 3a\nAT 7\nImages of cells in videos,\nbioviewers, photographs\nand micrographs can be\nused as comparison for\nstudents own drawings.\nRequired practical activity 1: use a light microscope to observe, draw and label a selection of\nplant and animal cells. A magnification scale must be included.\nAT skills covered by this practical activity: biology AT 1 and 7.\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 176).\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 21\n4.1.1.3 Cell specialisation\nContent Key opportunities for\nskills development\nStudents should be able to, when provided with appropriate\ninformation, explain how the structure of different types of cell relate\nto their function in a tissue, an organ or organ system, or the whole\norganism.\nCells may be specialised to carry out a particular function:\n• sperm cells, nerve cells and muscle cells in animals\n• root hair cells, xylem and phloem cells in plants.\n4.1.1.4 Cell differentiation\nContent Key opportunities for\nskills development\nStudents should be able to explain the importance of cell\ndifferentiation.\nAs an organism develops, cells differentiate to form different types\nof cells.\n• Most types of animal cell differentiate at an early stage.\n• Many types of plant cells retain the ability to differentiate\nthroughout life.\nIn mature animals, cell division is mainly restricted to repair and\nreplacement. As a cell differentiates it acquires different sub-cellular\nstructures to enable it to carry out a certain function. It has become\na specialised cell.\n4.1.1.5 Microscopy\nContent Key opportunities for\nskills development\nStudents should be able to:\n• understand how microscopy techniques have developed over\ntime\n• explain how electron microscopy has increased\nunderstanding of sub-cellular structures.\nLimited to the differences in magnification and resolution.\nAn electron microscope has much higher magnification and\nresolving power than a light microscope. This means that it can be\nused to study cells in much finer detail. This has enabled biologists\nto see and understand many more sub-cellular structures.\nWS 1.1\n22 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n"
+}

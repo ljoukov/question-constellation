@@ -1,0 +1,183 @@
+{
+  "status": "accepted",
+  "plan": {
+    "status": "generation_requested",
+    "runId": "combined-higher-chemistry-atomic-model-compiler-v5",
+    "workDir": "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5",
+    "artifactDir": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5",
+    "catalog": "data/curricula/curriculum-catalog.json",
+    "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+    "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+    "subject": "Chemistry",
+    "pageRange": [
+      68,
+      71
+    ],
+    "pageTextCharacters": 6683,
+    "sourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+    "count": 8,
+    "targets": [
+      {
+        "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+        "isPrimary": true,
+        "confidence": 1,
+        "reviewed": true,
+        "mappingSource": "recall-card-compiler-v2"
+      }
+    ],
+    "models": {
+      "generator": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "fullReviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "cueReviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      }
+    },
+    "promptVersion": "recall-card-compiler-v5"
+  },
+  "run": {
+    "id": "combined-higher-chemistry-atomic-model-compiler-v5",
+    "startedAt": "2026-07-15T21:06:35.430Z",
+    "finishedAt": "2026-07-15T21:15:37.211Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": false
+    }
+  },
+  "counts": {
+    "generated": 8,
+    "accepted": 8,
+    "rejected": 0,
+    "cueReplacementsReviewed": 0
+  },
+  "artifacts": [
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/plan.json",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/source-evidence.json",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/generation-prompt.txt",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/candidate-cards.json",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/full-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/full-review.json",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/cue-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/cue-review.json",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+    "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/rejected-cards.json"
+  ],
+  "durableArtifacts": [
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/candidate-cards.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/cue-review-codex-run-summary.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/cue-review-model-output.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/cue-review-prompt.txt",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/cue-review.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/full-review-codex-run-summary.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/full-review-model-output.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/full-review-prompt.txt",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/full-review.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/generation-codex-run-summary.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/generation-model-output.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/generation-prompt.txt",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/plan.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/rejected-cards.json",
+    "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/source-evidence.json"
+  ],
+  "acceptedArtifact": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+  "acceptedArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+  "codex": {
+    "generator": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f679a-5ac3-7312-b53d-778e2c4bc8ba",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/generation",
+      "startedAt": "2026-07-15T21:06:36.150Z",
+      "finishedAt": "2026-07-15T21:13:58.866Z",
+      "durationSeconds": 442.717,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 15784,
+        "cached_input_tokens": 9984,
+        "output_tokens": 27717,
+        "reasoning_output_tokens": 24068
+      },
+      "failedCommands": []
+    },
+    "fullReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f67a1-1afc-7370-8e65-a2f0027fc689",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/full-review",
+      "startedAt": "2026-07-15T21:13:58.874Z",
+      "finishedAt": "2026-07-15T21:15:25.906Z",
+      "durationSeconds": 87.031,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 18713,
+        "cached_input_tokens": 0,
+        "output_tokens": 4469,
+        "reasoning_output_tokens": 3602
+      },
+      "failedCommands": []
+    },
+    "cueReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f67a2-6e97-79c3-afe8-920308382328",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-chemistry-atomic-model-compiler-v5/cue-review",
+      "startedAt": "2026-07-15T21:15:25.908Z",
+      "finishedAt": "2026-07-15T21:15:37.209Z",
+      "durationSeconds": 11.302,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 15956,
+        "cached_input_tokens": 0,
+        "output_tokens": 535,
+        "reasoning_output_tokens": 179
+      },
+      "failedCommands": []
+    },
+    "replacementCueReviewer": null
+  }
+}

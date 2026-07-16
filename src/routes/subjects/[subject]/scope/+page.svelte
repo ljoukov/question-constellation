@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
@@ -46,6 +47,12 @@
 	);
 
 	const specificationLabel = $derived(data.curriculum.label);
+	const backHref = $derived(
+		data.subject.scope.status === 'not_set' ? resolve('/') : data.subject.href
+	);
+	const backLabel = $derived(
+		data.subject.scope.status === 'not_set' ? 'Back home' : `Back to ${data.subject.subject}`
+	);
 	const selectionChanged = $derived(
 		scopeMode !== savedMode ||
 			selectedIds.length !== savedIds.length ||
@@ -68,7 +75,22 @@
 	);
 
 	function groupLabel(group: (typeof curriculumGroups)[number]) {
+		if (!choosesCourseOptions && curriculumGroups.length === 1) {
+			return `Select covered ${scopeNoun}`;
+		}
 		return group.title;
+	}
+
+	function groupHasSelection(group: (typeof curriculumGroups)[number]) {
+		return group.components.some((topic) => selectedIds.includes(topic.id));
+	}
+
+	function showGroupAction(group: (typeof curriculumGroups)[number]) {
+		if (group.selectionMax === 1) {
+			return !groupHasSelection(group) || (group.selectionMin ?? 0) === 0;
+		}
+		if (group.selectionMax == null) return curriculumGroups.length > 1;
+		return true;
 	}
 
 	function toggleGroup(groupId: string) {
@@ -115,17 +137,17 @@
 
 	<div class="qc-learning-layout">
 		<aside class="qc-learning-sidebar">
-			<IconBackLink href={data.subject.href} label={`Back to ${data.subject.subject}`} />
+			<IconBackLink href={backHref} label={backLabel} />
 
 			<header class="qc-learning-heading" aria-labelledby="scope-title">
 				<p class="qc-real-kicker">{specificationLabel}</p>
 				<h1 id="scope-title">
-					{choosesCourseOptions ? 'Choose your course options' : 'Choose what you have covered'}
+					{choosesCourseOptions ? 'Course options' : 'Course coverage'}
 				</h1>
 				<p>
 					{choosesCourseOptions
-						? 'Choose the options taught by your school. Practice will stay within those choices.'
-						: `Select only the ${scopeNoun} your class has covered. Untaught material stays out of practice and progress.`}
+						? 'Choose what your school teaches. Practice will stay within those choices.'
+						: `Include only the ${scopeNoun} your class has covered. Untaught material stays out of practice and progress.`}
 				</p>
 			</header>
 		</aside>
@@ -139,13 +161,13 @@
 				{#if choosesCourseOptions}
 					<input type="hidden" name="scopeMode" value="selected" />
 				{:else}
-					<ControlSection label="Coverage">
+					<ControlSection label="Practice range">
 						<ul class="qc-checklist" role="radiogroup" aria-label="Curriculum scope mode">
 							<li class="qc-scope-option-row">
 								<label class="qc-scope-option">
 									<input type="radio" name="scopeMode" value="all" bind:group={scopeMode} />
 									<div>
-										<h2>All {scopeNoun}</h2>
+										<strong>Whole course</strong>
 										<p>Use the full official specification.</p>
 									</div>
 								</label>
@@ -155,8 +177,8 @@
 								<label class="qc-scope-option">
 									<input type="radio" name="scopeMode" value="selected" bind:group={scopeMode} />
 									<div>
-										<h2>Choose {scopeNoun}</h2>
-										<p>Use the specification sections you have covered.</p>
+										<strong>Specific {scopeNoun}</strong>
+										<p>Use only the {scopeNoun} your class has covered.</p>
 									</div>
 								</label>
 							</li>
@@ -164,44 +186,69 @@
 					</ControlSection>
 				{/if}
 
+				{#if selectionChanged || !selectionComplete}
+					<footer class="qc-profile-footer qc-scope-save-bar">
+						<p>
+							{choosesCourseOptions
+								? `${selectedIds.length} of ${requiredOptionCount} required ${scopeNoun} selected`
+								: scopeMode === 'all'
+									? `Whole course included`
+									: `${selectedIds.length} ${selectedIds.length === 1 ? scopeNoun.replace(/s$/, '') : scopeNoun} included`}
+						</p>
+						<button type="submit" class="qc-profile-save" disabled={!selectionComplete}>
+							{!selectionComplete
+								? choosesCourseOptions
+									? remainingRequiredOptionCount > 0
+										? `Choose ${remainingRequiredOptionCount} more`
+										: 'Review your selections'
+									: `Choose at least one ${scopeNoun.replace(/s$/, '')}`
+								: choosesCourseOptions
+									? 'Save course options'
+									: 'Save coverage'}
+						</button>
+					</footer>
+				{/if}
+
 				{#if scopeMode === 'selected'}
 					{#each curriculumGroups as group (group.id)}
 						<ControlSection label={groupLabel(group)}>
-							<div class="qc-action-row">
-								{#if group.selectionMax === 1}
-									{#if group.components.some((topic) => selectedIds.includes(topic.id))}
+							{#if showGroupAction(group)}
+								<div class="qc-action-row">
+									{#if group.selectionMax === 1}
+										{#if groupHasSelection(group)}
+											<button
+												type="button"
+												class="qc-action-button compact"
+												aria-label={`Clear the selected option for ${group.title}`}
+												onclick={() => clearGroup(group.id)}
+											>
+												Clear selection
+											</button>
+										{:else}
+											<p>{group.selectionMin === 1 ? 'Choose one.' : 'Choose up to one.'}</p>
+										{/if}
+									{:else if group.selectionMax == null}
 										<button
 											type="button"
 											class="qc-action-button compact"
-											aria-label={`Clear the selected option for ${group.title}`}
-											onclick={() => clearGroup(group.id)}
+											aria-label={`${group.components.every((topic) => selectedIds.includes(topic.id)) ? 'Clear' : 'Select'} all in ${group.title}`}
+											onclick={() => toggleGroup(group.id)}
 										>
-											Clear selection
+											{group.components.every((topic) => selectedIds.includes(topic.id))
+												? 'Clear all'
+												: 'Select all'}
 										</button>
 									{:else}
-										<p>{group.selectionMin === 1 ? 'Choose one.' : 'Choose up to one.'}</p>
+										<p>
+											{group.selectionMin === group.selectionMax
+												? `Choose ${group.selectionMax}.`
+												: group.selectionMin
+													? `Choose ${group.selectionMin}–${group.selectionMax}.`
+													: `Choose up to ${group.selectionMax}.`}
+										</p>
 									{/if}
-								{:else if group.selectionMax == null}
-									<button
-										type="button"
-										class="qc-action-button compact"
-										aria-label={`${group.components.every((topic) => selectedIds.includes(topic.id)) ? 'Clear' : 'Select'} all in ${group.title}`}
-										onclick={() => toggleGroup(group.id)}
-									>
-										{group.components.every((topic) => selectedIds.includes(topic.id))
-											? 'Clear all'
-											: 'Select all'}
-									</button>
-								{:else}
-									<p>
-										{group.selectionMin === group.selectionMax
-											? `Choose ${group.selectionMax}.`
-											: group.selectionMin
-												? `Choose ${group.selectionMin}–${group.selectionMax}.`
-												: `Choose up to ${group.selectionMax}.`}
-									</p>
-								{/if}
-							</div>
+								</div>
+							{/if}
 
 							<ul class="qc-checklist">
 								{#each group.components as topic (topic.id)}
@@ -216,7 +263,7 @@
 													toggleTopic(group.id, topic.id, event.currentTarget.checked)}
 											/>
 											<div>
-												<h2>{topic.title}</h2>
+												<strong>{topic.title}</strong>
 											</div>
 										</label>
 									</li>
@@ -235,29 +282,6 @@
 						<p>{form.message}</p>
 					</div>
 				</div>
-			{/if}
-
-			{#if selectionChanged || !selectionComplete}
-				<footer class="qc-profile-footer">
-					<p>
-						{choosesCourseOptions
-							? `${selectedIds.length} of ${requiredOptionCount} required ${scopeNoun} selected`
-							: scopeMode === 'all'
-								? `All ${data.curriculum.topics.length} ${scopeNoun} included`
-								: `${selectedIds.length} ${selectedIds.length === 1 ? scopeNoun.replace(/s$/, '') : scopeNoun} included`}
-					</p>
-					<button type="submit" class="qc-profile-save" disabled={!selectionComplete}>
-						{!selectionComplete
-							? choosesCourseOptions
-								? remainingRequiredOptionCount > 0
-									? `Choose ${remainingRequiredOptionCount} more`
-									: 'Review your selections'
-								: `Choose at least one ${scopeNoun.replace(/s$/, '')}`
-							: choosesCourseOptions
-								? 'Save course options'
-								: 'Save selection'}
-					</button>
-				</footer>
 			{/if}
 		</form>
 

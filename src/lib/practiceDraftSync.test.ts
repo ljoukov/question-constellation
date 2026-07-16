@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	flushPracticeDraftQueue,
+	practiceDraftSyncBatches,
 	queuePracticeDraft,
 	queuedPracticeDraftForQuestion
 } from './practiceDraftSync';
@@ -29,6 +30,13 @@ function draft(questionId: string, clientUpdatedAt: number): PracticeDraftSave {
 		answerText: `answer ${questionId}`,
 		payload: { answerText: `answer ${questionId}` },
 		clientUpdatedAt
+	};
+}
+
+function largeDraft(questionId: string, payloadSize: number): PracticeDraftSave {
+	return {
+		...draft(questionId, payloadSize),
+		payload: { answerText: 'x'.repeat(payloadSize) }
 	};
 }
 
@@ -106,5 +114,40 @@ describe('practice draft sync queue', () => {
 
 		await expect(flushPromise).resolves.toBe(true);
 		expect(queuedPracticeDraftForQuestion('user-1', 'q1')?.clientUpdatedAt).toBe(200);
+	});
+
+	it('splits keepalive work below the browser body budget', () => {
+		const drafts = [largeDraft('q1', 36_000), largeDraft('q2', 36_000)];
+		const result = practiceDraftSyncBatches(drafts, { keepalive: true });
+		expect(result.batches.map((batch) => batch.map((item) => item.questionId))).toEqual([
+			['q1'],
+			['q2']
+		]);
+		expect(result.deferred).toEqual([]);
+	});
+
+	it('defers an individually large draft from keepalive but sends it normally', async () => {
+		const fetchMock = vi.fn(() => okResponse());
+		vi.stubGlobal('fetch', fetchMock);
+		queuePracticeDraft('user-1', largeDraft('q1', 70_000));
+
+		await expect(flushPracticeDraftQueue('user-1', { keepalive: true })).resolves.toBe(true);
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(queuedPracticeDraftForQuestion('user-1', 'q1')).not.toBeNull();
+
+		await expect(flushPracticeDraftQueue('user-1')).resolves.toBe(true);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(queuedPracticeDraftForQuestion('user-1', 'q1')).toBeNull();
+	});
+
+	it('does not let an oversized draft poison valid queued work', async () => {
+		const fetchMock = vi.fn(() => okResponse());
+		vi.stubGlobal('fetch', fetchMock);
+		queuePracticeDraft('user-1', largeDraft('too-large', 90_000));
+		queuePracticeDraft('user-1', draft('valid', 200));
+
+		expect(queuedPracticeDraftForQuestion('user-1', 'too-large')).toBeNull();
+		await expect(flushPracticeDraftQueue('user-1')).resolves.toBe(true);
+		expect(queuedPracticeDraftForQuestion('user-1', 'valid')).toBeNull();
 	});
 });

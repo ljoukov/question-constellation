@@ -2,6 +2,7 @@ import {
 	gradeEnglishPracticeStepStreaming,
 	type EnglishStepGradeDelta
 } from '$lib/server/englishStepGrading';
+import { recordEnglishStepAttemptEvidence } from '$lib/server/subjectLearning';
 import { createSseStream, sseResponse } from '$lib/server/sse';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
@@ -13,6 +14,10 @@ const paramsSchema = z.object({
 const requestSchema = z.object({
 	stepId: z.string().trim().min(1).max(100),
 	answer: z.string().trim().min(1).max(5000),
+	checkId: z.string().trim().min(1).max(128).regex(/^[a-zA-Z0-9_-]+$/),
+	sourceSessionId: z.string().trim().min(1).max(128).regex(/^[a-zA-Z0-9_-]+$/).nullish(),
+	responseDurationMs: z.number().int().min(0).max(6 * 60 * 60 * 1000).nullish(),
+	hintOpened: z.boolean().default(false),
 	stepAnswers: z.record(z.string(), z.string().max(5000)).default({}),
 	attemptHistory: z
 		.array(
@@ -74,6 +79,25 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 				signal: request.signal,
 				onDelta: (delta) => sendDelta(send, delta)
 			});
+			try {
+				await recordEnglishStepAttemptEvidence({
+					user: locals.user!,
+					checkId: body.checkId,
+					questionId,
+					stepId: body.stepId,
+					result,
+					hintOpened: body.hintOpened,
+					sourceSessionId: body.sourceSessionId,
+					responseDurationMs: body.responseDurationMs
+				});
+			} catch (error) {
+				console.warn('[english-step-grade] failed to save learner evidence', {
+					error,
+					questionId,
+					stepId: body.stepId,
+					userId: locals.user?.uid
+				});
+			}
 			send({ event: 'done', data: JSON.stringify(result) });
 		} catch (error) {
 			console.error('[english-step-grade] failed to grade step', {

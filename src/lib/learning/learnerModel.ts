@@ -104,8 +104,8 @@ const recommendationReasonText: Record<RecommendationReasonCode, string> = {
 	resolve_conflicting_evidence: 'Recent answers disagree, so check this with a focused task.',
 	close_known_gap: 'This is the clearest active gap in the selected curriculum.',
 	review_due: 'This was going well and is now due for a quick check.',
-	establish_first_evidence: 'There is not enough evidence for this part of the curriculum yet.',
-	strengthen_developing: 'One more focused attempt will strengthen the current evidence.',
+	establish_first_evidence: 'You have not practised this part of the curriculum here yet.',
+	strengthen_developing: 'One more focused attempt will make your progress clearer.',
 	practise_transfer: 'Use the same method in a less familiar exam question.',
 	next_available: 'This is the strongest available next step in the selected curriculum.'
 };

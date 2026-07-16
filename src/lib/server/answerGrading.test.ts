@@ -44,6 +44,7 @@ const practiceData: PracticePageData = {
 				stepId: 'heating-loss'
 			}
 		],
+		checklistSource: 'official',
 		repairChain: [],
 		practiceDraft: '',
 		whyThisFits: 'Uses the same electricity efficiency chain.'
@@ -302,6 +303,9 @@ describe('answer grading prompt and parser', () => {
 		expect(prompt).toContain('id: current');
 		expect(prompt).toContain('Physics Paper 1');
 		expect(prompt).toContain('Student answer:');
+		expect(prompt).toContain('Official mark-scheme points');
+		expect(prompt).toContain('Say that current decreases.');
+		expect(prompt).toContain('do not treat their order as a mapping to chain-step ids');
 	});
 
 	it('includes OCR English Literature level guidance without making steps rigid mark buckets', () => {
@@ -353,6 +357,28 @@ describe('answer grading prompt and parser', () => {
 
 		expect(result.presentStepIds).toEqual(['pd']);
 		expect(result.missingStepIds).toEqual(['current', 'heating-loss']);
+	});
+
+	it('does not infer per-step evidence when a low-mark answer cannot assess every chain link', () => {
+		const result = parseGradeResponse(
+			[
+				'%AWARDED_MARKS%: 1',
+				'%PRESENT_STEP_IDS%: pd',
+				'%MISSING_STEP_IDS%: current,heating-loss',
+				'%FEEDBACK%: The one-mark answer is correct.'
+			].join('\n'),
+			{
+				...practiceData,
+				question: {
+					...practiceData.question,
+					meta: { ...practiceData.question.meta, marks: 1 }
+				}
+			}
+		);
+
+		expect(result.result).toBe('correct');
+		expect(result.presentStepIds).toEqual([]);
+		expect(result.missingStepIds).toEqual([]);
 	});
 
 	it('treats an omitted step as missing when both lists are otherwise populated', () => {

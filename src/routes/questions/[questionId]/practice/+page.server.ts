@@ -1,9 +1,12 @@
 import { getPracticePageData } from '$lib/server/questionData';
 import { getQuestionDraft } from '$lib/server/questionDrafts';
+import { supportsLearnerPracticeInput } from '$lib/learning/practiceEligibility';
+import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
+import { withEnglishPracticeContext } from '$lib/englishPracticeNavigation';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	let practiceData: Awaited<ReturnType<typeof getPracticePageData>>;
 	try {
 		practiceData = await getPracticePageData(params.questionId);
@@ -14,11 +17,28 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	if (practiceData.englishPractice) {
 		const firstStepId = practiceData.englishPractice.stages[0]?.id;
 		if (firstStepId) {
-			throw redirect(
-				307,
-				`/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`
-			);
+			const stepPath = `/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`;
+			throw redirect(307, withEnglishPracticeContext(stepPath, url.searchParams));
 		}
+	}
+
+	if (
+		locals.user &&
+		!supportsLearnerPracticeInput({
+			answerFormat: practiceData.question.answerFormat,
+			prompt: practiceData.question.prompt,
+			responseKind:
+				typeof practiceData.question.renderingOverlay?.responseInteraction?.kind === 'string'
+					? practiceData.question.renderingOverlay.responseInteraction.kind
+					: null
+		})
+	) {
+		const subject = learnerSubjectForQuestion({
+			subject: practiceData.question.meta.subject,
+			subjectArea: practiceData.question.meta.subjectArea,
+			paper: practiceData.question.meta.paper
+		});
+		throw redirect(303, subject ? learnerSubjectHref(subject) : '/');
 	}
 
 	const savedDraft = locals.user

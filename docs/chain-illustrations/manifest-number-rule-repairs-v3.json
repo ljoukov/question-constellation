@@ -1,0 +1,196 @@
+{
+	"version": 3,
+	"styleKey": "luminous-scientific-atlas-v2",
+	"illustrations": [
+		{
+			"id": "chain-illustration-physics-chain-resistance-decreases-current-increases-a80438f4fe8bdb3d-74911c6c8d418a3d",
+			"answerChainId": "physics-chain-resistance-decreases-current-increases",
+			"sourceQuestionId": "aqa-8464p1h-qp-nov21-01-6",
+			"sourceFingerprint": "a80438f4fe8bdb3da1933c2c33be5cd1f150d10f61e978460898e3dd7a530067",
+			"localPath": "docs/chain-illustrations/candidates/resistance-current-dark.webp",
+			"assetSha256": "fedd07635d882de7f3d2fb5ee78df0ab85512df9581f5d78453adebdc4cc6604",
+			"promptPath": "docs/chain-illustrations/prompts/resistance-current.txt",
+			"promptSha256": "72702df6943d2db31e05b0ec8c33c472f9da9a17e334246b1666057e8e3c3773",
+			"r2Key": "images/chains/physics-chain-resistance-decreases-current-increases/a80438f4fe8bdb3d-fedd07635d882de7-dark.webp",
+			"publicPath": "/images/chains/physics-chain-resistance-decreases-current-increases/a80438f4fe8bdb3d-fedd07635d882de7-dark.webp",
+			"lightLocalPath": "docs/chain-illustrations/candidates/resistance-current-light.webp",
+			"lightAssetSha256": "9c76204a29760200f0d22fcae31e731a5fb58799a45c1b0f72e1e0fe045623e1",
+			"lightDerivedFromAssetSha256": "fedd07635d882de7f3d2fb5ee78df0ab85512df9581f5d78453adebdc4cc6604",
+			"lightPromptPath": "docs/chain-illustrations/prompts/resistance-current-light-edit.txt",
+			"lightPromptSha256": "2933f4c43232390567f07cc35b756fcd0abe78f1933a96e31ad577ee833eb467",
+			"lightR2Key": "images/chains/physics-chain-resistance-decreases-current-increases/a80438f4fe8bdb3d-9c76204a29760200-light.webp",
+			"lightPublicPath": "/images/chains/physics-chain-resistance-decreases-current-increases/a80438f4fe8bdb3d-9c76204a29760200-light.webp",
+			"altText": "Three-stage circuit diagram showing fixed potential difference, lower resistance and a larger current.",
+			"caption": "Potential difference fixed → resistance falls → current rises.",
+			"width": 1672,
+			"height": 941,
+			"generatedBy": "codex-built-in-imagegen-number-rule-repair",
+			"generationTool": "codex-built-in-imagegen",
+			"imageGeneration": {
+				"darkCallId": "exec-2b477af6-4e8b-4de0-8217-944e752eaf0c",
+				"lightCallId": "exec-40ddb44c-6cc3-4324-88dd-12c1d57bb8fc",
+				"lightDerivedFromDarkCallId": "exec-2b477af6-4e8b-4de0-8217-944e752eaf0c"
+			},
+			"modelVisualAudit": {
+				"status": "not_performed",
+				"notes": "No structured independent model-audit artifact with a verifiable model identity was retained."
+			},
+			"humanAudit": {
+				"status": "not_performed",
+				"notes": "The user has not yet reviewed this exact corrected dark/light pair."
+			}
+		},
+		{
+			"id": "chain-illustration-physics-chain-elastic-deformation-return-original-length-cc4db7d6c2287eab-63825544462ae862",
+			"answerChainId": "physics-chain-elastic-deformation-return-original-length",
+			"sourceQuestionId": "aqa-8464p2h-qp-jun23-05.3",
+			"sourceFingerprint": "cc4db7d6c2287eab95f24f49254e4634210590290b4807706f3671bb8deb46c5",
+			"localPath": "docs/chain-illustrations/candidates/elastic-recovery-dark.webp",
+			"assetSha256": "9f418f3bd3fdb423d5e288dd1a57eb4c1d6e2a3667a7c0ffcdfbb5cf8b367b04",
+			"promptPath": "docs/chain-illustrations/prompts/elastic-recovery.txt",
+			"promptSha256": "914caee15de13b79bcb4d5cab92f1ea2267c8ba05869418ba695dd677973fd7d",
+			"r2Key": "images/chains/physics-chain-elastic-deformation-return-original-length/cc4db7d6c2287eab-9f418f3bd3fdb423-dark.webp",
+			"publicPath": "/images/chains/physics-chain-elastic-deformation-return-original-length/cc4db7d6c2287eab-9f418f3bd3fdb423-dark.webp",
+			"lightLocalPath": "docs/chain-illustrations/candidates/elastic-recovery-light.webp",
+			"lightAssetSha256": "c8a028c35c584d169ef6d2844e823b7fb1679e7efa0369784821f23a0cdd2184",
+			"lightDerivedFromAssetSha256": "9f418f3bd3fdb423d5e288dd1a57eb4c1d6e2a3667a7c0ffcdfbb5cf8b367b04",
+			"lightPromptPath": "docs/chain-illustrations/prompts/elastic-recovery-light-edit.txt",
+			"lightPromptSha256": "2933f4c43232390567f07cc35b756fcd0abe78f1933a96e31ad577ee833eb467",
+			"lightR2Key": "images/chains/physics-chain-elastic-deformation-return-original-length/cc4db7d6c2287eab-c8a028c35c584d16-light.webp",
+			"lightPublicPath": "/images/chains/physics-chain-elastic-deformation-return-original-length/cc4db7d6c2287eab-c8a028c35c584d16-light.webp",
+			"altText": "Three-stage comparison showing force removal followed by elastic recovery or permanent inelastic deformation.",
+			"caption": "Remove the force → returns means elastic; stays changed means inelastic.",
+			"width": 1672,
+			"height": 941,
+			"generatedBy": "codex-built-in-imagegen-number-rule-repair",
+			"generationTool": "codex-built-in-imagegen",
+			"imageGeneration": {
+				"darkCallId": "exec-6f0cda9c-8e2e-4172-8d74-4d59cf03c5a1",
+				"lightCallId": "exec-a59e7d6e-f6f5-4d18-adfe-677c4e43ebb5",
+				"lightDerivedFromDarkCallId": "exec-6f0cda9c-8e2e-4172-8d74-4d59cf03c5a1"
+			},
+			"modelVisualAudit": {
+				"status": "not_performed",
+				"notes": "No structured independent model-audit artifact with a verifiable model identity was retained."
+			},
+			"humanAudit": {
+				"status": "not_performed",
+				"notes": "The user has not yet reviewed this exact corrected dark/light pair."
+			}
+		},
+		{
+			"id": "chain-illustration-physics-chain-resultant-force-acceleration-proportionality-3268f7d59678914f-4353f2ce41a115cd",
+			"answerChainId": "physics-chain-resultant-force-acceleration-proportionality",
+			"sourceQuestionId": "aqa-8464p2h-qp-jun18-01-4",
+			"sourceFingerprint": "3268f7d59678914f0fb6580615554abb2743e258ed72c71bda02fa9694acae5b",
+			"localPath": "docs/chain-illustrations/candidates/resultant-acceleration-dark.webp",
+			"assetSha256": "fbe6986f73cb782a01b201e2f610fe51c16a25aa14f2c1f26815a650191b9bc6",
+			"promptPath": "docs/chain-illustrations/prompts/resultant-acceleration.txt",
+			"promptSha256": "9ec29b3e02634c2060c2ababc1f29a64adb8ee2a46ae4a903e87b984b3edc129",
+			"r2Key": "images/chains/physics-chain-resultant-force-acceleration-proportionality/3268f7d59678914f-fbe6986f73cb782a-dark.webp",
+			"publicPath": "/images/chains/physics-chain-resultant-force-acceleration-proportionality/3268f7d59678914f-fbe6986f73cb782a-dark.webp",
+			"lightLocalPath": "docs/chain-illustrations/candidates/resultant-acceleration-light.webp",
+			"lightAssetSha256": "363dd90f5221ab9d12cfd544548bf714fbcc33faaf7187c404b7645743f9c732",
+			"lightDerivedFromAssetSha256": "fbe6986f73cb782a01b201e2f610fe51c16a25aa14f2c1f26815a650191b9bc6",
+			"lightPromptPath": "docs/chain-illustrations/prompts/resultant-acceleration-light-edit.txt",
+			"lightPromptSha256": "2933f4c43232390567f07cc35b756fcd0abe78f1933a96e31ad577ee833eb467",
+			"lightR2Key": "images/chains/physics-chain-resultant-force-acceleration-proportionality/3268f7d59678914f-363dd90f5221ab9d-light.webp",
+			"lightPublicPath": "/images/chains/physics-chain-resultant-force-acceleration-proportionality/3268f7d59678914f-363dd90f5221ab9d-light.webp",
+			"altText": "Four-stage trolley diagram showing forces combined into a resultant and, for fixed mass, a proportional acceleration.",
+			"caption": "Combine forces → find the resultant → keep mass fixed → acceleration follows.",
+			"width": 1672,
+			"height": 941,
+			"generatedBy": "codex-built-in-imagegen-number-rule-repair",
+			"generationTool": "codex-built-in-imagegen",
+			"imageGeneration": {
+				"darkCallId": "exec-e920c949-734b-49be-8e02-9452a83884a9",
+				"lightCallId": "exec-dffa85f7-8609-4a7a-8722-e9099ee22750",
+				"lightDerivedFromDarkCallId": "exec-e920c949-734b-49be-8e02-9452a83884a9"
+			},
+			"modelVisualAudit": {
+				"status": "not_performed",
+				"notes": "No structured independent model-audit artifact with a verifiable model identity was retained."
+			},
+			"humanAudit": {
+				"status": "not_performed",
+				"notes": "The user has not yet reviewed this exact corrected dark/light pair."
+			}
+		},
+		{
+			"id": "chain-illustration-physics-chain-collision-momentum-conservation-qualitative-8167561fed55a934-5ea3250e55c1b730",
+			"answerChainId": "physics-chain-collision-momentum-conservation-qualitative",
+			"sourceQuestionId": "8464p2h-jun22-03-2",
+			"sourceFingerprint": "8167561fed55a9344becda83f0cbcef6432b0e4eef582c5f062b77739d7aa6db",
+			"localPath": "docs/chain-illustrations/candidates/momentum-sharing-dark.webp",
+			"assetSha256": "d670d60f6921a0fd1d2238775b3aabbd2a92b099e5548a335923fee7734f02a6",
+			"promptPath": "docs/chain-illustrations/prompts/momentum-sharing.txt",
+			"promptSha256": "6eb46f88cd64e483c61f27565440c30ded263c60d307eaf9d763159836a0f705",
+			"r2Key": "images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-d670d60f6921a0fd-dark.webp",
+			"publicPath": "/images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-d670d60f6921a0fd-dark.webp",
+			"lightLocalPath": "docs/chain-illustrations/candidates/momentum-sharing-light.webp",
+			"lightAssetSha256": "3957e54bf1f6521551edb4d23b1f9b698bcd3c0d7804c3bfa6c36678304885b3",
+			"lightDerivedFromAssetSha256": "d670d60f6921a0fd1d2238775b3aabbd2a92b099e5548a335923fee7734f02a6",
+			"lightPromptPath": "docs/chain-illustrations/prompts/momentum-sharing-light-edit.txt",
+			"lightPromptSha256": "2933f4c43232390567f07cc35b756fcd0abe78f1933a96e31ad577ee833eb467",
+			"lightR2Key": "images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-3957e54bf1f65215-light.webp",
+			"lightPublicPath": "/images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-3957e54bf1f65215-light.webp",
+			"altText": "Four-stage collision diagram showing total momentum conserved while momentum is transferred between two objects and their velocities change.",
+			"caption": "Total momentum stays the same → one gains → the other loses → velocities change.",
+			"width": 1672,
+			"height": 941,
+			"generatedBy": "codex-built-in-imagegen-number-rule-repair",
+			"generationTool": "codex-built-in-imagegen",
+			"imageGeneration": {
+				"darkCallId": "exec-755b06fe-df76-464f-a6b7-e2475ab6cf5e",
+				"lightCallId": "exec-eddf2b26-d3ec-4e21-a525-29ac73d12449",
+				"lightDerivedFromDarkCallId": "exec-755b06fe-df76-464f-a6b7-e2475ab6cf5e"
+			},
+			"modelVisualAudit": {
+				"status": "not_performed",
+				"notes": "No structured independent model-audit artifact with a verifiable model identity was retained."
+			},
+			"humanAudit": {
+				"status": "not_performed",
+				"notes": "The user has not yet reviewed this exact corrected dark/light pair."
+			}
+		},
+		{
+			"id": "chain-illustration-physics-chain-parallel-current-sharing-addition-2cf71ca3b0c804d0-93a80c3dfcf32814",
+			"answerChainId": "physics-chain-parallel-current-sharing-addition",
+			"sourceQuestionId": "aqa-8464p1h-nov21-05-4",
+			"sourceFingerprint": "2cf71ca3b0c804d0f5b3b1faa46ddf8778b26d62271aa8bace4c608821c7d7ba",
+			"localPath": "docs/chain-illustrations/candidates/parallel-current-dark.webp",
+			"assetSha256": "28ff1d577d85ea4b78319cf148d59e6dd7be12dc43f281b651ec4da8c4ed3b81",
+			"promptPath": "docs/chain-illustrations/prompts/parallel-current.txt",
+			"promptSha256": "e2aa5d6163b4ff74dabdcf3c4327b815425b844289273b1dccfeddf318aa7434",
+			"r2Key": "images/chains/physics-chain-parallel-current-sharing-addition/2cf71ca3b0c804d0-28ff1d577d85ea4b-dark.webp",
+			"publicPath": "/images/chains/physics-chain-parallel-current-sharing-addition/2cf71ca3b0c804d0-28ff1d577d85ea4b-dark.webp",
+			"lightLocalPath": "docs/chain-illustrations/candidates/parallel-current-light.webp",
+			"lightAssetSha256": "7911fcb623b3c413a389d23cb9002184a2a17157b2ed03bf6e1b8b67efcda9e2",
+			"lightDerivedFromAssetSha256": "28ff1d577d85ea4b78319cf148d59e6dd7be12dc43f281b651ec4da8c4ed3b81",
+			"lightPromptPath": "docs/chain-illustrations/prompts/parallel-current-light-edit.txt",
+			"lightPromptSha256": "2933f4c43232390567f07cc35b756fcd0abe78f1933a96e31ad577ee833eb467",
+			"lightR2Key": "images/chains/physics-chain-parallel-current-sharing-addition/2cf71ca3b0c804d0-7911fcb623b3c413-light.webp",
+			"lightPublicPath": "/images/chains/physics-chain-parallel-current-sharing-addition/2cf71ca3b0c804d0-7911fcb623b3c413-light.webp",
+			"altText": "Four-stage parallel-circuit diagram showing equal potential difference, equal currents in identical branches and currents adding in the main wire.",
+			"caption": "Parallel branches → same potential difference → equal branch currents → currents add.",
+			"width": 1672,
+			"height": 941,
+			"generatedBy": "codex-built-in-imagegen-number-rule-repair",
+			"generationTool": "codex-built-in-imagegen",
+			"imageGeneration": {
+				"darkCallId": "exec-6cb7d841-c11a-42ef-9d8b-2e04d4b063d6",
+				"lightCallId": "exec-5dbcee9c-6899-4e93-8e34-8fd9383471dc",
+				"lightDerivedFromDarkCallId": "exec-6cb7d841-c11a-42ef-9d8b-2e04d4b063d6"
+			},
+			"modelVisualAudit": {
+				"status": "not_performed",
+				"notes": "No structured independent model-audit artifact with a verifiable model identity was retained."
+			},
+			"humanAudit": {
+				"status": "not_performed",
+				"notes": "The user has not yet reviewed this exact corrected dark/light pair."
+			}
+		}
+	]
+}
