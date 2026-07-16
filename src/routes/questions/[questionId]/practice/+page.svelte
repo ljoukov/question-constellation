@@ -1017,7 +1017,7 @@
 		/>
 
 		<div class="qc-real-layout qc-question-layout" class:singleton={!showPracticeSet}>
-			<aside class="qc-real-rail qc-question-rail" aria-label="Practice route">
+			<aside class="qc-context-rail qc-real-rail qc-question-rail" aria-label="Practice route">
 				<IconBackLink href={practiceBackHref} label={practiceBackLabel} />
 				<p class="qc-real-kicker"><MathText text={topbarSubject} /></p>
 				<h1>{showPracticeSet ? 'Practice set' : 'Exam practice'}</h1>

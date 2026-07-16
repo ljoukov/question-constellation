@@ -449,6 +449,13 @@ portrait-first journey. The desktop mocks document the later wide-screen directi
 keep one focused learning surface primary, use the secondary column for guidance or
 state, and avoid revealing the full chain before the student has acted.
 
+Persistent route context rails use the shared `qc-context-rail` presentation: the
+same translucent semantic surface, subtle divider, theme behavior, and circular back
+control. Their width, typography, contents, and collapse breakpoint stay specific to
+the learning task so a source-heavy English question can remain wider than a compact
+science navigation rail. Quiet dashboard sidebars and context cards are not rails and
+should not inherit this surface treatment.
+
 ### Mobile: Discovery To Constellation
 
 ![Question Constellation Biology Answer Chain](assets/product-flows/biology-answer-chain.png)

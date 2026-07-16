@@ -1026,7 +1026,7 @@
 	/>
 
 	<div class="qc-step-practice-layout">
-		<aside class="qc-step-question" aria-label="Question">
+		<aside class="qc-context-rail qc-step-question" aria-label="Question">
 			<IconBackLink href={backHref} label={backLabel} />
 			<p class="qc-step-eyebrow">{question.meta.qualification} {question.meta.subject}</p>
 			<h1>Question {question.sourceRef}</h1>
@@ -1316,7 +1316,7 @@
 		grid-template-columns: minmax(24rem, 32rem) minmax(0, 1fr);
 		width: min(100%, 94rem);
 		min-width: 0;
-		min-height: calc(var(--app-viewport-height, 100vh) - 4rem);
+		min-height: calc(var(--app-viewport-height, 100vh) - var(--qc-topbar-height, 4rem));
 		margin: 0 auto;
 	}
 
@@ -1327,7 +1327,6 @@
 		min-width: 0;
 		padding: clamp(1.4rem, 2.5vw, 2.35rem);
 		border-right: 1px solid var(--qc-ui-border-subtle);
-		background: var(--qc-ui-surface-translucent);
 	}
 
 	.qc-step-question :global(.qc-exam-card) {
@@ -1910,7 +1909,7 @@
 		margin: -0.1rem 0 0;
 	}
 
-	@media (max-width: 920px) {
+	@media (max-width: 1100px) {
 		.qc-step-practice-layout {
 			grid-template-columns: 1fr;
 		}

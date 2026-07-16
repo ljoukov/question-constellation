@@ -80,7 +80,7 @@
 	/>
 
 	<div class="qc-browse-layout">
-		<aside class="qc-browse-intro">
+		<aside class="qc-context-rail qc-browse-intro">
 			<IconBackLink href={resolve('/')} label="Back home" />
 			<p class="qc-real-kicker">OCR J352 · your course</p>
 			<h1>Your English Literature questions.</h1>

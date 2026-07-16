@@ -188,7 +188,10 @@
 		</div>
 	{:else}
 		<div class="qc-real-layout qc-question-layout">
-			<aside class="qc-real-rail qc-question-rail" aria-label="Questions using this method">
+			<aside
+				class="qc-context-rail qc-real-rail qc-question-rail"
+				aria-label="Questions using this method"
+			>
 				<IconBackLink href={questionHref} label="Back to question" />
 				<p class="qc-real-kicker">Method</p>
 				<h1><MathText text={data.chain.title} /></h1>
