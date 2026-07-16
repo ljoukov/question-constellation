@@ -2941,14 +2941,20 @@ The automatic phase must fail closed at each gate:
    checks both variants for scientific accuracy, evidence fidelity, exact labels and numbers,
    sequence clarity, 1024x576 legibility, distinct causal visuals, text-hidden comprehension, clear
    terminology, absence of dominant repetition, and the absence of extra claims, loops, panels,
-   logos, or watermarks. It also runs a strict cross-theme consistency audit. Publish the pair only
+   logos, or watermarks. Before scoring, the judge must reconstruct what a learner infers with text
+   hidden and after reading, record visible cue → concept → relationship associations, list plausible
+   unintended takeaways, and compare the connected lesson with the planner's intended goal. It also
+   runs a strict cross-theme consistency audit. Publish the pair only
    when both variants score at least `18/20` with full correctness, evidence, and text scores, every
    hard visual-learning flag passes, and cross-theme preservation scores `4/4`.
    The judge owns the persistent structured glitch catalogue: ambiguous symbol placement, wrong
    conductor association, bypass topology, invalid equations, repeated-object identity/size drift,
-   force-removal direction, conventional-current/electron-direction confusion, and
-   question-specific numbers. Symbols require an unambiguous leader or immediate physical target;
-   equations must be visually separate from conductor/object labels. A failed deterministic or
+   force-removal direction, conventional-current/electron-direction confusion, question-specific
+   numbers, lost ground/track contact, unexplained encodings, broken spatial stories, missing
+   derived-quantity or governing-law bridges, ambiguous quantity encodings, creation-like cues for
+   conserved quantities, and scientifically inexact relationship terminology. Symbols require an
+   unambiguous leader or immediate physical target; equations must be visually separate from
+   conductor/object labels. A failed deterministic or
    visual attempt is discarded as a pair. Retry with a brand-new dark generation and no reference
    image; append only the exact observed defects and the catalogue rules actually triggered. Never
    patch or edit a failed dark image, and do not create a light variant until a dark original passes

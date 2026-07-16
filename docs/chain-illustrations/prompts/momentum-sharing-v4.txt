@@ -1,0 +1,22 @@
+Create a fresh 16:9 landscape educational illustration from scratch for an iPad GCSE Physics app. No reference image and no reuse of an earlier composition.
+
+Show momentum transfer in a same-direction collision as one continuous BEFORE → CONTACT → AFTER story on a straight rail. Use the same orange rear trolley and blue front trolley throughout. Every wheel stays seated on the rail. Deep navy luminous mechanics-atlas style, crisp cyan/orange accents, accurate and accessible for GCSE.
+
+BEFORE: orange moves right faster than blue. AFTER: orange moves right more slowly and blue moves right faster. Use orange and blue arrows for these qualitative motion changes, and place the full word “VELOCITY” directly beside each arrow group so no arrow can be mistaken for momentum. Do not imply that adding arrow lengths proves conservation.
+
+CONTACT: show a restrained directional orange-to-blue transfer band between the touching buffers. It must look like existing momentum is redistributed from the orange trolley to the blue trolley—not created in an explosion. No radiant burst or source-like halo.
+
+Make the governing condition concrete: use one subtle bracket or enclosure around both trolleys, labelled “CLOSED SYSTEM”. It must clearly refer to the two-trolley system, not call the collision itself closed.
+
+Below the title, add one compact two-part supporting strip, separate from the numbered chain. Render exactly once:
+“MOMENTUM = MASS × VELOCITY”
+“TOTAL MOMENTUM BEFORE = TOTAL MOMENTUM AFTER”
+No symbolic duplicate, example values, masses, speeds or units.
+
+Along the lower edge, show exactly four short numbered labels in an unmistakable left-to-right 1 → 2 → 3 → 4 path:
+1 CLOSED SYSTEM
+2 FRONT GAINS MOMENTUM
+3 REAR LOSES MOMENTUM
+4 VELOCITIES CHANGE
+
+Title: “MOMENTUM TRANSFER IN A COLLISION”. Keep all text minimal, horizontal, correctly spelled and readable at iPad width. The intended takeaway is specific and connected: a collision redistributes momentum between objects; individual velocities change, while total momentum of the closed system remains constant. No bars, charts, detached encodings, floating objects, extra panels, extra equations, logos, watermark, circular arrows, question-specific numbers or decorative prose. Balanced spacing and a clear three-second grasp.

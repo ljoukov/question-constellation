@@ -81,8 +81,18 @@ as a calibration set for the prompts and visual QA gates.
 - The independent judge, not the core generation prompt, owns the full structured glitch catalogue:
   ambiguous symbol placement, wrong conductor association, bypass topology, invalid equations,
   repeated-object identity/size drift, force-removal direction, conventional-current/electron-flow
-  confusion, and question-specific numbers. Every symbol/current label must target one exact
-  physical quantity or location; equations remain visually separate from conductor/object labels.
+  confusion, question-specific numbers, lost track/surface contact, unexplained abstract encodings,
+  broken spatial storytelling, missing bridges for central derived quantities or governing laws,
+  ambiguous physical-quantity encodings, creation-like cues for conserved quantities, and inexact
+  relationship terminology. Every symbol/current label must target one exact physical quantity or
+  location; equations remain visually separate from conductor/object labels. A compact universal
+  relationship may bridge an otherwise opaque term to familiar quantities, and a compact universal
+  conservation/balance statement may reinforce the same mechanism. Both stay outside the numbered
+  reasoning steps and never contain example values.
+- Before scoring correctness or aesthetics, the judge reconstructs what a learner would infer with
+  wording hidden and after reading the full image. It records specific visual cue → concept →
+  relationship associations, plausible unintended takeaways, and whether the connected lesson
+  matches the planner's intended goal. A list of visible nouns or copied labels is not a pass.
 - Route the atlas by subject and mechanism: biological/medical/cellular/ecology, molecular/materials/
   apparatus/energy, or electrical/mechanics/waves/nuclear/measurement.
 - No marketing composition, logo, watermark, exam-board branding, decorative legend, extra step,
@@ -102,3 +112,12 @@ the sole published primary and the former primary is retained as a non-primary d
 `manifest-number-rule-repairs-v3.json` is deliberately scoped to the five pairs regenerated after
 the numeric-transferability and diagram-label review. It excludes unchanged pairs and does not
 claim candidate selection, structured model QA evidence, or human review that was not recorded.
+
+`manifest-momentum-clarity-repair-v4.json` is a one-pair replacement for the rejected collision
+visual. It removes the unexplained contribution bars, keeps both trolleys registered to one rail,
+uses a continuous before/contact/after story, restores an ordered 1→4 scan path, and adds the
+universal bridge `momentum = mass × velocity` alongside the governing reminder `total momentum
+before = total momentum after`. Velocity arrows are labelled explicitly, the two trolleys sit inside
+a visible closed-system enclosure, and contact is shown as directional transfer rather than a burst
+that could imply creation. Its light variant is an edit of the accepted dark master, not an
+independently generated alternative.

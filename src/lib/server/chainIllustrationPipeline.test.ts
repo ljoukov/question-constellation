@@ -151,10 +151,17 @@ describe('chain illustration evidence and prompt pipeline', () => {
 		expect(prompt).toContain('MEANING WITH ALL TEXT HIDDEN');
 		expect(prompt).toContain('Never copy their given values');
 		expect(prompt).toContain('Use qualitative comparisons or universal symbols instead');
+		expect(prompt).toContain('derived scientific quantity whose name alone may remain opaque');
+		expect(prompt).toContain('momentum = mass × velocity');
+		expect(prompt).toContain('total momentum before = total momentum after');
+		expect(prompt).toContain('cue → concept → relationship');
 		expect(plannerPrompt).toContain(
 			'Never plan question-specific or illustrative numerical values'
 		);
 		expect(plannerPrompt).toContain('correct and useful for every chain member');
+		expect(plannerPrompt).toContain('derived scientific quantity whose name may remain opaque');
+		expect(plannerPrompt).toContain('total current into a junction = total current out');
+		expect(plannerPrompt).toContain('Design associations deliberately');
 		expect(
 			visualJudgePrompt(candidate, decision, {
 				dark: { status: 'passed' },
@@ -167,6 +174,12 @@ describe('chain illustration evidence and prompt pipeline', () => {
 				light: { status: 'passed' }
 			})
 		).toContain('noQuestionSpecificValues must be false');
+		expect(darkVisualJudgePrompt(candidate, decision, { status: 'passed' })).toContain(
+			'central derived quantity is still opaque'
+		);
+		expect(darkVisualJudgePrompt(candidate, decision, { status: 'passed' })).toContain(
+			'LEARNER RECONSTRUCTION — DO THIS BEFORE SCORING'
+		);
 		expect(buildStylePrompt(candidate)).toContain('mechanics and motion atlas');
 		expect(buildLightEditStylePrompt(candidate)).toContain('light-mode scientific atlas');
 		const lightPrompt = buildLightEditPrompt(candidate, decision);
@@ -186,7 +199,15 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			'repeated_object_identity_or_size_drift',
 			'force_removal_direction',
 			'conventional_current_or_electron_direction_confusion',
-			'question_specific_numbers'
+			'question_specific_numbers',
+			'ground_contact_or_motion_discontinuity',
+			'unexplained_abstract_encoding',
+			'spatial_story_breakdown',
+			'missing_derived_quantity_bridge',
+			'missing_governing_law_bridge',
+			'ambiguous_physical_quantity_encoding',
+			'conserved_quantity_creation_cue',
+			'scientifically_inexact_relationship_terminology'
 		]);
 		const judgePrompt = visualJudgePrompt(candidate, decision, {
 			dark: { status: 'passed' },
@@ -234,6 +255,14 @@ describe('chain illustration evidence and prompt pipeline', () => {
 		expect(retry).toContain('A wire bridges the resistor in panel 2.');
 		expect(retry).not.toContain('force_removal_direction:');
 		expect(retry).not.toContain('question_specific_numbers:');
+		expect(retry).not.toContain('ground_contact_or_motion_discontinuity:');
+		expect(retry).not.toContain('unexplained_abstract_encoding:');
+		expect(retry).not.toContain('spatial_story_breakdown:');
+		expect(retry).not.toContain('missing_derived_quantity_bridge:');
+		expect(retry).not.toContain('missing_governing_law_bridge:');
+		expect(retry).not.toContain('ambiguous_physical_quantity_encoding:');
+		expect(retry).not.toContain('conserved_quantity_creation_cue:');
+		expect(retry).not.toContain('scientifically_inexact_relationship_terminology:');
 		expect(retry).not.toContain('total-current equation or label placed beside the lower branch');
 		expect(retry).not.toContain('Do not copy this unstructured duplicate defect.');
 		expect(retry).not.toContain('Do not copy this cross-theme duplicate defect.');
@@ -254,6 +283,71 @@ describe('chain illustration evidence and prompt pipeline', () => {
 		expect(lightRetry).toContain('failed light image is not supplied');
 		expect(lightRetry).toContain('The total-current label appears to name the lower branch.');
 		expect(lightRetry).not.toContain('value copied from one member question');
+	});
+
+	it('turns a momentum visual failure into a narrowly targeted fresh-image retry', () => {
+		const retry = buildFreshDarkRegenerationPrompt(buildGenerationPrompt(candidate, decision), {
+			judge: {
+				glitchFindings: [
+					{
+						glitchId: 'ground_contact_or_motion_discontinuity',
+						themes: ['dark'],
+						panelOrders: [2],
+						defect: 'The blue trolley floats above the rail during the collision.'
+					},
+					{
+						glitchId: 'unexplained_abstract_encoding',
+						themes: ['dark'],
+						panelOrders: [1],
+						defect: 'The segmented total bars have no visible mapping to either trolley.'
+					},
+					{
+						glitchId: 'missing_derived_quantity_bridge',
+						themes: ['dark'],
+						panelOrders: [],
+						defect: 'Momentum is repeatedly named but never connected to mass and velocity.'
+					},
+					{
+						glitchId: 'missing_governing_law_bridge',
+						themes: ['dark'],
+						panelOrders: [],
+						defect: 'Transfer is shown without relating it to total momentum conservation.'
+					},
+					{
+						glitchId: 'ambiguous_physical_quantity_encoding',
+						themes: ['dark'],
+						panelOrders: [1, 4],
+						defect: 'The motion arrows could mean velocity or momentum.'
+					},
+					{
+						glitchId: 'conserved_quantity_creation_cue',
+						themes: ['dark'],
+						panelOrders: [2],
+						defect: 'The contact burst makes momentum appear to be created.'
+					},
+					{
+						glitchId: 'scientifically_inexact_relationship_terminology',
+						themes: ['dark'],
+						panelOrders: [1],
+						defect: 'The image says closed collision instead of closed system.'
+					}
+				]
+			}
+		});
+
+		expect(retry).toContain('brand-new DARK ORIGINAL from scratch');
+		expect(retry).toContain('The blue trolley floats above the rail');
+		expect(retry).toContain('The segmented total bars have no visible mapping');
+		expect(retry).toContain('connected to mass and velocity');
+		expect(retry).toContain('Keep every constrained object visibly registered');
+		expect(retry).toContain('Replace unexplained charts or detached encodings');
+		expect(retry).toContain('Add at most one compact, universally valid concept bridge');
+		expect(retry).toContain('Add one compact, universally valid statement of the governing');
+		expect(retry).toContain('Make each scientific encoding explicit and consistent');
+		expect(retry).toContain('Show a directional transfer or redistribution');
+		expect(retry).toContain('Replace the imprecise label with the exact GCSE term');
+		expect(retry).not.toContain('bypass_topology:');
+		expect(retry).not.toContain('force_removal_direction:');
 	});
 
 	it('gates the light edit behind an accepted dark and retries it only from that master', () => {
@@ -430,6 +524,18 @@ describe('chain illustration evidence and prompt pipeline', () => {
 					terminologyClear: true,
 					compositionPlanFollowed: true,
 					noQuestionSpecificValues: true,
+					textHiddenTakeaway: 'The collision redistributes motion between the objects.',
+					fullImageTakeaway:
+						'Momentum is conserved and shared in the collision, so both objects move.',
+					associativeLinks: [
+						{
+							visualCue: 'Two objects changing motion at contact',
+							concept: 'Momentum transfer',
+							relationship: 'The collision redistributes conserved momentum.'
+						}
+					],
+					unintendedTakeaways: [],
+					takeawayMatchesGoal: true,
 					panelAudits: steps.map((step, index) => ({
 						order: index + 1,
 						dominantVisual: step.stepText,
@@ -457,6 +563,18 @@ describe('chain illustration evidence and prompt pipeline', () => {
 					terminologyClear: true,
 					compositionPlanFollowed: true,
 					noQuestionSpecificValues: true,
+					textHiddenTakeaway: 'The collision redistributes motion between the objects.',
+					fullImageTakeaway:
+						'Momentum is conserved and shared in the collision, so both objects move.',
+					associativeLinks: [
+						{
+							visualCue: 'Two objects changing motion at contact',
+							concept: 'Momentum transfer',
+							relationship: 'The collision redistributes conserved momentum.'
+						}
+					],
+					unintendedTakeaways: [],
+					takeawayMatchesGoal: true,
 					panelAudits: steps.map((step, index) => ({
 						order: index + 1,
 						dominantVisual: step.stepText,
@@ -483,6 +601,11 @@ describe('chain illustration evidence and prompt pipeline', () => {
 		const hardChecks = { dark: { status: 'passed' }, light: { status: 'passed' } };
 		const variantSchema = visualJudgeSchema().properties.variants.items;
 		expect(variantSchema.required).toContain('noQuestionSpecificValues');
+		expect(variantSchema.required).toContain('textHiddenTakeaway');
+		expect(variantSchema.required).toContain('fullImageTakeaway');
+		expect(variantSchema.required).toContain('associativeLinks');
+		expect(variantSchema.required).toContain('unintendedTakeaways');
+		expect(variantSchema.required).toContain('takeawayMatchesGoal');
 		expect(variantSchema.properties.noQuestionSpecificValues).toEqual({ type: 'boolean' });
 		expect(validateVisualJudge(judge, hardChecks, decision.visualSteps)).toEqual({
 			status: 'passed',
@@ -599,7 +722,8 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			'noDominantRepetition',
 			'terminologyClear',
 			'compositionPlanFollowed',
-			'noQuestionSpecificValues'
+			'noQuestionSpecificValues',
+			'takeawayMatchesGoal'
 		] as const) {
 			const rejected: any = structuredClone(judge);
 			rejected.variants[0][hardFailure] = false;
@@ -621,6 +745,29 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			});
 			expect(rejected.pass).toBe(false);
 		}
+
+		const disconnectedLearningAudit = structuredClone(judge);
+		disconnectedLearningAudit.variants[0].associativeLinks = [];
+		disconnectedLearningAudit.variants[0].takeawayMatchesGoal = false;
+		disconnectedLearningAudit.variants[0].pass = false;
+		disconnectedLearningAudit.pass = false;
+		expect(
+			validateVisualJudge(disconnectedLearningAudit, hardChecks, decision.visualSteps).issues.join(
+				' '
+			)
+		).toContain('learner reconstruction requires two takeaways');
+
+		const misleadingLearningAudit: any = structuredClone(judge);
+		misleadingLearningAudit.variants[0].unintendedTakeaways = [
+			'Momentum appears to be created at impact.'
+		];
+		misleadingLearningAudit.variants[0].takeawayMatchesGoal = false;
+		misleadingLearningAudit.variants[0].pass = false;
+		misleadingLearningAudit.pass = false;
+		expect(validateVisualJudge(misleadingLearningAudit, hardChecks, decision.visualSteps)).toEqual({
+			status: 'passed',
+			issues: []
+		});
 
 		const repeatedAudit = structuredClone(judge);
 		for (const panel of repeatedAudit.variants[0].panelAudits) {

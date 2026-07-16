@@ -205,6 +205,26 @@ describe('recall catalog read path', () => {
 		).toBe(true);
 	});
 
+	it('keeps the ready Separate Science deck when a focused generated import is only an overlay', async () => {
+		queryRows.mockResolvedValue(
+			validRows().map((row) => ({
+				...row,
+				offering_id: separateHigherScope.offeringId,
+				curriculum_component_id: 'aqa-gcse-biology-8461-v1.0:4-3-1-7',
+				topic_component_id: 'aqa-gcse-biology-8461-v1.0:4-3'
+			}))
+		);
+
+		const cards = await getRecallCards(separateHigherScope);
+		expect(cards.length).toBeGreaterThan(20);
+		expect(cards[0]).toMatchObject({
+			id: 'generated-vaccine',
+			offeringId: separateHigherScope.offeringId
+		});
+		expect(cards.some((card) => card.id !== 'generated-vaccine')).toBe(true);
+		expect(cards.every((card) => card.offeringId === separateHigherScope.offeringId)).toBe(true);
+	});
+
 	it('does not leak Separate Science static cards into Combined Science or Foundation', async () => {
 		queryRows.mockRejectedValue(new Error('D1_ERROR: no such table: recall_cards'));
 

@@ -1,0 +1,44 @@
+{
+	"version": 4,
+	"styleKey": "luminous-scientific-atlas-v2",
+	"illustrations": [
+		{
+			"id": "chain-illustration-physics-chain-collision-momentum-conservation-qualitative-8167561fed55a934-e99e84398b4c7545",
+			"answerChainId": "physics-chain-collision-momentum-conservation-qualitative",
+			"sourceQuestionId": "8464p2h-jun22-03-2",
+			"sourceFingerprint": "8167561fed55a9344becda83f0cbcef6432b0e4eef582c5f062b77739d7aa6db",
+      "localPath": "docs/chain-illustrations/candidates/momentum-sharing-v4-dark.webp",
+			"assetSha256": "15d277d7cc8f7cc96a2ac51ee4f0caecea7e06c50eb3956c65fc616831db6911",
+      "promptPath": "docs/chain-illustrations/prompts/momentum-sharing-v4.txt",
+			"promptSha256": "479bd3315457faebdbf2c2a99df1353efc6f5ee0663e2bc6972ac6a2e6acd58a",
+			"r2Key": "images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-15d277d7cc8f7cc9-dark.webp",
+			"publicPath": "/images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-15d277d7cc8f7cc9-dark.webp",
+      "lightLocalPath": "docs/chain-illustrations/candidates/momentum-sharing-v4-light.webp",
+			"lightAssetSha256": "d161d6c4e6b5ee2fec07cda07bd01ab245495d9d1844d2f0d1248a5090023c34",
+			"lightDerivedFromAssetSha256": "15d277d7cc8f7cc96a2ac51ee4f0caecea7e06c50eb3956c65fc616831db6911",
+      "lightPromptPath": "docs/chain-illustrations/prompts/momentum-sharing-v4-light-edit.txt",
+			"lightPromptSha256": "70cc08e95166d5e50e6f97345a006df15b2308aaaa641c8b619cacadb88ef95a",
+			"lightR2Key": "images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-d161d6c4e6b5ee2f-light.webp",
+			"lightPublicPath": "/images/chains/physics-chain-collision-momentum-conservation-qualitative/8167561fed55a934-d161d6c4e6b5ee2f-light.webp",
+			"altText": "A continuous collision sequence shows an orange trolley transferring momentum to a blue trolley, with momentum defined as mass multiplied by velocity and the motion changes shown before, during and after contact.",
+			"caption": "Momentum equals mass × velocity. In a collision, total momentum is conserved as the front trolley gains momentum, the rear trolley loses momentum and their velocities change.",
+			"width": 1672,
+			"height": 941,
+			"generatedBy": "codex-built-in-imagegen-momentum-clarity-repair",
+			"generationTool": "codex-built-in-imagegen",
+			"imageGeneration": {
+				"darkCallId": "exec-d9cf3bff-7048-4685-94cc-26ac1ebc634c",
+				"lightCallId": "exec-00c8a6f6-38b1-4977-98e7-b7d5f87b02d0",
+				"lightDerivedFromDarkCallId": "exec-d9cf3bff-7048-4685-94cc-26ac1ebc634c"
+			},
+			"modelVisualAudit": {
+				"status": "not_recorded",
+				"notes": "An independent Codex learner-reconstruction audit passed the final dark and light variants in the working session, but no stable model identifier and structured output artifact were retained for provenance."
+			},
+			"humanAudit": {
+				"status": "not_performed",
+				"notes": "The user has not yet reviewed this exact regenerated dark/light pair."
+			}
+		}
+	]
+}

@@ -348,6 +348,23 @@ async function staticFallbackCards(scope: RecallCatalogScope): Promise<RecallCar
 	);
 }
 
+function mergePublishedRecallCards(
+	generated: readonly RecallCard[],
+	fallback: readonly RecallCard[]
+): RecallCard[] {
+	const seenIds = new Set<string>();
+	const seenContent = new Set<string>();
+	const merged: RecallCard[] = [];
+	for (const card of [...generated, ...fallback]) {
+		const contentKey = `${normalized(card.front)}\u0000${normalized(card.back)}`;
+		if (seenIds.has(card.id) || seenContent.has(contentKey)) continue;
+		seenIds.add(card.id);
+		seenContent.add(contentKey);
+		merged.push(card);
+	}
+	return merged;
+}
+
 export async function getRecallCards(scope?: RecallCatalogScope): Promise<RecallCard[]> {
 	if (!scope) return [];
 	const key = `${scope.subject}|${scope.offeringId}`;
@@ -357,11 +374,13 @@ export async function getRecallCards(scope?: RecallCatalogScope): Promise<Recall
 
 	const promise = (async () => {
 		const generated = await readGeneratedRecallCards(scope);
-		// Once an offering has any eligible imported D1 rows, that catalog is the
-		// authority. Invalid rows are held out rather than silently replaced with
-		// unrelated static content.
-		if (generated.hasEligibleRows) return generated.cards;
-		return await staticFallbackCards(scope);
+		const fallback = await staticFallbackCards(scope);
+		// A focused import is an overlay, not evidence that the whole offering has
+		// been generated. Keep every ready canonical card available and let reviewed
+		// D1 content win only exact ID/content collisions. An offering-wide catalog
+		// can replace its predecessor only through a future explicit coverage release.
+		if (generated.hasEligibleRows) return mergePublishedRecallCards(generated.cards, fallback);
+		return fallback;
 	})();
 	const entry = { expiresAt: now + RECALL_CATALOG_CACHE_TTL_MS, promise };
 	catalogCache.set(key, entry);

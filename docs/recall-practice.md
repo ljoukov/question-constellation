@@ -11,7 +11,27 @@ detail.
 - Use `/recall` as a lightweight retrieval-practice surface for AQA GCSE Science recall knowledge.
 - Do not turn recall cards into answer chains unless the item genuinely has reusable mark-scoring
   reasoning.
-- Store progress locally for now. A future signed-in model can sync due cards, streaks, and weak topics.
+- Keep signed-in progress and evidence private while the reviewed card catalog remains shared.
+
+## Availability and Personalisation Contract
+
+Reviewed canonical decks are generated and reviewed in the back-office compiler, imported as
+immutable bundles, and available before a learner opens recall. Learner-facing recall never waits for
+a model call. Personal progress changes the order and mix of already-published cards; a model outage
+must not remove canonical decks, recognition mode, saved selections, or the route back to a subject.
+
+Stable evidence gaps may be recorded privately in `user_recall_coverage_misses`. That table is an
+offline-generation input only: it never supplies learner-facing text. A future batch may use repeated
+coverage signals to propose original cards grounded in the official specification, then run the same
+deterministic, independent content, cue, provenance and duplicate reviews as a standard card. Only an
+accepted imported bundle may appear in a later session. A pending or failed tailored batch must leave
+the complete published catalog usable and must never turn the main recall surface into a generation
+waiting screen.
+
+Catalog releases should be coverage-gated per offering and official component. A partial generation
+run is not a complete subject deck and must not atomically replace a previously complete catalog.
+Custom stacks are saved manifests over published card IDs, with reviewed tailored cards mixed in only
+after offline acceptance.
 
 ## Card Types
 

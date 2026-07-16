@@ -1073,7 +1073,7 @@
 		{#if !sessionHydrated}
 			<section class="session-resuming" aria-live="polite">
 				<span class="session-resuming-mark" aria-hidden="true"></span>
-				<p>Preparing your set…</p>
+				<p>Opening your cards…</p>
 			</section>
 		{:else if sessionComplete}
 			<section class="session-complete">

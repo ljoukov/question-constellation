@@ -453,7 +453,8 @@ export function validateHistoricalBaselineWaiver(judge) {
 			'noDominantRepetition',
 			'terminologyClear',
 			'compositionPlanFollowed',
-			'noQuestionSpecificValues'
+			'noQuestionSpecificValues',
+			'takeawayMatchesGoal'
 		]) {
 			if (variant[field] !== true) issues.push(`${variant.theme} ${field} must remain true`);
 		}
@@ -476,6 +477,11 @@ function inheritedDefectSignature(variant) {
 	const panelAudits = /** @type {Array<Record<string, any>>} */ (variant?.panelAudits ?? []);
 	return JSON.stringify({
 		textIndependentMeaning: variant?.textIndependentMeaning,
+		textHiddenTakeaway: variant?.textHiddenTakeaway,
+		fullImageTakeaway: variant?.fullImageTakeaway,
+		associativeLinks: variant?.associativeLinks ?? [],
+		unintendedTakeaways: variant?.unintendedTakeaways ?? [],
+		takeawayMatchesGoal: variant?.takeawayMatchesGoal,
 		defects: variant?.defects ?? [],
 		panelAudits: panelAudits.map((audit) => ({
 			order: audit?.order,

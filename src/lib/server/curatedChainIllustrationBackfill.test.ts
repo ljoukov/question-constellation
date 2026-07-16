@@ -136,6 +136,17 @@ describe('curated historical illustration theme-pair backfill', () => {
 			terminologyClear: true,
 			compositionPlanFollowed: true,
 			noQuestionSpecificValues: true,
+			textHiddenTakeaway: 'The visible mechanism forms one connected sequence.',
+			fullImageTakeaway: 'The labels explain the connected approved mechanism.',
+			associativeLinks: [
+				{
+					visualCue: 'Visible state change',
+					concept: 'Causal link',
+					relationship: 'The state change supports the approved mechanism.'
+				}
+			],
+			unintendedTakeaways: [],
+			takeawayMatchesGoal: true,
 			panelAudits: [
 				{
 					order: 1,

@@ -93,6 +93,86 @@ export const CHAIN_ILLUSTRATION_GLITCH_CATALOGUE = Object.freeze({
 		]),
 		regenerationRule:
 			'Remove every example or question-specific value and unit. Keep only panel ordinals and universal symbols, equations, constants or ratios that remain valid for every attached question.'
+	}),
+	ground_contact_or_motion_discontinuity: Object.freeze({
+		label: 'Ground contact or motion discontinuity',
+		judgeRule:
+			'Fail when a wheeled, sliding, suspended or otherwise constrained object visibly floats, jumps, tilts off, clips through or loses contact with its track, road, surface or support without that being the approved mechanism. Motion across stages must remain physically continuous.',
+		observedExamples: Object.freeze([
+			'a collision trolley appearing to jump above the rail in one stage even though no vertical motion is involved'
+		]),
+		regenerationRule:
+			'Keep every constrained object visibly registered to the same track, surface or support throughout the event. Preserve a physically continuous path and do not imply an unapproved jump, lift, tilt or teleport.'
+	}),
+	unexplained_abstract_encoding: Object.freeze({
+		label: 'Unexplained abstract visual encoding',
+		judgeRule:
+			'Fail a bar, chart, gauge, colour split, detached arrow group or other abstract encoding whose visual grammar is not self-evident and directly tied to the physical mechanism. An unexplained diagram must not carry a required causal step.',
+		observedExamples: Object.freeze([
+			'before-and-after colour bars with no clear physical meaning or mapping to the colliding objects'
+		]),
+		regenerationRule:
+			'Replace unexplained charts or detached encodings with visible physical state changes on the actual objects. Retain a compact diagram only when its mapping is immediate, necessary and unambiguous.'
+	}),
+	spatial_story_breakdown: Object.freeze({
+		label: 'Spatial story or layout breakdown',
+		judgeRule:
+			'Fail when excessive unused space, disconnected repeated boxes, contradictory positions or a scrambled scan path prevent the learner from reading one coherent causal event in the required order.',
+		observedExamples: Object.freeze([
+			'most of each panel left empty while small repeated objects and detached arrows fail to form a continuous collision story'
+		]),
+		regenerationRule:
+			'Use the canvas to form one coherent physical story with balanced spacing and an unmistakable ordered eye path. Keep related objects, arrows and state changes close enough to be read together.'
+	}),
+	missing_derived_quantity_bridge: Object.freeze({
+		label: 'Missing bridge for a central derived quantity',
+		judgeRule:
+			'Fail when the illustration depends on a central derived scientific quantity that remains opaque even after viewing the physical mechanism, and one compact universal relationship would connect it to familiar quantities without adding a new causal step. Do not demand a formula when the visual already makes the term clear or the relationship is irrelevant.',
+		observedExamples: Object.freeze([
+			'a momentum-transfer illustration repeatedly naming momentum without connecting it to mass and velocity'
+		]),
+		regenerationRule:
+			'Add at most one compact, universally valid concept bridge in a separate supporting region, using full familiar terms and optionally the standard formula. Do not add example values, units, worked substitution or another numbered step.'
+	}),
+	missing_governing_law_bridge: Object.freeze({
+		label: 'Missing bridge for a governing law or invariant',
+		judgeRule:
+			'Fail when the approved mechanism depends on a conservation, balance, equality or other governing property but the illustration leaves that connection implicit even though one compact universal statement would make the relationship memorable. Do not require a law that is not part of the approved reasoning.',
+		observedExamples: Object.freeze([
+			'a collision showing momentum transfer without connecting it to total momentum before equalling total momentum after'
+		]),
+		regenerationRule:
+			'Add one compact, universally valid statement of the governing conservation, balance or equality property in a separate supporting region. Keep it connected to the depicted mechanism, outside the numbered steps, and free of example values.'
+	}),
+	ambiguous_physical_quantity_encoding: Object.freeze({
+		label: 'Ambiguous physical-quantity encoding',
+		judgeRule:
+			'Fail when an arrow, glow, length, area, colour or repeated cue could represent two materially different quantities and that ambiguity changes the scientific meaning, such as velocity versus momentum.',
+		observedExamples: Object.freeze([
+			'collision arrows whose lengths appear to prove momentum conservation but are never identified as velocity or momentum'
+		]),
+		regenerationRule:
+			'Make each scientific encoding explicit and consistent using one concise full-word label or unmistakable direct attachment. Do not let a qualitative arrow length appear to assert a different conserved quantity.'
+	}),
+	conserved_quantity_creation_cue: Object.freeze({
+		label: 'Conserved quantity appears to be created',
+		judgeRule:
+			'Fail when a burst, glow, particle source, expanding halo or other effect makes a conserved quantity appear to originate at an interaction instead of being transferred, redistributed or transformed within the stated system.',
+		observedExamples: Object.freeze([
+			'an explosive contact flash that makes momentum appear to be created during a collision'
+		]),
+		regenerationRule:
+			'Show a directional transfer or redistribution between the existing objects, using a restrained connector or flow cue. Avoid a source-like burst that implies the conserved quantity appears from nowhere.'
+	}),
+	scientifically_inexact_relationship_terminology: Object.freeze({
+		label: 'Scientifically inexact relationship terminology',
+		judgeRule:
+			'Fail a concise label that sounds plausible but names the scientific condition, relationship or system incorrectly, especially when the wording changes what law applies.',
+		observedExamples: Object.freeze([
+			'calling a collision itself closed instead of identifying a closed system'
+		]),
+		regenerationRule:
+			'Replace the imprecise label with the exact GCSE term for the condition, relationship or system. Make the term visibly attach to what it describes and keep the wording concise.'
 	})
 });
 
@@ -246,6 +326,11 @@ export const CHAIN_ILLUSTRATION_GLITCH_IDS = Object.freeze(
  * @property {boolean} terminologyClear
  * @property {boolean} compositionPlanFollowed
  * @property {boolean} noQuestionSpecificValues
+ * @property {string} textHiddenTakeaway
+ * @property {string} fullImageTakeaway
+ * @property {{visualCue: string, concept: string, relationship: string}[]} associativeLinks
+ * @property {string[]} unintendedTakeaways
+ * @property {boolean} takeawayMatchesGoal
  * @property {{order: number, dominantVisual: string, visibleCausalEvidence: string, understandableWithoutText: boolean, defects: string[]}[]} panelAudits
  * @property {number} total
  * @property {string[]} defects
@@ -396,6 +481,9 @@ Visual-learning gate for every accepted plan:
 - Make the endpoint concrete when possible: show the organism, material or consumer outcome rather than an abstract success meter.
 - Use full student-facing terminology. Never use unexplained shorthand such as "p.d."; write "potential difference" or an equally clear full phrase.
 - Small, correct GCSE equations may support an approved causal link when they explain it visually, but must not become an extra step.
+- When a chain depends on a derived scientific quantity whose name may remain opaque, plan at most one compact universal bridge to familiar quantities (for example, momentum = mass × velocity). Keep it outside the numbered causal steps. Omit it when the physical mechanism already explains the term or the relationship is not essential.
+- When an approved conservation, balance, equality or other governing property deepens the same mechanism, plan at most one compact universal law reminder (for example, total momentum before = total momentum after, or total current into a junction = total current out). Keep it visually connected to the mechanism but outside the numbered steps. Never invent a law that the evidence does not support.
+- Design associations deliberately: every supporting cue must connect a visible object or state to one concept and then to the approved causal relationship. For example, changed motion on either side of a collision can connect momentum transfer to conservation; branch flows meeting at a junction can connect individual currents to current balance. Do not return a disconnected list of facts, icons or formulae.
 - Keep all planned visuals and learner-facing text numerically transferable: no sample measurements or worked-example numbers. Use qualitative comparisons or universal symbols instead, and include a formula constant or ratio only when it applies unchanged to every attached question.
 - Choose compositionMode deliberately: continuous-journey for a process through a system, single-subject-state-progression for one object changing state, or linked-distinct-scenes when the causal steps require different scales or subjects.
 - visualAnchor names the memorable whole-image subject; continuousPath states how the eye travels through the mechanism; visualWithoutTextSummary states what a learner can retell after seeing the art for three seconds with all wording hidden.
@@ -821,6 +909,8 @@ SOURCE OF TRUTH
 Approved chain: ${candidate.canonicalChainText}
 Depict only the approved causal steps and panel plan below. A small, correct GCSE equation may support an approved link when it genuinely makes that link visible; it must not become an extra step or decorative fact.
 
+If this chain depends on a derived scientific quantity whose name alone may remain opaque, add at most one compact universal concept bridge to familiar quantities in a separate supporting region—for example, "momentum = mass × velocity". If an approved conservation, balance, equality or other governing property deepens the same mechanism, add at most one compact universal law reminder—for example, "total momentum before = total momentum after". Keep both outside the numbered steps, omit either when unnecessary, and never use example values, units or worked substitutions.
+
 TRANSFER GOAL
 Make this mechanism reconstructable across the attached exam contexts, without overfitting to one question:
 - ${contexts}
@@ -829,6 +919,9 @@ The contexts are evidence, not worked examples. Never copy their given values, s
 
 VISUAL-LEARNING OBJECTIVE
 Optimise for immediate grasp, memorisation and deeper understanding through complementary visual channels: whole-system context, mechanism-specific close-ups, spatial direction, semantic colour, and visible state change. Run a three-second test: if every word and number were covered, the pictures alone must still let a GCSE learner retell the causal sequence.
+
+The intended learner takeaway is: ${decision.visualWithoutTextSummary}
+Build specific cue → concept → relationship associations: each important visual cue must attach to a physical object or state, evoke one relevant concept, and connect that concept to the approved mechanism. A learner should reconstruct one connected explanation, not remember a loose list of objects, labels and formulae.
 
 COMPOSITION
 Composition mode: ${decision.compositionMode}
@@ -993,14 +1086,17 @@ ${visualJudgeEvidence(candidate, decision)}
 AUTOMATIC DARK FILE CHECK:
 ${JSON.stringify(hardCheck, null, 2)}
 
-Audit scientific accuracy, evidence fidelity, exact text, one-way sequence, iPad legibility, text-hidden comprehension, distinct mechanism visuals, internal identity/state/direction consistency, clear terminology, and numeric transferability. Exactly one panelAudit must correspond to every required panel in order. Any visible defect belongs in variant.defects/panelAudits and, when it matches the catalogue below, in one concise structured glitchFindings row.
+LEARNER RECONSTRUCTION — DO THIS BEFORE SCORING
+First infer what a GCSE student would learn from the visible objects, states, directions and changes with all wording conceptually hidden; return that as textHiddenTakeaway. Then read the complete image and return the connected explanation a student would retain as fullImageTakeaway. Do not list visible nouns or copy the captions. Return explicit associativeLinks, each mapping one visible cue → one concept → its relationship to the approved chain. List every plausible wrong lesson in unintendedTakeaways. Set takeawayMatchesGoal true only when the full takeaway specifically matches "${decision.visualWithoutTextSummary}", the associations are visibly supported, and there is no materially misleading alternative.
+
+Audit scientific accuracy, evidence fidelity, exact text, one-way sequence, iPad legibility, text-hidden comprehension, distinct mechanism visuals, internal identity/state/direction consistency, clear terminology, and numeric transferability. If a central derived quantity is still opaque after viewing the mechanism, check whether one compact universal relationship was needed to bridge it to familiar quantities. If a relevant approved conservation, balance or equality property would deepen the same mechanism, check whether a compact universal law reminder is present and connected. Exactly one panelAudit must correspond to every required panel in order. Any visible defect belongs in variant.defects/panelAudits and, when it matches the catalogue below, in one concise structured glitchFindings row.
 
 STRUCTURED GLITCH CATALOGUE
 ${glitchCatalogueJudgeText()}
 
 The symbol-placement contract is strict: every symbol or current label needs an unambiguous leader or immediate adjacency to the exact physical quantity and location it names. Equations must occupy a visually separate equation region and must not read as labels for a conductor, branch or object.
 
-Score the dark variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Return all seven hard booleans and panelAudits. It passes only at least 18/20, full scientificAccuracy/evidenceFidelity/textExactness, all hard booleans true, every panel understandable without text, no defects, and no glitch finding. Set the top-level pass to the same value as variant.pass.`;
+Score the dark variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Return all hard booleans, both learner takeaways, associativeLinks, unintendedTakeaways and panelAudits. It passes only at least 18/20, full scientificAccuracy/evidenceFidelity/textExactness, all hard booleans including takeawayMatchesGoal true, at least one specific associative link, no unintended takeaway, every panel understandable without text, no defects, and no glitch finding. Set the top-level pass to the same value as variant.pass.`;
 }
 
 export function darkVisualJudgeSchema() {
@@ -1073,7 +1169,7 @@ ${decision.visualSteps.map((step) => `${step.order}. ${step.heading} / ${step.mi
 AUTOMATIC FILE CHECKS:
 ${JSON.stringify(hardChecks, null, 2)}
 
-The light edit must keep the dark master's exact canvas, crop, panel geometry, objects, counts, states, directions, equations, wording, sequence, and scientific meaning. Only background/surface tone, text contrast, shadows, highlights, and glow may change. Audit the light image at iPad size using the same scientific, evidence, text-hidden, terminology, state-consistency, and numeric-transferability thresholds as the accepted dark. Return one light variant audit and a strict crossThemeConsistency audit.
+The light edit must keep the dark master's exact canvas, crop, panel geometry, objects, counts, states, directions, equations, wording, sequence, and scientific meaning. Only background/surface tone, text contrast, shadows, highlights, and glow may change. Reconstruct what a student learns from the light image in textHiddenTakeaway and fullImageTakeaway, map visible cue → concept → relationship in associativeLinks, list unintendedTakeaways, and compare the result with "${decision.visualWithoutTextSummary}" in takeawayMatchesGoal. Audit the light image at iPad size using the same scientific, evidence, text-hidden, terminology, state-consistency, and numeric-transferability thresholds as the accepted dark. Return one light variant audit and a strict crossThemeConsistency audit.
 
 STRUCTURED GLITCH CATALOGUE
 ${glitchCatalogueJudgeText()}
@@ -1174,6 +1270,13 @@ ${JSON.stringify(
 AUTOMATIC FILE CHECKS:
 ${JSON.stringify(hardChecks, null, 2)}
 
+LEARNER RECONSTRUCTION — DO THIS BEFORE SCORING EACH THEME
+1. Conceptually cover every word and number. State the connected lesson a GCSE student would infer from the visible objects, states, directions and changes as textHiddenTakeaway.
+2. Read the complete image. State the specific connected explanation the student would retain as fullImageTakeaway; do not merely list nouns or repeat captions.
+3. Return associativeLinks that explicitly map visible cue → concept → relationship to the approved chain. A decorative association or disconnected fact does not count.
+4. List every plausible wrong or competing lesson in unintendedTakeaways.
+5. Compare the reconstructed lesson with the intended goal, "${decision.visualWithoutTextSummary}". takeawayMatchesGoal is true only when the causal relationship is specific, visibly supported and free of a materially misleading alternative.
+
 Hard requirements for each theme variant:
 - scientifically correct against every approved source step and no invented causal claim;
 - exactly ${decision.visualSteps.length} numbered panels in the correct one-way order, with no loop;
@@ -1185,6 +1288,9 @@ Hard requirements for each theme variant:
 - causal changes are physically visible rather than represented only by labels, arrows, gauges, dashboard dials, checkmarks or generic icons;
 - the complete system/background is established once rather than decoratively copied into several panels;
 - student-facing wording uses full clear terminology with no unexplained shorthand such as "p.d.";
+- a central derived quantity is not left as an opaque repeated label when one compact, universally valid relationship is needed to connect it to familiar quantities; that bridge remains outside the numbered causal steps and contains no example values;
+- a relevant approved conservation, balance, equality or governing property is connected to the depicted mechanism with one compact universal reminder when that connection materially deepens the lesson;
+- the reconstructed learner takeaway is a specific connected explanation that matches the intended goal, at least one cue → concept → relationship association is visibly grounded, and no materially misleading takeaway remains;
 - no given, example, substitution, intermediate-result, final-answer, one-question-unit or arbitrary-scale numerical value appears. Panel ordinal numbers are allowed. Equations, symbols, formula constants and ratios are allowed only when they apply unchanged to every attached question;
 - the final outcome is concrete whenever the approved mechanism has a visible organism, material, apparatus or consumer outcome;
 - readable and unclipped at 1024×576 iPad preview size;
@@ -1215,7 +1321,7 @@ ${Object.entries(CHAIN_ILLUSTRATION_GLITCH_CATALOGUE)
 
 The symbol-placement contract is strict: every symbol or current label needs an unambiguous leader or immediate adjacency to the exact physical quantity and location it names. Equations must occupy a visually separate equation region and must not read as labels for a conductor, branch or object.
 
-Score each theme variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Also return the seven hard booleans textIndependentMeaning, distinctVisualAnchors, causalChangesVisible, noDominantRepetition, terminologyClear, compositionPlanFollowed and noQuestionSpecificValues. A variant passes only with at least 18/20, full scores for scientificAccuracy/evidenceFidelity/textExactness, all seven hard booleans true, every panelAudit understandable without text, and no glitch finding affecting that theme. Score crossThemeConsistency 0-4; the pair passes only at 4/4 with compositionMatch, contentMatch, textMatch and scientificMeaningMatch all true, with both variants passing, and with an empty glitchFindings array. Prefer immediate visual understanding and correctness over spectacle.`;
+Score each theme variant: scientificAccuracy 0-4, evidenceFidelity 0-4, textExactness 0-3, sequenceClarity 0-3, ipadLegibility 0-2, mnemonicCoherence 0-2, appStyleFit 0-2. Also return the hard booleans textIndependentMeaning, distinctVisualAnchors, causalChangesVisible, noDominantRepetition, terminologyClear, compositionPlanFollowed, noQuestionSpecificValues and takeawayMatchesGoal, plus both takeaways, associativeLinks and unintendedTakeaways. A variant passes only with at least 18/20, full scores for scientificAccuracy/evidenceFidelity/textExactness, every hard boolean true, at least one specific associative link, no unintended takeaway, every panelAudit understandable without text, and no glitch finding affecting that theme. Score crossThemeConsistency 0-4; the pair passes only at 4/4 with compositionMatch, contentMatch, textMatch and scientificMeaningMatch all true, with both variants passing, and with an empty glitchFindings array. Prefer immediate visual understanding and correctness over spectacle.`;
 }
 
 export function visualJudgeSchema() {
@@ -1248,6 +1354,11 @@ export function visualJudgeSchema() {
 						'terminologyClear',
 						'compositionPlanFollowed',
 						'noQuestionSpecificValues',
+						'textHiddenTakeaway',
+						'fullImageTakeaway',
+						'associativeLinks',
+						'unintendedTakeaways',
+						'takeawayMatchesGoal',
 						'panelAudits',
 						'total',
 						'defects'
@@ -1269,6 +1380,25 @@ export function visualJudgeSchema() {
 						terminologyClear: { type: 'boolean' },
 						compositionPlanFollowed: { type: 'boolean' },
 						noQuestionSpecificValues: { type: 'boolean' },
+						textHiddenTakeaway: { type: 'string' },
+						fullImageTakeaway: { type: 'string' },
+						associativeLinks: {
+							type: 'array',
+							minItems: 1,
+							maxItems: 6,
+							items: {
+								type: 'object',
+								additionalProperties: false,
+								required: ['visualCue', 'concept', 'relationship'],
+								properties: {
+									visualCue: { type: 'string' },
+									concept: { type: 'string' },
+									relationship: { type: 'string' }
+								}
+							}
+						},
+						unintendedTakeaways: { type: 'array', items: { type: 'string' } },
+						takeawayMatchesGoal: { type: 'boolean' },
 						panelAudits: {
 							type: 'array',
 							items: {
@@ -1406,7 +1536,8 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 			'noDominantRepetition',
 			'terminologyClear',
 			'compositionPlanFollowed',
-			'noQuestionSpecificValues'
+			'noQuestionSpecificValues',
+			'takeawayMatchesGoal'
 		]);
 		for (const field of hardBooleanFields) {
 			if (typeof row[field] !== 'boolean') {
@@ -1470,6 +1601,25 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 		if (!auditTerminologyClear && row.terminologyClear === true) {
 			issues.push(`${row.theme}: terminology boolean contradicts the visual audit.`);
 		}
+		const associativeLinks = Array.isArray(row.associativeLinks) ? row.associativeLinks : [];
+		const learningAuditComplete = Boolean(
+			String(row.textHiddenTakeaway ?? '').trim() &&
+			String(row.fullImageTakeaway ?? '').trim() &&
+			associativeLinks.length >= 1 &&
+			associativeLinks.length <= 6 &&
+			associativeLinks.every(
+				(link) =>
+					String(link?.visualCue ?? '').trim() &&
+					String(link?.concept ?? '').trim() &&
+					String(link?.relationship ?? '').trim()
+			) &&
+			Array.isArray(row.unintendedTakeaways)
+		);
+		if (!learningAuditComplete) {
+			issues.push(
+				`${row.theme}: learner reconstruction requires two takeaways, 1–6 complete associative links and an unintendedTakeaways array.`
+			);
+		}
 		const panelAuditPass =
 			panelAuditStructurallyComplete &&
 			panelAudits.every(
@@ -1483,6 +1633,9 @@ export function validateVisualJudge(judge, hardChecks, approvedVisualSteps) {
 			row.terminologyClear &&
 			row.compositionPlanFollowed &&
 			row.noQuestionSpecificValues &&
+			row.takeawayMatchesGoal &&
+			learningAuditComplete &&
+			row.unintendedTakeaways.length === 0 &&
 			panelAuditAnchorsDistinct &&
 			auditTerminologyClear &&
 			panelAuditPass
@@ -1697,6 +1850,17 @@ function perfectJudgeVariant(theme, steps) {
 		terminologyClear: true,
 		compositionPlanFollowed: true,
 		noQuestionSpecificValues: true,
+		textHiddenTakeaway: 'The visible mechanism forms one connected causal sequence.',
+		fullImageTakeaway: 'The approved reasoning chain explains the visible mechanism.',
+		associativeLinks: [
+			{
+				visualCue: steps[0]?.distinctVisualAnchor ?? 'Visible mechanism',
+				concept: steps[0]?.heading ?? 'First causal concept',
+				relationship: steps.map((step) => step.heading).join(' → ')
+			}
+		],
+		unintendedTakeaways: [],
+		takeawayMatchesGoal: true,
 		panelAudits: steps.map((step) => ({
 			order: step.order,
 			dominantVisual: step.distinctVisualAnchor,
