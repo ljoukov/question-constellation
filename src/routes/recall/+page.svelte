@@ -29,10 +29,12 @@
 		cardsEligibleForRecallMode,
 		explicitReversePair,
 		mixedRecallPresentation,
+		recallDragIntent,
 		recallControlModel,
 		requeueRecallContentKey,
 		recallReviewDecision,
 		shuffledRecallChoices,
+		type RecallDragIntent,
 		type RecallMcqFeedback,
 		type RecallPresentation,
 		type RecallReviewIntent
@@ -211,7 +213,11 @@
 	let dragStartX = $state(0);
 	let dragStartY = $state(0);
 	let dragging = $state(false);
+	let dragIntent = $state<RecallDragIntent | null>(null);
 	let activePointerId = $state<number | null>(null);
+	let resultFaceElement = $state<HTMLElement | null>(null);
+	let resultFaceScrollable = $state(false);
+	let resultMeasureFrame: number | null = null;
 	let cardMotion = $state<CardMotion>('idle');
 	let motionTimer: ReturnType<typeof setTimeout> | null = null;
 	let recallSyncFailure = $state<RequestFailure | null>(null);
@@ -423,6 +429,37 @@
 		}
 	});
 
+	$effect(() => {
+		if (!browser) return;
+		const resultFace = resultFaceElement;
+		const showResult = revealed;
+		const presentation = currentPresentation;
+
+		if (!resultFace || !showResult) {
+			resultFaceScrollable = false;
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(() => {
+			scheduleResultScrollabilityUpdate();
+		});
+		resizeObserver.observe(resultFace);
+		const scrollContainer =
+			presentation === 'mcq' ? resultFace.querySelector<HTMLElement>('.mcq-answer') : resultFace;
+		if (scrollContainer && scrollContainer !== resultFace) {
+			resizeObserver.observe(scrollContainer);
+		}
+		scheduleResultScrollabilityUpdate();
+
+		return () => {
+			resizeObserver.disconnect();
+			if (resultMeasureFrame !== null) {
+				cancelAnimationFrame(resultMeasureFrame);
+				resultMeasureFrame = null;
+			}
+		};
+	});
+
 	onMount(() => {
 		let localProgress: Record<string, RecallProgress> = {};
 		try {
@@ -543,6 +580,30 @@
 			return;
 		}
 		void flushRecallSync();
+	}
+
+	function measureResultScrollability() {
+		const resultFace = resultFaceElement;
+		if (!resultFace || !revealed) {
+			resultFaceScrollable = false;
+			return;
+		}
+		const scrollContainer =
+			currentPresentation === 'mcq'
+				? resultFace.querySelector<HTMLElement>('.mcq-answer')
+				: resultFace;
+		resultFaceScrollable = Boolean(
+			scrollContainer && scrollContainer.scrollHeight - scrollContainer.clientHeight > 2
+		);
+	}
+
+	function scheduleResultScrollabilityUpdate() {
+		if (!browser) return;
+		if (resultMeasureFrame !== null) cancelAnimationFrame(resultMeasureFrame);
+		resultMeasureFrame = requestAnimationFrame(() => {
+			resultMeasureFrame = null;
+			measureResultScrollability();
+		});
 	}
 
 	function clearMotionTimer() {
@@ -771,7 +832,9 @@
 		dragX = 0;
 		dragY = 0;
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
+		resultFaceScrollable = false;
 		cardStartedAt = sessionActive && !sessionComplete ? Date.now() : 0;
 		cardMotion = options?.entering ? 'entering' : 'idle';
 		if (options?.entering) {
@@ -877,6 +940,7 @@
 		if (!currentCard || revealed || currentPresentation === 'mcq' || cardBusy) return;
 		haptics.selection();
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
 		dragX = 0;
 		dragY = 0;
@@ -898,6 +962,7 @@
 
 	function returnCard(afterReturn?: () => void) {
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
 		dragX = 0;
 		dragY = 0;
@@ -912,6 +977,7 @@
 		if (!currentCard || cardMotion === 'exiting-left' || cardMotion === 'exiting-right') return;
 		const width = browser ? window.innerWidth : 420;
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
 		dragX = direction === 'right' ? width * 1.18 : -width * 1.18;
 		dragY = Math.max(-86, Math.min(86, dragY));
@@ -967,33 +1033,68 @@
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
 		clearMotionTimer();
 		activePointerId = event.pointerId;
-		dragging = true;
-		cardMotion = 'dragging';
+		dragging = false;
+		dragIntent = 'pending';
 		dragStartX = event.clientX;
 		dragStartY = event.clientY;
 		dragX = 0;
 		dragY = 0;
-		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+		try {
+			(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+		} catch {
+			// Some WebKit versions reject capture while transferring a native touch gesture.
+		}
 	}
 
 	function handlePointerMove(event: PointerEvent) {
-		if (!dragging || activePointerId !== event.pointerId) return;
+		if (activePointerId !== event.pointerId) return;
+		const nextDragX = event.clientX - dragStartX;
+		const nextDragY = event.clientY - dragStartY;
+		const nextIntent = recallDragIntent(nextDragX, nextDragY, dragIntent ?? 'pending');
+
+		if (nextIntent === 'vertical') {
+			try {
+				(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+			} catch {
+				// The browser may already own a vertical scroll gesture.
+			}
+			activePointerId = null;
+			dragIntent = null;
+			dragging = false;
+			return;
+		}
+		dragIntent = nextIntent;
+		if (nextIntent !== 'horizontal') return;
+
 		event.preventDefault();
-		dragX = event.clientX - dragStartX;
-		dragY = event.clientY - dragStartY;
+		if (!dragging) {
+			dragging = true;
+			cardMotion = 'dragging';
+		}
+		dragX = nextDragX;
+		dragY = Math.max(-18, Math.min(18, nextDragY * 0.15));
 	}
 
 	function handlePointerUp(event: PointerEvent) {
-		if (!dragging || activePointerId !== event.pointerId) return;
+		if (activePointerId !== event.pointerId) return;
 		try {
 			(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
 		} catch {
 			// Pointer capture may already be released by the browser.
 		}
-		const direction = dragX > 0 ? 'right' : 'left';
-		const shouldAct = Math.abs(dragX) > 92 && Math.abs(dragX) > Math.abs(dragY);
-		dragging = false;
+		const completedHorizontalDrag = dragIntent === 'horizontal';
+		dragIntent = null;
 		activePointerId = null;
+		if (!completedHorizontalDrag) {
+			dragging = false;
+			dragX = 0;
+			dragY = 0;
+			return;
+		}
+
+		const direction = dragX > 0 ? 'right' : 'left';
+		const shouldAct = Math.abs(dragX) > 92;
+		dragging = false;
 		if (shouldAct) {
 			reviewCurrentCard(direction === 'right' ? 'next' : 'repeat');
 		} else {
@@ -1002,13 +1103,18 @@
 	}
 
 	function handlePointerCancel(event: PointerEvent) {
-		if (!dragging || activePointerId !== event.pointerId) return;
+		if (activePointerId !== event.pointerId) return;
 		try {
 			(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
 		} catch {
 			// Pointer capture may already be released by the browser.
 		}
-		returnCard();
+		dragging = false;
+		dragIntent = null;
+		activePointerId = null;
+		dragX = 0;
+		dragY = 0;
+		cardMotion = 'idle';
 	}
 
 	function syncRecallUrl(
@@ -1267,8 +1373,10 @@
 							<div
 								class="card-face back"
 								class:mcq-result-face={currentPresentation === 'mcq'}
+								class:allows-vertical-result-scroll={resultFaceScrollable}
 								aria-hidden={!revealed}
 								inert={!revealed}
+								bind:this={resultFaceElement}
 							>
 								{#if currentPresentation === 'mcq'}
 									<header
@@ -1289,7 +1397,11 @@
 										<h1>{mcqFeedback === 'correct' ? 'That’s right' : 'Not quite'}</h1>
 									</header>
 
-									<section class="card-answer mcq-answer" aria-label="Answer feedback">
+									<section
+										class="card-answer mcq-answer"
+										class:allows-vertical-result-scroll={resultFaceScrollable}
+										aria-label="Answer feedback"
+									>
 										<div class="mcq-key-answer" id={`mcq-answer-${currentCard.id}`}>
 											<span>Correct answer</span>
 											<strong><MathText text={answerTextFor(currentCard)} /></strong>
@@ -1309,13 +1421,21 @@
 										{/if}
 
 										{#if selectedChoice && selectedChoice !== currentCard.back}
-											<details class="mcq-choice-review">
-												<summary>Review your choice</summary>
+											<details
+												class="mcq-choice-review"
+												ontoggle={scheduleResultScrollabilityUpdate}
+											>
+												<summary>Review incorrect answer</summary>
 												<div class="mcq-choice-review-content">
-													<span>Your choice</span>
-													<strong><MathText text={selectedChoice} /></strong>
+													<div class="mcq-incorrect-answer">
+														<span>Incorrect answer</span>
+														<strong><MathText text={selectedChoice} /></strong>
+													</div>
 													{#if currentChoiceFeedback}
-														<p><MathText text={currentChoiceFeedback} /></p>
+														<div class="mcq-choice-reason">
+															<span>Why it’s incorrect</span>
+															<p><MathText text={currentChoiceFeedback} /></p>
+														</div>
 													{/if}
 												</div>
 											</details>
@@ -1903,7 +2023,7 @@
 	}
 
 	.card-stage.moving-stack .stack-card.preview.one {
-		opacity: 1;
+		opacity: 0.72;
 	}
 
 	.card-stage.flipping-stack .stack-card.preview {
@@ -2040,6 +2160,10 @@
 		transform: rotateY(180deg);
 	}
 
+	.card-face.back:not(.allows-vertical-result-scroll) {
+		touch-action: none;
+	}
+
 	.card-reveal-hitbox {
 		position: absolute;
 		inset: 0;
@@ -2164,6 +2288,11 @@
 		overscroll-behavior: contain;
 		scrollbar-gutter: stable;
 		-webkit-overflow-scrolling: touch;
+		touch-action: pan-y;
+	}
+
+	.card-answer.mcq-answer:not(.allows-vertical-result-scroll) {
+		touch-action: none;
 	}
 
 	.card-face.mcq-result-face {
@@ -2210,7 +2339,8 @@
 
 	.mcq-key-answer > span,
 	.mcq-memory-tip > span,
-	.mcq-choice-review-content > span {
+	.mcq-incorrect-answer > span,
+	.mcq-choice-reason > span {
 		color: var(--qc-ui-text-muted);
 		font-size: 0.78rem;
 		font-weight: 650;
@@ -2313,9 +2443,21 @@
 
 	.mcq-choice-review-content {
 		display: grid;
+		gap: 0.8rem;
+		min-width: 0;
+		padding: 0.2rem 0 0.1rem;
+	}
+
+	.mcq-incorrect-answer,
+	.mcq-choice-reason {
+		display: grid;
 		gap: 0.3rem;
 		min-width: 0;
-		padding: 0.2rem 0 0.1rem 0.85rem;
+		padding-left: 1.03rem;
+	}
+
+	.mcq-incorrect-answer {
+		padding-left: 0.85rem;
 		border-left: 0.18rem solid var(--qc-ui-danger);
 	}
 
@@ -2689,7 +2831,7 @@
 	}
 
 	:global(:root[data-theme='dark']) .card-stage.moving-stack .stack-card.preview.one {
-		opacity: 1;
+		opacity: 0.62;
 	}
 
 	:global(:root[data-theme='dark']) .card-stage.flipping-stack .stack-card.preview {
@@ -2739,6 +2881,12 @@
 		border-color: var(--qc-ui-danger);
 		background: color-mix(in srgb, var(--qc-ui-danger) 12%, var(--qc-ui-surface));
 		color: var(--qc-ui-danger);
+	}
+
+	@media (min-width: 621px) and (min-height: 900px) {
+		.stack-card {
+			height: min(100%, 40rem);
+		}
 	}
 
 	@media (min-width: 621px) and (max-height: 820px) {
@@ -2994,7 +3142,8 @@
 		}
 
 		.mcq-key-answer > span,
-		.mcq-choice-review-content > span {
+		.mcq-incorrect-answer > span,
+		.mcq-choice-reason > span {
 			font-size: 0.74rem;
 		}
 

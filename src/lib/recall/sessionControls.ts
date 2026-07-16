@@ -1,6 +1,11 @@
 export type RecallPresentation = 'flashcard' | 'mcq';
 export type RecallMcqFeedback = 'correct' | 'incorrect' | null;
 export type RecallReviewIntent = 'repeat' | 'next';
+export type RecallDragIntent = 'pending' | 'horizontal' | 'vertical';
+
+const RECALL_DRAG_INTENT_SLOP_PX = 8;
+const RECALL_DRAG_HORIZONTAL_BIAS = 0.8;
+const RECALL_DRAG_VERTICAL_BIAS = 1.2;
 
 export type RecallControlModel =
 	| {
@@ -31,6 +36,27 @@ export type RecallReviewDecision = {
 	grade: 'again' | 'good';
 	direction: 'left' | 'right';
 };
+
+export function recallDragIntent(
+	deltaX: number,
+	deltaY: number,
+	currentIntent: RecallDragIntent = 'pending'
+): RecallDragIntent {
+	if (currentIntent !== 'pending') return currentIntent;
+
+	const horizontalDistance = Math.abs(deltaX);
+	const verticalDistance = Math.abs(deltaY);
+	if (Math.max(horizontalDistance, verticalDistance) < RECALL_DRAG_INTENT_SLOP_PX) {
+		return 'pending';
+	}
+	if (horizontalDistance >= verticalDistance * RECALL_DRAG_HORIZONTAL_BIAS) {
+		return 'horizontal';
+	}
+	if (verticalDistance >= horizontalDistance * RECALL_DRAG_VERTICAL_BIAS) {
+		return 'vertical';
+	}
+	return 'pending';
+}
 
 export function mixedRecallPresentation(
 	cardPosition: number,

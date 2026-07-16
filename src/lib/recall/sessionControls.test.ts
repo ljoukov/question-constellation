@@ -3,6 +3,7 @@ import {
 	cardsEligibleForRecallMode,
 	explicitReversePair,
 	mixedRecallPresentation,
+	recallDragIntent,
 	recallControlModel,
 	requeueRecallContentKey,
 	recallReviewDecision,
@@ -10,6 +11,15 @@ import {
 } from './sessionControls';
 
 describe('recall session controls', () => {
+	it('waits through touch slop and favours a natural diagonal card swipe', () => {
+		expect(recallDragIntent(4, 4)).toBe('pending');
+		expect(recallDragIntent(-10, 10)).toBe('horizontal');
+		expect(recallDragIntent(-12, 8)).toBe('horizontal');
+		expect(recallDragIntent(4, 12)).toBe('vertical');
+		expect(recallDragIntent(40, 2, 'vertical')).toBe('vertical');
+		expect(recallDragIntent(2, 40, 'horizontal')).toBe('horizontal');
+	});
+
 	it('alternates a five-card mixed deck when choices exist', () => {
 		expect(Array.from({ length: 5 }, (_, index) => mixedRecallPresentation(index, true))).toEqual([
 			'flashcard',
