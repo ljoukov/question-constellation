@@ -8,6 +8,7 @@
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { haptics } from '$lib/haptics';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
 	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
 	import type {
@@ -310,10 +311,15 @@
 		return 'Done';
 	});
 	const completionSummary = $derived.by(() => {
+		const skipped = Math.max(0, cardPositionInSession - reviewedInSession);
 		if (reviewedInSession === 0) {
-			return 'No cards were checked.';
+			return skipped > 0
+				? `${skipped} ${skipped === 1 ? 'card' : 'cards'} skipped · no answers checked`
+				: 'No cards were checked.';
 		}
-		return `${rememberedInSession} remembered · ${returningSoonerInSession} needed another look`;
+		return `${rememberedInSession} remembered · ${returningSoonerInSession} needed another look${
+			skipped > 0 ? ` · ${skipped} skipped` : ''
+		}`;
 	});
 	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
 	const dragCue = $derived(
@@ -323,7 +329,12 @@
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 	const slowMotion = $derived(page.url.searchParams.get('debugMotion') === 'slow');
 	const sessionAnnouncement = $derived.by(() => {
-		if (sessionComplete) return `Session complete. ${reviewedInSession} prompts checked.`;
+		if (sessionComplete) {
+			const skipped = Math.max(0, cardPositionInSession - reviewedInSession);
+			return `Session complete. ${reviewedInSession} prompts checked${
+				skipped > 0 ? ` and ${skipped} skipped` : ''
+			}.`;
+		}
 		if (!currentCard) return '';
 		if (!revealed) return `Card ${cardPositionInSession + 1} of ${totalCards}.`;
 		if (currentPresentation === 'mcq') return '';
@@ -728,6 +739,8 @@
 	}
 
 	function startSession() {
+		if (filteredCards.length === 0) return;
+		haptics.selection();
 		startSessionState();
 		syncRecallUrl('push', true);
 		requestAnimationFrame(() => focusCurrentPrompt());
@@ -739,6 +752,7 @@
 
 	async function exitSession() {
 		if (leavingSession) return;
+		haptics.selection();
 		leavingSession = true;
 		clearPersistedSession();
 		try {
@@ -845,6 +859,8 @@
 		if (selectedChoice || cardBusy || currentPresentation !== 'mcq') return;
 		selectedChoice = choice;
 		const isCorrect = choice === card.back;
+		if (isCorrect) haptics.success();
+		else haptics.error();
 		mcqFeedback = isCorrect ? 'correct' : 'incorrect';
 		cardMotion = 'answering';
 		afterMotion(560, () => {
@@ -859,6 +875,7 @@
 
 	function revealCard() {
 		if (!currentCard || revealed || currentPresentation === 'mcq' || cardBusy) return;
+		haptics.selection();
 		dragging = false;
 		activePointerId = null;
 		dragX = 0;
@@ -869,6 +886,14 @@
 			cardMotion = 'idle';
 			requestAnimationFrame(() => flashcardResultHeading?.focus({ preventScroll: true }));
 		});
+	}
+
+	function skipCurrentCard() {
+		if (!currentCard || revealed || currentPresentation !== 'mcq' || selectedChoice || cardBusy) {
+			return;
+		}
+		haptics.selection();
+		exitCard('left', () => advanceCard(false));
 	}
 
 	function returnCard(afterReturn?: () => void) {
@@ -903,6 +928,7 @@
 			intent
 		});
 		if (!decision) return;
+		haptics.selection();
 		const chosenAnswer = currentPresentation === 'mcq' ? (selectedChoice ?? undefined) : undefined;
 		exitCard(decision.direction, () => {
 			if (intent === 'repeat') {
@@ -930,6 +956,12 @@
 
 	function handlePointerDown(event: PointerEvent) {
 		if (!currentCard || sessionComplete || cardBusy || !revealed) {
+			return;
+		}
+		if (
+			event.target instanceof Element &&
+			event.target.closest('button, a, input, select, textarea, summary')
+		) {
 			return;
 		}
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -1259,19 +1291,9 @@
 
 									<section class="card-answer mcq-answer" aria-label="Answer feedback">
 										<div class="mcq-key-answer" id={`mcq-answer-${currentCard.id}`}>
-											<span>Answer</span>
+											<span>Correct answer</span>
 											<strong><MathText text={answerTextFor(currentCard)} /></strong>
 										</div>
-
-										{#if selectedChoice && selectedChoice !== currentCard.back}
-											<div class="mcq-choice-review">
-												<span>Your choice</span>
-												<strong><MathText text={selectedChoice} /></strong>
-												{#if currentChoiceFeedback}
-													<p><MathText text={currentChoiceFeedback} /></p>
-												{/if}
-											</div>
-										{/if}
 
 										{#if currentExplanation}
 											<div class="mcq-explanation">
@@ -1284,6 +1306,19 @@
 												<span>Remember</span>
 												<p><MathText text={currentMemoryTip} /></p>
 											</div>
+										{/if}
+
+										{#if selectedChoice && selectedChoice !== currentCard.back}
+											<details class="mcq-choice-review">
+												<summary>Review your choice</summary>
+												<div class="mcq-choice-review-content">
+													<span>Your choice</span>
+													<strong><MathText text={selectedChoice} /></strong>
+													{#if currentChoiceFeedback}
+														<p><MathText text={currentChoiceFeedback} /></p>
+													{/if}
+												</div>
+											</details>
 										{/if}
 									</section>
 								{:else}
@@ -1315,43 +1350,51 @@
 				{/key}
 			</section>
 
-			{#if currentControls.layout !== 'none'}
-				<footer
-					class="session-actions"
-					class:prompt-actions={currentControls.phase === 'prompt'}
-					class:result-actions={currentControls.phase === 'result'}
-					class:single-action={currentControls.layout === 'single'}
-				>
-					{#if currentControls.phase === 'result'}
-						{#if currentControls.layout === 'split'}
-							<button
-								type="button"
-								class="session-secondary"
-								disabled={cardBusy}
-								aria-label="Put this card at the end of this set"
-								onclick={() => reviewCurrentCard('repeat')}
-							>
-								<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
-								{currentControls.repeatLabel}
-							</button>
-						{/if}
+			<footer
+				class="session-actions"
+				class:prompt-actions={currentControls.phase === 'prompt'}
+				class:result-actions={currentControls.phase === 'result'}
+				class:single-action={currentControls.layout === 'single'}
+			>
+				{#if currentControls.phase === 'result'}
+					{#if currentControls.layout === 'split'}
 						<button
 							type="button"
-							class="session-primary session-next"
+							class="session-secondary"
 							disabled={cardBusy}
-							onclick={() => reviewCurrentCard('next')}
+							aria-label="Put this card at the end of this set"
+							onclick={() => reviewCurrentCard('repeat')}
 						>
-							{currentControls.nextLabel}
-							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
-						</button>
-					{:else if currentControls.action === 'reveal'}
-						<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
-							<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
-							{currentControls.label}
+							<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
+							{currentControls.repeatLabel}
 						</button>
 					{/if}
-				</footer>
-			{/if}
+					<button
+						type="button"
+						class="session-primary session-next"
+						disabled={cardBusy}
+						onclick={() => reviewCurrentCard('next')}
+					>
+						{currentControls.nextLabel}
+						<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
+					</button>
+				{:else if currentControls.action === 'reveal'}
+					<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
+						<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
+						{currentControls.label}
+					</button>
+				{:else if currentControls.action === 'skip'}
+					<button
+						type="button"
+						class="session-secondary session-skip"
+						disabled={cardBusy}
+						onclick={skipCurrentCard}
+					>
+						{currentControls.label}
+						<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
+					</button>
+				{/if}
+			</footer>
 		{/if}
 	</main>
 {:else}
@@ -1742,7 +1785,7 @@
 		min-height: 0;
 		max-height: var(--app-viewport-height, 100dvh);
 		overflow: hidden;
-		touch-action: pan-y pinch-zoom;
+		touch-action: pan-y;
 		--recall-card-enter-duration: 360ms;
 		--recall-card-exit-duration: 360ms;
 		--recall-card-return-duration: 220ms;
@@ -1860,7 +1903,7 @@
 	}
 
 	.card-stage.moving-stack .stack-card.preview.one {
-		opacity: 0.72;
+		opacity: 1;
 	}
 
 	.card-stage.flipping-stack .stack-card.preview {
@@ -1883,7 +1926,7 @@
 		box-shadow: none;
 		overflow: visible;
 		user-select: none;
-		touch-action: pan-y pinch-zoom;
+		touch-action: pan-y;
 		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
 		transition:
 			transform var(--recall-card-return-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
@@ -1903,13 +1946,7 @@
 	}
 
 	.stack-card.active.mcq-card {
-		touch-action: pan-y pinch-zoom;
-	}
-
-	:global(html[data-viewport-zoomed='true']) .recall-session,
-	:global(html[data-viewport-zoomed='true']) .stack-card.active,
-	:global(html[data-viewport-zoomed='true']) .stack-card.active.mcq-card {
-		touch-action: pan-x pan-y pinch-zoom;
+		touch-action: pan-y;
 	}
 
 	.stack-card.active.exiting-left,
@@ -1917,12 +1954,12 @@
 		opacity: 0;
 		transition:
 			transform var(--recall-card-exit-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
-			opacity calc(var(--recall-card-exit-duration) * 0.78) ease;
+			opacity var(--recall-card-exit-duration) ease;
 	}
 
 	@keyframes promote-card {
 		from {
-			opacity: 0.92;
+			opacity: 1;
 			transform: translate(0.65rem, 0.65rem) rotate(0deg) scale(0.985);
 		}
 
@@ -1973,6 +2010,7 @@
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		-webkit-overflow-scrolling: touch;
+		touch-action: pan-y;
 	}
 
 	.card-face.mcq-front {
@@ -2172,7 +2210,7 @@
 
 	.mcq-key-answer > span,
 	.mcq-memory-tip > span,
-	.mcq-choice-review > span {
+	.mcq-choice-review-content > span {
 		color: var(--qc-ui-text-muted);
 		font-size: 0.78rem;
 		font-weight: 650;
@@ -2190,8 +2228,7 @@
 
 	.mcq-key-answer,
 	.mcq-explanation,
-	.mcq-memory-tip,
-	.mcq-choice-review {
+	.mcq-memory-tip {
 		display: grid;
 		gap: 0.3rem;
 		min-width: 0;
@@ -2238,6 +2275,48 @@
 	.mcq-choice-review {
 		padding-top: 0.9rem;
 		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.mcq-choice-review summary {
+		display: flex;
+		min-height: 2.75rem;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.94rem;
+		font-weight: 700;
+		list-style: none;
+		cursor: pointer;
+	}
+
+	.mcq-choice-review summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.mcq-choice-review summary::after {
+		content: '+';
+		color: var(--qc-ui-text-muted);
+		font-size: 1.25rem;
+		font-weight: 500;
+		line-height: 1;
+	}
+
+	.mcq-choice-review[open] summary::after {
+		content: '−';
+	}
+
+	.mcq-choice-review summary:focus-visible {
+		outline: 3px solid var(--qc-ui-accent-border);
+		outline-offset: 2px;
+	}
+
+	.mcq-choice-review-content {
+		display: grid;
+		gap: 0.3rem;
+		min-width: 0;
+		padding: 0.2rem 0 0.1rem 0.85rem;
+		border-left: 0.18rem solid var(--qc-ui-danger);
 	}
 
 	.mcq-choice-review strong {
@@ -2610,7 +2689,7 @@
 	}
 
 	:global(:root[data-theme='dark']) .card-stage.moving-stack .stack-card.preview.one {
-		opacity: 0.62;
+		opacity: 1;
 	}
 
 	:global(:root[data-theme='dark']) .card-stage.flipping-stack .stack-card.preview {
@@ -2915,7 +2994,7 @@
 		}
 
 		.mcq-key-answer > span,
-		.mcq-choice-review > span {
+		.mcq-choice-review-content > span {
 			font-size: 0.74rem;
 		}
 

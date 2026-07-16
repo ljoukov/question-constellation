@@ -11,8 +11,9 @@ export type RecallControlModel =
 	  }
 	| {
 			phase: 'prompt';
-			layout: 'none';
-			action: 'choose';
+			layout: 'single';
+			label: 'Skip card';
+			action: 'skip';
 	  }
 	| {
 			phase: 'result';
@@ -51,8 +52,9 @@ export function recallControlModel({
 		return presentation === 'mcq'
 			? {
 					phase: 'prompt',
-					layout: 'none',
-					action: 'choose'
+					layout: 'single',
+					label: 'Skip card',
+					action: 'skip'
 				}
 			: {
 					phase: 'prompt',

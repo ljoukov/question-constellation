@@ -17,6 +17,9 @@ importers:
       '@openai/codex-sdk':
         specifier: 0.144.1
         version: 0.144.1
+      ios-haptics:
+        specifier: ^0.1.5
+        version: 0.1.5
       jose:
         specifier: ^6.2.3
         version: 6.2.3
@@ -1632,6 +1635,9 @@ packages:
 
   inline-style-parser@0.2.7:
     resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
+
+  ios-haptics@0.1.5:
+    resolution: {integrity: sha512-quSSgC4pKFkXV0SzKPRB8jOh7GYl9nYvgIYYcmFMqOkk2WSJ/ocfN5O0F/w8cqzUxKP2z+4tiJRO3eGE3qU05g==}
 
   is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
@@ -3778,6 +3784,8 @@ snapshots:
   inherits@2.0.4: {}
 
   inline-style-parser@0.2.7: {}
+
+  ios-haptics@0.1.5: {}
 
   is-extglob@2.1.1: {}
 

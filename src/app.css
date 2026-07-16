@@ -74,7 +74,7 @@
 html {
 	min-width: 320px;
 	background: var(--qc-app-surface);
-	touch-action: manipulation;
+	touch-action: pan-x pan-y;
 }
 
 body {
@@ -83,7 +83,7 @@ body {
 	min-height: 100vh;
 	background: var(--qc-app-surface);
 	overflow-x: hidden;
-	touch-action: manipulation;
+	touch-action: pan-x pan-y;
 }
 
 button,
@@ -127,7 +127,7 @@ a {
 	position: fixed;
 	top: 0.75rem;
 	left: 50%;
-	z-index: 50;
+	z-index: 100;
 	display: inline-flex;
 	align-items: center;
 	gap: 0.55rem;
@@ -6777,9 +6777,9 @@ textarea::placeholder {
 	height: 2.75rem;
 	padding: 0;
 	place-items: center;
-	border: 1px solid var(--qc-ui-border-subtle);
+	border: 1px solid transparent;
 	border-radius: 50%;
-	background: var(--qc-ui-surface);
+	background: transparent;
 	color: var(--qc-ui-text);
 	cursor: pointer;
 }
@@ -9001,7 +9001,6 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-topbar-search,
 :root[data-theme='dark'] .qc-topbar-search-button,
-:root[data-theme='dark'] .qc-avatar-trigger,
 :root[data-theme='dark'] .qc-avatar-popover {
 	border-color: var(--qc-spark-input);
 	background: var(--qc-spark-card);
@@ -9519,7 +9518,6 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-topbar-search,
 	:root:not([data-theme='light']) .qc-topbar-search-button,
-	:root:not([data-theme='light']) .qc-avatar-trigger,
 	:root:not([data-theme='light']) .qc-avatar-popover {
 		border-color: rgba(148, 163, 184, 0.28);
 		background: #071426;

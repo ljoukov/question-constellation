@@ -33,8 +33,9 @@ describe('recall session controls', () => {
 		expect(recallControlModel({ presentation: 'mcq', revealed: false, isLastCard: false })).toEqual(
 			{
 				phase: 'prompt',
-				layout: 'none',
-				action: 'choose'
+				layout: 'single',
+				label: 'Skip card',
+				action: 'skip'
 			}
 		);
 
