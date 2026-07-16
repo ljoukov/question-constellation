@@ -5,6 +5,8 @@ const mocks = vi.hoisted(() => ({
 	getRecallCatalogScopeForLearner: vi.fn(),
 	getRecallReviewSnapshot: vi.fn(),
 	isRecallTopicWithinLearnerScope: vi.fn(),
+	recallCardsWithinLearnerScope: vi.fn(),
+	defaultRecallCatalogScope: vi.fn(),
 	getRecallCards: vi.fn(),
 	recordRecallCoverageMisses: vi.fn()
 }));
@@ -12,10 +14,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock('$lib/server/subjectLearning', () => ({
 	getRecallCatalogScopeForLearner: mocks.getRecallCatalogScopeForLearner,
 	getRecallReviewSnapshot: mocks.getRecallReviewSnapshot,
-	isRecallTopicWithinLearnerScope: mocks.isRecallTopicWithinLearnerScope
+	isRecallTopicWithinLearnerScope: mocks.isRecallTopicWithinLearnerScope,
+	recallCardsWithinLearnerScope: mocks.recallCardsWithinLearnerScope
 }));
 
 vi.mock('$lib/server/recallCatalog', () => ({
+	defaultRecallCatalogScope: mocks.defaultRecallCatalogScope,
 	getRecallCards: mocks.getRecallCards
 }));
 
@@ -56,12 +60,14 @@ function card(id: string): RecallCard {
 	};
 }
 
-async function loadRecall(platform?: { ctx: { waitUntil: (promise: Promise<unknown>) => void } }) {
+async function loadRecall(
+	platform?: { ctx: { waitUntil: (promise: Promise<unknown>) => void } },
+	activeUser: typeof user | null = user,
+	url = 'https://constellation.eviworld.com/recall?start=1&subject=Biology&topic=biology-cell-biology&activity=mcq'
+) {
 	const result = await load({
-		locals: { user },
-		url: new URL(
-			'https://constellation.eviworld.com/recall?start=1&subject=Biology&topic=biology-cell-biology&activity=mcq'
-		),
+		locals: { user: activeUser },
+		url: new URL(url),
 		platform
 	} as unknown as Parameters<typeof load>[0]);
 	if (!result) throw new Error('Expected recall page data.');
@@ -74,13 +80,53 @@ beforeEach(() => {
 		subject: 'Biology',
 		offeringId: 'offering-1'
 	});
+	mocks.defaultRecallCatalogScope.mockReturnValue({
+		subject: 'Biology',
+		offeringId: 'aqa-gcse-biology-8461-v1.0:higher'
+	});
 	mocks.isRecallTopicWithinLearnerScope.mockResolvedValue(true);
-	mocks.getRecallCards.mockResolvedValue([card('a'), card('b')]);
+	const cards = [card('a'), card('b')];
+	mocks.getRecallCards.mockResolvedValue(cards);
+	mocks.recallCardsWithinLearnerScope.mockResolvedValue(cards);
 	mocks.getRecallReviewSnapshot.mockResolvedValue([]);
 	mocks.recordRecallCoverageMisses.mockResolvedValue(0);
 });
 
+describe('anonymous recall page load', () => {
+	it('opens the same public catalog advertised by the activity page', async () => {
+		const result = await loadRecall(undefined, null);
+
+		expect(mocks.defaultRecallCatalogScope).toHaveBeenCalledWith('Biology');
+		expect(mocks.getRecallCards).toHaveBeenCalledWith({
+			subject: 'Biology',
+			offeringId: 'aqa-gcse-biology-8461-v1.0:higher'
+		});
+		expect(result.cards.map((item: RecallCard) => item.id)).toEqual(['a', 'b']);
+		expect(result.user).toBeNull();
+	});
+});
+
 describe('signed-in recall page load', () => {
+	it('opens the aggregate quick-start stack inside the learner curriculum scope', async () => {
+		const result = await loadRecall(
+			undefined,
+			user,
+			'https://constellation.eviworld.com/recall?start=1&subject=Biology&topic=all&mode=mixed'
+		);
+
+		expect(mocks.recallCardsWithinLearnerScope).toHaveBeenCalledWith(
+			user.uid,
+			'Biology',
+			expect.arrayContaining([
+				expect.objectContaining({ id: 'a' }),
+				expect.objectContaining({ id: 'b' })
+			])
+		);
+		expect(mocks.isRecallTopicWithinLearnerScope).not.toHaveBeenCalled();
+		expect(result.cards.map((item: RecallCard) => item.id)).toEqual(['a', 'b']);
+		expect(result.initialTopic).toBe('all');
+	});
+
 	it('preserves canonical order when private progress is unavailable', async () => {
 		mocks.getRecallReviewSnapshot.mockRejectedValue(new Error('personal D1 unavailable'));
 

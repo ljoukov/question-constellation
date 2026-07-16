@@ -1,0 +1,202 @@
+{
+  "contract": "concept-method-process-v2",
+  "provenance": "curated-title-recovery-2026-07-16",
+  "repairs": [
+    {
+      "questionId": "84611h-nov20-01-2",
+      "title": "Energy source for photosynthesis"
+    },
+    {
+      "questionId": "84611h-nov20-01-3",
+      "title": "Calculating a mean from measurements"
+    },
+    {
+      "questionId": "84611h-nov20-01-5",
+      "title": "Possible causes of anomalous results"
+    },
+    {
+      "questionId": "84611h-nov20-01-6",
+      "title": "Handling an anomalous result"
+    },
+    {
+      "questionId": "84611h-nov20-01-7",
+      "title": "Control variables in a photosynthesis investigation"
+    },
+    {
+      "questionId": "computer-science-2021-june-paper-2-written-assessment-qp-13-2",
+      "title": "Firewall protection for a computer network"
+    },
+    {
+      "questionId": "aqa-8464p1h-qp-jun22-04-2",
+      "title": "Uncertainty from repeated pressure readings"
+    },
+    {
+      "questionId": "8464p1h-jun18-02-3",
+      "title": "Uncertainty from repeated density measurements"
+    },
+    {
+      "questionId": "84611h-nov20-07-3",
+      "title": "Designing clinical trials for a treatment"
+    },
+    {
+      "questionId": "84611h-nov20-05-5",
+      "title": "Bacterial benefits of root nodules"
+    },
+    {
+      "questionId": "84611h-nov20-05-6",
+      "title": "Plant benefits of nitrogen-fixing nodules"
+    },
+    {
+      "questionId": "computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp-13-0",
+      "title": "Linear search process"
+    },
+    {
+      "questionId": "computer-science-2022-june-paper-2-computing-concepts-qp-07-2",
+      "title": "Interpreter translation and execution"
+    },
+    {
+      "questionId": "computer-science-2021-june-paper-2-written-assessment-qp-13-3",
+      "title": "Authentication or MAC address filtering"
+    },
+    {
+      "questionId": "geography-2023-june-paper-3-geographical-applications-qp-02-5",
+      "title": "Multi-use development in the Cayman Islands"
+    },
+    {
+      "questionId": "geography-2020-june-paper-2-challenges-in-the-human-environment-qp-01-11",
+      "title": "Urban regeneration solving urban problems"
+    },
+    {
+      "questionId": "8464p1h-jun23-06-1",
+      "title": "Gas temperature and chamber pressure"
+    },
+    {
+      "questionId": "aqa-8464p1h-qp-nov21-06-4",
+      "title": "Coolant density, temperature and pressure"
+    },
+    {
+      "questionId": "aqa-8464p2h-qp-nov21-06.1",
+      "title": "Changing acceleration at maximum engine power"
+    },
+    {
+      "questionId": "8464p1h-jun19-05-4",
+      "title": "Non-linear kettle heating results"
+    },
+    {
+      "questionId": "8464p1h-jun18-05-1",
+      "title": "Wall insulation and heat transfer"
+    },
+    {
+      "questionId": "computer-science-2024-june-paper-2-computing-concepts-qp-12-0",
+      "title": "Compiler and interpreter operation"
+    },
+    {
+      "questionId": "computer-science-2024-june-paper-2-computing-concepts-qp-14-0",
+      "title": "SMTP and IMAP email transfer"
+    },
+    {
+      "questionId": "computer-science-2024-june-paper-2-computing-concepts-qp-17-0",
+      "title": "Operation of viruses, trojans and spyware"
+    },
+    {
+      "questionId": "computer-science-2023-june-paper-2-computing-concepts-qp-08-6",
+      "title": "Purpose of secondary storage"
+    },
+    {
+      "questionId": "computer-science-2021-june-paper-2-written-assessment-qp-10-0",
+      "title": "Factors affecting CPU performance"
+    },
+    {
+      "questionId": "geography-2024-june-paper-1-living-with-the-physical-environment-qp-03-6",
+      "title": "Coastal landscape processes"
+    },
+    {
+      "questionId": "geography-2024-june-paper-1-living-with-the-physical-environment-qp-04-6",
+      "title": "River erosion and deposition landforms"
+    },
+    {
+      "questionId": "geography-2024-june-paper-2-challenges-in-the-human-environment-qp-02-7",
+      "title": "Manufacturing and economic development"
+    },
+    {
+      "questionId": "geography-2024-june-paper-2-challenges-in-the-human-environment-qp-01-10",
+      "title": "Urban greening opportunities"
+    },
+    {
+      "questionId": "geography-2024-june-paper-3-geographical-applications-qp-01-3",
+      "title": "Brownfield land and urban regeneration"
+    },
+    {
+      "questionId": "geography-2023-june-paper-1-living-with-the-physical-environment-qp-05-5",
+      "title": "Glacial erosion and corrie formation"
+    },
+    {
+      "questionId": "geography-2023-june-paper-1-living-with-the-physical-environment-qp-04-5",
+      "title": "Physical controls on flood risk"
+    },
+    {
+      "questionId": "geography-2023-june-paper-1-living-with-the-physical-environment-qp-01-4",
+      "title": "Effects of climate change on people"
+    },
+    {
+      "questionId": "geography-2023-june-paper-2-challenges-in-the-human-environment-qp-04-4",
+      "title": "Pests, diseases and food supply"
+    },
+    {
+      "questionId": "geography-2023-june-paper-2-challenges-in-the-human-environment-qp-05-4",
+      "title": "Infrastructure and water supply"
+    },
+    {
+      "questionId": "geography-2023-june-paper-2-challenges-in-the-human-environment-qp-06-4",
+      "title": "Political factors and energy supply"
+    },
+    {
+      "questionId": "geography-2022-june-paper-2-challenges-in-the-human-environment-qp-03-2",
+      "title": "Water supply and social well-being"
+    },
+    {
+      "questionId": "geography-2022-june-paper-2-challenges-in-the-human-environment-qp-04-7",
+      "title": "Sustainable food-supply strategies"
+    },
+    {
+      "questionId": "geography-2022-june-paper-2-challenges-in-the-human-environment-qp-05-7",
+      "title": "Sustainable water-supply strategies"
+    },
+    {
+      "questionId": "geography-2022-june-paper-2-challenges-in-the-human-environment-qp-06-7",
+      "title": "Sustainable energy-supply strategies"
+    },
+    {
+      "questionId": "geography-2020-june-paper-1-living-with-the-physical-environment-qp-04-5",
+      "title": "River levee formation"
+    },
+    {
+      "questionId": "geography-2020-june-paper-1-living-with-the-physical-environment-qp-04-6",
+      "title": "Physical and human controls on flood risk"
+    },
+    {
+      "questionId": "geography-2020-june-paper-1-living-with-the-physical-environment-qp-05-5",
+      "title": "Economic opportunities in UK glaciated areas"
+    },
+    {
+      "questionId": "geography-2020-june-paper-2-challenges-in-the-human-environment-qp-02-4",
+      "title": "Physical and economic causes of uneven development"
+    },
+    {
+      "questionId": "geography-2020-june-paper-2-challenges-in-the-human-environment-qp-04-5",
+      "title": "Sustainable food-supply strategies"
+    },
+    {
+      "questionId": "geography-2020-june-paper-2-challenges-in-the-human-environment-qp-05-5",
+      "title": "Sustainable water-supply strategies"
+    },
+    {
+      "questionId": "geography-2020-june-paper-2-challenges-in-the-human-environment-qp-06-5",
+      "title": "Sustainable energy use"
+    },
+    {
+      "questionId": "aqa-8464p2h-jun23-07-3",
+      "title": "Risks of large vehicle decelerations"
+    }
+  ]
+}

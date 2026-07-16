@@ -4,8 +4,7 @@ import {
 	type ChainQuestionTeaser,
 	type LearningChain
 } from '$lib/learningChains';
-import { deriveEnglishQuestionCardTitle } from '$lib/englishQuestionCardTitle';
-import { deriveQuestionCardTitle } from '$lib/questionCardTitle.js';
+import { storedQuestionTitle, storedQuestionTitleIssues } from '$lib/storedQuestionTitle.js';
 import {
 	canonicalCurriculumSubject,
 	gcseCurriculumTopics,
@@ -49,6 +48,7 @@ type QuestionMembershipRow = {
 	source_document_id: string;
 	source_question_ref: string;
 	prompt_text: string;
+	self_contained_prompt_text: string | null;
 	command_word: string | null;
 	marks: number | null;
 	subject: string | null;
@@ -78,6 +78,7 @@ type QuestionBankQuestionRow = {
 	source_question_ref: string | null;
 	display_order: number | null;
 	prompt_text: string;
+	self_contained_prompt_text: string | null;
 	command_word: string | null;
 	marks: number | null;
 	board: string | null;
@@ -101,6 +102,7 @@ type QuestionBankQuestionRow = {
 	source_year: number | null;
 	answer_chain_id: string | null;
 	chain_title: string | null;
+	reviewed_answer_text: string | null;
 };
 
 export type HomePagePublicData = {
@@ -151,7 +153,6 @@ export type QuestionBankTopic = {
 };
 
 export type QuestionBankBrowseData = {
-	chains: LearningChain[];
 	questions: QuestionBankQuestion[];
 	topics: QuestionBankTopic[];
 };
@@ -253,26 +254,14 @@ function questionYear(row: QuestionBankQuestionRow): number | null {
 }
 
 function questionBankTitle(row: QuestionBankQuestionRow) {
-	const metadata = parseJson<{ title?: string; card_title?: string; stem?: string }>(
-		row.metadata_json,
-		{}
-	);
-	const genericTitle = deriveQuestionCardTitle({
-		cardTitle: metadata.card_title ?? metadata.title,
+	return storedQuestionTitle({
+		id: row.id,
+		subject: questionSubjectName(row),
+		metadataJson: row.metadata_json,
 		promptText: row.prompt_text,
-		fallback: metadata.stem ?? row.source_question_ref ?? row.id
+		selfContainedPromptText: row.self_contained_prompt_text,
+		topicPathJson: row.topic_path_json
 	});
-	if (genericTitle !== 'Unlabelled science question') return genericTitle;
-
-	if (/^English (?:Language|Literature)$/i.test(questionSubjectName(row))) {
-		const englishTitle = deriveEnglishQuestionCardTitle({
-			promptText: row.prompt_text,
-			topicPath: parseJson<string[]>(row.topic_path_json, [])
-		});
-		if (englishTitle) return englishTitle;
-	}
-
-	return genericTitle;
 }
 
 function questionBankPreview(row: QuestionBankQuestionRow) {
@@ -458,12 +447,25 @@ function teaserFromPrompt(text: string) {
 }
 
 function titleFromQuestion(row: QuestionMembershipRow) {
-	const metadata = parseJson<{ title?: string; card_title?: string }>(row.metadata_json, {});
-	return deriveQuestionCardTitle({
-		cardTitle: metadata.card_title ?? metadata.title,
+	return storedQuestionTitle({
+		id: row.id,
+		subject: row.subject ?? row.source_subject,
+		metadataJson: row.metadata_json,
 		promptText: row.prompt_text,
-		fallback: row.source_question_ref
+		selfContainedPromptText: row.self_contained_prompt_text,
+		topicPathJson: row.topic_path_json
 	});
+}
+
+function questionHasSafeTitle(row: QuestionMembershipRow): boolean {
+	return (
+		storedQuestionTitleIssues({
+			title: titleFromQuestion(row),
+			subject: row.subject_area ?? row.subject ?? row.source_subject,
+			promptText: row.prompt_text,
+			selfContainedPromptText: row.self_contained_prompt_text
+		}).length === 0
+	);
 }
 
 function topicFromRow(row: QuestionMembershipRow) {
@@ -604,7 +606,7 @@ function buildLearningChain(
 	steps: ChainStepRow[],
 	questions: QuestionMembershipRow[]
 ): LearningChain | null {
-	const sortedQuestions = [...questions].sort(sortQuestions);
+	const sortedQuestions = questions.filter(questionHasSafeTitle).sort(sortQuestions);
 	const firstQuestion = sortedQuestions[0];
 	if (!firstQuestion) return null;
 
@@ -622,7 +624,7 @@ function buildLearningChain(
 		topic: row.broad_topic ?? topicFromRow(firstQuestion),
 		symbol: subjectSymbol(subject),
 		paperSlug: sourceDocumentSlug(firstQuestion.source_document_id),
-		paperLabel: `${subject} · ${row.question_count} questions`,
+		paperLabel: `${subject} · ${sortedQuestions.length} questions`,
 		summary:
 			row.summary ??
 			`Practise ${sortedQuestions.length} questions that use the same thinking chain.`,
@@ -673,6 +675,7 @@ async function fetchQuestionRows() {
 	return queryRows<QuestionMembershipRow>(
 		`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order,
 		        q.id, q.source_document_id, q.source_question_ref, q.prompt_text,
+		        q.self_contained_prompt_text,
 		        q.command_word, q.marks, q.subject, q.subject_area, q.paper,
 		        q.series, q.year, q.topic_path_json, q.metadata_json,
 		        sd.board AS source_board, sd.qualification AS source_qualification,
@@ -734,6 +737,7 @@ async function fetchQuestionBankRows(filter?: { board: string; subject: string }
 		        q.source_question_ref,
 		        q.display_order,
 		        q.prompt_text,
+		        q.self_contained_prompt_text,
 		        q.command_word,
 		        q.marks,
 		        q.board,
@@ -756,13 +760,19 @@ async function fetchQuestionBankRows(filter?: { board: string; subject: string }
 		        sd.series AS source_series,
 		        sd.year AS source_year,
 		        qac.answer_chain_id,
-		        ac.title AS chain_title
+		        ac.title AS chain_title,
+		        (SELECT ma.answer_text
+		           FROM model_answers ma
+		          WHERE ma.question_id = q.id
+		            AND ma.needs_human_review = 0
+		          ORDER BY ma.confidence DESC, ma.id
+		          LIMIT 1) AS reviewed_answer_text
 		 FROM questions q
 		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
-		 LEFT JOIN question_answer_chains qac
+		 JOIN question_answer_chains qac
 		   ON qac.question_id = q.id
 		  AND qac.needs_human_review = 0
-		 LEFT JOIN answer_chains ac
+		 JOIN answer_chains ac
 		   ON ac.id = qac.answer_chain_id
 		  AND ac.needs_human_review = 0
 		  AND ac.status = 'published'
@@ -774,6 +784,7 @@ async function fetchQuestionBankRows(filter?: { board: string; subject: string }
 		   COALESCE(q.subject_area, q.subject, sd.subject, ''),
 		   COALESCE(q.year, sd.year, 0) DESC,
 		   COALESCE(q.paper, sd.paper, ''),
+		   qac.is_primary DESC,
 		   CASE qac.transfer_distance
 		     WHEN 'start' THEN 0
 		     WHEN 'near' THEN 1
@@ -824,7 +835,19 @@ function dedupeQuestionBankRows(rows: QuestionBankQuestionRow[]): QuestionBankQu
 	const byQuestionId = new Map<string, QuestionBankQuestion>();
 	for (const row of rows) {
 		if (byQuestionId.has(row.id)) continue;
-		byQuestionId.set(row.id, hydrateQuestionBankQuestion(row));
+		const question = hydrateQuestionBankQuestion(row);
+		if (
+			storedQuestionTitleIssues({
+				title: question.title,
+				subject: question.subject,
+				promptText: row.prompt_text,
+				selfContainedPromptText: row.self_contained_prompt_text,
+				answerText: row.reviewed_answer_text
+			}).length > 0
+		) {
+			continue;
+		}
+		byQuestionId.set(row.id, question);
 	}
 	return [...byQuestionId.values()];
 }
@@ -963,6 +986,21 @@ function homeQuestionScore(question: ChainQuestionTeaser) {
 	return extendedExplanation + explanationCommand + marks;
 }
 
+function homeReadyChains(chains: LearningChain[]): LearningChain[] {
+	return chains
+		.map((chain) => ({
+			...chain,
+			questions: chain.questions.filter(
+				(question) =>
+					storedQuestionTitleIssues({
+						title: question.title,
+						subject: chain.subject
+					}).length === 0
+			)
+		}))
+		.filter((chain) => chain.questions.length > 0);
+}
+
 function featuredHomeChains(chains: LearningChain[]) {
 	const preferred = homeFeaturedChainIds
 		.map((chainId) => chains.find((chain) => chain.id === chainId))
@@ -981,12 +1019,13 @@ function featuredHomeChains(chains: LearningChain[]) {
 }
 
 function summarizeChains(chains: LearningChain[]): HomePagePublicData {
-	const subjects = new Set(chains.map((chain) => chain.subject).filter(Boolean));
+	const readyChains = homeReadyChains(chains);
+	const subjects = new Set(readyChains.map((chain) => chain.subject).filter(Boolean));
 	return {
-		featuredChains: featuredHomeChains(chains),
+		featuredChains: featuredHomeChains(readyChains),
 		stats: {
-			chainCount: chains.length,
-			questionCount: chains.reduce((total, chain) => total + chain.questions.length, 0),
+			chainCount: readyChains.length,
+			questionCount: readyChains.reduce((total, chain) => total + chain.questions.length, 0),
 			subjectCount: subjects.size
 		}
 	};
@@ -1028,12 +1067,8 @@ export async function getQuestionBankQuestionsForSubject(
 }
 
 export async function getFreshQuestionBankBrowseData(): Promise<QuestionBankBrowseData> {
-	const [chains, questions] = await Promise.all([
-		getExplorableLearningChains(),
-		getQuestionBankQuestions()
-	]);
+	const questions = await getQuestionBankQuestions();
 	return {
-		chains,
 		questions,
 		topics: buildQuestionBankTopics(questions)
 	};
@@ -1043,7 +1078,7 @@ export async function getQuestionBankBrowseData(): Promise<QuestionBankBrowseDat
 	const materialized = await getPublicRoutePayload<QuestionBankBrowseData>(
 		questionBankBrowsePayloadId
 	);
-	if (!materialized?.chains || !materialized.questions || !materialized.topics) {
+	if (!materialized?.questions || !materialized.topics) {
 		throw new Error(`Missing current public route payload: ${questionBankBrowsePayloadId}`);
 	}
 	return materialized;

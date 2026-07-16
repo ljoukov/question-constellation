@@ -1,0 +1,116 @@
+{
+  "tips": [
+    {
+      "cardId": "bio-animal-cell-differentiation-early",
+      "memoryTip": "Picture development as a theatre: most animal-cell roles are cast in the opening scene, while many plant cells keep auditions open for life.",
+      "evidenceIds": [
+        "bio-animal-cell-differentiation-early:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt contrasts most animal cells differentiating early with many plant cells retaining that ability throughout life; the theatre is an explicit mnemonic."
+    },
+    {
+      "cardId": "bio-differentiation-subcellular-structures",
+      "memoryTip": "Picture a differentiating cell receiving a job toolkit: the tools stand for different sub-cellular structures that enable its particular function.",
+      "evidenceIds": [
+        "bio-differentiation-subcellular-structures:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt states that differentiation equips a cell with different sub-cellular structures enabling it to perform a certain function."
+    },
+    {
+      "cardId": "bio-eukaryotic-genetic-material-nucleus",
+      "memoryTip": "Memory image: plant and animal genetic material is locked in a safe labelled NUCLEUS; bacterial genetic material has no such enclosure.",
+      "evidenceIds": [
+        "bio-eukaryotic-genetic-material-nucleus:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt says plant and animal genetic material is enclosed in a nucleus, whereas bacterial genetic material is not; the safe is mnemonic imagery."
+    },
+    {
+      "cardId": "bio-mature-animal-cell-division-repair-replacement",
+      "memoryTip": "Picture a mature animal’s cell-division office with its main work filed in two matching R drawers: REPAIR and REPLACEMENT.",
+      "evidenceIds": [
+        "bio-mature-animal-cell-division-repair-replacement:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt states that cell division in mature animals is mainly restricted to repair and replacement; the two R drawers provide a sound and spatial cue."
+    },
+    {
+      "cardId": "bio-plant-vacuole-cell-sap",
+      "memoryTip": "Memory image: VACUOLE sounds like a vacuum flask; picture that permanent plant-cell flask with a contents label: CELL SAP.",
+      "evidenceIds": [
+        "bio-plant-vacuole-cell-sap:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt explicitly identifies a permanent plant-cell vacuole filled with cell sap; the vacuum-flask resemblance is labelled as a memory image."
+    },
+    {
+      "cardId": "chem-alpha-scattering-mass-location",
+      "memoryTip": "Picture the alpha-scattering conclusion as a target: the atom’s MASS sits on the central bullseye labelled NUCLEUS, rather than spread across it.",
+      "evidenceIds": [
+        "chem-alpha-scattering-mass-location:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt states that alpha scattering showed atomic mass concentrated at the centre, the nucleus; the target supplies the spatial retrieval cue."
+    },
+    {
+      "cardId": "chem-atom-smallest-part",
+      "memoryTip": "Picture zooming into an ELEMENT until a red stop sign appears: ATOM. The sign marks the smallest part of that element that can exist.",
+      "evidenceIds": [
+        "chem-atom-smallest-part:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt defines an atom as the smallest part of an element that can exist; the zoom and stop sign encode that endpoint."
+    },
+    {
+      "cardId": "chem-bohr-specific-electron-orbits",
+      "memoryTip": "Picture Bohr’s model as a dartboard: nucleus at the bullseye, electrons circling on marked rings; each ring cues a specific distance.",
+      "evidenceIds": [
+        "chem-bohr-specific-electron-orbits:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt places the nucleus at the centre and states that Bohr proposed electrons orbiting it at specific distances; the dartboard is mnemonic imagery."
+    },
+    {
+      "cardId": "chem-compound-fixed-proportions",
+      "memoryTip": "Picture a compound as a padlocked recipe: its elements are chemically joined, and the ingredient proportions cannot slide—they stay fixed.",
+      "evidenceIds": [
+        "chem-compound-fixed-proportions:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt defines compounds as elements chemically combined in fixed proportions; the locked recipe links both defining features."
+    },
+    {
+      "cardId": "chem-mass-number-particle-sum",
+      "memoryTip": "Picture a MASS NUMBER guest list with only two particle types admitted: PROTONS + NEUTRONS; ELECTRONS are crossed off.",
+      "evidenceIds": [
+        "chem-mass-number-particle-sum:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt defines mass number as the sum of protons and neutrons, supporting their inclusion and the exclusion of electrons."
+    },
+    {
+      "cardId": "chem-mixture-combination-properties",
+      "memoryTip": "Picture a mixture as a shared room, not a chemical marriage: its substances do not chemically join, and each keeps the same chemical-properties badge.",
+      "evidenceIds": [
+        "chem-mixture-combination-properties:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt states that mixture substances are not chemically combined and that each substance’s chemical properties remain unchanged."
+    },
+    {
+      "cardId": "chem-neutral-atom-particle-balance",
+      "memoryTip": "Picture an atom’s charge ledger: every electron is matched by a proton; equal totals make the final line read NO OVERALL CHARGE.",
+      "evidenceIds": [
+        "chem-neutral-atom-particle-balance:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt directly links equal electron and proton numbers in an atom with having no overall electrical charge."
+    },
+    {
+      "cardId": "chem-plum-pudding-model-structure",
+      "memoryTip": "Picture a pudding-shaped ball stamped +, with tiny − electron dots embedded like fruit: the ball is positive; the embedded electrons are negative.",
+      "evidenceIds": [
+        "chem-plum-pudding-model-structure:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt describes a ball of positive charge containing embedded negative electrons; the dessert layout makes that charge arrangement vivid."
+    },
+    {
+      "cardId": "phys-elastic-equation-proportional-limit",
+      "memoryTip": "Picture a red gate marked LIMIT OF PROPORTIONALITY: the elastic-energy equation carries a pass valid only while that gate has not been crossed.",
+      "evidenceIds": [
+        "phys-elastic-equation-proportional-limit:official-curriculum"
+      ],
+      "groundingRationale": "The excerpt conditions the elastic potential energy equation on the limit of proportionality not having been exceeded; the gate encodes that boundary."
+    }
+  ]
+}

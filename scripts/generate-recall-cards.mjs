@@ -12,6 +12,7 @@ import {
 import path from 'node:path';
 
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
+import { buildRecallCompanionArtifacts } from './lib/recall-card-artifacts.mjs';
 import {
 	RECALL_CUE_REVIEW_OUTPUT_SCHEMA,
 	RECALL_FULL_REVIEW_OUTPUT_SCHEMA,
@@ -20,6 +21,8 @@ import {
 	compileRecallCardBundle,
 	hashRecallArtifact,
 	parseRecallJsonOutput,
+	sha256,
+	stableStringify,
 	validateRecallCandidateBatch,
 	validateRecallCueReviews,
 	validateRecallFullReviews
@@ -29,6 +32,10 @@ import {
 	buildRecallCardGenerationPrompt,
 	buildRecallCardVisualCueBatchReviewPrompt
 } from './lib/recall-card-generation-prompt.mjs';
+import {
+	assertAdditiveRecallCandidates,
+	loadExistingRecallCardContext
+} from './lib/recall-card-existing-context.mjs';
 import { loadOfficialRecallEvidence } from './lib/recall-curriculum-evidence.mjs';
 import {
 	assertStrictChild,
@@ -78,6 +85,13 @@ const evidence = loadOfficialRecallEvidence({
 	offeringIds: args.offeringIds,
 	primaryOfferingId: args.primaryOfferingId
 });
+const existingCardContext = loadExistingRecallCardContext({
+	rootDir,
+	subject: evidence.subject,
+	topicComponentId: evidence.topicComponent.id,
+	offeringIds: evidence.targets.map((target) => target.offeringId)
+});
+const existingCardContextHash = sha256(stableStringify(existingCardContext));
 
 const sourceForPrompt = {
 	specification: evidence.specification,
@@ -100,6 +114,13 @@ const plan = {
 	pageRange: [evidence.pageStart, evidence.pageEnd],
 	pageTextCharacters: evidence.pageText.length,
 	sourceFingerprint: evidence.fingerprint,
+	generationMode: existingCardContext.mode,
+	existingCardContextHash,
+	existingCardContextCounts: {
+		reservedIds: existingCardContext.reservedIds.length,
+		reservedConceptKeys: existingCardContext.reservedConceptKeys.length,
+		existingTargetCards: existingCardContext.existingTargetCards.length
+	},
 	count: args.count,
 	targets: evidence.targets,
 	models: {
@@ -128,6 +149,7 @@ writeJson(path.join(workDir, 'source-evidence.json'), {
 	catalogPath: evidence.catalogPath,
 	subject: evidence.subject,
 	targets: evidence.targets,
+	existingCardContext,
 	pageText: evidence.pageText
 });
 
@@ -143,7 +165,8 @@ try {
 		officialCurriculumExcerpt: evidence.pageText,
 		count: args.count,
 		source: sourceForPrompt,
-		curriculumTargets: evidence.targets
+		curriculumTargets: evidence.targets,
+		existingCardContext
 	});
 	writeFileSync(path.join(workDir, 'generation-prompt.txt'), `${generationPrompt}\n`);
 	generatorRun = await runStage({
@@ -161,13 +184,15 @@ try {
 			expectedCount: args.count
 		}
 	);
+	assertAdditiveRecallCandidates(candidates, existingCardContext);
 	writeJson(path.join(workDir, 'candidate-cards.json'), candidates);
 
 	const completeCards = candidates.cards.map((card) => ({ ...card, subject: evidence.subject }));
 	const fullReviewPrompt = buildRecallCardFullReviewPrompt({
 		cards: completeCards,
 		evidence: { ...sourceForPrompt, pageText: evidence.pageText },
-		targets: evidence.targets
+		targets: evidence.targets,
+		existingCardContext
 	});
 	writeFileSync(path.join(workDir, 'full-review-prompt.txt'), `${fullReviewPrompt}\n`);
 	fullReviewerRun = await runStage({
@@ -265,12 +290,16 @@ try {
 			replacementReviewRun: replacements.length > 0
 		}
 	};
+	const companionArtifacts = buildRecallCompanionArtifacts(workDir, {
+		replacementReviewRun: replacements.length > 0
+	});
 	const { bundle, rejectedCards } = compileRecallCardBundle({
 		candidates,
 		fullReviews,
 		cueReviews,
 		evidence,
-		run
+		run,
+		companionArtifacts
 	});
 	writeJson(path.join(workDir, 'accepted-cards.json'), bundle);
 	writeJson(path.join(workDir, 'rejected-cards.json'), { cards: rejectedCards });

@@ -1,0 +1,28 @@
+{
+  "reviews": [
+    {
+      "cardId": "bio-diffusion-net-movement",
+      "accepted": true,
+      "reason": "💨 is a conventional landmark for diffusion, which is explicit on the front. It reveals neither direction nor medium and is neutral across all choices.",
+      "replacementCue": "💨"
+    },
+    {
+      "cardId": "bio-diffusion-rate-factors",
+      "accepted": false,
+      "reason": "📘 is an unnecessary neutral fallback. The stronger topical candidate 💨 safely represents diffusion, already explicit on the front, without identifying any factor or distinguishing among the three omission distractors.",
+      "replacementCue": "💨"
+    },
+    {
+      "cardId": "bio-single-cell-surface-area-volume",
+      "accepted": true,
+      "reason": "🦠 represents the single-celled organism already explicit on the front. It adds no surface-area-to-volume information and remains neutral across every ratio choice.",
+      "replacementCue": "🦠"
+    },
+    {
+      "cardId": "bio-thin-membrane-short-diffusion-path",
+      "accepted": true,
+      "reason": "🫁 represents the mammalian lungs already explicit on the front. It does not reveal the effect of membrane thinness or distinguish the diffusion-path answer from the other exchange-surface features.",
+      "replacementCue": "🫁"
+    }
+  ]
+}

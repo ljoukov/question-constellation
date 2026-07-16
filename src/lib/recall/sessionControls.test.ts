@@ -4,6 +4,7 @@ import {
 	explicitReversePair,
 	mixedRecallPresentation,
 	recallControlModel,
+	requeueRecallContentKey,
 	recallReviewDecision,
 	shuffledRecallChoices
 } from './sessionControls';
@@ -42,14 +43,24 @@ describe('recall session controls', () => {
 		).toEqual({
 			phase: 'result',
 			layout: 'split',
-			repeatLabel: 'Repeat',
+			repeatLabel: 'Repeat later',
 			nextLabel: 'Next card'
 		});
 		expect(recallControlModel({ presentation: 'mcq', revealed: true, isLastCard: true })).toEqual({
 			phase: 'result',
-			layout: 'single',
+			layout: 'split',
+			repeatLabel: 'Repeat later',
 			nextLabel: 'See results'
 		});
+	});
+
+	it('puts an explicit repeat at the end of the active deck', () => {
+		expect(requeueRecallContentKey(['one', 'two', 'three'], 'two')).toEqual([
+			'one',
+			'two',
+			'three',
+			'two'
+		]);
 	});
 
 	it('lets a learner repeat a correct guess and keeps a wrong MCQ due when continuing', () => {

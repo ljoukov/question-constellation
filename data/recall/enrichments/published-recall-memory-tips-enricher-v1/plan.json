@@ -1,0 +1,37 @@
+{
+  "status": "generation_requested",
+  "runId": "published-recall-memory-tips-enricher-v1",
+  "cardIds": [
+    "bio-animal-cell-differentiation-early",
+    "bio-differentiation-subcellular-structures",
+    "bio-eukaryotic-genetic-material-nucleus",
+    "bio-mature-animal-cell-division-repair-replacement",
+    "bio-plant-vacuole-cell-sap",
+    "chem-alpha-scattering-mass-location",
+    "chem-atom-smallest-part",
+    "chem-bohr-specific-electron-orbits",
+    "chem-compound-fixed-proportions",
+    "chem-mass-number-particle-sum",
+    "chem-mixture-combination-properties",
+    "chem-neutral-atom-particle-balance",
+    "chem-plum-pudding-model-structure",
+    "phys-elastic-equation-proportional-limit"
+  ],
+  "cardCount": 14,
+  "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f",
+  "workDir": "tmp/recall-memory-tip-enrichment/published-recall-memory-tips-enricher-v1",
+  "artifactDir": "data/recall/enrichments/published-recall-memory-tips-enricher-v1",
+  "artifactPath": "data/recall/enrichments/published-recall-memory-tips-enricher-v1/accepted-enrichments.json",
+  "schemaVersion": "recall-memory-tip-enrichment-v1",
+  "promptVersion": "recall-memory-tip-enricher-v1",
+  "models": {
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    }
+  }
+}

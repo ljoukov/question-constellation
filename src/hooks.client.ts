@@ -3,12 +3,7 @@ import {
 	ResponseRequestError,
 	type RequestFailure
 } from '$lib/requestFailure';
-import { installViewportZoomLock } from '$lib/viewportZoom';
-import type { ClientInit, HandleClientError } from '@sveltejs/kit';
-
-export const init: ClientInit = () => {
-	installViewportZoomLock();
-};
+import type { HandleClientError } from '@sveltejs/kit';
 
 export const handleError: HandleClientError = ({ error, status, message }) => {
 	if (status === 404) return { message: 'Page not found.' };

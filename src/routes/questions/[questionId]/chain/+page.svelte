@@ -26,13 +26,16 @@
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
 	);
-	const chainPageHref = $derived(
-		`/questions/${encodeURIComponent(data.question.id)}/chain`
-	);
+	const chainPageHref = $derived(`/questions/${encodeURIComponent(data.question.id)}/chain`);
 	function practiceWithReturn(questionId: string) {
 		const base = resolve('/questions/[questionId]/practice', { questionId });
 		const params = new URLSearchParams({ entry: 'chain', returnTo: chainPageHref });
 		return `${base}?${params.toString()}`;
+	}
+	function questionDestination(question: (typeof data.questions)[number]) {
+		return question.practiceAvailable
+			? practiceWithReturn(question.id)
+			: resolve('/questions/[questionId]', { questionId: question.id });
 	}
 	const practiceHref = $derived(practiceWithReturn(data.practiceQuestion.id));
 	const currentPracticeHref = $derived(practiceWithReturn(data.question.id));
@@ -122,37 +125,37 @@
 			</div>
 
 			{#if showMarkingPoints}
-			<section class="qc-answer-panel qc-mark-details" class:is-open={markingPointsOpen}>
-				<button
-					type="button"
-					class="qc-mark-details-toggle"
-					aria-expanded={markingPointsOpen}
-					aria-controls="marking-points-list"
-					onclick={() => (markingPointsOpen = !markingPointsOpen)}
-				>
-					<span class="qc-panel-label">{checklistLabel}</span>
-					<span class="qc-mark-details-action">
-						{markingPointsOpen ? 'Hide' : 'Show'}
-						<ChevronDown size={17} strokeWidth={2} aria-hidden="true" />
-					</span>
-				</button>
-				{#if markingPointsOpen}
-					<div
-						id="marking-points-list"
-						class="qc-mark-details-content"
-						transition:slide={{ duration: markingPointsRevealDurationMs }}
+				<section class="qc-answer-panel qc-mark-details" class:is-open={markingPointsOpen}>
+					<button
+						type="button"
+						class="qc-mark-details-toggle"
+						aria-expanded={markingPointsOpen}
+						aria-controls="marking-points-list"
+						onclick={() => (markingPointsOpen = !markingPointsOpen)}
 					>
-						<ol class="qc-checklist">
-							{#each data.question.checklist as item, index (item.id)}
-								<li>
-									<span>{index + 1}</span>
-									<MathText text={item.text} />
-								</li>
-							{/each}
-						</ol>
-					</div>
-				{/if}
-			</section>
+						<span class="qc-panel-label">{checklistLabel}</span>
+						<span class="qc-mark-details-action">
+							{markingPointsOpen ? 'Hide' : 'Show'}
+							<ChevronDown size={17} strokeWidth={2} aria-hidden="true" />
+						</span>
+					</button>
+					{#if markingPointsOpen}
+						<div
+							id="marking-points-list"
+							class="qc-mark-details-content"
+							transition:slide={{ duration: markingPointsRevealDurationMs }}
+						>
+							<ol class="qc-checklist">
+								{#each data.question.checklist as item, index (item.id)}
+									<li>
+										<span>{index + 1}</span>
+										<MathText text={item.text} />
+									</li>
+								{/each}
+							</ol>
+						</div>
+					{/if}
+				</section>
 			{/if}
 
 			{#if showWeakAnswer}
@@ -175,7 +178,7 @@
 						See {transferQuestions.length} more
 						{transferQuestions.length === 1 ? 'question' : 'questions'}
 					</a>
-				{:else}
+				{:else if data.question.practiceAvailable}
 					<a class="qc-action-button primary" href={currentPracticeHref}>
 						<PenLine size={18} aria-hidden="true" />
 						Practise this question
@@ -197,10 +200,7 @@
 				/>
 				<nav class="qc-real-chain-list" aria-label="Practice transfer questions">
 					{#each data.questions as question, index (question.id)}
-						<a
-							class:active={question.id === data.question.id}
-							href={practiceWithReturn(question.id)}
-						>
+						<a class:active={question.id === data.question.id} href={questionDestination(question)}>
 							<span>{index + 1}</span>
 							<span><MathText text={question.title} /></span>
 							<small>{question.distanceLabel} · {question.meta.marks} marks</small>
@@ -215,7 +215,9 @@
 						<p><MathText text={data.question.sourceRef} /></p>
 						<h2>How this earns marks</h2>
 					</div>
-					<a class="qc-real-link-button" href={currentPracticeHref}>Practise this question</a>
+					{#if data.question.practiceAvailable}
+						<a class="qc-real-link-button" href={currentPracticeHref}>Practise this question</a>
+					{/if}
 				</div>
 
 				{#if data.chain.illustration}
@@ -265,14 +267,16 @@
 							See related questions
 						</a>
 					{/if}
-					<a
-						class:primary={transferQuestions.length === 0}
-						class="qc-action-button"
-						href={practiceHref}
-					>
-						<PenLine size={18} aria-hidden="true" />
-						Start practice
-					</a>
+					{#if data.practiceQuestion.practiceAvailable}
+						<a
+							class:primary={transferQuestions.length === 0}
+							class="qc-action-button"
+							href={practiceHref}
+						>
+							<PenLine size={18} aria-hidden="true" />
+							Start practice
+						</a>
+					{/if}
 				</div>
 			</section>
 		</div>

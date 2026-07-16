@@ -1,0 +1,140 @@
+{
+  "reviews": [
+    {
+      "cardId": "phys-energy-system-definition",
+      "accepted": true,
+      "reason": "The definition and all corrections follow the stated definition of a system; the alternatives diagnose single-object, multiple-object, and energy-change confusions.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-system-energy-change-processes",
+      "accepted": true,
+      "reason": "The answer reproduces the three specified processes, while the alternatives distinguish example situations, omitted work, and an energy-storage outcome.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-kinetic-energy-formula",
+      "accepted": true,
+      "reason": "The equation is exact, and the alternatives cleanly test omission of one-half, failure to square speed, and squaring the wrong variable.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-elastic-potential-energy-formula",
+      "accepted": true,
+      "reason": "The equation and proportionality-limit qualification match the specification; each alternative represents a distinct formula error.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-gravitational-potential-energy-formula",
+      "accepted": true,
+      "reason": "The stated equation exactly matches Ep = mgh, with distinct alternatives testing a squared height, an added half, and division by height.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-thermal-energy-change-formula",
+      "accepted": true,
+      "reason": "The answer exactly gives ΔE = mcΔθ, and the alternatives diagnose temperature-versus-temperature-change and incorrect division by c or m.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-specific-heat-capacity-definition",
+      "accepted": true,
+      "reason": "The answer preserves both defining reference quantities, and the alternatives separately test omission or reversal of those quantities.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "phys-specific-heat-capacity-practical",
+      "accepted": true,
+      "reason": "The purpose and linked energy-temperature sequence match required practical 14; the alternatives diagnose confusion between the target and quantities linked during the investigation.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    }
+  ]
+}

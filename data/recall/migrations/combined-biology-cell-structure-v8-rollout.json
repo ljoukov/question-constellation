@@ -1,0 +1,34 @@
+{
+	"schemaVersion": "recall-card-retirement-v1",
+	"createdAt": "2026-07-16T06:37:57Z",
+	"reason": "Retire only the three compiler-v5 Biology cards whose concepts are fully covered by independently accepted compiler-v8 replacements. Preserve every v5 card with unique curriculum coverage.",
+	"cards": [
+		{
+			"id": "bio-bacterial-genetic-material-loop",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "2e7ba19b9fb7c55425f097d4a1ec2cf127b5e159b273057add2a6d3257b9d5b3",
+			"expectedGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+			"replacementId": "bio-bacterial-genetic-material",
+			"replacementGenerationRunId": "combined-higher-biology-cell-structure-compiler-v8"
+		},
+		{
+			"id": "bio-plant-algal-cell-wall-cellulose",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "980c13482bb7a33ef9fb87843503769c0fdc3f3005e2cb10aeb8e1af7d847f02",
+			"expectedGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+			"replacementId": "bio-cellulose-cell-wall",
+			"replacementGenerationRunId": "combined-higher-biology-cell-structure-compiler-v8"
+		},
+		{
+			"id": "bio-electron-microscope-magnification-resolution",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "b6f7ae9378f7ab78ce59c29d39613a3e595cf9feea364722c850f8425351818f",
+			"expectedGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+			"replacementId": "bio-electron-microscope-finer-detail",
+			"replacementGenerationRunId": "combined-higher-biology-cell-structure-compiler-v8"
+		}
+	]
+}

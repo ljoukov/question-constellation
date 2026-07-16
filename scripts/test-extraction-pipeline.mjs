@@ -148,6 +148,7 @@ for (const filePath of [
 	'docs/product-methodology.md',
 	'docs/product-flows.md',
 	'docs/extraction-spec.md',
+	'scripts/extraction-learner-guardrails.mjs',
 	'scripts/lib/llm-extraction-pipeline.mjs',
 	'scripts/download-aqa-separate-science.mjs',
 	'scripts/extract-aqa-separate-science-batch.mjs',
@@ -654,6 +655,12 @@ requireIncludes(
 		'06.7 = 10',
 		'every visible blank segment must have a matching response.correctAnswers target',
 		'Figure and response-surface assets must be complete learner-visible crops',
+		'Treat an existing hypothesis as a required source dependency',
+		'exact reversible equation in a learner-visible equation block',
+		'use response.kind="equation-blanks"',
+		'such as Test and Result/Observation',
+		'Carry a stem, table, equation, figure, or asset from a prior/lookahead/adjacent page only when this atomic question actually depends on it',
+		'Strip all exam-booklet furniture',
 		'For Ordnance Survey map extracts and other grid-reference maps',
 		'readable eastings and northings on the relevant margins',
 		'0870, 0970, or 7109',
@@ -1786,6 +1793,95 @@ if (!ocrAlphabeticRefFailure.includes('ocr_english_alphabetic_part_ref_lost')) {
 	fail('Codex helper validation did not reject lost OCR English (a)/(b) source refs.', {
 		ocrAlphabeticRefFailure
 	});
+}
+
+const learnerSurfaceGuardrailFixtures = [
+	{
+		name: 'hidden-hypothesis',
+		code: 'referenced_hypothesis_missing_statement',
+		mutate(question) {
+			question.promptText =
+				'Explain whether the results from the investigation support their hypothesis.';
+			question.selfContainedPromptText = question.promptText;
+			question.promptBlocks = [{ kind: 'paragraph', text: question.promptText }];
+		}
+	},
+	{
+		name: 'missing-equilibrium-equation',
+		code: 'equilibrium_pressure_missing_reversible_equation',
+		mutate(question) {
+			question.promptText =
+				'Explain how increasing pressure changes the equilibrium position and yield of ammonia.';
+			question.selfContainedPromptText = question.promptText;
+			question.stemBlocks = [{ kind: 'equation', text: 'Reaction A ⇌ B' }];
+			question.promptBlocks = [{ kind: 'paragraph', text: question.promptText }];
+		}
+	},
+	{
+		name: 'equation-completion-lines',
+		code: 'equation_completion_requires_equation_blanks',
+		mutate(question) {
+			question.promptText = 'Complete the balanced chemical equation for this reaction.';
+			question.selfContainedPromptText = question.promptText;
+			question.promptBlocks = [{ kind: 'paragraph', text: question.promptText }];
+		}
+	},
+	{
+		name: 'equation-balancing-lines',
+		code: 'equation_completion_requires_equation_blanks',
+		mutate(question) {
+			question.promptText = 'Balance the equation for the reaction.';
+			question.selfContainedPromptText = question.promptText;
+			question.promptBlocks = [{ kind: 'paragraph', text: question.promptText }];
+		}
+	},
+	{
+		name: 'merged-test-result-fields',
+		code: 'multiple_named_fields_require_labeled_lines',
+		mutate(question) {
+			question.promptText = 'State the test and the result for hydrogen gas.';
+			question.selfContainedPromptText = question.promptText;
+			question.promptBlocks = [{ kind: 'paragraph', text: question.promptText }];
+		}
+	},
+	{
+		name: 'exam-footer-leak',
+		code: 'exam_booklet_footer_in_learner_content',
+		mutate(question) {
+			question.selfContainedPromptText = `${question.promptText}\nAdditional page, if required.\nCopyright © 2024 AQA`;
+		}
+	},
+	{
+		name: 'unbound-adjacent-asset',
+		code: 'adjacent_asset_not_bound_to_learner_surface',
+		mutate(question) {
+			question.assets = [
+				{
+					sourceLabel: 'Figure 9',
+					filePath: 'https://example.test/figure-9.png',
+					pageNumber: 1,
+					needsHumanReview: false
+				}
+			];
+		}
+	}
+];
+for (const fixture of learnerSurfaceGuardrailFixtures) {
+	const candidate = JSON.parse(readText(helperFragmentsNormalized));
+	fixture.mutate(candidate.questions[0]);
+	const fixturePath = path.join(helperNormalizeDir, `${fixture.name}.json`);
+	writeFileSync(fixturePath, JSON.stringify(candidate, null, 2));
+	const failure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+		'validate-extraction',
+		`--input=${fixturePath}`,
+		'--expected-marks=3',
+		'--expected-questions=2'
+	]);
+	if (!failure.includes(fixture.code)) {
+		fail(`Codex helper validation did not reject ${fixture.name} with ${fixture.code}.`, {
+			failure
+		});
+	}
 }
 
 const invalidImageLabelExtractionPath = path.join(helperNormalizeDir, 'invalid-image-label.json');
@@ -6374,6 +6470,230 @@ if (
 	)
 ) {
 	fail('Deterministic checks did not flag unsupported response.kind values.');
+}
+
+const learnerGuardrailBaseQuestion = {
+	sourceQuestionRef: '01.1',
+	commandWord: 'Explain',
+	marks: 2,
+	promptText: 'Explain the result.',
+	selfContainedPromptText: 'Explain the result.',
+	promptBlocks: [{ kind: 'paragraph', text: 'Explain the result.' }],
+	response: { kind: 'lines', lineCount: 3 },
+	assets: [],
+	markSchemeItems: [{ itemType: 'mark', text: 'A source-grounded point.' }],
+	markChecklist: [{ text: 'Gives the credited point.', markSchemeItemIndexes: [0] }],
+	modelAnswer: { answerText: 'A source-grounded answer.' }
+};
+const learnerGuardrailCases = [
+	{
+		code: 'referenced_hypothesis_missing_statement',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			promptText: 'Explain whether the results support their hypothesis.',
+			selfContainedPromptText: 'Explain whether the results support their hypothesis.',
+			promptBlocks: [
+				{ kind: 'paragraph', text: 'Explain whether the results support their hypothesis.' }
+			]
+		}
+	},
+	{
+		code: 'equilibrium_pressure_missing_reversible_equation',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			promptText:
+				'Explain how increasing pressure affects the equilibrium position and yield of ammonia.',
+			selfContainedPromptText:
+				'Explain how increasing pressure affects the equilibrium position and yield of ammonia.',
+			promptBlocks: [
+				{
+					kind: 'paragraph',
+					text: 'Explain how increasing pressure affects the equilibrium position and yield of ammonia.'
+				}
+			],
+			stemBlocks: [{ kind: 'equation', text: 'Reaction A ⇌ B' }]
+		}
+	},
+	{
+		code: 'equation_completion_requires_equation_blanks',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			promptText: 'Complete the balanced chemical equation.',
+			selfContainedPromptText: 'Complete the balanced chemical equation.',
+			promptBlocks: [{ kind: 'paragraph', text: 'Complete the balanced chemical equation.' }]
+		}
+	},
+	{
+		code: 'equation_completion_requires_equation_blanks',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			promptText: 'Balance the equation for the reaction.',
+			selfContainedPromptText: 'Balance the equation for the reaction.',
+			promptBlocks: [{ kind: 'paragraph', text: 'Balance the equation for the reaction.' }]
+		}
+	},
+	{
+		code: 'multiple_named_fields_require_labeled_lines',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			promptText: 'State the test and the result for hydrogen gas.',
+			selfContainedPromptText: 'State the test and the result for hydrogen gas.',
+			promptBlocks: [{ kind: 'paragraph', text: 'State the test and the result for hydrogen gas.' }]
+		}
+	},
+	{
+		code: 'exam_booklet_footer_in_learner_content',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			selfContainedPromptText:
+				'Explain the result. Additional page, if required. Copyright © 2024 AQA.'
+		}
+	},
+	{
+		code: 'adjacent_asset_not_bound_to_learner_surface',
+		question: {
+			...learnerGuardrailBaseQuestion,
+			pageStart: 5,
+			pageEnd: 5,
+			assets: [
+				{
+					sourceLabel: 'Figure 9',
+					pageNumber: 4,
+					filePath: 'https://example.test/figure-9.png',
+					needsHumanReview: false
+				}
+			]
+		}
+	}
+];
+for (const fixture of learnerGuardrailCases) {
+	const findings = pipelineModule.deterministicCandidateIssues(
+		{ questions: [fixture.question] },
+		{ includeAnswerChainIssues: false }
+	);
+	if (
+		!findings.some((finding) =>
+			finding.issues.some((issue) => issue.severity === 'error' && issue.code === fixture.code)
+		)
+	) {
+		fail(`Deterministic checks did not emit ${fixture.code}.`, { findings });
+	}
+}
+
+const validLearnerGuardrailIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				...learnerGuardrailBaseQuestion,
+				promptText:
+					'The students tested whether the results supported their hypothesis. Explain the conclusion.',
+				selfContainedPromptText:
+					'The hypothesis was that increasing light intensity increases plant growth. Explain whether the results support it.',
+				stemBlocks: [
+					{
+						kind: 'paragraph',
+						text: 'The hypothesis was that increasing light intensity increases plant growth.'
+					}
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Explain whether the results support it.' }]
+			},
+			{
+				...learnerGuardrailBaseQuestion,
+				sourceQuestionRef: '01.2',
+				promptText:
+					'Explain how increasing pressure affects the equilibrium position and yield of ammonia.',
+				selfContainedPromptText:
+					'Nitrogen reacts reversibly with hydrogen. Explain how increasing pressure affects the equilibrium position and yield of ammonia.',
+				stemBlocks: [{ kind: 'equation', text: '$\\mathrm{N_2(g) + 3H_2(g) ⇌ 2NH_3(g)}$' }]
+			},
+			{
+				...learnerGuardrailBaseQuestion,
+				sourceQuestionRef: '01.3',
+				promptText: 'Complete the balanced chemical equation.',
+				selfContainedPromptText: 'Complete the balanced chemical equation.',
+				response: {
+					kind: 'equation-blanks',
+					segments: [
+						{ kind: 'text', text: '2H₂ + O₂ → ' },
+						{ kind: 'blank', id: 'water' }
+					],
+					correctAnswers: [{ targetId: 'water', correctAnswer: '2H₂O' }]
+				},
+				modelAnswer: null
+			},
+			{
+				...learnerGuardrailBaseQuestion,
+				sourceQuestionRef: '01.4',
+				promptText: 'State the test and the result for hydrogen gas.',
+				selfContainedPromptText: 'State the test and the result for hydrogen gas.',
+				response: {
+					kind: 'labeled-lines',
+					fields: [
+						{ id: 'test', label: 'Test', lineCount: 1 },
+						{ id: 'result', label: 'Result', lineCount: 1 }
+					]
+				}
+			},
+			{
+				...learnerGuardrailBaseQuestion,
+				sourceQuestionRef: '01.5',
+				promptText: 'Label the structures on Figure 2.',
+				selfContainedPromptText: 'Label the structures on Figure 2.',
+				promptBlocks: [{ kind: 'paragraph', text: 'Label the structures on Figure 2.' }],
+				response: {
+					kind: 'image-label-zones',
+					assetLabel: 'Figure 2',
+					labels: ['xylem', 'phloem'],
+					zones: [
+						{ id: 'xylem-zone', x: 0.2, y: 0.3, width: 0.1, height: 0.1 },
+						{ id: 'phloem-zone', x: 0.6, y: 0.3, width: 0.1, height: 0.1 }
+					],
+					correctAnswers: [
+						{ targetId: 'xylem-zone', correctAnswer: 'xylem' },
+						{ targetId: 'phloem-zone', correctAnswer: 'phloem' }
+					]
+				},
+				assets: [
+					{
+						sourceLabel: 'Figure 2',
+						filePath: 'https://example.test/figure-2.png',
+						needsHumanReview: false
+					}
+				],
+				modelAnswer: null
+			},
+			{
+				...learnerGuardrailBaseQuestion,
+				sourceQuestionRef: '01.6',
+				promptText: 'Explain why the test produced the observed result.',
+				selfContainedPromptText: 'Explain why the test produced the observed result.',
+				promptBlocks: [
+					{ kind: 'paragraph', text: 'Explain why the test produced the observed result.' }
+				]
+			},
+			{
+				...learnerGuardrailBaseQuestion,
+				sourceQuestionRef: '01.7',
+				promptText: 'Turn over the card and explain what you observe.',
+				selfContainedPromptText: 'Turn over the card and explain what you observe.',
+				promptBlocks: [
+					{ kind: 'paragraph', text: 'Turn over the card and explain what you observe.' }
+				]
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+for (const code of learnerGuardrailCases.slice(0, 5).map((fixture) => fixture.code)) {
+	if (
+		validLearnerGuardrailIssues.some((finding) =>
+			finding.issues.some((issue) => issue.code === code)
+		)
+	) {
+		fail(`Deterministic checks rejected a valid learner surface with ${code}.`, {
+			validLearnerGuardrailIssues
+		});
+	}
 }
 
 const missingDiagramResponseIssues = pipelineModule.deterministicCandidateIssues(

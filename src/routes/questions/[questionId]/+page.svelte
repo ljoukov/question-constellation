@@ -75,13 +75,13 @@
 		/>
 
 		<div class="qc-public-question-actions" aria-label="Question actions">
-			{#if !data.user || data.practiceAvailable}
+			{#if data.practiceAvailable}
 				<a class="qc-action-button primary" href={practiceHref}>
 					Try this question
 					<ArrowRight size={18} aria-hidden="true" />
 				</a>
 			{/if}
-			<a class:primary={Boolean(data.user && !data.practiceAvailable)} class="qc-action-button" href={chainHref}>
+			<a class:primary={!data.practiceAvailable} class="qc-action-button" href={chainHref}>
 				<Eye size={18} aria-hidden="true" />
 				Show answer chain
 			</a>

@@ -17,6 +17,7 @@ const practiceData: PracticePageData = {
 		context: 'Figure 1 shows some of the energy resources used to meet demand.',
 		assets: [],
 		renderingOverlay: null,
+		practiceAvailable: true,
 		meta: {
 			qualification: 'GCSE',
 			board: 'AQA',

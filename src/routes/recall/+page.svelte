@@ -29,6 +29,7 @@
 		explicitReversePair,
 		mixedRecallPresentation,
 		recallControlModel,
+		requeueRecallContentKey,
 		recallReviewDecision,
 		shuffledRecallChoices,
 		type RecallMcqFeedback,
@@ -312,10 +313,12 @@
 		if (reviewedInSession === 0) {
 			return 'No cards were checked.';
 		}
-		return `${rememberedInSession} remembered · ${returningSoonerInSession} to repeat`;
+		return `${rememberedInSession} remembered · ${returningSoonerInSession} needed another look`;
 	});
 	const dragRotation = $derived(Math.max(-6, Math.min(6, dragX / 80)));
-	const dragCue = $derived(!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Next' : 'Repeat');
+	const dragCue = $derived(
+		!revealed || Math.abs(dragX) < 24 ? '' : dragX > 0 ? 'Next' : 'Repeat later'
+	);
 	const dragProgress = $derived(Math.min(1, Math.abs(dragX) / 140));
 	const cardBusy = $derived(cardMotion !== 'idle' && cardMotion !== 'dragging');
 	const slowMotion = $derived(page.url.searchParams.get('debugMotion') === 'slow');
@@ -901,7 +904,15 @@
 		});
 		if (!decision) return;
 		const chosenAnswer = currentPresentation === 'mcq' ? (selectedChoice ?? undefined) : undefined;
-		exitCard(decision.direction, () => gradeCard(card, decision.grade, chosenAnswer));
+		exitCard(decision.direction, () => {
+			if (intent === 'repeat') {
+				sessionCardContentKeys = requeueRecallContentKey(
+					sessionCardContentKeys,
+					recallCardContentKey(card)
+				);
+			}
+			gradeCard(card, decision.grade, chosenAnswer);
+		});
 	}
 
 	function advanceCard(countAsAnswered = false) {
@@ -1056,7 +1067,7 @@
 				<div class="session-progress-text">
 					<strong>
 						{sessionComplete
-							? `${activityLabel} complete`
+							? activityLabel
 							: `${Math.min(cardPositionInSession + 1, totalCards)} of ${totalCards}`}
 					</strong>
 					<span>{sessionComplete ? selectedSubject : `${activityLabel} · ${selectedSubject}`}</span>
@@ -1080,7 +1091,6 @@
 				<span class="completion-mark" aria-hidden="true">
 					<CheckCircle2 size={34} strokeWidth={2.2} />
 				</span>
-				<p class="recall-kicker">Set complete</p>
 				<h1>
 					{reviewedInSession}
 					{reviewedInSession === 1 ? 'card' : 'cards'} done
@@ -1253,12 +1263,6 @@
 											<strong><MathText text={answerTextFor(currentCard)} /></strong>
 										</div>
 
-										{#if currentExplanation}
-											<div class="mcq-explanation">
-												<p><MathText text={currentExplanation} /></p>
-											</div>
-										{/if}
-
 										{#if selectedChoice && selectedChoice !== currentCard.back}
 											<div class="mcq-choice-review">
 												<span>Your choice</span>
@@ -1266,6 +1270,19 @@
 												{#if currentChoiceFeedback}
 													<p><MathText text={currentChoiceFeedback} /></p>
 												{/if}
+											</div>
+										{/if}
+
+										{#if currentExplanation}
+											<div class="mcq-explanation">
+												<p><MathText text={currentExplanation} /></p>
+											</div>
+										{/if}
+
+										{#if currentMemoryTip}
+											<div class="mcq-memory-tip">
+												<span>Remember</span>
+												<p><MathText text={currentMemoryTip} /></p>
 											</div>
 										{/if}
 									</section>
@@ -1311,7 +1328,7 @@
 								type="button"
 								class="session-secondary"
 								disabled={cardBusy}
-								aria-label="Repeat this card sooner"
+								aria-label="Put this card at the end of this set"
 								onclick={() => reviewCurrentCard('repeat')}
 							>
 								<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
@@ -1725,7 +1742,7 @@
 		min-height: 0;
 		max-height: var(--app-viewport-height, 100dvh);
 		overflow: hidden;
-		touch-action: pan-y;
+		touch-action: pan-y pinch-zoom;
 		--recall-card-enter-duration: 360ms;
 		--recall-card-exit-duration: 360ms;
 		--recall-card-return-duration: 220ms;
@@ -1866,7 +1883,7 @@
 		box-shadow: none;
 		overflow: visible;
 		user-select: none;
-		touch-action: none;
+		touch-action: pan-y pinch-zoom;
 		transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--drag-rotate));
 		transition:
 			transform var(--recall-card-return-duration) cubic-bezier(0.22, 0.75, 0.25, 1),
@@ -1886,7 +1903,13 @@
 	}
 
 	.stack-card.active.mcq-card {
-		touch-action: pan-y;
+		touch-action: pan-y pinch-zoom;
+	}
+
+	:global(html[data-viewport-zoomed='true']) .recall-session,
+	:global(html[data-viewport-zoomed='true']) .stack-card.active,
+	:global(html[data-viewport-zoomed='true']) .stack-card.active.mcq-card {
+		touch-action: pan-x pan-y pinch-zoom;
 	}
 
 	.stack-card.active.exiting-left,
@@ -1946,7 +1969,10 @@
 		backface-visibility: hidden;
 		-webkit-backface-visibility: hidden;
 		transform-style: preserve-3d;
-		overflow: hidden;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	.card-face.mcq-front {
@@ -2145,6 +2171,7 @@
 	}
 
 	.mcq-key-answer > span,
+	.mcq-memory-tip > span,
 	.mcq-choice-review > span {
 		color: var(--qc-ui-text-muted);
 		font-size: 0.78rem;
@@ -2163,6 +2190,7 @@
 
 	.mcq-key-answer,
 	.mcq-explanation,
+	.mcq-memory-tip,
 	.mcq-choice-review {
 		display: grid;
 		gap: 0.3rem;
@@ -2170,6 +2198,7 @@
 	}
 
 	.mcq-explanation p,
+	.mcq-memory-tip p,
 	.mcq-choice-review p {
 		margin: 0;
 		color: var(--qc-ui-text-secondary);
@@ -2196,9 +2225,14 @@
 		overflow-wrap: anywhere;
 	}
 
-	.mcq-explanation {
+	.mcq-explanation,
+	.mcq-memory-tip {
 		padding-top: 0.9rem;
 		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.mcq-memory-tip > span {
+		color: var(--qc-ui-accent-text);
 	}
 
 	.mcq-choice-review {

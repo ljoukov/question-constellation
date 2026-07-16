@@ -58,4 +58,83 @@ describe('supportsLearnerPracticeInput', () => {
 			})
 		).toBe(false);
 	});
+
+	it('holds out a question that references an absent exam table', () => {
+		expect(
+			supportsLearnerPracticeInput({
+				answerFormat: 'labeled-lines',
+				prompt: 'Calculate mean value X.',
+				context: 'Table 1 shows the results at 20 °C.',
+				responseKind: 'labeled-lines',
+				hasReferencedSourceMaterial: false
+			})
+		).toBe(false);
+	});
+
+	it('allows a text response when its referenced table is rendered', () => {
+		expect(
+			supportsLearnerPracticeInput({
+				answerFormat: 'labeled-lines',
+				prompt: 'Calculate mean value X.',
+				context: 'Table 1 shows the results at 20 °C.',
+				responseKind: 'labeled-lines',
+				hasReferencedSourceMaterial: true
+			})
+		).toBe(true);
+	});
+
+	it('holds out an equation completion without reviewed equation blanks', () => {
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Complete the equation for the reaction. C11H24 → C5H10 + 2 +',
+				responseKind: 'lines'
+			})
+		).toBe(false);
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Balance the equation for complete combustion of methane.',
+				responseKind: 'lines'
+			})
+		).toBe(false);
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Balance the equation for complete combustion of methane.',
+				responseKind: 'equation-blanks'
+			})
+		).toBe(true);
+	});
+
+	it('holds out multiple named response fields without a reviewed labeled input', () => {
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Describe the test.\nTest\nResult',
+				responseKind: 'lines'
+			})
+		).toBe(false);
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Describe the test.\nTest\nResult',
+				responseKind: 'labeled-lines'
+			})
+		).toBe(true);
+	});
+
+	it('holds out an unstated hypothesis and reaction-specific pressure question', () => {
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Explain why the students thought their hypothesis would be correct.'
+			})
+		).toBe(false);
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Explain the effect of increasing the pressure on the yield of ammonia.'
+			})
+		).toBe(false);
+		expect(
+			supportsLearnerPracticeInput({
+				prompt: 'Explain the effect of increasing the pressure on the yield of ammonia.',
+				context: 'The equation for the reaction is N2 + 3 H2 ⇌ 2 NH3.'
+			})
+		).toBe(true);
+	});
 });

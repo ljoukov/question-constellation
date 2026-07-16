@@ -33,6 +33,7 @@
 	const availableTopicCount = $derived(
 		topics.filter((topic) => cards.some((card) => card.topicId === topic.id)).length
 	);
+	const quickStartSize = $derived(Math.min(10, cards.length));
 	const subjectOptions = ['Biology', 'Chemistry', 'Physics'];
 	const browseHref = $derived(`/chains?subject=${encodeURIComponent(subject)}`);
 
@@ -41,7 +42,13 @@
 	}
 
 	function startHref(topic = 'all') {
-		return recallSessionHref({ subject, activity, topic, size: 10, returnTo });
+		return recallSessionHref({
+			subject,
+			activity,
+			topic,
+			size: Math.min(10, cards.length),
+			returnTo
+		});
 	}
 </script>
 
@@ -83,13 +90,22 @@
 		<section class="recall-quick-start" aria-label="Quick start">
 			<div>
 				<p class="recall-route-kicker">Mixed topics</p>
-				<h2>Start with 10 cards</h2>
-				<p>{cards.length} cards available across {availableTopicCount} topics.</p>
+				<h2>
+					{cards.length > 0 ? `Start with ${quickStartSize} cards` : 'No cards available yet'}
+				</h2>
+				<p>
+					{cards.length}
+					{cards.length === 1 ? 'card' : 'cards'} available across
+					{availableTopicCount}
+					{availableTopicCount === 1 ? 'topic' : 'topics'}.
+				</p>
 			</div>
-			<a href={startHref()}>
-				Start {title.toLowerCase()}
-				<ArrowRight size={17} aria-hidden="true" />
-			</a>
+			{#if cards.length > 0}
+				<a href={startHref()}>
+					Start {title.toLowerCase()}
+					<ArrowRight size={17} aria-hidden="true" />
+				</a>
+			{/if}
 		</section>
 
 		<section class="recall-route-topics" aria-labelledby="recall-route-topics-title">
@@ -329,6 +345,10 @@
 		border-left-color: rgba(226, 232, 240, 0.72);
 	}
 
+	:global(:root[data-theme='dark']) .recall-activity-switch a {
+		color: #b5c6d5;
+	}
+
 	:global(:root[data-theme='dark']) .recall-activity-switch a.active,
 	:global(:root[data-theme='dark']) .recall-quick-start > a {
 		background: rgba(16, 67, 49, 0.72);
@@ -367,6 +387,10 @@
 
 		:global(:root:not([data-theme='light'])) .recall-activity-switch a + a {
 			border-left-color: rgba(226, 232, 240, 0.72);
+		}
+
+		:global(:root:not([data-theme='light'])) .recall-activity-switch a {
+			color: #b5c6d5;
 		}
 
 		:global(:root:not([data-theme='light'])) .recall-activity-switch a.active,

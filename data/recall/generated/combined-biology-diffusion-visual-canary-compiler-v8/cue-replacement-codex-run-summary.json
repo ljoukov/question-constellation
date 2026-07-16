@@ -1,0 +1,25 @@
+{
+	"status": "passed",
+	"error": null,
+	"threadId": "019f696d-23af-7b01-a1d2-4d5f5319b6d4",
+	"model": "gpt-5.6-sol",
+	"thinkingLevel": "max",
+	"workDir": "tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review",
+	"startedAt": "2026-07-16T05:36:27.734Z",
+	"finishedAt": "2026-07-16T05:36:42.639Z",
+	"durationSeconds": 14.905,
+	"events": 4,
+	"commandActions": 0,
+	"failedCommandActions": 0,
+	"agentMessages": 1,
+	"reasoningSummaries": 0,
+	"webSearches": 0,
+	"fileChanges": 0,
+	"usage": {
+		"input_tokens": 12865,
+		"cached_input_tokens": 0,
+		"output_tokens": 202,
+		"reasoning_output_tokens": 128
+	},
+	"failedCommands": []
+}

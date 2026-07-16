@@ -289,6 +289,121 @@ export const recallCurriculumTopics: RecallTopic[] = [
 	}
 ];
 
+/**
+ * Compact second encodings for the original hand-authored deck. These do not
+ * replace the exact answer: they recast the same source-grounded relationship
+ * as an arrow chain, contrast, verbal formula, or retrieval mnemonic.
+ */
+export const recallMemoryTipById: Readonly<Record<string, string>> = Object.freeze({
+	'bio-eukaryote-prokaryote':
+		'Eukaryote: DNA enclosed in a nucleus | prokaryote: DNA not enclosed in a nucleus.',
+	'bio-nucleus-function': 'Nucleus = DNA store + cell control centre.',
+	'bio-mitochondria-function': 'Mitochondria → aerobic respiration → energy release.',
+	'bio-ribosome-function': 'Ribosomes = the cell’s protein builders.',
+	'bio-chloroplast-function': 'Chlorophyll captures light → photosynthesis in chloroplasts.',
+	'bio-stem-cell-definition': 'Undifferentiated → self-renewal + specialised cell types.',
+	'bio-diffusion-definition': 'Particles spread: high concentration → low concentration.',
+	'bio-osmosis-definition':
+		'Water only: dilute → concentrated, across a partially permeable membrane.',
+	'bio-active-transport-definition':
+		'Against the gradient: dilute → concentrated; respiration supplies energy.',
+	'bio-enzyme-definition': 'Catalyst: reaction speeds up; enzyme remains.',
+	'bio-coronary-heart-disease':
+		'Fatty build-up → narrower coronary artery → less blood to heart muscle.',
+	'bio-vaccination-memory-cells':
+		'Harmless pathogen material → antibodies + memory cells → faster antibody response on later exposure.',
+	'bio-antibiotics-vs-painkillers': 'Antibiotic → bacteria | painkiller → symptoms.',
+	'bio-aerobic-respiration-equation': 'Glucose is the fuel: add oxygen → carbon dioxide + water.',
+	'bio-anaerobic-respiration-muscles': 'No-oxygen muscle route: glucose → lactic acid.',
+	'bio-photosynthesis-equation': 'Leaf inputs: carbon dioxide + water → glucose + oxygen.',
+	'bio-transpiration-definition': 'Leaf → stomata → water vapour out.',
+	'bio-homeostasis-definition':
+		'Internal conditions kept steady → enzymes and cells work at their optimum.',
+	'bio-hormone-definition': 'Gland → blood → target organ.',
+	'bio-meiosis-purpose': 'Meiosis → gametes with half the chromosome number + genetic variation.',
+	'bio-genotype-phenotype': 'Genotype = alleles carried | phenotype = observable characteristic.',
+	'bio-natural-selection-steps':
+		'Variation → survival and reproduction → advantageous alleles spread.',
+	'bio-biodiversity-definition': 'Biodiversity = species variety, not organism count or biomass.',
+	'bio-decomposers-role': 'Dead material → breakdown → mineral ions returned to soil.',
+	'chem-atom-definition': 'Element → zoom to its smallest part that can still exist → atom.',
+	'chem-isotope-definition':
+		'Element identity follows protons: same P, different N → same element, different isotope.',
+	'chem-subatomic-charges': 'P–N–E = Plus, Neutral, nEgative → +1, 0, −1.',
+	'chem-mixture-definition':
+		'Not chemically joined → mixture | joined in fixed proportions → compound.',
+	'chem-ionic-bonding': 'Transfer → ions → opposite charges attract | sharing → covalent bonding.',
+	'chem-covalent-bonding': 'Co-valent = co-own: one electron pair shared.',
+	'chem-metallic-bonding':
+		'Positive metal ions ↔ delocalised electrons | covalent = one shared pair.',
+	'chem-moles-mass-mr': 'Mass is the numerator: moles = mass ÷ Mᵣ; rearrange to mass = moles × Mᵣ.',
+	'chem-concentration-mass-volume':
+		'Same volume, more mass → higher concentration | same mass, more volume → lower concentration.',
+	'chem-group-one-reactivity': 'Step down Group 1 ↓ while reactivity climbs ↑.',
+	'chem-electrolysis-definition':
+		'ELECTRO = electricity; LYSIS = split: current splits a molten or dissolved ionic compound.',
+	'chem-neutralisation-products': 'Acid + alkali → salt + water: A + A → S + W.',
+	'chem-soluble-salt-method': 'E–F–C: Excess base → Filter leftovers → Crystallise.',
+	'chem-exothermic-definition':
+		'EXO = EXIT: energy transfers to the surroundings → temperature usually rises.',
+	'chem-endothermic-definition':
+		'ENDO = ENTER: energy transfers from the surroundings → temperature usually falls.',
+	'chem-temperature-rate':
+		'F–F–S: hotter particles move Faster → collide more Frequently → more collisions Succeed.',
+	'chem-catalyst-definition':
+		'Shortcut, not fuel: lower-energy pathway → faster reaction; catalyst remains.',
+	'chem-alkane-general-formula': 'For n carbons: double n for hydrogen, then add 2 → CₙH₂ₙ₊₂.',
+	'chem-alkene-bromine-water': 'AlkEne Erases orange: orange bromine water → colourless.',
+	'chem-chromatography-rf': 'Spot ÷ front: substance distance goes first.',
+	'chem-flame-test-lithium': 'Picture “Li” in crimson light: lithium → crimson, not lilac.',
+	'chem-carbon-dioxide-test': 'CO₂ makes a cloud: clear limewater → cloudy.',
+	'chem-life-cycle-assessment':
+		'E–M–U–D: Extraction → Manufacture → Use → Disposal; compare impact at every stage.',
+	'phys-scalar-vector': 'Vector arrows point: scalar = size only | vector = size + direction.',
+	'phys-kinetic-energy-equation': 'Half–mass–speed²: speed is the only squared term → Eₖ = ½mv².',
+	'phys-gpe-equation': 'm–g–h: mass × gravitational field strength × height; no ½ and no square.',
+	'phys-power-equation': 'Power is pace: energy per time → P = E ÷ t.',
+	'phys-efficiency-equation': 'Useful goes on top, total goes below → no more than 1 (or 100%).',
+	'phys-current-equation':
+		'Charge delivered = current × time: Q = I × t. More I or more t → more Q.',
+	'phys-potential-difference-definition':
+		'“Per” means divide: energy ÷ charge → potential difference.',
+	'phys-resistance-equation': 'V drives, R resists, I flows → V = I × R.',
+	'phys-iv-characteristics-practical':
+		'Vary V → measure I. Keep that order: change potential difference, read current.',
+	'phys-ohmic-conductor': 'Constant temperature: V up → I rises in the same proportion.',
+	'phys-series-current':
+		'One series path → one current through every component; there is nowhere to split.',
+	'phys-parallel-pd':
+		'Same two connection points → same potential difference across every parallel branch.',
+	'phys-density-equation':
+		'Density means packed mass: ρ = m ÷ V. Same volume + more mass → denser.',
+	'phys-specific-heat-capacity-equation':
+		'Temperature change belongs here: ΔE = m × c × Δθ; latent heat has no Δθ.',
+	'phys-specific-latent-heat-equation':
+		'State change → E = mL. Keep Δθ out of the latent-heat equation.',
+	'phys-isotope-definition':
+		'Protons choose the element; neutrons choose the isotope → same element, different neutrons.',
+	'phys-half-life-definition':
+		'Start → ½ → ¼ → ⅛ after equal half-life intervals; it halves repeatedly, not all at once.',
+	'phys-resultant-force-equation': 'Resultant force → acceleration: F = m × a. Use the net force.',
+	'phys-force-unit': 'Force → newton (N). Keep N separate from J, W and V.',
+	'phys-weight-equation': 'Weight W = mass m × gravitational field strength g → W = mg.',
+	'phys-acceleration-equation': 'Change first, then divide by time: Δv → ÷t → acceleration.',
+	'phys-momentum-equation': 'Momentum is “mass in motion”: p = m × v.',
+	'phys-stopping-distance':
+		'See hazard → thinking distance; press brake → braking distance; add both.',
+	'phys-frequency-definition':
+		'Count waves past one point for 1 second → that count is the frequency.',
+	'phys-wave-speed-equation': 'One wave travels λ each cycle; f cycles each second → v = fλ.',
+	'phys-electromagnetic-spectrum-order':
+		'Long → short: “Rabbits Make Interesting Videos Using X-ray Goggles” = R–M–I–V–U–X–G.',
+	'phys-magnetic-field-wire': 'Current through a wire → a magnetic “halo” surrounds it.',
+	'phys-transformer-purpose':
+		'Alternating supply in → transformer steps potential difference up or down.',
+	'phys-red-shift': 'Red = stretched: longer observed wavelength → galaxy moving away.'
+} satisfies Record<string, string>);
+
 function recallCard(
 	card: Omit<
 		RecallCardDefinition,
@@ -299,16 +414,19 @@ function recallCard(
 ) {
 	const source = sourceBySubject[card.subject];
 	const visualCue = card.visualCue ?? recallVisualCueFor(card.id);
+	const memoryTip = recallMemoryTipById[card.id];
 	if (!isApprovedRecallVisualCueForSubject(visualCue, card.subject)) {
 		throw new Error(`Recall card ${card.id} has an invalid visual cue`);
 	}
+	if (!memoryTip) throw new Error(`Missing memory tip for recall card ${card.id}`);
 	return {
 		board: 'AQA',
 		qualification: 'GCSE',
 		sourceUrl: source.url,
 		sourceTitle: source.title,
 		...card,
-		visualCue
+		visualCue,
+		memoryTip
 	} satisfies RecallCardDefinition;
 }
 

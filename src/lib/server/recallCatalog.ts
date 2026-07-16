@@ -41,9 +41,16 @@ type RecallCatalogRow = {
 };
 
 export const SUPPORTED_RECALL_BUNDLE_SCHEMA_VERSION = 'recall-card-bundle-v2';
-export const SUPPORTED_RECALL_PROMPT_VERSION = 'recall-card-compiler-v6';
+export const SUPPORTED_RECALL_PROMPT_VERSION = 'recall-card-compiler-v9';
+export const SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_SCHEMA_VERSION =
+	'recall-memory-tip-enrichment-v1';
+export const SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_PROMPT_VERSION =
+	'recall-memory-tip-enricher-v1';
 export const IMPORTABLE_RECALL_PROMPT_VERSIONS = [
 	'recall-card-compiler-v5',
+	'recall-card-compiler-v6',
+	'recall-card-compiler-v7',
+	'recall-card-compiler-v8',
 	SUPPORTED_RECALL_PROMPT_VERSION
 ] as const;
 export const RECALL_CATALOG_CACHE_TTL_MS = 30_000;
@@ -63,9 +70,24 @@ const staticSeparateHigherOffering = Object.freeze({
 	}
 } satisfies Record<RecallSubject, { offeringId: string; specificationId: string }>);
 
-const STATIC_RECALL_CATALOG_VERSION = 'aqa-separate-science-higher-v1';
+export const STATIC_RECALL_CATALOG_VERSION = 'aqa-separate-science-higher-v2';
 
-const catalogSql = `SELECT c.id AS card_id,
+const catalogSql = `WITH imported_memory_tip_enrichments AS (
+  SELECT enrichment.*
+  FROM recall_card_memory_tip_enrichments enrichment
+  JOIN recall_memory_tip_enrichment_runs enrichment_run
+    ON enrichment_run.id = enrichment.enrichment_run_id
+  WHERE enrichment.status = 'published'
+    AND enrichment.needs_human_review = 0
+    AND enrichment.import_owner = 'recall-memory-tip-enrichment-import/v1'
+    AND enrichment_run.status = 'imported'
+    AND enrichment_run.import_owner = 'recall-memory-tip-enrichment-import/v1'
+    AND enrichment_run.schema_version = ?
+    AND enrichment_run.prompt_version = ?
+    AND enrichment_run.artifact_path =
+      'data/recall/enrichments/' || enrichment_run.id || '/accepted-enrichments.json'
+)
+SELECT c.id AS card_id,
        c.concept_key,
        c.subject,
        c.kind,
@@ -75,9 +97,12 @@ const catalogSql = `SELECT c.id AS card_id,
        c.reverse_front,
        c.reverse_back,
        c.explanation,
-       c.memory_tip,
-       c.content_revision,
-       c.content_hash,
+       COALESCE(memory_tip_enrichment.memory_tip, c.memory_tip) AS memory_tip,
+       COALESCE(
+         memory_tip_enrichment.effective_content_revision,
+         c.content_revision
+       ) AS content_revision,
+       COALESCE(memory_tip_enrichment.effective_content_hash, c.content_hash) AS content_hash,
        c.provenance_json,
        ch.choice_key,
        ch.text AS choice_text,
@@ -96,6 +121,17 @@ const catalogSql = `SELECT c.id AS card_id,
 FROM recall_cards c
 JOIN recall_generation_runs generation_run
   ON generation_run.id = c.generation_run_id
+LEFT JOIN imported_memory_tip_enrichments memory_tip_enrichment
+  ON memory_tip_enrichment.card_id = c.id
+ AND NULLIF(trim(c.memory_tip), '') IS NULL
+ AND memory_tip_enrichment.base_generation_run_id = c.generation_run_id
+ AND memory_tip_enrichment.base_content_revision = c.content_revision
+ AND memory_tip_enrichment.base_content_hash = c.content_hash
+ AND memory_tip_enrichment.base_source_fingerprint = c.source_fingerprint
+ AND memory_tip_enrichment.base_artifact_hash = generation_run.artifact_hash
+ AND memory_tip_enrichment.base_artifact_path = generation_run.artifact_path
+ AND memory_tip_enrichment.effective_hash_version =
+     'recall-memory-tip-effective-content-v1'
 JOIN recall_card_choices ch
   ON ch.card_id = c.id
 JOIN recall_card_curriculum_targets target
@@ -113,7 +149,9 @@ JOIN curriculum_specifications specification
   ON specification.id = offering.specification_id
 WHERE c.status = 'published'
   AND c.needs_human_review = 0
+  AND c.import_owner = 'recall-card-import/v1'
   AND generation_run.status = 'imported'
+  AND generation_run.import_owner = 'recall-card-import/v1'
   AND generation_run.schema_version = ?
   AND generation_run.prompt_version IN (${IMPORTABLE_RECALL_PROMPT_VERSIONS.map(() => '?').join(', ')})
   AND c.source_fingerprint = generation_run.source_fingerprint
@@ -128,6 +166,13 @@ export type RecallCatalogScope = {
 	offeringId: string;
 };
 
+export function defaultRecallCatalogScope(subject: RecallSubject): RecallCatalogScope {
+	return {
+		subject,
+		offeringId: staticSeparateHigherOffering[subject].offeringId
+	};
+}
+
 type CatalogRead = { hasEligibleRows: boolean; cards: RecallCard[] };
 type CatalogCacheEntry = { expiresAt: number; promise: Promise<RecallCard[]> };
 
@@ -137,6 +182,16 @@ const canonicalContentHashPattern = /^[a-f0-9]{64}$/;
 
 function isCanonicalChoiceKey(value: string): boolean {
 	return value.length <= 64 && canonicalChoiceKeyPattern.test(value);
+}
+
+function isValidMemoryTip(value: string | null): boolean {
+	if (value === null || value.trim() === '') return true;
+	return (
+		value === value.trim() &&
+		value.length >= 8 &&
+		value.length <= 180 &&
+		!/[\u0000-\u001f\u007f]/.test(value)
+	);
 }
 
 function normalized(value: string): string {
@@ -192,6 +247,7 @@ function hydrateCatalogRows(rows: RecallCatalogRow[]): RecallCard[] {
 		if (
 			!topicId ||
 			!isApprovedRecallVisualCueForSubject(row.visual_cue, row.subject) ||
+			!isValidMemoryTip(row.memory_tip) ||
 			!Number.isInteger(row.content_revision) ||
 			row.content_revision < 1 ||
 			!canonicalContentHashPattern.test(row.content_hash) ||
@@ -266,7 +322,7 @@ function hydrateCatalogRows(rows: RecallCatalogRow[]): RecallCard[] {
 
 function missingCatalogTable(cause: unknown): boolean {
 	const message = cause instanceof Error ? cause.message : String(cause);
-	return /no such table:\s*recall_(?:generation_runs|cards|card_choices|card_curriculum_targets)/i.test(
+	return /no such table:\s*recall_(?:generation_runs|cards|card_choices|card_curriculum_targets|memory_tip_enrichment_runs|card_memory_tip_enrichments)/i.test(
 		message
 	);
 }
@@ -274,6 +330,8 @@ function missingCatalogTable(cause: unknown): boolean {
 async function readGeneratedRecallCards(scope: RecallCatalogScope): Promise<CatalogRead> {
 	try {
 		const rows = await queryRows<RecallCatalogRow>(catalogSql, [
+			SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_SCHEMA_VERSION,
+			SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_PROMPT_VERSION,
 			SUPPORTED_RECALL_BUNDLE_SCHEMA_VERSION,
 			...IMPORTABLE_RECALL_PROMPT_VERSIONS,
 			scope.subject,
@@ -281,7 +339,7 @@ async function readGeneratedRecallCards(scope: RecallCatalogScope): Promise<Cata
 		]);
 		return { hasEligibleRows: rows.length > 0, cards: hydrateCatalogRows(rows) };
 	} catch (cause) {
-		// A fresh local database may not have applied 0018 yet. Production and
+		// A fresh local database may not have applied 0018/0020 yet. Production and
 		// configured local D1 environments must surface every other failure.
 		if (missingCatalogTable(cause)) return { hasEligibleRows: false, cards: [] };
 		throw cause;

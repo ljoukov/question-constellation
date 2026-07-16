@@ -1,0 +1,62 @@
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "course": "Combined Science",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "component": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+    "code": "6.1.1",
+    "title": "Energy changes in a system, and the ways energy is stored before and after such changes",
+    "kind": "section",
+    "subjectArea": "Physics",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 122,
+    "sourcePageEnd": 124
+  },
+  "topicComponent": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6",
+    "code": "6.1",
+    "title": "Energy",
+    "kind": "chapter",
+    "subjectArea": "Physics",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 121,
+    "sourcePageEnd": 126
+  },
+  "pageStart": 122,
+  "pageEnd": 124,
+  "sourceFingerprint": "fd5bda3ad7a773cfa0ed2a710e0213e6e366da4d3f84d99a6c75bc6117ed07c4",
+  "catalogSchemaVersion": "1",
+  "catalogPath": "data/curricula/curriculum-catalog.json",
+  "subject": "Physics",
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "pageText": "6.1.1 Energy changes in a system, and the ways energy is stored\nbefore and after such changes\n6.1.1.1 Energy stores and systems\nContent Key opportunities for\nskills development\nA system is an object or group of objects.\nThere are changes in the way energy is stored when a system\nchanges.\nStudents should be able to describe all the changes involved in the\nway energy is stored when a system changes, for common\nsituations. For example:\n• an object projected upwards\n• a moving object hitting an obstacle\n• an object accelerated by a constant force\n• a vehicle slowing down\n• bringing water to a boil in an electric kettle.\nThroughout this section on Energy students should be able to\ncalculate the changes in energy involved when a system is changed\nby:\n• heating\n• work done by forces\n• work done when a current flows\nThe link between work done\n(energy transfer) and\ncurrent flow in a circuit is\ncovered in Work done and\nenergy transfer (page 146).\nWS 4.5\n• use calculations to show on a common scale how the overall\nenergy in a system is redistributed when the system is\nchanged.\nWS 1.2, 4.3, 4.5, 4.6\nMS 1a, c, 3b, c\n6.1.1.2 Changes in energy\nContent Key opportunities for\nskills development\nStudents should be able to calculate the amount of energy\nassociated with a moving object, a stretched spring and an object\nraised above ground level.\nWS 1.2, 4.3, 4.4, 4.6\nMS 1a, c, 3b, c\n122 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\nContent Key opportunities for\nskills development\nThe kinetic energy of a moving object can be calculated using the\nequation:\nkinetic energy = 0.5 × mass × speed\n2\nEk = 1\n2\nm v2\nkinetic energy, Ek, in joules, J\nmass, m, in kilograms, kg\nspeed, v, in metres per second, m/s\nThe amount of elastic potential energy stored in a stretched spring\ncan be calculated using the equation:\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\nelastic potential energy = 0.5 × spring constant × extension\n2\nEe = 1\n2\nk e2\n(assuming the limit of proportionality has not been exceeded)\nelastic potential energy, Ee, in joules, J\nspring constant, k, in newtons per metre, N/m\nextension, e, in metres, m\nThe amount of gravitational potential energy gained by an object\nraised above ground level can be calculated using the equation:\nMS 3b, c\nStudents should be able to\napply this equation which is\ngiven on the Physics\nequation sheet.\ng . p . e . = mass × gravitational f ield strength × height\nEp = m g h\ngravitational potential energy, Ep, in joules, J\nmass, m, in kilograms, kg\ngravitational field strength, g, in newtons per kilogram, N/kg (In any\ncalculation the value of the gravitational field strength (g) will be\ngiven).\nheight, h, in metres, m\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\nAT 1\nInvestigate the transfer of\nenergy from a gravitational\npotential energy store to a\nkinetic energy store.\n6.1.1.3 Energy changes in systems\nContent Key opportunities for\nskills development\nThe amount of energy stored in or released from a system as its\ntemperature changes can be calculated using the equation:\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 123\nContent Key opportunities for\nskills development\nchange in thermal energy = mass × speci f ic heat capacity\n× temperature change\n∆ E = m c ∆ θ\nchange in thermal energy, ∆E, in joules, J\nmass, m, in kilograms, kg\nspecific heat capacity, c, in joules per kilogram per degree Celsius,\nJ/kg °C\ntemperature change, ∆θ, in degrees Celsius, °C\nThe specific heat capacity of a substance is the amount of energy\nrequired to raise the temperature of one kilogram of the substance\nby one degree Celsius.\nMS 3b, c\nStudents should be able to\napply this equation which is\ngiven on the Physics\nequation sheet.\nThis equation and specific\nheat capacity are also\nincluded in Temperature\nchanges in a system and\nspecific heat capacity (page\n137).\nRequired practical activity 14: an investigation to determine the specific heat capacity of one or\nmore materials. The investigation will involve linking the decrease of one energy store (or work\ndone) to the increase in temperature and subsequent increase in thermal energy stored.\nAT skills covered by this practical activity: physics AT 1 and 5.\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 184).\n124 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n"
+}

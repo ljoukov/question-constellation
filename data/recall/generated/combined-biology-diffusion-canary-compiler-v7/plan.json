@@ -1,0 +1,53 @@
+{
+  "status": "generation_requested",
+  "runId": "combined-biology-diffusion-canary-compiler-v7",
+  "workDir": "tmp/recall-generation/combined-biology-diffusion-canary-compiler-v7",
+  "artifactDir": "data/recall/generated/combined-biology-diffusion-canary-compiler-v7",
+  "catalog": "data/curricula/curriculum-catalog.json",
+  "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+  "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+  "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+  "subject": "Biology",
+  "pageRange": [
+    25,
+    25
+  ],
+  "pageTextCharacters": 2219,
+  "sourceFingerprint": "4b76ec26ca63147e514cdc26db49e6f56fd0fc468835d999b21be0a9a759c99a",
+  "count": 4,
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "isPrimary": false,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "models": {
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    }
+  },
+  "promptVersion": "recall-card-compiler-v7"
+}

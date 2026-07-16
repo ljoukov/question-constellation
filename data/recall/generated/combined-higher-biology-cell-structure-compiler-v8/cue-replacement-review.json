@@ -1,0 +1,16 @@
+{
+  "reviews": [
+    {
+      "cardId": "bio-cellulose-cell-wall",
+      "accepted": true,
+      "reason": "🌿 represents the plant context already explicit in the front. It does not reveal the wall material: cellulose, cell sap, cytoplasm, and cell membrane are all compatible with the depicted plant context, so it neither selects the answer nor eliminates a distractor.",
+      "replacementCue": "🌿"
+    },
+    {
+      "cardId": "bio-animal-plant-differentiation-timing",
+      "accepted": true,
+      "reason": "🧫 is a conventional landmark for the cells and differentiation already named in the front. It encodes neither early nor lifelong differentiation and does not favor either the animal or plant pattern, so it remains neutral across all choices.",
+      "replacementCue": "🧫"
+    }
+  ]
+}

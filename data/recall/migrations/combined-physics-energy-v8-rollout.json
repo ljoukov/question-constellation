@@ -1,0 +1,52 @@
+{
+	"schemaVersion": "recall-card-retirement-v1",
+	"createdAt": "2026-07-16T06:55:00Z",
+	"reason": "Retire only the five compiler-v5 Physics energy cards whose retrieval tasks are fully covered by independently accepted compiler-v8 replacements. Preserve the distinct proportional-limit card and the definition revised in place.",
+	"cards": [
+		{
+			"id": "phys-system-definition",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "bd77dde3268ee0475499eff44199f3aa81715c76bdc3d7a99e0dc47e91437fe8",
+			"expectedGenerationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+			"replacementId": "phys-energy-system-definition",
+			"replacementGenerationRunId": "combined-higher-physics-energy-compiler-v8"
+		},
+		{
+			"id": "phys-energy-change-processes",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "db69203e3f3021c4c601ae5134a5a996b25da1759e4e73de930358e3b1286cd4",
+			"expectedGenerationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+			"replacementId": "phys-system-energy-change-processes",
+			"replacementGenerationRunId": "combined-higher-physics-energy-compiler-v8"
+		},
+		{
+			"id": "phys-kinetic-energy-equation",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "e080b45220d07834a4fe0bba2b89798d09b7ef6941d3912c9e31aae7cb0bc87f",
+			"expectedGenerationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+			"replacementId": "phys-kinetic-energy-formula",
+			"replacementGenerationRunId": "combined-higher-physics-energy-compiler-v8"
+		},
+		{
+			"id": "phys-gravitational-potential-energy-equation",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "2077f565a7068044c63fc1abd5d565be17fc230403c235e3e0216f18e0becec1",
+			"expectedGenerationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+			"replacementId": "phys-gravitational-potential-energy-formula",
+			"replacementGenerationRunId": "combined-higher-physics-energy-compiler-v8"
+		},
+		{
+			"id": "phys-thermal-energy-change-equation",
+			"expectedStatus": "published",
+			"expectedContentRevision": 1,
+			"expectedContentHash": "160a9c69271dab14c0fdb8789d10670582d9912f3e137f9fea9abee8ea75a9a8",
+			"expectedGenerationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+			"replacementId": "phys-thermal-energy-change-formula",
+			"replacementGenerationRunId": "combined-higher-physics-energy-compiler-v8"
+		}
+	]
+}

@@ -22,6 +22,20 @@ export function canonicalSourceFileHash(value) {
 }
 
 /**
+ * Canonicalise a stored JSON provenance value for semantic comparison while
+ * preserving the raw database string separately for optimistic write guards.
+ *
+ * @param {unknown} value
+ */
+export function canonicalRecallProvenance(value) {
+	try {
+		return stableStringify(typeof value === 'string' ? JSON.parse(value) : value);
+	} catch {
+		return null;
+	}
+}
+
+/**
  * Build a strict import plan from a validated accepted bundle and a read-only
  * D1 snapshot. Existing content is never silently adopted or overwritten.
  *
@@ -125,7 +139,16 @@ export function planRecallCardImport(
 			});
 			continue;
 		}
-		if (existingCard.content_hash === card.contentHash && existingCard.status === 'published') {
+		const expectedProvenance = stableStringify(card.provenance);
+		const sameImportIdentity =
+			existingCard.source_fingerprint === bundle.source.fingerprint &&
+			existingCard.generation_run_id === bundle.run.id &&
+			canonicalRecallProvenance(existingCard.provenance_json) === expectedProvenance;
+		if (
+			existingCard.content_hash === card.contentHash &&
+			existingCard.status === 'published' &&
+			sameImportIdentity
+		) {
 			actions.push({
 				type: 'noop',
 				card,
@@ -137,9 +160,13 @@ export function planRecallCardImport(
 			conflicts.push({
 				cardId: card.id,
 				reason:
-					existingCard.content_hash === card.contentHash
-						? `existing identical card is ${existingCard.status}, not published; pass --allow-update to resume it`
-						: 'published content differs; inspect it and pass --allow-update explicitly'
+					existingCard.content_hash === card.contentHash &&
+					existingCard.status === 'published' &&
+					!sameImportIdentity
+						? 'identical published content belongs to different source/run provenance; pass --allow-update to rebind it explicitly'
+						: existingCard.content_hash === card.contentHash
+							? `existing identical card is ${existingCard.status}, not published; pass --allow-update to resume it`
+							: 'published content differs; inspect it and pass --allow-update explicitly'
 			});
 			continue;
 		}
@@ -149,7 +176,10 @@ export function planRecallCardImport(
 			expected: {
 				contentHash: existingCard.content_hash,
 				contentRevision: Number(existingCard.content_revision),
-				status: existingCard.status
+				status: existingCard.status,
+				sourceFingerprint: existingCard.source_fingerprint,
+				generationRunId: existingCard.generation_run_id,
+				provenanceJson: existingCard.provenance_json
 			},
 			contentRevision:
 				existingCard.content_hash === card.contentHash
@@ -268,8 +298,9 @@ export function buildRecallCardImportStatements(bundle, plan) {
 				          content_revision = ?, content_hash = ?, source_fingerprint = ?, generation_run_id = ?,
 				          provenance_json = ?, status = 'draft', needs_human_review = 0,
 				          import_owner = ?, updated_at = CURRENT_TIMESTAMP
-				      WHERE id = ? AND import_owner = ?
-				        AND content_hash = ? AND content_revision = ? AND status = ?`,
+					  WHERE id = ? AND import_owner = ?
+					    AND content_hash = ? AND content_revision = ? AND status = ?
+					    AND source_fingerprint = ? AND generation_run_id = ? AND provenance_json = ?`,
 				params: [
 					...commonParams.slice(1),
 					RECALL_IMPORT_OWNER,
@@ -277,7 +308,10 @@ export function buildRecallCardImportStatements(bundle, plan) {
 					RECALL_IMPORT_OWNER,
 					expected.contentHash,
 					expected.contentRevision,
-					expected.status
+					expected.status,
+					expected.sourceFingerprint,
+					expected.generationRunId,
+					expected.provenanceJson
 				]
 			});
 			for (const table of [
@@ -373,21 +407,26 @@ export function buildRecallCardImportStatements(bundle, plan) {
 			sql: `UPDATE recall_cards
 			      SET status = 'published', updated_at = CURRENT_TIMESTAMP
 			      WHERE id = ? AND import_owner = ? AND status = 'draft'
-			        AND content_hash = ? AND content_revision = ? AND generation_run_id = ?`,
+			        AND content_hash = ? AND content_revision = ? AND generation_run_id = ?
+			        AND source_fingerprint = ? AND provenance_json = ?`,
 			params: [
 				card.id,
 				RECALL_IMPORT_OWNER,
 				card.contentHash,
 				action.contentRevision,
-				bundle.run.id
+				bundle.run.id,
+				bundle.source.fingerprint,
+				stableStringify(card.provenance)
 			]
 		});
 	}
 	const importedActions = plan.actions.filter((action) => action.type !== 'noop');
-	const cardGuards = importedActions
+	const cardGuards = plan.actions
 		.map(
 			() =>
-				`EXISTS (SELECT 1 FROM recall_cards WHERE id = ? AND status = 'published' AND content_hash = ?)`
+				`EXISTS (SELECT 1 FROM recall_cards
+				 WHERE id = ? AND status = 'published' AND content_hash = ?
+				   AND source_fingerprint = ? AND generation_run_id = ? AND provenance_json = ?)`
 		)
 		.join(' AND ');
 	if (plan.run.needsFinalization || importedActions.length > 0) {
@@ -395,16 +434,57 @@ export function buildRecallCardImportStatements(bundle, plan) {
 			sql: `UPDATE recall_generation_runs
 		      SET status = 'imported', updated_at = CURRENT_TIMESTAMP
 		      WHERE id = ? AND import_owner = ? AND artifact_hash = ?
-		        AND status IN ('accepted', 'imported')${cardGuards ? ` AND ${cardGuards}` : ''}`,
+		        AND source_fingerprint = ? AND status IN ('accepted', 'imported')${cardGuards ? ` AND ${cardGuards}` : ''}`,
 			params: [
 				bundle.run.id,
 				RECALL_IMPORT_OWNER,
 				plan.run.artifactHash,
-				...importedActions.flatMap((action) => [action.card.id, action.card.contentHash])
+				bundle.source.fingerprint,
+				...plan.actions.flatMap((action) => [
+					action.card.id,
+					action.card.contentHash,
+					bundle.source.fingerprint,
+					bundle.run.id,
+					stableStringify(action.card.provenance)
+				])
 			]
 		});
 	}
 	return statements;
+}
+
+/**
+ * Compare the stored parent rows with every accepted identity-bearing field.
+ * Child rows are verified separately by the importer.
+ *
+ * @param {any} bundle
+ * @param {any[]} rows
+ */
+export function recallStoredCardParentIssues(bundle, rows) {
+	const expectedById = new Map(bundle.cards.map((/** @type {any} */ card) => [card.id, card]));
+	const issues = [];
+	for (const row of rows) {
+		const expected = expectedById.get(row.id);
+		if (!expected) {
+			issues.push(`${row.id} is not present in the accepted artifact`);
+			continue;
+		}
+		if (row.status !== 'published') issues.push(`${row.id} is ${row.status}`);
+		if (row.content_hash !== expected.contentHash) issues.push(`${row.id} content hash differs`);
+		if (row.source_fingerprint !== bundle.source.fingerprint) {
+			issues.push(`${row.id} source fingerprint differs`);
+		}
+		if (row.generation_run_id !== bundle.run.id) {
+			issues.push(`${row.id} generation run differs`);
+		}
+		if (canonicalRecallProvenance(row.provenance_json) !== stableStringify(expected.provenance)) {
+			issues.push(`${row.id} provenance differs`);
+		}
+	}
+	if (rows.length !== bundle.cards.length) {
+		issues.push('not every bundle card was found after import');
+	}
+	return issues;
 }
 
 /** @param {any} card @param {number} contentRevision @param {string} generationRunId @param {string} sourceFingerprint */

@@ -17,6 +17,10 @@ const mechanicsOnlyTitle =
 const contextualTitle = /\b(?:this|that|it)\b|\bfigure\s+\d+\b/i;
 const responseShapedTitle =
 	/^(?:what|which|where)\b|\btheir hypothesis\b|^a better description\b|\bidentify the blocks\b|\bidentification$/i;
+const sentenceShapedTitle =
+	/^(?:the|a|an|one of these)\b[\s\S]{0,52}\b(?:is|are|was|were|works?|benefits?|changes?|increases?|decreases?|gives?|reduces?|can|should|would|will)\b/i;
+const finitePredicateTitle =
+	/\b(?:is|are|was|were|operates?|works|used|required|forms?|affects?|helps?|provides?|created|formed|stimulates?|may|can|could|should|would|will|have\s+been|has\s+been|have\s+caused)\b/i;
 
 // These comparison/result words are especially likely to disclose the conclusion of an
 // explain question. Keep this deliberately narrow: a title is rejected only when the exact
@@ -753,6 +757,10 @@ export function questionCardTitleIssues(value, options = {}) {
 	if (mechanicsOnlyTitle.test(title)) issues.push('mechanics_only');
 	if (contextualTitle.test(title)) issues.push('context_dependent');
 	if (responseShapedTitle.test(title)) issues.push('response_mechanics');
+	if (sentenceShapedTitle.test(title)) issues.push('copies_prompt_sentence');
+	if (!/\b(?:equation|calculation)$/i.test(title) && finitePredicateTitle.test(title)) {
+		issues.push('sentence_not_concept_label');
+	}
 
 	const prompt = normalizedComparisonText(atomicPrompt(options.promptText));
 	const answer = normalizedComparisonText(options.answerText);

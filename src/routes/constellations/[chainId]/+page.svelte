@@ -78,7 +78,11 @@
 		return prompt;
 	}
 
-	function practiceHref(questionId: string) {
+	function questionHref(question: (typeof data.questions)[number]) {
+		if (!question.practiceAvailable) {
+			return resolve('/questions/[questionId]', { questionId: question.id });
+		}
+		const questionId = question.id;
 		const base = resolve('/questions/[questionId]/practice', { questionId });
 		const params = new URLSearchParams({ entry: 'constellation', returnTo: constellationHref });
 		return `${base}?${params.toString()}`;
@@ -140,7 +144,7 @@
 			{#each data.questions as question, index (question.id)}
 				{@const prompt = usefulPrompt(question.title, question.prompt)}
 				<li>
-					<a class="qc-chain-question" href={practiceHref(question.id)}>
+					<a class="qc-chain-question" href={questionHref(question)}>
 						<span class="qc-chain-question-index">{index + 1}</span>
 						<span class="qc-chain-question-body">
 							<span class="qc-chain-question-meta">
@@ -153,7 +157,10 @@
 								<span class="qc-chain-question-teaser"><MathText text={prompt} /></span>
 							{/if}
 						</span>
-						<ArrowRight class="qc-chain-question-arrow" size={18} aria-hidden="true" />
+						<span class="qc-chain-question-action">
+							{question.practiceAvailable ? 'Practise' : 'View'}
+							<ArrowRight class="qc-chain-question-arrow" size={18} aria-hidden="true" />
+						</span>
 					</a>
 				</li>
 			{/each}

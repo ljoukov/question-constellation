@@ -54,6 +54,7 @@ const practice = {
 		context: 'Bingley and Darcy have returned to Netherfield and visit Longbourn.',
 		assets: [],
 		renderingOverlay: null,
+		practiceAvailable: true,
 		meta: {
 			qualification: 'GCSE',
 			board: 'OCR',

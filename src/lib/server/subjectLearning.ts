@@ -1,4 +1,4 @@
-import { deriveQuestionCardTitle, questionCardTitleIssues } from '$lib/questionCardTitle.js';
+import { storedQuestionTitle, storedQuestionTitleIssues } from '$lib/storedQuestionTitle.js';
 import { curriculumOfferingTopics } from '$lib/curriculum/catalog';
 import type { CurriculumSelectionGroup } from '$lib/curriculum/catalog';
 import type { StemCurriculumTopic } from '$lib/curriculum/aqaStem';
@@ -150,6 +150,7 @@ type GapRow = {
 
 type QuestionCandidateRow = {
 	id: string;
+	subject: string | null;
 	prompt_text: string;
 	self_contained_prompt_text: string | null;
 	metadata_json: string;
@@ -165,6 +166,7 @@ type QuestionCandidateRow = {
 	chain_title: string;
 	transfer_distance: string;
 	step_count: number;
+	reviewed_answer_text: string | null;
 };
 
 type CandidateDetail = {
@@ -766,9 +768,15 @@ async function readQuestionCandidates(
 	return await queryRows<QuestionCandidateRow>(
 		`WITH RECURSIVE candidate_questions AS MATERIALIZED (
 		   SELECT
-		     q.id, q.prompt_text, q.self_contained_prompt_text, q.metadata_json,
+		     q.id, q.subject, q.prompt_text, q.self_contained_prompt_text, q.metadata_json,
 		     q.source_question_ref, q.marks, q.answer_format, q.paper, q.topic_path_json,
 		     q.spec_ref,
+		     (SELECT ma.answer_text
+		        FROM model_answers ma
+		       WHERE ma.question_id = q.id
+		         AND ma.needs_human_review = 0
+		       ORDER BY ma.confidence DESC, ma.id
+		       LIMIT 1) AS reviewed_answer_text,
 		     (SELECT LOWER(json_extract(qro.render_json, '$.response.kind'))
 		        FROM question_rendering_overlays qro
 		       WHERE qro.question_id = q.id
@@ -849,10 +857,10 @@ async function readQuestionCandidates(
 		   WHERE mapping_rank = 1
 		 )
 		 SELECT
-		   candidate.id, candidate.prompt_text, candidate.self_contained_prompt_text,
+		   candidate.id, candidate.subject, candidate.prompt_text, candidate.self_contained_prompt_text,
 		   candidate.metadata_json, candidate.source_question_ref, candidate.marks,
 		   candidate.answer_format, candidate.response_kind, candidate.paper,
-		   candidate.topic_path_json, candidate.spec_ref,
+		   candidate.topic_path_json, candidate.spec_ref, candidate.reviewed_answer_text,
 		   sm.component_id AS curriculum_component_id,
 		   candidate.answer_chain_id, candidate.chain_title, candidate.transfer_distance,
 		   (SELECT COUNT(*)
@@ -972,15 +980,13 @@ function topicProgress(
 }
 
 function questionTitle(row: QuestionCandidateRow): string {
-	const metadata = parseJson<Record<string, unknown>>(row.metadata_json, {});
-	const storedTitle = [metadata.card_title, metadata.cardTitle, metadata.title].find(
-		(value): value is string => typeof value === 'string' && value.trim().length > 0
-	);
-	return deriveQuestionCardTitle({
-		cardTitle: storedTitle,
+	return storedQuestionTitle({
+		id: row.id,
+		subject: row.subject,
+		metadataJson: row.metadata_json,
 		promptText: row.prompt_text,
 		selfContainedPromptText: row.self_contained_prompt_text,
-		fallback: row.chain_title
+		topicPathJson: row.topic_path_json
 	});
 }
 
@@ -1266,8 +1272,12 @@ function chooseCandidateDetails(
 		if (attemptedIds.has(question.id)) continue;
 		const title = questionTitle(question);
 		if (
-			questionCardTitleIssues(title, {
-				promptText: `${question.prompt_text}\n${question.self_contained_prompt_text ?? ''}`
+			storedQuestionTitleIssues({
+				title,
+				subject: question.subject,
+				promptText: question.prompt_text,
+				selfContainedPromptText: question.self_contained_prompt_text,
+				answerText: question.reviewed_answer_text
 			}).length > 0
 		) {
 			continue;
@@ -2196,12 +2206,27 @@ export async function isRecallCardWithinLearnerScope(
 	userId: string,
 	card: RecallCard
 ): Promise<boolean> {
-	const context = await recallScopeContext(userId, card.subject);
-	if (!context || context.curriculum.id !== card.offeringId) return false;
-	const exactTopic = context.curriculum.topics.find((topic) => topic.id === card.topicComponentId);
-	if (!exactTopic) return false;
-	if (context.scope.scope_mode === 'all') return true;
-	return validSelectedTopicIds(context.scope, context.curriculum.topics).includes(exactTopic.id);
+	return (await recallCardsWithinLearnerScope(userId, card.subject, [card])).length === 1;
+}
+
+export async function recallCardsWithinLearnerScope(
+	userId: string,
+	subject: RecallSubject,
+	cards: RecallCard[]
+): Promise<RecallCard[]> {
+	const context = await recallScopeContext(userId, subject);
+	if (!context) return [];
+	const { scope, curriculum } = context;
+	const topicIds = new Set(curriculum.topics.map((topic) => topic.id));
+	const selectedTopicIds =
+		scope.scope_mode === 'all' ? null : new Set(validSelectedTopicIds(scope, curriculum.topics));
+	return cards.filter(
+		(card) =>
+			card.subject === subject &&
+			card.offeringId === curriculum.id &&
+			topicIds.has(card.topicComponentId) &&
+			(selectedTopicIds === null || selectedTopicIds.has(card.topicComponentId))
+	);
 }
 
 async function recallScopeContext(

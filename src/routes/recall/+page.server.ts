@@ -9,9 +9,10 @@ import { learnerSubjectHref } from '$lib/learning/subjects';
 import {
 	getRecallCatalogScopeForLearner,
 	getRecallReviewSnapshot,
-	isRecallTopicWithinLearnerScope
+	isRecallTopicWithinLearnerScope,
+	recallCardsWithinLearnerScope
 } from '$lib/server/subjectLearning';
-import { getRecallCards } from '$lib/server/recallCatalog';
+import { defaultRecallCatalogScope, getRecallCards } from '$lib/server/recallCatalog';
 import { rankCanonicalRecallCards } from '$lib/recall/personalization';
 import { recordRecallCoverageMisses } from '$lib/server/recallCoverageShadow';
 import { redirect } from '@sveltejs/kit';
@@ -25,43 +26,56 @@ function serverTimestamp(value: string): number {
 	return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function requestedRecallSubject(value: string | null): RecallSubject | undefined {
+	return value === 'Biology' || value === 'Chemistry' || value === 'Physics' ? value : undefined;
+}
+
 export const load: PageServerLoad = async ({ locals, url, platform }) => {
 	const initialActivity = url.searchParams.get('activity') === 'mcq' ? 'mcq' : 'flashcards';
 	if (url.searchParams.get('start') !== '1') {
-		const requestedSubject = url.searchParams.get('subject');
-		const subject = recallSubjects.includes(requestedSubject as RecallSubject)
-			? (requestedSubject as RecallSubject)
-			: 'Biology';
+		const subject = requestedRecallSubject(url.searchParams.get('subject')) ?? 'Biology';
 		throw redirect(307, recallActivityHref(subject, initialActivity));
 	}
 	const requestedSubject = url.searchParams.get('subject');
-	const reviewSubject = recallSubjects.includes(requestedSubject as RecallSubject)
-		? (requestedSubject as RecallSubject)
-		: undefined;
+	const reviewSubject = requestedRecallSubject(requestedSubject);
 	const catalogScope =
 		locals.user && reviewSubject
 			? await getRecallCatalogScopeForLearner(locals.user, reviewSubject)
-			: null;
-	const allCards = await getRecallCards(catalogScope ?? undefined);
+			: reviewSubject
+				? defaultRecallCatalogScope(reviewSubject)
+				: null;
+	if (locals.user && (!reviewSubject || !catalogScope)) {
+		throw redirect(303, reviewSubject ? learnerSubjectHref(reviewSubject) : '/');
+	}
+	const catalogCards = await getRecallCards(catalogScope ?? undefined);
+	const allCards =
+		locals.user && reviewSubject
+			? await recallCardsWithinLearnerScope(locals.user.uid, reviewSubject, catalogCards)
+			: catalogCards;
 	const requestedTopic = url.searchParams.get('topic');
+	const aggregateTopicRequested = !requestedTopic || requestedTopic === 'all';
 	const hasRequestedTopic = Boolean(
 		reviewSubject &&
 		requestedTopic &&
+		!aggregateTopicRequested &&
 		allCards.some((card) => card.subject === reviewSubject && card.topicId === requestedTopic)
 	);
+	let requestedTopicAllowed = aggregateTopicRequested;
+	if (locals.user && !aggregateTopicRequested && reviewSubject && requestedTopic) {
+		requestedTopicAllowed =
+			hasRequestedTopic &&
+			(await isRecallTopicWithinLearnerScope(locals.user.uid, reviewSubject, requestedTopic));
+	}
 	if (locals.user) {
-		if (
-			!reviewSubject ||
-			!hasRequestedTopic ||
-			!(await isRecallTopicWithinLearnerScope(locals.user.uid, reviewSubject, requestedTopic!))
-		) {
+		if (allCards.length === 0 || !requestedTopicAllowed) {
 			throw redirect(303, reviewSubject ? learnerSubjectHref(reviewSubject) : '/');
 		}
 	}
 	const cards = reviewSubject
 		? allCards.filter(
 				(card) =>
-					card.subject === reviewSubject && (!hasRequestedTopic || card.topicId === requestedTopic)
+					card.subject === reviewSubject &&
+					(aggregateTopicRequested || card.topicId === requestedTopic)
 			)
 		: allCards;
 	const serverProgress =

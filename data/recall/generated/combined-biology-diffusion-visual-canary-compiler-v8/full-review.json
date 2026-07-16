@@ -1,0 +1,74 @@
+{
+  "reviews": [
+    {
+      "cardId": "bio-diffusion-net-movement",
+      "accepted": true,
+      "reason": "The card accurately retrieves the specified definition and direction of diffusion; its three distractors isolate distinct misconceptions and all supporting content is grounded in page 25.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-diffusion-rate-factors",
+      "accepted": true,
+      "reason": "The answer exactly covers all three listed rate factors, with distinct omission-based distractors and a grounded mnemonic.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    },
+    {
+      "cardId": "bio-single-cell-surface-area-volume",
+      "accepted": false,
+      "reason": "Two distractors encode the same reciprocal misconception: a small surface-area-to-volume ratio is equivalent to a large volume-to-surface-area ratio.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": false,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": [
+        "The small-SA:V and large-V:SA distractors are mathematically equivalent, so the three distractors are not mutually distinct."
+      ]
+    },
+    {
+      "cardId": "bio-thin-membrane-short-diffusion-path",
+      "accepted": true,
+      "reason": "The card precisely tests the thin-membrane–short-diffusion-path relationship, while the distractors distinctly attribute other listed exchange-surface adaptations to thinness.",
+      "checks": {
+        "singleConcept": true,
+        "officialEvidenceGrounded": true,
+        "correctAnswerExact": true,
+        "distractorsDiagnostic": true,
+        "feedbackUseful": true,
+        "concise": true,
+        "reverseSafe": true,
+        "memoryTipGrounded": true,
+        "targetMappingCorrect": true
+      },
+      "issues": []
+    }
+  ]
+}

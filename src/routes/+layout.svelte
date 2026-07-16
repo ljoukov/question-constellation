@@ -29,8 +29,21 @@
 
 	function syncAppViewportHeight() {
 		if (typeof window === 'undefined') return;
-		const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-		document.documentElement.style.setProperty('--app-viewport-height', `${viewportHeight}px`);
+		const root = document.documentElement;
+		const visualViewport = window.visualViewport;
+		if (visualViewport && visualViewport.scale > 1.01) {
+			root.dataset.viewportZoomed = 'true';
+			// Keep the last layout-height value while pinch-zoom changes only the
+			// visual viewport. Reflowing full-screen cards to the magnified viewport
+			// would enlarge text and shrink its container at the same time.
+			if (!root.style.getPropertyValue('--app-viewport-height')) {
+				root.style.setProperty('--app-viewport-height', `${root.clientHeight}px`);
+			}
+			return;
+		}
+		delete root.dataset.viewportZoomed;
+		const viewportHeight = visualViewport?.height ?? window.innerHeight;
+		root.style.setProperty('--app-viewport-height', `${viewportHeight}px`);
 	}
 
 	onMount(() => {

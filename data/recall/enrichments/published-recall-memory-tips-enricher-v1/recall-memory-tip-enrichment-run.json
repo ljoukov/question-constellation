@@ -1,0 +1,126 @@
+{
+  "status": "accepted",
+  "plan": {
+    "status": "generation_requested",
+    "runId": "published-recall-memory-tips-enricher-v1",
+    "cardIds": [
+      "bio-animal-cell-differentiation-early",
+      "bio-differentiation-subcellular-structures",
+      "bio-eukaryotic-genetic-material-nucleus",
+      "bio-mature-animal-cell-division-repair-replacement",
+      "bio-plant-vacuole-cell-sap",
+      "chem-alpha-scattering-mass-location",
+      "chem-atom-smallest-part",
+      "chem-bohr-specific-electron-orbits",
+      "chem-compound-fixed-proportions",
+      "chem-mass-number-particle-sum",
+      "chem-mixture-combination-properties",
+      "chem-neutral-atom-particle-balance",
+      "chem-plum-pudding-model-structure",
+      "phys-elastic-equation-proportional-limit"
+    ],
+    "cardCount": 14,
+    "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f",
+    "workDir": "tmp/recall-memory-tip-enrichment/published-recall-memory-tips-enricher-v1",
+    "artifactDir": "data/recall/enrichments/published-recall-memory-tips-enricher-v1",
+    "artifactPath": "data/recall/enrichments/published-recall-memory-tips-enricher-v1/accepted-enrichments.json",
+    "schemaVersion": "recall-memory-tip-enrichment-v1",
+    "promptVersion": "recall-memory-tip-enricher-v1",
+    "models": {
+      "generator": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "reviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      }
+    }
+  },
+  "run": {
+    "id": "published-recall-memory-tips-enricher-v1",
+    "startedAt": "2026-07-16T07:50:04.958Z",
+    "finishedAt": "2026-07-16T07:55:15.657Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    }
+  },
+  "counts": {
+    "generated": 14,
+    "accepted": 14,
+    "rejected": 0
+  },
+  "acceptedArtifact": "data/recall/enrichments/published-recall-memory-tips-enricher-v1/accepted-enrichments.json",
+  "acceptedArtifactHash": "591078f075eaa1988e4389ab56e55d840240fb1c9128f76f209ed0890769c8af",
+  "companionArtifacts": {
+    "schemaVersion": "recall-memory-tip-enrichment-companions-v1",
+    "sha256ByFile": {
+      "plan.json": "16fa58993206064e5adafada1d16a827bae0b4e3afef4decdfc6947f612e4d3f",
+      "source-snapshot.json": "f65a1d54592637a74934b438c43934b299c60370360926bf1f8ce543e8265e74",
+      "generation-prompt.txt": "b8c2da342af65f75e73cda099556d3391598ebaa89dcf7950c6b6df4560c307d",
+      "generation-model-output.json": "2f00464fb2c601c9ca8cffd2efb207c3648b3c78e52bf3400c78f2ad4eff10ab",
+      "candidate-enrichments.json": "35d2990b9385ae06addc9783e85377eca8e15e8d89231165d5907e962782111e",
+      "review-prompt.txt": "f8be535a5808d6b2681a974cd06e0fbc7d88e3843788fe6b10856f9c696da750",
+      "review-model-output.json": "040fe764ef07c1e2397b518e9e13bc1440e07c131171b26eb49aff07dba55760",
+      "review.json": "126194b45fef0caee116702dc4b7fbdfeb9a2f5b52fb2497d3dbfd89e5c0d7d6"
+    }
+  },
+  "codex": {
+    "generator": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f69e7-83b3-7330-8103-df3fe006ded0",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-memory-tip-enrichment/published-recall-memory-tips-enricher-v1/generation",
+      "startedAt": "2026-07-16T07:50:05.687Z",
+      "finishedAt": "2026-07-16T07:53:33.418Z",
+      "durationSeconds": 207.731,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 37741,
+        "cached_input_tokens": 0,
+        "output_tokens": 6230,
+        "reasoning_output_tokens": 4907
+      },
+      "failedCommands": []
+    },
+    "reviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f69ea-a765-7970-934f-1afac20cdbd8",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-memory-tip-enrichment/published-recall-memory-tips-enricher-v1/review",
+      "startedAt": "2026-07-16T07:53:33.443Z",
+      "finishedAt": "2026-07-16T07:55:15.656Z",
+      "durationSeconds": 102.213,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 39331,
+        "cached_input_tokens": 0,
+        "output_tokens": 3951,
+        "reasoning_output_tokens": 2868
+      },
+      "failedCommands": []
+    }
+  }
+}

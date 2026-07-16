@@ -16,8 +16,8 @@ export type RecallControlModel =
 	  }
 	| {
 			phase: 'result';
-			layout: 'single' | 'split';
-			repeatLabel?: 'Repeat';
+			layout: 'split';
+			repeatLabel: 'Repeat later';
 			nextLabel: 'Next card' | 'See results';
 	  };
 
@@ -64,10 +64,14 @@ export function recallControlModel({
 
 	return {
 		phase: 'result',
-		layout: presentation === 'mcq' ? 'single' : 'split',
-		...(presentation === 'flashcard' ? { repeatLabel: 'Repeat' as const } : {}),
+		layout: 'split',
+		repeatLabel: 'Repeat later',
 		nextLabel: isLastCard ? 'See results' : 'Next card'
 	};
+}
+
+export function requeueRecallContentKey(keys: string[], contentKey: string): string[] {
+	return [...keys, contentKey];
 }
 
 export function explicitReversePair(

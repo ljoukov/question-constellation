@@ -1,7 +1,12 @@
 import { getRequestEvent } from '$app/server';
 import type { ChainIllustration } from '$lib/chains/chainIllustration';
-import { deriveEnglishQuestionCardTitle } from '$lib/englishQuestionCardTitle';
-import { deriveQuestionCardTitle, questionCardTitleIssues } from '$lib/questionCardTitle.js';
+import { supportsLearnerPracticeInput } from '$lib/learning/practiceEligibility';
+import { cleanLearnerQuestionText } from '$lib/learning/questionTextQuality.js';
+import {
+	QUESTION_PRACTICE_PAGE_CACHE_KIND,
+	QUESTION_PRACTICE_PAGE_CACHE_VERSION
+} from '$lib/questionPracticeCache.js';
+import { storedQuestionTitle, storedQuestionTitleIssues } from '$lib/storedQuestionTitle.js';
 import {
 	getVersionedPublicRoutePayload,
 	putPublicRoutePayload
@@ -9,9 +14,6 @@ import {
 import { gcsePastPaperData } from '$lib/pastPapers/gcsePastPapers';
 import { getPublishedChainIllustration } from './chainIllustrations';
 import { queryFirst, queryRows } from './db';
-
-const PRACTICE_PAGE_CACHE_VERSION = 'question-practice-page-v10';
-const PRACTICE_PAGE_CACHE_KIND = 'question-practice-page';
 
 export type TransferDistance = 'start' | 'near' | 'stretch' | 'exam-transfer' | 'unclassified';
 
@@ -95,6 +97,7 @@ export type Question = {
 	assets: QuestionAsset[];
 	renderingOverlay: QuestionRenderingOverlay | null;
 	answerFormat?: string | null;
+	practiceAvailable: boolean;
 	meta: ExamMeta;
 	transferDistance: TransferDistance;
 	distanceLabel: string;
@@ -415,7 +418,7 @@ type EnglishQuestionMetadata = {
 };
 
 function questionPracticeRoutePayloadId(questionId: string): string {
-	return `${PRACTICE_PAGE_CACHE_KIND}:${PRACTICE_PAGE_CACHE_VERSION}:${questionId}`;
+	return `${QUESTION_PRACTICE_PAGE_CACHE_KIND}:${QUESTION_PRACTICE_PAGE_CACHE_VERSION}:${questionId}`;
 }
 
 function questionPracticeRoutePath(questionId: string): string {
@@ -444,7 +447,7 @@ function looksLikePracticePageData(value: unknown): value is PracticePageData {
 async function getCachedPracticePageData(questionId: string): Promise<PracticePageData | null> {
 	const cached = await getVersionedPublicRoutePayload<unknown>(
 		questionPracticeRoutePayloadId(questionId),
-		PRACTICE_PAGE_CACHE_VERSION
+		QUESTION_PRACTICE_PAGE_CACHE_VERSION
 	);
 	return looksLikePracticePageData(cached) ? cached : null;
 }
@@ -458,10 +461,10 @@ async function putCachedPracticePageData(
 		lookupIds.map((questionId) =>
 			putPublicRoutePayload({
 				id: questionPracticeRoutePayloadId(questionId),
-				routeKind: PRACTICE_PAGE_CACHE_KIND,
+				routeKind: QUESTION_PRACTICE_PAGE_CACHE_KIND,
 				routePath: questionPracticeRoutePath(questionId),
 				payload: data,
-				sourceVersion: PRACTICE_PAGE_CACHE_VERSION
+				sourceVersion: QUESTION_PRACTICE_PAGE_CACHE_VERSION
 			})
 		)
 	);
@@ -566,24 +569,14 @@ function iconForStep(text: string, role: string): RepairChainNode['icon'] {
 }
 
 function titleFromQuestion(row: QuestionRow): string {
-	const metadata = parseJson<{ title?: string; card_title?: string }>(row.metadata_json, {});
-	const genericTitle = deriveQuestionCardTitle({
-		cardTitle: metadata.card_title ?? metadata.title,
+	return storedQuestionTitle({
+		id: row.id,
+		subject: row.subject,
+		metadataJson: row.metadata_json,
 		promptText: row.prompt_text,
 		selfContainedPromptText: row.self_contained_prompt_text,
-		fallback: row.id
+		topicPathJson: row.topic_path_json
 	});
-	if (genericTitle !== 'Unlabelled science question') return genericTitle;
-
-	if (/^English (?:Language|Literature)$/i.test(row.subject ?? '')) {
-		const englishTitle = deriveEnglishQuestionCardTitle({
-			promptText: row.prompt_text,
-			topicPath: parseJson<string[]>(row.topic_path_json, [])
-		});
-		if (englishTitle) return englishTitle;
-	}
-
-	return genericTitle;
 }
 
 function topicFromRow(row: QuestionRow): string {
@@ -593,13 +586,7 @@ function topicFromRow(row: QuestionRow): string {
 }
 
 export function cleanPromptText(text: string): string {
-	return text
-		.split(/\r?\n/)
-		.filter((line) => !/^\s*\[\s*\d+\s*marks?\s*\]\s*$/i.test(line))
-		.filter((line) => !/^\s*(?:figure|table)\s+\d+\s*$/i.test(line))
-		.join('\n')
-		.replace(/([a-z0-9,;])\s*\n(?:[ \t]*\n)*[ \t]*([a-z])/g, '$1 $2')
-		.trim();
+	return cleanLearnerQuestionText(text);
 }
 
 function questionReferencesSourceAsset(text: string): boolean {
@@ -801,6 +788,7 @@ async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
 		`SELECT id, asset_type, source_label, public_path, alt_text, required, role, metadata_json
 		 FROM question_assets
 		 WHERE question_id = ?
+		   AND needs_human_review = 0
 		 ORDER BY required DESC, source_label, id`,
 		[questionId]
 	);
@@ -846,6 +834,7 @@ export async function getQuestionRenderingOverlay(
 		        render_json
 		 FROM question_rendering_overlays
 		 WHERE question_id = ?
+		   AND needs_human_review = 0
 		 ORDER BY CASE provenance
 			WHEN 'manual' THEN 0
 			WHEN 'pdf-geometry' THEN 1
@@ -885,6 +874,7 @@ async function getStoredChecklist(questionId: string): Promise<ChecklistRow[]> {
 		`SELECT id, text, display_order
 		 FROM mark_checklist_items
 		 WHERE question_id = ?
+		   AND needs_human_review = 0
 		 ORDER BY display_order`,
 		[questionId]
 	);
@@ -1020,6 +1010,7 @@ async function getQuestionSupplements(
 			`SELECT question_id, id, asset_type, source_label, public_path, alt_text, required, role, metadata_json
 			 FROM question_assets
 			 WHERE question_id IN (${placeholders})
+			   AND needs_human_review = 0
 			 ORDER BY question_id, required DESC, source_label, id`,
 			ids
 		),
@@ -1028,6 +1019,7 @@ async function getQuestionSupplements(
 			        render_json
 			 FROM question_rendering_overlays
 			 WHERE question_id IN (${placeholders})
+			   AND needs_human_review = 0
 			 ORDER BY question_id,
 				CASE provenance
 					WHEN 'manual' THEN 0
@@ -1049,6 +1041,7 @@ async function getQuestionSupplements(
 			`SELECT question_id, id, text, display_order
 			 FROM mark_checklist_items
 			 WHERE question_id IN (${placeholders})
+			   AND needs_human_review = 0
 			 ORDER BY question_id, display_order`,
 			ids
 		),
@@ -2446,7 +2439,7 @@ function hydrateQuestionFromSupplement(
 	const checklist = checklistPresentation.items;
 	const weakAnswer = weakAnswerFromRow(supplement.weakAnswerRow, chain);
 
-	return {
+	const question: Question = {
 		id: row.id,
 		sourceRef: `Q${row.source_question_ref}`,
 		title: titleFromQuestion(row),
@@ -2455,6 +2448,7 @@ function hydrateQuestionFromSupplement(
 		assets: supplement.assets,
 		renderingOverlay: supplement.renderingOverlay,
 		answerFormat: row.answer_format,
+		practiceAvailable: false,
 		meta: {
 			qualification: row.qualification ?? 'GCSE',
 			board: row.board ?? 'AQA',
@@ -2479,6 +2473,31 @@ function hydrateQuestionFromSupplement(
 		practiceDraft: weakAnswer.text,
 		whyThisFits: membership.fit_notes ?? chain.summary
 	};
+	question.practiceAvailable =
+		isEnglishQuestionRow(row) ||
+		(supportsLearnerPracticeInput({
+			answerFormat: question.answerFormat,
+			prompt: question.prompt,
+			context: question.context,
+			responseKind:
+				typeof question.renderingOverlay?.responseInteraction?.kind === 'string'
+					? question.renderingOverlay.responseInteraction.kind
+					: null,
+			hasReferencedSourceMaterial: questionHasReferencedSourceMaterial(question)
+		}) &&
+			hasSafeQuestionCardTitle(question));
+	return question;
+}
+
+function questionHasReferencedSourceMaterial(question: Question): boolean {
+	if (question.assets.length > 0) return true;
+	return [
+		...(question.renderingOverlay?.stemBlocks ?? []),
+		...(question.renderingOverlay?.promptBlocks ?? [])
+	].some((block) => {
+		const kind = typeof block.kind === 'string' ? block.kind : '';
+		return ['figure', 'table', 'structured-table', 'key'].includes(kind);
+	});
 }
 
 async function hydrateQuestion(
@@ -2563,7 +2582,7 @@ async function getQuestionRowsForChain(
 
 async function getQuestionsForChain(chain: AnswerChain): Promise<Question[]> {
 	const rows = await getQuestionRowsForChain(chain.id);
-	return await hydrateQuestions(rows, chain);
+	return (await hydrateQuestions(rows, chain)).filter(hasSafeQuestionCardTitle);
 }
 
 function buildConstellationForChain(
@@ -2603,9 +2622,21 @@ function nextQuestionAfter(questions: Question[], questionId: string): Question 
 	return questions[(index + 1 + questions.length) % questions.length] ?? questions[0];
 }
 
+function nextPracticeQuestionAfter(questions: Question[], questionId: string): Question {
+	const eligibleQuestions = questions.filter((question) => question.practiceAvailable);
+	if (eligibleQuestions.length === 0) {
+		return questions.find((question) => question.id === questionId) ?? questions[0];
+	}
+	const currentIndex = eligibleQuestions.findIndex((question) => question.id === questionId);
+	if (currentIndex < 0) return eligibleQuestions[0];
+	return eligibleQuestions[(currentIndex + 1) % eligibleQuestions.length] ?? eligibleQuestions[0];
+}
+
 function hasSafeQuestionCardTitle(question: Question): boolean {
 	return (
-		questionCardTitleIssues(question.title, {
+		storedQuestionTitleIssues({
+			title: question.title,
+			subject: question.meta.subjectArea ?? question.meta.subject,
 			promptText: question.prompt,
 			answerText: question.modelAnswer
 		}).length === 0
@@ -2625,7 +2656,9 @@ async function getQuestionChainContext(
 	]);
 	const chain = buildAnswerChain(seed.chainRow, steps, illustration);
 	const supplements = await getQuestionSupplements(questionRows.map((row) => row.id));
-	const questions = hydrateQuestionsFromSupplements(questionRows, chain, supplements);
+	const questions = hydrateQuestionsFromSupplements(questionRows, chain, supplements).filter(
+		hasSafeQuestionCardTitle
+	);
 	const question =
 		questions.find((candidate) => candidate.id === seed.row.id) ??
 		hydrateQuestionFromSupplement(
@@ -2634,6 +2667,9 @@ async function getQuestionChainContext(
 			seed.membership,
 			supplements.get(seed.row.id) ?? emptyQuestionSupplement()
 		);
+	if (!hasSafeQuestionCardTitle(question)) {
+		throw new Error(`Question does not have a reviewed learner-facing title: ${question.id}`);
+	}
 	const constellation = buildConstellationForChain(chain, questions, constellationRow);
 
 	return {
@@ -2727,7 +2763,7 @@ export async function getQuestionChainPageData(questionId: string): Promise<Ques
 		questions: context.questions,
 		constellation: context.constellation,
 		question: context.question,
-		practiceQuestion: context.nextQuestion
+		practiceQuestion: nextPracticeQuestionAfter(context.questions, context.question.id)
 	};
 }
 
@@ -2735,7 +2771,7 @@ export async function getConstellationPageData(chainId: string): Promise<Constel
 	const data = await getAnswerChainPageData(chainId);
 	return {
 		...data,
-		practiceQuestion: data.questions[1] ?? data.questions[0]
+		practiceQuestion: nextPracticeQuestionAfter(data.questions, data.startQuestion.id)
 	};
 }
 
@@ -2747,10 +2783,10 @@ async function getFreshPracticePageData(questionId: string): Promise<PracticePag
 	}
 
 	const context = await getQuestionChainContext(questionId, seed ?? undefined);
-	const questions = context.questions.filter(hasSafeQuestionCardTitle);
+	const questions = context.questions.filter((candidate) => candidate.practiceAvailable);
 	const question = questions.find((candidate) => candidate.id === context.question.id);
 	if (!question) {
-		throw new Error(`Question title has not passed learner-facing review: ${context.question.id}`);
+		throw new Error(`Question does not have a reviewed learner input: ${context.question.id}`);
 	}
 
 	return {

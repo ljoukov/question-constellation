@@ -20,4 +20,8 @@ export function copyCodexImportHelperBundle({ rootDir = process.cwd(), workDir }
 		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
 		path.join(workDir, 'answer-chain-specificity.mjs')
 	);
+	copyFileSync(
+		path.join(rootDir, 'scripts/extraction-learner-guardrails.mjs'),
+		path.join(workDir, 'extraction-learner-guardrails.mjs')
+	);
 }

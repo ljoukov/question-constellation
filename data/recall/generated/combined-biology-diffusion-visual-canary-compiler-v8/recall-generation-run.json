@@ -1,0 +1,221 @@
+{
+	"status": "accepted",
+	"plan": {
+		"status": "generation_requested",
+		"runId": "combined-biology-diffusion-visual-canary-compiler-v8",
+		"workDir": "tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8",
+		"artifactDir": "data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8",
+		"catalog": "data/curricula/curriculum-catalog.json",
+		"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+		"componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+		"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+		"subject": "Biology",
+		"pageRange": [25, 25],
+		"pageTextCharacters": 2219,
+		"sourceFingerprint": "4b76ec26ca63147e514cdc26db49e6f56fd0fc468835d999b21be0a9a759c99a",
+		"count": 4,
+		"targets": [
+			{
+				"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+				"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+				"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+				"isPrimary": false,
+				"confidence": 1,
+				"reviewed": true,
+				"mappingSource": "recall-card-compiler-v2"
+			},
+			{
+				"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+				"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+				"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+				"isPrimary": true,
+				"confidence": 1,
+				"reviewed": true,
+				"mappingSource": "recall-card-compiler-v2"
+			}
+		],
+		"models": {
+			"generator": {
+				"model": "gpt-5.6-sol",
+				"thinkingLevel": "max"
+			},
+			"fullReviewer": {
+				"model": "gpt-5.6-sol",
+				"thinkingLevel": "max"
+			},
+			"cueReviewer": {
+				"model": "gpt-5.6-sol",
+				"thinkingLevel": "max"
+			}
+		},
+		"promptVersion": "recall-card-compiler-v8"
+	},
+	"run": {
+		"id": "combined-biology-diffusion-visual-canary-compiler-v8",
+		"startedAt": "2026-07-16T05:30:03.740Z",
+		"finishedAt": "2026-07-16T05:36:42.640Z",
+		"generator": {
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max"
+		},
+		"fullReviewer": {
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"independentTurn": true
+		},
+		"cueReviewer": {
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"independentTurn": true,
+			"replacementReviewRun": true
+		}
+	},
+	"counts": {
+		"generated": 4,
+		"accepted": 3,
+		"rejected": 1,
+		"cueReplacementsReviewed": 1
+	},
+	"artifacts": [
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/plan.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/source-evidence.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/generation-prompt.txt",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/candidate-cards.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/full-review-prompt.txt",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/full-review.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-review-prompt.txt",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-review.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review-prompt.txt",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/final-cue-review.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/accepted-cards.json",
+		"tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/rejected-cards.json"
+	],
+	"durableArtifacts": [
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/accepted-cards.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/candidate-cards.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-codex-run-summary.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review-model-output.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review-prompt.txt",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-review-codex-run-summary.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-review-model-output.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-review-prompt.txt",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/cue-review.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/final-cue-review.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/full-review-codex-run-summary.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/full-review-model-output.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/full-review-prompt.txt",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/full-review.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/generation-codex-run-summary.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/generation-model-output.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/generation-prompt.txt",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/plan.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/rejected-cards.json",
+		"data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/source-evidence.json"
+	],
+	"acceptedArtifact": "data/recall/generated/combined-biology-diffusion-visual-canary-compiler-v8/accepted-cards.json",
+	"acceptedArtifactHash": "4a0542bc10bace28dc5e5016ddc409b24c519dbd6f4b1c1300582955f70dc77e",
+	"codex": {
+		"generator": {
+			"status": "passed",
+			"error": null,
+			"threadId": "019f6967-4cd4-7f02-acbb-f0d50c663c74",
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"workDir": "tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/generation",
+			"startedAt": "2026-07-16T05:30:04.189Z",
+			"finishedAt": "2026-07-16T05:34:06.248Z",
+			"durationSeconds": 242.059,
+			"events": 4,
+			"commandActions": 0,
+			"failedCommandActions": 0,
+			"agentMessages": 1,
+			"reasoningSummaries": 0,
+			"webSearches": 0,
+			"fileChanges": 0,
+			"usage": {
+				"input_tokens": 14747,
+				"cached_input_tokens": 0,
+				"output_tokens": 9589,
+				"reasoning_output_tokens": 7768
+			},
+			"failedCommands": []
+		},
+		"fullReviewer": {
+			"status": "passed",
+			"error": null,
+			"threadId": "019f696a-fb75-7dd1-824d-ec94ec666465",
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"workDir": "tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/full-review",
+			"startedAt": "2026-07-16T05:34:06.253Z",
+			"finishedAt": "2026-07-16T05:35:48.593Z",
+			"durationSeconds": 102.34,
+			"events": 4,
+			"commandActions": 0,
+			"failedCommandActions": 0,
+			"agentMessages": 1,
+			"reasoningSummaries": 0,
+			"webSearches": 0,
+			"fileChanges": 0,
+			"usage": {
+				"input_tokens": 15505,
+				"cached_input_tokens": 0,
+				"output_tokens": 3311,
+				"reasoning_output_tokens": 2850
+			},
+			"failedCommands": []
+		},
+		"cueReviewer": {
+			"status": "passed",
+			"error": null,
+			"threadId": "019f696c-8b00-7ec0-ad49-4d6542adf4fa",
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"workDir": "tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-review",
+			"startedAt": "2026-07-16T05:35:48.596Z",
+			"finishedAt": "2026-07-16T05:36:27.733Z",
+			"durationSeconds": 39.136,
+			"events": 4,
+			"commandActions": 0,
+			"failedCommandActions": 0,
+			"agentMessages": 1,
+			"reasoningSummaries": 0,
+			"webSearches": 0,
+			"fileChanges": 0,
+			"usage": {
+				"input_tokens": 14275,
+				"cached_input_tokens": 0,
+				"output_tokens": 1046,
+				"reasoning_output_tokens": 796
+			},
+			"failedCommands": []
+		},
+		"replacementCueReviewer": {
+			"status": "passed",
+			"error": null,
+			"threadId": "019f696d-23af-7b01-a1d2-4d5f5319b6d4",
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"workDir": "tmp/recall-generation/combined-biology-diffusion-visual-canary-compiler-v8/cue-replacement-review",
+			"startedAt": "2026-07-16T05:36:27.734Z",
+			"finishedAt": "2026-07-16T05:36:42.639Z",
+			"durationSeconds": 14.905,
+			"events": 4,
+			"commandActions": 0,
+			"failedCommandActions": 0,
+			"agentMessages": 1,
+			"reasoningSummaries": 0,
+			"webSearches": 0,
+			"fileChanges": 0,
+			"usage": {
+				"input_tokens": 12865,
+				"cached_input_tokens": 0,
+				"output_tokens": 202,
+				"reasoning_output_tokens": 128
+			},
+			"failedCommands": []
+		}
+	}
+}

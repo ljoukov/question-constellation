@@ -1,0 +1,215 @@
+{
+  "status": "accepted",
+  "plan": {
+    "status": "generation_requested",
+    "runId": "combined-higher-biology-cell-structure-compiler-v8",
+    "workDir": "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8",
+    "artifactDir": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8",
+    "catalog": "data/curricula/curriculum-catalog.json",
+    "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+    "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+    "subject": "Biology",
+    "pageRange": [
+      20,
+      22
+    ],
+    "pageTextCharacters": 4846,
+    "sourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+    "count": 8,
+    "targets": [
+      {
+        "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+        "isPrimary": true,
+        "confidence": 1,
+        "reviewed": true,
+        "mappingSource": "recall-card-compiler-v2"
+      }
+    ],
+    "models": {
+      "generator": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "fullReviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      },
+      "cueReviewer": {
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max"
+      }
+    },
+    "promptVersion": "recall-card-compiler-v8"
+  },
+  "run": {
+    "id": "combined-higher-biology-cell-structure-compiler-v8",
+    "startedAt": "2026-07-16T06:15:05.051Z",
+    "finishedAt": "2026-07-16T06:34:25.690Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": true
+    }
+  },
+  "counts": {
+    "generated": 8,
+    "accepted": 6,
+    "rejected": 2,
+    "cueReplacementsReviewed": 2
+  },
+  "artifacts": [
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/plan.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/source-evidence.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/generation-prompt.txt",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/candidate-cards.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/full-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/full-review.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/cue-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/cue-review.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-review-prompt.txt",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-review.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/final-cue-review.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/accepted-cards.json",
+    "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/rejected-cards.json"
+  ],
+  "durableArtifacts": [
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/accepted-cards.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/candidate-cards.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-codex-run-summary.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-review-model-output.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-review-prompt.txt",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-review.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-review-codex-run-summary.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-review-model-output.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-review-prompt.txt",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/cue-review.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/final-cue-review.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/full-review-codex-run-summary.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/full-review-model-output.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/full-review-prompt.txt",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/full-review.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/generation-codex-run-summary.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/generation-model-output.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/generation-prompt.txt",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/plan.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/rejected-cards.json",
+    "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/source-evidence.json"
+  ],
+  "acceptedArtifact": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8/accepted-cards.json",
+  "acceptedArtifactHash": "1612683a07a9829b22486cfc9b45c0a8dbca1ffb4ca6d2bb6430b70a8b167224",
+  "codex": {
+    "generator": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f6990-822a-7241-a001-586bb530325b",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/generation",
+      "startedAt": "2026-07-16T06:15:05.548Z",
+      "finishedAt": "2026-07-16T06:25:48.418Z",
+      "durationSeconds": 642.87,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 15222,
+        "cached_input_tokens": 0,
+        "output_tokens": 22365,
+        "reasoning_output_tokens": 18595
+      },
+      "failedCommands": []
+    },
+    "fullReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f699a-99d4-7cd3-a916-ddded23ffdc7",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/full-review",
+      "startedAt": "2026-07-16T06:25:48.466Z",
+      "finishedAt": "2026-07-16T06:32:41.962Z",
+      "durationSeconds": 413.497,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 18181,
+        "cached_input_tokens": 0,
+        "output_tokens": 11299,
+        "reasoning_output_tokens": 10358
+      },
+      "failedCommands": []
+    },
+    "cueReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f69a0-a034-7850-bb1e-18097c6bef53",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/cue-review",
+      "startedAt": "2026-07-16T06:32:41.965Z",
+      "finishedAt": "2026-07-16T06:34:09.183Z",
+      "durationSeconds": 87.218,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 16234,
+        "cached_input_tokens": 0,
+        "output_tokens": 2878,
+        "reasoning_output_tokens": 2406
+      },
+      "failedCommands": []
+    },
+    "replacementCueReviewer": {
+      "status": "passed",
+      "error": null,
+      "threadId": "019f69a1-f4e2-7b13-a3af-717722e6c07f",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "workDir": "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8/cue-replacement-review",
+      "startedAt": "2026-07-16T06:34:09.184Z",
+      "finishedAt": "2026-07-16T06:34:25.689Z",
+      "durationSeconds": 16.505,
+      "events": 4,
+      "commandActions": 0,
+      "failedCommandActions": 0,
+      "agentMessages": 1,
+      "reasoningSummaries": 0,
+      "webSearches": 0,
+      "fileChanges": 0,
+      "usage": {
+        "input_tokens": 13360,
+        "cached_input_tokens": 0,
+        "output_tokens": 426,
+        "reasoning_output_tokens": 263
+      },
+      "failedCommands": []
+    }
+  }
+}

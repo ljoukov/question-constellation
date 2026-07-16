@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f69e7-83b3-7330-8103-df3fe006ded0",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "tmp/recall-memory-tip-enrichment/published-recall-memory-tips-enricher-v1/generation",
+  "startedAt": "2026-07-16T07:50:05.687Z",
+  "finishedAt": "2026-07-16T07:53:33.418Z",
+  "durationSeconds": 207.731,
+  "events": 4,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 0,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 37741,
+    "cached_input_tokens": 0,
+    "output_tokens": 6230,
+    "reasoning_output_tokens": 4907
+  },
+  "failedCommands": []
+}

@@ -1,0 +1,930 @@
+{
+  "schemaVersion": "recall-memory-tip-enrichment-v1",
+  "promptVersion": "recall-memory-tip-enricher-v1",
+  "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f",
+  "run": {
+    "id": "published-recall-memory-tips-enricher-v1",
+    "startedAt": "2026-07-16T07:50:04.958Z",
+    "finishedAt": "2026-07-16T07:55:15.657Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    }
+  },
+  "companionArtifacts": {
+    "schemaVersion": "recall-memory-tip-enrichment-companions-v1",
+    "sha256ByFile": {
+      "plan.json": "16fa58993206064e5adafada1d16a827bae0b4e3afef4decdfc6947f612e4d3f",
+      "source-snapshot.json": "f65a1d54592637a74934b438c43934b299c60370360926bf1f8ce543e8265e74",
+      "generation-prompt.txt": "b8c2da342af65f75e73cda099556d3391598ebaa89dcf7950c6b6df4560c307d",
+      "generation-model-output.json": "2f00464fb2c601c9ca8cffd2efb207c3648b3c78e52bf3400c78f2ad4eff10ab",
+      "candidate-enrichments.json": "35d2990b9385ae06addc9783e85377eca8e15e8d89231165d5907e962782111e",
+      "review-prompt.txt": "f8be535a5808d6b2681a974cd06e0fbc7d88e3843788fe6b10856f9c696da750",
+      "review-model-output.json": "040fe764ef07c1e2397b518e9e13bc1440e07c131171b26eb49aff07dba55760",
+      "review.json": "126194b45fef0caee116702dc4b7fbdfeb9a2f5b52fb2497d3dbfd89e5c0d7d6"
+    }
+  },
+  "enrichments": [
+    {
+      "id": "published-recall-memory-tips-enricher-v1:bio-animal-cell-differentiation-early",
+      "cardId": "bio-animal-cell-differentiation-early",
+      "baseGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "eaf44680d6e6b388c30acdb83cfc026b6c954191ec57f1f831497b58130ba419",
+      "baseSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+      "baseArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+      "baseArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "186a65ff387d0bfcf1a60e8e3a2d1b06089bf9dfe86df1445fa52b7eab329b67",
+      "memoryTip": "Picture development as a theatre: most animal-cell roles are cast in the opening scene, while many plant cells keep auditions open for life.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "c10e0b02a4e1b9c35f28d48bc78c6f451ce771305d64cfb8571733b958c7fe3b",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "186a65ff387d0bfcf1a60e8e3a2d1b06089bf9dfe86df1445fa52b7eab329b67",
+          "cardSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+          "generationArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+          "generationArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "0b0b2006e245b3c5f7f771550da5224f2e7cd0d2bca940717d78204c695aed60",
+            "id": "bio-animal-cell-differentiation-early:official-curriculum",
+            "sourceExcerpt": "As an organism develops, cells differentiate to form different types of cells. • Most types of animal cell differentiate at an early stage. • Many types of plant cells retain the ability to differentiate throughout life. In mature animals, cell division is mainly restricted to repair and replacement. As a cell differentiates it acquires different sub-cellular structures to enable it to carry out a certain function. It has become a specialised cell.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:a:feedback",
+              "choice:b:feedback",
+              "choice:b:misconception",
+              "choice:c:feedback",
+              "choice:c:misconception",
+              "choice:d:feedback",
+              "choice:d:misconception"
+            ],
+            "supportsHash": "0299941c8408147b6290d77a3f1b73b05e29ff7fb7cc1a55398e283b272aadc9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt contrasts most animal cells differentiating early with many plant cells retaining that ability throughout life; the theatre is an explicit mnemonic.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "bio-animal-cell-differentiation-early",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The theatre timeline accurately encodes early animal-cell differentiation and lifelong potential in many plant cells as a distinct visual contrast."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:bio-differentiation-subcellular-structures",
+      "cardId": "bio-differentiation-subcellular-structures",
+      "baseGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "2d3c3b6b815b802f65db4ef9a8359789e1372aaa8676326aa21e7be4cf5a194b",
+      "baseSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+      "baseArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+      "baseArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "4592028e9ba67ea3b46fb03b31964090bb8de93dc569e007b50ad5764163aadb",
+      "memoryTip": "Picture a differentiating cell receiving a job toolkit: the tools stand for different sub-cellular structures that enable its particular function.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "7cf786abc8b00534ddfd7ad67af6efeafb3189999c8e69145fd2374d1b8f964c",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "4592028e9ba67ea3b46fb03b31964090bb8de93dc569e007b50ad5764163aadb",
+          "cardSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+          "generationArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+          "generationArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "0b0b2006e245b3c5f7f771550da5224f2e7cd0d2bca940717d78204c695aed60",
+            "id": "bio-differentiation-subcellular-structures:official-curriculum",
+            "sourceExcerpt": "As an organism develops, cells differentiate to form different types of cells. • Most types of animal cell differentiate at an early stage. • Many types of plant cells retain the ability to differentiate throughout life. In mature animals, cell division is mainly restricted to repair and replacement. As a cell differentiates it acquires different sub-cellular structures to enable it to carry out a certain function. It has become a specialised cell.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:a:feedback",
+              "choice:b:feedback",
+              "choice:b:misconception",
+              "choice:c:feedback",
+              "choice:c:misconception",
+              "choice:d:feedback",
+              "choice:d:misconception"
+            ],
+            "supportsHash": "0299941c8408147b6290d77a3f1b73b05e29ff7fb7cc1a55398e283b272aadc9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt states that differentiation equips a cell with different sub-cellular structures enabling it to perform a certain function.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "bio-differentiation-subcellular-structures",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The job-toolkit image accurately links acquired sub-cellular structures to specialised function and provides a useful visual retrieval route."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:bio-eukaryotic-genetic-material-nucleus",
+      "cardId": "bio-eukaryotic-genetic-material-nucleus",
+      "baseGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "fffddc836dd855373e21291320a01a94d6dac23a1615221b308112bfd73489b8",
+      "baseSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+      "baseArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+      "baseArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "569f249bdac716d74ef1a5964fbfd73fb1b2f998193f72b9353f17396267a535",
+      "memoryTip": "Memory image: plant and animal genetic material is locked in a safe labelled NUCLEUS; bacterial genetic material has no such enclosure.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "fe6140021299a240059a50e7e7e446dfb65af0262b291b23fdb0462cb7ff671a",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "569f249bdac716d74ef1a5964fbfd73fb1b2f998193f72b9353f17396267a535",
+          "cardSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+          "generationArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+          "generationArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "bb7677853d59893e7d520a4cb838a911dc600677cfc4b130e56bfe6aad010c6f",
+            "id": "bio-eukaryotic-genetic-material-nucleus:official-curriculum",
+            "sourceExcerpt": "Plant and animal cells (eukaryotic cells) have a cell membrane, cytoplasm and genetic material enclosed in a nucleus. Bacterial cells (prokaryotic cells) are much smaller in comparison. They have cytoplasm and a cell membrane surrounded by a cell wall. The genetic material is not enclosed in a nucleus. It is a single DNA loop and there may be one or more small rings of DNA called plasmids.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:a:feedback",
+              "choice:b:feedback",
+              "choice:b:misconception",
+              "choice:c:feedback",
+              "choice:c:misconception",
+              "choice:d:feedback",
+              "choice:d:misconception"
+            ],
+            "supportsHash": "0299941c8408147b6290d77a3f1b73b05e29ff7fb7cc1a55398e283b272aadc9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt says plant and animal genetic material is enclosed in a nucleus, whereas bacterial genetic material is not; the safe is mnemonic imagery.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "bio-eukaryotic-genetic-material-nucleus",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The labelled-safe image accurately encodes nuclear enclosure and contrasts it with bacterial genetic material without a nucleus."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:bio-mature-animal-cell-division-repair-replacement",
+      "cardId": "bio-mature-animal-cell-division-repair-replacement",
+      "baseGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "84ba6be38e6d65f691ed3eeb9c784daa22d0b54839df649bf0c78c0c5ae0d6e1",
+      "baseSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+      "baseArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+      "baseArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "217d27fb423f0d167d5b37ab15b02c02f14af0d38ad4302b6f6428e9f4379f88",
+      "memoryTip": "Picture a mature animal’s cell-division office with its main work filed in two matching R drawers: REPAIR and REPLACEMENT.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "58d3f53d8723417a6ee29c0e588fe13fa072c8a3342ffcfa5b2a5f460602a24b",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "217d27fb423f0d167d5b37ab15b02c02f14af0d38ad4302b6f6428e9f4379f88",
+          "cardSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+          "generationArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+          "generationArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "0b0b2006e245b3c5f7f771550da5224f2e7cd0d2bca940717d78204c695aed60",
+            "id": "bio-mature-animal-cell-division-repair-replacement:official-curriculum",
+            "sourceExcerpt": "As an organism develops, cells differentiate to form different types of cells. • Most types of animal cell differentiate at an early stage. • Many types of plant cells retain the ability to differentiate throughout life. In mature animals, cell division is mainly restricted to repair and replacement. As a cell differentiates it acquires different sub-cellular structures to enable it to carry out a certain function. It has become a specialised cell.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:a:feedback",
+              "choice:b:feedback",
+              "choice:b:misconception",
+              "choice:c:feedback",
+              "choice:c:misconception",
+              "choice:d:feedback",
+              "choice:d:misconception"
+            ],
+            "supportsHash": "0299941c8408147b6290d77a3f1b73b05e29ff7fb7cc1a55398e283b272aadc9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt states that cell division in mature animals is mainly restricted to repair and replacement; the two R drawers provide a sound and spatial cue.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "bio-mature-animal-cell-division-repair-replacement",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The two R-labelled drawers provide a grounded sound-and-space cue for the two main roles of mature-animal cell division."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:bio-plant-vacuole-cell-sap",
+      "cardId": "bio-plant-vacuole-cell-sap",
+      "baseGenerationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "0edcb8963e61d053350b26789cd5c9de6943c7325e5e4c0376ed7b2eed1ed58e",
+      "baseSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+      "baseArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+      "baseArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "1513bd778c1a6c18c6ea32294590ca007885c125113b7dafdac2b8ac4c5a265c",
+      "memoryTip": "Memory image: VACUOLE sounds like a vacuum flask; picture that permanent plant-cell flask with a contents label: CELL SAP.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "62764798e62532b34e182520f6b22472856c594bbce17b737eb0b9ac91bb7a08",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "1513bd778c1a6c18c6ea32294590ca007885c125113b7dafdac2b8ac4c5a265c",
+          "cardSourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+          "generationArtifactHash": "5e757946634b2ce8a52a30ea73226cdc2f4336995a0867add8e12c7841f5e327",
+          "generationArtifactPath": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-biology-cell-structure-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "5d4e7c1b24f372c833612792082b5523663106fd7ad24f128912b89f2a9f068e",
+            "id": "bio-plant-vacuole-cell-sap:official-curriculum",
+            "sourceExcerpt": "Most animal cells have the following parts: • a nucleus • cytoplasm • a cell membrane • mitochondria • ribosomes. In addition to the parts found in animal cells, plant cells often have: • chloroplasts • a permanent vacuole filled with cell sap. Plant and algal cells also have a cell wall made of cellulose, which strengthens the cell.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:a:feedback",
+              "choice:b:feedback",
+              "choice:b:misconception",
+              "choice:c:feedback",
+              "choice:c:misconception",
+              "choice:d:feedback",
+              "choice:d:misconception"
+            ],
+            "supportsHash": "0299941c8408147b6290d77a3f1b73b05e29ff7fb7cc1a55398e283b272aadc9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt explicitly identifies a permanent plant-cell vacuole filled with cell sap; the vacuum-flask resemblance is labelled as a memory image.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "bio-plant-vacuole-cell-sap",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The vacuum-flask association and contents label form a concrete mnemonic for cell sap filling the permanent plant-cell vacuole."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-alpha-scattering-mass-location",
+      "cardId": "chem-alpha-scattering-mass-location",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "8624b06fd00757f400ecb04dff52abba36ca4f35facceff15a3e2009b90b4c3e",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "1c9cb8819d8f8ad15e9f26ba4b825742f60d4c3069098636aac028ef5fefffb4",
+      "memoryTip": "Picture the alpha-scattering conclusion as a target: the atom’s MASS sits on the central bullseye labelled NUCLEUS, rather than spread across it.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "2fa9702046230a48843ef8394e1a858def58eb739c67b76ecc0bde887de5b125",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "1c9cb8819d8f8ad15e9f26ba4b825742f60d4c3069098636aac028ef5fefffb4",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "e0517ff6509812efd75539f4436bf113a0201652c60afcf37fcf439b37c0f584",
+            "id": "chem-alpha-scattering-mass-location:official-curriculum",
+            "sourceExcerpt": "The results from the alpha particle scattering experiment led to the conclusion that the mass of an atom was concentrated at the centre (nucleus) and that the nucleus was charged. This nuclear model replaced the plum pudding model. Niels Bohr adapted the nuclear model by suggesting that electrons orbit the nucleus at specific distances.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:central-nucleus:feedback",
+              "choice:evenly-spread:feedback",
+              "choice:orbiting-electrons:feedback",
+              "choice:outer-edge:feedback",
+              "choice:evenly-spread:misconception",
+              "choice:orbiting-electrons:misconception",
+              "choice:outer-edge:misconception"
+            ],
+            "supportsHash": "94d7b8b6f555f93df89ed5827c2d97a0549a5935c93550d20a52276d27c77e39"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt states that alpha scattering showed atomic mass concentrated at the centre, the nucleus; the target supplies the spatial retrieval cue.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-alpha-scattering-mass-location",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The target and central bullseye accurately encode the scattering conclusion that atomic mass is concentrated in the nucleus."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-atom-smallest-part",
+      "cardId": "chem-atom-smallest-part",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "8a50d31cbd73b36aa84f1e01ef377a21170f962f13d574f24b42e8130aebf6ba",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "13defc6e740dcfe3f069fcde8f86f4d9e97912f8751593847f745f312cee3d85",
+      "memoryTip": "Picture zooming into an ELEMENT until a red stop sign appears: ATOM. The sign marks the smallest part of that element that can exist.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "6e99702d742887a8245bf393bc9cb2a1b3c5bf5eac502985ac944d2865457407",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "13defc6e740dcfe3f069fcde8f86f4d9e97912f8751593847f745f312cee3d85",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "a4f54bba89f3f6dca3f12ff28cee05d8d35342922622530da123ded4c11bdfb5",
+            "id": "chem-atom-smallest-part:official-curriculum",
+            "sourceExcerpt": "All substances are made of atoms. An atom is the smallest part of an element that can exist. Atoms of each element are represented by a chemical symbol, eg O represents an atom of oxygen, Na represents an atom of sodium.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:atom:feedback",
+              "choice:chemical-symbol:feedback",
+              "choice:element:feedback",
+              "choice:substance:feedback",
+              "choice:chemical-symbol:misconception",
+              "choice:element:misconception",
+              "choice:substance:misconception"
+            ],
+            "supportsHash": "73359ddf1b51990e6e6e14d823f3e35a29bc83c97bcdfe22b272658843915401"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt defines an atom as the smallest part of an element that can exist; the zoom and stop sign encode that endpoint.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-atom-smallest-part",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The zoom-and-stop image gives a concrete endpoint cue for the supported definition of an atom as the smallest existing part of an element."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-bohr-specific-electron-orbits",
+      "cardId": "chem-bohr-specific-electron-orbits",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "7f9074f8686c32c0e631809d35f2545765ae8956e55a59200d63f685632336ee",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "89919bb7c80ed375c3975e3cece4fa3ff7fc970513a4b1aa7aa7f95761d6b991",
+      "memoryTip": "Picture Bohr’s model as a dartboard: nucleus at the bullseye, electrons circling on marked rings; each ring cues a specific distance.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "5f6fd28c222264e254e7348e5c69911905e659b13ee4eaa7f40f9fe3cbbcdcc9",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "89919bb7c80ed375c3975e3cece4fa3ff7fc970513a4b1aa7aa7f95761d6b991",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "787897b0df6c005fde5f337fe0b0f36da8bb0ef1dc44f04c0462ca472e8b5fd2",
+            "id": "chem-bohr-specific-electron-orbits:official-curriculum",
+            "sourceExcerpt": "Before the discovery of the electron, atoms were thought to be tiny spheres that could not be divided. The discovery of the electron led to the plum pudding model of the atom. The plum pudding model suggested that the atom is a ball of positive charge with negative electrons embedded in it. The results from the alpha particle scattering experiment led to the conclusion that the mass of an atom was concentrated at the centre (nucleus) and that the nucleus was charged. This nuclear model replaced the plum pudding model. Niels Bohr adapted the nuclear model by suggesting that electrons orbit the nucleus at specific distances. The theoretical calculations of Bohr agreed with experimental observations.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:specific-orbits:feedback",
+              "choice:embedded-electrons:feedback",
+              "choice:indivisible-spheres:feedback",
+              "choice:scattering-nucleus:feedback",
+              "choice:embedded-electrons:misconception",
+              "choice:indivisible-spheres:misconception",
+              "choice:scattering-nucleus:misconception"
+            ],
+            "supportsHash": "2efec85a98af2d0b47171a4f4a9e97a76efb987eb2e110b9beb9ef6d43e51dc6"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt places the nucleus at the centre and states that Bohr proposed electrons orbiting it at specific distances; the dartboard is mnemonic imagery.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-bohr-specific-electron-orbits",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The dartboard rings accurately encode Bohr's model of electrons orbiting the nucleus at specific distances."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-compound-fixed-proportions",
+      "cardId": "chem-compound-fixed-proportions",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "2b9bbfe77a2464bed219eed1369d48cfa058e4cd9e966c5213e23b9bb32b584c",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "489780ee7912110610916ecfaa2dc2699d671a1e4f7aad53fbc7158c8ff462d1",
+      "memoryTip": "Picture a compound as a padlocked recipe: its elements are chemically joined, and the ingredient proportions cannot slide—they stay fixed.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "5fd037f8db2ec10a66ce1417d7c2a64c35bd3a4e639fcaeb393dcb106e5dd1e5",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "489780ee7912110610916ecfaa2dc2699d671a1e4f7aad53fbc7158c8ff462d1",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "b9f784271246c93596f7baa45a7f7606ca7d66644c9af3a7ef83d60e8d3461ca",
+            "id": "chem-compound-fixed-proportions:official-curriculum",
+            "sourceExcerpt": "Compounds contain two or more elements chemically combined in fixed proportions and can be represented by formulae using the symbols of the atoms from which they were formed.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:chemical-fixed:feedback",
+              "choice:chemical-variable:feedback",
+              "choice:physical-fixed:feedback",
+              "choice:physical-variable:feedback",
+              "choice:chemical-variable:misconception",
+              "choice:physical-fixed:misconception",
+              "choice:physical-variable:misconception"
+            ],
+            "supportsHash": "40e7dfd6c1be55839ee090af39c5ed6346f7351463489a8a37fdc798ebb23e94"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt defines compounds as elements chemically combined in fixed proportions; the locked recipe links both defining features.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-compound-fixed-proportions",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The padlocked-recipe image accurately combines the two supported features: chemical combination and fixed proportions."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-mass-number-particle-sum",
+      "cardId": "chem-mass-number-particle-sum",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "1560b96d0fbbbdbc250bf612dbe559fa25dad261d75c3447e742aaa3127077ea",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "08b2d6393ee0fd8bf56b8eca36d78b90b0d6f7eb1113957b12d4d64ca0f9847d",
+      "memoryTip": "Picture a MASS NUMBER guest list with only two particle types admitted: PROTONS + NEUTRONS; ELECTRONS are crossed off.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "2a70de0c4a1ed44a427ad694d565b95eb1c58ef7a1a43de5b10fe3f468678a0d",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "08b2d6393ee0fd8bf56b8eca36d78b90b0d6f7eb1113957b12d4d64ca0f9847d",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "d8b73f19c6d1667f400190010756a0c66d63129284dcf76a3fdef56a27ce2499",
+            "id": "chem-mass-number-particle-sum:official-curriculum",
+            "sourceExcerpt": "The sum of the protons and neutrons in an atom is its mass number.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:protons-neutrons:feedback",
+              "choice:protons-electrons:feedback",
+              "choice:neutrons-electrons:feedback",
+              "choice:all-three-particles:feedback",
+              "choice:protons-electrons:misconception",
+              "choice:neutrons-electrons:misconception",
+              "choice:all-three-particles:misconception"
+            ],
+            "supportsHash": "4dba567569c3f068da09e47105e54fdfe6e4c22ce40f134811e816eced15f59d"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt defines mass number as the sum of protons and neutrons, supporting their inclusion and the exclusion of electrons.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-mass-number-particle-sum",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The guest-list image clearly encodes inclusion of protons and neutrons and exclusion of electrons from mass number."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-mixture-combination-properties",
+      "cardId": "chem-mixture-combination-properties",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "e81bd7b5091be1944abdeae44b82c0ba5ed07abc00ba5cac140b86f075effb60",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "68dd463e5820a9650a3f819af1bf97d79078d00ccd93ae182c94a19e97739a18",
+      "memoryTip": "Picture a mixture as a shared room, not a chemical marriage: its substances do not chemically join, and each keeps the same chemical-properties badge.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "d72aa20a1bb353663658289cfd5c89f52c33893b821815296a9a8024a6a2ffed",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "68dd463e5820a9650a3f819af1bf97d79078d00ccd93ae182c94a19e97739a18",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "1ee76d3e975feb53c836abbfebc35fc1d33d401a7de2633d437594e684913c64",
+            "id": "chem-mixture-combination-properties:official-curriculum",
+            "sourceExcerpt": "A mixture consists of two or more elements or compounds not chemically combined together. The chemical properties of each substance in the mixture are unchanged.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:not-chemical-unchanged:feedback",
+              "choice:chemical-unchanged:feedback",
+              "choice:not-chemical-changed:feedback",
+              "choice:chemical-changed:feedback",
+              "choice:chemical-unchanged:misconception",
+              "choice:not-chemical-changed:misconception",
+              "choice:chemical-changed:misconception"
+            ],
+            "supportsHash": "f51dcf4b56e0acb799f8dd5779ad26221e0cab873e907b18cf7db6ca50360dc4"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt states that mixture substances are not chemically combined and that each substance’s chemical properties remain unchanged.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-mixture-combination-properties",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The shared-room, marriage and badge imagery accurately encodes both defining mixture features from the cited evidence."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-neutral-atom-particle-balance",
+      "cardId": "chem-neutral-atom-particle-balance",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "52c936bba2e71007738d292e188640692259caa5b3839367bb2c424803babf03",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "10d4538d768646edce38be15c9b6e77946ca81ce712a1d9808631d1e81b327b2",
+      "memoryTip": "Picture an atom’s charge ledger: every electron is matched by a proton; equal totals make the final line read NO OVERALL CHARGE.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "c15ab06eb4f35c90eb0fcdfbbdfe9ab4f0e8981c72ffeb6d9969fcd914b3005c",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "10d4538d768646edce38be15c9b6e77946ca81ce712a1d9808631d1e81b327b2",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "931c06f78e91ff875f68a7ce72926c78b9950724e7037c7c424e275f64f2dd0c",
+            "id": "chem-neutral-atom-particle-balance:official-curriculum",
+            "sourceExcerpt": "In an atom, the number of electrons is equal to the number of protons in the nucleus. Atoms have no overall electrical charge.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:equal-electrons-protons:feedback",
+              "choice:more-electrons:feedback",
+              "choice:fewer-electrons:feedback",
+              "choice:equal-electrons-neutrons:feedback",
+              "choice:more-electrons:misconception",
+              "choice:fewer-electrons:misconception",
+              "choice:equal-electrons-neutrons:misconception"
+            ],
+            "supportsHash": "72932168c3acc7dbec7e595c0b49cd6d6d2f4de152494a108b5f5588c88ccdba"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt directly links equal electron and proton numbers in an atom with having no overall electrical charge.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-neutral-atom-particle-balance",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The ledger supplies a concrete balance image for equal electron and proton numbers producing no overall charge."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:chem-plum-pudding-model-structure",
+      "cardId": "chem-plum-pudding-model-structure",
+      "baseGenerationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "eefdddf5e0748c6ef1bf92d55fcacf5c56cc6d027e689100859770796aa2aae3",
+      "baseSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+      "baseArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+      "baseArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "0b7d5cbaa957412cbec0d88d9ab581130505733f208d64504b1601d3379c6cc9",
+      "memoryTip": "Picture a pudding-shaped ball stamped +, with tiny − electron dots embedded like fruit: the ball is positive; the embedded electrons are negative.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "ef7d9a532e630af927301d575995f0280ad2e39ee70dcb06ced9f5eefef6f6fc",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "0b7d5cbaa957412cbec0d88d9ab581130505733f208d64504b1601d3379c6cc9",
+          "cardSourceFingerprint": "a485a8f6f01c53d4e0b95085b6474def3bd9b1ce94fbfc9f97477dab3bbf2c7d",
+          "generationArtifactHash": "7178bbcdbb7113d60b9302af5432a340f22f701879fed6e7cdca4372f22fe565",
+          "generationArtifactPath": "data/recall/generated/combined-higher-chemistry-atomic-model-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-chemistry-atomic-model-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "787897b0df6c005fde5f337fe0b0f36da8bb0ef1dc44f04c0462ca472e8b5fd2",
+            "id": "chem-plum-pudding-model-structure:official-curriculum",
+            "sourceExcerpt": "Before the discovery of the electron, atoms were thought to be tiny spheres that could not be divided. The discovery of the electron led to the plum pudding model of the atom. The plum pudding model suggested that the atom is a ball of positive charge with negative electrons embedded in it. The results from the alpha particle scattering experiment led to the conclusion that the mass of an atom was concentrated at the centre (nucleus) and that the nucleus was charged. This nuclear model replaced the plum pudding model. Niels Bohr adapted the nuclear model by suggesting that electrons orbit the nucleus at specific distances. The theoretical calculations of Bohr agreed with experimental observations.",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:positive-ball-negative-electrons:feedback",
+              "choice:negative-ball-positive-particles:feedback",
+              "choice:charged-nucleus-orbits:feedback",
+              "choice:indivisible-sphere:feedback",
+              "choice:negative-ball-positive-particles:misconception",
+              "choice:charged-nucleus-orbits:misconception",
+              "choice:indivisible-sphere:misconception"
+            ],
+            "supportsHash": "32d0fdacaa2dc406009bcc1a9c630aba9dd715cc6749e95e81c4f9b292ecb0d9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt describes a ball of positive charge containing embedded negative electrons; the dessert layout makes that charge arrangement vivid.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "chem-plum-pudding-model-structure",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The pudding-and-fruit image accurately preserves the model's positive ball and embedded negative electrons as a useful spatial encoding."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    },
+    {
+      "id": "published-recall-memory-tips-enricher-v1:phys-elastic-equation-proportional-limit",
+      "cardId": "phys-elastic-equation-proportional-limit",
+      "baseGenerationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+      "baseContentRevision": 1,
+      "baseContentHash": "32f441e27d4f00368f6eef11c17a9a38478be496810bd1bda171306f8256723c",
+      "baseSourceFingerprint": "fd5bda3ad7a773cfa0ed2a710e0213e6e366da4d3f84d99a6c75bc6117ed07c4",
+      "baseArtifactHash": "cfe9e32cd0877c538b74c41781a8dbe87b9a8ae01e043c69ffaff75af4340398",
+      "baseArtifactPath": "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/accepted-cards.json",
+      "baseProvenanceHash": "c6b49446192cb2094c82ffbd2fa5947d9d890cf4236ecaaf05394424be33498e",
+      "memoryTip": "Picture a red gate marked LIMIT OF PROPORTIONALITY: the elastic-energy equation carries a pass valid only while that gate has not been crossed.",
+      "effectiveContentRevision": 2,
+      "effectiveHashVersion": "recall-memory-tip-effective-content-v1",
+      "effectiveContentHash": "6b5343a16356c24a7dcfdb861e18f81ff8e4cfa7560bd065fdd2a5816983440a",
+      "provenance": {
+        "base": {
+          "cardProvenanceHash": "c6b49446192cb2094c82ffbd2fa5947d9d890cf4236ecaaf05394424be33498e",
+          "cardSourceFingerprint": "fd5bda3ad7a773cfa0ed2a710e0213e6e366da4d3f84d99a6c75bc6117ed07c4",
+          "generationArtifactHash": "cfe9e32cd0877c538b74c41781a8dbe87b9a8ae01e043c69ffaff75af4340398",
+          "generationArtifactPath": "data/recall/generated/combined-higher-physics-energy-stores-compiler-v5/accepted-cards.json",
+          "generationRunId": "combined-higher-physics-energy-stores-compiler-v5",
+          "generationRunStatus": "imported"
+        },
+        "citedEvidence": [
+          {
+            "excerptHash": "5f0225437759b0922c04113832694f8eda82b88659cdf740dbb3cf830727c895",
+            "id": "phys-elastic-equation-proportional-limit:official-curriculum",
+            "sourceExcerpt": "elastic potential energy = 0.5 × spring constant × extension 2 Ee = 1 2 k e2 (assuming the limit of proportionality has not been exceeded)",
+            "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+            "supports": [
+              "front",
+              "back",
+              "explanation",
+              "choice:a:feedback",
+              "choice:b:feedback",
+              "choice:b:misconception",
+              "choice:c:feedback",
+              "choice:c:misconception",
+              "choice:d:feedback",
+              "choice:d:misconception"
+            ],
+            "supportsHash": "0299941c8408147b6290d77a3f1b73b05e29ff7fb7cc1a55398e283b272aadc9"
+          }
+        ],
+        "enrichmentRunId": "published-recall-memory-tips-enricher-v1",
+        "groundingRationale": "The excerpt conditions the elastic potential energy equation on the limit of proportionality not having been exceeded; the gate encodes that boundary.",
+        "promptVersion": "recall-memory-tip-enricher-v1",
+        "review": {
+          "accepted": true,
+          "cardId": "phys-elastic-equation-proportional-limit",
+          "checks": {
+            "concise": true,
+            "distinctFromAnswer": true,
+            "officialEvidenceGrounded": true,
+            "scientificallyAccurate": true,
+            "secondEncodingUseful": true
+          },
+          "issues": [],
+          "reason": "The red gate clearly encodes the supported boundary condition that the proportionality limit must not have been exceeded."
+        },
+        "schemaVersion": "recall-memory-tip-enrichment-v1",
+        "sourceFingerprint": "25a3092d7dc8e987480d542d06655bd1b7dcd58134ecf8bea5a958e142ed5f8f"
+      }
+    }
+  ]
+}

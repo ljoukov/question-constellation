@@ -1,0 +1,71 @@
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "course": "Combined Science",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "component": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3",
+    "code": "4.1.3.1",
+    "title": "Diffusion",
+    "kind": "topic",
+    "subjectArea": "Biology",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 25,
+    "sourcePageEnd": 25
+  },
+  "topicComponent": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+    "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4",
+    "code": "4.1",
+    "title": "Cell biology",
+    "kind": "chapter",
+    "subjectArea": "Biology",
+    "tier": [
+      "Foundation",
+      "Higher"
+    ],
+    "sourcePageStart": 20,
+    "sourcePageEnd": 25
+  },
+  "pageStart": 25,
+  "pageEnd": 25,
+  "sourceFingerprint": "4b76ec26ca63147e514cdc26db49e6f56fd0fc468835d999b21be0a9a759c99a",
+  "catalogSchemaVersion": "1",
+  "catalogPath": "data/curricula/curriculum-catalog.json",
+  "subject": "Biology",
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "isPrimary": false,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "pageText": "4.1.3 Transport in cells\n4.1.3.1 Diffusion\nContent Key opportunities for\nskills development\nSubstances may move into and out of cells across the cell\nmembranes via diffusion.\nDiffusion is the spreading out of the particles of any substance in\nsolution, or particles of a gas, resulting in a net movement from an\narea of higher concentration to an area of lower concentration.\nSome of the substances transported in and out of cells by diffusion\nare oxygen and carbon dioxide in gas exchange, and of the waste\nproduct urea from cells into the blood plasma for excretion in the\nkidney.\nStudents should be able to explain how different factors affect the\nrate of diffusion.\nFactors which affect the rate of diffusion are:\n• the difference in concentrations (concentration gradient)\n• the temperature\n• the surface area of the membrane.\nA single-celled organism has a relatively large surface area to\nvolume ratio. This allows sufficient transport of molecules into and\nout of the cell to meet the needs of the organism.\nWS 1.2\nRecognise, draw and\ninterpret diagrams that\nmodel diffusion.\nWS 1.5\nUse of isotonic drinks and\nhigh energy drinks in sport.\nStudents should be able to calculate and compare surface area to\nvolume ratios.\nStudents should be able to explain the need for exchange surfaces\nand a transport system in multicellular organisms in terms of\nsurface area to volume ratio.\nStudents should be able to explain how the small intestine and\nlungs in mammals, gills in fish, and the roots and leaves in plants,\nare adapted for exchanging materials.\nIn multicellular organisms, surfaces and organ systems are\nspecialised for exchanging materials. This is to allow sufficient\nmolecules to be transported into and out of cells for the organism’s\nneeds. The effectiveness of an exchange surface is increased by:\n• having a large surface area\n• a membrane that is thin, to provide a short diffusion path\n• (in animals) having an efficient blood supply\n• (in animals, for gaseous exchange) being ventilated.\nMS 1c, 5c\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 25\n"
+}

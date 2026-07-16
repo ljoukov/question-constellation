@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	RECALL_COMPANION_ARTIFACT_SCHEMA_VERSION,
+	recallHashBoundCompanionEntries
+} from '../../../scripts/lib/recall-card-artifacts.mjs';
+import {
 	RECALL_REVIEW_CHECKS,
 	compileRecallCardBundle,
 	validateRecallCandidateBatch,
@@ -27,12 +31,13 @@ describe('versioned recall card bundle', () => {
 			fullReviews,
 			cueReviews,
 			evidence: evidenceFixture(),
-			run: runFixture()
+			run: runFixture(),
+			companionArtifacts: companionArtifactsFixture()
 		});
 
 		expect(rejectedCards).toEqual([]);
 		expect(bundle.schemaVersion).toBe('recall-card-bundle-v2');
-		expect(bundle.promptVersion).toBe('recall-card-compiler-v6');
+		expect(bundle.promptVersion).toBe('recall-card-compiler-v9');
 		expect(bundle.cards[0]).toEqual(
 			expect.objectContaining({
 				id: 'bio-vaccination-antibodies',
@@ -82,6 +87,22 @@ describe('versioned recall card bundle', () => {
 				expectedCount: 1
 			})
 		).toThrow(/not an exact quote/);
+	});
+
+	it('collapses PDF line breaks in an otherwise exact source excerpt', () => {
+		const raw = candidateBatch();
+		raw.cards[0].evidence.sourceExcerpt =
+			'This stimulates white blood cells\n\tto produce antibodies against the pathogen.';
+
+		const normalized = validateRecallCandidateBatch(raw, {
+			subject: 'Biology',
+			pageText,
+			expectedCount: 1
+		});
+
+		expect(normalized.cards[0].evidence.sourceExcerpt).toBe(
+			'This stimulates white blood cells to produce antibodies against the pathogen.'
+		);
 	});
 
 	it('requires exact correct-choice text and evidence for every learner-facing prompt', () => {
@@ -171,7 +192,8 @@ describe('versioned recall card bundle', () => {
 			fullReviews: validateRecallFullReviews(fullReview(true), ['bio-vaccination-antibodies']),
 			cueReviews: validateRecallCueReviews(cueReview(true), completeCards, 'Biology'),
 			evidence: evidenceFixture(),
-			run: runFixture()
+			run: runFixture(),
+			companionArtifacts: companionArtifactsFixture()
 		});
 		const compilerV5 = structuredClone(bundle);
 		compilerV5.promptVersion = 'recall-card-compiler-v5';
@@ -188,6 +210,39 @@ describe('versioned recall card bundle', () => {
 				run: { ...compilerV5.run, id: 'ambiguous-compiler-v6' }
 			})
 		).toThrow(/run.id must end with -compiler-v5/);
+	});
+
+	it('requires hash-bound compiler companions and the full replacement-cue trail for v7', () => {
+		const candidates = validateRecallCandidateBatch(candidateBatch(), {
+			subject: 'Biology',
+			pageText,
+			expectedCount: 1
+		});
+		const completeCards = candidates.cards.map((card) => ({ ...card, subject: 'Biology' }));
+		const { bundle } = compileRecallCardBundle({
+			candidates,
+			fullReviews: validateRecallFullReviews(fullReview(true), ['bio-vaccination-antibodies']),
+			cueReviews: validateRecallCueReviews(cueReview(true), completeCards, 'Biology'),
+			evidence: evidenceFixture(),
+			run: runFixture(),
+			companionArtifacts: companionArtifactsFixture()
+		});
+
+		const missingIdentity = structuredClone(bundle);
+		delete missingIdentity.companionArtifacts;
+		expect(() => validateRecallCardBundle(missingIdentity)).toThrow(
+			/companionArtifacts is required/
+		);
+
+		const replacementRun = structuredClone(bundle);
+		replacementRun.run.cueReviewer.replacementReviewRun = true;
+		replacementRun.companionArtifacts = companionArtifactsFixture(true);
+		expect(validateRecallCardBundle(replacementRun)).toBe(replacementRun);
+
+		delete replacementRun.companionArtifacts.sha256ByFile['final-cue-review.json'];
+		expect(() => validateRecallCardBundle(replacementRun)).toThrow(
+			/missing final-cue-review\.json/
+		);
 	});
 });
 
@@ -329,13 +384,38 @@ function evidenceFixture() {
 
 function runFixture() {
 	return {
-		id: 'recall-test-run-compiler-v6',
+		id: 'recall-test-run-compiler-v9',
 		startedAt: '2026-07-15T10:00:00.000Z',
 		finishedAt: '2026-07-15T10:01:00.000Z',
 		generator: { model: 'gpt-5.6-sol', thinkingLevel: 'max' },
 		fullReviewer: { model: 'gpt-5.6-sol', thinkingLevel: 'max', independentTurn: true },
-		cueReviewer: { model: 'gpt-5.6-sol', thinkingLevel: 'max', independentTurn: true }
+		cueReviewer: {
+			model: 'gpt-5.6-sol',
+			thinkingLevel: 'max',
+			independentTurn: true,
+			replacementReviewRun: false
+		}
 	};
 }
 
-export { candidateBatch, cueReview, evidenceFixture, fullReview, pageText, runFixture };
+function companionArtifactsFixture(replacementReviewRun = false) {
+	return {
+		schemaVersion: RECALL_COMPANION_ARTIFACT_SCHEMA_VERSION,
+		sha256ByFile: Object.fromEntries(
+			recallHashBoundCompanionEntries(replacementReviewRun).map((entry, index) => [
+				entry.name,
+				(index + 1).toString(16).padStart(64, '0')
+			])
+		)
+	};
+}
+
+export {
+	candidateBatch,
+	companionArtifactsFixture,
+	cueReview,
+	evidenceFixture,
+	fullReview,
+	pageText,
+	runFixture
+};

@@ -14,8 +14,13 @@ import {
 import {
 	buildRecallCardImportStatements,
 	canonicalSourceFileHash,
-	planRecallCardImport
+	planRecallCardImport,
+	recallStoredCardParentIssues
 } from './lib/recall-card-import.mjs';
+import {
+	recallRequiredDurableCompanionNames,
+	verifyRecallCompanionArtifactFiles
+} from './lib/recall-card-artifacts.mjs';
 import { loadOfficialRecallEvidence } from './lib/recall-curriculum-evidence.mjs';
 import { resolveRecallAcceptedArtifactPath } from './lib/recall-generation-paths.mjs';
 
@@ -99,23 +104,8 @@ function requireDurableArtifact(filePath, artifactHash, bundle) {
 		);
 	}
 	const artifactDir = path.dirname(filePath);
-	const requiredCompanions = [
-		'source-evidence.json',
-		'generation-prompt.txt',
-		'generation-model-output.json',
-		'generation-codex-run-summary.json',
-		'candidate-cards.json',
-		'full-review-prompt.txt',
-		'full-review-model-output.json',
-		'full-review-codex-run-summary.json',
-		'full-review.json',
-		'cue-review-prompt.txt',
-		'cue-review-model-output.json',
-		'cue-review-codex-run-summary.json',
-		'cue-review.json',
-		'rejected-cards.json',
-		'recall-generation-run.json'
-	];
+	const replacementReviewRun = bundle.run.cueReviewer?.replacementReviewRun === true;
+	const requiredCompanions = recallRequiredDurableCompanionNames(replacementReviewRun);
 	const missing = requiredCompanions.filter((name) => !existsSync(path.join(artifactDir, name)));
 	if (missing.length) {
 		throw new Error(`Durable recall run is incomplete; missing: ${missing.join(', ')}`);
@@ -125,10 +115,23 @@ function requireDurableArtifact(filePath, artifactHash, bundle) {
 	);
 	if (
 		manifest.status !== 'accepted' ||
-		manifest.run?.id !== bundle.run.id ||
+		stableStringify(manifest.run) !== stableStringify(bundle.run) ||
 		manifest.acceptedArtifactHash !== artifactHash
 	) {
 		throw new Error('Durable recall run manifest does not match the accepted artifact.');
+	}
+	const replacementCount = Number(manifest.counts?.cueReplacementsReviewed ?? 0);
+	if (
+		!Number.isInteger(replacementCount) ||
+		replacementCount < 0 ||
+		replacementCount > 0 !== replacementReviewRun
+	) {
+		throw new Error('Durable recall run manifest has inconsistent cue-replacement metadata.');
+	}
+	if (bundle.companionArtifacts) {
+		verifyRecallCompanionArtifactFiles(artifactDir, bundle.companionArtifacts, {
+			replacementReviewRun
+		});
 	}
 }
 
@@ -346,7 +349,8 @@ async function loadExisting(bundle) {
 	const ids = bundle.cards.map((card) => card.id);
 	const conceptClauses = bundle.cards.map(() => '(subject = ? AND concept_key = ?)');
 	const cards = await d1Rows(
-		`SELECT id, subject, concept_key, content_revision, content_hash, status, import_owner
+		`SELECT id, subject, concept_key, content_revision, content_hash,
+		        source_fingerprint, generation_run_id, provenance_json, status, import_owner
 		 FROM recall_cards
 		 WHERE id IN (${ids.map(() => '?').join(', ')})
 		    OR ${conceptClauses.join(' OR ')}`,
@@ -382,6 +386,7 @@ async function verifyImport(bundle, artifactHash) {
 	const ids = bundle.cards.map((card) => card.id);
 	const rows = await d1Rows(
 		`SELECT c.id, c.status, c.content_revision, c.content_hash,
+		        c.source_fingerprint, c.generation_run_id, c.provenance_json,
 		        (SELECT COUNT(*) FROM recall_card_choices x WHERE x.card_id = c.id) AS choice_count,
 		        (SELECT SUM(is_correct) FROM recall_card_choices x WHERE x.card_id = c.id) AS correct_count,
 		        (SELECT COUNT(*) FROM recall_card_evidence x WHERE x.card_id = c.id) AS evidence_count,
@@ -393,12 +398,8 @@ async function verifyImport(bundle, artifactHash) {
 		ids,
 		{ rootDir, binding: 'QUESTION_DB' }
 	);
-	const expectedById = new Map(bundle.cards.map((card) => [card.id, card]));
-	const errors = [];
+	const errors = recallStoredCardParentIssues(bundle, rows);
 	for (const row of rows) {
-		const expected = expectedById.get(row.id);
-		if (row.status !== 'published') errors.push(`${row.id} is ${row.status}`);
-		if (row.content_hash !== expected.contentHash) errors.push(`${row.id} content hash differs`);
 		if (Number(row.choice_count) !== 4 || Number(row.correct_count) !== 1) {
 			errors.push(`${row.id} choice invariant failed`);
 		}
@@ -407,8 +408,6 @@ async function verifyImport(bundle, artifactHash) {
 			errors.push(`${row.id} curriculum target invariant failed`);
 		}
 	}
-	if (rows.length !== bundle.cards.length)
-		errors.push('not every bundle card was found after import');
 	const [choiceRows, evidenceRows, targetRows] = await Promise.all([
 		d1Rows(
 			`SELECT id, card_id, display_order, choice_key, text, is_correct,
@@ -497,7 +496,8 @@ async function verifyImport(bundle, artifactHash) {
 		errors.push('stored curriculum target rows differ from the accepted artifact');
 	}
 	const runRows = await d1Rows(
-		`SELECT status, artifact_hash, import_owner FROM recall_generation_runs WHERE id = ?`,
+		`SELECT status, artifact_hash, source_fingerprint, import_owner
+		 FROM recall_generation_runs WHERE id = ?`,
 		[bundle.run.id],
 		{ rootDir, binding: 'QUESTION_DB' }
 	);
@@ -506,6 +506,7 @@ async function verifyImport(bundle, artifactHash) {
 		!run ||
 		run.status !== 'imported' ||
 		run.artifact_hash !== artifactHash ||
+		run.source_fingerprint !== bundle.source.fingerprint ||
 		run.import_owner !== RECALL_IMPORT_OWNER
 	) {
 		errors.push('generation run verification failed');

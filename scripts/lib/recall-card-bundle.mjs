@@ -1,13 +1,17 @@
 import { createHash } from 'node:crypto';
 
 import { isApprovedRecallVisualCueForSubject } from '../../src/lib/recall/visualCues.js';
+import { recallCompanionArtifactIssues } from './recall-card-artifacts.mjs';
 
 /** @typedef {Record<string, any>} AnyRecord */
 
 export const RECALL_BUNDLE_SCHEMA_VERSION = 'recall-card-bundle-v2';
-export const RECALL_PROMPT_VERSION = 'recall-card-compiler-v6';
+export const RECALL_PROMPT_VERSION = 'recall-card-compiler-v9';
 export const RECALL_IMPORTABLE_PROMPT_VERSIONS = Object.freeze([
 	'recall-card-compiler-v5',
+	'recall-card-compiler-v6',
+	'recall-card-compiler-v7',
+	'recall-card-compiler-v8',
 	RECALL_PROMPT_VERSION
 ]);
 export const RECALL_MAPPING_SOURCE = 'recall-card-compiler-v2';
@@ -376,8 +380,16 @@ function normalizeCandidateEvidence(raw, label, pageText, memoryTip, hasReverse,
 	if (!isRecord(raw)) {
 		issues.push(`${label}.evidence must be an object`);
 	}
+	// PDF excerpts are authored across lines, while the durable evidence contract
+	// permits whitespace-only collapse. Keep the raw model output in the companion
+	// artifact, but canonicalise its excerpt to one line before deterministic
+	// validation and hashing. Other control characters still fail boundedText.
+	const sourceExcerptInput =
+		typeof evidenceRecord.sourceExcerpt === 'string'
+			? evidenceRecord.sourceExcerpt.replace(/[\t\n\r\f\v ]+/g, ' ').trim()
+			: evidenceRecord.sourceExcerpt;
 	const sourceExcerpt = boundedText(
-		evidenceRecord.sourceExcerpt,
+		sourceExcerptInput,
 		`${label}.evidence.sourceExcerpt`,
 		1400,
 		issues,
@@ -524,10 +536,17 @@ function validateReviewIdSet(reviews, cardIds, issues, label) {
  *
  * @param {{
  *  candidates: {cards:AnyRecord[]}, fullReviews:{reviews:AnyRecord[]}, cueReviews:{reviews:AnyRecord[]},
- *  evidence:AnyRecord, run:AnyRecord
+ *  evidence:AnyRecord, run:AnyRecord, companionArtifacts?:AnyRecord
  * }} input
  */
-export function compileRecallCardBundle({ candidates, fullReviews, cueReviews, evidence, run }) {
+export function compileRecallCardBundle({
+	candidates,
+	fullReviews,
+	cueReviews,
+	evidence,
+	run,
+	companionArtifacts
+}) {
 	const fullById = new Map(fullReviews.reviews.map((review) => [review.cardId, review]));
 	const cueById = new Map(cueReviews.reviews.map((review) => [review.cardId, review]));
 	const acceptedCards = [];
@@ -599,6 +618,7 @@ export function compileRecallCardBundle({ candidates, fullReviews, cueReviews, e
 		schemaVersion: RECALL_BUNDLE_SCHEMA_VERSION,
 		promptVersion: RECALL_PROMPT_VERSION,
 		run,
+		companionArtifacts,
 		source: {
 			catalogSchemaVersion: evidence.catalogSchemaVersion,
 			catalogPath: evidence.catalogPath,
@@ -667,6 +687,19 @@ export function validateRecallCardBundle(input) {
 				issues.push(`run.${stage} must record an independent turn`);
 			}
 		}
+		if (
+			promptVersionRequiresCompanionArtifacts(input.promptVersion) &&
+			typeof input.run.cueReviewer?.replacementReviewRun !== 'boolean'
+		) {
+			issues.push('run.cueReviewer.replacementReviewRun must be boolean');
+		}
+	}
+	const replacementReviewRun = input.run?.cueReviewer?.replacementReviewRun === true;
+	for (const issue of recallCompanionArtifactIssues(input.companionArtifacts, {
+		replacementReviewRun,
+		required: promptVersionRequiresCompanionArtifacts(input.promptVersion)
+	})) {
+		issues.push(issue);
 	}
 	if (!isRecord(input.source)) {
 		issues.push('source metadata is required');
@@ -695,6 +728,12 @@ export function validateRecallCardBundle(input) {
 	);
 	if (issues.length) throw new RecallCardBundleValidationError(issues);
 	return input;
+}
+
+/** @param {unknown} promptVersion */
+function promptVersionRequiresCompanionArtifacts(promptVersion) {
+	const match = /^recall-card-compiler-v(\d+)$/.exec(String(promptVersion ?? ''));
+	return match ? Number(match[1]) >= 7 : false;
 }
 
 /** @param {any} card @param {number} index @param {any} bundle @param {string[]} issues */

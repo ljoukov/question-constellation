@@ -21,6 +21,7 @@ import {
 	QUESTION_CARD_TITLE_MIN_WORDS
 } from './question-card-title.js';
 import { answerChainSpecificityIssues } from './answer-chain-specificity.mjs';
+import { learnerFacingExtractionIssues } from './extraction-learner-guardrails.mjs';
 
 const rootDir = process.cwd();
 let localPathBaseDir = rootDir;
@@ -1593,6 +1594,7 @@ function deterministicIssuesFor(candidate, options = {}) {
 		}
 		for (const issue of responseDiagramSurfaceIssues(question)) issues.push(issue);
 		for (const issue of drawingBoxGridMetadataIssues(question)) issues.push(issue);
+		for (const issue of learnerFacingExtractionIssues(question)) issues.push(issue);
 		if (
 			fixedResponseKinds.has(response?.kind) &&
 			!(response.correctAnswers ?? []).length &&

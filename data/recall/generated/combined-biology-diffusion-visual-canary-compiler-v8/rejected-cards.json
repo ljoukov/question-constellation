@@ -1,0 +1,32 @@
+{
+	"cards": [
+		{
+			"id": "bio-single-cell-surface-area-volume",
+			"fullReview": {
+				"cardId": "bio-single-cell-surface-area-volume",
+				"accepted": false,
+				"reason": "Two distractors encode the same reciprocal misconception: a small surface-area-to-volume ratio is equivalent to a large volume-to-surface-area ratio.",
+				"checks": {
+					"singleConcept": true,
+					"officialEvidenceGrounded": true,
+					"correctAnswerExact": true,
+					"distractorsDiagnostic": false,
+					"feedbackUseful": true,
+					"concise": true,
+					"reverseSafe": true,
+					"memoryTipGrounded": true,
+					"targetMappingCorrect": true
+				},
+				"issues": [
+					"The small-SA:V and large-V:SA distractors are mathematically equivalent, so the three distractors are not mutually distinct."
+				]
+			},
+			"cueReview": {
+				"cardId": "bio-single-cell-surface-area-volume",
+				"accepted": true,
+				"reason": "🦠 represents the single-celled organism already explicit on the front. It adds no surface-area-to-volume information and remains neutral across every ratio choice.",
+				"replacementCue": "🦠"
+			}
+		}
+	]
+}

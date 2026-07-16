@@ -1,0 +1,44 @@
+{
+  "status": "generation_requested",
+  "runId": "combined-higher-biology-cell-structure-compiler-v8",
+  "workDir": "tmp/recall-generation/combined-higher-biology-cell-structure-compiler-v8",
+  "artifactDir": "data/recall/generated/combined-higher-biology-cell-structure-compiler-v8",
+  "catalog": "data/curricula/curriculum-catalog.json",
+  "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+  "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+  "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+  "subject": "Biology",
+  "pageRange": [
+    20,
+    22
+  ],
+  "pageTextCharacters": 4846,
+  "sourceFingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+  "count": 8,
+  "targets": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "isPrimary": true,
+      "confidence": 1,
+      "reviewed": true,
+      "mappingSource": "recall-card-compiler-v2"
+    }
+  ],
+  "models": {
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    }
+  },
+  "promptVersion": "recall-card-compiler-v8"
+}

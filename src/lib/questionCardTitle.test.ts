@@ -215,6 +215,18 @@ describe('question card titles', () => {
 		expect(questionCardTitleIssues('Unlabelled science question')).toContain('mechanics_only');
 		expect(questionCardTitleIssues('The Physics Equations Sheet')).toContain('mechanics_only');
 		expect(questionCardTitleIssues('What happened')).toContain('mechanics_only');
+		expect(questionCardTitleIssues('The linear search algorithm works')).toContain(
+			'copies_prompt_sentence'
+		);
+		expect(questionCardTitleIssues('The pressure in the chamber changes')).toContain(
+			'copies_prompt_sentence'
+		);
+		expect(questionCardTitleIssues('Compilers and interpreters operate')).toContain(
+			'sentence_not_concept_label'
+		);
+		expect(questionCardTitleIssues('Distance, force and work done equation')).not.toContain(
+			'sentence_not_concept_label'
+		);
 		expect(questionCardTitleIssues('The effect shown in Figure 7')).toEqual(
 			expect.arrayContaining(['context_dependent'])
 		);

@@ -1,0 +1,236 @@
+{
+  "cards": [
+    {
+      "id": "bio-diffusion-net-movement",
+      "conceptKey": "diffusion-definition-direction",
+      "kind": "definition",
+      "visualCue": "💨",
+      "front": "What is diffusion?",
+      "back": "The spreading out of particles, causing net movement from higher to lower concentration.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The particles may belong to a substance in solution or to a gas.",
+      "memoryTip": "Particles spread out; net movement goes higher concentration → lower concentration.",
+      "choices": [
+        {
+          "choiceKey": "higher-to-lower",
+          "text": "The spreading out of particles, causing net movement from higher to lower concentration.",
+          "isCorrect": true,
+          "feedback": "This includes both spreading out and the stated higher-to-lower net movement.",
+          "misconception": null
+        },
+        {
+          "choiceKey": "lower-to-higher",
+          "text": "The spreading out of particles, causing net movement from lower to higher concentration.",
+          "isCorrect": false,
+          "feedback": "The stated net movement is from higher concentration to lower concentration.",
+          "misconception": "Reversing the direction of diffusion"
+        },
+        {
+          "choiceKey": "no-net-movement",
+          "text": "The spreading out of particles, with no net movement between concentrations.",
+          "isCorrect": false,
+          "feedback": "The definition includes net movement from an area of higher concentration to one of lower concentration.",
+          "misconception": "Removing net movement from the definition"
+        },
+        {
+          "choiceKey": "gases-only",
+          "text": "The spreading out of particles only in gases, from higher to lower concentration.",
+          "isCorrect": false,
+          "feedback": "Diffusion also applies to particles of substances in solution, not only gases.",
+          "misconception": "Restricting diffusion to gases"
+        }
+      ],
+      "evidence": {
+        "sourceExcerpt": "Diffusion is the spreading out of the particles of any substance in solution, or particles of a gas, resulting in a net movement from an area of higher concentration to an area of lower concentration.",
+        "supports": [
+          "front",
+          "back",
+          "explanation",
+          "memoryTip",
+          "choice:higher-to-lower:feedback",
+          "choice:lower-to-higher:feedback",
+          "choice:lower-to-higher:misconception",
+          "choice:no-net-movement:feedback",
+          "choice:no-net-movement:misconception",
+          "choice:gases-only:feedback",
+          "choice:gases-only:misconception"
+        ]
+      }
+    },
+    {
+      "id": "bio-diffusion-rate-factors",
+      "conceptKey": "diffusion-rate-factors",
+      "kind": "fact",
+      "visualCue": "📘",
+      "front": "Which three factors affect the rate of diffusion?",
+      "back": "Concentration difference, temperature and membrane surface area.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The concentration difference is also called the concentration gradient.",
+      "memoryTip": "G–T–A: gradient, temperature, membrane area.",
+      "choices": [
+        {
+          "choiceKey": "all-three",
+          "text": "Concentration difference, temperature and membrane surface area.",
+          "isCorrect": true,
+          "feedback": "These are the three listed factors affecting diffusion rate.",
+          "misconception": null
+        },
+        {
+          "choiceKey": "omit-gradient",
+          "text": "Temperature and membrane surface area, but not concentration difference.",
+          "isCorrect": false,
+          "feedback": "The difference in concentrations is listed as a factor and is called the concentration gradient.",
+          "misconception": "Omitting the concentration gradient"
+        },
+        {
+          "choiceKey": "omit-temperature",
+          "text": "Concentration difference and membrane surface area, but not temperature.",
+          "isCorrect": false,
+          "feedback": "Temperature is explicitly listed as a factor affecting diffusion rate.",
+          "misconception": "Omitting temperature"
+        },
+        {
+          "choiceKey": "omit-membrane-area",
+          "text": "Concentration difference and temperature, but not membrane surface area.",
+          "isCorrect": false,
+          "feedback": "The membrane’s surface area is explicitly listed as a factor affecting diffusion rate.",
+          "misconception": "Omitting membrane surface area"
+        }
+      ],
+      "evidence": {
+        "sourceExcerpt": "Factors which affect the rate of diffusion are: • the difference in concentrations (concentration gradient) • the temperature • the surface area of the membrane.",
+        "supports": [
+          "front",
+          "back",
+          "explanation",
+          "memoryTip",
+          "choice:all-three:feedback",
+          "choice:omit-gradient:feedback",
+          "choice:omit-gradient:misconception",
+          "choice:omit-temperature:feedback",
+          "choice:omit-temperature:misconception",
+          "choice:omit-membrane-area:feedback",
+          "choice:omit-membrane-area:misconception"
+        ]
+      }
+    },
+    {
+      "id": "bio-single-cell-surface-area-volume",
+      "conceptKey": "single-cell-surface-area-volume-ratio",
+      "kind": "fact",
+      "visualCue": "🦠",
+      "front": "Why can a single-celled organism transport sufficient molecules into and out of its cell?",
+      "back": "It has a relatively large surface area to volume ratio.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The large ratio allows sufficient transport to meet the organism’s needs.",
+      "memoryTip": "Large surface-area-to-volume ratio → sufficient transport → needs met.",
+      "choices": [
+        {
+          "choiceKey": "large-sa-v",
+          "text": "It has a relatively large surface area to volume ratio.",
+          "isCorrect": true,
+          "feedback": "The relatively large ratio allows sufficient molecular transport for the organism’s needs.",
+          "misconception": null
+        },
+        {
+          "choiceKey": "small-sa-v",
+          "text": "It has a relatively small surface area to volume ratio.",
+          "isCorrect": false,
+          "feedback": "A single-celled organism is stated to have a relatively large surface area to volume ratio.",
+          "misconception": "Reversing the relative size of the ratio"
+        },
+        {
+          "choiceKey": "reversed-v-sa",
+          "text": "It has a relatively large volume to surface area ratio.",
+          "isCorrect": false,
+          "feedback": "The stated ratio compares surface area with volume in that order.",
+          "misconception": "Reversing surface area to volume as volume to surface area"
+        },
+        {
+          "choiceKey": "surface-area-alone",
+          "text": "It has a relatively large surface area without relation to volume.",
+          "isCorrect": false,
+          "feedback": "The explanation depends on surface area relative to volume, expressed as a ratio.",
+          "misconception": "Ignoring volume in the surface area comparison"
+        }
+      ],
+      "evidence": {
+        "sourceExcerpt": "A single-celled organism has a relatively large surface area to volume ratio. This allows sufficient transport of molecules into and out of the cell to meet the needs of the organism.",
+        "supports": [
+          "front",
+          "back",
+          "explanation",
+          "memoryTip",
+          "choice:large-sa-v:feedback",
+          "choice:small-sa-v:feedback",
+          "choice:small-sa-v:misconception",
+          "choice:reversed-v-sa:feedback",
+          "choice:reversed-v-sa:misconception",
+          "choice:surface-area-alone:feedback",
+          "choice:surface-area-alone:misconception"
+        ]
+      }
+    },
+    {
+      "id": "bio-thin-membrane-short-diffusion-path",
+      "conceptKey": "exchange-surface-thin-membrane",
+      "kind": "fact",
+      "visualCue": "🫁",
+      "front": "In mammalian lungs, why does a thin membrane make an exchange surface more effective?",
+      "back": "It provides a short diffusion path.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Large surface area, blood supply and ventilation are separate features that can also increase effectiveness.",
+      "memoryTip": "Thin membrane → short diffusion path.",
+      "choices": [
+        {
+          "choiceKey": "short-path",
+          "text": "It provides a short diffusion path.",
+          "isCorrect": true,
+          "feedback": "The source links a thin membrane with providing a short diffusion path.",
+          "misconception": null
+        },
+        {
+          "choiceKey": "large-area",
+          "text": "It provides a large surface area.",
+          "isCorrect": false,
+          "feedback": "Large surface area is a separate feature; a thin membrane provides a short diffusion path.",
+          "misconception": "Attributing surface area to membrane thinness"
+        },
+        {
+          "choiceKey": "blood-supply",
+          "text": "It provides an efficient blood supply.",
+          "isCorrect": false,
+          "feedback": "Efficient blood supply is a separate animal feature; thinness provides a short diffusion path.",
+          "misconception": "Attributing blood supply to membrane thinness"
+        },
+        {
+          "choiceKey": "ventilation",
+          "text": "It keeps the exchange surface ventilated.",
+          "isCorrect": false,
+          "feedback": "Ventilation is a separate gaseous-exchange feature; thinness provides a short diffusion path.",
+          "misconception": "Attributing ventilation to membrane thinness"
+        }
+      ],
+      "evidence": {
+        "sourceExcerpt": "Students should be able to explain how the small intestine and lungs in mammals, gills in fish, and the roots and leaves in plants, are adapted for exchanging materials. In multicellular organisms, surfaces and organ systems are specialised for exchanging materials. This is to allow sufficient molecules to be transported into and out of cells for the organism’s needs. The effectiveness of an exchange surface is increased by: • having a large surface area • a membrane that is thin, to provide a short diffusion path • (in animals) having an efficient blood supply • (in animals, for gaseous exchange) being ventilated.",
+        "supports": [
+          "front",
+          "back",
+          "explanation",
+          "memoryTip",
+          "choice:short-path:feedback",
+          "choice:large-area:feedback",
+          "choice:large-area:misconception",
+          "choice:blood-supply:feedback",
+          "choice:blood-supply:misconception",
+          "choice:ventilation:feedback",
+          "choice:ventilation:misconception"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f69aa-fcd4-75e3-9b93-4c1b7be0e45e",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "tmp/recall-generation/combined-higher-physics-energy-compiler-v8/full-review",
+  "startedAt": "2026-07-16T06:43:01.458Z",
+  "finishedAt": "2026-07-16T06:46:14.918Z",
+  "durationSeconds": 193.615,
+  "events": 4,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 0,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 17717,
+    "cached_input_tokens": 0,
+    "output_tokens": 3173,
+    "reasoning_output_tokens": 2354
+  },
+  "failedCommands": []
+}

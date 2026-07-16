@@ -2,13 +2,18 @@
 
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { deriveQuestionCardTitle } from '../src/lib/questionCardTitle.js';
+import { storedQuestionTitle } from '../src/lib/storedQuestionTitle.js';
+import { QUESTION_PRACTICE_PAGE_CACHE_VERSION } from '../src/lib/questionPracticeCache.js';
 import { subjectSymbol } from '../src/lib/subjectSymbols.js';
 import { d1Config, d1Rows } from './lib/d1-rest.mjs';
-import { deleteStalePracticePayloadsStatement } from './lib/public-route-materialization-scope.mjs';
+import {
+	deleteAllStalePracticePayloadsStatement,
+	deleteStaleQuestionPracticePayloadVersionsStatement,
+	deleteStalePracticePayloadsStatement
+} from './lib/public-route-materialization-scope.mjs';
 
 const DEFAULT_BATCH_SIZE = 50;
-const PAYLOAD_COMPRESSION_THRESHOLD_BYTES = 1_500_000;
+const PAYLOAD_COMPRESSION_THRESHOLD_BYTES = 128 * 1024;
 
 function integerArg(name, defaultValue, minValue) {
 	const arg = process.argv.find((candidate) => candidate.startsWith(`--${name}=`));
@@ -138,12 +143,13 @@ function teaserFromPrompt(text) {
 }
 
 function titleFromQuestion(row) {
-	const metadata = parseJson(row.metadata_json, {});
-	return deriveQuestionCardTitle({
-		cardTitle: metadata.card_title ?? metadata.title,
+	return storedQuestionTitle({
+		id: row.id,
+		subject: row.subject ?? row.source_subject,
+		metadataJson: row.metadata_json,
 		promptText: row.prompt_text,
 		selfContainedPromptText: row.self_contained_prompt_text,
-		fallback: row.source_question_ref
+		topicPathJson: row.topic_path_json
 	});
 }
 
@@ -990,6 +996,7 @@ async function fetchPublicChains({ rootDir }) {
 				SELECT 1
 				FROM question_rendering_overlays qro
 				WHERE qro.question_id = q.id
+				  AND qro.needs_human_review = 0
 			   )
 			 GROUP BY ac.id
 			 HAVING question_count > 0
@@ -1054,6 +1061,7 @@ async function fetchPublicChains({ rootDir }) {
 				SELECT 1
 				FROM question_rendering_overlays qro
 				WHERE qro.question_id = q.id
+				  AND qro.needs_human_review = 0
 			   )
 			 ORDER BY qac.answer_chain_id,
 			          CASE qac.transfer_distance
@@ -1099,7 +1107,9 @@ async function fetchPapersForQuestions({ rootDir, sourceDocumentIds }) {
 				        COUNT(q.id) AS question_count
 				 FROM source_documents sd
 				 JOIN questions q ON q.source_document_id = sd.id
-				 JOIN question_rendering_overlays qro ON qro.question_id = q.id
+				 JOIN question_rendering_overlays qro
+				   ON qro.question_id = q.id
+				  AND qro.needs_human_review = 0
 				 WHERE sd.id IN (${placeholders})
 				 GROUP BY sd.id`,
 				ids,
@@ -1113,6 +1123,7 @@ async function fetchPapersForQuestions({ rootDir, sourceDocumentIds }) {
 				 FROM question_assets qa
 				 JOIN questions q ON q.id = qa.question_id
 				 WHERE q.source_document_id IN (${placeholders})
+				   AND qa.needs_human_review = 0
 				   AND (qa.public_path IS NOT NULL OR qa.r2_key IS NOT NULL)
 				 ORDER BY q.source_document_id, qa.source_label, qa.id`,
 				ids,
@@ -1124,7 +1135,20 @@ async function fetchPapersForQuestions({ rootDir, sourceDocumentIds }) {
 				`SELECT q.source_document_id, q.id, q.parent_source_question_ref,
 				        q.source_question_ref, q.display_order, q.marks, qro.render_json
 				 FROM questions q
-				 JOIN question_rendering_overlays qro ON qro.question_id = q.id
+				 JOIN question_rendering_overlays qro
+				   ON qro.id = (
+				     SELECT qro2.id
+				       FROM question_rendering_overlays qro2
+				      WHERE qro2.question_id = q.id
+				        AND qro2.needs_human_review = 0
+				      ORDER BY CASE qro2.provenance
+				        WHEN 'manual' THEN 0
+				        WHEN 'pdf-geometry' THEN 1
+				        WHEN 'vision-extracted' THEN 2
+				        ELSE 3
+				      END, qro2.overlay_version DESC
+				      LIMIT 1
+				   )
 				 WHERE q.source_document_id IN (${placeholders})
 				 ORDER BY q.source_document_id, q.display_order, q.source_question_ref`,
 				ids,
@@ -1246,9 +1270,20 @@ export async function materializePublicRoutePayloads({
 		}
 	}
 	const cleanupStatements = [];
-	if (ownedChainIdSet?.size) {
+	if (ownedChainIdSet) {
+		// Prune the caller's complete scope, not only the chains that survived the
+		// reviewed-data filters. Otherwise a newly ineligible chain retains stale
+		// learner-facing payloads forever.
+		if (ownedChainIdSet.size > 0) {
+			cleanupStatements.push(
+				deleteStalePracticePayloadsStatement([...ownedChainIdSet], practicePayloadIds)
+			);
+		}
+	} else {
+		// A full run owns the entire legacy practice cache namespace.
+		cleanupStatements.push(deleteAllStalePracticePayloadsStatement(practicePayloadIds));
 		cleanupStatements.push(
-			deleteStalePracticePayloadsStatement([...ownedChainIdSet], practicePayloadIds)
+			deleteStaleQuestionPracticePayloadVersionsStatement(QUESTION_PRACTICE_PAGE_CACHE_VERSION)
 		);
 	}
 

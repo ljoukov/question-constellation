@@ -1,6 +1,5 @@
-import { getPracticePageData } from '$lib/server/questionData';
+import { getPracticePageData, getQuestionChainPageData } from '$lib/server/questionData';
 import { getQuestionDraft } from '$lib/server/questionDrafts';
-import { supportsLearnerPracticeInput } from '$lib/learning/practiceEligibility';
 import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
 import { withEnglishPracticeContext } from '$lib/englishPracticeNavigation';
 import { error, redirect } from '@sveltejs/kit';
@@ -11,6 +10,10 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	try {
 		practiceData = await getPracticePageData(params.questionId);
 	} catch {
+		const questionData = await getQuestionChainPageData(params.questionId).catch(() => null);
+		if (questionData && !questionData.question.practiceAvailable) {
+			throw redirect(303, `/questions/${encodeURIComponent(params.questionId)}`);
+		}
 		throw error(404, 'Practice question not found.');
 	}
 
@@ -22,17 +25,10 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		}
 	}
 
-	if (
-		locals.user &&
-		!supportsLearnerPracticeInput({
-			answerFormat: practiceData.question.answerFormat,
-			prompt: practiceData.question.prompt,
-			responseKind:
-				typeof practiceData.question.renderingOverlay?.responseInteraction?.kind === 'string'
-					? practiceData.question.renderingOverlay.responseInteraction.kind
-					: null
-		})
-	) {
+	if (!practiceData.question.practiceAvailable) {
+		if (!locals.user) {
+			throw redirect(303, `/questions/${encodeURIComponent(practiceData.question.id)}`);
+		}
 		const subject = learnerSubjectForQuestion({
 			subject: practiceData.question.meta.subject,
 			subjectArea: practiceData.question.meta.subjectArea,

@@ -13,6 +13,8 @@ import {
 	upsertStatement
 } from '../../../scripts/lib/chained-import-preservation.mjs';
 import {
+	deleteAllStalePracticePayloadsStatement,
+	deleteStaleQuestionPracticePayloadVersionsStatement,
 	deleteStalePracticePayloadsStatement,
 	invalidateQuestionPracticePayloadsStatement
 } from '../../../scripts/lib/public-route-materialization-scope.mjs';
@@ -727,6 +729,53 @@ describe('additive chained imports', () => {
 			{ id: 'practice:foreign-chain:keep' },
 			{ id: 'practice:owned-chain:keep' },
 			{ id: 'question-practice-page:question-practice-page-v3:other-question' }
+		]);
+		database.close();
+	});
+
+	it('full refresh cleanup removes stale routes from the complete practice namespace', () => {
+		const database = new DatabaseSync(':memory:');
+		database.exec(`
+			CREATE TABLE public_route_payloads (
+			  id TEXT PRIMARY KEY, route_kind TEXT NOT NULL, route_path TEXT NOT NULL
+			);
+			INSERT INTO public_route_payloads VALUES
+			  ('practice:kept-chain:kept-question', 'practice', '/practice/kept-chain/kept-question'),
+			  ('practice:ineligible-chain:stale-question', 'practice', '/practice/ineligible-chain/stale-question'),
+			  ('chains:browse', 'chains', '/chains');
+		`);
+		runStatement(
+			database,
+			deleteAllStalePracticePayloadsStatement(['practice:kept-chain:kept-question'])
+		);
+		expect(database.prepare('SELECT id FROM public_route_payloads ORDER BY id').all()).toEqual([
+			{ id: 'chains:browse' },
+			{ id: 'practice:kept-chain:kept-question' }
+		]);
+		database.close();
+	});
+
+	it('full refresh cleanup removes obsolete versioned question-page caches', () => {
+		const database = new DatabaseSync(':memory:');
+		database.exec(`
+			CREATE TABLE public_route_payloads (
+			  id TEXT PRIMARY KEY,
+			  route_kind TEXT NOT NULL,
+			  route_path TEXT NOT NULL,
+			  source_version TEXT
+			);
+			INSERT INTO public_route_payloads VALUES
+			  ('old', 'question-practice-page', '/questions/old/practice', 'question-practice-page-v11'),
+			  ('current', 'question-practice-page', '/questions/current/practice', 'question-practice-page-v13'),
+			  ('browse', 'chains', '/chains', 'anything');
+		`);
+		runStatement(
+			database,
+			deleteStaleQuestionPracticePayloadVersionsStatement('question-practice-page-v13')
+		);
+		expect(database.prepare('SELECT id FROM public_route_payloads ORDER BY id').all()).toEqual([
+			{ id: 'browse' },
+			{ id: 'current' }
 		]);
 		database.close();
 	});

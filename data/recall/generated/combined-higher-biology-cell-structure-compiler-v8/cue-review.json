@@ -1,0 +1,52 @@
+{
+  "reviews": [
+    {
+      "cardId": "bio-bacterial-genetic-material",
+      "accepted": true,
+      "reason": "🦠 represents the bacterial context already explicit in the front. It reveals nothing about DNA-loop number, nuclear enclosure, or plasmids and is neutral across all choices.",
+      "replacementCue": "🦠"
+    },
+    {
+      "cardId": "bio-bacterial-relative-size",
+      "accepted": true,
+      "reason": "🦠 marks the explicitly named bacterial-cell topic without conveying any size comparison, so it does not favor smaller, equal, or larger.",
+      "replacementCue": "🦠"
+    },
+    {
+      "cardId": "bio-animal-cell-main-parts",
+      "accepted": true,
+      "reason": "🦋 is a conventional animal landmark for the animal-cell context already stated. It does not identify any organelle or distinguish among the four lists.",
+      "replacementCue": "🦋"
+    },
+    {
+      "cardId": "bio-plant-cell-additional-parts",
+      "accepted": true,
+      "reason": "🌿 represents the plant context already explicit in the front. It does not itself specify chloroplasts, a vacuole, or any competing listed part.",
+      "replacementCue": "🌿"
+    },
+    {
+      "cardId": "bio-cellulose-cell-wall",
+      "accepted": false,
+      "reason": "📘 is an unnecessary neutral fallback. The stronger topical alternative 🌿 represents only the explicitly named plant context and remains neutral among cellulose, cell sap, cytoplasm, and cell membrane.",
+      "replacementCue": "🌿"
+    },
+    {
+      "cardId": "bio-light-microscope-required-practical",
+      "accepted": true,
+      "reason": "🔬 directly marks the light-microscope context already named. It reveals nothing about observing, drawing, labelling, cell selection, or including a scale.",
+      "replacementCue": "🔬"
+    },
+    {
+      "cardId": "bio-animal-plant-differentiation-timing",
+      "accepted": false,
+      "reason": "📘 is an unnecessary neutral fallback. The stronger topical alternative 🧫 safely marks the explicitly stated cell context without indicating early differentiation, lifelong ability, or which organism has either pattern; it is neutral across all choices.",
+      "replacementCue": "🧫"
+    },
+    {
+      "cardId": "bio-electron-microscope-finer-detail",
+      "accepted": true,
+      "reason": "🔬 represents the microscope comparison already explicit in the front. It conveys neither magnification nor resolving-power direction and cannot distinguish any choice.",
+      "replacementCue": "🔬"
+    }
+  ]
+}

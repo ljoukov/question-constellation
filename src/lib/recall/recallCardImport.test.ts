@@ -3,12 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
 	hashRecallArtifact,
 	hashRecallCardContent,
-	sha256
+	sha256,
+	stableStringify
 } from '../../../scripts/lib/recall-card-bundle.mjs';
 import {
 	buildRecallCardImportStatements,
 	canonicalSourceFileHash,
-	planRecallCardImport
+	planRecallCardImport,
+	recallStoredCardParentIssues
 } from '../../../scripts/lib/recall-card-import.mjs';
 
 describe('official source hash identity', () => {
@@ -36,6 +38,7 @@ describe('recall card D1 import plan', () => {
 			}
 		);
 		const statements = buildRecallCardImportStatements(bundle, plan);
+		expectEveryPlaceholderBound(statements);
 
 		expect(plan.counts).toEqual({ insert: 1, update: 0, noop: 0, conflicts: 0 });
 		const draftIndex = statements.findIndex((statement) =>
@@ -58,21 +61,10 @@ describe('recall card D1 import plan', () => {
 	it('is idempotent for an exact published artifact', () => {
 		const bundle = bundleFixture();
 		const artifactHash = hashRecallArtifact(bundle);
-		const card = bundle.cards[0];
 		const plan = planRecallCardImport(
 			bundle,
 			{
-				cards: [
-					{
-						id: card.id,
-						subject: card.subject,
-						concept_key: card.conceptKey,
-						content_revision: 4,
-						content_hash: card.contentHash,
-						status: 'published',
-						import_owner: 'recall-card-import/v1'
-					}
-				],
+				cards: [storedCardFixture(bundle, { content_revision: 4 })],
 				generationRun: {
 					id: bundle.run.id,
 					schema_version: bundle.schemaVersion,
@@ -99,21 +91,10 @@ describe('recall card D1 import plan', () => {
 		const bundle = bundleFixture();
 		const artifactHash = hashRecallArtifact(bundle);
 		const artifactPath = 'data/recall/generated/recall-test-compiler-v5/accepted-cards.json';
-		const card = bundle.cards[0];
 		const plan = planRecallCardImport(
 			bundle,
 			{
-				cards: [
-					{
-						id: card.id,
-						subject: card.subject,
-						concept_key: card.conceptKey,
-						content_revision: 4,
-						content_hash: card.contentHash,
-						status: 'published',
-						import_owner: 'recall-card-import/v1'
-					}
-				],
+				cards: [storedCardFixture(bundle, { content_revision: 4 })],
 				generationRun: {
 					id: bundle.run.id,
 					schema_version: bundle.schemaVersion,
@@ -199,13 +180,10 @@ describe('recall card D1 import plan', () => {
 		const existing = {
 			cards: [
 				{
-					id: card.id,
-					subject: card.subject,
-					concept_key: card.conceptKey,
+					...storedCardFixture(bundle),
 					content_revision: 7,
 					content_hash: 'f'.repeat(64),
-					status: 'published',
-					import_owner: 'recall-card-import/v1'
+					status: 'published'
 				}
 			]
 		};
@@ -222,22 +200,96 @@ describe('recall card D1 import plan', () => {
 			expect.objectContaining({
 				type: 'update',
 				contentRevision: 8,
-				expected: {
+				expected: expect.objectContaining({
 					contentHash: 'f'.repeat(64),
 					contentRevision: 7,
 					status: 'published'
-				}
+				})
 			})
 		);
 		const statements = buildRecallCardImportStatements(bundle, plan);
+		expectEveryPlaceholderBound(statements);
 		const update = statements.find((statement) => statement.sql.includes('UPDATE recall_cards'))!;
 		expect(update.sql).toContain('content_hash = ? AND content_revision = ? AND status = ?');
-		expect(update.params.slice(-3)).toEqual(['f'.repeat(64), 7, 'published']);
+		expect(update.sql).toContain(
+			'source_fingerprint = ? AND generation_run_id = ? AND provenance_json = ?'
+		);
+		expect(update.params.slice(-6)).toEqual([
+			'f'.repeat(64),
+			7,
+			'published',
+			bundle.source.fingerprint,
+			bundle.run.id,
+			stableStringify(card.provenance)
+		]);
 		for (const childInsert of statements.filter((statement) =>
 			statement.sql.includes('INSERT INTO recall_card_')
 		)) {
 			expect(childInsert.sql).toContain('WHERE EXISTS');
 		}
+	});
+
+	it('does not silently import a new run while identical cards retain old provenance', () => {
+		const bundle = bundleFixture();
+		const card = bundle.cards[0];
+		const oldProvenance = {
+			...card.provenance,
+			generationRunId: 'older-recall-run-compiler-v5',
+			generatedAt: '2026-07-14T10:01:00.000Z'
+		};
+		const existing = {
+			cards: [
+				storedCardFixture(bundle, {
+					generation_run_id: oldProvenance.generationRunId,
+					provenance_json: stableStringify(oldProvenance)
+				})
+			]
+		};
+		const options = {
+			artifactHash: hashRecallArtifact(bundle),
+			artifactPath: 'data/recall/generated/recall-test-compiler-v5/accepted-cards.json'
+		};
+
+		const blocked = planRecallCardImport(bundle, existing, options);
+		expect(blocked.counts).toEqual({ insert: 0, update: 0, noop: 0, conflicts: 1 });
+		expect(blocked.conflicts[0].reason).toMatch(/different source\/run provenance/);
+
+		const rebind = planRecallCardImport(bundle, existing, { ...options, allowUpdate: true });
+		expect(rebind.counts).toEqual({ insert: 0, update: 1, noop: 0, conflicts: 0 });
+		expect(rebind.actions[0]).toEqual(
+			expect.objectContaining({ type: 'update', contentRevision: 1 })
+		);
+		const statements = buildRecallCardImportStatements(bundle, rebind);
+		expectEveryPlaceholderBound(statements);
+		const finalization = statements.at(-1)!;
+		expect(finalization.sql).toContain('generation_run_id = ? AND provenance_json = ?');
+		expect(finalization.params).toEqual(
+			expect.arrayContaining([
+				bundle.run.id,
+				bundle.source.fingerprint,
+				stableStringify(card.provenance)
+			])
+		);
+	});
+
+	it('post-write parent verification compares run, source and canonical provenance', () => {
+		const bundle = bundleFixture();
+		const exact = storedCardFixture(bundle, {
+			provenance_json: JSON.stringify(bundle.cards[0].provenance, null, 2)
+		});
+		expect(recallStoredCardParentIssues(bundle, [exact])).toEqual([]);
+
+		const drifted = {
+			...exact,
+			source_fingerprint: 'e'.repeat(64),
+			generation_run_id: 'other-run-compiler-v5',
+			provenance_json: stableStringify({ ...bundle.cards[0].provenance, generatedAt: 'later' })
+		};
+		expect(recallStoredCardParentIssues(bundle, [drifted])).toEqual([
+			`${drifted.id} source fingerprint differs`,
+			`${drifted.id} generation run differs`,
+			`${drifted.id} provenance differs`
+		]);
 	});
 
 	it('refuses foreign ownership and stable concept identity drift', () => {
@@ -385,4 +437,27 @@ function bundleFixture() {
 		},
 		cards: [card]
 	};
+}
+
+function storedCardFixture(bundle: ReturnType<typeof bundleFixture>, overrides = {}) {
+	const card = bundle.cards[0];
+	return {
+		id: card.id,
+		subject: card.subject,
+		concept_key: card.conceptKey,
+		content_revision: 1,
+		content_hash: card.contentHash,
+		source_fingerprint: bundle.source.fingerprint,
+		generation_run_id: bundle.run.id,
+		provenance_json: stableStringify(card.provenance),
+		status: 'published',
+		import_owner: 'recall-card-import/v1',
+		...overrides
+	};
+}
+
+function expectEveryPlaceholderBound(statements: Array<{ sql: string; params: unknown[] }>) {
+	for (const statement of statements) {
+		expect(statement.params).toHaveLength(statement.sql.match(/\?/g)?.length ?? 0);
+	}
 }

@@ -1,0 +1,667 @@
+{
+  "schemaVersion": "recall-card-bundle-v2",
+  "promptVersion": "recall-card-compiler-v7",
+  "run": {
+    "id": "combined-biology-diffusion-canary-compiler-v7",
+    "startedAt": "2026-07-16T04:20:22.320Z",
+    "finishedAt": "2026-07-16T04:25:05.278Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": false
+    }
+  },
+  "source": {
+    "catalogSchemaVersion": "1",
+    "catalogPath": "data/curricula/curriculum-catalog.json",
+    "fingerprint": "4b76ec26ca63147e514cdc26db49e6f56fd0fc468835d999b21be0a9a759c99a",
+    "specification": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Combined Science: Trilogy",
+      "course": "Combined Science",
+      "specificationCode": "8464",
+      "version": "1.1",
+      "title": "AQA GCSE Combined Science: Trilogy (8464)",
+      "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+      "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+      "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+      "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+    },
+    "component": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3",
+      "code": "4.1.3.1",
+      "title": "Diffusion",
+      "kind": "topic",
+      "subjectArea": "Biology",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 25,
+      "sourcePageEnd": 25
+    },
+    "topicComponent": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4",
+      "code": "4.1",
+      "title": "Cell biology",
+      "kind": "chapter",
+      "subjectArea": "Biology",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 20,
+      "sourcePageEnd": 25
+    },
+    "pageStart": 25,
+    "pageEnd": 25
+  },
+  "cards": [
+    {
+      "id": "bio-diffusion-definition",
+      "conceptKey": "diffusion-definition",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "What happens to particles during diffusion?",
+      "back": "Particles spread out, with net movement from higher to lower concentration.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This definition applies to particles of substances in solution and to particles of a gas.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-diffusion-definition:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Particles spread out, with net movement from higher to lower concentration.",
+          "isCorrect": true,
+          "feedback": "Diffusion is defined as spreading out with net movement from higher to lower concentration.",
+          "misconception": null
+        },
+        {
+          "id": "bio-diffusion-definition:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Particles spread out, with net movement from lower to higher concentration.",
+          "isCorrect": false,
+          "feedback": "The stated net movement is from higher to lower concentration, not the reverse.",
+          "misconception": "Reverses the specified direction of net movement."
+        },
+        {
+          "id": "bio-diffusion-definition:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Particles gather, with net movement from higher to lower concentration.",
+          "isCorrect": false,
+          "feedback": "The passage defines diffusion as particles spreading out, not gathering.",
+          "misconception": "Replaces spreading out with gathering."
+        },
+        {
+          "id": "bio-diffusion-definition:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Particles spread out, with no net movement between concentrations.",
+          "isCorrect": false,
+          "feedback": "The definition explicitly includes net movement from higher to lower concentration.",
+          "misconception": "Leaves out the net movement that is part of the definition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-diffusion-definition:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "pageStart": 25,
+          "pageEnd": 25,
+          "sourceExcerpt": "Diffusion is the spreading out of the particles of any substance in solution, or particles of a gas, resulting in a net movement from an area of higher concentration to an area of lower concentration.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "fea66babd4bb50c78def805c078e9f59f6959084c7fe875e76565542023a86e1",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "77031ba232b6ec19032791831f7bbcab500a818be7c2046e829fb4f57bb576ed",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v7",
+        "generationRunId": "combined-biology-diffusion-canary-compiler-v7",
+        "generatedAt": "2026-07-16T04:25:05.278Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-diffusion-definition",
+          "accepted": true,
+          "reason": "The card tests one specification-defined concept; its answer, explanation, distractors, and feedback are concise and fully supported by the quoted definition of diffusion.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-diffusion-definition",
+          "accepted": true,
+          "reason": "No approved icon directly depicts particles or diffusion without introducing an unstated medium such as a solution or gas. The neutral fallback adds no answer-selecting information.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "bio-urea-diffusion-route",
+      "conceptKey": "urea-diffusion-route",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "process",
+      "visualCue": "📘",
+      "front": "Which route does urea take by diffusion before excretion in the kidney?",
+      "back": "From cells into the blood plasma.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Blood plasma is the diffusion destination, while the kidney is the excretion site.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-urea-diffusion-route:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "From cells into the blood plasma.",
+          "isCorrect": true,
+          "feedback": "Urea is stated to move from cells into blood plasma for excretion in the kidney.",
+          "misconception": null
+        },
+        {
+          "id": "bio-urea-diffusion-route:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "From the blood plasma into cells.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated movement: urea moves from cells into blood plasma.",
+          "misconception": "Reverses the direction between cells and blood plasma."
+        },
+        {
+          "id": "bio-urea-diffusion-route:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "From cells directly into the kidney.",
+          "isCorrect": false,
+          "feedback": "Blood plasma is the stated destination from cells; the kidney is where excretion occurs.",
+          "misconception": "Treats the kidney as the immediate diffusion destination."
+        },
+        {
+          "id": "bio-urea-diffusion-route:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "From the kidney into the blood plasma.",
+          "isCorrect": false,
+          "feedback": "Urea is described as coming from cells, not the kidney, before entering blood plasma.",
+          "misconception": "Treats the kidney as the source of urea entering blood plasma."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-urea-diffusion-route:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "pageStart": 25,
+          "pageEnd": 25,
+          "sourceExcerpt": "Some of the substances transported in and out of cells by diffusion are oxygen and carbon dioxide in gas exchange, and of the waste product urea from cells into the blood plasma for excretion in the kidney.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "9981e24d2df0a72268aa048951b4c0cf8fb0f94db47893849eab4d623bb7390b",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "e58d6a6e2515c67f9a4e8927bd5058a0a67a40481999651e4190452948624c37",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v7",
+        "generationRunId": "combined-biology-diffusion-canary-compiler-v7",
+        "generatedAt": "2026-07-16T04:25:05.278Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-urea-diffusion-route",
+          "accepted": true,
+          "reason": "The card accurately tests the specified route of urea from cells into blood plasma, with distinct route misconceptions and source-grounded feedback.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-urea-diffusion-route",
+          "accepted": true,
+          "reason": "No approved icon safely depicts urea or the kidney. A blood-, fluid-, or laboratory-associated cue could bias the learner toward routes involving blood plasma, so the neutral fallback is appropriate.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "bio-concentration-gradient-term",
+      "conceptKey": "concentration-gradient-term",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "What term means the difference in concentrations when discussing diffusion rate?",
+      "back": "The concentration gradient.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "It is one of three listed rate factors, alongside temperature and membrane surface area.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-concentration-gradient-term:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "The concentration gradient.",
+          "isCorrect": true,
+          "feedback": "The specification places concentration gradient after the difference in concentrations.",
+          "misconception": null
+        },
+        {
+          "id": "bio-concentration-gradient-term:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "The temperature.",
+          "isCorrect": false,
+          "feedback": "Temperature is a separate factor affecting diffusion rate, not the term for a concentration difference.",
+          "misconception": "Confuses a separate rate factor with the concentration difference."
+        },
+        {
+          "id": "bio-concentration-gradient-term:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "The surface area of the membrane.",
+          "isCorrect": false,
+          "feedback": "Membrane surface area is another rate factor, not the name of a concentration difference.",
+          "misconception": "Confuses membrane area with the concentration difference."
+        },
+        {
+          "id": "bio-concentration-gradient-term:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "The rate of diffusion.",
+          "isCorrect": false,
+          "feedback": "The rate of diffusion is what the listed factors affect, not the term for the concentration difference.",
+          "misconception": "Confuses the affected rate with one of the factors affecting it."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-concentration-gradient-term:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "pageStart": 25,
+          "pageEnd": 25,
+          "sourceExcerpt": "Students should be able to explain how different factors affect the rate of diffusion. Factors which affect the rate of diffusion are: • the difference in concentrations (concentration gradient) • the temperature • the surface area of the membrane.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "399ee8a3dbafe1e35641fbe7bae97b3e420f1a4baefcd845f9bfeedb1ed2669a",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "ad3e07da901f076c731b11cc800565e3cbeeaec5b83af139daf395f5c04f32d2",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v7",
+        "generationRunId": "combined-biology-diffusion-canary-compiler-v7",
+        "generatedAt": "2026-07-16T04:25:05.278Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-concentration-gradient-term",
+          "accepted": true,
+          "reason": "The card cleanly tests the specification term for a difference in concentrations; the alternatives distinguish other diffusion-rate factors from the affected rate itself.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-concentration-gradient-term",
+          "accepted": true,
+          "reason": "No approved icon directly depicts the difference in concentrations without creating an association that could help recall the hidden term or favor it over the distractors. The neutral fallback is correct.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "bio-exchange-surface-short-diffusion-path",
+      "conceptKey": "exchange-surface-short-diffusion-path",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "📘",
+      "front": "Which exchange-surface adaptation provides a short diffusion path?",
+      "back": "Having a thin membrane.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Large surface area, animal blood supply and animal gaseous-exchange ventilation are listed as separate adaptations.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "id": "bio-exchange-surface-short-diffusion-path:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Having a thin membrane.",
+          "isCorrect": true,
+          "feedback": "A thin membrane is explicitly linked to providing a short diffusion path.",
+          "misconception": null
+        },
+        {
+          "id": "bio-exchange-surface-short-diffusion-path:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Having a large surface area.",
+          "isCorrect": false,
+          "feedback": "Large surface area increases effectiveness, but the short diffusion path is linked to a thin membrane.",
+          "misconception": "Confuses greater exchange area with a shorter diffusion path."
+        },
+        {
+          "id": "bio-exchange-surface-short-diffusion-path:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Having an efficient blood supply.",
+          "isCorrect": false,
+          "feedback": "Efficient blood supply is listed for animals, while a thin membrane provides the short path.",
+          "misconception": "Confuses an animal blood-supply adaptation with membrane thinness."
+        },
+        {
+          "id": "bio-exchange-surface-short-diffusion-path:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Being ventilated for gas exchange.",
+          "isCorrect": false,
+          "feedback": "Ventilation is listed for animal gaseous exchange, while a thin membrane provides the short path.",
+          "misconception": "Confuses ventilation with the membrane feature that shortens the path."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-exchange-surface-short-diffusion-path:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "pageStart": 25,
+          "pageEnd": 25,
+          "sourceExcerpt": "The effectiveness of an exchange surface is increased by: • having a large surface area • a membrane that is thin, to provide a short diffusion path • (in animals) having an efficient blood supply • (in animals, for gaseous exchange) being ventilated.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "f5fdbd6ebf85e4f0d4b236f805e04417fbfa62018cec132d9f74ce27ad9df442",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "5acea8e46bfc7c0ea5fd14afcbdf3a9d7474d8c7e1c78042f51c6ec9e5319715",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v7",
+        "generationRunId": "combined-biology-diffusion-canary-compiler-v7",
+        "generatedAt": "2026-07-16T04:25:05.278Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "bio-exchange-surface-short-diffusion-path",
+          "accepted": true,
+          "reason": "The card precisely links a thin membrane to a short diffusion path and uses the other listed exchange-surface adaptations as distinct, diagnostic distractors.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-exchange-surface-short-diffusion-path",
+          "accepted": true,
+          "reason": "Available organ or gas-exchange icons would add an animal or respiratory context absent from the front and could affect distractor selection. No safer approved icon depicts the stated exchange surface or path, so the neutral fallback is appropriate.",
+          "replacementCue": "📘"
+        }
+      }
+    }
+  ],
+  "companionArtifacts": {
+    "schemaVersion": "recall-companion-artifacts-v1",
+    "sha256ByFile": {
+      "plan.json": "5fe8db808d8f5bda480c02e8fed47d6d63cdf3842a35a213d5ca2f0a1c79341f",
+      "source-evidence.json": "11667b2fbeb583d14980099b369641c65db867743d90913dcd21298f80a6ef8e",
+      "generation-prompt.txt": "e05b855945fb1fc9a02df6a186fbda6db57cd0e67077058d52fd18858a8583ee",
+      "generation-model-output.json": "be740de9c56b79fc5b7c6dfc982b98b6647af7dcf9420bd044cba4827f188b0c",
+      "candidate-cards.json": "cc05d418ac44df6049a492be341bf7bd83097836cf27083dc4dae491d84774c5",
+      "full-review-prompt.txt": "f755d92617626b3c699c2c8d62e4fccf1d834b286b70041095aaf4ce21039788",
+      "full-review-model-output.json": "65e97fdca608fde43c1c287d2090f9b0b15e3179541927e6be6dec01069e0e82",
+      "full-review.json": "16379cc353c0fbbfa4c1a4a1a846cf5bfcf1e65d4c19a64bb8ddf496259a23a0",
+      "cue-review-prompt.txt": "8fe74a7fff1901c9428787f11c8d641cacd03b210d6bbd2711b3e292a62454ad",
+      "cue-review-model-output.json": "8186fd8272cca4be39969988b33ec6205bc0f0be9564eeaa5fc7e8d752646efb",
+      "cue-review.json": "6303c4b613735be497f62bb0186f569e7f4e8bc047ef4537c16e4bac1f4c28a6"
+    }
+  }
+}

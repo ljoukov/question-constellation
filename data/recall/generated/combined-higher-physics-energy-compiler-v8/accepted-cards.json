@@ -1,0 +1,1179 @@
+{
+  "schemaVersion": "recall-card-bundle-v2",
+  "promptVersion": "recall-card-compiler-v8",
+  "run": {
+    "id": "combined-higher-physics-energy-compiler-v8",
+    "startedAt": "2026-07-16T06:29:56.962Z",
+    "finishedAt": "2026-07-16T06:49:39.316Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": false
+    }
+  },
+  "companionArtifacts": {
+    "schemaVersion": "recall-companion-artifacts-v1",
+    "sha256ByFile": {
+      "plan.json": "081364c6aea2bc5da843dc8cbc32c23c0986efbeed1fc6f219dcdb28a3c70605",
+      "source-evidence.json": "807754cc1bb8b1f31df991acef6a398c3ff632fe74d7636f9de0b0e6d5cf1edb",
+      "generation-prompt.txt": "1c4ddc3cb2c609eaa948a0e50652c1459d7798027ad0f10f5d9e0888094f9fd6",
+      "generation-model-output.json": "edaa150a7f2fd8802d7110d81c03e099fa1baf612b95359316f43cbcfc781c80",
+      "candidate-cards.json": "ac184f71cbf8d03672e07802b5e0424659057c9f1c638c049bf68f565c403aa6",
+      "full-review-prompt.txt": "99330b6dc13491510432d030dfd75d49a74221273771ab3441494863b4548301",
+      "full-review-model-output.json": "024652d0784ece9393474b8947fbaf7eeb3117d183b062968993708c98fe027c",
+      "full-review.json": "a92c476bb2fbdb7e8cf80423f4a77cf71be826c62370825dbc6004b70b0506dc",
+      "cue-review-prompt.txt": "f73a2329841564373a8f63cb5d9b2a78eef99f44fa5758da912b5ad218ac5387",
+      "cue-review-model-output.json": "eb683c0f86976831a6a80de7bb6ad46242ab05e56adf769e394c8c021c5a5d5a",
+      "cue-review.json": "90a6fbd2ce191c67b517b76f43f5fdfc99a0220d0da39740efe3e4afdff884c2"
+    }
+  },
+  "source": {
+    "catalogSchemaVersion": "1",
+    "catalogPath": "data/curricula/curriculum-catalog.json",
+    "fingerprint": "fd5bda3ad7a773cfa0ed2a710e0213e6e366da4d3f84d99a6c75bc6117ed07c4",
+    "specification": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Combined Science: Trilogy",
+      "course": "Combined Science",
+      "specificationCode": "8464",
+      "version": "1.1",
+      "title": "AQA GCSE Combined Science: Trilogy (8464)",
+      "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+      "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+      "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+      "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+    },
+    "component": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+      "code": "6.1.1",
+      "title": "Energy changes in a system, and the ways energy is stored before and after such changes",
+      "kind": "section",
+      "subjectArea": "Physics",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 122,
+      "sourcePageEnd": 124
+    },
+    "topicComponent": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6",
+      "code": "6.1",
+      "title": "Energy",
+      "kind": "chapter",
+      "subjectArea": "Physics",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 121,
+      "sourcePageEnd": 126
+    },
+    "pageStart": 122,
+    "pageEnd": 124
+  },
+  "cards": [
+    {
+      "id": "phys-energy-system-definition",
+      "conceptKey": "energy-system-definition",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "definition",
+      "visualCue": "⚡",
+      "front": "In this energy topic, what is a system?",
+      "back": "An object or group of objects",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A system need not contain several objects; one object is enough.",
+      "memoryTip": "One object → system; grouped objects → system.",
+      "choices": [
+        {
+          "id": "phys-energy-system-definition:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Only one object",
+          "isCorrect": false,
+          "feedback": "A system can also be a group of objects.",
+          "misconception": "Restricts a system to a single object"
+        },
+        {
+          "id": "phys-energy-system-definition:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "An object or group of objects",
+          "isCorrect": true,
+          "feedback": "The definition allows one object or a group of objects.",
+          "misconception": null
+        },
+        {
+          "id": "phys-energy-system-definition:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Only a group of objects",
+          "isCorrect": false,
+          "feedback": "A single object can also be a system.",
+          "misconception": "Assumes a system must contain multiple objects"
+        },
+        {
+          "id": "phys-energy-system-definition:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "A change in the way energy is stored",
+          "isCorrect": false,
+          "feedback": "Energy storage can change when a system changes, but that change is not the system itself.",
+          "misconception": "Confuses a system with a change in its energy storage"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-energy-system-definition:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "A system is an object or group of objects. There are changes in the way energy is stored when a system changes.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "ae5e550b34813130461dc0ccb75e8ea4be3abbd5aa64c689e648ddd377db1dc1",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "ecfffe0f3caa601c0b77218e205c837d95b3fc5b735ecf991e74d0b533d8c666",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-energy-system-definition",
+          "accepted": true,
+          "reason": "The definition and all corrections follow the stated definition of a system; the alternatives diagnose single-object, multiple-object, and energy-change confusions.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-energy-system-definition",
+          "accepted": true,
+          "reason": "⚡ marks the energy topic already explicit in the front and gives no clue about whether a system is one object, several objects, or an energy-storage change.",
+          "replacementCue": "⚡"
+        }
+      }
+    },
+    {
+      "id": "phys-system-energy-change-processes",
+      "conceptKey": "system-energy-change-processes",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "process",
+      "visualCue": "🔀",
+      "front": "Which three processes are used to calculate energy changes when a system changes?",
+      "back": "Heating; work done by forces; work done when a current flows",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Heating is separate from the two work routes: forces and current flow.",
+      "memoryTip": "Heating | force-work | current-flow work.",
+      "choices": [
+        {
+          "id": "phys-system-energy-change-processes:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "An object projected upwards; a vehicle slowing down; bringing water to a boil",
+          "isCorrect": false,
+          "feedback": "These are example situations, not the three listed processes used in calculations.",
+          "misconception": "Confuses common situations with general energy-change processes"
+        },
+        {
+          "id": "phys-system-energy-change-processes:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Heating; forces acting; a current flowing",
+          "isCorrect": false,
+          "feedback": "The list specifies work done by forces and work done when a current flows.",
+          "misconception": "Drops work done from both non-heating routes"
+        },
+        {
+          "id": "phys-system-energy-change-processes:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Heating; work done by forces; a change in stored energy",
+          "isCorrect": false,
+          "feedback": "A storage change is calculated, not used as the third process; that process is current-flow work.",
+          "misconception": "Treats an energy-storage change as a process and omits current-flow work"
+        },
+        {
+          "id": "phys-system-energy-change-processes:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Heating; work done by forces; work done when a current flows",
+          "isCorrect": true,
+          "feedback": "These are the three listed ways used in the energy-change calculations.",
+          "misconception": null
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-system-energy-change-processes:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "Students should be able to describe all the changes involved in the way energy is stored when a system changes, for common situations. For example: • an object projected upwards • a moving object hitting an obstacle • an object accelerated by a constant force • a vehicle slowing down • bringing water to a boil in an electric kettle. Throughout this section on Energy students should be able to calculate the changes in energy involved when a system is changed by: • heating • work done by forces • work done when a current flows",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "783e13da003e905d50473127be160d75aade6ff91c4ca84238687f62325a1c8f",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "87c2bc21743f56ab8b5644f55b321622ebb904e629fe3d8db176e25b95750cf7",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-system-energy-change-processes",
+          "accepted": true,
+          "reason": "The answer reproduces the three specified processes, while the alternatives distinguish example situations, omitted work, and an energy-storage outcome.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-system-energy-change-processes",
+          "accepted": true,
+          "reason": "🔀 represents the multiple processes/system changes already stated in the front without identifying heating, force-work, current-flow work, or distinguishing any choice.",
+          "replacementCue": "🔀"
+        }
+      }
+    },
+    {
+      "id": "phys-kinetic-energy-formula",
+      "conceptKey": "kinetic-energy-formula",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "formula",
+      "visualCue": "🏃",
+      "front": "What equation calculates kinetic energy from mass and speed?",
+      "back": "Eₖ = ½mv²",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Speed is squared, whereas mass appears only once.",
+      "memoryTip": "Mass once, speed twice: m × v × v, then halve.",
+      "choices": [
+        {
+          "id": "phys-kinetic-energy-formula:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Eₖ = mv²",
+          "isCorrect": false,
+          "feedback": "The stated equation includes a factor of 0.5 (½).",
+          "misconception": "Omits the factor of one-half"
+        },
+        {
+          "id": "phys-kinetic-energy-formula:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Eₖ = ½mv²",
+          "isCorrect": true,
+          "feedback": "This includes the factor ½ and squares speed.",
+          "misconception": null
+        },
+        {
+          "id": "phys-kinetic-energy-formula:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Eₖ = ½mv",
+          "isCorrect": false,
+          "feedback": "Speed is squared in the stated equation.",
+          "misconception": "Uses speed rather than speed squared"
+        },
+        {
+          "id": "phys-kinetic-energy-formula:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Eₖ = ½m²v",
+          "isCorrect": false,
+          "feedback": "Mass is not squared; speed is the squared term.",
+          "misconception": "Squares mass instead of speed"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-kinetic-energy-formula:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "kinetic energy = 0.5 × mass × speed 2 Ek = 1 2 m v2",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "ef25b3899332e7480dcccb9bbc3c36f7c55ceab47f1e7ccdb6e1330aec5f3ce5",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "a1e475a3b88686a8ba3c9ed8f4b84499154a2077b072397dd298cc61e92aef3a",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-kinetic-energy-formula",
+          "accepted": true,
+          "reason": "The equation is exact, and the alternatives cleanly test omission of one-half, failure to square speed, and squaring the wrong variable.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-kinetic-energy-formula",
+          "accepted": true,
+          "reason": "🏃 marks the explicitly named kinetic-energy and speed context but reveals neither the factor ½ nor which variable is squared.",
+          "replacementCue": "🏃"
+        }
+      }
+    },
+    {
+      "id": "phys-elastic-potential-energy-formula",
+      "conceptKey": "elastic-potential-energy-formula",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "formula",
+      "visualCue": "🔗",
+      "front": "What equation calculates elastic potential energy from spring constant and extension?",
+      "back": "Eₑ = ½ke²",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This equation assumes the limit of proportionality has not been exceeded.",
+      "memoryTip": "Spring constant once, extension twice: k × e × e, then halve.",
+      "choices": [
+        {
+          "id": "phys-elastic-potential-energy-formula:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Eₑ = ke²",
+          "isCorrect": false,
+          "feedback": "The stated equation includes a factor of 0.5 (½).",
+          "misconception": "Omits the factor of one-half"
+        },
+        {
+          "id": "phys-elastic-potential-energy-formula:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Eₑ = ½ke",
+          "isCorrect": false,
+          "feedback": "Extension is squared in the stated equation.",
+          "misconception": "Uses extension rather than extension squared"
+        },
+        {
+          "id": "phys-elastic-potential-energy-formula:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Eₑ = ½ke²",
+          "isCorrect": true,
+          "feedback": "The formula includes both the factor ½ and extension squared.",
+          "misconception": null
+        },
+        {
+          "id": "phys-elastic-potential-energy-formula:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Eₑ = ½k²e",
+          "isCorrect": false,
+          "feedback": "Extension, not spring constant, is squared.",
+          "misconception": "Squares spring constant instead of extension"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-elastic-potential-energy-formula:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "elastic potential energy = 0.5 × spring constant × extension 2 Ee = 1 2 k e2 (assuming the limit of proportionality has not been exceeded)",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "5f0225437759b0922c04113832694f8eda82b88659cdf740dbb3cf830727c895",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "eca264ffb4118f56009b09b74db386507198b6f3fc74d75971631fed165a78a7",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-elastic-potential-energy-formula",
+          "accepted": true,
+          "reason": "The equation and proportionality-limit qualification match the specification; each alternative represents a distinct formula error.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-elastic-potential-energy-formula",
+          "accepted": true,
+          "reason": "🔗 is a conventional elastic/linkage landmark for the spring-and-extension context already explicit in the front; it gives no information about the factor ½ or squared variable.",
+          "replacementCue": "🔗"
+        }
+      }
+    },
+    {
+      "id": "phys-gravitational-potential-energy-formula",
+      "conceptKey": "gravitational-potential-energy-formula",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "formula",
+      "visualCue": "🌌",
+      "front": "What equation calculates gravitational potential energy from mass, field strength and height?",
+      "back": "Eₚ = mgh",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Each factor is multiplied once, with no squared term or factor ½.",
+      "memoryTip": "GPE trio: mass × g × height.",
+      "choices": [
+        {
+          "id": "phys-gravitational-potential-energy-formula:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Eₚ = mgh",
+          "isCorrect": true,
+          "feedback": "Mass, gravitational field strength and height are multiplied.",
+          "misconception": null
+        },
+        {
+          "id": "phys-gravitational-potential-energy-formula:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Eₚ = mgh²",
+          "isCorrect": false,
+          "feedback": "Height appears once in the stated equation, not squared.",
+          "misconception": "Incorrectly squares height"
+        },
+        {
+          "id": "phys-gravitational-potential-energy-formula:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Eₚ = ½mgh",
+          "isCorrect": false,
+          "feedback": "No factor ½ appears in the stated equation.",
+          "misconception": "Adds an unsupported factor of one-half"
+        },
+        {
+          "id": "phys-gravitational-potential-energy-formula:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Eₚ = mg/h",
+          "isCorrect": false,
+          "feedback": "Height is multiplied rather than used as a divisor.",
+          "misconception": "Inverts the role of height"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-gravitational-potential-energy-formula:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "g . p . e . = mass × gravitational f ield strength × height Ep = m g h gravitational potential energy, Ep, in joules, J",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "0472852ca38f7a5030589e83a945fb44ea04ac52f62c59a7fda6ad361f373211",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "879a06b6074d26e75ac21a18d6ec002f6b14473e7378b68b6d3fba7de0d41c6b",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-gravitational-potential-energy-formula",
+          "accepted": true,
+          "reason": "The stated equation exactly matches Ep = mgh, with distinct alternatives testing a squared height, an added half, and division by height.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-gravitational-potential-energy-formula",
+          "accepted": true,
+          "reason": "🌌 marks the explicitly named gravitational context without revealing multiplication, division, a squared term, or a factor ½.",
+          "replacementCue": "🌌"
+        }
+      }
+    },
+    {
+      "id": "phys-thermal-energy-change-formula",
+      "conceptKey": "thermal-energy-change-formula",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "formula",
+      "visualCue": "🌡️",
+      "front": "What equation calculates the change in thermal energy from a temperature change?",
+      "back": "∆E = mc∆θ",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The temperature term is the change, ∆θ, rather than temperature alone.",
+      "memoryTip": "Thermal-change trio: mass × specific heat capacity × temperature change.",
+      "choices": [
+        {
+          "id": "phys-thermal-energy-change-formula:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "∆E = mcθ",
+          "isCorrect": false,
+          "feedback": "The stated temperature term is ∆θ, the temperature change.",
+          "misconception": "Uses temperature instead of temperature change"
+        },
+        {
+          "id": "phys-thermal-energy-change-formula:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "∆E = m∆θ/c",
+          "isCorrect": false,
+          "feedback": "Specific heat capacity is multiplied, not used as a divisor.",
+          "misconception": "Treats specific heat capacity as a divisor"
+        },
+        {
+          "id": "phys-thermal-energy-change-formula:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "∆E = c∆θ/m",
+          "isCorrect": false,
+          "feedback": "Mass is multiplied, not used as a divisor.",
+          "misconception": "Treats mass as a divisor"
+        },
+        {
+          "id": "phys-thermal-energy-change-formula:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "∆E = mc∆θ",
+          "isCorrect": true,
+          "feedback": "The stated equation multiplies mass, specific heat capacity and temperature change.",
+          "misconception": null
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-thermal-energy-change-formula:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "change in thermal energy = mass × speci f ic heat capacity × temperature change ∆ E = m c ∆ θ change in thermal energy, ∆E, in joules, J mass, m, in kilograms, kg specific heat capacity, c, in joules per kilogram per degree Celsius, J/kg °C temperature change, ∆θ, in degrees Celsius, °C",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "09abb1e153cf893eab6bade550ba18cdea39d3aeca1a29ac37ceaa4dfd066416",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "5e6a0ab78f460304c499191019afc8f0cb8426053e24cfab97c11b6b1b280bf5",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-thermal-energy-change-formula",
+          "accepted": true,
+          "reason": "The answer exactly gives ΔE = mcΔθ, and the alternatives diagnose temperature-versus-temperature-change and incorrect division by c or m.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-thermal-energy-change-formula",
+          "accepted": true,
+          "reason": "🌡️ represents the temperature-change context already explicit in the front and does not reveal the variables' relationship or distinguish any equation choice.",
+          "replacementCue": "🌡️"
+        }
+      }
+    },
+    {
+      "id": "phys-specific-heat-capacity-definition",
+      "conceptKey": "specific-heat-capacity-definition",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "definition",
+      "visualCue": "📘",
+      "front": "What is the specific heat capacity of a substance?",
+      "back": "The energy needed to raise the temperature of 1 kg of it by 1 °C",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Both reference amounts are fixed: one kilogram and a rise of one degree Celsius.",
+      "memoryTip": "1 kg → +1 °C: ask how much energy is required.",
+      "choices": [
+        {
+          "id": "phys-specific-heat-capacity-definition:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "The energy needed to raise the temperature of any mass of it by 1 °C",
+          "isCorrect": false,
+          "feedback": "The definition specifies one kilogram, not an unspecified mass.",
+          "misconception": "Omits the fixed one-kilogram mass"
+        },
+        {
+          "id": "phys-specific-heat-capacity-definition:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "The energy needed to raise the temperature of 1 kg of it by 1 °C",
+          "isCorrect": true,
+          "feedback": "Both reference quantities match the definition: one kilogram and one degree Celsius.",
+          "misconception": null
+        },
+        {
+          "id": "phys-specific-heat-capacity-definition:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "The energy needed to raise the temperature of 1 kg of it by any number of degrees Celsius",
+          "isCorrect": false,
+          "feedback": "The definition specifies a rise of one degree Celsius.",
+          "misconception": "Omits the fixed one-degree-Celsius rise"
+        },
+        {
+          "id": "phys-specific-heat-capacity-definition:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "The temperature rise produced when energy is supplied to 1 kg of it",
+          "isCorrect": false,
+          "feedback": "The definition gives the required energy for a fixed rise, not the rise produced by unspecified energy.",
+          "misconception": "Reverses required energy and resulting temperature rise"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-specific-heat-capacity-definition:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "The specific heat capacity of a substance is the amount of energy required to raise the temperature of one kilogram of the substance by one degree Celsius.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "2d1faa35f4ec79cc44584f43b3d0e037706821a55c29baff315794f4a4f13f50",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "0796d4e6e311437c7ac280dda26e3b590bece2562ab7fb80c00ffe290e3b9673",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-specific-heat-capacity-definition",
+          "accepted": true,
+          "reason": "The answer preserves both defining reference quantities, and the alternatives separately test omission or reversal of those quantities.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-specific-heat-capacity-definition",
+          "accepted": true,
+          "reason": "📘 is the correct neutral fallback. The strongest topical alternative, 🌡️, would introduce temperature—the hidden definition content absent from the front—even though temperature appears across the choices; energy-themed alternatives would likewise introduce required-energy content.",
+          "replacementCue": "📘"
+        }
+      }
+    },
+    {
+      "id": "phys-specific-heat-capacity-practical",
+      "conceptKey": "specific-heat-capacity-practical-purpose",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "kind": "practical",
+      "visualCue": "⚙️",
+      "front": "What does required practical activity 14 determine?",
+      "back": "The specific heat capacity of one or more materials",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "It links a store decrease or work done to a temperature rise, followed by increased thermal energy stored.",
+      "memoryTip": "Store decrease/work done → temperature rises → thermal energy stored rises.",
+      "choices": [
+        {
+          "id": "phys-specific-heat-capacity-practical:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "The decrease of one energy store or the work done",
+          "isCorrect": false,
+          "feedback": "These are linked to the temperature increase; they are not the stated target.",
+          "misconception": "Mistakes a linked starting quantity for the investigation's target"
+        },
+        {
+          "id": "phys-specific-heat-capacity-practical:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "The increase in temperature",
+          "isCorrect": false,
+          "feedback": "Temperature increase is part of the link, while specific heat capacity is the quantity determined.",
+          "misconception": "Mistakes the linked temperature increase for the target quantity"
+        },
+        {
+          "id": "phys-specific-heat-capacity-practical:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "The specific heat capacity of one or more materials",
+          "isCorrect": true,
+          "feedback": "Specific heat capacity is explicitly the quantity to be determined.",
+          "misconception": null
+        },
+        {
+          "id": "phys-specific-heat-capacity-practical:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "The subsequent increase in thermal energy stored",
+          "isCorrect": false,
+          "feedback": "This is the subsequent linked increase; the practical determines specific heat capacity.",
+          "misconception": "Mistakes the linked thermal-energy increase for the target quantity"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "phys-specific-heat-capacity-practical:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "pageStart": 122,
+          "pageEnd": 124,
+          "sourceExcerpt": "Required practical activity 14: an investigation to determine the specific heat capacity of one or more materials. The investigation will involve linking the decrease of one energy store (or work done) to the increase in temperature and subsequent increase in thermal energy stored.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "b90f87464c9f9c8e779b5ceb6d0a21545ff560aac9a8803d5a43212fe9351c18",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:a:misconception",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "35e6c5eb0f18a618376f211e149cd43b510b875c2a454a6630893d0d83854829",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-physics-energy-compiler-v8",
+        "generatedAt": "2026-07-16T06:49:39.316Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": false
+        },
+        "fullReview": {
+          "cardId": "phys-specific-heat-capacity-practical",
+          "accepted": true,
+          "reason": "The purpose and linked energy-temperature sequence match required practical 14; the alternatives diagnose confusion between the target and quantities linked during the investigation.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "phys-specific-heat-capacity-practical",
+          "accepted": true,
+          "reason": "⚙️ serves as a generic practical-activity landmark for the context already explicit in the front and does not identify specific heat capacity or favor any listed measured or linked quantity.",
+          "replacementCue": "⚙️"
+        }
+      }
+    }
+  ]
+}

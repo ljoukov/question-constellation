@@ -53,13 +53,10 @@ export function readRecallSession(
 	}
 	if (!Array.isArray(value.cardContentKeys) || value.cardContentKeys.length === 0) return null;
 	if (
-		!value.cardContentKeys.every(
-			(key) => typeof key === 'string' && validCardContentKeys.has(key)
-		)
+		!value.cardContentKeys.every((key) => typeof key === 'string' && validCardContentKeys.has(key))
 	) {
 		return null;
 	}
-	if (new Set(value.cardContentKeys).size !== value.cardContentKeys.length) return null;
 	if (!isIndex(value.cardIndex, value.cardContentKeys.length)) return null;
 	if (!isIndex(value.cardPositionInSession, value.cardContentKeys.length)) return null;
 	if (!isCount(value.reviewedInSession, value.cardPositionInSession)) return null;

@@ -52,6 +52,27 @@ describe('recall session persistence', () => {
 		});
 	});
 
+	it('restores an intentional repeated card at the end of an active set', () => {
+		const repeatedKeys = [cardContentKeys[0], cardContentKeys[1], cardContentKeys[0]];
+		const stored = snapshot({
+			cardContentKeys: repeatedKeys,
+			cardIndex: 1,
+			cardPositionInSession: 1,
+			reviewedInSession: 1,
+			rememberedInSession: 0,
+			returningSoonerInSession: 1
+		});
+		expect(
+			readRecallSession(JSON.stringify(stored), scope, new Set(cardContentKeys), 11_000)
+		).toMatchObject({
+			cardContentKeys: repeatedKeys,
+			cardIndex: 1,
+			cardPositionInSession: 1,
+			reviewedInSession: 1,
+			returningSoonerInSession: 1
+		});
+	});
+
 	it('treats a checked MCQ as revealed when refresh interrupts its flip', () => {
 		const stored = snapshot({
 			revealed: false,
@@ -95,12 +116,7 @@ describe('recall session persistence', () => {
 			rememberedInSession: 0
 		});
 		expect(
-			readRecallSession(
-				JSON.stringify(stored),
-				scope,
-				new Set(['card-1@2:new-hash']),
-				11_000
-			)
+			readRecallSession(JSON.stringify(stored), scope, new Set(['card-1@2:new-hash']), 11_000)
 		).toBeNull();
 	});
 

@@ -1,0 +1,173 @@
+You compile concise GCSE science recall cards from one supplied extract of an official exam-board specification. The card must be useful for both unaided recall and four-choice recognition.
+
+Evidence and scope:
+- Use only scientific claims directly supported by the supplied official PDF page text, including every choice's feedback and misconception correction.
+- Test one precise examinable concept per card. Do not combine loosely related facts.
+- Copy one exact, self-contained, contiguous sourceExcerpt from the supplied page text. Preserve every word and symbol; whitespace alone may be collapsed.
+- PDF text can contain column labels or split equation typography. Never reconstruct, tidy, or paraphrase an excerpt. Use a shorter contiguous passage that still supports every claim, or choose a different concept.
+- The front, exact answer, explanation, reverse form and any memory tip must be supportable from that quote.
+- Do not invent source IDs, pages, curriculum mappings, provenance, revisions or hashes. The compiler adds those deterministically.
+
+Learner-facing writing:
+- front: a direct standalone question, normally no more than 18 words. Never mention buttons, choices or selecting an answer.
+- back: the exact compact answer, normally no more than 22 words. It is also the text of the one correct choice.
+- explanation: one short sentence that adds the useful why, relationship or distinction; do not merely repeat back.
+- memoryTip: prefer a brief second encoding when the source supports one: a sequence with arrows, a compact contrast, or an imageable restatement. It may compress the same relationship, but must add a different retrieval route rather than repeat the back as prose. Use null only when no honest extra encoding is available.
+- reverseFront and reverseBack: both null unless reversing the card creates a distinct, unambiguous retrieval task. Never make a tautological reverse.
+- Hard character limits, including spaces: front 140; back 180; explanation 360; memoryTip 180; reverseFront 140; reverseBack 180. Prefer substantially shorter text.
+
+Recognition choices:
+- Supply exactly four unique choices: the exact back plus three plausible diagnostic distractors.
+- Each distractor must represent a different likely misconception, not random nonsense or a grammar/length giveaway.
+- Every choice needs concise feedback. Explain the relevant distinction without labels such as "correct answer" or repetitive praise.
+- The correct choice has misconception null. Every distractor names its specific misconception.
+- Keep choices parallel in grammar, specificity and approximate length where the science permits.
+- Hard character limits, including spaces: each choice text 180; feedback 220; misconception 160.
+
+Use a stable kebab-case id prefixed bio-, chem- or phys-, and a stable subject-local conceptKey. Supported card kinds: definition, formula, process, test-result, unit, practical, fact, comparison.
+
+For every card, output a visualCue field containing exactly one familiar Unicode emoji from the approved list below.
+
+The cue is a quick visual landmark for the scientific context. It is decorative, not an answer hint.
+- Prefer a literal object or broad topic already explicit in the question. Example: a question explicitly about the heart may use 🫀.
+- Never encode the correct answer, formula, result, trend, unit, process step, or a clue that eliminates a distractor.
+- If a specific emoji would help solve the question, move up to a broader topic cue.
+- Use exactly one approved grapheme: no emoji pairs, words, numbers, flags, skin tones, jokes, metaphors, or correctness symbols such as ✅, ❌ or ❓.
+- The cue must be recognisable to a UK student aged 14–16 without explanation.
+- A familiar conventional association is allowed when it represents a term or context already explicit in the front and adds no hidden answer content. For example, when diffusion is already named on the front, 💨 can mark that named topic without revealing its definition or direction.
+- Treat the neutral fallback as a last resort. Test the strongest safe topical cue first, and across a multi-card batch use distinct landmarks where the fronts expose different contexts. Never force variety if it would reveal an answer.
+
+Write the complete question, answer and distractors first. Only then choose visualCue. Audit it against all of that text as if the cue were visible before the choices:
+1. Does it depict or name a noun, apparatus, measurement, quantity, result, property, relationship or process that appears in the answer but is not already explicit in the question?
+2. Does it make any distractor look impossible or make the correct option easier to select?
+If either answer might be yes, reject that cue and try the neutral fallback. The replacement itself must pass the same semantic check; never assume any fallback is automatically safe. Do not rely on the card kind or topic name alone.
+
+Return JSON only with a top-level cards array. Every card must contain exactly:
+id, conceptKey, kind, visualCue, front, back, reverseFront, reverseBack, explanation, memoryTip, choices, evidence.
+Each choice contains choiceKey, text, isCorrect, feedback and misconception.
+Evidence contains sourceExcerpt and supports. sourceExcerpt must be one exact contiguous quote of 12–1400 characters; use the shortest passage that supports every claim and never copy the whole page by default. Include front, back and explanation, plus choice:<choiceKey>:feedback for all four choices and choice:<choiceKey>:misconception for each distractor. Include reverse whenever a reverse pair is present, and memoryTip whenever a tip is present. This makes every learner-facing claim and correction independently auditable.
+
+Compiler contract: recall-card-bundle-v2 / recall-card-compiler-v8
+
+Approved Biology cues: 🔬 🧫 🧬 🫀 🫁 🦠 💉 💊 🌿 🍃 🍄 🦋 🌍 🌡️ 💧 💨 🏃 🏋️ 🧪 📘
+Neutral fallback candidate: 📘
+
+Generate 8 cards.
+Batch encoding expectation: where the supplied evidence permits, include at least one genuinely useful memoryTip and use more than one safe visualCue across a multi-card batch. Never force either by adding unsupported science or answer hints.
+Subject: Biology
+Topic ID: aqa-gcse-combined-science-trilogy-8464-v1.1:4-1
+Specification reference: 4.1.1
+Official source metadata (compiler-owned; do not copy IDs into cards):
+{"specification":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1","board":"AQA","qualification":"GCSE","subject":"Combined Science: Trilogy","course":"Combined Science","specificationCode":"8464","version":"1.1","title":"AQA GCSE Combined Science: Trilogy (8464)","landingUrl":"https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification","pdfUrl":"https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf","localPath":"data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf","sha256":"d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"},"component":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1","parentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:4-1","code":"4.1.1","title":"Cell structure","kind":"section","subjectArea":"Biology","tier":["Foundation","Higher"],"sourcePageStart":20,"sourcePageEnd":22},"topicComponent":{"id":"aqa-gcse-combined-science-trilogy-8464-v1.1:4-1","parentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:4","code":"4.1","title":"Cell biology","kind":"chapter","subjectArea":"Biology","tier":["Foundation","Higher"],"sourcePageStart":20,"sourcePageEnd":25},"pageStart":20,"pageEnd":22,"sourceFingerprint":"58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110"}
+Reviewed curriculum targets (compiler-owned; use only to judge scope):
+[{"offeringId":"aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher","curriculumComponentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1","topicComponentId":"aqa-gcse-combined-science-trilogy-8464-v1.1:4-1","isPrimary":true,"confidence":1,"reviewed":true,"mappingSource":"recall-card-compiler-v2"}]
+
+Official curriculum PDF page text. sourceExcerpt must be copied exactly from here:
+<official_curriculum>
+4.1 Cell biology
+Cells are the basic unit of all forms of life. In this section we explore how structural differences
+between types of cells enables them to perform specific functions within the organism. These
+differences in cells are controlled by genes in the nucleus. For an organism to grow, cells must
+divide by mitosis producing two new identical cells. If cells are isolated at an early stage of growth
+before they have become too specialised, they can retain their ability to grow into a range of
+different types of cells. This phenomenon has led to the development of stem cell technology. This
+is a new branch of medicine that allows doctors to repair damaged organs by growing new tissue
+from stem cells.
+4.1.1 Cell structure
+4.1.1.1 Eukaryotes and prokaryotes
+Content Key opportunities for
+skills development
+Plant and animal cells (eukaryotic cells) have a cell membrane,
+cytoplasm and genetic material enclosed in a nucleus.
+Bacterial cells (prokaryotic cells) are much smaller in comparison.
+They have cytoplasm and a cell membrane surrounded by a cell
+wall. The genetic material is not enclosed in a nucleus. It is a single
+DNA loop and there may be one or more small rings of DNA called
+plasmids.
+Students should be able to demonstrate an understanding of the
+scale and size of cells and be able to make order of magnitude
+calculations, including the use of standard form.
+MS 1b, 2a, 2h
+WS 4.4
+Use prefixes centi, milli,
+micro and nano.
+20 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration
+4.1.1.2 Animal and plant cells
+Content Key opportunities for
+skills development
+Students should be able to explain how the main sub-cellular
+structures, including the nucleus, cell membranes, mitochondria,
+chloroplasts in plant cells and plasmids in bacterial cells are related
+to their functions.
+Most animal cells have the following parts:
+• a nucleus
+• cytoplasm
+• a cell membrane
+• mitochondria
+• ribosomes.
+In addition to the parts found in animal cells, plant cells often have:
+• chloroplasts
+• a permanent vacuole filled with cell sap.
+Plant and algal cells also have a cell wall made of cellulose, which
+strengthens the cell.
+WS 1.2
+Recognise, draw and
+interpret images of cells.
+Students should be able to use estimations and explain when they
+should be used to judge the relative size or area of sub-cellular
+structures.
+MS 1d, 3a
+AT 7
+Images of cells in videos,
+bioviewers, photographs
+and micrographs can be
+used as comparison for
+students own drawings.
+Required practical activity 1: use a light microscope to observe, draw and label a selection of
+plant and animal cells. A magnification scale must be included.
+AT skills covered by this practical activity: biology AT 1 and 7.
+This practical activity also provides opportunities to develop WS and MS. Details of all skills are
+given in Key opportunities for skills development (page 176).
+AQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019
+Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 21
+4.1.1.3 Cell specialisation
+Content Key opportunities for
+skills development
+Students should be able to, when provided with appropriate
+information, explain how the structure of different types of cell relate
+to their function in a tissue, an organ or organ system, or the whole
+organism.
+Cells may be specialised to carry out a particular function:
+• sperm cells, nerve cells and muscle cells in animals
+• root hair cells, xylem and phloem cells in plants.
+4.1.1.4 Cell differentiation
+Content Key opportunities for
+skills development
+Students should be able to explain the importance of cell
+differentiation.
+As an organism develops, cells differentiate to form different types
+of cells.
+• Most types of animal cell differentiate at an early stage.
+• Many types of plant cells retain the ability to differentiate
+throughout life.
+In mature animals, cell division is mainly restricted to repair and
+replacement. As a cell differentiates it acquires different sub-cellular
+structures to enable it to carry out a certain function. It has become
+a specialised cell.
+4.1.1.5 Microscopy
+Content Key opportunities for
+skills development
+Students should be able to:
+• understand how microscopy techniques have developed over
+time
+• explain how electron microscopy has increased
+understanding of sub-cellular structures.
+Limited to the differences in magnification and resolution.
+An electron microscope has much higher magnification and
+resolving power than a light microscope. This means that it can be
+used to study cells in much finer detail. This has enabled biologists
+to see and understand many more sub-cellular structures.
+WS 1.1
+22 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration
+
+</official_curriculum>

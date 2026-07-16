@@ -1,0 +1,911 @@
+{
+  "schemaVersion": "recall-card-bundle-v2",
+  "promptVersion": "recall-card-compiler-v8",
+  "run": {
+    "id": "combined-higher-biology-cell-structure-compiler-v8",
+    "startedAt": "2026-07-16T06:15:05.051Z",
+    "finishedAt": "2026-07-16T06:34:25.690Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max"
+    },
+    "fullReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true
+    },
+    "cueReviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "independentTurn": true,
+      "replacementReviewRun": true
+    }
+  },
+  "companionArtifacts": {
+    "schemaVersion": "recall-companion-artifacts-v1",
+    "sha256ByFile": {
+      "plan.json": "b271d6171d0adf5a03274559e3c40becdb8db7cd3b5d738cfd5aaaa5f2e6b5f0",
+      "source-evidence.json": "f22775351782a876a5d104baa7a38174c239738cd35eb827f32773a305acf6da",
+      "generation-prompt.txt": "36e4e19c68a60fba016c0d56bb22e7f2030a2b58149004b51c839ec196b5268c",
+      "generation-model-output.json": "1b8ed2e1a9e93dfdb35d997b0c725f334ad88b8823d791c9dab4a6aaff34ea22",
+      "candidate-cards.json": "10628862a849c86c670b9dd3cc2a437ebb508fc8f09e19a611fc47fb9a3a9d50",
+      "full-review-prompt.txt": "794c6fc7f7b5424adcccd74e7e9d49ac0c50a025f90c6d1d79079ac869044ce2",
+      "full-review-model-output.json": "2802456d0f7df3f89ecf33ac27051eb77f587913d6a0eb9a1f30d5fab5db8319",
+      "full-review.json": "1702257f6c04dd7190b343a152abc28ab6c377ebefd40d31ea1edf31ef8caa37",
+      "cue-review-prompt.txt": "ffc6416af3351ec96e27605c4a1522dfea779cad2b5e3d8c06c1d0ef99948e38",
+      "cue-review-model-output.json": "54ee2cda8c67885c3e8980b52f424431661c4648293d7dba74434370d27c670a",
+      "cue-review.json": "c16a424d9f11bd10b4d271698b96b17b6258c6e34c5e710701af7e9025fa8f5a",
+      "cue-replacement-review-prompt.txt": "f90ee0e8abe6f70beec67da85df52440f33abd6efefaf9fbdb0b1b29da23aaab",
+      "cue-replacement-review-model-output.json": "adcd8fcd20083ea1bbaf77945de48a713b89ddba77616dc65c6b9c2f0800f23a",
+      "cue-replacement-review.json": "85437ccb02a0f8f58b608262dfded3ea9636a8e70fba8284302375e78e02e37e",
+      "final-cue-review.json": "108c4c8bb39bdb2e53e9929a75b14db06333a2d330b6c5cd19a8ed427439c5f1"
+    }
+  },
+  "source": {
+    "catalogSchemaVersion": "1",
+    "catalogPath": "data/curricula/curriculum-catalog.json",
+    "fingerprint": "58ce6e2cd0eb2f70b3af5e9e83c1e2b89a5950310c1e610a2c42bbc208d90110",
+    "specification": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Combined Science: Trilogy",
+      "course": "Combined Science",
+      "specificationCode": "8464",
+      "version": "1.1",
+      "title": "AQA GCSE Combined Science: Trilogy (8464)",
+      "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+      "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+      "localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+      "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+    },
+    "component": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "code": "4.1.1",
+      "title": "Cell structure",
+      "kind": "section",
+      "subjectArea": "Biology",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 20,
+      "sourcePageEnd": 22
+    },
+    "topicComponent": {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4",
+      "code": "4.1",
+      "title": "Cell biology",
+      "kind": "chapter",
+      "subjectArea": "Biology",
+      "tier": [
+        "Foundation",
+        "Higher"
+      ],
+      "sourcePageStart": 20,
+      "sourcePageEnd": 25
+    },
+    "pageStart": 20,
+    "pageEnd": 22
+  },
+  "cards": [
+    {
+      "id": "bio-bacterial-genetic-material",
+      "conceptKey": "cell-structure-bacterial-genetic-material",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🦠",
+      "front": "How is genetic material arranged in a bacterial cell?",
+      "back": "A single DNA loop not enclosed in a nucleus, with possible plasmids.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Plasmids are optional small DNA rings alongside the single DNA loop.",
+      "memoryTip": "One DNA loop + optional small DNA rings; no nucleus encloses the genetic material.",
+      "choices": [
+        {
+          "id": "bio-bacterial-genetic-material:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "A single DNA loop not enclosed in a nucleus, with possible plasmids.",
+          "isCorrect": true,
+          "feedback": "Bacterial genetic material is one DNA loop not enclosed in a nucleus; one or more small plasmid rings may also occur.",
+          "misconception": null
+        },
+        {
+          "id": "bio-bacterial-genetic-material:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "A single DNA loop enclosed in a nucleus, with possible plasmids.",
+          "isCorrect": false,
+          "feedback": "Bacterial genetic material is not enclosed in a nucleus; it forms a single DNA loop.",
+          "misconception": "Assuming bacterial genetic material is enclosed in a nucleus."
+        },
+        {
+          "id": "bio-bacterial-genetic-material:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Several DNA loops not enclosed in a nucleus, with possible plasmids.",
+          "isCorrect": false,
+          "feedback": "The cell has a single DNA loop; multiple small DNA rings, when present, are plasmids.",
+          "misconception": "Confusing one or more plasmids with several DNA loops."
+        },
+        {
+          "id": "bio-bacterial-genetic-material:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Plasmid rings only, with no single DNA loop.",
+          "isCorrect": false,
+          "feedback": "Plasmids may be present, but the genetic material is also described as a single DNA loop.",
+          "misconception": "Treating optional plasmids as the cell's only genetic material."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-bacterial-genetic-material:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Bacterial cells (prokaryotic cells) are much smaller in comparison. They have cytoplasm and a cell membrane surrounded by a cell wall. The genetic material is not enclosed in a nucleus. It is a single DNA loop and there may be one or more small rings of DNA called plasmids.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "bc6d6b08bdd8401e921eedc0e492d670a9456c304407e85a3a193987fca8428c",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "0b8b0e923550431412efda54a82adbc1607cb973ac05841847e3b06c5a145ea2",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v8",
+        "generatedAt": "2026-07-16T06:34:25.690Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": true
+        },
+        "fullReview": {
+          "cardId": "bio-bacterial-genetic-material",
+          "accepted": true,
+          "reason": "The card accurately retrieves the single non-nuclear DNA loop and optional plasmids. The alternatives diagnose distinct errors about nuclear enclosure, loop number and plasmids.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-bacterial-genetic-material",
+          "accepted": true,
+          "reason": "🦠 represents the bacterial context already explicit in the front. It reveals nothing about DNA-loop number, nuclear enclosure, or plasmids and is neutral across all choices.",
+          "replacementCue": "🦠"
+        }
+      }
+    },
+    {
+      "id": "bio-bacterial-relative-size",
+      "conceptKey": "cell-structure-bacterial-relative-size",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "comparison",
+      "visualCue": "🦠",
+      "front": "How do bacterial cells compare in size with plant and animal cells?",
+      "back": "Bacterial cells are much smaller.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Bacterial cells are prokaryotic, whereas plant and animal cells are eukaryotic.",
+      "memoryTip": "Size contrast: eukaryotic plant/animal cells > prokaryotic bacterial cells.",
+      "choices": [
+        {
+          "id": "bio-bacterial-relative-size:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Bacterial cells are much smaller.",
+          "isCorrect": true,
+          "feedback": "The specification describes bacterial cells as much smaller in comparison.",
+          "misconception": null
+        },
+        {
+          "id": "bio-bacterial-relative-size:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Bacterial cells are slightly smaller.",
+          "isCorrect": false,
+          "feedback": "The stated difference is much smaller, not merely slightly smaller.",
+          "misconception": "Underestimating the stated size difference."
+        },
+        {
+          "id": "bio-bacterial-relative-size:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Bacterial cells are the same size.",
+          "isCorrect": false,
+          "feedback": "Bacterial cells are described as much smaller, so equal size does not match the comparison.",
+          "misconception": "Assuming prokaryotic and eukaryotic cells are equal in size."
+        },
+        {
+          "id": "bio-bacterial-relative-size:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Bacterial cells are much larger.",
+          "isCorrect": false,
+          "feedback": "Bacterial cells are much smaller; describing them as larger reverses the comparison.",
+          "misconception": "Reversing the relative-size comparison."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-bacterial-relative-size:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Plant and animal cells (eukaryotic cells) have a cell membrane, cytoplasm and genetic material enclosed in a nucleus. Bacterial cells (prokaryotic cells) are much smaller in comparison.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "27aa250d68ebc70f5edebe792d03c279f10b09dc9c9b2b3bd5657611c423f6d3",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "63ff903021d70177b38b612053ed6597b492ca40a8941ffa05a057f3d6cb5fce",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v8",
+        "generatedAt": "2026-07-16T06:34:25.690Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": true
+        },
+        "fullReview": {
+          "cardId": "bio-bacterial-relative-size",
+          "accepted": true,
+          "reason": "The keyed comparison exactly matches the specification, and the alternatives distinguish underestimating, eliminating and reversing the size difference.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-bacterial-relative-size",
+          "accepted": true,
+          "reason": "🦠 marks the explicitly named bacterial-cell topic without conveying any size comparison, so it does not favor smaller, equal, or larger.",
+          "replacementCue": "🦠"
+        }
+      }
+    },
+    {
+      "id": "bio-animal-cell-main-parts",
+      "conceptKey": "cell-structure-animal-cell-main-parts",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🦋",
+      "front": "Which five parts are found in most animal cells?",
+      "back": "A nucleus, cytoplasm, a cell membrane, mitochondria and ribosomes.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Chloroplasts and a permanent vacuole are additions often found in plant cells.",
+      "memoryTip": "Five-part check: Nucleus, Cytoplasm, Membrane, Mitochondria, Ribosomes — N-C-M-M-R.",
+      "choices": [
+        {
+          "id": "bio-animal-cell-main-parts:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "A nucleus, cytoplasm, a cell membrane, mitochondria and ribosomes.",
+          "isCorrect": true,
+          "feedback": "These are the five parts listed for most animal cells.",
+          "misconception": null
+        },
+        {
+          "id": "bio-animal-cell-main-parts:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "A nucleus, cytoplasm, a cell wall, mitochondria and ribosomes.",
+          "isCorrect": false,
+          "feedback": "Most animal cells are listed with a cell membrane; a cell wall is stated for plant and algal cells.",
+          "misconception": "Replacing the animal cell membrane with a plant/algal cell wall."
+        },
+        {
+          "id": "bio-animal-cell-main-parts:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "A nucleus, cytoplasm, a cell membrane, chloroplasts and ribosomes.",
+          "isCorrect": false,
+          "feedback": "Mitochondria are in the animal-cell list; chloroplasts are an addition often found in plant cells.",
+          "misconception": "Replacing listed mitochondria with a plant-cell chloroplast."
+        },
+        {
+          "id": "bio-animal-cell-main-parts:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "A nucleus, cytoplasm, a cell membrane, mitochondria and a permanent vacuole.",
+          "isCorrect": false,
+          "feedback": "Ribosomes are in the animal-cell list; a permanent vacuole is an addition often found in plant cells.",
+          "misconception": "Replacing listed ribosomes with a plant-cell permanent vacuole."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-animal-cell-main-parts:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Most animal cells have the following parts: • a nucleus • cytoplasm • a cell membrane • mitochondria • ribosomes. In addition to the parts found in animal cells, plant cells often have: • chloroplasts • a permanent vacuole filled with cell sap. Plant and algal cells also have a cell wall made of cellulose, which strengthens the cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "5d4e7c1b24f372c833612792082b5523663106fd7ad24f128912b89f2a9f068e",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "de624c65d27f0719c52cce5d7aa658f66dc17073f059aa556f51a9ff54ee439e",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v8",
+        "generatedAt": "2026-07-16T06:34:25.690Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": true
+        },
+        "fullReview": {
+          "cardId": "bio-animal-cell-main-parts",
+          "accepted": true,
+          "reason": "The answer exactly reproduces the five listed animal-cell parts. Each distractor makes one clear substitution using a sourced plant-cell feature.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-animal-cell-main-parts",
+          "accepted": true,
+          "reason": "🦋 is a conventional animal landmark for the animal-cell context already stated. It does not identify any organelle or distinguish among the four lists.",
+          "replacementCue": "🦋"
+        }
+      }
+    },
+    {
+      "id": "bio-cellulose-cell-wall",
+      "conceptKey": "cell-structure-cellulose-cell-wall",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "fact",
+      "visualCue": "🌿",
+      "front": "What material forms the cell wall of plant and algal cells?",
+      "back": "Cellulose.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The cellulose wall strengthens the cell.",
+      "memoryTip": "Cellulose wall → stronger cell.",
+      "choices": [
+        {
+          "id": "bio-cellulose-cell-wall:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Cellulose.",
+          "isCorrect": true,
+          "feedback": "Plant and algal cell walls are stated to be made of cellulose.",
+          "misconception": null
+        },
+        {
+          "id": "bio-cellulose-cell-wall:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Cell sap.",
+          "isCorrect": false,
+          "feedback": "Cell sap fills the permanent vacuole; the plant and algal cell wall is made of cellulose.",
+          "misconception": "Confusing vacuole contents with cell-wall material."
+        },
+        {
+          "id": "bio-cellulose-cell-wall:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Cytoplasm.",
+          "isCorrect": false,
+          "feedback": "Cytoplasm is a listed cell part, not the stated wall material; the wall is made of cellulose.",
+          "misconception": "Treating cytoplasm as the material of the cell wall."
+        },
+        {
+          "id": "bio-cellulose-cell-wall:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Cell membrane.",
+          "isCorrect": false,
+          "feedback": "The cell membrane is listed separately from the plant and algal cell wall; cellulose is the wall material.",
+          "misconception": "Treating the cell membrane itself as cell-wall material."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-cellulose-cell-wall:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Most animal cells have the following parts: • a nucleus • cytoplasm • a cell membrane • mitochondria • ribosomes. In addition to the parts found in animal cells, plant cells often have: • chloroplasts • a permanent vacuole filled with cell sap. Plant and algal cells also have a cell wall made of cellulose, which strengthens the cell.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "5d4e7c1b24f372c833612792082b5523663106fd7ad24f128912b89f2a9f068e",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "de5038c24a5ee4624ae506d218b9429000668cddccdfdbe602c4399ce9da6520",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v8",
+        "generatedAt": "2026-07-16T06:34:25.690Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": true
+        },
+        "fullReview": {
+          "cardId": "bio-cellulose-cell-wall",
+          "accepted": true,
+          "reason": "The keyed material and strengthening function are stated directly in the source. The distractors diagnose confusion with vacuole contents and other cell structures.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-cellulose-cell-wall",
+          "accepted": true,
+          "reason": "🌿 represents the plant context already explicit in the front. It does not reveal the wall material: cellulose, cell sap, cytoplasm, and cell membrane are all compatible with the depicted plant context, so it neither selects the answer nor eliminates a distractor.",
+          "replacementCue": "🌿"
+        }
+      }
+    },
+    {
+      "id": "bio-light-microscope-required-practical",
+      "conceptKey": "cell-structure-light-microscope-required-practical",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "practical",
+      "visualCue": "🔬",
+      "front": "In the required light-microscope practical, what must students do?",
+      "back": "Observe, draw and label a selection of plant and animal cells, including a magnification scale.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The task links light-microscope observation to a labelled drawing with a magnification scale.",
+      "memoryTip": "Light microscope → observe → draw → label → add a magnification scale.",
+      "choices": [
+        {
+          "id": "bio-light-microscope-required-practical:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "Observe, draw and label a selection of plant and animal cells, including a magnification scale.",
+          "isCorrect": true,
+          "feedback": "The practical specifies observation, labelled drawings of plant and animal cells, and a magnification scale.",
+          "misconception": null
+        },
+        {
+          "id": "bio-light-microscope-required-practical:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "Observe and draw a selection of plant and animal cells without labels, but include a magnification scale.",
+          "isCorrect": false,
+          "feedback": "The practical explicitly requires students to draw and label the cells; the magnification scale does not replace labels.",
+          "misconception": "Treating labels as optional."
+        },
+        {
+          "id": "bio-light-microscope-required-practical:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "Observe, draw and label a selection of plant cells only, including a magnification scale.",
+          "isCorrect": false,
+          "feedback": "The stated selection contains plant and animal cells, not plant cells alone.",
+          "misconception": "Restricting the required selection to plant cells."
+        },
+        {
+          "id": "bio-light-microscope-required-practical:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "Observe, draw and label a selection of plant and animal cells, but omit the magnification scale.",
+          "isCorrect": false,
+          "feedback": "A magnification scale must be included with the observed, drawn and labelled cells.",
+          "misconception": "Treating the magnification scale as optional."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-light-microscope-required-practical:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Required practical activity 1: use a light microscope to observe, draw and label a selection of plant and animal cells. A magnification scale must be included.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "8c9b614769261dea145b7572a6fa39ffdca09e6e33fa479ddfb00381518ee25b",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "148c2cebff71467ad41165d06818bc50023af28d0647e7ab5ed0f1927b0899bc",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v8",
+        "generatedAt": "2026-07-16T06:34:25.690Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": true
+        },
+        "fullReview": {
+          "cardId": "bio-light-microscope-required-practical",
+          "accepted": true,
+          "reason": "The answer includes every stated practical requirement, and each alternative omits or restricts one distinct required element.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-light-microscope-required-practical",
+          "accepted": true,
+          "reason": "🔬 directly marks the light-microscope context already named. It reveals nothing about observing, drawing, labelling, cell selection, or including a scale.",
+          "replacementCue": "🔬"
+        }
+      }
+    },
+    {
+      "id": "bio-electron-microscope-finer-detail",
+      "conceptKey": "cell-structure-electron-microscope-finer-detail",
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "kind": "comparison",
+      "visualCue": "🔬",
+      "front": "Why can an electron microscope study cells in finer detail than a light microscope?",
+      "back": "It has much higher magnification and resolving power.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This lets biologists see and understand many more sub-cellular structures.",
+      "memoryTip": "Higher magnification + higher resolving power → finer cellular detail.",
+      "choices": [
+        {
+          "id": "bio-electron-microscope-finer-detail:a",
+          "displayOrder": 0,
+          "choiceKey": "a",
+          "text": "It has much higher magnification and resolving power.",
+          "isCorrect": true,
+          "feedback": "Both properties are much higher than in a light microscope, enabling cells to be studied in finer detail.",
+          "misconception": null
+        },
+        {
+          "id": "bio-electron-microscope-finer-detail:b",
+          "displayOrder": 1,
+          "choiceKey": "b",
+          "text": "It has much higher magnification but lower resolving power.",
+          "isCorrect": false,
+          "feedback": "Its resolving power is also much higher than that of a light microscope.",
+          "misconception": "Assuming electron microscopy trades resolving power for magnification."
+        },
+        {
+          "id": "bio-electron-microscope-finer-detail:c",
+          "displayOrder": 2,
+          "choiceKey": "c",
+          "text": "It has lower magnification but much higher resolving power.",
+          "isCorrect": false,
+          "feedback": "Its magnification is also much higher than that of a light microscope.",
+          "misconception": "Assuming electron microscopy gains resolving power while losing magnification."
+        },
+        {
+          "id": "bio-electron-microscope-finer-detail:d",
+          "displayOrder": 3,
+          "choiceKey": "d",
+          "text": "It has the same magnification and resolving power.",
+          "isCorrect": false,
+          "feedback": "The electron microscope has much higher magnification and resolving power than the light microscope.",
+          "misconception": "Assuming electron and light microscopes have equal capabilities."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "bio-electron-microscope-finer-detail:official-curriculum",
+          "sourceKind": "curriculum_component",
+          "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "pageStart": 20,
+          "pageEnd": 22,
+          "sourceExcerpt": "Limited to the differences in magnification and resolution. An electron microscope has much higher magnification and resolving power than a light microscope. This means that it can be used to study cells in much finer detail. This has enabled biologists to see and understand many more sub-cellular structures.",
+          "sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "excerptHash": "d4be4021755c83855cd905ef890a77a378cfcb85312d163809cc09c0686a2b30",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip",
+            "choice:a:feedback",
+            "choice:b:feedback",
+            "choice:b:misconception",
+            "choice:c:feedback",
+            "choice:c:misconception",
+            "choice:d:feedback",
+            "choice:d:misconception"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true,
+          "mappingSource": "recall-card-compiler-v2"
+        }
+      ],
+      "contentRevision": 1,
+      "contentHash": "331e0c660d51acd9250678a9709ebee4e20dbc661e64fc63abb6d61235ca7973",
+      "provenance": {
+        "schemaVersion": "recall-card-bundle-v2",
+        "promptVersion": "recall-card-compiler-v8",
+        "generationRunId": "combined-higher-biology-cell-structure-compiler-v8",
+        "generatedAt": "2026-07-16T06:34:25.690Z",
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max"
+        },
+        "fullReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true
+        },
+        "cueReviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "independentTurn": true,
+          "replacementReviewRun": true
+        },
+        "fullReview": {
+          "cardId": "bio-electron-microscope-finer-detail",
+          "accepted": true,
+          "reason": "The answer gives both directly stated causes of finer detail. The alternatives independently reverse or remove the magnification and resolving-power advantages.",
+          "checks": {
+            "singleConcept": true,
+            "officialEvidenceGrounded": true,
+            "correctAnswerExact": true,
+            "distractorsDiagnostic": true,
+            "feedbackUseful": true,
+            "concise": true,
+            "reverseSafe": true,
+            "memoryTipGrounded": true,
+            "targetMappingCorrect": true
+          },
+          "issues": []
+        },
+        "cueReview": {
+          "cardId": "bio-electron-microscope-finer-detail",
+          "accepted": true,
+          "reason": "🔬 represents the microscope comparison already explicit in the front. It conveys neither magnification nor resolving-power direction and cannot distinguish any choice.",
+          "replacementCue": "🔬"
+        }
+      }
+    }
+  ]
+}

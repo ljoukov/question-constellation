@@ -1,0 +1,524 @@
+{
+	"schemaVersion": "recall-card-bundle-v2",
+	"promptVersion": "recall-card-compiler-v8",
+	"run": {
+		"id": "combined-biology-diffusion-visual-canary-compiler-v8",
+		"startedAt": "2026-07-16T05:30:03.740Z",
+		"finishedAt": "2026-07-16T05:36:42.640Z",
+		"generator": {
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max"
+		},
+		"fullReviewer": {
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"independentTurn": true
+		},
+		"cueReviewer": {
+			"model": "gpt-5.6-sol",
+			"thinkingLevel": "max",
+			"independentTurn": true,
+			"replacementReviewRun": true
+		}
+	},
+	"companionArtifacts": {
+		"schemaVersion": "recall-companion-artifacts-v1",
+		"sha256ByFile": {
+			"plan.json": "ceff5de37649a4eaa062c8ece872856e431382db70a53da0c0c477f47bc0beac",
+			"source-evidence.json": "11667b2fbeb583d14980099b369641c65db867743d90913dcd21298f80a6ef8e",
+			"generation-prompt.txt": "cc270e935581eaf702d9a5b0d143015d7f2282ea5989c6e21f992c5f2bc64203",
+			"generation-model-output.json": "ff2c5ff3f1d112a604f0219e7440f9a4709b4e6622900dbfd64d0a15c1f203fe",
+			"candidate-cards.json": "c1d06a99305772c5ede60c9eefa9d97cdb7e8607e403352f707155af49b00291",
+			"full-review-prompt.txt": "5ad210876ed2b0e91fc6b57a75d62a31fa2cb84377af9cec1140b979aaa2fa56",
+			"full-review-model-output.json": "dead910f507c5bfea4a74959e5e020b3032e9671d1cc1e596c12b7ec3c434d79",
+			"full-review.json": "ae8054a1c0e114fe2b0324177444f9b48b2e2418dfa400fcdba89a3cf2efbccc",
+			"cue-review-prompt.txt": "38029cc1b17f996c1cb7de83734970de350758ea66f2947e40569a178b770045",
+			"cue-review-model-output.json": "c7fe15b4edd7763fe1a21434f80304b66a9a1c2825e9b0a2c9f7c680d393a0f5",
+			"cue-review.json": "72985117e0fcb7109317dcd541d28f5ad914b06bfaac6f0ad5077e70ea0feb5f",
+			"cue-replacement-review-prompt.txt": "e08b7eb41de28bdb0f4adc6a628058337503dae14d77a2ae727b742ba26f8eb2",
+			"cue-replacement-review-model-output.json": "c1e44212c62adf8ea79f86335156b555bbc81b7a6b9f940a5a3316b1b506765e",
+			"cue-replacement-review.json": "4afd189e51cecf5937cd02b4a3164543ffaf268448a9f03f9debdcf950a943d5",
+			"final-cue-review.json": "7d48408da4037755c8b88349dc42ef36ffc194bc031286643d31eb0ca7168f88"
+		}
+	},
+	"source": {
+		"catalogSchemaVersion": "1",
+		"catalogPath": "data/curricula/curriculum-catalog.json",
+		"fingerprint": "4b76ec26ca63147e514cdc26db49e6f56fd0fc468835d999b21be0a9a759c99a",
+		"specification": {
+			"id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"board": "AQA",
+			"qualification": "GCSE",
+			"subject": "Combined Science: Trilogy",
+			"course": "Combined Science",
+			"specificationCode": "8464",
+			"version": "1.1",
+			"title": "AQA GCSE Combined Science: Trilogy (8464)",
+			"landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+			"pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+			"localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+			"sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+		},
+		"component": {
+			"id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+			"parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3",
+			"code": "4.1.3.1",
+			"title": "Diffusion",
+			"kind": "topic",
+			"subjectArea": "Biology",
+			"tier": ["Foundation", "Higher"],
+			"sourcePageStart": 25,
+			"sourcePageEnd": 25
+		},
+		"topicComponent": {
+			"id": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+			"parentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4",
+			"code": "4.1",
+			"title": "Cell biology",
+			"kind": "chapter",
+			"subjectArea": "Biology",
+			"tier": ["Foundation", "Higher"],
+			"sourcePageStart": 20,
+			"sourcePageEnd": 25
+		},
+		"pageStart": 25,
+		"pageEnd": 25
+	},
+	"cards": [
+		{
+			"id": "bio-diffusion-net-movement",
+			"conceptKey": "diffusion-definition-direction",
+			"board": "AQA",
+			"qualification": "GCSE",
+			"subject": "Biology",
+			"kind": "definition",
+			"visualCue": "💨",
+			"front": "What is diffusion?",
+			"back": "The spreading out of particles, causing net movement from higher to lower concentration.",
+			"reverseFront": null,
+			"reverseBack": null,
+			"explanation": "The particles may belong to a substance in solution or to a gas.",
+			"memoryTip": "Particles spread out; net movement goes higher concentration → lower concentration.",
+			"choices": [
+				{
+					"id": "bio-diffusion-net-movement:higher-to-lower",
+					"displayOrder": 0,
+					"choiceKey": "higher-to-lower",
+					"text": "The spreading out of particles, causing net movement from higher to lower concentration.",
+					"isCorrect": true,
+					"feedback": "This includes both spreading out and the stated higher-to-lower net movement.",
+					"misconception": null
+				},
+				{
+					"id": "bio-diffusion-net-movement:lower-to-higher",
+					"displayOrder": 1,
+					"choiceKey": "lower-to-higher",
+					"text": "The spreading out of particles, causing net movement from lower to higher concentration.",
+					"isCorrect": false,
+					"feedback": "The stated net movement is from higher concentration to lower concentration.",
+					"misconception": "Reversing the direction of diffusion"
+				},
+				{
+					"id": "bio-diffusion-net-movement:no-net-movement",
+					"displayOrder": 2,
+					"choiceKey": "no-net-movement",
+					"text": "The spreading out of particles, with no net movement between concentrations.",
+					"isCorrect": false,
+					"feedback": "The definition includes net movement from an area of higher concentration to one of lower concentration.",
+					"misconception": "Removing net movement from the definition"
+				},
+				{
+					"id": "bio-diffusion-net-movement:gases-only",
+					"displayOrder": 3,
+					"choiceKey": "gases-only",
+					"text": "The spreading out of particles only in gases, from higher to lower concentration.",
+					"isCorrect": false,
+					"feedback": "Diffusion also applies to particles of substances in solution, not only gases.",
+					"misconception": "Restricting diffusion to gases"
+				}
+			],
+			"evidence": [
+				{
+					"id": "bio-diffusion-net-movement:official-curriculum",
+					"sourceKind": "curriculum_component",
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"pageStart": 25,
+					"pageEnd": 25,
+					"sourceExcerpt": "Diffusion is the spreading out of the particles of any substance in solution, or particles of a gas, resulting in a net movement from an area of higher concentration to an area of lower concentration.",
+					"sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+					"excerptHash": "fea66babd4bb50c78def805c078e9f59f6959084c7fe875e76565542023a86e1",
+					"supports": [
+						"front",
+						"back",
+						"explanation",
+						"memoryTip",
+						"choice:higher-to-lower:feedback",
+						"choice:lower-to-higher:feedback",
+						"choice:lower-to-higher:misconception",
+						"choice:no-net-movement:feedback",
+						"choice:no-net-movement:misconception",
+						"choice:gases-only:feedback",
+						"choice:gases-only:misconception"
+					]
+				}
+			],
+			"targets": [
+				{
+					"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+					"isPrimary": false,
+					"confidence": 1,
+					"reviewed": true,
+					"mappingSource": "recall-card-compiler-v2"
+				},
+				{
+					"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+					"isPrimary": true,
+					"confidence": 1,
+					"reviewed": true,
+					"mappingSource": "recall-card-compiler-v2"
+				}
+			],
+			"contentRevision": 1,
+			"contentHash": "ede9474f8fcef0a6a975535ff85129b201a37d3be5de26e650cccff75033e8e8",
+			"provenance": {
+				"schemaVersion": "recall-card-bundle-v2",
+				"promptVersion": "recall-card-compiler-v8",
+				"generationRunId": "combined-biology-diffusion-visual-canary-compiler-v8",
+				"generatedAt": "2026-07-16T05:36:42.640Z",
+				"generator": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max"
+				},
+				"fullReviewer": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max",
+					"independentTurn": true
+				},
+				"cueReviewer": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max",
+					"independentTurn": true,
+					"replacementReviewRun": true
+				},
+				"fullReview": {
+					"cardId": "bio-diffusion-net-movement",
+					"accepted": true,
+					"reason": "The card accurately retrieves the specified definition and direction of diffusion; its three distractors isolate distinct misconceptions and all supporting content is grounded in page 25.",
+					"checks": {
+						"singleConcept": true,
+						"officialEvidenceGrounded": true,
+						"correctAnswerExact": true,
+						"distractorsDiagnostic": true,
+						"feedbackUseful": true,
+						"concise": true,
+						"reverseSafe": true,
+						"memoryTipGrounded": true,
+						"targetMappingCorrect": true
+					},
+					"issues": []
+				},
+				"cueReview": {
+					"cardId": "bio-diffusion-net-movement",
+					"accepted": true,
+					"reason": "💨 is a conventional landmark for diffusion, which is explicit on the front. It reveals neither direction nor medium and is neutral across all choices.",
+					"replacementCue": "💨"
+				}
+			}
+		},
+		{
+			"id": "bio-diffusion-rate-factors",
+			"conceptKey": "diffusion-rate-factors",
+			"board": "AQA",
+			"qualification": "GCSE",
+			"subject": "Biology",
+			"kind": "fact",
+			"visualCue": "💨",
+			"front": "Which three factors affect the rate of diffusion?",
+			"back": "Concentration difference, temperature and membrane surface area.",
+			"reverseFront": null,
+			"reverseBack": null,
+			"explanation": "The concentration difference is also called the concentration gradient.",
+			"memoryTip": "G–T–A: gradient, temperature, membrane area.",
+			"choices": [
+				{
+					"id": "bio-diffusion-rate-factors:all-three",
+					"displayOrder": 0,
+					"choiceKey": "all-three",
+					"text": "Concentration difference, temperature and membrane surface area.",
+					"isCorrect": true,
+					"feedback": "These are the three listed factors affecting diffusion rate.",
+					"misconception": null
+				},
+				{
+					"id": "bio-diffusion-rate-factors:omit-gradient",
+					"displayOrder": 1,
+					"choiceKey": "omit-gradient",
+					"text": "Temperature and membrane surface area, but not concentration difference.",
+					"isCorrect": false,
+					"feedback": "The difference in concentrations is listed as a factor and is called the concentration gradient.",
+					"misconception": "Omitting the concentration gradient"
+				},
+				{
+					"id": "bio-diffusion-rate-factors:omit-temperature",
+					"displayOrder": 2,
+					"choiceKey": "omit-temperature",
+					"text": "Concentration difference and membrane surface area, but not temperature.",
+					"isCorrect": false,
+					"feedback": "Temperature is explicitly listed as a factor affecting diffusion rate.",
+					"misconception": "Omitting temperature"
+				},
+				{
+					"id": "bio-diffusion-rate-factors:omit-membrane-area",
+					"displayOrder": 3,
+					"choiceKey": "omit-membrane-area",
+					"text": "Concentration difference and temperature, but not membrane surface area.",
+					"isCorrect": false,
+					"feedback": "The membrane’s surface area is explicitly listed as a factor affecting diffusion rate.",
+					"misconception": "Omitting membrane surface area"
+				}
+			],
+			"evidence": [
+				{
+					"id": "bio-diffusion-rate-factors:official-curriculum",
+					"sourceKind": "curriculum_component",
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"pageStart": 25,
+					"pageEnd": 25,
+					"sourceExcerpt": "Factors which affect the rate of diffusion are: • the difference in concentrations (concentration gradient) • the temperature • the surface area of the membrane.",
+					"sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+					"excerptHash": "b5bf171d090b592865d0e76cc15af23cacfa9d3b1614ea1c471b2facc9aa6919",
+					"supports": [
+						"front",
+						"back",
+						"explanation",
+						"memoryTip",
+						"choice:all-three:feedback",
+						"choice:omit-gradient:feedback",
+						"choice:omit-gradient:misconception",
+						"choice:omit-temperature:feedback",
+						"choice:omit-temperature:misconception",
+						"choice:omit-membrane-area:feedback",
+						"choice:omit-membrane-area:misconception"
+					]
+				}
+			],
+			"targets": [
+				{
+					"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+					"isPrimary": false,
+					"confidence": 1,
+					"reviewed": true,
+					"mappingSource": "recall-card-compiler-v2"
+				},
+				{
+					"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+					"isPrimary": true,
+					"confidence": 1,
+					"reviewed": true,
+					"mappingSource": "recall-card-compiler-v2"
+				}
+			],
+			"contentRevision": 1,
+			"contentHash": "332b88606d610189d3d597ec54efc0b4ffddc810e6ac3255079744927bccfd99",
+			"provenance": {
+				"schemaVersion": "recall-card-bundle-v2",
+				"promptVersion": "recall-card-compiler-v8",
+				"generationRunId": "combined-biology-diffusion-visual-canary-compiler-v8",
+				"generatedAt": "2026-07-16T05:36:42.640Z",
+				"generator": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max"
+				},
+				"fullReviewer": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max",
+					"independentTurn": true
+				},
+				"cueReviewer": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max",
+					"independentTurn": true,
+					"replacementReviewRun": true
+				},
+				"fullReview": {
+					"cardId": "bio-diffusion-rate-factors",
+					"accepted": true,
+					"reason": "The answer exactly covers all three listed rate factors, with distinct omission-based distractors and a grounded mnemonic.",
+					"checks": {
+						"singleConcept": true,
+						"officialEvidenceGrounded": true,
+						"correctAnswerExact": true,
+						"distractorsDiagnostic": true,
+						"feedbackUseful": true,
+						"concise": true,
+						"reverseSafe": true,
+						"memoryTipGrounded": true,
+						"targetMappingCorrect": true
+					},
+					"issues": []
+				},
+				"cueReview": {
+					"cardId": "bio-diffusion-rate-factors",
+					"accepted": true,
+					"reason": "💨 is a conventional landmark for diffusion, which is already explicit in the front. It reveals none of the three rate factors and does not favor or eliminate any choice.",
+					"replacementCue": "💨"
+				}
+			}
+		},
+		{
+			"id": "bio-thin-membrane-short-diffusion-path",
+			"conceptKey": "exchange-surface-thin-membrane",
+			"board": "AQA",
+			"qualification": "GCSE",
+			"subject": "Biology",
+			"kind": "fact",
+			"visualCue": "🫁",
+			"front": "In mammalian lungs, why does a thin membrane make an exchange surface more effective?",
+			"back": "It provides a short diffusion path.",
+			"reverseFront": null,
+			"reverseBack": null,
+			"explanation": "Large surface area, blood supply and ventilation are separate features that can also increase effectiveness.",
+			"memoryTip": "Thin membrane → short diffusion path.",
+			"choices": [
+				{
+					"id": "bio-thin-membrane-short-diffusion-path:short-path",
+					"displayOrder": 0,
+					"choiceKey": "short-path",
+					"text": "It provides a short diffusion path.",
+					"isCorrect": true,
+					"feedback": "The source links a thin membrane with providing a short diffusion path.",
+					"misconception": null
+				},
+				{
+					"id": "bio-thin-membrane-short-diffusion-path:large-area",
+					"displayOrder": 1,
+					"choiceKey": "large-area",
+					"text": "It provides a large surface area.",
+					"isCorrect": false,
+					"feedback": "Large surface area is a separate feature; a thin membrane provides a short diffusion path.",
+					"misconception": "Attributing surface area to membrane thinness"
+				},
+				{
+					"id": "bio-thin-membrane-short-diffusion-path:blood-supply",
+					"displayOrder": 2,
+					"choiceKey": "blood-supply",
+					"text": "It provides an efficient blood supply.",
+					"isCorrect": false,
+					"feedback": "Efficient blood supply is a separate animal feature; thinness provides a short diffusion path.",
+					"misconception": "Attributing blood supply to membrane thinness"
+				},
+				{
+					"id": "bio-thin-membrane-short-diffusion-path:ventilation",
+					"displayOrder": 3,
+					"choiceKey": "ventilation",
+					"text": "It keeps the exchange surface ventilated.",
+					"isCorrect": false,
+					"feedback": "Ventilation is a separate gaseous-exchange feature; thinness provides a short diffusion path.",
+					"misconception": "Attributing ventilation to membrane thinness"
+				}
+			],
+			"evidence": [
+				{
+					"id": "bio-thin-membrane-short-diffusion-path:official-curriculum",
+					"sourceKind": "curriculum_component",
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"pageStart": 25,
+					"pageEnd": 25,
+					"sourceExcerpt": "Students should be able to explain how the small intestine and lungs in mammals, gills in fish, and the roots and leaves in plants, are adapted for exchanging materials. In multicellular organisms, surfaces and organ systems are specialised for exchanging materials. This is to allow sufficient molecules to be transported into and out of cells for the organism’s needs. The effectiveness of an exchange surface is increased by: • having a large surface area • a membrane that is thin, to provide a short diffusion path • (in animals) having an efficient blood supply • (in animals, for gaseous exchange) being ventilated.",
+					"sourceFileHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+					"excerptHash": "de5f177cd153f37964bb292160c96af713bc3e820d2c2c24e995caddea4f2bd9",
+					"supports": [
+						"front",
+						"back",
+						"explanation",
+						"memoryTip",
+						"choice:short-path:feedback",
+						"choice:large-area:feedback",
+						"choice:large-area:misconception",
+						"choice:blood-supply:feedback",
+						"choice:blood-supply:misconception",
+						"choice:ventilation:feedback",
+						"choice:ventilation:misconception"
+					]
+				}
+			],
+			"targets": [
+				{
+					"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+					"isPrimary": false,
+					"confidence": 1,
+					"reviewed": true,
+					"mappingSource": "recall-card-compiler-v2"
+				},
+				{
+					"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-1",
+					"topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+					"isPrimary": true,
+					"confidence": 1,
+					"reviewed": true,
+					"mappingSource": "recall-card-compiler-v2"
+				}
+			],
+			"contentRevision": 1,
+			"contentHash": "7052edcd0f23273cc3b83b38a6b9d4d88f75180dc95a513654ab6a4495f24ee7",
+			"provenance": {
+				"schemaVersion": "recall-card-bundle-v2",
+				"promptVersion": "recall-card-compiler-v8",
+				"generationRunId": "combined-biology-diffusion-visual-canary-compiler-v8",
+				"generatedAt": "2026-07-16T05:36:42.640Z",
+				"generator": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max"
+				},
+				"fullReviewer": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max",
+					"independentTurn": true
+				},
+				"cueReviewer": {
+					"model": "gpt-5.6-sol",
+					"thinkingLevel": "max",
+					"independentTurn": true,
+					"replacementReviewRun": true
+				},
+				"fullReview": {
+					"cardId": "bio-thin-membrane-short-diffusion-path",
+					"accepted": true,
+					"reason": "The card precisely tests the thin-membrane–short-diffusion-path relationship, while the distractors distinctly attribute other listed exchange-surface adaptations to thinness.",
+					"checks": {
+						"singleConcept": true,
+						"officialEvidenceGrounded": true,
+						"correctAnswerExact": true,
+						"distractorsDiagnostic": true,
+						"feedbackUseful": true,
+						"concise": true,
+						"reverseSafe": true,
+						"memoryTipGrounded": true,
+						"targetMappingCorrect": true
+					},
+					"issues": []
+				},
+				"cueReview": {
+					"cardId": "bio-thin-membrane-short-diffusion-path",
+					"accepted": true,
+					"reason": "🫁 represents the mammalian lungs already explicit on the front. It does not reveal the effect of membrane thinness or distinguish the diffusion-path answer from the other exchange-surface features.",
+					"replacementCue": "🫁"
+				}
+			}
+		}
+	]
+}
