@@ -13,6 +13,14 @@
 	const pastPapersHref = resolve('/past-papers/gcse');
 	const featuredChain = $derived(data.featuredChains[0] ?? null);
 	const featuredQuestion = $derived(featuredChain?.questions[0] ?? null);
+	const websiteJsonLd = JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'Question Constellation',
+		alternateName: 'GCSE Question Constellation',
+		url: 'https://constellation.eviworld.com/'
+	}).replace(/</g, '\\u003c');
+	const websiteJsonLdScript = `<script type="application/ld+json">${websiteJsonLd}</` + 'script>';
 	const startQuestionHref = $derived(
 		featuredChain && featuredQuestion ? questionHref(featuredChain, featuredQuestion) : chainsHref
 	);
@@ -98,6 +106,7 @@
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/" />
 	<meta property="og:title" content="Free GCSE Question Bank And Past Papers" />
+	<meta property="og:site_name" content="Question Constellation" />
 	<meta
 		property="og:description"
 		content="GCSE exam questions with answer chains, marking points and similar practice questions."
@@ -107,6 +116,8 @@
 		content="https://constellation.eviworld.com/product/question-flow.webp"
 	/>
 	<meta property="og:url" content="https://constellation.eviworld.com/" />
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html websiteJsonLdScript}
 </svelte:head>
 
 <main
