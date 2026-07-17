@@ -2,6 +2,22 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { binaryArtifactMatches, jsonArtifactMatches } from './codex-phase-artifacts.mjs';
 
+/**
+ * @param {{
+ *   summary: {
+ *     status?: string,
+ *     outputArtifacts?: Array<{
+ *       path?: string,
+ *       sha256?: string | null,
+ *       canonicalJsonSha256?: string | null
+ *     }>
+ *   },
+ *   rootDir?: string,
+ *   outputRoot: string,
+ *   sourceDocumentId: string
+ * }} options
+ * @returns {string}
+ */
 export function resolveSingleImportReadyOutput({
 	summary,
 	rootDir = process.cwd(),
