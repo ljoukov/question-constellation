@@ -1,5 +1,7 @@
 ## Local Guidance
 
+- Read `docs/subject-content-workflow.md` before adding, extending, repairing, refreshing, or
+  improving subject support, paper cohorts, curriculum mappings, or study-card coverage.
 - Read `docs/product-methodology.md` before changing product direction, navigation, data models, onboarding, question-bank surfaces, or retained-chain review behavior.
 - Read `docs/product-flows.md` before changing acquisition paths, public question pages, answer-chain pages, constellation pages, practice/check flows, or mobile UX.
 - Read `docs/extraction-spec.md` before building extraction agents, importing papers or mark schemes, changing answer-chain derivation, or changing question-bank storage/schema.

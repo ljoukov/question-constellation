@@ -6,6 +6,7 @@ SvelteKit app for exploring GCSE question families and reusable answer chains.
 
 - [Product methodology](docs/product-methodology.md)
 - [Product flows and mobile mocks](docs/product-flows.md)
+- [Subject content workflow](docs/subject-content-workflow.md)
 - [Extraction specification and D1 schema](docs/extraction-spec.md)
 
 ## Local Development
