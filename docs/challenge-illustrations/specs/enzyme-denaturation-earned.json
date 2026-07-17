@@ -1,0 +1,114 @@
+{
+	"schemaVersion": "challenge-illustration-spec/v1",
+	"id": "enzyme-denaturation-earned",
+	"subjectArea": "Biology",
+	"broadTopic": "Bioenergetics: enzymes and photosynthesis",
+	"displayStage": "earned",
+	"challenge": {
+		"question": "An aquatic plant produced no gas at 45 °C. Explain why no gas was produced by the plant at this temperature.",
+		"learningGoal": "Connect excessive temperature to enzyme denaturation, active-site shape, failed substrate binding, and a lower reaction rate.",
+		"correctAnswer": "At 45 °C the enzymes denature. Their active sites change shape, so substrates no longer fit and the photosynthesis reactions stop.",
+		"evidence": [
+			{
+				"id": "denaturation",
+				"source": "AQA 8464B1H June 2024 question 04.3 mark scheme",
+				"text": "Enzymes in the plant or chloroplast become destroyed or denatured."
+			},
+			{
+				"id": "active-site-fit",
+				"source": "AQA 8464B1H June 2024 question 04.3 mark scheme",
+				"text": "The active site changes shape, so the substrate no longer fits or binds."
+			},
+			{
+				"id": "observed-output",
+				"source": "AQA 8464B1H June 2024 question 04.3 prompt",
+				"text": "At the high tested temperature no gas was produced by the aquatic plant."
+			},
+			{
+				"id": "transfer-rate",
+				"source": "Curated challenge transfer for AQA 84611H November 2020 question 01.8",
+				"text": "Above the optimum, enzyme denaturation can outweigh the collision-rate effect, so the reaction rate falls."
+			}
+		]
+	},
+	"illustration": {
+		"title": "WHEN HEAT CHANGES AN ENZYME",
+		"altText": "Four stages show excessive heat denaturing an enzyme, changing its active site so the substrate no longer fits and the reaction rate falls.",
+		"caption": "Too hot → enzyme denatures → active site changes → reaction rate falls.",
+		"approvedMeaning": "Above the optimum, heat denatures the enzyme; its active site changes shape, the substrate no longer fits, and the reaction rate falls.",
+		"compositionMode": "single-subject-state-progression",
+		"visualAnchor": "One enzyme followed from a working active site to a heat-changed non-fitting shape.",
+		"continuousPath": "Follow the orange heat cue from plant cell to enzyme shape, failed substrate fit, and reduced product.",
+		"textHiddenSummary": "Excess heat changes the enzyme shape, prevents substrate binding, and reduces product formation.",
+		"steps": [
+			{
+				"order": 1,
+				"heading": "TOO HOT",
+				"microcopy": "Above the optimum",
+				"visual": "Heat enters an aquatic plant cell and chloroplast; a working enzyme and fitting substrate establish the starting state.",
+				"distinctVisualAnchor": "Heated plant-cell and chloroplast cutaway",
+				"textHiddenMeaning": "The plant's enzyme-controlled process is exposed to excessive heat.",
+				"misconceptionGuards": [
+					"Do not imply that one exact temperature is the optimum for every enzyme.",
+					"Do not imply that heat removes substrate particles."
+				],
+				"evidenceIds": ["denaturation", "observed-output", "transfer-rate"]
+			},
+			{
+				"order": 2,
+				"heading": "DENATURED",
+				"microcopy": "Enzyme shape changes",
+				"visual": "The same enzyme changes from a fitted blue form into a visibly altered purple form under heat.",
+				"distinctVisualAnchor": "Before-and-after enzyme shape",
+				"textHiddenMeaning": "Excess heat changes the enzyme's three-dimensional shape.",
+				"misconceptionGuards": [
+					"Do not show the enzyme evaporating, dying, or disappearing.",
+					"Keep the substrate unchanged."
+				],
+				"evidenceIds": ["denaturation", "active-site-fit"]
+			},
+			{
+				"order": 3,
+				"heading": "ACTIVE SITE CHANGED",
+				"microcopy": "Substrate no longer fits",
+				"visual": "A close-up compares the altered active-site cavity with the unchanged substrate silhouette that can no longer bind.",
+				"distinctVisualAnchor": "Non-matching active-site close-up",
+				"textHiddenMeaning": "The changed active site and unchanged substrate no longer match.",
+				"misconceptionGuards": [
+					"Do not show the substrate denaturing.",
+					"Do not suggest that fewer collisions cause the high-temperature fall."
+				],
+				"evidenceIds": ["active-site-fit"]
+			},
+			{
+				"order": 4,
+				"heading": "REACTION RATE FALLS",
+				"microcopy": "Less product formed",
+				"visual": "Fewer successful enzyme-substrate complexes lead back to the aquatic plant producing less visible gas.",
+				"distinctVisualAnchor": "Reduced enzyme binding and gas output",
+				"textHiddenMeaning": "Failed binding means fewer successful reactions and less product.",
+				"misconceptionGuards": [
+					"Do not show all molecules stopping their motion.",
+					"Do not add an exact universal temperature cutoff."
+				],
+				"evidenceIds": ["active-site-fit", "observed-output", "transfer-rate"]
+			}
+		]
+	},
+	"usage": {
+		"mobileFit": "pan",
+		"mobilePosition": "left",
+		"mobileWidth": 720,
+		"mobileHeight": 405,
+		"mobileViewportWidth": 240
+	},
+	"output": {
+		"darkPath": "static/product/challenges/atlas/enzyme-denaturation-dark-v1.webp",
+		"lightPath": "static/product/challenges/atlas/enzyme-denaturation-light-v1.webp"
+	},
+	"promptConstraints": [
+		"Use the project's luminous scientific-atlas visual language and preserve a left-to-right causal scan.",
+		"Treat the chloroplast and gas output as the question context, not as extra causal stages.",
+		"Use no numerical temperature, worked value, logo, watermark, or exam-board branding."
+	]
+}

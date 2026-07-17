@@ -15,7 +15,7 @@ export const challengeSubjects = [
 		label: 'Biology',
 		description:
 			'Spot the precise observation, method step or causal link that turns a plausible Biology answer into an exam-ready one.',
-		heroSlug: 'smoking-risk-data-conclusions',
+		heroSlug: 'enzyme-denaturation-at-45c',
 		accent: 'fern'
 	},
 	{
@@ -23,7 +23,7 @@ export const challengeSubjects = [
 		label: 'Physics',
 		description:
 			'Mark the working, track forces and connect particle behaviour to outcomes in short, exact Physics challenges.',
-		heroSlug: 'gas-pressure-in-a-syringe',
+		heroSlug: 'half-range-uncertainty',
 		accent: 'electric'
 	}
 ] as const satisfies readonly ChallengeSubjectDefinition[];
@@ -430,8 +430,7 @@ const biologyChallenges = [
 				correct: false
 			}
 		],
-		repairPrompt:
-			'What is the smallest scientifically accurate replacement for “enzymes are killed”?',
+		repairPrompt: 'What is the smallest accurate repair to Answer B’s collision explanation?',
 		repairChoices: [
 			{
 				id: 'denature-fit',
@@ -458,7 +457,7 @@ const biologyChallenges = [
 			['substrate no longer fits', 'substrates cannot fit', 'cannot bind']
 		],
 		repairSuccess:
-			'You replaced an everyday-life phrase with the exact enzyme mechanism: denature, changed active site, failed binding.',
+			'You replaced the incorrect collision explanation with the exact mechanism: denaturation, changed active site and failed binding.',
 		transferPromptLead:
 			'Pondweed photosynthesis falls from 40.8 cm³/hour at 35 °C to 2.1 cm³/hour at 45 °C. Which explanation fits?',
 		transferChoices: [

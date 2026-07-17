@@ -14,39 +14,33 @@
 		challengeSocialImageHeight,
 		challengeSocialImageWidth
 	} from '$lib/challenges/seo';
-	import ChallengeButton from '$lib/challenges/ui/ChallengeButton.svelte';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
-	import ChallengeHowItWorks from '$lib/challenges/ui/ChallengeHowItWorks.svelte';
-	import ChallengePageHeader from '$lib/challenges/ui/ChallengePageHeader.svelte';
-	import ChallengePanel from '$lib/challenges/ui/ChallengePanel.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
 	import type { ChallengeSubject } from '$lib/challenges/types';
-	import { ArrowRight, Check, Orbit, SearchCheck, Wrench } from '@lucide/svelte';
+	import { Check, ChevronDown } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	const canonicalUrl = 'https://constellation.eviworld.com/challenges';
-	const pageTitle = 'GCSE Science Exam Answers | Find the Missing Mark';
+	const pageTitle = 'GCSE Science Exam Question Games | Biology & Physics';
 	const pageDescription =
-		'Compare answers to real cited GCSE Biology and Physics questions, find the exact missing mark, repair the reasoning and try it in a new case.';
-	const featuredChallenge = challengeByRoute('physics', 'thermal-conductivity-ice-cream-bowl');
+		'Try free GCSE Biology and Physics exam-question games. Compare two answers, find the missing mark, improve it and use the same reasoning on a new question.';
+	const featuredChallenge = challengeByRoute('biology', 'measles-vaccine-immunity');
 	let completedIds = $state<string[]>([]);
-
+	const totalCompleted = $derived(
+		challengeCatalog.filter((challenge) => completedIds.includes(challenge.id)).length
+	);
 	const subjectGroups = $derived(
 		challengeSubjects.map((subject) => {
 			const challenges = challengesForSubject(subject.subject);
 			return {
 				...subject,
 				challenges,
-				hero: challengeByRoute(subject.subject, subject.heroSlug),
 				completed: challenges.filter((challenge) => completedIds.includes(challenge.id)).length
 			};
 		})
-	);
-	const totalCompleted = $derived(
-		challengeCatalog.filter((challenge) => completedIds.includes(challenge.id)).length
 	);
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
@@ -63,7 +57,7 @@
 					{
 						'@type': 'ListItem',
 						position: 2,
-						name: 'GCSE Science Challenges',
+						name: 'GCSE Science Exam Question Games',
 						item: canonicalUrl
 					}
 				]
@@ -71,7 +65,7 @@
 			{
 				'@context': 'https://schema.org',
 				'@type': 'CollectionPage',
-				name: 'GCSE Science Challenges',
+				name: 'GCSE Science Exam Question Games',
 				description: pageDescription,
 				url: canonicalUrl,
 				isAccessibleForFree: true,
@@ -81,7 +75,7 @@
 					itemListElement: challengeSubjects.map((subject, index) => ({
 						'@type': 'ListItem',
 						position: index + 1,
-						name: `GCSE ${subject.label} answer challenges`,
+						name: `GCSE ${subject.label} exam questions`,
 						url: `https://constellation.eviworld.com/challenges/${subject.subject}`
 					}))
 				}
@@ -127,308 +121,162 @@
 
 <ChallengeRouteShell user={data.user} wide>
 	<div class="challenge-home-shell">
-		<ChallengePageHeader
-			eyebrow="Free GCSE Science past-paper answer challenges"
-			title="Two answers sound right. One loses the mark."
-			description="Compare model answers to real cited GCSE Biology and Physics past-paper questions. Find the exact line that loses the mark, repair the reasoning steps an examiner expects—then use them in a new case."
-		>
-			{#snippet actions()}
-				<ChallengeButton href={subjectHref('biology')}>
-					Browse Biology cases
-					<ArrowRight size={18} aria-hidden="true" />
-				</ChallengeButton>
-				<ChallengeButton variant="secondary" href={subjectHref('physics')}>
-					Browse Physics cases
-				</ChallengeButton>
-			{/snippet}
-			{#snippet aside()}
-				{#if featuredChallenge}
-					<div class="hero-play">
-						<p>Try one now · no sign-up</p>
-						<ChallengePreview challenge={featuredChallenge} stacked headingLevel="h2" />
-					</div>
-				{/if}
-			{/snippet}
-		</ChallengePageHeader>
+		{#if featuredChallenge}
+			<section class="play-first" aria-label="Play a GCSE Biology question">
+				<ChallengePreview
+					challenge={featuredChallenge}
+					stacked
+					headingLevel="h1"
+					headline="Both answers mention antibodies. Only one explains lasting immunity."
+				/>
+			</section>
+		{/if}
 
-		<p class="challenge-launch-note" aria-live="polite">
-			{#if totalCompleted > 0}
-				<Check size={17} aria-hidden="true" />
-				You have solved {totalCompleted} of {challengeCatalog.length} launch challenges on this device.
-			{:else}
-				No account needed · 4–6 minutes each · 2–4 mark Higher-tier source questions.
-			{/if}
-		</p>
+		{#if totalCompleted > 0}
+			<p class="device-progress" aria-live="polite">
+				<Check size={16} aria-hidden="true" />
+				{totalCompleted} of {challengeCatalog.length} challenges solved on this device
+			</p>
+		{/if}
 
-		<ChallengeHowItWorks
-			eyebrow="Past-paper questions, decoded"
-			title="Find where the answer stops earning marks"
-			headingId="challenge-loop-title"
-		/>
-
-		<section class="subject-section" aria-labelledby="choose-subject">
-			<header class="section-heading">
-				<p>Choose a case file</p>
-				<h2 id="choose-subject">Start with a real GCSE question</h2>
-				<span>Completed challenges stay on this device.</span>
+		<section class="subject-paths" aria-labelledby="subject-paths-title">
+			<header>
+				<p>Choose what comes next</p>
+				<h2 id="subject-paths-title">More exam questions, same missing-link idea</h2>
 			</header>
-
-			<div class="subject-grid">
+			<div>
 				{#each subjectGroups as subject (subject.subject)}
 					<ChallengeCardLink
 						href={subjectHref(subject.subject)}
-						eyebrow={`${subject.challenges.length} challenges · ${subject.completed} solved`}
+						eyebrow={`${subject.challenges.length} questions · ${subject.completed} solved`}
 						title={`GCSE ${subject.label}`}
-						description={subject.description}
-						meta={`Open ${subject.label}`}
+						description={subject.subject === 'biology'
+							? 'Explain cells, practicals, data and biological cause-and-effect.'
+							: 'Check calculations, particles, circuits, forces and motion.'}
+						meta={`Browse ${subject.label}`}
 						complete={subject.completed === subject.challenges.length}
 					/>
 				{/each}
 			</div>
 		</section>
 
-		<section class="preview-section" aria-labelledby="try-now">
-			<header class="section-heading compact">
-				<p>Two more starting points</p>
-				<h2 id="try-now">Choose your first answer showdown</h2>
-				<span>The full round unlocks the Question Chain only after you repair the answer.</span>
-			</header>
-			<div class="preview-grid">
-				{#each subjectGroups as subject (subject.subject)}
-					{#if subject.hero}
-						<ChallengePreview challenge={subject.hero} />
-					{/if}
-				{/each}
-			</div>
-		</section>
-
-		<ChallengePanel>
-			<section class="why-section" aria-labelledby="why-challenges">
-				<div>
-					<p class="challenge-kicker">Not another fact quiz</p>
-					<h2 id="why-challenges">Train the link that earns the mark</h2>
-					<p>
-						Each case starts with exam evidence, shows exactly why a plausible answer is incomplete
-						and makes you use the repaired reasoning again before moving on.
-					</p>
-				</div>
-				<ul>
-					<li><SearchCheck size={21} aria-hidden="true" /> Grounded in public exam questions</li>
-					<li>
-						<Wrench size={21} aria-hidden="true" /> Repair the answer instead of just revealing it
-					</li>
-					<li><Orbit size={21} aria-hidden="true" /> Try one Question Chain across contexts</li>
-				</ul>
-			</section>
-		</ChallengePanel>
+		<details class="method-note">
+			<summary>
+				<span>How these GCSE exam-question games work</span>
+				<ChevronDown size={17} aria-hidden="true" />
+			</summary>
+			<p>
+				Compare two plausible answers, expose the exact scoring gap, fix the smallest part that
+				matters, then use the same Question Chain in a different exam context. No account is
+				required.
+			</p>
+		</details>
 	</div>
 </ChallengeRouteShell>
 
 <style>
-	.challenge-kicker,
-	.section-heading > p {
-		margin: 0 0 0.65rem;
-		color: var(--qc-ui-accent-text);
-		font-size: 0.76rem;
-		font-weight: 650;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-	}
-
-	.hero-play {
-		display: grid;
-		gap: 0.55rem;
-		min-width: 0;
-	}
-
-	.hero-play > p {
-		margin: 0;
-		color: var(--qc-ui-text-muted);
-		font-size: 0.75rem;
-		font-weight: 820;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.subject-section,
-	.preview-section,
-	.why-section {
-		padding-top: clamp(3rem, 7vw, 6rem);
-	}
-
-	.section-heading {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		align-items: end;
-		gap: 0.3rem 1rem;
-		margin-bottom: 1.25rem;
-	}
-
-	.section-heading > p,
-	.section-heading h2 {
-		grid-column: 1;
-	}
-
-	.section-heading h2,
-	.why-section h2 {
-		margin: 0;
-		color: var(--qc-ui-text);
-		font-size: clamp(1.65rem, 3.6vw, 2.65rem);
-		letter-spacing: -0.035em;
-	}
-
-	.section-heading > span {
-		grid-column: 2;
-		grid-row: 1 / span 2;
-		max-width: 22rem;
-		color: var(--qc-ui-text-muted);
-		font-size: 0.86rem;
-		line-height: 1.5;
-		text-align: right;
-	}
-
-	.subject-grid,
-	.preview-grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 1rem;
-	}
-
-	.preview-grid {
-		align-items: start;
-	}
-
-	.why-section {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
-		gap: 2rem;
-		align-items: center;
-	}
-
-	.why-section p:not(.challenge-kicker) {
-		max-width: 42rem;
-		margin: 1rem 0 0;
-		color: var(--qc-ui-text-secondary);
-		font-size: 1.02rem;
-		line-height: 1.65;
-	}
-
-	.why-section ul {
-		display: grid;
-		gap: 0.55rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.why-section li {
-		display: flex;
-		align-items: center;
-		gap: 0.7rem;
-		padding: 0.85rem 1rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		border-radius: 0.85rem;
-		background: var(--qc-ui-surface-translucent);
-		color: var(--qc-ui-text-secondary);
-		font-weight: 700;
-	}
-
-	.why-section li :global(svg) {
-		flex: 0 0 auto;
-		color: var(--qc-ui-accent-text);
-	}
-
-	@media (max-width: 760px) {
-		.section-heading {
-			display: block;
-		}
-
-		.section-heading > span {
-			display: block;
-			margin-top: 0.55rem;
-			text-align: left;
-		}
-
-		.subject-grid,
-		.preview-grid,
-		.why-section {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	/* Page CSS owns layout only; shared components own controls, panels and type. */
 	.challenge-home-shell {
 		display: grid;
-		gap: clamp(2.5rem, 6vw, 4.5rem);
-		width: auto;
-		margin: 0;
-		padding: 0;
+		gap: clamp(1.4rem, 4vw, 2.8rem);
+		width: min(100%, 66rem);
+		margin: 0 auto;
 	}
 
-	.hero-play {
-		display: grid;
-		gap: 0.5rem;
+	.play-first {
 		min-width: 0;
-		padding-right: 1.3rem;
-		padding-bottom: 1.3rem;
 	}
 
-	.hero-play > p {
+	.device-progress {
+		display: inline-flex;
+		width: fit-content;
+		gap: 0.4rem;
+		align-items: center;
+		margin: -0.4rem 0 0;
+		color: var(--qc-ui-accent-text);
+		font-size: 0.82rem;
+		font-weight: 620;
+	}
+
+	.subject-paths {
+		display: grid;
+		gap: 0.85rem;
+		padding-top: clamp(0.8rem, 2vw, 1.4rem);
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.subject-paths > header {
+		display: grid;
+		gap: 0.22rem;
+	}
+
+	.subject-paths p,
+	.subject-paths h2,
+	.method-note p {
 		margin: 0;
-		color: var(--qc-ui-text-muted);
-		font-size: 0.76rem;
+	}
+
+	.subject-paths header p {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.72rem;
 		font-weight: 650;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 	}
 
-	.challenge-launch-note {
+	.subject-paths h2 {
+		font-size: clamp(1.35rem, 3vw, 1.85rem);
+		font-weight: 540;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+	}
+
+	.subject-paths > div {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.7rem;
+	}
+
+	.method-note {
+		border-block: 1px solid var(--qc-ui-border-subtle);
+		background: color-mix(in srgb, var(--qc-ui-surface-raised) 72%, transparent);
+	}
+
+	.method-note summary {
 		display: flex;
+		min-height: 3rem;
 		align-items: center;
-		gap: 0.4rem;
-		margin: -3.5rem 0 0;
-		color: var(--qc-ui-text-muted);
-		font-size: 0.82rem;
-		line-height: 1.4;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.7rem 0.85rem;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.86rem;
+		font-weight: 620;
+		cursor: pointer;
 	}
 
-	.section-heading h2,
-	.why-section h2 {
-		font-size: clamp(1.45rem, 3vw, 1.9rem);
-		font-weight: 560;
-		letter-spacing: 0;
+	.method-note summary::-webkit-details-marker {
+		display: none;
 	}
 
-	.subject-section,
-	.preview-section,
-	.why-section {
-		padding-top: 0;
+	.method-note[open] summary :global(svg) {
+		transform: rotate(180deg);
 	}
 
-	.subject-grid,
-	.preview-grid {
-		gap: 0.75rem;
-	}
-
-	.why-section li {
-		border-radius: 0;
-		background: var(--qc-ui-surface-raised);
+	.method-note p {
+		max-width: 54rem;
+		padding: 0 0.85rem 0.9rem;
+		color: var(--qc-ui-text-secondary);
 		font-size: 0.9rem;
-		font-weight: 550;
+		line-height: 1.55;
 	}
 
-	@media (max-width: 760px) {
+	@media (max-width: 640px) {
 		.challenge-home-shell {
-			gap: 2.5rem;
+			gap: 1.4rem;
 		}
 
-		.hero-play {
-			padding-right: 0.75rem;
-			padding-bottom: 0.75rem;
-		}
-
-		.challenge-launch-note {
-			margin-top: -1.75rem;
+		.subject-paths > div {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

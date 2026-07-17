@@ -9,7 +9,6 @@
 		challengeSocialImageWidth
 	} from '$lib/challenges/seo';
 	import ChallengeButton from '$lib/challenges/ui/ChallengeButton.svelte';
-	import ChallengeHowItWorks from '$lib/challenges/ui/ChallengeHowItWorks.svelte';
 	import ChallengePanel from '$lib/challenges/ui/ChallengePanel.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
 	import {
@@ -176,37 +175,37 @@
 			</section>
 		</ChallengePanel>
 
-		<ChallengeHowItWorks
-			eyebrow="How this round works"
-			title="Evidence before explanation"
-			headingId="challenge-method-title"
-		/>
-
 		<ChallengePanel>
 			<section class="challenge-provenance" aria-labelledby="source-title">
 				<div class="provenance-icon" aria-hidden="true"><ShieldCheck size={25} /></div>
 				<div>
 					<p>Source and review</p>
-					<h2 id="source-title">Know what you are practising</h2>
-					<p>
-						Question Constellation is an independent revision resource and is not affiliated with or
-						endorsed by {data.question.meta.board}. The compact focus is our adaptation and the
-						expanded card is our reconstruction of the question cited from {contextLine}. We checked
-						this challenge against the associated marking guidance. The sample answers, comparison,
-						feedback and Question Chain are our teaching interpretation, not an official mark. Other
-						scientifically valid wording may also earn credit.
-					</p>
-					<ul>
-						<li><FileCheck2 size={16} aria-hidden="true" /> {data.question.sourceRef}</li>
-						<li>
-							<CalendarCheck2 size={16} aria-hidden="true" /> Last checked against cited marking points:
-							{reviewedDate}
-						</li>
-						<li>
-							<BookOpenCheck size={16} aria-hidden="true" /> Content version {data.challenge
-								.version}
-						</li>
-					</ul>
+					<h2 id="source-title">
+						{data.question.meta.board} · {data.question.sourceRef} · {data.question.meta.marks}
+						{data.question.meta.marks === 1 ? 'mark' : 'marks'}
+					</h2>
+					<details class="provenance-details">
+						<summary>How this question was adapted and checked</summary>
+						<p>
+							Question Constellation is an independent revision resource and is not affiliated with
+							or endorsed by {data.question.meta.board}. The compact focus is our adaptation and the
+							expanded card is our reconstruction of the question cited from {contextLine}. We
+							checked this challenge against the associated marking guidance. The sample answers,
+							comparison, feedback and Question Chain are our teaching interpretation, not an
+							official mark. Other scientifically valid wording may also earn credit.
+						</p>
+						<ul>
+							<li><FileCheck2 size={16} aria-hidden="true" /> {data.question.sourceRef}</li>
+							<li>
+								<CalendarCheck2 size={16} aria-hidden="true" /> Last checked against cited marking points:
+								{reviewedDate}
+							</li>
+							<li>
+								<BookOpenCheck size={16} aria-hidden="true" /> Content version {data.challenge
+									.version}
+							</li>
+						</ul>
+					</details>
 				</div>
 				<nav aria-label="Challenge sources">
 					{#if data.questionStandaloneAvailable}
@@ -317,9 +316,24 @@
 		color: var(--qc-ui-accent-text);
 	}
 
-	.challenge-provenance h2 + p {
+	.provenance-details {
+		margin-top: 0.65rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.provenance-details summary {
+		display: flex;
+		min-height: 2.75rem;
+		align-items: center;
+		color: var(--qc-ui-accent-text);
+		font-size: 0.82rem;
+		font-weight: 650;
+		cursor: pointer;
+	}
+
+	.provenance-details > p {
 		max-width: 43rem;
-		margin: 0.7rem 0 0;
+		margin: 0 0 0.7rem;
 		color: var(--qc-ui-text-secondary);
 		font-size: 0.9rem;
 		line-height: 1.6;

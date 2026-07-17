@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ArrowRight, Check } from '@lucide/svelte';
+	import type { ChallengeDefinition } from '../types';
+	import ChallengeVisualStory from './ChallengeVisualStory.svelte';
 
 	let {
 		href,
@@ -8,6 +10,7 @@
 		title,
 		description,
 		meta,
+		visualChallenge,
 		complete = false,
 		analyticsLabel
 	}: {
@@ -16,12 +19,18 @@
 		title: string;
 		description: string;
 		meta?: string;
+		visualChallenge?: ChallengeDefinition;
 		complete?: boolean;
 		analyticsLabel?: string;
 	} = $props();
 </script>
 
 <a class:complete href={resolve(href as '/')} data-analytics-label={analyticsLabel}>
+	{#if visualChallenge}
+		<div class="card-visual">
+			<ChallengeVisualStory challenge={visualChallenge} mode="teaser" compact />
+		</div>
+	{/if}
 	<div class="card-copy">
 		<span>{eyebrow}</span>
 		<strong>{title}</strong>
@@ -64,6 +73,12 @@
 		display: grid;
 		gap: 0.28rem;
 		min-width: 0;
+	}
+
+	.card-visual {
+		grid-column: 1 / -1;
+		min-width: 0;
+		margin: -1rem -1rem 0;
 	}
 
 	.card-copy > span,

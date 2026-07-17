@@ -3,6 +3,7 @@
 	import { X } from '@lucide/svelte';
 	import { tick, type Snippet } from 'svelte';
 	import ChallengeProgress from './ChallengeProgress.svelte';
+	import ChallengeSoundToggle from './ChallengeSoundToggle.svelte';
 
 	let {
 		exitHref,
@@ -41,8 +42,7 @@
 			return;
 		}
 		showScrollCue =
-			activeCard.scrollHeight > activeCard.clientHeight + 8 &&
-			activeCard.scrollTop < activeCard.scrollHeight - activeCard.clientHeight - 8;
+			activeCard.scrollHeight > activeCard.clientHeight + 8 && activeCard.scrollTop < 8;
 	}
 
 	$effect(() => {
@@ -96,6 +96,7 @@
 		>
 			<X size={23} strokeWidth={2.1} aria-hidden="true" />
 		</a>
+		<ChallengeSoundToggle />
 		<ChallengeProgress {steps} {activeIndex} {value} {complete} />
 		<div class="session-context">
 			<span>{eyebrow}</span>
@@ -148,7 +149,7 @@
 
 	.session-header {
 		display: grid;
-		grid-template-columns: auto minmax(16rem, 1fr) minmax(10rem, 0.55fr);
+		grid-template-columns: auto auto minmax(16rem, 1fr) minmax(10rem, 0.55fr);
 		gap: 0.8rem 1rem;
 		align-items: center;
 		padding: max(0.75rem, env(safe-area-inset-top)) 1rem 0.75rem;
@@ -169,6 +170,11 @@
 	.session-exit:focus-visible {
 		outline: 3px solid var(--qc-ui-accent-text);
 		outline-offset: 2px;
+	}
+
+	.session-header :global(.sound-control button) {
+		border-radius: 0;
+		box-shadow: none;
 	}
 
 	.session-context {
@@ -296,7 +302,7 @@
 		}
 
 		.session-header {
-			grid-template-columns: auto minmax(0, 1fr);
+			grid-template-columns: auto auto minmax(0, 1fr);
 			padding-right: 0.75rem;
 			padding-left: 0.75rem;
 		}
@@ -343,9 +349,28 @@
 		}
 	}
 
+	@media (max-width: 620px) {
+		.session-stage {
+			padding: 0.4rem;
+		}
+
+		.stack-card {
+			width: calc(100% - 0.8rem);
+			height: calc(100% - 0.8rem);
+		}
+
+		.stack-card.preview {
+			display: none;
+		}
+
+		.scroll-cue {
+			bottom: 0.4rem;
+		}
+	}
+
 	@media (max-height: 520px) {
 		.session-header {
-			grid-template-columns: auto minmax(0, 1fr);
+			grid-template-columns: auto auto minmax(0, 1fr);
 			gap: 0.45rem;
 			padding-top: 0.35rem;
 			padding-bottom: 0.35rem;
@@ -383,6 +408,44 @@
 			padding-right: max(0.5rem, env(safe-area-inset-right));
 			padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
 			padding-left: max(0.5rem, env(safe-area-inset-left));
+		}
+	}
+
+	@media (max-width: 360px) {
+		.session-header {
+			gap: 0.4rem;
+			padding: 0.45rem 0.5rem;
+		}
+
+		.session-header :global(.challenge-progress) {
+			gap: 0.25rem;
+		}
+
+		.session-header :global(.challenge-progress ol) {
+			display: none;
+		}
+
+		.session-stage {
+			padding: 0.25rem;
+		}
+
+		.stack-card {
+			width: calc(100% - 0.5rem);
+			height: calc(100% - 0.5rem);
+		}
+
+		.scroll-cue {
+			right: 0.5rem;
+			bottom: 0.5rem;
+			max-width: 1.8rem;
+			padding: 0.28rem 0.42rem;
+			transform: none;
+			overflow: hidden;
+			font-size: 0;
+		}
+
+		.scroll-cue::first-letter {
+			font-size: 0.78rem;
 		}
 	}
 

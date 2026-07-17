@@ -86,6 +86,7 @@
 		"approve:paper-sitting": "node scripts/approve-paper-sitting.mjs",
 		"upload:r2-images": "node scripts/upload-r2-images.mjs",
 		"generate:chain-illustrations": "node scripts/generate-chain-illustrations.mjs",
+		"generate:challenge-illustration": "node scripts/generate-challenge-illustration.mjs",
 		"publish:chain-illustrations": "node scripts/publish-chain-illustrations.mjs",
 		"reconcile:physics-question-id": "node scripts/reconcile-physics-question-id.mjs",
 		"deploy": "wrangler deploy",

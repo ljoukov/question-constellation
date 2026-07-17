@@ -2,25 +2,36 @@
 	import { analyticsEvent } from '$lib/analytics/client';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { haptics } from '$lib/haptics';
-	import { ArrowRight, CheckCircle2, CircleX } from '@lucide/svelte';
+	import { ArrowRight, CheckCircle2, CircleHelp } from '@lucide/svelte';
+	import { tick } from 'svelte';
 	import { challengePath } from './catalog';
+	import { playChallengeSound } from './sound';
 	import type { ChallengeDefinition } from './types';
+	import { challengeVisual } from './visuals';
 	import ChallengeButton from './ui/ChallengeButton.svelte';
 	import ChallengeChoice from './ui/ChallengeChoice.svelte';
 	import ChallengePanel from './ui/ChallengePanel.svelte';
+	import ChallengeSoundToggle from './ui/ChallengeSoundToggle.svelte';
+	import ChallengeVisualStory from './ui/ChallengeVisualStory.svelte';
 
 	let {
 		challenge,
 		stacked = false,
-		headingLevel = 'h3'
+		headingLevel = 'h3',
+		headline,
+		showTeaser = true
 	}: {
 		challenge: ChallengeDefinition;
 		stacked?: boolean;
-		headingLevel?: 'h2' | 'h3';
+		headingLevel?: 'h1' | 'h2' | 'h3';
+		headline?: string;
+		showTeaser?: boolean;
 	} = $props();
 
 	let selected = $state<'a' | 'b' | null>(null);
+	let previewResult = $state<HTMLElement | null>(null);
 	const correct = $derived(selected === challenge.strongerAnswer);
+	const visual = $derived(challengeVisual(challenge));
 	const fullChallengeHref = $derived(
 		selected ? `${challengePath(challenge)}?previewChoice=${selected}` : challengePath(challenge)
 	);
@@ -28,13 +39,27 @@
 	function choose(answer: 'a' | 'b') {
 		if (selected) return;
 		selected = answer;
-		if (answer === challenge.strongerAnswer) haptics.success();
-		else haptics.error();
+		if (answer === challenge.strongerAnswer) {
+			haptics.success();
+			void playChallengeSound('correct');
+		} else {
+			haptics.error();
+			void playChallengeSound('incorrect');
+		}
 		analyticsEvent('challenge_preview_pick', {
 			challengeId: challenge.id,
 			subject: challenge.subject,
 			answer,
 			correct: answer === challenge.strongerAnswer
+		});
+		void revealResult();
+	}
+
+	async function revealResult() {
+		await tick();
+		previewResult?.scrollIntoView({
+			behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+			block: 'center'
 		});
 	}
 </script>
@@ -43,29 +68,47 @@
 	<ChallengePanel {stacked} raised>
 		<header>
 			<div>
-				<span>{challenge.subject === 'biology' ? 'Biology' : 'Physics'} quick play</span>
-				{#if headingLevel === 'h2'}
-					<h2>{challenge.title}</h2>
+				<span>GCSE {challenge.subject === 'biology' ? 'Biology' : 'Physics'} · one question</span>
+				{#if headingLevel === 'h1'}
+					<h1>{headline ?? challenge.title}</h1>
+				{:else if headingLevel === 'h2'}
+					<h2>{headline ?? challenge.title}</h2>
 				{:else}
-					<h3>{challenge.title}</h3>
+					<h3>{headline ?? challenge.title}</h3>
 				{/if}
 			</div>
-			<span class="preview-time">{challenge.estimatedMinutes} min</span>
+			<div class="preview-tools">
+				<span class="preview-time">{challenge.estimatedMinutes} min</span>
+				<ChallengeSoundToggle />
+			</div>
 		</header>
+
+		{#if showTeaser && !selected}
+			<ChallengeVisualStory {challenge} mode="teaser" compact />
+		{/if}
 
 		<p class="preview-question"><MathText text={challenge.previewQuestion} /></p>
 		<p class="preview-prompt">
 			{challenge.mechanic === 'first-wrong-step'
-				? 'Which working is better supported by the marking points?'
-				: 'Which answer is better supported by the marking points?'}
+				? 'Tap the working you would trust.'
+				: 'Tap the answer you would trust.'}
 		</p>
 
-		<div class="preview-answers" aria-label="Choose the stronger answer" data-nosnippet>
+		<div
+			class="preview-answers"
+			role="group"
+			aria-label="Choose the stronger answer"
+			data-nosnippet
+		>
 			{#each ['a', 'b'] as answer (answer)}
 				{@const answerKey = answer as 'a' | 'b'}
 				<ChallengeChoice
 					text={challenge.staticAnswers[answerKey]}
-					label={`Answer ${answerKey.toUpperCase()}`}
+					label={selected
+						? answerKey === challenge.strongerAnswer
+							? `Answer ${answerKey.toUpperCase()} · stronger`
+							: `Answer ${answerKey.toUpperCase()} · near-miss`
+						: `Answer ${answerKey.toUpperCase()}`}
 					selected={selected === answerKey}
 					status={selected
 						? answerKey === challenge.strongerAnswer
@@ -74,11 +117,6 @@
 								? 'incorrect'
 								: 'idle'
 						: 'idle'}
-					feedback={selected === answerKey
-						? answerKey === challenge.strongerAnswer
-							? 'This is the stronger answer. Open the full case to uncover the scoring link.'
-							: 'This is the tempting near-miss. Open the full case to find the decisive gap.'
-						: null}
 					disabled={Boolean(selected)}
 					prominent
 					onclick={() => choose(answerKey)}
@@ -88,31 +126,36 @@
 		</div>
 
 		{#if selected}
-			<div class:correct class:incorrect={!correct} class="preview-result" aria-live="polite">
+			<div class="preview-result" aria-live="polite" bind:this={previewResult}>
 				<span aria-hidden="true">
 					{#if correct}
 						<CheckCircle2 size={22} strokeWidth={2.3} />
 					{:else}
-						<CircleX size={22} strokeWidth={2.3} />
+						<CircleHelp size={22} strokeWidth={2.3} />
 					{/if}
 				</span>
 				<div>
-					<strong>{correct ? 'You saw it.' : 'That is the tempting one.'}</strong>
-					<p>{challenge.showdownExplanation}</p>
+					<strong>
+						{correct ? 'Found it' : 'That answer breaks here'} — {visual?.decisiveLabel ??
+							challenge.memoryHandle}
+					</strong>
+					<p>The exact cause-and-effect step is highlighted below.</p>
 				</div>
 			</div>
+
+			<ChallengeVisualStory {challenge} mode="gap" compact />
 		{/if}
 
-		<ChallengeButton
-			href={fullChallengeHref}
-			fullWidth
-			analyticsLabel={`Open full challenge: ${challenge.id}`}
-		>
-			{selected
-				? `See why Answer ${challenge.strongerAnswer.toUpperCase()} earns the mark`
-				: 'Play the full challenge'}
-			<ArrowRight size={17} aria-hidden="true" />
-		</ChallengeButton>
+		{#if selected}
+			<ChallengeButton
+				href={fullChallengeHref}
+				fullWidth
+				analyticsLabel={`Open full challenge: ${challenge.id}`}
+			>
+				Fix the missing link
+				<ArrowRight size={17} aria-hidden="true" />
+			</ChallengeButton>
+		{/if}
 	</ChallengePanel>
 </div>
 
@@ -122,7 +165,8 @@
 	}
 
 	header,
-	header > div {
+	header > div:first-child,
+	.preview-tools {
 		display: flex;
 		min-width: 0;
 	}
@@ -133,9 +177,14 @@
 		gap: 1rem;
 	}
 
-	header > div {
+	header > div:first-child {
 		flex-direction: column;
 		gap: 0.22rem;
+	}
+
+	.preview-tools {
+		align-items: center;
+		gap: 0.45rem;
 	}
 
 	header span,
@@ -147,6 +196,7 @@
 		letter-spacing: 0.03em;
 	}
 
+	header h1,
 	header h2,
 	header h3,
 	.preview-question,
@@ -155,12 +205,14 @@
 		margin: 0;
 	}
 
+	header h1,
 	header h2,
 	header h3 {
 		color: var(--qc-ui-text);
-		font-size: clamp(1.25rem, 2.5vw, 1.6rem);
-		font-weight: 650;
-		line-height: 1.18;
+		font-size: clamp(1.35rem, 3vw, 2rem);
+		font-weight: 560;
+		line-height: 1.08;
+		letter-spacing: -0.025em;
 	}
 
 	.preview-time {
@@ -170,11 +222,20 @@
 		background: var(--qc-ui-surface-muted);
 	}
 
+	.preview-tools :global(.sound-control button) {
+		width: 2.75rem;
+		height: 2.75rem;
+		min-width: 2.75rem;
+		min-height: 2.75rem;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
 	.preview-question {
 		color: var(--qc-ui-text);
-		font-size: clamp(1rem, 2vw, 1.12rem);
-		font-weight: 550;
-		line-height: 1.5;
+		font-size: clamp(0.98rem, 1.7vw, 1.08rem);
+		font-weight: 520;
+		line-height: 1.42;
 	}
 
 	.preview-prompt {
@@ -193,19 +254,10 @@
 		gap: 0.7rem;
 		align-items: start;
 		padding: 0.85rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		background: var(--qc-ui-surface-muted);
-		color: var(--qc-ui-text-secondary);
-	}
-
-	.preview-result.correct {
+		border: 1px solid var(--qc-ui-accent-border);
 		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
 		color: var(--qc-ui-accent-text);
-	}
-
-	.preview-result.incorrect {
-		border-color: var(--qc-ui-danger);
-		color: var(--qc-ui-danger);
 	}
 
 	.preview-result strong {
@@ -221,8 +273,23 @@
 	}
 
 	@media (max-width: 560px) {
+		header {
+			gap: 0.65rem;
+		}
+
+		header h1,
+		header h2,
+		header h3 {
+			font-size: 1.35rem;
+		}
+
+		.preview-time {
+			display: none;
+		}
+
 		.preview-answers {
 			grid-template-columns: minmax(0, 1fr);
+			gap: 0.5rem;
 		}
 	}
 </style>

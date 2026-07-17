@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Maximize2, X } from '@lucide/svelte';
+	import { Maximize2, MoveHorizontal, X } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { ChainIllustration } from './chainIllustration';
 
@@ -8,17 +8,24 @@
 		label = 'Visual method',
 		eager = false,
 		showCaption = true,
-		expandable = false
+		expandable = false,
+		mobilePan = false,
+		mobilePanels = [],
+		onPanComplete
 	}: {
 		illustration: ChainIllustration;
 		label?: string;
 		eager?: boolean;
 		showCaption?: boolean;
 		expandable?: boolean;
+		mobilePan?: boolean;
+		mobilePanels?: Array<{ label: string; position: string }>;
+		onPanComplete?: () => void;
 	} = $props();
 
 	let expandedDialog: HTMLDialogElement | undefined = $state();
 	let activeTheme: 'light' | 'dark' | null = $state(null);
+	let panCompletionReported = false;
 	const activeSrc = $derived(
 		activeTheme === 'dark'
 			? illustration.src
@@ -53,28 +60,125 @@
 	function closeFromBackdrop(event: MouseEvent) {
 		if (event.target === expandedDialog) closeExpandedView();
 	}
+
+	function panFocus(node: HTMLElement, enabled: boolean) {
+		let featureEnabled = enabled;
+		const sync = () => {
+			const canPan = featureEnabled && node.scrollWidth > node.clientWidth + 1;
+			if (canPan) {
+				node.tabIndex = 0;
+				node.setAttribute(
+					'aria-label',
+					`${label}. Swipe horizontally or use the arrow keys to see all four steps.`
+				);
+			} else {
+				node.removeAttribute('tabindex');
+				node.setAttribute('aria-label', `${label} image`);
+			}
+		};
+		const update = (nextEnabled: boolean) => {
+			featureEnabled = nextEnabled;
+			sync();
+		};
+		const resizeObserver = new ResizeObserver(sync);
+		resizeObserver.observe(node);
+		if (node.firstElementChild instanceof HTMLElement) {
+			resizeObserver.observe(node.firstElementChild);
+		}
+		node.addEventListener('keydown', handlePanKeydown);
+		node.addEventListener('scroll', handlePanScroll, { passive: true });
+		sync();
+		return {
+			update,
+			destroy: () => {
+				resizeObserver.disconnect();
+				node.removeEventListener('keydown', handlePanKeydown);
+				node.removeEventListener('scroll', handlePanScroll);
+			}
+		};
+	}
+
+	function handlePanScroll(event: Event) {
+		if (panCompletionReported || !(event.currentTarget instanceof HTMLElement)) return;
+		const scroller = event.currentTarget;
+		if (scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 8) return;
+		panCompletionReported = true;
+		onPanComplete?.();
+	}
+
+	function handlePanKeydown(event: KeyboardEvent) {
+		if (!mobilePan || !(event.currentTarget instanceof HTMLElement)) return;
+		const scroller = event.currentTarget;
+		const step = Math.max(96, Math.round(scroller.clientWidth * 0.8));
+		if (event.key === 'ArrowRight') scroller.scrollBy({ left: step });
+		else if (event.key === 'ArrowLeft') scroller.scrollBy({ left: -step });
+		else if (event.key === 'Home') scroller.scrollTo({ left: 0 });
+		else if (event.key === 'End') scroller.scrollTo({ left: scroller.scrollWidth });
+		else return;
+		event.preventDefault();
+	}
 </script>
 
-<figure class="chain-illustration" data-analytics-label={`${label}: ${illustration.caption}`}>
-	<div class="chain-illustration-frame">
-		{#if eager}
-			<div
-				class="chain-illustration-art"
-				role="img"
-				aria-label={illustration.alt}
-				style:--illustration-light-image={lightBackground}
-				style:--illustration-dark-image={darkBackground}
-			></div>
-		{:else if activeSrc}
-			<img
-				src={activeSrc}
-				alt={illustration.alt}
-				width={illustration.width}
-				height={illustration.height}
-				loading={eager ? 'eager' : 'lazy'}
-				decoding="async"
-			/>
-		{/if}
+<figure
+	class="chain-illustration"
+	class:mobile-pan={mobilePan}
+	class:mobile-panel-sequence={mobilePanels.length > 0}
+	data-analytics-label={`${label}: ${illustration.caption}`}
+>
+	{#if mobilePan}
+		<p class="chain-illustration-pan-hint">
+			<MoveHorizontal size={17} strokeWidth={2.2} aria-hidden="true" />
+			Swipe to see all 4 steps · expand for the full atlas
+		</p>
+	{/if}
+	<div class="chain-illustration-frame-shell">
+		<div
+			class="chain-illustration-frame-scroll"
+			use:panFocus={mobilePan}
+			role="region"
+			aria-label={`${label} image`}
+		>
+			<div class="chain-illustration-frame">
+				{#if eager}
+					<div
+						class="chain-illustration-art"
+						role="img"
+						aria-label={illustration.alt}
+						style:--illustration-light-image={lightBackground}
+						style:--illustration-dark-image={darkBackground}
+					></div>
+				{:else if activeSrc}
+					<img
+						src={activeSrc}
+						alt={illustration.alt}
+						width={illustration.width}
+						height={illustration.height}
+						loading={eager ? 'eager' : 'lazy'}
+						decoding="async"
+					/>
+				{/if}
+			</div>
+			{#if mobilePanels.length > 0}
+				<div
+					class="chain-illustration-mobile-sequence"
+					role="img"
+					aria-label={`${label}: ${mobilePanels.map((panel) => panel.label).join(', then ')}`}
+				>
+					{#each mobilePanels as panel, index (panel.label)}
+						<div
+							class="chain-illustration-mobile-panel"
+							style:--illustration-light-image={lightBackground}
+							style:--illustration-dark-image={darkBackground}
+							style:--mobile-panel-position={panel.position}
+							aria-hidden="true"
+						>
+							<span>{index + 1}</span>
+							<strong>{panel.label}</strong>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
 		{#if expandable}
 			<button
 				type="button"
@@ -112,6 +216,10 @@
 			>
 				<X size={21} strokeWidth={2.2} aria-hidden="true" />
 			</button>
+			<p class="chain-illustration-dialog-hint">
+				<MoveHorizontal size={17} strokeWidth={2.2} aria-hidden="true" />
+				Swipe across the full atlas
+			</p>
 			<div class="chain-illustration-pan">
 				{#if activeSrc}
 					<img
@@ -120,7 +228,7 @@
 						alt={illustration.alt}
 						width={illustration.width}
 						height={illustration.height}
-						loading="lazy"
+						loading={eager ? 'eager' : 'lazy'}
 						decoding="async"
 					/>
 				{/if}
@@ -153,6 +261,8 @@
 
 	.chain-illustration {
 		width: min(100%, 980px);
+		max-width: 100%;
+		min-width: 0;
 		margin: 0;
 		border: 1px solid var(--illustration-border);
 		background: var(--illustration-surface);
@@ -164,10 +274,23 @@
 	}
 
 	.chain-illustration-frame {
-		position: relative;
 		aspect-ratio: 16 / 9;
 		background: var(--illustration-frame);
 		overflow: hidden;
+	}
+
+	.chain-illustration-frame-shell {
+		position: relative;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.chain-illustration-frame-scroll {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
 	}
 
 	.chain-illustration-frame > img {
@@ -203,6 +326,16 @@
 		position: absolute;
 		top: 0.65rem;
 		right: 0.65rem;
+		z-index: 2;
+	}
+
+	.chain-illustration-pan-hint {
+		display: none;
+	}
+
+	.chain-illustration-mobile-sequence,
+	.chain-illustration-dialog-hint {
+		display: none;
 	}
 
 	.chain-illustration-expand:hover,
@@ -293,6 +426,10 @@
 		background-image: var(--illustration-dark-image);
 	}
 
+	:global(:root[data-theme='dark']) .chain-illustration-mobile-panel {
+		background-image: var(--illustration-dark-image);
+	}
+
 	@media (prefers-color-scheme: dark) {
 		:global(:root:not([data-theme='light'])) .chain-illustration,
 		:global(:root:not([data-theme='light'])) .chain-illustration-dialog {
@@ -322,6 +459,117 @@
 		:global(:root:not([data-theme='light'])) .chain-illustration-art {
 			background-image: var(--illustration-dark-image);
 		}
+
+		:global(:root:not([data-theme='light'])) .chain-illustration-mobile-panel {
+			background-image: var(--illustration-dark-image);
+		}
+	}
+
+	@media (max-width: 520px) {
+		.mobile-pan {
+			contain: inline-size;
+		}
+
+		.mobile-pan .chain-illustration-frame-scroll {
+			overflow-x: auto;
+			overscroll-behavior-inline: contain;
+			scrollbar-width: thin;
+		}
+
+		.mobile-pan .chain-illustration-frame-scroll:focus-visible {
+			outline: 2px solid var(--illustration-control-outline);
+			outline-offset: -2px;
+		}
+
+		.mobile-pan .chain-illustration-frame {
+			width: 45rem;
+			max-width: none;
+		}
+
+		.mobile-panel-sequence .chain-illustration-frame {
+			display: none;
+		}
+
+		.mobile-panel-sequence .chain-illustration-frame-scroll {
+			scroll-snap-type: x mandatory;
+		}
+
+		.mobile-panel-sequence .chain-illustration-mobile-sequence {
+			display: flex;
+			width: max-content;
+			gap: 0.5rem;
+			padding: 0.5rem;
+		}
+
+		.mobile-panel-sequence .chain-illustration-mobile-panel {
+			position: relative;
+			width: min(17rem, calc(100vw - 5.5rem));
+			aspect-ratio: 1.46;
+			flex: 0 0 auto;
+			scroll-snap-align: start;
+			border: 1px solid var(--illustration-border);
+			background-image: var(--illustration-light-image);
+			background-position: var(--mobile-panel-position);
+			background-repeat: no-repeat;
+			background-size: 334% auto;
+			overflow: hidden;
+		}
+
+		.mobile-panel-sequence .chain-illustration-mobile-panel::after {
+			position: absolute;
+			inset: auto 0 0;
+			height: 44%;
+			background: linear-gradient(transparent, rgba(1, 9, 20, 0.88));
+			content: '';
+		}
+
+		.mobile-panel-sequence .chain-illustration-mobile-panel > span,
+		.mobile-panel-sequence .chain-illustration-mobile-panel > strong {
+			position: absolute;
+			z-index: 1;
+			bottom: 0.55rem;
+			color: #fff;
+			text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+		}
+
+		.mobile-panel-sequence .chain-illustration-mobile-panel > span {
+			left: 0.55rem;
+			display: grid;
+			width: 1.55rem;
+			height: 1.55rem;
+			place-items: center;
+			border: 1px solid rgba(255, 255, 255, 0.76);
+			background: rgba(2, 16, 31, 0.82);
+			font-size: 0.78rem;
+			font-weight: 850;
+		}
+
+		.mobile-panel-sequence .chain-illustration-mobile-panel > strong {
+			right: 0.55rem;
+			left: 2.45rem;
+			font-size: 0.83rem;
+			line-height: 1.2;
+		}
+
+		.mobile-pan .chain-illustration-pan-hint {
+			display: flex;
+			gap: 0.42rem;
+			align-items: center;
+			margin: 0;
+			padding: 0.58rem 0.7rem;
+			border-bottom: 1px solid var(--illustration-caption-border);
+			background: var(--illustration-caption-surface);
+			color: var(--illustration-caption-copy);
+			font-size: 0.76rem;
+			font-weight: 650;
+			line-height: 1.35;
+		}
+
+		.mobile-pan .chain-illustration-expand {
+			position: absolute;
+			right: 0.55rem;
+			top: 0.55rem;
+		}
 	}
 
 	figcaption {
@@ -350,7 +598,7 @@
 	}
 
 	@media (max-width: 620px) {
-		.chain-illustration-expand {
+		.chain-illustration:not(.mobile-pan) .chain-illustration-expand {
 			top: auto;
 			right: 0.42rem;
 			bottom: 0.42rem;
@@ -365,7 +613,25 @@
 
 		.chain-illustration-pan {
 			place-items: start;
-			padding: 3.4rem 0.5rem 0.5rem;
+			padding: 0.5rem;
+		}
+
+		.chain-illustration-dialog-shell {
+			grid-template-rows: auto minmax(0, 1fr);
+		}
+
+		.chain-illustration-dialog-hint {
+			display: flex;
+			gap: 0.42rem;
+			align-items: center;
+			min-height: 3.4rem;
+			margin: 0;
+			padding: 0.8rem 3.7rem 0.8rem 0.8rem;
+			border-bottom: 1px solid var(--illustration-caption-border);
+			background: var(--illustration-caption-surface);
+			color: var(--illustration-caption-copy);
+			font-size: 0.8rem;
+			font-weight: 650;
 		}
 
 		.chain-illustration-expanded-image {

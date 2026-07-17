@@ -10,21 +10,10 @@
 		challengeSocialImageHeight,
 		challengeSocialImageWidth
 	} from '$lib/challenges/seo';
-	import ChallengeButton from '$lib/challenges/ui/ChallengeButton.svelte';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
-	import ChallengePageHeader from '$lib/challenges/ui/ChallengePageHeader.svelte';
-	import ChallengePanel from '$lib/challenges/ui/ChallengePanel.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
-	import {
-		ArrowRight,
-		CheckCircle2,
-		Clock3,
-		Compass,
-		FlaskConical,
-		Gauge,
-		LockKeyholeOpen
-	} from '@lucide/svelte';
+	import { Check, ChevronDown, Clock3, LockKeyholeOpen } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
@@ -34,13 +23,31 @@
 	const canonicalUrl = $derived(
 		`https://constellation.eviworld.com/challenges/${data.subject.subject}`
 	);
-	const pageTitle = $derived(`${subjectLabel} Exam Answer Quiz | Past-Paper Questions`);
+	const pageTitle = $derived(
+		data.subject.subject === 'biology'
+			? 'GCSE Biology Exam Questions & Answer Quiz'
+			: 'GCSE Physics Exam Questions & Working Quiz'
+	);
 	const pageDescription = $derived(
-		`Play ${data.challenges.length} short ${subjectLabel} exam-answer challenges. Compare plausible answers, repair missing reasoning and recognise the Question Chain in a new case.`
+		`Try ${data.challenges.length} free ${subjectLabel} exam-question challenges. Compare plausible answers, find the scoring gap, improve it and apply the reasoning again.`
 	);
 	const heroChallenge = $derived(
 		challengeByRoute(data.subject.subject, data.subject.heroSlug) ?? data.challenges[0]
 	);
+	const heroHeadline = $derived(
+		data.subject.subject === 'biology'
+			? 'Both answers say the enzyme stops. Only one explains why.'
+			: 'The range is right. Why does the uncertainty still lose the mark?'
+	);
+	const recommended = $derived.by(() => {
+		const pool = data.challenges.filter((challenge) => challenge.id !== heroChallenge?.id);
+		const varied = (['starter', 'standard', 'stretch'] as const)
+			.map((difficulty) => pool.find((challenge) => challenge.difficulty === difficulty))
+			.filter((challenge) => challenge !== undefined);
+		return [
+			...new Map([...varied, ...pool].map((challenge) => [challenge.id, challenge])).values()
+		].slice(0, 3);
+	});
 	let completedIds = $state<string[]>([]);
 	const completedCount = $derived(
 		data.challenges.filter((challenge) => completedIds.includes(challenge.id)).length
@@ -60,7 +67,7 @@
 					{
 						'@type': 'ListItem',
 						position: 2,
-						name: 'GCSE Science Challenges',
+						name: 'GCSE Science Exam Question Games',
 						item: 'https://constellation.eviworld.com/challenges'
 					},
 					{
@@ -74,7 +81,7 @@
 			{
 				'@context': 'https://schema.org',
 				'@type': 'CollectionPage',
-				name: `${subjectLabel} exam-answer challenges`,
+				name: `${subjectLabel} exam questions`,
 				description: pageDescription,
 				url: canonicalUrl,
 				isAccessibleForFree: true,
@@ -126,446 +133,248 @@
 
 <ChallengeRouteShell user={data.user} wide>
 	<div class="challenge-subject-shell">
-		<IconBackLink href={resolve('/challenges')} label="Back to all challenges" />
-
-		<ChallengePageHeader
-			eyebrow={`GCSE ${data.subject.label} answer challenges`}
-			title={`${subjectLabel} answers: spot the decisive link.`}
-			description={data.subject.description}
-		>
-			{#snippet actions()}
-				{#if heroChallenge}
-					<ChallengeButton href={challengePath(heroChallenge)}>
-						Start the warm-up
-						<ArrowRight size={17} aria-hidden="true" />
-					</ChallengeButton>
-				{/if}
-			{/snippet}
-			{#snippet aside()}
-				<ChallengePanel>
-					<div class="subject-readout">
-						<strong>{completedCount}<small>/{data.challenges.length}</small></strong>
-						<span>case files solved</span>
-						<div
-							role="progressbar"
-							aria-label={`${subjectLabel} challenge progress`}
-							aria-valuemin="0"
-							aria-valuemax={data.challenges.length}
-							aria-valuenow={completedCount}
-						>
-							<i style={`width: ${(completedCount / data.challenges.length) * 100}%`}></i>
-						</div>
-					</div>
-				</ChallengePanel>
-			{/snippet}
-		</ChallengePageHeader>
-
-		<div class="subject-hero-meta">
-			<span>
-				<FlaskConical size={17} aria-hidden="true" />
-				AQA {data.subject.label} + Combined Science · Higher tier
+		<div class="subject-toolbar">
+			<IconBackLink href={resolve('/challenges')} label="Back to all challenges" />
+			<span class="progress-chip">
+				{#if completedCount > 0}<Check size={15} aria-hidden="true" />{/if}
+				{completedCount}/{data.challenges.length} solved
 			</span>
-			<span><Clock3 size={17} aria-hidden="true" /> 4–6 minutes each</span>
-			<span><LockKeyholeOpen size={17} aria-hidden="true" /> No account needed</span>
 		</div>
 
 		{#if heroChallenge}
-			<section class="subject-preview" aria-labelledby="first-case">
-				<header>
-					<p>Warm-up case</p>
-					<h2 id="first-case">Choose before the explanation gives it away</h2>
-				</header>
-				<ChallengePreview challenge={heroChallenge} />
+			<section class="subject-hero" aria-label={`Play a ${subjectLabel} question`}>
+				<ChallengePreview
+					challenge={heroChallenge}
+					headingLevel="h1"
+					headline={heroHeadline}
+					stacked
+				/>
 			</section>
 		{/if}
 
-		<section class="case-files" aria-labelledby="case-files">
-			<header class="case-heading">
-				<div>
-					<p>{data.challenges.length} interactive case files</p>
-					<h2 id="case-files">Build the chain, one arc at a time</h2>
-				</div>
-				<span><Compass size={17} aria-hidden="true" /> Start anywhere; each arc is finite.</span>
+		<p class="subject-facts">
+			<span><Clock3 size={15} aria-hidden="true" /> 4–6 minutes a question</span>
+			<span><LockKeyholeOpen size={15} aria-hidden="true" /> No account needed</span>
+		</p>
+
+		<section class="recommended-cases" aria-labelledby="recommended-cases-title">
+			<header>
+				<p>Three ways in</p>
+				<h2 id="recommended-cases-title">Choose another {data.subject.label} question</h2>
 			</header>
-
-			{#each data.arcs as arc, arcIndex (arc.id)}
-				{@const arcChallenges = data.challenges.filter((challenge) => challenge.arc === arc.id)}
-				<section class="arc-section" aria-labelledby={`arc-${arc.id}`}>
-					<header>
-						<span>{String(arcIndex + 1).padStart(2, '0')}</span>
-						<div>
-							<h3 id={`arc-${arc.id}`}>{arc.label}</h3>
-							<p>{arc.description}</p>
-						</div>
-					</header>
-
-					<div class="case-grid">
-						{#each arcChallenges as challenge, index (challenge.id)}
-							<ChallengeCardLink
-								href={challengePath(challenge)}
-								eyebrow={`Case ${index + 1} · ${completedIds.includes(challenge.id) ? 'Solved' : challenge.difficulty}`}
-								title={challenge.title}
-								description={challenge.hook}
-								meta={`${challenge.topic} · ${challenge.estimatedMinutes} min`}
-								complete={completedIds.includes(challenge.id)}
-								analyticsLabel={`Open ${challenge.title} challenge`}
-							/>
-						{/each}
-					</div>
-				</section>
-			{/each}
+			<div>
+				{#each recommended as challenge (challenge.id)}
+					<ChallengeCardLink
+						href={challengePath(challenge)}
+						eyebrow={`${completedIds.includes(challenge.id) ? 'Solved' : challenge.difficulty} · ${challenge.estimatedMinutes} min`}
+						title={challenge.title}
+						description={challenge.hook}
+						meta={challenge.topic}
+						visualChallenge={challenge}
+						complete={completedIds.includes(challenge.id)}
+						analyticsLabel={`Open ${challenge.title} challenge`}
+					/>
+				{/each}
+			</div>
 		</section>
 
-		<ChallengePanel>
-			<aside class="teacher-note">
-				<Gauge size={21} aria-hidden="true" />
-				<div>
-					<strong>Teacher note</strong>
-					<p>
-						Use the quick-play preview for a two-minute class vote, or one full case as a 4–6 minute
-						starter.
-					</p>
-				</div>
-			</aside>
-		</ChallengePanel>
+		<details class="all-cases">
+			<summary>
+				<span>
+					<strong>View all {data.challenges.length} {data.subject.label} questions</strong>
+					<small>Grouped by the reasoning move they practise</small>
+				</span>
+				<ChevronDown size={19} aria-hidden="true" />
+			</summary>
 
-		<ChallengePanel>
-			<footer class="subject-footer">
-				<CheckCircle2 size={22} aria-hidden="true" />
-				<div>
-					<strong>What counts as solved?</strong>
-					<p>Repair the answer and recognise the same reasoning in a second question.</p>
-				</div>
-				<ChallengeButton variant="secondary" href="/challenges">Switch subject</ChallengeButton>
-			</footer>
-		</ChallengePanel>
+			<div class="arc-list">
+				{#each data.arcs as arc (arc.id)}
+					{@const arcChallenges = data.challenges.filter((challenge) => challenge.arc === arc.id)}
+					{#if arcChallenges.length > 0}
+						<section aria-labelledby={`arc-${arc.id}`}>
+							<header>
+								<h2 id={`arc-${arc.id}`}>{arc.label}</h2>
+								<p>{arc.description}</p>
+							</header>
+							<div>
+								{#each arcChallenges as challenge (challenge.id)}
+									<ChallengeCardLink
+										href={challengePath(challenge)}
+										eyebrow={`${completedIds.includes(challenge.id) ? 'Solved' : challenge.difficulty} · ${challenge.estimatedMinutes} min`}
+										title={challenge.title}
+										description={challenge.hook}
+										meta={challenge.topic}
+										complete={completedIds.includes(challenge.id)}
+									/>
+								{/each}
+							</div>
+						</section>
+					{/if}
+				{/each}
+			</div>
+		</details>
 	</div>
 </ChallengeRouteShell>
 
 <style>
 	.challenge-subject-shell {
-		width: min(100%, 75rem);
+		display: grid;
+		gap: clamp(1.35rem, 3vw, 2.3rem);
+		width: min(100%, 66rem);
 		margin: 0 auto;
-		padding: 1.2rem clamp(1rem, 3vw, 2rem) 5rem;
 	}
 
-	.subject-preview > header p,
-	.case-heading p {
-		margin: 0 0 0.6rem;
+	.subject-toolbar,
+	.subject-facts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.55rem 1rem;
+	}
+
+	.progress-chip,
+	.subject-facts span {
+		display: inline-flex;
+		gap: 0.35rem;
+		align-items: center;
+		color: var(--qc-ui-text-muted);
+		font-size: 0.78rem;
+		font-weight: 620;
+	}
+
+	.progress-chip {
+		min-height: 2rem;
+		padding: 0.32rem 0.48rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
+	}
+
+	.progress-chip :global(svg) {
 		color: var(--qc-ui-accent-text);
-		font-size: 0.75rem;
+	}
+
+	.subject-facts {
+		justify-content: flex-start;
+		margin: -0.6rem 0 0;
+	}
+
+	.recommended-cases {
+		display: grid;
+		gap: 0.8rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.recommended-cases > header,
+	.arc-list section > header {
+		display: grid;
+		gap: 0.22rem;
+	}
+
+	.recommended-cases p,
+	.recommended-cases h2,
+	.arc-list h2,
+	.arc-list p {
+		margin: 0;
+	}
+
+	.recommended-cases > header p {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.72rem;
 		font-weight: 650;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 	}
 
-	.subject-hero-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 1rem;
-		margin-top: 1.25rem;
+	.recommended-cases h2 {
+		font-size: clamp(1.35rem, 3vw, 1.85rem);
+		font-weight: 540;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
 	}
 
-	.subject-hero-meta span {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.38rem;
-		color: var(--qc-ui-text-muted);
-		font-size: 0.82rem;
-		font-weight: 650;
-	}
-
-	.subject-readout {
-		display: grid;
-		min-width: 10rem;
-		gap: 0.2rem;
-		padding: 1rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		border-radius: 1rem;
-		background: var(--qc-ui-surface-raised);
-	}
-
-	.subject-readout > strong {
-		color: var(--qc-ui-text);
-		font-size: 2.6rem;
-		line-height: 1;
-	}
-
-	.subject-readout > strong small {
-		color: var(--qc-ui-text-muted);
-		font-size: 1rem;
-	}
-
-	.subject-readout > span {
-		color: var(--qc-ui-text-muted);
-		font-size: 0.78rem;
-		font-weight: 700;
-	}
-
-	.subject-readout > div {
-		height: 0.38rem;
-		margin-top: 0.6rem;
-		overflow: hidden;
-		border-radius: 99px;
-		background: var(--qc-ui-border-subtle);
-	}
-
-	.subject-readout i {
-		display: block;
-		height: 100%;
-		border-radius: inherit;
-		background: var(--qc-ui-accent);
-		transition: width 320ms ease;
-	}
-
-	.subject-preview,
-	.case-files {
-		padding-top: clamp(3rem, 7vw, 5rem);
-	}
-
-	.subject-preview > header,
-	.case-heading {
-		margin-bottom: 1.1rem;
-	}
-
-	.subject-preview h2,
-	.case-heading h2 {
-		margin: 0;
-		color: var(--qc-ui-text);
-		font-size: clamp(1.55rem, 3.5vw, 2.5rem);
-		letter-spacing: -0.035em;
-	}
-
-	.subject-preview :global(.challenge-preview) {
-		max-width: 52rem;
-	}
-
-	.case-heading {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		align-items: end;
-	}
-
-	.case-heading > span {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		color: var(--qc-ui-text-muted);
-		font-size: 0.84rem;
-	}
-
-	.arc-section {
-		margin-top: 2rem;
-	}
-
-	.arc-section > header {
-		display: grid;
-		grid-template-columns: 2.4rem minmax(0, 1fr);
-		gap: 0.75rem;
-		align-items: start;
-		margin-bottom: 0.8rem;
-	}
-
-	.arc-section > header > span {
-		display: grid;
-		width: 2.4rem;
-		height: 2.4rem;
-		place-items: center;
-		border: 1px solid var(--qc-ui-accent-border);
-		border-radius: 0.72rem;
-		background: var(--qc-ui-accent-muted);
-		color: var(--qc-ui-accent-text);
-		font-size: 0.76rem;
-		font-weight: 900;
-	}
-
-	.arc-section h3 {
-		margin: 0;
-		color: var(--qc-ui-text);
-		font-size: 1.25rem;
-	}
-
-	.arc-section header p {
-		margin: 0.2rem 0 0;
-		color: var(--qc-ui-text-muted);
-		line-height: 1.5;
-	}
-
-	.case-grid {
+	.recommended-cases > div {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.75rem;
+		gap: 0.65rem;
 	}
 
-	.subject-footer {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
-		gap: 0.75rem;
+	.all-cases {
+		border-block: 1px solid var(--qc-ui-border-subtle);
+		background: color-mix(in srgb, var(--qc-ui-surface-raised) 78%, transparent);
+	}
+
+	.all-cases > summary {
+		display: flex;
+		min-height: 4rem;
 		align-items: center;
-		margin-top: 4rem;
-		padding: 1rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		border-radius: 1rem;
-		background: var(--qc-ui-surface-translucent);
-		color: var(--qc-ui-text-secondary);
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.75rem 0.9rem;
+		cursor: pointer;
 	}
 
-	.teacher-note {
+	.all-cases > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.all-cases > summary span {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0.7rem;
-		align-items: start;
-		margin-top: 3rem;
-		padding: 0.85rem 1rem;
-		border-left: 3px solid var(--qc-ui-accent);
-		background: var(--qc-ui-accent-muted);
-		color: var(--qc-ui-text-secondary);
+		gap: 0.15rem;
 	}
 
-	.teacher-note > :global(svg) {
-		color: var(--qc-ui-accent-text);
+	.all-cases > summary strong {
+		font-size: 0.95rem;
+		font-weight: 620;
 	}
 
-	.teacher-note strong {
-		color: var(--qc-ui-text);
+	.all-cases > summary small {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.78rem;
 	}
 
-	.teacher-note p {
-		margin: 0.15rem 0 0;
-		font-size: 0.84rem;
-		line-height: 1.5;
+	.all-cases[open] > summary :global(svg) {
+		transform: rotate(180deg);
 	}
 
-	.subject-footer > :global(svg) {
-		color: var(--qc-ui-accent-text);
-	}
-
-	.subject-footer strong {
-		color: var(--qc-ui-text);
-	}
-
-	.subject-footer p {
-		margin: 0.15rem 0 0;
-		font-size: 0.84rem;
-	}
-
-	@media (max-width: 820px) {
-		.case-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 620px) {
-		.subject-readout {
-			grid-template-columns: auto minmax(0, 1fr);
-			align-items: center;
-		}
-
-		.subject-readout > div {
-			grid-column: 1 / -1;
-			margin-top: 0.35rem;
-		}
-
-		.case-heading {
-			display: block;
-		}
-
-		.case-heading > span {
-			margin-top: 0.65rem;
-		}
-
-		.case-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.subject-footer {
-			grid-template-columns: auto minmax(0, 1fr);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.subject-readout i {
-			transition: none;
-		}
-	}
-
-	/* Route CSS is intentionally limited to composition around shared Challenge UI. */
-	.challenge-subject-shell {
+	.arc-list {
 		display: grid;
-		gap: clamp(2rem, 5vw, 4rem);
-		width: auto;
-		margin: 0;
-		padding: 0;
+		gap: 1.4rem;
+		padding: 0.25rem 0.9rem 1rem;
 	}
 
-	.subject-hero-meta {
-		margin-top: -3rem;
+	.arc-list section {
+		display: grid;
+		gap: 0.65rem;
 	}
 
-	.subject-readout {
-		min-width: 0;
-		padding: 0;
-		border: 0;
-		border-radius: 0;
-		background: transparent;
+	.arc-list section > header {
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
 	}
 
-	.subject-readout > strong {
-		font-size: 2.25rem;
-		font-weight: 560;
+	.arc-list h2 {
+		font-size: 1.12rem;
+		font-weight: 620;
 	}
 
-	.subject-readout > div,
-	.subject-readout i {
-		border-radius: 0;
+	.arc-list p {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.82rem;
+		line-height: 1.4;
 	}
 
-	.subject-preview,
-	.case-files {
-		padding-top: 0;
-	}
-
-	.subject-preview h2,
-	.case-heading h2 {
-		font-size: clamp(1.45rem, 3vw, 1.9rem);
-		font-weight: 560;
-		letter-spacing: 0;
-	}
-
-	.arc-section > header > span {
-		border-radius: 0;
-		font-weight: 700;
-	}
-
-	.arc-section h3 {
-		font-weight: 600;
-	}
-
-	.case-grid {
+	.arc-list section > div {
+		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.6rem;
 	}
 
-	.teacher-note,
-	.subject-footer {
-		margin-top: 0;
-		padding: 0;
-		border: 0;
-		border-radius: 0;
-		background: transparent;
-	}
-
-	@media (max-width: 620px) {
-		.challenge-subject-shell {
-			gap: 2.5rem;
-		}
-
-		.subject-hero-meta {
-			margin-top: -1.75rem;
-		}
-
-		.case-grid {
-			grid-template-columns: 1fr;
+	@media (max-width: 760px) {
+		.recommended-cases > div,
+		.arc-list section > div {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

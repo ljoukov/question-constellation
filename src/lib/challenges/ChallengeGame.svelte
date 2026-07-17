@@ -28,9 +28,12 @@
 		updateChallengeProgress,
 		writeChallengeProgress
 	} from './progress';
+	import { playChallengeSound } from './sound';
 	import ChallengeButton from './ui/ChallengeButton.svelte';
 	import ChallengeChoiceControl from './ui/ChallengeChoice.svelte';
 	import ChallengeSessionShell from './ui/ChallengeSessionShell.svelte';
+	import ChallengeVisualStory from './ui/ChallengeVisualStory.svelte';
+	import { challengeVisual } from './visuals';
 
 	type Stage = 'showdown' | 'diagnose' | 'repair' | 'transfer' | 'complete';
 
@@ -79,6 +82,8 @@
 	let reduceMotion = $state(false);
 	let canNativeShare = $state(false);
 	let stageHeading = $state<HTMLElement | null>(null);
+	let showdownReveal = $state<HTMLElement | null>(null);
+	let earnedChain = $state<HTMLElement | null>(null);
 	let stageStartedAt = $state(0);
 	let roundStartedAt = $state(0);
 
@@ -122,6 +127,9 @@
 			'off-command': 'Does not answer the command word'
 		}[challenge.weakAnswerKind]
 	);
+	const commandWord = $derived(inferCommandWord(challenge.previewQuestion));
+	const paperLabel = $derived(compactPaperLabel(question.meta.paper, question.meta.tier));
+	const visual = $derived(challengeVisual(challenge));
 	const completedWithoutFeedback = $derived(
 		selectedShowdownCorrect &&
 			diagnosisAttempts === 1 &&
@@ -141,17 +149,15 @@
 		const previewChoice = page.url.searchParams.get('previewChoice');
 		if (previewChoice === 'a' || previewChoice === 'b') {
 			selectedAnswer = previewChoice;
-			announcement =
-				previewChoice === challenge.strongerAnswer
-					? 'Your quick-play choice is here. Read the comparison, then continue.'
-					: 'Your quick-play choice is here. Read the marked gap, then continue.';
+			stage = 'diagnose';
+			announcement = 'Your answer is carried into the missing-link step.';
 			analyticsEvent('challenge_preview_resume', eventContext({ answer: previewChoice }));
 		}
 		motionPreference.addEventListener('change', syncMotionPreference);
 		roundStartedAt = performance.now();
 		stageStartedAt = roundStartedAt;
 		repairDraft = `${weakAnswerText}\n`;
-		recordProgress('showdown');
+		recordProgress(stage);
 		analyticsEvent('challenge_round_start', eventContext());
 
 		return () => motionPreference.removeEventListener('change', syncMotionPreference);
@@ -196,6 +202,7 @@
 			eventContext({ durationMs: elapsedSince(stageStartedAt) })
 		);
 		haptics.selection();
+		void playChallengeSound('reveal');
 		stage = nextStage;
 		stageStartedAt = performance.now();
 		recordProgress(nextStage);
@@ -208,6 +215,7 @@
 		const correct = answer === challenge.strongerAnswer;
 		if (correct) haptics.success();
 		else haptics.error();
+		void playChallengeSound(correct ? 'correct' : 'incorrect');
 		announcement = correct
 			? 'You chose the stronger answer.'
 			: `You chose the plausible near-miss: ${weakAnswerLabel.toLowerCase()}.`;
@@ -220,6 +228,15 @@
 			})
 		);
 		analyticsEvent('challenge_reveal_complete', eventContext({ correct }));
+		void revealShowdownResult();
+	}
+
+	async function revealShowdownResult() {
+		await tick();
+		showdownReveal?.scrollIntoView({
+			behavior: reduceMotion ? 'auto' : 'smooth',
+			block: 'center'
+		});
 	}
 
 	function chooseDiagnosis(choice: ChallengeChoice) {
@@ -232,9 +249,11 @@
 		diagnosisChoice = choice.id;
 		if (choice.correct) {
 			haptics.success();
+			void playChallengeSound('correct');
 			announcement = 'You found the missing link.';
 		} else {
 			haptics.error();
+			void playChallengeSound('incorrect');
 			announcement = 'That is plausible, but it does not repair the decisive gap. Try again.';
 		}
 		analyticsEvent(
@@ -251,9 +270,12 @@
 		if (choice.correct) {
 			repairPassed = true;
 			haptics.success();
+			void playChallengeSound('correct');
 			announcement = 'Repair complete. You earned the full Question Chain.';
+			void revealEarnedChain();
 		} else {
 			haptics.error();
+			void playChallengeSound('incorrect');
 			announcement = 'That edit is still incomplete. Use the feedback and try again.';
 		}
 		analyticsEvent(
@@ -267,10 +289,19 @@
 		);
 	}
 
+	async function revealEarnedChain() {
+		await tick();
+		earnedChain?.scrollIntoView({
+			behavior: reduceMotion ? 'auto' : 'smooth',
+			block: 'start'
+		});
+	}
+
 	function openWrittenSelfCheck() {
 		repairAttempts += 1;
 		writtenSelfCheckOpen = true;
 		haptics.selection();
+		void playChallengeSound('select');
 		announcement = 'The self-check is open. You—not an automated checker—compare the whole answer.';
 		analyticsEvent('challenge_written_self_check', eventContext({ attempt: repairAttempts }));
 	}
@@ -280,6 +311,7 @@
 		writeRepair = !writeRepair;
 		writtenSelfCheckOpen = false;
 		haptics.selection();
+		void playChallengeSound('select');
 		repairMessage = '';
 		if (!repairDraft.trim()) repairDraft = `${weakAnswerText}\n`;
 		analyticsEvent(
@@ -302,12 +334,14 @@
 		if (choice.correct) {
 			transferPassed = true;
 			haptics.success();
+			void playChallengeSound('correct');
 			announcement =
 				transferAttempts === 1
 					? 'You recognised the link in a new context first time.'
 					: 'You recognised the link in a new context with feedback.';
 		} else {
 			haptics.error();
+			void playChallengeSound('incorrect');
 			announcement = 'That answer repeats the context, but misses the shared link. Try again.';
 		}
 		analyticsEvent(
@@ -319,6 +353,7 @@
 	function showTransferHint() {
 		transferHintOpen = true;
 		haptics.selection();
+		void playChallengeSound('reveal');
 		analyticsEvent('challenge_transfer_hint_used', eventContext({ attempt: transferAttempts }));
 		announcement = 'A Question Chain reminder is visible. Use it to choose, then try again.';
 	}
@@ -327,6 +362,7 @@
 		stage = 'complete';
 		recordProgress('complete');
 		haptics.success();
+		void playChallengeSound('complete');
 		analyticsEvent(
 			'challenge_round_complete',
 			eventContext({
@@ -344,6 +380,7 @@
 
 	function replay() {
 		haptics.selection();
+		void playChallengeSound('select');
 		stage = 'showdown';
 		selectedAnswer = null;
 		diagnosisChoice = null;
@@ -373,11 +410,13 @@
 	function submitDisagreement(reason: string) {
 		disagreementSent = true;
 		haptics.selection();
+		void playChallengeSound('select');
 		analyticsEvent('challenge_disagreement', eventContext({ reason }));
 	}
 
 	async function toggleDisagreement() {
 		disagreementOpen = !disagreementOpen;
+		void playChallengeSound('select');
 		if (!disagreementOpen) return;
 		await tick();
 		disagreementPanel?.focus({ preventScroll: true });
@@ -423,6 +462,18 @@
 	function isCorrectChoice(choices: ChallengeChoice[], id: string | null) {
 		return Boolean(id && choices.find((choice) => choice.id === id)?.correct);
 	}
+
+	function inferCommandWord(prompt: string) {
+		const match = prompt.match(
+			/\b(calculate|compare|complete|describe|determine|evaluate|explain|give|identify|name|state|suggest|use|write)\b/i
+		);
+		return match ? `${match[1][0].toUpperCase()}${match[1].slice(1).toLowerCase()}` : 'Exam task';
+	}
+
+	function compactPaperLabel(paper: string, tier: string) {
+		if (!paper || !tier) return paper;
+		return paper.replace(new RegExp(`\\s*${tier}\\s*$`, 'i'), '').trim() || paper;
+	}
 </script>
 
 <div class="challenge-game">
@@ -448,33 +499,26 @@
 				{#if stage === 'showdown'}
 					<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
 						<span>Answer showdown</span>
-						<h2>Which answer is better supported by the marking points?</h2>
-						<p>Both are plausible sample answers. Choose before you see the decisive difference.</p>
+						<h2><MathText text={challenge.previewQuestion} /></h2>
+						<p>
+							<span class="showdown-instruction-wide"
+								>Both answers sound plausible. Tap the one you would trust in the exam.</span
+							>
+							<span class="showdown-instruction-mobile">Tap the answer you trust.</span>
+						</p>
 					</div>
 
-					<article class="question-focus">
-						<header>
-							<span>Challenge focus · adapted from the cited question</span>
-							<strong>{question.meta.marks} {question.meta.marks === 1 ? 'mark' : 'marks'}</strong>
-						</header>
-						<p><MathText text={challenge.previewQuestion} /></p>
-						<details>
-							<summary
-								data-analytics-label={`Challenge ${challenge.id}: view full source question`}
-							>
-								View Question Constellation’s source reconstruction
-							</summary>
-							<ExamQuestionCard
-								{question}
-								showTitle={false}
-								showMeta={false}
-								assetLoading="eager"
-								compact
-							/>
-						</details>
-					</article>
+					<div class="question-meta-row" aria-label="Question details">
+						<span>{question.meta.board}</span>
+						<span>{question.meta.tier || 'All tiers'}</span>
+						<span>{paperLabel || question.meta.subject}</span>
+						<span>{question.meta.marks} {question.meta.marks === 1 ? 'mark' : 'marks'}</span>
+						<span>{commandWord}</span>
+					</div>
 
-					<div class="answer-showdown" aria-label="Answer choices" data-nosnippet>
+					<ChallengeVisualStory {challenge} mode="teaser" compact />
+
+					<div class="answer-showdown" role="group" aria-label="Answer choices" data-nosnippet>
 						{#each ['a', 'b'] as answer (answer)}
 							{@const answerKey = answer as 'a' | 'b'}
 							<ChallengeChoiceControl
@@ -503,6 +547,10 @@
 					</div>
 
 					{#if selectedAnswer}
+						<div class="showdown-gap" bind:this={showdownReveal}>
+							<ChallengeVisualStory {challenge} mode="gap" compact />
+						</div>
+
 						<div
 							class:correct={selectedShowdownCorrect}
 							class:incorrect={!selectedShowdownCorrect}
@@ -519,11 +567,42 @@
 								<p class="reveal-label">
 									{selectedShowdownCorrect ? 'Well supported' : 'A plausible near-miss'}
 								</p>
-								<h3>That is the key difference in this comparison.</h3>
-								<p>{challenge.showdownExplanation}</p>
-								<p class="command-lesson">{challenge.commandWordLesson}</p>
+								<h3>The missing link: {visual?.decisiveLabel ?? challenge.memoryHandle}</h3>
+								<p>
+									{selectedShowdownCorrect
+										? 'The stronger answer makes this step explicit.'
+										: 'Your choice sounds plausible, but it breaks at this step.'}
+								</p>
+								<details>
+									<summary>Why this changes the mark</summary>
+									<p>{challenge.showdownExplanation}</p>
+									<p class="command-lesson">{challenge.commandWordLesson}</p>
+								</details>
 							</div>
 						</div>
+
+						<article class="question-focus">
+							<header>
+								<span>Source reconstruction · available after your choice</span>
+								<strong>{question.meta.marks} {question.meta.marks === 1 ? 'mark' : 'marks'}</strong
+								>
+							</header>
+							<p><MathText text={challenge.previewQuestion} /></p>
+							<details class="source-details">
+								<summary
+									data-analytics-label={`Challenge ${challenge.id}: view full source question`}
+								>
+									View the full source reconstruction
+								</summary>
+								<ExamQuestionCard
+									{question}
+									showTitle={false}
+									showMeta={false}
+									assetLoading="lazy"
+									compact
+								/>
+							</details>
+						</article>
 
 						{#if disagreementOpen}
 							<div
@@ -565,7 +644,7 @@
 						<p><MathText text={weakAnswerText} /></p>
 					</article>
 
-					<div class="diagnosis-options">
+					<div class="diagnosis-options" role="group" aria-label="Missing-link choices">
 						{#each challenge.diagnosisChoices as choice, index (choice.id)}
 							<ChallengeChoiceControl
 								text={choice.text}
@@ -642,7 +721,11 @@
 									{/if}
 								</div>
 							{:else}
-								<div class="repair-choice-list" aria-label="Choose the smallest sufficient edit">
+								<div
+									class="repair-choice-list"
+									role="group"
+									aria-label="Choose the smallest sufficient edit"
+								>
 									{#each challenge.repairChoices as choice (choice.id)}
 										<ChallengeChoiceControl
 											text={choice.text}
@@ -676,51 +759,63 @@
 								</div>
 							{/if}
 						{:else}
-							<div class="repair-after">
-								<span>After · coherent exam-ready sample</span>
-								<p><mark><MathText text={repairedAnswer} /></mark></p>
-							</div>
-							<p class="repair-why">
-								<strong
-									>{repairSupportUsed
-										? 'Reviewed repair revealed'
-										: 'Why this is now sufficient'}</strong
-								>
-								{challenge.repairSuccess}
-							</p>
-
-							<div class="chain-earned">
+							<div class="chain-earned" bind:this={earnedChain}>
 								<header>
 									<div>
-										<span><Sparkles size={17} aria-hidden="true" /> Question Chain earned</span>
+										<span><Sparkles size={17} aria-hidden="true" /> The full mechanism</span>
 										<h3>{challenge.memoryHandle}</h3>
 									</div>
-									<small>Use it once, then we hide it.</small>
+									<small>You repaired it. Follow it once, then spot it in a new disguise.</small>
 								</header>
-								<ol>
-									{#each chain.steps as chainStep, index (chainStep.id)}
-										<li style={`--step-delay: ${index * 70}ms`}>
-											<span>{index + 1}</span>
-											<div>
-												<strong><MathText text={chainStep.short} /></strong>
-												<small>{chainStep.markEvidence}</small>
-											</div>
-										</li>
-									{/each}
-								</ol>
+								<ChallengeVisualStory
+									{challenge}
+									mode="earned"
+									illustrationOverride={chain.illustration}
+									expandable
+								/>
+								<details class="chain-evidence">
+									<summary>Review the marking steps</summary>
+									<ol>
+										{#each chain.steps as chainStep, index (chainStep.id)}
+											<li style={`--step-delay: ${index * 70}ms`}>
+												<span>{index + 1}</span>
+												<div>
+													<strong><MathText text={chainStep.short} /></strong>
+													<small>{chainStep.markEvidence}</small>
+												</div>
+											</li>
+										{/each}
+									</ol>
+								</details>
 							</div>
+
+							<details class="repair-detail">
+								<summary>See the repaired answer and why it works</summary>
+								<div class="repair-after">
+									<span>After · coherent exam-ready sample</span>
+									<p><mark><MathText text={repairedAnswer} /></mark></p>
+								</div>
+								<p class="repair-why">
+									<strong
+										>{repairSupportUsed
+											? 'Reviewed repair revealed'
+											: 'Why this is now sufficient'}</strong
+									>
+									{challenge.repairSuccess}
+								</p>
+							</details>
 						{/if}
 					</div>
 				{:else if stage === 'transfer'}
 					<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
-						<span>Try the link in a new context</span>
+						<span>Same link, new disguise</span>
 						<h2>{challenge.transferPromptLead}</h2>
-						<p>The chain is hidden. Choose the step that carries it into this question.</p>
+						<p>The atlas is hidden. Spot the step that carries into this question.</p>
 					</div>
 
 					<ExamQuestionCard question={transferQuestion} showTitle={false} compact />
 
-					<div class="transfer-options">
+					<div class="transfer-options" role="group" aria-label="New-case choices">
 						{#each challenge.transferChoices as choice, index (choice.id)}
 							<ChallengeChoiceControl
 								text={choice.text}
@@ -949,6 +1044,10 @@
 		line-height: 1.45;
 	}
 
+	.showdown-instruction-mobile {
+		display: none;
+	}
+
 	.question-focus {
 		display: grid;
 		gap: 0.75rem;
@@ -1015,6 +1114,40 @@
 		gap: 0.85rem;
 	}
 
+	.question-meta-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		color: var(--qc-ui-text-muted);
+		font-size: 0.72rem;
+		font-weight: 650;
+	}
+
+	.question-meta-row span {
+		padding: 0.22rem 0.42rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
+	}
+
+	.source-details {
+		padding: 0.7rem 0.8rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
+	}
+
+	.source-details summary {
+		min-height: 2.75rem;
+		color: var(--qc-ui-accent-text);
+		font-size: 0.82rem;
+		font-weight: 650;
+		line-height: 2.75rem;
+		cursor: pointer;
+	}
+
+	.source-details :global(.qc-exam-card) {
+		margin-top: 0.65rem;
+	}
+
 	.showdown-reveal,
 	.transfer-result {
 		display: grid;
@@ -1074,6 +1207,28 @@
 		padding-left: 0.65rem;
 		border-left: 3px solid var(--challenge-accent);
 		font-size: 0.92rem;
+	}
+
+	.showdown-gap,
+	.chain-earned {
+		scroll-margin-block: 0.8rem;
+	}
+
+	.showdown-reveal details {
+		margin-top: 0.55rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.showdown-reveal summary,
+	.chain-evidence summary,
+	.repair-detail summary {
+		display: flex;
+		min-height: 2.75rem;
+		align-items: center;
+		color: var(--qc-ui-accent-text);
+		font-size: 0.82rem;
+		font-weight: 650;
+		cursor: pointer;
 	}
 
 	.disagreement-panel {
@@ -1267,6 +1422,9 @@
 
 	.chain-earned {
 		display: grid;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
 		gap: 0.8rem;
 		padding: 1rem;
 		border: 1px solid var(--qc-ui-accent-border);
@@ -1313,6 +1471,21 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	.chain-evidence {
+		border-top: 1px solid var(--qc-ui-accent-border);
+	}
+
+	.repair-detail {
+		display: grid;
+		gap: 0.7rem;
+		border-block: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.repair-detail > .repair-after,
+	.repair-detail > .repair-why {
+		margin-bottom: 0.7rem;
 	}
 
 	.chain-earned li {
@@ -1367,6 +1540,10 @@
 		width: min(100%, 54rem);
 		margin: 0 auto;
 		padding: clamp(0.5rem, 2vw, 1.2rem);
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		color: var(--qc-ui-text);
 		text-align: center;
 		outline: none;
 	}
@@ -1400,6 +1577,7 @@
 
 	.completion-card h2 {
 		max-width: 17ch;
+		color: var(--qc-ui-text);
 		font-size: clamp(1.8rem, 4vw, 3rem);
 		line-height: 1.05;
 	}
@@ -1543,6 +1721,8 @@
 	}
 
 	.challenge-stage-heading > *,
+	.question-meta-row,
+	.source-details,
 	.question-focus > p,
 	.question-focus > p :global(.math-text),
 	.question-focus summary,
@@ -1579,6 +1759,12 @@
 		color: var(--qc-ui-text-secondary);
 		font-size: 0.94rem;
 		line-height: 1.45;
+	}
+
+	.question-meta-row,
+	.source-details {
+		max-width: 100%;
+		min-width: 0;
 	}
 
 	.question-focus,
@@ -1734,16 +1920,87 @@
 	}
 
 	@media (max-width: 620px) {
+		.challenge-game {
+			width: calc(100% + 2rem);
+			max-width: none;
+			margin-inline: -1rem;
+		}
+
 		.challenge-stage {
-			padding: 0.82rem;
+			gap: 0.52rem;
+			padding: 0.58rem;
+		}
+
+		.challenge-game :global(.challenge-visual-teaser) {
+			display: none;
 		}
 
 		.answer-showdown {
 			grid-template-columns: minmax(0, 1fr);
+			gap: 0.45rem;
 		}
 
 		.challenge-stage-heading h2 {
-			font-size: clamp(1.35rem, 7vw, 1.85rem);
+			font-size: clamp(1.08rem, 5.2vw, 1.42rem);
+			line-height: 1.08;
+		}
+
+		.challenge-stage-heading {
+			gap: 0.2rem;
+		}
+
+		.challenge-stage-heading p {
+			font-size: 0.8rem;
+			line-height: 1.3;
+		}
+
+		.showdown-instruction-wide,
+		.question-meta-row {
+			display: none;
+		}
+
+		.showdown-instruction-mobile {
+			display: inline;
+		}
+
+		.answer-showdown :global(button[data-analytics-label*='showdown answer']) {
+			min-height: 0;
+			padding: 0.56rem;
+			font-size: 0.84rem;
+			line-height: 1.32;
+		}
+
+		.answer-showdown :global(.choice-copy) {
+			gap: 0.18rem;
+		}
+
+		.answer-showdown :global(.choice-label) {
+			font-size: 0.68rem;
+		}
+
+		.chain-earned {
+			padding: 0.45rem;
+		}
+	}
+
+	@media (max-width: 360px) {
+		.challenge-stage {
+			gap: 0.42rem;
+			padding: 0.48rem;
+		}
+
+		.challenge-stage-heading h2 {
+			font-size: 1.04rem;
+		}
+
+		.answer-showdown :global(button[data-analytics-label*='showdown answer']) {
+			padding: 0.48rem;
+			font-size: 0.78rem;
+			line-height: 1.28;
+		}
+
+		.chain-earned {
+			padding: 0.35rem;
 		}
 
 		.question-focus > header {

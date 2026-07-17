@@ -1,6 +1,6 @@
 <script lang="ts">
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import { CheckCircle2, CircleX } from '@lucide/svelte';
+	import { CheckCircle2, CircleHelp } from '@lucide/svelte';
 	import HapticSurface from './HapticSurface.svelte';
 
 	let {
@@ -52,7 +52,7 @@
 				{#if status === 'correct'}
 					<CheckCircle2 size={20} strokeWidth={2.3} />
 				{:else}
-					<CircleX size={20} strokeWidth={2.3} />
+					<CircleHelp size={20} strokeWidth={2.3} />
 				{/if}
 			</span>
 		{/if}
@@ -113,9 +113,9 @@
 	}
 
 	button.incorrect {
-		border-color: var(--qc-ui-danger);
-		background: color-mix(in srgb, var(--qc-ui-danger) 9%, var(--qc-ui-surface));
-		color: var(--qc-ui-danger);
+		border-color: var(--qc-ui-warning);
+		background: color-mix(in srgb, var(--qc-ui-warning) 10%, var(--qc-ui-surface));
+		color: var(--qc-ui-warning-text);
 	}
 
 	button.selected.correct {
@@ -125,7 +125,7 @@
 
 	button.selected.incorrect {
 		animation: challenge-choice-incorrect var(--challenge-motion-duration, 560ms)
-			cubic-bezier(0.25, 0.75, 0.25, 1) both;
+			cubic-bezier(0.2, 0.76, 0.2, 1) both;
 	}
 
 	.choice-marker {
@@ -186,27 +186,13 @@
 	@keyframes challenge-choice-incorrect {
 		0%,
 		100% {
-			transform: translateX(0);
+			transform: scale(1);
+			box-shadow: 0 0 0 color-mix(in srgb, var(--qc-ui-warning) 0%, transparent);
 		}
 
-		16% {
-			transform: translateX(-0.52rem);
-		}
-
-		33% {
-			transform: translateX(0.44rem);
-		}
-
-		50% {
-			transform: translateX(-0.34rem);
-		}
-
-		68% {
-			transform: translateX(0.22rem);
-		}
-
-		84% {
-			transform: translateX(-0.1rem);
+		42% {
+			transform: scale(1.012);
+			box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--qc-ui-warning) 12%, transparent);
 		}
 	}
 
