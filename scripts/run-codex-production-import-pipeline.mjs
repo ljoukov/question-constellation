@@ -29,6 +29,7 @@ import {
 	assertVerifiedLearnerAssetCopiesCurrent,
 	stageLearnerVisibleAssetBundle
 } from './lib/learner-visible-asset-binding.mjs';
+import { resolveSingleImportReadyOutput } from './lib/import-ready-output.mjs';
 import { exactExistingChainContextSnapshotEvidenceMatches } from './lib/existing-chain-context-evidence.mjs';
 import {
 	componentCodeCompatibility,
@@ -170,7 +171,7 @@ const reconciledOutputPath = path.join(workRoot, 'chain-reconciled', `${sourceDo
 const chainSummaryPath = path.join(workRoot, 'codex-chain-summary.json');
 const importReadyRoot = path.join(workRoot, 'import-ready');
 const importReadyAuditPath = path.join(workRoot, 'import-ready-audit.json');
-const importReadyPaperPath = path.join(importReadyRoot, `${sourceDocumentId}.json`);
+let importReadyPaperPath = path.join(importReadyRoot, `${sourceDocumentId}.json`);
 const solvabilityOutputPath = path.join(workRoot, 'codex-solvability', 'solvability-report.json');
 const solvabilitySummaryPath = path.join(workRoot, 'codex-solvability-summary.json');
 const summaryPath = path.join(workRoot, 'codex-production-import-summary.json');
@@ -404,6 +405,12 @@ try {
 			prepareImportReadyCommand({ forceNoImportCheck: true }),
 			'strict audit before Codex solvability'
 		);
+		importReadyPaperPath = resolveSingleImportReadyOutput({
+			summary: importReady,
+			rootDir,
+			outputRoot: importReadyRoot,
+			sourceDocumentId
+		});
 		steps.push({ label: 'strict audit before Codex solvability', status: 'passed' });
 		importReadySnapshotBinding = stageGeneratedPhaseSnapshot(
 			importReadyPaperPath,
@@ -426,6 +433,15 @@ try {
 				prepareImportReadyCommand(),
 				`strict audit / D1 ${importToD1 ? 'write' : 'dry-run'}`
 			);
+			const finalImportReadyPaperPath = resolveSingleImportReadyOutput({
+				summary: importReady,
+				rootDir,
+				outputRoot: importReadyRoot,
+				sourceDocumentId
+			});
+			if (finalImportReadyPaperPath !== importReadyPaperPath) {
+				throw new Error('Final import-ready output path changed after solvability.');
+			}
 			steps.push({
 				label: `strict audit / D1 ${importToD1 ? 'write' : 'dry-run'}`,
 				status: 'passed'
