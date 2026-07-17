@@ -1,0 +1,138 @@
+\usepackage[a4paper,margin=0.85in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{array,booktabs,tabularx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.markings}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\emergencystretch=2em
+
+\definecolor{constellationBlue}{HTML}{1F5FBF}
+\definecolor{constellationInk}{HTML}{172033}
+\definecolor{constellationGreen}{HTML}{1C7C62}
+\definecolor{constellationRed}{HTML}{B42318}
+\definecolor{constellationAmber}{HTML}{B7791F}
+\definecolor{constellationSoft}{HTML}{F5F7FB}
+\definecolor{constellationRule}{HTML}{D8DEE9}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=constellationBlue,
+  citecolor=constellationBlue,
+  urlcolor=constellationBlue,
+  pdftitle={Question Constellation Research Paper},
+  pdfauthor={Question Constellation Inc}
+}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newcommand{\paperkicker}[1]{%
+  \begin{center}
+    \small\textsc{#1}
+  \end{center}
+}
+
+\newcommand{\affiliationblock}{%
+  Question Constellation Inc
+}
+
+\newcommand{\keywords}[1]{%
+  \vspace{0.5em}
+  \noindent\textbf{Keywords:} #1
+}
+
+\newcommand{\claimbox}[2]{%
+  \begin{center}
+    \fcolorbox{constellationRule}{constellationSoft}{%
+      \begin{minipage}{0.92\linewidth}
+      \textbf{#1}\par
+      #2
+      \end{minipage}}
+  \end{center}
+}
+
+\newcommand{\link}[2]{\href{#1}{#2}}
+\newcommand{\sourcepath}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\chain}[1]{\texttt{\detokenize{#1}}}
+
+\newcommand{\protocolbox}[2]{%
+  \begin{center}
+    \fcolorbox{constellationBlue}{constellationSoft}{%
+      \begin{minipage}{0.9\linewidth}
+      \textbf{#1}\par
+      #2
+      \end{minipage}}
+  \end{center}
+}
+
+\tikzset{
+  process/.style={
+    rectangle,
+    rounded corners=2pt,
+    draw=constellationBlue,
+    fill=constellationSoft,
+    line width=0.7pt,
+    minimum height=8mm,
+    align=center,
+    text width=28mm,
+    font=\small
+  },
+  processWide/.style={
+    rectangle,
+    rounded corners=2pt,
+    draw=constellationBlue,
+    fill=constellationSoft,
+    line width=0.7pt,
+    minimum height=8mm,
+    align=center,
+    text width=40mm,
+    font=\small
+  },
+  decision/.style={
+    diamond,
+    aspect=1.9,
+    draw=constellationAmber,
+    fill=constellationSoft,
+    line width=0.7pt,
+    align=center,
+    text width=26mm,
+    font=\small
+  },
+  arrow/.style={
+    -{Latex[length=2.2mm]},
+    line width=0.7pt,
+    draw=constellationInk
+  },
+  midRetryArrow/.style={
+    densely dashed,
+    line width=0.7pt,
+    draw=constellationAmber,
+    postaction={decorate},
+    decoration={
+      markings,
+      mark=at position 0.74 with {\arrow{Latex[length=2.2mm]}}
+    }
+  },
+  chartbar/.style={
+    draw=constellationBlue,
+    fill=constellationBlue!18,
+    line width=0.5pt
+  }
+}
+
+\newcommand{\simplebar}[5]{%
+  \draw[chartbar] (#1,0) rectangle ++(#3,#4);
+  \node[below,align=center,font=\scriptsize,text width=22mm] at ($(#1,0)+(#3/2,0)$) {#2};
+  \node[above,font=\scriptsize] at ($(#1,0)+(#3/2,#4)$) {#5};
+}

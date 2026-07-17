@@ -1,0 +1,4601 @@
+{
+  "generatedAt": "2026-07-03T19:40:11.351Z",
+  "fixture": "scripts/fixtures/grading-eval-cases.json",
+  "baseUrl": "http://localhost:5173",
+  "options": {
+    "models": [
+      "chatgpt-gpt-5.3-codex-spark",
+      "chatgpt-gpt-5.4-fast",
+      "chatgpt-gpt-5.4-mini"
+    ],
+    "thinkingLevels": [
+      "medium"
+    ],
+    "judge": false,
+    "judgeModel": "chatgpt-gpt-5.5",
+    "judgeThinkingLevel": "xhigh",
+    "includePrompts": false
+  },
+  "summary": [
+    {
+      "combo": "chatgpt-gpt-5.3-codex-spark / medium",
+      "runs": 16,
+      "ok": 16,
+      "errors": 0,
+      "insideExpectedRange": 15,
+      "outsideExpectedRange": 1,
+      "judgePass": 0,
+      "judgeFail": 0,
+      "judgeUncertain": 0,
+      "avgDurationMs": 5135,
+      "p50DurationMs": 4065,
+      "p95DurationMs": 7771,
+      "usage": {
+        "costUsd": 0.06649845,
+        "promptTokens": 20445,
+        "cachedTokens": 2048,
+        "responseTokens": 8217,
+        "thinkingTokens": 22707,
+        "totalTokens": 51369
+      }
+    },
+    {
+      "combo": "chatgpt-gpt-5.4-fast / medium",
+      "runs": 16,
+      "ok": 16,
+      "errors": 0,
+      "insideExpectedRange": 14,
+      "outsideExpectedRange": 2,
+      "judgePass": 0,
+      "judgeFail": 0,
+      "judgeUncertain": 0,
+      "avgDurationMs": 12232,
+      "p50DurationMs": 12138,
+      "p95DurationMs": 14135,
+      "usage": {
+        "costUsd": 0.3282750000000001,
+        "promptTokens": 20445,
+        "cachedTokens": 2560,
+        "responseTokens": 6681,
+        "thinkingTokens": 1238,
+        "totalTokens": 28364
+      }
+    },
+    {
+      "combo": "chatgpt-gpt-5.4-mini / medium",
+      "runs": 16,
+      "ok": 16,
+      "errors": 0,
+      "insideExpectedRange": 15,
+      "outsideExpectedRange": 1,
+      "judgePass": 0,
+      "judgeFail": 0,
+      "judgeUncertain": 0,
+      "avgDurationMs": 12950,
+      "p50DurationMs": 10812,
+      "p95DurationMs": 18865,
+      "usage": {
+        "costUsd": 0.02970124999999999,
+        "promptTokens": 20445,
+        "cachedTokens": 0,
+        "responseTokens": 5669,
+        "thinkingTokens": 6626,
+        "totalTokens": 32740
+      }
+    }
+  ],
+  "runs": [
+    {
+      "caseId": "physics-swimmer-drag-empty",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "Force B changes and then he moves faster.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 1,
+        "notes": "Very weak: mentions change and faster movement but misses acceleration, drag increase, balance, and higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 4957,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1368,
+        "cachedTokens": 0,
+        "responseTokens": 656,
+        "thinkingTokens": 2670,
+        "totalTokens": 4694
+      },
+      "costUsd": 0.006994,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5543,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "medium",
+        "summary": "Only a change in speed is stated.",
+        "nextStep": "State that drag increases and finally balances Force A.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates.",
+            "verdict": "credited",
+            "explanation": "The answer says he moves faster, which is the same outcome as acceleration."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "missed",
+            "explanation": "Only a change in Force B is mentioned, not an increase."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until Force B equals Force A.",
+            "verdict": "missed",
+            "explanation": "The equalisation of forces is not described."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "The response gives only a speed increase, not constant velocity."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "missed",
+              "explanation": "The initial increase in Force A is not stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "uncertain",
+              "explanation": "Force B is said to change, but no link to speed is given."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "No resultant-force or net-force argument is provided."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "A speed increase is given, indicating change in acceleration."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "There is no statement that forces become balanced."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "When Force A increases, the man accelerates. Force B gets bigger because he is moving faster.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets acceleration and drag/Force B increase but not the final force balance or higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 4065,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1379,
+        "cachedTokens": 0,
+        "responseTokens": 642,
+        "thinkingTokens": 1183,
+        "totalTokens": 3204
+      },
+      "costUsd": 0.00399475,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5595,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Does not explain when drag force balances thrust.",
+        "nextStep": "State that Force B rises until equal to Force A, giving higher steady speed.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A is increased.",
+            "verdict": "credited",
+            "explanation": "The response directly says the man accelerates as Force A increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "It clearly states Force B gets bigger."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A.",
+            "verdict": "missed",
+            "explanation": "It does not explain that Force B rises until the two forces balance."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "A final state of higher constant velocity is not stated."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The change in condition is identified by stating Force A increases."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The answer links Force B to movement speed by saying it increases when he moves faster."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "No link is made to the resultant force becoming zero."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "Acceleration is explicitly stated after the increased force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "The force balance/conclusion that motion becomes steady is absent."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A increases. As his speed increases, Force B also increases. Force B rises until it equals Force A, so the resultant force is zero.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Gets the force-balance chain but omits explicitly saying higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 7545,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1394,
+        "cachedTokens": 0,
+        "responseTokens": 663,
+        "thinkingTokens": 3016,
+        "totalTokens": 5073
+      },
+      "costUsd": 0.0077065,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5664,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Balanced-force consequence is not explicitly stated.",
+        "nextStep": "Add that the swimmer then moves at a higher constant speed.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "State that the man accelerates when Force A is increased",
+            "verdict": "credited",
+            "explanation": "The answer says the man accelerates when Force A increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "State that Force B increases",
+            "verdict": "credited",
+            "explanation": "The response states that Force B also increases as speed increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Explain that Force B increases until it equals Force A so the resultant force is zero",
+            "verdict": "credited",
+            "explanation": "It explicitly links the increase of Force B to becoming equal to Force A and states zero resultant force."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "State that the man then moves at a higher constant velocity",
+            "verdict": "missed",
+            "explanation": "The answer stops at zero resultant force and does not explicitly mention the resulting constant higher velocity."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The change in driving condition is identified as Force A increasing."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The answer links increased speed with an increase in Force B."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "It shows the result of forces balancing as Force B rises to match Force A."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "An initial acceleration is stated before balance is reached."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "The final condition is described as zero resultant force."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A is increased. As speed increases, Force B increases. Force B increases until it equals Force A, so the resultant force becomes zero. The man then moves at a higher constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: acceleration, drag increase, forces balance, higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 4672,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1403,
+        "cachedTokens": 0,
+        "responseTokens": 665,
+        "thinkingTokens": 966,
+        "totalTokens": 3034
+      },
+      "costUsd": 0.0036127499999999996,
+      "totals": {
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5717,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Fully explains increased force, drag, and speed effect.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "State that the man accelerates when Force A is increased.",
+            "verdict": "credited",
+            "explanation": "The response explicitly says the man accelerates when Force A is increased."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "State that Force B increases.",
+            "verdict": "credited",
+            "explanation": "It clearly states that Force B increases as the swimmer speeds up."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Explain that Force B increases until it equals Force A, so the resultant force becomes zero.",
+            "verdict": "credited",
+            "explanation": "The response explains Force B rises until equal to Force A and then the resultant force is zero."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "State that the man then moves at a higher constant velocity.",
+            "verdict": "credited",
+            "explanation": "It concludes that the man moves at a higher constant velocity once balance is reached."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The condition change is clearly identified by increasing Force A."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Force B is linked to increasing speed with 'as speed increases, Force B increases.'"
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "The response explicitly states Force B increases until it equals Force A, giving zero resultant."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "An acceleration stage is stated directly at the start of the explanation."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "The response links zero resultant force to motion at constant velocity."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-weak",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The water pushes against the stone so it slows down and then travels at terminal velocity.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Mentions resistance and constant/terminal velocity but misses drag greater than weight, resultant force, and drag decrease."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 7771,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1417,
+        "cachedTokens": 0,
+        "responseTokens": 644,
+        "thinkingTokens": 2829,
+        "totalTokens": 4890
+      },
+      "costUsd": 0.0073002499999999994,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5852,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "medium",
+        "summary": "Force reason for terminal velocity not fully explained.",
+        "nextStep": "State that drag decreases with speed until it balances weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "missed",
+            "explanation": "No comparison is made between drag and weight at the start."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "The answer says the water push slows the stone."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "missed",
+            "explanation": "The change in drag with decreasing velocity is not explained."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "credited",
+            "explanation": "Mentioning terminal velocity implies a final constant-speed balance."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "missed",
+              "explanation": "The change to a new condition is implied but not stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Water pushing against the stone identifies a resistive force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "The response links the water force to the stone slowing down."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "A reduction in speed is explicitly stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "Terminal velocity is given as the final constant-speed state."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "outside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "Drag acts upwards on the stone and is greater than its weight at first, so the stone decelerates.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Covers initial drag greater than weight and deceleration but not the later drag decrease/balance."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 6282,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1422,
+        "cachedTokens": 0,
+        "responseTokens": 673,
+        "thinkingTokens": 2487,
+        "totalTokens": 4582
+      },
+      "costUsd": 0.0066755,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5859,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Initial deceleration explained; final constant-speed reason omitted.",
+        "nextStep": "Add that drag reduces with speed until it balances weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "The answer says drag is greater than the stone’s weight at first."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "It clearly links greater upward drag to the stone slowing down."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "The response does not mention force balance or reaching constant velocity."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "missed",
+              "explanation": "The link to changing condition in water is implied, not explained."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag (resistive force) is directly identified."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "uncertain",
+              "explanation": "Net-force implication is suggested but not explicitly stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "Deceleration is explicitly linked to the force condition."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "No explanation that drag and weight balance to give constant velocity."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The drag is initially greater than the weight, so there is a resultant force upwards and the stone decelerates. As it slows, the drag decreases.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Covers the middle chain but omits final equality of drag and weight giving constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 3639,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1431,
+        "cachedTokens": 0,
+        "responseTokens": 680,
+        "thinkingTokens": 1148,
+        "totalTokens": 3259
+      },
+      "costUsd": 0.00401375,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5906,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Terminal condition is not stated.",
+        "nextStep": "State that constant velocity occurs when drag equals weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "The response clearly says drag is initially greater than weight."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "A resultant force is identified as upward, opposite motion, with deceleration."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "credited",
+            "explanation": "Included in the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "The response does not state the terminal-velocity condition of drag balancing weight."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The answer refers to the initial situation in water via 'initially greater drag'."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag is identified and linked to changing speed through 'as it slows, the drag decreases'."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "A resultant upward force is clearly stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The effect of resultant force is explained as deceleration."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "No balance point is given for constant velocity (drag equals weight)."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "At first the drag force from the water is greater than the stone's weight. This gives a resultant force opposite to the velocity, so the stone decelerates. As the stone slows, drag decreases until drag equals weight. The resultant force is then zero, so the stone moves at a constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: drag greater than weight, resultant force/deceleration, drag decreases, drag equals weight."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 3464,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1461,
+        "cachedTokens": 0,
+        "responseTokens": 651,
+        "thinkingTokens": 913,
+        "totalTokens": 3025
+      },
+      "costUsd": 0.00349325,
+      "totals": {
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 6055,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Clear terminal-motion explanation with all required links.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "The response says the drag force from the water is greater than the stone’s weight."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "It explicitly states the resultant force is opposite to the direction of motion and causes deceleration."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "credited",
+            "explanation": "The answer explains that drag decreases as the stone slows."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "credited",
+            "explanation": "The response concludes that drag equals weight, giving zero resultant force and constant velocity."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "It references the stone entering water and the initial force comparison change."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "It includes drag as the resistive force acting in water."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "It explicitly links drag greater than weight to a resultant force opposite motion."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "It states deceleration as the acceleration change caused by that resultant force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "It gives force balance at drag = weight and constant velocity as the result."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-weak",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "The amylase would not work very well because the pH is wrong.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Weak: recognises enzyme does not work but gives no denaturation/active-site/result detail."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 3274,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1188,
+        "cachedTokens": 0,
+        "responseTokens": 366,
+        "thinkingTokens": 1010,
+        "totalTokens": 2564
+      },
+      "costUsd": 0.0030489999999999996,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4811,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "medium",
+        "summary": "The answer is too general and incomplete",
+        "nextStep": "State that amylase is denatured, starch is not digested and light remains about 10%.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "State that at pH 1 amylase is denatured or its active site is altered.",
+            "verdict": "missed",
+            "explanation": "The answer does not mention denaturation or changes to the active site."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Explain that starch would not be digested or the reaction would be much slower/no reaction.",
+            "verdict": "credited",
+            "explanation": "It says the amylase would not work very well, indicating reduced reaction activity."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "Use Figure 8 to say the percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "No prediction is given for what happens to the percentage light transmission."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-partial",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the enzyme is denatured, so the shape of the active site changes.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 2,
+        "notes": "Gets denaturation/active site but not starch digestion or light percentage result."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 4434,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1193,
+        "cachedTokens": 1024,
+        "responseTokens": 521,
+        "thinkingTokens": 836,
+        "totalTokens": 2550
+      },
+      "costUsd": 0.0027818499999999998,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4823,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "Only low-pH denaturation is described.",
+        "nextStep": "Add that starch is not digested and transmittance does not increase.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1, amylase is denatured or its active site is altered.",
+            "verdict": "credited",
+            "explanation": "The response states the enzyme is denatured and the active site changes."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower/no reaction.",
+            "verdict": "missed",
+            "explanation": "No statement is made about the effect on starch digestion or reaction rate."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "Use Figure 8 to say the percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "There is no comparison with the graph’s percentage-transmittance trend."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-near-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 amylase is denatured and the active site changes shape. Starch is not broken down, so iodine would stay dark.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 3,
+        "notes": "Nearly complete; mentions no starch digestion but may not clearly state the percentage stays about 10%."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 3143,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1204,
+        "cachedTokens": 1024,
+        "responseTokens": 350,
+        "thinkingTokens": 777,
+        "totalTokens": 2331
+      },
+      "costUsd": 0.0023246,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4867,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "Correctly explains denaturation, no digestion and unchanged iodine result.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1, amylase is denatured and its active site is altered",
+            "verdict": "credited",
+            "explanation": "The response states that amylase is denatured and its active site changes shape at pH 1."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch is not digested, so little or no reaction occurs",
+            "verdict": "credited",
+            "explanation": "The response clearly says starch is not broken down, indicating no effective reaction."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay about the same, with no noticeable increase",
+            "verdict": "credited",
+            "explanation": "The response gives \"iodine would stay dark,\" which is equivalent to no increase in light passing through."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the amylase is denatured and the active site changes shape. Starch is not digested, so the mixture stays dark with iodine and the percentage of light passing through stays about 10% instead of increasing.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: active site changed/denatured, starch not digested, percentage light stays around 10%."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 14848,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1222,
+        "cachedTokens": 0,
+        "responseTokens": 331,
+        "thinkingTokens": 657,
+        "totalTokens": 2210
+      },
+      "costUsd": 0.0022814999999999997,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4962,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "Denaturation and unchanged absorbance are correctly explained.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "Amylase is denatured and its active site is altered at pH 1.",
+            "verdict": "credited",
+            "explanation": "The answer states the enzyme is denatured and the active site changes shape."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch digestion is prevented or greatly reduced at pH 1.",
+            "verdict": "credited",
+            "explanation": "The response explains that starch is not digested and the reaction is effectively absent."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "Light percentage remains around 10% and does not rise.",
+            "verdict": "credited",
+            "explanation": "The student links unchanged digestion to the reading staying about 10% rather than increasing."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-weak",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes conduct because they are made of carbon and are strong.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 0,
+        "notes": "Incorrect: strength/carbon alone does not explain electrical conduction."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 2926,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1086,
+        "cachedTokens": 0,
+        "responseTokens": 328,
+        "thinkingTokens": 691,
+        "totalTokens": 2105
+      },
+      "costUsd": 0.0023095,
+      "totals": {
+        "awardedMarks": 0,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4502,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "incorrect",
+        "awardedMarks": 0,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "No explanation of electron delocalisation or conductivity.",
+        "nextStep": "",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds",
+            "verdict": "missed",
+            "explanation": "The answer only says the nanotube is carbon and strong, with no mention of bonding to neighbouring atoms."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised",
+            "verdict": "missed",
+            "explanation": "No delocalised electron is identified or described in the response."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry electrical charge through the nanotube",
+            "verdict": "missed",
+            "explanation": "The mechanism for electrical charge movement through the structure is not explained."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-partial",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes have delocalised electrons.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Only identifies delocalised electrons."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 4262,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1081,
+        "cachedTokens": 0,
+        "responseTokens": 329,
+        "thinkingTokens": 1884,
+        "totalTokens": 3294
+      },
+      "costUsd": 0.004696249999999999,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4474,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "medium",
+        "summary": "The answer names delocalised electrons only.",
+        "nextStep": "Explain that each carbon atom leaves one electron delocalised and that these electrons carry charge through the nanotube.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "missed",
+            "explanation": "No mention is made of carbon atoms forming three bonds in the structure."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "The answer states that electrons are delocalised."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry electrical charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "No link is made between these electrons and transport of electrical charge."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-near-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron delocalised.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets bonding and delocalised electron but not that electrons move/carry charge."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 3156,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1088,
+        "cachedTokens": 0,
+        "responseTokens": 404,
+        "thinkingTokens": 1080,
+        "totalTokens": 2572
+      },
+      "costUsd": 0.00324,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4508,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "No charge transport mechanism is stated.",
+        "nextStep": "State that delocalised electrons carry electrical charge through the nanotube.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "credited",
+            "explanation": "The answer directly says each carbon atom forms three covalent bonds."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "It is stated that one electron is left and is delocalised."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry electrical charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "The answer does not mention these electrons moving charge through the structure."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron from each carbon atom delocalised. These delocalised electrons can move through the nanotube and carry electrical charge.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: three covalent bonds, one delocalised electron per carbon, electrons move/carry charge."
+      },
+      "requestedModel": "chatgpt-gpt-5.3-codex-spark",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 3721,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.3-codex-spark",
+      "serverModelVersion": "chatgpt-gpt-5.3-codex-spark",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1108,
+        "cachedTokens": 0,
+        "responseTokens": 314,
+        "thinkingTokens": 560,
+        "totalTokens": 1982
+      },
+      "costUsd": 0.002025,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4617,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "All three conductivity factors are clearly explained.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "credited",
+            "explanation": "The answer states that each carbon atom forms three covalent bonds."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "The answer explicitly says one electron from each carbon atom is delocalised."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons can carry electrical charge through the nanotube.",
+            "verdict": "credited",
+            "explanation": "The answer links delocalised electrons to moving through and carrying charge through the nanotube."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-empty",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "Force B changes and then he moves faster.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 1,
+        "notes": "Very weak: mentions change and faster movement but misses acceleration, drag increase, balance, and higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 12784,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1368,
+        "cachedTokens": 0,
+        "responseTokens": 486,
+        "thinkingTokens": 118,
+        "totalTokens": 1972
+      },
+      "costUsd": 0.024960000000000003,
+      "totals": {
+        "awardedMarks": 0,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5543,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "incorrect",
+        "awardedMarks": 0,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Too vague; key force links missing.",
+        "nextStep": "",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A is increased.",
+            "verdict": "missed",
+            "explanation": "The answer says he moves faster but does not clearly state acceleration."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "missed",
+            "explanation": "It only says Force B changes, not that it increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A, so the resultant force becomes zero again.",
+            "verdict": "missed",
+            "explanation": "There is no link to balanced forces or zero resultant force."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "The answer does not state that the faster motion becomes constant."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The increase in Force A is the given condition change."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "missed",
+              "explanation": "There is no clear statement that the resistive force increases."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "There is no explanation of the resultant force becoming zero again."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "missed",
+              "explanation": "A speed change is mentioned, but not as acceleration caused by a resultant force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "Balanced forces at the new constant speed are not described."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "When Force A increases, the man accelerates. Force B gets bigger because he is moving faster.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets acceleration and drag/Force B increase but not the final force balance or higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 13018,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1379,
+        "cachedTokens": 0,
+        "responseTokens": 487,
+        "thinkingTokens": 38,
+        "totalTokens": 1904
+      },
+      "costUsd": 0.022645000000000002,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5595,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer states that the man accelerates and that Force B increases as he moves faster, but it does not complete the force-balance outcome.",
+        "nextStep": "Add that Force B rises until it equals Force A, then the man travels at a higher constant velocity.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A is increased.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A, so the resultant force becomes zero again.",
+            "verdict": "missed",
+            "explanation": "The answer does not say that the forces become equal again."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "The final constant higher speed is not given."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The change in condition is included by increasing Force A."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The answer links Force B increasing to moving faster."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "There is no statement about the resultant force becoming zero again."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "Acceleration is stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "Balanced forces are not stated."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A increases. As his speed increases, Force B also increases. Force B rises until it equals Force A, so the resultant force is zero.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Gets the force-balance chain but omits explicitly saying higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 11808,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1394,
+        "cachedTokens": 0,
+        "responseTokens": 490,
+        "thinkingTokens": 47,
+        "totalTokens": 1931
+      },
+      "costUsd": 0.02308,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5664,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer explains acceleration and increasing Force B to balanced forces, but it does not state the later higher constant velocity.",
+        "nextStep": "Add that he then moves at a higher constant velocity.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A is increased.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly in the first sentence."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "The answer states that Force B also increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A, so the resultant force becomes zero again.",
+            "verdict": "credited",
+            "explanation": "This link is included explicitly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "The final motion at a new constant speed is not stated."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The changed condition is given by increasing Force A."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The answer states that Force B increases as speed increases."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "It explains that the resultant force becomes zero when the forces are equal."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The answer states that the man accelerates after Force A increases."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "It concludes with balanced forces when Force B equals Force A."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A is increased. As speed increases, Force B increases. Force B increases until it equals Force A, so the resultant force becomes zero. The man then moves at a higher constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: acceleration, drag increase, forces balance, higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 11335,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1403,
+        "cachedTokens": 0,
+        "responseTokens": 445,
+        "thinkingTokens": 58,
+        "totalTokens": 1906
+      },
+      "costUsd": 0.022105,
+      "totals": {
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5717,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer explains the full change in motion and force balance.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A is increased.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A, so the resultant force becomes zero again.",
+            "verdict": "credited",
+            "explanation": "The equal forces and zero resultant are both explained."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "credited",
+            "explanation": "This final motion is stated clearly."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The increase in Force A is identified as the changed condition."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Force B is linked to increasing speed."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "The resultant force becoming zero is explained."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "Acceleration is stated after Force A increases."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "Balanced forces are described when Force B equals Force A."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-weak",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The water pushes against the stone so it slows down and then travels at terminal velocity.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Mentions resistance and constant/terminal velocity but misses drag greater than weight, resultant force, and drag decrease."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 13831,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1417,
+        "cachedTokens": 0,
+        "responseTokens": 503,
+        "thinkingTokens": 148,
+        "totalTokens": 2068
+      },
+      "costUsd": 0.026615000000000003,
+      "totals": {
+        "awardedMarks": 0,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5852,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "incorrect",
+        "awardedMarks": 0,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "medium",
+        "summary": "Terminal velocity named without explanation.",
+        "nextStep": "",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "missed",
+            "explanation": "The answer mentions water pushing against the stone but not that drag is greater than weight."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "missed",
+            "explanation": "Slowing down is stated, but the resultant force opposite the motion is not explained."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "Terminal velocity is named, but the balanced forces explanation is missing."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "uncertain",
+              "explanation": "The stone moving through water is implied, but the changed condition is not explained."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The answer identifies a resistive push from the water."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "The resultant force is not described."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The answer states that the stone slows down."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "There is no statement that forces balance at constant velocity."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "outside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "Drag acts upwards on the stone and is greater than its weight at first, so the stone decelerates.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Covers initial drag greater than weight and deceleration but not the later drag decrease/balance."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 14135,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1422,
+        "cachedTokens": 0,
+        "responseTokens": 515,
+        "thinkingTokens": 154,
+        "totalTokens": 2091
+      },
+      "costUsd": 0.027180000000000003,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5859,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer identifies the initial drag being greater than weight, but does not complete the force-balance explanation to constant velocity.",
+        "nextStep": "Include the resultant force link and explain how drag falls until it equals weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "missed",
+            "explanation": "Deceleration is stated, but the resultant force opposite to motion is not made clear."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "The explanation does not reach balanced forces or constant velocity."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The initial condition is given by stating what happens at first."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag is identified and compared with weight."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "The resultant force link is not stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "uncertain",
+              "explanation": "Deceleration is stated, but without the full force reasoning."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "There is no final force balance explanation."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "outside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The drag is initially greater than the weight, so there is a resultant force upwards and the stone decelerates. As it slows, the drag decreases.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Covers the middle chain but omits final equality of drag and weight giving constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 12138,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1431,
+        "cachedTokens": 1280,
+        "responseTokens": 511,
+        "thinkingTokens": 44,
+        "totalTokens": 1986
+      },
+      "costUsd": 0.018045000000000002,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5906,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer explains the initial deceleration and that drag decreases as speed falls, but does not state that drag eventually equals weight so the stone moves at constant velocity.",
+        "nextStep": "State that constant velocity is reached when drag equals weight, so the resultant force is zero.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "This is stated directly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "An upward resultant force and deceleration are both given."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "credited",
+            "explanation": "Included in the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "The final force balance and constant velocity are not stated."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The initial condition is identified: drag is greater than weight."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag is discussed and linked to slowing down."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "A resultant force upward is stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The answer links the resultant force to deceleration."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "It does not state that the forces become balanced."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "At first the drag force from the water is greater than the stone's weight. This gives a resultant force opposite to the velocity, so the stone decelerates. As the stone slows, drag decreases until drag equals weight. The resultant force is then zero, so the stone moves at a constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: drag greater than weight, resultant force/deceleration, drag decreases, drag equals weight."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 13201,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1461,
+        "cachedTokens": 1280,
+        "responseTokens": 480,
+        "thinkingTokens": 34,
+        "totalTokens": 1975
+      },
+      "costUsd": 0.016965,
+      "totals": {
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 6055,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer fully explains the slowing to constant velocity.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "The link from force direction to deceleration is included."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "credited",
+            "explanation": "Included in the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "credited",
+            "explanation": "Both balanced forces and constant velocity are explained."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The initial condition is described as entering water with drag greater than weight."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag is identified and linked to the stone slowing down."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "A resultant force opposite to the motion is stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The answer explains that the stone decelerates."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "It concludes with drag equalling weight and zero resultant force."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-weak",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "The amylase would not work very well because the pH is wrong.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Weak: recognises enzyme does not work but gives no denaturation/active-site/result detail."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 13442,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1188,
+        "cachedTokens": 0,
+        "responseTokens": 426,
+        "thinkingTokens": 75,
+        "totalTokens": 1689
+      },
+      "costUsd": 0.020970000000000003,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4811,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer states the wrong pH would stop amylase working well, but does not link this to active site change or the light percentage from Figure 8.",
+        "nextStep": "Add that pH 1 denatures amylase and light stays about 10%.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1 amylase is denatured or its active site is altered.",
+            "verdict": "missed",
+            "explanation": "The answer says the pH is wrong but does not mention denaturation or active site change."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower/no reaction.",
+            "verdict": "credited",
+            "explanation": "Saying amylase would not work very well shows the digestion would be greatly reduced."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "There is no use of Figure 8 or comment about light passing through."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-partial",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the enzyme is denatured, so the shape of the active site changes.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 2,
+        "notes": "Gets denaturation/active site but not starch digestion or light percentage result."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 10390,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1193,
+        "cachedTokens": 0,
+        "responseTokens": 383,
+        "thinkingTokens": 88,
+        "totalTokens": 1664
+      },
+      "costUsd": 0.020095000000000002,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4823,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer identifies denaturation at pH 1 but does not link this to starch digestion or the unchanged light transmission.",
+        "nextStep": "Add that starch would not be digested, so light transmission would stay around 10%.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1 amylase is denatured or its active site is altered.",
+            "verdict": "credited",
+            "explanation": "The answer states the enzyme is denatured and the active site shape changes."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower/no reaction.",
+            "verdict": "missed",
+            "explanation": "The answer does not state what happens to starch digestion."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "The answer does not use Figure 8 to describe the light result."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-near-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 amylase is denatured and the active site changes shape. Starch is not broken down, so iodine would stay dark.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 3,
+        "notes": "Nearly complete; mentions no starch digestion but may not clearly state the percentage stays about 10%."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 13384,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1204,
+        "cachedTokens": 0,
+        "responseTokens": 399,
+        "thinkingTokens": 113,
+        "totalTokens": 1716
+      },
+      "costUsd": 0.02138,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4867,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer states denaturation and no starch breakdown, but does not give the Figure 8 light transmission result.",
+        "nextStep": "Add that light passing through would stay around 10% and not increase.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1 amylase is denatured or its active site is altered.",
+            "verdict": "credited",
+            "explanation": "The answer states that amylase is denatured and the active site changes shape."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower/no reaction.",
+            "verdict": "credited",
+            "explanation": "The answer says starch is not broken down."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "The answer does not state the light transmission result from Figure 8."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the amylase is denatured and the active site changes shape. Starch is not digested, so the mixture stays dark with iodine and the percentage of light passing through stays about 10% instead of increasing.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: active site changed/denatured, starch not digested, percentage light stays around 10%."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 7823,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1222,
+        "cachedTokens": 0,
+        "responseTokens": 269,
+        "thinkingTokens": 47,
+        "totalTokens": 1538
+      },
+      "costUsd": 0.015590000000000001,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4962,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer explains that pH 1 denatures amylase, so starch is not digested and light transmission stays around 10%.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1 amylase is denatured or its active site is altered.",
+            "verdict": "credited",
+            "explanation": "The answer states amylase is denatured and the active site changes shape."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower/no reaction.",
+            "verdict": "credited",
+            "explanation": "The answer says starch is not digested."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "credited",
+            "explanation": "The answer says it stays about 10% instead of increasing."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-weak",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes conduct because they are made of carbon and are strong.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 0,
+        "notes": "Incorrect: strength/carbon alone does not explain electrical conduction."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 8042,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1086,
+        "cachedTokens": 0,
+        "responseTokens": 331,
+        "thinkingTokens": 23,
+        "totalTokens": 1440
+      },
+      "costUsd": 0.016050000000000002,
+      "totals": {
+        "awardedMarks": 0,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4502,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "incorrect",
+        "awardedMarks": 0,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "Does not explain electrical conduction.",
+        "nextStep": "",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "missed",
+            "explanation": "The answer does not describe the bonding around each carbon atom."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "missed",
+            "explanation": "There is no mention of delocalised electrons."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "The answer does not link moving electrons to electrical conduction."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-partial",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes have delocalised electrons.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Only identifies delocalised electrons."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 11939,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1081,
+        "cachedTokens": 0,
+        "responseTokens": 363,
+        "thinkingTokens": 179,
+        "totalTokens": 1623
+      },
+      "costUsd": 0.021665,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4474,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "medium",
+        "summary": "The answer identifies delocalised electrons but does not explain the bonding or how charge is carried.",
+        "nextStep": "Add that each carbon forms three covalent bonds and the delocalised electrons move through the nanotube carrying charge.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "missed",
+            "explanation": "No bonding between carbon atoms is described."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "The answer states that nanotubes have delocalised electrons."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "The delocalised electrons carry charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "It does not link the electrons to conducting electricity."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-near-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron delocalised.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets bonding and delocalised electron but not that electrons move/carry charge."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 22072,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1088,
+        "cachedTokens": 0,
+        "responseTokens": 375,
+        "thinkingTokens": 25,
+        "totalTokens": 1488
+      },
+      "costUsd": 0.01744,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4508,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer states three covalent bonds and a delocalised electron, but does not link the delocalised electrons to carrying charge through the nanotube.",
+        "nextStep": "Add that the delocalised electrons move through the nanotube and carry electrical charge.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "The answer says one electron is delocalised after three bonds form."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "It does not say that the delocalised electrons move and carry electrical charge."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron from each carbon atom delocalised. These delocalised electrons can move through the nanotube and carry electrical charge.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: three covalent bonds, one delocalised electron per carbon, electrons move/carry charge."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-fast",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 6372,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-fast",
+      "serverModelVersion": "chatgpt-gpt-5.4-fast",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1108,
+        "cachedTokens": 0,
+        "responseTokens": 218,
+        "thinkingTokens": 47,
+        "totalTokens": 1373
+      },
+      "costUsd": 0.013490000000000002,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4617,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer explains the bonding and links delocalised electrons to electrical conduction in the nanotube.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry charge through the nanotube.",
+            "verdict": "credited",
+            "explanation": "The answer links electron movement to carrying electrical charge."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-empty",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "Force B changes and then he moves faster.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 1,
+        "notes": "Very weak: mentions change and faster movement but misses acceleration, drag increase, balance, and higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 16165,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1368,
+        "cachedTokens": 0,
+        "responseTokens": 465,
+        "thinkingTokens": 558,
+        "totalTokens": 2391
+      },
+      "costUsd": 0.002388,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5543,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "medium",
+        "summary": "The answer indicates a speed increase but gives little detail about Force B.",
+        "nextStep": "State that Force B increases until it equals Force A, so the man then moves at a higher constant velocity.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates.",
+            "verdict": "credited",
+            "explanation": "Moves faster means his speed increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "missed",
+            "explanation": "Only a vague change in Force B is stated."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A.",
+            "verdict": "missed",
+            "explanation": "No balancing point is described."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "A constant velocity is not stated."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "missed",
+              "explanation": "No clear change in conditions is described."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "missed",
+              "explanation": "Drag or resistive force is not linked to speed."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "No resultant force link is given."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "uncertain",
+              "explanation": "Moves faster suggests acceleration, but the force reason is not shown."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "No force balance is described."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "When Force A increases, the man accelerates. Force B gets bigger because he is moving faster.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets acceleration and drag/Force B increase but not the final force balance or higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 10812,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1379,
+        "cachedTokens": 0,
+        "responseTokens": 463,
+        "thinkingTokens": 172,
+        "totalTokens": 2014
+      },
+      "costUsd": 0.0016147499999999999,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5595,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer includes acceleration and increased drag.",
+        "nextStep": "Add that Force B rises until it equals Force A, giving a higher constant velocity.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A is increased.",
+            "verdict": "credited",
+            "explanation": "Acceleration is stated when Force A increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "Force B is described as getting bigger as speed rises."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A, so the resultant force becomes zero again.",
+            "verdict": "missed",
+            "explanation": "The equal-balance point is not stated."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man then moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "The final constant-speed motion is not given."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The changed condition is stated as Force A increasing."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Force B is linked to the man moving faster."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "uncertain",
+              "explanation": "The resultant force is not stated directly."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "Acceleration is stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "Balanced forces are not described."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A increases. As his speed increases, Force B also increases. Force B rises until it equals Force A, so the resultant force is zero.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Gets the force-balance chain but omits explicitly saying higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 15500,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1394,
+        "cachedTokens": 0,
+        "responseTokens": 457,
+        "thinkingTokens": 516,
+        "totalTokens": 2367
+      },
+      "costUsd": 0.0022944999999999997,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5664,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The motion outcome is missing.",
+        "nextStep": "State that the man then moves at a higher constant velocity.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-1",
+            "text": "The man accelerates when Force A increases.",
+            "verdict": "credited",
+            "explanation": "Acceleration is stated when Force A is increased."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "The answer says Force B also increases as speed increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-3",
+            "text": "Force B increases until it equals Force A.",
+            "verdict": "credited",
+            "explanation": "The answer states Force B rises until it equals Force A."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-check-4",
+            "text": "The man moves at a higher constant velocity.",
+            "verdict": "missed",
+            "explanation": "The final motion is not stated."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "Force A is increased, showing the condition change."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Force B is linked to speed increasing."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "The answer states the resultant force becomes zero."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The man is said to accelerate when Force A increases."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "Force B is said to equal Force A, showing balance."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-swimmer-drag-full",
+      "paperSlug": "aqa-8464p2h-qp-jun18",
+      "ref": "07.2",
+      "subject": "Physics",
+      "questionSummary": "A man/swimmer increases Force A; explain Force B and movement.",
+      "answer": "The man accelerates when Force A is increased. As speed increases, Force B increases. Force B increases until it equals Force A, so the resultant force becomes zero. The man then moves at a higher constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: acceleration, drag increase, forces balance, higher constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 12664,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1403,
+        "cachedTokens": 0,
+        "responseTokens": 466,
+        "thinkingTokens": 262,
+        "totalTokens": 2131
+      },
+      "costUsd": 0.0018067499999999998,
+      "totals": {
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5717,
+      "result": {
+        "ref": "07.2",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "Complete explanation with full force balance.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-ms-1",
+            "text": "The man accelerates.",
+            "verdict": "credited",
+            "explanation": "The answer states that the man accelerates when Force A is increased."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-ms-2",
+            "text": "Force B increases.",
+            "verdict": "credited",
+            "explanation": "The answer says Force B increases as speed increases."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-ms-3",
+            "text": "Force B increases until it equals Force A.",
+            "verdict": "credited",
+            "explanation": "The answer includes Force B rising until it balances Force A and the resultant force becomes zero."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun18-07-2-ms-4",
+            "text": "The man moves at a higher constant velocity.",
+            "verdict": "credited",
+            "explanation": "The answer states the man then moves at a higher constant velocity."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "Force A is increased, changing the motion condition."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The answer links greater speed to increased Force B."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "Force B is linked to Force A through the resultant force becoming zero."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The answer states the man accelerates before the balance is restored."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "Balanced forces are implied by Force B equalling Force A."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-weak",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The water pushes against the stone so it slows down and then travels at terminal velocity.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Mentions resistance and constant/terminal velocity but misses drag greater than weight, resultant force, and drag decrease."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 43687,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1417,
+        "cachedTokens": 0,
+        "responseTokens": 455,
+        "thinkingTokens": 2529,
+        "totalTokens": 4401
+      },
+      "costUsd": 0.00632225,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5852,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "medium",
+        "summary": "Water resistance is mentioned, but balance is absent.",
+        "nextStep": "Add that drag decreases and later balances weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "A resistive force is identified."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "Included in the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "missed",
+              "explanation": "No clear change from initial motion is stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Water pushing against the stone gives a resistive force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "missed",
+              "explanation": "The resultant force is not stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The stone is described as slowing down."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "uncertain",
+              "explanation": "Terminal velocity is named, but force balance is not explained."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "outside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-partial",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "Drag acts upwards on the stone and is greater than its weight at first, so the stone decelerates.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Covers initial drag greater than weight and deceleration but not the later drag decrease/balance."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 18865,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1422,
+        "cachedTokens": 0,
+        "responseTokens": 489,
+        "thinkingTokens": 629,
+        "totalTokens": 2540
+      },
+      "costUsd": 0.0025914999999999996,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5859,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer links drag to deceleration but not terminal balance.",
+        "nextStep": "Add that drag decreases until it equals weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "States drag is greater than weight initially."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "Greater upward drag means the net force is opposite the motion, so the stone slows."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-3",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "No link made between slowing down and a reduced drag force."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "uncertain",
+              "explanation": "The phrase 'at first' shows an initial condition, but the change in condition is not developed."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag is identified as the resistive force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "A greater drag than weight implies a resultant force upward."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The stone decelerates."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "No balanced-force conclusion is stated."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-near-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "The drag is initially greater than the weight, so there is a resultant force upwards and the stone decelerates. As it slows, the drag decreases.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Covers the middle chain but omits final equality of drag and weight giving constant velocity."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 14208,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1431,
+        "cachedTokens": 0,
+        "responseTokens": 465,
+        "thinkingTokens": 393,
+        "totalTokens": 2289
+      },
+      "costUsd": 0.00207375,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 5906,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 3,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "The answer explains deceleration and decreasing drag.",
+        "nextStep": "State that constant velocity occurs when drag equals weight.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "The answer states drag is initially greater than weight."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "The answer links the upward resultant force to deceleration."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "credited",
+            "explanation": "The answer states that drag decreases as the stone slows."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "missed",
+            "explanation": "Missing from the answer."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The initial condition is given: drag is greater than weight."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "Drag is identified as the resistive force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "A resultant force is stated."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The resultant force is linked to deceleration."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "missed",
+              "explanation": "The force balance for constant velocity is not included."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "physics-stone-water-full",
+      "paperSlug": "aqa-8464p2h-qp-jun23",
+      "ref": "06.3",
+      "subject": "Physics",
+      "questionSummary": "Stone enters water, slows to constant velocity; explain why.",
+      "answer": "At first the drag force from the water is greater than the stone's weight. This gives a resultant force opposite to the velocity, so the stone decelerates. As the stone slows, drag decreases until drag equals weight. The resultant force is then zero, so the stone moves at a constant velocity.",
+      "expected": {
+        "minMarks": 4,
+        "maxMarks": 4,
+        "notes": "Full chain: drag greater than weight, resultant force/deceleration, drag decreases, drag equals weight."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 10916,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1461,
+        "cachedTokens": 0,
+        "responseTokens": 459,
+        "thinkingTokens": 191,
+        "totalTokens": 2111
+      },
+      "costUsd": 0.0016652499999999998,
+      "totals": {
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 6055,
+      "result": {
+        "ref": "06.3",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 4,
+        "maxMarks": 4,
+        "gradeableMarks": 4,
+        "confidence": "high",
+        "summary": "All linked steps shown clearly.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [],
+        "checklist": [
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-1",
+            "text": "When the stone first moves through the water, the drag force is greater than its weight.",
+            "verdict": "credited",
+            "explanation": "The answer states this initial force difference clearly."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-2",
+            "text": "This gives a resultant force opposite to the direction of motion, so the stone decelerates.",
+            "verdict": "credited",
+            "explanation": "The answer links the force imbalance to slowing down."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-check-3",
+            "text": "As it slows down, the drag decreases until drag equals weight.",
+            "verdict": "credited",
+            "explanation": "The answer states drag gets smaller as speed falls."
+          },
+          {
+            "id": "aqa-8464p2h-qp-jun23-06.3-model-answer-check-4",
+            "text": "The resultant force is then zero, so the stone continues at a constant velocity.",
+            "verdict": "credited",
+            "explanation": "Included in the answer."
+          }
+        ],
+        "chain": {
+          "id": "physics-chain-resistive-force-terminal-motion",
+          "title": "Drag Balance",
+          "steps": [
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-1",
+              "text": "condition change",
+              "role": "given",
+              "verdict": "credited",
+              "explanation": "The answer gives the initial condition clearly."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-2",
+              "text": "resistive force",
+              "role": "process",
+              "verdict": "credited",
+              "explanation": "The drag force is identified as the resistive force."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-3",
+              "text": "resultant force",
+              "role": "link",
+              "verdict": "credited",
+              "explanation": "The answer states the resultant force is opposite to motion."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-4",
+              "text": "acceleration change",
+              "role": "effect",
+              "verdict": "credited",
+              "explanation": "The answer explains that deceleration follows from the force imbalance."
+            },
+            {
+              "id": "physics-chain-resistive-force-terminal-motion-step-5",
+              "text": "force balance",
+              "role": "conclusion",
+              "verdict": "credited",
+              "explanation": "The answer states drag equals weight and the resultant force is zero."
+            }
+          ]
+        }
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-weak",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "The amylase would not work very well because the pH is wrong.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Weak: recognises enzyme does not work but gives no denaturation/active-site/result detail."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 13826,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1188,
+        "cachedTokens": 0,
+        "responseTokens": 282,
+        "thinkingTokens": 370,
+        "totalTokens": 1840
+      },
+      "costUsd": 0.001601,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4811,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "medium",
+        "summary": "Add the effect on starch and the graph trend.",
+        "nextStep": "State that pH 1 would denature amylase so the percentage of light would stay around 10%.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "Amylase is denatured or its active site is altered at pH 1.",
+            "verdict": "missed",
+            "explanation": "The answer says the pH is wrong, but not that the enzyme is denatured or its active site changes."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower.",
+            "verdict": "credited",
+            "explanation": "Would not work very well shows the reaction would be reduced."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "No reference is made to the result on the graph."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-partial",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the enzyme is denatured, so the shape of the active site changes.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 2,
+        "notes": "Gets denaturation/active site but not starch digestion or light percentage result."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 6825,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1193,
+        "cachedTokens": 0,
+        "responseTokens": 258,
+        "thinkingTokens": 95,
+        "totalTokens": 1546
+      },
+      "costUsd": 0.00100425,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4823,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer states denaturation and active-site change.",
+        "nextStep": "Add that starch would not be digested and the light level would stay about 10%.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "At pH 1 amylase is denatured or its active site is altered",
+            "verdict": "credited",
+            "explanation": "Denatured and active-site change are both stated."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower",
+            "verdict": "missed",
+            "explanation": "No effect on starch digestion is given."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay about 10% or would not increase",
+            "verdict": "missed",
+            "explanation": "No use of Figure 8 is included."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-near-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 amylase is denatured and the active site changes shape. Starch is not broken down, so iodine would stay dark.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 3,
+        "notes": "Nearly complete; mentions no starch digestion but may not clearly state the percentage stays about 10%."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 9348,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1204,
+        "cachedTokens": 0,
+        "responseTokens": 244,
+        "thinkingTokens": 301,
+        "totalTokens": 1749
+      },
+      "costUsd": 0.001391,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4867,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer includes two correct points.",
+        "nextStep": "Mention that light passing stays around 10%.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "Amylase is denatured or its active site is altered.",
+            "verdict": "credited",
+            "explanation": "Denatured and active site changes shape are both stated."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch would not be digested or the reaction would be much slower.",
+            "verdict": "credited",
+            "explanation": "Starch is described as not being broken down."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through would stay around 10% or would not increase.",
+            "verdict": "missed",
+            "explanation": "The answer does not state the light percentage result."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "biology-amylase-ph-full",
+      "paperSlug": "aqa-8464b1h-qp-jun23",
+      "ref": "06.6",
+      "subject": "Biology",
+      "questionSummary": "Predict/explain starch digestion result at pH 1 using amylase graph.",
+      "answer": "At pH 1 the amylase is denatured and the active site changes shape. Starch is not digested, so the mixture stays dark with iodine and the percentage of light passing through stays about 10% instead of increasing.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: active site changed/denatured, starch not digested, percentage light stays around 10%."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 6435,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1222,
+        "cachedTokens": 0,
+        "responseTokens": 237,
+        "thinkingTokens": 109,
+        "totalTokens": 1568
+      },
+      "costUsd": 0.0009975000000000001,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4962,
+      "result": {
+        "ref": "06.6",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer describes the full effect at pH 1.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464b1h-jun23-06-6-check-1",
+            "text": "Amylase is denatured or its active site changes shape.",
+            "verdict": "credited",
+            "explanation": "States denaturation and active site change at pH 1."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-2",
+            "text": "Starch is not digested or the reaction stops/is much slower.",
+            "verdict": "credited",
+            "explanation": "Links the altered enzyme to no starch digestion."
+          },
+          {
+            "id": "8464b1h-jun23-06-6-check-3",
+            "text": "The percentage of light passing through stays about 10% or does not increase.",
+            "verdict": "credited",
+            "explanation": "Uses Figure 8 to describe the unchanged light transmission."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-weak",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes conduct because they are made of carbon and are strong.",
+      "expected": {
+        "minMarks": 0,
+        "maxMarks": 0,
+        "notes": "Incorrect: strength/carbon alone does not explain electrical conduction."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 5761,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1086,
+        "cachedTokens": 0,
+        "responseTokens": 215,
+        "thinkingTokens": 86,
+        "totalTokens": 1387
+      },
+      "costUsd": 0.0008734999999999999,
+      "totals": {
+        "awardedMarks": 0,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4502,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "incorrect",
+        "awardedMarks": 0,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "No bonding explanation given.",
+        "nextStep": "",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "missed",
+            "explanation": "The answer does not mention bonding between carbon atoms."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "missed",
+            "explanation": "No delocalised electrons are mentioned."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry electrical charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "No link is made between electrons and conduction."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-partial",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Carbon nanotubes have delocalised electrons.",
+      "expected": {
+        "minMarks": 1,
+        "maxMarks": 1,
+        "notes": "Only identifies delocalised electrons."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 8234,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1081,
+        "cachedTokens": 0,
+        "responseTokens": 227,
+        "thinkingTokens": 128,
+        "totalTokens": 1436
+      },
+      "costUsd": 0.00098025,
+      "totals": {
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4474,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 1,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "Delocalised electrons mentioned, but explanation incomplete.",
+        "nextStep": "Add the bonding detail and how the electrons carry charge.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "missed",
+            "explanation": "No bonding between carbon atoms is stated."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "Delocalised electrons are mentioned."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry electrical charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "No link is made to movement of charge."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-near-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron delocalised.",
+      "expected": {
+        "minMarks": 2,
+        "maxMarks": 2,
+        "notes": "Gets bonding and delocalised electron but not that electrons move/carry charge."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 7087,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1088,
+        "cachedTokens": 0,
+        "responseTokens": 227,
+        "thinkingTokens": 167,
+        "totalTokens": 1482
+      },
+      "costUsd": 0.00106,
+      "totals": {
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4508,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "partial",
+        "awardedMarks": 2,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "The answer gives the bonding and delocalised electron points.",
+        "nextStep": "Link the delocalised electrons to carrying charge through the nanotube.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "This is stated clearly."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry electrical charge through the nanotube.",
+            "verdict": "missed",
+            "explanation": "The charge-carrying role is not linked."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    },
+    {
+      "caseId": "chem-nanotube-conducts-full",
+      "paperSlug": "aqa-8464c1h-qp-jun24",
+      "ref": "08.4",
+      "subject": "Chemistry",
+      "questionSummary": "Explain why carbon nanotubes conduct electricity, referring to bonding.",
+      "answer": "Each carbon atom forms three covalent bonds, leaving one electron from each carbon atom delocalised. These delocalised electrons can move through the nanotube and carry electrical charge.",
+      "expected": {
+        "minMarks": 3,
+        "maxMarks": 3,
+        "notes": "Full: three covalent bonds, one delocalised electron per carbon, electrons move/carry charge."
+      },
+      "requestedModel": "chatgpt-gpt-5.4-mini",
+      "requestedThinkingLevel": "medium",
+      "ok": true,
+      "durationMs": 6870,
+      "status": 200,
+      "serverModel": "chatgpt-gpt-5.4-mini",
+      "serverModelVersion": "chatgpt-gpt-5.4-mini-2026-03-17",
+      "serverThinkingLevel": "medium",
+      "usage": {
+        "promptTokens": 1108,
+        "cachedTokens": 0,
+        "responseTokens": 260,
+        "thinkingTokens": 120,
+        "totalTokens": 1488
+      },
+      "costUsd": 0.001037,
+      "totals": {
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "ungradedMarks": 0
+      },
+      "debugPromptChars": 4617,
+      "result": {
+        "ref": "08.4",
+        "status": "graded",
+        "result": "correct",
+        "awardedMarks": 3,
+        "maxMarks": 3,
+        "gradeableMarks": 3,
+        "confidence": "high",
+        "summary": "Three linked points explained.",
+        "nextStep": "Add the missing marking point or chain link.",
+        "warnings": [
+          "No answer chain is linked to this subpart in D1 yet."
+        ],
+        "checklist": [
+          {
+            "id": "8464c1h-jun24-08-4-check-1",
+            "text": "Each carbon atom forms three covalent bonds.",
+            "verdict": "credited",
+            "explanation": "States the bonding pattern in the nanotube."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-2",
+            "text": "One electron from each carbon atom is delocalised.",
+            "verdict": "credited",
+            "explanation": "Identifies the delocalised electron from each carbon atom."
+          },
+          {
+            "id": "8464c1h-jun24-08-4-check-3",
+            "text": "Delocalised electrons carry charge through the nanotube.",
+            "verdict": "credited",
+            "explanation": "Links the mobile electrons to electrical conduction."
+          }
+        ],
+        "chain": null
+      },
+      "expectedVerdict": "inside_expected_range"
+    }
+  ]
+}

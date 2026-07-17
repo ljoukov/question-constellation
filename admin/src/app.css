@@ -165,30 +165,6 @@
 	.ai-summary li {
 		@apply ml-5 list-disc;
 	}
-	.gallery-tab {
-		@apply inline-flex h-8 shrink-0 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
-	}
-	.gallery-tab-active {
-		@apply bg-muted font-medium text-foreground;
-	}
-	.screen-thumb {
-		@apply flex shrink-0 gap-2 rounded-lg border bg-card p-1.5 text-left text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground md:block;
-	}
-	.screen-thumb small {
-		@apply block font-mono text-[10px] text-muted-foreground;
-	}
-	.screen-thumb strong {
-		@apply mt-0.5 block text-xs leading-tight font-medium;
-	}
-	.screen-thumb-active {
-		@apply border-foreground/40 bg-muted text-foreground ring-2 ring-ring/30;
-	}
-	.lightbox-arrow {
-		@apply absolute top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/65 text-white backdrop-blur transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none;
-	}
-	.lightbox-arrow svg {
-		@apply size-5;
-	}
 }
 
 code {
