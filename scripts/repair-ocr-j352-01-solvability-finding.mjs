@@ -61,10 +61,7 @@ const publishableValidationCandidatePath = path.resolve(
 );
 const evidencePath = path.resolve(
 	rootDir,
-	stringArg(
-		'evidence',
-		'docs/release-evidence/ocr-j352-01-reviewed-solvability-repair.json'
-	)
+	stringArg('evidence', 'docs/release-evidence/ocr-j352-01-reviewed-solvability-repair.json')
 );
 
 const expectedHashes = {
@@ -82,11 +79,7 @@ const inputs = {
 		expectedHashes.importReadyCandidate,
 		true
 	),
-	solvabilityReport: checkedArtifact(
-		solvabilityReportPath,
-		expectedHashes.solvabilityReport,
-		true
-	),
+	solvabilityReport: checkedArtifact(solvabilityReportPath, expectedHashes.solvabilityReport, true),
 	solvabilitySummary: checkedArtifact(
 		solvabilitySummaryPath,
 		expectedHashes.solvabilitySummary,
@@ -224,8 +217,7 @@ const evidence = {
 		noOtherFieldsChanged: true,
 		questionCountPreserved: repaired.questions.length === 24,
 		markTotalPreserved:
-			repaired.questions.reduce((total, entry) => total + Number(entry?.marks ?? 0), 0) ===
-			720,
+			repaired.questions.reduce((total, entry) => total + Number(entry?.marks ?? 0), 0) === 720,
 		refOrderPreserved: true,
 		exactCopyrightHoldoutPreserved: true,
 		deterministicValidationPassed: true
@@ -274,7 +266,9 @@ function assertFailedSolvabilityContract(report, summary) {
 		summary?.report?.failed !== 1 ||
 		summary?.phaseArtifacts?.inputs?.candidate?.sha256 !== expectedHashes.importReadyCandidate
 	) {
-		throw new Error('Failed J352/01 solvability evidence no longer has the exact one-repair contract.');
+		throw new Error(
+			'Failed J352/01 solvability evidence no longer has the exact one-repair contract.'
+		);
 	}
 }
 
@@ -343,9 +337,7 @@ function assertExactCopyrightHoldout(validation) {
 		'model_answer_needs_human_review',
 		'needs_human_review'
 	].sort();
-	const actualCodes = (validation?.blockingIssues ?? [])
-		.map((issue) => issue.code)
-		.sort();
+	const actualCodes = (validation?.blockingIssues ?? []).map((issue) => issue.code).sort();
 	if (
 		validation?.status !== 'failed' ||
 		validation?.sourceDocumentId !== sourceDocumentId ||
@@ -353,9 +345,7 @@ function assertExactCopyrightHoldout(validation) {
 		validation?.markTotal !== 720 ||
 		JSON.stringify(validation?.reviewQuestionRefs) !== JSON.stringify(['17.1']) ||
 		JSON.stringify(actualCodes) !== JSON.stringify(expectedCodes) ||
-		(validation?.blockingIssues ?? []).some(
-			(issue) => issue.sourceQuestionRef !== '17.1'
-		)
+		(validation?.blockingIssues ?? []).some((issue) => issue.sourceQuestionRef !== '17.1')
 	) {
 		throw new Error(
 			`Full J352/01 validation no longer fails only for the exact copyright hold-out: ${JSON.stringify(
