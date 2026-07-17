@@ -160,6 +160,7 @@ node scripts/run-codex-production-import-pipeline.mjs \
   --run-id=codex-production-batch-ocr-j352-01-qp-jun24 \
   --supporting-document=data/ocr-gcse-english-literature/examiner-reports/OCR-J352-01-ER-JUN24.PDF \
   --existing-chains=tmp/current-model-paper-cohort/retry-runs/existing-chain-contexts/english-literature.json \
+  --reviewed-repair-evidence=docs/release-evidence/ocr-j352-01-reviewed-solvability-repair.json \
   --allow-unpublishable-source-drops \
   --resume-passed-phases \
   --reuse-existing-extraction \

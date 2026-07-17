@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "codex-reviewed-extraction-repair-v1",
+  "status": "passed",
+  "sourceDocumentId": "ocr-j352-01-qp-jun24",
+  "basis": "One-field deterministic repair bounded to the complete failed Codex solvability report. It corrects only the exchange attributed to Jekyll’s closed-mouth gesture, using the official printed extract; no question, mark, source asset, prompt, response, chain, checklist, or other model-answer field changed. The full 24-row inventory retains the exact reviewed 17.1 copyright hold-out, while the exact 23-row publishable subset passes deterministic validation.",
+  "inputs": {
+    "candidate": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/failed-solvability-20260717T083144Z/failed-full-candidate.json",
+      "sha256": "2ab967927c0e78c59e9d1814a318faf6d7d282c1a131f806b1542b4d9ba0b024",
+      "canonicalJsonSha256": "aad3dba290607170f7ff8f816f56afa2361b73bf34977765b262b03473b2413a"
+    },
+    "importReadyCandidate": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/failed-solvability-20260717T083144Z/failed-import-ready-candidate.json",
+      "sha256": "cae61238efd2940c6551a4b0f7fe09bbb799026176f5c66dc3c2e3494a490975",
+      "canonicalJsonSha256": "07999fff05f452ea6768f7aa5354782a721abde5aa15a53b053cb4044ea20ca8"
+    },
+    "solvabilityReport": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/failed-solvability-20260717T083144Z/solvability-report.json",
+      "sha256": "2d5131503733402980e90170304e6ec24f0223af4a45c9fd92f5a2fb0ce514fd",
+      "canonicalJsonSha256": "c71b8f26f14443ff0c31a24bb9ab76cb8964c38750339e45273a5bd2b38e03be"
+    },
+    "solvabilitySummary": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/failed-solvability-20260717T083144Z/solvability-summary.json",
+      "sha256": "de283ed156821a9ef9ce871b36944529bb3550bc3567c774e7b4cda64a0d633e",
+      "canonicalJsonSha256": "5dca2bc31e82f179f3b3b2569a1f00b928ce5cf3894c4404863ab94eddcc0381"
+    },
+    "questionPaper": {
+      "path": "data/ocr-gcse-english-literature/question-papers/OCR-J352-01-QP-JUN24.PDF",
+      "sha256": "c3d6821647f4a752624a67416fb62571f5bda72479f663bd40ce21e83ba2c160"
+    },
+    "markScheme": {
+      "path": "data/ocr-gcse-english-literature/mark-schemes/OCR-J352-01-MS-JUN24.PDF",
+      "sha256": "8ec499a8b6a0665fd3bb8ac5619b501d5f67071f27b75afd4cbeacd030e96a7d"
+    }
+  },
+  "failedModelAudit": {
+    "status": "failed",
+    "questionCount": 23,
+    "passed": 22,
+    "failed": 1,
+    "minScore": 0.8,
+    "failedResult": {
+      "sourceQuestionRef": "13.1",
+      "status": "failed",
+      "score": 0.78,
+      "studentVisibleSolvable": true,
+      "markSchemeFits": false,
+      "missingContext": [],
+      "renderFindings": [],
+      "requiredRepairs": [
+        "Correct the model answer so Jekyll's action of shutting his mouth tight and nodding is attributed to Utterson's question about Hyde dictating the will, not to a question about how the note arrived."
+      ],
+      "rationale": "Extract-plus-wider-text task: the source and response surface are complete, but the model answer materially misreads the visible exchange and therefore gives learners inaccurate grading guidance."
+    }
+  },
+  "repairs": [
+    {
+      "sourceQuestionRef": "13.1",
+      "field": "modelAnswer.answerText",
+      "before": "Stevenson presents secrecy as a social habit that allows Jekyll’s deception to survive. In the extract Jekyll claims Hyde’s note ‘was handed in’, but when Utterson asks directly how it arrived he ‘shut his mouth tight and nodded’. The physical closure replaces speech and makes concealment visible. His exclamation ‘O God, Utterson, what a lesson I have had!’ sounds confessional, yet he still lies and deceives himself that Hyde’s power has ended. Utterson ‘liked this letter well enough’, showing how a respectable lawyer’s desire to protect Jekyll helps sustain the fraud even after Poole says nothing was delivered except by post. Elsewhere, Stevenson delays truth through nested documents, Lanyon’s sealed narrative and Jekyll’s final confession. Doors and windows repeatedly embody inaccessible identities, from the neglected door ‘equipped with neither bell nor knocker’ to Jekyll’s sudden withdrawal at the window. Victorian pressure to maintain a gentleman’s reputation makes concealment seem protective, but the novella’s mystery structure shows its danger: respectable men preserve one another’s silence until violence forces the hidden truth into view.",
+      "after": "Stevenson presents secrecy as a social habit that allows Jekyll’s deception to survive. In the extract Jekyll claims Hyde’s note ‘was handed in’, but when Utterson asks whether Hyde dictated the terms in Jekyll’s will, Jekyll ‘shut his mouth tight and nodded’. The physical closure replaces speech and makes concealment visible. His exclamation ‘O God, Utterson, what a lesson I have had!’ sounds confessional, yet he still lies and deceives himself that Hyde’s power has ended. Utterson ‘liked this letter well enough’, showing how a respectable lawyer’s desire to protect Jekyll helps sustain the fraud even after Poole says nothing was delivered except by post. Elsewhere, Stevenson delays truth through nested documents, Lanyon’s sealed narrative and Jekyll’s final confession. Doors and windows repeatedly embody inaccessible identities, from the neglected door ‘equipped with neither bell nor knocker’ to Jekyll’s sudden withdrawal at the window. Victorian pressure to maintain a gentleman’s reputation makes concealment seem protective, but the novella’s mystery structure shows its danger: respectable men preserve one another’s silence until violence forces the hidden truth into view.",
+      "officialAnchor": "Question paper PDF page 19: Jekyll says the note “was handed in”; separately, after Utterson asks whether Hyde dictated the terms of Jekyll’s will, Jekyll “shut his mouth tight and nodded”.",
+      "judgeFinding": "Correct the model answer so Jekyll's action of shutting his mouth tight and nodding is attributed to Utterson's question about Hyde dictating the will, not to a question about how the note arrived."
+    }
+  ],
+  "changedPaths": [
+    "questions[18].modelAnswer.answerText"
+  ],
+  "outputArtifact": {
+    "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/repaired-extraction.json",
+    "sha256": "5d145c281ea8dd8b3d4755c6570b66eb2561e289ec3dddbc907a061c6c0511b4",
+    "canonicalJsonSha256": "c32bdf294352542f5d7c44124dd3cd2057096654e3885f603c19e68c7c398ca5"
+  },
+  "deterministicValidation": {
+    "status": "passed",
+    "sourceDocumentId": "ocr-j352-01-qp-jun24",
+    "questionCount": 23,
+    "markTotal": 680,
+    "firstRef": "01.1a",
+    "lastRef": "18.1",
+    "duplicateRefs": [],
+    "parentMarkTotals": {
+      "10": 40,
+      "11": 40,
+      "12": 40,
+      "13": 40,
+      "14": 40,
+      "15": 40,
+      "16": 40,
+      "18": 40,
+      "01": 40,
+      "02": 40,
+      "03": 40,
+      "04": 40,
+      "05": 40,
+      "06": 40,
+      "07": 40,
+      "08": 40,
+      "09": 40
+    },
+    "reviewQuestionRefs": [],
+    "blockingIssues": [],
+    "deterministicIssueCount": 0,
+    "deterministicIssues": [],
+    "candidateArtifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/publishable-validation-candidate.json",
+      "sha256": "02923d8e926d394552b521de63309a9cb97c4c224268764e0be7948d2272f645",
+      "canonicalJsonSha256": "d37d81019c8610574f0ab860aacbf8c93ea60e26675e8efee9a5b7f4871fcc71"
+    },
+    "artifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/validation.json",
+      "sha256": "de97250f1b3eda5e1cfd6985ca3faa18adf6ae13fc2546d1b64bd50b9ba50ad2",
+      "canonicalJsonSha256": "27c9d766c01625a17d76365154390046717678623a7377fcee7c8a28bd566237"
+    }
+  },
+  "copyrightHoldoutValidation": {
+    "fullCandidateArtifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/repaired-extraction.json",
+      "sha256": "5d145c281ea8dd8b3d4755c6570b66eb2561e289ec3dddbc907a061c6c0511b4",
+      "canonicalJsonSha256": "c32bdf294352542f5d7c44124dd3cd2057096654e3885f603c19e68c7c398ca5"
+    },
+    "fullValidation": {
+      "status": "failed",
+      "sourceDocumentId": "ocr-j352-01-qp-jun24",
+      "questionCount": 24,
+      "markTotal": 720,
+      "firstRef": "01.1a",
+      "lastRef": "18.1",
+      "duplicateRefs": [],
+      "parentMarkTotals": {
+        "10": 40,
+        "11": 40,
+        "12": 40,
+        "13": 40,
+        "14": 40,
+        "15": 40,
+        "16": 40,
+        "17": 40,
+        "18": 40,
+        "01": 40,
+        "02": 40,
+        "03": 40,
+        "04": 40,
+        "05": 40,
+        "06": 40,
+        "07": 40,
+        "08": 40,
+        "09": 40
+      },
+      "reviewQuestionRefs": [
+        "17.1"
+      ],
+      "blockingIssues": [
+        {
+          "code": "english_literature_source_status_incomplete",
+          "field": "selfContainment.status",
+          "severity": "error",
+          "evidence": "17.1: source-dependent Literature tasks require status=\"source_complete\".",
+          "sourceQuestionRef": "17.1"
+        },
+        {
+          "code": "english_literature_required_source_asset_missing",
+          "field": "assets",
+          "severity": "error",
+          "evidence": "17.1: missing exact required source asset label Withheld extract from A Christmas Carol by Charles Dickens.",
+          "sourceQuestionRef": "17.1"
+        },
+        {
+          "code": "english_literature_source_asset_count_incomplete",
+          "field": "assets",
+          "severity": "error",
+          "evidence": "17.1: 0/1 required source assets resolved.",
+          "sourceQuestionRef": "17.1"
+        },
+        {
+          "code": "english_literature_topology_source_assets_missing",
+          "field": "assets",
+          "severity": "error",
+          "evidence": "17.1: fixed extract-plus-wider-text topology requires 1 concrete source-role asset(s); found 0.",
+          "sourceQuestionRef": "17.1"
+        },
+        {
+          "code": "needs_human_review",
+          "field": "needsHumanReview",
+          "severity": "error",
+          "evidence": "17.1",
+          "sourceQuestionRef": "17.1"
+        },
+        {
+          "code": "model_answer_needs_human_review",
+          "field": "modelAnswer.needsHumanReview",
+          "severity": "error",
+          "evidence": "17.1",
+          "sourceQuestionRef": "17.1"
+        },
+        {
+          "code": "known_unresolved_copyright_source",
+          "field": "stemBlocks/assets/needsHumanReview",
+          "severity": "error",
+          "evidence": "ocr-j352-01-qp-jun24 17.1 requires the complete A Christmas Carol extract that OCR page 21 explicitly removes for third-party copyright. Only this exact 40-mark row may be held out; mark-scheme or examiner-report fragments are not a learner-safe replacement.",
+          "sourceQuestionRef": "17.1"
+        }
+      ],
+      "deterministicIssueCount": 1,
+      "deterministicIssues": [
+        {
+          "sourceQuestionRef": "17.1",
+          "issues": [
+            {
+              "code": "english_literature_source_status_incomplete",
+              "field": "selfContainment.status",
+              "severity": "error",
+              "evidence": "17.1: source-dependent Literature tasks require status=\"source_complete\"."
+            },
+            {
+              "code": "english_literature_required_source_asset_missing",
+              "field": "assets",
+              "severity": "error",
+              "evidence": "17.1: missing exact required source asset label Withheld extract from A Christmas Carol by Charles Dickens."
+            },
+            {
+              "code": "english_literature_source_asset_count_incomplete",
+              "field": "assets",
+              "severity": "error",
+              "evidence": "17.1: 0/1 required source assets resolved."
+            },
+            {
+              "code": "english_literature_topology_source_assets_missing",
+              "field": "assets",
+              "severity": "error",
+              "evidence": "17.1: fixed extract-plus-wider-text topology requires 1 concrete source-role asset(s); found 0."
+            },
+            {
+              "code": "needs_human_review",
+              "field": "needsHumanReview",
+              "severity": "error",
+              "evidence": "17.1"
+            },
+            {
+              "code": "model_answer_needs_human_review",
+              "field": "modelAnswer.needsHumanReview",
+              "severity": "error",
+              "evidence": "17.1"
+            },
+            {
+              "code": "known_unresolved_copyright_source",
+              "field": "stemBlocks/assets/needsHumanReview",
+              "severity": "error",
+              "evidence": "ocr-j352-01-qp-jun24 17.1 requires the complete A Christmas Carol extract that OCR page 21 explicitly removes for third-party copyright. Only this exact 40-mark row may be held out; mark-scheme or examiner-report fragments are not a learner-safe replacement."
+            }
+          ]
+        }
+      ],
+      "artifact": {
+        "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-01-qp-jun24/full-validation.json",
+        "sha256": "328257988471f75a56a4a1049a3d79ec6f5cf6c87e6b9ee27e7f7c8ca883d63e",
+        "canonicalJsonSha256": "695e41e915e5f1411a82da7a998871fd0300ee1553a1363e8cec4907faaef6a3"
+      }
+    },
+    "heldOutSourceQuestionRefs": [
+      "17.1"
+    ],
+    "publishableQuestionCount": 23,
+    "publishableMarkTotal": 680
+  },
+  "invariants": {
+    "exactFailedCandidateHash": true,
+    "exactFailedImportReadyCandidateHash": true,
+    "exactFailedSolvabilityReportHash": true,
+    "exactFailedSolvabilitySummaryHash": true,
+    "exactOfficialPdfHashes": true,
+    "requiredRepairCountExact": true,
+    "changedFieldCountExact": true,
+    "noOtherFieldsChanged": true,
+    "questionCountPreserved": true,
+    "markTotalPreserved": true,
+    "refOrderPreserved": true,
+    "exactCopyrightHoldoutPreserved": true,
+    "deterministicValidationPassed": true
+  }
+}
