@@ -1,0 +1,21 @@
+Create a polished 16:9 landscape reasoning-chain illustration for an iPad GCSE science app.
+
+STYLE
+Luminous materials-and-energy atlas on a deep navy technical backdrop. Use accurate material cutaways, amber thermal-energy flow, cool cyan insulating material, and a realistic final design application. Elegant GCSE textbook precision.
+
+LEARNING OBJECTIVE
+Show the transferable chain: thermal conductivity determines energy-transfer rate; energy travels hot to cold; a designer chooses high or low conductivity to suit the purpose.
+
+COMPOSITION
+Exactly four numbered left-to-right panels. Use paired high-conductivity metal and low-conductivity plastic pathways through panels 1–3, with visibly different energy-flow density. Panel 4 applies the distinction to a cooking vessel or handle with an immediate useful-design cue.
+
+TEXT — render exactly
+1  THERMAL CONDUCTIVITY
+2  TRANSFER RATE
+3  HOT TO COLD
+4  CHOOSE FOR THE JOB
+METAL
+PLASTIC
+
+HARD CONSTRAINTS
+No temperatures, times, rates, dimensions, or other example numbers. Do not imply that cold flows or that energy is destroyed. No fifth step, legend, extra prose, logo, watermark, or repeated generic object. Each panel needs distinct visual evidence, not the same picture four times.

@@ -1,0 +1,22 @@
+Create a polished 16:9 landscape reasoning-chain illustration for an iPad GCSE science app.
+
+STYLE
+Luminous particle-and-energy atlas on deep navy. Use elegant material cutaways, blue for high specific heat capacity, copper-orange for low specific heat capacity, amber energy waves, and clear thermometer responses.
+
+LEARNING OBJECTIVE
+Make the transferable comparison visible: for the same mass and energy transfer, a high-specific-heat-capacity material changes temperature less and a low-specific-heat-capacity material changes temperature more.
+
+COMPOSITION
+Exactly three numbered left-to-right panels with paired blue and orange material samples. Label equal mass only with the universal symbol m. Panel 1 contrasts their energy-storage pathways. Panel 2 gives the same energy per kilogram to both and may show ΔE = mcΔθ. Panel 3 shows a small versus large thermometer rise without any scale or numerical reading.
+
+TEXT — render exactly
+1  SPECIFIC HEAT CAPACITY
+2  SAME ENERGY PER KILOGRAM
+3  DIFFERENT TEMPERATURE CHANGE
+HIGH
+LOW
+SMALL temperature rise
+LARGE temperature rise
+
+HARD CONSTRAINTS
+No example mass, energy, temperature, or specific-heat-capacity values. Universal symbols and ΔE = mcΔθ are allowed. Do not imply that one sample receives more energy. No extra step, logo, watermark, legend, or decorative prose.
