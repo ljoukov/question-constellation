@@ -2,7 +2,7 @@
 
 **Status:** Product and acquisition recommendation
 
-**Evidence snapshot:** 16 July 2026
+**Evidence snapshot:** 17 July 2026
 
 **Market:** GCSE learners in the United Kingdom
 
@@ -15,7 +15,7 @@ Question Constellation should build a family of short exam-marking games around 
 The recommended subject strategy is:
 
 1. **Biology + Physics are the complete initial wedge.** They reach approximately the same Science learner base but test complementary strengths. Biology makes the promise compelling; Physics makes the result trustworthy. Initial product, content, acquisition, and measurement effort should stay concentrated on these two subjects.
-2. **Biology is the public hero.** It has the best combination of a large reachable audience, unusually strong quiz interest, relatable questions, and visible causal “missing links.” It makes the product promise easiest to understand and share.
+2. **Biology is the public product hero, not a proven SEO winner.** It has the best combination of a large reachable audience, unusually strong quiz interest, relatable questions, and visible causal “missing links.” It makes the product promise easiest to understand and share. A 17 July long-tail audit found measurable broad, Paper 1, and six-mark demand plus prediction-system support for qualified topic wording, but no observed Google-origin Biology landings and inconsistent support for verbose topic-plus-mark-count phrases.
 3. **Physics is the scoring control.** It has the cleanest exact-mark mechanics, far more exact-four-mark inventory than Biology in the two extracted source sets compared, and the lowest ambiguity for validating whether the marking experience is trusted.
 4. **Chemistry is the natural Science expansion.** Procedures, particle explanations, equations, and observation-to-conclusion chains reuse most of the Biology/Physics interaction system.
 5. **Maths is the largest reach opportunity, but it needs a distinct interface.** Its differentiated game is not “guess the answer.” It is “mark the working”: compare two solutions, spot the first wrong step, and recover method marks.
@@ -31,6 +31,20 @@ This is not a single league table. Three different winners matter:
 | Which subject best expresses the distinctive product promise? | Biology | A missing causal link is easy to see, repair, remember, and transfer into a different biological context. |
 
 If only one public subject can be launched, choose **Biology**. If the goal is the fastest trustworthy implementation from the present bank, choose **Physics**. The selected initial wedge is **Biology hero + Physics control**. Chemistry and Maths are deliberately outside that wedge: Chemistry is the easiest later extension, while Maths is the largest later opportunity but requires its own renderer.
+
+### Acquisition correction from the long-tail audit
+
+The subject choice and the acquisition mechanism are separate decisions. The follow-up [GCSE Biology Long-Tail Search Demand Audit](./gcse-biology-long-tail-search-demand-audit-2026-07-17.md) establishes that:
+
+- natural query clusters such as `gcse biology questions`, `gcse biology paper 1 quiz`, and `aqa gcse biology 6 mark questions` have measurable vendor-estimated demand; qualified topic exam-question phrases have prediction-system support but unresolved GCSE-specific volume;
+- the shorter phrase `osmosis 6 marker` appears as an exact Google UK autocomplete prediction, while `gcse biology osmosis 6 marker` did not; a prediction is behavioral evidence, not proof that a person submitted that exact query;
+- nine **unqualified** Biology topic exam-question phrases returned a raw, overlapping 1,010/month upper-bound proxy that can include A-level and other markets;
+- eight follow-up GCSE-qualified topic phrases appeared as exact predictions, but the volume endpoint was rate-limited before returning GCSE-specific estimates;
+- Question Constellation observed zero Google-origin Biology landings in the full available 11–17 July production analytics history;
+- challenge pages were not in the production sitemap and `/challenges` returned 404;
+- exact-question long-tail acquisition must therefore be treated as a bounded experiment, not an established source of traffic.
+
+The revised acquisition unit is a **searched topic, mechanic, or readiness hub supported by a small number of excellent question leaves**. “Find the missing mark” remains the differentiated interaction after landing; it is not established search vocabulary.
 
 ## Relationship to the existing product
 
@@ -378,6 +392,34 @@ No single source should be treated as exact:
 - Exam entries measure the eligible cohort, not intent to use this product.
 - GCSE demand is highly seasonal and rises sharply near exams.
 
+### Long-tail query correction
+
+The broad subject comparison does not by itself prove that learners search for a page such as “GCSE Biology osmosis six marker.” A separate UK-localized audit on 17 July 2026 tested 39 purposively selected exact phrases:
+
+- 29 appeared as exact Google UK autocomplete predictions;
+- 17 returned directional monthly estimates;
+- 12 had an exact prediction but no usable volume;
+- 10 had neither an exact prediction nor a usable volume.
+
+The set was built from the user’s example, nearby topic variants, mechanic formulations, Paper 1 and mark-scheme terms, broad practice terms, and nine topic seeds. It was not random or exhaustive, so these proportions describe only the diagnostic set and must not be generalized to all possible long-tail phrases.
+
+The most decision-relevant measured examples were:
+
+| Query | Exact Google UK prediction | Directional UK searches/month |
+|---|---:|---:|
+| `gcse biology osmosis 6 marker` | No | Not reported |
+| `osmosis 6 marker` | Yes | Not reported |
+| `gcse biology osmosis exam questions` | Yes | Not reported |
+| `osmosis exam questions` | Yes | 70 |
+| `aqa gcse biology 6 mark questions` | Yes | 70 |
+| `gcse biology paper 1 quiz` | Yes | 70 |
+| `cell biology exam questions` | Yes | 320, level ambiguous |
+| `homeostasis exam questions` | Yes | 170, level ambiguous |
+| `infection and response exam questions` | Yes | 140, level ambiguous |
+| `photosynthesis exam questions` | Yes | 110, level ambiguous |
+
+Autocomplete is evidence that the wording occurs in Google’s prediction system, not proof that a person submitted the exact phrase or a monthly user count. The point estimates may contain close variants and overlap. Eight follow-up GCSE-qualified topic phrases were exact predictions, but their volume requests returned HTTP 429; the 30–320/month topic values above are therefore wider Biology-market upper-bound proxies, not GCSE counts. The result supports hub-level testing and natural short formulations; it does not support generating a large page estate from every verbose topic × mark-count combination. Full methodology, the saved query dataset, executable first-party SQL, Student Room behavior, competition, and pilot gates are in the [long-tail audit](./gcse-biology-long-tail-search-demand-audit-2026-07-17.md).
+
 ### Signed-in Google Keyword Planner ranges
 
 The following monthly UK ranges were observed:
@@ -410,11 +452,11 @@ Google explains how Keyword Planner forecasts and historical metrics are produce
 
 The point estimates below are useful for rough ratios among fully reported rows. An em dash means that the source did not return a value, not that the query is never searched. Totals containing an em dash are shown as lower bounds or as not reported.
 
-“Interactive” is the simple sum of `questions + quiz + test`. “Broad sampled” adds `past papers + revision`. These sums contain overlap and must not be read as a market size.
+“Questions + quiz + test” is the simple sum of those three terms. It is a practice-resource proxy, not proof that every searcher prefers an interactive page. “Broad sampled” adds `past papers + revision`. These sums contain overlap and must not be read as a market size.
 
 The values came from the public `api.seodata.dev` keyword endpoint, retrieved on 16 July 2026 with `country=gb`. The provider describes its values as Google-Ads-derived 12-month averages. Values below are shown as returned without additional rounding. The endpoint does not document match type or close-variant treatment, so these figures are a directional cross-check of the signed-in Planner ranges, not forecasts or unique-user counts. An example response is the [`GCSE Biology quiz` UK query](https://api.seodata.dev/v1/keyword?q=gcse%20biology%20quiz&country=gb).
 
-| Subject | Questions | Quiz | Test | Interactive | Past papers | Revision | Broad sampled |
+| Subject | Questions | Quiz | Test | Questions + quiz + test | Past papers | Revision | Broad sampled |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Maths | 5,400 | 1,000 | 1,600 | 8,000 | 27,100 | 3,600 | 38,700 |
 | Biology | 880 | 880 | 210 | 1,970 | 4,400 | 1,600 | 7,970 |
@@ -432,12 +474,12 @@ The values came from the public `api.seodata.dev` keyword endpoint, retrieved on
 
 Key implications:
 
-- Maths has approximately four times Biology’s sampled interactive head-term demand and nearly five times its broad sampled total.
-- In this point-estimate source, Biology has the strongest Science interaction pool: about 1.6 times Chemistry and 2.4 times Physics.
+- Maths has approximately four times Biology’s sampled question/quiz/test demand and nearly five times its broad sampled total.
+- In this point-estimate source, Biology has the strongest Science question/quiz/test pool: about 1.6 times Chemistry and 2.4 times Physics.
 - Biology’s quiz query alone is estimated at 880 searches, 88% of the Maths quiz estimate despite Maths having a much larger overall search market.
 - English Language has reach, but much of the assessment does not support literal atomic mark-point games.
 - Geography slightly exceeds Physics in this one point-estimate sample because of quiz demand. This does not establish a stable Geography-versus-History demand ranking.
-- Reported “Combined Science” head terms are weaker than the component subjects, while several interactive values are suppressed rather than zero. Combined Science should remain a qualification and course filter while public pages lead with Biology, Chemistry, or Physics.
+- Reported “Combined Science” head terms are weaker than the component subjects, while several question/quiz/test values are suppressed rather than zero. Combined Science should remain a qualification and course filter while public pages lead with Biology, Chemistry, or Physics.
 
 ### Quiz-intent share as an engagement proxy
 
@@ -457,7 +499,7 @@ Within this source, Biology is the most attractive combination of absolute quiz 
 The sources disagree on some within-category ordering. Google Trends places the normalized `GCSE Biology quiz` series above `GCSE Maths quiz`, while the point estimates place Maths slightly above Biology. Trends also placed History above Geography for quiz interest in the captured comparison, while the point estimates reverse them. Trends is sampled and normalized within a set; the point source attempts absolute averages with undocumented matching. The stable conclusions are therefore narrower:
 
 - Maths is the broad reach leader.
-- Biology has unusually strong interactive interest relative to its broad subject demand.
+- Biology has unusually strong quiz interest relative to its broad subject demand.
 - Biology and Physics form a large Science wedge with complementary mechanics.
 - the research does not establish a reliable demand order between Geography and History.
 
@@ -1133,7 +1175,31 @@ The most relevant participatory intents are:
 
 Build around three page layers.
 
-#### 1. Challenge leaves
+#### 1. Topic and mechanic hubs
+
+Curated groups such as:
+
+- AQA GCSE Biology six-mark questions;
+- GCSE Biology osmosis exam questions;
+- GCSE Biology required-practical questions;
+- GCSE Physics method-mark challenges;
+- GCSE Maths mark-the-working questions;
+- GCSE Geography developed-answer challenges.
+
+These are the primary SEO unit. The hub should contain playable previews and clear paths into complete rounds, not only link lists. Search-facing titles should use observed language; the missing-mark interaction should become clear on the page.
+
+#### 2. Readiness sprints
+
+Broader tool pages:
+
+- AQA GCSE Biology Paper 1 practice test or quiz;
+- AQA Physics calculation diagnostic;
+- GCSE Maths method-mark diagnostic;
+- am I ready for Combined Science Paper 1?
+
+These aggregate calibrated rounds into a meaningful result and address “test me” intent that a static answer cannot satisfy.
+
+#### 3. Challenge leaves
 
 One complete interactive round:
 
@@ -1142,50 +1208,25 @@ One complete interactive round:
 - `Mark the working: simultaneous equations`
 - `Which geography answer is developed?`
 
-These pages target specific topic + mechanic intent and are the primary share destination.
-
-#### 2. Topic and mechanic hubs
-
-Curated groups such as:
-
-- GCSE Biology missing-mark challenges;
-- AQA Biology four-mark questions;
-- GCSE Physics method-mark challenges;
-- GCSE Maths mark-the-working questions;
-- GCSE Geography developed-answer challenges.
-
-The hub should contain playable previews and clear paths into complete rounds, not only link lists.
-
-#### 3. Readiness sprints
-
-Broader tool pages:
-
-- GCSE Biology Paper 1 test;
-- AQA Physics calculation diagnostic;
-- GCSE Maths method-mark diagnostic;
-- am I ready for Combined Science Paper 1?
-
-These aggregate calibrated rounds into a meaningful result and address “test me” intent that a static answer cannot satisfy.
+These pages support the hubs and are the primary share destination. Publish only leaves with a complete attempt, evidence reveal, repair, transfer, and stable canonical URL. The long-tail audit supports testing a small leaf set; it does not support programmatic topic × mark-count expansion.
 
 ### Query priorities
 
-The measured research covered the generic `GCSE <subject> questions`, `quiz`, `test`, `past papers`, and `revision` head terms. It did not establish volume for the mechanic phrases or topic combinations below. Treat those as experimental clusters to validate through fresh Planner checks, Search Console impressions, and completed challenge cycles.
+The 17 July audit adds exact-prediction and directional-volume evidence to the earlier head-term research. The initial Biology portfolio should use the following order:
 
-Measured Biology head-term families:
+| Priority | Query family | Evidence | Role |
+|---|---|---|---|
+| 1 | GCSE Biology Paper 1 quiz | the exact phrase was a prediction with a 70/month estimate; adding AQA or “practice test” is an adjacent product-fit hypothesis, not the measured phrase | readiness hub |
+| 1 | AQA GCSE Biology six-mark questions | exact predictions; `aqa gcse biology 6 mark questions` estimated at 70/month | mechanic hub |
+| 1 | GCSE Biology osmosis and required-practical questions | multiple qualified exact predictions; the adjacent unqualified `osmosis exam questions` estimate was 70/month and is only an upper-bound proxy | topic hub and a few calibrated leaves |
+| 2 | GCSE Biology exam questions | exact prediction; 140/month estimate, with a close reverse-order variant also reported at 140 | broad question hub |
+| Validate before prioritizing | GCSE-qualified Cell Biology, Homeostasis, Infection and Response, Photosynthesis, Bioenergetics, and Ecology questions | every tested qualified phrase was an exact prediction; the volume endpoint returned HTTP 429. Adjacent unqualified estimates ranged from 30 to 320/month but can include other levels | second-wave topic candidates |
+| Avoid as a lead | generic or year-specific mark schemes and PDFs | document/archive intent and stronger incumbents | support only when necessary for source context |
+| Do not target as a keyword | `find the missing mark Biology` | no relevant result in the representative audit | product hook after landing |
 
-- GCSE Biology quiz;
-- GCSE Biology questions;
-- GCSE Biology test;
-- GCSE Biology past papers;
-- GCSE Biology revision.
+The nine unqualified topic exam-question phrases have a raw 1,010/month upper-bound proxy for the wider Biology market, not GCSE-specific demand. The three narrow initial phrases with point estimates—AQA six-mark questions, unqualified osmosis exam questions, and Biology Paper 1 quiz—sum to 210 per month. Both totals contain overlap; the latter also contains one level-ambiguous term. Neither is a unique-user or traffic forecast.
 
-Experimental Biology clusters:
-
-- AQA Biology four-mark questions;
-- Biology Paper 1 test;
-- respiration exam questions;
-- enzymes exam questions;
-- find the missing mark Biology.
+Exact leaves should use the shortest natural formulation supported by the evidence. For example, `osmosis 6 marker` appeared in Google’s prediction system, while `gcse biology osmosis 6 marker` did not. This suggests wording to test; it does not prove an exact-query user count.
 
 Measured Physics head-term families:
 
@@ -1244,13 +1285,32 @@ Strong short-form hooks:
 
 The smallest credible online test does not require broad brand awareness:
 
-1. publish a compact set of excellent, indexable challenge leaves;
-2. distribute the exact same leaves through search, creators, tutor links, and share cards;
-3. measure completed rounds rather than visits;
-4. identify which subject + mechanic combination creates voluntary repair and transfer;
-5. expand only the winning chains and query clusters.
+1. publish three to six strong, indexable hubs in observed search language;
+2. support them with approximately 12–20 excellent challenge leaves;
+3. distribute the same leaves through search, creators, tutor links, and share cards;
+4. measure Search Console impressions and queries as well as completed rounds;
+5. identify which query + subject + mechanic combination creates acquisition, voluntary repair, and transfer;
+6. expand only the winning hubs, chains, and query clusters.
 
 This avoids treating traffic as proof of product value or treating classroom access as the only route to early learners.
+
+### Search validation gates
+
+The first-party audit found one anonymous exact-Google-referrer landing, zero observed Google-origin Biology landings, and that anonymous landing ended on a URL that now returns 404. Without Search Console, the referrer is consistent with an organic visit but does not expose its query or conclusively classify a click. Googlebot crawl counts establish crawlability, not search demand.
+
+Before evaluating the wedge:
+
+- enable and verify Search Console access;
+- make 100% of pilot pages return 200 with intended self-referencing canonicals;
+- redirect known stale question URLs;
+- put the hubs and selected leaves in the sitemap and internal-link graph;
+- require at least 90% discovery by day 14 and 75% indexing by day 28.
+
+Predeclare Paper 1 quiz/test, six-mark questions, osmosis/required practical, broad exam questions, and each separately named topic as distinct query families.
+
+Treat impressions on at least five pilot URLs, impressions from at least three predeclared query families, and genuine organic clicks on at least three pages that lead to challenge starts as only a **minimum signal for one more bounded iteration**. It is not enough to validate the wedge or authorize programmatic expansion.
+
+Before scaling, observe a complete substantial UK mock or exam-demand window and accumulate at least 100 genuine organic landing sessions across the pilot. That sample gives only roughly ±10 percentage-point precision for a worst-case 50% conversion rate at 95% confidence. Scale only if demand is distributed across multiple pages and families and the entrants complete the repair-and-transfer loop at rates worth comparing with other acquisition sources.
 
 ### What not to depend on
 
@@ -1454,10 +1514,12 @@ For Biology, generate at the chain level so each hero round has a real transfer.
 
 Create:
 
-- individual challenge leaves;
-- Biology and Physics topic/mechanic hubs;
+- three to six Biology and Physics readiness/topic/mechanic hubs using observed search language;
+- approximately 12–20 supporting challenge leaves;
 - one short readiness sprint per initial subject;
 - spoiler-free share cards and direct round links.
+
+Verify 200 responses, canonicals, redirects, sitemap inclusion, internal links, Search Console discovery, and indexing before treating traffic as a demand result. Use early distributed impressions and clicks only to justify another bounded iteration; expand programmatically only after the full seasonal and 100-organic-landing scale gate.
 
 ### Step 4: select the winning public promise
 
@@ -1485,6 +1547,8 @@ Likely order by mechanic compatibility, current bank readiness, and build cost�
 
 Build **Science mark games**, not a generic revision game and not a generic AI tutor.
 
+Keep Biology as the public product hero, while treating Biology SEO as a measured hypothesis rather than a proven wedge. Lead acquisition with Paper 1, six-mark-question, topic exam-question, and required-practical hubs. Use a small set of exact-question pages to support and test those hubs; do not generate a large long-tail estate until Search Console shows demand across multiple pages and query families.
+
 Use Biology to make the promise vivid:
 
 > **Can you find the missing link that turns this from 2/4 into 4/4?**
@@ -1503,6 +1567,8 @@ The common product is not the score. It is the learner’s progression from **se
 
 Demand and audience:
 
+- [GCSE Biology Long-Tail Search Demand Audit, 17 July 2026](./gcse-biology-long-tail-search-demand-audit-2026-07-17.md)
+- [Google: how autocomplete predictions work](https://support.google.com/websearch/answer/7368877?hl=en)
 - [Google Keyword Planner historical metrics and forecasts](https://support.google.com/google-ads/answer/3022575?hl=en)
 - [Example `api.seodata.dev` UK keyword response used for the directional point-estimate cross-check](https://api.seodata.dev/v1/keyword?q=gcse%20biology%20quiz&country=gb)
 - [Google Trends: GCSE subject comparison, UK, latest 12 months](https://trends.google.com/trends/explore?date=today%2012-m&geo=GB&q=gcse%20maths,gcse%20biology,gcse%20chemistry,gcse%20physics,gcse%20english%20language)

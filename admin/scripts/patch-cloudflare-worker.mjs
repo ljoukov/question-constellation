@@ -27,6 +27,26 @@ export class AnalyticsSummaryWorkflow extends WorkflowEntrypoint {
       async () => {
         await initialized;
         const summaryId = event.payload.summaryId;
+        const workflowSecret = String(this.env.AUTH_COOKIE_SECRET || "");
+        if (workflowSecret.length < 32) {
+          throw new Error("Analytics workflow signing secret is unavailable.");
+        }
+        const workflowKey = await crypto.subtle.importKey(
+          "raw",
+          new TextEncoder().encode(workflowSecret),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+        const signatureBytes = await crypto.subtle.sign(
+          "HMAC",
+          workflowKey,
+          new TextEncoder().encode(\`analytics-summary:\${summaryId}\`)
+        );
+        const workflowSignature = Array.from(
+          new Uint8Array(signatureBytes),
+          (byte) => byte.toString(16).padStart(2, "0")
+        ).join("");
         const deferred = [];
         const workflowContext = {
           waitUntil(promise) { deferred.push(promise); },
@@ -38,7 +58,7 @@ export class AnalyticsSummaryWorkflow extends WorkflowEntrypoint {
             method: "POST",
             headers: {
               "content-type": "application/json",
-              "x-analytics-workflow-id": summaryId
+              "x-analytics-workflow-signature": workflowSignature
             },
             body: JSON.stringify(event.payload)
           }
@@ -69,6 +89,7 @@ worker_default.scheduled = async function scheduled(controller, env, ctx) {
     const now = new Date();
     const cutoff = new Date(now.getTime() - 90 * 86_400_000).toISOString();
     const summaryCutoff = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+    const auditCutoff = new Date(now.getTime() - 365 * 86_400_000).toISOString();
     const auditId = crypto.randomUUID();
     await env.ANALYTICS_DB.batch([
       env.ANALYTICS_DB.prepare(
@@ -87,11 +108,24 @@ worker_default.scheduled = async function scheduled(controller, env, ctx) {
         "DELETE FROM analytics_sessions WHERE last_seen_at < ?"
       ).bind(cutoff),
       env.ANALYTICS_DB.prepare(
+        "DELETE FROM analytics_admin_audit WHERE created_at < ?"
+      ).bind(auditCutoff),
+      env.ANALYTICS_DB.prepare(
+        "DELETE FROM analytics_actor_labels WHERE (actor_key LIKE 'user:%' AND NOT EXISTS (SELECT 1 FROM analytics_sessions s WHERE 'user:' || s.user_id = actor_key)) OR (actor_key LIKE 'anon:%' AND NOT EXISTS (SELECT 1 FROM analytics_sessions s WHERE 'anon:' || s.anonymous_id = actor_key))"
+      ),
+      env.ANALYTICS_DB.prepare(
         "INSERT INTO analytics_admin_audit (audit_id, action, scope, requested_by, created_at, metadata_json) VALUES (?, 'retention-prune', 'database', 'cloudflare-cron', ?, ?)"
       ).bind(
         auditId,
         now.toISOString(),
-        JSON.stringify({ retentionDays: 90, summaryRetentionDays: 30, cutoff, summaryCutoff })
+        JSON.stringify({
+          retentionDays: 90,
+          summaryRetentionDays: 30,
+          auditRetentionDays: 365,
+          cutoff,
+          summaryCutoff,
+          auditCutoff
+        })
       )
     ]);
   };

@@ -1,6 +1,9 @@
+import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { isAllowedAdminUserId } from '$lib/server/auth/access';
 import { clearAdminSessionCookie, readAdminAuthFromCookies } from '$lib/server/auth/session';
+import { signAnalyticsWorkflow, signaturesMatch } from '$lib/server/workflowAuth';
 
 function isPublicPath(pathname: string): boolean {
 	return pathname === '/login' || pathname.startsWith('/auth/') || pathname.startsWith('/_app/');
@@ -31,8 +34,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const workflowSummaryId = event.url.pathname.match(
 		/^\/api\/summaries\/([a-zA-Z0-9-]{1,96})\/execute$/
 	)?.[1];
+	const workflowSecret = String(event.platform?.env.AUTH_COOKIE_SECRET || env.AUTH_COOKIE_SECRET || '');
+	const providedWorkflowSignature =
+		event.request.headers.get('x-analytics-workflow-signature') || '';
 	const workflowAllowed = Boolean(
-		workflowSummaryId && event.request.headers.get('x-analytics-workflow-id') === workflowSummaryId
+		workflowSummaryId &&
+			workflowSecret.length >= 32 &&
+			signaturesMatch(
+				await signAnalyticsWorkflow(workflowSummaryId, workflowSecret),
+				providedWorkflowSignature
+			)
 	);
 
 	if (workflowAllowed) {
@@ -41,6 +52,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	if (isPublicPath(event.url.pathname)) {
+		return applySecurityHeaders(await resolve(event));
+	}
+
+	if (dev && env.DEV_AUTH_USER_ID) {
+		event.locals.adminUser = {
+			uid: env.DEV_AUTH_USER_ID,
+			email: env.DEV_AUTH_EMAIL || 'local-admin@example.test',
+			name: env.DEV_AUTH_NAME || 'Local admin',
+			photoUrl: null
+		};
+		event.locals.adminIdentity = event.locals.adminUser.email;
 		return applySecurityHeaders(await resolve(event));
 	}
 

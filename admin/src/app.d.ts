@@ -16,7 +16,15 @@ declare global {
 	interface AnalyticsSummaryWorkflowBinding {
 		create(options: {
 			id?: string;
-			params: { summaryId: string; environment: string; days: number };
+			params: {
+				summaryId: string;
+				environment: string;
+				days: number;
+				traffic: string;
+				identity: string;
+				country: string;
+				path: string;
+			};
 		}): Promise<{ id: string }>;
 	}
 

@@ -8,7 +8,11 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	const summary = (
 		await queryRows<Record<string, unknown>>(
 			locals.analyticsDb,
-			'SELECT * FROM analytics_ai_summaries WHERE summary_id = ? LIMIT 1',
+			`SELECT
+				summary_id, status, environment, window_days, traffic_scope, identity_scope,
+				country_scope, path_scope, created_at, started_at, completed_at, duration_ms,
+				model, model_version, summary_markdown, usage_json, cost_usd, error_message
+			FROM analytics_ai_summaries WHERE summary_id = ? LIMIT 1`,
 			[summaryId]
 		)
 	)[0];

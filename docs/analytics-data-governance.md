@@ -19,6 +19,11 @@ This is the pre-deployment inventory for the first-party analytics system. The d
 - Best-effort network hints: Network Information API `effectiveType`, downlink estimate, RTT estimate, and save-data preference. Browsers generally do not reliably expose whether the connection is Wi-Fi.
 - Request metadata: IP from `CF-Connecting-IP`/`X-Real-IP`, accepted languages, CF Ray, and every available request header except the credential-bearing exclusions below.
 - Cloudflare request context: country, region/code, city, postal code, timezone, colo, continent, latitude/longitude, ASN/organization, and the full serializable `request.cf` object (which may also contain HTTP/TLS/priority/RTT/bot-management fields when Cloudflare supplies them).
+- Traffic quality: a versioned session classification (`human`, `verified_bot`,
+  `suspected_bot`, `internal_test`, or `unknown`), its source/reason, and classification time.
+  Cloudflare's top-level verified-bot category controls when present; documented user-agent
+  rules provide a conservative suspected-automation fallback. Development traffic is classified
+  as internal/test. Records are retained and filterable rather than deleted.
 - Never stored: `Cookie`, `Authorization`, `Proxy-Authorization`, `CF-Access-JWT-Assertion`, or `X-API-Key` headers.
 
 ### Runtime model calls
@@ -28,11 +33,32 @@ This is the pre-deployment inventory for the first-party analytics system. The d
 - Result: status, start/completion time, duration, model version, raw output, available raw thought/reasoning channel text, usage JSON, cost, and error name/message.
 - Current learner-facing integrations: general answer grading, English Literature step grading, and experimental paper grading. Analytics writes are non-blocking and must never fail the learner action.
 
-### AI overview jobs
+### Optional cohort-note jobs
 
-- Job scope/status/requester/timestamps/duration, environment/window, model/version/thinking level, source snapshot JSON, exact overview prompt, raw available reasoning, Markdown summary, usage/cost, and error.
-- The overview prompt tells the model not to reproduce hidden chain-of-thought and to distinguish evidence from inference. The restricted admin can still inspect the stored raw reasoning evidence.
+- Job scope/status/requester/timestamps/duration, environment/window/audience/identity/location/path
+  filters, model/version/thinking level, source snapshot JSON, exact prompt, raw available
+  reasoning, Markdown note, usage/cost, and error.
+- The note source contains deterministic cohort totals and bounded route/action summaries for at
+  most five representative journeys. It omits learner input values, model prompts, model output,
+  and model reasoning. The response is limited to three evidence-linked bullets and must state
+  when the sample is too thin.
+- Person, email, UID, browser, or session searches disable AI-note generation so direct search
+  identifiers are not copied into a model prompt or summary record.
+- The note prompt tells the model not to reproduce hidden chain-of-thought and to distinguish
+  evidence from inference. Raw provider reasoning remains restricted evidence and is not returned
+  by normal list or polling queries.
 - Deployed generation is a Cloudflare Workflow (available on Workers Free) because observed GPT-5.6 Sol runs take 33-90 seconds and `waitUntil` only extends an HTTP invocation for up to 30 seconds after its response. D1 job polling is independent of Workflow instance retention.
+
+### Manual traffic labels
+
+- The restricted admin may mark a stable Firebase UID or anonymous browser ID as `internal_test`
+  or restore it to `human`. These reversible overrides apply to that actor's historical sessions
+  and take precedence over automatic classification.
+- The actor key, optional note, admin identity, and timestamps are stored in
+  `analytics_actor_labels`. An identifier-free hash and action type are also recorded in the
+  administrative audit table.
+- User/anonymous privacy deletion removes the matching label. Retention pruning removes orphaned
+  labels after their final session expires.
 
 ## Access controls
 
@@ -40,13 +66,15 @@ This is the pre-deployment inventory for the first-party analytics system. The d
 - Production and local development use the same server-side Firebase Google redirect flow as the public app. Every page and API request verifies the encrypted session and checks the Firebase UID against the two-entry admin allow-list.
 - Missing Firebase configuration fails closed. Unauthenticated pages redirect to the login screen, unauthenticated APIs return 401, and authenticated but unapproved users receive access denied.
 - No Cloudflare operator token or database credential is uploaded as a Worker runtime variable.
+- Maps and overview lists expose country/region aggregates only. Exact latitude/longitude and IP
+  evidence remain confined to restricted raw records and are not plotted as learner-level pins.
 
 ## Retention policy
 
 The deployed admin Worker enforces these defaults every day at 04:17 UTC through a Cloudflare cron trigger:
 
 - Journey sessions/events/requests and raw model calls: **90 days**.
-- AI summaries, including copied source snapshots: **30 days**.
+- AI cohort notes, including copied source snapshots: **30 days**.
 - Identifier-free administrative audit rows: **365 days**.
 
 The protected `POST /api/maintenance/retention` endpoint provides an operator-triggered equivalent when called with `confirm: "prune expired analytics"`; days can be overridden within guarded limits. Each automatic or manual prune adds an identifier-free administrative audit row.
@@ -55,7 +83,8 @@ The protected `POST /api/maintenance/retention` endpoint provides an operator-tr
 
 The protected `POST /api/privacy/delete` endpoint accepts scopes `session`, `anonymous`, or `user`. It requires the exact confirmation string `delete <scope> <identifier>`.
 
-- Session deletion removes that session's events, ingestion requests, model runs, session aggregate, and any AI overview whose stored source/prompt contains the session id.
+- Session deletion removes that session's events, ingestion requests, model runs, session aggregate,
+  and any AI overview whose stored source, prompt, summary, or reasoning contains the session id.
 - Anonymous-id deletion removes every linked session, event, request, model run, and affected overview.
 - User deletion accepts either uid or email and removes every matching session, event, request, model run, and affected overview.
 - The audit log retains only a SHA-256 hash of the deletion target, not the deleted identifier.

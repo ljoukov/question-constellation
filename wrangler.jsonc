@@ -30,7 +30,8 @@
 		{
 			"binding": "ANALYTICS_DB",
 			"database_name": "question-constellation-analytics",
-			"database_id": "d989edc1-26d8-4bd6-83f1-97b09c4d50a2"
+			"database_id": "d989edc1-26d8-4bd6-83f1-97b09c4d50a2",
+			"migrations_dir": "migrations/analytics"
 		}
 	],
 	"r2_buckets": [

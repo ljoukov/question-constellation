@@ -4,6 +4,8 @@ import { env } from '$env/dynamic/private';
 import { ANALYTICS_DB_DATABASE_ID } from './cloudflareConfig';
 import type { AnalyticsBatchPayload, AnalyticsEventPayload } from '$lib/analytics/types';
 import type { AdminUser } from './auth/session';
+import { safeAnalyticsJson } from './analyticsJson';
+import { classifyAnalyticsTraffic } from './analyticsTraffic';
 
 type AnalyticsDb = D1Database | D1DatabaseSession;
 type SqlStatement = { sql: string; params: Array<string | number | null> };
@@ -29,15 +31,6 @@ function integer(value: unknown, minimum = 0, maximum = Number.MAX_SAFE_INTEGER)
 function decimal(value: unknown, minimum = 0, maximum = 100): number | null {
 	if (typeof value !== 'number' || !Number.isFinite(value)) return null;
 	return Math.min(maximum, Math.max(minimum, value));
-}
-
-function safeJson(value: unknown, maximum = 32_000): string | null {
-	if (value === undefined || value === null) return null;
-	try {
-		return JSON.stringify(value).slice(0, maximum);
-	} catch {
-		return null;
-	}
 }
 
 function identifier(value: unknown): string | null {
@@ -106,7 +99,7 @@ function eventParams(
 		text(event.input?.value, 12_000),
 		text(event.input?.previousValue, 12_000),
 		event.input?.redacted ? 1 : 0,
-		safeJson(event.properties),
+		safeAnalyticsJson(event.properties),
 		identity.environment,
 		identity.appVersion
 	];
@@ -196,6 +189,7 @@ export async function recordAnalyticsBatch(args: {
 	const ipAddress =
 		request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || null;
 	const userAgent = request.headers.get('user-agent');
+	const traffic = classifyAnalyticsTraffic({ environment, userAgent, cf });
 	const engagedMs = payload.events.reduce(
 		(sum, event) => sum + (integer(event.engagedMs, 0, 86_400_000) ?? 0),
 		0
@@ -213,8 +207,9 @@ export async function recordAnalyticsBatch(args: {
 				operating_system, device_type, viewport_width, viewport_height, screen_width,
 				screen_height, cf_json, request_headers_json, event_count, page_view_count, engaged_ms,
 				environment, app_version, connection_effective_type, connection_downlink_mbps,
-				connection_rtt_ms, connection_save_data, device_memory_gb, hardware_concurrency
-			) VALUES (${Array.from({ length: 47 }, () => '?').join(', ')})
+				connection_rtt_ms, connection_save_data, device_memory_gb, hardware_concurrency,
+				traffic_class, traffic_source, traffic_detail, classification_version, classified_at
+			) VALUES (${Array.from({ length: 52 }, () => '?').join(', ')})
 			ON CONFLICT(session_id) DO UPDATE SET
 				last_seen_at = excluded.last_seen_at,
 				user_id = COALESCE(excluded.user_id, analytics_sessions.user_id),
@@ -245,9 +240,11 @@ export async function recordAnalyticsBatch(args: {
 				connection_save_data = COALESCE(excluded.connection_save_data, analytics_sessions.connection_save_data),
 				device_memory_gb = COALESCE(excluded.device_memory_gb, analytics_sessions.device_memory_gb),
 				hardware_concurrency = COALESCE(excluded.hardware_concurrency, analytics_sessions.hardware_concurrency),
-				event_count = analytics_sessions.event_count + excluded.event_count,
-				page_view_count = analytics_sessions.page_view_count + excluded.page_view_count,
-				engaged_ms = analytics_sessions.engaged_ms + excluded.engaged_ms`,
+				traffic_class = excluded.traffic_class,
+				traffic_source = excluded.traffic_source,
+				traffic_detail = excluded.traffic_detail,
+				classification_version = excluded.classification_version,
+				classified_at = excluded.classified_at`,
 		params: [
 			payload.sessionId,
 			payload.anonymousId,
@@ -283,8 +280,8 @@ export async function recordAnalyticsBatch(args: {
 			integer(context.viewportHeight, 0, 100_000),
 			integer(context.screenWidth, 0, 100_000),
 			integer(context.screenHeight, 0, 100_000),
-			safeJson(cf, 64_000),
-			safeJson(headers, 64_000),
+			safeAnalyticsJson(cf, 64_000),
+			safeAnalyticsJson(headers, 64_000),
 			payload.events.length,
 			pageViews,
 			engagedMs,
@@ -295,7 +292,12 @@ export async function recordAnalyticsBatch(args: {
 			integer(context.connectionRttMs, 0, 1_000_000),
 			context.connectionSaveData === undefined ? null : context.connectionSaveData ? 1 : 0,
 			decimal(context.deviceMemoryGb, 0, 10_000),
-			integer(context.hardwareConcurrency, 0, 10_000)
+			integer(context.hardwareConcurrency, 0, 10_000),
+			traffic.trafficClass,
+			traffic.source,
+			traffic.detail,
+			traffic.version,
+			receivedAt
 		]
 	};
 
@@ -313,8 +315,8 @@ export async function recordAnalyticsBatch(args: {
 			request.headers.get('cf-ray'),
 			cfValue(cf, 'country'),
 			cfValue(cf, 'colo'),
-			safeJson(cf, 64_000),
-			safeJson(headers, 64_000),
+			safeAnalyticsJson(cf, 64_000),
+			safeAnalyticsJson(headers, 64_000),
 			payload.events.length,
 			environment,
 			appVersion
@@ -330,13 +332,33 @@ export async function recordAnalyticsBatch(args: {
 		environment,
 		appVersion
 	};
+	const refreshSessionStatement: SqlStatement = {
+		sql: `
+			UPDATE analytics_sessions SET
+				event_count = (
+					SELECT COUNT(*) FROM analytics_events
+					WHERE analytics_events.session_id = analytics_sessions.session_id
+				),
+				page_view_count = (
+					SELECT COUNT(*) FROM analytics_events
+					WHERE analytics_events.session_id = analytics_sessions.session_id
+						AND analytics_events.event_type = 'page_view'
+				),
+				engaged_ms = COALESCE((
+					SELECT SUM(analytics_events.engaged_ms) FROM analytics_events
+					WHERE analytics_events.session_id = analytics_sessions.session_id
+				), 0)
+			WHERE session_id = ?`,
+		params: [payload.sessionId]
+	};
 	await executeStatements(db, [
 		sessionStatement,
 		requestStatement,
 		...payload.events.map((event) => ({
 			sql: INSERT_EVENT_SQL,
 			params: eventParams(event, identity)
-		}))
+		})),
+		refreshSessionStatement
 	]);
 }
 
@@ -413,18 +435,18 @@ export function startModelAnalytics(input: {
 				completedAt.toISOString(),
 				Math.max(0, completedAt.getTime() - startedAtMs),
 				text(input.prompt, 300_000),
-				safeJson(input.modelInput, 300_000),
+				safeAnalyticsJson(input.modelInput, 300_000),
 				text(completion.output, 300_000),
 				text(completion.reasoning, 300_000),
-				safeJson(completion.usage, 100_000),
+				safeAnalyticsJson(completion.usage, 100_000),
 				typeof completion.costUsd === 'number' ? completion.costUsd : null,
 				errorValue?.name ?? null,
 				text(errorValue?.message, 20_000),
-				safeJson({ ...input.metadata, ...completion.metadata }, 100_000),
+				safeAnalyticsJson({ ...input.metadata, ...completion.metadata }, 100_000),
 				request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip'),
 				request.headers.get('user-agent'),
-				safeJson(cf, 64_000),
-				safeJson(requestHeaders(request), 64_000)
+				safeAnalyticsJson(cf, 64_000),
+				safeAnalyticsJson(requestHeaders(request), 64_000)
 			]
 		};
 		const task = executeStatements(requestEvent.locals.analyticsDb, [statement]).catch(
