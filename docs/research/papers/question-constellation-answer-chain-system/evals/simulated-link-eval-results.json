@@ -1,0 +1,360 @@
+{
+  "kind": "deterministic_simulated_user_link_eval",
+  "generatedAt": "2026-07-03T19:40:30.745Z",
+  "description": "Synthetic learner-response fixtures over four Spark guided-gap cases. This is a harness sanity check, not learner-outcome evidence and not an LLM benchmark result.",
+  "sourceCases": [
+    {
+      "id": "particle-collisions-power",
+      "title": "Particle collisions and power",
+      "responseCount": 5
+    },
+    {
+      "id": "alpha-scattering-evidence",
+      "title": "Alpha scattering evidence chain",
+      "responseCount": 4
+    },
+    {
+      "id": "circuit-adjustment-method",
+      "title": "Circuit adjustment method",
+      "responseCount": 4
+    },
+    {
+      "id": "coronary-artery-chain",
+      "title": "Coronary artery chain",
+      "responseCount": 4
+    }
+  ],
+  "metrics": {
+    "flowCount": 4,
+    "responseCount": 17,
+    "linkLabelCount": 68,
+    "linkStateAccuracy": 0.9559,
+    "exactVectorAccuracy": 0.8824,
+    "primaryGapAccuracy": 0.7647
+  },
+  "rows": [
+    {
+      "flowId": "particle-collisions-power",
+      "responseId": "blank",
+      "gold": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "predicted": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "goldPrimaryGap": 0,
+      "predictedPrimaryGap": 0,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "particle-collisions-power",
+      "responseId": "spark-draft",
+      "gold": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "goldPrimaryGap": 2,
+      "predictedPrimaryGap": 2,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "particle-collisions-power",
+      "responseId": "collision-only",
+      "gold": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "predicted": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "goldPrimaryGap": 0,
+      "predictedPrimaryGap": 0,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "particle-collisions-power",
+      "responseId": "partial-repair",
+      "gold": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "goldPrimaryGap": 1,
+      "predictedPrimaryGap": 3,
+      "exactVectorMatch": false
+    },
+    {
+      "flowId": "particle-collisions-power",
+      "responseId": "improved",
+      "gold": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "goldPrimaryGap": null,
+      "predictedPrimaryGap": null,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "alpha-scattering-evidence",
+      "responseId": "model-recall-only",
+      "gold": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "predicted": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "goldPrimaryGap": 1,
+      "predictedPrimaryGap": 1,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "alpha-scattering-evidence",
+      "responseId": "spark-draft",
+      "gold": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "goldPrimaryGap": 1,
+      "predictedPrimaryGap": 1,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "alpha-scattering-evidence",
+      "responseId": "empty-space-only",
+      "gold": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "predicted": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "goldPrimaryGap": 0,
+      "predictedPrimaryGap": 0,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "alpha-scattering-evidence",
+      "responseId": "evidence-paired",
+      "gold": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "goldPrimaryGap": null,
+      "predictedPrimaryGap": null,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "circuit-adjustment-method",
+      "responseId": "battery-swap",
+      "gold": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "predicted": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "goldPrimaryGap": 1,
+      "predictedPrimaryGap": 0,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "circuit-adjustment-method",
+      "responseId": "variable-resistor-only",
+      "gold": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "predicted": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "goldPrimaryGap": 0,
+      "predictedPrimaryGap": 0,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "circuit-adjustment-method",
+      "responseId": "method-complete",
+      "gold": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "goldPrimaryGap": null,
+      "predictedPrimaryGap": null,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "circuit-adjustment-method",
+      "responseId": "reverse-and-record",
+      "gold": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "predicted": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "goldPrimaryGap": 1,
+      "predictedPrimaryGap": 0,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "coronary-artery-chain",
+      "responseId": "weak-start",
+      "gold": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "predicted": [
+        true,
+        false,
+        false,
+        false
+      ],
+      "goldPrimaryGap": 1,
+      "predictedPrimaryGap": 1,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "coronary-artery-chain",
+      "responseId": "oxygen-only",
+      "gold": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "predicted": [
+        true,
+        true,
+        false,
+        false
+      ],
+      "goldPrimaryGap": 2,
+      "predictedPrimaryGap": 2,
+      "exactVectorMatch": true
+    },
+    {
+      "flowId": "coronary-artery-chain",
+      "responseId": "skips-energy",
+      "gold": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        true,
+        false
+      ],
+      "goldPrimaryGap": null,
+      "predictedPrimaryGap": 3,
+      "exactVectorMatch": false
+    },
+    {
+      "flowId": "coronary-artery-chain",
+      "responseId": "improved",
+      "gold": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "predicted": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "goldPrimaryGap": null,
+      "predictedPrimaryGap": null,
+      "exactVectorMatch": true
+    }
+  ]
+}
