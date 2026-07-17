@@ -1,0 +1,9 @@
+{
+  "invalidCards": [],
+  "validCountByTopic": {
+    "ocr-gcse-english-language-j351-v2.0:01": 4,
+    "ocr-gcse-english-language-j351-v2.0:02": 4
+  },
+  "topicsBelowMinimum": [],
+  "repairCardIds": []
+}

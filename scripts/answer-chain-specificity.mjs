@@ -131,7 +131,6 @@ function concreteNumbers(text) {
 function chainTextForClassification(chain, context = {}) {
 	const steps = chain?.steps ?? [];
 	return [
-		chain?.id,
 		chain?.title,
 		firstPresent(chain, FIELD_ALIASES.canonicalChainText),
 		chain?.summary,
@@ -154,7 +153,6 @@ function isCalculationLike(chain, context = {}) {
 function chainFields(chain) {
 	const fields = [];
 	for (const [name, value] of [
-		['id', chain?.id],
 		['title', chain?.title],
 		['canonical_chain_text', firstPresent(chain, FIELD_ALIASES.canonicalChainText)],
 		['summary', chain?.summary]

@@ -1,0 +1,1857 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-anita-and-me-delivery-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/358302-anita-and-me-delivery-guide.pdf",
+          "title": "OCR J352 Anita and Me Delivery Guide",
+          "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "anita-and-me-deep-plot-outsider",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Meena wants to fit in",
+          "approvedExcerpt": "Feeling like an outsider and desperate to fit in with the other youngsters in the community"
+        },
+        {
+          "id": "anita-and-me-deep-plot-racial-prejudice",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Sam and his gang",
+          "approvedExcerpt": "Meena encounters racial prejudice by many characters, most notably from tearaway Sam Lowbridge and his gang"
+        },
+        {
+          "id": "anita-and-me-deep-plot-nanima",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Nanima visits",
+          "approvedExcerpt": "Nanima, who helps Meena understand her heritage and the reasons her parents came to England"
+        },
+        {
+          "id": "anita-and-me-deep-plot-eleven-plus",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Meena at school",
+          "approvedExcerpt": "At school, Meena must pass the Eleven Plus so that she can attend grammar school."
+        },
+        {
+          "id": "anita-and-me-deep-plot-news-camera",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; motorway tensions",
+          "approvedExcerpt": "Sam shouts a racist slogan into a local news camera."
+        },
+        {
+          "id": "anita-and-me-deep-plot-attack",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; attack after the broadcast",
+          "approvedExcerpt": "The next day, the Indian man is attacked and robbed."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "wikipedia-never-let-me-go-plot",
+          "kind": "secondary-source",
+          "retrievalType": "licensed-web-synopsis",
+          "url": "https://en.wikipedia.org/wiki/Never_Let_Me_Go_(novel)",
+          "title": "Wikipedia: Never Let Me Go (novel)",
+          "rightsBasis": "Wikipedia text is licensed under CC BY-SA 4.0; short attributed secondary-source plot excerpts are retained with source attribution and share-alike notice."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "never-let-me-go-deep-plot-gallery",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Madame’s gallery",
+          "approvedExcerpt": "The students' best pieces are collected by Madame for a mysterious gallery."
+        },
+        {
+          "id": "never-let-me-go-deep-plot-ruth-tommy",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Ruth and Tommy",
+          "approvedExcerpt": "As the students grow older, Tommy and Ruth start dating."
+        },
+        {
+          "id": "never-let-me-go-deep-plot-purpose",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Miss Lucy reveals their purpose",
+          "approvedExcerpt": "they have been created to donate their vital organs to others upon reaching adulthood"
+        },
+        {
+          "id": "never-let-me-go-deep-plot-cottages",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; the students leave Hailsham",
+          "approvedExcerpt": "When the students are 16, they move to the Cottages, a halfway house"
+        },
+        {
+          "id": "never-let-me-go-deep-plot-couple",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; after Ruth completes",
+          "approvedExcerpt": "After Ruth completes, Kathy becomes Tommy's carer and they finally become a couple."
+        },
+        {
+          "id": "never-let-me-go-deep-plot-deferral",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Miss Emily rejects the deferral rumour",
+          "approvedExcerpt": "Miss Emily says that rumours of deferral were false"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "wikipedia-animal-farm-plot",
+          "kind": "secondary-source",
+          "retrievalType": "licensed-web-synopsis",
+          "url": "https://en.wikipedia.org/wiki/Animal_Farm",
+          "title": "Wikipedia: Animal Farm",
+          "rightsBasis": "Wikipedia text is licensed under CC BY-SA 4.0; short attributed secondary-source plot excerpts are retained with source attribution and share-alike notice."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "animal-farm-deep-plot-old-major",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Old Major’s meeting",
+          "approvedExcerpt": "Old Major holds a conference, at which he calls for the overthrow of humans"
+        },
+        {
+          "id": "animal-farm-deep-plot-commandments",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Animalism after the revolt",
+          "approvedExcerpt": "The animals adopt the Seven Commandments of Animalism"
+        },
+        {
+          "id": "animal-farm-deep-plot-snowball-exile",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Napoleon removes Snowball",
+          "approvedExcerpt": "Napoleon's dogs chasing Snowball away"
+        },
+        {
+          "id": "animal-farm-deep-plot-purge",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Napoleon’s purge",
+          "approvedExcerpt": "many animals who are alleged to be helping Snowball in plots are executed"
+        },
+        {
+          "id": "animal-farm-deep-plot-boxer",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Boxer’s fate",
+          "approvedExcerpt": "Napoleon had engineered the sale of Boxer to the knacker"
+        },
+        {
+          "id": "animal-farm-deep-plot-final-image",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; final dinner",
+          "approvedExcerpt": "they find they have become indistinguishable from one another"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "pearson-an-inspector-calls-set-text-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Drama/2016/teaching-and-learning-materials/gcse-set-text-guide-an-inspector-calls.pdf",
+          "title": "Pearson Edexcel GCSE Drama Prescribed Text Guide: An Inspector Calls",
+          "rightsBasis": "Official awarding-body teaching guide used for educational criticism and review; only short attributed factual excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "an-inspector-calls-deep-plot-engagement",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 3; Act One opening",
+          "approvedExcerpt": "A celebration is underway – Arthur Birling’s daughter, Sheila, has become engaged to Gerald Croft"
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-birling-sacks-eva",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 3; Arthur’s link",
+          "approvedExcerpt": "Arthur Birling sacked Eva from his mill because she led an unsuccessful strike for better pay."
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-sheila-sacks-eva",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 3; Sheila’s link",
+          "approvedExcerpt": "in a fit of jealousy, Sheila used her influence to have her sacked."
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-gerald-affair",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 4; Act Two",
+          "approvedExcerpt": "The Inspector forces Gerald Croft to reveal that he had a love affair with Daisy Renton"
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-mrs-birling-charity",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 4; Mrs Birling’s link",
+          "approvedExcerpt": "Mrs Birling used her influence to have the committee refuse to help Eva"
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-eric",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 4; Eric’s link",
+          "approvedExcerpt": "Eric reveals that he met Eva in a bar and kept her as his mistress."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-leave-taking-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/639352-leave-taking.pdf",
+          "title": "OCR GCSE English Literature Leave Taking Teacher Guide",
+          "rightsBasis": "Official OCR teaching resource used as short attributed factual evidence; no primary-text quotation is retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "leave-taking-deep-plot-slap",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 2 synopsis",
+          "approvedExcerpt": "Enid loses her temper and slaps her."
+        },
+        {
+          "id": "leave-taking-deep-plot-mooma-dies",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 3 synopsis",
+          "approvedExcerpt": "Enid receives the news that her mother has died and she must send money for her funeral."
+        },
+        {
+          "id": "leave-taking-deep-plot-del-moves",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 5 synopsis",
+          "approvedExcerpt": "A few weeks later, Del has moved in with Mai and is staying in her estranged son’s old bedroom."
+        },
+        {
+          "id": "leave-taking-deep-plot-viv-exam",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 5 synopsis",
+          "approvedExcerpt": "Viv gives her Enid’s money and tells Del that she has walked out of her English examination"
+        },
+        {
+          "id": "leave-taking-deep-plot-enid-reading",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 6 synopsis",
+          "approvedExcerpt": "Enid has come for a reading from Mai. She tells Mai that she is worried about Del"
+        },
+        {
+          "id": "leave-taking-deep-plot-notebook",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 8 synopsis",
+          "approvedExcerpt": "Mai passes her notebook to Del and explains that she does not have her own daughter to pass it to."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-dna-delivery-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/208645-dna-delivery-guide.pdf",
+          "title": "OCR J352 DNA Delivery Guide",
+          "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "dna-deep-plot-john-tate-leader",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; shifting leadership",
+          "approvedExcerpt": "Initially it seems John Tate is the leader"
+        },
+        {
+          "id": "dna-deep-plot-frame-innocent",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Phil’s plan",
+          "approvedExcerpt": "arriving at the plot to implicate an innocent person in the killing of Adam"
+        },
+        {
+          "id": "dna-deep-plot-cover-up",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 8; coerced followers",
+          "approvedExcerpt": "Danny, the would-be dentist, and Brian are both used by Phil in the cover-up."
+        },
+        {
+          "id": "dna-deep-plot-adam-killed",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Phil and Adam",
+          "approvedExcerpt": "Adam’s killing itself"
+        },
+        {
+          "id": "dna-deep-plot-cathy-leader",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Cathy’s ending",
+          "approvedExcerpt": "Cathy emerges from the role of follower to become a leader at the end of the play."
+        },
+        {
+          "id": "dna-deep-plot-phil-bereft",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Phil’s final appearance",
+          "approvedExcerpt": "his final appearance in the play – seemingly bereft and removed from the group"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-great-expectations",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+          "title": "Great Expectations by Charles Dickens",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "great-expectations-deep-plot-convict-threat",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter I; Pip meets the escaped convict",
+          "anchor": "Keep still, you little devil, or I’ll cut your throat!"
+        },
+        {
+          "id": "great-expectations-deep-plot-estella-insult",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter VIII; Estella humiliates Pip",
+          "anchor": "And what coarse hands he has! And what thick boots!"
+        },
+        {
+          "id": "great-expectations-deep-plot-expectations",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XVIII; Jaggers announces Pip’s expectations",
+          "anchor": "he be immediately removed from his present sphere of life and from this place, and be brought up as a gentleman"
+        },
+        {
+          "id": "great-expectations-deep-plot-havisham-fire",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XLIX; Miss Havisham catches fire",
+          "anchor": "she had been in flames, or that the flames were out"
+        },
+        {
+          "id": "great-expectations-deep-plot-escape-fails",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LIV; Magwitch and Compeyson go overboard",
+          "anchor": "they had gone down fiercely locked in each other’s arms"
+        },
+        {
+          "id": "great-expectations-deep-plot-magwitch-dies",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LVI; Magwitch dies after learning Estella lives",
+          "anchor": "his head dropped quietly on his breast"
+        },
+        {
+          "id": "great-expectations-deep-quotation-break-hearts",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XII; Miss Havisham instructs Estella",
+          "anchor": "Break their hearts my pride and hope, break their hearts and have no mercy!",
+          "requiredAnswer": "Break their hearts my pride and hope, break their hearts and have no mercy!"
+        },
+        {
+          "id": "great-expectations-deep-quotation-against-reason",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XXIX; Pip describes loving Estella",
+          "anchor": "I loved her against reason, against promise, against peace, against hope, against happiness",
+          "requiredAnswer": "I loved her against reason, against promise, against peace, against hope, against happiness"
+        },
+        {
+          "id": "great-expectations-deep-quotation-evidence",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XL; Jaggers gives Pip a rule",
+          "anchor": "Take nothing on its looks; take everything on evidence.",
+          "requiredAnswer": "Take nothing on its looks; take everything on evidence."
+        },
+        {
+          "id": "great-expectations-deep-quotation-every-line",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XLIV; Pip addresses Estella",
+          "anchor": "You have been in every line I have ever read since I first came here",
+          "requiredAnswer": "You have been in every line I have ever read since I first came here"
+        },
+        {
+          "id": "great-expectations-deep-quotation-suffering",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LIX; Estella reflects on suffering",
+          "anchor": "suffering has been stronger than all other teaching",
+          "requiredAnswer": "suffering has been stronger than all other teaching"
+        },
+        {
+          "id": "great-expectations-deep-quotation-bent-broken",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LIX; Estella describes her change",
+          "anchor": "I have been bent and broken, but—I hope—into a better shape.",
+          "requiredAnswer": "I have been bent and broken, but—I hope—into a better shape."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-a-christmas-carol",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/46/pg46.txt",
+          "title": "A Christmas Carol by Charles Dickens",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "a-christmas-carol-deep-plot-charity-refusal",
+          "mode": "plot",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave I; Scrooge rejects the charity collectors",
+          "anchor": "Are there no prisons?"
+        },
+        {
+          "id": "a-christmas-carol-deep-plot-marley-chain",
+          "mode": "plot",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave I; Marley explains his punishment",
+          "anchor": "I wear the chain I forged in life"
+        },
+        {
+          "id": "a-christmas-carol-deep-plot-belle-release",
+          "mode": "plot",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave II; Belle ends the engagement",
+          "anchor": "I release you. With a full heart, for the love of him you once were."
+        },
+        {
+          "id": "a-christmas-carol-deep-plot-tiny-tim-future",
+          "mode": "plot",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave III; the Spirit predicts Tiny Tim’s fate",
+          "anchor": "If these shadows remain unaltered by the Future, the child will die."
+        },
+        {
+          "id": "a-christmas-carol-deep-plot-ignorance-want",
+          "mode": "plot",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave III; the Spirit reveals two children",
+          "anchor": "This boy is Ignorance. This girl is Want."
+        },
+        {
+          "id": "a-christmas-carol-deep-plot-own-grave",
+          "mode": "plot",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave IV; Scrooge reads the neglected grave",
+          "anchor": "read upon the stone of the neglected grave his own name, EBENEZER SCROOGE"
+        },
+        {
+          "id": "a-christmas-carol-deep-quotation-oyster",
+          "mode": "quotation",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave I; the narrator characterises Scrooge",
+          "anchor": "solitary as an oyster",
+          "requiredAnswer": "solitary as an oyster"
+        },
+        {
+          "id": "a-christmas-carol-deep-quotation-prisons",
+          "mode": "quotation",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave I; Scrooge rejects charity",
+          "anchor": "Are there no prisons?",
+          "requiredAnswer": "Are there no prisons?"
+        },
+        {
+          "id": "a-christmas-carol-deep-quotation-mankind",
+          "mode": "quotation",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave I; Marley corrects Scrooge",
+          "anchor": "Mankind was my business.",
+          "requiredAnswer": "Mankind was my business."
+        },
+        {
+          "id": "a-christmas-carol-deep-quotation-small-matter",
+          "mode": "quotation",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave II; the Spirit describes Fezziwig’s cost",
+          "anchor": "A small matter",
+          "requiredAnswer": "A small matter"
+        },
+        {
+          "id": "a-christmas-carol-deep-quotation-surplus",
+          "mode": "quotation",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave I; Scrooge dismisses poor people",
+          "anchor": "decrease the surplus population.",
+          "requiredAnswer": "decrease the surplus population."
+        },
+        {
+          "id": "a-christmas-carol-deep-quotation-ignorance-want",
+          "mode": "quotation",
+          "sourceId": "gutenberg-a-christmas-carol",
+          "locator": "Stave III; the Spirit names the children",
+          "anchor": "This boy is Ignorance. This girl is Want.",
+          "requiredAnswer": "This boy is Ignorance. This girl is Want."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-pride-and-prejudice",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
+          "title": "Pride and Prejudice by Jane Austen",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "pride-and-prejudice-deep-plot-netherfield",
+          "mode": "plot",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter I; news reaches Longbourn",
+          "anchor": "Netherfield Park is let at last?"
+        },
+        {
+          "id": "pride-and-prejudice-deep-plot-darcy-insult",
+          "mode": "plot",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter III; Darcy refuses to dance with Elizabeth",
+          "anchor": "not handsome enough to tempt"
+        },
+        {
+          "id": "pride-and-prejudice-deep-plot-collins-refusal",
+          "mode": "plot",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XIX; Elizabeth refuses Mr Collins",
+          "anchor": "I am very sensible of the honour of your proposals, but it is impossible for me to do otherwise than decline them."
+        },
+        {
+          "id": "pride-and-prejudice-deep-plot-letter-reversal",
+          "mode": "plot",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XXXVI; Elizabeth reassesses herself after Darcy’s letter",
+          "anchor": "Till this moment, I never knew myself."
+        },
+        {
+          "id": "pride-and-prejudice-deep-plot-lydia-elopes",
+          "mode": "plot",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XLVI; Jane’s letter reports Lydia’s flight",
+          "anchor": "My youngest sister has left all her friends--has eloped; has thrown herself into the power of--of Mr. Wickham."
+        },
+        {
+          "id": "pride-and-prejudice-deep-plot-second-proposal",
+          "mode": "plot",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter LVIII; Elizabeth accepts Darcy",
+          "anchor": "her sentiments had undergone so material a change"
+        },
+        {
+          "id": "pride-and-prejudice-deep-quotation-stubbornness",
+          "mode": "quotation",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XXXI; Elizabeth answers Darcy",
+          "anchor": "There is a stubbornness about me that never can bear to be frightened at the will of others.",
+          "requiredAnswer": "There is a stubbornness about me that never can bear to be frightened at the will of others."
+        },
+        {
+          "id": "pride-and-prejudice-deep-quotation-courage",
+          "mode": "quotation",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XXXI; Elizabeth resists intimidation",
+          "anchor": "My courage always rises with every attempt to intimidate me.",
+          "requiredAnswer": "My courage always rises with every attempt to intimidate me."
+        },
+        {
+          "id": "pride-and-prejudice-deep-quotation-self-knowledge",
+          "mode": "quotation",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XXXVI; Elizabeth’s self-recognition",
+          "anchor": "Till this moment, I never knew myself.",
+          "requiredAnswer": "Till this moment, I never knew myself."
+        },
+        {
+          "id": "pride-and-prejudice-deep-quotation-vanity-pride",
+          "mode": "quotation",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter V; Mary distinguishes two ideas",
+          "anchor": "Vanity and pride are different things, though the words are often used synonymously.",
+          "requiredAnswer": "Vanity and pride are different things, though the words are often used synonymously."
+        },
+        {
+          "id": "pride-and-prejudice-deep-quotation-neighbours",
+          "mode": "quotation",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter LVII; Mr Bennet jokes about society",
+          "anchor": "For what do we live, but to make sport for our neighbours, and laugh at them in our turn?",
+          "requiredAnswer": "For what do we live, but to make sport for our neighbours, and laugh at them in our turn?"
+        },
+        {
+          "id": "pride-and-prejudice-deep-quotation-ardently",
+          "mode": "quotation",
+          "sourceId": "gutenberg-pride-and-prejudice",
+          "locator": "Chapter XXXIV; Darcy’s first proposal",
+          "anchor": "You must allow me to tell you how ardently I admire and love you.",
+          "requiredAnswer": "You must allow me to tell you how ardently I admire and love you."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-the-war-of-the-worlds",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/36/pg36.txt",
+          "title": "The War of the Worlds by H. G. Wells",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "war-of-the-worlds-deep-plot-heat-ray",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter V; the Heat-Ray attacks",
+          "anchor": "It was sweeping round swiftly and steadily, this flaming death, this invisible, inevitable sword of heat."
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-leatherhead",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter X; the narrator takes his wife away",
+          "anchor": "We got to Leatherhead without misadventure about nine"
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-curate",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XIII; the narrator meets the curate",
+          "anchor": "I became aware of him as a seated figure in soot-smudged shirt sleeves"
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-rout",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XVI; London flees",
+          "anchor": "It was the beginning of the rout of civilisation, of the massacre of mankind."
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-thunder-child",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XVII; the warship intervenes",
+          "anchor": "coming to the rescue of the threatened shipping."
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-curate-struck",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book Two, Chapter IV; the narrator silences the curate",
+          "anchor": "I turned the blade back and struck him with the butt. He went headlong forward and lay stretched on the ground."
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-intellects",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter I; the Martian minds",
+          "anchor": "intellects vast and cool and unsympathetic",
+          "requiredAnswer": "intellects vast and cool and unsympathetic"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-million",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter I; Ogilvy’s estimate",
+          "anchor": "The chances against anything manlike on Mars are a million to one",
+          "requiredAnswer": "The chances against anything manlike on Mars are a million to one"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-not-war",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book Two, Chapter VII; the artilleryman’s judgement",
+          "anchor": "This isn’t a war",
+          "requiredAnswer": "This isn’t a war"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-slay",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter VI; the Heat-Ray",
+          "anchor": "It is still a matter of wonder how the Martians are able to slay men so swiftly and so silently.",
+          "requiredAnswer": "It is still a matter of wonder how the Martians are able to slay men so swiftly and so silently."
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-stay",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter X; the narrator decides to leave",
+          "anchor": "We can’t possibly stay here",
+          "requiredAnswer": "We can’t possibly stay here"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-civilisation",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XVI; London’s flight",
+          "anchor": "the rout of civilisation, of the massacre of mankind",
+          "requiredAnswer": "the rout of civilisation, of the massacre of mankind"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-jekyll-and-hyde",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/43/pg43.txt",
+          "title": "The Strange Case of Dr Jekyll and Mr Hyde by Robert Louis Stevenson",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "jekyll-and-hyde-deep-plot-will",
+          "mode": "plot",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Search for Mr Hyde; Jekyll’s will",
+          "anchor": "all his possessions were to pass into the hands of his “friend and benefactor Edward Hyde,”"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-plot-utterson-meets-hyde",
+          "mode": "plot",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Search for Mr Hyde; Utterson waits by the door",
+          "anchor": "I shall be Mr. Seek."
+        },
+        {
+          "id": "jekyll-and-hyde-deep-plot-carew-murder",
+          "mode": "plot",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "The Carew Murder Case; Hyde attacks Carew",
+          "anchor": "with ape-like fury, he was trampling his victim under foot"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-plot-forged-letter",
+          "mode": "plot",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Incident of the Letter; Utterson suspects Jekyll",
+          "anchor": "Henry Jekyll forge for a murderer!"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-plot-lanyon-reveal",
+          "mode": "plot",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Dr Lanyon’s Narrative; Hyde transforms",
+          "anchor": "there stood Henry Jekyll!"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-plot-involuntary-change",
+          "mode": "plot",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Henry Jekyll’s Full Statement; the change becomes involuntary",
+          "anchor": "I had gone to bed Henry Jekyll, I had awakened Edward Hyde."
+        },
+        {
+          "id": "jekyll-and-hyde-deep-quotation-troglodytic",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Search for Mr Hyde; Utterson describes Hyde",
+          "anchor": "Something troglodytic",
+          "requiredAnswer": "Something troglodytic"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-quotation-ape",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "The Carew Murder Case; Hyde attacks Carew",
+          "anchor": "with ape-like fury",
+          "requiredAnswer": "with ape-like fury"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-quotation-satan",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Search for Mr Hyde; Utterson reads Hyde’s face",
+          "anchor": "Satan’s signature upon a face",
+          "requiredAnswer": "Satan’s signature upon a face"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-quotation-seek",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Search for Mr Hyde; Utterson’s wordplay",
+          "anchor": "I shall be Mr. Seek.",
+          "requiredAnswer": "I shall be Mr. Seek."
+        },
+        {
+          "id": "jekyll-and-hyde-deep-quotation-duality",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Henry Jekyll’s Full Statement; Jekyll’s theory",
+          "anchor": "the thorough and primitive duality of man",
+          "requiredAnswer": "the thorough and primitive duality of man"
+        },
+        {
+          "id": "jekyll-and-hyde-deep-quotation-devil-caged",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jekyll-and-hyde",
+          "locator": "Henry Jekyll’s Full Statement; Hyde returns",
+          "anchor": "My devil had been long caged, he came out roaring.",
+          "requiredAnswer": "My devil had been long caged, he came out roaring."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-jane-eyre",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1260/pg1260.txt",
+          "title": "Jane Eyre by Charlotte Brontë",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "jane-eyre-deep-plot-red-room",
+          "mode": "plot",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter II; Jane is punished at Gateshead",
+          "anchor": "Take her away to the red-room, and lock her in there."
+        },
+        {
+          "id": "jane-eyre-deep-plot-helen-dies",
+          "mode": "plot",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter IX; Jane wakes beside Helen",
+          "anchor": "I was asleep, and Helen was—dead."
+        },
+        {
+          "id": "jane-eyre-deep-plot-new-situation",
+          "mode": "plot",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter X; Jane seeks a post away from Lowood",
+          "anchor": "I had a prospect of getting a new situation where the salary would be double what I now received"
+        },
+        {
+          "id": "jane-eyre-deep-plot-proposal",
+          "mode": "plot",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXIII; Rochester proposes",
+          "anchor": "Jane, will you marry me?"
+        },
+        {
+          "id": "jane-eyre-deep-plot-leaves-thornfield",
+          "mode": "plot",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXVII; Jane resolves to leave",
+          "anchor": "I must leave Adèle and Thornfield. I must part with you for my whole life"
+        },
+        {
+          "id": "jane-eyre-deep-plot-hears-call",
+          "mode": "plot",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXXV; Jane hears Rochester’s call",
+          "anchor": "I heard a voice somewhere cry— “Jane! Jane! Jane!”—nothing more."
+        },
+        {
+          "id": "jane-eyre-deep-quotation-not-angel",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXIV; Jane resists idealisation",
+          "anchor": "I am not an angel",
+          "requiredAnswer": "I am not an angel"
+        },
+        {
+          "id": "jane-eyre-deep-quotation-automaton",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXIII; Jane asserts equality",
+          "anchor": "Do you think I am an automaton?—a machine without feelings?",
+          "requiredAnswer": "Do you think I am an automaton?—a machine without feelings?"
+        },
+        {
+          "id": "jane-eyre-deep-quotation-women-calm",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XII; Jane reflects on women’s confinement",
+          "anchor": "Women are supposed to be very calm generally: but women feel just as men feel",
+          "requiredAnswer": "Women are supposed to be very calm generally: but women feel just as men feel"
+        },
+        {
+          "id": "jane-eyre-deep-quotation-care-self",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXVII; Jane chooses self-respect",
+          "anchor": "The more solitary, the more friendless, the more unsustained I am, the more I will respect myself.",
+          "requiredAnswer": "The more solitary, the more friendless, the more unsustained I am, the more I will respect myself."
+        },
+        {
+          "id": "jane-eyre-deep-quotation-sundered",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XVII; Jane disciplines her feelings",
+          "anchor": "we are for ever sundered",
+          "requiredAnswer": "we are for ever sundered"
+        },
+        {
+          "id": "jane-eyre-deep-quotation-husbands-life",
+          "mode": "quotation",
+          "sourceId": "gutenberg-jane-eyre",
+          "locator": "Chapter XXXVIII; Jane describes the marriage",
+          "anchor": "I am my husband’s life as fully as he is mine.",
+          "requiredAnswer": "I am my husband’s life as fully as he is mine."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "Plot recall is not applicable to a thematic poetry cluster."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "partialCardCount": 4,
+          "reason": "Only edition-verified public-domain poems are included; full anthology quotation coverage remains withheld because the current cluster includes in-copyright poems."
+        },
+        "method": {
+          "status": "ready",
+          "expectedCardCount": 1
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-j352-specification-love-poetry",
+          "kind": "curriculum-specification",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+          "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+          "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+        },
+        {
+          "id": "ocr-love-poetry-current-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/654700-love-and-relationships.pdf",
+          "title": "OCR Love and Relationships Poetry Teacher Guide, updated cluster",
+          "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+          "verificationAnchors": [
+            "A Song",
+            "Bright Star"
+          ]
+        },
+        {
+          "id": "ocr-anthology-public-domain-love",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-anthology-pdf",
+          "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+          "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+          "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "love-poetry-deep-quotation-song-love",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "A Song by Helen Maria Williams, lines 7–8, anthology page 7",
+          "anchor": "I only meant his love.",
+          "requiredAnswer": "I only meant his love."
+        },
+        {
+          "id": "love-poetry-deep-quotation-song-storm",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "A Song by Helen Maria Williams, line 24, anthology page 7",
+          "anchor": "The storm is in my soul.",
+          "requiredAnswer": "The storm is in my soul."
+        },
+        {
+          "id": "love-poetry-deep-quotation-bright-star-breast",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "Bright Star by John Keats, line 10, anthology page 8",
+          "anchor": "Pillow’d upon my fair love’s ripening breast,",
+          "requiredAnswer": "Pillow’d upon my fair love’s ripening breast,"
+        },
+        {
+          "id": "love-poetry-deep-quotation-bright-star-unrest",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "Bright Star by John Keats, line 12, anthology page 8",
+          "anchor": "Awake for ever in a sweet unrest,",
+          "requiredAnswer": "Awake for ever in a sweet unrest,"
+        },
+        {
+          "id": "love-poetry-deep-method-quote-to-interpretation",
+          "mode": "method",
+          "sourceId": "ocr-j352-specification-love-poetry",
+          "locator": "J352 specification, physical PDF page 19; effective use of quotations",
+          "approvedExcerpt": "use textual references and quotations effectively to support views"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "Plot recall is not applicable to a thematic poetry cluster."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "partialCardCount": 4,
+          "reason": "Only edition-verified public-domain poems are included; full anthology quotation coverage remains withheld because the current cluster includes in-copyright poems."
+        },
+        "method": {
+          "status": "ready",
+          "expectedCardCount": 1
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-j352-specification-conflict-poetry",
+          "kind": "curriculum-specification",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+          "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+          "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+        },
+        {
+          "id": "ocr-conflict-poetry-current-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/654699-conflict.pdf",
+          "title": "OCR Conflict Poetry Teacher Guide, updated cluster",
+          "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+          "verificationAnchors": [
+            "Boat Stealing",
+            "The Destruction of Sennacherib"
+          ]
+        },
+        {
+          "id": "ocr-anthology-public-domain-conflict",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-anthology-pdf",
+          "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+          "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+          "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "conflict-poetry-deep-quotation-boat-cliff",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "Boat Stealing by William Wordsworth, lines 27–28, anthology page 20",
+          "anchor": "a huge cliff, As if with voluntary power instinct,",
+          "requiredAnswer": "a huge cliff, As if with voluntary power instinct,"
+        },
+        {
+          "id": "conflict-poetry-deep-quotation-boat-dreams",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "Boat Stealing by William Wordsworth, line 48, anthology page 20",
+          "anchor": "By day, and were the trouble of my dreams.",
+          "requiredAnswer": "By day, and were the trouble of my dreams."
+        },
+        {
+          "id": "conflict-poetry-deep-quotation-sennacherib-autumn",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "The Destruction of Sennacherib by Lord Byron, line 7, anthology page 21",
+          "anchor": "Like the leaves of the forest when Autumn hath blown,",
+          "requiredAnswer": "Like the leaves of the forest when Autumn hath blown,"
+        },
+        {
+          "id": "conflict-poetry-deep-quotation-sennacherib-snow",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "The Destruction of Sennacherib by Lord Byron, line 24, anthology page 21",
+          "anchor": "Hath melted like snow in the glance of the Lord!",
+          "requiredAnswer": "Hath melted like snow in the glance of the Lord!"
+        },
+        {
+          "id": "conflict-poetry-deep-method-quote-to-interpretation",
+          "mode": "method",
+          "sourceId": "ocr-j352-specification-conflict-poetry",
+          "locator": "J352 specification, physical PDF page 19; effective use of quotations",
+          "approvedExcerpt": "use textual references and quotations effectively to support views"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "Plot recall is not applicable to a thematic poetry cluster."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "partialCardCount": 4,
+          "reason": "Only edition-verified public-domain poems are included; full anthology quotation coverage remains withheld because the current cluster includes in-copyright poems."
+        },
+        "method": {
+          "status": "ready",
+          "expectedCardCount": 1
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-j352-specification-youth-poetry",
+          "kind": "curriculum-specification",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+          "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+          "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+        },
+        {
+          "id": "ocr-youth-poetry-current-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/654698-youth-and-age.pdf",
+          "title": "OCR Youth and Age Poetry Teacher Guide, updated cluster",
+          "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+          "verificationAnchors": [
+            "Holy Thursday",
+            "The Bluebell"
+          ]
+        },
+        {
+          "id": "ocr-anthology-public-domain-youth",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-anthology-pdf",
+          "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+          "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+          "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "youth-poetry-deep-quotation-holy-flowers",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "Holy Thursday by William Blake, line 5, anthology page 32",
+          "anchor": "O what a multitude they seemed, these flowers of London town!",
+          "requiredAnswer": "O what a multitude they seemed, these flowers of London town!"
+        },
+        {
+          "id": "youth-poetry-deep-quotation-holy-hands",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "Holy Thursday by William Blake, line 8, anthology page 32",
+          "anchor": "Thousands of little boys and girls raising their innocent hands.",
+          "requiredAnswer": "Thousands of little boys and girls raising their innocent hands."
+        },
+        {
+          "id": "youth-poetry-deep-quotation-bluebell-spirit",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "The Bluebell by Anne Brontë, lines 1–2, anthology page 34",
+          "anchor": "A fine and subtle spirit dwells In every little flower,",
+          "requiredAnswer": "A fine and subtle spirit dwells In every little flower,"
+        },
+        {
+          "id": "youth-poetry-deep-quotation-bluebell-childhood",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "The Bluebell by Anne Brontë, line 34, anthology page 34",
+          "anchor": "My happy childhood’s hours",
+          "requiredAnswer": "My happy childhood’s hours"
+        },
+        {
+          "id": "youth-poetry-deep-method-quote-to-interpretation",
+          "mode": "method",
+          "sourceId": "ocr-j352-specification-youth-poetry",
+          "locator": "J352 specification, physical PDF page 19; effective use of quotations",
+          "approvedExcerpt": "use textual references and quotations effectively to support views"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-romeo-and-juliet",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1513/pg1513.txt",
+          "title": "Romeo and Juliet by William Shakespeare",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "romeo-and-juliet-deep-plot-feast-meeting",
+          "mode": "plot",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 1, Scene 5; Romeo and Juliet meet",
+          "anchor": "And palm to palm is holy palmers’ kiss."
+        },
+        {
+          "id": "romeo-and-juliet-deep-plot-marriage",
+          "mode": "plot",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 2, Scene 6; Friar Laurence marries them",
+          "anchor": "I married them; and their stol’n marriage day Was Tybalt’s doomsday"
+        },
+        {
+          "id": "romeo-and-juliet-deep-plot-banishment",
+          "mode": "plot",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 3, Scene 1; the Prince banishes Romeo",
+          "anchor": "Hence from Verona art thou banished."
+        },
+        {
+          "id": "romeo-and-juliet-deep-plot-potion",
+          "mode": "plot",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 4, Scene 1; Friar Laurence gives Juliet the plan",
+          "anchor": "Take thou this vial, being then in bed, And this distilled liquor drink thou off"
+        },
+        {
+          "id": "romeo-and-juliet-deep-plot-juliet-dies",
+          "mode": "plot",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 5, Scene 3; Juliet kills herself",
+          "anchor": "But, as it seems, did violence on herself."
+        },
+        {
+          "id": "romeo-and-juliet-deep-plot-reconciliation",
+          "mode": "plot",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 5, Scene 3; Montague memorialises Juliet",
+          "anchor": "I will raise her statue in pure gold"
+        },
+        {
+          "id": "romeo-and-juliet-deep-quotation-star-crossed",
+          "mode": "quotation",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Prologue; the lovers’ fate",
+          "anchor": "A pair of star-cross’d lovers take their life;",
+          "requiredAnswer": "A pair of star-cross’d lovers take their life;"
+        },
+        {
+          "id": "romeo-and-juliet-deep-quotation-only-love",
+          "mode": "quotation",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 1, Scene 5; Juliet learns Romeo’s identity",
+          "anchor": "My only love sprung from my only hate!",
+          "requiredAnswer": "My only love sprung from my only hate!"
+        },
+        {
+          "id": "romeo-and-juliet-deep-quotation-name",
+          "mode": "quotation",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 2, Scene 2; Juliet questions names",
+          "anchor": "What’s in a name? That which we call a rose",
+          "requiredAnswer": "What’s in a name? That which we call a rose"
+        },
+        {
+          "id": "romeo-and-juliet-deep-quotation-violent-delights",
+          "mode": "quotation",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 2, Scene 6; Friar Laurence warns Romeo",
+          "anchor": "These violent delights have violent ends,",
+          "requiredAnswer": "These violent delights have violent ends,"
+        },
+        {
+          "id": "romeo-and-juliet-deep-quotation-fortunes-fool",
+          "mode": "quotation",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 3, Scene 1; Romeo reacts after killing Tybalt",
+          "anchor": "O, I am fortune’s fool!",
+          "requiredAnswer": "O, I am fortune’s fool!"
+        },
+        {
+          "id": "romeo-and-juliet-deep-quotation-dagger",
+          "mode": "quotation",
+          "sourceId": "gutenberg-romeo-and-juliet",
+          "locator": "Act 5, Scene 3; Juliet takes Romeo’s dagger",
+          "anchor": "O happy dagger.",
+          "requiredAnswer": "O happy dagger."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-the-merchant-of-venice",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1515/pg1515.txt",
+          "title": "The Merchant of Venice by William Shakespeare",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "merchant-of-venice-deep-plot-loan",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 1, Scene 3; Bassanio asks for the loan",
+          "anchor": "Three thousand ducats for three months, and Antonio bound."
+        },
+        {
+          "id": "merchant-of-venice-deep-plot-bond-sealed",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 1, Scene 3; Antonio accepts Shylock’s bond",
+          "anchor": "Yes, Shylock, I will seal unto this bond."
+        },
+        {
+          "id": "merchant-of-venice-deep-plot-jessica-elopes",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 2, Scene 8; Shylock learns Jessica fled",
+          "anchor": "My daughter! O my ducats! O my daughter! Fled with a Christian!"
+        },
+        {
+          "id": "merchant-of-venice-deep-plot-leaden-casket",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 3, Scene 2; Bassanio chooses the lead casket",
+          "anchor": "Fair Portia’s counterfeit!"
+        },
+        {
+          "id": "merchant-of-venice-deep-plot-ships-fail",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 3, Scene 2; Antonio’s letter reaches Bassanio",
+          "anchor": "my ships have all miscarried, my creditors grow cruel, my estate is very low, my bond to the Jew is forfeit"
+        },
+        {
+          "id": "merchant-of-venice-deep-plot-ring-revealed",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 5, Scene 1; Portia reveals the ring trick",
+          "anchor": "I had it of him: pardon me, Bassanio, For by this ring, the doctor lay with me."
+        },
+        {
+          "id": "merchant-of-venice-deep-quotation-sad",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 1, Scene 1; Antonio’s opening line",
+          "anchor": "In sooth I know not why I am so sad,",
+          "requiredAnswer": "In sooth I know not why I am so sad,"
+        },
+        {
+          "id": "merchant-of-venice-deep-quotation-glisters",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 2, Scene 7; the gold casket scroll",
+          "anchor": "All that glisters is not gold,",
+          "requiredAnswer": "All that glisters is not gold,"
+        },
+        {
+          "id": "merchant-of-venice-deep-quotation-stage",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 1, Scene 1; Antonio describes the world",
+          "anchor": "I hold the world but as the world, Gratiano,",
+          "requiredAnswer": "I hold the world but as the world, Gratiano,"
+        },
+        {
+          "id": "merchant-of-venice-deep-quotation-scripture",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 1, Scene 3; Antonio judges Shylock’s argument",
+          "anchor": "The devil can cite Scripture for his purpose.",
+          "requiredAnswer": "The devil can cite Scripture for his purpose."
+        },
+        {
+          "id": "merchant-of-venice-deep-quotation-do",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 1, Scene 2; Portia on advice and action",
+          "anchor": "If to do were as easy as to know what were good to do",
+          "requiredAnswer": "If to do were as easy as to know what were good to do"
+        },
+        {
+          "id": "merchant-of-venice-deep-quotation-candle",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-merchant-of-venice",
+          "locator": "Act 5, Scene 1; Portia sees the candle",
+          "anchor": "How far that little candle throws his beams!",
+          "requiredAnswer": "How far that little candle throws his beams!"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-macbeth",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1533/pg1533.txt",
+          "title": "Macbeth by William Shakespeare",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "macbeth-deep-plot-prophecy",
+          "mode": "plot",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 1, Scene 3; the third witch greets Macbeth",
+          "anchor": "All hail, Macbeth! that shalt be king hereafter!"
+        },
+        {
+          "id": "macbeth-deep-plot-lady-plan",
+          "mode": "plot",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 1, Scene 5; Lady Macbeth tells him to deceive Duncan",
+          "anchor": "look like the innocent flower, But be the serpent under’t."
+        },
+        {
+          "id": "macbeth-deep-plot-crowned",
+          "mode": "plot",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 3, Scene 1; Banquo reflects on Macbeth’s titles",
+          "anchor": "Thou hast it now, King, Cawdor, Glamis, all,"
+        },
+        {
+          "id": "macbeth-deep-plot-banquo-fleance",
+          "mode": "plot",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 3, Scene 3; Banquo is killed but Fleance escapes",
+          "anchor": "Fleance escapes."
+        },
+        {
+          "id": "macbeth-deep-plot-banquo-ghost",
+          "mode": "plot",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 3, Scene 4; Banquo’s ghost takes Macbeth’s place",
+          "anchor": "The Ghost of Banquo rises, and sits in Macbeth’s place."
+        },
+        {
+          "id": "macbeth-deep-plot-apparitions",
+          "mode": "plot",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 4, Scene 1; an apparition gives Macbeth confidence",
+          "anchor": "none of woman born Shall harm Macbeth."
+        },
+        {
+          "id": "macbeth-deep-quotation-stars",
+          "mode": "quotation",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 1, Scene 4; Macbeth hides his desire",
+          "anchor": "Stars, hide your fires!",
+          "requiredAnswer": "Stars, hide your fires!"
+        },
+        {
+          "id": "macbeth-deep-quotation-flower-serpent",
+          "mode": "quotation",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 1, Scene 5; Lady Macbeth advises deception",
+          "anchor": "look like the innocent flower, But be the serpent under’t.",
+          "requiredAnswer": "look like the innocent flower, But be the serpent under’t."
+        },
+        {
+          "id": "macbeth-deep-quotation-dagger",
+          "mode": "quotation",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 2, Scene 1; Macbeth sees the dagger",
+          "anchor": "Is this a dagger which I see before me,",
+          "requiredAnswer": "Is this a dagger which I see before me,"
+        },
+        {
+          "id": "macbeth-deep-quotation-neptune",
+          "mode": "quotation",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 2, Scene 2; Macbeth looks at his bloody hands",
+          "anchor": "Will all great Neptune’s ocean wash this blood",
+          "requiredAnswer": "Will all great Neptune’s ocean wash this blood"
+        },
+        {
+          "id": "macbeth-deep-quotation-spot",
+          "mode": "quotation",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 5, Scene 1; Lady Macbeth sleepwalks",
+          "anchor": "Out, damned spot! out, I say!",
+          "requiredAnswer": "Out, damned spot! out, I say!"
+        },
+        {
+          "id": "macbeth-deep-quotation-shadow",
+          "mode": "quotation",
+          "sourceId": "gutenberg-macbeth",
+          "locator": "Act 5, Scene 5; Macbeth responds to the Queen’s death",
+          "anchor": "Life’s but a walking shadow; a poor player,",
+          "requiredAnswer": "Life’s but a walking shadow; a poor player,"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-much-ado-about-nothing",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1519/pg1519.txt",
+          "title": "Much Ado About Nothing by William Shakespeare",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "much-ado-deep-plot-hero-match",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 1, Scene 1; Don Pedro agrees to woo Hero for Claudio",
+          "anchor": "I will assume thy part in some disguise, And tell fair Hero I am Claudio"
+        },
+        {
+          "id": "much-ado-deep-plot-benedick-gull",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 2, Scene 3; Benedick overhears the staged conversation",
+          "anchor": "I should think this a gull, but that the white-bearded fellow speaks it"
+        },
+        {
+          "id": "much-ado-deep-plot-beatrice-gull",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 3, Scene 1; Beatrice decides to return Benedick’s love",
+          "anchor": "And, Benedick, love on; I will requite thee"
+        },
+        {
+          "id": "much-ado-deep-plot-window-trick",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 3, Scene 3; Borachio explains the deception",
+          "anchor": "they Margaret was Hero"
+        },
+        {
+          "id": "much-ado-deep-plot-wedding-shame",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 4, Scene 1; Claudio accuses Hero",
+          "anchor": "Hero itself can blot out Hero’s virtue."
+        },
+        {
+          "id": "much-ado-deep-plot-watch-confession",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 3, Scene 3; the Watch hears Borachio confess",
+          "anchor": "I have tonight wooed Margaret, the Lady Hero’s gentlewoman, by the name of Hero"
+        },
+        {
+          "id": "much-ado-deep-quotation-love-nothing",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 4, Scene 1; Benedick declares love",
+          "anchor": "I do love nothing in the world so well as you: is not that strange?",
+          "requiredAnswer": "I do love nothing in the world so well as you: is not that strange?"
+        },
+        {
+          "id": "much-ado-deep-quotation-silence",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 2, Scene 1; Claudio responds to the match",
+          "anchor": "Silence is the perfectest herald of joy",
+          "requiredAnswer": "Silence is the perfectest herald of joy"
+        },
+        {
+          "id": "much-ado-deep-quotation-giddy",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 5, Scene 4; Benedick reverses his old position",
+          "anchor": "man is a giddy thing",
+          "requiredAnswer": "man is a giddy thing"
+        },
+        {
+          "id": "much-ado-deep-quotation-bachelor",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 2, Scene 3; Benedick changes his mind",
+          "anchor": "When I said I would die a bachelor, I did not think I should live till I were married.",
+          "requiredAnswer": "When I said I would die a bachelor, I did not think I should live till I were married."
+        },
+        {
+          "id": "much-ado-deep-quotation-slander",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 5, Scene 3; Claudio reads the epitaph",
+          "anchor": "Done to death by slanderous tongues",
+          "requiredAnswer": "Done to death by slanderous tongues"
+        },
+        {
+          "id": "much-ado-deep-quotation-protest",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 4, Scene 1; Beatrice declares love",
+          "anchor": "I love you with so much of my heart that none is left to protest.",
+          "requiredAnswer": "I love you with so much of my heart that none is left to protest."
+        }
+      ]
+    }
+  ]
+}

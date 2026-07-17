@@ -3,6 +3,10 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import {
+	componentCodeCompatibility,
+	normalizeComponentCode
+} from './lib/source-identity.mjs';
 
 const rootDir = process.cwd();
 
@@ -96,6 +100,14 @@ function auditRow(row) {
 	const expectedComponent = row.component ?? '';
 	const visibleSeries = firstNonEmpty([questionPaper.series, markScheme.series]);
 	const visibleComponent = firstNonEmpty([questionPaper.component, markScheme.component]);
+	const expectedToVisibleComponentCompatibility = componentCodeCompatibility(
+		expectedComponent,
+		visibleComponent
+	);
+	const questionPaperToMarkSchemeComponentCompatibility = componentCodeCompatibility(
+		questionPaper.component,
+		markScheme.component
+	);
 	if (
 		normalizeSeries(expectedSeries) &&
 		normalizeSeries(visibleSeries) &&
@@ -129,9 +141,9 @@ function auditRow(row) {
 		});
 	}
 	if (
-		normalizeComponent(expectedComponent) &&
-		normalizeComponent(visibleComponent) &&
-		!componentCodesCompatible(expectedComponent, visibleComponent)
+		normalizeComponentCode(expectedComponent) &&
+		normalizeComponentCode(visibleComponent) &&
+		!expectedToVisibleComponentCompatibility.compatible
 	) {
 		issues.push({
 			code: 'visible_component_mismatch',
@@ -145,9 +157,9 @@ function auditRow(row) {
 		});
 	}
 	if (
-		normalizeComponent(questionPaper.component) &&
-		normalizeComponent(markScheme.component) &&
-		!componentCodesCompatible(questionPaper.component, markScheme.component)
+		normalizeComponentCode(questionPaper.component) &&
+		normalizeComponentCode(markScheme.component) &&
+		!questionPaperToMarkSchemeComponentCompatibility.compatible
 	) {
 		issues.push({
 			code: 'question_paper_mark_scheme_component_mismatch',
@@ -178,6 +190,10 @@ function auditRow(row) {
 		visible: {
 			series: visibleSeries || null,
 			componentCode: visibleComponent || null
+		},
+		componentCompatibility: {
+			expectedToVisible: expectedToVisibleComponentCompatibility,
+			questionPaperToMarkScheme: questionPaperToMarkSchemeComponentCompatibility
 		},
 		sourceIdentity: {
 			status: issues.some((issue) => issue.severity === 'error')
@@ -255,7 +271,7 @@ function findSeries(text) {
 }
 
 function findComponent(text) {
-	const match = text.match(/\b(\d{4})\/([0-9A-Z]+(?:\/[A-Z]+)*)\b/i);
+	const match = text.match(/\b(\d{4})\/([0-9A-Z]+(?:\/[0-9A-Z]+)*)\b/i);
 	if (!match) return null;
 	return {
 		component: `${match[1]}/${match[2].toUpperCase()}`,
@@ -275,26 +291,6 @@ function normalizeSeries(value) {
 		november: 'november'
 	};
 	return `${monthMap[match[1].toLowerCase()]}-20${match[3]}`;
-}
-
-function normalizeComponent(value) {
-	return String(value ?? '')
-		.toUpperCase()
-		.replace(/[^0-9A-Z]/g, '');
-}
-
-function componentCodesCompatible(expected, visible) {
-	const expectedKey = normalizeComponent(expected);
-	const visibleKey = normalizeComponent(visible);
-	if (!expectedKey || !visibleKey) return true;
-	if (expectedKey === visibleKey) return true;
-	if (expectedKey.startsWith(visibleKey) && /^[A-Z]+$/.test(expectedKey.slice(visibleKey.length))) {
-		return true;
-	}
-	if (visibleKey.startsWith(expectedKey) && /^[A-Z]+$/.test(visibleKey.slice(expectedKey.length))) {
-		return true;
-	}
-	return false;
 }
 
 function countBy(rows, keyFn) {

@@ -53,6 +53,22 @@ describe('English Literature practice task classification', () => {
 			expected: 'extract-and-wider'
 		},
 		{
+			name: 'extract and wider text phrased as a starting moment',
+			promptText:
+				'Starting with this moment, explore how Shakespeare presents fear in the play as a whole.',
+			contextText: 'Act 2 Scene 3 is printed above the question.',
+			paper: 'Exploring poetry and Shakespeare',
+			expected: 'extract-and-wider'
+		},
+		{
+			name: 'extract and wider text with an Act reference but no extract noun',
+			promptText:
+				'Explore how Shakespeare presents friendship. Refer to Act 3 Scene 2 and elsewhere in the play.',
+			contextText: 'The printed scene precedes the task.',
+			paper: 'Exploring poetry and Shakespeare',
+			expected: 'extract-and-wider'
+		},
+		{
 			name: 'whole-text judgement',
 			promptText:
 				"'The Curate is selfish and deserves no sympathy.' How far do you agree? Explore at least two moments from the novel.",
@@ -86,8 +102,17 @@ describe('English Literature practice task classification', () => {
 		},
 		{
 			name: 'single whole-play analysis',
-			promptText: 'How does Shakespeare present the young lovers in this play?',
-			contextText: 'Explore at least two moments from the play to support your ideas.',
+			promptText:
+				'How does Shakespeare present the young lovers in this play? Explore at least two moments from the play to support your ideas.',
+			contextText: 'Whole-play analysis option.',
+			paper: 'Exploring poetry and Shakespeare',
+			expected: 'single-text-analysis'
+		},
+		{
+			name: 'single whole-play analysis using different ways',
+			promptText:
+				'Explore different ways in which Shakespeare presents betrayal in Macbeth. Explore at least two moments from the play to support your ideas.',
+			contextText: 'Whole-play analysis option.',
 			paper: 'Exploring poetry and Shakespeare',
 			expected: 'single-text-analysis'
 		}

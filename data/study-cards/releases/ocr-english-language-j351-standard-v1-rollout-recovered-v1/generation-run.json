@@ -1,0 +1,18 @@
+{
+  "status": "accepted_rollout_recovery",
+  "counts": {
+    "generated": 8,
+    "accepted": 8,
+    "rejectedByReviewer": 0,
+    "readyCoverageRows": 2,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "f469c3e2286c242bcc1535312eea79762e3d7cee7002dde4e34ad8493c2a15fc",
+  "recovery": {
+    "historicalReleaseId": "ocr-english-language-j351-standard-v1",
+    "historicalArtifactHash": "04daae417aabeb65fd487d2f5fea95dc2173c7ee35455278a8909d645db2c420",
+    "reconstructedHistoricalIdArtifactHash": "fd6922d75398a64c87102921db15eddc28189bdc0ca54506cf42349d7e6ed242",
+    "modelCalls": 0
+  }
+}

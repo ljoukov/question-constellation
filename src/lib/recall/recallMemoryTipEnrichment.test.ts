@@ -42,6 +42,36 @@ describe('recall memory-tip enrichment contract', () => {
 		expect(() => normalizeRecallMemoryTipSourceSnapshot(booleanish)).toThrow(/boolean or integer/);
 	});
 
+	it('accepts a three-choice compiler-v10 base without weakening compiler-v9 enrichment checks', () => {
+		const v10Input = structuredClone(snapshotFixture());
+		const v10Card = v10Input.cards[0];
+		v10Card.generationRunId = 'base-run-compiler-v10';
+		v10Card.generationRun.id = v10Card.generationRunId;
+		v10Card.generationRun.promptVersion = 'recall-card-compiler-v10';
+		v10Card.generationRun.artifactPath =
+			'data/recall/generated/base-run-compiler-v10/accepted-cards.json';
+		v10Card.provenance.generationRunId = v10Card.generationRunId;
+		v10Card.provenance.promptVersion = 'recall-card-compiler-v10';
+		v10Card.choices.pop();
+		v10Card.contentHash = hashRecallCardContent(v10Card);
+
+		const v10 = normalizeRecallMemoryTipSourceSnapshot(v10Input);
+		expect(v10.cards[0].choices).toHaveLength(3);
+
+		const relabelledAsV9 = structuredClone(v10);
+		const v9Card = relabelledAsV9.cards[0];
+		v9Card.generationRunId = 'base-run-compiler-v9';
+		v9Card.generationRun.id = v9Card.generationRunId;
+		v9Card.generationRun.promptVersion = 'recall-card-compiler-v9';
+		v9Card.generationRun.artifactPath =
+			'data/recall/generated/base-run-compiler-v9/accepted-cards.json';
+		v9Card.provenance.generationRunId = v9Card.generationRunId;
+		v9Card.provenance.promptVersion = 'recall-card-compiler-v9';
+		expect(() => normalizeRecallMemoryTipSourceSnapshot(relabelledAsV9)).toThrow(
+			/exactly four rows for recall-card-compiler-v9/
+		);
+	});
+
 	it('requires exact selected ids, exact evidence ids, canonical one-line tips and a second encoding', () => {
 		const snapshot = snapshotFixture();
 		const candidates = candidateFixture();

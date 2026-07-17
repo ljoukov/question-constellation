@@ -1,0 +1,385 @@
+{
+  "schemaVersion": "study-card-base-rollout-recovery-evidence-v1",
+  "status": "accepted_base_transcripts_recovered",
+  "policy": "Only cards accepted by the recorded independent reviewer, plus independently accepted reviewed repairs, were materialized. Recovery made zero model calls.",
+  "identityPolicy": "Historical artifact wrappers were absent. Each durable artifact therefore uses an explicit rollout-recovered-v1 release id; the historical release id remains evidence and is never silently substituted.",
+  "accountingNote": "The seven releases contain 253 accepted cards and 222 distinct targeted curriculum component ids. Exactly 221 of those ids are section/topic descendants counted by the descendant planner; one accepted target is outside that planner kind filter. The earlier inferred 139 figure is not the recovered lineage cardinality.",
+  "sessionRoot": "/home/yaroslav_volovich/.codex/sessions/2026/07/16",
+  "modelCallsDuringRecovery": 0,
+  "totals": {
+    "releases": 7,
+    "cards": 253,
+    "distinctTargetComponents": 222,
+    "plannerEligibleTargetComponents": 221,
+    "nonPlannerEligibleTargetComponents": 1,
+    "coverageRows": 114,
+    "readyCoverageRows": 114,
+    "withheldCoverageRows": 0,
+    "deterministicRepairAcceptedCards": 1,
+    "reviewedRepairAttempts": 4,
+    "acceptedReviewedRepairs": 2,
+    "sessions": 24,
+    "validatorsPassed": 7
+  },
+  "postRecovery": {
+    "plannerTargetCount": 450,
+    "plannerUniqueTargetCount": 450,
+    "completionJobCount": 23,
+    "completionQueuePath": "docs/release-evidence/study-card-descendant-coverage/completion-queue.json",
+    "postRecoveryPlanPath": "docs/release-evidence/study-card-descendant-coverage/post-base-recovery-uncovered.json",
+    "plannerAndCompletionTargetUnionMatch": true
+  },
+  "accidentalAttempts": {
+    "quarantinePath": "docs/release-evidence/study-card-descendant-coverage/quarantined-accidental-interrupted-attempts.json",
+    "attemptCount": 2,
+    "acceptedArtifactCount": 0,
+    "disposition": "quarantined-not-accepted"
+  },
+  "releases": [
+    {
+      "historicalReleaseId": "aqa-biology-8461-standard-v1",
+      "releaseId": "aqa-biology-8461-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-biology-8461-v1.0",
+      "subject": "Biology",
+      "artifactPath": "data/study-cards/releases/aqa-biology-8461-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "2ad49f74c04907c9fe942451fd57b46138e526cc55dd31649b4edf24db3faa68",
+      "cardCount": 26,
+      "distinctTargetComponentCount": 26,
+      "plannerEligibleTargetComponentCount": 26,
+      "nonPlannerEligibleAcceptedComponentIds": [],
+      "coverageCount": 14,
+      "readyCoverageCount": 14,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "ready": 7,
+          "withheld": 0,
+          "coverageRows": 7,
+          "cardCount": 26
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "ready": 7,
+          "withheld": 0,
+          "coverageRows": 7,
+          "cardCount": 26
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 0,
+      "reviewedRepairAttempts": 0,
+      "acceptedReviewedRepairs": 0,
+      "sessionCount": 3,
+      "generatorRunId": "019f6bcf-35e8-7c63-b8ba-e189fea5788d",
+      "reviewerRunId": "019f6bf1-00cd-77b1-8d56-7299e68d3874",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "2ad49f74c04907c9fe942451fd57b46138e526cc55dd31649b4edf24db3faa68",
+        "counts": {
+          "cards": 26,
+          "choices": 78,
+          "sources": 26,
+          "targets": 52,
+          "coverage": 14,
+          "readyCoverage": 14,
+          "withheldCoverage": 0
+        }
+      }
+    },
+    {
+      "historicalReleaseId": "aqa-history-8145-standard-v1",
+      "releaseId": "aqa-history-8145-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-history-8145-v1.3",
+      "subject": "History",
+      "artifactPath": "data/study-cards/releases/aqa-history-8145-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "e24a124a056942a0791b22bf13197fd11350b430dc3242fa02d847760fbc5db5",
+      "cardCount": 73,
+      "distinctTargetComponentCount": 50,
+      "plannerEligibleTargetComponentCount": 50,
+      "nonPlannerEligibleAcceptedComponentIds": [],
+      "coverageCount": 16,
+      "readyCoverageCount": 16,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+          "ready": 16,
+          "withheld": 0,
+          "coverageRows": 16,
+          "cardCount": 73
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 1,
+      "reviewedRepairAttempts": 3,
+      "acceptedReviewedRepairs": 1,
+      "sessionCount": 9,
+      "generatorRunId": "019f6bcf-37cf-78e2-9ea0-e534dac0309c",
+      "reviewerRunId": "019f6be5-ab67-76c2-9aa5-2e869bcfb19d",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "e24a124a056942a0791b22bf13197fd11350b430dc3242fa02d847760fbc5db5",
+        "counts": {
+          "cards": 73,
+          "choices": 219,
+          "sources": 73,
+          "targets": 73,
+          "coverage": 16,
+          "readyCoverage": 16,
+          "withheldCoverage": 0
+        }
+      }
+    },
+    {
+      "historicalReleaseId": "aqa-chemistry-8462-standard-v1",
+      "releaseId": "aqa-chemistry-8462-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-chemistry-8462-v1.1",
+      "subject": "Chemistry",
+      "artifactPath": "data/study-cards/releases/aqa-chemistry-8462-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "f06a69affa54f29e3f98bf1af300186394dfdfa9a6b473e2e65ca6bba4116218",
+      "cardCount": 37,
+      "distinctTargetComponentCount": 36,
+      "plannerEligibleTargetComponentCount": 35,
+      "nonPlannerEligibleAcceptedComponentIds": [
+        "aqa-gcse-chemistry-8462-v1.1:4-5"
+      ],
+      "coverageCount": 20,
+      "readyCoverageCount": 20,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-chemistry-8462-v1.1:foundation",
+          "ready": 10,
+          "withheld": 0,
+          "coverageRows": 10,
+          "cardCount": 37
+        },
+        {
+          "offeringId": "aqa-gcse-chemistry-8462-v1.1:higher",
+          "ready": 10,
+          "withheld": 0,
+          "coverageRows": 10,
+          "cardCount": 37
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 0,
+      "reviewedRepairAttempts": 0,
+      "acceptedReviewedRepairs": 0,
+      "sessionCount": 2,
+      "generatorRunId": "019f6c04-d1a1-7493-85bd-dbe904f31811",
+      "reviewerRunId": "019f6c10-902d-7dd2-a6f1-a86175d2f6d0",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "f06a69affa54f29e3f98bf1af300186394dfdfa9a6b473e2e65ca6bba4116218",
+        "counts": {
+          "cards": 37,
+          "choices": 124,
+          "sources": 37,
+          "targets": 74,
+          "coverage": 20,
+          "readyCoverage": 20,
+          "withheldCoverage": 0
+        }
+      }
+    },
+    {
+      "historicalReleaseId": "aqa-physics-8463-standard-v1",
+      "releaseId": "aqa-physics-8463-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-physics-8463-v1.1",
+      "subject": "Physics",
+      "artifactPath": "data/study-cards/releases/aqa-physics-8463-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "4c33d24475dd773471ec537f7da5672d0a4594262c895808c06d9a2b726fb7f4",
+      "cardCount": 31,
+      "distinctTargetComponentCount": 30,
+      "plannerEligibleTargetComponentCount": 30,
+      "nonPlannerEligibleAcceptedComponentIds": [],
+      "coverageCount": 16,
+      "readyCoverageCount": 16,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "ready": 8,
+          "withheld": 0,
+          "coverageRows": 8,
+          "cardCount": 31
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "ready": 8,
+          "withheld": 0,
+          "coverageRows": 8,
+          "cardCount": 31
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 0,
+      "reviewedRepairAttempts": 0,
+      "acceptedReviewedRepairs": 0,
+      "sessionCount": 2,
+      "generatorRunId": "019f6c04-d167-7a00-9fe9-a8640c321f5a",
+      "reviewerRunId": "019f6c0c-170c-7ec2-8834-878572263196",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "4c33d24475dd773471ec537f7da5672d0a4594262c895808c06d9a2b726fb7f4",
+        "counts": {
+          "cards": 31,
+          "choices": 93,
+          "sources": 31,
+          "targets": 62,
+          "coverage": 16,
+          "readyCoverage": 16,
+          "withheldCoverage": 0
+        }
+      }
+    },
+    {
+      "historicalReleaseId": "aqa-combined-biology-8464-standard-v1",
+      "releaseId": "aqa-combined-biology-8464-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "subject": "Biology",
+      "artifactPath": "data/study-cards/releases/aqa-combined-biology-8464-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "cfd93c38304e90a5c04b5e641fc978674b0f0133e1e92fee6923ae1ef695df23",
+      "cardCount": 25,
+      "distinctTargetComponentCount": 23,
+      "plannerEligibleTargetComponentCount": 23,
+      "nonPlannerEligibleAcceptedComponentIds": [],
+      "coverageCount": 14,
+      "readyCoverageCount": 14,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+          "ready": 7,
+          "withheld": 0,
+          "coverageRows": 7,
+          "cardCount": 25
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "ready": 7,
+          "withheld": 0,
+          "coverageRows": 7,
+          "cardCount": 25
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 0,
+      "reviewedRepairAttempts": 0,
+      "acceptedReviewedRepairs": 0,
+      "sessionCount": 2,
+      "generatorRunId": "019f6c11-b988-7933-b4f4-09c525d34e76",
+      "reviewerRunId": "019f6c1a-8864-7911-9e35-56d2f21c7e79",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "cfd93c38304e90a5c04b5e641fc978674b0f0133e1e92fee6923ae1ef695df23",
+        "counts": {
+          "cards": 25,
+          "choices": 94,
+          "sources": 25,
+          "targets": 50,
+          "coverage": 14,
+          "readyCoverage": 14,
+          "withheldCoverage": 0
+        }
+      }
+    },
+    {
+      "historicalReleaseId": "aqa-combined-chemistry-8464-standard-v1",
+      "releaseId": "aqa-combined-chemistry-8464-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "subject": "Chemistry",
+      "artifactPath": "data/study-cards/releases/aqa-combined-chemistry-8464-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "aeebc078d860b616777a518449d885092c0ecee12f64e5878015e8ba65bbf2da",
+      "cardCount": 35,
+      "distinctTargetComponentCount": 34,
+      "plannerEligibleTargetComponentCount": 34,
+      "nonPlannerEligibleAcceptedComponentIds": [],
+      "coverageCount": 20,
+      "readyCoverageCount": 20,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:foundation",
+          "ready": 10,
+          "withheld": 0,
+          "coverageRows": 10,
+          "cardCount": 35
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "ready": 10,
+          "withheld": 0,
+          "coverageRows": 10,
+          "cardCount": 35
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 0,
+      "reviewedRepairAttempts": 0,
+      "acceptedReviewedRepairs": 0,
+      "sessionCount": 2,
+      "generatorRunId": "019f6c18-d2b3-70d1-bd85-198a97e2179e",
+      "reviewerRunId": "019f6c24-fc72-73e2-9745-10fbbbe6dfdb",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "aeebc078d860b616777a518449d885092c0ecee12f64e5878015e8ba65bbf2da",
+        "counts": {
+          "cards": 35,
+          "choices": 105,
+          "sources": 35,
+          "targets": 70,
+          "coverage": 20,
+          "readyCoverage": 20,
+          "withheldCoverage": 0
+        }
+      }
+    },
+    {
+      "historicalReleaseId": "aqa-combined-physics-8464-standard-v1",
+      "releaseId": "aqa-combined-physics-8464-standard-v1-rollout-recovered-v1",
+      "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+      "subject": "Physics",
+      "artifactPath": "data/study-cards/releases/aqa-combined-physics-8464-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+      "artifactHash": "23a7e78d59413c50e84f01b71a964d66145b1136b19e55d070c57c1fac928d04",
+      "cardCount": 26,
+      "distinctTargetComponentCount": 23,
+      "plannerEligibleTargetComponentCount": 23,
+      "nonPlannerEligibleAcceptedComponentIds": [],
+      "coverageCount": 14,
+      "readyCoverageCount": 14,
+      "withheldCoverageCount": 0,
+      "offeringCoverage": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "ready": 7,
+          "withheld": 0,
+          "coverageRows": 7,
+          "cardCount": 26
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "ready": 7,
+          "withheld": 0,
+          "coverageRows": 7,
+          "cardCount": 26
+        }
+      ],
+      "deterministicRepairAcceptedCardCount": 0,
+      "reviewedRepairAttempts": 1,
+      "acceptedReviewedRepairs": 1,
+      "sessionCount": 4,
+      "generatorRunId": "019f6c21-cdcd-79f1-9d07-e4658280830e",
+      "reviewerRunId": "019f6c28-59f2-73b2-9167-d3c0a44d2f9f",
+      "validator": {
+        "status": "valid",
+        "artifactHash": "23a7e78d59413c50e84f01b71a964d66145b1136b19e55d070c57c1fac928d04",
+        "counts": {
+          "cards": 26,
+          "choices": 94,
+          "sources": 26,
+          "targets": 52,
+          "coverage": 14,
+          "readyCoverage": 14,
+          "withheldCoverage": 0
+        }
+      }
+    }
+  ]
+}

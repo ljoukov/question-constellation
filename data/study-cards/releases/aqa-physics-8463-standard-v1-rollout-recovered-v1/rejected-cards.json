@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-physics-8463-v1-1-space-red-shift-evidence",
+        "conceptKey": "aqa-physics-8463-v1-1-concept-red-shift-evidence",
+        "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+        "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-2",
+        "kind": "interpretation",
+        "visualCue": "📈",
+        "front": "What does the observed red-shift of distant galaxies provide evidence for?",
+        "back": "That the universe is expanding; it supports the Big Bang theory.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The observation is interpreted as evidence for expansion of space itself and as support for the Big Bang theory.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "That the universe is contracting; it contradicts the Big Bang theory.",
+            "isCorrect": false,
+            "feedback": "This reverses both conclusions drawn from red-shift.",
+            "misconception": "reverses-red-shift-evidence"
+          },
+          {
+            "key": "b",
+            "text": "That the universe is expanding; it supports the Big Bang theory.",
+            "isCorrect": true,
+            "feedback": "Correct: these are the two conclusions supported by observed red-shift.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "That the universe is unchanging; it neither supports nor challenges the Big Bang theory.",
+            "isCorrect": false,
+            "feedback": "Observed red-shift is evidence for expansion and supports the Big Bang theory.",
+            "misconception": "treats-red-shift-as-static-universe-evidence"
+          }
+        ],
+        "sourceExcerpt": "The observed red-shift provides evidence that space itself (the\nuniverse) is expanding and supports the Big Bang theory.",
+        "sourceLocator": "Official PDF pages 72-75; 4.8.2 Red-shift (physics only)"
+      },
+      "review": {
+        "cardId": "aqa-physics-8463-v1-1-space-red-shift-evidence",
+        "accepted": false,
+        "issues": [
+          "The 📈 visual cue leaks the correct answer by signalling growth or expansion when the choices explicitly contrast an expanding, contracting and unchanging universe."
+        ],
+        "learnerValue": [
+          "The underlying source-backed link between red-shift, universal expansion and the Big Bang theory is otherwise accurate and useful."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "study-card-completion-queue-preflight-v1",
+  "status": "passed-no-model-execution",
+  "coverageLedgerPath": "docs/release-evidence/study-card-coverage-ledger.json",
+  "completionQueuePath": "docs/release-evidence/study-card-descendant-coverage/completion-queue.json",
+  "postPartialLogicalQueuePath": "docs/release-evidence/study-card-descendant-coverage/post-partial-acceptance-completion-queue.json",
+  "executionQueuePath": "docs/release-evidence/study-card-descendant-coverage/tier-safe-execution-queue.json",
+  "counts": {
+    "logicalJobs": 23,
+    "frozenTargets": 450,
+    "acceptedTargetsRemoved": 12,
+    "physicalBatches": 26,
+    "standardGenerationBatches": 24,
+    "archivedOutputRecoveryCohorts": 2,
+    "splitLogicalJobs": 3,
+    "targets": 438,
+    "uniqueTargets": 438,
+    "maximumTargetsPerPhysicalBatch": 20,
+    "dryPlansPassed": 26
+  },
+  "invariants": {
+    "currentPlannerTargetUnionMatched": true,
+    "logicalLineagePreserved": true,
+    "acceptedTargetOverlapCount": 0,
+    "rejectedCombinedPhysicsTargetsQueued": 3,
+    "inheritedTierScopeValidated": true,
+    "foundationHigherOnlyMixes": 0,
+    "threeOrFourChoiceContract": "standard-study-card-descendant-coverage-v2: enforced-by-generator-schema-independent-review-artifact-validator-and-import-preflight",
+    "acceptedArtifactsRegenerated": 0,
+    "modelCalls": 0
+  }
+}

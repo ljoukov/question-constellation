@@ -1,0 +1,63 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8525-3-2-subroutine-definition",
+        "conceptKey": "aqa-8525-subroutine-definition",
+        "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+        "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2-2",
+        "kind": "definition",
+        "visualCue": "🧩",
+        "front": "What is a subroutine?",
+        "back": "A named ‘out of line’ block of code that may be called by writing its name in a program statement.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The block is named, and writing that name in a program statement may execute or call it.",
+        "memoryTip": "Imagine a detached code block with a name tag; writing the tag calls the block.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "A variable that usually exists only while a subroutine executes.",
+            "isCorrect": false,
+            "feedback": "That describes a usual feature of a local variable, not a subroutine.",
+            "misconception": "local-variable-as-subroutine"
+          },
+          {
+            "key": "b",
+            "text": "A value passed into a program through keyboard input.",
+            "isCorrect": false,
+            "feedback": "Keyboard input is not the definition of a subroutine.",
+            "misconception": "input-as-subroutine"
+          },
+          {
+            "key": "c",
+            "text": "A condition-controlled block that repeats instructions.",
+            "isCorrect": false,
+            "feedback": "That describes an iterative structure rather than the general subroutine concept.",
+            "misconception": "iteration-as-subroutine"
+          },
+          {
+            "key": "d",
+            "text": "A named ‘out of line’ block of code that may be called by writing its name in a program statement.",
+            "isCorrect": true,
+            "feedback": "Correct. This preserves the named block and the stated way it may be called.",
+            "misconception": null
+          }
+        ],
+        "sourceExcerpt": "Students should know that a subroutine is a\nnamed ‘out of line’ block of code that may be\nexecuted (called) by simply writing its name in a\nprogram statement.",
+        "sourceLocator": "Official PDF pages 11-17; 3.2.2 Programming concepts"
+      },
+      "review": {
+        "cardId": "aqa-8525-3-2-subroutine-definition",
+        "accepted": false,
+        "issues": [
+          "The excerpt is from 3.2.10 Structured programming and subroutines, not 3.2.2 Programming concepts, so both the curriculum component mapping and source locator are incorrect."
+        ],
+        "learnerValue": [
+          "The named detached-block mnemonic usefully distinguishes a subroutine from local variables, input and iteration."
+        ]
+      }
+    }
+  ]
+}

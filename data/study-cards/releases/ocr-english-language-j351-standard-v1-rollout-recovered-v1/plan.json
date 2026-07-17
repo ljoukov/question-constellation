@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "status": "rollout_reconstruction",
+  "releaseId": "ocr-english-language-j351-standard-v1-rollout-recovered-v1",
+  "historicalReleaseId": "ocr-english-language-j351-standard-v1",
+  "promptVersion": "standard-study-card-compiler-v1",
+  "generatorRunId": "019f6b86-f09e-7ab0-a320-bc0b04215f77",
+  "reviewerRunId": "019f6b8a-cf6f-7133-bc3d-ce052b242740",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "cards": 8,
+  "coverageRows": 2
+}

@@ -6,6 +6,7 @@ import path from 'node:path';
 import {
 	hashRecallArtifact,
 	hashRecallCardContent,
+	isValidRecallChoiceCount,
 	normalizeEvidenceText,
 	sha256,
 	stableStringify
@@ -146,7 +147,13 @@ function normalizeBaseCard(raw, index, issues) {
 	const choices = Array.isArray(raw.choices)
 		? raw.choices.map((choice, choiceIndex) => normalizeChoice(choice, label, choiceIndex, issues))
 		: [];
-	if (choices.length !== 4) issues.push(`${label}.choices must contain exactly four rows`);
+	if (!isValidRecallChoiceCount(generationRun.promptVersion, choices.length)) {
+		issues.push(
+			generationRun.promptVersion === 'recall-card-compiler-v10'
+				? `${label}.choices must contain three or four rows for compiler-v10`
+				: `${label}.choices must contain exactly four rows for ${generationRun.promptVersion}`
+		);
+	}
 	const evidence = Array.isArray(raw.evidence)
 		? raw.evidence.map((row, evidenceIndex) => normalizeEvidence(row, label, evidenceIndex, issues))
 		: [];

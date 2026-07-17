@@ -1,0 +1,83 @@
+You are the fresh independent reviewer for a single targeted OCR J352 English Literature card repair. You did not generate this repair. Do not rewrite it.
+
+Accept only if the repaired front is self-contained, names Macbeth, and removes the original ambiguity by identifying Duncan's killing or the Act 2 chamber aftermath; every teaching claim is supported by the supplied evidence; sourceExcerpt is verbatim and directly covers both the blocked “Amen” and “Macbeth does murder sleep”; the answer is clear; all four choices are unique with one exact correct answer and three plausible neighbouring misconceptions grounded wholly in the bounded excerpt; no choice or feedback repeats the unsupported dagger-return claim; feedback diagnoses each confusion; and no unsourced or silently corrected literary detail appears. Return exactly one review in the required JSON shape.
+
+Evidence:
+{
+  "id": "macbeth-plot-murder-sleep",
+  "mode": "plot",
+  "sourceId": "gutenberg-macbeth",
+  "locator": "Act 2, Scene 2; Macbeth returns after killing Duncan",
+  "requiredAnswer": null,
+  "excerpt": "did laugh in’s sleep, and one cried, “Murder!” That they did wake each other: I stood and heard them. But they did say their prayers, and address’d them Again to sleep. LADY MACBETH. There are two lodg’d together. MACBETH. One cried, “God bless us!” and, “Amen,” the other, As they had seen me with these hangman’s hands. List’ning their fear, I could not say “Amen,” When they did say, “God bless us.” LADY MACBETH. Consider it not so deeply. MACBETH. But wherefore could not I pronounce “Amen”? I had most need of blessing, and “Amen” Stuck in my throat. LADY MACBETH. These deeds must not be thought After these ways; so, it will make us mad. MACBETH. Methought I heard a voice cry, “Sleep no more! Macbeth does murder sleep,”—the innocent sleep; Sleep that knits up the ravell’d sleave of care, The death of each day’s life, sore labour’s bath, Balm of hurt minds, great nature’s second course, Chief nourisher in life’s feast. LADY MACBETH. What do you mean? MACBETH. Still it cried, “Sleep no more!” to all the house: “Glamis hath murder’d sleep, and therefore Cawdor Shall sleep no more. Macbeth shall sleep no more!” LADY MACBETH. Who was it that thus cried? Why, worthy thane, You do unbend your noble strength to think So brainsickly of things. Go get some water, And wash this filthy witness from your hand.— Why did you bring these daggers from the place? They must lie there: go carry them, and smear The sleepy grooms with blood. MACBETH.",
+  "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+  "source": {
+    "id": "gutenberg-macbeth",
+    "kind": "primary-text",
+    "retrievalType": "public-domain-text",
+    "url": "https://www.gutenberg.org/cache/epub/1533/pg1533.txt",
+    "title": "Macbeth by William Shakespeare",
+    "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+    "verificationAnchors": [],
+    "sourceHash": "0cc29cd2ce26d039cfda41b0d7455eee0fdac0911fbc9d42c2a56a046aa991e7"
+  }
+}
+
+Original rejection:
+{
+  "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+  "accepted": false,
+  "issues": [
+    "The standalone front refers only to “the killing.” Macbeth contains multiple killings, so it should identify Duncan or the Act 2 chamber aftermath to make the event unambiguous."
+  ],
+  "learnerValue": [
+    "The answer accurately links Macbeth’s blocked prayer with the accusation that he has murdered sleep."
+  ]
+}
+
+Repaired candidate:
+{
+  "evidenceId": "macbeth-plot-murder-sleep",
+  "id": "ocr-j352-card-macbeth-plot-murder-sleep",
+  "conceptKey": "ocr-j352-concept-macbeth-plot-murder-sleep",
+  "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+  "kind": "plot",
+  "visualCue": "🌙",
+  "front": "In Macbeth, what spiritual and psychological disturbances does Macbeth report in the Act 2 chamber aftermath after Duncan’s killing?",
+  "back": "Macbeth cannot say “Amen” and hears a voice cry that he has murdered sleep.",
+  "reverseFront": null,
+  "reverseBack": null,
+  "explanation": "Macbeth says that “Amen” sticks in his throat despite his need for blessing. He then reports hearing a voice accuse him of murdering innocent sleep.",
+  "memoryTip": "Retrieve the disturbance in two stages: blocked blessing → accusing voice about sleep.",
+  "choices": [
+    {
+      "key": "macbeth-plot-murder-sleep-choice-correct",
+      "text": "Macbeth cannot say “Amen” and hears a voice cry that he has murdered sleep.",
+      "isCorrect": true,
+      "feedback": "Correct: Macbeth says “Amen” stuck in his throat and reports the cry “Macbeth does murder sleep.”",
+      "misconception": null
+    },
+    {
+      "key": "macbeth-plot-murder-sleep-choice-confusion-one",
+      "text": "Macbeth says “Amen” and hears a voice promise that he will sleep.",
+      "isCorrect": false,
+      "feedback": "This reverses both reports: Macbeth says that “Amen” stuck in his throat and that the voice cried “Sleep no more!”",
+      "misconception": "Reversing the blocked prayer and the accusing voice."
+    },
+    {
+      "key": "macbeth-plot-murder-sleep-choice-confusion-two",
+      "text": "Lady Macbeth cannot say “Amen” and hears the voice cry that she has murdered sleep.",
+      "isCorrect": false,
+      "feedback": "This transfers both experiences from Macbeth to Lady Macbeth; Macbeth describes the blocked “Amen” and reports the voice.",
+      "misconception": "Swapping Macbeth’s reported experience with Lady Macbeth’s."
+    },
+    {
+      "key": "macbeth-plot-murder-sleep-choice-confusion-three",
+      "text": "Macbeth cannot say “Amen” but hears a voice say that Lady Macbeth has murdered sleep.",
+      "isCorrect": false,
+      "feedback": "The blocked “Amen” belongs to Macbeth, but the voice also names Macbeth—not Lady Macbeth—as the one who has murdered sleep.",
+      "misconception": "Keeping the prayer detail while transferring the accusation to Lady Macbeth."
+    }
+  ],
+  "sourceExcerpt": "I could not say “Amen,” When they did say, “God bless us.” LADY MACBETH. Consider it not so deeply. MACBETH. But wherefore could not I pronounce “Amen”? I had most need of blessing, and “Amen” Stuck in my throat. LADY MACBETH. These deeds must not be thought After these ways; so, it will make us mad. MACBETH. Methought I heard a voice cry, “Sleep no more! Macbeth does murder sleep,”"
+}

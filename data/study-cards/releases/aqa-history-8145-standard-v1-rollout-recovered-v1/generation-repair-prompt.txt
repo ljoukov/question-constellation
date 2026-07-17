@@ -1,0 +1,154 @@
+You are performing a narrowly scoped source-evidence repair in an import-grade GCSE standard deck. Do not regenerate, rewrite or discuss any preserved card.
+
+Produce exactly 1 replacement card(s), in the listed order, and preserve each id, conceptKey and topicComponentId exactly. You may select a different supplied descendant curriculumComponentId or revise learner-facing content only when necessary to make the same concept fully supported. Use only the supplied official component text.
+
+V4 hard rules for every replacement:
+- sourceExcerpt is one exact character-for-character contiguous substring of at most 400 characters from the selected component text. Prefer one sentence, clause or bullet. Do not reflow whitespace, join paragraphs, omit internal words, add ellipses, transliterate Unicode spaces, or emit control bytes. If the concept is an equation, preserve the exact compact source characters rather than inventing a plain-text layout.
+- sourceLocator names the selected component's supplied official page locator.
+- Front, back, explanation, memory route, choice feedback and every contrast must be fully entailed by that one excerpt. Narrow the answer rather than splice evidence.
+- Supply exactly three or four unique choices with one exact correct answer. Use four only for three genuinely distinct plausible misconceptions; otherwise use three. Every distractor needs specific diagnostic feedback and a misconception label.
+- Keep the meaningful subject emoji within the supplied allowlist and do not leak the answer.
+- IDs, concept keys and choice keys remain lowercase kebab-case. Output JSON only and match the schema.
+
+Required replacements and preserved failures:
+[
+  {
+    "index": 16,
+    "requiredIdentity": {
+      "id": "aqa-8145-321ad-sacco-vanzetti-red-scare",
+      "conceptKey": "america-1920-1973-sacco-vanzetti-red-scare",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad"
+    },
+    "deterministicFailure": "cards[0].sourceExcerpt source excerpt is not one exact contiguous substring of its official component text.",
+    "rejectedCandidate": {
+      "id": "aqa-8145-321ad-sacco-vanzetti-red-scare",
+      "conceptKey": "america-1920-1973-sacco-vanzetti-red-scare",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+      "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-1",
+      "kind": "case-study",
+      "visualCue": "🏛️",
+      "front": "Which case’s significance is specified in connection with the Red Scare?",
+      "back": "the Sacco and Vanzetti case",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The Red Scare strand explicitly names the significance of the Sacco and Vanzetti case.",
+      "memoryTip": "Use the paired surnames as a single case label: S and V.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "the Sacco and Vanzetti case",
+          "isCorrect": true,
+          "feedback": "Correct: this is the named case.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Roe v Wade",
+          "isCorrect": false,
+          "feedback": "That belongs to later feminist developments, not the Red Scare.",
+          "misconception": "confuses-1970s-ruling-with-red-scare-case"
+        },
+        {
+          "key": "c",
+          "text": "the Scarman Report",
+          "isCorrect": false,
+          "feedback": "That belongs to a different British topic, not the American Red Scare.",
+          "misconception": "confuses-british-report-with-american-case"
+        }
+      ],
+      "sourceExcerpt": "the Red Scare and the significance of the Sacco and Vanzetti case.",
+      "sourceLocator": "Official PDF pages 17-18; 3.2.1.AD.part-1 Part one: American people and the 'Boom'"
+    }
+  }
+]
+
+Official repair scope:
+{
+  "specification": {
+    "id": "aqa-gcse-history-8145-v1.3",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "History",
+    "specificationCode": "8145",
+    "version": "1.3",
+    "title": "AQA GCSE History (8145)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/8ce7740f340e7b7014741572fe0c0e1782e664cb.pdf",
+    "sha256": "7d1c1ff834a74aea6d2ce6ca30aad88c1811a0d23afd51593056d1039e9de0da"
+  },
+  "offerings": [
+    {
+      "id": "aqa-gcse-history-8145-v1.3:higher",
+      "profileSubject": "History",
+      "course": "GCSE Subject",
+      "tier": "Higher",
+      "label": "AQA GCSE History (8145)",
+      "selectableComponentIds": [
+        "aqa-gcse-history-8145-v1.3:3-2-1-aa",
+        "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+        "aqa-gcse-history-8145-v1.3:3-2-1-ac",
+        "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+        "aqa-gcse-history-8145-v1.3:3-2-2-ba",
+        "aqa-gcse-history-8145-v1.3:3-2-2-bb",
+        "aqa-gcse-history-8145-v1.3:3-2-2-bc",
+        "aqa-gcse-history-8145-v1.3:3-2-2-bd",
+        "aqa-gcse-history-8145-v1.3:3-2-2-be",
+        "aqa-gcse-history-8145-v1.3:3-3-1-aa",
+        "aqa-gcse-history-8145-v1.3:3-3-1-ab",
+        "aqa-gcse-history-8145-v1.3:3-3-1-ac",
+        "aqa-gcse-history-8145-v1.3:3-3-2-ba",
+        "aqa-gcse-history-8145-v1.3:3-3-2-bb",
+        "aqa-gcse-history-8145-v1.3:3-3-2-bc",
+        "aqa-gcse-history-8145-v1.3:3-3-2-bd"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+      "code": "3.2.1.AD",
+      "title": "America, 1920–1973: Opportunity and inequality",
+      "paper": "Paper 1: Understanding the modern world",
+      "pageStart": 17,
+      "pageEnd": 18,
+      "components": [
+        {
+          "id": "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+          "code": "3.2.1.AD",
+          "title": "America, 1920–1973: Opportunity and inequality",
+          "kind": "option",
+          "tier": [],
+          "locator": "Official PDF pages 17-18; 3.2.1.AD America, 1920–1973: Opportunity and inequality",
+          "text": "Official PDF pages 17-18\nAmerica, 1920–1973: Opportunity and inequality\nThis period study focuses on the development of the USA during a turbulent half century of\nchange. It was a period of opportunity and inequality – when some Americans lived the 'American\nDream' whilst others grappled with the nightmare of poverty, discrimination and prejudice.\nStudents will study the political, economic, social and cultural aspects of these two developments\nand the role ideas played in bringing about change. They will also look at the role of key individuals\nand groups in shaping change and the impact the developments had on them.\nPart one: American people and the 'Boom'\n• The ‘Boom’: benefits, advertising and the consumer society; hire purchase; mass production,\nincluding Ford and the motor industry; inequalities of wealth; Republican government\npolicies; stock market boom.\n• Social and cultural developments: entertainment, including cinema and jazz; the position of\nwomen in society, including flappers.\n• Divided society: organised crime, prohibition and their impact on society; the causes of racial\ntension, the experiences of immigrants and the impact of immigration; the Ku Klux Klan; the\nRed Scare and the significance of the Sacco and Vanzetti case.\nAQA GCSE History 8145. GCSE exams June 2018 onwards. Version 1.3 24 September 2019\nVisit for the most up-to-date specification, resources, support and administration 17\nPart two: Bust – Americans' experiences of the Depression and New Deal\n• American society during the Depression: unemployment; farmers; businessmen; Hoover’s\nresponses and unpopularity; Roosevelt's election as president.\n• The effectiveness of the New Deal on different groups in society: successes and limitations\nincluding opposition towards the New Deal from Supreme Court, Republicans and Radical\npoliticians; Roosevelt's contribution as president; popular culture.\n• The impact of the Second World War: America’s economic recovery; Lend Lease; exports;\nsocial developments, including experiences of African-Americans and women.\nPart three: Post-war America\n• Post-war American society and economy: consumerism and the causes of prosperity; the\nAmerican Dream; McCarthyism; popular culture, including Rock and Roll and television.\n• Racial tension and developments in the Civil Rights campaigns in the 1950s and 1960s:\nSegregation laws; Martin Luther King and peaceful protests; Malcolm X and the Black Power\nMovement; Civil Rights Acts of 1964 and 1968.\n• America and the ‘Great Society': the social policies of Presidents Kennedy and Johnson\nrelating to poverty, education and health; the development and impact of feminist movements\nin the 1960s and early 1970s, including the fight for equal pay; the National Organisation for\nWomen, Roe v Wade (1973), the Supreme Court ruling on equal rights (1972) and opposition\nto Equal Rights Amendment.\n3.2.2 Section B: Wider world depth studies\nBA Conflict and tension: the First World War, 1894–1918\nThis wider world depth study enables students to understand the complex and diverse interests of\nthe Great Powers and other states. It focuses on the causes, nature and conclusion of the First\nWorld War and seeks to show how and why conflict occurred, and why it proved difficult to bring\nthe war to a conclusion. This study also considers the role of key individuals and groups in shaping\nchange and how they were affected by and influenced international relations.\nPart one: The causes of the First World War\n• The Alliance System: the Triple Alliance; Franco-Russian Alliance; relations between the\n‘Entente’ powers; the crises in Morocco (1905 and 1911) and the Balkans (1908–1909), and\ntheir effects on international relations.\n• Anglo-German rivalry: Britain and challenges to Splendid Isolation; Kaiser Wilhelm’s aims in\nforeign policy, including Weltpolitik; colonial tensions; European rearmament, including the\nAnglo-German naval race.\n• Outbreak of war: Slav nationalism and relations between Serbia and Austria-Hungary; the\nassassination of Archduke Franz Ferdinand in Sarajevo and its consequences; the July\nCrisis; the Schlieffen Plan and Belgium; reasons for the outbreak of hostilities and the\nescalation of the conflict.\n18 Visit for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-1",
+          "code": "3.2.1.AD.part-1",
+          "title": "Part one: American people and the 'Boom'",
+          "kind": "topic",
+          "tier": [],
+          "locator": "Official PDF pages 17-18; 3.2.1.AD.part-1 Part one: American people and the 'Boom'",
+          "text": "Official PDF pages 17-18\nPart one: American people and the 'Boom'\n• The ‘Boom’: benefits, advertising and the consumer society; hire purchase; mass production,\nincluding Ford and the motor industry; inequalities of wealth; Republican government\npolicies; stock market boom.\n• Social and cultural developments: entertainment, including cinema and jazz; the position of\nwomen in society, including flappers.\n• Divided society: organised crime, prohibition and their impact on society; the causes of racial\ntension, the experiences of immigrants and the impact of immigration; the Ku Klux Klan; the\nRed Scare and the significance of the Sacco and Vanzetti case.\nAQA GCSE History 8145. GCSE exams June 2018 onwards. Version 1.3 24 September 2019\nVisit for the most up-to-date specification, resources, support and administration 17\nPart two: Bust – Americans' experiences of the Depression and New Deal\n• American society during the Depression: unemployment; farmers; businessmen; Hoover’s\nresponses and unpopularity; Roosevelt's election as president.\n• The effectiveness of the New Deal on different groups in society: successes and limitations\nincluding opposition towards the New Deal from Supreme Court, Republicans and Radical\npoliticians; Roosevelt's contribution as president; popular culture.\n• The impact of the Second World War: America’s economic recovery; Lend Lease; exports;\nsocial developments, including experiences of African-Americans and women.\nPart three: Post-war America\n• Post-war American society and economy: consumerism and the causes of prosperity; the\nAmerican Dream; McCarthyism; popular culture, including Rock and Roll and television.\n• Racial tension and developments in the Civil Rights campaigns in the 1950s and 1960s:\nSegregation laws; Martin Luther King and peaceful protests; Malcolm X and the Black Power\nMovement; Civil Rights Acts of 1964 and 1968.\n• America and the ‘Great Society': the social policies of Presidents Kennedy and Johnson\nrelating to poverty, education and health; the development and impact of feminist movements\nin the 1960s and early 1970s, including the fight for equal pay; the National Organisation for\nWomen, Roe v Wade (1973), the Supreme Court ruling on equal rights (1972) and opposition\nto Equal Rights Amendment.\n3.2.2 Section B: Wider world depth studies\nBA Conflict and tension: the First World War, 1894–1918\nThis wider world depth study enables students to understand the complex and diverse interests of\nthe Great Powers and other states. It focuses on the causes, nature and conclusion of the First\nWorld War and seeks to show how and why conflict occurred, and why it proved difficult to bring\nthe war to a conclusion. This study also considers the role of key individuals and groups in shaping\nchange and how they were affected by and influenced international relations.\nPart one: The causes of the First World War\n• The Alliance System: the Triple Alliance; Franco-Russian Alliance; relations between the\n‘Entente’ powers; the crises in Morocco (1905 and 1911) and the Balkans (1908–1909), and\ntheir effects on international relations.\n• Anglo-German rivalry: Britain and challenges to Splendid Isolation; Kaiser Wilhelm’s aims in\nforeign policy, including Weltpolitik; colonial tensions; European rearmament, including the\nAnglo-German naval race.\n• Outbreak of war: Slav nationalism and relations between Serbia and Austria-Hungary; the\nassassination of Archduke Franz Ferdinand in Sarajevo and its consequences; the July\nCrisis; the Schlieffen Plan and Belgium; reasons for the outbreak of hostilities and the\nescalation of the conflict.\n18 Visit for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-2",
+          "code": "3.2.1.AD.part-2",
+          "title": "Part two: Bust – Americans' experiences of the Depression and New Deal",
+          "kind": "topic",
+          "tier": [],
+          "locator": "Official PDF pages 17-18; 3.2.1.AD.part-2 Part two: Bust – Americans' experiences of the Depression and New Deal",
+          "text": "Official PDF pages 17-18\nPart two: Bust – Americans' experiences of the Depression and New Deal\n• American society during the Depression: unemployment; farmers; businessmen; Hoover’s\nresponses and unpopularity; Roosevelt's election as president.\n• The effectiveness of the New Deal on different groups in society: successes and limitations\nincluding opposition towards the New Deal from Supreme Court, Republicans and Radical\npoliticians; Roosevelt's contribution as president; popular culture.\n• The impact of the Second World War: America’s economic recovery; Lend Lease; exports;\nsocial developments, including experiences of African-Americans and women.\nPart three: Post-war America\n• Post-war American society and economy: consumerism and the causes of prosperity; the\nAmerican Dream; McCarthyism; popular culture, including Rock and Roll and television.\n• Racial tension and developments in the Civil Rights campaigns in the 1950s and 1960s:\nSegregation laws; Martin Luther King and peaceful protests; Malcolm X and the Black Power\nMovement; Civil Rights Acts of 1964 and 1968.\n• America and the ‘Great Society': the social policies of Presidents Kennedy and Johnson\nrelating to poverty, education and health; the development and impact of feminist movements\nin the 1960s and early 1970s, including the fight for equal pay; the National Organisation for\nWomen, Roe v Wade (1973), the Supreme Court ruling on equal rights (1972) and opposition\nto Equal Rights Amendment.\n3.2.2 Section B: Wider world depth studies\nBA Conflict and tension: the First World War, 1894–1918\nThis wider world depth study enables students to understand the complex and diverse interests of\nthe Great Powers and other states. It focuses on the causes, nature and conclusion of the First\nWorld War and seeks to show how and why conflict occurred, and why it proved difficult to bring\nthe war to a conclusion. This study also considers the role of key individuals and groups in shaping\nchange and how they were affected by and influenced international relations.\nPart one: The causes of the First World War\n• The Alliance System: the Triple Alliance; Franco-Russian Alliance; relations between the\n‘Entente’ powers; the crises in Morocco (1905 and 1911) and the Balkans (1908–1909), and\ntheir effects on international relations.\n• Anglo-German rivalry: Britain and challenges to Splendid Isolation; Kaiser Wilhelm’s aims in\nforeign policy, including Weltpolitik; colonial tensions; European rearmament, including the\nAnglo-German naval race.\n• Outbreak of war: Slav nationalism and relations between Serbia and Austria-Hungary; the\nassassination of Archduke Franz Ferdinand in Sarajevo and its consequences; the July\nCrisis; the Schlieffen Plan and Belgium; reasons for the outbreak of hostilities and the\nescalation of the conflict.\n18 Visit for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-3",
+          "code": "3.2.1.AD.part-3",
+          "title": "Part three: Post-war America",
+          "kind": "topic",
+          "tier": [],
+          "locator": "Official PDF pages 17-18; 3.2.1.AD.part-3 Part three: Post-war America",
+          "text": "Official PDF pages 17-18\nPart three: Post-war America\n• Post-war American society and economy: consumerism and the causes of prosperity; the\nAmerican Dream; McCarthyism; popular culture, including Rock and Roll and television.\n• Racial tension and developments in the Civil Rights campaigns in the 1950s and 1960s:\nSegregation laws; Martin Luther King and peaceful protests; Malcolm X and the Black Power\nMovement; Civil Rights Acts of 1964 and 1968.\n• America and the ‘Great Society': the social policies of Presidents Kennedy and Johnson\nrelating to poverty, education and health; the development and impact of feminist movements\nin the 1960s and early 1970s, including the fight for equal pay; the National Organisation for\nWomen, Roe v Wade (1973), the Supreme Court ruling on equal rights (1972) and opposition\nto Equal Rights Amendment.\n3.2.2 Section B: Wider world depth studies\nBA Conflict and tension: the First World War, 1894–1918\nThis wider world depth study enables students to understand the complex and diverse interests of\nthe Great Powers and other states. It focuses on the causes, nature and conclusion of the First\nWorld War and seeks to show how and why conflict occurred, and why it proved difficult to bring\nthe war to a conclusion. This study also considers the role of key individuals and groups in shaping\nchange and how they were affected by and influenced international relations.\nPart one: The causes of the First World War\n• The Alliance System: the Triple Alliance; Franco-Russian Alliance; relations between the\n‘Entente’ powers; the crises in Morocco (1905 and 1911) and the Balkans (1908–1909), and\ntheir effects on international relations.\n• Anglo-German rivalry: Britain and challenges to Splendid Isolation; Kaiser Wilhelm’s aims in\nforeign policy, including Weltpolitik; colonial tensions; European rearmament, including the\nAnglo-German naval race.\n• Outbreak of war: Slav nationalism and relations between Serbia and Austria-Hungary; the\nassassination of Archduke Franz Ferdinand in Sarajevo and its consequences; the July\nCrisis; the Schlieffen Plan and Belgium; reasons for the outbreak of hostilities and the\nescalation of the conflict.\n18 Visit for the most up-to-date specification, resources, support and administration"
+        }
+      ]
+    }
+  ]
+}

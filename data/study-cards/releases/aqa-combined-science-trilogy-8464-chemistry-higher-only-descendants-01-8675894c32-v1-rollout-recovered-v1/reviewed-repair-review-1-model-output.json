@@ -1,0 +1,13 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-cdcf4e788e-aqa-8464-5-3-2-1-mole-mass-relative-formula-mass",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the source-supported relationship between molar mass in grams and relative formula mass.",
+        "Distractors distinguish the required mass unit from the misconception that equal particle counts imply equal mole masses."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1669 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8462-4-1-atomic-number-protons",
+      "conceptKey": "atomic-number-proton-count",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1-1-4",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What determines an element's atomic number?",
+      "back": "The number of protons in an atom.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "All atoms of a particular element have the same proton count, while atoms of different elements have different proton counts.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The number of neutrons in an atom.",
+          "isCorrect": false,
+          "feedback": "Neutron count is not the cited definition of atomic number.",
+          "misconception": "confuses-atomic-number-with-neutron-number"
+        },
+        {
+          "key": "b",
+          "text": "The number of protons in an atom.",
+          "isCorrect": true,
+          "feedback": "Correct: atomic number is the proton count.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The total number of protons and neutrons.",
+          "isCorrect": false,
+          "feedback": "The cited definition uses protons alone.",
+          "misconception": "confuses-atomic-number-with-mass-number"
+        },
+        {
+          "key": "d",
+          "text": "The number of electrons in the outer shell.",
+          "isCorrect": false,
+          "feedback": "The cited definition does not use outer-shell electrons.",
+          "misconception": "confuses-group-electrons-with-atomic-number"
+        }
+      ],
+      "sourceExcerpt": "The number of protons in an atom of an element is its atomic\nnumber. All atoms of a particular element have the same number of\nprotons. Atoms of different elements have different numbers of\nprotons.",
+      "sourceLocator": "Official PDF pages 17-26; 4.1.1.4 Relative electrical charges of subatomic particles"
+    },
+    {
+      "id": "aqa-8462-4-1-isotopes-neutrons",
+      "conceptKey": "isotopes-different-neutron-counts",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1-1-5",
+      "kind": "comparison",
+      "visualCue": "⚛️",
+      "front": "How do isotopes of the same element differ?",
+      "back": "They have different numbers of neutrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The atoms are of the same element but are called isotopes because their neutron numbers differ.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They have different numbers of protons.",
+          "isCorrect": false,
+          "feedback": "The cited distinction between these atoms is their neutron number.",
+          "misconception": "confuses-isotopes-with-different-elements"
+        },
+        {
+          "key": "b",
+          "text": "They have different numbers of neutrons.",
+          "isCorrect": true,
+          "feedback": "Correct: isotopes of an element differ in neutron number.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "They have different numbers of electrons.",
+          "isCorrect": false,
+          "feedback": "The isotope definition here refers to different neutron numbers.",
+          "misconception": "confuses-isotopes-with-ion-formation"
+        }
+      ],
+      "sourceExcerpt": "Atoms of the same element can have different numbers of\nneutrons; these atoms are called isotopes of that element.",
+      "sourceLocator": "Official PDF pages 17-26; 4.1.1.5 Size and mass of atoms"
+    },
+    {
+      "id": "aqa-8462-4-1-groups-outer-electrons",
+      "conceptKey": "periodic-groups-outer-electrons",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1-1-7",
+      "kind": "cause-consequence",
+      "visualCue": "⚛️",
+      "front": "Why do elements in the same periodic-table group have similar chemical properties?",
+      "back": "They have the same number of electrons in their outer shell.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The same number of outer electrons gives elements in a group similar chemical properties.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They have the same atomic number.",
+          "isCorrect": false,
+          "feedback": "The cited explanation is based on outer-shell electrons, not atomic number.",
+          "misconception": "confuses-group-membership-with-same-element"
+        },
+        {
+          "key": "b",
+          "text": "They have the same number of electrons in their outer shell.",
+          "isCorrect": true,
+          "feedback": "Correct: the shared outer-electron count explains the similar properties.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "They have the same total number of electrons.",
+          "isCorrect": false,
+          "feedback": "The specification identifies outer-shell electrons specifically.",
+          "misconception": "confuses-total-electrons-with-outer-electrons"
+        },
+        {
+          "key": "d",
+          "text": "They have the same number of neutrons.",
+          "isCorrect": false,
+          "feedback": "Neutron number is not the stated reason for similar group properties.",
+          "misconception": "attributes-group-properties-to-neutrons"
+        }
+      ],
+      "sourceExcerpt": "Elements in the same group in the periodic table have the same\nnumber of electrons in their outer shell (outer electrons) and this\ngives them similar chemical properties.",
+      "sourceLocator": "Official PDF pages 17-26; 4.1.1.7 Electronic structure"
+    },
+    {
+      "id": "aqa-8462-4-1-halogen-displacement",
+      "conceptKey": "halogen-displacement-reactivity",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1-2-6",
+      "kind": "process",
+      "visualCue": "🧪",
+      "front": "In an aqueous halide salt solution, which halogen can displace another halogen?",
+      "back": "A more reactive halogen can displace a less reactive halogen.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The stated direction of Group 7 displacement is from the more reactive halogen to the less reactive one.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A less reactive halogen can displace a more reactive halogen.",
+          "isCorrect": false,
+          "feedback": "This reverses the specified displacement rule.",
+          "misconception": "reverses-halogen-displacement-order"
+        },
+        {
+          "key": "b",
+          "text": "Reactivity makes no difference to which halogen is displaced.",
+          "isCorrect": false,
+          "feedback": "The displacement rule explicitly depends on relative reactivity.",
+          "misconception": "ignores-halogen-reactivity"
+        },
+        {
+          "key": "c",
+          "text": "A more reactive halogen can displace a less reactive halogen.",
+          "isCorrect": true,
+          "feedback": "Correct: the more reactive halogen displaces the less reactive one.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "A more reactive halogen can displace a less reactive halogen from\nan aqueous solution of its salt.",
+      "sourceLocator": "Official PDF pages 17-26; 4.1.2.6 Group 7"
+    },
+    {
+      "id": "aqa-8462-4-2-ionic-electron-transfer",
+      "conceptKey": "ionic-bonding-electron-transfer",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2-1-2",
+      "kind": "process",
+      "visualCue": "🔗",
+      "front": "When a metal reacts with a non-metal to form ions, what happens to electrons and charges?",
+      "back": "The metal loses electrons to form a positive ion; the non-metal gains electrons to form a negative ion.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Outer-shell electrons are transferred from metal atoms to non-metal atoms.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Both atoms share a pair of electrons and remain neutral.",
+          "isCorrect": false,
+          "feedback": "Ionic formation here involves electron transfer and charged ions, not sharing.",
+          "misconception": "confuses-ionic-with-covalent-bonding"
+        },
+        {
+          "key": "b",
+          "text": "The metal loses electrons to form a positive ion; the non-metal gains electrons to form a negative ion.",
+          "isCorrect": true,
+          "feedback": "Correct: electrons transfer from the metal to the non-metal.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The metal gains electrons to form a negative ion; the non-metal loses electrons to form a positive ion.",
+          "isCorrect": false,
+          "feedback": "This reverses both the electron transfer and the resulting charges.",
+          "misconception": "reverses-ionic-electron-transfer"
+        },
+        {
+          "key": "d",
+          "text": "Both atoms lose electrons and form positive ions.",
+          "isCorrect": false,
+          "feedback": "The non-metal is specified to gain electrons and become negative.",
+          "misconception": "assumes-both-atoms-form-cations"
+        }
+      ],
+      "sourceExcerpt": "When a metal atom reacts with a non-metal atom electrons in the\nouter shell of the metal atom are transferred. Metal atoms lose\nelectrons to become positively charged ions. Non-metal atoms gain\nelectrons to become negatively charged ions.",
+      "sourceLocator": "Official PDF pages 26-36; 4.2.1.2 Ionic bonding"
+    },
+    {
+      "id": "aqa-8462-4-2-covalent-shared-pair",
+      "conceptKey": "covalent-bond-shared-electron-pair",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2-1-4",
+      "kind": "definition",
+      "visualCue": "🔗",
+      "front": "What is a covalent bond, in terms of electrons?",
+      "back": "A shared pair of electrons between atoms.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Atoms form a strong covalent bond when they share a pair of electrons.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A complete transfer of electrons between atoms.",
+          "isCorrect": false,
+          "feedback": "Electron transfer does not match the cited definition of covalent bonding.",
+          "misconception": "confuses-covalent-with-ionic-transfer"
+        },
+        {
+          "key": "b",
+          "text": "An attraction between oppositely charged ions.",
+          "isCorrect": false,
+          "feedback": "The covalent definition refers to atoms sharing electron pairs.",
+          "misconception": "confuses-covalent-bond-with-ionic-attraction"
+        },
+        {
+          "key": "c",
+          "text": "A shared pair of electrons between atoms.",
+          "isCorrect": true,
+          "feedback": "Correct: a covalent bond forms through a shared electron pair.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Delocalised electrons shared through a metal structure.",
+          "isCorrect": false,
+          "feedback": "Delocalised electrons do not describe the cited covalent bond.",
+          "misconception": "confuses-covalent-with-metallic-bonding"
+        }
+      ],
+      "sourceExcerpt": "When atoms share pairs of electrons, they form covalent bonds.\nThese bonds between atoms are strong.",
+      "sourceLocator": "Official PDF pages 26-36; 4.2.1.4 Covalent bonding"
+    },
+    {
+      "id": "aqa-8462-4-2-ionic-conductivity",
+      "conceptKey": "ionic-conduction-mobile-ions",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "⚡",
+      "front": "When do ionic compounds conduct electricity, and why?",
+      "back": "When melted or dissolved in water, because their ions are free to move.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Mobile ions allow electrical charge to flow through a molten ionic compound or its aqueous solution.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "In the solid state, because their ions are free to move.",
+          "isCorrect": false,
+          "feedback": "The cited conducting conditions are melting or dissolving in water.",
+          "misconception": "assumes-solid-ionic-lattice-conducts"
+        },
+        {
+          "key": "b",
+          "text": "When melted or dissolved in water, because their ions are free to move.",
+          "isCorrect": true,
+          "feedback": "Correct: free-moving ions allow charge to flow.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "When melted or dissolved, because electrons move through the liquid.",
+          "isCorrect": false,
+          "feedback": "The cited charge carriers are free-moving ions, not electrons.",
+          "misconception": "confuses-ionic-and-metallic-charge-carriers"
+        }
+      ],
+      "sourceExcerpt": "When melted or dissolved in water, ionic compounds conduct\nelectricity because the ions are free to move and so charge can\nflow.",
+      "sourceLocator": "Official PDF pages 26-36; 4.2.2.3 Properties of ionic compounds"
+    },
+    {
+      "id": "aqa-8462-4-2-metallic-conductivity",
+      "conceptKey": "metallic-conduction-delocalised-electrons",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-2-2-8",
+      "kind": "cause-consequence",
+      "visualCue": "⚡",
+      "front": "Why are metals good electrical conductors?",
+      "back": "Delocalised electrons carry electrical charge through the metal.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The delocalised electrons within a metal carry charge through its structure.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Delocalised electrons carry electrical charge through the metal.",
+          "isCorrect": true,
+          "feedback": "Correct: delocalised electrons are the charge carriers.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Positive metal ions move through the whole structure.",
+          "isCorrect": false,
+          "feedback": "The specification identifies delocalised electrons as carrying the charge.",
+          "misconception": "treats-metal-ions-as-mobile-charge-carriers"
+        },
+        {
+          "key": "c",
+          "text": "Metal atoms move through the structure carrying charge.",
+          "isCorrect": false,
+          "feedback": "The cited explanation relies on delocalised electrons, not moving atoms.",
+          "misconception": "treats-metal-atoms-as-charge-carriers"
+        }
+      ],
+      "sourceExcerpt": "Metals are good conductors of electricity because the delocalised\nelectrons in the metal carry electrical charge through the metal.",
+      "sourceLocator": "Official PDF pages 26-36; 4.2.2.8 Metals as conductors"
+    },
+    {
+      "id": "aqa-8462-4-3-conservation-of-mass",
+      "conceptKey": "conservation-of-mass",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3-1-1",
+      "kind": "fact",
+      "visualCue": "⚖️",
+      "front": "State the law of conservation of mass for a chemical reaction.",
+      "back": "No atoms are lost or made, so the mass of the products equals the mass of the reactants.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Conservation of atoms during a reaction means the total reactant and product masses are equal.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Atoms are made during reactions, so products have greater mass.",
+          "isCorrect": false,
+          "feedback": "The law states that no atoms are made or lost.",
+          "misconception": "assumes-atoms-are-created-in-reactions"
+        },
+        {
+          "key": "b",
+          "text": "No atoms are lost or made, so the mass of the products equals the mass of the reactants.",
+          "isCorrect": true,
+          "feedback": "Correct: atom conservation gives equal total masses.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The number of molecules stays the same, so the masses are equal.",
+          "isCorrect": false,
+          "feedback": "The cited law concerns atoms and total mass, not an unchanged molecule count.",
+          "misconception": "confuses-atom-conservation-with-molecule-count"
+        }
+      ],
+      "sourceExcerpt": "The law of conservation of mass states that no atoms are lost or\nmade during a chemical reaction so the mass of the products\nequals the mass of the reactants.",
+      "sourceLocator": "Official PDF pages 36-43; 4.3.1.1 Conservation of mass and balanced chemical equations"
+    },
+    {
+      "id": "aqa-8462-4-3-relative-formula-mass",
+      "conceptKey": "relative-formula-mass-sum",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3-1-2",
+      "kind": "formula",
+      "visualCue": "⚖️",
+      "front": "How is the relative formula mass (Mr) of a compound calculated?",
+      "back": "Add the relative atomic masses of all atoms in the numbers shown in the formula.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Each relative atomic mass is included according to the number of that atom shown in the compound's formula.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Add the atomic numbers of the elements in the formula.",
+          "isCorrect": false,
+          "feedback": "Mr uses relative atomic masses, not atomic numbers.",
+          "misconception": "uses-atomic-numbers-for-relative-formula-mass"
+        },
+        {
+          "key": "b",
+          "text": "Average the numbers written as subscripts in the formula.",
+          "isCorrect": false,
+          "feedback": "The formula numbers tell you how many atomic masses to include; they are not averaged.",
+          "misconception": "averages-formula-subscripts"
+        },
+        {
+          "key": "c",
+          "text": "Add the relative atomic masses of all atoms in the numbers shown in the formula.",
+          "isCorrect": true,
+          "feedback": "Correct: sum the relative atomic masses with the formula's atom counts.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Multiply all the relative atomic masses together.",
+          "isCorrect": false,
+          "feedback": "Relative formula mass is a sum, not a product.",
+          "misconception": "multiplies-instead-of-summing-atomic-masses"
+        }
+      ],
+      "sourceExcerpt": "The relative formula mass (Mr) of a compound is the sum of the\nrelative atomic masses of the atoms in the numbers shown in the\nformula.",
+      "sourceLocator": "Official PDF pages 36-43; 4.3.1.2 Relative formula mass"
+    },
+    {
+      "id": "aqa-8462-4-3-concentration-mass-volume",
+      "conceptKey": "solution-concentration-mass-per-volume",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3-2-5",
+      "kind": "unit",
+      "visualCue": "📏",
+      "front": "How can the concentration of a solution be expressed in terms of mass and volume?",
+      "back": "Mass per given volume of solution, for example g/dm3.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification gives grams per dm3 as an example unit for this form of concentration.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Volume of solution per given mass, for example dm3/g.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated mass-per-volume relationship.",
+          "misconception": "inverts-mass-concentration-ratio"
+        },
+        {
+          "key": "b",
+          "text": "Mass per given volume of solution, for example g/dm3.",
+          "isCorrect": true,
+          "feedback": "Correct: this concentration is expressed as mass per volume.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Mass multiplied by volume, for example g dm3.",
+          "isCorrect": false,
+          "feedback": "The specification states mass per volume, not mass multiplied by volume.",
+          "misconception": "multiplies-mass-and-volume-for-concentration"
+        }
+      ],
+      "sourceExcerpt": "Many chemical reactions take place in solutions. The concentration\nof a solution can be measured in mass per given volume of\nsolution, eg grams per dm3 (g/dm3).",
+      "sourceLocator": "Official PDF pages 36-43; 4.3.2.5 Concentration of solutions"
+    },
+    {
+      "id": "aqa-8462-4-3-percentage-yield",
+      "conceptKey": "percentage-yield-comparison",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-3-3-1",
+      "kind": "definition",
+      "visualCue": "⚖️",
+      "front": "What does percentage yield compare?",
+      "back": "The amount of product obtained with the maximum theoretical amount, expressed as a percentage.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Yield is the amount of product obtained; expressing it relative to the maximum theoretical amount gives percentage yield.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The useful product with all starting materials, expressed as a percentage.",
+          "isCorrect": false,
+          "feedback": "That describes a starting-material efficiency comparison, not the cited percentage-yield comparison.",
+          "misconception": "confuses-percentage-yield-with-atom-economy"
+        },
+        {
+          "key": "b",
+          "text": "Only the amount of product obtained, without any comparison.",
+          "isCorrect": false,
+          "feedback": "That is yield alone; percentage yield also compares it with the theoretical maximum.",
+          "misconception": "omits-theoretical-yield-comparison"
+        },
+        {
+          "key": "c",
+          "text": "The amount of product obtained with the maximum theoretical amount, expressed as a percentage.",
+          "isCorrect": true,
+          "feedback": "Correct: actual product is compared with the theoretical maximum.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "The pure product with the whole reaction mixture, expressed as a percentage.",
+          "isCorrect": false,
+          "feedback": "Percentage yield is not defined as a purity comparison.",
+          "misconception": "confuses-percentage-yield-with-purity"
+        }
+      ],
+      "sourceExcerpt": "The amount of a product obtained is known as the yield. When\ncompared with the maximum theoretical amount as a percentage, it\nis called the percentage yield.",
+      "sourceLocator": "Official PDF pages 36-43; 4.3.3.1 Percentage yield"
+    },
+    {
+      "id": "aqa-8462-4-4-metal-displacement",
+      "conceptKey": "metal-displacement-reactivity-rule",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4-1-2",
+      "kind": "process",
+      "visualCue": "🧪",
+      "front": "What is the rule for metal displacement from a compound?",
+      "back": "A more reactive metal can displace a less reactive metal.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The direction of displacement follows the metals' relative reactivity.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A less reactive metal can displace a more reactive metal.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated reactivity rule.",
+          "misconception": "reverses-metal-displacement-order"
+        },
+        {
+          "key": "b",
+          "text": "A more reactive metal can displace a less reactive metal.",
+          "isCorrect": true,
+          "feedback": "Correct: the more reactive metal displaces the less reactive one.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Only metals with equal reactivity can displace one another.",
+          "isCorrect": false,
+          "feedback": "The cited rule depends on one metal being more reactive.",
+          "misconception": "assumes-equal-reactivity-causes-displacement"
+        }
+      ],
+      "sourceExcerpt": "A more reactive metal can displace a less reactive metal from a\ncompound.",
+      "sourceLocator": "Official PDF pages 43-51; 4.4.1.2 The reactivity series"
+    },
+    {
+      "id": "aqa-8462-4-4-carbon-reduction-extraction",
+      "conceptKey": "carbon-reduction-metal-extraction",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4-1-3",
+      "kind": "method",
+      "visualCue": "🧪",
+      "front": "How can a metal less reactive than carbon be extracted from its oxide?",
+      "back": "By reduction of the oxide with carbon.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "In this extraction method, reduction means the oxide loses oxygen.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "By electrolysis of any aqueous solution of the oxide.",
+          "isCorrect": false,
+          "feedback": "The cited method for metals less reactive than carbon is reduction with carbon.",
+          "misconception": "uses-electrolysis-instead-of-carbon-reduction"
+        },
+        {
+          "key": "b",
+          "text": "By reduction of the oxide with carbon.",
+          "isCorrect": true,
+          "feedback": "Correct: carbon can reduce the oxides of metals below it in reactivity.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "By reacting the oxide with more oxygen.",
+          "isCorrect": false,
+          "feedback": "Reduction is loss of oxygen, not addition of more oxygen.",
+          "misconception": "confuses-reduction-with-oxygen-gain"
+        }
+      ],
+      "sourceExcerpt": "Metals less reactive than carbon can be extracted from their oxides\nby reduction with carbon.\nReduction involves the loss of oxygen.",
+      "sourceLocator": "Official PDF pages 43-51; 4.4.1.3 Extraction of metals and reduction"
+    },
+    {
+      "id": "aqa-8462-4-4-neutralisation-products",
+      "conceptKey": "acid-neutralisation-products",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4-2-2",
+      "kind": "comparison",
+      "visualCue": "🧂",
+      "front": "What products form when an acid reacts with (i) an alkali or base and (ii) a metal carbonate?",
+      "back": "With an alkali or base: salt and water; with a metal carbonate: salt, water and carbon dioxide.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Carbon dioxide is the additional product when an acid is neutralised by a metal carbonate.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "With an alkali or base: salt and water; with a metal carbonate: salt, water and carbon dioxide.",
+          "isCorrect": true,
+          "feedback": "Correct: the carbonate reaction also produces carbon dioxide.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Both reactions produce only salt and water.",
+          "isCorrect": false,
+          "feedback": "The metal-carbonate reaction also produces carbon dioxide.",
+          "misconception": "omits-carbon-dioxide-from-carbonate-reaction"
+        },
+        {
+          "key": "c",
+          "text": "Both reactions produce salt and hydrogen.",
+          "isCorrect": false,
+          "feedback": "Hydrogen is not listed among the products of these neutralisation reactions.",
+          "misconception": "confuses-neutralisation-with-acid-metal-reaction"
+        }
+      ],
+      "sourceExcerpt": "Acids are neutralised by alkalis (eg soluble metal hydroxides) and\nbases (eg insoluble metal hydroxides and metal oxides) to produce\nsalts and water, and by metal carbonates to produce salts, water\nand carbon dioxide.",
+      "sourceLocator": "Official PDF pages 43-51; 4.4.2.2 Neutralisation of acids and salt production"
+    },
+    {
+      "id": "aqa-8462-4-4-electrolysis-ion-movement",
+      "conceptKey": "electrolysis-ion-electrode-movement",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-4-3-1",
+      "kind": "process",
+      "visualCue": "⚡",
+      "front": "During electrolysis, where do positive and negative ions move?",
+      "back": "Positive ions move to the cathode (negative electrode); negative ions move to the anode (positive electrode).",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Electric current moves the ions to the oppositely charged electrodes, where ions are discharged.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Positive ions move to the anode; negative ions move to the cathode.",
+          "isCorrect": false,
+          "feedback": "This reverses both electrode destinations.",
+          "misconception": "reverses-ion-electrode-attraction"
+        },
+        {
+          "key": "b",
+          "text": "Both positive and negative ions remain in the electrolyte.",
+          "isCorrect": false,
+          "feedback": "The current causes the ions to move to the electrodes.",
+          "misconception": "assumes-ions-remain-stationary-during-electrolysis"
+        },
+        {
+          "key": "c",
+          "text": "Positive ions move to the cathode (negative electrode); negative ions move to the anode (positive electrode).",
+          "isCorrect": true,
+          "feedback": "Correct: positive ions go to the negative cathode and negative ions to the positive anode.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Passing an electric current through electrolytes causes the ions to\nmove to the electrodes. Positively charged ions move to the\nnegative electrode (the cathode), and negatively charged ions move\nto the positive electrode (the anode). Ions are discharged at the\nelectrodes producing elements. This process is called electrolysis.",
+      "sourceLocator": "Official PDF pages 43-51; 4.4.3.1 The process of electrolysis"
+    },
+    {
+      "id": "aqa-8462-4-5-exothermic-endothermic",
+      "conceptKey": "exothermic-endothermic-energy-transfer",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5",
+      "kind": "comparison",
+      "visualCue": "🌡️",
+      "front": "How do exothermic and endothermic reactions differ in their energy transfer?",
+      "back": "Exothermic reactions release energy to the surroundings; endothermic reactions take in thermal energy.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The two reaction types are distinguished by whether energy is released to or taken in from the surroundings.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Exothermic reactions take in thermal energy; endothermic reactions release it.",
+          "isCorrect": false,
+          "feedback": "This reverses the two energy-transfer directions.",
+          "misconception": "reverses-exothermic-and-endothermic"
+        },
+        {
+          "key": "b",
+          "text": "Exothermic reactions release energy to the surroundings; endothermic reactions take in thermal energy.",
+          "isCorrect": true,
+          "feedback": "Correct: exothermic releases energy and endothermic takes it in.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Both reaction types release energy to the surroundings.",
+          "isCorrect": false,
+          "feedback": "Endothermic reactions are stated to take in thermal energy.",
+          "misconception": "treats-all-reactions-as-exothermic"
+        }
+      ],
+      "sourceExcerpt": "Reactions in which energy\nis released to the surroundings are exothermic reactions, while those that take in thermal energy\nare endothermic.",
+      "sourceLocator": "Official PDF pages 51-54; 4.5 Energy changes"
+    },
+    {
+      "id": "aqa-8462-4-5-activation-energy",
+      "conceptKey": "activation-energy-definition",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5-1-2",
+      "kind": "definition",
+      "visualCue": "🔥",
+      "front": "What is activation energy?",
+      "back": "The minimum energy that particles must have to react.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Reacting particles must collide with sufficient energy; the minimum sufficient amount is the activation energy.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The energy released to the surroundings by a reaction.",
+          "isCorrect": false,
+          "feedback": "Activation energy is the minimum needed for particles to react, not the energy released.",
+          "misconception": "confuses-activation-energy-with-energy-release"
+        },
+        {
+          "key": "b",
+          "text": "The total energy stored in the products.",
+          "isCorrect": false,
+          "feedback": "The definition concerns the minimum energy needed for reaction.",
+          "misconception": "confuses-activation-energy-with-product-energy"
+        },
+        {
+          "key": "c",
+          "text": "The minimum energy that particles must have to react.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the minimum energy threshold for reaction.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "The energy needed to raise the surroundings by one degree.",
+          "isCorrect": false,
+          "feedback": "The cited definition refers to reacting particles, not a temperature-rise calculation.",
+          "misconception": "confuses-activation-energy-with-heating-energy"
+        }
+      ],
+      "sourceExcerpt": "Chemical reactions can occur only when reacting particles collide\nwith each other and with sufficient energy. The minimum amount of\nenergy that particles must have to react is called the activation\nenergy.",
+      "sourceLocator": "Official PDF pages 51-54; 4.5.1.2 Reaction profiles"
+    },
+    {
+      "id": "aqa-8462-4-5-batteries-series",
+      "conceptKey": "batteries-cells-in-series",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5-2-1",
+      "kind": "structure",
+      "visualCue": "⚡",
+      "front": "How is a battery related to cells, and what is the effect of connecting them this way?",
+      "back": "It consists of two or more cells connected in series to provide a greater voltage.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A battery combines at least two cells in series so that they provide a greater voltage.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It consists of two or more cells connected in series to provide a greater voltage.",
+          "isCorrect": true,
+          "feedback": "Correct: a series connection of cells provides the greater voltage.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It consists of two or more cells connected in parallel to keep the same voltage.",
+          "isCorrect": false,
+          "feedback": "The specification defines batteries using cells connected in series.",
+          "misconception": "confuses-series-with-parallel-cell-connection"
+        },
+        {
+          "key": "c",
+          "text": "It is one cell divided into two or more sections.",
+          "isCorrect": false,
+          "feedback": "A battery is specified as two or more cells connected together.",
+          "misconception": "treats-battery-as-single-cell"
+        }
+      ],
+      "sourceExcerpt": "Batteries consist of two or more cells connected together in series\nto provide a greater voltage.",
+      "sourceLocator": "Official PDF pages 51-54; 4.5.2.1 Cells and batteries"
+    },
+    {
+      "id": "aqa-8462-4-5-hydrogen-fuel-cell",
+      "conceptKey": "hydrogen-fuel-cell-overall-reaction",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-5-2-2",
+      "kind": "process",
+      "visualCue": "⚡",
+      "front": "What is the overall chemical change in a hydrogen fuel cell?",
+      "back": "Hydrogen is oxidised to produce water.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A hydrogen fuel cell receives fuel and oxygen or air externally, and its overall reaction oxidises hydrogen to water.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Hydrogen is reduced to produce water.",
+          "isCorrect": false,
+          "feedback": "The specification states that hydrogen is oxidised.",
+          "misconception": "confuses-oxidation-with-reduction-in-fuel-cell"
+        },
+        {
+          "key": "b",
+          "text": "Hydrogen is oxidised to produce water.",
+          "isCorrect": true,
+          "feedback": "Correct: oxidation of hydrogen produces water overall.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Water is oxidised to produce hydrogen.",
+          "isCorrect": false,
+          "feedback": "This reverses both the reactant and product in the stated overall reaction.",
+          "misconception": "reverses-hydrogen-fuel-cell-reaction"
+        }
+      ],
+      "sourceExcerpt": "Fuel cells are supplied by an external source of fuel (eg hydrogen)\nand oxygen or air. The fuel is oxidised electrochemically within the\nfuel cell to produce a potential difference.\nThe overall reaction in a hydrogen fuel cell involves the oxidation of\nhydrogen to produce water.",
+      "sourceLocator": "Official PDF pages 51-54; 4.5.2.2 Fuel cells"
+    },
+    {
+      "id": "aqa-8462-4-6-measuring-reaction-rate",
+      "conceptKey": "mean-reaction-rate",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6-1-1",
+      "kind": "method",
+      "visualCue": "⏱️",
+      "front": "How can the rate of a chemical reaction be found from reactant or product measurements?",
+      "back": "Measure the quantity of reactant used or product formed over time.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Reaction rate can be followed using either reactant consumption or product formation measured over time.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Measure only the final quantity, without recording time.",
+          "isCorrect": false,
+          "feedback": "The cited method requires the quantity to be measured over time.",
+          "misconception": "omits-time-from-reaction-rate"
+        },
+        {
+          "key": "b",
+          "text": "Divide the time taken by the total initial reactant quantity.",
+          "isCorrect": false,
+          "feedback": "The specification tracks reactant used or product formed over time.",
+          "misconception": "inverts-reaction-rate-relationship"
+        },
+        {
+          "key": "c",
+          "text": "Measure the quantity of reactant used or product formed over time.",
+          "isCorrect": true,
+          "feedback": "Correct: either quantity can be monitored over time.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "The rate of a chemical reaction can be found by measuring the\nquantity of a reactant used or the quantity of product formed over\ntime:",
+      "sourceLocator": "Official PDF pages 55-61; 4.6.1.1 Calculating rates of reactions"
+    },
+    {
+      "id": "aqa-8462-4-6-collision-theory",
+      "conceptKey": "collision-theory-reaction-condition",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6-1-3",
+      "kind": "process",
+      "visualCue": "⚛️",
+      "front": "According to collision theory, what two conditions must reacting particles meet for a reaction to occur?",
+      "back": "They must collide with each other and have sufficient energy.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A collision is required, and its particles must meet the minimum-energy threshold called the activation energy.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They must collide with each other and have sufficient energy.",
+          "isCorrect": true,
+          "feedback": "Correct: both collision and sufficient energy are required.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They only need to collide; any collision causes a reaction.",
+          "isCorrect": false,
+          "feedback": "Collision alone is insufficient because the particles also need sufficient energy.",
+          "misconception": "ignores-activation-energy-in-collisions"
+        },
+        {
+          "key": "c",
+          "text": "They only need sufficient energy and do not need to collide.",
+          "isCorrect": false,
+          "feedback": "Collision theory requires the reacting particles to collide.",
+          "misconception": "ignores-collision-requirement"
+        }
+      ],
+      "sourceExcerpt": "According to this theory, chemical reactions can occur\nonly when reacting particles collide with each other and with\nsufficient energy. The minimum amount of energy that particles\nmust have to react is called the activation energy.",
+      "sourceLocator": "Official PDF pages 55-61; 4.6.1.3 Collision theory and activation energy"
+    },
+    {
+      "id": "aqa-8462-4-6-catalyst-pathway",
+      "conceptKey": "catalyst-lower-activation-energy",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6-1-4",
+      "kind": "cause-consequence",
+      "visualCue": "⏱️",
+      "front": "How does a catalyst increase reaction rate, and what happens to the catalyst during the reaction?",
+      "back": "It provides a different pathway with lower activation energy and is not used up.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A catalyst increases rate through an alternative, lower-activation-energy pathway while remaining unused up by the reaction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It provides a pathway with higher activation energy and is used up.",
+          "isCorrect": false,
+          "feedback": "Both parts are reversed: the pathway has lower activation energy and the catalyst is not used up.",
+          "misconception": "reverses-catalyst-action"
+        },
+        {
+          "key": "b",
+          "text": "It supplies energy directly and is consumed by the reaction.",
+          "isCorrect": false,
+          "feedback": "The catalyst provides a different pathway and is not used up.",
+          "misconception": "treats-catalyst-as-consumed-energy-source"
+        },
+        {
+          "key": "c",
+          "text": "It provides a different pathway with lower activation energy and is not used up.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified catalytic action.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Catalysts change the rate of chemical reactions but are not used up\nduring the reaction. Different reactions need different catalysts.\nEnzymes act as catalysts in biological systems.\nCatalysts increase the rate of reaction by providing a different\npathway for the reaction that has a lower activation energy.",
+      "sourceLocator": "Official PDF pages 55-61; 4.6.1.4 Catalysts"
+    },
+    {
+      "id": "aqa-8462-4-6-equilibrium-definition",
+      "conceptKey": "equilibrium-equal-forward-reverse-rates",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6-2-3",
+      "kind": "definition",
+      "visualCue": "⚖️",
+      "front": "When is equilibrium reached in a reversible reaction?",
+      "back": "When reactants and products cannot escape and the forward and reverse reactions occur at exactly the same rate.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The apparatus must prevent escape, and both reaction directions must occur at equal rates.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "When the forward reaction has stopped completely.",
+          "isCorrect": false,
+          "feedback": "At equilibrium, forward and reverse reactions both occur.",
+          "misconception": "assumes-equilibrium-is-static"
+        },
+        {
+          "key": "b",
+          "text": "When all reactants and products are present in equal amounts.",
+          "isCorrect": false,
+          "feedback": "The definition specifies equal reaction rates, not equal amounts.",
+          "misconception": "confuses-equal-rates-with-equal-amounts"
+        },
+        {
+          "key": "c",
+          "text": "When the reverse reaction becomes faster than the forward reaction.",
+          "isCorrect": false,
+          "feedback": "Equilibrium requires the two rates to be exactly equal.",
+          "misconception": "assumes-unequal-rates-at-equilibrium"
+        },
+        {
+          "key": "d",
+          "text": "When reactants and products cannot escape and the forward and reverse reactions occur at exactly the same rate.",
+          "isCorrect": true,
+          "feedback": "Correct: containment and equal forward and reverse rates define equilibrium here.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "When a reversible reaction occurs in apparatus which prevents the\nescape of reactants and products, equilibrium is reached when the\nforward and reverse reactions occur at exactly the same rate.",
+      "sourceLocator": "Official PDF pages 55-61; 4.6.2.3 Equilibrium"
+    },
+    {
+      "id": "aqa-8462-4-7-hydrocarbon-definition",
+      "conceptKey": "hydrocarbon-definition",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7-1-1",
+      "kind": "definition",
+      "visualCue": "⛽",
+      "front": "What is a hydrocarbon?",
+      "back": "A molecule made only of hydrogen and carbon atoms.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Most compounds in crude oil are described as hydrocarbons, whose molecules contain hydrogen and carbon atoms only.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A molecule made only of hydrogen and carbon atoms.",
+          "isCorrect": true,
+          "feedback": "Correct: hydrocarbons contain only hydrogen and carbon.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A molecule made only of carbon and oxygen atoms.",
+          "isCorrect": false,
+          "feedback": "The cited definition requires hydrogen and carbon.",
+          "misconception": "replaces-hydrogen-with-oxygen-in-hydrocarbon"
+        },
+        {
+          "key": "c",
+          "text": "A molecule made only of hydrogen and oxygen atoms.",
+          "isCorrect": false,
+          "feedback": "The cited definition requires carbon as well as hydrogen.",
+          "misconception": "omits-carbon-from-hydrocarbon"
+        },
+        {
+          "key": "d",
+          "text": "A molecule made only of carbon atoms.",
+          "isCorrect": false,
+          "feedback": "A hydrocarbon contains hydrogen atoms as well as carbon atoms.",
+          "misconception": "treats-hydrocarbon-as-pure-carbon"
+        }
+      ],
+      "sourceExcerpt": "Crude oil is a mixture of a very large number of compounds. Most of\nthe compounds in crude oil are hydrocarbons, which are molecules\nmade up of hydrogen and carbon atoms only.",
+      "sourceLocator": "Official PDF pages 61-70; 4.7.1.1 Crude oil, hydrocarbons and alkanes"
+    },
+    {
+      "id": "aqa-8462-4-7-alkane-general-formula",
+      "conceptKey": "alkane-general-formula",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7-1-1",
+      "kind": "formula",
+      "visualCue": "⛽",
+      "front": "What is the general formula of the alkane homologous series?",
+      "back": "CnH2n+2",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification gives CnH2n+2 as the general formula for alkanes.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "CnH2n",
+          "isCorrect": false,
+          "feedback": "This is not the stated alkane formula.",
+          "misconception": "confuses-alkane-and-alkene-formulae"
+        },
+        {
+          "key": "b",
+          "text": "CnH2n+2",
+          "isCorrect": true,
+          "feedback": "Correct: this is the general formula for alkanes.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "CnH2n-2",
+          "isCorrect": false,
+          "feedback": "The alkane formula has two more hydrogen atoms than CnH2n, not two fewer.",
+          "misconception": "subtracts-two-hydrogens-from-alkane-formula"
+        },
+        {
+          "key": "d",
+          "text": "CnHn+2",
+          "isCorrect": false,
+          "feedback": "The hydrogen term in the stated formula is 2n+2.",
+          "misconception": "omits-factor-of-two-in-alkane-formula"
+        }
+      ],
+      "sourceExcerpt": "Most of the hydrocarbons in crude oil are hydrocarbons called\nalkanes. The general formula for the homologous series of alkanes\nis CnH2n+2",
+      "sourceLocator": "Official PDF pages 61-70; 4.7.1.1 Crude oil, hydrocarbons and alkanes"
+    },
+    {
+      "id": "aqa-8462-4-7-fractional-distillation",
+      "conceptKey": "crude-oil-fractional-distillation",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7-1-2",
+      "kind": "process",
+      "visualCue": "⛽",
+      "front": "What does fractional distillation separate crude oil into?",
+      "back": "Fractions containing molecules with a similar number of carbon atoms.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Fractional distillation separates the many hydrocarbons in crude oil into fractions on this basis.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Separate fractions containing pure elements.",
+          "isCorrect": false,
+          "feedback": "The fractions contain hydrocarbon molecules, not separated elements.",
+          "misconception": "treats-fractional-distillation-as-element-separation"
+        },
+        {
+          "key": "b",
+          "text": "Fractions containing exactly one pure compound each.",
+          "isCorrect": false,
+          "feedback": "Each fraction is described as containing molecules with a similar carbon-atom count.",
+          "misconception": "assumes-each-crude-oil-fraction-is-one-compound"
+        },
+        {
+          "key": "c",
+          "text": "Fractions containing molecules with a similar number of carbon atoms.",
+          "isCorrect": true,
+          "feedback": "Correct: molecules within a fraction have similar carbon-chain sizes.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "The many hydrocarbons in crude oil may be separated into\nfractions, each of which contains molecules with a similar number of\ncarbon atoms, by fractional distillation.",
+      "sourceLocator": "Official PDF pages 61-70; 4.7.1.2 Fractional distillation and petrochemicals"
+    },
+    {
+      "id": "aqa-8462-4-7-cracking-purpose",
+      "conceptKey": "hydrocarbon-cracking-purpose",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-7-1-4",
+      "kind": "process",
+      "visualCue": "⛽",
+      "front": "What is the purpose of cracking hydrocarbons?",
+      "back": "To break them down into smaller, more useful molecules.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Cracking changes larger hydrocarbons into smaller molecules described as more useful.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "To join them into larger molecules.",
+          "isCorrect": false,
+          "feedback": "Cracking breaks hydrocarbons down rather than joining them.",
+          "misconception": "reverses-cracking-into-polymerisation"
+        },
+        {
+          "key": "b",
+          "text": "To break them down into smaller, more useful molecules.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the stated purpose of cracking.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "To separate them physically without changing their molecules.",
+          "isCorrect": false,
+          "feedback": "Cracking breaks the hydrocarbon molecules down.",
+          "misconception": "confuses-cracking-with-fractional-distillation"
+        }
+      ],
+      "sourceExcerpt": "Hydrocarbons can be broken down (cracked) to produce smaller,\nmore useful molecules.",
+      "sourceLocator": "Official PDF pages 61-70; 4.7.1.4 Cracking and alkenes"
+    },
+    {
+      "id": "aqa-8462-4-8-pure-substance",
+      "conceptKey": "chemistry-pure-substance",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8-1-1",
+      "kind": "definition",
+      "visualCue": "🧪",
+      "front": "In chemistry, what is a pure substance?",
+      "back": "A single element or compound not mixed with any other substance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A chemically pure sample may be an element or a compound, but it is not mixed with another substance.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A mixture designed to be a useful product.",
+          "isCorrect": false,
+          "feedback": "A designed mixture is not a pure substance under the cited definition.",
+          "misconception": "confuses-pure-substance-with-formulation"
+        },
+        {
+          "key": "b",
+          "text": "Any natural substance with nothing added to it.",
+          "isCorrect": false,
+          "feedback": "That reflects an everyday meaning rather than the stated chemical definition.",
+          "misconception": "uses-everyday-purity-definition"
+        },
+        {
+          "key": "c",
+          "text": "A single element or compound not mixed with any other substance.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the chemical definition of a pure substance.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "A substance containing only one type of atom.",
+          "isCorrect": false,
+          "feedback": "The definition includes pure compounds as well as elements.",
+          "misconception": "excludes-compounds-from-pure-substances"
+        }
+      ],
+      "sourceExcerpt": "In chemistry, a pure substance is a single element or compound,\nnot mixed with any other substance.",
+      "sourceLocator": "Official PDF pages 70-75; 4.8.1.1 Pure substances"
+    },
+    {
+      "id": "aqa-8462-4-8-chromatography-phases",
+      "conceptKey": "chromatography-phases-distribution",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8-1-3",
+      "kind": "method",
+      "visualCue": "🧪",
+      "front": "What phases are involved in chromatography, and what determines separation?",
+      "back": "A stationary phase and a mobile phase; separation depends on substances' distribution between them.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Chromatographic separation occurs because substances distribute differently between the stationary and mobile phases.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A stationary phase and a mobile phase; separation depends on substances' distribution between them.",
+          "isCorrect": true,
+          "feedback": "Correct: distribution between the two phases controls separation.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Two mobile phases; separation depends only on their speed.",
+          "isCorrect": false,
+          "feedback": "Chromatography uses one stationary phase and one mobile phase.",
+          "misconception": "assumes-two-mobile-phases"
+        },
+        {
+          "key": "c",
+          "text": "A single phase; separation depends on boiling point alone.",
+          "isCorrect": false,
+          "feedback": "The cited method uses two phases and distribution between them.",
+          "misconception": "confuses-chromatography-with-distillation"
+        }
+      ],
+      "sourceExcerpt": "Chromatography can be used to separate mixtures and can give\ninformation to help identify substances. Chromatography involves a\nstationary phase and a mobile phase. Separation depends on the\ndistribution of substances between the phases.",
+      "sourceLocator": "Official PDF pages 70-75; 4.8.1.3 Chromatography"
+    },
+    {
+      "id": "aqa-8462-4-8-hydrogen-gas-test",
+      "conceptKey": "hydrogen-gas-test",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8-2-1",
+      "kind": "test-result",
+      "visualCue": "🫧",
+      "front": "How do you test for hydrogen gas, and what positive result confirms it?",
+      "back": "Hold a burning splint at the open end of the test tube; hydrogen burns rapidly with a pop.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specified hydrogen test uses a burning splint, and a rapid pop is the positive result.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Insert a glowing splint; it relights.",
+          "isCorrect": false,
+          "feedback": "A relighting glowing splint is not the cited hydrogen result.",
+          "misconception": "confuses-hydrogen-with-oxygen-test"
+        },
+        {
+          "key": "b",
+          "text": "Bubble the gas through limewater; it turns milky.",
+          "isCorrect": false,
+          "feedback": "A milky limewater result is not the cited hydrogen test.",
+          "misconception": "confuses-hydrogen-with-carbon-dioxide-test"
+        },
+        {
+          "key": "c",
+          "text": "Expose damp litmus paper; it is bleached white.",
+          "isCorrect": false,
+          "feedback": "Bleached litmus is not the cited hydrogen result.",
+          "misconception": "confuses-hydrogen-with-chlorine-test"
+        },
+        {
+          "key": "d",
+          "text": "Hold a burning splint at the open end of the test tube; hydrogen burns rapidly with a pop.",
+          "isCorrect": true,
+          "feedback": "Correct: a burning splint gives the characteristic pop.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "The test for hydrogen uses a burning splint held at the open end of\na test tube of the gas. Hydrogen burns rapidly with a pop sound.",
+      "sourceLocator": "Official PDF pages 70-75; 4.8.2.1 Test for hydrogen"
+    },
+    {
+      "id": "aqa-8462-4-8-halide-precipitates",
+      "conceptKey": "halide-silver-nitrate-test",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-8-3-4",
+      "kind": "test-result",
+      "visualCue": "🧂",
+      "front": "How are chloride, bromide and iodide ions distinguished using silver nitrate?",
+      "back": "Use silver nitrate with dilute nitric acid: chloride gives a white precipitate, bromide cream and iodide yellow.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The three silver-halide precipitate colours are white for chloride, cream for bromide and yellow for iodide.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Use sodium hydroxide: chloride gives blue, bromide green and iodide brown precipitates.",
+          "isCorrect": false,
+          "feedback": "The specified halide test uses silver nitrate in the presence of dilute nitric acid.",
+          "misconception": "confuses-halide-test-with-metal-hydroxide-tests"
+        },
+        {
+          "key": "b",
+          "text": "Use silver nitrate with dilute nitric acid: chloride gives a white precipitate, bromide cream and iodide yellow.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified reagents and precipitate colours.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Use silver nitrate with dilute nitric acid: chloride gives yellow, bromide cream and iodide white.",
+          "isCorrect": false,
+          "feedback": "This swaps the chloride and iodide precipitate colours.",
+          "misconception": "reverses-silver-chloride-and-iodide-colours"
+        },
+        {
+          "key": "d",
+          "text": "Use barium chloride with dilute hydrochloric acid: all three give white precipitates.",
+          "isCorrect": false,
+          "feedback": "That does not match the specified silver-nitrate halide test.",
+          "misconception": "confuses-halide-test-with-sulfate-test"
+        }
+      ],
+      "sourceExcerpt": "Halide ions in solution produce precipitates with silver nitrate\nsolution in the presence of dilute nitric acid. Silver chloride is white,\nsilver bromide is cream and silver iodide is yellow.",
+      "sourceLocator": "Official PDF pages 70-75; 4.8.3.4 Halides"
+    },
+    {
+      "id": "aqa-8462-4-9-atmosphere-proportions",
+      "conceptKey": "atmospheric-nitrogen-oxygen-proportions",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9-1-1",
+      "kind": "fact",
+      "visualCue": "🌡️",
+      "front": "What are the approximate proportions of nitrogen and oxygen in today's atmosphere?",
+      "back": "About 80% nitrogen and about 20% oxygen.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Other gases, including carbon dioxide, water vapour and noble gases, occur in small proportions.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "About 20% nitrogen and about 80% oxygen.",
+          "isCorrect": false,
+          "feedback": "This reverses the approximate nitrogen and oxygen proportions.",
+          "misconception": "reverses-atmospheric-nitrogen-and-oxygen"
+        },
+        {
+          "key": "b",
+          "text": "About 50% nitrogen and about 50% oxygen.",
+          "isCorrect": false,
+          "feedback": "The two gases are not present in approximately equal proportions.",
+          "misconception": "assumes-equal-atmospheric-proportions"
+        },
+        {
+          "key": "c",
+          "text": "About 80% nitrogen and about 20% oxygen.",
+          "isCorrect": true,
+          "feedback": "Correct: the atmosphere is about four-fifths nitrogen and one-fifth oxygen.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "For 200 million years, the proportions of different gases in the\natmosphere have been much the same as they are today:\n• about four-fifths (approximately 80%) nitrogen\n• about one-fifth (approximately 20%) oxygen\n• small proportions of various other gases, including carbon\ndioxide, water vapour and noble gases.",
+      "sourceLocator": "Official PDF pages 75-80; 4.9.1.1 The proportions of different gases in the atmosphere"
+    },
+    {
+      "id": "aqa-8462-4-9-oxygen-photosynthesis",
+      "conceptKey": "atmospheric-oxygen-photosynthesis",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9-1-3",
+      "kind": "cause-consequence",
+      "visualCue": "⛽",
+      "front": "Which process by algae and plants produced the oxygen now in the atmosphere?",
+      "back": "Photosynthesis.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification attributes the production of present atmospheric oxygen by algae and plants to photosynthesis.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Respiration.",
+          "isCorrect": false,
+          "feedback": "The cited process is photosynthesis.",
+          "misconception": "confuses-photosynthesis-with-respiration"
+        },
+        {
+          "key": "b",
+          "text": "Photosynthesis.",
+          "isCorrect": true,
+          "feedback": "Correct: algae and plants produced atmospheric oxygen by photosynthesis.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Combustion.",
+          "isCorrect": false,
+          "feedback": "Combustion is not the process identified in the excerpt.",
+          "misconception": "attributes-atmospheric-oxygen-to-combustion"
+        },
+        {
+          "key": "d",
+          "text": "Condensation.",
+          "isCorrect": false,
+          "feedback": "Condensation is not the stated source process for atmospheric oxygen.",
+          "misconception": "confuses-gas-production-with-condensation"
+        }
+      ],
+      "sourceExcerpt": "Algae and plants produced the oxygen that is now in the\natmosphere by photosynthesis, which can be represented by the\nequation:",
+      "sourceLocator": "Official PDF pages 75-80; 4.9.1.3 How oxygen increased"
+    },
+    {
+      "id": "aqa-8462-4-9-greenhouse-gases",
+      "conceptKey": "greenhouse-gases-role",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9-2-1",
+      "kind": "fact",
+      "visualCue": "🌡️",
+      "front": "Which three gases are named as greenhouse gases, and what is their stated role?",
+      "back": "Water vapour, carbon dioxide and methane; they maintain temperatures on Earth high enough to support life.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These three atmospheric gases help maintain Earth temperatures at a level high enough for life.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Water vapour, carbon dioxide and methane; they maintain temperatures on Earth high enough to support life.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three named greenhouse gases and their stated role.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Nitrogen, oxygen and noble gases; they maintain temperatures on Earth high enough to support life.",
+          "isCorrect": false,
+          "feedback": "The named greenhouse gases are water vapour, carbon dioxide and methane.",
+          "misconception": "confuses-major-atmospheric-gases-with-greenhouse-gases"
+        },
+        {
+          "key": "c",
+          "text": "Carbon monoxide, sulfur dioxide and oxides of nitrogen; they maintain temperatures on Earth high enough to support life.",
+          "isCorrect": false,
+          "feedback": "Those are not the three gases named in the greenhouse-gas statement.",
+          "misconception": "confuses-atmospheric-pollutants-with-greenhouse-gases"
+        }
+      ],
+      "sourceExcerpt": "Greenhouse gases in the atmosphere maintain temperatures on\nEarth high enough to support life. Water vapour, carbon dioxide and\nmethane are greenhouse gases.",
+      "sourceLocator": "Official PDF pages 75-80; 4.9.2.1 Greenhouse gases"
+    },
+    {
+      "id": "aqa-8462-4-9-sulfur-nitrogen-oxide-effects",
+      "conceptKey": "sulfur-dioxide-nitrogen-oxides-effects",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9-3-2",
+      "kind": "cause-consequence",
+      "visualCue": "⛽",
+      "front": "What effects do sulfur dioxide and oxides of nitrogen have?",
+      "back": "They cause respiratory problems in humans and acid rain.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Both sulfur dioxide and oxides of nitrogen are linked to human respiratory problems and acid rain.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They are toxic, colourless and odourless, so they are not easily detected.",
+          "isCorrect": false,
+          "feedback": "That description is given for carbon monoxide, not these two pollutants.",
+          "misconception": "assigns-carbon-monoxide-properties-to-other-pollutants"
+        },
+        {
+          "key": "b",
+          "text": "They cause respiratory problems in humans and acid rain.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified effects.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "They cause global dimming and health problems for humans.",
+          "isCorrect": false,
+          "feedback": "Global dimming is attributed to particulates in the cited passage.",
+          "misconception": "assigns-particulate-effects-to-gaseous-pollutants"
+        }
+      ],
+      "sourceExcerpt": "Carbon monoxide is a toxic gas. It is colourless and odourless and\nso is not easily detected.\nSulfur dioxide and oxides of nitrogen cause respiratory problems in\nhumans and cause acid rain.\nParticulates cause global dimming and health problems for humans.",
+      "sourceLocator": "Official PDF pages 75-80; 4.9.3.2 Properties and effects of atmospheric pollutants"
+    },
+    {
+      "id": "aqa-8462-4-10-potable-water",
+      "conceptKey": "potable-water-definition",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-1-2",
+      "kind": "definition",
+      "visualCue": "🫧",
+      "front": "What is potable water, and why is it not chemically pure water?",
+      "back": "It is water safe to drink with sufficiently low levels of dissolved salts and microbes; it still contains dissolved substances.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Potability requires sufficiently low dissolved-salt and microbe levels, but potable water may still contain dissolved substances.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is chemically pure water containing no dissolved substances.",
+          "isCorrect": false,
+          "feedback": "The specification explicitly says potable water is not chemically pure because it contains dissolved substances.",
+          "misconception": "equates-potable-water-with-chemically-pure-water"
+        },
+        {
+          "key": "b",
+          "text": "It is any water with no microbes, regardless of its dissolved-salt level.",
+          "isCorrect": false,
+          "feedback": "Drinking water should have sufficiently low levels of both microbes and dissolved salts.",
+          "misconception": "ignores-dissolved-salts-in-potability"
+        },
+        {
+          "key": "c",
+          "text": "It is water safe to drink with sufficiently low levels of dissolved salts and microbes; it still contains dissolved substances.",
+          "isCorrect": true,
+          "feedback": "Correct: potable water is safe to drink but not chemically pure.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "For humans,\ndrinking water should have sufficiently low levels of dissolved salts\nand microbes. Water that is safe to drink is called potable water.\nPotable water is not pure water in the chemical sense because it\ncontains dissolved substances.",
+      "sourceLocator": "Official PDF pages 80-89; 4.10.1.2 Potable water"
+    },
+    {
+      "id": "aqa-8462-4-10-sewage-treatment",
+      "conceptKey": "sewage-treatment-sequence",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-1-3",
+      "kind": "process",
+      "visualCue": "♻️",
+      "front": "What is the specified sequence of stages in sewage treatment?",
+      "back": "Screening and grit removal; sedimentation to form sludge and effluent; anaerobic digestion of sludge; aerobic biological treatment of effluent.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Sedimentation produces sewage sludge and effluent; the sludge is treated anaerobically and the effluent aerobically.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Screening and grit removal; sedimentation to form sludge and effluent; anaerobic digestion of sludge; aerobic biological treatment of effluent.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both the order and the treatment assigned to each stream.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Screening; aerobic digestion of sludge; anaerobic treatment of effluent; sedimentation.",
+          "isCorrect": false,
+          "feedback": "This reverses the biological treatments and puts sedimentation last.",
+          "misconception": "reverses-sewage-biological-treatments-and-order"
+        },
+        {
+          "key": "c",
+          "text": "Sedimentation; screening; desalination; sterilisation.",
+          "isCorrect": false,
+          "feedback": "Desalination and sterilisation are not the listed sewage-treatment sequence.",
+          "misconception": "confuses-sewage-treatment-with-potable-water-production"
+        }
+      ],
+      "sourceExcerpt": "Sewage treatment includes:\n• screening and grit removal\n• sedimentation to produce sewage sludge and effluent\n• anaerobic digestion of sewage sludge\n• aerobic biological treatment of effluent.",
+      "sourceLocator": "Official PDF pages 80-89; 4.10.1.3 Waste water treatment"
+    },
+    {
+      "id": "aqa-8462-4-10-life-cycle-assessment",
+      "conceptKey": "life-cycle-assessment-stages",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-2-1",
+      "kind": "method",
+      "visualCue": "♻️",
+      "front": "Which product-life stages does a life cycle assessment examine?",
+      "back": "Raw-material extraction and processing; manufacture and packaging; use during the product's lifetime; disposal, including transport and distribution at each stage.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An LCA follows environmental impact from obtaining raw materials through manufacture, use and end-of-life disposal, including transport and distribution.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Only manufacture, packaging and final disposal.",
+          "isCorrect": false,
+          "feedback": "This omits raw-material processing, use, and transport or distribution.",
+          "misconception": "uses-incomplete-life-cycle-boundary"
+        },
+        {
+          "key": "b",
+          "text": "Raw-material extraction and processing; manufacture and packaging; use during the product's lifetime; disposal, including transport and distribution at each stage.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified LCA stages.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Only the product's sales price, operating cost and profit.",
+          "isCorrect": false,
+          "feedback": "The cited assessment concerns environmental impacts across product-life stages.",
+          "misconception": "confuses-life-cycle-assessment-with-financial-analysis"
+        }
+      ],
+      "sourceExcerpt": "Life cycle assessments (LCAs) are carried out to assess the\nenvironmental impact of products in each of these stages:\n• extracting and processing raw materials\n• manufacturing and packaging\n• use and operation during its lifetime\n• disposal at the end of its useful life, including transport and\ndistribution at each stage.",
+      "sourceLocator": "Official PDF pages 80-89; 4.10.2.1 Life cycle assessment"
+    },
+    {
+      "id": "aqa-8462-4-10-haber-conditions",
+      "conceptKey": "haber-process-conditions",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4-1",
+      "kind": "fact",
+      "visualCue": "🧪",
+      "front": "What catalyst, temperature and pressure are specified for the Haber process?",
+      "back": "An iron catalyst, about 450°C and about 200 atmospheres.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Purified nitrogen and hydrogen pass over iron under these high-temperature, high-pressure conditions, and some reacts to form ammonia.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A copper catalyst, about 25°C and about 1 atmosphere.",
+          "isCorrect": false,
+          "feedback": "The specified catalyst and conditions are iron, about 450°C and about 200 atmospheres.",
+          "misconception": "uses-ambient-haber-conditions-and-wrong-catalyst"
+        },
+        {
+          "key": "b",
+          "text": "An iron catalyst, about 200°C and about 450 atmospheres.",
+          "isCorrect": false,
+          "feedback": "This swaps the approximate temperature and pressure values.",
+          "misconception": "swaps-haber-temperature-and-pressure"
+        },
+        {
+          "key": "c",
+          "text": "An iron catalyst, about 450°C and about 200 atmospheres.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified Haber-process conditions.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "No catalyst, about 450°C and about 200 atmospheres.",
+          "isCorrect": false,
+          "feedback": "The purified gases are passed over an iron catalyst.",
+          "misconception": "omits-iron-catalyst-from-haber-process"
+        }
+      ],
+      "sourceExcerpt": "The purified gases are passed over a catalyst of iron at a high\ntemperature (about 450°C) and a high pressure (about 200\natmospheres). Some of the hydrogen and nitrogen reacts to form\nammonia.",
+      "sourceLocator": "Official PDF pages 80-89; 4.10.4.1 The Haber process"
+    }
+  ]
+}

@@ -1,0 +1,1281 @@
+{
+  "recoveredFromRolloutRunId": "019f6baa-297d-74c0-8469-8323535348c2",
+  "officialSpecification": {
+    "id": "ocr-gcse-english-literature-j352-v3.0",
+    "board": "OCR",
+    "qualification": "GCSE",
+    "subject": "English Literature",
+    "specificationCode": "J352",
+    "version": "3.0",
+    "title": "Cambridge OCR GCSE English Literature (J352)",
+    "landingUrl": "https://www.ocr.org.uk/qualifications/gcse/english-literature-j352-from-2015/",
+    "pdfUrl": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+    "sha256": "471c71e7335fc679a6e55ac6fbb42657b1458712d98989a958f932a1edc511b0"
+  },
+  "offering": {
+    "id": "ocr-gcse-english-literature-j352-v3.0:higher",
+    "profileSubject": "English Literature",
+    "course": "GCSE Subject",
+    "tier": "Higher",
+    "label": "Cambridge OCR GCSE English Literature (J352)",
+    "selectableComponentIds": [
+      "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing"
+    ]
+  },
+  "sourceManifest": {
+    "schemaVersion": "ocr-j352-literature-source-plan-v1",
+    "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+    "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+    "topics": [
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+        "title": "Anita and Me",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+          }
+        },
+        "sources": [
+          {
+            "id": "ocr-anita-and-me-delivery-guide",
+            "kind": "supporting-document",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/358302-anita-and-me-delivery-guide.pdf",
+            "title": "OCR J352 Anita and Me Delivery Guide",
+            "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "486d25dd707e7f91546f2f5d3151d376bd718c2781a06cfe5b690a05570c23b9"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "anita-and-me-plot-friendship",
+            "mode": "plot",
+            "sourceId": "ocr-anita-and-me-delivery-guide",
+            "locator": "OCR Delivery Guide, printed page 5; synopsis",
+            "requiredAnswer": null,
+            "excerpt": "Meena befriends the bad girl of the village Anita Rutter."
+          },
+          {
+            "id": "anita-and-me-plot-leaves-tollington",
+            "mode": "plot",
+            "sourceId": "ocr-anita-and-me-delivery-guide",
+            "locator": "OCR Delivery Guide, printed page 5; end of synopsis",
+            "requiredAnswer": null,
+            "excerpt": "At the end of the novel, Meena and her parents leave Tollington to start a new life in Wolverhampton."
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+        "title": "Never Let Me Go",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+          }
+        },
+        "sources": [
+          {
+            "id": "faber-never-let-me-go-summary",
+            "kind": "secondary-source",
+            "retrievalType": "copyrighted-web-synopsis",
+            "url": "https://www.faber.co.uk/product/9780571335770-never-let-me-go/",
+            "title": "Faber: Never Let Me Go with GCSE and A Level study guide",
+            "rightsBasis": "Publisher-owned synopsis used only as short attributed factual excerpts; no primary-text quotation is permitted.",
+            "verificationAnchors": [],
+            "sourceHash": "50e237d7e8c7e593beabe2ec07cccdb1984d3a97b2cc838f6b0a548ecb621798"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "never-let-me-go-plot-kathy-hailsham",
+            "mode": "plot",
+            "sourceId": "faber-never-let-me-go-summary",
+            "locator": "Publisher summary; Kathy's recollection of Hailsham",
+            "requiredAnswer": null,
+            "excerpt": "Narrated by Kathy, now thirty-one, Never Let Me Go hauntingly dramatises her attempts"
+          },
+          {
+            "id": "never-let-me-go-plot-fate",
+            "mode": "plot",
+            "sourceId": "faber-never-let-me-go-summary",
+            "locator": "Publisher summary; the friends' fate",
+            "requiredAnswer": null,
+            "excerpt": "with the fate that has always awaited her and her closest friends"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+        "title": "Animal Farm",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "No globally reusable licensed primary-text quotation source is available to this pipeline."
+          }
+        },
+        "sources": [
+          {
+            "id": "penguin-animal-farm-summary",
+            "kind": "secondary-source",
+            "retrievalType": "copyrighted-web-synopsis",
+            "url": "https://www.penguin.co.uk/books/57033/animal-farm-by-orwell-george/9780241453865",
+            "title": "Penguin: Animal Farm by George Orwell",
+            "rightsBasis": "Publisher-owned synopsis used only as short attributed factual excerpts; no primary-text quotation is permitted.",
+            "verificationAnchors": [],
+            "sourceHash": "ed5f0871447f58451563565022554a71f2b836a0036af8ef76e70d5d4ecc4cbf"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "animal-farm-plot-rebellion",
+            "mode": "plot",
+            "sourceId": "penguin-animal-farm-summary",
+            "locator": "Publisher synopsis; the animals' rebellion",
+            "requiredAnswer": null,
+            "excerpt": "When the downtrodden animals of Manor Farm overthrow their master, Mr Jones"
+          },
+          {
+            "id": "animal-farm-plot-new-tyranny",
+            "mode": "plot",
+            "sourceId": "penguin-animal-farm-summary",
+            "locator": "Publisher synopsis; the rebellion's outcome",
+            "requiredAnswer": null,
+            "excerpt": "one form of tyranny is replaced with another"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+        "title": "An Inspector Calls",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+          }
+        },
+        "sources": [
+          {
+            "id": "pearson-an-inspector-calls-set-text-guide",
+            "kind": "supporting-document",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Drama/2016/teaching-and-learning-materials/gcse-set-text-guide-an-inspector-calls.pdf",
+            "title": "Pearson Edexcel GCSE Drama Prescribed Text Guide: An Inspector Calls",
+            "rightsBasis": "Official awarding-body teaching guide used for educational criticism and review; only short attributed factual excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "8ee357932db0084c761a0fa870154e5f3892477855be9d2b8be3cb883515ac00"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "an-inspector-calls-plot-goole-arrives",
+            "mode": "plot",
+            "sourceId": "pearson-an-inspector-calls-set-text-guide",
+            "locator": "Pearson prescribed text guide, page 3; Act One summary",
+            "requiredAnswer": null,
+            "excerpt": "Inspector Goole enters to bring news of the death of a girl, Eva Smith, in the infirmary."
+          },
+          {
+            "id": "an-inspector-calls-plot-final-call",
+            "mode": "plot",
+            "sourceId": "pearson-an-inspector-calls-set-text-guide",
+            "locator": "Pearson prescribed text guide, page 4; Act Three summary",
+            "requiredAnswer": null,
+            "excerpt": "The phone rings – it is the police. A girl has died on the way to the infirmary"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+        "title": "Leave Taking",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+          }
+        },
+        "sources": [
+          {
+            "id": "nick-hern-leave-taking-summary",
+            "kind": "secondary-source",
+            "retrievalType": "copyrighted-web-synopsis",
+            "url": "https://www.nickhernbooks.co.uk/leave-taking",
+            "title": "Nick Hern Books: Leave Taking by Winsome Pinnock",
+            "rightsBasis": "Publisher-owned synopsis used only as short attributed factual excerpts; no primary-text quotation is permitted.",
+            "verificationAnchors": [],
+            "sourceHash": "9ecc905fa3839173c62a6b55848de09d7294713255dc9e3827bc6731b3a6a5e6"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "leave-taking-plot-obeah-visit",
+            "mode": "plot",
+            "sourceId": "nick-hern-leave-taking-summary",
+            "locator": "Publisher synopsis; Enid takes her daughters to Mai",
+            "requiredAnswer": null,
+            "excerpt": "When Enid takes her daughters to the local obeah woman"
+          },
+          {
+            "id": "leave-taking-plot-countries-cultures",
+            "mode": "plot",
+            "sourceId": "nick-hern-leave-taking-summary",
+            "locator": "Publisher synopsis; consequences for Del, Viv and Enid",
+            "requiredAnswer": null,
+            "excerpt": "as they negotiate the frictions between their countries and cultures"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+        "title": "DNA",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+          }
+        },
+        "sources": [
+          {
+            "id": "ocr-dna-delivery-guide",
+            "kind": "supporting-document",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/208645-dna-delivery-guide.pdf",
+            "title": "OCR J352 DNA Delivery Guide",
+            "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "e9414d82aecf5d912d1a723f7aeae080bc16e058801b23111c2404e2f0ba7dee"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "dna-plot-accident",
+            "mode": "plot",
+            "sourceId": "ocr-dna-delivery-guide",
+            "locator": "OCR Delivery Guide, printed page 6; structure",
+            "requiredAnswer": null,
+            "excerpt": "It starts with Jan and Mark in a street discussing a mysterious death"
+          },
+          {
+            "id": "dna-plot-cover-up",
+            "mode": "plot",
+            "sourceId": "ocr-dna-delivery-guide",
+            "locator": "OCR Delivery Guide, printed page 7; Phil and Adam",
+            "requiredAnswer": null,
+            "excerpt": "his ruthless handling of the reappearance of Adam"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+        "title": "Great Expectations",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-great-expectations",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+            "title": "Great Expectations by Charles Dickens",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "26ce833a278ba2c60e678456f9ef43b336ddcb93c3469c3b43aac4a6fefe19fd"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "great-expectations-plot-pip-aids-convict",
+            "mode": "plot",
+            "sourceId": "gutenberg-great-expectations",
+            "locator": "Chapter II; Pip steals food for the convict",
+            "requiredAnswer": null,
+            "excerpt": "friction then; to have got one I must have struck it out of flint and steel, and have made a noise like the very pirate himself rattling his chains. As soon as the great black velvet pall outside my little window was shot with grey, I got up and went downstairs; every board upon the way, and every crack in every board calling after me, “Stop thief!” and “Get up, Mrs. Joe!” In the pantry, which was far more abundantly supplied than usual, owing to the season, I was very much alarmed by a hare hanging up by the heels, whom I rather thought I caught, when my back was half turned, winking. I had no time for verification, no time for selection, no time for anything, for I had no time to spare. I stole some bread, some rind of cheese, about half a jar of mincemeat (which I tied up in my pocket-handkerchief with my last night’s slice), some brandy from a stone bottle (which I decanted into a glass bottle I had secretly used for making that intoxicating fluid, Spanish-liquorice-water, up in my room: diluting the stone bottle from a jug in the kitchen cupboard), a meat bone with very little on it, and a beautiful round compact pork pie. I was nearly going away without the pie, but I was tempted to mount upon a shelf, to look what it was that was put away so carefully in a covered earthenware dish in a corner, and I found it was the pie, and I took it in the hope that it was not intended for early use, and would not be missed for some time. There was a door"
+          },
+          {
+            "id": "great-expectations-plot-benefactor-reveal",
+            "mode": "plot",
+            "sourceId": "gutenberg-great-expectations",
+            "locator": "Chapter XXXIX; Magwitch identifies himself as Pip's benefactor",
+            "requiredAnswer": null,
+            "excerpt": "had wanted to come on to you. ‘However, you have found me out,’ you says just now. Well! However, did I find you out? Why, I wrote from Portsmouth to a person in London, for particulars of your address. That person’s name? Why, Wemmick.” I could not have spoken one word, though it had been to save my life. I stood, with a hand on the chair-back and a hand on my breast, where I seemed to be suffocating,—I stood so, looking wildly at him, until I grasped at the chair, when the room began to surge and turn. He caught me, drew me to the sofa, put me up against the cushions, and bent on one knee before me, bringing the face that I now well remembered, and that I shuddered at, very near to mine. “Yes, Pip, dear boy, I’ve made a gentleman on you! It’s me wot has done it! I swore that time, sure as ever I earned a guinea, that guinea should go to you. I swore arterwards, sure as ever I spec’lated and got rich, you should get rich. I lived rough, that you should live smooth; I worked hard, that you should be above work. What odds, dear boy? Do I tell it, fur you to feel a obligation? Not a bit. I tell it, fur you to know as that there hunted dunghill dog wot you kep life in, got his head so high that he could make a gentleman,—and, Pip, you’re him!” The abhorrence in which I held the man, the dread I had of him, the repugnance with which I shrank from him, could not have been exceeded if he had been some terrible beast. “Look’ee here,"
+          },
+          {
+            "id": "great-expectations-quotation-opening-name",
+            "mode": "quotation",
+            "sourceId": "gutenberg-great-expectations",
+            "locator": "Chapter I; Pip explains his name",
+            "requiredAnswer": "My father’s family name being Pirrip, and my Christian name Philip",
+            "excerpt": "Chapter XI. Chapter XII. Chapter XIII. Chapter XIV. Chapter XV. Chapter XVI. Chapter XVII. Chapter XVIII. Chapter XIX. Chapter XX. Chapter XXI. Chapter XXII. Chapter XXIII. Chapter XXIV. Chapter XXV. Chapter XXVI. Chapter XXVII. Chapter XXVIII. Chapter XXIX. Chapter XXX. Chapter XXXI. Chapter XXXII. Chapter XXXIII. Chapter XXXIV. Chapter XXXV. Chapter XXXVI. Chapter XXXVII. Chapter XXXVIII. Chapter XXXIX. Chapter XL. Chapter XLI. Chapter XLII. Chapter XLIII. Chapter XLIV. Chapter XLV. Chapter XLVI. Chapter XLVII. Chapter XLVIII. Chapter XLIX. Chapter L. Chapter LI. Chapter LII. Chapter LIII. Chapter LIV. Chapter LV. Chapter LVI. Chapter LVII. Chapter LVIII. Chapter LIX. [Illustration] Chapter I. My father’s family name being Pirrip, and my Christian name Philip, my infant tongue could make of both names nothing longer or more explicit than Pip. So, I called myself Pip, and came to be called Pip. I give Pirrip as my father’s family name, on the authority of his tombstone and my sister,—Mrs. Joe Gargery, who married the blacksmith. As I never saw my father or my mother, and never saw any likeness of either of them (for their days were long before the days of photographs), my first fancies regarding what they were like were unreasonably derived from their tombstones. The shape of the letters on my father’s, gave me an odd idea that he was a square, stout, dark man, with curly black hair. From the character and turn of the inscription, “_Also Georgiana"
+          },
+          {
+            "id": "great-expectations-quotation-estella-heart",
+            "mode": "quotation",
+            "sourceId": "gutenberg-great-expectations",
+            "locator": "Chapter XXIX; Estella warns Pip",
+            "requiredAnswer": "I have no heart,—if that has anything to do with my memory.",
+            "excerpt": "had made the round of it twice or thrice, we came out again into the brewery yard. I showed her to a nicety where I had seen her walking on the casks, that first old day, and she said, with a cold and careless look in that direction, “Did I?” I reminded her where she had come out of the house and given me my meat and drink, and she said, “I don’t remember.” “Not remember that you made me cry?” said I. “No,” said she, and shook her head and looked about her. I verily believe that her not remembering and not minding in the least, made me cry again, inwardly,—and that is the sharpest crying of all. “You must know,” said Estella, condescending to me as a brilliant and beautiful woman might, “that I have no heart,—if that has anything to do with my memory.” I got through some jargon to the effect that I took the liberty of doubting that. That I knew better. That there could be no such beauty without it. “Oh! I have a heart to be stabbed in or shot in, I have no doubt,” said Estella, “and of course if it ceased to beat I should cease to be. But you know what I mean. I have no softness there, no—sympathy—sentiment—nonsense.” What _was_ it that was borne in upon my mind when she stood still and looked attentively at me? Anything that I had seen in Miss Havisham? No. In some of her looks and gestures there was that tinge of resemblance to Miss Havisham which may often be noticed to have been acquired by children, from grown person with whom they have"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+        "title": "A Christmas Carol",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-a-christmas-carol",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/46/pg46.txt",
+            "title": "A Christmas Carol by Charles Dickens",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "1f865ca425054466ef4c0332c0bad614a92bed0a57a926b55532086e943b3bdb"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "a-christmas-carol-plot-marley-dead",
+            "mode": "plot",
+            "sourceId": "gutenberg-a-christmas-carol",
+            "locator": "Stave I; the narrator establishes Marley's death",
+            "requiredAnswer": null,
+            "excerpt": "*** START OF THE PROJECT GUTENBERG EBOOK A CHRISTMAS CAROL IN PROSE; BEING A GHOST STORY OF CHRISTMAS *** A CHRISTMAS CAROL IN PROSE BEING A Ghost Story of Christmas by Charles Dickens PREFACE I HAVE endeavoured in this Ghostly little book, to raise the Ghost of an Idea, which shall not put my readers out of humour with themselves, with each other, with the season, or with me. May it haunt their houses pleasantly, and no one wish to lay it. Their faithful Friend and Servant, C. D. December, 1843. CONTENTS Stave I: Marley's Ghost Stave II: The First of the Three Spirits Stave III: The Second of the Three Spirits Stave IV: The Last of the Spirits Stave V: The End of It STAVE I: MARLEY'S GHOST MARLEY was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it: and Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile; and my unhallowed hands shall not disturb it, or the Country's done for. You will therefore permit me to repeat, emphatically, that Marley was"
+          },
+          {
+            "id": "a-christmas-carol-plot-scrooge-changed",
+            "mode": "plot",
+            "sourceId": "gutenberg-a-christmas-carol",
+            "locator": "Stave V; Scrooge keeps his promises",
+            "requiredAnswer": null,
+            "excerpt": "therefore I am about to raise your salary!\" Bob trembled, and got a little nearer to the ruler. He had a momentary idea of knocking Scrooge down with it, holding him, and calling to the people in the court for help and a strait-waistcoat. \"A merry Christmas, Bob!\" said Scrooge, with an earnestness that could not be mistaken, as he clapped him on the back. \"A merrier Christmas, Bob, my good fellow, than I have given you, for many a year! I'll raise your salary, and endeavour to assist your struggling family, and we will discuss your affairs this very afternoon, over a Christmas bowl of smoking bishop, Bob! Make up the fires, and buy another coal-scuttle before you dot another i, Bob Cratchit!\" Scrooge was better than his word. He did it all, and infinitely more; and to Tiny Tim, who did NOT die, he was a second father. He became as good a friend, as good a master, and as good a man, as the good old city knew, or any other good old city, town, or borough, in the good old world. Some people laughed to see the alteration in him, but he let them laugh, and little heeded them; for he was wise enough to know that nothing ever happened on this globe, for good, at which some people did not have their fill of laughter in the outset; and knowing that such as these would be blind anyway, he thought it quite as well that they should wrinkle up their eyes in grins, as have the malady in less attractive forms. His own heart laughed:"
+          },
+          {
+            "id": "a-christmas-carol-quotation-honour-christmas",
+            "mode": "quotation",
+            "sourceId": "gutenberg-a-christmas-carol",
+            "locator": "Stave IV; Scrooge promises to change",
+            "requiredAnswer": "I will honour Christmas in my heart, and try to keep it all the year.",
+            "excerpt": "stone of the neglected grave his own name, EBENEZER SCROOGE. \"Am I that man who lay upon the bed?\" he cried, upon his knees. The finger pointed from the grave to him, and back again. \"No, Spirit! Oh no, no!\" The finger still was there. \"Spirit!\" he cried, tight clutching at its robe, \"hear me! I am not the man I was. I will not be the man I must have been but for this intercourse. Why show me this, if I am past all hope!\" For the first time the hand appeared to shake. \"Good Spirit,\" he pursued, as down upon the ground he fell before it: \"Your nature intercedes for me, and pities me. Assure me that I yet may change these shadows you have shown me, by an altered life!\" The kind hand trembled. \"I will honour Christmas in my heart, and try to keep it all the year. I will live in the Past, the Present, and the Future. The Spirits of all Three shall strive within me. I will not shut out the lessons that they teach. Oh, tell me I may sponge away the writing on this stone!\" In his agony, he caught the spectral hand. It sought to free itself, but he was strong in his entreaty, and detained it. The Spirit, stronger yet, repulsed him. Holding up his hands in a last prayer to have his fate reversed, he saw an alteration in the Phantom's hood and dress. It shrunk, collapsed, and dwindled down into a bedpost. STAVE V: THE END OF IT YES! and the bedpost was his own. The bed was his own, the room was his own. Best and happiest of all, the Time before him was his"
+          },
+          {
+            "id": "a-christmas-carol-quotation-tiny-tim",
+            "mode": "quotation",
+            "sourceId": "gutenberg-a-christmas-carol",
+            "locator": "Stave III; Tiny Tim's toast",
+            "requiredAnswer": "God bless us every one!",
+            "excerpt": "swept, and the fire made up. The compound in the jug being tasted, and considered perfect, apples and oranges were put upon the table, and a shovel-full of chestnuts on the fire. Then all the Cratchit family drew round the hearth, in what Bob Cratchit called a circle, meaning half a one; and at Bob Cratchit's elbow stood the family display of glass. Two tumblers, and a custard-cup without a handle. These held the hot stuff from the jug, however, as well as golden goblets would have done; and Bob served it out with beaming looks, while the chestnuts on the fire sputtered and cracked noisily. Then Bob proposed: \"A Merry Christmas to us all, my dears. God bless us!\" Which all the family re-echoed. \"God bless us every one!\" said Tiny Tim, the last of all. He sat very close to his father's side upon his little stool. Bob held his withered little hand in his, as if he loved the child, and wished to keep him by his side, and dreaded that he might be taken from him. \"Spirit,\" said Scrooge, with an interest he had never felt before, \"tell me if Tiny Tim will live.\" \"I see a vacant seat,\" replied the Ghost, \"in the poor chimney-corner, and a crutch without an owner, carefully preserved. If these shadows remain unaltered by the Future, the child will die.\" \"No, no,\" said Scrooge. \"Oh, no, kind Spirit! say he will be spared.\" \"If these shadows remain unaltered by the Future, none other of my race,\" returned the Ghost,"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+        "title": "Pride and Prejudice",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-pride-and-prejudice",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
+            "title": "Pride and Prejudice by Jane Austen",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "101fddbe7c28fd4267004de2ba4fdeb72dd4969689fc08a5167dcb91a40bf031"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "pride-and-prejudice-plot-first-proposal",
+            "mode": "plot",
+            "sourceId": "gutenberg-pride-and-prejudice",
+            "locator": "Chapter XXXIV; Darcy's first proposal",
+            "requiredAnswer": null,
+            "excerpt": "before called late in the evening, and might now come to inquire particularly after her. But this idea was soon banished, and her spirits were very differently affected, when, to her utter amazement, she saw Mr. Darcy walk into the room. In a hurried manner he immediately began an inquiry after her health, imputing his visit to a wish of hearing that she were better. She answered him with cold civility. He sat down for a few moments, and then getting up walked about the room. Elizabeth was surprised, but said not a word. After a silence of several minutes, he came towards her in an agitated manner, and thus began:-- “In vain have I struggled. It will not do. My feelings will not be repressed. You must allow me to tell you how ardently I admire and love you.” Elizabeth’s astonishment was beyond expression. She stared, coloured, doubted, and was silent. This he considered sufficient encouragement, and the avowal of all that he felt and had long felt for her immediately followed. He spoke well; but there were feelings besides those of the heart to be detailed, and he was not more eloquent on the subject of tenderness than of pride. His sense of her inferiority, of its being a degradation, of the family obstacles which judgment had always opposed to inclination, were dwelt on with a warmth which seemed due to the consequence he was wounding, but was very unlikely to recommend his suit. In spite of her deeply-rooted dislike, she could not be insensible"
+          },
+          {
+            "id": "pride-and-prejudice-plot-jane-bingley-engagement",
+            "mode": "plot",
+            "sourceId": "gutenberg-pride-and-prejudice",
+            "locator": "Chapter LVI; Jane and Bingley's engagement",
+            "requiredAnswer": null,
+            "excerpt": "so happy as you. Till I have your disposition, your goodness, I never can have your happiness. No, no, let me shift for myself; and, perhaps, if I have very good luck, I may meet with another Mr. Collins in time.” The situation of affairs in the Longbourn family could not be long a secret. Mrs. Bennet was privileged to whisper it to Mrs. Philips, and she ventured, without any permission, to do the same by all her neighbours in Meryton. The Bennets were speedily pronounced to be the luckiest family in the world; though only a few weeks before, when Lydia had first run away, they had been generally proved to be marked out for misfortune. [Illustration] CHAPTER LVI. [Illustration] One morning, about a week after Bingley’s engagement with Jane had been formed, as he and the females of the family were sitting together in the dining-room, their attention was suddenly drawn to the window by the sound of a carriage; and they perceived a chaise and four driving up the lawn. It was too early in the morning for visitors; and besides, the equipage did not answer to that of any of their neighbours. The horses were post; and neither the carriage, nor the livery of the servant who preceded it, were familiar to them. As it was certain, however, that somebody was coming, Bingley instantly prevailed on Miss Bennet to avoid the confinement of such an intrusion, and walk away with him into the shrubbery. They both set off; and the conjectures of the remaining three"
+          },
+          {
+            "id": "pride-and-prejudice-quotation-opening",
+            "mode": "quotation",
+            "sourceId": "gutenberg-pride-and-prejudice",
+            "locator": "Chapter I; opening sentence",
+            "requiredAnswer": "It is a truth universally acknowledged",
+            "excerpt": "not an instant to lose” 339 “The first pleasing earnest of their welcome” 345 The Post 359 “To whom I have related the affair” 363 Heading to Chapter XLIX. 368 “But perhaps you would like to read it” 370 “The spiteful old ladies” 377 “With an affectionate smile” 385 “I am sure she did not listen” 393 “Mr. Darcy with him” 404 “Jane happened to look round” 415 “Mrs. Long and her nieces” 420 “Lizzy, my dear, I want to speak to you” 422 Heading to Chapter LVI. 431 “After a short survey” 434 “But now it comes out” 442 “The efforts of his aunt” 448 “Unable to utter a syllable” 457 “The obsequious civility” 466 Heading to Chapter LXI. 472 The End 476 [Illustration: ·PRIDE AND PREJUDICE· Chapter I.] It is a truth universally acknowledged, that a single man in possession of a good fortune must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters. “My dear Mr. Bennet,” said his lady to him one day, “have you heard that Netherfield Park is let at last?” Mr. Bennet replied that he had not. “But it is,” returned she; “for Mrs. Long has just been here, and she told me all about it.” Mr. Bennet made no answer. “Do not you want to know who has taken it?” cried his wife, impatiently. “_You_ want to tell me, and I have no objection to hearing"
+          },
+          {
+            "id": "pride-and-prejudice-quotation-darcy-opinion",
+            "mode": "quotation",
+            "sourceId": "gutenberg-pride-and-prejudice",
+            "locator": "Chapter XI; Darcy describes his resentment",
+            "requiredAnswer": "My good opinion once lost is lost for ever.",
+            "excerpt": "regulation.” Elizabeth turned away to hide a smile. “Your examination of Mr. Darcy is over, I presume,” said Miss Bingley; “and pray what is the result?” “I am perfectly convinced by it that Mr. Darcy has no defect. He owns it himself without disguise.” “No,” said Darcy, “I have made no such pretension. I have faults enough, but they are not, I hope, of understanding. My temper I dare not vouch for. It is, I believe, too little yielding; certainly too little for the convenience of the world. I cannot forget the follies and vices of others so soon as I ought, nor their offences against myself. My feelings are not puffed about with every attempt to move them. My temper would perhaps be called resentful. My good opinion once lost is lost for ever.” “_That_ is a failing, indeed!” cried Elizabeth. “Implacable resentment _is_ a shade in a character. But you have chosen your fault well. I really cannot _laugh_ at it. You are safe from me.” “There is, I believe, in every disposition a tendency to some particular evil, a natural defect, which not even the best education can overcome.” “And _your_ defect is a propensity to hate everybody.” “And yours,” he replied, with a smile, “is wilfully to misunderstand them.” “Do let us have a little music,” cried Miss Bingley, tired of a conversation in which she had no share. “Louisa, you will not mind my waking Mr. Hurst.” Her sister made not the smallest objection, and the pianoforte was opened; and"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+        "title": "The War of the Worlds",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-the-war-of-the-worlds",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/36/pg36.txt",
+            "title": "The War of the Worlds by H. G. Wells",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "617f3e16aae11d02afca619ae8950cc9ba6be680a5a898344934efe6210bb0d9"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "war-of-the-worlds-plot-cylinder-opens",
+            "mode": "plot",
+            "sourceId": "gutenberg-the-war-of-the-worlds",
+            "locator": "Book One, Chapter IV; the cylinder opens",
+            "requiredAnswer": null,
+            "excerpt": "like it. I’m a-goin’ ’ome, I am.” I went on to the crowd. There were really, I should think, two or three hundred people elbowing and jostling one another, the one or two ladies there being by no means the least active. “He’s fallen in the pit!” cried some one. “Keep back!” said several. The crowd swayed a little, and I elbowed my way through. Every one seemed greatly excited. I heard a peculiar humming sound from the pit. “I say!” said Ogilvy; “help keep these idiots back. We don’t know what’s in the confounded thing, you know!” I saw a young man, a shop assistant in Woking I believe he was, standing on the cylinder and trying to scramble out of the hole again. The crowd had pushed him in. The end of the cylinder was being screwed out from within. Nearly two feet of shining screw projected. Somebody blundered against me, and I narrowly missed being pitched onto the top of the screw. I turned, and as I did so the screw must have come out, for the lid of the cylinder fell upon the gravel with a ringing concussion. I stuck my elbow into the person behind me, and turned my head towards the Thing again. For a moment that circular cavity seemed perfectly black. I had the sunset in my eyes. I think everyone expected to see a man emerge—possibly something a little unlike us terrestrial men, but in all essentials a man. I know I did. But, looking, I presently saw something stirring within the shadow: greyish billowy movements, one above another,"
+          },
+          {
+            "id": "war-of-the-worlds-plot-bacteria-defeat",
+            "mode": "plot",
+            "sourceId": "gutenberg-the-war-of-the-worlds",
+            "locator": "Book Two, Chapter VIII; the Martians' defeat",
+            "requiredAnswer": null,
+            "excerpt": "ran and disappeared. The thought that had flashed into my mind grew real, grew credible. I felt no fear, only a wild, trembling exultation, as I ran up the hill towards the motionless monster. Out of the hood hung lank shreds of brown, at which the hungry birds pecked and tore. In another moment I had scrambled up the earthen rampart and stood upon its crest, and the interior of the redoubt was below me. A mighty space it was, with gigantic machines here and there within it, huge mounds of material and strange shelter places. And scattered about it, some in their overturned war-machines, some in the now rigid handling-machines, and a dozen of them stark and silent and laid in a row, were the Martians—_dead!_—slain by the putrefactive and disease bacteria against which their systems were unprepared; slain as the red weed was being slain; slain, after all man’s devices had failed, by the humblest things that God, in his wisdom, has put upon this earth. For so it had come about, as indeed I and many men might have foreseen had not terror and disaster blinded our minds. These germs of disease have taken toll of humanity since the beginning of things—taken toll of our prehuman ancestors since life began here. But by virtue of this natural selection of our kind we have developed resisting power; to no germs do we succumb without a struggle, and to many—those that cause putrefaction in dead matter, for instance—our living frames are altogether immune."
+          },
+          {
+            "id": "war-of-the-worlds-quotation-opening",
+            "mode": "quotation",
+            "sourceId": "gutenberg-the-war-of-the-worlds",
+            "locator": "Book One, Chapter I; opening sentence",
+            "requiredAnswer": "No one would have believed in the last years of the nineteenth century",
+            "excerpt": "HEAT-RAY. VI. THE HEAT-RAY IN THE CHOBHAM ROAD. VII. HOW I REACHED HOME. VIII. FRIDAY NIGHT. IX. THE FIGHTING BEGINS. X. IN THE STORM. XI. AT THE WINDOW. XII. WHAT I SAW OF THE DESTRUCTION OF WEYBRIDGE AND SHEPPERTON. XIII. HOW I FELL IN WITH THE CURATE. XIV. IN LONDON. XV. WHAT HAD HAPPENED IN SURREY. XVI. THE EXODUS FROM LONDON. XVII. THE “THUNDER CHILD”. BOOK TWO.—THE EARTH UNDER THE MARTIANS I. UNDER FOOT. II. WHAT WE SAW FROM THE RUINED HOUSE. III. THE DAYS OF IMPRISONMENT. IV. THE DEATH OF THE CURATE. V. THE STILLNESS. VI. THE WORK OF FIFTEEN DAYS. VII. THE MAN ON PUTNEY HILL. VIII. DEAD LONDON. IX. WRECKAGE. X. THE EPILOGUE. BOOK ONE THE COMING OF THE MARTIANS I. THE EVE OF THE WAR. No one would have believed in the last years of the nineteenth century that this world was being watched keenly and closely by intelligences greater than man’s and yet as mortal as his own; that as men busied themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water. With infinite complacency men went to and fro over this globe about their little affairs, serene in their assurance of their empire over matter. It is possible that the infusoria under the microscope do the same. No one gave a thought to the older worlds of space as sources of human danger, or thought of them only to dismiss the idea of life upon"
+          },
+          {
+            "id": "war-of-the-worlds-quotation-birthright",
+            "mode": "quotation",
+            "sourceId": "gutenberg-the-war-of-the-worlds",
+            "locator": "Book Two, Chapter VIII; the narrator reflects on survival",
+            "requiredAnswer": "By the toll of a billion deaths man has bought his birthright of the earth",
+            "excerpt": "terror and disaster blinded our minds. These germs of disease have taken toll of humanity since the beginning of things—taken toll of our prehuman ancestors since life began here. But by virtue of this natural selection of our kind we have developed resisting power; to no germs do we succumb without a struggle, and to many—those that cause putrefaction in dead matter, for instance—our living frames are altogether immune. But there are no bacteria in Mars, and directly these invaders arrived, directly they drank and fed, our microscopic allies began to work their overthrow. Already when I watched them they were irrevocably doomed, dying and rotting even as they went to and fro. It was inevitable. By the toll of a billion deaths man has bought his birthright of the earth, and it is his against all comers; it would still be his were the Martians ten times as mighty as they are. For neither do men live nor die in vain. Here and there they were scattered, nearly fifty altogether, in that great gulf they had made, overtaken by a death that must have seemed to them as incomprehensible as any death could be. To me also at that time this death was incomprehensible. All I knew was that these things that had been alive and so terrible to men were dead. For a moment I believed that the destruction of Sennacherib had been repeated, that God had repented, that the Angel of Death had slain them in the night. I stood staring into the pit, and my heart lightened gloriously,"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+        "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-jekyll-and-hyde",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/43/pg43.txt",
+            "title": "The Strange Case of Dr Jekyll and Mr Hyde by Robert Louis Stevenson",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "b2caa26084ba311729931b72b9c4ee7ccb9370a4080d48cae86e24ad81cf14a3"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "jekyll-and-hyde-plot-child",
+            "mode": "plot",
+            "sourceId": "gutenberg-jekyll-and-hyde",
+            "locator": "Story of the Door; Hyde tramples the child",
+            "requiredAnswer": null,
+            "excerpt": "black winter morning, and my way lay through a part of town where there was literally nothing to be seen but lamps. Street after street and all the folks asleep—street after street, all lighted up as if for a procession and all as empty as a church—till at last I got into that state of mind when a man listens and listens and begins to long for the sight of a policeman. All at once, I saw two figures: one a little man who was stumping along eastward at a good walk, and the other a girl of maybe eight or ten who was running as hard as she was able down a cross street. Well, sir, the two ran into one another naturally enough at the corner; and then came the horrible part of the thing; for the man trampled calmly over the child’s body and left her screaming on the ground. It sounds nothing to hear, but it was hellish to see. It wasn’t like a man; it was like some damned Juggernaut. I gave a few halloa, took to my heels, collared my gentleman, and brought him back to where there was already quite a group about the screaming child. He was perfectly cool and made no resistance, but gave me one look, so ugly that it brought out the sweat on me like running. The people who had turned out were the girl’s own family; and pretty soon, the doctor, for whom she had been sent, put in his appearance. Well, the child was not much the worse, more frightened, according to the Sawbones; and there you might have supposed would be an end to it. But there was one"
+          },
+          {
+            "id": "jekyll-and-hyde-plot-cabinet-body",
+            "mode": "plot",
+            "sourceId": "gutenberg-jekyll-and-hyde",
+            "locator": "The Last Night; Utterson and Poole enter the cabinet",
+            "requiredAnswer": null,
+            "excerpt": "fell; but the wood was tough and the fittings were of excellent workmanship; and it was not until the fifth, that the lock burst and the wreck of the door fell inwards on the carpet. The besiegers, appalled by their own riot and the stillness that had succeeded, stood back a little and peered in. There lay the cabinet before their eyes in the quiet lamplight, a good fire glowing and chattering on the hearth, the kettle singing its thin strain, a drawer or two open, papers neatly set forth on the business table, and nearer the fire, the things laid out for tea; the quietest room, you would have said, and, but for the glazed presses full of chemicals, the most commonplace that night in London. Right in the middle there lay the body of a man sorely contorted and still twitching. They drew near on tiptoe, turned it on his back and beheld the face of Edward Hyde. He was dressed in clothes far too large for him, clothes of the doctor’s bigness; the cords of his face still moved with a semblance of life, but life was quite gone; and by the crushed phial in the hand and the strong smell of kernels that hung upon the air, Utterson knew that he was looking on the body of a self-destroyer. “We have come too late,” he said sternly, “whether to save or punish. Hyde is gone to his account; and it only remains for us to find the body of your master.” The far greater proportion of the building was occupied by the theatre, which filled almost the whole ground"
+          },
+          {
+            "id": "jekyll-and-hyde-quotation-two",
+            "mode": "quotation",
+            "sourceId": "gutenberg-jekyll-and-hyde",
+            "locator": "Henry Jekyll's Full Statement of the Case; Jekyll states his theory",
+            "requiredAnswer": "man is not truly one, but truly two",
+            "excerpt": "profound a double-dealer, I was in no sense a hypocrite; both sides of me were in dead earnest; I was no more myself when I laid aside restraint and plunged in shame, than when I laboured, in the eye of day, at the furtherance of knowledge or the relief of sorrow and suffering. And it chanced that the direction of my scientific studies, which led wholly towards the mystic and the transcendental, reacted and shed a strong light on this consciousness of the perennial war among my members. With every day, and from both sides of my intelligence, the moral and the intellectual, I thus drew steadily nearer to that truth, by whose partial discovery I have been doomed to such a dreadful shipwreck: that man is not truly one, but truly two. I say two, because the state of my own knowledge does not pass beyond that point. Others will follow, others will outstrip me on the same lines; and I hazard the guess that man will be ultimately known for a mere polity of multifarious, incongruous and independent denizens. I, for my part, from the nature of my life, advanced infallibly in one direction and in one direction only. It was on the moral side, and in my own person, that I learned to recognise the thorough and primitive duality of man; I saw that, of the two natures that contended in the field of my consciousness, even if I could rightly be said to be either, it was only because I was radically both; and from an early date, even"
+          },
+          {
+            "id": "jekyll-and-hyde-quotation-sufferers",
+            "mode": "quotation",
+            "sourceId": "gutenberg-jekyll-and-hyde",
+            "locator": "Remarkable Incident of Dr Lanyon; Jekyll writes to Utterson",
+            "requiredAnswer": "I am the chief of sinners, I am the chief of sufferers also.",
+            "excerpt": "bear it.” As soon as he got home, Utterson sat down and wrote to Jekyll, complaining of his exclusion from the house, and asking the cause of this unhappy break with Lanyon; and the next day brought him a long answer, often very pathetically worded, and sometimes darkly mysterious in drift. The quarrel with Lanyon was incurable. “I do not blame our old friend,” Jekyll wrote, “but I share his view that we must never meet. I mean from henceforth to lead a life of extreme seclusion; you must not be surprised, nor must you doubt my friendship, if my door is often shut even to you. You must suffer me to go my own dark way. I have brought on myself a punishment and a danger that I cannot name. If I am the chief of sinners, I am the chief of sufferers also. I could not think that this earth contained a place for sufferings and terrors so unmanning; and you can do but one thing, Utterson, to lighten this destiny, and that is to respect my silence.” Utterson was amazed; the dark influence of Hyde had been withdrawn, the doctor had returned to his old tasks and amities; a week ago, the prospect had smiled with every promise of a cheerful and an honoured age; and now in a moment, friendship, and peace of mind, and the whole tenor of his life were wrecked. So great and unprepared a change pointed to madness; but in view of Lanyon’s manner and words, there must lie for it some deeper ground. A week afterwards Dr. Lanyon took to his bed, and in something"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+        "title": "Jane Eyre",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-jane-eyre",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1260/pg1260.txt",
+            "title": "Jane Eyre by Charlotte Brontë",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "76c360aa718514ed2e1ca5a2684b31bdf13aa1c7cd4b1ad3ca99cee7bc8e1c36"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "jane-eyre-plot-wife-reveal",
+            "mode": "plot",
+            "sourceId": "gutenberg-jane-eyre",
+            "locator": "Chapter XXVI; Rochester's existing marriage is revealed",
+            "requiredAnswer": null,
+            "excerpt": "marriage exists.” Mr. Rochester heard, but heeded not: he stood stubborn and rigid, making no movement but to possess himself of my hand. What a hot and strong grasp he had! and how like quarried marble was his pale, firm, massive front at this moment! How his eye shone, still watchful, and yet wild beneath! Mr. Wood seemed at a loss. “What is the nature of the impediment?” he asked. “Perhaps it may be got over—explained away?” “Hardly,” was the answer. “I have called it insuperable, and I speak advisedly.” The speaker came forward and leaned on the rails. He continued, uttering each word distinctly, calmly, steadily, but not loudly— “It simply consists in the existence of a previous marriage. Mr. Rochester has a wife now living.” My nerves vibrated to those low-spoken words as they had never vibrated to thunder—my blood felt their subtle violence as it had never felt frost or fire; but I was collected, and in no danger of swooning. I looked at Mr. Rochester: I made him look at me. His whole face was colourless rock: his eye was both spark and flint. He disavowed nothing: he seemed as if he would defy all things. Without speaking, without smiling, without seeming to recognise in me a human being, he only twined my waist with his arm and riveted me to his side. “Who are you?” he asked of the intruder. “My name is Briggs, a solicitor of —— Street, London.” “And you would thrust on me a wife?” “I would remind you of your"
+          },
+          {
+            "id": "jane-eyre-plot-thornfield-fire",
+            "mode": "plot",
+            "sourceId": "gutenberg-jane-eyre",
+            "locator": "Chapter XXXVI; Jane learns what happened to Thornfield",
+            "requiredAnswer": null,
+            "excerpt": "Fully assured by these words that Mr. Edward—_my_ Mr. Rochester (God bless him, wherever he was!)—was at least alive: was, in short, “the present gentleman.” Gladdening words! It seemed I could hear all that was to come—whatever the disclosures might be—with comparative tranquillity. Since he was not in the grave, I could bear, I thought, to learn that he was at the Antipodes. “Is Mr. Rochester living at Thornfield Hall now?” I asked, knowing, of course, what the answer would be, but yet desirous of deferring the direct question as to where he really was. “No, ma’am—oh, no! No one is living there. I suppose you are a stranger in these parts, or you would have heard what happened last autumn,—Thornfield Hall is quite a ruin: it was burnt down just about harvest-time. A dreadful calamity! such an immense quantity of valuable property destroyed: hardly any of the furniture could be saved. The fire broke out at dead of night, and before the engines arrived from Millcote, the building was one mass of flame. It was a terrible spectacle: I witnessed it myself.” “At dead of night!” I muttered. Yes, that was ever the hour of fatality at Thornfield. “Was it known how it originated?” I demanded. “They guessed, ma’am: they guessed. Indeed, I should say it was ascertained beyond a doubt. You are not perhaps aware,” he continued, edging his chair a little nearer the table, and speaking low, “that there was a lady—a—a lunatic, kept in the house?”"
+          },
+          {
+            "id": "jane-eyre-quotation-no-bird",
+            "mode": "quotation",
+            "sourceId": "gutenberg-jane-eyre",
+            "locator": "Chapter XXIII; Jane asserts her independence",
+            "requiredAnswer": "I am no bird; and no net ensnares me; I am a free human being",
+            "excerpt": "feet, equal,—as we are!” “As we are!” repeated Mr. Rochester—“so,” he added, enclosing me in his arms, gathering me to his breast, pressing his lips on my lips: “so, Jane!” “Yes, so, sir,” I rejoined: “and yet not so; for you are a married man—or as good as a married man, and wed to one inferior to you—to one with whom you have no sympathy—whom I do not believe you truly love; for I have seen and heard you sneer at her. I would scorn such a union: therefore I am better than you—let me go!” “Where, Jane? To Ireland?” “Yes—to Ireland. I have spoken my mind, and can go anywhere now.” “Jane, be still; don’t struggle so, like a wild frantic bird that is rending its own plumage in its desperation.” “I am no bird; and no net ensnares me; I am a free human being with an independent will, which I now exert to leave you.” Another effort set me at liberty, and I stood erect before him. “And your will shall decide your destiny,” he said: “I offer you my hand, my heart, and a share of all my possessions.” “You play a farce, which I merely laugh at.” “I ask you to pass through life at my side—to be my second self, and best earthly companion.” “For that fate you have already made your choice, and must abide by it.” “Jane, be still a few moments: you are over-excited: I will be still too.” A waft of wind came sweeping down the laurel-walk, and trembled through the boughs of the chestnut: it wandered away—away—to an indefinite distance—it died. The nightingale’s"
+          },
+          {
+            "id": "jane-eyre-quotation-reader-married",
+            "mode": "quotation",
+            "sourceId": "gutenberg-jane-eyre",
+            "locator": "Chapter XXXVIII; Jane states the outcome",
+            "requiredAnswer": "Reader, I married him.",
+            "excerpt": "know it to be otherwise. Yes, I thank God!” He put me off his knee, rose, and reverently lifting his hat from his brow, and bending his sightless eyes to the earth, he stood in mute devotion. Only the last words of the worship were audible. “I thank my Maker, that, in the midst of judgment, he has remembered mercy. I humbly entreat my Redeemer to give me strength to lead henceforth a purer life than I have done hitherto!” Then he stretched his hand out to be led. I took that dear hand, held it a moment to my lips, then let it pass round my shoulder: being so much lower of stature than he, I served both for his prop and guide. We entered the wood, and wended homeward. CHAPTER XXXVIII—CONCLUSION Reader, I married him. A quiet wedding we had: he and I, the parson and clerk, were alone present. When we got back from church, I went into the kitchen of the manor-house, where Mary was cooking the dinner and John cleaning the knives, and I said— “Mary, I have been married to Mr. Rochester this morning.” The housekeeper and her husband were both of that decent phlegmatic order of people, to whom one may at any time safely communicate a remarkable piece of news without incurring the danger of having one’s ears pierced by some shrill ejaculation, and subsequently stunned by a torrent of wordy wonderment. Mary did look up, and she did stare at me: the ladle with which she was basting a pair of chickens roasting at"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+        "title": "Love and Relationships",
+        "coverage": {
+          "plot": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "Plot recall is not applicable to a thematic poetry cluster."
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 2,
+            "reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+          },
+          "method": {
+            "status": "ready",
+            "expectedCardCount": 3,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "ocr-j352-specification-love-poetry",
+            "kind": "curriculum-specification",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+            "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+            "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence.",
+            "verificationAnchors": [],
+            "sourceHash": "7c2bbf0ecbea24e2636702de449d037a00b184b854ecdc8df0ec8ce94cc5ed8a"
+          },
+          {
+            "id": "ocr-love-poetry-current-teacher-guide",
+            "kind": "supporting-document",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/654700-love-and-relationships.pdf",
+            "title": "OCR Love and Relationships Poetry Teacher Guide, updated cluster",
+            "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+            "verificationAnchors": [
+              "A Song",
+              "Bright Star"
+            ],
+            "sourceHash": "2140bf1093dfddda5bd0fe9c0bf596d82d5aefb490c15591d2c3b2c0ab7f9174"
+          },
+          {
+            "id": "ocr-anthology-public-domain-love",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-anthology-pdf",
+            "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+            "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+            "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition.",
+            "verificationAnchors": [],
+            "sourceHash": "53670157999399d5ea139df31c2ad307467e89e5b9c2590377a42b5bc76a5f66"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "love-poetry-method-evidence-supported-response",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-love-poetry",
+            "locator": "J352 specification, physical PDF page 19; Poetry across time critical reading skills",
+            "requiredAnswer": null,
+            "excerpt": "make an informed personal response, justifying a point of view by referring closely to evidence in the text"
+          },
+          {
+            "id": "love-poetry-method-language-form-structure",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-love-poetry",
+            "locator": "J352 specification, physical PDF page 18; critical reading skills",
+            "requiredAnswer": null,
+            "excerpt": "Learners analyse and evaluate how language, form and structure inform and impact on their reading of poetry."
+          },
+          {
+            "id": "love-poetry-method-connections-contrasts",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-love-poetry",
+            "locator": "J352 specification, physical PDF page 18; comparative understanding",
+            "requiredAnswer": null,
+            "excerpt": "learners make connections and contrasts between poems, comparing features and qualities."
+          },
+          {
+            "id": "love-poetry-quotation-a-song",
+            "mode": "quotation",
+            "sourceId": "ocr-anthology-public-domain-love",
+            "locator": "Love and Relationships, A Song by Helen Maria Williams, lines 3-4, anthology page 7",
+            "requiredAnswer": "He gave a boon I valued more — He gave me all his heart!",
+            "excerpt": "Flag John Agard 28 Phrase Book Jo Shapcott 28 Honour Killing Imtiaz Dharker 30 Partition Sujata Bhatt 31 Youth and Age Holy Thursday William Blake 32 When I have fears that I may cease to be John Keats 33 The Bluebell Anne Brontë 34 Midnight on the Great Western Thomas Hardy 35 Spring and Fall: to a Young Child Gerard Manley Hopkins 36 Ode Arthur O’Shaughnessy 36 Out, Out– Robert Frost 37 Red Roses Anne Sexton 38 Baby Song Thom Gunn 39 You’re Sylvia Plath 40 Cold Knap Lake Gillian Clarke 40 My First Weeks Sharon Olds 41 Venus’s-flytraps Yusef Komunyakaa 42 Love Kate Clanchy 43 Farther Owen Sheers 44 5 6 Love and Relationships A Song I 1 No riches from his scanty store My lover could impart; He gave a boon I valued more — He gave me all his heart! II 5 His soul sincere, his generous worth, Might well this bosom move; And when I asked for bliss on earth, I only meant his love. III But now for me, in search of gain 10 From shore to shore he flies; Why wander riches to obtain, When love is all I prize? IV The frugal meal, the lowly cot If blest my love with thee! 15 That simple fare, that humble lot, Were more than wealth to me. V While he the dangerous ocean braves, My tears but vainly flow: Is pity in the faithless waves 20 To which I pour my woe? VI The night is dark, the waters deep, Yet soft the billows roll; Alas! at every breeze I weep — The storm is in my soul. HELEN MARIA WILLIAMS (1761–1827) Towards a World Unknown • Love and Relationships"
+          },
+          {
+            "id": "love-poetry-quotation-bright-star",
+            "mode": "quotation",
+            "sourceId": "ocr-anthology-public-domain-love",
+            "locator": "Love and Relationships, Bright Star by John Keats, line 1, anthology page 8",
+            "requiredAnswer": "Bright star, would I were stedfast as thou art–",
+            "excerpt": "Now 1 Out of your whole life give but a moment! All of your life that has gone before, All to come after it, – so you ignore So you make perfect the present, – condense, 5 In a rapture of rage, for perfection’s endowment, Thought and feeling and soul and sense – Merged in a moment which gives me at last You around me for once, you beneath me, above me – Me – sure that despite of time future, time past, – 10 This tick of our life-time’s one moment you love me! How long such suspension may linger? Ah, Sweet – The moment eternal – just that and no more – When ecstasy’s utmost we clutch at the core While cheeks burn, arms open, eyes shut and lips meet! ROBERT BROWNING (1812–1889) Bright Star 1 Bright star, would I were stedfast as thou art– Not in lone splendour hung aloft the night And watching, with eternal lids apart, Like nature’s patient, sleepless Eremite, 5 The moving waters at their priestlike task Of pure ablution round earth’s human shores, Or gazing on the new soft-fallen mask Of snow upon the mountains and the moors– No – yet still stedfast, still unchangeable, 10 Pillow’d upon my fair love’s ripening breast, To feel for ever its soft fall and swell, Awake for ever in a sweet unrest, Still, still to hear her tender-taken breath, And so live ever – or else swoon to death. JOHN KEATS (1795–1821) 8 Towards a World Unknown • Love and Relationships Love and Friendship 1 Love is like the wild rose-briar, Friendship like the"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+        "title": "Conflict",
+        "coverage": {
+          "plot": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "Plot recall is not applicable to a thematic poetry cluster."
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 2,
+            "reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+          },
+          "method": {
+            "status": "ready",
+            "expectedCardCount": 3,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "ocr-j352-specification-conflict-poetry",
+            "kind": "curriculum-specification",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+            "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+            "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence.",
+            "verificationAnchors": [],
+            "sourceHash": "7c2bbf0ecbea24e2636702de449d037a00b184b854ecdc8df0ec8ce94cc5ed8a"
+          },
+          {
+            "id": "ocr-conflict-poetry-current-teacher-guide",
+            "kind": "supporting-document",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/654699-conflict.pdf",
+            "title": "OCR Conflict Poetry Teacher Guide, updated cluster",
+            "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+            "verificationAnchors": [
+              "Boat Stealing",
+              "The Destruction of Sennacherib"
+            ],
+            "sourceHash": "742e786355ac2f7b9a98ea17d04013179bf70bdc7f83ef3d60d2b64697d38559"
+          },
+          {
+            "id": "ocr-anthology-public-domain-conflict",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-anthology-pdf",
+            "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+            "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+            "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition.",
+            "verificationAnchors": [],
+            "sourceHash": "53670157999399d5ea139df31c2ad307467e89e5b9c2590377a42b5bc76a5f66"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "conflict-poetry-method-evidence-supported-response",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-conflict-poetry",
+            "locator": "J352 specification, physical PDF page 19; Poetry across time critical reading skills",
+            "requiredAnswer": null,
+            "excerpt": "make an informed personal response, justifying a point of view by referring closely to evidence in the text"
+          },
+          {
+            "id": "conflict-poetry-method-language-form-structure",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-conflict-poetry",
+            "locator": "J352 specification, physical PDF page 18; critical reading skills",
+            "requiredAnswer": null,
+            "excerpt": "Learners analyse and evaluate how language, form and structure inform and impact on their reading of poetry."
+          },
+          {
+            "id": "conflict-poetry-method-connections-contrasts",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-conflict-poetry",
+            "locator": "J352 specification, physical PDF page 18; comparative understanding",
+            "requiredAnswer": null,
+            "excerpt": "learners make connections and contrasts between poems, comparing features and qualities."
+          },
+          {
+            "id": "conflict-poetry-quotation-boat-stealing",
+            "mode": "quotation",
+            "sourceId": "ocr-anthology-public-domain-conflict",
+            "locator": "Conflict, Boat Stealing by William Wordsworth, line 9, anthology page 20",
+            "requiredAnswer": "It was an act of stealth",
+            "excerpt": "rose’s scent, Or it could ne’er be discontent With its own pretty flower. Like such a blind and senseless tree As I’ve imagined this to be, 15 All envious persons are: With care and culture all may find Some pretty flower in their own mind, Some talent that is rare. MARY LAMB (1764–1847) Towards a World Unknown • Conflict 19 Boat Stealing 1 I went alone into a Shepherd’s boat, A skiff, that to a willow-tree was tied Within a rocky cave, its usual home. The moon was up, the lake was shining clear 5 Among the hoary mountains; from the shore I pushed, and struck the oars, and struck again In cadence, and my little boat moved on Just like a man who walks with stately step Though bent on speed. It was an act of stealth 10 And troubled pleasure. Not without the voice Of mountain echoes did my boat move on, Leaving behind her still on either side Small circles glittering idly in the moon, Until they melted all into one track 15 Of sparkling light. A rocky steep uprose Above the cavern of the willow-tree, And now, as suited one who proudly rowed With his best skill, I fixed a steady view Upon the top of that same craggy ridge, 20 The bound of the horizon – for behind Was nothing but the stars and the grey sky. She was an elfin pinnace; twenty times I dipped my oars into the silent lake, And as I rose upon the stroke my boat 25 Went heaving through the water like a swan — When from behind that rocky steep, till"
+          },
+          {
+            "id": "conflict-poetry-quotation-sennacherib",
+            "mode": "quotation",
+            "sourceId": "ocr-anthology-public-domain-conflict",
+            "locator": "Conflict, The Destruction of Sennacherib by Lord Byron, line 1, anthology page 21",
+            "requiredAnswer": "The Assyrian came down like the wolf on the fold,",
+            "excerpt": "cavern of the willow-tree. There in her mooring-place I left my bark, And through the meadows homeward went with grave And serious thoughts; and after I had seen That spectacle, for many days my brain 40 Worked with a dim and undetermined sense Of unknown modes of being. In my thoughts There was a darkness – call it solitude, Or blank desertion – no familiar shapes Of hourly objects, images of trees, 45 Of sea or sky, no colours of green fields, But huge and mighty forms that do not live Like living men moved slowly through my mind By day, and were the trouble of my dreams. WILLIAM WORDSWORTH (1770–1850) From 1799 Prelude 20 Towards a World Unknown • Conflict The Destruction of Sennacherib 1 The Assyrian came down like the wolf on the fold, And his cohorts were gleaming in purple and gold; And the sheen of their spears was like stars on the sea, When the blue wave rolls nightly on deep Galilee. 5 Like the leaves of the forest when Summer is green, That host with their banners at sunset were seen: Like the leaves of the forest when Autumn hath blown, That host on the morrow lay withered and strown. For the Angel of Death spread his wings on the blast, 10 And breathed in the face of the foe as he passed; And the eyes of the sleepers waxed deadly and chill, And their hearts but once heaved, and for ever grew still! And there lay the steed with his nostril all wide, But through it there rolled not the breath of his pride; 15 And the"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+        "title": "Youth and Age",
+        "coverage": {
+          "plot": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 0,
+            "reason": "Plot recall is not applicable to a thematic poetry cluster."
+          },
+          "quotation": {
+            "status": "withheld",
+            "expectedCardCount": 0,
+            "partialCardCount": 2,
+            "reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+          },
+          "method": {
+            "status": "ready",
+            "expectedCardCount": 3,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "ocr-j352-specification-youth-poetry",
+            "kind": "curriculum-specification",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+            "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+            "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence.",
+            "verificationAnchors": [],
+            "sourceHash": "7c2bbf0ecbea24e2636702de449d037a00b184b854ecdc8df0ec8ce94cc5ed8a"
+          },
+          {
+            "id": "ocr-youth-poetry-current-teacher-guide",
+            "kind": "supporting-document",
+            "retrievalType": "official-resource-pdf",
+            "url": "https://www.ocr.org.uk/Images/654698-youth-and-age.pdf",
+            "title": "OCR Youth and Age Poetry Teacher Guide, updated cluster",
+            "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+            "verificationAnchors": [
+              "Holy Thursday",
+              "The Bluebell"
+            ],
+            "sourceHash": "4dfcd9fac234d5ed39966914e8f54c0c9d949e15d61c8c1f58c718167bf765ea"
+          },
+          {
+            "id": "ocr-anthology-public-domain-youth",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-anthology-pdf",
+            "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+            "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+            "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition.",
+            "verificationAnchors": [],
+            "sourceHash": "53670157999399d5ea139df31c2ad307467e89e5b9c2590377a42b5bc76a5f66"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "youth-poetry-method-evidence-supported-response",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-youth-poetry",
+            "locator": "J352 specification, physical PDF page 19; Poetry across time critical reading skills",
+            "requiredAnswer": null,
+            "excerpt": "make an informed personal response, justifying a point of view by referring closely to evidence in the text"
+          },
+          {
+            "id": "youth-poetry-method-language-form-structure",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-youth-poetry",
+            "locator": "J352 specification, physical PDF page 18; critical reading skills",
+            "requiredAnswer": null,
+            "excerpt": "Learners analyse and evaluate how language, form and structure inform and impact on their reading of poetry."
+          },
+          {
+            "id": "youth-poetry-method-connections-contrasts",
+            "mode": "method",
+            "sourceId": "ocr-j352-specification-youth-poetry",
+            "locator": "J352 specification, physical PDF page 18; comparative understanding",
+            "requiredAnswer": null,
+            "excerpt": "learners make connections and contrasts between poems, comparing features and qualities."
+          },
+          {
+            "id": "youth-poetry-quotation-holy-thursday",
+            "mode": "quotation",
+            "sourceId": "ocr-anthology-public-domain-youth",
+            "locator": "Youth and Age, Holy Thursday by William Blake, line 12, anthology page 32",
+            "requiredAnswer": "Then cherish pity, lest you drive an angel from your door.",
+            "excerpt": "Youth and Age Holy Thursday 1 ‘Twas on a holy Thursday, their innocent faces clean, The children walking two and two in red and blue and green: Grey-headed beadles walked before, with wands as white as snow, Till into the high dome of Paul’s they like Thames waters flow. 5 O what a multitude they seemed, these flowers of London town! Seated in companies they sit, with radiance all their own. The hum of multitudes was there, but multitudes of lambs, Thousands of little boys and girls raising their innocent hands. Now like a mighty wind they raise to heaven the voice of song, 10 Or like harmonious thunderings the seats of heaven among: Beneath them sit the aged men, wise guardians of the poor. Then cherish pity, lest you drive an angel from your door. WILLIAM BLAKE (1757–1827) 32 Towards a World Unknown • Youth and Age When I have fears that I may cease to be 1 When I have fears that I may cease to be Before my pen has glean’d my teeming brain, Before high pilèd books, in charact’ry, Hold like rich garners the full-ripen’d grain; 5 When I behold, upon the night’s starr’d face, Huge cloudy symbols of a high romance, And think that I may never live to trace Their shadows, with the magic hand of chance; And when I feel, fair creature of an hour, 10 That I shall never look upon thee more, Never have relish in the faery power Of unreflecting love;—then on the shore Of the wide world I stand alone, and think, Till Love and Fame to nothingness do"
+          },
+          {
+            "id": "youth-poetry-quotation-bluebell",
+            "mode": "quotation",
+            "sourceId": "ocr-anthology-public-domain-youth",
+            "locator": "Youth and Age, The Bluebell by Anne Brontë, lines 5-6, anthology page 34",
+            "requiredAnswer": "There is a silent eloquence In every wild bluebell",
+            "excerpt": "books, in charact’ry, Hold like rich garners the full-ripen’d grain; 5 When I behold, upon the night’s starr’d face, Huge cloudy symbols of a high romance, And think that I may never live to trace Their shadows, with the magic hand of chance; And when I feel, fair creature of an hour, 10 That I shall never look upon thee more, Never have relish in the faery power Of unreflecting love;—then on the shore Of the wide world I stand alone, and think, Till Love and Fame to nothingness do sink. JOHN KEATS (1795–1821) Towards a World Unknown • Youth and Age 33 The Bluebell 1 A fine and subtle spirit dwells In every little flower, Each one its own sweet feeling breathes With more or less of power. 5 There is a silent eloquence In every wild bluebell That fills my softened heart with bliss That words could never tell. Yet I recall not long ago 10 A bright and sunny day, ‘Twas when I led a toilsome life So many leagues away; That day along a sunny road All carelessly I strayed, 15 Between two banks where smiling flowers Their varied hues displayed. Before me rose a lofty hill, Behind me lay the sea, My heart was not so heavy then 20 As it was wont to be. Less harassed than at other times I saw the scene was fair, And spoke and laughed to those around, As if I knew no care. 25 But when I looked upon the bank My wandering glances fell Upon a little trembling flower, A single sweet bluebell. Whence came that rising in my throat, 30 That dimness"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+        "title": "Romeo and Juliet",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-romeo-and-juliet",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1513/pg1513.txt",
+            "title": "Romeo and Juliet by William Shakespeare",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "63710bcca9b05228d92da850856a609b33a344ccb778015c3b7059e2cc6bfcd6"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "romeo-and-juliet-plot-mercutio-dies",
+            "mode": "plot",
+            "sourceId": "gutenberg-romeo-and-juliet",
+            "locator": "Act 3, Scene 1; Mercutio is fatally wounded",
+            "requiredAnswer": null,
+            "excerpt": "wouldst thou have with me? MERCUTIO. Good King of Cats, nothing but one of your nine lives; that I mean to make bold withal, and, as you shall use me hereafter, dry-beat the rest of the eight. Will you pluck your sword out of his pilcher by the ears? Make haste, lest mine be about your ears ere it be out. TYBALT. [_Drawing._] I am for you. ROMEO. Gentle Mercutio, put thy rapier up. MERCUTIO. Come, sir, your passado. [_They fight._] ROMEO. Draw, Benvolio; beat down their weapons. Gentlemen, for shame, forbear this outrage, Tybalt, Mercutio, the Prince expressly hath Forbid this bandying in Verona streets. Hold, Tybalt! Good Mercutio! [_Exeunt Tybalt with his Partizans._] MERCUTIO. I am hurt. A plague o’ both your houses. I am sped. Is he gone, and hath nothing? BENVOLIO. What, art thou hurt? MERCUTIO. Ay, ay, a scratch, a scratch. Marry, ’tis enough. Where is my page? Go villain, fetch a surgeon. [_Exit Page._] ROMEO. Courage, man; the hurt cannot be much. MERCUTIO. No, ’tis not so deep as a well, nor so wide as a church door, but ’tis enough, ’twill serve. Ask for me tomorrow, and you shall find me a grave man. I am peppered, I warrant, for this world. A plague o’ both your houses. Zounds, a dog, a rat, a mouse, a cat, to scratch a man to death. A braggart, a rogue, a villain, that fights by the book of arithmetic!—Why the devil came you between us? I was hurt under your arm. ROMEO. I thought all for the best. MERCUTIO."
+          },
+          {
+            "id": "romeo-and-juliet-plot-romeo-dies",
+            "mode": "plot",
+            "sourceId": "gutenberg-romeo-and-juliet",
+            "locator": "Act 5, Scene 3; Romeo drinks the poison",
+            "requiredAnswer": null,
+            "excerpt": "amorous; And that the lean abhorred monster keeps Thee here in dark to be his paramour? For fear of that I still will stay with thee, And never from this palace of dim night Depart again. Here, here will I remain With worms that are thy chambermaids. O, here Will I set up my everlasting rest; And shake the yoke of inauspicious stars From this world-wearied flesh. Eyes, look your last. Arms, take your last embrace! And, lips, O you The doors of breath, seal with a righteous kiss A dateless bargain to engrossing death. Come, bitter conduct, come, unsavoury guide. Thou desperate pilot, now at once run on The dashing rocks thy sea-sick weary bark. Here’s to my love! [_Drinks._] O true apothecary! Thy drugs are quick. Thus with a kiss I die. [_Dies._] Enter, at the other end of the Churchyard, Friar Lawrence, with a lantern, crow, and spade. FRIAR LAWRENCE. Saint Francis be my speed. How oft tonight Have my old feet stumbled at graves? Who’s there? Who is it that consorts, so late, the dead? BALTHASAR. Here’s one, a friend, and one that knows you well. FRIAR LAWRENCE. Bliss be upon you. Tell me, good my friend, What torch is yond that vainly lends his light To grubs and eyeless skulls? As I discern, It burneth in the Capels’ monument. BALTHASAR. It doth so, holy sir, and there’s my master, One that you love. FRIAR LAWRENCE. Who is it? BALTHASAR. Romeo. FRIAR LAWRENCE. How long hath he been there? BALTHASAR. Full half an hour. FRIAR"
+          },
+          {
+            "id": "romeo-and-juliet-quotation-window",
+            "mode": "quotation",
+            "sourceId": "gutenberg-romeo-and-juliet",
+            "locator": "Act 2, Scene 2; Romeo sees Juliet",
+            "requiredAnswer": "But soft, what light through yonder window breaks?",
+            "excerpt": "hid himself among these trees To be consorted with the humorous night. Blind is his love, and best befits the dark. MERCUTIO. If love be blind, love cannot hit the mark. Now will he sit under a medlar tree, And wish his mistress were that kind of fruit As maids call medlars when they laugh alone. O Romeo, that she were, O that she were An open-arse and thou a poperin pear! Romeo, good night. I’ll to my truckle-bed. This field-bed is too cold for me to sleep. Come, shall we go? BENVOLIO. Go then; for ’tis in vain To seek him here that means not to be found. [_Exeunt._] SCENE II. Capulet’s Garden. Enter Romeo. ROMEO. He jests at scars that never felt a wound. Juliet appears above at a window. But soft, what light through yonder window breaks? It is the east, and Juliet is the sun! Arise fair sun and kill the envious moon, Who is already sick and pale with grief, That thou her maid art far more fair than she. Be not her maid since she is envious; Her vestal livery is but sick and green, And none but fools do wear it; cast it off. It is my lady, O it is my love! O, that she knew she were! She speaks, yet she says nothing. What of that? Her eye discourses, I will answer it. I am too bold, ’tis not to me she speaks. Two of the fairest stars in all the heaven, Having some business, do entreat her eyes To twinkle in their spheres till they return. What if her eyes were there, they in her head? The brightness of her cheek would shame those"
+          },
+          {
+            "id": "romeo-and-juliet-quotation-wherefore",
+            "mode": "quotation",
+            "sourceId": "gutenberg-romeo-and-juliet",
+            "locator": "Act 2, Scene 2; Juliet questions Romeo's name",
+            "requiredAnswer": "O Romeo, Romeo, wherefore art thou Romeo?",
+            "excerpt": "spheres till they return. What if her eyes were there, they in her head? The brightness of her cheek would shame those stars, As daylight doth a lamp; her eyes in heaven Would through the airy region stream so bright That birds would sing and think it were not night. See how she leans her cheek upon her hand. O that I were a glove upon that hand, That I might touch that cheek. JULIET. Ay me. ROMEO. She speaks. O speak again bright angel, for thou art As glorious to this night, being o’er my head, As is a winged messenger of heaven Unto the white-upturned wondering eyes Of mortals that fall back to gaze on him When he bestrides the lazy-puffing clouds And sails upon the bosom of the air. JULIET. O Romeo, Romeo, wherefore art thou Romeo? Deny thy father and refuse thy name. Or if thou wilt not, be but sworn my love, And I’ll no longer be a Capulet. ROMEO. [_Aside._] Shall I hear more, or shall I speak at this? JULIET. ’Tis but thy name that is my enemy; Thou art thyself, though not a Montague. What’s Montague? It is nor hand nor foot, Nor arm, nor face, nor any other part Belonging to a man. O be some other name. What’s in a name? That which we call a rose By any other name would smell as sweet; So Romeo would, were he not Romeo call’d, Retain that dear perfection which he owes Without that title. Romeo, doff thy name, And for thy name, which is no part of thee, Take all myself. ROMEO. I take thee at thy word. Call me but love,"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+        "title": "The Merchant of Venice",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-the-merchant-of-venice",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1515/pg1515.txt",
+            "title": "The Merchant of Venice by William Shakespeare",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "b2f56cb53b2c38bb8ce64b3df2f5d128e6020f7c34072734649157f6c00664dd"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "merchant-of-venice-plot-bond-forfeit",
+            "mode": "plot",
+            "sourceId": "gutenberg-the-merchant-of-venice",
+            "locator": "Act 4, Scene 1; the court considers the forfeited bond",
+            "requiredAnswer": null,
+            "excerpt": "I beseech you, Wrest once the law to your authority. To do a great right, do a little wrong, And curb this cruel devil of his will. PORTIA. It must not be, there is no power in Venice Can alter a decree established; ’Twill be recorded for a precedent, And many an error by the same example Will rush into the state. It cannot be. SHYLOCK. A Daniel come to judgment! Yea, a Daniel! O wise young judge, how I do honour thee! PORTIA. I pray you let me look upon the bond. SHYLOCK. Here ’tis, most reverend doctor, here it is. PORTIA. Shylock, there’s thrice thy money offered thee. SHYLOCK. An oath, an oath! I have an oath in heaven. Shall I lay perjury upon my soul? No, not for Venice. PORTIA. Why, this bond is forfeit, And lawfully by this the Jew may claim A pound of flesh, to be by him cut off Nearest the merchant’s heart. Be merciful, Take thrice thy money; bid me tear the bond. SHYLOCK. When it is paid according to the tenour. It doth appear you are a worthy judge; You know the law; your exposition Hath been most sound. I charge you by the law, Whereof you are a well-deserving pillar, Proceed to judgment. By my soul I swear There is no power in the tongue of man To alter me. I stay here on my bond. ANTONIO. Most heartily I do beseech the court To give the judgment. PORTIA. Why then, thus it is: You must prepare your bosom for his knife. SHYLOCK. O noble judge! O excellent young man! PORTIA. For the intent and purpose of the law Hath full relation to the penalty,"
+          },
+          {
+            "id": "merchant-of-venice-plot-no-blood",
+            "mode": "plot",
+            "sourceId": "gutenberg-the-merchant-of-venice",
+            "locator": "Act 4, Scene 1; Portia identifies the bond's limit",
+            "requiredAnswer": null,
+            "excerpt": "would she were in heaven, so she could Entreat some power to change this currish Jew. NERISSA. ’Tis well you offer it behind her back, The wish would make else an unquiet house. SHYLOCK. These be the Christian husbands! I have a daughter— Would any of the stock of Barabbas Had been her husband, rather than a Christian! We trifle time, I pray thee, pursue sentence. PORTIA. A pound of that same merchant’s flesh is thine, The court awards it and the law doth give it. SHYLOCK. Most rightful judge! PORTIA. And you must cut this flesh from off his breast. The law allows it and the court awards it. SHYLOCK. Most learned judge! A sentence! Come, prepare. PORTIA. Tarry a little, there is something else. This bond doth give thee here no jot of blood. The words expressly are “a pound of flesh”: Take then thy bond, take thou thy pound of flesh, But in the cutting it, if thou dost shed One drop of Christian blood, thy lands and goods Are, by the laws of Venice, confiscate Unto the state of Venice. GRATIANO. O upright judge! Mark, Jew. O learned judge! SHYLOCK. Is that the law? PORTIA. Thyself shalt see the act. For, as thou urgest justice, be assur’d Thou shalt have justice more than thou desir’st. GRATIANO. O learned judge! Mark, Jew, a learned judge! SHYLOCK. I take this offer then. Pay the bond thrice And let the Christian go. BASSANIO. Here is the money. PORTIA. Soft! The Jew shall have all justice. Soft! no haste! He shall have nothing"
+          },
+          {
+            "id": "merchant-of-venice-quotation-mercy",
+            "mode": "quotation",
+            "sourceId": "gutenberg-the-merchant-of-venice",
+            "locator": "Act 4, Scene 1; Portia appeals for mercy",
+            "requiredAnswer": "The quality of mercy is not strain’d",
+            "excerpt": "PORTIA. I did, my lord. DUKE. You are welcome. Take your place. Are you acquainted with the difference That holds this present question in the court? PORTIA. I am informed throughly of the cause. Which is the merchant here? And which the Jew? DUKE. Antonio and old Shylock, both stand forth. PORTIA. Is your name Shylock? SHYLOCK. Shylock is my name. PORTIA. Of a strange nature is the suit you follow, Yet in such rule that the Venetian law Cannot impugn you as you do proceed. [_To Antonio_.] You stand within his danger, do you not? ANTONIO. Ay, so he says. PORTIA. Do you confess the bond? ANTONIO. I do. PORTIA. Then must the Jew be merciful. SHYLOCK. On what compulsion must I? Tell me that. PORTIA. The quality of mercy is not strain’d, It droppeth as the gentle rain from heaven Upon the place beneath. It is twice blest, It blesseth him that gives and him that takes. ’Tis mightiest in the mightiest; it becomes The throned monarch better than his crown. His sceptre shows the force of temporal power, The attribute to awe and majesty, Wherein doth sit the dread and fear of kings; But mercy is above this sceptred sway, It is enthroned in the hearts of kings, It is an attribute to God himself; And earthly power doth then show likest God’s When mercy seasons justice. Therefore, Jew, Though justice be thy plea, consider this, That in the course of justice none of us Should see salvation. We do pray for mercy, And that same prayer"
+          },
+          {
+            "id": "merchant-of-venice-quotation-bleed",
+            "mode": "quotation",
+            "sourceId": "gutenberg-the-merchant-of-venice",
+            "locator": "Act 3, Scene 1; Shylock argues for common humanity",
+            "requiredAnswer": "If you prick us, do we not bleed?",
+            "excerpt": "Christian cur’sy; let him look to his bond. SALARINO. Why, I am sure if he forfeit, thou wilt not take his flesh! What’s that good for? SHYLOCK. To bait fish withal; if it will feed nothing else, it will feed my revenge. He hath disgrac’d me and hind’red me half a million, laugh’d at my losses, mock’d at my gains, scorned my nation, thwarted my bargains, cooled my friends, heated mine enemies. And what’s his reason? I am a Jew. Hath not a Jew eyes? Hath not a Jew hands, organs, dimensions, senses, affections, passions? Fed with the same food, hurt with the same weapons, subject to the same diseases, healed by the same means, warmed and cooled by the same winter and summer as a Christian is? If you prick us, do we not bleed? If you tickle us, do we not laugh? If you poison us, do we not die? And if you wrong us, shall we not revenge? If we are like you in the rest, we will resemble you in that. If a Jew wrong a Christian, what is his humility? Revenge. If a Christian wrong a Jew, what should his sufferance be by Christian example? Why, revenge! The villainy you teach me I will execute, and it shall go hard but I will better the instruction. Enter a man from Antonio. SERVANT. Gentlemen, my master Antonio is at his house, and desires to speak with you both. SALARINO. We have been up and down to seek him. Enter Tubal. SOLANIO. Here comes another of the tribe; a third cannot be match’d, unless the devil himself turn"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+        "title": "Macbeth",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-macbeth",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1533/pg1533.txt",
+            "title": "Macbeth by William Shakespeare",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "0cc29cd2ce26d039cfda41b0d7455eee0fdac0911fbc9d42c2a56a046aa991e7"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "macbeth-plot-murder-sleep",
+            "mode": "plot",
+            "sourceId": "gutenberg-macbeth",
+            "locator": "Act 2, Scene 2; Macbeth returns after killing Duncan",
+            "requiredAnswer": null,
+            "excerpt": "did laugh in’s sleep, and one cried, “Murder!” That they did wake each other: I stood and heard them. But they did say their prayers, and address’d them Again to sleep. LADY MACBETH. There are two lodg’d together. MACBETH. One cried, “God bless us!” and, “Amen,” the other, As they had seen me with these hangman’s hands. List’ning their fear, I could not say “Amen,” When they did say, “God bless us.” LADY MACBETH. Consider it not so deeply. MACBETH. But wherefore could not I pronounce “Amen”? I had most need of blessing, and “Amen” Stuck in my throat. LADY MACBETH. These deeds must not be thought After these ways; so, it will make us mad. MACBETH. Methought I heard a voice cry, “Sleep no more! Macbeth does murder sleep,”—the innocent sleep; Sleep that knits up the ravell’d sleave of care, The death of each day’s life, sore labour’s bath, Balm of hurt minds, great nature’s second course, Chief nourisher in life’s feast. LADY MACBETH. What do you mean? MACBETH. Still it cried, “Sleep no more!” to all the house: “Glamis hath murder’d sleep, and therefore Cawdor Shall sleep no more. Macbeth shall sleep no more!” LADY MACBETH. Who was it that thus cried? Why, worthy thane, You do unbend your noble strength to think So brainsickly of things. Go get some water, And wash this filthy witness from your hand.— Why did you bring these daggers from the place? They must lie there: go carry them, and smear The sleepy grooms with blood. MACBETH."
+          },
+          {
+            "id": "macbeth-plot-final-fight",
+            "mode": "plot",
+            "sourceId": "gutenberg-macbeth",
+            "locator": "Act 5, Scene 8; Macduff confronts Macbeth",
+            "requiredAnswer": null,
+            "excerpt": "undeeded. There thou shouldst be; By this great clatter, one of greatest note Seems bruited. Let me find him, Fortune! And more I beg not. [_Exit. Alarums._] Enter Malcolm and old Siward. SIWARD. This way, my lord;—the castle’s gently render’d: The tyrant’s people on both sides do fight; The noble thanes do bravely in the war, The day almost itself professes yours, And little is to do. MALCOLM. We have met with foes That strike beside us. SIWARD. Enter, sir, the castle. [_Exeunt. Alarums._] SCENE VIII. The same. Another part of the field. Enter Macbeth. MACBETH. Why should I play the Roman fool, and die On mine own sword? whiles I see lives, the gashes Do better upon them. Enter Macduff. MACDUFF. Turn, hell-hound, turn! MACBETH. Of all men else I have avoided thee: But get thee back; my soul is too much charg’d With blood of thine already. MACDUFF. I have no words; My voice is in my sword: thou bloodier villain Than terms can give thee out! [_They fight._] MACBETH. Thou losest labour: As easy mayst thou the intrenchant air With thy keen sword impress, as make me bleed: Let fall thy blade on vulnerable crests; I bear a charmed life, which must not yield To one of woman born. MACDUFF. Despair thy charm; And let the angel whom thou still hast serv’d Tell thee, Macduff was from his mother’s womb Untimely ripp’d. MACBETH. Accursed be that tongue that tells me so, For it hath cow’d my better part of man! And be these"
+          },
+          {
+            "id": "macbeth-quotation-fair-foul",
+            "mode": "quotation",
+            "sourceId": "gutenberg-macbeth",
+            "locator": "Act 1, Scene 1; the witches close the scene",
+            "requiredAnswer": "Fair is foul, and foul is fair:",
+            "excerpt": "Gentlemen, Officers, Soldiers, Murderers, Attendants and Messengers. The Ghost of Banquo and several other Apparitions. SCENE: In the end of the Fourth Act, in England; through the rest of the Play, in Scotland; and chiefly at Macbeth’s Castle. ACT I SCENE I. An open Place. Thunder and Lightning. Enter three Witches. FIRST WITCH. When shall we three meet again? In thunder, lightning, or in rain? SECOND WITCH. When the hurlyburly’s done, When the battle’s lost and won. THIRD WITCH. That will be ere the set of sun. FIRST WITCH. Where the place? SECOND WITCH. Upon the heath. THIRD WITCH. There to meet with Macbeth. FIRST WITCH. I come, Graymalkin! SECOND WITCH. Paddock calls. THIRD WITCH. Anon. ALL. Fair is foul, and foul is fair: Hover through the fog and filthy air. [_Exeunt._] SCENE II. A Camp near Forres. Alarum within. Enter King Duncan, Malcolm, Donalbain, Lennox, with Attendants, meeting a bleeding Captain. DUNCAN. What bloody man is that? He can report, As seemeth by his plight, of the revolt The newest state. MALCOLM. This is the sergeant Who, like a good and hardy soldier, fought ’Gainst my captivity.—Hail, brave friend! Say to the King the knowledge of the broil As thou didst leave it. SOLDIER. Doubtful it stood; As two spent swimmers that do cling together And choke their art. The merciless Macdonwald (Worthy to be a rebel, for to that The multiplying villainies of nature Do swarm upon him) from the Western"
+          },
+          {
+            "id": "macbeth-quotation-ambition",
+            "mode": "quotation",
+            "sourceId": "gutenberg-macbeth",
+            "locator": "Act 1, Scene 7; Macbeth identifies his motive",
+            "requiredAnswer": "Vaulting ambition, which o’erleaps itself",
+            "excerpt": "ingredience of our poison’d chalice To our own lips. He’s here in double trust: First, as I am his kinsman and his subject, Strong both against the deed; then, as his host, Who should against his murderer shut the door, Not bear the knife myself. Besides, this Duncan Hath borne his faculties so meek, hath been So clear in his great office, that his virtues Will plead like angels, trumpet-tongued, against The deep damnation of his taking-off; And pity, like a naked new-born babe, Striding the blast, or heaven’s cherubin, hors’d Upon the sightless couriers of the air, Shall blow the horrid deed in every eye, That tears shall drown the wind.—I have no spur To prick the sides of my intent, but only Vaulting ambition, which o’erleaps itself And falls on th’ other— Enter Lady Macbeth. How now! what news? LADY MACBETH. He has almost supp’d. Why have you left the chamber? MACBETH. Hath he ask’d for me? LADY MACBETH. Know you not he has? MACBETH. We will proceed no further in this business: He hath honour’d me of late; and I have bought Golden opinions from all sorts of people, Which would be worn now in their newest gloss, Not cast aside so soon. LADY MACBETH. Was the hope drunk Wherein you dress’d yourself? Hath it slept since? And wakes it now, to look so green and pale At what it did so freely? From this time Such I account thy love. Art thou afeard To be the same in thine own act and valour As thou art in desire? Wouldst thou"
+          }
+        ]
+      },
+      {
+        "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+        "title": "Much Ado About Nothing",
+        "coverage": {
+          "plot": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          },
+          "quotation": {
+            "status": "ready",
+            "expectedCardCount": 2,
+            "partialCardCount": 0,
+            "reason": null
+          }
+        },
+        "sources": [
+          {
+            "id": "gutenberg-much-ado-about-nothing",
+            "kind": "primary-text",
+            "retrievalType": "public-domain-text",
+            "url": "https://www.gutenberg.org/cache/epub/1519/pg1519.txt",
+            "title": "Much Ado About Nothing by William Shakespeare",
+            "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+            "verificationAnchors": [],
+            "sourceHash": "7b3144843d315d65512b274e2d928a5b117bbc6e6f32f269d0db77750d66bcf9"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "much-ado-plot-kill-claudio",
+            "mode": "plot",
+            "sourceId": "gutenberg-much-ado-about-nothing",
+            "locator": "Act 4, Scene 1; Beatrice asks Benedick to challenge Claudio",
+            "requiredAnswer": null,
+            "excerpt": "not; I confess nothing, nor I deny nothing. I am sorry for my cousin. BENEDICK. By my sword, Beatrice, thou lovest me. BEATRICE. Do not swear by it, and eat it. BENEDICK. I will swear by it that you love me; and I will make him eat it that says I love not you. BEATRICE. Will you not eat your word? BENEDICK. With no sauce that can be devised to it. I protest I love thee. BEATRICE. Why then, God forgive me! BENEDICK. What offence, sweet Beatrice? BEATRICE. You have stayed me in a happy hour: I was about to protest I loved you. BENEDICK. And do it with all thy heart. BEATRICE. I love you with so much of my heart that none is left to protest. BENEDICK. Come, bid me do anything for thee. BEATRICE. Kill Claudio. BENEDICK. Ha! not for the wide world. BEATRICE. You kill me to deny it. Farewell. BENEDICK. Tarry, sweet Beatrice. BEATRICE. I am gone, though I am here: there is no love in you: nay, I pray you, let me go. BENEDICK. Beatrice,— BEATRICE. In faith, I will go. BENEDICK. We’ll be friends first. BEATRICE. You dare easier be friends with me than fight with mine enemy. BENEDICK. Is Claudio thine enemy? BEATRICE. Is he not approved in the height a villain, that hath slandered, scorned, dishonoured my kinswoman? O! that I were a man. What! bear her in hand until they come to take hands, and then, with public accusation, uncovered slander, unmitigated rancour,—O God, that I were a man! I would eat his"
+          },
+          {
+            "id": "much-ado-plot-hero-revealed",
+            "mode": "plot",
+            "sourceId": "gutenberg-much-ado-about-nothing",
+            "locator": "Act 5, Scene 4; Hero reveals herself",
+            "requiredAnswer": null,
+            "excerpt": "leap’d your father’s cow, And got a calf in that same noble feat, Much like to you, for you have just his bleat. CLAUDIO. For this I owe you: here comes other reckonings. Re-enter Antonio, with the ladies masked. Which is the lady I must seize upon? ANTONIO. This same is she, and I do give you her. CLAUDIO. Why then, she’s mine. Sweet, let me see your face. LEONATO. No, that you shall not, till you take her hand Before this friar, and swear to marry her. CLAUDIO. Give me your hand: before this holy friar, I am your husband, if you like of me. HERO. And when I liv’d, I was your other wife: [Unmasking.] And when you lov’d, you were my other husband. CLAUDIO. Another Hero! HERO. Nothing certainer: One Hero died defil’d, but I do live, And surely as I live, I am a maid. DON PEDRO. The former Hero! Hero that is dead! LEONATO. She died, my lord, but whiles her slander liv’d. FRIAR. All this amazement can I qualify: When after that the holy rites are ended, I’ll tell you largely of fair Hero’s death: Meantime, let wonder seem familiar, And to the chapel let us presently. BENEDICK. Soft and fair, friar. Which is Beatrice? BEATRICE. [Unmasking.] I answer to that name. What is your will? BENEDICK. Do not you love me? BEATRICE. Why, no; no more than reason. BENEDICK. Why, then, your uncle and the Prince and Claudio Have been deceived; for they swore you did. BEATRICE. Do not you love me? BENEDICK. Troth, no; no more than reason."
+          },
+          {
+            "id": "much-ado-quotation-dog-bark",
+            "mode": "quotation",
+            "sourceId": "gutenberg-much-ado-about-nothing",
+            "locator": "Act 1, Scene 1; Beatrice rejects romance",
+            "requiredAnswer": "I had rather hear my dog bark at a crow than a man swear he loves me.",
+            "excerpt": "Messina, as like him as she is. BEATRICE. I wonder that you will still be talking, Signior Benedick: nobody marks you. BENEDICK. What! my dear Lady Disdain, are you yet living? BEATRICE. Is it possible Disdain should die while she hath such meet food to feed it as Signior Benedick? Courtesy itself must convert to disdain if you come in her presence. BENEDICK. Then is courtesy a turncoat. But it is certain I am loved of all ladies, only you excepted; and I would I could find in my heart that I had not a hard heart; for, truly, I love none. BEATRICE. A dear happiness to women: they would else have been troubled with a pernicious suitor. I thank God and my cold blood, I am of your humour for that. I had rather hear my dog bark at a crow than a man swear he loves me. BENEDICK. God keep your Ladyship still in that mind; so some gentleman or other shall scape a predestinate scratched face. BEATRICE. Scratching could not make it worse, and ’twere such a face as yours were. BENEDICK. Well, you are a rare parrot-teacher. BEATRICE. A bird of my tongue is better than a beast of yours. BENEDICK. I would my horse had the speed of your tongue, and so good a continuer. But keep your way, i’ God’s name; I have done. BEATRICE. You always end with a jade’s trick: I know you of old. DON PEDRO. That is the sum of all, Leonato: Signior Claudio, and Signior Benedick, my dear friend Leonato hath invited you all. I tell him we shall stay here at the least a month, and he heartly"
+          },
+          {
+            "id": "much-ado-quotation-cupid-traps",
+            "mode": "quotation",
+            "sourceId": "gutenberg-much-ado-about-nothing",
+            "locator": "Act 3, Scene 1; Hero observes Beatrice",
+            "requiredAnswer": "Some Cupid kills with arrows, some with traps.",
+            "excerpt": "excellent a wit As she is priz’d to have,—as to refuse So rare a gentleman as Signior Benedick. HERO. He is the only man of Italy, Always excepted my dear Claudio. URSULA. I pray you, be not angry with me, madam, Speaking my fancy: Signior Benedick, For shape, for bearing, argument and valour, Goes foremost in report through Italy. HERO. Indeed, he hath an excellent good name. URSULA. His excellence did earn it, ere he had it. When are you married, madam? HERO. Why, every day, tomorrow. Come, go in: I’ll show thee some attires, and have thy counsel Which is the best to furnish me tomorrow. URSULA. She’s lim’d, I warrant you, We have caught her, madam. HERO. If it prove so, then loving goes by haps: Some Cupid kills with arrows, some with traps. [Exeunt Hero and Ursula.] BEATRICE. [Advancing.] What fire is in mine ears? Can this be true? Stand I condemn’d for pride and scorn so much? Contempt, farewell! and maiden pride, adieu! No glory lives behind the back of such. And, Benedick, love on; I will requite thee, Taming my wild heart to thy loving hand: If thou dost love, my kindness shall incite thee To bind our loves up in a holy band; For others say thou dost deserve, and I Believe it better than reportingly. [Exit.] SCENE II. A Room in Leonato’s House. Enter Don Pedro, Claudio, Benedick and Leonato. DON PEDRO. I do but stay till your marriage be consummate, and then go I toward Arragon. CLAUDIO. I’ll bring you thither, my lord, if"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -14,12 +14,14 @@
 		paper,
 		answers = {},
 		gradingResults = {},
+		readOnly = false,
 		canSubmit = false,
 		isSubmitting = false,
 		submitLabel = 'Submit',
 		submitError = '',
 		submitFailure = null,
 		onAnswerChange,
+		onPartActivate,
 		onDismissGrade,
 		onSubmitGrade,
 		onRetrySubmit
@@ -27,12 +29,14 @@
 		paper: ExamPaper;
 		answers?: Record<string, string>;
 		gradingResults?: Record<string, ExperimentQuestionGradeResult>;
+		readOnly?: boolean;
 		canSubmit?: boolean;
 		isSubmitting?: boolean;
 		submitLabel?: string;
 		submitError?: string;
 		submitFailure?: RequestFailure | null;
 		onAnswerChange?: (ref: string, answer: string) => void;
+		onPartActivate?: (ref: string) => void;
 		onDismissGrade?: (ref: string) => void;
 		onSubmitGrade?: () => void;
 		onRetrySubmit?: () => void;
@@ -45,10 +49,11 @@
 	}
 
 	const showSubmit = $derived(
-		isSubmitting ||
-			Boolean(submitError) ||
-			Boolean(submitFailure) ||
-			Object.keys(gradingResults).length === 0
+		Boolean(onSubmitGrade) &&
+			(isSubmitting ||
+				Boolean(submitError) ||
+				Boolean(submitFailure) ||
+				Object.keys(gradingResults).length === 0)
 	);
 	const displayPaper = $derived(resolvePaperDependencies(paper));
 	const hasHeader = $derived(
@@ -100,7 +105,14 @@
 							</div>
 						</div>
 					{/if}
-					<div class="exam-question-row exam-part-row" id={part.ref}>
+					<div
+						class="exam-question-row exam-part-row"
+						id={part.ref}
+						role="group"
+						aria-label={`Question ${part.ref}`}
+						onfocusin={() => onPartActivate?.(part.ref)}
+						onpointerdown={() => onPartActivate?.(part.ref)}
+					>
 						<div class="exam-number-cell">
 							<QuestionNumber ref={part.ref} />
 						</div>
@@ -113,6 +125,7 @@
 								response={part.response}
 								assets={displayPaper.assets}
 								answer={answers[part.ref] ?? ''}
+								{readOnly}
 								onAnswerChange={(answer) => onAnswerChange?.(part.ref, answer)}
 							/>
 							{#if gradingResults[part.ref]}
@@ -226,20 +239,27 @@
 
 <style>
 	.question-experiment-page {
-		flex: 0 0 100%;
+		--qc-response-ink: var(--qc-ui-text);
+		--qc-response-line: var(--qc-ui-border-strong);
+		--qc-response-control-bg: var(--qc-ui-surface-raised);
+		--qc-response-selected-bg: var(--qc-ui-surface-muted);
+		--qc-response-muted: var(--qc-ui-text-muted);
+		--qc-response-caret: var(--qc-ui-accent);
+		flex: 1 1 auto;
+		min-height: 0;
 		box-sizing: border-box;
 		width: 100%;
 		padding: 1.5rem 1rem 0.75rem;
-		background: #ffffff;
-		color: #000000;
+		background: var(--qc-ui-canvas);
+		color: var(--qc-ui-text);
 	}
 
 	.paper-sheet {
 		width: min(100%, 900px);
 		margin: 0 auto;
 		padding: 2.2rem 2rem 1.25rem;
-		background: #ffffff;
-		color: #000000;
+		background: var(--qc-ui-surface);
+		color: var(--qc-ui-text);
 		font-family: Arial, Helvetica, sans-serif;
 		font-size: 15px;
 		line-height: 1.45;
@@ -247,7 +267,7 @@
 
 	.paper-header {
 		margin-bottom: 2.2rem;
-		border-bottom: 1px solid #000000;
+		border-bottom: 1px solid var(--qc-ui-border-strong);
 		padding-bottom: 1rem;
 	}
 
@@ -322,8 +342,8 @@
 		align-items: center;
 		justify-content: flex-end;
 		margin: 0.25rem 0 1.25rem;
-		background: #ffffff;
-		color: #172033;
+		background: var(--qc-ui-surface);
+		color: var(--qc-ui-text);
 		font-family:
 			Inter,
 			ui-sans-serif,
@@ -339,23 +359,24 @@
 		border: 0;
 		border-radius: 7px;
 		padding: 0.62rem 0.95rem;
-		background: #1f63ed;
-		color: #ffffff;
+		background: var(--qc-ui-accent);
+		color: var(--qc-ui-on-accent);
 		font: inherit;
 		font-weight: 850;
 		cursor: pointer;
-		box-shadow: 0 8px 18px rgb(31 99 237 / 24%);
+		box-shadow: 0 8px 18px var(--qc-ui-shadow);
 	}
 
 	.submit-grade-button:disabled {
-		background: #a8b5ca;
+		background: var(--qc-ui-disabled-surface);
+		color: var(--qc-ui-disabled-text);
 		cursor: not-allowed;
 		box-shadow: none;
 	}
 
 	.submit-error {
 		margin: 0;
-		color: #b42318;
+		color: var(--qc-ui-danger);
 		text-align: right;
 		font-size: 0.82rem;
 	}
@@ -364,10 +385,10 @@
 		position: relative;
 		margin: 1rem 0 0.35rem;
 		padding: 0.9rem;
-		border: 1px solid #102033;
+		border: 1px solid var(--qc-ui-border-strong);
 		border-radius: 0;
-		background: #ffffff;
-		color: #102033;
+		background: var(--qc-ui-surface);
+		color: var(--qc-ui-text);
 		font-family:
 			Inter,
 			ui-sans-serif,
@@ -380,24 +401,24 @@
 	}
 
 	.experiment-grade-card.correct {
-		border-color: #168458;
-		background: #edf9f3;
+		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
 	}
 
 	.experiment-grade-card.partial {
-		border-color: #b66a16;
-		background: #fff8eb;
+		border-color: var(--qc-ui-warning);
+		background: var(--qc-ui-warning-surface);
 	}
 
 	.experiment-grade-card.incorrect {
-		border-color: #9b4a27;
-		background: #fff8ec;
+		border-color: var(--qc-ui-danger);
+		background: color-mix(in srgb, var(--qc-ui-danger) 9%, var(--qc-ui-surface));
 	}
 
 	.experiment-grade-card.ungraded {
-		border-color: #c6cbd5;
-		background: #f8f9fb;
-		color: #293142;
+		border-color: var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
+		color: var(--qc-ui-text-secondary);
 	}
 
 	.grade-card-header {
@@ -415,7 +436,7 @@
 
 	.grade-card-label {
 		margin: 0;
-		color: #0d5a3f;
+		color: var(--qc-ui-accent-text);
 		font-size: 0.84rem;
 		font-weight: 560;
 		line-height: 1.22;
@@ -446,7 +467,7 @@
 		border-bottom: 1px dotted currentColor;
 		border-radius: 0;
 		background: transparent;
-		color: #556276;
+		color: var(--qc-ui-text-muted);
 		font: inherit;
 		font-size: 0.82rem;
 		font-weight: 400;
@@ -459,7 +480,7 @@
 
 	.grade-close-button:hover,
 	.grade-close-button:focus-visible {
-		color: #10213f;
+		color: var(--qc-ui-text);
 	}
 
 	.grade-next-step {
@@ -469,7 +490,7 @@
 
 	.grade-summary {
 		margin-top: 0.55rem;
-		color: #344054;
+		color: var(--qc-ui-text-secondary);
 		font-size: 0.92rem;
 		line-height: 1.38;
 	}
@@ -502,12 +523,12 @@
 	}
 
 	.grade-mark-list li.credited .grade-mark-icon {
-		color: #15884f;
+		color: var(--qc-ui-accent);
 	}
 
 	.grade-mark-list li.missed .grade-mark-icon,
 	.grade-mark-list li.uncertain .grade-mark-icon {
-		color: #c03434;
+		color: var(--qc-ui-danger);
 	}
 
 	.grade-mark-text,
@@ -517,13 +538,13 @@
 
 	.grade-mark-note {
 		margin-top: 0.12rem;
-		color: #556276;
+		color: var(--qc-ui-text-muted);
 		font-size: 0.86rem;
 	}
 
 	.grade-model-answer {
 		margin-top: 0.85rem;
-		border-top: 1px solid rgb(16 33 63 / 14%);
+		border-top: 1px solid var(--qc-ui-border-subtle);
 		padding-top: 0.72rem;
 		font-size: 0.92rem;
 		line-height: 1.42;
@@ -538,7 +559,7 @@
 	}
 
 	.grade-model-answer-label {
-		color: #556276;
+		color: var(--qc-ui-text-muted);
 		font-size: 0.78rem;
 		letter-spacing: 0;
 		text-transform: uppercase;
@@ -585,8 +606,8 @@
 		}
 
 		.paper-sheet {
-			width: min(100%, calc(100vw - 4rem));
-			max-width: calc(100vw - 4rem);
+			width: 100%;
+			max-width: 100%;
 			padding: 0.9rem 0.65rem 1.8rem;
 			overflow: hidden;
 		}

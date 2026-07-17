@@ -1,0 +1,606 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-321ab-stresemann-era-dates",
+        "conceptKey": "germany-1890-1945-stresemann-era-1924-1929",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+        "kind": "chronology",
+        "visualCue": "⏳",
+        "front": "What years define the Stresemann era in the specified study of Weimar recovery?",
+        "back": "1924–1929",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The Stresemann era is specified as 1924–1929.",
+        "memoryTip": "Use the two fours and nines: it begins in ’24 and ends in ’29.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "1919–1923",
+            "isCorrect": false,
+            "feedback": "That is the preceding period of political change and unrest, not the Stresemann era.",
+            "misconception": "confuses-weimar-unrest-with-stresemann-recovery"
+          },
+          {
+            "key": "b",
+            "text": "1924–1929",
+            "isCorrect": true,
+            "feedback": "Correct: these are the specified Stresemann-era years.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "1928–1932",
+            "isCorrect": false,
+            "feedback": "That date range belongs to growing extremist support, not the Stresemann era.",
+            "misconception": "confuses-depression-era-support-with-stresemann-era"
+          }
+        ],
+        "sourceExcerpt": "the Stresemann era (1924–\n1929): economic developments",
+        "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy"
+      },
+      "review": {
+        "cardId": "aqa-8145-321ab-stresemann-era-dates",
+        "accepted": false,
+        "issues": [
+          "The memory route is unclear: “the two fours and nines” does not cleanly describe or encode the 1924–1929 range and may confuse learners."
+        ],
+        "learnerValue": [
+          "The core question accurately targets the dates of the Stresemann era."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-321ab-dawes-young-plans",
+        "conceptKey": "germany-1890-1945-dawes-young-plans",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+        "kind": "fact",
+        "visualCue": "🏛️",
+        "front": "Which two named plans are included among the economic developments of Weimar recovery?",
+        "back": "the Dawes Plan and the Young Plan",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The economic developments include a new currency, the Dawes Plan and the Young Plan.",
+        "memoryTip": "Remember the age progression in the names: Dawes before Young.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "the Enabling Act and the Navy Laws",
+            "isCorrect": false,
+            "feedback": "Those are political measures from other strands, not the two recovery plans.",
+            "misconception": "confuses-political-laws-with-economic-recovery-plans"
+          },
+          {
+            "key": "b",
+            "text": "the Locarno treaties and the Kellogg-Briand Pact",
+            "isCorrect": false,
+            "feedback": "Those are diplomatic agreements, not the named Weimar economic plans.",
+            "misconception": "confuses-diplomacy-with-economic-plans"
+          },
+          {
+            "key": "c",
+            "text": "the Dawes Plan and the Young Plan",
+            "isCorrect": true,
+            "feedback": "Correct: these are the two named recovery plans.",
+            "misconception": null
+          }
+        ],
+        "sourceExcerpt": "economic developments including the new currency, Dawes Plan and the Young Plan;",
+        "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy"
+      },
+      "review": {
+        "cardId": "aqa-8145-321ab-dawes-young-plans",
+        "accepted": false,
+        "issues": [
+          "The claimed “age progression” is contrived: “Dawes” supplies no age concept, so the tip does not provide a reliable route to the two plan names."
+        ],
+        "learnerValue": [
+          "The core question accurately retrieves the Dawes and Young Plans."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-321ab-papen-hindenburg",
+        "conceptKey": "germany-1890-1945-papen-hindenburg-chancellor-appointment",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-2",
+        "kind": "cause-consequence",
+        "visualCue": "🏛️",
+        "front": "Which two individuals’ roles are specified in relation to Hitler’s appointment as Chancellor?",
+        "back": "Papen and Hindenburg",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The failure-of-democracy strand links the roles of Papen and Hindenburg with Hitler’s appointment as Chancellor.",
+        "memoryTip": "Keep the pair in alphabetical order by surname: H and P, but recall the source order P then H.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Papen and Hindenburg",
+            "isCorrect": true,
+            "feedback": "Correct: both are named with the Chancellor appointment.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Himmler and Rohm",
+            "isCorrect": false,
+            "feedback": "Those figures belong to later Nazi control and dictatorship topics.",
+            "misconception": "confuses-dictatorship-figures-with-chancellor-appointment"
+          },
+          {
+            "key": "c",
+            "text": "Stresemann and Goebbels",
+            "isCorrect": false,
+            "feedback": "This mixes recovery and propaganda figures rather than the appointment pair.",
+            "misconception": "mixes-weimar-recovery-with-nazi-control"
+          }
+        ],
+        "sourceExcerpt": "the role of Papen and Hindenburg and\nHitler’s appointment as Chancellor.",
+        "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-2 Part two: Germany and the Depression"
+      },
+      "review": {
+        "cardId": "aqa-8145-321ab-papen-hindenburg",
+        "accepted": false,
+        "issues": [
+          "The memory tip gives two competing orders—Hindenburg/Papen alphabetically and Papen/Hindenburg in the source—for a prompt that does not test order, making the retrieval route needlessly confusing."
+        ],
+        "learnerValue": [
+          "The core question correctly associates Papen and Hindenburg with Hitler's appointment."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-321ac-terror-purges",
+        "conceptKey": "russia-1894-1945-terror-purges",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ac",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ac-part-3",
+        "kind": "fact",
+        "visualCue": "🏛️",
+        "front": "Which paired campaigns of repression are named under Stalin as dictator?",
+        "back": "the Terror and the Purges",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The dictatorship list pairs the Terror with the Purges before naming the army, secret police and labour camps.",
+        "memoryTip": "Recall the matching capital letters: Terror, then Purges.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "collectivisation and the Five Year Plans",
+            "isCorrect": false,
+            "feedback": "Those belong to modernisation, not the paired repression campaigns.",
+            "misconception": "confuses-modernisation-with-repression"
+          },
+          {
+            "key": "b",
+            "text": "the Terror and the Purges",
+            "isCorrect": true,
+            "feedback": "Correct: this is the named pair.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "War Communism and the NEP",
+            "isCorrect": false,
+            "feedback": "Those are Lenin-era economic developments, not Stalin’s repression campaigns.",
+            "misconception": "confuses-leninist-economic-policy-with-stalinist-repression"
+          }
+        ],
+        "sourceExcerpt": "the Terror and the Purges; the army; secret police; labour camps;",
+        "sourceLocator": "Official PDF pages 16-17; 3.2.1.AC.part-3 Part three: Stalin's USSR"
+      },
+      "review": {
+        "cardId": "aqa-8145-321ac-terror-purges",
+        "accepted": false,
+        "issues": [
+          "The memory tip's “matching capital letters” cue is not meaningful: Terror and Purges have different initials, and shared capitalisation does not distinguish this pair."
+        ],
+        "learnerValue": [
+          "The core question correctly retrieves the Terror and the Purges as Stalinist repression."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-322bb-wilson-fourteen-points",
+        "conceptKey": "inter-war-years-wilson-fourteen-points",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-2-bb",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-2-bb-part-1",
+        "kind": "fact",
+        "visualCue": "🏛️",
+        "front": "Which peacemaker is paired with the Fourteen Points?",
+        "back": "Wilson",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The peacemaking strand pairs Wilson with the Fourteen Points, before naming Clemenceau and Lloyd George.",
+        "memoryTip": "Both key words start with a strong opening sound: Wilson’s points.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Wilson",
+            "isCorrect": true,
+            "feedback": "Correct: Wilson is the peacemaker paired with the Fourteen Points.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Clemenceau",
+            "isCorrect": false,
+            "feedback": "Clemenceau is named as a peacemaker, but not as the figure paired with the Fourteen Points.",
+            "misconception": "confuses-clemenceau-with-wilson"
+          },
+          {
+            "key": "c",
+            "text": "Lloyd George",
+            "isCorrect": false,
+            "feedback": "Lloyd George is also named, but the Fourteen Points are paired with Wilson.",
+            "misconception": "confuses-lloyd-george-with-wilson"
+          }
+        ],
+        "sourceExcerpt": "Wilson and the Fourteen Points; Clemenceau and\nLloyd George;",
+        "sourceLocator": "Official PDF pages 19-20; 3.2.2.BB.part-1 Part one: Peacemaking"
+      },
+      "review": {
+        "cardId": "aqa-8145-322bb-wilson-fourteen-points",
+        "accepted": false,
+        "issues": [
+          "The memory tip claims an opening-sound route, but Wilson and Points do not share an initial or opening sound; the cue adds no dependable retrieval value."
+        ],
+        "learnerValue": [
+          "The core question correctly associates Wilson with the Fourteen Points."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-322bc-yalta-potsdam",
+        "conceptKey": "cold-war-yalta-potsdam-conferences",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-2-bc",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-2-bc-part-1",
+        "kind": "chronology",
+        "visualCue": "🏛️",
+        "front": "Which two conferences are named at the end of the Second World War in the origins of the Cold War?",
+        "back": "the Yalta and Potsdam Conferences",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The end-of-war strand names the Yalta and Potsdam Conferences before the division of Germany.",
+        "memoryTip": "Use alphabetical order to recover the source sequence: Y comes before P only in the remembered phrase Yalta–Potsdam.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "the Paris and Munich Conferences",
+            "isCorrect": false,
+            "feedback": "Those are not the two end-of-war conferences in this Cold War strand.",
+            "misconception": "confuses-other-diplomatic-meetings-with-cold-war-origins"
+          },
+          {
+            "key": "b",
+            "text": "the Yalta and Potsdam Conferences",
+            "isCorrect": true,
+            "feedback": "Correct: these are the two named conferences.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "the Geneva and Locarno Conferences",
+            "isCorrect": false,
+            "feedback": "This mixes agreements from other international-relations topics.",
+            "misconception": "mixes-unrelated-agreements-with-yalta-potsdam"
+          }
+        ],
+        "sourceExcerpt": "The end of the Second World War: Yalta and Potsdam Conferences; the division of\nGermany;",
+        "sourceLocator": "Official PDF pages 20-20; 3.2.2.BC.part-1 Part one: The origins of the Cold War"
+      },
+      "review": {
+        "cardId": "aqa-8145-322bc-yalta-potsdam",
+        "accepted": false,
+        "issues": [
+          "The memory route is factually misleading: it invokes alphabetical order for Yalta–Potsdam even though P precedes Y alphabetically."
+        ],
+        "learnerValue": [
+          "The core question correctly retrieves the two end-of-war conferences."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-322be-iraqi-invasion-kuwait",
+        "conceptKey": "gulf-war-1990-iraqi-invasion-kuwait",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-2-be",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-2-be-part-1",
+        "kind": "chronology",
+        "visualCue": "⚔️",
+        "front": "Which country did Iraq invade in the 1990 Gulf War strand?",
+        "back": "Kuwait",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The 1990 Gulf War strand specifies the Iraqi invasion of Kuwait.",
+        "memoryTip": "Link the two K sounds in the phrase Gulf War—Kuwait.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Iran",
+            "isCorrect": false,
+            "feedback": "Iran appears in the regional-instability context, but the 1990 invasion target named here is Kuwait.",
+            "misconception": "confuses-iran-iraq-war-with-kuwait-invasion"
+          },
+          {
+            "key": "b",
+            "text": "Afghanistan",
+            "isCorrect": false,
+            "feedback": "Afghanistan belongs to the later war-on-Al-Qaeda strand.",
+            "misconception": "confuses-gulf-war-with-afghanistan"
+          },
+          {
+            "key": "c",
+            "text": "Kuwait",
+            "isCorrect": true,
+            "feedback": "Correct: Kuwait is the specified invasion target.",
+            "misconception": null
+          }
+        ],
+        "sourceExcerpt": "The Gulf War,1990: reasons for the Iraqi invasion of Kuwait;",
+        "sourceLocator": "Official PDF pages 21-22; 3.2.2.BE.part-1 Part one: Tensions in the Gulf"
+      },
+      "review": {
+        "cardId": "aqa-8145-322be-iraqi-invasion-kuwait",
+        "accepted": false,
+        "issues": [
+          "The memory tip claims two K sounds in “Gulf War—Kuwait,” but that phrase supplies only one /k/ sound; the mnemonic is unreliable."
+        ],
+        "learnerValue": [
+          "The core question correctly identifies Kuwait as Iraq's 1990 invasion target."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8145-331ac-independence-leaders",
+        "conceptKey": "migration-empires-gandhi-nkrumrah-kenyatta",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-1-ac",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-3-1-ac-part-4",
+        "kind": "fact",
+        "visualCue": "🏛️",
+        "front": "Which three individuals’ roles are named in nationalism and independence in India and Africa?",
+        "back": "Gandhi, Nkrumrah and Kenyatta",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The end-of-Empire strand names the roles of Gandhi, Nkrumrah and Kenyatta in nationalism and independence.",
+        "memoryTip": "Use G-N-K as the three-name sequence.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Clive, Hastings and Rhodes",
+            "isCorrect": false,
+            "feedback": "Those figures belong to earlier imperial expansion strands.",
+            "misconception": "confuses-imperial-expansion-figures-with-independence-leaders"
+          },
+          {
+            "key": "b",
+            "text": "Gandhi, Nkrumrah and Kenyatta",
+            "isCorrect": true,
+            "feedback": "Correct: all three match the independence strand.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "Cnut, Emma and Alfred",
+            "isCorrect": false,
+            "feedback": "Those figures belong to the early conquest strand.",
+            "misconception": "confuses-early-conquest-figures-with-independence-leaders"
+          }
+        ],
+        "sourceExcerpt": "nationalism and independence in India and Africa, including the role of Gandhi, Nkrumrah\nand Kenyatta.",
+        "sourceLocator": "Official PDF pages 25-27; 3.3.1.AC.part-4 Part four: Britain in the 20th century"
+      },
+      "review": {
+        "cardId": "aqa-8145-331ac-independence-leaders",
+        "accepted": false,
+        "issues": [
+          "The canonical answer, explanation and correct choice reproduce “Nkrumrah,” but the historical name is Kwame Nkrumah. The supplied source excerpt itself contains the typo, so the card cannot satisfy both exact support and canonical accuracy."
+        ],
+        "learnerValue": [
+          "The intended retrieval of three independence leaders is useful, but the spelling error makes the card unsafe to import."
+        ]
+      }
+    },
+    {
+      "stage": "deterministic-candidate-superseded",
+      "card": {
+        "id": "aqa-8145-321ad-sacco-vanzetti-red-scare",
+        "conceptKey": "america-1920-1973-sacco-vanzetti-red-scare",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-1",
+        "kind": "case-study",
+        "visualCue": "🏛️",
+        "front": "Which case’s significance is specified in connection with the Red Scare?",
+        "back": "the Sacco and Vanzetti case",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The Red Scare strand explicitly names the significance of the Sacco and Vanzetti case.",
+        "memoryTip": "Use the paired surnames as a single case label: S and V.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "the Sacco and Vanzetti case",
+            "isCorrect": true,
+            "feedback": "Correct: this is the named case.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Roe v Wade",
+            "isCorrect": false,
+            "feedback": "That belongs to later feminist developments, not the Red Scare.",
+            "misconception": "confuses-1970s-ruling-with-red-scare-case"
+          },
+          {
+            "key": "c",
+            "text": "the Scarman Report",
+            "isCorrect": false,
+            "feedback": "That belongs to a different British topic, not the American Red Scare.",
+            "misconception": "confuses-british-report-with-american-case"
+          }
+        ],
+        "sourceExcerpt": "the Red Scare and the significance of the Sacco and Vanzetti case.",
+        "sourceLocator": "Official PDF pages 17-18; 3.2.1.AD.part-1 Part one: American people and the 'Boom'"
+      },
+      "replacement": {
+        "id": "aqa-8145-321ad-sacco-vanzetti-red-scare",
+        "conceptKey": "america-1920-1973-sacco-vanzetti-red-scare",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-1",
+        "kind": "case-study",
+        "visualCue": "🏛️",
+        "front": "In the divided-society content, which case is identified as significant alongside the Red Scare?",
+        "back": "the Sacco and Vanzetti case",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The specification links the Red Scare with the significance of the Sacco and Vanzetti case.",
+        "memoryTip": "Remember the stated pairing: Red Scare and the Sacco and Vanzetti case.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "the Sacco and Vanzetti case",
+            "isCorrect": true,
+            "feedback": "Correct: this is the case named alongside the Red Scare.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "the Ku Klux Klan",
+            "isCorrect": false,
+            "feedback": "The Ku Klux Klan is listed separately; the named case is the Sacco and Vanzetti case.",
+            "misconception": "selects-adjacent-ku-klux-klan-topic"
+          },
+          {
+            "key": "c",
+            "text": "organised crime and prohibition",
+            "isCorrect": false,
+            "feedback": "Organised crime and prohibition are linked to their impact on society; the named case is the Sacco and Vanzetti case.",
+            "misconception": "selects-adjacent-crime-and-prohibition-topic"
+          }
+        ],
+        "sourceExcerpt": "• Divided society: organised crime, prohibition and their impact on society; the causes of racial\ntension, the experiences of immigrants and the impact of immigration; the Ku Klux Klan; the\nRed Scare and the significance of the Sacco and Vanzetti case.",
+        "sourceLocator": "Official PDF pages 17-18; 3.2.1.AD.part-1 Part one: American people and the 'Boom'"
+      }
+    },
+    {
+      "stage": "reviewed-repair-review-1",
+      "card": {
+        "id": "aqa-8145-321ab-stresemann-era-dates",
+        "conceptKey": "germany-1890-1945-stresemann-era-1924-1929",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+        "kind": "chronology",
+        "visualCue": "⏳",
+        "front": "What years define the Stresemann era in the specified study of Weimar recovery?",
+        "back": "1924–1929",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The Stresemann era is specified as 1924–1929.",
+        "memoryTip": "Recall the two endpoints: the Stresemann era starts in 1924 and ends in 1929.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "1919–1923",
+            "isCorrect": false,
+            "feedback": "That is the preceding period of political change and unrest, not the Stresemann era.",
+            "misconception": "confuses-weimar-unrest-with-stresemann-recovery"
+          },
+          {
+            "key": "b",
+            "text": "1924–1929",
+            "isCorrect": true,
+            "feedback": "Correct: these are the specified Stresemann-era years.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "1928–1932",
+            "isCorrect": false,
+            "feedback": "That date range belongs to growing extremist support, not the Stresemann era.",
+            "misconception": "confuses-depression-era-support-with-stresemann-era"
+          }
+        ],
+        "sourceExcerpt": "the Stresemann era (1924–\n1929): economic developments",
+        "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy"
+      },
+      "review": {
+        "cardId": "aqa-8145-321ab-stresemann-era-dates",
+        "accepted": false,
+        "issues": [
+          "The memory tip merely repeats the answer’s two dates and provides no mnemonic, association, sequence cue, or other retrieval route."
+        ],
+        "learnerValue": [
+          "Tests the officially specified 1924–1929 chronology and distinguishes it from the adjacent Weimar unrest and Depression-era periods."
+        ]
+      }
+    },
+    {
+      "stage": "reviewed-repair-review-2",
+      "card": {
+        "id": "aqa-8145-321ab-stresemann-era-dates",
+        "conceptKey": "germany-1890-1945-stresemann-era-1924-1929",
+        "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+        "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+        "kind": "chronology",
+        "visualCue": "⏳",
+        "front": "What years define the Stresemann era in the specified study of Weimar recovery?",
+        "back": "1924–1929",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The Stresemann era is specified as 1924–1929.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "1919–1923",
+            "isCorrect": false,
+            "feedback": "That is the preceding period of political change and unrest, not the Stresemann era.",
+            "misconception": "confuses-weimar-unrest-with-stresemann-recovery"
+          },
+          {
+            "key": "b",
+            "text": "1924–1929",
+            "isCorrect": true,
+            "feedback": "Correct: these are the specified Stresemann-era years.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "1928–1932",
+            "isCorrect": false,
+            "feedback": "That date range belongs to growing extremist support, not the Stresemann era.",
+            "misconception": "confuses-depression-era-support-with-stresemann-era"
+          }
+        ],
+        "sourceExcerpt": "the extent of recovery during the Stresemann era (1924–",
+        "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy"
+      },
+      "review": {
+        "cardId": "aqa-8145-321ab-stresemann-era-dates",
+        "accepted": false,
+        "issues": [
+          "The source excerpt is truncated after “1924–” and therefore does not support the full canonical answer and explanation, which specify 1924–1929."
+        ],
+        "learnerValue": [
+          "Tests a useful chronological distinction between Weimar unrest, Stresemann-era recovery, and Depression-era extremist growth.",
+          "The three choices are distinct and the feedback accurately diagnoses each date-range confusion."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    }
+  ]
+}

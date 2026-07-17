@@ -1,5 +1,7 @@
 <script lang="ts">
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
+	import CalibratedPaperImage from '$lib/components/CalibratedPaperImage.svelte';
+	import type { PaperMeasurement } from '$lib/experiments/questions/types';
 	import { diagnoseResourceLoadFailure, type RequestFailure } from '$lib/requestFailure';
 	type QuestionAsset = {
 		publicPath: string;
@@ -7,6 +9,7 @@
 		sourceLabel: string;
 		paperWidthPx?: number | null;
 		paperHeightPx?: number | null;
+		paperMeasurement?: PaperMeasurement | null;
 	};
 
 	let {
@@ -71,6 +74,22 @@
 			retryLabel="Retry image"
 			compact
 		/>
+	{:else if asset.paperMeasurement}
+		<CalibratedPaperImage
+			src={imageSrc}
+			alt={asset.altText}
+			measurement={asset.paperMeasurement}
+			{loading}
+			onerror={handleImageFailure}
+		/>
+		<button
+			class="asset-open-calibrated"
+			type="button"
+			onclick={openDialog}
+			aria-label={`Open ${asset.sourceLabel} full screen`}
+		>
+			Open image full screen
+		</button>
 	{:else}
 		<button
 			class="asset-open-button"
@@ -109,3 +128,18 @@
 		/>
 	</div>
 </dialog>
+
+<style>
+	.asset-open-calibrated {
+		display: block;
+		width: 100%;
+		padding: 0.55rem 0.8rem;
+		border-top: 1px solid #d9e0ea;
+		background: #ffffff;
+		color: #334155;
+		font: inherit;
+		font-size: 0.82rem;
+		font-weight: 650;
+		cursor: zoom-in;
+	}
+</style>

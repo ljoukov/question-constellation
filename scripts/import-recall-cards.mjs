@@ -240,6 +240,18 @@ async function requireSchema() {
 			`Recall draft-first guards are absent: ${missingTriggers.join(', ')}. Apply migration 0019 before import.`
 		);
 	}
+	const choiceCountTriggerRows = await d1Rows(
+		`SELECT sql FROM sqlite_master
+		 WHERE type = 'trigger' AND name = 'recall_cards_publish_choice_count'`,
+		[],
+		{ rootDir, binding: 'QUESTION_DB' }
+	);
+	const choiceCountTriggerSql = String(choiceCountTriggerRows[0]?.sql ?? '').replace(/\s+/g, ' ');
+	if (!/NOT BETWEEN 3 AND 4/i.test(choiceCountTriggerSql)) {
+		throw new Error(
+			'Recall three-or-four-choice publication guard is absent. Apply migration 0023 before import.'
+		);
+	}
 }
 
 async function requireCurriculumReferences(bundle) {
@@ -399,8 +411,12 @@ async function verifyImport(bundle, artifactHash) {
 		{ rootDir, binding: 'QUESTION_DB' }
 	);
 	const errors = recallStoredCardParentIssues(bundle, rows);
+	const expectedChoiceCounts = new Map(bundle.cards.map((card) => [card.id, card.choices.length]));
 	for (const row of rows) {
-		if (Number(row.choice_count) !== 4 || Number(row.correct_count) !== 1) {
+		if (
+			Number(row.choice_count) !== expectedChoiceCounts.get(row.id) ||
+			Number(row.correct_count) !== 1
+		) {
 			errors.push(`${row.id} choice invariant failed`);
 		}
 		if (Number(row.evidence_count) < 1) errors.push(`${row.id} has no evidence`);

@@ -1,0 +1,83 @@
+You are performing one narrowly scoped, source-grounded repair in an import-grade OCR J352 English Literature deck. Do not regenerate or discuss any other card.
+
+The independent reviewer accepted the evidence, answer and learner value but rejected the front because "the killing" is ambiguous in Macbeth. Produce exactly one replacement card. Preserve evidenceId, id, conceptKey, topicComponentId and kind exactly. The front must remain self-contained, name Macbeth, and explicitly identify Duncan's killing or the Act 2 chamber aftermath. Use only the supplied evidence window; do not add remembered facts. Keep exactly four unique choices because this repairs an already-generated four-choice v2 release. Preserve exact source wording in sourceExcerpt. Output JSON only.
+
+Evidence:
+{
+  "id": "macbeth-plot-murder-sleep",
+  "mode": "plot",
+  "sourceId": "gutenberg-macbeth",
+  "locator": "Act 2, Scene 2; Macbeth returns after killing Duncan",
+  "requiredAnswer": null,
+  "excerpt": "did laugh in’s sleep, and one cried, “Murder!” That they did wake each other: I stood and heard them. But they did say their prayers, and address’d them Again to sleep. LADY MACBETH. There are two lodg’d together. MACBETH. One cried, “God bless us!” and, “Amen,” the other, As they had seen me with these hangman’s hands. List’ning their fear, I could not say “Amen,” When they did say, “God bless us.” LADY MACBETH. Consider it not so deeply. MACBETH. But wherefore could not I pronounce “Amen”? I had most need of blessing, and “Amen” Stuck in my throat. LADY MACBETH. These deeds must not be thought After these ways; so, it will make us mad. MACBETH. Methought I heard a voice cry, “Sleep no more! Macbeth does murder sleep,”—the innocent sleep; Sleep that knits up the ravell’d sleave of care, The death of each day’s life, sore labour’s bath, Balm of hurt minds, great nature’s second course, Chief nourisher in life’s feast. LADY MACBETH. What do you mean? MACBETH. Still it cried, “Sleep no more!” to all the house: “Glamis hath murder’d sleep, and therefore Cawdor Shall sleep no more. Macbeth shall sleep no more!” LADY MACBETH. Who was it that thus cried? Why, worthy thane, You do unbend your noble strength to think So brainsickly of things. Go get some water, And wash this filthy witness from your hand.— Why did you bring these daggers from the place? They must lie there: go carry them, and smear The sleepy grooms with blood. MACBETH.",
+  "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+  "source": {
+    "id": "gutenberg-macbeth",
+    "kind": "primary-text",
+    "retrievalType": "public-domain-text",
+    "url": "https://www.gutenberg.org/cache/epub/1533/pg1533.txt",
+    "title": "Macbeth by William Shakespeare",
+    "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+    "verificationAnchors": [],
+    "sourceHash": "0cc29cd2ce26d039cfda41b0d7455eee0fdac0911fbc9d42c2a56a046aa991e7"
+  }
+}
+
+Rejected candidate:
+{
+  "evidenceId": "macbeth-plot-murder-sleep",
+  "id": "ocr-j352-card-macbeth-plot-murder-sleep",
+  "conceptKey": "ocr-j352-concept-macbeth-plot-murder-sleep",
+  "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+  "kind": "plot",
+  "visualCue": "🌙",
+  "front": "In Macbeth, what spiritual and psychological disturbances does Macbeth report immediately after the killing?",
+  "back": "Macbeth cannot say “Amen” and hears a voice cry that he has murdered sleep.",
+  "reverseFront": null,
+  "reverseBack": null,
+  "explanation": "In the chamber aftermath, Macbeth reports hearing the sleepers’ prayers but being unable to answer “Amen.” His imagined voice then identifies him with the destruction of innocent sleep.",
+  "memoryTip": "Retrieve the disturbance in two stages: blocked blessing → accusing voice about sleep.",
+  "choices": [
+    {
+      "key": "macbeth-plot-murder-sleep-choice-correct",
+      "text": "Macbeth cannot say “Amen” and hears a voice cry that he has murdered sleep.",
+      "isCorrect": true,
+      "feedback": "Correct: the scene joins a blocked prayer to the imagined accusation about sleep.",
+      "misconception": null
+    },
+    {
+      "key": "macbeth-plot-murder-sleep-choice-confusion-one",
+      "text": "Macbeth says “Amen” easily and returns the daggers himself.",
+      "isCorrect": false,
+      "feedback": "This reverses his inability to pray and confuses his response to the daggers.",
+      "misconception": "Removing Macbeth’s immediate disturbance."
+    },
+    {
+      "key": "macbeth-plot-murder-sleep-choice-confusion-two",
+      "text": "Lady Macbeth hears the accusing voice while Macbeth sleeps peacefully.",
+      "isCorrect": false,
+      "feedback": "This transfers Macbeth’s reported experience to Lady Macbeth and reverses the loss of sleep.",
+      "misconception": "Swapping the characters’ experiences."
+    },
+    {
+      "key": "macbeth-plot-murder-sleep-choice-confusion-three",
+      "text": "Macbeth hears a blessing promising him peaceful sleep.",
+      "isCorrect": false,
+      "feedback": "This reverses the voice’s accusation that Macbeth has murdered sleep.",
+      "misconception": "Changing condemnation into comfort."
+    }
+  ],
+  "sourceExcerpt": "I could not say “Amen,” When they did say, “God bless us.”"
+}
+
+Reviewer finding:
+{
+  "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+  "accepted": false,
+  "issues": [
+    "The standalone front refers only to “the killing.” Macbeth contains multiple killings, so it should identify Duncan or the Act 2 chamber aftermath to make the event unambiguous."
+  ],
+  "learnerValue": [
+    "The answer accurately links Macbeth’s blocked prayer with the accusation that he has murdered sleep."
+  ]
+}

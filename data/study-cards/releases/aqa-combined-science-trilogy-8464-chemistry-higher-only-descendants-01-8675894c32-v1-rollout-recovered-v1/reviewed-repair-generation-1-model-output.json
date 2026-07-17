@@ -1,0 +1,43 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-cdcf4e788e-aqa-8464-5-3-2-1-mole-mass-relative-formula-mass",
+      "conceptKey": "aqa-8464-cdcf4e788e-aqa-8464-mole-mass-relative-formula-mass",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-1",
+      "kind": "fact",
+      "visualCue": "📏",
+      "front": "How is the mass of one mole of a substance in grams related to its relative formula mass?",
+      "back": "It is numerically equal to the substance's relative formula mass.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "For a substance, the numerical value of the mass of one mole in grams equals its relative formula mass.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is numerically equal to the substance's relative formula mass.",
+          "isCorrect": true,
+          "feedback": "Correct. The mass of one mole in grams is numerically equal to the relative formula mass.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It is numerically equal to the relative formula mass when measured in kilograms.",
+          "isCorrect": false,
+          "feedback": "The numerical equality applies when the mass of one mole is measured in grams, not kilograms.",
+          "misconception": "wrong-mass-unit"
+        },
+        {
+          "key": "c",
+          "text": "It is the same for every substance because every mole contains the same number of particles.",
+          "isCorrect": false,
+          "feedback": "Moles contain the same number of stated particles, but the mass of one mole in grams is tied to the substance's relative formula mass.",
+          "misconception": "confuses-equal-particle-number-with-equal-mass"
+        }
+      ],
+      "sourceExcerpt": "The mass of one mole of a substance in grams is numerically equal\nto its relative formula mass.\nOne mole of a substance contains the same number of the stated\nparticles, atoms, molecules or ions as one mole of any other\nsubstance.",
+      "sourceLocator": "Official PDF pages 86-88; 5.3.2.1 Moles (HT only)"
+    }
+  ]
+}

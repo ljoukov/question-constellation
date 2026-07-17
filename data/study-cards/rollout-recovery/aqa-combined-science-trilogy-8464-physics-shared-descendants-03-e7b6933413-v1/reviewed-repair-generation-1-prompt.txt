@@ -1,0 +1,292 @@
+You are performing a narrowly scoped repair of cards rejected by an independent reviewer in an import-grade descendant-coverage release.
+
+Return exactly 3 replacement cards in the listed order. Preserve every id, conceptKey, topicComponentId and curriculumComponentId exactly. Address every reviewer issue using only the exact official component supplied for that card. Do not alter or discuss accepted cards.
+
+Every sourceExcerpt must be one exact contiguous substring of at most 400 characters from that component's text, without reflow or control bytes. Front, back, explanation, feedback and any memoryTip must be fully entailed. memoryTip may be null. Use exactly three or four unique choices with one exact correct answer; four is allowed only for three distinct plausible misconceptions. Keep a meaningful allowed subject emoji that does not reveal the answer. Output JSON only.
+
+Rejected cards and required identities:
+[
+  {
+    "requiredIdentity": {
+      "id": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+      "conceptKey": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-given-braking-force-speed-stopping-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3"
+    },
+    "reviewer": {
+      "cardId": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+      "accepted": false,
+      "issues": [
+        "Choices c and d express the same underlying misconception: both make stopping distance independent of speed when braking force is fixed. The four-choice card therefore lacks three genuinely distinct distractors."
+      ],
+      "learnerValue": [
+        "Tests the supported relationship between speed and stopping distance at a given braking force."
+      ]
+    },
+    "rejectedCandidate": {
+      "id": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+      "conceptKey": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-given-braking-force-speed-stopping-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3",
+      "kind": "cause-consequence",
+      "visualCue": "🏎️",
+      "front": "For a vehicle with a given braking force, how does increasing its speed affect its stopping distance?",
+      "back": "The greater the speed, the greater the stopping distance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "With braking force held at the given value, a greater speed corresponds to a greater stopping distance.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The greater the speed, the greater the stopping distance.",
+          "isCorrect": true,
+          "feedback": "At a given braking force, stopping distance increases with speed.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The greater the speed, the shorter the stopping distance.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated relationship.",
+          "misconception": "inverse-speed-stopping-distance"
+        },
+        {
+          "key": "c",
+          "text": "Speed has no effect on stopping distance.",
+          "isCorrect": false,
+          "feedback": "The passage explicitly links greater speed to greater stopping distance.",
+          "misconception": "speed-independent-stopping-distance"
+        },
+        {
+          "key": "d",
+          "text": "Stopping distance changes only if braking force changes.",
+          "isCorrect": false,
+          "feedback": "The stated relationship applies while braking force is fixed.",
+          "misconception": "braking-force-only"
+        }
+      ],
+      "sourceExcerpt": "For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3 Forces and braking"
+    }
+  },
+  {
+    "requiredIdentity": {
+      "id": "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+      "conceptKey": "aqa-8464-653a60fc98-aqa-8464-physics-momentum-mass-times-velocity",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1"
+    },
+    "reviewer": {
+      "cardId": "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+      "accepted": false,
+      "issues": [
+        "The official source places 6.5.5 Momentum under “HT only”. Because the target set includes a Foundation offering, this card is out of scope."
+      ],
+      "learnerValue": [
+        "Accurately tests the momentum equation for Higher-tier learners."
+      ]
+    },
+    "rejectedCandidate": {
+      "id": "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+      "conceptKey": "aqa-8464-653a60fc98-aqa-8464-physics-momentum-mass-times-velocity",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1",
+      "kind": "formula",
+      "visualCue": "🎳",
+      "front": "What equation defines the momentum of a moving object?",
+      "back": "momentum = mass × velocity",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The equation defines momentum as the product of mass and velocity.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "momentum = mass × velocity",
+          "isCorrect": true,
+          "feedback": "Momentum is mass multiplied by velocity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "momentum = mass × speed",
+          "isCorrect": false,
+          "feedback": "The stated equation uses velocity, not speed.",
+          "misconception": "speed-substituted-for-velocity"
+        },
+        {
+          "key": "c",
+          "text": "momentum = mass ÷ velocity",
+          "isCorrect": false,
+          "feedback": "The stated relationship uses multiplication, not division.",
+          "misconception": "divides-mass-by-velocity"
+        }
+      ],
+      "sourceExcerpt": "Momentum is defined by the equation:\nmomentum = mass × velocity",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.5.1 Momentum is a property of moving objects"
+    }
+  },
+  {
+    "requiredIdentity": {
+      "id": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum",
+      "conceptKey": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-closed-system-total-momentum-conservation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2"
+    },
+    "reviewer": {
+      "cardId": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum",
+      "accepted": false,
+      "issues": [
+        "The official source places 6.5.5 Momentum under “HT only”. Because the target set includes a Foundation offering, this card is out of scope."
+      ],
+      "learnerValue": [
+        "Clearly distinguishes conservation of total momentum from common Higher-tier misconceptions."
+      ]
+    },
+    "rejectedCandidate": {
+      "id": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum",
+      "conceptKey": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-closed-system-total-momentum-conservation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2",
+      "kind": "fact",
+      "visualCue": "🔀",
+      "front": "What does conservation of momentum state for an event in a closed system?",
+      "back": "In a closed system, total momentum before an event equals total momentum after it.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Conservation of momentum equates the system’s total momentum before and after the event.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "In a closed system, total momentum before an event equals total momentum after it.",
+          "isCorrect": true,
+          "feedback": "This is the stated conservation rule.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "In a closed system, each object keeps the same momentum throughout the event.",
+          "isCorrect": false,
+          "feedback": "The statement concerns total momentum; it does not say each object’s momentum is unchanged.",
+          "misconception": "individual-momentum-must-stay-constant"
+        },
+        {
+          "key": "c",
+          "text": "In a closed system, total momentum after the event is always zero.",
+          "isCorrect": false,
+          "feedback": "The before and after totals are equal; they are not stated to be zero.",
+          "misconception": "conserved-momentum-must-be-zero"
+        },
+        {
+          "key": "d",
+          "text": "In a closed system, total kinetic energy before an event equals total kinetic energy after it.",
+          "isCorrect": false,
+          "feedback": "The cited conservation rule concerns total momentum, not kinetic energy.",
+          "misconception": "kinetic-energy-for-momentum-conservation"
+        }
+      ],
+      "sourceExcerpt": "In a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.5.2 Conservation of momentum"
+    }
+  }
+]
+
+Official source scope:
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "offerings": [
+    {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "profileSubject": "Physics",
+      "course": "Combined Science",
+      "tier": "Foundation",
+      "label": "AQA Combined Science: Trilogy · Physics · Foundation",
+      "selectableComponentIds": [
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+      ]
+    },
+    {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "profileSubject": "Physics",
+      "course": "Combined Science",
+      "tier": "Higher",
+      "label": "AQA Combined Science: Trilogy · Physics · Higher",
+      "selectableComponentIds": [
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "code": "6.5",
+      "title": "Forces",
+      "paper": "Physics Paper 2",
+      "pageStart": 152,
+      "pageEnd": 155,
+      "components": [
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3",
+          "code": "6.5.4.3",
+          "title": "Forces and braking",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.3 Forces and braking",
+          "text": "Official PDF pages 152-155\nForces and braking\n152 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.4.3.1 Stopping distance\nContent Key opportunities for\nskills development\nThe stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance). For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.\n6.5.4.3.2 Reaction time\nContent Key opportunities for\nskills development\nReaction times vary from person to person. Typical values range\nfrom 0.2 s to 0.9 s.\nA driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.\nStudents should be able to:\n• explain methods used to measure human reaction times and\nrecall typical results\n• interpret and evaluate measurements from simple methods to\nmeasure the different reaction times of students\nWS 3.5, 3.7\n• evaluate the effect of various factors on thinking distance\nbased on given data.\nWS 1.5, 2.2\nMS 1a, c\nAT 1\nMeasure the effect of\ndistractions on reaction\ntime.\n6.5.4.3.3 Factors affecting braking distance 1\nContent Key opportunities for\nskills development\nThe braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.\nStudents should be able to:\n• explain the factors which affect the distance required for road\ntransport vehicles to come to rest in emergencies, and the\nimplications for safety\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 153\nContent Key opportunities for\nskills development\n• estimate how the distance required for road vehicles to stop in\nan emergency varies over a range of typical speeds.\nMS 1c, 1d, 2c, 2d, 2f, 2h,\n3b, 3c\n6.5.4.3.4 Factors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1",
+          "code": "6.5.5.1",
+          "title": "Momentum is a property of moving objects",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.5.1 Momentum is a property of moving objects",
+          "text": "Official PDF pages 152-155\nMomentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2",
+          "code": "6.5.5.2",
+          "title": "Conservation of momentum",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.5.2 Conservation of momentum",
+          "text": "Official PDF pages 152-155\nConservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        }
+      ]
+    }
+  ]
+}

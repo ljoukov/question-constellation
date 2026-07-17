@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f6bb6-db0a-76a3-bccb-e95bd910a0d8",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "/tmp/qc-release-a35ab11/tmp/study-card-generation/ocr-j352-literature-standard-v1/review",
+  "startedAt": "2026-07-16T16:16:14.497Z",
+  "finishedAt": "2026-07-16T16:23:44.787Z",
+  "durationSeconds": 450.29,
+  "events": 44,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 30,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 84227,
+    "cached_input_tokens": 7936,
+    "output_tokens": 18632,
+    "reasoning_output_tokens": 15538,
+    "total_tokens": 102859
+  },
+  "failedCommands": [],
+  "recovery": "summary reconstructed from preserved rollout JSONL boundaries and token counts"
+}

@@ -1,0 +1,68 @@
+{
+  "reviews": [
+    {
+      "cardId": "ocr-j351-v2-0-01-section-reading-writing",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the reading and writing demands of Component 01 and anchors the 19th-century text requirement to Section A."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-01-single-summary-multiple-synthesis",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clarifies when learners should summarise and when they should synthesise across texts."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-01-evaluate-usefulness-bias-evidence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides a concise retrieval cue for evaluating usefulness through bias and misuse of evidence."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-01-adapt-tone-style-register",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the three explicitly required features learners must adapt in non-fiction writing."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-02-reading-text-period-and-genre",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately distinguishes Component 02 text periods and genres from Component 01 requirements."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-02-reader-impact-language-structure-grammar",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds recall of the three craft aspects learners explore when analysing reader impact."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-02-narrative-structure-deliberate-effects",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects narrative organisation and structure with their required purpose: creating deliberate effects."
+      ]
+    },
+    {
+      "cardId": "ocr-j351-v2-0-02-consistent-narrative-viewpoint",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces conscious selection and sustained control of narrative viewpoint across a creative-writing piece."
+      ]
+    }
+  ]
+}

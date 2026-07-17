@@ -1,0 +1,14 @@
+{
+  "reviews": [
+    {
+      "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+      "accepted": false,
+      "issues": [
+        "The first distractor treats “returns the daggers himself” as a diagnosed error, but the supplied excerpt ends when Lady Macbeth orders him to return them; it does not show Macbeth’s response or establish who returns them. That part of the choice and its feedback therefore rely on an unsupplied plot detail."
+      ],
+      "learnerValue": [
+        "The repaired front is self-contained and explicitly identifies Duncan’s killing, while the core answer accurately links Macbeth’s blocked “Amen” with the accusation that he has murdered sleep."
+      ]
+    }
+  ]
+}

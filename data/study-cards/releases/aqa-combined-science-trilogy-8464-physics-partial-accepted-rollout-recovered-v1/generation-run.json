@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f6c49-a3cc-7ee1-b385-9064ede9c439",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1/generation",
+  "startedAt": "2026-07-16T18:56:34.090Z",
+  "finishedAt": "2026-07-16T19:02:22.881Z",
+  "durationSeconds": 348.791,
+  "usage": {
+    "input_tokens": 29508,
+    "cached_input_tokens": 0,
+    "output_tokens": 19201,
+    "reasoning_output_tokens": 12948,
+    "total_tokens": 48709
+  },
+  "recovery": "summary reconstructed from preserved rollout JSONL identity, boundaries and token counts"
+}

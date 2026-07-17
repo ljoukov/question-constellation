@@ -134,6 +134,28 @@ describe('English step grading', () => {
 		expect(prompt).toContain('materially misreads the supplied context');
 	});
 
+	it('uses the English Language coach role for Language questions', () => {
+		const languagePractice: EnglishPracticeData = {
+			...practice,
+			question: {
+				...practice.question,
+				meta: { ...practice.question.meta, subject: 'English Language' }
+			},
+			modelAnswer: ''
+		};
+		const prompt = buildEnglishStepGradePrompt({
+			practice: languagePractice,
+			stage: taskStage,
+			stageIndex: 0,
+			studentAnswer: 'The writer presents the city as threatening.',
+			stepAnswers: {}
+		});
+
+		expect(prompt).toContain('GCSE English Language step coach');
+		expect(prompt).not.toContain('GCSE English Literature step coach');
+		expect(prompt).toContain('No curated model answer is available');
+	});
+
 	it('requires every configured check before returning pass', () => {
 		const criteria = criteriaForEnglishStep(taskStage);
 		const raw = JSON.stringify({

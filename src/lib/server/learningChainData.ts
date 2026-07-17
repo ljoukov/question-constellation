@@ -13,6 +13,10 @@ import {
 	subjectBelongsToScience,
 	type GcseCurriculumTopic
 } from '$lib/curriculum/gcseCurriculum';
+import {
+	englishPracticeEligibility,
+	type EnglishSourceAssetEvidence
+} from '$lib/englishPracticeEligibility';
 import { subjectSymbol } from '$lib/subjectSymbols.js';
 import { getPublishedChainIllustration } from './chainIllustrations';
 import { sourceDocumentSlug } from './questionExperimentData';
@@ -79,6 +83,8 @@ type QuestionBankQuestionRow = {
 	display_order: number | null;
 	prompt_text: string;
 	self_contained_prompt_text: string | null;
+	context_text: string | null;
+	self_containment_json: string | null;
 	command_word: string | null;
 	marks: number | null;
 	board: string | null;
@@ -103,6 +109,8 @@ type QuestionBankQuestionRow = {
 	answer_chain_id: string | null;
 	chain_title: string | null;
 	reviewed_answer_text: string | null;
+	reviewed_source_assets_json: string | null;
+	reviewed_render_json: string | null;
 };
 
 export type HomePagePublicData = {
@@ -135,6 +143,8 @@ export type QuestionBankQuestion = {
 	command: string;
 	chainId: string | null;
 	chainTitle: string | null;
+	practiceAvailable: boolean;
+	practiceUnavailableReason: string | null;
 };
 
 export type QuestionBankTopic = {
@@ -738,6 +748,8 @@ async function fetchQuestionBankRows(filter?: { board: string; subject: string }
 		        q.display_order,
 		        q.prompt_text,
 		        q.self_contained_prompt_text,
+		        q.context_text,
+		        q.self_containment_json,
 		        q.command_word,
 		        q.marks,
 		        q.board,
@@ -761,6 +773,29 @@ async function fetchQuestionBankRows(filter?: { board: string; subject: string }
 		        sd.year AS source_year,
 		        qac.answer_chain_id,
 		        ac.title AS chain_title,
+		        (SELECT json_group_array(json_object(
+		                  'id', qa.id,
+		                  'publicPath', qa.public_path,
+		                  'role', qa.role,
+		                  'sourceLabel', qa.source_label,
+		                  'altText', qa.alt_text,
+		                  'required', qa.required
+		                ))
+		           FROM question_assets qa
+		          WHERE qa.question_id = q.id
+		            AND qa.needs_human_review = 0
+		            AND COALESCE(TRIM(qa.public_path), '') <> '') AS reviewed_source_assets_json,
+		        (SELECT qro.render_json
+		           FROM question_rendering_overlays qro
+		          WHERE qro.question_id = q.id
+		            AND qro.needs_human_review = 0
+		          ORDER BY CASE qro.provenance
+		            WHEN 'manual' THEN 0
+		            WHEN 'pdf-geometry' THEN 1
+		            WHEN 'vision-extracted' THEN 2
+		            ELSE 3
+		          END, qro.overlay_version DESC
+		          LIMIT 1) AS reviewed_render_json,
 		        (SELECT ma.answer_text
 		           FROM model_answers ma
 		          WHERE ma.question_id = q.id
@@ -804,6 +839,18 @@ function hydrateQuestionBankQuestion(row: QuestionBankQuestionRow): QuestionBank
 	const topicPath = parseTopicPath(row.topic_path_json);
 	const subject = questionSubjectName(row);
 	const paper = questionPaper(row);
+	const englishEligibility = /english/i.test(subject)
+		? englishPracticeEligibility({
+				subject,
+				prompt: row.prompt_text,
+				context: row.context_text,
+				selfContainedPrompt: row.self_contained_prompt_text,
+				selfContainmentJson: row.self_containment_json,
+				assets: parseJson<EnglishSourceAssetEvidence[]>(row.reviewed_source_assets_json, []),
+				renderingOverlay: parseJson<unknown>(row.reviewed_render_json, null),
+				reviewed: true
+			})
+		: { available: true, reason: null };
 	const questionWithoutTopicId = {
 		id: row.id,
 		slug: row.slug,
@@ -823,7 +870,9 @@ function hydrateQuestionBankQuestion(row: QuestionBankQuestionRow): QuestionBank
 		marks: row.marks,
 		command: cleanNullable(row.command_word) ?? 'Question',
 		chainId: cleanNullable(row.answer_chain_id),
-		chainTitle: cleanNullable(row.chain_title)
+		chainTitle: cleanNullable(row.chain_title),
+		practiceAvailable: englishEligibility.available,
+		practiceUnavailableReason: englishEligibility.reason
 	} satisfies Omit<QuestionBankQuestion, 'topicId'>;
 	return {
 		...questionWithoutTopicId,

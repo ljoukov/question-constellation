@@ -1,0 +1,42 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalReleaseId": "aqa-physics-8463-standard-v1",
+    "recoveredReleaseId": "aqa-physics-8463-standard-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-physics-8463-v1.1",
+    "subject": "Physics",
+    "offeringIds": [
+      "aqa-gcse-physics-8463-v1.1:foundation",
+      "aqa-gcse-physics-8463-v1.1:higher"
+    ],
+    "topicComponentIds": [
+      "aqa-gcse-physics-8463-v1.1:4-1",
+      "aqa-gcse-physics-8463-v1.1:4-2",
+      "aqa-gcse-physics-8463-v1.1:4-3",
+      "aqa-gcse-physics-8463-v1.1:4-4",
+      "aqa-gcse-physics-8463-v1.1:4-5",
+      "aqa-gcse-physics-8463-v1.1:4-6",
+      "aqa-gcse-physics-8463-v1.1:4-7",
+      "aqa-gcse-physics-8463-v1.1:4-8"
+    ],
+    "countPerTopic": 4,
+    "minimumAcceptedPerTopic": 3,
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 32,
+    "reviewCandidates": 32,
+    "accepted": 31,
+    "distinctTargetComponents": 30,
+    "plannerEligibleTargetComponents": 30,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 16,
+    "readyCoverageRows": 16,
+    "withheldCoverageRows": 0,
+    "sessions": 2
+  },
+  "artifactPath": "data/study-cards/releases/aqa-physics-8463-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "4c33d24475dd773471ec537f7da5672d0a4594262c895808c06d9a2b726fb7f4",
+  "modelCallsDuringRecovery": 0
+}

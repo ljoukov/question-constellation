@@ -5,6 +5,16 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSyn
 import path from 'node:path';
 import { copyCodexImportHelperBundle } from './lib/codex-import-helper-bundle.mjs';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
+import { existingChainContextSnapshotDerivation } from './lib/existing-chain-context-evidence.mjs';
+import { preserveExtractionFactsForChainPhase } from './lib/answer-chain-phase-boundary.mjs';
+import { phaseArtifacts } from './lib/codex-phase-artifacts.mjs';
+import { assertLearnerVisibleAssetBundleCurrent } from './lib/learner-visible-asset-binding.mjs';
+import {
+	assertBoundJsonInputCurrent,
+	assertExactJsonArtifactsEqual,
+	captureBoundJsonInput,
+	stageBoundJsonSnapshot
+} from './lib/phase-input-binding.mjs';
 
 const rootDir = process.cwd();
 loadDefaultEnv(rootDir);
@@ -31,6 +41,9 @@ Optional:
   --chain-style-judge-source-snippet-chars=360
   --chain-validation-repair-attempts=2
   --chain-style-repair-attempts=4
+  --expected-input-sha256=<exact-byte-sha256>
+  --expected-input-canonical-json-sha256=<exact-canonical-json-sha256>
+  --asset-manifest=<exact-learner-visible-asset-manifest.json>
   --timeout-ms=7200000
   --force
   --dry-run`;
@@ -41,7 +54,30 @@ if (hasArg('help')) {
 }
 
 const inputPath = path.resolve(rootDir, requiredStringArg('input'));
-const inputPaper = readJson(inputPath);
+const expectedInputSha256 = stringArg('expected-input-sha256', '');
+const expectedInputCanonicalJsonSha256 = stringArg('expected-input-canonical-json-sha256', '');
+if (!existsSync(inputPath)) throw new Error(`Input file does not exist: ${inputPath}`);
+const inputBinding = captureBoundJsonInput(inputPath, {
+	rootDir,
+	expectedSha256: expectedInputSha256,
+	expectedCanonicalJsonSha256: expectedInputCanonicalJsonSha256,
+	label: 'Answer-chain extraction input'
+});
+const inputPaper = inputBinding.value;
+const assetManifestArg = stringArg('asset-manifest', '');
+const assetManifestBinding = assetManifestArg
+	? captureBoundJsonInput(path.resolve(rootDir, assetManifestArg), {
+			rootDir,
+			label: 'Answer-chain learner asset manifest'
+		})
+	: null;
+if (assetManifestBinding) {
+	assertLearnerVisibleAssetBundleCurrent({
+		paper: inputPaper,
+		manifest: assetManifestBinding.value,
+		rootDir
+	});
+}
 const sourceDocumentId =
 	inputPaper.sourceDocument?.id ?? inputPaper.sourceDocumentId ?? path.basename(inputPath, '.json');
 const outputPath = path.resolve(
@@ -61,6 +97,14 @@ const summaryPath = path.resolve(
 );
 const existingChainsPath = stringArg('existing-chains', '');
 const existingChainInputRoot = stringArg('existing-chain-input-root', '');
+const resolvedExistingChainsPath = existingChainsPath
+	? path.resolve(rootDir, existingChainsPath)
+	: null;
+const resolvedExistingChainInputRoot = existingChainInputRoot
+	? path.resolve(rootDir, existingChainInputRoot)
+	: null;
+const existingChainContextModelPath = path.join(workDir, 'existing-chain-context.json');
+const generatedExistingChainContextPath = path.join(workDir, 'existing-chain-context-source.json');
 const model = stringArg('model', 'gpt-5.6-sol');
 const thinkingLevel = stringArg('thinking-level', 'max');
 const runLegacyChainStyleJudge = hasArg('run-legacy-chain-style-judge');
@@ -80,13 +124,25 @@ const chainStyleRepairAttempts = integerArg('chain-style-repair-attempts', 4, 0)
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
+let extractionSnapshotBinding = null;
+let existingChainContextBinding = null;
+let existingChainContextSnapshotBinding = null;
+let existingChainContextGeneration = null;
 
-if (!existsSync(inputPath)) throw new Error(`Input file does not exist: ${inputPath}`);
-if (existingChainsPath && !existsSync(path.resolve(rootDir, existingChainsPath))) {
+if (resolvedExistingChainsPath && !existsSync(resolvedExistingChainsPath)) {
 	throw new Error(`Existing chains file does not exist: ${existingChainsPath}`);
 }
-if (existingChainInputRoot && !existsSync(path.resolve(rootDir, existingChainInputRoot))) {
+if (resolvedExistingChainInputRoot && !existsSync(resolvedExistingChainInputRoot)) {
 	throw new Error(`Existing chain input root does not exist: ${existingChainInputRoot}`);
+}
+if (resolvedExistingChainsPath && resolvedExistingChainInputRoot) {
+	throw new Error('Pass either --existing-chains or --existing-chain-input-root, not both.');
+}
+if (resolvedExistingChainsPath) {
+	existingChainContextBinding = captureBoundJsonInput(resolvedExistingChainsPath, {
+		rootDir,
+		label: 'Existing chain context'
+	});
 }
 
 const plan = {
@@ -101,6 +157,7 @@ const plan = {
 	existingChainInputRoot: existingChainInputRoot
 		? relative(path.resolve(rootDir, existingChainInputRoot))
 		: null,
+	existingChainContextArtifact: existingChainContextBinding?.artifact ?? null,
 	model,
 	thinkingLevel,
 	skipChainStyleJudge,
@@ -112,6 +169,9 @@ const plan = {
 	chainStyleJudgeSourceSnippetChars,
 	chainValidationRepairAttempts,
 	chainStyleRepairAttempts,
+	expectedInputSha256: expectedInputSha256 || null,
+	expectedInputCanonicalJsonSha256: expectedInputCanonicalJsonSha256 || null,
+	assetManifestPath: assetManifestBinding ? relative(assetManifestBinding.path) : null,
 	questionCount: inputPaper.questions?.length ?? 0
 };
 
@@ -127,7 +187,7 @@ writeFileSync(path.join(workDir, 'prompt.md'), prompt);
 const startedAt = new Date().toISOString();
 let codexSummary = null;
 try {
-	codexSummary = await runCodexSdkTurn({
+	codexSummary = await runBoundCodexTurn({
 		prompt,
 		workDir,
 		eventsPath: path.join(workDir, 'events.jsonl'),
@@ -150,7 +210,7 @@ try {
 		const repairPrompt = buildValidationRepairPrompt(attempt, failedValidationPath);
 		const repairPromptPath = path.join(workDir, `validation-repair-prompt-${attempt}.md`);
 		writeFileSync(repairPromptPath, repairPrompt);
-		const repairSummary = await runCodexSdkTurn({
+		const repairSummary = await runBoundCodexTurn({
 			prompt: repairPrompt,
 			workDir,
 			eventsPath: path.join(workDir, `validation-repair-events-${attempt}.jsonl`),
@@ -181,7 +241,7 @@ try {
 		const repairPrompt = buildStyleRepairPrompt(attempt, failedStylePath);
 		const repairPromptPath = path.join(workDir, `style-repair-prompt-${attempt}.md`);
 		writeFileSync(repairPromptPath, repairPrompt);
-		const repairSummary = await runCodexSdkTurn({
+		const repairSummary = await runBoundCodexTurn({
 			prompt: repairPrompt,
 			workDir,
 			eventsPath: path.join(workDir, `style-repair-events-${attempt}.jsonl`),
@@ -199,8 +259,24 @@ try {
 	if (!styleJudgePassed(styleJudge)) {
 		throw new Error('answer-chain style judge failed after repair attempts.');
 	}
+	assertBoundPhaseInputsCurrent();
+	const reconciledBinding = captureBoundJsonInput(chainPath, {
+		rootDir,
+		label: 'Reconciled answer-chain output'
+	});
 	mkdirSync(path.dirname(outputPath), { recursive: true });
-	copyFileSync(chainPath, outputPath);
+	writeFileSync(outputPath, reconciledBinding.bytes);
+	const publishedOutputBinding = captureBoundJsonInput(outputPath, {
+		rootDir,
+		label: 'Published reconciled answer-chain output'
+	});
+	assertExactJsonArtifactsEqual(
+		reconciledBinding.artifact,
+		publishedOutputBinding.artifact,
+		'Reconciled answer-chain output copy'
+	);
+	assertBoundLearnerAssetsCurrent(publishedOutputBinding.value);
+	assertBoundPhaseInputsCurrent();
 	const summary = {
 		status: 'passed',
 		startedAt,
@@ -211,6 +287,24 @@ try {
 		repairs,
 		validation,
 		styleJudge,
+		phaseArtifacts: phaseArtifacts({
+			inputs: {
+				extraction: inputBinding.artifact,
+				verifiedInputSnapshot: extractionSnapshotBinding.artifact,
+				inputSnapshotDerivation: {
+					schemaVersion: 'generated-phase-input-snapshot-v1',
+					source: inputBinding.artifact,
+					snapshot: extractionSnapshotBinding.artifact
+				},
+				existingChainContext: existingChainContextBinding?.artifact ?? null,
+				existingChainContextModelSnapshot: existingChainContextSnapshotBinding?.artifact ?? null,
+				existingChainContextSnapshotDerivation: existingChainContextDerivation(),
+				...(assetManifestBinding ? { learnerAssetManifest: assetManifestBinding.artifact } : {})
+			},
+			outputs: {
+				reconciled: publishedOutputBinding.artifact
+			}
+		}),
 		artifacts: artifacts(chainPath)
 	};
 	writeJson(summaryPath, summary);
@@ -238,7 +332,14 @@ function prepareWorkDir() {
 		rmSync(workDir, { recursive: true, force: true });
 	}
 	mkdirSync(workDir, { recursive: true });
-	copyFileSync(inputPath, path.join(workDir, 'extraction.json'));
+	extractionSnapshotBinding = stageBoundJsonSnapshot(
+		inputBinding,
+		path.join(workDir, 'extraction.json'),
+		{
+			rootDir,
+			label: 'Answer-chain extraction input'
+		}
+	);
 	copyCodexImportHelperBundle({ rootDir, workDir });
 	copyFileSync(
 		path.join(rootDir, 'scripts/answer-chain-specificity.mjs'),
@@ -250,18 +351,24 @@ function prepareWorkDir() {
 		mkdirSync(specTargetDir, { recursive: true });
 		copyFileSync(specSourcePath, path.join(specTargetDir, 'extraction-spec.md'));
 	}
-	if (existingChainsPath) {
-		copyFileSync(
-			path.resolve(rootDir, existingChainsPath),
-			path.join(workDir, 'existing-chain-context.json')
+	if (resolvedExistingChainsPath) {
+		existingChainContextSnapshotBinding = stageBoundJsonSnapshot(
+			existingChainContextBinding,
+			existingChainContextModelPath,
+			{
+				rootDir,
+				label: 'Existing chain context'
+			}
 		);
-	} else if (existingChainInputRoot) {
+	} else if (resolvedExistingChainInputRoot) {
+		const generatedAt = new Date().toISOString();
 		const result = spawnSync(
 			process.execPath,
 			[
 				'scripts/build-existing-chain-context.mjs',
-				`--input-root=${path.resolve(rootDir, existingChainInputRoot)}`,
-				`--output=${path.join(workDir, 'existing-chain-context.json')}`
+				`--input-root=${resolvedExistingChainInputRoot}`,
+				`--output=${generatedExistingChainContextPath}`,
+				`--generated-at=${generatedAt}`
 			],
 			{ cwd: rootDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }
 		);
@@ -271,7 +378,91 @@ function prepareWorkDir() {
 			);
 		}
 		if (result.stdout.trim()) process.stderr.write(result.stdout);
+		existingChainContextBinding = captureBoundJsonInput(generatedExistingChainContextPath, {
+			rootDir,
+			label: 'Generated existing chain context'
+		});
+		existingChainContextGeneration = {
+			schemaVersion: 'existing-chain-context-input-root-v1',
+			inputRoot: relative(resolvedExistingChainInputRoot),
+			generatedAt
+		};
+		existingChainContextSnapshotBinding = stageBoundJsonSnapshot(
+			existingChainContextBinding,
+			existingChainContextModelPath,
+			{
+				rootDir,
+				label: 'Generated existing chain context'
+			}
+		);
 	}
+}
+
+async function runBoundCodexTurn(options) {
+	assertBoundPhaseInputsCurrent();
+	try {
+		return await runCodexSdkTurn(options);
+	} finally {
+		assertBoundPhaseInputsCurrent();
+	}
+}
+
+function assertBoundPhaseInputsCurrent() {
+	assertBoundJsonInputCurrent(inputBinding, { label: 'Answer-chain extraction input' });
+	if (!extractionSnapshotBinding) {
+		throw new Error('Answer-chain extraction input snapshot was not staged.');
+	}
+	assertBoundJsonInputCurrent(extractionSnapshotBinding, {
+		label: 'Answer-chain extraction input snapshot'
+	});
+	assertExactJsonArtifactsEqual(
+		inputBinding.artifact,
+		extractionSnapshotBinding.artifact,
+		'Answer-chain extraction input snapshot'
+	);
+	if (existingChainContextBinding) {
+		assertBoundJsonInputCurrent(existingChainContextBinding, {
+			label: 'Existing chain context'
+		});
+		if (!existingChainContextSnapshotBinding) {
+			throw new Error('Existing chain context model snapshot was not staged.');
+		}
+		assertBoundJsonInputCurrent(existingChainContextSnapshotBinding, {
+			label: 'Existing chain context model snapshot'
+		});
+		assertExactJsonArtifactsEqual(
+			existingChainContextBinding.artifact,
+			existingChainContextSnapshotBinding.artifact,
+			'Existing chain context model snapshot'
+		);
+	} else if (existingChainContextSnapshotBinding) {
+		throw new Error('Existing chain context snapshot exists without a bound source context.');
+	}
+	assertBoundLearnerAssetsCurrent(inputPaper);
+}
+
+function assertBoundLearnerAssetsCurrent(paper) {
+	if (!assetManifestBinding) return;
+	assertBoundJsonInputCurrent(assetManifestBinding, {
+		label: 'Answer-chain learner asset manifest'
+	});
+	assertLearnerVisibleAssetBundleCurrent({
+		paper,
+		manifest: assetManifestBinding.value,
+		rootDir
+	});
+}
+
+function existingChainContextDerivation() {
+	if (!existingChainContextBinding) return null;
+	if (!existingChainContextSnapshotBinding) {
+		throw new Error('Existing chain context model snapshot was not staged.');
+	}
+	return existingChainContextSnapshotDerivation({
+		source: existingChainContextBinding.artifact,
+		snapshot: existingChainContextSnapshotBinding.artifact,
+		generation: existingChainContextGeneration
+	});
 }
 
 function buildChainPrompt() {
@@ -441,6 +632,27 @@ function normalizeChainOutput(chainPath, { allowFailure = false } = {}) {
 	}
 	if (result.stdout.trim()) process.stderr.write(result.stdout);
 	if (result.stderr.trim()) process.stderr.write(result.stderr);
+	try {
+		const candidatePaper = readJson(chainPath);
+		writeJson(chainPath, preserveExtractionFactsForChainPhase(inputPaper, candidatePaper));
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (allowFailure) {
+			return {
+				status: 'failed',
+				blockingIssues: [
+					{
+						code: 'chain_phase_boundary_failed',
+						severity: 'error',
+						message
+					}
+				],
+				deterministicIssues: [],
+				runnerError: `chain phase boundary failed: ${message}`
+			};
+		}
+		throw new Error(`chain phase boundary failed: ${message}`, { cause: error });
+	}
 	return { status: 'passed' };
 }
 
@@ -465,12 +677,18 @@ function judgeChainStyle(chainPath, { allowFailure = false } = {}) {
 	if (existsSync(path.join(workDir, 'existing-chain-context.json'))) {
 		args.push(`--existing-chains=${path.join(workDir, 'existing-chain-context.json')}`);
 	}
-	const result = spawnSync(process.execPath, args, {
-		cwd: rootDir,
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'pipe'],
-		maxBuffer: 64 * 1024 * 1024
-	});
+	assertBoundPhaseInputsCurrent();
+	let result;
+	try {
+		result = spawnSync(process.execPath, args, {
+			cwd: rootDir,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+			maxBuffer: 64 * 1024 * 1024
+		});
+	} finally {
+		assertBoundPhaseInputsCurrent();
+	}
 	if (result.status !== 0) {
 		const failedReport = existsSync(path.join(workDir, 'chain-style-judge.json'))
 			? readJson(path.join(workDir, 'chain-style-judge.json'))

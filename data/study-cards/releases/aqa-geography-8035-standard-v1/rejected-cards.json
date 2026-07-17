@@ -1,0 +1,64 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8035-311-plate-margin-types",
+        "conceptKey": "aqa-geography-8035-tectonic-plate-margin-types",
+        "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+        "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1-2",
+        "kind": "fact",
+        "visualCue": "🌋",
+        "front": "At which three types of plate margin do physical processes lead to earthquakes and volcanic activity in this specification?",
+        "back": "Constructive, destructive and conservative plate margins.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Physical processes at all three named margin types are linked to earthquakes and volcanic activity.",
+        "memoryTip": "Use the initials C-D-C: constructive, destructive, conservative.",
+        "choices": [
+          {
+            "key": "A",
+            "text": "Constructive, destructive and conservative plate margins.",
+            "isCorrect": true,
+            "feedback": "Correct: these are the three specified plate-margin types.",
+            "misconception": null
+          },
+          {
+            "key": "B",
+            "text": "Pressure belts and surface winds.",
+            "isCorrect": false,
+            "feedback": "These belong to the general atmospheric circulation model.",
+            "misconception": "confuses-plate-tectonics-with-atmospheric-circulation"
+          },
+          {
+            "key": "C",
+            "text": "Primary and secondary effects.",
+            "isCorrect": false,
+            "feedback": "These classify hazard effects, not plate margins.",
+            "misconception": "confuses-margin-types-with-effect-types"
+          },
+          {
+            "key": "D",
+            "text": "Monitoring, prediction, protection and planning.",
+            "isCorrect": false,
+            "feedback": "These are tectonic risk-reduction approaches, not margin types.",
+            "misconception": "confuses-margin-types-with-management"
+          }
+        ],
+        "sourceExcerpt": "Physical processes taking place at different\ntypes of plate margin (constructive, destructive\nand conservative) that lead to earthquakes and\nvolcanic activity.",
+        "sourceLocator": "Official PDF pages 9-11; 3.1.1.2 Tectonic hazards"
+      },
+      "review": {
+        "cardId": "aqa-8035-311-plate-margin-types",
+        "accepted": false,
+        "issues": [
+          "The stem and explanation imply that all three margin types lead to both earthquakes and volcanic activity. Conservative margins are associated with earthquakes but not volcanic activity; the excerpt names the margins collectively and does not support this per-margin claim.",
+          "The volcano cue reinforces the misleading association for conservative margins."
+        ],
+        "learnerValue": [
+          "The C-D-C mnemonic usefully retrieves the three named margin types."
+        ]
+      }
+    }
+  ]
+}

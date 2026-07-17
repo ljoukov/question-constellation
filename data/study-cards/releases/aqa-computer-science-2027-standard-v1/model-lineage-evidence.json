@@ -1,0 +1,604 @@
+{
+  "schemaVersion": "study-card-model-lineage-v2",
+  "status": "passed",
+  "releaseId": "aqa-computer-science-2027-standard-v1",
+  "requiredModel": "gpt-5.6-sol",
+  "requiredThinkingLevel": "max",
+  "artifact": {
+    "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/accepted-study-cards.json",
+    "fileSha256": "21591d37a66686ab1c1eeed811893e8c8883a17d09a1515005f50819e2b2cebf",
+    "semanticSha256": "56ff1f5a5957820626f25c4e2d9f2589da4dfd606d41c9fbc6e44274eedcdada",
+    "acceptedCardCount": 31,
+    "acceptedCardIdsSha256": "c7a9434ef9173dcbec97c30cfa3641b11f0fd90a5b4e3bb0e58cd97894b847c5",
+    "acceptedCardContent": [
+      {
+        "cardId": "aqa-8525-3-1-abstraction-definition",
+        "semanticSha256": "22b46dcfee64a2100ecd1f2af0de6983f410d8e5bf470a45550eb53b30b6f316"
+      },
+      {
+        "cardId": "aqa-8525-3-1-algorithm-definition",
+        "semanticSha256": "0ec0ac541cc25d6449a9530e1308fe01fb95ac116f2937222b8caaf826739643"
+      },
+      {
+        "cardId": "aqa-8525-3-1-algorithm-program-relationship",
+        "semanticSha256": "4c99b345dc26c5e3e412a89f76540f2551c7c4fb79dc15b459986ccee930b91f"
+      },
+      {
+        "cardId": "aqa-8525-3-1-decomposition-definition",
+        "semanticSha256": "15d26323e8a899b8c95246d086a3bd8fef10debe2667ec20eb15d9615e7356d1"
+      },
+      {
+        "cardId": "aqa-8525-3-2-div-mod-eleven-two",
+        "semanticSha256": "86038e1505351abd5cdc34c6a7cef376baedf266d871f366e812eed541719e08"
+      },
+      {
+        "cardId": "aqa-8525-3-2-imperative-combining-principles",
+        "semanticSha256": "a49def684e4c7dff7577c18d35a81254a62a75bd1fe83309ea14cb49183bfbf2"
+      },
+      {
+        "cardId": "aqa-8525-3-2-required-data-types",
+        "semanticSha256": "f2a7122b158e67ec75fcd229d8dbfce09de2f9b7bef814bc744bc84bd0816310"
+      },
+      {
+        "cardId": "aqa-8525-3-3-bit-byte-units-symbols",
+        "semanticSha256": "9ae81b180df410479d806acab9a1667cfb9baf9bc20f7870e01dabecaf981951"
+      },
+      {
+        "cardId": "aqa-8525-3-3-bitmap-file-size-formulas",
+        "semanticSha256": "c8f2443e7c70f289a5c114261f08393743edc325f615828215571a1d6febbd9d"
+      },
+      {
+        "cardId": "aqa-8525-3-3-equivalent-255-representations",
+        "semanticSha256": "e5c02151af2a315797add0452c57a2a83f982850c9bc2f21e02c1166a5f62b61"
+      },
+      {
+        "cardId": "aqa-8525-3-3-sound-file-size-formula",
+        "semanticSha256": "4198ba47f7a6d7cda3d4f5667c510cf73ef9d78bb54c6404f69033ec4e28ef63"
+      },
+      {
+        "cardId": "aqa-8525-3-4-fetch-decode-execute-cycle",
+        "semanticSha256": "16d6652826af5da6464f166fea7a20c7dc7e3987f664aadc75778821edfacab0"
+      },
+      {
+        "cardId": "aqa-8525-3-4-main-memory-secondary-storage",
+        "semanticSha256": "e945b88b08601414f30c3f3cc3ca62e709f428fd146a6b3ee814b10238a513b9"
+      },
+      {
+        "cardId": "aqa-8525-3-4-system-application-software-roles",
+        "semanticSha256": "ebcbbccbd5928ba36f07252b9b23d18afc77a7a214502dddc734fde61f94cc8d"
+      },
+      {
+        "cardId": "aqa-8525-3-4-translator-machine-code-output",
+        "semanticSha256": "30f823ad9c4ced9869839621e0553b540aa375822887b8dd26f22800659d8fa5"
+      },
+      {
+        "cardId": "aqa-8525-3-5-firewall-definition",
+        "semanticSha256": "ed9810bf748267d4ac2a2417fb84fe113c719f810511b96b008fca44e3f67c5a"
+      },
+      {
+        "cardId": "aqa-8525-3-5-lan-wan-scope-ownership",
+        "semanticSha256": "aa62d3ffa1b052129379f61a09067b8e5d96e1b6fc47cf80d83a4cf9bf1d5e21"
+      },
+      {
+        "cardId": "aqa-8525-3-5-protocol-layer-mapping",
+        "semanticSha256": "c8a802f4101fa63e9694b6d727451ccaf4879317f4a1cea29fe03130d028ac4c"
+      },
+      {
+        "cardId": "aqa-8525-3-5-tcp-ip-layer-sequence",
+        "semanticSha256": "e146408289302ddb8912e176883c8b8cdefc9025df81794dc26833302eac98b2"
+      },
+      {
+        "cardId": "aqa-8525-3-6-cyber-security-definition",
+        "semanticSha256": "f14698935050a34220597f4b6949985955eeed29293bbbbff9a06a1ba47d6f4b"
+      },
+      {
+        "cardId": "aqa-8525-3-6-malware-definition",
+        "semanticSha256": "b88329fb1c1bec8abe0e51558b1bc7702e15cd98e96917a81af4d23d11cc0085"
+      },
+      {
+        "cardId": "aqa-8525-3-6-penetration-testing-definition",
+        "semanticSha256": "3227c8ed0247410e616554995c3be350fbb7be9fbd59dc6bd17f318c4b917de6"
+      },
+      {
+        "cardId": "aqa-8525-3-6-phishing-shouldering-comparison",
+        "semanticSha256": "48cf9058bdd1f5fd35ee8d01dfa8ebdb6cc78894beaea2de0a95be43044b1513"
+      },
+      {
+        "cardId": "aqa-8525-3-7-relational-database-consistency-benefit",
+        "semanticSha256": "9a7868e8280557eb8c06af13ea9aeaf64f0a774cc46e31ab236b152d87927564"
+      },
+      {
+        "cardId": "aqa-8525-3-7-sql-insert-structure",
+        "semanticSha256": "ac04fb5590787625d93be50994d5fdd2511678e2992fc5fafc3527c7be2145c6"
+      },
+      {
+        "cardId": "aqa-8525-3-7-sql-retrieval-command-set",
+        "semanticSha256": "48ab840f3d63632fbd0a42167dc419f50f3a6de91f04613124bfffa771284245"
+      },
+      {
+        "cardId": "aqa-8525-3-7-sql-update-delete-structures",
+        "semanticSha256": "5fc8de6f99f42c690c27661c664034807f1966ab439b4dff92260f239dc6ffa9"
+      },
+      {
+        "cardId": "aqa-8525-3-8-citizen-privacy-position",
+        "semanticSha256": "a8fc67353d1ae9eec379d6f96ea15e3b8ef46eafe178798040fd2bbf241e94e8"
+      },
+      {
+        "cardId": "aqa-8525-3-8-hacking-definition",
+        "semanticSha256": "2fcc56a2ebd4c0e425283917b25c6b24343cae22fc9801b6f6cfdd33e631952b"
+      },
+      {
+        "cardId": "aqa-8525-3-8-societal-impact-analysis-framework",
+        "semanticSha256": "dc31466023d75c618f87f260285f8696e727fb002795893301493ee07815a36e"
+      },
+      {
+        "cardId": "aqa-8525-3-8-state-private-data-argument",
+        "semanticSha256": "ae9ca47b9ad7c062e20676b09247e440c594bed7e1c6231cf9eeb128c3957b69"
+      }
+    ],
+    "acceptedCardContentSha256": "3087ac4244793c1d73f8839e451b7056c1deea57e9465f8cb1aa862e0ff11719",
+    "sourceManifestHash": "2793f4912d3dac83be48c687852d2e52eda844a82846c77df5db8e205914f3f1"
+  },
+  "generationRun": {
+    "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/generation-run.json",
+    "sha256": "b6a0cd8e41f2dceaaaa5e018133a6e82acfec35f13110fa986eaf2a3249c5591"
+  },
+  "runs": [
+    {
+      "stage": "generation",
+      "role": "generator",
+      "status": "passed",
+      "runId": "019f6b9d-9a14-71c1-b821-25d0d50bc751",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T15:48:39.739Z",
+      "finishedAt": "2026-07-16T15:58:30.881Z",
+      "summary": {
+        "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/generation-codex-run-summary.json",
+        "sha256": "e8e2316a697c6676d4f6597aad034f0d16fe47059324d5fbb63facee28382d30"
+      },
+      "eventStream": {
+        "sourceFileName": "generation-rollout-source.jsonl",
+        "sha256": "957341cd8bbb97ed690103ddca5ae66da04b70ecc251bdea14d2711f8f79cde0",
+        "sanitizedEventCount": 46
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/generation-prompt.txt",
+        "sha256": "f1589c784fed821e145b05b10429140bd161e989fe93ecf251cf2eba4dfd642b"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/generation-model-output.json",
+        "sha256": "0d5786b6436a7fb97fa8b2863c9d2bbb1414ea0ce87a92521beb4c9047aa2fd7"
+      },
+      "generatedCardIds": [
+        "aqa-8525-3-1-abstraction-definition",
+        "aqa-8525-3-1-algorithm-definition",
+        "aqa-8525-3-1-algorithm-program-relationship",
+        "aqa-8525-3-1-decomposition-definition",
+        "aqa-8525-3-2-div-mod-eleven-two",
+        "aqa-8525-3-2-imperative-combining-principles",
+        "aqa-8525-3-2-required-data-types",
+        "aqa-8525-3-2-subroutine-definition",
+        "aqa-8525-3-3-bit-byte-units-symbols",
+        "aqa-8525-3-3-bitmap-file-size-formulas",
+        "aqa-8525-3-3-equivalent-255-representations",
+        "aqa-8525-3-3-sound-file-size-formula",
+        "aqa-8525-3-4-fetch-decode-execute-cycle",
+        "aqa-8525-3-4-main-memory-secondary-storage",
+        "aqa-8525-3-4-system-application-software-roles",
+        "aqa-8525-3-4-translator-machine-code-output",
+        "aqa-8525-3-5-firewall-definition",
+        "aqa-8525-3-5-lan-wan-scope-ownership",
+        "aqa-8525-3-5-protocol-layer-mapping",
+        "aqa-8525-3-5-tcp-ip-layer-sequence",
+        "aqa-8525-3-6-cyber-security-definition",
+        "aqa-8525-3-6-malware-definition",
+        "aqa-8525-3-6-penetration-testing-definition",
+        "aqa-8525-3-6-phishing-shouldering-comparison",
+        "aqa-8525-3-7-relational-database-consistency-benefit",
+        "aqa-8525-3-7-sql-insert-structure",
+        "aqa-8525-3-7-sql-retrieval-command-set",
+        "aqa-8525-3-7-sql-update-delete-structures",
+        "aqa-8525-3-8-citizen-privacy-position",
+        "aqa-8525-3-8-hacking-definition",
+        "aqa-8525-3-8-societal-impact-analysis-framework",
+        "aqa-8525-3-8-state-private-data-argument"
+      ],
+      "generatedCardContent": [
+        {
+          "cardId": "aqa-8525-3-1-abstraction-definition",
+          "semanticSha256": "22b46dcfee64a2100ecd1f2af0de6983f410d8e5bf470a45550eb53b30b6f316"
+        },
+        {
+          "cardId": "aqa-8525-3-1-algorithm-definition",
+          "semanticSha256": "0ec0ac541cc25d6449a9530e1308fe01fb95ac116f2937222b8caaf826739643"
+        },
+        {
+          "cardId": "aqa-8525-3-1-algorithm-program-relationship",
+          "semanticSha256": "4c99b345dc26c5e3e412a89f76540f2551c7c4fb79dc15b459986ccee930b91f"
+        },
+        {
+          "cardId": "aqa-8525-3-1-decomposition-definition",
+          "semanticSha256": "15d26323e8a899b8c95246d086a3bd8fef10debe2667ec20eb15d9615e7356d1"
+        },
+        {
+          "cardId": "aqa-8525-3-2-div-mod-eleven-two",
+          "semanticSha256": "86038e1505351abd5cdc34c6a7cef376baedf266d871f366e812eed541719e08"
+        },
+        {
+          "cardId": "aqa-8525-3-2-imperative-combining-principles",
+          "semanticSha256": "a49def684e4c7dff7577c18d35a81254a62a75bd1fe83309ea14cb49183bfbf2"
+        },
+        {
+          "cardId": "aqa-8525-3-2-required-data-types",
+          "semanticSha256": "f2a7122b158e67ec75fcd229d8dbfce09de2f9b7bef814bc744bc84bd0816310"
+        },
+        {
+          "cardId": "aqa-8525-3-2-subroutine-definition",
+          "semanticSha256": "f1b2a40996e4fe1aa0256f133f9c33cf89d2dfd33f119f7e257916bdd65e995d"
+        },
+        {
+          "cardId": "aqa-8525-3-3-bit-byte-units-symbols",
+          "semanticSha256": "9ae81b180df410479d806acab9a1667cfb9baf9bc20f7870e01dabecaf981951"
+        },
+        {
+          "cardId": "aqa-8525-3-3-bitmap-file-size-formulas",
+          "semanticSha256": "c8f2443e7c70f289a5c114261f08393743edc325f615828215571a1d6febbd9d"
+        },
+        {
+          "cardId": "aqa-8525-3-3-equivalent-255-representations",
+          "semanticSha256": "e5c02151af2a315797add0452c57a2a83f982850c9bc2f21e02c1166a5f62b61"
+        },
+        {
+          "cardId": "aqa-8525-3-3-sound-file-size-formula",
+          "semanticSha256": "4198ba47f7a6d7cda3d4f5667c510cf73ef9d78bb54c6404f69033ec4e28ef63"
+        },
+        {
+          "cardId": "aqa-8525-3-4-fetch-decode-execute-cycle",
+          "semanticSha256": "16d6652826af5da6464f166fea7a20c7dc7e3987f664aadc75778821edfacab0"
+        },
+        {
+          "cardId": "aqa-8525-3-4-main-memory-secondary-storage",
+          "semanticSha256": "e945b88b08601414f30c3f3cc3ca62e709f428fd146a6b3ee814b10238a513b9"
+        },
+        {
+          "cardId": "aqa-8525-3-4-system-application-software-roles",
+          "semanticSha256": "ebcbbccbd5928ba36f07252b9b23d18afc77a7a214502dddc734fde61f94cc8d"
+        },
+        {
+          "cardId": "aqa-8525-3-4-translator-machine-code-output",
+          "semanticSha256": "30f823ad9c4ced9869839621e0553b540aa375822887b8dd26f22800659d8fa5"
+        },
+        {
+          "cardId": "aqa-8525-3-5-firewall-definition",
+          "semanticSha256": "ed9810bf748267d4ac2a2417fb84fe113c719f810511b96b008fca44e3f67c5a"
+        },
+        {
+          "cardId": "aqa-8525-3-5-lan-wan-scope-ownership",
+          "semanticSha256": "aa62d3ffa1b052129379f61a09067b8e5d96e1b6fc47cf80d83a4cf9bf1d5e21"
+        },
+        {
+          "cardId": "aqa-8525-3-5-protocol-layer-mapping",
+          "semanticSha256": "c8a802f4101fa63e9694b6d727451ccaf4879317f4a1cea29fe03130d028ac4c"
+        },
+        {
+          "cardId": "aqa-8525-3-5-tcp-ip-layer-sequence",
+          "semanticSha256": "e146408289302ddb8912e176883c8b8cdefc9025df81794dc26833302eac98b2"
+        },
+        {
+          "cardId": "aqa-8525-3-6-cyber-security-definition",
+          "semanticSha256": "f14698935050a34220597f4b6949985955eeed29293bbbbff9a06a1ba47d6f4b"
+        },
+        {
+          "cardId": "aqa-8525-3-6-malware-definition",
+          "semanticSha256": "b88329fb1c1bec8abe0e51558b1bc7702e15cd98e96917a81af4d23d11cc0085"
+        },
+        {
+          "cardId": "aqa-8525-3-6-penetration-testing-definition",
+          "semanticSha256": "3227c8ed0247410e616554995c3be350fbb7be9fbd59dc6bd17f318c4b917de6"
+        },
+        {
+          "cardId": "aqa-8525-3-6-phishing-shouldering-comparison",
+          "semanticSha256": "48cf9058bdd1f5fd35ee8d01dfa8ebdb6cc78894beaea2de0a95be43044b1513"
+        },
+        {
+          "cardId": "aqa-8525-3-7-relational-database-consistency-benefit",
+          "semanticSha256": "9a7868e8280557eb8c06af13ea9aeaf64f0a774cc46e31ab236b152d87927564"
+        },
+        {
+          "cardId": "aqa-8525-3-7-sql-insert-structure",
+          "semanticSha256": "ac04fb5590787625d93be50994d5fdd2511678e2992fc5fafc3527c7be2145c6"
+        },
+        {
+          "cardId": "aqa-8525-3-7-sql-retrieval-command-set",
+          "semanticSha256": "48ab840f3d63632fbd0a42167dc419f50f3a6de91f04613124bfffa771284245"
+        },
+        {
+          "cardId": "aqa-8525-3-7-sql-update-delete-structures",
+          "semanticSha256": "5fc8de6f99f42c690c27661c664034807f1966ab439b4dff92260f239dc6ffa9"
+        },
+        {
+          "cardId": "aqa-8525-3-8-citizen-privacy-position",
+          "semanticSha256": "a8fc67353d1ae9eec379d6f96ea15e3b8ef46eafe178798040fd2bbf241e94e8"
+        },
+        {
+          "cardId": "aqa-8525-3-8-hacking-definition",
+          "semanticSha256": "2fcc56a2ebd4c0e425283917b25c6b24343cae22fc9801b6f6cfdd33e631952b"
+        },
+        {
+          "cardId": "aqa-8525-3-8-societal-impact-analysis-framework",
+          "semanticSha256": "dc31466023d75c618f87f260285f8696e727fb002795893301493ee07815a36e"
+        },
+        {
+          "cardId": "aqa-8525-3-8-state-private-data-argument",
+          "semanticSha256": "ae9ca47b9ad7c062e20676b09247e440c594bed7e1c6231cf9eeb128c3957b69"
+        }
+      ],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "review",
+      "role": "reviewer",
+      "status": "passed",
+      "runId": "019f6ba6-a6ba-7640-bbe1-66ab1cd369f9",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T15:58:32.482Z",
+      "finishedAt": "2026-07-16T16:00:29.397Z",
+      "summary": {
+        "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/review-codex-run-summary.json",
+        "sha256": "7b8db9875b862f68ab6887da0a9a1bb12b284c5c7f1140e326a6c5712d53580b"
+      },
+      "eventStream": {
+        "sourceFileName": "review-rollout-source.jsonl",
+        "sha256": "6ad83e0b12aa7c13d38cda17d3504b9e404af754c3c041880408b37cbc702aa8",
+        "sanitizedEventCount": 22
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/review-prompt.txt",
+        "sha256": "b908902a5c2702d7a2e78cf2be02d3a7d251dafe7608d4a579abd0d66a74901a"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/review-model-output.json",
+        "sha256": "75fec6a64a4212f99f433a5df2137b35a90e0757841ddd873fe778b3df4623d6"
+      },
+      "generatedCardIds": [],
+      "generatedCardContent": [],
+      "reviewedAcceptedCardIds": [
+        "aqa-8525-3-1-abstraction-definition",
+        "aqa-8525-3-1-algorithm-definition",
+        "aqa-8525-3-1-algorithm-program-relationship",
+        "aqa-8525-3-1-decomposition-definition",
+        "aqa-8525-3-2-div-mod-eleven-two",
+        "aqa-8525-3-2-imperative-combining-principles",
+        "aqa-8525-3-2-required-data-types",
+        "aqa-8525-3-3-bit-byte-units-symbols",
+        "aqa-8525-3-3-bitmap-file-size-formulas",
+        "aqa-8525-3-3-equivalent-255-representations",
+        "aqa-8525-3-3-sound-file-size-formula",
+        "aqa-8525-3-4-fetch-decode-execute-cycle",
+        "aqa-8525-3-4-main-memory-secondary-storage",
+        "aqa-8525-3-4-system-application-software-roles",
+        "aqa-8525-3-4-translator-machine-code-output",
+        "aqa-8525-3-5-firewall-definition",
+        "aqa-8525-3-5-lan-wan-scope-ownership",
+        "aqa-8525-3-5-protocol-layer-mapping",
+        "aqa-8525-3-5-tcp-ip-layer-sequence",
+        "aqa-8525-3-6-cyber-security-definition",
+        "aqa-8525-3-6-malware-definition",
+        "aqa-8525-3-6-penetration-testing-definition",
+        "aqa-8525-3-6-phishing-shouldering-comparison",
+        "aqa-8525-3-7-relational-database-consistency-benefit",
+        "aqa-8525-3-7-sql-insert-structure",
+        "aqa-8525-3-7-sql-retrieval-command-set",
+        "aqa-8525-3-7-sql-update-delete-structures",
+        "aqa-8525-3-8-citizen-privacy-position",
+        "aqa-8525-3-8-hacking-definition",
+        "aqa-8525-3-8-societal-impact-analysis-framework",
+        "aqa-8525-3-8-state-private-data-argument"
+      ],
+      "reviewedAcceptedCardContent": [
+        {
+          "cardId": "aqa-8525-3-1-abstraction-definition",
+          "semanticSha256s": [
+            "22b46dcfee64a2100ecd1f2af0de6983f410d8e5bf470a45550eb53b30b6f316"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-1-algorithm-definition",
+          "semanticSha256s": [
+            "0ec0ac541cc25d6449a9530e1308fe01fb95ac116f2937222b8caaf826739643"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-1-algorithm-program-relationship",
+          "semanticSha256s": [
+            "4c99b345dc26c5e3e412a89f76540f2551c7c4fb79dc15b459986ccee930b91f"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-1-decomposition-definition",
+          "semanticSha256s": [
+            "15d26323e8a899b8c95246d086a3bd8fef10debe2667ec20eb15d9615e7356d1"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-2-div-mod-eleven-two",
+          "semanticSha256s": [
+            "86038e1505351abd5cdc34c6a7cef376baedf266d871f366e812eed541719e08"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-2-imperative-combining-principles",
+          "semanticSha256s": [
+            "a49def684e4c7dff7577c18d35a81254a62a75bd1fe83309ea14cb49183bfbf2"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-2-required-data-types",
+          "semanticSha256s": [
+            "f2a7122b158e67ec75fcd229d8dbfce09de2f9b7bef814bc744bc84bd0816310"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-3-bit-byte-units-symbols",
+          "semanticSha256s": [
+            "9ae81b180df410479d806acab9a1667cfb9baf9bc20f7870e01dabecaf981951"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-3-bitmap-file-size-formulas",
+          "semanticSha256s": [
+            "c8f2443e7c70f289a5c114261f08393743edc325f615828215571a1d6febbd9d"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-3-equivalent-255-representations",
+          "semanticSha256s": [
+            "e5c02151af2a315797add0452c57a2a83f982850c9bc2f21e02c1166a5f62b61"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-3-sound-file-size-formula",
+          "semanticSha256s": [
+            "4198ba47f7a6d7cda3d4f5667c510cf73ef9d78bb54c6404f69033ec4e28ef63"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-4-fetch-decode-execute-cycle",
+          "semanticSha256s": [
+            "16d6652826af5da6464f166fea7a20c7dc7e3987f664aadc75778821edfacab0"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-4-main-memory-secondary-storage",
+          "semanticSha256s": [
+            "e945b88b08601414f30c3f3cc3ca62e709f428fd146a6b3ee814b10238a513b9"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-4-system-application-software-roles",
+          "semanticSha256s": [
+            "ebcbbccbd5928ba36f07252b9b23d18afc77a7a214502dddc734fde61f94cc8d"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-4-translator-machine-code-output",
+          "semanticSha256s": [
+            "30f823ad9c4ced9869839621e0553b540aa375822887b8dd26f22800659d8fa5"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-5-firewall-definition",
+          "semanticSha256s": [
+            "ed9810bf748267d4ac2a2417fb84fe113c719f810511b96b008fca44e3f67c5a"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-5-lan-wan-scope-ownership",
+          "semanticSha256s": [
+            "aa62d3ffa1b052129379f61a09067b8e5d96e1b6fc47cf80d83a4cf9bf1d5e21"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-5-protocol-layer-mapping",
+          "semanticSha256s": [
+            "c8a802f4101fa63e9694b6d727451ccaf4879317f4a1cea29fe03130d028ac4c"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-5-tcp-ip-layer-sequence",
+          "semanticSha256s": [
+            "e146408289302ddb8912e176883c8b8cdefc9025df81794dc26833302eac98b2"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-6-cyber-security-definition",
+          "semanticSha256s": [
+            "f14698935050a34220597f4b6949985955eeed29293bbbbff9a06a1ba47d6f4b"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-6-malware-definition",
+          "semanticSha256s": [
+            "b88329fb1c1bec8abe0e51558b1bc7702e15cd98e96917a81af4d23d11cc0085"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-6-penetration-testing-definition",
+          "semanticSha256s": [
+            "3227c8ed0247410e616554995c3be350fbb7be9fbd59dc6bd17f318c4b917de6"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-6-phishing-shouldering-comparison",
+          "semanticSha256s": [
+            "48cf9058bdd1f5fd35ee8d01dfa8ebdb6cc78894beaea2de0a95be43044b1513"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-7-relational-database-consistency-benefit",
+          "semanticSha256s": [
+            "9a7868e8280557eb8c06af13ea9aeaf64f0a774cc46e31ab236b152d87927564"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-7-sql-insert-structure",
+          "semanticSha256s": [
+            "ac04fb5590787625d93be50994d5fdd2511678e2992fc5fafc3527c7be2145c6"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-7-sql-retrieval-command-set",
+          "semanticSha256s": [
+            "48ab840f3d63632fbd0a42167dc419f50f3a6de91f04613124bfffa771284245"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-7-sql-update-delete-structures",
+          "semanticSha256s": [
+            "5fc8de6f99f42c690c27661c664034807f1966ab439b4dff92260f239dc6ffa9"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-8-citizen-privacy-position",
+          "semanticSha256s": [
+            "a8fc67353d1ae9eec379d6f96ea15e3b8ef46eafe178798040fd2bbf241e94e8"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-8-hacking-definition",
+          "semanticSha256s": [
+            "2fcc56a2ebd4c0e425283917b25c6b24343cae22fc9801b6f6cfdd33e631952b"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-8-societal-impact-analysis-framework",
+          "semanticSha256s": [
+            "dc31466023d75c618f87f260285f8696e727fb002795893301493ee07815a36e"
+          ]
+        },
+        {
+          "cardId": "aqa-8525-3-8-state-private-data-argument",
+          "semanticSha256s": [
+            "ae9ca47b9ad7c062e20676b09247e440c594bed7e1c6231cf9eeb128c3957b69"
+          ]
+        }
+      ]
+    }
+  ],
+  "linkage": {
+    "contentProjection": "study-card-learner-content-v1",
+    "allowedDeterministicBinding": "board/qualification/subject/contentRevision, official source metadata, offering targets and normalized choice keys are bound after model review; all learner-visible fields, ordered choice content, source excerpt and component identities hash exactly",
+    "generatorOutputSha256": "f437507e899a3a9a8da2e011b078573341ad3877ef9c270f016db310ff47c6d9",
+    "reviewerInputSha256": "65c1f72ab0d534a9e07d9abee0c38020b61073e8e98885ca88d4eac88bc813f0",
+    "reviewerOutputSha256": "c09fe8459227e9fcc82401edb522c0ae924fe7b46b611dd90eb44529c291c126",
+    "generatedAcceptedCardIdsSha256": "c7a9434ef9173dcbec97c30cfa3641b11f0fd90a5b4e3bb0e58cd97894b847c5",
+    "reviewedAcceptedCardIdsSha256": "c7a9434ef9173dcbec97c30cfa3641b11f0fd90a5b4e3bb0e58cd97894b847c5",
+    "generatedAcceptedCardContentSha256": "3087ac4244793c1d73f8839e451b7056c1deea57e9465f8cb1aa862e0ff11719",
+    "reviewedAcceptedCardContentSha256": "3087ac4244793c1d73f8839e451b7056c1deea57e9465f8cb1aa862e0ff11719",
+    "acceptedArtifactCardContentSha256": "3087ac4244793c1d73f8839e451b7056c1deea57e9465f8cb1aa862e0ff11719",
+    "acceptedArtifactSha256": "21591d37a66686ab1c1eeed811893e8c8883a17d09a1515005f50819e2b2cebf"
+  }
+}

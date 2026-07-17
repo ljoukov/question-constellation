@@ -6,6 +6,7 @@ import { clearRecallCatalogCacheForTests } from './recallCatalog';
 const mocks = vi.hoisted(() => ({
 	executePersonalQuery: vi.fn(),
 	getCurriculumOffering: vi.fn(),
+	getLatestResumeActionsBySubject: vi.fn(),
 	getLearnerProfileSettings: vi.fn(),
 	queryPersonalFirst: vi.fn(),
 	queryPersonalRows: vi.fn(),
@@ -24,23 +25,29 @@ vi.mock('./personalLearning', () => ({
 vi.mock('./curriculumCatalog', () => ({
 	getCurriculumOffering: mocks.getCurriculumOffering
 }));
+vi.mock('./learningResume', () => ({
+	getLatestResumeActionsBySubject: mocks.getLatestResumeActionsBySubject
+}));
 
 import {
 	CurriculumScopeValidationError,
 	getRecallReviewEvidenceReceipt,
 	getRecallReviewSnapshot,
+	getSignedInLearningHome,
 	getSignedInSubjectView,
 	officialTopicForQuestion,
 	recordEnglishStepAttemptEvidence,
 	recordLearnerEvidence,
 	recordQuestionAttemptEvidence,
 	recordRecallReviewEvidence,
+	recallCardsWithinLearnerScope,
 	supportsTextPracticeRecommendation,
 	validatedCurriculumScopeSelection
 } from './subjectLearning';
 
 beforeEach(() => {
 	for (const mock of Object.values(mocks)) mock.mockReset();
+	mocks.getLatestResumeActionsBySubject.mockResolvedValue(new Map());
 	clearRecallCatalogCacheForTests();
 });
 
@@ -178,12 +185,14 @@ function mockBiologyGapSubject({
 	selectedTopicIds,
 	gaps,
 	states = [],
-	topicEvidence = []
+	topicEvidence = [],
+	attempts = []
 }: {
 	selectedTopicIds: string[];
 	gaps: Array<Record<string, unknown>>;
 	states?: Array<Record<string, unknown>>;
 	topicEvidence?: Array<Record<string, unknown>>;
+	attempts?: Array<Record<string, unknown>>;
 }) {
 	mocks.getLearnerProfileSettings.mockResolvedValue(
 		learnerSettings('Biology', 'AQA', emptyEnglishLiteratureSelections, 'Combined Science')
@@ -230,6 +239,7 @@ function mockBiologyGapSubject({
 	mocks.queryPersonalRows.mockImplementation(async (sql: string) => {
 		if (sql.includes('FROM user_learner_component_states')) return states;
 		if (sql.includes('FROM user_learning_evidence')) return topicEvidence;
+		if (sql.includes('FROM user_question_attempts')) return attempts;
 		if (sql.includes('FROM user_chain_gaps')) return gaps;
 		return [];
 	});
@@ -454,6 +464,156 @@ describe('curriculum scope selection validation', () => {
 	});
 });
 
+describe('signed-in home resume action', () => {
+	it('puts the latest compatible unfinished answer first and keeps the ranked action available', async () => {
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('Biology', 'AQA', emptyEnglishLiteratureSelections, 'Combined Science')
+		);
+		mocks.getCurriculumOffering.mockResolvedValue(
+			curriculumOffering({
+				subject: 'Biology',
+				course: 'Combined Science',
+				specificationCode: '8464',
+				groups: [
+					{
+						id: 'biology-chapters',
+						title: 'Chapters',
+						kind: 'group',
+						displayOrder: 0,
+						components: [curriculumComponent('biology-topic-4-1', '4.1', 'Cell biology', 0)]
+					}
+				]
+			})
+		);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string) => {
+			if (sql.includes('FROM user_subject_curriculum_scopes')) {
+				return {
+					user_id: testUser.uid,
+					subject: 'Biology',
+					board: 'AQA',
+					qualification: 'GCSE',
+					course: 'Combined Science',
+					tier: 'Higher',
+					specification_code: '8464',
+					specification_version: '1.0',
+					official_source_url: 'https://example.test/specification',
+					scope_mode: 'all',
+					selected_component_ids_json: '[]',
+					updated_at: '2026-07-14 00:00:00'
+				};
+			}
+			if (sql.includes("datetime('now', '-7 days')")) {
+				return { attempt_count: 2, recall_count: 3, closed_gap_count: 1 };
+			}
+			return null;
+		});
+		mocks.queryPersonalRows.mockResolvedValue([]);
+		mockGeneratedBiologyRecallCatalog();
+		mocks.getLatestResumeActionsBySubject.mockResolvedValue(
+			new Map([
+				[
+					'Biology',
+					{
+						id: 'resume:question-1',
+						kind: 'resume',
+						eyebrow: 'Unfinished answer',
+						title: 'Continue your Biology answer',
+						detail: 'Your latest unfinished response is saved on this question.',
+						reason:
+							'Carry on from the exact point you reached instead of starting another activity.',
+						durationMinutes: null,
+						href: '/questions/question-1/practice',
+						available: true
+					}
+				]
+			])
+		);
+
+		const home = await getSignedInLearningHome(testUser);
+
+		expect(home.subjects[0]?.nextAction).toMatchObject({
+			id: 'resume:question-1',
+			kind: 'resume',
+			href: '/questions/question-1/practice'
+		});
+		expect(home.subjects[0]?.alternatives).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: 'recall:biology-topic-4-1', kind: 'recall' })
+			])
+		);
+		expect(home.weeklySummary).toEqual({
+			attemptCount: 2,
+			recallCount: 3,
+			closedGapCount: 1
+		});
+		expect(mocks.getLatestResumeActionsBySubject).toHaveBeenCalledWith(
+			testUser.uid,
+			expect.arrayContaining([expect.objectContaining({ subject: 'Biology', enabled: true })]),
+			expect.any(Map)
+		);
+		const resumeScopes = mocks.getLatestResumeActionsBySubject.mock.calls[0]?.[2] as Map<
+			string,
+			Set<string>
+		>;
+		expect(resumeScopes.get('Biology')).toEqual(new Set(['biology-topic-4-1']));
+	});
+
+	it('keeps resume disabled until all English Literature course texts are configured', async () => {
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('English Literature', 'OCR', {
+				board: 'OCR',
+				specificationCode: 'J352',
+				modernText: null,
+				nineteenthCenturyNovel: null,
+				poetryCluster: null,
+				shakespearePlay: 'Macbeth'
+			})
+		);
+		mocks.getCurriculumOffering.mockResolvedValue(
+			curriculumOffering({
+				subject: 'English Literature',
+				board: 'OCR',
+				specificationCode: 'J352',
+				groups: [
+					{
+						id: 'english-texts',
+						title: 'Course texts',
+						kind: 'option_group',
+						displayOrder: 0,
+						selectionMin: 4,
+						selectionMax: 4,
+						components: [
+							curriculumComponent('ocr-j352:macbeth', '02', 'Macbeth', 0),
+							curriculumComponent('ocr-j352:animal-farm', '01', 'Animal Farm', 1),
+							curriculumComponent('ocr-j352:conflict', '01', 'Conflict', 2),
+							curriculumComponent('ocr-j352:jekyll-and-hyde', '02', 'Jekyll and Hyde', 3)
+						]
+					}
+				]
+			})
+		);
+		mocks.queryPersonalFirst.mockResolvedValue({
+			attempt_count: 0,
+			recall_count: 0,
+			closed_gap_count: 0
+		});
+		mocks.queryPersonalRows.mockResolvedValue([]);
+		mocks.queryRows.mockResolvedValue([]);
+
+		const home = await getSignedInLearningHome(testUser);
+
+		expect(home.subjects[0]?.scope).toMatchObject({
+			status: 'not_set',
+			includedTopicIds: ['ocr-j352:macbeth']
+		});
+		const resumeScopes = mocks.getLatestResumeActionsBySubject.mock.calls[0]?.[2] as Map<
+			string,
+			Set<string>
+		>;
+		expect(resumeScopes.get('English Literature')).toEqual(new Set());
+	});
+});
+
 describe('signed-in subject action integrity', () => {
 	it('does not recommend a text answer for a missing direct-manipulation diagram', () => {
 		expect(
@@ -461,14 +621,24 @@ describe('signed-in subject action integrity', () => {
 				answer_format: null,
 				prompt_text:
 					'Determine the probability. Complete the Punnett square diagram and identify the offspring genotype.',
-				self_contained_prompt_text: null
+				self_contained_prompt_text: null,
+				subject: 'Biology',
+				context_text: null,
+				self_containment_json: null,
+				reviewed_source_assets_json: null,
+				reviewed_render_json: null
 			})
 		).toBe(false);
 		expect(
 			supportsTextPracticeRecommendation({
 				answer_format: 'lines',
 				prompt_text: 'Explain why a higher potential difference reduces energy loss.',
-				self_contained_prompt_text: null
+				self_contained_prompt_text: null,
+				subject: 'Physics',
+				context_text: null,
+				self_containment_json: null,
+				reviewed_source_assets_json: null,
+				reviewed_render_json: null
 			})
 		).toBe(true);
 		expect(
@@ -476,7 +646,12 @@ describe('signed-in subject action integrity', () => {
 				answer_format: null,
 				prompt_text: 'Tick (✓) one box. Which tissue forms new root cells?',
 				self_contained_prompt_text: null,
-				response_kind: null
+				response_kind: null,
+				subject: 'Biology',
+				context_text: null,
+				self_containment_json: null,
+				reviewed_source_assets_json: null,
+				reviewed_render_json: null
 			})
 		).toBe(false);
 		expect(
@@ -484,9 +659,91 @@ describe('signed-in subject action integrity', () => {
 				answer_format: null,
 				prompt_text: 'Tick (✓) one box. Which tissue forms new root cells?',
 				self_contained_prompt_text: null,
-				response_kind: 'choice'
+				response_kind: 'choice',
+				subject: 'Biology',
+				context_text: null,
+				self_containment_json: null,
+				reviewed_source_assets_json: null,
+				reviewed_render_json: null
 			})
 		).toBe(true);
+	});
+
+	it('does not recommend source-dependent English until the reviewed source is present', () => {
+		const sourceTask = {
+			subject: 'English Language',
+			answer_format: 'lines',
+			prompt_text: 'Look again at lines 10-28. Explore how the writer uses language.',
+			self_contained_prompt_text: null,
+			context_text: 'The relevant source is Text 2 from the insert.',
+			self_containment_json: JSON.stringify({ status: 'self_contained' }),
+			reviewed_source_assets_json: '[]',
+			reviewed_render_json: null
+		};
+
+		expect(supportsTextPracticeRecommendation(sourceTask)).toBe(false);
+		expect(
+			supportsTextPracticeRecommendation({
+				...sourceTask,
+				reviewed_source_assets_json: JSON.stringify([
+					{
+						publicPath: '/images/papers/source.png',
+						role: 'source-page',
+						required: true
+					}
+				])
+			})
+		).toBe(true);
+	});
+
+	it('matches a reviewed Literature figure to its exact serialized question-asset id', () => {
+		const sourceTask = {
+			subject: 'English Literature',
+			answer_format: 'lines',
+			prompt_text:
+				'Starting with this extract, explore how Shakespeare presents guilt in the play.',
+			self_contained_prompt_text: null,
+			context_text: null,
+			self_containment_json: JSON.stringify({
+				status: 'source_complete',
+				requires_assets: true,
+				required_source_count: 1,
+				required_asset_labels: ['Macbeth extract']
+			}),
+			reviewed_source_assets_json: JSON.stringify([
+				{
+					id: 'macbeth-extract',
+					publicPath: '/images/papers/macbeth-extract.png',
+					role: 'source-page',
+					sourceLabel: 'Macbeth extract',
+					required: true
+				}
+			]),
+			reviewed_render_json: JSON.stringify({
+				stemBlocks: [{ kind: 'figure', assetId: 'macbeth-extract' }],
+				promptBlocks: [
+					{
+						kind: 'paragraph',
+						text: 'Starting with this extract, explore how Shakespeare presents guilt.'
+					}
+				]
+			})
+		};
+
+		expect(supportsTextPracticeRecommendation(sourceTask)).toBe(true);
+		expect(
+			supportsTextPracticeRecommendation({
+				...sourceTask,
+				reviewed_source_assets_json: JSON.stringify([
+					{
+						publicPath: '/images/papers/macbeth-extract.png',
+						role: 'source-page',
+						sourceLabel: 'Macbeth extract',
+						required: true
+					}
+				])
+			})
+		).toBe(false);
 	});
 
 	it('names a recall recommendation with the topic first', async () => {
@@ -574,6 +831,72 @@ describe('signed-in subject action integrity', () => {
 			String(sql).includes('FROM user_learning_evidence')
 		)?.[0];
 		expect(evidenceQuery).toContain('COUNT(DISTINCT CASE');
+	});
+
+	it('shows checked-answer marks without predicting a GCSE grade', async () => {
+		mockBiologyGapSubject({
+			selectedTopicIds: ['biology-topic-4-1', 'biology-topic-4-3'],
+			gaps: [],
+			attempts: [
+				{
+					id: 'attempt-1',
+					question_id: 'q-1',
+					answer_chain_id: 'chain-1',
+					result: 'correct',
+					awarded_marks: 4,
+					max_marks: 4,
+					independent: 1,
+					topic_path_json: JSON.stringify(['Cell biology']),
+					created_at: '2026-07-16 10:00:00'
+				},
+				{
+					id: 'attempt-2',
+					question_id: 'q-2',
+					answer_chain_id: 'chain-2',
+					result: 'partial',
+					awarded_marks: 3,
+					max_marks: 4,
+					independent: 1,
+					topic_path_json: JSON.stringify(['Infection and response']),
+					created_at: '2026-07-16 09:00:00'
+				},
+				{
+					id: 'attempt-3',
+					question_id: 'q-3',
+					answer_chain_id: 'chain-3',
+					result: 'partial',
+					awarded_marks: 2,
+					max_marks: 4,
+					independent: 1,
+					topic_path_json: JSON.stringify(['Cell biology']),
+					created_at: '2026-07-16 08:00:00'
+				},
+				{
+					id: 'assisted-attempt',
+					question_id: 'q-assisted',
+					answer_chain_id: 'chain-4',
+					result: 'correct',
+					awarded_marks: 9,
+					max_marks: 9,
+					independent: 0,
+					topic_path_json: JSON.stringify(['Cell biology']),
+					created_at: '2026-07-16 11:00:00'
+				}
+			]
+		});
+
+		const view = await getSignedInSubjectView(testUser, 'Biology');
+
+		expect(view?.progress.checkedAnswerPerformance).toMatchObject({
+			label: 'Checked-answer mark rate',
+			value: '9/12 marks · 75%'
+		});
+		expect(view?.progress.checkedAnswerPerformance.detail).toContain(
+			'3 independent checked questions across 2 of 2'
+		);
+		expect(view?.progress.checkedAnswerPerformance.detail).toContain(
+			'cannot convert this question sample to a GCSE grade'
+		);
 	});
 
 	it('reuses an exact next-action snapshot and dismisses it when only learner state changes', async () => {
@@ -809,6 +1132,64 @@ describe('signed-in subject action integrity', () => {
 		expect(recallAction?.href).toContain('mode=mixed');
 	});
 
+	it('keeps a 1–3-mark written check visible alongside standard study cards', async () => {
+		mockBiologyGapSubject({
+			selectedTopicIds: ['biology-topic-4-1'],
+			gaps: []
+		});
+		const recallQuery = mocks.queryRows.getMockImplementation();
+		mocks.queryRows.mockImplementation(async (sql: string, ...args: unknown[]) => {
+			if (sql.includes('FROM recall_cards c')) return recallQuery?.(sql, ...args) ?? [];
+			if (sql.includes('WITH RECURSIVE candidate_questions')) {
+				return [
+					{
+						id: 'cell-membrane-short-check',
+						subject: 'Combined Science: Trilogy',
+						prompt_text: 'State one function of the cell membrane.',
+						self_contained_prompt_text: null,
+						context_text: null,
+						self_containment_json: null,
+						reviewed_source_assets_json: '[]',
+						reviewed_render_json: null,
+						metadata_json: JSON.stringify({ card_title: 'Cell membrane function' }),
+						source_question_ref: '01.1',
+						marks: 1,
+						answer_format: 'lines',
+						response_kind: 'lines',
+						paper: 'Paper 1',
+						topic_path_json: JSON.stringify(['Cell biology']),
+						spec_ref: '4.1',
+						curriculum_component_id: 'biology-topic-4-1',
+						answer_chain_id: 'cell-membrane-chain',
+						chain_title: 'Cell membrane recall',
+						transfer_distance: 'start',
+						step_count: 1,
+						reviewed_answer_text: 'It controls movement into and out of the cell.'
+					}
+				];
+			}
+			return [];
+		});
+
+		const view = await getSignedInSubjectView(testUser, 'Biology');
+		const visibleActions = [view?.nextAction, ...(view?.alternatives ?? [])].filter(
+			(action) => action?.available
+		);
+
+		expect(visibleActions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: 'recall:biology-topic-4-1', kind: 'recall' }),
+				expect.objectContaining({
+					id: 'quick:cell-membrane-short-check',
+					kind: 'recall',
+					eyebrow: 'Quick exam check',
+					detail: '1-mark question · answer from memory, then check it.'
+				})
+			])
+		);
+		expect(JSON.stringify(view)).not.toContain('short exam check—selected automatically');
+	});
+
 	it('offers a course-scoped selection check instead of a dead end or the generic chain browser', async () => {
 		mocks.getLearnerProfileSettings.mockResolvedValue(learnerSettings('Geography', 'AQA'));
 		mocks.getCurriculumOffering.mockResolvedValue(
@@ -909,7 +1290,7 @@ describe('signed-in subject action integrity', () => {
 			available: true
 		});
 		expect(mocks.queryPersonalFirst).not.toHaveBeenCalled();
-		expect(mocks.queryRows).not.toHaveBeenCalled();
+		expect(mocks.queryRows).toHaveBeenCalled();
 	});
 
 	it('treats four OCR Literature profile choices as the selected official course scope', async () => {
@@ -967,7 +1348,81 @@ describe('signed-in subject action integrity', () => {
 		expect(view?.nextAction.detail).toContain('four course texts');
 		expect(JSON.stringify(view)).not.toContain('/chains');
 		expect(mocks.queryPersonalFirst).not.toHaveBeenCalled();
-		expect(mocks.queryRows).not.toHaveBeenCalled();
+		expect(mocks.queryRows).toHaveBeenCalled();
+	});
+
+	it('keeps Literature recall inside the learner’s four selected course texts', async () => {
+		const selectedTitles = ['An Inspector Calls', 'A Christmas Carol', 'Conflict', 'Macbeth'];
+		const allTitles = [...selectedTitles, 'Animal Farm'];
+		const groups = allTitles.map((title, index) => ({
+			id: `literature-${index}`,
+			title: `${title} choices`,
+			kind: 'option_group',
+			displayOrder: index,
+			selectionMin: 1,
+			selectionMax: 1,
+			components: [curriculumComponent(`literature-text-${index}`, `${index + 1}`, title, index)]
+		}));
+		const offering = curriculumOffering({
+			subject: 'English Literature',
+			board: 'OCR',
+			specificationCode: 'J352',
+			groups
+		});
+		mocks.getCurriculumOffering.mockResolvedValue(offering);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string) => {
+			if (sql.includes('FROM user_profile_subjects')) {
+				return {
+					board: 'OCR',
+					qualification: 'GCSE',
+					course: 'GCSE Subject',
+					tier: 'Higher'
+				};
+			}
+			if (sql.includes('FROM user_english_literature_selections')) {
+				return {
+					modern_text: selectedTitles[0],
+					nineteenth_century_novel: selectedTitles[1],
+					poetry_cluster: selectedTitles[2],
+					shakespeare_play: selectedTitles[3]
+				};
+			}
+			return null;
+		});
+		const cards = allTitles.map(
+			(title, index) =>
+				({
+					id: `literature-card-${index}`,
+					board: 'OCR',
+					qualification: 'GCSE',
+					subject: 'English Literature',
+					topicId: `literature-text-${index}`,
+					topicTitle: title,
+					specRef: `${index + 1}.1`,
+					kind: 'theme',
+					visualCue: '📖',
+					front: `What matters in ${title}?`,
+					back: `A reviewed idea from ${title}.`,
+					distractors: ['A first misconception.', 'A second misconception.'],
+					choiceKeys: {
+						[`A reviewed idea from ${title}.`]: 'correct',
+						'A first misconception.': 'wrong-one',
+						'A second misconception.': 'wrong-two'
+					},
+					sourceUrl: 'https://example.test/source',
+					sourceTitle: title,
+					offeringId: offering.id,
+					curriculumComponentId: `literature-leaf-${index}`,
+					topicComponentId: `literature-text-${index}`,
+					contentRevision: 1,
+					contentHash: String(index + 1).repeat(64)
+				}) satisfies RecallCard
+		);
+
+		const scoped = await recallCardsWithinLearnerScope(testUser.uid, 'English Literature', cards);
+
+		expect(scoped.map((card) => card.topicTitle)).toEqual(selectedTitles);
+		expect(scoped).toHaveLength(4);
 	});
 });
 
@@ -1146,6 +1601,50 @@ describe('question-attempt learner evidence attribution', () => {
 		expect(gapUpdates[0][1].at(-1)).toBe('combined-biology-question');
 	});
 
+	it('records pasted constructed answers as assisted evidence and never closes a gap', async () => {
+		mockCombinedBiologyAttempt();
+
+		await recordQuestionAttemptEvidence({
+			user: testUser,
+			attemptId: 'pasted-attempt',
+			questionId: 'combined-biology-question',
+			result: {
+				status: 'ok',
+				result: 'correct',
+				awardedMarks: 4,
+				maxMarks: 4,
+				presentStepIds: ['step-1', 'step-2'],
+				missingStepIds: [],
+				feedbackMarkdown: 'Both links are present.',
+				thinkingMarkdown: null,
+				model: 'test-model',
+				modelVersion: 'test-version'
+			},
+			assistance: {
+				externalInputDetected: true,
+				externalInputSources: ['paste']
+			}
+		});
+
+		const gapUpdates = mocks.executePersonalQuery.mock.calls.filter(([sql]) =>
+			String(sql).includes('UPDATE user_chain_gaps')
+		);
+		expect(gapUpdates).toHaveLength(0);
+		const evidenceWrites = mocks.queryPersonalFirst.mock.calls.filter(([sql]) =>
+			String(sql).includes('INSERT INTO user_learning_evidence')
+		);
+		expect(evidenceWrites).toHaveLength(3);
+		for (const [, params] of evidenceWrites) {
+			expect(params[13]).toBe(0);
+			expect(JSON.parse(String(params[23]))).toMatchObject({
+				assistance: {
+					externalInputDetected: true,
+					externalInputSources: ['paste']
+				}
+			});
+		}
+	});
+
 	it('records a deterministic fixed-choice answer as recognition evidence', async () => {
 		mockCombinedBiologyAttempt();
 
@@ -1172,6 +1671,83 @@ describe('question-attempt learner evidence attribution', () => {
 		);
 		expect(evidenceWrites).toHaveLength(1);
 		expect(evidenceWrites[0][1][11]).toBe('multiple_choice');
+	});
+
+	it('attributes an exact-profile humanities answer to its official curriculum topic', async () => {
+		mocks.getLearnerProfileSettings.mockResolvedValue(learnerSettings('Geography', 'AQA'));
+		mocks.getCurriculumOffering.mockResolvedValue(
+			curriculumOffering({
+				subject: 'Geography',
+				specificationCode: '8035',
+				groups: [
+					{
+						id: 'geography-sections',
+						title: 'Sections',
+						kind: 'group',
+						displayOrder: 0,
+						components: [curriculumComponent('geography-topic-3-1', '3.1', 'Natural hazards', 0)]
+					}
+				]
+			})
+		);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string, params: unknown[]) =>
+			sql.includes('INSERT INTO user_learning_evidence') ? { id: params[0] } : null
+		);
+		mocks.queryPersonalRows.mockResolvedValue([]);
+		mocks.queryRows.mockImplementation(async (sql: string) => {
+			if (sql.includes('FROM questions q')) {
+				return [
+					{
+						id: 'geography-question',
+						board: 'AQA',
+						qualification: 'GCSE',
+						subject: 'Geography',
+						subject_area: 'Geography',
+						component_code: '8035/1',
+						tier: 'Untiered',
+						spec_ref: '3.1.1',
+						topic_path_json: JSON.stringify(['Natural hazards']),
+						marks: 3,
+						answer_chain_id: 'geography-chain',
+						transfer_distance: 'near'
+					}
+				];
+			}
+			if (sql.includes('FROM answer_chain_steps')) {
+				return [{ id: 'geography-step', step_text: 'Connect the process to its effect' }];
+			}
+			return [];
+		});
+
+		await recordQuestionAttemptEvidence({
+			user: testUser,
+			attemptId: 'geography-attempt',
+			questionId: 'geography-question',
+			result: {
+				status: 'ok',
+				result: 'correct',
+				awardedMarks: 3,
+				maxMarks: 3,
+				presentStepIds: ['geography-step'],
+				missingStepIds: [],
+				feedbackMarkdown: 'The causal link is explicit.',
+				thinkingMarkdown: null,
+				model: 'test-model',
+				modelVersion: 'test-version'
+			}
+		});
+
+		const evidenceWrite = mocks.queryPersonalFirst.mock.calls.find(([sql]) =>
+			String(sql).includes('INSERT INTO user_learning_evidence')
+		);
+		expect(evidenceWrite?.[1]).toMatchObject({
+			1: testUser.uid,
+			2: 'Geography',
+			3: 'AQA',
+			4: 'GCSE',
+			7: 'geography-topic-3-1',
+			16: 'geography-question'
+		});
 	});
 });
 
@@ -1216,6 +1792,14 @@ describe('recall learner evidence', () => {
 		expect(
 			mocks.queryPersonalFirst.mock.calls.some(([sql]) => String(sql).includes('matches_write'))
 		).toBe(true);
+		const canonicalFence = mocks.queryPersonalFirst.mock.calls.find(([sql]) =>
+			String(sql).includes('matches_write')
+		)?.[0];
+		expect(canonicalFence).toContain('independent = ?');
+		expect(canonicalFence).toContain('awarded_marks');
+		expect(canonicalFence).toContain('max_marks');
+		expect(canonicalFence).toContain('response_duration_ms');
+		expect(canonicalFence).toContain('metadata_json = ?');
 		const stateWrite = mocks.executePersonalQuery.mock.calls.find(([sql]) =>
 			String(sql).includes('INSERT INTO user_learner_component_states')
 		);
@@ -1300,6 +1884,8 @@ describe('recall learner evidence', () => {
 				isCorrect: false,
 				misconception: 'Confuses antibodies with red blood cells.'
 			},
+			statementChoice: null,
+			selectedTruth: null,
 			sourceSessionId: 'session-1',
 			responseDurationMs: 8_000,
 			createdAt: Date.UTC(2026, 6, 15)
@@ -1556,6 +2142,10 @@ describe('English guided-practice learner evidence', () => {
 				stepId: 'method',
 				result,
 				hintOpened: true,
+				assistance: {
+					externalInputDetected: true,
+					externalInputSources: ['drop']
+				},
 				sourceSessionId: 'english-session-1',
 				responseDurationMs: 42_000
 			});
@@ -1584,6 +2174,10 @@ describe('English guided-practice learner evidence', () => {
 		expect(JSON.parse(String(stageWrite[23]))).toMatchObject({
 			guided: true,
 			hintOpened: true,
+			assistance: {
+				externalInputDetected: true,
+				externalInputSources: ['drop']
+			},
 			learnerModel: {
 				recurringNeed: 'Argument links'
 			}

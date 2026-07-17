@@ -1,0 +1,41 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalReleaseId": "aqa-combined-biology-8464-standard-v1",
+    "recoveredReleaseId": "aqa-combined-biology-8464-standard-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "subject": "Biology",
+    "offeringIds": [
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher"
+    ],
+    "topicComponentIds": [
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7"
+    ],
+    "countPerTopic": 4,
+    "minimumAcceptedPerTopic": 3,
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 28,
+    "reviewCandidates": 27,
+    "accepted": 25,
+    "distinctTargetComponents": 23,
+    "plannerEligibleTargetComponents": 23,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 14,
+    "readyCoverageRows": 14,
+    "withheldCoverageRows": 0,
+    "sessions": 2
+  },
+  "artifactPath": "data/study-cards/releases/aqa-combined-biology-8464-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "cfd93c38304e90a5c04b5e641fc978674b0f0133e1e92fee6923ae1ef695df23",
+  "modelCallsDuringRecovery": 0
+}

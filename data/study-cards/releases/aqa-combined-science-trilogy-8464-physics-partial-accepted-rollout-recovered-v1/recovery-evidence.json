@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "combined-physics-partial-accepted-release-recovery-v1",
+  "status": "accepted_partial_release_materialized",
+  "policy": "Only cards explicitly accepted by the archived independent reviewer are published. Rejected cards and unreviewed repair candidates remain excluded.",
+  "sourceBatchId": "aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1",
+  "sourceArchive": "data/study-cards/rollout-recovery/aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1",
+  "sourceArchiveEvidenceHash": "1bda6c985ec67d81a7fff807eb9644ee87192c9f831e72a699cd0d61f01b8128",
+  "exactCoreFileHashes": {
+    "plan.json": "953b7d82b14be49a045d323b8a2cafa0ea05d913b0dc35d0696da0c97cb48a0b",
+    "candidate-cards.json": "d1f7616bb32594d5401a669bbb6fb304dda89037d48e73f4f7c97e1d9fda1034",
+    "review.json": "c3db5ff5900cd10ae5bd5b4bb06c51f94cd6de1252e9a752f873c28782fd4ee0",
+    "reviewed-repair-generation-1-model-output.json": "e5625995d660028d539514a667c1dac6cbdc6c0131f4b706e392b10513e6d2ee",
+    "source-evidence.json": "f0255476152410f713a2226a9a50d24bf7314c3eac0e8c7e8da03630fd76a7b0"
+  },
+  "reconstructedSummaryHashes": {
+    "generation/codex-run-summary.json": "afd2b4bbeec76eacb9418022307dfef12efe93f25022c3b1126f902510e64c36",
+    "review/codex-run-summary.json": "2e5ccff52c93f3a1859ee88a9ade9cebb7d3384236d75d5e856b7d5e3684a0cd",
+    "reviewed-repair-generation-1/codex-run-summary.json": "43b54c9f1e9f87c02721c252eecdeb24aed664c785b9335610017ac4b25a7f22"
+  },
+  "releaseId": "aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1",
+  "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "594b25a0d329e6f2f7ede7bab801b705d1a5d9467f2ba7797799a49069754e16",
+  "lineage": {
+    "generatorRunId": "019f6c49-a3cc-7ee1-b385-9064ede9c439",
+    "reviewerRunId": "019f6c4e-fbb3-76f2-b189-dc3edf004d2f",
+    "independentReview": true
+  },
+  "counts": {
+    "archivedCandidates": 15,
+    "archivedAccepted": 12,
+    "archivedRejectedExcluded": 3,
+    "unreviewedRepairCandidatesExcluded": 3,
+    "readyCoverageRows": 6,
+    "withheldCoverageRows": 0
+  },
+  "acceptedCardIds": [
+    "aqa-8464-33cbec4d1f-aqa-8464-physics-6-5-4-3-3-braking-distance-conditions",
+    "aqa-8464-5830312136-aqa-8464-physics-6-6-2-3-ionising-wave-hazards",
+    "aqa-8464-5eff9fe3d3-aqa-8464-physics-6-7-2-electromagnet-definition",
+    "aqa-8464-7c9085df32-aqa-8464-physics-6-5-4-3-1-stopping-distance-components",
+    "aqa-8464-955b11dcf2-aqa-8464-physics-6-5-4-2-3-newtons-third-law-force-pair",
+    "aqa-8464-9b68727484-aqa-8464-physics-6-6-1-wave-frequency-definition",
+    "aqa-8464-aef6715b9e-aqa-8464-physics-6-7-1-permanent-induced-magnets",
+    "aqa-8464-befd51184a-aqa-8464-physics-6-5-4-3-2-driver-reaction-factors",
+    "aqa-8464-c27f96ba5f-aqa-8464-physics-6-6-2-4-microwave-applications",
+    "aqa-8464-d86a40e656-aqa-8464-physics-6-5-4-3-4-braking-energy-change",
+    "aqa-8464-db52375d36-aqa-8464-physics-6-6-2-2-infrared-surface-practical",
+    "aqa-8464-f4686243a5-aqa-8464-physics-6-6-2-electromagnetic-spectrum-order"
+  ],
+  "acceptedCurriculumComponentIds": [
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-4",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-4",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2"
+  ],
+  "rejectedCardIds": [
+    "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+    "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+    "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum"
+  ],
+  "rejectedCurriculumComponents": [
+    {
+      "cardId": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+      "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3",
+      "status": "uncovered-pending-fresh-review",
+      "coverageRepresentation": "Its parent topic has other accepted cards, so the topic-level artifact schema cannot express this descendant hole as a second withheld row."
+    },
+    {
+      "cardId": "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+      "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1",
+      "status": "uncovered-pending-fresh-review-under-corrected-higher-only-scope",
+      "coverageRepresentation": "The parent 6.5 topic has other accepted cards, so the topic-level artifact schema cannot express this descendant hole as a second withheld row."
+    },
+    {
+      "cardId": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum",
+      "componentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2",
+      "status": "uncovered-pending-fresh-review-under-corrected-higher-only-scope",
+      "coverageRepresentation": "The parent 6.5 topic has other accepted cards, so the topic-level artifact schema cannot express this descendant hole as a second withheld row."
+    }
+  ],
+  "modelCallsDuringRecovery": 0
+}

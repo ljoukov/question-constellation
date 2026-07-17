@@ -6,12 +6,13 @@ import { recallCompanionArtifactIssues } from './recall-card-artifacts.mjs';
 /** @typedef {Record<string, any>} AnyRecord */
 
 export const RECALL_BUNDLE_SCHEMA_VERSION = 'recall-card-bundle-v2';
-export const RECALL_PROMPT_VERSION = 'recall-card-compiler-v9';
+export const RECALL_PROMPT_VERSION = 'recall-card-compiler-v10';
 export const RECALL_IMPORTABLE_PROMPT_VERSIONS = Object.freeze([
 	'recall-card-compiler-v5',
 	'recall-card-compiler-v6',
 	'recall-card-compiler-v7',
 	'recall-card-compiler-v8',
+	'recall-card-compiler-v9',
 	RECALL_PROMPT_VERSION
 ]);
 export const RECALL_MAPPING_SOURCE = 'recall-card-compiler-v2';
@@ -97,7 +98,7 @@ export const RECALL_GENERATION_OUTPUT_SCHEMA = Object.freeze({
 					memoryTip: { type: ['string', 'null'] },
 					choices: {
 						type: 'array',
-						minItems: 4,
+						minItems: 3,
 						maxItems: 4,
 						items: {
 							type: 'object',
@@ -321,8 +322,8 @@ function normalizeCandidate(raw, index, { subject, pageText, issues }) {
 
 /** @param {unknown} input @param {string} label @param {string} back @param {string[]} issues */
 function normalizeChoices(input, label, back, issues) {
-	if (!Array.isArray(input) || input.length !== 4) {
-		issues.push(`${label}.choices must contain exactly four choices`);
+	if (!Array.isArray(input) || input.length < 3 || input.length > 4) {
+		issues.push(`${label}.choices must contain exactly three or four choices`);
 		return [];
 	}
 	const choices = input.map((raw, index) => {
@@ -736,6 +737,19 @@ function promptVersionRequiresCompanionArtifacts(promptVersion) {
 	return match ? Number(match[1]) >= 7 : false;
 }
 
+/**
+ * Compiler v5-v9 artifacts are immutable exact-four contracts. Compiler v10
+ * is the first version that permits omitting a contrived third distractor.
+ *
+ * @param {unknown} promptVersion
+ * @param {number} choiceCount
+ */
+export function isValidRecallChoiceCount(promptVersion, choiceCount) {
+	return promptVersion === 'recall-card-compiler-v10'
+		? choiceCount === 3 || choiceCount === 4
+		: choiceCount === 4;
+}
+
 /** @param {any} card @param {number} index @param {any} bundle @param {string[]} issues */
 function validateCompiledCard(card, index, bundle, issues) {
 	const label = `cards[${index}]`;
@@ -785,8 +799,12 @@ function validateCompiledCard(card, index, bundle, issues) {
 	if (card.contentHash && card.contentHash !== hashRecallCardContent(card)) {
 		issues.push(`${label}.contentHash does not match card content`);
 	}
-	if (choices.length !== 4) {
-		issues.push(`${label}.choices must contain four items`);
+	if (!isValidRecallChoiceCount(bundle.promptVersion, choices.length)) {
+		issues.push(
+			bundle.promptVersion === 'recall-card-compiler-v10'
+				? `${label}.choices must contain three or four items for compiler-v10`
+				: `${label}.choices must contain exactly four items for ${bundle.promptVersion}`
+		);
 	} else {
 		if (choices.filter((choice) => choice.isCorrect).length !== 1) {
 			issues.push(`${label}.choices must contain one correct item`);
@@ -826,7 +844,7 @@ function validateCompiledCard(card, index, bundle, issues) {
 		);
 		const displayOrders = choices.map((choice) => choice.displayOrder);
 		if (displayOrders.some((value, choiceIndex) => value !== choiceIndex)) {
-			issues.push(`${label}.choices displayOrder must be exactly 0, 1, 2, 3`);
+			issues.push(`${label}.choices displayOrder must be consecutive from zero`);
 		}
 	}
 	if (evidenceRows.length === 0) {

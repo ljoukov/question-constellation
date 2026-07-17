@@ -4,6 +4,14 @@ export type ExamPaperAsset = {
 	src: string;
 	alt: string;
 	width?: number;
+	paperMeasurement?: PaperMeasurement | null;
+};
+
+export type PaperMeasurement = {
+	axis: 'horizontal';
+	pixelWidth: number;
+	pixelsPerMillimetre: number;
+	instructions?: string;
 };
 
 export type ExamTableCell = {
@@ -110,6 +118,10 @@ export type ExamResponse =
 			label?: string;
 			width?: number;
 			labelBank?: string[];
+			instructions?: string;
+			lineCount?: number;
+			answerLabel?: string;
+			unit?: string;
 	  }
 	| {
 			kind: 'drawing-box';

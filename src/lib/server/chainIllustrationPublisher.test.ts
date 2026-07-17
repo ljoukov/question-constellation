@@ -4,6 +4,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import {
+	assertIllustrationBatchIdentities,
 	assertIllustrationProvenance,
 	buildIllustrationProvenance,
 	illustrationThemePair,
@@ -66,6 +67,30 @@ const hardChecks = {
 };
 
 describe('chain illustration pair publishing', () => {
+	it('rejects incomplete or overlapping batch identities before external publication', () => {
+		expect(() => assertIllustrationBatchIdentities([])).toThrow('at least one item');
+		expect(() => assertIllustrationBatchIdentities([item, { ...item }])).toThrow('duplicate id');
+		expect(() =>
+			assertIllustrationBatchIdentities([
+				item,
+				{
+					...item,
+					id: 'paired-image-2',
+					answerChainId: 'physics-chain-2'
+				}
+			])
+		).toThrow('duplicate R2 object keys');
+	});
+
+	it('makes the accepted set visible with one transactional D1 batch', () => {
+		const source = readFileSync('scripts/lib/chain-illustration-publisher.mjs', 'utf8');
+		const batchStart = source.indexOf('async function publishIllustrationD1Batch');
+		const batchEnd = source.indexOf('function publicationResult', batchStart);
+		const batchSource = source.slice(batchStart, batchEnd);
+		expect(batchSource).toContain('await d1Batch(items.map(illustrationUpsert), { rootDir })');
+		expect(batchSource).not.toContain('await d1Query(');
+	});
+
 	it('keeps the scoped repair manifest truthful, hash-bound and limited to five changed pairs', () => {
 		const manifest = JSON.parse(
 			readFileSync(

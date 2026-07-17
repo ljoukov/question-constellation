@@ -1,0 +1,298 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8461-4-7-4-1-trophic-level-numbering",
+      "conceptKey": "aqa-8461-trophic-level-numbering-and-level-one",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-4-1",
+      "kind": "structure",
+      "visualCue": "🌍",
+      "front": "How are trophic levels numbered along a food chain, and which organisms form trophic level 1?",
+      "back": "Numbering starts at level 1 and follows how far an organism is along the food chain; plants and algae are level 1 producers.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Trophic-level numbering begins with plants and algae at level 1. Subsequent levels are numbered by how far the organism is along the food chain.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Numbering starts at level 1 and follows how far an organism is along the food chain; plants and algae are level 1 producers.",
+          "isCorrect": true,
+          "feedback": "Correct: numbering starts with plants and algae at level 1, then follows position along the food chain.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Numbering starts at level 1 and follows organism size; plants and algae are level 1 producers.",
+          "isCorrect": false,
+          "feedback": "Level numbers follow position along the food chain, not organism size.",
+          "misconception": "numbering-by-organism-size"
+        },
+        {
+          "key": "c",
+          "text": "Numbering starts at level 1 and follows how far an organism is along the food chain; carnivores are level 1 producers.",
+          "isCorrect": false,
+          "feedback": "Level 1 producers are plants and algae, not carnivores.",
+          "misconception": "carnivores-as-level-one-producers"
+        },
+        {
+          "key": "d",
+          "text": "Numbering starts with plants and algae at the highest level and runs backwards along the food chain.",
+          "isCorrect": false,
+          "feedback": "The source starts numbering at level 1 with plants and algae, then numbers subsequent levels along the chain.",
+          "misconception": "reversed-trophic-level-numbering"
+        }
+      ],
+      "sourceExcerpt": "Trophic levels can be represented by numbers, starting at level 1 with\nplants and algae. Further trophic levels are numbered subsequently\naccording to how far the organism is along the food chain.\nLevel 1: Plants and algae make their own food and are called producers.",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.4.1 Trophic levels"
+    },
+    {
+      "id": "aqa-8461-4-7-4-2-pyramid-biomass-representation",
+      "conceptKey": "aqa-8461-pyramid-of-biomass-representation",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-4-2",
+      "kind": "definition",
+      "visualCue": "🔬",
+      "front": "What does a pyramid of biomass represent, and where is trophic level 1 placed?",
+      "back": "It represents the relative biomass in each food-chain level, with trophic level 1 at the bottom.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A pyramid represents the relative amount of biomass in each level of a food chain, and trophic level 1 is at the bottom.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It represents the relative biomass in each food-chain level, with trophic level 1 at the bottom.",
+          "isCorrect": true,
+          "feedback": "Correct: it shows relative biomass, with trophic level 1 at the bottom.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It represents the number of organisms in each food-chain level, with trophic level 1 at the bottom.",
+          "isCorrect": false,
+          "feedback": "A pyramid of biomass represents relative biomass, not organism numbers.",
+          "misconception": "confusing-biomass-with-organism-count"
+        },
+        {
+          "key": "c",
+          "text": "It represents the relative biomass in each food-chain level, with trophic level 1 at the top.",
+          "isCorrect": false,
+          "feedback": "The biomass measure is correct, but trophic level 1 belongs at the bottom.",
+          "misconception": "placing-trophic-level-one-at-top"
+        },
+        {
+          "key": "d",
+          "text": "It represents biomass transfer between food-chain levels, with trophic level 1 at the bottom.",
+          "isCorrect": false,
+          "feedback": "It represents the relative amount of biomass in each level, rather than biomass transfer between levels.",
+          "misconception": "confusing-biomass-amount-with-transfer"
+        }
+      ],
+      "sourceExcerpt": "Pyramids of biomass can be constructed to represent the relative\namount of biomass in each level of a food chain. Trophic level 1 is at the\nbottom of the pyramid.",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.4.2 Pyramids of biomass"
+    },
+    {
+      "id": "aqa-8461-4-7-5-food-security-definition",
+      "conceptKey": "aqa-8461-food-security-definition",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5",
+      "kind": "definition",
+      "visualCue": "🌿",
+      "front": "In food production, what is food security?",
+      "back": "Having enough food to feed a population.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Food security concerns whether there is enough food to feed a population.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Having enough food to feed a population.",
+          "isCorrect": true,
+          "feedback": "Correct: food security means having enough food for a population.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Keeping food free from contamination.",
+          "isCorrect": false,
+          "feedback": "The cited definition concerns having enough food for a population, not contamination control.",
+          "misconception": "confusing-food-security-with-food-safety"
+        },
+        {
+          "key": "c",
+          "text": "Producing all food within the population's own country.",
+          "isCorrect": false,
+          "feedback": "The definition requires enough food to feed the population; it does not specify where that food is produced.",
+          "misconception": "confusing-food-security-with-self-sufficiency"
+        }
+      ],
+      "sourceExcerpt": "Food security is having enough food to feed a population.",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.5 Food production (biology only)"
+    },
+    {
+      "id": "aqa-8461-4-7-5-1-rain-failure-food-production",
+      "conceptKey": "aqa-8461-rain-failure-food-production-example",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-1",
+      "kind": "cause-consequence",
+      "visualCue": "🌡️",
+      "front": "What example does AQA give of environmental change affecting food production?",
+      "back": "If rains fail, widespread famine can occur in some countries.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Failed rains are given as an example of environmental change affecting food production, with widespread famine occurring in some countries.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "If rains fail, widespread famine can occur in some countries.",
+          "isCorrect": true,
+          "feedback": "Correct: the example links failed rains with widespread famine in some countries.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Failed rains inevitably cause famine in every country.",
+          "isCorrect": false,
+          "feedback": "The source limits the example to some countries and does not state an inevitable worldwide outcome.",
+          "misconception": "overgeneralising-the-failed-rain-example"
+        },
+        {
+          "key": "c",
+          "text": "Failed rains leave food production unaffected.",
+          "isCorrect": false,
+          "feedback": "The source presents failed rains and famine as an example of environmental change affecting food production.",
+          "misconception": "denying-environmental-effects-on-food-production"
+        }
+      ],
+      "sourceExcerpt": "environmental changes that affect food production, such as\nwidespread famine occurring in some countries if rains fail",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.5.1 Factors affecting food security"
+    },
+    {
+      "id": "aqa-8461-4-7-5-2-food-animal-energy-controls",
+      "conceptKey": "aqa-8461-food-animal-environmental-energy-controls",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-2",
+      "kind": "method",
+      "visualCue": "🏋️",
+      "front": "Which two controls can improve food-production efficiency by restricting energy transfer from food animals to the environment?",
+      "back": "Limit their movement and control the temperature of their surroundings.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Limiting movement and controlling the surrounding temperature restrict energy transfer from food animals to the environment, which can improve food-production efficiency.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Limit their movement and control the temperature of their surroundings.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two stated controls for restricting energy transfer to the environment.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Increase their movement and control the temperature of their surroundings.",
+          "isCorrect": false,
+          "feedback": "Movement should be limited, while the temperature of the surroundings is controlled.",
+          "misconception": "reversing-the-movement-control"
+        },
+        {
+          "key": "c",
+          "text": "Limit their movement and feed them high-protein food.",
+          "isCorrect": false,
+          "feedback": "High-protein food is stated to increase growth; the environmental-energy controls are limited movement and controlled temperature.",
+          "misconception": "substituting-feed-for-temperature-control"
+        }
+      ],
+      "sourceExcerpt": "The efficiency of food production can be improved by restricting energy\ntransfer from food animals to the environment. This can be done by\nlimiting their movement and by controlling the temperature of their\nsurroundings.\nSome animals are fed high protein foods to increase growth.",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.5.2 Farming techniques"
+    },
+    {
+      "id": "aqa-8461-4-7-5-3-sustainable-fish-stock-controls",
+      "conceptKey": "aqa-8461-net-size-and-fishing-quota-controls",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-3",
+      "kind": "method",
+      "visualCue": "💧",
+      "front": "Which two controls does AQA identify for conserving fish stocks at a sustainable level?",
+      "back": "Control net size and introduce fishing quotas.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Both net-size control and fishing quotas play important roles in conserving fish stocks at a sustainable level.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Control net size and introduce fishing quotas.",
+          "isCorrect": true,
+          "feedback": "Correct: both controls are identified as important for sustainable fish stocks.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Control net size but remove fishing quotas.",
+          "isCorrect": false,
+          "feedback": "Fishing quotas should be introduced; they also play an important conservation role.",
+          "misconception": "omitting-fishing-quotas"
+        },
+        {
+          "key": "c",
+          "text": "Introduce fishing quotas but leave net size uncontrolled.",
+          "isCorrect": false,
+          "feedback": "Net-size control is also identified as important for conserving fish stocks.",
+          "misconception": "omitting-net-size-control"
+        }
+      ],
+      "sourceExcerpt": "Control of net size and the introduction of fishing quotas play important\nroles in conservation of fish stocks at a sustainable level.",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.5.3 Sustainable fisheries"
+    },
+    {
+      "id": "aqa-8461-4-7-5-4-fusarium-mycoprotein-process",
+      "conceptKey": "aqa-8461-fusarium-mycoprotein-production-process",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-4",
+      "kind": "process",
+      "visualCue": "🍄",
+      "front": "How is Fusarium cultured and processed when producing mycoprotein?",
+      "back": "Grow it on glucose syrup in aerobic conditions, then harvest and purify the biomass.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Fusarium is grown on glucose syrup under aerobic conditions. Its biomass is then harvested and purified to produce mycoprotein.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Grow it on glucose syrup in aerobic conditions, then harvest and purify the biomass.",
+          "isCorrect": true,
+          "feedback": "Correct: aerobic growth on glucose syrup is followed by harvesting and purification of the biomass.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Grow it on glucose syrup in anaerobic conditions, then harvest and purify the biomass.",
+          "isCorrect": false,
+          "feedback": "The specified growth conditions are aerobic, not anaerobic.",
+          "misconception": "using-anaerobic-fusarium-conditions"
+        },
+        {
+          "key": "c",
+          "text": "Grow it on glucose syrup in aerobic conditions, then harvest and purify human insulin.",
+          "isCorrect": false,
+          "feedback": "Fusarium produces mycoprotein; human insulin is produced by a genetically modified bacterium.",
+          "misconception": "confusing-fusarium-with-insulin-producing-bacteria"
+        },
+        {
+          "key": "d",
+          "text": "Grow it on glucose syrup in aerobic conditions and use the culture without harvesting or purification.",
+          "isCorrect": false,
+          "feedback": "The biomass must be harvested and purified after growth.",
+          "misconception": "omitting-biomass-harvesting-and-purification"
+        }
+      ],
+      "sourceExcerpt": "The fungus Fusarium is useful for producing mycoprotein, a protein-rich\nfood suitable for vegetarians. The fungus is grown on glucose syrup, in\naerobic conditions, and the biomass is harvested and purified.\nA genetically modified bacterium produces human insulin.",
+      "sourceLocator": "Official PDF pages 71-74; 4.7.5.4 Role of biotechnology"
+    }
+  ]
+}

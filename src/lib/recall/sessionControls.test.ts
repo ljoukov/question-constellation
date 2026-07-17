@@ -3,13 +3,24 @@ import {
 	cardsEligibleForRecallMode,
 	explicitReversePair,
 	mixedRecallPresentation,
+	recallDragIntent,
 	recallControlModel,
 	requeueRecallContentKey,
 	recallReviewDecision,
+	shouldRecordRecallWrongChoice,
 	shuffledRecallChoices
 } from './sessionControls';
 
 describe('recall session controls', () => {
+	it('waits through touch slop and favours a natural diagonal card swipe', () => {
+		expect(recallDragIntent(4, 4)).toBe('pending');
+		expect(recallDragIntent(-10, 10)).toBe('horizontal');
+		expect(recallDragIntent(-12, 8)).toBe('horizontal');
+		expect(recallDragIntent(4, 12)).toBe('vertical');
+		expect(recallDragIntent(40, 2, 'vertical')).toBe('vertical');
+		expect(recallDragIntent(2, 40, 'horizontal')).toBe('horizontal');
+	});
+
 	it('alternates a five-card mixed deck when choices exist', () => {
 		expect(Array.from({ length: 5 }, (_, index) => mixedRecallPresentation(index, true))).toEqual([
 			'flashcard',
@@ -38,6 +49,9 @@ describe('recall session controls', () => {
 				action: 'skip'
 			}
 		);
+		expect(
+			recallControlModel({ presentation: 'truefalse', revealed: false, isLastCard: false })
+		).toEqual({ phase: 'prompt', layout: 'none', action: 'choose' });
 
 		expect(
 			recallControlModel({ presentation: 'flashcard', revealed: true, isLastCard: false })
@@ -64,6 +78,24 @@ describe('recall session controls', () => {
 		]);
 	});
 
+	it('does not record a correct MCQ choice as a misconception when repeating it', () => {
+		const choiceKeys = { Correct: 'correct-key', Distractor: 'distractor-key' };
+		expect(
+			shouldRecordRecallWrongChoice({
+				chosenAnswer: 'Correct',
+				correctAnswer: 'Correct',
+				choiceKeys
+			})
+		).toBe(false);
+		expect(
+			shouldRecordRecallWrongChoice({
+				chosenAnswer: 'Distractor',
+				correctAnswer: 'Correct',
+				choiceKeys
+			})
+		).toBe(true);
+	});
+
 	it('lets a learner repeat a correct guess and keeps a wrong MCQ due when continuing', () => {
 		expect(
 			recallReviewDecision({ presentation: 'mcq', mcqFeedback: 'correct', intent: 'repeat' })
@@ -77,6 +109,13 @@ describe('recall session controls', () => {
 		expect(
 			recallReviewDecision({ presentation: 'mcq', mcqFeedback: null, intent: 'next' })
 		).toBeNull();
+		expect(
+			recallReviewDecision({
+				presentation: 'truefalse',
+				mcqFeedback: 'incorrect',
+				intent: 'next'
+			})
+		).toEqual({ grade: 'again', direction: 'right' });
 	});
 
 	it('uses only explicit complete reverse pairs', () => {

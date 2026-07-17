@@ -37,6 +37,62 @@ const ALLOWED_ILLUSTRATION_IDENTITY_COLUMNS = new Set([
 	'generation_metadata_json'
 ]);
 
+/**
+ * Reconstruct the exact pre-expanded illustration fingerprint projection. This is intentionally
+ * local to the one guarded Physics identity/fingerprint migration: new illustration freshness
+ * must always use normalizedSourceFingerprintInput instead.
+ * @param {Parameters<typeof normalizedSourceFingerprintInput>[0]} candidate
+ */
+export function legacyIllustrationSourceFingerprintInputV1(candidate) {
+	return {
+		chain: {
+			id: candidate.id,
+			title: candidate.title,
+			canonicalChainText: candidate.canonicalChainText,
+			summary: candidate.summary,
+			subjectArea: candidate.subjectArea,
+			broadTopic: candidate.broadTopic,
+			confidence: candidate.confidence,
+			updatedAt: candidate.updatedAt
+		},
+		steps: candidate.steps.map((step) => ({
+			id: step.id,
+			displayOrder: step.displayOrder,
+			stepText: step.stepText,
+			stepRole: step.stepRole,
+			explanation: step.explanation,
+			commonOmission: step.commonOmission
+		})),
+		members: candidate.members.map((member) => ({
+			questionId: member.questionId,
+			sourceDocumentId: member.sourceDocumentId,
+			promptText: member.promptText,
+			selfContainedPromptText: member.selfContainedPromptText,
+			marks: member.marks,
+			fitConfidence: member.fitConfidence,
+			markSchemeItems: member.markSchemeItems.map((item) => ({
+				id: item.id,
+				displayOrder: item.displayOrder,
+				itemType: item.itemType,
+				text: item.text,
+				marks: item.marks
+			})),
+			checklistItems: member.checklistItems.map((item) => ({
+				id: item.id,
+				displayOrder: item.displayOrder,
+				text: item.text,
+				markSchemeItemIds: item.markSchemeItemIds
+			})),
+			modelAnswers: member.modelAnswers.map((answer) => ({
+				id: answer.id,
+				answerText: answer.answerText,
+				derivation: answer.derivation,
+				supportingMarkSchemeItemIds: answer.supportingMarkSchemeItemIds
+			}))
+		}))
+	};
+}
+
 /** @param {string} value */
 function quoteIdentifier(value) {
 	if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(value)) {
@@ -124,6 +180,7 @@ export function projectPhysicsFingerprintIdentity(
 export function buildPhysicsFingerprintTransition(candidate, identity) {
 	const config = PHYSICS_QUESTION_ID_RECONCILIATION;
 	const currentInput = normalizedSourceFingerprintInput(candidate);
+	const legacyCurrentInput = legacyIllustrationSourceFingerprintInputV1(candidate);
 	const computedCurrentFingerprint = sourceFingerprintFromInput(currentInput);
 	if (candidate.sourceFingerprint !== computedCurrentFingerprint) {
 		throw new Error(
@@ -134,12 +191,19 @@ export function buildPhysicsFingerprintTransition(candidate, identity) {
 	if (identity === 'placeholder') {
 		const { projectedInput: canonicalInput, changedPaths } =
 			projectPhysicsFingerprintIdentity(currentInput);
+		const legacyProjection = projectPhysicsFingerprintIdentity(legacyCurrentInput);
+		requireSameIdentityProjection(changedPaths, legacyProjection.changedPaths);
 		return {
 			identity,
 			oldInput: currentInput,
 			canonicalInput,
 			oldFingerprint: computedCurrentFingerprint,
 			canonicalFingerprint: sourceFingerprintFromInput(canonicalInput),
+			legacyOldInput: legacyCurrentInput,
+			legacyCanonicalInput: legacyProjection.projectedInput,
+			legacyOldFingerprint: sourceFingerprintFromInput(legacyCurrentInput),
+			legacyCanonicalFingerprint: sourceFingerprintFromInput(legacyProjection.projectedInput),
+			legacyChangedPaths: legacyProjection.changedPaths,
 			changedPaths
 		};
 	}
@@ -148,12 +212,26 @@ export function buildPhysicsFingerprintTransition(candidate, identity) {
 			fromQuestionId: config.canonicalQuestionId,
 			toQuestionId: config.placeholderQuestionId
 		});
+		const legacyReverse = projectPhysicsFingerprintIdentity(legacyCurrentInput, {
+			fromQuestionId: config.canonicalQuestionId,
+			toQuestionId: config.placeholderQuestionId
+		});
+		requireSameIdentityProjection(reverse.changedPaths, legacyReverse.changedPaths);
 		return {
 			identity,
 			oldInput: reverse.projectedInput,
 			canonicalInput: currentInput,
 			oldFingerprint: sourceFingerprintFromInput(reverse.projectedInput),
 			canonicalFingerprint: computedCurrentFingerprint,
+			legacyOldInput: legacyReverse.projectedInput,
+			legacyCanonicalInput: legacyCurrentInput,
+			legacyOldFingerprint: sourceFingerprintFromInput(legacyReverse.projectedInput),
+			legacyCanonicalFingerprint: sourceFingerprintFromInput(legacyCurrentInput),
+			legacyChangedPaths: legacyReverse.changedPaths.map((change) => ({
+				path: change.path,
+				before: change.after,
+				after: change.before
+			})),
 			changedPaths: reverse.changedPaths.map((change) => ({
 				path: change.path,
 				before: change.after,
@@ -162,6 +240,22 @@ export function buildPhysicsFingerprintTransition(candidate, identity) {
 		};
 	}
 	throw new Error(`Unknown Physics candidate identity: ${identity}`);
+}
+
+/**
+ * The old and expanded projections must prove the same identity-only edit before a legacy hash is
+ * accepted as migration input.
+ * @param {Array<{path: string}>} expanded
+ * @param {Array<{path: string}>} legacy
+ */
+function requireSameIdentityProjection(expanded, legacy) {
+	const expandedPaths = expanded.map((change) => change.path);
+	const legacyPaths = legacy.map((change) => change.path);
+	if (JSON.stringify(expandedPaths) !== JSON.stringify(legacyPaths)) {
+		throw new Error(
+			'Legacy and expanded fingerprint projections change different identity leaves.'
+		);
+	}
 }
 
 /** @param {string} raw */
@@ -785,8 +879,13 @@ export function validatePhysicsIllustrationFingerprintState(
 		}
 		const allowedStoredFingerprints =
 			transition.identity === 'placeholder'
-				? [transition.oldFingerprint]
-				: [transition.oldFingerprint, transition.canonicalFingerprint];
+				? [transition.oldFingerprint, transition.legacyOldFingerprint]
+				: [
+						transition.oldFingerprint,
+						transition.canonicalFingerprint,
+						transition.legacyOldFingerprint,
+						transition.legacyCanonicalFingerprint
+					];
 		if (!allowedStoredFingerprints.includes(primary.source_fingerprint)) {
 			issues.push(
 				`Published primary fingerprint ${primary.source_fingerprint} is not an expected transition fingerprint.`

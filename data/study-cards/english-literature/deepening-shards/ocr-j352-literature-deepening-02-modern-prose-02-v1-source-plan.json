@@ -1,0 +1,502 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "pearson-an-inspector-calls-set-text-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Drama/2016/teaching-and-learning-materials/gcse-set-text-guide-an-inspector-calls.pdf",
+          "title": "Pearson Edexcel GCSE Drama Prescribed Text Guide: An Inspector Calls",
+          "rightsBasis": "Official awarding-body teaching guide used for educational criticism and review; only short attributed factual excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "an-inspector-calls-deep-plot-engagement",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 3; Act One opening",
+          "approvedExcerpt": "A celebration is underway – Arthur Birling’s daughter, Sheila, has become engaged to Gerald Croft"
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-birling-sacks-eva",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 3; Arthur’s link",
+          "approvedExcerpt": "Arthur Birling sacked Eva from his mill because she led an unsuccessful strike for better pay."
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-sheila-sacks-eva",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 3; Sheila’s link",
+          "approvedExcerpt": "in a fit of jealousy, Sheila used her influence to have her sacked."
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-gerald-affair",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 4; Act Two",
+          "approvedExcerpt": "The Inspector forces Gerald Croft to reveal that he had a love affair with Daisy Renton"
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-mrs-birling-charity",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 4; Mrs Birling’s link",
+          "approvedExcerpt": "Mrs Birling used her influence to have the committee refuse to help Eva"
+        },
+        {
+          "id": "an-inspector-calls-deep-plot-eric",
+          "mode": "plot",
+          "sourceId": "pearson-an-inspector-calls-set-text-guide",
+          "locator": "Pearson prescribed text guide, page 4; Eric’s link",
+          "approvedExcerpt": "Eric reveals that he met Eva in a bar and kept her as his mistress."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-leave-taking-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/639352-leave-taking.pdf",
+          "title": "OCR GCSE English Literature Leave Taking Teacher Guide",
+          "rightsBasis": "Official OCR teaching resource used as short attributed factual evidence; no primary-text quotation is retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "leave-taking-deep-plot-slap",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 2 synopsis",
+          "approvedExcerpt": "Enid loses her temper and slaps her."
+        },
+        {
+          "id": "leave-taking-deep-plot-mooma-dies",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 3 synopsis",
+          "approvedExcerpt": "Enid receives the news that her mother has died and she must send money for her funeral."
+        },
+        {
+          "id": "leave-taking-deep-plot-del-moves",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 5 synopsis",
+          "approvedExcerpt": "A few weeks later, Del has moved in with Mai and is staying in her estranged son’s old bedroom."
+        },
+        {
+          "id": "leave-taking-deep-plot-viv-exam",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 5 synopsis",
+          "approvedExcerpt": "Viv gives her Enid’s money and tells Del that she has walked out of her English examination"
+        },
+        {
+          "id": "leave-taking-deep-plot-enid-reading",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 6 synopsis",
+          "approvedExcerpt": "Enid has come for a reading from Mai. She tells Mai that she is worried about Del"
+        },
+        {
+          "id": "leave-taking-deep-plot-notebook",
+          "mode": "plot",
+          "sourceId": "ocr-leave-taking-teacher-guide",
+          "locator": "OCR Teacher Guide, scene 8 synopsis",
+          "approvedExcerpt": "Mai passes her notebook to Del and explains that she does not have her own daughter to pass it to."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-dna-delivery-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/208645-dna-delivery-guide.pdf",
+          "title": "OCR J352 DNA Delivery Guide",
+          "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "dna-deep-plot-john-tate-leader",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; shifting leadership",
+          "approvedExcerpt": "Initially it seems John Tate is the leader"
+        },
+        {
+          "id": "dna-deep-plot-frame-innocent",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Phil’s plan",
+          "approvedExcerpt": "arriving at the plot to implicate an innocent person in the killing of Adam"
+        },
+        {
+          "id": "dna-deep-plot-cover-up",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 8; coerced followers",
+          "approvedExcerpt": "Danny, the would-be dentist, and Brian are both used by Phil in the cover-up."
+        },
+        {
+          "id": "dna-deep-plot-adam-killed",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Phil and Adam",
+          "approvedExcerpt": "Adam’s killing itself"
+        },
+        {
+          "id": "dna-deep-plot-cathy-leader",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Cathy’s ending",
+          "approvedExcerpt": "Cathy emerges from the role of follower to become a leader at the end of the play."
+        },
+        {
+          "id": "dna-deep-plot-phil-bereft",
+          "mode": "plot",
+          "sourceId": "ocr-dna-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 7; Phil’s final appearance",
+          "approvedExcerpt": "his final appearance in the play – seemingly bereft and removed from the group"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    }
+  ]
+}

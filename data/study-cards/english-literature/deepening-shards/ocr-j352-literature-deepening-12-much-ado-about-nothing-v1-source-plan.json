@@ -1,0 +1,447 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-much-ado-about-nothing",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1519/pg1519.txt",
+          "title": "Much Ado About Nothing by William Shakespeare",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "much-ado-deep-plot-hero-match",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 1, Scene 1; Don Pedro agrees to woo Hero for Claudio",
+          "anchor": "I will assume thy part in some disguise, And tell fair Hero I am Claudio"
+        },
+        {
+          "id": "much-ado-deep-plot-benedick-gull",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 2, Scene 3; Benedick overhears the staged conversation",
+          "anchor": "I should think this a gull, but that the white-bearded fellow speaks it"
+        },
+        {
+          "id": "much-ado-deep-plot-beatrice-gull",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 3, Scene 1; Beatrice decides to return Benedick’s love",
+          "anchor": "And, Benedick, love on; I will requite thee"
+        },
+        {
+          "id": "much-ado-deep-plot-window-trick",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 3, Scene 3; Borachio explains the deception",
+          "anchor": "they Margaret was Hero"
+        },
+        {
+          "id": "much-ado-deep-plot-wedding-shame",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 4, Scene 1; Claudio accuses Hero",
+          "anchor": "Hero itself can blot out Hero’s virtue."
+        },
+        {
+          "id": "much-ado-deep-plot-watch-confession",
+          "mode": "plot",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 3, Scene 3; the Watch hears Borachio confess",
+          "anchor": "I have tonight wooed Margaret, the Lady Hero’s gentlewoman, by the name of Hero"
+        },
+        {
+          "id": "much-ado-deep-quotation-love-nothing",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 4, Scene 1; Benedick declares love",
+          "anchor": "I do love nothing in the world so well as you: is not that strange?",
+          "requiredAnswer": "I do love nothing in the world so well as you: is not that strange?"
+        },
+        {
+          "id": "much-ado-deep-quotation-silence",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 2, Scene 1; Claudio responds to the match",
+          "anchor": "Silence is the perfectest herald of joy",
+          "requiredAnswer": "Silence is the perfectest herald of joy"
+        },
+        {
+          "id": "much-ado-deep-quotation-giddy",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 5, Scene 4; Benedick reverses his old position",
+          "anchor": "man is a giddy thing",
+          "requiredAnswer": "man is a giddy thing"
+        },
+        {
+          "id": "much-ado-deep-quotation-bachelor",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 2, Scene 3; Benedick changes his mind",
+          "anchor": "When I said I would die a bachelor, I did not think I should live till I were married.",
+          "requiredAnswer": "When I said I would die a bachelor, I did not think I should live till I were married."
+        },
+        {
+          "id": "much-ado-deep-quotation-slander",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 5, Scene 3; Claudio reads the epitaph",
+          "anchor": "Done to death by slanderous tongues",
+          "requiredAnswer": "Done to death by slanderous tongues"
+        },
+        {
+          "id": "much-ado-deep-quotation-protest",
+          "mode": "quotation",
+          "sourceId": "gutenberg-much-ado-about-nothing",
+          "locator": "Act 4, Scene 1; Beatrice declares love",
+          "anchor": "I love you with so much of my heart that none is left to protest.",
+          "requiredAnswer": "I love you with so much of my heart that none is left to protest."
+        }
+      ]
+    }
+  ]
+}

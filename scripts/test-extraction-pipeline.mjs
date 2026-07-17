@@ -6,9 +6,196 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { copyCodexImportHelperBundle } from './lib/codex-import-helper-bundle.mjs';
+import { preserveExtractionFactsForChainPhase } from './lib/answer-chain-phase-boundary.mjs';
+import {
+	jsonArtifact,
+	jsonArtifactMatches,
+	phaseArtifactSchemaMatches,
+	phaseArtifacts
+} from './lib/codex-phase-artifacts.mjs';
+import { publicChainWhere } from './lib/public-chain-d1.mjs';
+import { exactQuestionRefSetMatches } from './lib/question-ref-set.mjs';
+import {
+	OCR_J352_JUNE_2024_ORIGINAL_INVENTORIES,
+	OCR_J351_JUNE_2024_ORIGINAL_INVENTORIES,
+	auditOcrEnglishJune2024OriginalInventory,
+	auditOcrJ351June2024OriginalInventory
+} from './lib/ocr-j351-june-2024-inventory.mjs';
+import { collectRecoveredPipelineCommandObservations } from './lib/recovered-extraction-input-evidence.mjs';
+import {
+	REVIEWED_OCR_COMPONENT_SOURCE_IDENTITIES,
+	componentCodeCompatibility,
+	findVisibleComponent
+} from './lib/source-identity.mjs';
 
 const rootDir = process.cwd();
 const packagePath = path.join(rootDir, 'package.json');
+
+const retainedQuestions = [{ sourceQuestionRef: '01.1' }, { sourceQuestionRef: '01.2' }];
+if (
+	!exactQuestionRefSetMatches({
+		checkedRefs: ['01.1', '01.2', '01.3'],
+		questions: retainedQuestions,
+		additionalRefs: ['01.3']
+	}) ||
+	exactQuestionRefSetMatches({
+		checkedRefs: ['01.1', '01.2'],
+		questions: retainedQuestions,
+		additionalRefs: ['01.3']
+	}) ||
+	exactQuestionRefSetMatches({
+		checkedRefs: ['01.1', '01.2', '01.3', '01.3'],
+		questions: retainedQuestions,
+		additionalRefs: ['01.3']
+	})
+) {
+	fail('Exact judge-ref reuse did not require retained refs plus every audited source holdout.');
+}
+
+const combinedScienceComponentCompatibilityCases = [
+	['8464B1H', '8464/B', true, 'aqa_8464_combined_science_family_to_paper_tier'],
+	['8464/C/2H', '8464C', true, 'aqa_8464_combined_science_family_to_paper_tier'],
+	['8464P', '8464/P/1H', true, 'aqa_8464_combined_science_family_to_paper_tier'],
+	['8464B1H', '8464/C', false, 'incompatible'],
+	['8464B1H', '8464/B/2H', false, 'incompatible'],
+	['84631H', '8464/B', false, 'incompatible']
+];
+for (const [expected, visible, compatible, rule] of combinedScienceComponentCompatibilityCases) {
+	const result = componentCodeCompatibility(expected, visible);
+	if (result.compatible !== compatible || result.rule !== rule) {
+		fail('AQA Combined Science component compatibility escaped its narrow audited rule.', {
+			expected,
+			visible,
+			wanted: { compatible, rule },
+			actual: result
+		});
+	}
+}
+
+const ocrVisibleComponentCases = [
+	['J351/01\nOxford Cambridge and RSA\n[601/4575/4]', 'J351/01'],
+	['J351 / 02\nMay/June 2024\n[601/4575/4]', 'J351/02'],
+	['J352/01\nOxford Cambridge and RSA\n[601/4872/X]', 'J352/01'],
+	['J352 / 02\nMay/June 2024\n[601/4872/X]', 'J352/02']
+];
+for (const [firstPageText, expected] of ocrVisibleComponentCases) {
+	const result = findVisibleComponent(firstPageText);
+	if (result?.component !== expected || result?.rule !== 'visible_ocr_component_precedence') {
+		fail('OCR visible component precedence confused an accreditation footer for a paper code.', {
+			expected,
+			actual: result
+		});
+	}
+}
+if (findVisibleComponent('[601/4575/4]\n[601/4872/X]') !== null) {
+	fail('Bracketed OCR qualification accreditation numbers must not become paper components.');
+}
+if (
+	REVIEWED_OCR_COMPONENT_SOURCE_IDENTITIES.length !== 8 ||
+	new Set(REVIEWED_OCR_COMPONENT_SOURCE_IDENTITIES.map((entry) => entry.sha256)).size !== 8
+) {
+	fail('Reviewed OCR June 2024 question-paper/mark-scheme identity hashes are incomplete.');
+}
+for (const entry of REVIEWED_OCR_COMPONENT_SOURCE_IDENTITIES) {
+	const result = findVisibleComponent('', { sha256: entry.sha256 });
+	if (result?.component !== entry.component || result?.rule !== 'reviewed_exact_ocr_pdf_hash') {
+		fail('Reviewed exact OCR PDF hash did not resolve to its audited component.', {
+			entry,
+			actual: result
+		});
+	}
+}
+
+for (const [sourceDocumentId, expected] of Object.entries(
+	OCR_J351_JUNE_2024_ORIGINAL_INVENTORIES
+)) {
+	const audit = auditOcrJ351June2024OriginalInventory({
+		sourceDocumentId,
+		questions: expected.questions
+	});
+	if (audit.status !== 'passed') {
+		fail('The reviewed OCR J351 original inventory did not satisfy its shared exact lock.', audit);
+	}
+}
+const missingOrdinaryJ351Ref = auditOcrJ351June2024OriginalInventory({
+	sourceDocumentId: 'ocr-j351-01-qp-jun24',
+	questions: OCR_J351_JUNE_2024_ORIGINAL_INVENTORIES['ocr-j351-01-qp-jun24'].questions.filter(
+		(question) => question.sourceQuestionRef !== '01.1a'
+	)
+});
+if (
+	missingOrdinaryJ351Ref.status !== 'failed' ||
+	!missingOrdinaryJ351Ref.missingRefs.includes('01.1a')
+) {
+	fail('The OCR J351 lock did not reject removal of an ordinary retained question.', {
+		missingOrdinaryJ351Ref
+	});
+}
+const wrongJ351Mark = auditOcrJ351June2024OriginalInventory({
+	sourceDocumentId: 'ocr-j351-02-qp-jun24',
+	questions: OCR_J351_JUNE_2024_ORIGINAL_INVENTORIES['ocr-j351-02-qp-jun24'].questions.map(
+		(question) => (question.sourceQuestionRef === '05.1' ? { ...question, marks: 39 } : question)
+	)
+});
+if (
+	wrongJ351Mark.status !== 'failed' ||
+	!wrongJ351Mark.markMismatches.some(
+		(mismatch) =>
+			mismatch.sourceQuestionRef === '05.1' &&
+			mismatch.expectedMarks === 40 &&
+			mismatch.actualMarks === 39
+	)
+) {
+	fail('The OCR J351 lock did not reject an exact-ref mark mutation.', { wrongJ351Mark });
+}
+
+for (const [sourceDocumentId, expected] of Object.entries(
+	OCR_J352_JUNE_2024_ORIGINAL_INVENTORIES
+)) {
+	const audit = auditOcrEnglishJune2024OriginalInventory({
+		sourceDocumentId,
+		questions: expected.questions
+	});
+	if (
+		audit.status !== 'passed' ||
+		audit.policy !== 'ocr_j352_june_2024_exact_original_inventory_v1'
+	) {
+		fail('The reviewed OCR J352 original inventory did not satisfy its exact lock.', audit);
+	}
+}
+const missingOrdinaryJ352Ref = auditOcrEnglishJune2024OriginalInventory({
+	sourceDocumentId: 'ocr-j352-01-qp-jun24',
+	questions: OCR_J352_JUNE_2024_ORIGINAL_INVENTORIES['ocr-j352-01-qp-jun24'].questions.filter(
+		(question) => question.sourceQuestionRef !== '18.1'
+	)
+});
+if (
+	missingOrdinaryJ352Ref.status !== 'failed' ||
+	!missingOrdinaryJ352Ref.missingRefs.includes('18.1')
+) {
+	fail('The OCR J352 lock did not reject removal of an ordinary whole-text question.', {
+		missingOrdinaryJ352Ref
+	});
+}
+const wrongJ352CopyrightRowMark = auditOcrEnglishJune2024OriginalInventory({
+	sourceDocumentId: 'ocr-j352-01-qp-jun24',
+	questions: OCR_J352_JUNE_2024_ORIGINAL_INVENTORIES['ocr-j352-01-qp-jun24'].questions.map(
+		(question) => (question.sourceQuestionRef === '17.1' ? { ...question, marks: 39 } : question)
+	)
+});
+if (
+	wrongJ352CopyrightRowMark.status !== 'failed' ||
+	!wrongJ352CopyrightRowMark.markMismatches.some(
+		(mismatch) =>
+			mismatch.sourceQuestionRef === '17.1' &&
+			mismatch.expectedMarks === 40 &&
+			mismatch.actualMarks === 39
+	)
+) {
+	fail('The OCR J352 lock did not reject a changed copyright-row mark.', {
+		wrongJ352CopyrightRowMark
+	});
+}
 
 const isolatedHelperDir = mkdtempSync(path.join(os.tmpdir(), 'qc-helper-bundle-'));
 try {
@@ -19,6 +206,48 @@ try {
 	});
 } finally {
 	rmSync(isolatedHelperDir, { recursive: true, force: true });
+}
+
+const phaseHashDir = mkdtempSync(path.join(os.tmpdir(), 'qc-phase-hashes-'));
+try {
+	const artifactPath = path.join(phaseHashDir, 'paper.json');
+	const basePaper = {
+		sourceDocument: { id: 'same-ref-paper' },
+		questions: [
+			{
+				sourceQuestionRef: '01.1',
+				promptText: 'Explain the trend.',
+				markSchemeItems: [{ text: 'Identifies the trend.', marks: 1 }],
+				response: { kind: 'lines', lineCount: 2 },
+				answerChain: { id: 'chain-a', canonicalChainText: 'trend -> evidence' }
+			}
+		]
+	};
+	writeFileSync(artifactPath, `${JSON.stringify(basePaper, null, 2)}\n`);
+	const record = jsonArtifact(artifactPath, { rootDir: phaseHashDir });
+	const phase = phaseArtifacts({ outputs: { extraction: record } });
+	if (!phaseArtifactSchemaMatches(phase) || !jsonArtifactMatches(record, artifactPath)) {
+		fail('An unchanged phase artifact did not satisfy its canonical content address.');
+	}
+	const mutations = [
+		['prompt', (paper) => (paper.questions[0].promptText = 'Describe the trend.')],
+		['mark evidence', (paper) => (paper.questions[0].markSchemeItems[0].text = 'Uses evidence.')],
+		['response', (paper) => (paper.questions[0].response.lineCount = 3)],
+		['chain', (paper) => (paper.questions[0].answerChain.canonicalChainText = 'evidence -> trend')]
+	];
+	for (const [label, mutate] of mutations) {
+		const changed = structuredClone(basePaper);
+		mutate(changed);
+		if (changed.questions[0].sourceQuestionRef !== basePaper.questions[0].sourceQuestionRef) {
+			fail(`${label} mutation accidentally changed the source ref.`);
+		}
+		writeFileSync(artifactPath, `${JSON.stringify(changed, null, 2)}\n`);
+		if (jsonArtifactMatches(record, artifactPath)) {
+			fail(`Same-ref ${label} mutation inherited a stale phase content address.`);
+		}
+	}
+} finally {
+	rmSync(phaseHashDir, { recursive: true, force: true });
 }
 
 function fail(message, details = null) {
@@ -46,6 +275,64 @@ function runNodeScript(scriptPath, args = []) {
 		cwd: rootDir,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe']
+	});
+}
+
+const recoveredCommandObservations = collectRecoveredPipelineCommandObservations(
+	[
+		{
+			timestamp: '2026-07-16T00:00:00.000Z',
+			type: 'response_item',
+			payload: {
+				type: 'custom_tool_call_output',
+				output: [
+					{
+						text: 'node scripts/run-codex-production-import-pipeline.mjs --question-paper=/old/data/question.pdf --mark-scheme=/old/data/mark.pdf --source-document-id=paper-a\\nnode scripts/run-codex-production-import-pipeline.mjs --question-paper=/old/data/question.pdf --mark-scheme=/old/data/mark.pdf --source-document-id=paper-a --supporting-document=/old/data/insert.pdf'
+					}
+				]
+			}
+		},
+		{
+			timestamp: '2026-07-16T00:00:01.000Z',
+			type: 'response_item',
+			payload: {
+				type: 'custom_tool_call',
+				input:
+					'node scripts/run-codex-production-import-pipeline.mjs --question-paper=data/question.pdf --mark-scheme=data/mark.pdf --source-document-id=paper-b'
+			}
+		}
+	],
+	'paper-a'
+);
+if (
+	recoveredCommandObservations.length !== 2 ||
+	Math.max(...recoveredCommandObservations.map((entry) => entry.supportingDocuments.length)) !==
+		1 ||
+	recoveredCommandObservations.some((entry) => entry.sourceDocumentId !== 'paper-a')
+) {
+	fail('Recovered extraction command parsing lost complete output observations.', {
+		recoveredCommandObservations
+	});
+}
+const recoveredDirectCommand = collectRecoveredPipelineCommandObservations(
+	[
+		{
+			type: 'response_item',
+			payload: {
+				type: 'custom_tool_call',
+				input:
+					'node scripts/run-codex-production-import-pipeline.mjs --question-paper=data/question.pdf --mark-scheme=data/mark.pdf --source-document-id=paper-b'
+			}
+		}
+	],
+	'paper-b'
+);
+if (
+	recoveredDirectCommand.length !== 1 ||
+	recoveredDirectCommand[0].payloadType !== 'custom_tool_call'
+) {
+	fail('Recovered extraction command parsing ignored a direct custom tool-call input.', {
+		recoveredDirectCommand
 	});
 }
 
@@ -108,6 +395,9 @@ const codexProductionImportSource = readText(
 const codexProductionImportBatchSource = readText(
 	path.join(rootDir, 'scripts/run-codex-production-import-batch.mjs')
 );
+const recoveredRolloutEvidenceSource = readText(
+	path.join(rootDir, 'scripts/recover-selective-paper-rollout-evidence.mjs')
+);
 const productionBatchSource = readText(
 	path.join(rootDir, 'scripts/run-production-extraction-batch.mjs')
 );
@@ -139,6 +429,9 @@ const codexObservationSource = readText(
 	path.join(rootDir, 'docs/codex-whole-pdf-import-observations.md')
 );
 const questionTypesSource = readText(path.join(rootDir, 'src/lib/experiments/questions/types.ts'));
+const calibratedPaperImageSource = readText(
+	path.join(rootDir, 'src/lib/components/CalibratedPaperImage.svelte')
+);
 const questionDataSource = readText(path.join(rootDir, 'src/lib/server/questionExperimentData.ts'));
 const questionGradingSource = readText(
 	path.join(rootDir, 'src/lib/server/questionExperimentGrading.ts')
@@ -156,12 +449,16 @@ for (const filePath of [
 	'scripts/run-production-extraction-pipeline.mjs',
 	'scripts/codex-import-helper.mjs',
 	'scripts/lib/codex-sdk-runner.mjs',
+	'scripts/lib/ocr-j351-june-2024-inventory.mjs',
 	'scripts/run-codex-pdf-extraction.mjs',
 	'scripts/run-codex-extraction-judge.mjs',
 	'scripts/run-codex-answer-chains.mjs',
 	'scripts/run-codex-solvability-judge.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/run-codex-production-import-batch.mjs',
+	'scripts/recover-selective-paper-rollout-evidence.mjs',
+	'scripts/lib/recovered-extraction-input-evidence.mjs',
+	'scripts/repair-ocr-j352-02-judge-findings.mjs',
 	'scripts/run-production-extraction-batch.mjs',
 	'scripts/verify-production-extraction-run.mjs',
 	'scripts/summarize-llm-extraction-logs.mjs',
@@ -188,6 +485,20 @@ for (const filePath of [
 	if (!existsSync(path.join(rootDir, filePath)))
 		fail(`Pipeline references missing file: ${filePath}`);
 }
+
+requireIncludes(
+	recoveredRolloutEvidenceSource,
+	[
+		"schemaVersion: 'codex-recovered-extraction-input-recovery-v1'",
+		"schemaVersion: 'codex-recovered-extraction-inputs-v1'",
+		'phases.extraction.inputAttestation',
+		'recoveryArtifact: inputRecoveryArtifact',
+		'parentOperatorRollout',
+		'extractionRollout',
+		'canonicalInputFlagsSha256'
+	],
+	'Recovered selective-paper rollout evidence'
+);
 
 requireIncludes(
 	extractionSpec,
@@ -293,8 +604,11 @@ requireIncludes(
 		'The script detected these sourceQuestionRef values from core-page text',
 		'For calculation questions with visible working lines',
 		'For blank printed grids that the learner must complete or draw on',
+		'response.unit is only for a unit visibly preprinted',
 		'For markChecklist.required, true means every full-credit response',
 		'level-response indicative content must be required=false',
+		'itemType "indicative_content"',
+		'never mislabel an indicative-content row as guidance',
 		'Do not use asset-canvas for a table that can be represented structurally',
 		'LOOKAHEAD QUESTION PAPER PAGE',
 		'PRIOR CONTEXT QUESTION PAPER PAGE',
@@ -535,6 +849,7 @@ requireIncludes(
 		'known_database_context_missing',
 		'common_weak_answer_missing_confidence',
 		'known_paired_boundary_answer_encoded_as_independent_aliases',
+		'knownOcrEnglishLanguageJune2024SourceIssues',
 		'Q03.0 official mark-scheme split is 10111; 100;',
 		"'07.3': 5"
 	],
@@ -577,8 +892,17 @@ requireIncludes(
 		'expected-marks',
 		'expected-questions',
 		'--allow-unpublishable-source-drops',
+		'--reviewed-repair-evidence',
+		'--reviewed-asset-repair-evidence',
+		'codex-reviewed-extraction-asset-repair-v1',
+		'reviewedAssets',
 		'--reuse-existing-extraction',
+		'copyCodexImportHelperBundle({ rootDir, workDir })',
 		'droppedUnpublishableSourceQuestionRefs',
+		'known_unresolved_copyright_source_only_v1',
+		'questionCountConserved',
+		'markTotalConserved',
+		'onlyKnownUnresolvedCopyrightSource',
 		'known_unresolved_copyright_source',
 		'question-paper.pdf',
 		'mark-scheme.pdf',
@@ -626,7 +950,9 @@ requireIncludes(
 		'01.2 = 5',
 		'02.2 = 5',
 		'13.1 = 4',
-		'learner label bank must be AND, XOR, NOT',
+		'do not show AND, XOR, NOT, OR, or any other candidate gate bank',
+		'04.2 = 2, 05.3 = 7',
+		"WHERE Title = 'Toy Story 3'",
 		'08.2 = 6 total',
 		'02.4 = 3 visible ruled lines',
 		'11.0 = 37 across pages 22 and 23',
@@ -659,7 +985,11 @@ requireIncludes(
 		'exact reversible equation in a learner-visible equation block',
 		'use response.kind="equation-blanks"',
 		'such as Test and Result/Observation',
+		'response.unit is only for a unit visibly preprinted',
+		'Never emit modelAnswer as a bare string or leave its confidence null',
 		'Carry a stem, table, equation, figure, or asset from a prior/lookahead/adjacent page only when this atomic question actually depends on it',
+		'For English Literature, every task that supplies a printed extract, poem, or pair of sources',
+		'Two-extract and two-poem comparisons require both complete sources',
 		'Strip all exam-booklet furniture',
 		'For Ordnance Survey map extracts and other grid-reference maps',
 		'readable eastings and northings on the relevant margins',
@@ -724,6 +1054,8 @@ requireIncludes(
 		'Inspect labelled structured-table/table/key/equation blocks before declaring a referenced Figure/Table missing',
 		'For Geography 2023 Paper 1 Q02.1 and Q02.3',
 		'For Geography 2022 Paper 1 Q02.3',
+		'For every English Literature question, classify the task as whole-text',
+		'Do not accept a synopsis, selfContainedPromptText, model answer, mark-scheme indicative content',
 		'requiredRepairs'
 	],
 	'Codex extraction judge runner'
@@ -767,6 +1099,10 @@ requireIncludes(
 		'chain-validation-repair-attempts',
 		'validation-repair-summary',
 		'deterministic answer-chain validation',
+		'existingChainContextSnapshotBinding',
+		'existingChainContextSnapshotDerivation',
+		'assertBoundPhaseInputsCurrent',
+		'--generated-at=',
 		'run-legacy-chain-style-judge',
 		'skip-chain-style-judge',
 		'events.jsonl',
@@ -804,7 +1140,8 @@ requireIncludes(
 		"path.join(jobDir, 'dark.webp')",
 		"path.join(jobDir, 'light.webp')",
 		'no-passing-pair',
-		'derivedFromAssetSha256'
+		'derivedFromAssetSha256',
+		'await writeStdoutJson'
 	],
 	'Chain illustration dark/light generator'
 );
@@ -838,13 +1175,32 @@ requireIncludes(
 		'--run-legacy-solvability',
 		'--solvability-timeout-ms',
 		'--skip-r2-upload',
+		'--r2-asset-root',
 		'--allow-unpublishable-source-drops',
+		'--reviewed-repair-evidence',
+		'--reviewed-asset-repair-evidence',
+		'reviewedAssetOutputsMatch',
 		'--reuse-existing-extraction',
+		'--resume-passed-phases',
+		'--rerun-passed-phases',
+		"hasArg('resume-passed-phases') ||",
+		'replaceRejectedPhaseArtifacts',
+		'A real --import requires the current Codex solvability gate',
+		'A real --import cannot opt out of the required R2 upload gate',
+		'existingChainContextEvidenceMatches',
+		'generatedExistingChainContextMatches',
+		'exactSupportingDocumentMetadataMatches',
 		'--allow-dropped-questions',
 		'--import',
 		'codex-production-import-summary.json',
 		'codex-extraction-summary.json',
 		'codex-chain-summary.json',
+		'passed_after_reviewed_source_closure',
+		'reviewed_source_closure',
+		'phaseArtifactSchemaMatches',
+		'jsonArtifactMatches',
+		'phase.inputs?.candidate',
+		'phase.outputs?.reconciled',
 		'importReadyAuditPath',
 		'solvabilitySummaryPath',
 		'importReadyPaperPath',
@@ -857,6 +1213,16 @@ requireIncludes(
 		'max'
 	],
 	'Codex production import orchestrator'
+);
+requireIncludes(
+	codexPdfExtractionSource,
+	[
+		'assertOcrEnglishJune2024OriginalInventory',
+		'originalInventoryLock',
+		'includeExpectedTotals: false',
+		'supportingDocumentMetadata: supportingDocumentIdentities'
+	],
+	'Codex PDF extraction exact pre-subset inventory lock'
 );
 
 requireIncludes(
@@ -890,12 +1256,34 @@ requireIncludes(
 		'studentVisibleContext.sections[*].blocks.stem',
 		'structured table rendered there is visible evidence',
 		'inspect the local image file under assets/',
+		'paperMeasurement with sourceVerified=true',
+		'Treat that as a calibrated digital ruler',
+		'For English Literature, classify each target as whole-text',
+		'Require two source media for two printed extracts/poems',
 		'assetCopyPairs',
 		'--target-only',
 		'gpt-5.6-sol',
 		'max'
 	],
 	'Codex solvability judge'
+);
+
+requireIncludes(
+	calibratedPaperImageSource,
+	[
+		'Left guide',
+		'Right guide',
+		'Measured distance:',
+		'measurement.pixelsPerMillimetre',
+		'measurement.pixelWidth'
+	],
+	'Calibrated paper measurement renderer'
+);
+
+requireIncludes(
+	importSource,
+	['paper_measurement', 'pixels_per_millimetre', 'source_verified', "'identify'"],
+	'Calibrated paper measurement import'
 );
 
 requireIncludes(
@@ -969,9 +1357,13 @@ requireIncludes(
 		'existingReplacementPlan',
 		'questionIdCollisions',
 		'sharedIncomingChains',
+		'sharedChainReuseIsSafe',
 		'allow-shared-chain-updates',
 		'validateRenderJsonForApp',
 		'normalizeExtractedQuestionForImport',
+		'selfContainmentMetadataForImport',
+		'required_source_count',
+		'complete_source_bundle',
 		'card_title_contract',
 		'asset-canvas assetId must be a string',
 		'image-label-zones needs at least one target zone'
@@ -1056,10 +1448,31 @@ requireIncludes(
 		'max-question-refs',
 		"hasArg('d1')",
 		'fetchPublicChains',
-		'max-examples-per-chain'
+		'max-examples-per-chain',
+		'requireRenderingOverlay: false'
 	],
 	'Existing chain context builder'
 );
+
+const learnerVisibleChainWhere = publicChainWhere();
+const reconciliationChainWhere = publicChainWhere({ requireRenderingOverlay: false });
+if (
+	!learnerVisibleChainWhere.includes('question_rendering_overlays') ||
+	reconciliationChainWhere.includes('question_rendering_overlays') ||
+	!reconciliationChainWhere.includes("ac.status = 'published'") ||
+	!reconciliationChainWhere.includes('ac.needs_human_review = 0') ||
+	!reconciliationChainWhere.includes('qac.needs_human_review = 0') ||
+	!reconciliationChainWhere.includes("q.status = 'published'") ||
+	!reconciliationChainWhere.includes('q.needs_human_review = 0')
+) {
+	fail(
+		'Chain reconciliation context did not make rendering overlays optional while retaining review/publication gates.',
+		{
+			learnerVisibleChainWhere,
+			reconciliationChainWhere
+		}
+	);
+}
 
 requireIncludes(
 	reconcileAnswerChainsSource,
@@ -1357,6 +1770,91 @@ if (
 	});
 }
 
+const chainBoundaryInput = {
+	sourceDocumentId: 'test-paper',
+	extractionRun: {
+		agentVersion: 'codex-pdf-extraction-v1',
+		model: 'gpt-5.6-sol',
+		extractedAt: '2026-07-16T15:48:25.244Z',
+		needsHumanReview: false,
+		reviewNotes: []
+	},
+	sourceDocument: { id: 'test-paper', title: 'Original question paper' },
+	markSchemeDocument: { id: 'test-ms', title: 'Original mark scheme' },
+	supportingDocuments: [{ id: 'test-support', title: 'Original support' }],
+	localAssetManifest: [{ sourceLabel: 'Figure 1', filePath: '/source/figure-1.png' }],
+	questions: [
+		{
+			id: 'test-paper-01-1',
+			sourceQuestionRef: '01.1',
+			promptText: 'Original learner-visible prompt.',
+			response: { kind: 'lines', lineCount: 2 },
+			markSchemeItems: [{ text: 'Original positive marking point.' }],
+			answerChain: { id: null, title: 'Placeholder' },
+			chainResolution: { action: 'needs_review' },
+			commonWeakAnswers: []
+		}
+	]
+};
+const chainBoundaryCandidate = {
+	...chainBoundaryInput,
+	modelAddedTopLevelField: 'must not survive',
+	extractionRun: {
+		...chainBoundaryInput.extractionRun,
+		model: null,
+		extractedAt: '2099-01-01T00:00:00.000Z'
+	},
+	sourceDocument: { id: 'wrong-paper', title: 'Mutated question paper' },
+	questions: [
+		{
+			...chainBoundaryInput.questions[0],
+			promptText: 'Mutated prompt must not survive.',
+			response: { kind: 'none' },
+			markSchemeItems: [{ text: 'Mutated marking evidence must not survive.' }],
+			answerChain: { id: 'bio-chain-test-paper-01-1', title: 'Accepted chain' },
+			chainResolution: { action: 'create_new' },
+			commonWeakAnswers: [
+				{
+					weakAnswerText: 'Plausible weak answer.',
+					explanation: 'It misses the original positive marking point.',
+					missingStepIndexes: [0],
+					confidence: 0.9
+				}
+			]
+		}
+	]
+};
+const chainBoundaryResult = preserveExtractionFactsForChainPhase(
+	chainBoundaryInput,
+	chainBoundaryCandidate
+);
+const topLevelWithoutQuestions = (paper) =>
+	Object.fromEntries(Object.entries(paper).filter(([key]) => key !== 'questions'));
+const questionWithoutChainFields = (question) =>
+	Object.fromEntries(
+		Object.entries(question).filter(
+			([key]) => !['answerChain', 'chainResolution', 'commonWeakAnswers'].includes(key)
+		)
+	);
+if (
+	JSON.stringify(topLevelWithoutQuestions(chainBoundaryResult)) !==
+		JSON.stringify(topLevelWithoutQuestions(chainBoundaryInput)) ||
+	JSON.stringify(questionWithoutChainFields(chainBoundaryResult.questions[0])) !==
+		JSON.stringify(questionWithoutChainFields(chainBoundaryInput.questions[0])) ||
+	JSON.stringify(chainBoundaryResult.questions[0].answerChain) !==
+		JSON.stringify(chainBoundaryCandidate.questions[0].answerChain) ||
+	JSON.stringify(chainBoundaryResult.questions[0].chainResolution) !==
+		JSON.stringify(chainBoundaryCandidate.questions[0].chainResolution) ||
+	JSON.stringify(chainBoundaryResult.questions[0].commonWeakAnswers) !==
+		JSON.stringify(chainBoundaryCandidate.questions[0].commonWeakAnswers)
+) {
+	fail('Codex answer-chain boundary did not preserve extraction facts.', {
+		chainBoundaryInput,
+		chainBoundaryCandidate,
+		chainBoundaryResult
+	});
+}
+
 const helperNormalizeDir = path.join(rootDir, 'tmp/test-codex-helper-normalize');
 mkdirSync(helperNormalizeDir, { recursive: true });
 const helperNormalizeInput = path.join(helperNormalizeDir, 'raw.json');
@@ -1376,6 +1874,14 @@ writeFileSync(
 				{
 					sourceQuestionRef: '01.1',
 					promptText: 'Use Table 1 to calculate the mean.',
+					selfContainment: {
+						status: 'source_complete',
+						requires_context: true,
+						requires_assets: true,
+						required_asset_labels: ['Table 1'],
+						required_source_count: 1,
+						complete_source_bundle: false
+					},
 					marks: 1,
 					pageStart: 2,
 					pageEnd: 2,
@@ -1392,6 +1898,11 @@ writeFileSync(
 						{
 							kind: 'formula',
 							text: '\\overline{A} + B'
+						},
+						{
+							kind: 'figure',
+							assetId: 'official-source-1',
+							label: 'Source 1'
 						}
 					],
 					markSchemeItems: [{ itemType: 'mark', text: 'Correct mean.' }],
@@ -1496,6 +2007,29 @@ runNodeScript('scripts/codex-import-helper.mjs', [
 	`--output=${helperNormalizeOutput}`
 ]);
 const helperNormalized = JSON.parse(readText(helperNormalizeOutput));
+const normalizedSelfContainment = helperNormalized.questions.find(
+	(question) => question.sourceQuestionRef === '01.1'
+)?.selfContainment;
+if (
+	normalizedSelfContainment?.status !== 'source_complete' ||
+	normalizedSelfContainment?.requiresContext !== true ||
+	normalizedSelfContainment?.requiresAssets !== true ||
+	normalizedSelfContainment?.requiredSourceCount !== 1 ||
+	normalizedSelfContainment?.completeSourceBundle !== false ||
+	JSON.stringify(normalizedSelfContainment?.requiredAssetLabels) !== JSON.stringify(['Table 1'])
+) {
+	fail('Codex helper normalization did not preserve self-containment source metadata.', {
+		normalizedSelfContainment
+	});
+}
+const missingModelAnswerConfidence = helperNormalized.questions.find(
+	(question) => question.sourceQuestionRef === '01.1'
+)?.modelAnswer?.confidence;
+if (missingModelAnswerConfidence !== null) {
+	fail('Codex helper normalization invented model-answer confidence.', {
+		missingModelAnswerConfidence
+	});
+}
 const propagatedTable = helperNormalized.questions
 	.find((question) => question.sourceQuestionRef === '01.2')
 	?.stemBlocks?.find((block) => block.kind === 'structured-table' && block.label === 'Table 1');
@@ -1516,6 +2050,14 @@ const normalizedFormulaBlock = helperNormalized.questions
 if (normalizedFormulaBlock?.kind !== 'equation') {
 	fail('Codex helper normalization did not canonicalize formula blocks to equation blocks.', {
 		normalizedFormulaBlock
+	});
+}
+const normalizedSourceFigure = helperNormalized.questions
+	.find((question) => question.sourceQuestionRef === '01.1')
+	?.stemBlocks?.find((block) => block.label === 'Source 1');
+if (normalizedSourceFigure?.assetId !== 'official-source-1') {
+	fail('Codex helper normalization did not preserve an exact figure asset id.', {
+		normalizedSourceFigure
 	});
 }
 const normalizedAliasAnswer = helperNormalized.questions
@@ -1792,6 +2334,173 @@ const ocrAlphabeticRefFailure = runNodeScriptExpectFailure('scripts/codex-import
 if (!ocrAlphabeticRefFailure.includes('ocr_english_alphabetic_part_ref_lost')) {
 	fail('Codex helper validation did not reject lost OCR English (a)/(b) source refs.', {
 		ocrAlphabeticRefFailure
+	});
+}
+
+const ocrJ351CopyrightHoldoutPath = path.join(
+	helperNormalizeDir,
+	'ocr-j351-copyright-holdout.json'
+);
+const ocrJ351CopyrightHoldoutCandidate = {
+	sourceDocument: {
+		id: 'ocr-j351-02-qp-jun24',
+		docType: 'question_paper',
+		pageCount: 16
+	},
+	markSchemeDocument: { id: 'ocr-j351-02-ms-jun24', docType: 'mark_scheme', pageCount: 24 },
+	questions: [
+		{
+			sourceQuestionRef: '01.1a',
+			promptText: 'Give three words or phrases that show what the dogs do at night.',
+			selfContainedPromptText:
+				'Read lines 1–5 of Text 1. Give three words or phrases that show what the dogs do at night.',
+			selfContainment: {
+				status: 'source_missing',
+				requiresContext: true,
+				requiresAssets: true,
+				requiredAssetLabels: ['Text 1 — complete extract'],
+				requiredSourceCount: 1,
+				completeSourceBundle: false
+			},
+			marks: 3,
+			pageStart: 2,
+			pageEnd: 2,
+			needsHumanReview: true,
+			reviewNotes: [
+				'BLOCKED SOURCE DEFECT: the complete extract is removed from OCR’s public insert for third-party rights; the black source body contains no recoverable learner text.'
+			],
+			response: { kind: 'lines', lineCount: 3 },
+			markSchemeItems: [{ itemType: 'mark', text: 'Any three accepted phrases.', marks: 3 }],
+			markChecklist: [{ text: 'Selects three supported phrases.', markSchemeItemIndexes: [0] }],
+			modelAnswer: {
+				answerText: 'Withheld until the complete learner source is available.',
+				confidence: 0.99,
+				needsHumanReview: true
+			}
+		}
+	]
+};
+writeFileSync(
+	ocrJ351CopyrightHoldoutPath,
+	JSON.stringify(ocrJ351CopyrightHoldoutCandidate, null, 2)
+);
+const ocrJ351CopyrightHoldoutFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${ocrJ351CopyrightHoldoutPath}`,
+		'--expected-marks=3',
+		'--expected-questions=1'
+	]
+);
+if (!ocrJ351CopyrightHoldoutFailure.includes('known_unresolved_copyright_source')) {
+	fail('OCR J351 official-source removal was not classified as an auditable hold-out.', {
+		ocrJ351CopyrightHoldoutFailure
+	});
+}
+
+const ocrJ351OrdinaryReviewPath = path.join(helperNormalizeDir, 'ocr-j351-ordinary-review.json');
+const ocrJ351OrdinaryReviewCandidate = structuredClone(ocrJ351CopyrightHoldoutCandidate);
+ocrJ351OrdinaryReviewCandidate.questions[0].selfContainment.status = 'source_complete';
+ocrJ351OrdinaryReviewCandidate.questions[0].reviewNotes = [
+	'Human review is still required for the response-line count; the complete source is present.'
+];
+writeFileSync(ocrJ351OrdinaryReviewPath, JSON.stringify(ocrJ351OrdinaryReviewCandidate, null, 2));
+const ocrJ351OrdinaryReviewFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${ocrJ351OrdinaryReviewPath}`,
+	'--expected-marks=3',
+	'--expected-questions=1'
+]);
+if (ocrJ351OrdinaryReviewFailure.includes('known_unresolved_copyright_source')) {
+	fail('OCR J351 hold-out logic widened an ordinary review into a copyright drop.', {
+		ocrJ351OrdinaryReviewFailure
+	});
+}
+
+const ocrJ352CopyrightHoldoutPath = path.join(
+	helperNormalizeDir,
+	'ocr-j352-copyright-holdout.json'
+);
+const ocrJ352CopyrightHoldoutCandidate = {
+	sourceDocument: {
+		id: 'ocr-j352-01-qp-jun24',
+		docType: 'question_paper',
+		subject: 'English Literature',
+		pageCount: 24
+	},
+	markSchemeDocument: { id: 'ocr-j352-01-ms-jun24', docType: 'mark_scheme', pageCount: 36 },
+	questions: [
+		{
+			sourceQuestionRef: '17.1',
+			promptText:
+				'How does Dickens present care for the poor, in this extract and elsewhere in the novel?',
+			selfContainedPromptText:
+				'In A Christmas Carol by Charles Dickens, how does Dickens present care for the poor in this extract and elsewhere in the novel?',
+			selfContainment: {
+				status: 'source_incomplete',
+				requiresContext: true,
+				requiresAssets: true,
+				requiredAssetLabels: ['Withheld extract from A Christmas Carol by Charles Dickens'],
+				requiredSourceCount: 1,
+				completeSourceBundle: false
+			},
+			marks: 40,
+			pageStart: 21,
+			pageEnd: 21,
+			needsHumanReview: true,
+			reviewNotes: [
+				'Blocked source defect: question-paper.pdf page 21 preserves the task but the entire learner passage was removed for third-party copyright restrictions; the black source area has no recoverable complete extract.'
+			],
+			assets: [],
+			response: { kind: 'lines', lineCount: 30 },
+			markSchemeItems: [{ itemType: 'mark', text: 'AO1/AO2/AO3/AO4 level response.', marks: 40 }],
+			markChecklist: [
+				{ text: 'Builds a supported literary argument.', markSchemeItemIndexes: [0] }
+			],
+			modelAnswer: {
+				answerText:
+					'Withheld from publication until the exact complete official source is available.',
+				confidence: 0.75,
+				needsHumanReview: true
+			}
+		}
+	]
+};
+writeFileSync(
+	ocrJ352CopyrightHoldoutPath,
+	JSON.stringify(ocrJ352CopyrightHoldoutCandidate, null, 2)
+);
+const ocrJ352CopyrightHoldoutFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${ocrJ352CopyrightHoldoutPath}`,
+		'--expected-marks=40',
+		'--expected-questions=1'
+	]
+);
+if (!ocrJ352CopyrightHoldoutFailure.includes('known_unresolved_copyright_source')) {
+	fail('OCR J352/01 official Q17 source removal was not classified as an exact hold-out.', {
+		ocrJ352CopyrightHoldoutFailure
+	});
+}
+const ocrJ352WidenedHoldoutPath = path.join(
+	helperNormalizeDir,
+	'ocr-j352-widened-copyright-holdout.json'
+);
+const ocrJ352WidenedHoldoutCandidate = structuredClone(ocrJ352CopyrightHoldoutCandidate);
+ocrJ352WidenedHoldoutCandidate.questions[0].sourceQuestionRef = '15.1';
+writeFileSync(ocrJ352WidenedHoldoutPath, JSON.stringify(ocrJ352WidenedHoldoutCandidate, null, 2));
+const ocrJ352WidenedHoldoutFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
+	'validate-extraction',
+	`--input=${ocrJ352WidenedHoldoutPath}`,
+	'--expected-marks=40',
+	'--expected-questions=1'
+]);
+if (ocrJ352WidenedHoldoutFailure.includes('known_unresolved_copyright_source')) {
+	fail('OCR J352 hold-out logic widened beyond exact ref 17.1.', {
+		ocrJ352WidenedHoldoutFailure
 	});
 }
 
@@ -3561,6 +4270,121 @@ writeFileSync(
 	)
 );
 
+const incompleteEnglishLiteratureSourcePath = path.join(
+	helperNormalizeDir,
+	'incomplete-english-literature-source.json'
+);
+writeFileSync(
+	incompleteEnglishLiteratureSourcePath,
+	JSON.stringify(
+		{
+			sourceDocument: {
+				id: 'ocr-j352-01-qp-jun24',
+				docType: 'question_paper',
+				subject: 'English Literature',
+				pageCount: 40
+			},
+			markSchemeDocument: { id: 'ocr-j352-01-ms-jun24', docType: 'mark_scheme', pageCount: 24 },
+			questions: [
+				{
+					sourceQuestionRef: '01.1a',
+					promptText: 'Read Extract A and explain how the writer presents the character.',
+					selfContainment: {
+						status: 'contextual',
+						requiresContext: true,
+						requiresAssets: true,
+						requiredAssetLabels: ['Extract A'],
+						requiredSourceCount: 1
+					},
+					marks: 4,
+					pageStart: 2,
+					pageEnd: 2,
+					stemBlocks: [{ kind: 'figure', assetId: 'extract-a', label: 'Extract A' }],
+					assets: [
+						{
+							id: 'extract-a',
+							sourceLabel: 'Extract A',
+							role: 'printed-extract',
+							required: true,
+							filePath: 'tiny-figure.png'
+						}
+					],
+					response: { kind: 'lines', lineCount: 4 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: "Explains the writer's presentation.", marks: 4 }
+					],
+					markChecklist: [
+						{ text: "Explains the writer's presentation.", markSchemeItemIndexes: [0] }
+					],
+					modelAnswer: {
+						answerText:
+							'The writer presents the character through a precise detail from the extract.',
+						confidence: 0.9,
+						needsHumanReview: false
+					}
+				}
+			]
+		},
+		null,
+		2
+	)
+);
+const incompleteEnglishLiteratureSourceFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${incompleteEnglishLiteratureSourcePath}`,
+		'--expected-marks=4',
+		'--expected-questions=1'
+	]
+);
+if (
+	!incompleteEnglishLiteratureSourceFailure.includes('english_literature_source_status_incomplete')
+) {
+	fail('Codex helper validation did not reject incomplete English Literature source status.', {
+		incompleteEnglishLiteratureSourceFailure
+	});
+}
+
+const missingEnglishLiteratureSourceContractPath = path.join(
+	helperNormalizeDir,
+	'missing-english-literature-source-contract.json'
+);
+const missingEnglishLiteratureSourceContract = JSON.parse(
+	readText(incompleteEnglishLiteratureSourcePath)
+);
+delete missingEnglishLiteratureSourceContract.questions[0].selfContainment;
+delete missingEnglishLiteratureSourceContract.questions[0].assets;
+writeFileSync(
+	missingEnglishLiteratureSourceContractPath,
+	JSON.stringify(missingEnglishLiteratureSourceContract, null, 2)
+);
+const missingEnglishLiteratureSourceContractFailure = runNodeScriptExpectFailure(
+	'scripts/codex-import-helper.mjs',
+	[
+		'validate-extraction',
+		`--input=${missingEnglishLiteratureSourceContractPath}`,
+		'--expected-marks=4',
+		'--expected-questions=1'
+	]
+);
+if (
+	!missingEnglishLiteratureSourceContractFailure.includes(
+		'english_literature_required_source_count_missing'
+	) ||
+	!missingEnglishLiteratureSourceContractFailure.includes(
+		'english_literature_required_source_labels_missing'
+	) ||
+	!missingEnglishLiteratureSourceContractFailure.includes(
+		'english_literature_topology_source_assets_missing'
+	)
+) {
+	fail(
+		'Codex helper validation trusted deleted extractor metadata/assets for a fixed J352 source task.',
+		{ missingEnglishLiteratureSourceContractFailure }
+	);
+}
+
 const geography2022Paper3SourceTablePath = path.join(
 	helperNormalizeDir,
 	'geography-2022-paper-3-source-table.json'
@@ -4619,6 +5443,20 @@ writeFileSync(
 					modelAnswer: { answerText: '11001100' }
 				},
 				{
+					sourceQuestionRef: '04.2',
+					promptText: 'Convert the value in Figure 1 from binary to hexadecimal.',
+					selfContainedPromptText:
+						'Figure 1 shows 00110011. Convert the value from binary to hexadecimal.',
+					marks: 1,
+					pageStart: 3,
+					pageEnd: 3,
+					stemBlocks: [{ kind: 'code', label: 'Figure 1', text: '00110011' }],
+					response: { kind: 'lines', lineCount: 1 },
+					markSchemeItems: [{ itemType: 'mark', text: '33', marks: 1 }],
+					markChecklist: [{ text: 'Gives 33.', markSchemeItemIndexes: [0] }],
+					modelAnswer: { answerText: '33' }
+				},
+				{
 					sourceQuestionRef: '05.4',
 					promptText:
 						'Complete the table to show the binary representation of each colour in Image D.',
@@ -4666,6 +5504,26 @@ writeFileSync(
 					],
 					markChecklist: [{ text: 'Uses NOT A correctly.', markSchemeItemIndexes: [0] }],
 					modelAnswer: { answerText: 'A-bar + B.C' }
+				},
+				{
+					sourceQuestionRef: '18.6',
+					promptText:
+						'Toy Story 3 should have the title Toy Story 4. Write the SQL to make this change.',
+					selfContainedPromptText:
+						'In the Film table, Toy Story 3 should be Toy Story 4. Write the SQL to make this change.',
+					marks: 3,
+					pageStart: 27,
+					pageEnd: 27,
+					response: { kind: 'lines', lineCount: 6 },
+					markSchemeItems: [
+						{ itemType: 'mark', text: 'UPDATE Film', marks: 1 },
+						{ itemType: 'mark', text: "SET Title = 'Toy Story 4'", marks: 1 },
+						{ itemType: 'mark', text: 'A correct WHERE condition', marks: 1 }
+					],
+					markChecklist: [{ text: 'Uses a complete update.', markSchemeItemIndexes: [0, 1, 2] }],
+					modelAnswer: {
+						answerText: "UPDATE Film SET Title = 'Toy Story 4' WHERE FilmID = 101"
+					}
 				},
 				{
 					sourceQuestionRef: '18.7',
@@ -4731,8 +5589,8 @@ writeFileSync(
 const computerScienceCanaryFailure = runNodeScriptExpectFailure('scripts/codex-import-helper.mjs', [
 	'validate-extraction',
 	`--input=${computerScienceCanaryFailurePath}`,
-	'--expected-marks=27',
-	'--expected-questions=12'
+	'--expected-marks=31',
+	'--expected-questions=14'
 ]);
 for (const expectedFailure of [
 	'known_response_line_count_mismatch',
@@ -4741,7 +5599,11 @@ for (const expectedFailure of [
 	'known_prior_figure_context_missing',
 	'known_self_contained_answer_leak',
 	'known_truth_table_options_unfaithful',
-	'known_logic_gate_label_bank_mismatch',
+	'known_fixed_response_key_not_exact_option',
+	'known_logic_gate_free_response_missing',
+	'known_logic_gate_answer_bank_leak',
+	'known_logic_gate_hidden_key_mismatch',
+	'known_model_answer_context_missing',
 	'known_model_answer_mismatch',
 	'known_partial_mark_scheme_collapsed',
 	'known_level_response_descriptors_missing',
@@ -6085,11 +6947,51 @@ if (
 			(issue) =>
 				issue.severity === 'error' &&
 				issue.code === 'chain_prompt_specific_number' &&
-				['id', 'title'].includes(issue.field)
+				issue.field === 'title'
 		)
 	)
 ) {
-	fail('Deterministic checks did not flag prompt-specific numbers in chain id/title.');
+	fail(
+		'Deterministic checks did not flag prompt-specific numbers in the learner-facing chain title.'
+	);
+}
+
+const collisionSafeNumericIdIssues = pipelineModule.deterministicCandidateIssues({
+	sourceDocumentId: 'aqa-84632h-qp-jun24',
+	questions: [
+		{
+			sourceQuestionRef: '02.3',
+			commandWord: 'Calculate',
+			response: { kind: 'lines' },
+			markSchemeItems: [{ itemType: 'mark', text: 'Uses the correct equation.' }],
+			answerChain: {
+				id: 'physics-chain-aqa-84632h-qp-jun24-02-3-work-force-calculation',
+				title: 'Force calculation',
+				canonicalChainText: 'select equation -> rearrange -> calculate force',
+				summary: 'Rearrange before calculating.',
+				steps: [
+					{
+						stepText: 'Select equation',
+						stepRole: 'calculation',
+						explanation: null,
+						commonOmission: null,
+						markSchemeItemIndexes: [0]
+					}
+				]
+			}
+		}
+	]
+});
+if (
+	collisionSafeNumericIdIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.code === 'chain_prompt_specific_number' && issue.field === 'answerChain.id'
+		)
+	)
+) {
+	fail(
+		'Numeric specificity checks treated a collision-safe machine chain id as learner-facing text.'
+	);
 }
 
 const withdrawnStatisticsIssues = pipelineModule.deterministicCandidateIssues({
@@ -6727,6 +7629,37 @@ if (
 	fail('Deterministic checks did not flag a diagram-required prompt with only answer lines.');
 }
 
+const indirectGraphPlotReferenceIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '03.1',
+				commandWord: 'Describe',
+				marks: 6,
+				promptText:
+					'The student plotted a graph of resistance against wire length. Describe a method the student could have used to collect the data needed to plot the graph.',
+				response: { kind: 'lines', count: 14 },
+				markSchemeItems: [{ itemType: 'mark', text: 'Describes a valid method.' }],
+				markChecklist: [{ text: 'Describes a valid method.', markSchemeItemIndexes: [0] }],
+				modelAnswer: { answerText: 'Measure current and potential difference at several lengths.' }
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	indirectGraphPlotReferenceIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'diagram_response_surface_missing')
+	)
+) {
+	fail(
+		'Deterministic checks mistook an indirect reference to plotting for a learner drawing task.',
+		{
+			indirectGraphPlotReferenceIssues
+		}
+	);
+}
+
 const drawingBoxDiagramResponseIssues = pipelineModule.deterministicCandidateIssues(
 	{
 		questions: [
@@ -6786,6 +7719,63 @@ if (
 ) {
 	fail('Deterministic checks rejected a valid drawing-box grid response.', {
 		drawingGridResponseIssues
+	});
+}
+
+const blankPunnettSquareResponseIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '06.3',
+				commandWord: 'Complete',
+				marks: 2,
+				promptText: 'Complete a Punnett square to show the possible genotypes of the offspring.',
+				response: {
+					kind: 'drawing-box',
+					label: 'Punnett square working area'
+				},
+				markSchemeItems: [{ itemType: 'mark', text: 'Punnett square completed correctly.' }],
+				markChecklist: [
+					{ text: 'Shows all possible offspring genotypes.', markSchemeItemIndexes: [0] }
+				]
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	blankPunnettSquareResponseIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'drawing_grid_metadata_missing')
+	)
+) {
+	fail('Deterministic checks mistook a named Punnett-square task for a printed grid.', {
+		blankPunnettSquareResponseIssues
+	});
+}
+
+const missingPrintedGridMetadataIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '09.3',
+				commandWord: 'Complete',
+				marks: 2,
+				promptText: 'Complete the following printed grid.',
+				response: { kind: 'drawing-box', label: 'Grid answer' },
+				markSchemeItems: [{ itemType: 'mark', text: 'Grid completed correctly.' }],
+				markChecklist: [{ text: 'Completes the grid.', markSchemeItemIndexes: [0] }]
+			}
+		]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	!missingPrintedGridMetadataIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'drawing_grid_metadata_missing')
+	)
+) {
+	fail('Deterministic checks did not flag an explicit printed grid without metadata.', {
+		missingPrintedGridMetadataIssues
 	});
 }
 
@@ -7906,6 +8896,112 @@ if (
 ) {
 	fail('Import normalization should add empty missingStepIndexes for common weak answers.');
 }
+
+const sourceVerbatimTrailingSetupIssues = pipelineModule.deterministicCandidateIssues({
+	questions: [
+		{
+			sourceQuestionRef: '07.1',
+			promptText:
+				'Explain what happens to calcium atoms and to chlorine atoms when calcium reacts with chlorine to produce calcium chloride.',
+			stemBlocks: [
+				{
+					kind: 'paragraph',
+					text: 'Calcium reacts with chlorine to produce calcium chloride.'
+				}
+			],
+			promptBlocks: [
+				{
+					kind: 'paragraph',
+					text: 'Explain what happens to calcium atoms and to chlorine atoms when calcium reacts with chlorine to produce calcium chloride.'
+				}
+			],
+			response: { kind: 'lines', lineCount: 4 },
+			markSchemeItems: [{ itemType: 'mark', marks: 1, text: 'Calcium loses electrons.' }],
+			markChecklist: [{ text: 'Explains electron transfer.', markSchemeItemIndexes: [0] }]
+		}
+	]
+});
+if (
+	sourceVerbatimTrailingSetupIssues.some((finding) =>
+		finding.issues.some((issue) => issue.code === 'render_block_duplicate_text')
+	)
+) {
+	fail(
+		'Duplicate-render checks must retain a source-verbatim marked instruction that refers back to a stem at its end.',
+		sourceVerbatimTrailingSetupIssues
+	);
+}
+
+const missingModelAnswerConfidenceQuestion = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '02.2',
+	marks: 2,
+	extractionConfidence: 0.98,
+	response: { kind: 'lines', lineCount: 2 },
+	modelAnswer: {
+		answerText: 'A source-grounded written answer.',
+		confidence: null,
+		needsHumanReview: false
+	}
+});
+if (
+	missingModelAnswerConfidenceQuestion.modelAnswer?.confidence !== null ||
+	missingModelAnswerConfidenceQuestion.modelAnswer?.answerText !==
+		'A source-grounded written answer.'
+) {
+	fail(
+		'Import normalization must preserve a missing model-answer confidence for fail-closed audit instead of inventing provenance.',
+		missingModelAnswerConfidenceQuestion
+	);
+}
+
+const missingModelAnswerConfidenceIssues = pipelineModule.deterministicCandidateIssues(
+	{
+		questions: [missingModelAnswerConfidenceQuestion]
+	},
+	{ includeAnswerChainIssues: false }
+);
+if (
+	!missingModelAnswerConfidenceIssues.some((finding) =>
+		finding.issues.some(
+			(issue) => issue.code === 'written_response_model_answer_missing_confidence'
+		)
+	)
+) {
+	fail(
+		'Missing written-response model-answer confidence should fail deterministic import audit.',
+		missingModelAnswerConfidenceIssues
+	);
+}
+
+const arraySpecRefQuestion = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '02.2',
+	specRef: ['6.2.1.4', 'RPA16'],
+	response: { kind: 'none' },
+	modelAnswer: null
+});
+if (arraySpecRefQuestion.specRef !== null) {
+	fail(
+		'Out-of-contract specification-reference arrays must be withheld rather than promoted to reviewed compound mapping evidence.',
+		arraySpecRefQuestion
+	);
+}
+
+const invalidModelAnswerConfidenceQuestion = pipelineModule.normalizeExtractedQuestionForImport({
+	sourceQuestionRef: '02.3',
+	extractionConfidence: 0.98,
+	response: { kind: 'lines', lineCount: 2 },
+	modelAnswer: {
+		answerText: 'Another source-grounded written answer.',
+		confidence: 1.5,
+		needsHumanReview: false
+	}
+});
+if (invalidModelAnswerConfidenceQuestion.modelAnswer?.confidence !== 1.5) {
+	fail(
+		'Import normalization must not hide an invalid non-null model-answer confidence from strict audit.',
+		invalidModelAnswerConfidenceQuestion
+	);
+}
 if (
 	pipelineModule.positiveMarkSchemeItem({
 		itemType: 'guidance',
@@ -8010,6 +9106,90 @@ if (
 	fail(
 		'Solvability context omitted visible table or target answer-key evidence.',
 		solvabilityContext
+	);
+}
+
+const deduplicatedPriorContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		sourceDocument: { id: 'shared-source-paper' },
+		questions: [
+			{
+				sourceQuestionRef: '01.1a',
+				parentSourceQuestionRef: '01',
+				displayOrder: 1,
+				stemBlocks: [
+					{ kind: 'paragraph', label: 'Shared source', text: 'The shared source text.' },
+					{ kind: 'figure', label: 'Shared Figure', assetId: 'shared-figure' },
+					{ kind: 'paragraph', label: 'Extract A', text: 'A deliberately repeated line.' }
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Answer the first prompt.' }],
+				response: { kind: 'lines', count: 1 },
+				assets: [
+					{
+						id: 'shared-figure',
+						sourceLabel: 'Shared Figure',
+						filePath: 'tmp/shared-figure.png'
+					}
+				],
+				markSchemeItems: [{ itemType: 'mark', text: 'First answer.' }]
+			},
+			{
+				sourceQuestionRef: '01.1b',
+				parentSourceQuestionRef: '01',
+				displayOrder: 2,
+				stemBlocks: [
+					{ kind: 'paragraph', label: 'Shared source', text: 'The shared source text.' },
+					{ kind: 'figure', label: 'Shared Figure', assetId: 'shared-figure' },
+					{ kind: 'paragraph', label: 'Extract B', text: 'A deliberately repeated line.' },
+					{ kind: 'figure', label: 'Target Figure', assetId: 'target-figure' }
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Answer the distinct target prompt.' }],
+				response: { kind: 'lines', count: 2 },
+				assets: [
+					{
+						id: 'shared-figure',
+						sourceLabel: 'Shared Figure',
+						filePath: 'tmp/shared-figure.png'
+					},
+					{
+						id: 'target-figure',
+						sourceLabel: 'Target Figure',
+						filePath: 'tmp/target-figure.png'
+					}
+				],
+				markSchemeItems: [{ itemType: 'mark', text: 'Target answer.' }]
+			}
+		]
+	},
+	'01.1b',
+	{ attachImages: false }
+);
+const priorDedupSections = deduplicatedPriorContext.studentVisibleContext.sections;
+const priorDedupText = JSON.stringify(priorDedupSections);
+if (
+	priorDedupSections[0]?.blocks?.stem?.length !== 3 ||
+	priorDedupSections[1]?.blocks?.stem?.length !== 2 ||
+	(priorDedupText.match(/The shared source text\./g) ?? []).length !== 1 ||
+	(priorDedupText.match(/A deliberately repeated line\./g) ?? []).length !== 2 ||
+	!priorDedupText.includes('Answer the first prompt.') ||
+	!priorDedupText.includes('Answer the distinct target prompt.') ||
+	priorDedupSections[1]?.referencedAssets?.includes('Shared Figure') ||
+	!priorDedupSections[1]?.referencedAssets?.includes('Target Figure')
+) {
+	fail(
+		'Solvability prior-context assembly did not deduplicate exact shared support blocks while retaining distinct labelled repeats and prompts.',
+		deduplicatedPriorContext
+	);
+}
+const priorDedupMedia = deduplicatedPriorContext.studentVisibleContext.media;
+if (
+	priorDedupMedia.length !== 2 ||
+	priorDedupMedia.filter((media) => media.asset?.id === 'shared-figure').length !== 1 ||
+	priorDedupMedia.filter((media) => media.asset?.id === 'target-figure').length !== 1
+) {
+	fail(
+		'Solvability prior-context assembly did not deduplicate copied assets or retain a distinct target asset.',
+		priorDedupMedia
 	);
 }
 
@@ -8323,6 +9503,126 @@ const figureTwoMedia = numberedFigureContext.studentVisibleContext.media.find(
 );
 if (figureTwoMedia?.asset?.sourceLabel !== 'Figure 2') {
 	fail('Solvability media selection cross-matched numbered figure assets.', figureTwoMedia);
+}
+
+const hiddenOverlayAssetContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '04.1a',
+				promptText: 'Compare the two extracts.',
+				selfContainment: {
+					requiresAssets: true,
+					requiredAssetLabels: ['Extract A', 'Extract B'],
+					requiredSourceCount: 2
+				},
+				stemBlocks: [{ kind: 'paragraph', text: 'Read the extracts.' }],
+				promptBlocks: [{ kind: 'paragraph', text: 'Compare the two extracts.' }],
+				response: { kind: 'lines', count: 20 },
+				assets: [
+					{ id: 'extract-a', sourceLabel: 'Extract A', filePath: 'tmp/extract-a.png' },
+					{ id: 'extract-b', sourceLabel: 'Extract B', filePath: 'tmp/extract-b.png' }
+				],
+				markSchemeItems: [{ itemType: 'mark', text: 'Compares both extracts.' }]
+			}
+		]
+	},
+	'04.1a',
+	{ attachImages: false }
+);
+if (
+	hiddenOverlayAssetContext.studentVisibleContext.media.length !== 0 ||
+	hiddenOverlayAssetContext.targetQuestion.selfContainment?.requiredSourceCount !== 2
+) {
+	fail(
+		'Solvability context must not expose source assets hidden by an overlay, while retaining declared source requirements for fail-closed judging.',
+		hiddenOverlayAssetContext
+	);
+}
+
+const referencedOverlayAssetContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '04.1a',
+				promptText: 'Compare the two extracts.',
+				stemBlocks: [
+					{ kind: 'figure', assetId: 'extract-a' },
+					{ kind: 'figure', assetId: 'extract-b' }
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Compare the two extracts.' }],
+				response: { kind: 'lines', count: 20 },
+				assets: [
+					{ id: 'extract-a', sourceLabel: 'Extract A', filePath: 'tmp/extract-a.png' },
+					{ id: 'extract-b', sourceLabel: 'Extract B', filePath: 'tmp/extract-b.png' }
+				],
+				markSchemeItems: [{ itemType: 'mark', text: 'Compares both extracts.' }]
+			}
+		]
+	},
+	'04.1a',
+	{ attachImages: false }
+);
+if (
+	referencedOverlayAssetContext.studentVisibleContext.media.length !== 2 ||
+	!referencedOverlayAssetContext.studentVisibleContext.media.every((media) => media.present)
+) {
+	fail(
+		'Exactly referenced overlay source assets should remain available to solvability judging.',
+		referencedOverlayAssetContext
+	);
+}
+
+const pageSpecificAssetContext = pipelineModule.buildLearnerVisibleQuestionContext(
+	{
+		questions: [
+			{
+				sourceQuestionRef: '05.1a',
+				stemBlocks: [
+					{
+						kind: 'figure',
+						assetLabel: 'Extract 1 from: Example Play',
+						assetId: 'extract-1-page-1'
+					},
+					{
+						kind: 'figure',
+						assetLabel: 'Extract 1 from: Example Play — continuation',
+						assetId: 'extract-1-page-2'
+					}
+				],
+				promptBlocks: [{ kind: 'paragraph', text: 'Compare the complete extract.' }],
+				response: { kind: 'lines', count: 20 },
+				assets: [
+					{
+						id: 'extract-1-page-1',
+						sourceLabel: 'Extract 1 from: Example Play',
+						filePath: 'tmp/extract-1-page-1.png'
+					},
+					{
+						id: 'extract-1-page-2',
+						sourceLabel: 'Extract 1 from: Example Play — continuation',
+						filePath: 'tmp/extract-1-page-2.png'
+					}
+				],
+				markSchemeItems: [{ itemType: 'mark', text: 'Uses both pages.' }]
+			}
+		]
+	},
+	'05.1a',
+	{ attachImages: false }
+);
+const pageSpecificMedia = pageSpecificAssetContext.studentVisibleContext.media;
+if (
+	pageSpecificMedia.length !== 2 ||
+	pageSpecificMedia[0]?.label !== 'Extract 1 from: Example Play' ||
+	pageSpecificMedia[0]?.asset?.id !== 'extract-1-page-1' ||
+	pageSpecificMedia[1]?.label !== 'Extract 1 from: Example Play — continuation' ||
+	pageSpecificMedia[1]?.asset?.id !== 'extract-1-page-2'
+) {
+	fail(
+		'Page-specific source labels should prefer exact assets instead of cross-matching every shared label prefix.',
+		pageSpecificMedia
+	);
 }
 
 const multiPageFigureContext = pipelineModule.buildLearnerVisibleQuestionContext(
@@ -8687,12 +9987,68 @@ const codexIllustrationSingleDryRun = JSON.parse(
 		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
 		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
 		'--source-document-id=aqa-test-qp-jun26',
-		'--skip-solvability',
 		'--import',
 		'--chain-illustration-max-chains=7',
 		'--dry-run'
 	])
 );
+const codexResumeRejectedPhaseDryRun = JSON.parse(
+	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
+		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
+		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
+		'--source-document-id=aqa-test-qp-jun26',
+		'--resume-passed-phases',
+		'--dry-run'
+	])
+);
+const resumeReplaceablePhaseScripts = [
+	'scripts/run-codex-pdf-extraction.mjs',
+	'scripts/run-codex-extraction-judge.mjs',
+	'scripts/run-codex-answer-chains.mjs',
+	'scripts/run-codex-solvability-judge.mjs'
+];
+for (const scriptPath of resumeReplaceablePhaseScripts) {
+	const command = (codexResumeRejectedPhaseDryRun.commands ?? []).find(
+		(candidate) => candidate[0] === scriptPath
+	);
+	if (!command?.includes('--force')) {
+		fail('An exact-resume retry could still collide with the rejected phase work directory.', {
+			scriptPath,
+			codexResumeRejectedPhaseDryRun
+		});
+	}
+}
+if (
+	codexResumeRejectedPhaseDryRun.plan?.resumePassedPhases !== true ||
+	codexResumeRejectedPhaseDryRun.plan?.replaceRejectedPhaseArtifacts !== true
+) {
+	fail(
+		'Exact-resume planning did not declare rejected-phase replacement.',
+		codexResumeRejectedPhaseDryRun
+	);
+}
+const codexRerunPassedPhaseDryRun = JSON.parse(
+	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
+		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
+		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
+		'--source-document-id=aqa-test-qp-jun26',
+		'--resume-passed-phases',
+		'--rerun-passed-phases',
+		'--dry-run'
+	])
+);
+if (
+	codexRerunPassedPhaseDryRun.plan?.resumePassedPhases !== false ||
+	codexRerunPassedPhaseDryRun.plan?.replaceRejectedPhaseArtifacts !== false ||
+	(codexRerunPassedPhaseDryRun.commands ?? []).some(
+		(command) => resumeReplaceablePhaseScripts.includes(command[0]) && command.includes('--force')
+	)
+) {
+	fail(
+		'--rerun-passed-phases should opt out of implicit resume replacement unless --force is explicit.',
+		codexRerunPassedPhaseDryRun
+	);
+}
 const codexSingleCommands = codexIllustrationSingleDryRun.commands ?? [];
 const codexSingleImageIndex = codexSingleCommands.findIndex(
 	(command) => command[0] === 'scripts/generate-chain-illustrations.mjs'
@@ -8729,7 +10085,6 @@ const codexIllustrationSingleCompatibilityDryRun = JSON.parse(
 		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
 		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
 		'--source-document-id=aqa-test-qp-jun26',
-		'--skip-solvability',
 		'--import',
 		'--generate-chain-illustrations',
 		'--dry-run'
@@ -8746,7 +10101,6 @@ const codexIllustrationSingleSkippedDryRun = JSON.parse(
 		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
 		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
 		'--source-document-id=aqa-test-qp-jun26',
-		'--skip-solvability',
 		'--import',
 		'--skip-chain-illustrations',
 		'--dry-run'

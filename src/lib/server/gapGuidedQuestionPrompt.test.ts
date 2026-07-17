@@ -9,10 +9,10 @@ describe('gap guided question copy', () => {
 				target: 'Memory cells are produced.',
 				next: 'Antibodies are produced rapidly.'
 			})
-		).toBe('Add the step immediately before: antibodies are produced rapidly');
+		).toBe('What must happen immediately before antibodies are produced rapidly?');
 	});
 
-	it('anchors both sides of a missing middle step', () => {
+	it('asks a direct causal question instead of rendering an answer blank', () => {
 		expect(
 			gapGuidedQuestionPrompt({
 				kind: 'missing',
@@ -21,7 +21,7 @@ describe('gap guided question copy', () => {
 				next: 'Less aerobic respiration occurs.'
 			})
 		).toBe(
-			'Complete the missing link: heart pumps less blood → ? → less aerobic respiration occurs'
+			'What causal step connects “heart pumps less blood” to “less aerobic respiration occurs”?'
 		);
 	});
 
@@ -31,6 +31,6 @@ describe('gap guided question copy', () => {
 				kind: 'next',
 				target: 'Less oxygen reaches the muscles.'
 			})
-		).toBe('Add the next step after: less oxygen reaches the muscles');
+		).toBe('What happens immediately after less oxygen reaches the muscles?');
 	});
 });

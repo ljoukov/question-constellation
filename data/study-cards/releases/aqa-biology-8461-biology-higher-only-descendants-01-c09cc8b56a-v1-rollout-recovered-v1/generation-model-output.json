@@ -1,0 +1,227 @@
+{
+  "cards": [
+    {
+      "id": "aqa-gcse-biology-8461-v1-4-3-2-hybridoma-production",
+      "conceptKey": "aqa-gcse-biology-8461-hybridoma-cloning-monoclonal-antibodies",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-3",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-3-2",
+      "kind": "process",
+      "visualCue": "🔬",
+      "front": "How are monoclonal antibody-producing clones made using mouse lymphocytes and tumour cells?",
+      "back": "Stimulate mouse lymphocytes to make a particular antibody, combine them with a particular kind of tumour cell to make hybridomas, then clone single hybridoma cells so many identical cells all make the same antibody.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Mouse lymphocytes are stimulated and combined with tumour cells to make hybridomas. A single hybridoma is then cloned into identical cells that all produce the same antibody.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Stimulate mouse lymphocytes, combine them with tumour cells, then keep a mixture of different hybridomas so that different antibodies are made.",
+          "isCorrect": false,
+          "feedback": "Single hybridoma cells are cloned to produce identical cells that make the same antibody.",
+          "misconception": "mixed-hybridoma-clones"
+        },
+        {
+          "key": "b",
+          "text": "Stimulate mouse lymphocytes to make a particular antibody, combine them with a particular kind of tumour cell to make hybridomas, then clone single hybridoma cells so many identical cells all make the same antibody.",
+          "isCorrect": true,
+          "feedback": "Correct. This follows the stated sequence from stimulated lymphocytes to identical antibody-producing hybridoma cells.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Stimulate tumour cells to make the particular antibody, then clone the tumour cells without combining them with lymphocytes.",
+          "isCorrect": false,
+          "feedback": "The mouse lymphocytes are stimulated to make the antibody and are then combined with tumour cells.",
+          "misconception": "reversed-cell-roles"
+        },
+        {
+          "key": "d",
+          "text": "Combine lymphocytes with tumour cells to make hybridomas, but do not clone single hybridoma cells because each hybridoma should make a different antibody.",
+          "isCorrect": false,
+          "feedback": "Single hybridoma cells are cloned, and the resulting identical cells all make the same antibody.",
+          "misconception": "no-single-cell-cloning"
+        }
+      ],
+      "sourceExcerpt": "They are produced by stimulating mouse lymphocytes to make a\nparticular antibody. The lymphocytes are combined with a particular kind\nof tumour cell to make a cell called a hybridoma cell. The hybridoma\ncell can both divide and make the antibody. Single hybridoma cells\nare cloned to produce many identical cells that all produce the same\nantibody.",
+      "sourceLocator": "Official PDF pages 34-34; 4.3.2 Monoclonal antibodies (biology only) (HT only)"
+    },
+    {
+      "id": "aqa-gcse-biology-8461-v1-4-5-3-6-ivf-treatment-sequence",
+      "conceptKey": "aqa-gcse-biology-8461-ivf-hormones-fertilisation-embryo-transfer",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-5",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-5-3-6",
+      "kind": "process",
+      "visualCue": "🧬",
+      "front": "What is the sequence of IVF treatment from hormone treatment to embryo insertion?",
+      "back": "Give the mother FSH and LH to mature several eggs; collect the eggs and fertilise them with the father’s sperm in the laboratory; let them develop into embryos; insert one or two into the uterus when they are tiny balls of cells.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The sequence is hormone stimulation, egg collection and laboratory fertilisation, embryo development, then insertion of one or two embryos at the tiny-ball-of-cells stage.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Collect the eggs before giving FSH and LH, then fertilise them in the laboratory and insert one or two embryos.",
+          "isCorrect": false,
+          "feedback": "FSH and LH are given first to stimulate the maturation of several eggs before collection.",
+          "misconception": "hormones-after-egg-collection"
+        },
+        {
+          "key": "b",
+          "text": "Give FSH and LH to mature several eggs, then insert the eggs into the uterus so fertilisation by the father’s sperm occurs there.",
+          "isCorrect": false,
+          "feedback": "In IVF, the collected eggs are fertilised by sperm in the laboratory.",
+          "misconception": "in-vivo-fertilisation-confusion"
+        },
+        {
+          "key": "c",
+          "text": "Give the mother FSH and LH to mature several eggs; collect the eggs and fertilise them with the father’s sperm in the laboratory; let them develop into embryos; insert one or two into the uterus when they are tiny balls of cells.",
+          "isCorrect": true,
+          "feedback": "Correct. It preserves the specified order and the one-or-two-embryo limit.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Give FSH and LH and fertilise the collected eggs in the laboratory, then insert the fertilised eggs before they develop into embryos.",
+          "isCorrect": false,
+          "feedback": "The fertilised eggs develop into embryos before one or two are inserted as tiny balls of cells.",
+          "misconception": "embryo-transfer-too-early"
+        }
+      ],
+      "sourceExcerpt": "IVF involves giving a mother FSH and LH to stimulate the maturation\nof several eggs.\n•\n• The eggs are collected from the mother and fertilised by sperm from\nthe father in the laboratory.\n•\n• The fertilised eggs develop into embryos.\n•\n• At the stage when they are tiny balls of cells, one or two embryos are\ninserted into the mother’s uterus (womb).",
+      "sourceLocator": "Official PDF pages 48-49; 4.5.3.6 The use of hormones to treat infertility (HT only)"
+    },
+    {
+      "id": "aqa-gcse-biology-8461-v1-4-5-3-7-thyroxine-negative-feedback",
+      "conceptKey": "aqa-gcse-biology-8461-thyroxine-roles-negative-feedback",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-5",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-5-3-7",
+      "kind": "fact",
+      "visualCue": "🌡️",
+      "front": "What are the stated roles of thyroxine, and how are its levels controlled?",
+      "back": "Thyroxine stimulates the basal metabolic rate, plays an important role in growth and development, and its levels are controlled by negative feedback.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The excerpt links thyroxine with basal metabolism, growth and development, and states that thyroxine levels are controlled by negative feedback.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Thyroxine stimulates the basal metabolic rate, plays an important role in growth and development, and its levels are controlled by negative feedback.",
+          "isCorrect": true,
+          "feedback": "Correct. This includes both stated roles and the stated control mechanism.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Thyroxine stimulates the basal metabolic rate and supports growth, but its levels are controlled by positive feedback.",
+          "isCorrect": false,
+          "feedback": "Thyroxine levels are controlled by negative feedback, not positive feedback.",
+          "misconception": "positive-feedback-confusion"
+        },
+        {
+          "key": "c",
+          "text": "Thyroxine reduces the basal metabolic rate, plays an important role in growth and development, and its levels are controlled by negative feedback.",
+          "isCorrect": false,
+          "feedback": "Thyroxine stimulates rather than reduces the basal metabolic rate.",
+          "misconception": "reversed-metabolic-effect"
+        },
+        {
+          "key": "d",
+          "text": "Thyroxine stimulates the basal metabolic rate but has no important role in growth and development; its levels are controlled by negative feedback.",
+          "isCorrect": false,
+          "feedback": "The stated role of thyroxine includes both growth and development.",
+          "misconception": "omitted-growth-development-role"
+        }
+      ],
+      "sourceExcerpt": "Thyroxine from the thyroid gland stimulates the basal metabolic rate. It\nplays an important role in growth and development.\nThyroxine levels are controlled by negative feedback.",
+      "sourceLocator": "Official PDF pages 48-49; 4.5.3.7 Negative feedback (HT only)"
+    },
+    {
+      "id": "aqa-gcse-biology-8461-v1-4-5-4-2-plant-hormone-uses",
+      "conceptKey": "aqa-gcse-biology-8461-auxin-ethene-gibberellin-uses",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-5",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-5-4-2",
+      "kind": "comparison",
+      "visualCue": "🌿",
+      "front": "What are the specified uses of auxins, ethene and gibberellins?",
+      "back": "Auxins are used as weed killers and rooting powders and to promote growth in tissue culture; ethene is used in the food industry to control fruit ripening during storage and transport; gibberellins can end seed dormancy, promote flowering and increase fruit size.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The list links auxins to weed killing, rooting powders and tissue-culture growth; ethene to fruit ripening during storage and transport; and gibberellins to ending dormancy, promoting flowering and increasing fruit size.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Auxins control fruit ripening during storage and transport; ethene is used for weed killing, rooting powders and tissue-culture growth; gibberellins can end seed dormancy, promote flowering and increase fruit size.",
+          "isCorrect": false,
+          "feedback": "This swaps auxin and ethene uses: fruit ripening is linked to ethene, while weed killing, rooting and tissue-culture growth are linked to auxins.",
+          "misconception": "auxin-ethene-use-swap"
+        },
+        {
+          "key": "b",
+          "text": "Auxins are used for weed killing, rooting powders and tissue-culture growth; ethene can end seed dormancy, promote flowering and increase fruit size; gibberellins control fruit ripening during storage and transport.",
+          "isCorrect": false,
+          "feedback": "This swaps ethene and gibberellin uses: ethene controls fruit ripening, while gibberellins have the listed dormancy, flowering and fruit-size uses.",
+          "misconception": "ethene-gibberellin-use-swap"
+        },
+        {
+          "key": "c",
+          "text": "Auxins can end seed dormancy, promote flowering and increase fruit size; ethene controls fruit ripening during storage and transport; gibberellins are used for weed killing, rooting powders and tissue-culture growth.",
+          "isCorrect": false,
+          "feedback": "This swaps auxin and gibberellin uses: the dormancy, flowering and fruit-size uses belong to gibberellins.",
+          "misconception": "auxin-gibberellin-use-swap"
+        },
+        {
+          "key": "d",
+          "text": "Auxins are used as weed killers and rooting powders and to promote growth in tissue culture; ethene is used in the food industry to control fruit ripening during storage and transport; gibberellins can end seed dormancy, promote flowering and increase fruit size.",
+          "isCorrect": true,
+          "feedback": "Correct. Each hormone is matched to its specified uses.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Plant growth hormones are used in agriculture and horticulture.\nAuxins are used:\n•\n• as weed killers\n•\n• as rooting powders\n•\n• for promoting growth in tissue culture.\nEthene is used in the food industry to control ripening of fruit during\nstorage and transport.\nGibberellins can be used to:\n•\n• end seed dormancy\n•\n• promote flowering\n•\n• increase fruit size.",
+      "sourceLocator": "Official PDF pages 48-49; 4.5.4.2 Use of plant hormones (HT only)"
+    },
+    {
+      "id": "aqa-gcse-biology-8461-v1-4-7-2-4-environmental-change-distribution",
+      "conceptKey": "aqa-gcse-biology-8461-environmental-change-species-distribution",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-2-4",
+      "kind": "cause-consequence",
+      "visualCue": "🌍",
+      "front": "Which listed environmental changes affect species distribution in an ecosystem, and what forms may those changes take?",
+      "back": "Temperature, water availability and atmospheric gas composition affect distribution; the changes may be seasonal, geographic or caused by human interaction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The listed variables are temperature, water availability and atmospheric gas composition. Their changes may be seasonal, geographic or caused by human interaction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Temperature, water availability and atmospheric gas composition affect distribution, but the changes must be caused by human interaction.",
+          "isCorrect": false,
+          "feedback": "The changes may also be seasonal or geographic; human interaction is one possible cause, not a requirement.",
+          "misconception": "human-caused-changes-only"
+        },
+        {
+          "key": "b",
+          "text": "Temperature, water availability and atmospheric gas composition affect distribution; the changes may be seasonal, geographic or caused by human interaction.",
+          "isCorrect": true,
+          "feedback": "Correct. This includes all three listed variables and preserves the possible forms of change.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Temperature and water availability affect distribution, but atmospheric gas composition does not; the changes may be seasonal, geographic or caused by human interaction.",
+          "isCorrect": false,
+          "feedback": "Atmospheric gas composition is explicitly included alongside temperature and water availability.",
+          "misconception": "omitted-atmospheric-gases"
+        }
+      ],
+      "sourceExcerpt": "Environmental changes affect the distribution of species in an\necosystem. These changes include:\n•\n• temperature\n•\n• availability of water\n•\n• composition of atmospheric gases.\nThe changes may be seasonal, geographic or caused by human\ninteraction.",
+      "sourceLocator": "Official PDF pages 69-69; 4.7.2.4 Impact of environmental change (biology only) (HT only)"
+    }
+  ]
+}

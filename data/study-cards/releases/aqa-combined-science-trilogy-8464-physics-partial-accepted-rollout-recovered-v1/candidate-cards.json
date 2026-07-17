@@ -1,0 +1,514 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-955b11dcf2-aqa-8464-physics-6-5-4-2-3-newtons-third-law-force-pair",
+      "conceptKey": "aqa-8464-955b11dcf2-aqa-8464-physics-newtons-third-law-equal-opposite-forces",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-3",
+      "kind": "fact",
+      "visualCue": "🔗",
+      "front": "When two objects interact, how are the forces they exert on each other related?",
+      "back": "They are equal in magnitude and opposite in direction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Newton’s Third Law states that interacting objects exert forces on each other that are equal and opposite.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They are equal in magnitude and opposite in direction.",
+          "isCorrect": true,
+          "feedback": "The interaction forces are equal and opposite.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They are equal in magnitude and act in the same direction.",
+          "isCorrect": false,
+          "feedback": "Their directions are opposite, not the same.",
+          "misconception": "same-direction-force-pair"
+        },
+        {
+          "key": "c",
+          "text": "They are unequal in magnitude and act in opposite directions.",
+          "isCorrect": false,
+          "feedback": "The law states equality as well as opposition.",
+          "misconception": "unequal-force-pair"
+        },
+        {
+          "key": "d",
+          "text": "Only one object exerts a force.",
+          "isCorrect": false,
+          "feedback": "The two objects exert forces on each other.",
+          "misconception": "one-sided-interaction-force"
+        }
+      ],
+      "sourceExcerpt": "Whenever two objects interact, the forces they exert on each other\nare equal and opposite.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.2.3 Newton's Third Law"
+    },
+    {
+      "id": "aqa-8464-7c9085df32-aqa-8464-physics-6-5-4-3-1-stopping-distance-components",
+      "conceptKey": "aqa-8464-7c9085df32-aqa-8464-physics-stopping-distance-thinking-plus-braking-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-1",
+      "kind": "formula",
+      "visualCue": "🚗",
+      "front": "Which two distances make up a vehicle’s stopping distance?",
+      "back": "Thinking distance + braking distance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Thinking distance is travelled during the driver’s reaction time; braking distance is travelled under the braking force.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Thinking distance + braking distance.",
+          "isCorrect": true,
+          "feedback": "Stopping distance is the sum of these two distances.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Thinking distance + braking time.",
+          "isCorrect": false,
+          "feedback": "The definition names braking distance, not braking time.",
+          "misconception": "time-distance-mixing"
+        },
+        {
+          "key": "c",
+          "text": "Braking distance only.",
+          "isCorrect": false,
+          "feedback": "This omits the thinking distance travelled during reaction time.",
+          "misconception": "omits-thinking-distance"
+        }
+      ],
+      "sourceExcerpt": "The stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance).",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.1 Stopping distance"
+    },
+    {
+      "id": "aqa-8464-befd51184a-aqa-8464-physics-6-5-4-3-2-driver-reaction-factors",
+      "conceptKey": "aqa-8464-befd51184a-aqa-8464-physics-driver-reaction-time-affecting-factors",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-2",
+      "kind": "fact",
+      "visualCue": "🏃",
+      "front": "According to AQA, which factors can affect a driver’s reaction time or ability to react?",
+      "back": "Tiredness, drugs and alcohol; distractions may also affect the driver’s ability to react.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Tiredness, drugs and alcohol can affect reaction time, while distractions may affect the driver’s ability to react.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Tiredness, drugs and alcohol; distractions may also affect the driver’s ability to react.",
+          "isCorrect": true,
+          "feedback": "These are the reaction factors identified in the passage.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Wet or icy roads, and poor brakes or tyres.",
+          "isCorrect": false,
+          "feedback": "These are not among the reaction factors in the cited statement.",
+          "misconception": "braking-factors-for-reaction-time"
+        },
+        {
+          "key": "c",
+          "text": "Vehicle speed and braking force only.",
+          "isCorrect": false,
+          "feedback": "These are not the reaction-time factors listed here.",
+          "misconception": "vehicle-factors-for-reaction-time"
+        }
+      ],
+      "sourceExcerpt": "A driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.2 Reaction time"
+    },
+    {
+      "id": "aqa-8464-33cbec4d1f-aqa-8464-physics-6-5-4-3-3-braking-distance-conditions",
+      "conceptKey": "aqa-8464-33cbec4d1f-aqa-8464-physics-road-weather-vehicle-condition-braking-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-3",
+      "kind": "cause-consequence",
+      "visualCue": "🚗",
+      "front": "Which specified conditions can affect a vehicle’s braking distance?",
+      "back": "Adverse road and weather conditions, plus poor brakes or tyres.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Wet or icy conditions are examples of adverse road conditions; poor vehicle condition is limited to its brakes or tyres.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Adverse road and weather conditions, plus poor brakes or tyres.",
+          "isCorrect": true,
+          "feedback": "These are the specified environmental and vehicle-condition factors.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Tiredness, drugs, alcohol and distractions.",
+          "isCorrect": false,
+          "feedback": "Those are not the road, weather or vehicle-condition factors named here.",
+          "misconception": "reaction-factors-for-braking-distance"
+        },
+        {
+          "key": "c",
+          "text": "Dry roads and well-maintained brakes and tyres.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated adverse-road and poor-vehicle conditions.",
+          "misconception": "favourable-conditions-lengthen-braking"
+        }
+      ],
+      "sourceExcerpt": "The braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.3 Factors affecting braking distance 1"
+    },
+    {
+      "id": "aqa-8464-d86a40e656-aqa-8464-physics-6-5-4-3-4-braking-energy-change",
+      "conceptKey": "aqa-8464-d86a40e656-aqa-8464-physics-braking-kinetic-energy-temperature-change",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-4",
+      "kind": "cause-consequence",
+      "visualCue": "⚙️",
+      "front": "When a vehicle’s brakes are applied, what happens to the vehicle’s kinetic energy and the brakes’ temperature?",
+      "back": "The vehicle’s kinetic energy decreases and the brakes’ temperature increases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Friction between the brakes and wheel does work that reduces the vehicle’s kinetic energy, while the brakes’ temperature increases.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The vehicle’s kinetic energy decreases and the brakes’ temperature increases.",
+          "isCorrect": true,
+          "feedback": "This is the energy and temperature change described during braking.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Both the vehicle’s kinetic energy and the brakes’ temperature decrease.",
+          "isCorrect": false,
+          "feedback": "Kinetic energy decreases, but brake temperature increases.",
+          "misconception": "brake-temperature-decreases"
+        },
+        {
+          "key": "c",
+          "text": "The vehicle’s kinetic energy increases and the brakes’ temperature decreases.",
+          "isCorrect": false,
+          "feedback": "Both changes are reversed.",
+          "misconception": "reversed-braking-energy-changes"
+        },
+        {
+          "key": "d",
+          "text": "The vehicle’s kinetic energy stays constant and the brakes’ temperature increases.",
+          "isCorrect": false,
+          "feedback": "The friction force reduces the vehicle’s kinetic energy.",
+          "misconception": "constant-kinetic-energy-during-braking"
+        }
+      ],
+      "sourceExcerpt": "When a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.4 Factors affecting braking distance 2"
+    },
+    {
+      "id": "aqa-8464-9b68727484-aqa-8464-physics-6-6-1-wave-frequency-definition",
+      "conceptKey": "aqa-8464-9b68727484-aqa-8464-physics-wave-frequency-waves-per-second",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1",
+      "kind": "definition",
+      "visualCue": "🌊",
+      "front": "What is the frequency of a wave?",
+      "back": "The number of waves passing a point each second.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Frequency counts how many waves pass a particular point each second.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The number of waves passing a point each second.",
+          "isCorrect": true,
+          "feedback": "This is the definition of wave frequency.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The maximum displacement from the undisturbed position.",
+          "isCorrect": false,
+          "feedback": "That describes amplitude, not frequency.",
+          "misconception": "amplitude-for-frequency"
+        },
+        {
+          "key": "c",
+          "text": "The distance between equivalent points on adjacent waves.",
+          "isCorrect": false,
+          "feedback": "That describes wavelength, not frequency.",
+          "misconception": "wavelength-for-frequency"
+        },
+        {
+          "key": "d",
+          "text": "The time taken for one wave to pass a point.",
+          "isCorrect": false,
+          "feedback": "Frequency is a number of waves per second, not a time.",
+          "misconception": "period-for-frequency"
+        }
+      ],
+      "sourceExcerpt": "The amplitude of a wave is the maximum displacement of a point\non a wave away from its undisturbed position.\nThe wavelength of a wave is the distance from a point on one wave\nto the equivalent point on the adjacent wave.\nThe frequency of a wave is the number of waves passing a point\neach second.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.1 Waves in air, fluids and solids"
+    },
+    {
+      "id": "aqa-8464-f4686243a5-aqa-8464-physics-6-6-2-electromagnetic-spectrum-order",
+      "conceptKey": "aqa-8464-f4686243a5-aqa-8464-physics-electromagnetic-spectrum-long-to-short-wavelength",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2",
+      "kind": "structure",
+      "visualCue": "🌈",
+      "front": "What is the order of the electromagnetic spectrum from long to short wavelength, equivalently low to high frequency?",
+      "back": "Radio, microwave, infrared, visible light (red to violet), ultraviolet, X-rays and gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This sequence runs from long to short wavelength, which is also the direction from low to high frequency.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Radio, microwave, infrared, visible light (red to violet), ultraviolet, X-rays and gamma rays.",
+          "isCorrect": true,
+          "feedback": "This is the stated long-to-short-wavelength order.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Gamma rays, X-rays, ultraviolet, visible light (violet to red), infrared, microwave and radio.",
+          "isCorrect": false,
+          "feedback": "This is the reverse, running from short to long wavelength.",
+          "misconception": "electromagnetic-spectrum-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Microwave, radio, infrared, visible light (red to violet), ultraviolet, X-rays and gamma rays.",
+          "isCorrect": false,
+          "feedback": "Radio comes before microwave in the stated order.",
+          "misconception": "radio-microwave-order-swapped"
+        },
+        {
+          "key": "d",
+          "text": "Radio, microwave, infrared, ultraviolet, visible light (red to violet), X-rays and gamma rays.",
+          "isCorrect": false,
+          "feedback": "Visible light comes before ultraviolet in the stated order.",
+          "misconception": "visible-ultraviolet-order-swapped"
+        }
+      ],
+      "sourceExcerpt": "The waves that form the electromagnetic spectrum are grouped in\nterms of their wavelength and their frequency. Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2 Electromagnetic waves"
+    },
+    {
+      "id": "aqa-8464-db52375d36-aqa-8464-physics-6-6-2-2-infrared-surface-practical",
+      "conceptKey": "aqa-8464-db52375d36-aqa-8464-physics-infrared-absorption-radiation-surface-nature",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-2",
+      "kind": "practical",
+      "visualCue": "🌡️",
+      "front": "What relationship is investigated in AQA required practical activity 21?",
+      "back": "How infrared absorption or radiation by a surface depends on the nature of that surface.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The practical investigates whether the amount of infrared radiation absorbed or radiated depends on the nature of the surface.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "How infrared absorption or radiation by a surface depends on the nature of that surface.",
+          "isCorrect": true,
+          "feedback": "Surface nature is linked to the amount absorbed or radiated.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "How infrared wavelength depends on the distance between the source and surface.",
+          "isCorrect": false,
+          "feedback": "Distance is not the stated surface variable in this practical.",
+          "misconception": "distance-as-infrared-practical-variable"
+        },
+        {
+          "key": "c",
+          "text": "How the speed of infrared radiation depends on surface temperature.",
+          "isCorrect": false,
+          "feedback": "The practical concerns the amount absorbed or radiated, not infrared speed.",
+          "misconception": "infrared-speed-instead-of-radiation-amount"
+        }
+      ],
+      "sourceExcerpt": "Required practical activity 21: investigate how the amount of infrared radiation absorbed or\nradiated by a surface depends on the nature of that surface.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2.2 Properties of electromagnetic waves 1"
+    },
+    {
+      "id": "aqa-8464-5830312136-aqa-8464-physics-6-6-2-3-ionising-wave-hazards",
+      "conceptKey": "aqa-8464-5830312136-aqa-8464-physics-x-rays-gamma-ionising-gene-mutation-cancer",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "☢️",
+      "front": "Which electromagnetic waves are identified as ionising radiation that can cause gene mutations and cancer?",
+      "back": "X-rays and gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "X-rays and gamma rays are identified as ionising radiation that can cause mutation of genes and cancer.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "X-rays and gamma rays.",
+          "isCorrect": true,
+          "feedback": "These are the ionising waves identified in the passage.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Ultraviolet waves and X-rays.",
+          "isCorrect": false,
+          "feedback": "Ultraviolet is linked to premature skin ageing and skin-cancer risk, but the cited ionising pair is X-rays and gamma rays.",
+          "misconception": "ultraviolet-substituted-for-gamma"
+        },
+        {
+          "key": "c",
+          "text": "Microwaves and infrared waves.",
+          "isCorrect": false,
+          "feedback": "These are not the pair named in the ionising statement.",
+          "misconception": "lower-frequency-waves-labelled-ionising"
+        },
+        {
+          "key": "d",
+          "text": "All electromagnetic waves.",
+          "isCorrect": false,
+          "feedback": "The passage identifies a specific pair rather than making this claim about every electromagnetic wave.",
+          "misconception": "all-electromagnetic-waves-labelled-ionising"
+        }
+      ],
+      "sourceExcerpt": "Ultraviolet waves can cause skin to age prematurely and increase\nthe risk of skin cancer. X-rays and gamma rays are ionising\nradiation that can cause the mutation of genes and cancer.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2.3 Properties of electromagnetic waves 2"
+    },
+    {
+      "id": "aqa-8464-c27f96ba5f-aqa-8464-physics-6-6-2-4-microwave-applications",
+      "conceptKey": "aqa-8464-c27f96ba5f-aqa-8464-physics-microwaves-satellite-communications-cooking",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-4",
+      "kind": "fact",
+      "visualCue": "🌌",
+      "front": "Which type of electromagnetic wave is listed for both satellite communications and cooking food?",
+      "back": "Microwaves.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification lists satellite communications and cooking food as microwave applications.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Microwaves.",
+          "isCorrect": true,
+          "feedback": "Both applications are assigned to microwaves.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Radio waves.",
+          "isCorrect": false,
+          "feedback": "The cited applications are assigned to microwaves, not radio waves.",
+          "misconception": "radio-for-microwave-applications"
+        },
+        {
+          "key": "c",
+          "text": "Infrared.",
+          "isCorrect": false,
+          "feedback": "The cited applications are assigned to microwaves, not infrared.",
+          "misconception": "infrared-for-microwave-applications"
+        },
+        {
+          "key": "d",
+          "text": "Visible light.",
+          "isCorrect": false,
+          "feedback": "The cited applications are assigned to microwaves, not visible light.",
+          "misconception": "visible-light-for-microwave-applications"
+        }
+      ],
+      "sourceExcerpt": "• microwaves – satellite communications, cooking food",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2.4 Uses and applications of electromagnetic waves"
+    },
+    {
+      "id": "aqa-8464-aef6715b9e-aqa-8464-physics-6-7-1-permanent-induced-magnets",
+      "conceptKey": "aqa-8464-aef6715b9e-aqa-8464-physics-permanent-versus-induced-magnetism",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1",
+      "kind": "comparison",
+      "visualCue": "🧲",
+      "front": "What is the difference between a permanent magnet and an induced magnet, including what happens when an induced magnet is removed from the field?",
+      "back": "A permanent magnet produces its own magnetic field. An induced magnet becomes magnetic in a magnetic field and quickly loses most or all of its magnetism when removed.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An induced material becomes a magnet when placed in a magnetic field; after removal, it loses most or all of its magnetism quickly.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A permanent magnet produces its own magnetic field. An induced magnet becomes magnetic in a magnetic field and quickly loses most or all of its magnetism when removed.",
+          "isCorrect": true,
+          "feedback": "This correctly distinguishes permanent and induced magnetism.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An induced magnet produces its own field permanently; a permanent magnet is magnetic only while in an external field.",
+          "isCorrect": false,
+          "feedback": "This reverses the two descriptions.",
+          "misconception": "permanent-induced-magnets-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both types become magnetic only in an external field and lose their magnetism quickly when removed.",
+          "isCorrect": false,
+          "feedback": "That field-dependent behaviour is stated for an induced magnet, while a permanent magnet produces its own field.",
+          "misconception": "all-magnets-treated-as-induced"
+        }
+      ],
+      "sourceExcerpt": "A permanent magnet produces its own magnetic field. An induced\nmagnet is a material that becomes a magnet when it is placed in a\nmagnetic field. Induced magnetism always causes a force of\nattraction. When removed from the magnetic field an induced\nmagnet loses most/all of its magnetism quickly.",
+      "sourceLocator": "Official PDF pages 159-161; 6.7.1 Permanent and induced magnetism, magnetic forces and fields"
+    },
+    {
+      "id": "aqa-8464-5eff9fe3d3-aqa-8464-physics-6-7-2-electromagnet-definition",
+      "conceptKey": "aqa-8464-5eff9fe3d3-aqa-8464-physics-electromagnet-solenoid-iron-core",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2",
+      "kind": "definition",
+      "visualCue": "🔌",
+      "front": "What arrangement does AQA define as an electromagnet?",
+      "back": "A solenoid with an iron core.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Adding an iron core increases a solenoid’s magnetic-field strength; a solenoid with an iron core is an electromagnet.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A solenoid with an iron core.",
+          "isCorrect": true,
+          "feedback": "This is the stated definition of an electromagnet.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A solenoid without an iron core.",
+          "isCorrect": false,
+          "feedback": "The definition includes an iron core.",
+          "misconception": "coreless-solenoid-as-electromagnet"
+        },
+        {
+          "key": "c",
+          "text": "An iron core without a solenoid.",
+          "isCorrect": false,
+          "feedback": "An iron core alone does not match the stated solenoid-with-core definition.",
+          "misconception": "iron-core-alone-as-electromagnet"
+        }
+      ],
+      "sourceExcerpt": "Adding an iron core increases the strength of the\nmagnetic field of a solenoid. An electromagnet is a solenoid with an\niron core.",
+      "sourceLocator": "Official PDF pages 159-161; 6.7.2 The motor effect"
+    }
+  ]
+}

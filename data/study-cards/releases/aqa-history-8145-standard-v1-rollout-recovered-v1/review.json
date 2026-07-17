@@ -1,0 +1,660 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8145-321aa-manifest-destiny",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds direct recall of Manifest Destiny within westward expansion."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321aa-brigham-young-mormons",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the specified association between Brigham Young and the Mormons."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321aa-fort-laramie-1851",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links the Fort Laramie Treaty securely to 1851 and Plains conflict."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321aa-lincoln-jefferson-davis",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the two leaders specified in the Civil War background."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321aa-thirteenth-amendment",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the 13th Amendment as part of the Civil War aftermath."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ab-ruhr-occupation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the Ruhr occupation to Germany's post-war problems."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ab-stresemann-era-dates",
+      "accepted": false,
+      "issues": [
+        "The memory route is unclear: “the two fours and nines” does not cleanly describe or encode the 1924–1929 range and may confuse learners."
+      ],
+      "learnerValue": [
+        "The core question accurately targets the dates of the Stresemann era."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ab-dawes-young-plans",
+      "accepted": false,
+      "issues": [
+        "The claimed “age progression” is contrived: “Dawes” supplies no age concept, so the tip does not provide a reliable route to the two plan names."
+      ],
+      "learnerValue": [
+        "The core question accurately retrieves the Dawes and Young Plans."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ab-papen-hindenburg",
+      "accepted": false,
+      "issues": [
+        "The memory tip gives two competing orders—Hindenburg/Papen alphabetically and Papen/Hindenburg in the source—for a prompt that does not test order, making the retrieval route needlessly confusing."
+      ],
+      "learnerValue": [
+        "The core question correctly associates Papen and Hindenburg with Hitler's appointment."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ab-ss-gestapo",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes Nazi police-state organisations from resistance groups and the SA."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ac-stolypin-policies",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Uses a concise mnemonic to retrieve all three specified policy elements."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ac-provisional-government-problems",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the three categories of problem the Provisional Government failed to address."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ac-nep-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the sequence from War Communism through Kronstadt to the NEP."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ac-terror-purges",
+      "accepted": false,
+      "issues": [
+        "The memory tip's “matching capital letters” cue is not meaningful: Terror and Purges have different initials, and shared capitalisation does not distinguish this pair."
+      ],
+      "learnerValue": [
+        "The core question correctly retrieves the Terror and the Purges as Stalinist repression."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ac-collectivisation-five-year-plans",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes Stalinist modernisation policies from repression and Lenin-era policy."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ad-mass-production-ford",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Ford and the motor industry with mass production."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ad-sacco-vanzetti-red-scare",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the specified link between the Red Scare and the Sacco and Vanzetti case."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ad-new-deal-opposition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Secures recall of all three specified sources of New Deal opposition."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ad-lend-lease-exports",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links Lend Lease and exports with wartime economic recovery."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-321ad-king-malcolm-x-methods",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately contrasts the specified King and Malcolm X campaign associations."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322ba-morocco-balkans-crisis-dates",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the dates of the Moroccan and Balkan crises."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322ba-franz-ferdinand-sarajevo",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves both the assassinated individual and the location."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322ba-marne-schlieffen-failure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the Battle of Marne with the Schlieffen Plan's failure."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322ba-western-front-battles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Chunks the three specified Western Front battles for efficient recall."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322ba-1918-offensives",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts the German and Allied military developments of 1918."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bb-wilson-fourteen-points",
+      "accepted": false,
+      "issues": [
+        "The memory tip claims an opening-sound route, but Wilson and Points do not share an initial or opening sound; the cue adds no dependable retrieval value."
+      ],
+      "learnerValue": [
+        "The core question correctly associates Wilson with the Fourteen Points."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bb-versailles-terms",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides concise retrieval of four central Versailles Settlement features."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bb-outside-league-diplomacy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the two agreements studied as diplomacy outside the League."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bb-league-collapse-crises",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links the Manchurian and Abyssinian crises to the League's collapse."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bb-poland-september-1939",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors the invasion of Poland to the September 1939 outbreak of war."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bc-yalta-potsdam",
+      "accepted": false,
+      "issues": [
+        "The memory route is factually misleading: it invokes alphabetical order for Yalta–Potsdam even though P precedes Y alphabetically."
+      ],
+      "learnerValue": [
+        "The core question correctly retrieves the two end-of-war conferences."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bc-truman-marshall",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the two US policies studied through their purpose and Stalin's reaction."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bc-nato-warsaw-pact",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes the two military alliances from other Cold War bodies."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bc-nagy-hungary",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Nagy with the Hungarian reform movement."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bc-cuba-crisis-roles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Chunks the three leaders specified in the Cuba crisis strand."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bd-korean-invasion-june-1950",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors North Korea's invasion of South Korea to June 1950."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bd-chinese-intervention-october-1950",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes Chinese intervention from the preceding UN advance."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bd-thirty-eighth-parallel",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the Korean military stalemate with the 38th Parallel."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bd-tet-offensive",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the Tet Offensive within Johnson's War."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322bd-kissinger-peace-talks",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Kissinger with the Paris Peace talks and US withdrawal sequence."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322be-oil-supplies-threat",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Identifies oil supplies as the resource threatened in the cited Gulf context."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322be-iraqi-invasion-kuwait",
+      "accepted": false,
+      "issues": [
+        "The memory tip claims two K sounds in “Gulf War—Kuwait,” but that phrase supplies only one /k/ sound; the mnemonic is unreliable."
+      ],
+      "learnerValue": [
+        "The core question correctly identifies Kuwait as Iraq's 1990 invasion target."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322be-osama-bin-laden",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately associates Osama bin Laden with the Al-Qaeda strand."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322be-2001-us-uk-operation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the two countries identified in the 2001 operation."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-322be-iaea-inspectors",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects IAEA inspectors with the WMD issue before the Iraq invasion."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331aa-medieval-approaches",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts natural and supernatural approaches in medieval medicine."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331aa-renaissance-figures",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Chunks the three specified Renaissance medical figures."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331aa-edward-jenner-vaccination",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Edward Jenner with vaccination and opposition to change."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331aa-simpson-lister-substances",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately distinguishes the Simpson and Lister substance pairings."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331aa-fleming-penicillin",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves Fleming as the named discoverer of penicillin."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ab-magna-carta-king-john",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Magna Carta with the barons' challenge to King John."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ab-simon-de-montfort-1265",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves Simon de Montfort together with the Parliament of 1265."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ab-charles-i-execution",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Identifies Charles I as the monarch tried and executed during the English Revolution."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ab-great-reform-act-chartism",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links the Great Reform Act and Chartism to franchise extension."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ab-pankhursts-suffrage",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the Pankhurst family within the women's-suffrage campaign."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ac-danelaw",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Viking invasion and settlement with the creation of the Danelaw."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ac-john-hawkins-slave-trade",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves John Hawkins within the specified slave-trade strand."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ac-indian-rebellion-1857",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors the Indian Rebellion securely to 1857."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ac-independence-leaders",
+      "accepted": false,
+      "issues": [
+        "The canonical answer, explanation and correct choice reproduce “Nkrumrah,” but the historical name is Kwame Nkrumah. The supplied source excerpt itself contains the typo, so the card cannot satisfy both exact support and canonical accuracy."
+      ],
+      "learnerValue": [
+        "The intended retrieval of three independence leaders is useful, but the spelling error makes the card unsafe to import."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-331ac-windrush-claudia-jones",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Windrush-era Caribbean migration with Claudia Jones's work in the UK."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332ba-edward-confessor-death",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves Edward the Confessor's death as a cause of the Norman Conquest."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332ba-cavalry-castles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Identifies cavalry and castles as the specified Norman military innovations."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332ba-revolts-1067-1075",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors the Norman revolts to the specified 1067–1075 range."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332ba-domesday-book",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the Domesday Book within Norman government and feudalism."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332ba-lanfranc-church-reform",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Archbishop Lanfranc with reform of the English Church."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bb-model-parliament-1295",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors the Model Parliament to 1295."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bb-expulsion-jews-1290",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately retrieves the 1290 date of the expulsion of the Jews."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bb-gloucester-winchester-statutes",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the dates of the Gloucester and Winchester statutes."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bb-welsh-wars-dates",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves both specified phases of Edward I's Welsh Wars."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bb-balliol-bruce",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Balliol and Bruce with the Scottish succession issue."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bc-marriage-succession",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the link between Elizabeth's marriage problem and the succession."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bc-essex-rebellion-1601",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors Essex's rebellion to 1601 and the end of Elizabeth's reign."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bc-circumnavigation-dates",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the 1577–1580 circumnavigation date range."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bc-mary-queen-of-scots",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Mary Queen of Scots with plots, execution and their impact."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bc-spanish-armada-defeat",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the Spanish Armada as the fleet defeated in the conflict strand."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bd-rule-without-parliament-1681",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Anchors Charles II's rule without Parliament to 1681."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bd-exclusion-bill-1679",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the Exclusion Bill with its 1679 date."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bd-plague-fire-dates",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the consecutive dates of the Great Plague and Fire of London."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bd-restoration-culture-figures",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Chunks the Royal Society, Samuel Pepys and Christopher Wren within Restoration culture."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-332bd-navigation-acts-dutch-wars",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects Restoration trade policy with the specified Dutch conflicts."
+      ]
+    }
+  ]
+}

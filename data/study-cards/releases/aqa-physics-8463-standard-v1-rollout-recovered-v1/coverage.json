@@ -1,0 +1,116 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    }
+  ]
+}

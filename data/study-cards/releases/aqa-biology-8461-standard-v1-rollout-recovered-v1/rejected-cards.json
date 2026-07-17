@@ -1,0 +1,180 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-biology-8461-card-evolution-natural-selection-speciation",
+        "conceptKey": "aqa-biology-8461-evolution-natural-selection-speciation",
+        "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-6",
+        "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-6-3-2",
+        "kind": "cause-consequence",
+        "visualCue": "🦋",
+        "front": "How does evolution occur through natural selection, and when have two populations formed two new species?",
+        "back": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two populations have formed two new species if they become so different in phenotype that they can no longer interbreed to produce fertile offspring.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The excerpt links evolution to natural selection of best-suited phenotypes and identifies inability to interbreed to produce fertile offspring as the condition for two new species.",
+        "memoryTip": "Best-suited variants → evolution; no fertile interbreeding → two new species.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two populations have formed two new species if they become so different in phenotype that they can no longer interbreed to produce fertile offspring.",
+            "isCorrect": true,
+            "feedback": "Correct: this matches both the best-suited-phenotype mechanism and the fertile-offspring condition.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two new species form even while the populations can still interbreed to produce fertile offspring.",
+            "isCorrect": false,
+            "feedback": "The evolution part matches, but the excerpt says two new species have formed when the populations can no longer interbreed to produce fertile offspring.",
+            "misconception": "fertile-interbreeding-still-forms-new-species"
+          },
+          {
+            "key": "c",
+            "text": "Evolution occurs through natural selection of variants that give rise to phenotypes least suited to their environment. Two populations form new species when they can no longer interbreed to produce fertile offspring.",
+            "isCorrect": false,
+            "feedback": "The speciation part matches, but the excerpt says natural selection involves variants giving rise to phenotypes best suited to the environment.",
+            "misconception": "natural-selection-favours-least-suited"
+          }
+        ],
+        "sourceExcerpt": "Students should be able to explain how evolution occurs through natural\nselection of variants that give rise to phenotypes best suited to their\nenvironment.\nIf two populations of one species become so different in phenotype\nthat they can no longer interbreed to produce fertile offspring they have\nformed two new species.",
+        "sourceLocator": "Official PDF pages 50-64; 4.6.3.2 Speciation (biology only)"
+      },
+      "review": {
+        "cardId": "aqa-biology-8461-card-evolution-natural-selection-speciation",
+        "accepted": false,
+        "issues": [
+          "The quoted wording is from 4.6.2.2 Evolution, not the cited 4.6.3.2 Speciation (biology only), so the source locator is inaccurate.",
+          "The curriculum component maps the card to the Darwin-and-Wallace speciation topic rather than the evolution topic that directly contains both tested statements."
+        ],
+        "learnerValue": [
+          "The prompt usefully links selection of suited phenotypes to the fertile-offspring boundary between species."
+        ]
+      }
+    },
+    {
+      "stage": "deterministic-candidate-excluded",
+      "card": {
+        "id": "aqa-biology-8461-card-photosynthesis-word-equation",
+        "conceptKey": "aqa-biology-8461-photosynthesis-word-equation",
+        "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-4",
+        "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-4-1-1",
+        "kind": "formula",
+        "visualCue": "🌿",
+        "front": "What is the word equation for photosynthesis, including the role shown for light?",
+        "back": "carbon dioxide + water → glucose + oxygen, with light",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Carbon dioxide and water are the reactants, while glucose and oxygen are the products; light is shown for the reaction.",
+        "memoryTip": "Use the rhythm: carbon dioxide plus water; light; glucose plus oxygen.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "carbon dioxide + water → glucose + oxygen, with light",
+            "isCorrect": true,
+            "feedback": "Correct: the reactants, products and light are placed correctly.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "glucose + oxygen → carbon dioxide + water, with light",
+            "isCorrect": false,
+            "feedback": "This reverses the stated photosynthesis equation.",
+            "misconception": "reverses-photosynthesis-equation"
+          },
+          {
+            "key": "c",
+            "text": "carbon dioxide + oxygen → glucose + water, with light",
+            "isCorrect": false,
+            "feedback": "This swaps water and oxygen between the two sides.",
+            "misconception": "swaps-photosynthesis-water-oxygen"
+          }
+        ],
+        "sourceExcerpt": "Photosynthesis is represented by the equation:\ncarbon dioxide + water\nlight\n\u0000a0\u0000a0glucose + oxygen",
+        "sourceLocator": "Official PDF pages 36-39; 4.4.1.1 Photosynthetic reaction"
+      }
+    },
+    {
+      "stage": "deterministic-candidate-superseded",
+      "card": {
+        "id": "aqa-biology-8461-card-evolution-natural-selection-speciation",
+        "conceptKey": "aqa-biology-8461-evolution-natural-selection-speciation",
+        "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-6",
+        "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-6-2-2",
+        "kind": "cause-consequence",
+        "visualCue": "🦋",
+        "front": "How does natural selection relate to evolution, and what reproductive boundary marks the formation of two new species?",
+        "back": "Evolution is change in a population’s inherited characteristics over time through natural selection of variants with phenotypes best suited to the environment; populations form new species when they can no longer interbreed to produce fertile offspring.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Natural selection acts on variants giving phenotypes best suited to their environment, producing change in a population’s inherited characteristics over time. Two sufficiently different populations are new species when they cannot interbreed to produce fertile offspring.",
+        "memoryTip": "Use V-S-C-S: variants → selection → inherited change → possible speciation; no fertile interbreeding marks the final boundary.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Evolution is change in a population’s inherited characteristics over time through natural selection of variants with phenotypes best suited to the environment; populations form new species when they can no longer interbreed to produce fertile offspring.",
+            "isCorrect": true,
+            "feedback": "Correct: this includes inherited population change, natural selection and the fertile-offspring boundary.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Evolution is a change acquired by one organism during its lifetime; new species form whenever populations look slightly different.",
+            "isCorrect": false,
+            "feedback": "Evolution concerns inherited population characteristics, and speciation requires inability to produce fertile offspring.",
+            "misconception": "evolution-is-acquired-individual-change"
+          },
+          {
+            "key": "c",
+            "text": "Evolution happens when all variants survive equally; two populations remain one species even if they cannot produce fertile offspring.",
+            "isCorrect": false,
+            "feedback": "Natural selection concerns best-suited phenotypes, and the stated reproductive boundary indicates two new species.",
+            "misconception": "denies-selection-and-speciation-boundary"
+          }
+        ],
+        "sourceExcerpt": "Students should be able to describe evolution as a change in the\ninherited characteristics of a population over time through a process of\nnatural selection which may result in the formation of a new species.\nThe theory of evolution by natural selection states that all species of\nliving things have evolved from simple life forms that first developed\nmore than three billion years ago.\nStudents should be able to explain how evolution occurs through natural\nselection of variants that give rise to phenotypes best suited to their\nenvironment.\nIf two populations of one species become so different in phenotype\nthat they can no longer interbreed to produce fertile offspring they have\nformed two new species.",
+        "sourceLocator": "Official PDF pages 50-64; 4.6.2.2 Evolution"
+      },
+      "replacement": {
+        "id": "aqa-biology-8461-card-evolution-natural-selection-speciation",
+        "conceptKey": "aqa-biology-8461-evolution-natural-selection-speciation",
+        "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-6",
+        "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-6-3-2",
+        "kind": "cause-consequence",
+        "visualCue": "🦋",
+        "front": "How does evolution occur through natural selection, and when have two populations formed two new species?",
+        "back": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two populations have formed two new species if they become so different in phenotype that they can no longer interbreed to produce fertile offspring.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The excerpt links evolution to natural selection of best-suited phenotypes and identifies inability to interbreed to produce fertile offspring as the condition for two new species.",
+        "memoryTip": "Best-suited variants → evolution; no fertile interbreeding → two new species.",
+        "choices": [
+          {
+            "key": "a",
+            "text": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two populations have formed two new species if they become so different in phenotype that they can no longer interbreed to produce fertile offspring.",
+            "isCorrect": true,
+            "feedback": "Correct: this matches both the best-suited-phenotype mechanism and the fertile-offspring condition.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two new species form even while the populations can still interbreed to produce fertile offspring.",
+            "isCorrect": false,
+            "feedback": "The evolution part matches, but the excerpt says two new species have formed when the populations can no longer interbreed to produce fertile offspring.",
+            "misconception": "fertile-interbreeding-still-forms-new-species"
+          },
+          {
+            "key": "c",
+            "text": "Evolution occurs through natural selection of variants that give rise to phenotypes least suited to their environment. Two populations form new species when they can no longer interbreed to produce fertile offspring.",
+            "isCorrect": false,
+            "feedback": "The speciation part matches, but the excerpt says natural selection involves variants giving rise to phenotypes best suited to the environment.",
+            "misconception": "natural-selection-favours-least-suited"
+          }
+        ],
+        "sourceExcerpt": "Students should be able to explain how evolution occurs through natural\nselection of variants that give rise to phenotypes best suited to their\nenvironment.\nIf two populations of one species become so different in phenotype\nthat they can no longer interbreed to produce fertile offspring they have\nformed two new species.",
+        "sourceLocator": "Official PDF pages 50-64; 4.6.3.2 Speciation (biology only)"
+      }
+    }
+  ]
+}

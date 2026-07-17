@@ -1,0 +1,36 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalBatchId": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1",
+    "recoveredReleaseId": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-biology-8461-v1.0",
+    "subject": "Biology",
+    "mode": "shared",
+    "offeringIds": [
+      "aqa-gcse-biology-8461-v1.0:foundation",
+      "aqa-gcse-biology-8461-v1.0:higher"
+    ],
+    "requiredComponentIds": [
+      "aqa-gcse-biology-8461-v1.0:4-7-4-1",
+      "aqa-gcse-biology-8461-v1.0:4-7-4-2",
+      "aqa-gcse-biology-8461-v1.0:4-7-5",
+      "aqa-gcse-biology-8461-v1.0:4-7-5-1",
+      "aqa-gcse-biology-8461-v1.0:4-7-5-2",
+      "aqa-gcse-biology-8461-v1.0:4-7-5-3",
+      "aqa-gcse-biology-8461-v1.0:4-7-5-4"
+    ],
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 7,
+    "accepted": 7,
+    "rejectedByInitialReviewer": 0,
+    "reviewerRepairAttempts": 0,
+    "readyCoverageRows": 2,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "90fb530d2fd42faf442b8af826cd10cac51a7505ee21f1ea5ded6f2bf2786fb0",
+  "modelCallsDuringRecovery": 0
+}

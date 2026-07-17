@@ -1,0 +1,43 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8145-321ab-stresemann-era-dates",
+      "conceptKey": "germany-1890-1945-stresemann-era-1924-1929",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+      "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+      "kind": "chronology",
+      "visualCue": "⏳",
+      "front": "What years define the Stresemann era in the specified study of Weimar recovery?",
+      "back": "1924–1929",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The Stresemann era is specified as 1924–1929.",
+      "memoryTip": "Recall the two endpoints: the Stresemann era starts in 1924 and ends in 1929.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "1919–1923",
+          "isCorrect": false,
+          "feedback": "That is the preceding period of political change and unrest, not the Stresemann era.",
+          "misconception": "confuses-weimar-unrest-with-stresemann-recovery"
+        },
+        {
+          "key": "b",
+          "text": "1924–1929",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified Stresemann-era years.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "1928–1932",
+          "isCorrect": false,
+          "feedback": "That date range belongs to growing extremist support, not the Stresemann era.",
+          "misconception": "confuses-depression-era-support-with-stresemann-era"
+        }
+      ],
+      "sourceExcerpt": "the Stresemann era (1924–\n1929): economic developments",
+      "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy"
+    }
+  ]
+}

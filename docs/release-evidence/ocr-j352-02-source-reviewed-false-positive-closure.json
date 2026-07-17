@@ -1,0 +1,235 @@
+{
+  "schemaVersion": "codex-reviewed-source-false-positive-closure-v1",
+  "status": "passed_after_reviewed_source_closure",
+  "modelJudgePass": false,
+  "sourceDocumentId": "ocr-j352-02-qp-jun24",
+  "closure": {
+    "status": "passed",
+    "closureType": "human_source_reviewed_false_positive",
+    "modelJudgePass": false,
+    "sourceDocumentId": "ocr-j352-02-qp-jun24",
+    "basis": "The sole failed-judge finding is contradicted by the exact official OCR examiner-report evidence for this paper. The reviewed candidate already uses the supported wording and makes no stanza-count claim, so no content repair is authorized or made.",
+    "outputArtifact": {
+      "path": "tmp/current-model-paper-cohort/retry-runs/ocr-j352-02-qp-jun24/raw/ocr-j352-02-qp-jun24.json",
+      "sha256": "6fc6952c0a133b32487813e28363d4762633f8821ab22e65be1f8b9723815eda",
+      "canonicalJsonSha256": "4b58df486f89b1a3cfba3644e5e22df538ddaa58b04728abd94726b6aeb73270"
+    },
+    "candidateMutation": {
+      "before": {
+        "path": "tmp/current-model-paper-cohort/retry-runs/ocr-j352-02-qp-jun24/raw/ocr-j352-02-qp-jun24.json",
+        "sha256": "6fc6952c0a133b32487813e28363d4762633f8821ab22e65be1f8b9723815eda",
+        "canonicalJsonSha256": "4b58df486f89b1a3cfba3644e5e22df538ddaa58b04728abd94726b6aeb73270"
+      },
+      "after": {
+        "path": "tmp/current-model-paper-cohort/retry-runs/ocr-j352-02-qp-jun24/raw/ocr-j352-02-qp-jun24.json",
+        "sha256": "6fc6952c0a133b32487813e28363d4762633f8821ab22e65be1f8b9723815eda",
+        "canonicalJsonSha256": "4b58df486f89b1a3cfba3644e5e22df538ddaa58b04728abd94726b6aeb73270"
+      },
+      "changedPaths": [],
+      "unchanged": true
+    },
+    "deterministicValidation": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/deterministic-validation.json",
+      "sha256": "8b9f62594ce491cc836acdc4bfcaf9a1119353ebb1a2a3347f2cd311f2bdbfa0",
+      "canonicalJsonSha256": "967778ac726c2a48d9cc041ed14c5fe110e96cbdcef15bc94b4b98ec406257f1",
+      "status": "passed",
+      "questionCount": 14,
+      "markTotal": 440,
+      "blockingIssues": 0,
+      "deterministicIssueCount": 0
+    },
+    "sourceDocuments": {
+      "questionPaper": {
+        "path": "data/ocr-gcse-english-literature/question-papers/OCR-J352-02-QP-JUN24.PDF",
+        "sha256": "c0f3be806bddf97e106ac6a1c3ff57e676871c83a68a086eaad97cf0f2017574"
+      },
+      "markScheme": {
+        "path": "data/ocr-gcse-english-literature/mark-schemes/OCR-J352-02-MS-JUN24.PDF",
+        "sha256": "c0981d3849667c48d0a9ca553ca312688766058b0c55df66a3a115e3c86be04b"
+      },
+      "examinerReport": {
+        "path": "data/ocr-gcse-english-literature/examiner-reports/OCR-J352-02-ER-JUN24.PDF",
+        "sha256": "fb244b7a84f8d2a05d62cc3b3098661821579d61597408b87099ce3514259cc2"
+      }
+    },
+    "falsePositiveFindings": [
+      {
+        "sourceQuestionRef": "01.1b",
+        "field": "modelAnswer.answerText",
+        "modelFinding": {
+          "sourceQuestionRef": "01.1b",
+          "field": "modelAnswer.answerText",
+          "repair": "Replace the sentences based on the nonexistent quotation ‘walking’ and the false ‘final single line’ description with textually accurate analysis of Rita Dove's ‘Flirtation’. Preserve only claims and quotations that occur in the poem; its structure is seven two-line stanzas."
+        },
+        "disposition": "false_positive_no_candidate_change",
+        "candidateClaims": [
+          "walking",
+          "couplets",
+          "final single line"
+        ],
+        "candidateMakesStanzaCountClaim": false,
+        "officialSource": {
+          "document": "OCR J352/02 Summer 2024 Examiners’ report",
+          "physicalPdfPage": 7,
+          "anchors": [
+            "The stanzas are written in couplets",
+            "The verb ‘walking’ suggests a leisurely activity",
+            "supported by the final single line"
+          ]
+        },
+        "rationale": "The official report explicitly supports every disputed textual/structural detail. The failed judge additionally attributed a seven-stanza claim to the candidate that the candidate does not make."
+      }
+    ],
+    "modelAudits": [
+      {
+        "executionStatus": "passed",
+        "verdict": "fail",
+        "score": 0.97,
+        "threadId": "019f6e03-2d7b-7b21-9cd3-b7bfcf268500",
+        "model": "gpt-5.6-sol",
+        "thinkingLevel": "max",
+        "checkedRefs": 14,
+        "questionCount": 14,
+        "markTotal": 440,
+        "requiredRepairs": [
+          {
+            "sourceQuestionRef": "01.1b",
+            "field": "modelAnswer.answerText",
+            "repair": "Replace the sentences based on the nonexistent quotation ‘walking’ and the false ‘final single line’ description with textually accurate analysis of Rita Dove's ‘Flirtation’. Preserve only claims and quotations that occur in the poem; its structure is seven two-line stanzas."
+          }
+        ],
+        "report": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/judge-report.json",
+          "sha256": "d3ed6fb0d49b4c76ec67226d23dac51d4e4c8bbe6d7fe21dc9919f07f4d95249",
+          "canonicalJsonSha256": "cee2b92f1ca18e5d70efdb67cf395b4987159e33f989b463f7dca55d5a2f0c2e"
+        },
+        "summary": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/judge-summary.json",
+          "sha256": "c04f555be5711133704c907f35ad54581a02cff47d93cf9c1d7a3e76f09af249",
+          "canonicalJsonSha256": "09d3f550ac830811877bc54deb947fd94df8864043db9bc42c3f667344902658"
+        },
+        "events": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/events.jsonl",
+          "sha256": "ed5bfacc80827e6c17f4483f9ad8d72463dcf72685b59970708fca1243a64a7b"
+        },
+        "lastMessage": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/last-message.txt",
+          "sha256": "8d0a5d6a29f3cdfe0495e567441ad6538569d0b13bd644266e34e301766e0555"
+        },
+        "codexRunSummary": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/codex-run-summary.json",
+          "sha256": "66a1e9547f0cccb61258245d4fd8aee0725588e9dd3d2cba8748bf1e9ae9f6e2"
+        },
+        "prompt": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/prompt.md",
+          "sha256": "54285dea9b0a72178dd23867f5d4f90e0af6c87c41fd40b74c77e6141b3c2d5a"
+        },
+        "candidate": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/failed-candidate.json",
+          "sha256": "6fc6952c0a133b32487813e28363d4762633f8821ab22e65be1f8b9723815eda",
+          "canonicalJsonSha256": "4b58df486f89b1a3cfba3644e5e22df538ddaa58b04728abd94726b6aeb73270"
+        },
+        "judgeCandidateSnapshot": {
+          "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/judge-candidate-snapshot.json",
+          "sha256": "11be28d506ed54c279a4bf6731f9e5aae1ec2cbc4fd95a2bbbbb89ed9b8fb4b9",
+          "canonicalJsonSha256": "98fdb99ae7690fd72eb0023bfea41c171fd6b09f0095b8f90a232769e355b04e"
+        },
+        "checkedRefList": [
+          "01.1a",
+          "01.1b",
+          "02.1a",
+          "02.1b",
+          "03.1a",
+          "03.1b",
+          "04.1",
+          "05.1",
+          "06.1",
+          "07.1",
+          "08.1",
+          "09.1",
+          "10.1",
+          "11.1"
+        ]
+      }
+    ],
+    "invariants": {
+      "exactCandidateHash": true,
+      "exactFailedJudgeReportHash": true,
+      "exactFailedJudgeSummaryHash": true,
+      "exactOfficialQuestionPaperHash": true,
+      "exactOfficialMarkSchemeHash": true,
+      "exactOfficialExaminerReportHash": true,
+      "soleFailedFindingSourceDisproved": true,
+      "candidateUnchanged": true,
+      "changedFieldCountExact": true,
+      "fullRefInventoryValidated": true,
+      "fullMarkInventoryValidated": true,
+      "zeroDeterministicBlockers": true
+    },
+    "assertion": "No model-judge pass is claimed; the archived model verdict remains fail and the official source disproves its sole finding."
+  },
+  "failedAuditArtifacts": {
+    "candidate": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/failed-candidate.json",
+      "sha256": "6fc6952c0a133b32487813e28363d4762633f8821ab22e65be1f8b9723815eda",
+      "canonicalJsonSha256": "4b58df486f89b1a3cfba3644e5e22df538ddaa58b04728abd94726b6aeb73270"
+    },
+    "judgeCandidateSnapshot": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/judge-candidate-snapshot.json",
+      "sha256": "11be28d506ed54c279a4bf6731f9e5aae1ec2cbc4fd95a2bbbbb89ed9b8fb4b9",
+      "canonicalJsonSha256": "98fdb99ae7690fd72eb0023bfea41c171fd6b09f0095b8f90a232769e355b04e"
+    },
+    "report": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/judge-report.json",
+      "sha256": "d3ed6fb0d49b4c76ec67226d23dac51d4e4c8bbe6d7fe21dc9919f07f4d95249",
+      "canonicalJsonSha256": "cee2b92f1ca18e5d70efdb67cf395b4987159e33f989b463f7dca55d5a2f0c2e"
+    },
+    "summary": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/judge-summary.json",
+      "sha256": "c04f555be5711133704c907f35ad54581a02cff47d93cf9c1d7a3e76f09af249",
+      "canonicalJsonSha256": "09d3f550ac830811877bc54deb947fd94df8864043db9bc42c3f667344902658"
+    },
+    "codexRunSummary": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/codex-run-summary.json",
+      "sha256": "66a1e9547f0cccb61258245d4fd8aee0725588e9dd3d2cba8748bf1e9ae9f6e2"
+    },
+    "events": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/events.jsonl",
+      "sha256": "ed5bfacc80827e6c17f4483f9ad8d72463dcf72685b59970708fca1243a64a7b"
+    },
+    "lastMessage": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/last-message.txt",
+      "sha256": "8d0a5d6a29f3cdfe0495e567441ad6538569d0b13bd644266e34e301766e0555"
+    },
+    "prompt": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/false-positive-judge-20260717T030756Z/prompt.md",
+      "sha256": "54285dea9b0a72178dd23867f5d4f90e0af6c87c41fd40b74c77e6141b3c2d5a"
+    }
+  },
+  "outputs": {
+    "report": {
+      "path": "tmp/current-model-paper-cohort/retry-runs/ocr-j352-02-qp-jun24/extraction-judge/judge-report.json",
+      "sha256": "be603b00990f1e07405491d30eeefcf8e205bed715341024dc9f5cb079fb4f8e",
+      "canonicalJsonSha256": "1ef28500a7f43eb63d6e682983ca91fe81f2e692ebb5b3aa0d04e2ebb8d36c4d"
+    },
+    "summary": {
+      "path": "tmp/current-model-paper-cohort/retry-runs/ocr-j352-02-qp-jun24/codex-extraction-judge-summary.json",
+      "sha256": "9045408f593f810e46ab62d98daeacfa6921688370cee147478e2e2e56bb11ec",
+      "canonicalJsonSha256": "a7c06c184dd8d7a2f325ed356b3a627c9f573ac2614f3ff7cf51a49823e4021a"
+    }
+  },
+  "invariants": {
+    "exactCandidateHash": true,
+    "exactFailedJudgeReportHash": true,
+    "exactFailedJudgeSummaryHash": true,
+    "exactOfficialQuestionPaperHash": true,
+    "exactOfficialMarkSchemeHash": true,
+    "exactOfficialExaminerReportHash": true,
+    "soleFailedFindingSourceDisproved": true,
+    "candidateUnchanged": true,
+    "changedFieldCountExact": true,
+    "fullRefInventoryValidated": true,
+    "fullMarkInventoryValidated": true,
+    "zeroDeterministicBlockers": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8462-51ef1403c8-aqa-8462-haber-process-raw-materials",
+      "conceptKey": "aqa-8462-51ef1403c8-haber-process-raw-materials-nitrogen-hydrogen",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4",
+      "kind": "fact",
+      "visualCue": "🧪",
+      "front": "Which two raw materials are used in the Haber process?",
+      "back": "Nitrogen and hydrogen.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The Haber process uses nitrogen and hydrogen as its raw materials to manufacture ammonia, which can be used to produce nitrogen-based fertilisers.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Nitrogen and hydrogen.",
+          "isCorrect": true,
+          "feedback": "Correct: nitrogen and hydrogen are the raw materials for the Haber process.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Nitrogen and oxygen.",
+          "isCorrect": false,
+          "feedback": "Oxygen is not listed; hydrogen is the second raw material.",
+          "misconception": "haber-hydrogen-oxygen-substitution"
+        },
+        {
+          "key": "c",
+          "text": "Nitrogen and ammonia.",
+          "isCorrect": false,
+          "feedback": "Ammonia is manufactured by the process; it is not listed as a raw material.",
+          "misconception": "haber-product-as-raw-material"
+        }
+      ],
+      "sourceExcerpt": "The Haber process is used to manufacture ammonia, which can be\nused to produce nitrogen-based fertilisers.\nThe raw materials for the Haber process are nitrogen and\nhydrogen.",
+      "sourceLocator": "Official PDF pages 88-89; 4.10.4 The Haber process and the use of NPK fertilisers (chemistry only)"
+    },
+    {
+      "id": "aqa-8462-ef5a2661e3-aqa-8462-npk-fertiliser-elements",
+      "conceptKey": "aqa-8462-ef5a2661e3-npk-fertiliser-elements-nitrogen-phosphorus-potassium",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4-2",
+      "kind": "fact",
+      "visualCue": "⚛️",
+      "front": "Compounds of which three elements do NPK fertilisers contain?",
+      "back": "Nitrogen, phosphorus and potassium.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "NPK fertilisers contain compounds of nitrogen, phosphorus and potassium, which are used as fertilisers to improve agricultural productivity.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Nitrogen, phosphorus and potassium.",
+          "isCorrect": true,
+          "feedback": "Correct: NPK fertilisers contain compounds of all three elements.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Nitrogen, phosphorus and calcium.",
+          "isCorrect": false,
+          "feedback": "Calcium replaces potassium, which is one of the three named elements.",
+          "misconception": "npk-potassium-calcium-substitution"
+        },
+        {
+          "key": "c",
+          "text": "Nitrogen, sulfur and potassium.",
+          "isCorrect": false,
+          "feedback": "Sulfur replaces phosphorus, which is one of the three named elements.",
+          "misconception": "npk-phosphorus-sulfur-substitution"
+        }
+      ],
+      "sourceExcerpt": "Compounds of nitrogen, phosphorus and potassium are used as\nfertilisers to improve agricultural productivity. NPK fertilisers contain\ncompounds of all three elements.",
+      "sourceLocator": "Official PDF pages 88-89; 4.10.4.2 Production and uses of NPK fertilisers"
+    }
+  ]
+}

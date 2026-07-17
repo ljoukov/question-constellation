@@ -1,7 +1,10 @@
 import { getRequestEvent } from '$app/server';
 import type { ChainIllustration } from '$lib/chains/chainIllustration';
+import type { PaperMeasurement } from '$lib/experiments/questions/types';
+import { englishPracticeEligibility } from '$lib/englishPracticeEligibility';
 import { supportsLearnerPracticeInput } from '$lib/learning/practiceEligibility';
 import { cleanLearnerQuestionText } from '$lib/learning/questionTextQuality.js';
+import { questionAssetPublicPath } from '$lib/questionAssetPath';
 import {
 	QUESTION_PRACTICE_PAGE_CACHE_KIND,
 	QUESTION_PRACTICE_PAGE_CACHE_VERSION
@@ -71,6 +74,7 @@ export type QuestionAsset = {
 	role: string | null;
 	paperWidthPx: number | null;
 	paperHeightPx: number | null;
+	paperMeasurement: PaperMeasurement | null;
 };
 
 export type QuestionRenderingOverlay = {
@@ -98,6 +102,7 @@ export type Question = {
 	renderingOverlay: QuestionRenderingOverlay | null;
 	answerFormat?: string | null;
 	practiceAvailable: boolean;
+	practiceUnavailableReason?: string | null;
 	meta: ExamMeta;
 	transferDistance: TransferDistance;
 	distanceLabel: string;
@@ -315,6 +320,7 @@ type AssetRow = {
 	asset_type: string;
 	source_label: string | null;
 	public_path: string | null;
+	r2_key: string | null;
 	alt_text: string | null;
 	required: number;
 	role: string | null;
@@ -338,6 +344,13 @@ type AssetMetadata = {
 		x_ppi?: number;
 		y_ppi?: number;
 	}>;
+	paper_measurement?: {
+		axis?: string;
+		pixel_width?: number;
+		pixels_per_millimetre?: number;
+		instructions?: string;
+		source_verified?: boolean;
+	};
 };
 
 type ChecklistRow = {
@@ -523,6 +536,28 @@ function paperAssetSize(
 	return {
 		paperWidthPx: Math.round((candidate.width / candidate.x_ppi) * GCSE_PAPER_CSS_PX_PER_INCH),
 		paperHeightPx: Math.round((candidate.height / candidate.y_ppi) * GCSE_PAPER_CSS_PX_PER_INCH)
+	};
+}
+
+function paperAssetMeasurement(metadataJson: string): PaperMeasurement | null {
+	const metadata = parseJson<AssetMetadata>(metadataJson, {});
+	const measurement = metadata.paper_measurement;
+	if (
+		measurement?.axis !== 'horizontal' ||
+		measurement.source_verified !== true ||
+		!Number.isFinite(measurement.pixel_width) ||
+		Number(measurement.pixel_width) <= 0 ||
+		!Number.isFinite(measurement.pixels_per_millimetre) ||
+		Number(measurement.pixels_per_millimetre) <= 0
+	) {
+		return null;
+	}
+	return {
+		axis: 'horizontal',
+		pixelWidth: Number(measurement.pixel_width),
+		pixelsPerMillimetre: Number(measurement.pixels_per_millimetre),
+		instructions:
+			typeof measurement.instructions === 'string' ? measurement.instructions : undefined
 	};
 }
 
@@ -768,24 +803,26 @@ function ensureQuestionSupplement(
 }
 
 function questionAssetFromRow(row: AssetRow): QuestionAsset | null {
-	if (!row.public_path) return null;
+	const publicPath = questionAssetPublicPath(row.public_path, row.r2_key);
+	if (!publicPath) return null;
 	const paperSize = paperAssetSize(row.metadata_json);
 
 	return {
 		id: row.id,
 		assetType: row.asset_type,
 		sourceLabel: row.source_label ?? 'Source image',
-		publicPath: row.public_path,
+		publicPath,
 		altText: row.alt_text ?? row.source_label ?? 'Question paper image',
 		required: Boolean(row.required),
 		role: row.role,
-		...paperSize
+		...paperSize,
+		paperMeasurement: paperAssetMeasurement(row.metadata_json)
 	};
 }
 
 async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
 	const rows = await queryRows<AssetRow>(
-		`SELECT id, asset_type, source_label, public_path, alt_text, required, role, metadata_json
+		`SELECT id, asset_type, source_label, public_path, r2_key, alt_text, required, role, metadata_json
 		 FROM question_assets
 		 WHERE question_id = ?
 		   AND needs_human_review = 0
@@ -854,6 +891,15 @@ export function learnerFacingModelAnswer(value: string | null | undefined): stri
 	if (/\bAO\d\b/i.test(answer)) return '';
 	if (/^(?:allow|accept|ignore|reject|credit|do not accept)\b/i.test(answer)) return '';
 	if (/^\d+(?:\.\d+)+\s+.*\b(?:AO\d|mark)\b/i.test(answer)) return '';
+	if (
+		/^(?:there is no|no single)\s+(?:single\s+)?(?:fixed\s+)?model answer\b/i.test(answer) ||
+		/^answers?\s+(?:will|may|can)\s+vary\b/i.test(answer) ||
+		/^a\s+(?:strong|high[- ]level|high[- ]scoring)\s+(?:written\s+)?response\s+(?:would|should|could|may)\b/i.test(
+			answer
+		)
+	) {
+		return '';
+	}
 	return answer;
 }
 
@@ -1007,7 +1053,7 @@ async function getQuestionSupplements(
 	const placeholders = questionIdPlaceholders(ids);
 	const [assetRows, overlayRows, modelRows, checklistRows, weakRows] = await Promise.all([
 		queryRows<AssetRow & { question_id: string }>(
-			`SELECT question_id, id, asset_type, source_label, public_path, alt_text, required, role, metadata_json
+			`SELECT question_id, id, asset_type, source_label, public_path, r2_key, alt_text, required, role, metadata_json
 			 FROM question_assets
 			 WHERE question_id IN (${placeholders})
 			   AND needs_human_review = 0
@@ -1308,17 +1354,23 @@ export function classifyEnglishLiteratureTask({
 	if (!/literature/i.test(subject ?? '')) return 'other';
 	const prompt = promptText.toLowerCase();
 	const context = contextText?.toLowerCase() ?? '';
+	const taskText = `${prompt} ${context}`;
 	const isComparison = /\bcompare\b|\bboth (?:poems|texts|extracts)\b/.test(prompt);
 	const isPoetry = /\bpoem|\bpoetry|\banthology\b/.test(`${prompt} ${context} ${paper ?? ''}`);
-	const hasPrintedExtract = /\bthis extract\b|\bthese two extracts\b|\bprinted extract/.test(
-		`${prompt} ${context}`
-	);
+	const hasPrintedExtract =
+		/\bthis extract\b|\bthese two extracts\b|\bprinted extract/.test(taskText) ||
+		/\bstarting with (?:this|the) (?:moment|passage|scene|section|episode)\b/.test(taskText) ||
+		/\b(?:this|the) (?:moment|passage|scene|section|episode) (?:above|below)\b/.test(taskText) ||
+		/\brefer(?:ring)? to (?:act|scene|chapter|lines?)\b[\s\S]*\belsewhere\b/.test(taskText);
 	const asksElsewhere =
-		/\belsewhere\b|\bwider text\b|\brest of (?:the|your) (?:text|play|novel)\b/.test(
-			`${prompt} ${context}`
+		/\belsewhere\b|\bwider text\b|\brest of (?:the|your) (?:text|play|novel)\b|\b(?:text|play|novel) as a whole\b/.test(
+			taskText
 		);
-	const asksJudgement =
-		/\bhow far\b|\bto what extent\b|\bdo you agree\b|\bat least two moments\b/.test(prompt);
+	// “Explore at least two moments” is an evidence-scope instruction used by
+	// both discursive judgements and ordinary whole-text analysis. It does not,
+	// by itself, ask the learner to evaluate a proposition. Reserve the
+	// judgement scaffold for an explicit evaluative command.
+	const asksJudgement = /\bhow far\b|\bto what extent\b|\bdo you agree\b/.test(prompt);
 
 	if (isComparison && isPoetry) return 'poetry-comparison';
 	if (isComparison && hasPrintedExtract) return 'extract-comparison';
@@ -2253,7 +2305,7 @@ function buildEnglishStages(
 	return stages;
 }
 
-async function getStandaloneModelAnswer(questionId: string, fallback: string): Promise<string> {
+async function getStandaloneModelAnswer(questionId: string): Promise<string> {
 	const row = await queryFirst<ModelAnswerRow>(
 		`SELECT answer_text
 		 FROM model_answers
@@ -2264,7 +2316,7 @@ async function getStandaloneModelAnswer(questionId: string, fallback: string): P
 		[questionId]
 	);
 
-	return row?.answer_text ?? fallback;
+	return learnerFacingModelAnswer(row?.answer_text);
 }
 
 async function getStandaloneWeakAnswer(questionId: string): Promise<{
@@ -2363,10 +2415,7 @@ async function getEnglishPracticePageDataFromRow(row: QuestionRow): Promise<Prac
 		getStoredMarkSchemeItems(row.id)
 	]);
 	const criteria = buildEnglishCriteria(row, checklistRows);
-	const modelAnswer = await getStandaloneModelAnswer(
-		row.id,
-		criteria.map((criterion) => criterion.detail).join(' ')
-	);
+	const modelAnswer = await getStandaloneModelAnswer(row.id);
 	const metadata = parseJson<EnglishQuestionMetadata>(row.metadata_json, {});
 	const chain = buildEnglishDiagnosticChain(row, criteria, modelAnswer, weakAnswer);
 	const membership: MembershipRow = {
@@ -2378,6 +2427,12 @@ async function getEnglishPracticePageDataFromRow(row: QuestionRow): Promise<Prac
 		needs_human_review: 0
 	};
 	const question = await hydrateQuestion(row, chain, membership);
+	if (!question.practiceAvailable) {
+		throw new Error(
+			question.practiceUnavailableReason ??
+				`English practice is unavailable for question ${question.id}.`
+		);
+	}
 	const taskKind = englishLiteratureTaskKind(row);
 	const stages = buildEnglishStages(row, criteria);
 	const marks = row.marks ?? criteria.length;
@@ -2449,6 +2504,7 @@ function hydrateQuestionFromSupplement(
 		renderingOverlay: supplement.renderingOverlay,
 		answerFormat: row.answer_format,
 		practiceAvailable: false,
+		practiceUnavailableReason: null,
 		meta: {
 			qualification: row.qualification ?? 'GCSE',
 			board: row.board ?? 'AQA',
@@ -2473,19 +2529,45 @@ function hydrateQuestionFromSupplement(
 		practiceDraft: weakAnswer.text,
 		whyThisFits: membership.fit_notes ?? chain.summary
 	};
-	question.practiceAvailable =
-		isEnglishQuestionRow(row) ||
-		(supportsLearnerPracticeInput({
-			answerFormat: question.answerFormat,
-			prompt: question.prompt,
-			context: question.context,
-			responseKind:
-				typeof question.renderingOverlay?.responseInteraction?.kind === 'string'
-					? question.renderingOverlay.responseInteraction.kind
-					: null,
-			hasReferencedSourceMaterial: questionHasReferencedSourceMaterial(question)
-		}) &&
-			hasSafeQuestionCardTitle(question));
+	const safeQuestionTitle = hasSafeQuestionCardTitle(question);
+	if (isEnglishQuestionRow(row)) {
+		const eligibility = englishPracticeEligibility({
+			subject: row.subject ?? row.subject_area,
+			prompt: row.prompt_text,
+			context: row.context_text,
+			selfContainedPrompt: row.self_contained_prompt_text,
+			selfContainmentJson: row.self_containment_json,
+			assets: question.assets,
+			renderingOverlay: question.renderingOverlay,
+			taskKind: englishLiteratureTaskKind(row),
+			reviewed: true
+		});
+		question.practiceAvailable = eligibility.available && safeQuestionTitle;
+		question.practiceUnavailableReason = eligibility.reason;
+		if (!safeQuestionTitle && !question.practiceUnavailableReason) {
+			question.practiceUnavailableReason =
+				'This practice task is unavailable because its learner-facing title has not completed review yet.';
+		}
+	} else {
+		const responseInteraction = question.renderingOverlay?.responseInteraction;
+		question.practiceAvailable =
+			supportsLearnerPracticeInput({
+				answerFormat: question.answerFormat,
+				prompt: question.prompt,
+				context: question.context,
+				responseKind:
+					typeof responseInteraction?.kind === 'string' ? responseInteraction.kind : null,
+				responseHasWrittenFields:
+					responseInteraction?.kind === 'asset-canvas' &&
+					(Boolean(Number(responseInteraction.lineCount) > 0) ||
+						typeof responseInteraction.answerLabel === 'string'),
+				hasReferencedSourceMaterial: questionHasReferencedSourceMaterial(question)
+			}) && safeQuestionTitle;
+		if (!question.practiceAvailable) {
+			question.practiceUnavailableReason =
+				'This question can be viewed, but its original response format is not available for practice yet.';
+		}
+	}
 	return question;
 }
 

@@ -66,6 +66,17 @@
 	--qc-ui-warning-text: #4b5759;
 	--qc-ui-shadow: rgba(31, 50, 50, 0.055);
 }
+.qc-test-taking-view {
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+}
+
+.qc-test-taking-view :is(input, textarea, [contenteditable='true']) {
+	-webkit-user-select: text;
+	user-select: text;
+	-webkit-touch-callout: default;
+}
 
 * {
 	box-sizing: border-box;
@@ -3559,6 +3570,17 @@ textarea::placeholder {
 	border-color: #168458;
 	box-shadow: 0 0 0 2px rgba(22, 132, 88, 0.16);
 	outline: 0;
+}
+
+.qc-topic-question.unavailable {
+	border-style: dashed;
+	background: #fffaf2;
+}
+
+.qc-topic-question.unavailable:hover,
+.qc-topic-question.unavailable:focus-visible {
+	border-color: #b66a16;
+	box-shadow: 0 0 0 2px rgba(182, 106, 22, 0.14);
 }
 
 .qc-topic-question span,

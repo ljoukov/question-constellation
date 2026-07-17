@@ -1,0 +1,511 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8463-8ecaff2251-aqa-8463-4-3-3-3-work-on-gas-energy",
+      "conceptKey": "aqa-8463-8ecaff2251-aqa-8463-work-on-gas-internal-energy",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-3-3",
+      "kind": "cause-consequence",
+      "visualCue": "⚙️",
+      "front": "When work is done on a gas, what happens to its internal energy, and what may happen to its temperature?",
+      "back": "Its internal energy increases, and its temperature can increase.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Doing work on the gas increases its internal energy. A temperature increase is possible rather than guaranteed.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Its internal energy increases, and its temperature can increase.",
+          "isCorrect": true,
+          "feedback": "Correct. Work done on the gas increases its internal energy and can increase its temperature.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Its internal energy decreases, and its temperature can decrease.",
+          "isCorrect": false,
+          "feedback": "Doing work on the gas increases, rather than decreases, its internal energy.",
+          "misconception": "reverses-energy-change"
+        },
+        {
+          "key": "c",
+          "text": "Its internal energy stays constant, although its temperature can increase.",
+          "isCorrect": false,
+          "feedback": "The internal energy does not stay constant; it increases.",
+          "misconception": "assumes-constant-internal-energy"
+        }
+      ],
+      "sourceExcerpt": "Doing work on a gas increases the internal energy of the gas and\ncan cause an increase in the temperature of the gas.",
+      "sourceLocator": "Official PDF pages 36-36; 4.3.3.3 Increasing the pressure of a gas (physics only) (HT only)"
+    },
+    {
+      "id": "aqa-8463-697f402e56-aqa-8463-4-5-5-1-2-liquid-pressure-height-density",
+      "conceptKey": "aqa-8463-697f402e56-aqa-8463-liquid-pressure-height-and-density",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-5-1-2",
+      "kind": "fact",
+      "visualCue": "🌊",
+      "front": "How do the height of the liquid column above a point and the liquid’s density affect pressure at that point?",
+      "back": "Pressure increases with both the height of liquid above the point and the liquid’s density.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A taller column above the point and a denser liquid each increase the pressure there.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Pressure decreases with both the height of liquid above the point and the liquid’s density.",
+          "isCorrect": false,
+          "feedback": "Pressure increases, rather than decreases, with both factors.",
+          "misconception": "reverses-both-pressure-trends"
+        },
+        {
+          "key": "b",
+          "text": "Pressure increases with both the height of liquid above the point and the liquid’s density.",
+          "isCorrect": true,
+          "feedback": "Correct. Both greater column height and greater density increase pressure.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Pressure increases with the height of liquid above the point but is independent of the liquid’s density.",
+          "isCorrect": false,
+          "feedback": "Density is also a stated factor: pressure increases with it.",
+          "misconception": "omits-density-dependence"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to explain why, in a liquid, pressure at a\npoint increases with the height of the column of liquid above that\npoint and with the density of the liquid.",
+      "sourceLocator": "Official PDF pages 49-58; 4.5.5.1.2 Pressure in a fluid 2 (HT only)"
+    },
+    {
+      "id": "aqa-8463-73c844d589-aqa-8463-4-5-7-conservation-of-momentum",
+      "conceptKey": "aqa-8463-73c844d589-aqa-8463-closed-system-momentum-conservation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-7",
+      "kind": "fact",
+      "visualCue": "🎳",
+      "front": "State conservation of momentum for an event in a closed system.",
+      "back": "In a closed system, total momentum before an event equals total momentum after it.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The equality applies to the system’s total momentum and is called conservation of momentum.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "In a closed system, each object’s momentum is unchanged by an event.",
+          "isCorrect": false,
+          "feedback": "The law concerns total momentum, not the unchanged momentum of each object.",
+          "misconception": "confuses-total-with-individual-momentum"
+        },
+        {
+          "key": "b",
+          "text": "In a closed system, total momentum before an event equals total momentum after it.",
+          "isCorrect": true,
+          "feedback": "Correct. The total momentum is equal before and after the event.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "In a closed system, total momentum after an event must be zero.",
+          "isCorrect": false,
+          "feedback": "The final total equals the initial total; it is not necessarily zero.",
+          "misconception": "assumes-zero-total-momentum"
+        }
+      ],
+      "sourceExcerpt": "In a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.",
+      "sourceLocator": "Official PDF pages 49-58; 4.5.7 Momentum (HT only)"
+    },
+    {
+      "id": "aqa-8463-450adcac33-aqa-8463-4-6-1-4-human-hearing-range",
+      "conceptKey": "aqa-8463-450adcac33-aqa-8463-normal-human-hearing-frequency-range",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-4",
+      "kind": "fact",
+      "visualCue": "🌊",
+      "front": "What is the frequency range of normal human hearing?",
+      "back": "20 Hz to 20 kHz.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "AQA gives 20 Hz to 20 kHz as the range of normal human hearing.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "2 Hz to 2 kHz.",
+          "isCorrect": false,
+          "feedback": "Both limits are too low; the stated range begins at 20 Hz and ends at 20 kHz.",
+          "misconception": "lowers-both-hearing-limits"
+        },
+        {
+          "key": "b",
+          "text": "20 Hz to 20 kHz.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the stated range of normal human hearing.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "20 kHz to 200 kHz.",
+          "isCorrect": false,
+          "feedback": "Normal human hearing ends at 20 kHz rather than beginning there.",
+          "misconception": "places-range-above-upper-limit"
+        }
+      ],
+      "sourceExcerpt": "Students should know that the range of normal human hearing is\nfrom 20 Hz to 20 kHz.",
+      "sourceLocator": "Official PDF pages 62-62; 4.6.1.4 Sound waves (physics only) (HT only)"
+    },
+    {
+      "id": "aqa-8463-d95a5f1a9c-aqa-8463-4-6-1-5-p-and-s-wave-properties",
+      "conceptKey": "aqa-8463-d95a5f1a9c-aqa-8463-seismic-p-and-s-wave-comparison",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-5",
+      "kind": "comparison",
+      "visualCue": "🌌",
+      "front": "How do P-waves and S-waves differ in wave type and ability to travel through liquids?",
+      "back": "P-waves are longitudinal and travel through solids and liquids; S-waves are transverse and cannot travel through a liquid.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "P-waves travel through solids and liquids at different speeds, whereas S-waves cannot travel through a liquid. Both provide evidence about the Earth’s core.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "P-waves are transverse and cannot travel through a liquid; S-waves are longitudinal and travel through solids and liquids.",
+          "isCorrect": false,
+          "feedback": "The properties are reversed: P-waves are longitudinal, while S-waves are transverse and cannot travel through liquid.",
+          "misconception": "reverses-p-and-s-wave-properties"
+        },
+        {
+          "key": "b",
+          "text": "P-waves are longitudinal and travel through solids and liquids; S-waves are transverse and cannot travel through a liquid.",
+          "isCorrect": true,
+          "feedback": "Correct. This contrast helps seismic waves provide evidence about the Earth’s core.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "P-waves and S-waves are both longitudinal and both travel through solids and liquids.",
+          "isCorrect": false,
+          "feedback": "S-waves are transverse and cannot travel through a liquid.",
+          "misconception": "treats-both-seismic-waves-alike"
+        }
+      ],
+      "sourceExcerpt": "Seismic waves are produced by earthquakes. P-waves are\nlongitudinal, seismic waves. P-waves travel at different speeds\nthrough solids and liquids. S-waves are transverse, seismic waves.\nS-waves cannot travel through a liquid. P-waves and S-waves\nprovide evidence for the structure and size of the Earth’s core.",
+      "sourceLocator": "Official PDF pages 62-62; 4.6.1.5 Waves for detection and exploration (physics only) (HT only)"
+    },
+    {
+      "id": "aqa-8463-e04b8988d4-aqa-8463-4-7-2-2-fleming-left-hand-rule-quantities",
+      "conceptKey": "aqa-8463-e04b8988d4-aqa-8463-fleming-left-hand-rule-orientations",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2-2",
+      "kind": "method",
+      "visualCue": "🧲",
+      "front": "Which three quantities have their relative orientations represented by Fleming’s left-hand rule?",
+      "back": "The force, the current in the conductor and the magnetic field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Fleming’s left-hand rule represents the relative orientation of force, current and magnetic field.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The force, the potential difference across the conductor and the magnetic field.",
+          "isCorrect": false,
+          "feedback": "Current in the conductor is represented, not potential difference.",
+          "misconception": "substitutes-potential-difference-for-current"
+        },
+        {
+          "key": "b",
+          "text": "The force, the current in the conductor and the magnetic field.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the three quantities whose relative orientations the rule represents.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The force, the current in the conductor and the electric field.",
+          "isCorrect": false,
+          "feedback": "The rule represents the magnetic field, not an electric field.",
+          "misconception": "substitutes-electric-field-for-magnetic-field"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to show that Fleming's left-hand rule\nrepresents the relative orientation of the force, the current in the\nconductor and the magnetic field.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.2.2 Fleming's left-hand rule (HT only)"
+    },
+    {
+      "id": "aqa-8463-e4159aff46-aqa-8463-4-7-2-3-current-coil-rotation",
+      "conceptKey": "aqa-8463-e4159aff46-aqa-8463-electric-motor-coil-rotation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "⚙️",
+      "front": "What effect forms the basis of an electric motor?",
+      "back": "A current-carrying coil in a magnetic field tends to rotate.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The tendency of a current-carrying coil to rotate in a magnetic field is the stated basis of an electric motor.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A current-carrying coil tends to rotate even without a magnetic field.",
+          "isCorrect": false,
+          "feedback": "The stated motor basis includes a magnetic field as well as a current-carrying coil.",
+          "misconception": "omits-magnetic-field-condition"
+        },
+        {
+          "key": "b",
+          "text": "A coil in a magnetic field tends to rotate even when no current flows.",
+          "isCorrect": false,
+          "feedback": "The stated motor basis includes current in the coil as well as a magnetic field.",
+          "misconception": "omits-current-condition"
+        },
+        {
+          "key": "c",
+          "text": "A current-carrying coil in a magnetic field tends to rotate.",
+          "isCorrect": true,
+          "feedback": "Correct. This turning effect is the basis of an electric motor.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "A coil of wire carrying a current in a magnetic field tends to rotate.\nThis is the basis of an electric motor.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.2.3 Electric motors (HT only)"
+    },
+    {
+      "id": "aqa-8463-ef4d3146a1-aqa-8463-4-7-2-4-loudspeaker-energy-conversion",
+      "conceptKey": "aqa-8463-ef4d3146a1-aqa-8463-loudspeaker-motor-effect-conversion",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2-4",
+      "kind": "process",
+      "visualCue": "🔌",
+      "front": "What conversion do loudspeakers and headphones make using the motor effect?",
+      "back": "They use the motor effect to convert variations in current into pressure variations in sound waves.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The conversion runs from electrical-current variations to sound-pressure variations, and its named mechanism is the motor effect.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They use the generator effect to convert pressure variations in sound waves into variations in current.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated conversion; loudspeakers start with variations in current.",
+          "misconception": "reverses-loudspeaker-conversion"
+        },
+        {
+          "key": "b",
+          "text": "They use the motor effect to convert variations in current into pressure variations in sound waves.",
+          "isCorrect": true,
+          "feedback": "Correct. Current variations are converted into sound-wave pressure variations.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "They use the generator effect to convert variations in current into pressure variations in sound waves.",
+          "isCorrect": false,
+          "feedback": "The conversion is attributed to the motor effect, not the generator effect.",
+          "misconception": "uses-generator-effect-instead-of-motor-effect"
+        }
+      ],
+      "sourceExcerpt": "Loudspeakers and headphones use the motor effect to convert\nvariations in current in electrical circuits to the pressure variations in\nsound waves.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.2.4 Loudspeakers (physics only) (HT only)"
+    },
+    {
+      "id": "aqa-8463-82577ca9db-aqa-8463-4-7-3-induced-current-opposition",
+      "conceptKey": "aqa-8463-82577ca9db-aqa-8463-induced-current-opposes-original-change",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-3",
+      "kind": "cause-consequence",
+      "visualCue": "⚡",
+      "front": "What does the magnetic field generated by an induced current do relative to the original change?",
+      "back": "It opposes the original change, whether that change is conductor movement or a change in magnetic field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The induced current’s magnetic field opposes either form of original change named: conductor movement or magnetic-field change.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It reinforces the original change, whether that change is conductor movement or a change in magnetic field.",
+          "isCorrect": false,
+          "feedback": "The generated magnetic field opposes rather than reinforces the original change.",
+          "misconception": "reverses-opposition-direction"
+        },
+        {
+          "key": "b",
+          "text": "It opposes the original change, whether that change is conductor movement or a change in magnetic field.",
+          "isCorrect": true,
+          "feedback": "Correct. The induced current’s field opposes the original change.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "It opposes conductor movement but not a change in magnetic field.",
+          "isCorrect": false,
+          "feedback": "The opposition applies to either conductor movement or a change in magnetic field.",
+          "misconception": "limits-opposition-to-motion"
+        }
+      ],
+      "sourceExcerpt": "An induced current generates a magnetic field that opposes the\noriginal change, either the movement of the conductor or the\nchange in magnetic field.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.3 Induced potential, transformers and the National Grid (physics only) (HT only)"
+    },
+    {
+      "id": "aqa-8463-f31279f792-aqa-8463-4-7-3-1-generator-effect-conditions",
+      "conceptKey": "aqa-8463-f31279f792-aqa-8463-generator-effect-potential-and-current-conditions",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-3-1",
+      "kind": "process",
+      "visualCue": "🧲",
+      "front": "What changes induce a potential difference across a conductor, and when is a current induced?",
+      "back": "Relative motion between a conductor and a magnetic field, or a change in the field around the conductor, induces a potential difference; if the conductor is in a complete circuit, a current is induced.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Relative movement or a changing magnetic field induces a potential difference. If the conductor forms part of a complete circuit, a current is induced; this is the generator effect.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A conductor held still in an unchanging magnetic field induces a potential difference; an incomplete circuit then produces a current.",
+          "isCorrect": false,
+          "feedback": "The stated causes are relative motion or magnetic-field change, and the circuit must be complete for an induced current.",
+          "misconception": "assumes-static-field-and-open-circuit-induction"
+        },
+        {
+          "key": "b",
+          "text": "Relative motion between a conductor and a magnetic field, or a change in the field around the conductor, induces a potential difference; if the conductor is in a complete circuit, a current is induced.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the stated conditions for the generator effect.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Only a complete circuit is needed to induce both a potential difference and a current; no motion or field change is required.",
+          "isCorrect": false,
+          "feedback": "A complete circuit allows induced current, but relative motion or field change induces the potential difference.",
+          "misconception": "treats-complete-circuit-as-sole-cause"
+        }
+      ],
+      "sourceExcerpt": "If an electrical conductor moves relative to a magnetic field or if\nthere is a change in the magnetic field around a conductor, a\npotential difference is induced across the ends of the conductor. If\nthe conductor is part of a complete circuit, a current is induced in\nthe conductor. This is called the generator effect.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.3.1 Induced potential (HT only)"
+    },
+    {
+      "id": "aqa-8463-282c64b936-aqa-8463-4-7-3-2-alternator-dynamo-output",
+      "conceptKey": "aqa-8463-282c64b936-aqa-8463-alternator-ac-dynamo-dc",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-3-2",
+      "kind": "comparison",
+      "visualCue": "⚙️",
+      "front": "Using the generator effect, what type of current is generated by an alternator and by a dynamo?",
+      "back": "An alternator generates ac; a dynamo generates dc.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The generator effect is used for both devices, with an alternator producing ac and a dynamo producing dc.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "An alternator generates ac; a dynamo generates dc.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the stated alternator–dynamo distinction.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An alternator generates dc; a dynamo generates ac.",
+          "isCorrect": false,
+          "feedback": "The outputs are reversed: the alternator generates ac and the dynamo generates dc.",
+          "misconception": "swaps-alternator-and-dynamo-outputs"
+        },
+        {
+          "key": "c",
+          "text": "An alternator and a dynamo both generate dc.",
+          "isCorrect": false,
+          "feedback": "Only the dynamo is stated to generate dc; the alternator generates ac.",
+          "misconception": "assumes-both-generate-dc"
+        }
+      ],
+      "sourceExcerpt": "The generator effect is used in an alternator to generate ac and in a\ndynamo to generate dc.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.3.2 Uses of the generator effect (HT only)"
+    },
+    {
+      "id": "aqa-8463-a8138a28f3-aqa-8463-4-7-3-3-microphone-conversion",
+      "conceptKey": "aqa-8463-a8138a28f3-aqa-8463-microphone-generator-effect-conversion",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-3-3",
+      "kind": "process",
+      "visualCue": "🌊",
+      "front": "What conversion does a microphone make using the generator effect?",
+      "back": "It uses the generator effect to convert pressure variations in sound waves into variations in current in electrical circuits.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A microphone’s conversion runs from sound-wave pressure variations to electrical-current variations, using the generator effect.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It uses the motor effect to convert variations in current into pressure variations in sound waves.",
+          "isCorrect": false,
+          "feedback": "This reverses the microphone conversion; the microphone starts with sound-wave pressure variations.",
+          "misconception": "confuses-microphone-with-loudspeaker-conversion"
+        },
+        {
+          "key": "b",
+          "text": "It uses the motor effect to convert pressure variations in sound waves into variations in current in electrical circuits.",
+          "isCorrect": false,
+          "feedback": "The conversion direction is right, but the named mechanism is the generator effect.",
+          "misconception": "uses-motor-effect-instead-of-generator-effect"
+        },
+        {
+          "key": "c",
+          "text": "It uses the generator effect to convert pressure variations in sound waves into variations in current in electrical circuits.",
+          "isCorrect": true,
+          "feedback": "Correct. Sound-pressure variations are converted into current variations.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Microphones use the generator effect to convert the pressure\nvariations in sound waves into variations in current in electrical\ncircuits.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.3.3 Microphones (HT only)"
+    },
+    {
+      "id": "aqa-8463-0e8a5cc37d-aqa-8463-4-7-3-4-basic-transformer-structure",
+      "conceptKey": "aqa-8463-0e8a5cc37d-aqa-8463-basic-transformer-coils-and-iron-core",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-3-4",
+      "kind": "structure",
+      "visualCue": "🔗",
+      "front": "What does a basic transformer consist of, and why is iron used for its core?",
+      "back": "A primary coil and a secondary coil wound on an iron core; iron is used because it is easily magnetised.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Both coils are wound on the iron core, whose stated relevant property is that it is easily magnetised.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A primary coil and a secondary coil wound on an iron core; iron is used because it is easily magnetised.",
+          "isCorrect": true,
+          "feedback": "Correct. A basic transformer has two coils on an easily magnetised iron core.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "One coil wound on an iron core; iron is used because it is easily magnetised.",
+          "isCorrect": false,
+          "feedback": "A basic transformer has both a primary coil and a secondary coil.",
+          "misconception": "omits-secondary-coil"
+        },
+        {
+          "key": "c",
+          "text": "A primary coil and a secondary coil wound on a copper core; copper is used because it is easily magnetised.",
+          "isCorrect": false,
+          "feedback": "The stated core material is iron, chosen because it is easily magnetised.",
+          "misconception": "substitutes-copper-for-iron-core"
+        }
+      ],
+      "sourceExcerpt": "A basic transformer consists of a primary coil and a secondary coil\nwound on an iron core.\nIron is used as it is easily magnetised.",
+      "sourceLocator": "Official PDF pages 69-72; 4.7.3.4 Transformers (HT only)"
+    }
+  ]
+}

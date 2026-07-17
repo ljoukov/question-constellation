@@ -25,6 +25,8 @@ const review = (cardId: string, contentRevision = 3, contentHash = `${cardId}-ha
 	grade: 'good' as const,
 	mode: 'recall' as const,
 	selectedChoiceKey: null,
+	statementChoiceKey: null,
+	selectedTruth: null,
 	sourceSessionId: 'recall-session-1',
 	responseDurationMs: 4_200
 });
@@ -143,7 +145,7 @@ describe('recall review sync queue', () => {
 
 	it('filters locally corrupted rows using the API field constraints', () => {
 		window.localStorage.setItem(
-			'question-constellation:recall-review-queue:v3:user-1',
+			'question-constellation:recall-review-queue:v4:user-1',
 			JSON.stringify([
 				{
 					id: 'bad-review',
@@ -210,5 +212,24 @@ describe('recall review sync queue', () => {
 		const second = JSON.parse(fetchMock.mock.calls[1][1].body as string);
 		expect(first.selectedChoiceKey).toBe('confuses-antibodies');
 		expect(second).toEqual(first);
+	});
+
+	it('persists a canonical true-or-false statement and decision', async () => {
+		const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+		vi.stubGlobal('fetch', fetchMock);
+		queueRecallReview('user-1', {
+			...review('card-1'),
+			mode: 'true_false',
+			selectedChoiceKey: null,
+			statementChoiceKey: 'confuses-antibodies',
+			selectedTruth: false
+		});
+
+		await expect(flushRecallReviewQueue('user-1')).resolves.toMatchObject({ ok: true });
+		expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({
+			mode: 'true_false',
+			statementChoiceKey: 'confuses-antibodies',
+			selectedTruth: false
+		});
 	});
 });

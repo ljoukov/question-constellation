@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "codex-reviewed-extraction-repair-v1",
+  "status": "passed",
+  "sourceDocumentId": "ocr-j352-02-qp-jun24",
+  "basis": "Five-field deterministic repair bounded to the complete failed independent judge report; no question, mark, source asset, prompt, response, chain, checklist, or other model-answer field changed.",
+  "inputs": {
+    "candidate": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/failed-judge-20260717T0207Z/failed-candidate.json",
+      "sha256": "6befb95965c174bc17f2013154907240c5fba5691c0be9930f8349df31bf8bc9",
+      "canonicalJsonSha256": "8d6f59f0fc1479f06004cd083804f524299b7d61d95ccabb6d7b05d2cffb0870"
+    },
+    "judgeReport": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/failed-judge-20260717T0207Z/judge-report.json",
+      "sha256": "8a9fd42786c932f05d60e81bcf0ab676abdc12b71a13df7b946a57c1e54fe6a1",
+      "canonicalJsonSha256": "b87236e2f451c2055b8896f865b936d9145db8a1753972c36aedccaf49e9a08d"
+    },
+    "questionPaper": {
+      "path": "data/ocr-gcse-english-literature/question-papers/OCR-J352-02-QP-JUN24.PDF",
+      "sha256": "c0f3be806bddf97e106ac6a1c3ff57e676871c83a68a086eaad97cf0f2017574"
+    },
+    "markScheme": {
+      "path": "data/ocr-gcse-english-literature/mark-schemes/OCR-J352-02-MS-JUN24.PDF",
+      "sha256": "c0981d3849667c48d0a9ca553ca312688766058b0c55df66a3a115e3c86be04b"
+    }
+  },
+  "failedModelAudit": {
+    "status": "failed",
+    "verdict": "fail",
+    "score": 0.91,
+    "checkedRefs": [
+      "01.1a",
+      "01.1b",
+      "02.1a",
+      "02.1b",
+      "03.1a",
+      "03.1b",
+      "04.1",
+      "05.1",
+      "06.1",
+      "07.1",
+      "08.1",
+      "09.1",
+      "10.1",
+      "11.1"
+    ],
+    "requiredRepairs": [
+      {
+        "sourceQuestionRef": "01.1b",
+        "repair": "Put the OCR Love and Relationships cluster and the exclusion of Love After Love into learner-visible contextText/stemBlocks/promptBlocks (or equivalent assembled fields); do not rely on selfContainedPromptText or topicPath."
+      },
+      {
+        "sourceQuestionRef": "02.1b",
+        "repair": "Put the OCR Conflict cluster and the exclusion of Songs for the People into learner-visible contextText/stemBlocks/promptBlocks (or equivalent assembled fields); do not rely on selfContainedPromptText or topicPath."
+      },
+      {
+        "sourceQuestionRef": "03.1b",
+        "repair": "Put the OCR Youth and Age cluster and the exclusion of Holy Thursday into learner-visible contextText/stemBlocks/promptBlocks (or equivalent assembled fields); do not rely on selfContainedPromptText or topicPath."
+      },
+      {
+        "sourceQuestionRef": "07.1",
+        "repair": "Identify The Merchant of Venice in a learner-visible assembled field before or within the prompt so that 'this play' has an explicit referent."
+      },
+      {
+        "sourceQuestionRef": "01.1b",
+        "repair": "Correct the modelAnswer's 'unpeeled orange' claim to the poem's peeled-and-quartered orange and revise the attached interpretation so it does not depend on the reversed detail."
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "sourceQuestionRef": "01.1b",
+      "field": "contextText",
+      "before": null,
+      "after": "This question is from the OCR Love and Relationships poetry cluster. Choose one anthology poem other than ‘Love After Love’.",
+      "officialAnchor": "Question paper PDF page 4 prints the Love and Relationships cluster, the paired Love After Love route, and the part-(b) instruction.",
+      "judgeFinding": "Adds the cluster and exclusion to the learner-visible assembled context."
+    },
+    {
+      "sourceQuestionRef": "02.1b",
+      "field": "contextText",
+      "before": null,
+      "after": "This question is from the OCR Conflict poetry cluster. Choose one anthology poem other than ‘Songs for the People’.",
+      "officialAnchor": "Question paper PDF page 6 prints the Conflict cluster, the paired Songs for the People route, and the part-(b) instruction.",
+      "judgeFinding": "Adds the cluster and exclusion to the learner-visible assembled context."
+    },
+    {
+      "sourceQuestionRef": "03.1b",
+      "field": "contextText",
+      "before": null,
+      "after": "This question is from the OCR Youth and Age poetry cluster. Choose one anthology poem other than ‘Holy Thursday’.",
+      "officialAnchor": "Question paper PDF page 8 prints the Youth and Age cluster, the paired Holy Thursday route, and the part-(b) instruction.",
+      "judgeFinding": "Adds the cluster and exclusion to the learner-visible assembled context."
+    },
+    {
+      "sourceQuestionRef": "07.1",
+      "field": "contextText",
+      "before": null,
+      "after": "The Merchant of Venice by William Shakespeare",
+      "officialAnchor": "Question paper PDF page 11 prints The Merchant of Venice immediately before Q6/Q7.",
+      "judgeFinding": "Gives “this play” an explicit learner-visible referent."
+    },
+    {
+      "sourceQuestionRef": "01.1b",
+      "field": "modelAnswer.answerText",
+      "before": "In Rita Dove’s ‘Flirtation’, a satisfying relationship is presented as playful, sensual and full of possibility. The speaker’s relaxed ‘walking’ suggests that the relationship develops willingly rather than under pressure. Dove’s couplets can suggest two people moving together, while the final single line gives their closeness a moment of completion. The image of an unpeeled orange makes the new relationship seem sweet, refreshing and still waiting to be discovered; at the same time, the Wedgwood plate suggests something precious but fragile. Sensual sound in phrases such as ‘rolled up her rugs’ and the image of salt ‘strewn’ across the sky make the experience feel vivid and pleasurable. These methods present satisfaction not as certainty about a distant future, but as delight in intimacy, discovery and the shared present.",
+      "after": "In Rita Dove’s ‘Flirtation’, a satisfying relationship is presented as playful, sensual and full of possibility. The speaker’s relaxed ‘walking’ suggests that the relationship develops willingly rather than under pressure. Dove’s couplets can suggest two people moving together, while the final single line gives their closeness a moment of completion. The image of ‘an orange, peeled / and quartered’ makes the new relationship seem sweet, generous and ready to be shared; at the same time, the Wedgwood plate suggests something precious but fragile. Sensual sound in phrases such as ‘rolled up her rugs’ and the image of salt ‘strewn’ across the sky make the experience feel vivid and pleasurable. These methods present satisfaction not as certainty about a distant future, but as delight in intimacy, discovery and the shared present.",
+      "officialAnchor": "Mark scheme PDF page 21 names Flirtation as valid and cites its sensual imagery; the preserved failed judge report identifies the exact reversed “unpeeled” detail and required correction.",
+      "judgeFinding": "Corrects the reversed orange detail and removes the interpretation that depended on it."
+    }
+  ],
+  "changedPaths": [
+    "questions[1].contextText",
+    "questions[1].modelAnswer.answerText",
+    "questions[3].contextText",
+    "questions[5].contextText",
+    "questions[9].contextText"
+  ],
+  "outputArtifact": {
+    "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/repaired-extraction.json",
+    "sha256": "ce99c660d727de76aba5ccad825ccbc97c3c4ae42ee2020d56a2b646983d4320",
+    "canonicalJsonSha256": "f9ac020c371718a4f1afee8264fe84fdf8119f5faf99091c66b6c487252513b9"
+  },
+  "deterministicValidation": {
+    "status": "passed",
+    "sourceDocumentId": "ocr-j352-02-qp-jun24",
+    "questionCount": 14,
+    "markTotal": 440,
+    "firstRef": "01.1a",
+    "lastRef": "11.1",
+    "duplicateRefs": [],
+    "parentMarkTotals": {
+      "10": 40,
+      "11": 40,
+      "01": 40,
+      "02": 40,
+      "03": 40,
+      "04": 40,
+      "05": 40,
+      "06": 40,
+      "07": 40,
+      "08": 40,
+      "09": 40
+    },
+    "reviewQuestionRefs": [],
+    "blockingIssues": [],
+    "deterministicIssueCount": 0,
+    "deterministicIssues": [],
+    "artifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/validation.json",
+      "sha256": "8b9f62594ce491cc836acdc4bfcaf9a1119353ebb1a2a3347f2cd311f2bdbfa0",
+      "canonicalJsonSha256": "967778ac726c2a48d9cc041ed14c5fe110e96cbdcef15bc94b4b98ec406257f1"
+    }
+  },
+  "invariants": {
+    "exactFailedCandidateHash": true,
+    "exactFailedJudgeHash": true,
+    "exactOfficialPdfHashes": true,
+    "requiredRepairCountExact": true,
+    "changedFieldCountExact": true,
+    "noOtherFieldsChanged": true,
+    "questionCountPreserved": true,
+    "markTotalPreserved": true,
+    "refOrderPreserved": true,
+    "deterministicValidationPassed": true
+  }
+}

@@ -11,8 +11,10 @@ export type RecallReviewSave = {
 	contentRevision: number;
 	contentHash: string;
 	grade: 'again' | 'hard' | 'good' | 'easy';
-	mode: 'recall' | 'recognise' | 'reverse';
+	mode: 'recall' | 'recognise' | 'reverse' | 'true_false';
 	selectedChoiceKey: string | null;
+	statementChoiceKey: string | null;
+	selectedTruth: boolean | null;
 	sourceSessionId: string;
 	responseDurationMs: number | null;
 	createdAt: number;
@@ -25,7 +27,7 @@ export type RecallReviewFlushResult = {
 	discardedCount: number;
 };
 
-const queueKeyPrefix = 'question-constellation:recall-review-queue:v3:';
+const queueKeyPrefix = 'question-constellation:recall-review-queue:v4:';
 
 function queueKey(userId: string) {
 	return `${queueKeyPrefix}${userId}`;
@@ -91,6 +93,8 @@ export async function flushRecallReviewQueue(userId: string): Promise<RecallRevi
 					grade: review.grade,
 					mode: review.mode,
 					selectedChoiceKey: review.selectedChoiceKey,
+					statementChoiceKey: review.statementChoiceKey,
+					selectedTruth: review.selectedTruth,
 					sourceSessionId: review.sourceSessionId,
 					responseDurationMs: review.responseDurationMs,
 					createdAt: review.createdAt
@@ -144,13 +148,20 @@ function isRecallReviewSave(value: unknown): value is RecallReviewSave {
 		review.contentHash.length >= 1 &&
 		review.contentHash.length <= 256 &&
 		['again', 'hard', 'good', 'easy'].includes(review.grade ?? '') &&
-		['recall', 'recognise', 'reverse'].includes(review.mode ?? '') &&
+		['recall', 'recognise', 'reverse', 'true_false'].includes(review.mode ?? '') &&
 		(review.mode === 'recognise'
 			? typeof review.selectedChoiceKey === 'string' &&
 				review.selectedChoiceKey === review.selectedChoiceKey.trim() &&
 				review.selectedChoiceKey.length >= 1 &&
-				review.selectedChoiceKey.length <= 64
+				review.selectedChoiceKey.length <= 80
 			: review.selectedChoiceKey === null) &&
+		(review.mode === 'true_false'
+			? typeof review.statementChoiceKey === 'string' &&
+				review.statementChoiceKey === review.statementChoiceKey.trim() &&
+				review.statementChoiceKey.length >= 1 &&
+				review.statementChoiceKey.length <= 80 &&
+				typeof review.selectedTruth === 'boolean'
+			: review.statementChoiceKey === null && review.selectedTruth === null) &&
 		typeof review.sourceSessionId === 'string' &&
 		review.sourceSessionId === review.sourceSessionId.trim() &&
 		review.sourceSessionId.length >= 1 &&

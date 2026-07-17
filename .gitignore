@@ -8,9 +8,37 @@ data/*
 data/curricula/*
 !data/curricula/source-manifest.json
 !data/curricula/curriculum-catalog.json
+!data/curricula/question-mappings/
+!data/curricula/question-mappings/**
 !data/recall/
 !data/recall/generated/
 !data/recall/generated/**
+!data/study-cards/
+data/study-cards/*
+!data/study-cards/final-release-baseline.json
+!data/study-cards/releases/
+!data/study-cards/releases/**
+
+!data/study-cards/english-literature/
+data/study-cards/english-literature/*
+!data/study-cards/english-literature/ocr-j352-source-plan.json
+!data/study-cards/english-literature/ocr-j352-deepening-source-plan.json
+!data/study-cards/english-literature/ocr-j352-deepening-shard-manifest.json
+!data/study-cards/english-literature/deepening-shards/
+!data/study-cards/english-literature/deepening-shards/**
+!data/study-cards/supplemental-source-recovery/
+!data/study-cards/supplemental-source-recovery/**
+!data/study-cards/rollout-recovery/
+!data/study-cards/rollout-recovery/**
+
+# Raw Codex/SDK event streams can contain complete session context. Release
+# provenance retains their SHA-256 and sanitized event count instead.
+data/study-cards/**/*.jsonl
+data/study-cards/**/*.ndjson
+
+!data/release/
+data/release/*
+!data/release/selective-paper-cohort-lock.json
 tmp/
 .output
 .vercel

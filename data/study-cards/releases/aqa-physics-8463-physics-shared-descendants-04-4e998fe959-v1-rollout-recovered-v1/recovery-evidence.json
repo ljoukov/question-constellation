@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1",
+  "recoveredReleaseId": "aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "historicalArtifactHash": "5be13a4da939b08aa6836073ccb461c3b7f7b11f6c727aacd99f571596eb56b1",
+  "generator": {
+    "runId": "019f6c4b-2a19-7fa2-bd09-f0112112a537",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-58-13-019f6c4b-2a19-7fa2-bd09-f0112112a537.jsonl",
+    "jsonlHash": "201900d7720a64b5d4197f5855f1acea66370e61323c5ead23b6afe33f8bcacd",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1/generation",
+    "startedAt": "2026-07-16T18:58:13.293Z",
+    "completedAt": "2026-07-16T19:03:38.232Z",
+    "modelOutputHash": "439c8703512389c256d1fdf731d0d235866aee50c89934e8813f8e0a2a6e8ca2"
+  },
+  "reviewer": {
+    "runId": "019f6c50-2200-7030-897b-e8b041a8279e",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T12-03-38-019f6c50-2200-7030-897b-e8b041a8279e.jsonl",
+    "jsonlHash": "dda0cc4d127e5af29fd0062a8115235471ea863453a483db926b5d14484ed286",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1/review",
+    "startedAt": "2026-07-16T19:03:38.922Z",
+    "completedAt": "2026-07-16T19:07:18.206Z",
+    "modelOutputHash": "954e9ace08eee0ed6e410cde94169e8c3ca4f5f011e4aac9123430083826a907"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": true,
+  "artifactHash": "06f144955f700fadf6124a36c914e68837ab5a14aa6ec66ede3d050cd9d6a3b3"
+}

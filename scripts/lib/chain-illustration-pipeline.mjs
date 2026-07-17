@@ -183,6 +183,7 @@ export const CHAIN_ILLUSTRATION_GLITCH_IDS = Object.freeze(
 /**
  * @typedef {object} ChainStep
  * @property {string} id
+ * @property {string | undefined} [chainId]
  * @property {number} displayOrder
  * @property {string} stepText
  * @property {string} stepRole
@@ -223,13 +224,23 @@ export const CHAIN_ILLUSTRATION_GLITCH_IDS = Object.freeze(
 
 /**
  * @typedef {object} ChainMember
+ * @property {string | undefined} [chainId]
  * @property {string} questionId
+ * @property {string | undefined} [questionStatus]
+ * @property {number | undefined} [questionNeedsReview]
+ * @property {number | undefined} [membershipNeedsReview]
+ * @property {number | undefined} [extractionConfidence]
  * @property {string} sourceDocumentId
  * @property {string} sourceQuestionRef
  * @property {string} promptText
  * @property {string | null | undefined} [selfContainedPromptText]
+ * @property {string | null | undefined} [commandWord]
  * @property {number} marks
  * @property {number} fitConfidence
+ * @property {string | null | undefined} [paper]
+ * @property {string | null | undefined} [series]
+ * @property {number | null | undefined} [year]
+ * @property {number | undefined} [overlayCount]
  * @property {MarkSchemeItem[]} markSchemeItems
  * @property {ChecklistItem[]} checklistItems
  * @property {ModelAnswer[]} modelAnswers
@@ -393,6 +404,7 @@ export function normalizedSourceFingerprintInput(candidate) {
 	return {
 		chain: {
 			id: candidate.id,
+			slug: candidate.slug,
 			title: candidate.title,
 			canonicalChainText: candidate.canonicalChainText,
 			summary: candidate.summary,
@@ -403,6 +415,7 @@ export function normalizedSourceFingerprintInput(candidate) {
 		},
 		steps: candidate.steps.map((step) => ({
 			id: step.id,
+			chainId: step.chainId,
 			displayOrder: step.displayOrder,
 			stepText: step.stepText,
 			stepRole: step.stepRole,
@@ -410,29 +423,46 @@ export function normalizedSourceFingerprintInput(candidate) {
 			commonOmission: step.commonOmission
 		})),
 		members: candidate.members.map((member) => ({
+			chainId: member.chainId,
 			questionId: member.questionId,
+			questionStatus: member.questionStatus,
+			questionNeedsReview: member.questionNeedsReview,
+			membershipNeedsReview: member.membershipNeedsReview,
+			extractionConfidence: member.extractionConfidence,
 			sourceDocumentId: member.sourceDocumentId,
+			sourceQuestionRef: member.sourceQuestionRef,
 			promptText: member.promptText,
 			selfContainedPromptText: member.selfContainedPromptText,
+			commandWord: member.commandWord,
 			marks: member.marks,
 			fitConfidence: member.fitConfidence,
+			paper: member.paper,
+			series: member.series,
+			year: member.year,
+			overlayCount: member.overlayCount,
 			markSchemeItems: member.markSchemeItems.map((item) => ({
 				id: item.id,
 				displayOrder: item.displayOrder,
 				itemType: item.itemType,
 				text: item.text,
-				marks: item.marks
+				marks: item.marks,
+				confidence: item.confidence
 			})),
 			checklistItems: member.checklistItems.map((item) => ({
 				id: item.id,
 				displayOrder: item.displayOrder,
 				text: item.text,
+				required: item.required,
+				confidence: item.confidence,
+				needsHumanReview: item.needsHumanReview,
 				markSchemeItemIds: item.markSchemeItemIds
 			})),
 			modelAnswers: member.modelAnswers.map((answer) => ({
 				id: answer.id,
 				answerText: answer.answerText,
 				derivation: answer.derivation,
+				confidence: answer.confidence,
+				needsHumanReview: answer.needsHumanReview,
 				supportingMarkSchemeItemIds: answer.supportingMarkSchemeItemIds
 			}))
 		}))
@@ -839,6 +869,72 @@ export function validateSemanticPlan(candidates, plan) {
 		}
 	}
 	return { status: issues.length ? 'failed' : 'passed', issues };
+}
+
+/**
+ * Prove that the semantic plan has reached one terminal, publication-safe state before any
+ * external write begins. Rejected decisions need an explicit rejected job; every accepted
+ * decision needs exactly one ready job and exactly one matching publish item. Failed, missing,
+ * duplicate or already-published jobs make the whole release ineligible for publication.
+ *
+ * @param {{
+ *   decisions: Array<{chainId?: string, verdict?: string}>,
+ *   jobs: Array<{chainId?: string, status?: string}>,
+ *   prepared: Array<{chainId?: string, item?: {id?: string, answerChainId?: string}}>
+ * }} input
+ */
+export function validatePreparedIllustrationRelease({ decisions, jobs, prepared }) {
+	if (!Array.isArray(decisions) || !Array.isArray(jobs) || !Array.isArray(prepared)) {
+		throw new Error('Prepared illustration release inputs must be arrays.');
+	}
+	const decisionIds = decisions.map((decision) => String(decision?.chainId ?? ''));
+	const jobIds = jobs.map((job) => String(job?.chainId ?? ''));
+	const preparedIds = prepared.map((entry) => String(entry?.chainId ?? ''));
+	if (
+		decisionIds.some((id) => !id) ||
+		new Set(decisionIds).size !== decisionIds.length ||
+		jobs.length !== decisions.length ||
+		jobIds.some((id) => !id) ||
+		new Set(jobIds).size !== jobIds.length ||
+		preparedIds.some((id) => !id) ||
+		new Set(preparedIds).size !== preparedIds.length
+	) {
+		throw new Error(
+			'Prepared illustration release identities are missing, duplicated or incomplete.'
+		);
+	}
+	const jobByChainId = new Map(jobs.map((job) => [job.chainId, job]));
+	const preparedByChainId = new Map(prepared.map((entry) => [entry.chainId, entry]));
+	const items = [];
+	for (const decision of decisions) {
+		const job = jobByChainId.get(decision.chainId);
+		const entry = preparedByChainId.get(decision.chainId);
+		if (decision.verdict === 'reject') {
+			if (job?.status !== 'rejected-by-semantic-gate' || entry) {
+				throw new Error(
+					`${decision.chainId} does not have the exact terminal semantic-rejection state.`
+				);
+			}
+			continue;
+		}
+		if (
+			decision.verdict !== 'accept' ||
+			job?.status !== 'ready' ||
+			!entry?.item?.id ||
+			entry.item.answerChainId !== decision.chainId
+		) {
+			throw new Error(`${decision.chainId} is not ready for fail-closed batch publication.`);
+		}
+		items.push(entry.item);
+	}
+	if (prepared.length !== items.length) {
+		throw new Error('Prepared illustration release contains an item outside the accepted plan.');
+	}
+	const itemIds = items.map((item) => item.id);
+	if (new Set(itemIds).size !== itemIds.length) {
+		throw new Error('Prepared illustration release contains duplicate illustration ids.');
+	}
+	return items;
 }
 
 /** @param {ChainIllustrationCandidate} candidate */

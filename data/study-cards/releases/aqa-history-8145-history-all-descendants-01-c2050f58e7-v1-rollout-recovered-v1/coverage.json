@@ -1,0 +1,39 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-ba",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bb",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bc",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bd",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    }
+  ]
+}

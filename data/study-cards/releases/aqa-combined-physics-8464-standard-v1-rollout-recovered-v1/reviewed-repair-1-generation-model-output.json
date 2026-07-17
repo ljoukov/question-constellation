@@ -1,0 +1,43 @@
+{
+  "cards": [
+    {
+      "id": "forces-scalar-vector-difference",
+      "conceptKey": "forces-scalar-versus-vector",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1",
+      "kind": "comparison",
+      "visualCue": "🏎️",
+      "front": "How do scalar and vector quantities differ?",
+      "back": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Magnitude is sufficient for a scalar, whereas a vector also has an associated direction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+          "isCorrect": true,
+          "feedback": "Correct: a vector has an associated direction as well as magnitude, while a scalar has magnitude only.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Both scalars and vectors have magnitude only.",
+          "isCorrect": false,
+          "feedback": "A vector also has an associated direction.",
+          "misconception": "forces-vectors-have-no-direction"
+        },
+        {
+          "key": "c",
+          "text": "Both scalars and vectors have magnitude and an associated direction.",
+          "isCorrect": false,
+          "feedback": "A scalar has magnitude only; an associated direction is a property of a vector.",
+          "misconception": "forces-scalars-have-direction"
+        }
+      ],
+      "sourceExcerpt": "Scalar quantities have magnitude only.\nVector quantities have magnitude and an associated direction.",
+      "sourceLocator": "Official PDF pages 143-155; 6.5.1.1 Scalar and vector quantities"
+    }
+  ]
+}

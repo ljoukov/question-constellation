@@ -1,0 +1,43 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8145-321ad-sacco-vanzetti-red-scare",
+      "conceptKey": "america-1920-1973-sacco-vanzetti-red-scare",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad",
+      "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ad-part-1",
+      "kind": "case-study",
+      "visualCue": "🏛️",
+      "front": "In the divided-society content, which case is identified as significant alongside the Red Scare?",
+      "back": "the Sacco and Vanzetti case",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification links the Red Scare with the significance of the Sacco and Vanzetti case.",
+      "memoryTip": "Remember the stated pairing: Red Scare and the Sacco and Vanzetti case.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "the Sacco and Vanzetti case",
+          "isCorrect": true,
+          "feedback": "Correct: this is the case named alongside the Red Scare.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "the Ku Klux Klan",
+          "isCorrect": false,
+          "feedback": "The Ku Klux Klan is listed separately; the named case is the Sacco and Vanzetti case.",
+          "misconception": "selects-adjacent-ku-klux-klan-topic"
+        },
+        {
+          "key": "c",
+          "text": "organised crime and prohibition",
+          "isCorrect": false,
+          "feedback": "Organised crime and prohibition are linked to their impact on society; the named case is the Sacco and Vanzetti case.",
+          "misconception": "selects-adjacent-crime-and-prohibition-topic"
+        }
+      ],
+      "sourceExcerpt": "• Divided society: organised crime, prohibition and their impact on society; the causes of racial\ntension, the experiences of immigrants and the impact of immigration; the Ku Klux Klan; the\nRed Scare and the significance of the Sacco and Vanzetti case.",
+      "sourceLocator": "Official PDF pages 17-18; 3.2.1.AD.part-1 Part one: American people and the 'Boom'"
+    }
+  ]
+}

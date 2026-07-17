@@ -1,0 +1,46 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8145-d60a34fd65-aqa-8145-germany-hitler-dictatorship-establishment",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes Hitler’s appointment as Chancellor from the subsequent establishment of dictatorship.",
+        "Tests retrieval of the complete specification sequence rather than only the Reichstag Fire and Enabling Act."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-dbccb9700c-aqa-8145-norman-site-earlier-period-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the need to compare a Norman site’s features with earlier periods when judging representativeness."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-87f078e001-aqa-8145-edward-i-site-place-history-relationship",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the central historic-environment method of connecting a specific place with associated events and developments."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-9ec181170e-aqa-8145-elizabethan-site-design-period-culture",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates what site design reflects from the other required aspects of historic-environment study.",
+        "The three distractors represent distinct, source-grounded category confusions."
+      ]
+    },
+    {
+      "cardId": "aqa-8145-514f2a6fa2-aqa-8145-restoration-historic-environment-course-share",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds accurate awareness of the historic environment’s course weighting and approximate guided-learning allocation."
+      ]
+    }
+  ]
+}

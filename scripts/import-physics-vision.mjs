@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import {
@@ -14,8 +15,21 @@ import {
 } from './lib/llm-extraction-pipeline.mjs';
 import { aqaScienceTopicFieldsForImport } from './lib/aqa-science-topic-mapping.mjs';
 import { choiceMaxSelectionsForImport } from './lib/chained-question-response.mjs';
+import {
+	assertBoundJsonInputCurrent,
+	assertExactJsonArtifactsEqual,
+	captureBoundJsonInput
+} from './lib/phase-input-binding.mjs';
+import {
+	collectConsistentIncomingChainDefinitions,
+	normalizeSharedChainDefinition,
+	normalizeSharedChainStep,
+	sharedChainDefinitionsEqual,
+	sharedChainReuseIsSafe
+} from './lib/shared-chain-replacement-policy.mjs';
 
 const rootDir = process.cwd();
+const localImageMetadataCache = new Map();
 const wranglerPath = path.join(rootDir, 'wrangler.jsonc');
 const extractionRoot = path.resolve(
 	rootDir,
@@ -32,10 +46,16 @@ const allowSharedChainUpdates = args.has('--allow-shared-chain-updates');
 const refreshSharedChainDefinitions = args.has('--refresh-shared-chain-definitions');
 const applySchemaFlag = args.has('--apply-schema');
 const recursive = args.has('--recursive');
+const expectedPaperSha256 = stringArg('expected-paper-sha256', '');
+const expectedPaperCanonicalJsonSha256 = stringArg('expected-paper-canonical-json-sha256', '');
+if (Boolean(expectedPaperSha256) !== Boolean(expectedPaperCanonicalJsonSha256)) {
+	throw new Error('Pass both expected paper hashes together.');
+}
 const replaceAllSubject =
 	args.has('--replace-all-subject') || args.has('--replace-all-physics') || allPapers;
 const batchSize = integerArg('batch-size', 50, 1);
 const maxSqlParams = 80;
+const loadedPaperBindings = [];
 
 if (!paperArg && !allPapers) {
 	throw new Error('Pass --paper=<source_document_id> or --all.');
@@ -129,10 +149,6 @@ async function fetchD1WithRetry(options, label) {
 		await sleep(600 * attempt);
 	}
 	throw lastError ?? new Error(`${label} failed.`);
-}
-
-function readJson(filePath) {
-	return JSON.parse(readFileSync(filePath, 'utf8'));
 }
 
 function json(value, fallback) {
@@ -592,8 +608,8 @@ function normalizeBlock(block, assetIdsByLabel, reviewNotes) {
 		};
 	}
 	if (kind === 'figure') {
-		const label = block.assetLabel ?? block.label;
-		const visibleLabel = block.label ?? label;
+		const label = block.assetLabel ?? block.assetId ?? block.sourceLabel ?? block.label;
+		const visibleLabel = block.label ?? block.sourceLabel ?? block.assetLabel ?? label;
 		const assetId =
 			assetIdsByLabel.get(String(label ?? '').toLowerCase()) ??
 			assetIdsByLabel.get(String(visibleLabel ?? '').toLowerCase());
@@ -911,8 +927,17 @@ function assetStatements(question, questionId, sourceDocumentId) {
 				? `data/aqa-combined-science-trilogy-higher/assets/question-papers/${sourceDocumentId}/${localFileName}`
 				: null);
 		const delivery = assetDeliveryPaths(asset, sourceDocumentId, filePath);
+		const imageMetadata = localImageMetadata(filePath);
+		const paperMeasurement = normalizedPaperMeasurement(asset, imageMetadata);
 		if (delivery.r2Key || delivery.publicPath) {
-			for (const alias of [label, asset.sourceLabel, asset.assetLabel, asset.label]) {
+			for (const alias of [
+				label,
+				asset.sourceLabel,
+				asset.assetLabel,
+				asset.label,
+				asset.assetId,
+				asset.id
+			]) {
 				const key = String(alias ?? '')
 					.trim()
 					.toLowerCase();
@@ -959,7 +984,17 @@ function assetStatements(question, questionId, sourceDocumentId) {
 					json(
 						{
 							provenance: 'llm-vision-extracted',
-							review_notes: asset.reviewNotes ?? []
+							review_notes: asset.reviewNotes ?? [],
+							image_candidates: imageMetadata
+								? [
+										{
+											page_number: asset.pageNumber ?? asset.page ?? null,
+											file_path: filePath,
+											...imageMetadata
+										}
+									]
+								: [],
+							...(paperMeasurement ? { paper_measurement: paperMeasurement } : {})
 						},
 						{}
 					)
@@ -968,6 +1003,74 @@ function assetStatements(question, questionId, sourceDocumentId) {
 		);
 	}
 	return { statements, assetIdsByLabel };
+}
+
+function localImageMetadata(filePath) {
+	if (!filePath) return null;
+	const absolutePath = path.isAbsolute(filePath) ? filePath : path.join(rootDir, filePath);
+	if (localImageMetadataCache.has(absolutePath)) return localImageMetadataCache.get(absolutePath);
+	if (!existsSync(absolutePath)) return null;
+	try {
+		const raw = execFileSync('identify', ['-format', '%w|%h|%x|%y|%[units]', absolutePath], {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore']
+		});
+		const [width, height, rawX, rawY, units] = raw.trim().split('|');
+		const densityMultiplier = units === 'PixelsPerCentimeter' ? 2.54 : 1;
+		const xPpi =
+			Number(rawX) > 0 && units !== 'Undefined' ? Number(rawX) * densityMultiplier : null;
+		const yPpi =
+			Number(rawY) > 0 && units !== 'Undefined' ? Number(rawY) * densityMultiplier : null;
+		const metadata = {
+			width: Number(width),
+			height: Number(height),
+			x_ppi: xPpi,
+			y_ppi: yPpi
+		};
+		localImageMetadataCache.set(absolutePath, metadata);
+		return metadata;
+	} catch {
+		localImageMetadataCache.set(absolutePath, null);
+		return null;
+	}
+}
+
+function normalizedPaperMeasurement(asset, imageMetadata) {
+	const requested =
+		asset.paperMeasurement ??
+		asset.paper_measurement ??
+		asset.metadata?.paperMeasurement ??
+		asset.metadata?.paper_measurement ??
+		null;
+	if (!requested || requested.enabled === false) return null;
+	const pixelWidth = Number(requested.pixelWidth ?? requested.pixel_width ?? imageMetadata?.width);
+	const pixelsPerMillimetre = Number(
+		requested.pixelsPerMillimetre ??
+			requested.pixels_per_millimetre ??
+			(Number(imageMetadata?.x_ppi) > 0 ? Number(imageMetadata.x_ppi) / 25.4 : NaN)
+	);
+	if (
+		(requested.axis ?? 'horizontal') !== 'horizontal' ||
+		requested.sourceVerified !== true ||
+		!Number.isFinite(pixelWidth) ||
+		pixelWidth <= 0 ||
+		!Number.isFinite(pixelsPerMillimetre) ||
+		pixelsPerMillimetre <= 0
+	) {
+		throw new Error(
+			`Invalid calibrated paper measurement metadata for ${asset.sourceLabel ?? asset.assetLabel ?? 'asset'}.`
+		);
+	}
+	return {
+		axis: 'horizontal',
+		pixel_width: pixelWidth,
+		pixels_per_millimetre: pixelsPerMillimetre,
+		instructions:
+			requested.instructions ??
+			'Move the two guides to the endpoints being measured. The result uses the original paper scale.',
+		calibration_source: requested.calibrationSource ?? 'embedded_image_density',
+		source_verified: requested.sourceVerified === true
+	};
 }
 
 function responseAnswerKeyOrder(response, targetId, fallbackOrder) {
@@ -1254,6 +1357,44 @@ function questionAnswerEvidenceText(question) {
 		.join('\n');
 }
 
+function selfContainmentMetadataForImport(question) {
+	const declared =
+		question.selfContainment ?? question.self_containment ?? question.sourceRequirements ?? {};
+	const concreteAssetLabels = (question.assets ?? [])
+		.map((asset) => asset?.sourceLabel ?? asset?.assetLabel ?? asset?.label)
+		.map((label) => String(label ?? '').trim())
+		.filter(Boolean);
+	const declaredLabels = declared.required_asset_labels ?? declared.requiredAssetLabels;
+	const requiredAssetLabels = [
+		...new Set(
+			(Array.isArray(declaredLabels) ? declaredLabels : concreteAssetLabels)
+				.map((label) => String(label ?? '').trim())
+				.filter(Boolean)
+		)
+	];
+	const rawRequiredSourceCount =
+		declared.required_source_count ?? declared.requiredSourceCount ?? null;
+	const requiredSourceCount = Number(rawRequiredSourceCount);
+	const metadata = {
+		status:
+			String(declared.status ?? '').trim() ||
+			(question.selfContainedPromptText ? 'self_contained' : 'contextual'),
+		requires_context: declared.requires_context === true || declared.requiresContext === true,
+		requires_assets:
+			declared.requires_assets === true ||
+			declared.requiresAssets === true ||
+			requiredAssetLabels.length > 0,
+		required_asset_labels: requiredAssetLabels
+	};
+	if (Number.isInteger(requiredSourceCount) && requiredSourceCount >= 0) {
+		metadata.required_source_count = requiredSourceCount;
+	}
+	if (declared.complete_source_bundle === true || declared.completeSourceBundle === true) {
+		metadata.complete_source_bundle = true;
+	}
+	return metadata;
+}
+
 function addQuestionStatements(statements, paper, question, chainUseCount, options = {}) {
 	const sourceDocumentId = paper.sourceDocument.id;
 	const subjectArea = subjectAreaForPaper(paper);
@@ -1346,13 +1487,7 @@ function addQuestionStatements(statements, paper, question, chainUseCount, optio
 				question.pageEnd ?? null,
 				question.response?.kind ?? null,
 				json([], []),
-				json(
-					{
-						status: question.selfContainedPromptText ? 'self_contained' : 'contextual',
-						required_asset_labels: (question.assets ?? []).map((asset) => asset.sourceLabel)
-					},
-					{}
-				),
+				json(selfContainmentMetadataForImport(question), {}),
 				question.extractionConfidence ?? null,
 				bool(question.needsHumanReview),
 				json(reviewNotes, []),
@@ -1702,20 +1837,43 @@ function loadPapers() {
 	const files = listExtractionFiles(extractionRoot, recursive)
 		.filter((fileName) => fileName.endsWith('.json'))
 		.sort();
-	const papers = files.map((fileName) => ({
-		fileName,
-		paper: readJson(path.join(extractionRoot, fileName))
-	}));
+	const papers = files.map((fileName) => {
+		const binding = captureBoundJsonInput(path.join(extractionRoot, fileName), {
+			rootDir,
+			label: `Import paper candidate ${fileName}`
+		});
+		return { fileName, paper: binding.value, binding };
+	});
 	const selected = allPapers
 		? papers
 		: papers.filter(({ fileName, paper }) => paperMatchesSelection(fileName, paper));
 	if (!selected.length) throw new Error(`No extracted paper matched ${paperArg}.`);
+	if (expectedPaperSha256 || expectedPaperCanonicalJsonSha256) {
+		if (selected.length !== 1) {
+			throw new Error('Exact expected paper hashes require exactly one selected paper.');
+		}
+		assertExactJsonArtifactsEqual(
+			{
+				sha256: expectedPaperSha256,
+				canonicalJsonSha256: expectedPaperCanonicalJsonSha256
+			},
+			selected[0].binding.artifact,
+			'Import paper candidate'
+		);
+	}
+	loadedPaperBindings.push(...selected.map(({ binding }) => binding));
 	return selected.map(({ paper }) => ({
 		...paper,
 		questions: (paper.questions ?? []).map((question) =>
 			normalizeExtractedQuestionForImport(question)
 		)
 	}));
+}
+
+function assertBoundImportInputsCurrent() {
+	for (const binding of loadedPaperBindings) {
+		assertBoundJsonInputCurrent(binding, { label: 'Import paper candidate' });
+	}
 }
 
 function listExtractionFiles(dir, includeNested) {
@@ -1820,7 +1978,7 @@ async function chainIdsForSourceDocuments(sourceDocumentIds) {
 	return rows.map((row) => row.id).filter(Boolean);
 }
 
-async function existingReplacementPlan(papers) {
+async function existingReplacementPlan(papers, incomingChainDefinitions) {
 	const sourceDocumentIds = papers.map((paper) => paper.sourceDocument.id);
 	const incomingQuestionIds = papers.flatMap((paper) =>
 		(paper.questions ?? []).map((question) =>
@@ -1828,7 +1986,6 @@ async function existingReplacementPlan(papers) {
 		)
 	);
 	const incomingChainActions = incomingChainActionsForPapers(papers);
-	const incomingChainDefinitions = incomingChainDefinitionsForPapers(papers);
 	const incomingChainIds = [
 		...new Set(
 			papers.flatMap((paper) =>
@@ -1896,11 +2053,11 @@ async function existingReplacementPlan(papers) {
 		const actions = [...(incomingChainActions.get(row.id) ?? new Set())].sort();
 		const existingDefinition = existingSharedChainDefinitions.get(row.id) ?? null;
 		const incomingDefinition = incomingChainDefinitions.get(row.id) ?? null;
-		const definitionUnchanged = chainDefinitionsEqual(existingDefinition, incomingDefinition);
-		const safeReuseOnly =
-			(actions.length === 1 && actions[0] === 'reuse_existing') ||
-			(actions.every((action) => ['reuse_existing', 'update_existing'].includes(action)) &&
-				definitionUnchanged);
+		const definitionUnchanged = sharedChainDefinitionsEqual(
+			existingDefinition,
+			incomingDefinition
+		);
+		const safeReuseOnly = sharedChainReuseIsSafe({ actions, definitionUnchanged });
 		return {
 			...row,
 			incoming_actions: actions,
@@ -1944,7 +2101,7 @@ async function existingChainDefinitions(chainIds) {
 	const definitions = new Map(
 		rows.map((row) => [
 			row.id,
-			normalizeChainDefinition({
+			normalizeSharedChainDefinition({
 				title: row.title,
 				canonicalChainText: row.canonical_chain_text,
 				summary: row.summary,
@@ -1956,7 +2113,7 @@ async function existingChainDefinitions(chainIds) {
 		const definition = definitions.get(step.answer_chain_id);
 		if (!definition) continue;
 		definition.steps.push(
-			normalizeChainStep({
+			normalizeSharedChainStep({
 				stepText: step.step_text,
 				stepRole: step.step_role,
 				explanation: step.explanation,
@@ -1968,48 +2125,21 @@ async function existingChainDefinitions(chainIds) {
 }
 
 function incomingChainDefinitionsForPapers(papers) {
-	const definitions = new Map();
+	const entries = [];
 	for (const paper of papers) {
 		const subjectArea = subjectAreaForPaper(paper);
 		for (const question of paper.questions ?? []) {
 			const chain = question.answerChain;
 			if (!chain) continue;
 			const chainId = chainIdFor(chain, subjectArea);
-			if (!definitions.has(chainId)) definitions.set(chainId, normalizeChainDefinition(chain));
+			entries.push({
+				chainId,
+				definition: chain,
+				source: `${paper.sourceDocument?.id ?? 'unknown paper'}:${question.sourceQuestionRef ?? 'unknown ref'}`
+			});
 		}
 	}
-	return definitions;
-}
-
-function chainDefinitionsEqual(existingDefinition, incomingDefinition) {
-	if (!existingDefinition || !incomingDefinition) return false;
-	return JSON.stringify(existingDefinition) === JSON.stringify(incomingDefinition);
-}
-
-function normalizeChainDefinition(chain) {
-	return {
-		title: normalizeChainText(chain?.title),
-		canonicalChainText: normalizeChainText(
-			chain?.canonicalChainText ?? chain?.canonical_chain_text
-		),
-		summary: normalizeChainText(chain?.summary),
-		steps: (chain?.steps ?? []).map(normalizeChainStep)
-	};
-}
-
-function normalizeChainStep(step) {
-	return {
-		stepText: normalizeChainText(step?.stepText ?? step?.step_text),
-		stepRole: normalizeChainText(step?.stepRole ?? step?.step_role),
-		explanation: normalizeChainText(step?.explanation),
-		commonOmission: normalizeChainText(step?.commonOmission ?? step?.common_omission)
-	};
-}
-
-function normalizeChainText(value) {
-	return String(value ?? '')
-		.replace(/\s+/g, ' ')
-		.trim();
+	return collectConsistentIncomingChainDefinitions(entries);
 }
 
 function incomingChainActionsForPapers(papers) {
@@ -2229,8 +2359,11 @@ async function audit(papers) {
 
 const papers = loadPapers();
 validateExtractedPapers(papers);
+const incomingChainDefinitions = incomingChainDefinitionsForPapers(papers);
 const importedSubjectAreas = [...new Set(papers.map(subjectAreaForPaper).filter(Boolean))];
-const replacementPlan = checkExisting ? await existingReplacementPlan(papers) : null;
+const replacementPlan = checkExisting
+	? await existingReplacementPlan(papers, incomingChainDefinitions)
+	: null;
 if (replacementPlan && !replacementPlan.safeToReplace) {
 	console.log(JSON.stringify({ d1_existing_replacement_plan: replacementPlan }, null, 2));
 	throw new Error(
@@ -2257,6 +2390,7 @@ console.log(
 			dry_run: dryRun,
 			check_existing: checkExisting,
 			refresh_shared_chain_definitions: refreshSharedChainDefinitions,
+			input_artifacts: loadedPaperBindings.map((binding) => binding.artifact),
 			d1_existing_replacement_plan: replacementPlan
 		},
 		null,
@@ -2264,15 +2398,20 @@ console.log(
 	)
 );
 
-if (applySchemaFlag) await applySchema();
+if (applySchemaFlag) {
+	assertBoundImportInputsCurrent();
+	await applySchema();
+}
 if (dryRun) {
 	console.log('clear: dry run, skipped database deletes');
 } else {
+	assertBoundImportInputsCurrent();
 	await clearRowsForPapers(papers, { reuseExistingChainIds });
 }
 
 const statements = [];
 const chainUseCount = new Map();
+const contentImportId = `vision-extracted-${new Date().toISOString()}`;
 for (const paper of papers) {
 	statements.push(sourceDocumentStatement(paper.sourceDocument));
 	statements.push(sourceDocumentStatement(paper.markSchemeDocument, paper.sourceDocument));
@@ -2292,7 +2431,7 @@ statements.push(
 		'content_imports',
 		['id', 'source', 'question_count', 'chain_count', 'constellation_count', 'metadata_json'],
 		[
-			`vision-extracted-${new Date().toISOString()}`,
+			contentImportId,
 			path.relative(rootDir, extractionRoot),
 			papers.reduce((sum, paper) => sum + paper.questions.length, 0),
 			chainUseCount.size,
@@ -2312,7 +2451,40 @@ statements.push(
 	)
 );
 
-await executeBatch(statements, 'insert');
-if (!dryRun) await audit(papers);
+try {
+	await executeBatch(statements, 'insert');
+	if (!dryRun) await audit(papers);
+} catch (error) {
+	if (!dryRun) {
+		console.error('Import failed after D1 writes began; removing the incomplete paper rows.');
+		try {
+			await clearRowsForPapers(papers, { reuseExistingChainIds });
+			await d1Query('DELETE FROM content_imports WHERE id = ?', [contentImportId]);
+			const sourceDocumentIds = [
+				...new Set(
+					papers.flatMap((paper) => [
+						paper.sourceDocument?.id,
+						paper.markSchemeDocument?.id,
+						...(paper.supportingDocuments ?? []).map((document) => document?.id)
+					])
+				)
+			].filter(Boolean);
+			for (const ids of paramChunks(sourceDocumentIds)) {
+				await d1Query(
+					`DELETE FROM source_documents WHERE id IN (${ids.map(() => '?').join(', ')})`,
+					ids
+				);
+			}
+			console.error('Incomplete D1 paper rows removed.');
+		} catch (cleanupError) {
+			console.error(
+				`Incomplete D1 cleanup also failed: ${
+					cleanupError instanceof Error ? cleanupError.message : String(cleanupError)
+				}`
+			);
+		}
+	}
+	throw error;
+}
 
 console.log('Vision extraction import complete.');

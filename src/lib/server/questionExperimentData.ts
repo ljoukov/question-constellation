@@ -8,6 +8,7 @@ import type {
 	ExamResponse,
 	ExamTableCell
 } from '$lib/experiments/questions/types';
+import { questionAssetPublicPath } from '$lib/questionAssetPath';
 import { focusPaperByRef } from '$lib/experiments/questions/paperUtils';
 import { queryFirst, queryRows } from './db';
 
@@ -52,6 +53,13 @@ type AssetMetadata = {
 		x_ppi?: number;
 		y_ppi?: number;
 	}>;
+	paper_measurement?: {
+		axis?: string;
+		pixel_width?: number;
+		pixels_per_millimetre?: number;
+		instructions?: string;
+		source_verified?: boolean;
+	};
 };
 
 export type QuestionExperimentPaperSummary = {
@@ -106,22 +114,25 @@ function assetWidth(metadataJson: string) {
 	return Math.round((candidate.width / candidate.x_ppi) * 96);
 }
 
-function assetSrc(publicPath: string | null, r2Key: string | null) {
-	const rawPath = publicPath || (r2Key ? `/${r2Key}` : '');
-	if (!rawPath) return '';
-	if (/^(?:https?:|data:|blob:)/i.test(rawPath)) return rawPath;
-	if (rawPath.startsWith('/images/')) return rawPath;
-	if (rawPath.startsWith('images/')) return `/${rawPath}`;
-	if (rawPath.startsWith('/papers/')) return `/images${rawPath}`;
-	if (rawPath.startsWith('papers/')) return `/images/${rawPath}`;
-
-	const localAssetPrefix = 'data/aqa-combined-science-trilogy-higher/assets/question-papers/';
-	const normalizedPath = rawPath.replace(/^\//, '');
-	if (normalizedPath.startsWith(localAssetPrefix)) {
-		return `/images/papers/${normalizedPath.slice(localAssetPrefix.length)}`;
+function assetPaperMeasurement(metadataJson: string) {
+	const measurement = parseJson<AssetMetadata>(metadataJson, 'asset metadata').paper_measurement;
+	if (
+		measurement?.axis !== 'horizontal' ||
+		measurement.source_verified !== true ||
+		!Number.isFinite(measurement.pixel_width) ||
+		Number(measurement.pixel_width) <= 0 ||
+		!Number.isFinite(measurement.pixels_per_millimetre) ||
+		Number(measurement.pixels_per_millimetre) <= 0
+	) {
+		return null;
 	}
-
-	return rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+	return {
+		axis: 'horizontal' as const,
+		pixelWidth: Number(measurement.pixel_width),
+		pixelsPerMillimetre: Number(measurement.pixels_per_millimetre),
+		instructions:
+			typeof measurement.instructions === 'string' ? measurement.instructions : undefined
+	};
 }
 
 function fallbackLineCount(marks: number | null) {
@@ -349,9 +360,23 @@ function responseFromValue(raw: unknown): ExamResponse {
 		return {
 			kind: 'asset-canvas',
 			assetId: value.assetId,
-			label: typeof value.label === 'string' ? value.label : undefined,
+			label:
+				typeof value.label === 'string'
+					? value.label
+					: typeof value.assetLabel === 'string'
+						? value.assetLabel
+						: undefined,
 			width: typeof value.width === 'number' ? value.width : undefined,
-			labelBank: Array.isArray(value.labelBank) ? (value.labelBank as string[]) : undefined
+			labelBank: Array.isArray(value.labelBank)
+				? value.labelBank.filter((label): label is string => typeof label === 'string')
+				: undefined,
+			instructions: typeof value.instructions === 'string' ? value.instructions : undefined,
+			lineCount:
+				typeof value.lineCount === 'number' && value.lineCount > 0
+					? Math.ceil(value.lineCount)
+					: undefined,
+			answerLabel: typeof value.answerLabel === 'string' ? value.answerLabel : undefined,
+			unit: typeof value.unit === 'string' ? value.unit : undefined
 		};
 	}
 	if (value.kind === 'drawing-box') {
@@ -451,8 +476,18 @@ async function paperSummaries() {
 		        COUNT(q.id) AS question_count
 		 FROM source_documents sd
 		 JOIN questions q ON q.source_document_id = sd.id
-		 JOIN question_rendering_overlays qro ON qro.question_id = q.id
+		 JOIN question_rendering_overlays qro
+		   ON qro.id = (
+		     SELECT candidate.id
+		       FROM question_rendering_overlays candidate
+		      WHERE candidate.question_id = q.id
+		        AND candidate.needs_human_review = 0
+		      ORDER BY candidate.updated_at DESC, candidate.overlay_version DESC
+		      LIMIT 1
+		   )
 		 WHERE sd.doc_type = 'question_paper'
+		   AND q.status = 'published'
+		   AND q.needs_human_review = 0
 		 GROUP BY sd.id
 		 ORDER BY sd.year, sd.subject_area, sd.paper, sd.component_code`
 	);
@@ -485,8 +520,18 @@ export async function sourceDocumentIdForSlug(slug: string) {
 		   AND EXISTS (
 			SELECT 1
 			FROM questions q
-			JOIN question_rendering_overlays qro ON qro.question_id = q.id
+			JOIN question_rendering_overlays qro
+			  ON qro.id = (
+			    SELECT candidate.id
+			      FROM question_rendering_overlays candidate
+			     WHERE candidate.question_id = q.id
+			       AND candidate.needs_human_review = 0
+			     ORDER BY candidate.updated_at DESC, candidate.overlay_version DESC
+			     LIMIT 1
+			  )
 			WHERE q.source_document_id = sd.id
+			  AND q.status = 'published'
+			  AND q.needs_human_review = 0
 		   )
 		 LIMIT 1`,
 		[sourceDocumentId]
@@ -501,8 +546,18 @@ async function getPaperSummary(sourceDocumentId: string) {
 		        COUNT(q.id) AS question_count
 		 FROM source_documents sd
 		 JOIN questions q ON q.source_document_id = sd.id
-		 JOIN question_rendering_overlays qro ON qro.question_id = q.id
+		 JOIN question_rendering_overlays qro
+		   ON qro.id = (
+		     SELECT candidate.id
+		       FROM question_rendering_overlays candidate
+		      WHERE candidate.question_id = q.id
+		        AND candidate.needs_human_review = 0
+		      ORDER BY candidate.updated_at DESC, candidate.overlay_version DESC
+		      LIMIT 1
+		   )
 		 WHERE sd.id = ?
+		   AND q.status = 'published'
+		   AND q.needs_human_review = 0
 		 GROUP BY sd.id`,
 		[sourceDocumentId]
 	);
@@ -515,6 +570,9 @@ async function getPaperAssets(sourceDocumentId: string) {
 		 FROM question_assets qa
 		 JOIN questions q ON q.id = qa.question_id
 		 WHERE q.source_document_id = ?
+		   AND q.status = 'published'
+		   AND q.needs_human_review = 0
+		   AND qa.needs_human_review = 0
 		   AND (qa.public_path IS NOT NULL OR qa.r2_key IS NOT NULL)
 		 ORDER BY qa.source_label, qa.id`,
 		[sourceDocumentId]
@@ -525,9 +583,10 @@ async function getPaperAssets(sourceDocumentId: string) {
 		assets[row.id] = {
 			id: row.id,
 			label: row.source_label ?? 'Source image',
-			src: assetSrc(row.public_path, row.r2_key),
+			src: questionAssetPublicPath(row.public_path, row.r2_key),
 			alt: row.alt_text ?? row.source_label ?? 'Question image',
-			width: assetWidth(row.metadata_json)
+			width: assetWidth(row.metadata_json),
+			paperMeasurement: assetPaperMeasurement(row.metadata_json)
 		};
 	}
 	return assets;
@@ -538,8 +597,18 @@ async function getQuestionRows(sourceDocumentId: string) {
 		`SELECT q.id, q.parent_source_question_ref, q.source_question_ref, q.display_order, q.marks,
 		        qro.render_json
 		 FROM questions q
-		 JOIN question_rendering_overlays qro ON qro.question_id = q.id
+		 JOIN question_rendering_overlays qro
+		   ON qro.id = (
+		     SELECT candidate.id
+		       FROM question_rendering_overlays candidate
+		      WHERE candidate.question_id = q.id
+		        AND candidate.needs_human_review = 0
+		      ORDER BY candidate.updated_at DESC, candidate.overlay_version DESC
+		      LIMIT 1
+		   )
 		 WHERE q.source_document_id = ?
+		   AND q.status = 'published'
+		   AND q.needs_human_review = 0
 		 ORDER BY q.display_order, q.source_question_ref`,
 		[sourceDocumentId]
 	);

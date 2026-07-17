@@ -1,0 +1,30 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalBatchId": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1",
+    "recoveredReleaseId": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "subject": "Biology",
+    "mode": "shared",
+    "offeringIds": [
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher"
+    ],
+    "requiredComponentIds": [
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-3-6"
+    ],
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 1,
+    "accepted": 1,
+    "rejectedByInitialReviewer": 0,
+    "reviewerRepairAttempts": 0,
+    "readyCoverageRows": 2,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "a54e1a8e3f38a0a8df37d22d6c070bc557413b8cfee11ffb8677d5788540d871",
+  "modelCallsDuringRecovery": 0
+}

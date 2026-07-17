@@ -338,6 +338,7 @@ start_session() {
   local session_name
   local log_file
   local command
+  local runner
 
   existing_session="$(find_same_checkout_session || true)"
   if [[ -n "${existing_session}" ]]; then
@@ -356,7 +357,14 @@ start_session() {
 
   session_name="$(session_name_for_port "${port}")"
   log_file="$(log_file_for_port "${port}")"
-  command="$(printf 'cd %q && %q run dev -- --host 127.0.0.1 --port %q 2>&1 | tee %q' "${RUN_DIR}" "$(package_runner)" "${port}" "${log_file}")"
+  runner="$(package_runner)"
+  if [[ "${runner}" == "pnpm" ]]; then
+    # pnpm forwards arguments after the script name directly. Supplying npm's
+    # extra `--` makes Vite treat every following option as positional input.
+    command="$(printf 'cd %q && %q run dev --host 127.0.0.1 --port %q 2>&1 | tee %q' "${RUN_DIR}" "${runner}" "${port}" "${log_file}")"
+  else
+    command="$(printf 'cd %q && %q run dev -- --host 127.0.0.1 --port %q 2>&1 | tee %q' "${RUN_DIR}" "${runner}" "${port}" "${log_file}")"
+  fi
   tmux new-session -d -s "${session_name}" "${command}"
 
   echo "Started ${session_name}"

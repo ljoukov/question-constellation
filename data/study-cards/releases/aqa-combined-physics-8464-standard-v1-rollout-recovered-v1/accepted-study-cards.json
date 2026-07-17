@@ -1,0 +1,2156 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-combined-physics-8464-standard-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-compiler-v2",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c21-cdcd-79f1-9d07-e4658280830e"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c28-59f2-73b2-9167-d3c0a44d2f9f",
+      "independentTurn": true
+    },
+    "supplementalRuns": [
+      {
+        "purpose": "targeted-card-repair",
+        "promptVersion": "standard-study-card-reviewed-repair-v3",
+        "cardIds": [
+          "forces-scalar-vector-difference"
+        ],
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "runId": "019f6c31-f7cc-7e22-ae0f-0544d1b140be"
+        },
+        "reviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "runId": "019f6c32-422a-77e3-ae54-4a5d205c7bd1",
+          "independentTurn": true
+        },
+        "startedAt": "2026-07-16T18:30:42.280Z",
+        "finishedAt": "2026-07-16T18:31:14.602Z"
+      }
+    ],
+    "startedAt": "2026-07-16T18:13:02.787Z",
+    "finishedAt": "2026-07-16T18:31:14.602Z",
+    "sourceManifestHash": "ce747b8483609cb75e7658f12dbd1b205cca12aa6b9c6a7558f6006338a20c5d",
+    "artifactPath": "data/study-cards/releases/aqa-combined-physics-8464-standard-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "energy-power-rate-definition",
+      "conceptKey": "energy-power-as-rate",
+      "kind": "definition",
+      "visualCue": "⚡",
+      "front": "What is power in physics?",
+      "back": "The rate at which energy is transferred or work is done.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification defines power in either way: the rate of energy transfer or the rate of doing work.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The total energy stored in an object.",
+          "isCorrect": false,
+          "feedback": "Power is defined as a rate, not as a total amount of stored energy.",
+          "misconception": "energy-power-confused-with-stored-energy"
+        },
+        {
+          "key": "b",
+          "text": "The rate at which energy is transferred or work is done.",
+          "isCorrect": true,
+          "feedback": "Correct: both energy transfer and work done can define power as a rate.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The force applied to move an object.",
+          "isCorrect": false,
+          "feedback": "The definition uses the rate of energy transfer or work done, not force alone.",
+          "misconception": "energy-power-confused-with-force"
+        },
+        {
+          "key": "d",
+          "text": "The time taken to transfer any energy.",
+          "isCorrect": false,
+          "feedback": "Power is a rate of transfer or work, not the elapsed time itself.",
+          "misconception": "energy-power-confused-with-time"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 121-127; 6.1.1.4 Power",
+          "excerpt": "Power is defined as the rate at which energy is transferred or the\nrate at which work is done.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1-4",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-1-4",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "energy-conservation-transfer-store-dissipate",
+      "conceptKey": "energy-conservation-permitted-changes",
+      "kind": "fact",
+      "visualCue": "🔀",
+      "front": "During changes in a system, what may happen to energy, and what is forbidden by conservation of energy?",
+      "back": "Energy can be transferred usefully, stored or dissipated, but it cannot be created or destroyed.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Transfer, storage and dissipation are allowed descriptions of energy; creation and destruction are not.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Energy can be transferred or stored, but dissipation destroys it.",
+          "isCorrect": false,
+          "feedback": "Dissipation is listed as something that can happen to energy; the energy is not destroyed.",
+          "misconception": "energy-dissipation-means-destruction"
+        },
+        {
+          "key": "b",
+          "text": "Energy may be created when useful and destroyed when wasted.",
+          "isCorrect": false,
+          "feedback": "Energy cannot be created or destroyed, whether transferred usefully or dissipated.",
+          "misconception": "energy-usefulness-changes-conservation"
+        },
+        {
+          "key": "c",
+          "text": "Energy can be transferred usefully, stored or dissipated, but it cannot be created or destroyed.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the permitted changes and the conservation limit.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Energy can only remain in its original store.",
+          "isCorrect": false,
+          "feedback": "Energy may be transferred, stored in another way or dissipated.",
+          "misconception": "energy-conservation-means-no-transfer"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 121-127; 6.1.2.1 Energy transfers in a system",
+          "excerpt": "Energy can be transferred usefully, stored or dissipated, but cannot\nbe created or destroyed.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "energy-renewable-resource-definition",
+      "conceptKey": "energy-renewable-replenished-as-used",
+      "kind": "definition",
+      "visualCue": "🔋",
+      "front": "In this specification, what makes an energy resource renewable?",
+      "back": "It is being, or can be, replenished as it is used.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition includes a resource that is either being replenished or can be replenished as it is used.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is guaranteed never to run out, whatever the rate of use.",
+          "isCorrect": false,
+          "feedback": "The definition is replenishment as the resource is used, not an unlimited-use guarantee.",
+          "misconception": "energy-renewable-means-inexhaustible"
+        },
+        {
+          "key": "b",
+          "text": "It is being, or can be, replenished as it is used.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both parts of the specification's definition.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "It converts all input energy into useful output.",
+          "isCorrect": false,
+          "feedback": "That concerns energy conversion, not whether the resource is replenished as it is used.",
+          "misconception": "energy-renewability-confused-with-efficiency"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 121-127; 6.1.3 National and global energy resources",
+          "excerpt": "A renewable energy resource is one that is being (or can be)\nreplenished as it is used.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "energy-thermal-conductivity-transfer-rate",
+      "conceptKey": "energy-conductivity-and-conduction-rate",
+      "kind": "cause-consequence",
+      "visualCue": "🌡️",
+      "front": "How does a material's thermal conductivity affect the rate of energy transfer by conduction across it?",
+      "back": "The higher the thermal conductivity, the higher the rate of energy transfer by conduction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Thermal conductivity and the rate of energy transfer by conduction increase together.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The higher the thermal conductivity, the lower the rate of energy transfer by conduction.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated relationship: a higher conductivity gives a higher transfer rate.",
+          "misconception": "energy-conductivity-rate-reversed"
+        },
+        {
+          "key": "b",
+          "text": "Thermal conductivity has no effect on the rate of energy transfer by conduction.",
+          "isCorrect": false,
+          "feedback": "The specification directly links higher conductivity to a higher conduction rate.",
+          "misconception": "energy-conductivity-no-rate-effect"
+        },
+        {
+          "key": "c",
+          "text": "The higher the thermal conductivity, the higher the rate of energy transfer by conduction.",
+          "isCorrect": true,
+          "feedback": "Correct: both quantities increase together.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 121-127; 6.1.2.1 Energy transfers in a system",
+          "excerpt": "The higher the thermal conductivity of a material the higher the rate\nof energy transfer by conduction across the material.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "electricity-current-flow-and-rate",
+      "conceptKey": "electricity-current-charge-flow-rate",
+      "kind": "definition",
+      "visualCue": "⚡",
+      "front": "What is electric current, and what determines its size?",
+      "back": "Electric current is a flow of electrical charge; its size is the rate of flow of charge.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Current describes flowing electrical charge, while its size describes how rapidly that charge flows.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Electric current is a flow of electrical charge; its size is the rate of flow of charge.",
+          "isCorrect": true,
+          "feedback": "Correct: current is charge flow and its size is a rate.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Electric current is electrical charge stored in a component; its size is the stored charge.",
+          "isCorrect": false,
+          "feedback": "Current is defined as a flow of charge, not charge held in storage.",
+          "misconception": "electricity-current-confused-with-stored-charge"
+        },
+        {
+          "key": "c",
+          "text": "Electric current is a flow of charge; its size is the total charge, regardless of time.",
+          "isCorrect": false,
+          "feedback": "The size of current is the rate of charge flow, not merely the total charge.",
+          "misconception": "electricity-current-rate-confused-with-charge"
+        },
+        {
+          "key": "d",
+          "text": "Electric current is the source of potential difference in a circuit.",
+          "isCorrect": false,
+          "feedback": "The stated definition is a flow of electrical charge, not a source of potential difference.",
+          "misconception": "electricity-current-confused-with-potential-source"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 127-134; 6.2.1.2 Electrical charge and current",
+          "excerpt": "Electric current is a flow of electrical charge. The size of the electric\ncurrent is the rate of flow of electrical charge.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "electricity-resistance-current-fixed-pd",
+      "conceptKey": "electricity-resistance-effect-on-current",
+      "kind": "cause-consequence",
+      "visualCue": "🔌",
+      "front": "For a fixed potential difference across a component, what happens to current as resistance increases?",
+      "back": "The current decreases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "For a given potential difference, greater component resistance means a smaller current.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The current increases.",
+          "isCorrect": false,
+          "feedback": "This reverses the relationship: greater resistance gives a smaller current for a given potential difference.",
+          "misconception": "electricity-resistance-current-reversed"
+        },
+        {
+          "key": "b",
+          "text": "The current decreases.",
+          "isCorrect": true,
+          "feedback": "Correct: increasing resistance reduces current when potential difference is fixed.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The current stays the same.",
+          "isCorrect": false,
+          "feedback": "The specification states that current becomes smaller as resistance becomes greater.",
+          "misconception": "electricity-resistance-no-current-effect"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 127-134; 6.2.1.3 Current, resistance and potential difference",
+          "excerpt": "The greater the resistance of the component\nthe smaller the current for a given potential difference (pd) across\nthe component.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-1-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-1-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "electricity-series-current-rule",
+      "conceptKey": "electricity-series-same-current",
+      "kind": "comparison",
+      "visualCue": "🔗",
+      "front": "How does current compare through components connected in series?",
+      "back": "The same current flows through each component.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A series connection has one current value through every component.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The supply current is divided equally between the components.",
+          "isCorrect": false,
+          "feedback": "The current is not divided in series; it is the same through each component.",
+          "misconception": "electricity-series-current-splits"
+        },
+        {
+          "key": "b",
+          "text": "The same current flows through each component.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the series-current rule.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The current becomes smaller after each component.",
+          "isCorrect": false,
+          "feedback": "Position in the series circuit does not change the stated current value.",
+          "misconception": "electricity-series-current-used-up"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 127-134; 6.2.2 Series and parallel circuits",
+          "excerpt": "For components connected in series:\n• there is the same current through each component",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "electricity-uk-mains-frequency-voltage",
+      "conceptKey": "electricity-uk-domestic-supply-values",
+      "kind": "fact",
+      "visualCue": "🔌",
+      "front": "What are the frequency and approximate potential difference of the UK domestic electricity supply?",
+      "back": "50 Hz and about 230 V.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The frequency is given exactly as 50 Hz, while the potential difference is qualified as about 230 V.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "60 Hz and about 230 V.",
+          "isCorrect": false,
+          "feedback": "The potential difference matches, but the stated frequency is 50 Hz.",
+          "misconception": "electricity-uk-mains-frequency-sixty"
+        },
+        {
+          "key": "b",
+          "text": "50 Hz and about 120 V.",
+          "isCorrect": false,
+          "feedback": "The frequency matches, but the stated potential difference is about 230 V.",
+          "misconception": "electricity-uk-mains-voltage-one-twenty"
+        },
+        {
+          "key": "c",
+          "text": "50 Hz and about 230 V.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specification values for the UK domestic supply.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "60 Hz and about 120 V.",
+          "isCorrect": false,
+          "feedback": "Both values differ from the stated 50 Hz and about 230 V.",
+          "misconception": "electricity-uk-mains-both-values-wrong"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 127-134; 6.2.3.1 Direct and alternating potential difference",
+          "excerpt": "In the United Kingdom the\ndomestic electricity supply has a frequency of 50 Hz and is about\n230 V.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2-3-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "particle-density-practical-volume-methods",
+      "conceptKey": "particle-density-regular-irregular-volume",
+      "kind": "practical",
+      "visualCue": "⚖️",
+      "front": "In the required density practical, how should volume be found for a regularly shaped solid and for an irregularly shaped solid?",
+      "back": "Use dimensions for a regular object and a displacement technique for an irregular object.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The volume method depends on shape: dimensions are used for regular objects and displacement for irregular objects.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Use displacement for a regular object and dimensions for an irregular object.",
+          "isCorrect": false,
+          "feedback": "The methods are reversed: dimensions are for regular objects and displacement is for irregular objects.",
+          "misconception": "particle-density-volume-methods-reversed"
+        },
+        {
+          "key": "b",
+          "text": "Use dimensions for a regular object and a displacement technique for an irregular object.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two specified volume methods.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Use dimensions for both regular and irregular objects.",
+          "isCorrect": false,
+          "feedback": "The irregular object's volume should be found by a displacement technique.",
+          "misconception": "particle-density-dimensions-for-irregular"
+        },
+        {
+          "key": "d",
+          "text": "Use a displacement technique for both regular and irregular objects.",
+          "isCorrect": false,
+          "feedback": "The regular object's volume should be determined from its dimensions.",
+          "misconception": "particle-density-displacement-for-regular"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 135-138; 6.3.1.1 Density of materials",
+          "excerpt": "Volume should\nbe determined from the dimensions of regularly shaped objects, and by a displacement technique\nfor irregularly shaped objects.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "particle-state-change-mass-conservation",
+      "conceptKey": "particle-state-changes-conserve-mass",
+      "kind": "fact",
+      "visualCue": "🔀",
+      "front": "What happens to a substance's mass when it melts, freezes, boils, evaporates, condenses or sublimates?",
+      "back": "Its mass is conserved.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Mass remains conserved during each of the listed changes of state.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Its mass always increases.",
+          "isCorrect": false,
+          "feedback": "The specification states that mass is conserved during these state changes.",
+          "misconception": "particle-state-change-mass-increases"
+        },
+        {
+          "key": "b",
+          "text": "Its mass always decreases.",
+          "isCorrect": false,
+          "feedback": "The specification states that mass is conserved during these state changes.",
+          "misconception": "particle-state-change-mass-decreases"
+        },
+        {
+          "key": "c",
+          "text": "Its mass is conserved.",
+          "isCorrect": true,
+          "feedback": "Correct: the listed changes of state conserve mass.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 135-138; 6.3.1.2 Changes of state",
+          "excerpt": "Students should be able to describe how, when substances change\nstate (melt, freeze, boil, evaporate, condense or sublimate), mass is\nconserved.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "particle-internal-energy-definition",
+      "conceptKey": "particle-internal-energy-total",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What is the internal energy of a system?",
+      "back": "The total kinetic energy and potential energy of all the particles that make up the system.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Internal energy totals both the kinetic and potential energy of every atom or molecule in the system.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Only the kinetic energy of the system's particles.",
+          "isCorrect": false,
+          "feedback": "Internal energy includes potential energy as well as kinetic energy.",
+          "misconception": "particle-internal-energy-kinetic-only"
+        },
+        {
+          "key": "b",
+          "text": "Only the potential energy of the system's particles.",
+          "isCorrect": false,
+          "feedback": "Internal energy includes kinetic energy as well as potential energy.",
+          "misconception": "particle-internal-energy-potential-only"
+        },
+        {
+          "key": "c",
+          "text": "Only energy transferred to the particles while heating.",
+          "isCorrect": false,
+          "feedback": "The definition is the total kinetic and potential energy of all the particles.",
+          "misconception": "particle-internal-energy-confused-with-heating"
+        },
+        {
+          "key": "d",
+          "text": "The total kinetic energy and potential energy of all the particles that make up the system.",
+          "isCorrect": true,
+          "feedback": "Correct: both forms of particle energy are included in the total.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 135-138; 6.3.2.1 Internal energy",
+          "excerpt": "Internal energy is the total kinetic energy and potential energy of all\nthe particles (atoms and molecules) that make up a system.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "particle-state-change-energy-temperature",
+      "conceptKey": "particle-state-change-internal-energy-temperature",
+      "kind": "cause-consequence",
+      "visualCue": "🌡️",
+      "front": "When energy is supplied during a change of state, what changes and what stays unchanged?",
+      "back": "The internal energy changes, but the temperature does not.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "During the state change, supplied energy changes the system's internal energy without changing its temperature.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The internal energy changes, but the temperature does not.",
+          "isCorrect": true,
+          "feedback": "Correct: the supplied energy changes internal energy rather than temperature.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The temperature changes, but the internal energy does not.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated result: internal energy changes while temperature does not.",
+          "misconception": "particle-state-change-energy-temperature-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both the internal energy and temperature increase.",
+          "isCorrect": false,
+          "feedback": "The temperature does not change during the stated change of state.",
+          "misconception": "particle-state-change-temperature-increases"
+        },
+        {
+          "key": "d",
+          "text": "Neither the internal energy nor the temperature changes.",
+          "isCorrect": false,
+          "feedback": "The temperature stays unchanged, but the supplied energy changes internal energy.",
+          "misconception": "particle-state-change-no-energy-change"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 135-138; 6.3.2.3 Changes of state and specific latent heat",
+          "excerpt": "When a change of state occurs, the energy supplied changes\nthe energy stored (internal energy) but not the temperature.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-2-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3-2-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "atomic-basic-atom-structure",
+      "conceptKey": "atomic-nucleus-electron-structure",
+      "kind": "structure",
+      "visualCue": "⚛️",
+      "front": "What is the basic structure of an atom?",
+      "back": "A positively charged nucleus of protons and neutrons, surrounded by negatively charged electrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Protons and neutrons compose the positively charged nucleus, while negatively charged electrons surround it.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A negatively charged nucleus of electrons and neutrons, surrounded by positive protons.",
+          "isCorrect": false,
+          "feedback": "The nucleus is positively charged and contains protons and neutrons; negative electrons surround it.",
+          "misconception": "atomic-particles-and-charges-reversed"
+        },
+        {
+          "key": "b",
+          "text": "A positively charged nucleus of protons and neutrons, surrounded by negatively charged electrons.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives the stated particles, charges and arrangement.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "A positively charged nucleus containing protons only, surrounded by neutrons and electrons.",
+          "isCorrect": false,
+          "feedback": "The nucleus is composed of both protons and neutrons, and the surrounding particles are electrons.",
+          "misconception": "atomic-nucleus-protons-only"
+        },
+        {
+          "key": "d",
+          "text": "Positive charge and negative electrons spread uniformly throughout the atom.",
+          "isCorrect": false,
+          "feedback": "The stated basic structure concentrates protons and neutrons in a nucleus with electrons around it.",
+          "misconception": "atomic-structure-no-nucleus"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 138-143; 6.4.1.1 The structure of an atom",
+          "excerpt": "The basic structure of an atom is a positively charged nucleus\ncomposed of both protons and neutrons surrounded by negatively\ncharged electrons.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "atomic-isotope-definition",
+      "conceptKey": "atomic-isotopes-different-neutron-numbers",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What are isotopes of an element?",
+      "back": "Atoms of the same element with different numbers of neutrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Isotopes retain the identity of the same element but differ in their numbers of neutrons.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Atoms of the same element with different numbers of protons.",
+          "isCorrect": false,
+          "feedback": "The stated difference between isotopes is neutron number, not proton number.",
+          "misconception": "atomic-isotopes-different-protons"
+        },
+        {
+          "key": "b",
+          "text": "Atoms of different elements with the same number of neutrons.",
+          "isCorrect": false,
+          "feedback": "Isotopes are atoms of the same element, not different elements.",
+          "misconception": "atomic-isotopes-different-elements"
+        },
+        {
+          "key": "c",
+          "text": "Atoms of the same element with different numbers of neutrons.",
+          "isCorrect": true,
+          "feedback": "Correct: same element, different neutron numbers.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Positive ions formed when atoms lose outer electrons.",
+          "isCorrect": false,
+          "feedback": "Losing electrons describes ion formation, whereas isotopes differ in neutron number.",
+          "misconception": "atomic-isotopes-confused-with-ions"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 138-143; 6.4.1.2 Mass number, atomic number and isotopes",
+          "excerpt": "Atoms of the same element can have different numbers of\nneutrons; these atoms are called isotopes of that element.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "atomic-radioactive-decay-definition",
+      "conceptKey": "atomic-random-radioactive-decay",
+      "kind": "process",
+      "visualCue": "☢️",
+      "front": "What is radioactive decay?",
+      "back": "A random process in which an unstable nucleus gives out radiation as it changes to become more stable.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An unstable nucleus emits radiation as it becomes more stable, and this process is random.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A random process in which an unstable nucleus gives out radiation as it changes to become more stable.",
+          "isCorrect": true,
+          "feedback": "Correct: this includes instability, radiation emission, increased stability and randomness.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A predictable process in which a stable nucleus absorbs radiation.",
+          "isCorrect": false,
+          "feedback": "Radioactive decay is random and involves an unstable nucleus giving out radiation.",
+          "misconception": "atomic-decay-predictable-absorption"
+        },
+        {
+          "key": "c",
+          "text": "The loss of outer electrons by an atom.",
+          "isCorrect": false,
+          "feedback": "The process described concerns radiation from an unstable nucleus, not outer electrons.",
+          "misconception": "atomic-decay-confused-with-electron-loss"
+        },
+        {
+          "key": "d",
+          "text": "A change in which an unstable nucleus becomes less stable without emitting radiation.",
+          "isCorrect": false,
+          "feedback": "The nucleus gives out radiation as it changes to become more stable.",
+          "misconception": "atomic-decay-no-radiation-less-stable"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 138-143; 6.4.2.1 Radioactive decay and nuclear radiation",
+          "excerpt": "Some atomic nuclei are unstable. The nucleus gives out radiation\nas it changes to become more stable. This is a random process\ncalled radioactive decay.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "forces-work-done-displacement-condition",
+      "conceptKey": "forces-work-requires-caused-displacement",
+      "kind": "process",
+      "visualCue": "🏋️",
+      "front": "When does a force do work on an object?",
+      "back": "When the force causes a displacement of the object.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The force must cause the object's displacement for work to be done on it.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Whenever any force acts, even if there is no displacement.",
+          "isCorrect": false,
+          "feedback": "The stated condition requires the force to cause a displacement.",
+          "misconception": "forces-work-without-displacement"
+        },
+        {
+          "key": "b",
+          "text": "When the force causes a displacement of the object.",
+          "isCorrect": true,
+          "feedback": "Correct: a force does work when it causes displacement.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Whenever the object moves, whether or not the force causes the displacement.",
+          "isCorrect": false,
+          "feedback": "The displacement must be caused by the force in question.",
+          "misconception": "forces-work-any-motion"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 143-155; 6.5.2 Work done and energy transfer",
+          "excerpt": "When a force causes an object to move through a distance work is\ndone on the object. So a force does work on an object when the\nforce causes a displacement of the object.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "forces-newton-second-law-relationship",
+      "conceptKey": "forces-acceleration-force-mass-relationship",
+      "kind": "cause-consequence",
+      "visualCue": "🏎️",
+      "front": "According to Newton's Second Law, how does acceleration depend on resultant force and mass?",
+      "back": "It is proportional to resultant force and inversely proportional to mass.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Acceleration has a direct proportional relationship with resultant force and an inverse proportional relationship with mass.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is inversely proportional to resultant force and proportional to mass.",
+          "isCorrect": false,
+          "feedback": "This reverses both relationships given by Newton's Second Law.",
+          "misconception": "forces-newton-second-both-relations-reversed"
+        },
+        {
+          "key": "b",
+          "text": "It is proportional to both resultant force and mass.",
+          "isCorrect": false,
+          "feedback": "Acceleration is inversely, not directly, proportional to mass.",
+          "misconception": "forces-newton-second-mass-direct"
+        },
+        {
+          "key": "c",
+          "text": "It is proportional to resultant force and inversely proportional to mass.",
+          "isCorrect": true,
+          "feedback": "Correct: this states both proportional relationships.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "It is independent of both resultant force and mass.",
+          "isCorrect": false,
+          "feedback": "Newton's Second Law explicitly relates acceleration to both quantities.",
+          "misconception": "forces-newton-second-no-dependencies"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 143-155; 6.5.4.2.2 Newton's Second Law",
+          "excerpt": "The acceleration of an object is proportional to the resultant force\nacting on the object, and inversely proportional to the mass of the\nobject.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "waves-longitudinal-compressions-sound",
+      "conceptKey": "waves-longitudinal-features-example",
+      "kind": "comparison",
+      "visualCue": "🔀",
+      "front": "Which wave type has compressions and rarefactions, and what example is given?",
+      "back": "Longitudinal waves; sound waves travelling through air are an example.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Longitudinal waves have compressions and rarefactions, with sound in air as the example; water-surface ripples are transverse.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Longitudinal waves; sound waves travelling through air are an example.",
+          "isCorrect": true,
+          "feedback": "Correct: both the feature and example match longitudinal waves.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Transverse waves; sound waves travelling through air are an example.",
+          "isCorrect": false,
+          "feedback": "Sound waves travelling through air are stated to be longitudinal.",
+          "misconception": "waves-sound-in-air-called-transverse"
+        },
+        {
+          "key": "c",
+          "text": "Longitudinal waves; ripples on a water surface are an example.",
+          "isCorrect": false,
+          "feedback": "Water-surface ripples are given as a transverse-wave example.",
+          "misconception": "waves-water-ripples-called-longitudinal"
+        },
+        {
+          "key": "d",
+          "text": "Transverse waves; both sound in air and water ripples are examples.",
+          "isCorrect": false,
+          "feedback": "Only the water-surface ripples are identified as transverse; sound in air is longitudinal.",
+          "misconception": "waves-both-examples-called-transverse"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 155-158; 6.6.1.1 Transverse and longitudinal waves",
+          "excerpt": "The ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "waves-amplitude-definition",
+      "conceptKey": "waves-amplitude-maximum-displacement",
+      "kind": "definition",
+      "visualCue": "📈",
+      "front": "What is the amplitude of a wave?",
+      "back": "The maximum displacement of a point on the wave from its undisturbed position.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Amplitude measures the greatest displacement from the wave's undisturbed position.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The distance between equivalent points on adjacent waves.",
+          "isCorrect": false,
+          "feedback": "Amplitude is measured from the undisturbed position, not between adjacent waves.",
+          "misconception": "waves-amplitude-confused-with-wavelength"
+        },
+        {
+          "key": "b",
+          "text": "The maximum displacement of a point on the wave from its undisturbed position.",
+          "isCorrect": true,
+          "feedback": "Correct: maximum displacement from the undisturbed position defines amplitude.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The number of waves passing a point each second.",
+          "isCorrect": false,
+          "feedback": "Amplitude is a displacement, not a count of waves passing a point.",
+          "misconception": "waves-amplitude-confused-with-frequency"
+        },
+        {
+          "key": "d",
+          "text": "The speed at which energy moves through the medium.",
+          "isCorrect": false,
+          "feedback": "Amplitude is maximum displacement, not wave speed.",
+          "misconception": "waves-amplitude-confused-with-wave-speed"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 155-158; 6.6.1.2 Properties of waves",
+          "excerpt": "The amplitude of a wave is the maximum displacement of a point\non a wave away from its undisturbed position.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "waves-frequency-definition",
+      "conceptKey": "waves-frequency-per-second",
+      "kind": "definition",
+      "visualCue": "⚙️",
+      "front": "What is the frequency of a wave?",
+      "back": "The number of waves passing a point each second.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Frequency counts how many waves pass a chosen point in each second.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The maximum displacement from the undisturbed position.",
+          "isCorrect": false,
+          "feedback": "Frequency is a number of waves per second, not a displacement.",
+          "misconception": "waves-frequency-confused-with-amplitude"
+        },
+        {
+          "key": "b",
+          "text": "The distance between equivalent points on adjacent waves.",
+          "isCorrect": false,
+          "feedback": "Frequency counts passing waves rather than measuring a distance.",
+          "misconception": "waves-frequency-confused-with-wavelength"
+        },
+        {
+          "key": "c",
+          "text": "The number of waves passing a point each second.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the definition of frequency.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "The speed at which wave energy moves through a medium.",
+          "isCorrect": false,
+          "feedback": "Frequency is a count per second, not the wave's speed.",
+          "misconception": "waves-frequency-confused-with-speed"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 155-158; 6.6.1.2 Properties of waves",
+          "excerpt": "The frequency of a wave is the number of waves passing a point\neach second.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "waves-electromagnetic-spectrum-order",
+      "conceptKey": "waves-em-spectrum-long-to-short",
+      "kind": "structure",
+      "visualCue": "🌈",
+      "front": "What is the order of electromagnetic-wave groups from long to short wavelength?",
+      "back": "Radio, microwave, infrared, visible light, ultraviolet, X-rays, gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This long-to-short-wavelength sequence also runs from low to high frequency.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Gamma rays, X-rays, ultraviolet, visible light, infrared, microwave, radio.",
+          "isCorrect": false,
+          "feedback": "This is the reverse of the requested long-to-short-wavelength order.",
+          "misconception": "waves-em-spectrum-order-reversed"
+        },
+        {
+          "key": "b",
+          "text": "Radio, infrared, microwave, visible light, ultraviolet, X-rays, gamma rays.",
+          "isCorrect": false,
+          "feedback": "Microwave comes before infrared in the stated sequence.",
+          "misconception": "waves-em-spectrum-microwave-infrared-swapped"
+        },
+        {
+          "key": "c",
+          "text": "Radio, microwave, infrared, ultraviolet, visible light, X-rays, gamma rays.",
+          "isCorrect": false,
+          "feedback": "Visible light comes before ultraviolet in the stated sequence.",
+          "misconception": "waves-em-spectrum-visible-ultraviolet-swapped"
+        },
+        {
+          "key": "d",
+          "text": "Radio, microwave, infrared, visible light, ultraviolet, X-rays, gamma rays.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the complete long-to-short-wavelength order.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 155-158; 6.6.2.1 Types of electromagnetic waves",
+          "excerpt": "Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "magnetism-like-unlike-poles",
+      "conceptKey": "magnetism-pole-attraction-repulsion",
+      "kind": "comparison",
+      "visualCue": "🧲",
+      "front": "How do like and unlike magnetic poles interact?",
+      "back": "Like poles repel; unlike poles attract.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The interaction reverses with the pole pairing: like poles repel and unlike poles attract.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Like poles attract; unlike poles repel.",
+          "isCorrect": false,
+          "feedback": "This reverses both stated interactions.",
+          "misconception": "magnetism-pole-interactions-reversed"
+        },
+        {
+          "key": "b",
+          "text": "Like poles repel; unlike poles attract.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives both pole interactions.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Both like and unlike poles attract.",
+          "isCorrect": false,
+          "feedback": "Like poles repel rather than attract.",
+          "misconception": "magnetism-all-poles-attract"
+        },
+        {
+          "key": "d",
+          "text": "Both like and unlike poles repel.",
+          "isCorrect": false,
+          "feedback": "Unlike poles attract rather than repel.",
+          "misconception": "magnetism-all-poles-repel"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 159-162; 6.7.1.1 Poles of a magnet",
+          "excerpt": "Two like poles repel each other. Two\nunlike poles attract each other.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "magnetism-permanent-induced-difference",
+      "conceptKey": "magnetism-permanent-versus-induced",
+      "kind": "comparison",
+      "visualCue": "🧲",
+      "front": "How does a permanent magnet differ from an induced magnet?",
+      "back": "A permanent magnet produces its own field; an induced magnet becomes magnetic when placed in a magnetic field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The permanent magnet has its own magnetic field, while the induced material becomes a magnet through placement in a magnetic field.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A permanent magnet becomes magnetic only in an external field; an induced magnet produces its own field.",
+          "isCorrect": false,
+          "feedback": "This reverses the definitions of permanent and induced magnets.",
+          "misconception": "magnetism-permanent-induced-reversed"
+        },
+        {
+          "key": "b",
+          "text": "Both magnets produce their own field without being placed in another magnetic field.",
+          "isCorrect": false,
+          "feedback": "An induced magnet becomes magnetic when it is placed in a magnetic field.",
+          "misconception": "magnetism-induced-always-produces-own-field"
+        },
+        {
+          "key": "c",
+          "text": "A permanent magnet produces its own field; an induced magnet becomes magnetic when placed in a magnetic field.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the stated distinction.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 159-162; 6.7.1.1 Poles of a magnet",
+          "excerpt": "A permanent magnet produces its own magnetic field. An induced\nmagnet is a material that becomes a magnet when it is placed in a\nmagnetic field.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "magnetism-magnetic-field-definition",
+      "conceptKey": "magnetism-field-region-of-force",
+      "kind": "definition",
+      "visualCue": "🌌",
+      "front": "What is a magnetic field?",
+      "back": "The region around a magnet where a force acts on another magnet or on a magnetic material.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A magnetic field is defined as the surrounding region in which another magnet or a magnetic material experiences a force.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The region around a magnet where a force acts on another magnet or on a magnetic material.",
+          "isCorrect": true,
+          "feedback": "Correct: the field is defined by the region in which this force acts.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only the material inside a magnet where its force is strongest.",
+          "isCorrect": false,
+          "feedback": "The magnetic field is the region around the magnet, not only material inside it.",
+          "misconception": "magnetism-field-only-inside-magnet"
+        },
+        {
+          "key": "c",
+          "text": "A single line joining the magnet's two poles and nowhere else.",
+          "isCorrect": false,
+          "feedback": "The definition describes a region around the magnet, not one isolated line.",
+          "misconception": "magnetism-field-single-line"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 159-162; 6.7.1.2 Magnetic fields",
+          "excerpt": "The region around a magnet where a force acts on another magnet\nor on a magnetic material (iron, steel, cobalt and nickel) is called\nthe magnetic field.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "magnetism-electromagnet-iron-core",
+      "conceptKey": "magnetism-electromagnet-solenoid-core",
+      "kind": "definition",
+      "visualCue": "🔌",
+      "front": "What is an electromagnet, and what does its iron core do?",
+      "back": "It is a solenoid with an iron core; the core increases the solenoid's magnetic-field strength.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An electromagnet is specifically a solenoid containing an iron core, and adding that core strengthens the solenoid's magnetic field.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is a solenoid without a core; adding iron weakens its magnetic field.",
+          "isCorrect": false,
+          "feedback": "An electromagnet has an iron core, and that core increases field strength.",
+          "misconception": "magnetism-electromagnet-no-core-weakening"
+        },
+        {
+          "key": "b",
+          "text": "It is a solenoid with an iron core; the core increases the solenoid's magnetic-field strength.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives both the structure and the core's effect.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "It is a straight iron wire; forming a solenoid has no role.",
+          "isCorrect": false,
+          "feedback": "The stated definition requires a solenoid with an iron core.",
+          "misconception": "magnetism-electromagnet-straight-wire"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 159-162; 6.7.2.1 Electromagnetism",
+          "excerpt": "Adding an iron core increases the strength of the\nmagnetic field of a solenoid. An electromagnet is a solenoid with an\niron core.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "forces-scalar-vector-difference",
+      "conceptKey": "forces-scalar-versus-vector",
+      "kind": "comparison",
+      "visualCue": "🏎️",
+      "front": "How do scalar and vector quantities differ?",
+      "back": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Magnitude is sufficient for a scalar, whereas a vector also has an associated direction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+          "isCorrect": true,
+          "feedback": "Correct: a vector has an associated direction as well as magnitude, while a scalar has magnitude only.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Both scalars and vectors have magnitude only.",
+          "isCorrect": false,
+          "feedback": "A vector also has an associated direction.",
+          "misconception": "forces-vectors-have-no-direction"
+        },
+        {
+          "key": "c",
+          "text": "Both scalars and vectors have magnitude and an associated direction.",
+          "isCorrect": false,
+          "feedback": "A scalar has magnitude only; an associated direction is a property of a vector.",
+          "misconception": "forces-scalars-have-direction"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 143-155; 6.5.1.1 Scalar and vector quantities",
+          "excerpt": "Scalar quantities have magnitude only.\nVector quantities have magnitude and an associated direction.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "study-card-base-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered_under_new_identity",
+  "historicalReleaseId": "aqa-physics-8463-standard-v1",
+  "recoveredReleaseId": "aqa-physics-8463-standard-v1-rollout-recovered-v1",
+  "identityPolicy": "The explicit recovery id preserves reviewed content and provenance without claiming byte identity with the absent historical artifact wrapper.",
+  "generator": {
+    "runId": "019f6c04-d167-7a00-9fe9-a8640c321f5a",
+    "rolloutFileName": "rollout-2026-07-16T10-41-23-019f6c04-d167-7a00-9fe9-a8640c321f5a.jsonl",
+    "rolloutHash": "3bb2ebf151ecbc8eac08d5adab59f3c1873f1ab7b80b6b4b6936eca9e0bad890",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-physics-8463-standard-v1/generation",
+    "startedAt": "2026-07-16T17:41:23.124Z",
+    "completedAt": "2026-07-16T17:49:18.731Z",
+    "promptHash": "e38b7f3cfaf8eb55cc00772a268bd2a0e78b66fa68576c10979f2e8a48f22ee4",
+    "modelOutputHash": "9224647d66ddc5c03dc6ab2b1b783461ceb33042eab1e856d0aca47c7a1e25c4"
+  },
+  "reviewer": {
+    "runId": "019f6c0c-170c-7ec2-8834-878572263196",
+    "rolloutFileName": "rollout-2026-07-16T10-49-19-019f6c0c-170c-7ec2-8834-878572263196.jsonl",
+    "rolloutHash": "7cba030f47e2d0ad1a54a9b9dafb45f55b0cb34bc7e11d62af5f8fdee3c58006",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-physics-8463-standard-v1/review",
+    "startedAt": "2026-07-16T17:49:19.648Z",
+    "completedAt": "2026-07-16T17:54:21.188Z",
+    "promptHash": "c35ad085cb96c0d980be97ebedbf366150aaaf13049ec325640d0e6a22f71c4b",
+    "modelOutputHash": "5cfffb38c8b58877c65e6db66665dbb034aa1cb6a689c15d2de36c843e7d03d8"
+  },
+  "reviewedRepairAttempts": [],
+  "counts": {
+    "generated": 32,
+    "reviewCandidates": 32,
+    "accepted": 31,
+    "distinctTargetComponents": 30,
+    "plannerEligibleTargetComponents": 30,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 16,
+    "readyCoverageRows": 16,
+    "withheldCoverageRows": 0,
+    "sessions": 2
+  },
+  "nonPlannerEligibleAcceptedComponentIds": [],
+  "offeringCoverage": [
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "ready": 8,
+      "withheld": 0,
+      "coverageRows": 8,
+      "cardCount": 31
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "ready": 8,
+      "withheld": 0,
+      "coverageRows": 8,
+      "cardCount": 31
+    }
+  ],
+  "modelCallsDuringRecovery": 0,
+  "artifactHash": "4c33d24475dd773471ec537f7da5672d0a4594262c895808c06d9a2b726fb7f4"
+}

@@ -1,0 +1,447 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-great-expectations",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+          "title": "Great Expectations by Charles Dickens",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "great-expectations-deep-plot-convict-threat",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter I; Pip meets the escaped convict",
+          "anchor": "Keep still, you little devil, or I’ll cut your throat!"
+        },
+        {
+          "id": "great-expectations-deep-plot-estella-insult",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter VIII; Estella humiliates Pip",
+          "anchor": "And what coarse hands he has! And what thick boots!"
+        },
+        {
+          "id": "great-expectations-deep-plot-expectations",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XVIII; Jaggers announces Pip’s expectations",
+          "anchor": "he be immediately removed from his present sphere of life and from this place, and be brought up as a gentleman"
+        },
+        {
+          "id": "great-expectations-deep-plot-havisham-fire",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XLIX; Miss Havisham catches fire",
+          "anchor": "she had been in flames, or that the flames were out"
+        },
+        {
+          "id": "great-expectations-deep-plot-escape-fails",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LIV; Magwitch and Compeyson go overboard",
+          "anchor": "they had gone down fiercely locked in each other’s arms"
+        },
+        {
+          "id": "great-expectations-deep-plot-magwitch-dies",
+          "mode": "plot",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LVI; Magwitch dies after learning Estella lives",
+          "anchor": "his head dropped quietly on his breast"
+        },
+        {
+          "id": "great-expectations-deep-quotation-break-hearts",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XII; Miss Havisham instructs Estella",
+          "anchor": "Break their hearts my pride and hope, break their hearts and have no mercy!",
+          "requiredAnswer": "Break their hearts my pride and hope, break their hearts and have no mercy!"
+        },
+        {
+          "id": "great-expectations-deep-quotation-against-reason",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XXIX; Pip describes loving Estella",
+          "anchor": "I loved her against reason, against promise, against peace, against hope, against happiness",
+          "requiredAnswer": "I loved her against reason, against promise, against peace, against hope, against happiness"
+        },
+        {
+          "id": "great-expectations-deep-quotation-evidence",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XL; Jaggers gives Pip a rule",
+          "anchor": "Take nothing on its looks; take everything on evidence.",
+          "requiredAnswer": "Take nothing on its looks; take everything on evidence."
+        },
+        {
+          "id": "great-expectations-deep-quotation-every-line",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter XLIV; Pip addresses Estella",
+          "anchor": "You have been in every line I have ever read since I first came here",
+          "requiredAnswer": "You have been in every line I have ever read since I first came here"
+        },
+        {
+          "id": "great-expectations-deep-quotation-suffering",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LIX; Estella reflects on suffering",
+          "anchor": "suffering has been stronger than all other teaching",
+          "requiredAnswer": "suffering has been stronger than all other teaching"
+        },
+        {
+          "id": "great-expectations-deep-quotation-bent-broken",
+          "mode": "quotation",
+          "sourceId": "gutenberg-great-expectations",
+          "locator": "Chapter LIX; Estella describes her change",
+          "anchor": "I have been bent and broken, but—I hope—into a better shape.",
+          "requiredAnswer": "I have been bent and broken, but—I hope—into a better shape."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    }
+  ]
+}

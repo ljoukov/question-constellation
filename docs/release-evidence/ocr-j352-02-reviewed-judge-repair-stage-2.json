@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "codex-reviewed-extraction-repair-v1",
+  "status": "passed",
+  "sourceDocumentId": "ocr-j352-02-qp-jun24",
+  "basis": "Three-field second-stage deterministic repair bounded to the complete second failed independent judge report. It adds only the three official whole-text play headings as pre-prompt learner-visible blocks and explicitly chains to the first reviewed repair evidence.",
+  "inputs": {
+    "candidate": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/failed-judge-20260717T025100Z/failed-candidate.json",
+      "sha256": "ce99c660d727de76aba5ccad825ccbc97c3c4ae42ee2020d56a2b646983d4320",
+      "canonicalJsonSha256": "f9ac020c371718a4f1afee8264fe84fdf8119f5faf99091c66b6c487252513b9"
+    },
+    "judgeReport": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/failed-judge-20260717T025100Z/judge-report.json",
+      "sha256": "3ee81d07d18cd85f02c18b0c68c2a5e4f3e10d8dfeeeeed1a8a6bbcf07becb30",
+      "canonicalJsonSha256": "cea853bef6e159e72c2fbb51d3a03179c7454a3d70a5804b29762f83e8197edb"
+    },
+    "previousRepairEvidence": {
+      "path": "docs/release-evidence/ocr-j352-02-reviewed-judge-repair.json",
+      "sha256": "48f8d4e36d22fb31b45a80d9bb6e01a13b7bac03d2feb7d7dc8e5557840eaa8d",
+      "canonicalJsonSha256": "a3f13d3987085258d15dbe8ca7719155867da374f56350eac2472d35d6c4bc6d"
+    },
+    "questionPaper": {
+      "path": "data/ocr-gcse-english-literature/question-papers/OCR-J352-02-QP-JUN24.PDF",
+      "sha256": "c0f3be806bddf97e106ac6a1c3ff57e676871c83a68a086eaad97cf0f2017574"
+    },
+    "markScheme": {
+      "path": "data/ocr-gcse-english-literature/mark-schemes/OCR-J352-02-MS-JUN24.PDF",
+      "sha256": "c0981d3849667c48d0a9ca553ca312688766058b0c55df66a3a115e3c86be04b"
+    }
+  },
+  "previousRepair": {
+    "artifact": {
+      "path": "docs/release-evidence/ocr-j352-02-reviewed-judge-repair.json",
+      "sha256": "48f8d4e36d22fb31b45a80d9bb6e01a13b7bac03d2feb7d7dc8e5557840eaa8d",
+      "canonicalJsonSha256": "a3f13d3987085258d15dbe8ca7719155867da374f56350eac2472d35d6c4bc6d"
+    },
+    "outputArtifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/repaired-extraction.json",
+      "sha256": "ce99c660d727de76aba5ccad825ccbc97c3c4ae42ee2020d56a2b646983d4320",
+      "canonicalJsonSha256": "f9ac020c371718a4f1afee8264fe84fdf8119f5faf99091c66b6c487252513b9"
+    },
+    "changedPaths": [
+      "questions[1].contextText",
+      "questions[1].modelAnswer.answerText",
+      "questions[3].contextText",
+      "questions[5].contextText",
+      "questions[9].contextText"
+    ]
+  },
+  "failedModelAudit": {
+    "status": "failed",
+    "verdict": "fail",
+    "score": 0.96,
+    "checkedRefs": [
+      "01.1a",
+      "01.1b",
+      "02.1a",
+      "02.1b",
+      "03.1a",
+      "03.1b",
+      "04.1",
+      "05.1",
+      "06.1",
+      "07.1",
+      "08.1",
+      "09.1",
+      "10.1",
+      "11.1"
+    ],
+    "requiredRepairs": [
+      {
+        "sourceQuestionRefs": [
+          "05.1",
+          "09.1",
+          "11.1"
+        ],
+        "repair": "Add the official play title to candidate.contextText or a pre-prompt learner-visible block for each whole-text atom: Romeo and Juliet for 05.1, Macbeth for 09.1, and Much Ado About Nothing for 11.1. Do not rely on selfContainedPromptText, cardTitle, or topicPath because those are not part of the assembled context defined for this audit."
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "sourceQuestionRef": "05.1",
+      "field": "stemBlocks",
+      "before": [],
+      "after": [
+        {
+          "kind": "paragraph",
+          "label": "Play",
+          "text": "Romeo and Juliet"
+        }
+      ],
+      "officialAnchor": "Question paper heading immediately before 05.1: Romeo and Juliet.",
+      "judgeFinding": "Restores the printed whole-text work heading before the marked prompt."
+    },
+    {
+      "sourceQuestionRef": "09.1",
+      "field": "stemBlocks",
+      "before": [],
+      "after": [
+        {
+          "kind": "paragraph",
+          "label": "Play",
+          "text": "Macbeth"
+        }
+      ],
+      "officialAnchor": "Question paper heading immediately before 09.1: Macbeth.",
+      "judgeFinding": "Restores the printed whole-text work heading before the marked prompt."
+    },
+    {
+      "sourceQuestionRef": "11.1",
+      "field": "stemBlocks",
+      "before": [],
+      "after": [
+        {
+          "kind": "paragraph",
+          "label": "Play",
+          "text": "Much Ado About Nothing"
+        }
+      ],
+      "officialAnchor": "Question paper heading immediately before 11.1: Much Ado About Nothing.",
+      "judgeFinding": "Restores the printed whole-text work heading before the marked prompt."
+    }
+  ],
+  "changedPaths": [
+    "questions[7].stemBlocks",
+    "questions[11].stemBlocks",
+    "questions[13].stemBlocks"
+  ],
+  "outputArtifact": {
+    "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/stage-2-repaired-extraction.json",
+    "sha256": "6fc6952c0a133b32487813e28363d4762633f8821ab22e65be1f8b9723815eda",
+    "canonicalJsonSha256": "4b58df486f89b1a3cfba3644e5e22df538ddaa58b04728abd94726b6aeb73270"
+  },
+  "deterministicValidation": {
+    "status": "passed",
+    "sourceDocumentId": "ocr-j352-02-qp-jun24",
+    "questionCount": 14,
+    "markTotal": 440,
+    "firstRef": "01.1a",
+    "lastRef": "11.1",
+    "duplicateRefs": [],
+    "parentMarkTotals": {
+      "10": 40,
+      "11": 40,
+      "01": 40,
+      "02": 40,
+      "03": 40,
+      "04": 40,
+      "05": 40,
+      "06": 40,
+      "07": 40,
+      "08": 40,
+      "09": 40
+    },
+    "reviewQuestionRefs": [],
+    "blockingIssues": [],
+    "deterministicIssueCount": 0,
+    "deterministicIssues": [],
+    "artifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/ocr-j352-02-qp-jun24/stage-2-validation.json",
+      "sha256": "8b9f62594ce491cc836acdc4bfcaf9a1119353ebb1a2a3347f2cd311f2bdbfa0",
+      "canonicalJsonSha256": "967778ac726c2a48d9cc041ed14c5fe110e96cbdcef15bc94b4b98ec406257f1"
+    }
+  },
+  "invariants": {
+    "exactFirstStageCandidateHash": true,
+    "exactSecondFailedJudgeHash": true,
+    "exactPreviousRepairEvidenceHash": true,
+    "exactOfficialPdfHashes": true,
+    "requiredRepairGroupCountExact": true,
+    "changedFieldCountExact": true,
+    "noOtherFieldsChanged": true,
+    "questionCountPreserved": true,
+    "markTotalPreserved": true,
+    "refOrderPreserved": true,
+    "deterministicValidationPassed": true
+  }
+}

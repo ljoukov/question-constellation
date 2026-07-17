@@ -1,0 +1,49 @@
+{
+  "cards": [
+    {
+      "evidenceId": "macbeth-plot-murder-sleep",
+      "id": "ocr-j352-card-macbeth-plot-murder-sleep",
+      "conceptKey": "ocr-j352-concept-macbeth-plot-murder-sleep",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "kind": "plot",
+      "visualCue": "🌙",
+      "front": "In Macbeth, what spiritual and psychological disturbances does Macbeth report in the Act 2 chamber aftermath after Duncan’s killing?",
+      "back": "Macbeth cannot say “Amen” and hears a voice cry that he has murdered sleep.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Macbeth says that “Amen” sticks in his throat despite his need for blessing. He then reports hearing a voice accuse him of murdering innocent sleep.",
+      "memoryTip": "Retrieve the disturbance in two stages: blocked blessing → accusing voice about sleep.",
+      "choices": [
+        {
+          "key": "macbeth-plot-murder-sleep-choice-correct",
+          "text": "Macbeth cannot say “Amen” and hears a voice cry that he has murdered sleep.",
+          "isCorrect": true,
+          "feedback": "Correct: Macbeth says “Amen” stuck in his throat and reports the cry “Macbeth does murder sleep.”",
+          "misconception": null
+        },
+        {
+          "key": "macbeth-plot-murder-sleep-choice-confusion-one",
+          "text": "Macbeth says “Amen” and hears a voice promise that he will sleep.",
+          "isCorrect": false,
+          "feedback": "This reverses both reports: Macbeth says that “Amen” stuck in his throat and that the voice cried “Sleep no more!”",
+          "misconception": "Reversing the blocked prayer and the accusing voice."
+        },
+        {
+          "key": "macbeth-plot-murder-sleep-choice-confusion-two",
+          "text": "Lady Macbeth cannot say “Amen” and hears the voice cry that she has murdered sleep.",
+          "isCorrect": false,
+          "feedback": "This transfers both experiences from Macbeth to Lady Macbeth; Macbeth describes the blocked “Amen” and reports the voice.",
+          "misconception": "Swapping Macbeth’s reported experience with Lady Macbeth’s."
+        },
+        {
+          "key": "macbeth-plot-murder-sleep-choice-confusion-three",
+          "text": "Macbeth cannot say “Amen” but hears a voice say that Lady Macbeth has murdered sleep.",
+          "isCorrect": false,
+          "feedback": "The blocked “Amen” belongs to Macbeth, but the voice also names Macbeth—not Lady Macbeth—as the one who has murdered sleep.",
+          "misconception": "Keeping the prayer detail while transferring the accusation to Lady Macbeth."
+        }
+      ],
+      "sourceExcerpt": "I could not say “Amen,” When they did say, “God bless us.” LADY MACBETH. Consider it not so deeply. MACBETH. But wherefore could not I pronounce “Amen”? I had most need of blessing, and “Amen” Stuck in my throat. LADY MACBETH. These deeds must not be thought After these ways; so, it will make us mad. MACBETH. Methought I heard a voice cry, “Sleep no more! Macbeth does murder sleep,”"
+    }
+  ]
+}

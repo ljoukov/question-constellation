@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import type { SignedInLearningHome } from '$lib/learning/viewTypes';
 	import { ArrowRight, Settings2, Sparkles } from '@lucide/svelte';
 
 	let { dashboard }: { dashboard: SignedInLearningHome } = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	const hasWeeklyActivity = $derived(
 		dashboard.weeklySummary.attemptCount +
@@ -46,13 +48,16 @@
 	}
 
 	function cardHref(subject: SignedInLearningHome['subjects'][number]) {
-		return subject.scope.status === 'not_set' || subject.nextAction.kind === 'scope'
+		return subject.scope.status === 'not_set' ||
+			subject.nextAction.kind === 'scope' ||
+			subject.nextAction.kind === 'resume'
 			? subject.nextAction.href
 			: subject.href;
 	}
 
 	function cardActionLabel(subject: SignedInLearningHome['subjects'][number]) {
 		if (subject.scope.status === 'not_set') return 'Set up';
+		if (subject.nextAction.kind === 'resume') return 'Resume';
 		return subject.nextAction.kind === 'scope' ? 'Adjust' : 'Open';
 	}
 
@@ -98,7 +103,7 @@
 					class="qc-subject-card"
 					class:setup={lane.scope.status === 'not_set'}
 					data-action={lane.nextAction.kind}
-					href={cardHref(lane)}
+					href={resolveInternalPath(cardHref(lane))}
 				>
 					<header>
 						<div>
@@ -107,12 +112,20 @@
 							{#if progressSummary(lane)}
 								<p class="qc-subject-card-progress">{progressSummary(lane)}</p>
 							{/if}
+							{#if lane.scope.status !== 'not_set'}
+								<p class="qc-subject-card-performance">
+									<span>{lane.progress.checkedAnswerPerformance.label}</span>
+									{#if lane.progress.checkedAnswerPerformance.value}
+										<strong>{lane.progress.checkedAnswerPerformance.value}</strong>
+									{/if}
+								</p>
+							{/if}
 						</div>
 					</header>
 
 					<div class="qc-subject-next">
 						<span>
-							Next
+							{lane.nextAction.kind === 'resume' ? 'Resume' : 'Next'}
 							{#if lane.scope.status !== 'not_set' && lane.nextAction.durationMinutes}
 								· {lane.nextAction.durationMinutes} min{/if}
 						</span>

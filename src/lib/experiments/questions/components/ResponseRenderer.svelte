@@ -1,4 +1,10 @@
 <script lang="ts">
+	import {
+		parseAssetCanvasAnswer,
+		serializeAssetCanvasAnswer,
+		type AssetCanvasPoint,
+		type AssetCanvasStroke
+	} from '../assetCanvasAnswer';
 	import type { ExamPaperAsset, ExamResponse } from '../types';
 	import MathText from './MathText.svelte';
 
@@ -19,11 +25,13 @@
 		response,
 		assets = {},
 		answer = '',
+		readOnly = false,
 		onAnswerChange
 	}: {
 		response: ExamResponse;
 		assets?: Record<string, ExamPaperAsset>;
 		answer?: string;
+		readOnly?: boolean;
 		onAnswerChange?: (answer: string) => void;
 	} = $props();
 
@@ -39,8 +47,13 @@
 	let equationBlankAnswers = $state<Record<string, string>>({});
 	let activeGraphicLabel = $state('');
 	let graphicAnswers = $state<Record<string, string>>({});
+	let assetCanvasStrokes = $state<AssetCanvasStroke[]>([]);
+	let assetCanvasWorking = $state('');
+	let assetCanvasFinalAnswer = $state('');
+	let assetCanvasDrawingActive = $state(false);
 	let drawingCanvas = $state<HTMLCanvasElement | null>(null);
 	let drawingActive = $state(false);
+	let restoredDrawingAnswer = '';
 
 	type AutogrowTextareaParams = {
 		minLines: number;
@@ -361,6 +374,35 @@
 		}
 	});
 
+	$effect(() => {
+		if (response.kind !== 'asset-canvas') return;
+		const parsed = parseAssetCanvasAnswer(answer);
+		assetCanvasStrokes = parsed.strokes;
+		assetCanvasWorking = parsed.working;
+		assetCanvasFinalAnswer = parsed.finalAnswer;
+	});
+
+	$effect(() => {
+		if (response.kind !== 'drawing-box' || !drawingCanvas || typeof Image === 'undefined') return;
+		if (!answer) {
+			drawingCanvas.getContext('2d')?.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+			restoredDrawingAnswer = '';
+			return;
+		}
+		if (!answer.startsWith('data:image/') || answer === restoredDrawingAnswer) return;
+		const expectedAnswer = answer;
+		const image = new Image();
+		image.onload = () => {
+			if (!drawingCanvas || answer !== expectedAnswer) return;
+			const context = drawingCanvas.getContext('2d');
+			if (!context) return;
+			context.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+			context.drawImage(image, 0, 0, drawingCanvas.width, drawingCanvas.height);
+			restoredDrawingAnswer = expectedAnswer;
+		};
+		image.src = expectedAnswer;
+	});
+
 	function emitAnswer(value: string) {
 		onAnswerChange?.(value);
 	}
@@ -431,6 +473,28 @@
 	function setNumberAnswer(value: string) {
 		numberAnswer = value;
 		emitAnswer(value);
+	}
+
+	function emitAssetCanvasAnswer({
+		strokes = assetCanvasStrokes,
+		working = assetCanvasWorking,
+		finalAnswer = assetCanvasFinalAnswer
+	}: {
+		strokes?: AssetCanvasStroke[];
+		working?: string;
+		finalAnswer?: string;
+	} = {}) {
+		emitAnswer(serializeAssetCanvasAnswer({ strokes, working, finalAnswer }));
+	}
+
+	function setAssetCanvasWorking(value: string) {
+		assetCanvasWorking = value;
+		emitAssetCanvasAnswer({ working: value });
+	}
+
+	function setAssetCanvasFinalAnswer(value: string) {
+		assetCanvasFinalAnswer = value;
+		emitAssetCanvasAnswer({ finalAnswer: value });
 	}
 
 	function setLabeledAnswer(label: string, value: string) {
@@ -516,6 +580,7 @@
 	}
 
 	function startDrawing(event: PointerEvent) {
+		if (readOnly) return;
 		const point = drawingPoint(event);
 		const context = drawingContext();
 		if (!point || !context || !drawingCanvas) return;
@@ -526,6 +591,7 @@
 	}
 
 	function continueDrawing(event: PointerEvent) {
+		if (readOnly) return;
 		if (!drawingActive) return;
 		const point = drawingPoint(event);
 		const context = drawingContext();
@@ -535,15 +601,65 @@
 	}
 
 	function endDrawing() {
+		if (readOnly) return;
 		if (!drawingActive || !drawingCanvas) return;
 		drawingActive = false;
 		emitAnswer(drawingCanvas.toDataURL('image/png'));
 	}
 
 	function clearDrawing() {
+		if (readOnly) return;
 		if (!drawingCanvas) return;
 		drawingCanvas.getContext('2d')?.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 		emitAnswer('');
+	}
+
+	function assetCanvasPoint(event: PointerEvent): AssetCanvasPoint | null {
+		const target = event.currentTarget;
+		if (!(target instanceof SVGSVGElement)) return null;
+		const rect = target.getBoundingClientRect();
+		if (rect.width <= 0 || rect.height <= 0) return null;
+		return [
+			Math.max(0, Math.min(1_000, Math.round(((event.clientX - rect.left) / rect.width) * 1_000))),
+			Math.max(0, Math.min(1_000, Math.round(((event.clientY - rect.top) / rect.height) * 1_000)))
+		];
+	}
+
+	function startAssetCanvasDrawing(event: PointerEvent) {
+		if (readOnly) return;
+		const point = assetCanvasPoint(event);
+		if (!point || !(event.currentTarget instanceof SVGSVGElement)) return;
+		event.preventDefault();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		assetCanvasDrawingActive = true;
+		assetCanvasStrokes = [...assetCanvasStrokes, [point]];
+	}
+
+	function continueAssetCanvasDrawing(event: PointerEvent) {
+		if (readOnly || !assetCanvasDrawingActive) return;
+		const point = assetCanvasPoint(event);
+		const activeStroke = assetCanvasStrokes.at(-1);
+		const previous = activeStroke?.at(-1);
+		if (!point || !activeStroke || !previous) return;
+		if ((point[0] - previous[0]) ** 2 + (point[1] - previous[1]) ** 2 < 16) return;
+		const nextStrokes = assetCanvasStrokes.slice(0, -1);
+		assetCanvasStrokes = [...nextStrokes, [...activeStroke, point]];
+	}
+
+	function endAssetCanvasDrawing() {
+		if (readOnly || !assetCanvasDrawingActive) return;
+		assetCanvasDrawingActive = false;
+		emitAssetCanvasAnswer();
+	}
+
+	function clearAssetCanvasDrawing() {
+		if (readOnly) return;
+		assetCanvasStrokes = [];
+		emitAssetCanvasAnswer({ strokes: [] });
+	}
+
+	function assetCanvasPath(stroke: AssetCanvasStroke) {
+		return stroke.map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ');
 	}
 
 	function toggleChoiceTableRow(index: number) {
@@ -719,364 +835,436 @@
 	}
 </script>
 
-{#if response.kind === 'lines'}
-	<textarea
-		class="lined-textarea"
-		rows={response.count}
-		style={`--answer-line-count: ${response.count}`}
-		aria-label={`${response.count} line answer`}
-		value={textAnswer}
-		use:autogrowTextarea={{ minLines: response.count, value: textAnswer }}
-		oninput={(event) => setTextAnswer(event.currentTarget.value)}
-	></textarea>
-{:else if response.kind === 'labeled-lines'}
-	<div class="labeled-lines">
-		{#if response.choiceOptions?.length}
-			<div
-				class="choice-list inline-choice-list"
-				class:horizontal={response.choiceLayout === 'horizontal'}
-				role="radiogroup"
-				aria-label={response.choicePrompt ?? 'Ring one option'}
-			>
-				{#if response.choicePrompt}
-					<p class="inline-choice-prompt">{response.choicePrompt}</p>
-				{/if}
-				{#each response.choiceOptions as option, index (`${option}-${index}`)}
-					{@const selected = labeledChoice === index}
-					<button
-						type="button"
-						class="choice-row"
-						class:selected
-						role="radio"
-						aria-checked={selected}
-						onclick={() => setLabeledChoice(index)}
-					>
-						<span class="choice-label"><MathText text={option} /></span>
-						<span class="tick-cell" aria-hidden="true">
-							<span class="tick-mark">{selected ? '✓' : ''}</span>
-						</span>
-					</button>
-				{/each}
-			</div>
-		{/if}
-		{#each labeledFields() as field (field.label)}
-			{@const fieldLineCount = field.lineCount ?? response.lineCount}
-			<label class="labeled-line" class:multiline={Boolean(fieldLineCount && fieldLineCount > 1)}>
-				<span>{field.label}</span>
-				{#if fieldLineCount && fieldLineCount > 1}
-					<textarea
-						class="lined-textarea labeled-textarea"
-						rows={fieldLineCount}
-						style={`--answer-line-count: ${fieldLineCount}`}
-						value={labeledAnswers[field.label] ?? ''}
-						aria-label={`${field.label} answer`}
-						use:autogrowTextarea={{
-							minLines: fieldLineCount,
-							value: labeledAnswers[field.label] ?? ''
-						}}
-						oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
-					></textarea>
-				{:else}
-					<input
-						class="line-input"
-						value={labeledAnswers[field.label] ?? ''}
-						aria-label={`${field.label} answer`}
-						oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
-					/>
-				{/if}
-			</label>
-		{/each}
-	</div>
-{:else if response.kind === 'number-line'}
-	<label class="number-line">
-		<span><MathText text={response.label} /></span>
-		{#if response.prefix}
-			<span><MathText text={response.prefix} /></span>
-		{/if}
-		<input
-			class="line-input"
-			value={numberAnswer}
-			aria-label={`${response.label} answer`}
-			oninput={(event) => setNumberAnswer(event.currentTarget.value)}
-		/>
-		{#if response.unit}
-			<span><MathText text={response.unit} /></span>
-		{/if}
-	</label>
-{:else if response.kind === 'choice'}
-	{@const maxSelections = choiceMaxSelections()}
-	<div
-		class="choice-list"
-		class:horizontal={response.layout === 'horizontal'}
-		role={maxSelections === 1 ? 'radiogroup' : 'group'}
-		aria-label={maxSelections === 1 ? 'Tick one option' : `Tick ${maxSelections} options`}
-	>
-		{#each response.options as option, index (`${option}-${index}`)}
-			{@const selected = selectedChoices.includes(index)}
-			<button
-				type="button"
-				class="choice-row"
-				class:selected
-				role={maxSelections === 1 ? 'radio' : 'checkbox'}
-				aria-checked={selected}
-				onclick={() => toggleChoice(index)}
-			>
-				<span class="choice-label"><MathText text={option} /></span>
-				<span class="tick-cell" aria-hidden="true">
-					<span class="tick-mark">{selected ? '✓' : ''}</span>
-				</span>
-			</button>
-		{/each}
-	</div>
-{:else if response.kind === 'choice-table'}
-	<div
-		class="choice-table-grid"
-		role="radiogroup"
-		aria-label="Tick one table row"
-		style={`grid-template-columns: repeat(${response.columns.length}, minmax(0, 1fr)) var(--choice-table-gap) var(--choice-table-tick-width)`}
-	>
-		{#each response.columns as column, columnIndex (`${column}-${columnIndex}`)}
-			<div
-				class="choice-grid-cell choice-grid-heading"
-				class:first-column={columnIndex === 0}
-				style={`grid-column: ${columnIndex + 1}; grid-row: 1`}
-			>
-				<MathText text={column} />
-			</div>
-		{/each}
-		{#each response.rows as row, rowIndex (rowIndex)}
-			{#each row as cell, columnIndex (`${rowIndex}-${columnIndex}`)}
+<fieldset class="response-fieldset" disabled={readOnly} aria-disabled={readOnly}>
+	{#if response.kind === 'lines'}
+		<textarea
+			class="lined-textarea"
+			rows={response.count}
+			style={`--answer-line-count: ${response.count}`}
+			aria-label={`${response.count} line answer`}
+			value={textAnswer}
+			use:autogrowTextarea={{ minLines: response.count, value: textAnswer }}
+			oninput={(event) => setTextAnswer(event.currentTarget.value)}
+		></textarea>
+	{:else if response.kind === 'labeled-lines'}
+		<div class="labeled-lines">
+			{#if response.choiceOptions?.length}
 				<div
-					class="choice-grid-cell choice-grid-data"
-					class:first-column={columnIndex === 0}
-					class:selected={selectedChoiceTableRow === rowIndex}
-					style={`grid-column: ${columnIndex + 1}; grid-row: ${rowIndex + 2}`}
+					class="choice-list inline-choice-list"
+					class:horizontal={response.choiceLayout === 'horizontal'}
+					role="radiogroup"
+					aria-label={response.choicePrompt ?? 'Ring one option'}
 				>
-					<MathText text={cell} />
-				</div>
-			{/each}
-			<button
-				type="button"
-				class="table-tick-button"
-				class:selected={selectedChoiceTableRow === rowIndex}
-				role="radio"
-				aria-label={`Select row ${rowIndex + 1}`}
-				aria-checked={selectedChoiceTableRow === rowIndex}
-				style={`grid-column: ${response.columns.length + 2}; grid-row: ${rowIndex + 2}`}
-				onclick={() => toggleChoiceTableRow(rowIndex)}
-			>
-				{selectedChoiceTableRow === rowIndex ? '✓' : ''}
-			</button>
-		{/each}
-	</div>
-{:else if response.kind === 'matching'}
-	{@const rowCount = matchingRowCount(response.left, response.right)}
-	<div class="matching-connectors" aria-label="Matching question">
-		<div class="matching-connectors-heading">{response.leftTitle}</div>
-		<div class="matching-connectors-heading matching-connectors-heading-right">
-			{response.rightTitle}
-		</div>
-		<div class="matching-rows" style={`--match-row-count: ${rowCount}`}>
-			<div class="match-line-layer" style={`grid-row: 1 / span ${rowCount}`}>
-				<svg
-					class="match-lines"
-					viewBox={`0 0 100 ${rowCount * 100}`}
-					preserveAspectRatio="none"
-					aria-hidden="true"
-				>
-					{#each response.left as left, leftIndex (`line-${left}-${leftIndex}`)}
-						{@const right = matchingAnswers[left]}
-						{@const rightIndex = response.right.indexOf(right)}
-						{#if rightIndex >= 0}
-							<path style={matchStyleForIndex(leftIndex)} d={matchPath(leftIndex, rightIndex)} />
-						{/if}
-					{/each}
-				</svg>
-				{#each response.left as left, leftIndex (`end-${left}-${leftIndex}`)}
-					{@const right = matchingAnswers[left]}
-					{@const rightIndex = response.right.indexOf(right)}
-					{#if rightIndex >= 0}
-						<button
-							type="button"
-							class="match-end match-end-left"
-							style={`--match-row: ${leftIndex}; ${matchStyleForIndex(leftIndex)}`}
-							aria-label={`Remove match for ${left}`}
-							onclick={(event) => handleRemoveMatchClick(event, left)}
-						></button>
-						<button
-							type="button"
-							class="match-end match-end-right"
-							style={`--match-row: ${rightIndex}; ${matchStyleForIndex(leftIndex)}`}
-							aria-label={`Remove match for ${left}`}
-							onclick={(event) => handleRemoveMatchClick(event, left)}
-						></button>
+					{#if response.choicePrompt}
+						<p class="inline-choice-prompt">{response.choicePrompt}</p>
 					{/if}
-				{/each}
-			</div>
-			{#each response.left as left, rowIndex (`left-${left}-${rowIndex}`)}
-				<button
-					type="button"
-					class="match-option match-option-left"
-					class:active={selectedMatchIs('left', left)}
-					class:connected={Boolean(matchingAnswers[left])}
-					style={`grid-column: 1; grid-row: ${rowIndex + 1}; ${
-						matchingAnswers[left] ? matchStyleForIndex(rowIndex) : ''
-					}`}
-					aria-pressed={selectedMatchIs('left', left)}
-					aria-label={matchOptionLabel('left', left)}
-					onclick={(event) => handleMatchClick(event, 'left', left)}
-				>
-					<MathText text={left} />
-				</button>
-			{/each}
-			{#each response.right as right, rowIndex (`right-${right}-${rowIndex}`)}
-				{@const matchedLeft = leftForRight(right)}
-				<button
-					type="button"
-					class="match-option match-option-right"
-					class:active={selectedMatchIs('right', right)}
-					class:connected={Boolean(matchedLeft)}
-					style={`grid-column: 3; grid-row: ${rowIndex + 1}; ${
-						matchedLeft ? matchStyleForLeft(matchedLeft, response.left) : ''
-					}`}
-					aria-pressed={selectedMatchIs('right', right)}
-					aria-label={matchOptionLabel('right', right)}
-					onclick={(event) => handleMatchClick(event, 'right', right)}
-				>
-					<MathText text={right} />
-				</button>
-			{/each}
-		</div>
-	</div>
-{:else if response.kind === 'asset-canvas'}
-	{@const asset = assets[response.assetId]}
-	{#if asset}
-		{#if response.labelBank?.length}
-			<div class="graphic-label-bank" aria-label="Label choices">
-				{#each response.labelBank as label (label)}
-					<button
-						type="button"
-						class="graphic-label-chip"
-						class:active={activeGraphicLabel === label}
-						class:used={usedGraphicLabels().has(label)}
-						aria-pressed={activeGraphicLabel === label}
-						onclick={() => selectGraphicLabel(label)}
-					>
-						{label}
-					</button>
-				{/each}
-			</div>
-		{/if}
-		<figure
-			class="answer-canvas"
-			style={`--canvas-width: ${response.width ?? asset.width ?? 420}px`}
-		>
-			<figcaption>{response.label ?? asset.label}</figcaption>
-			<img src={asset.src} alt={asset.alt} />
-		</figure>
-	{:else}
-		<p class="missing-asset">Missing answer canvas: {response.assetId}</p>
-	{/if}
-{:else if response.kind === 'drawing-box'}
-	<figure
-		class="drawing-box"
-		class:has-grid={Boolean(response.grid)}
-		style={`--drawing-width: ${response.width ?? 420}px; --drawing-height: ${response.height ?? 180}px; --grid-rows: ${response.grid?.rows ?? 1}; --grid-columns: ${response.grid?.columns ?? 1}`}
-	>
-		{#if response.label || response.grid}
-			<figcaption>
-				{response.label ?? 'Drawing answer'}
-				{#if response.grid}
-					<span>{response.grid.rows} x {response.grid.columns} grid</span>
-				{/if}
-			</figcaption>
-		{/if}
-		<div class="drawing-grid-shell" class:with-row-labels={Boolean(response.rowLabels?.length)}>
-			{#if response.rowLabels?.length}
-				<div class="drawing-row-labels" aria-hidden="true">
-					{#each response.rowLabels as label}
-						<span>{label}</span>
-					{/each}
-				</div>
-			{/if}
-			<canvas
-				bind:this={drawingCanvas}
-				width={response.width ?? 420}
-				height={response.height ?? 180}
-				aria-label={response.label ?? 'Drawing answer'}
-				onpointerdown={startDrawing}
-				onpointermove={continueDrawing}
-				onpointerup={endDrawing}
-				onpointercancel={endDrawing}
-				onpointerleave={endDrawing}
-			></canvas>
-		</div>
-		<button type="button" class="clear-drawing-button" onclick={clearDrawing}>Clear</button>
-	</figure>
-{:else if response.kind === 'equation-blanks'}
-	<div class="equation-blanks" aria-label="Equation answer">
-		{#each response.segments as segment, index (segment.kind === 'blank' ? segment.id : `${segment.kind}-${index}`)}
-			{#if segment.kind === 'blank'}
-				<input
-					class="equation-blank-input"
-					style={`--blank-width: ${segment.width ?? 4.5}rem`}
-					value={equationBlankAnswers[segment.id] ?? ''}
-					aria-label={segment.label}
-					oninput={(event) => setEquationBlank(segment.id, event.currentTarget.value)}
-				/>
-			{:else if segment.kind === 'math'}
-				<span class="equation-blank-math"><MathText text={`$${segment.text}$`} /></span>
-			{:else}
-				<span><MathText text={segment.text} /></span>
-			{/if}
-		{/each}
-	</div>
-{:else if response.kind === 'image-label-zones'}
-	{@const asset = assets[response.assetId]}
-	{#if asset}
-		<div class="graphic-label-response">
-			<div class="graphic-label-bank" aria-label="Label choices">
-				{#each response.labels as label (label)}
-					<button
-						type="button"
-						class="graphic-label-chip"
-						class:active={activeGraphicLabel === label}
-						class:used={usedGraphicLabels().has(label)}
-						aria-pressed={activeGraphicLabel === label}
-						onclick={() => selectGraphicLabel(label)}
-					>
-						{label}
-					</button>
-				{/each}
-			</div>
-			<figure
-				class="graphic-label-figure"
-				style={`--graphic-width: ${response.width ?? asset.width ?? 640}px`}
-			>
-				<figcaption>{asset.label}</figcaption>
-				<div class="graphic-label-image-wrap">
-					<img src={asset.src} alt={asset.alt} />
-					{#each response.zones as zone (zone.id)}
+					{#each response.choiceOptions as option, index (`${option}-${index}`)}
+						{@const selected = labeledChoice === index}
 						<button
 							type="button"
-							class="graphic-label-zone"
-							class:filled={Boolean(graphicAnswers[zone.id])}
-							style={`left: ${zone.x * 100}%; top: ${zone.y * 100}%; width: ${zone.width * 100}%; height: ${zone.height * 100}%`}
-							aria-label={`${zone.label} label target${graphicAnswers[zone.id] ? `, ${graphicAnswers[zone.id]}` : ''}`}
-							onclick={() => placeGraphicLabel(zone.id)}
+							class="choice-row"
+							class:selected
+							role="radio"
+							aria-checked={selected}
+							onclick={() => setLabeledChoice(index)}
 						>
-							{graphicAnswers[zone.id] || ''}
+							<span class="choice-label"><MathText text={option} /></span>
+							<span class="tick-cell" aria-hidden="true">
+								<span class="tick-mark">{selected ? '✓' : ''}</span>
+							</span>
 						</button>
 					{/each}
 				</div>
-			</figure>
+			{/if}
+			{#each labeledFields() as field (field.label)}
+				{@const fieldLineCount = field.lineCount ?? response.lineCount}
+				<label class="labeled-line" class:multiline={Boolean(fieldLineCount && fieldLineCount > 1)}>
+					<span>{field.label}</span>
+					{#if fieldLineCount && fieldLineCount > 1}
+						<textarea
+							class="lined-textarea labeled-textarea"
+							rows={fieldLineCount}
+							style={`--answer-line-count: ${fieldLineCount}`}
+							value={labeledAnswers[field.label] ?? ''}
+							aria-label={`${field.label} answer`}
+							use:autogrowTextarea={{
+								minLines: fieldLineCount,
+								value: labeledAnswers[field.label] ?? ''
+							}}
+							oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
+						></textarea>
+					{:else}
+						<input
+							class="line-input"
+							value={labeledAnswers[field.label] ?? ''}
+							aria-label={`${field.label} answer`}
+							oninput={(event) => setLabeledAnswer(field.label, event.currentTarget.value)}
+						/>
+					{/if}
+				</label>
+			{/each}
 		</div>
-	{:else}
-		<p class="missing-asset">Missing label image: {response.assetId}</p>
+	{:else if response.kind === 'number-line'}
+		<label class="number-line">
+			<span><MathText text={response.label} /></span>
+			{#if response.prefix}
+				<span><MathText text={response.prefix} /></span>
+			{/if}
+			<input
+				class="line-input"
+				value={numberAnswer}
+				aria-label={`${response.label} answer`}
+				oninput={(event) => setNumberAnswer(event.currentTarget.value)}
+			/>
+			{#if response.unit}
+				<span><MathText text={response.unit} /></span>
+			{/if}
+		</label>
+	{:else if response.kind === 'choice'}
+		{@const maxSelections = choiceMaxSelections()}
+		<div
+			class="choice-list"
+			class:horizontal={response.layout === 'horizontal'}
+			role={maxSelections === 1 ? 'radiogroup' : 'group'}
+			aria-label={maxSelections === 1 ? 'Tick one option' : `Tick ${maxSelections} options`}
+		>
+			{#each response.options as option, index (`${option}-${index}`)}
+				{@const selected = selectedChoices.includes(index)}
+				<button
+					type="button"
+					class="choice-row"
+					class:selected
+					role={maxSelections === 1 ? 'radio' : 'checkbox'}
+					aria-checked={selected}
+					onclick={() => toggleChoice(index)}
+				>
+					<span class="choice-label"><MathText text={option} /></span>
+					<span class="tick-cell" aria-hidden="true">
+						<span class="tick-mark">{selected ? '✓' : ''}</span>
+					</span>
+				</button>
+			{/each}
+		</div>
+	{:else if response.kind === 'choice-table'}
+		<div
+			class="choice-table-grid"
+			role="radiogroup"
+			aria-label="Tick one table row"
+			style={`grid-template-columns: repeat(${response.columns.length}, minmax(0, 1fr)) var(--choice-table-gap) var(--choice-table-tick-width)`}
+		>
+			{#each response.columns as column, columnIndex (`${column}-${columnIndex}`)}
+				<div
+					class="choice-grid-cell choice-grid-heading"
+					class:first-column={columnIndex === 0}
+					style={`grid-column: ${columnIndex + 1}; grid-row: 1`}
+				>
+					<MathText text={column} />
+				</div>
+			{/each}
+			{#each response.rows as row, rowIndex (rowIndex)}
+				{#each row as cell, columnIndex (`${rowIndex}-${columnIndex}`)}
+					<div
+						class="choice-grid-cell choice-grid-data"
+						class:first-column={columnIndex === 0}
+						class:selected={selectedChoiceTableRow === rowIndex}
+						style={`grid-column: ${columnIndex + 1}; grid-row: ${rowIndex + 2}`}
+					>
+						<MathText text={cell} />
+					</div>
+				{/each}
+				<button
+					type="button"
+					class="table-tick-button"
+					class:selected={selectedChoiceTableRow === rowIndex}
+					role="radio"
+					aria-label={`Select row ${rowIndex + 1}`}
+					aria-checked={selectedChoiceTableRow === rowIndex}
+					style={`grid-column: ${response.columns.length + 2}; grid-row: ${rowIndex + 2}`}
+					onclick={() => toggleChoiceTableRow(rowIndex)}
+				>
+					{selectedChoiceTableRow === rowIndex ? '✓' : ''}
+				</button>
+			{/each}
+		</div>
+	{:else if response.kind === 'matching'}
+		{@const rowCount = matchingRowCount(response.left, response.right)}
+		<div class="matching-connectors" aria-label="Matching question">
+			<div class="matching-connectors-heading">{response.leftTitle}</div>
+			<div class="matching-connectors-heading matching-connectors-heading-right">
+				{response.rightTitle}
+			</div>
+			<div class="matching-rows" style={`--match-row-count: ${rowCount}`}>
+				<div class="match-line-layer" style={`grid-row: 1 / span ${rowCount}`}>
+					<svg
+						class="match-lines"
+						viewBox={`0 0 100 ${rowCount * 100}`}
+						preserveAspectRatio="none"
+						aria-hidden="true"
+					>
+						{#each response.left as left, leftIndex (`line-${left}-${leftIndex}`)}
+							{@const right = matchingAnswers[left]}
+							{@const rightIndex = response.right.indexOf(right)}
+							{#if rightIndex >= 0}
+								<path style={matchStyleForIndex(leftIndex)} d={matchPath(leftIndex, rightIndex)} />
+							{/if}
+						{/each}
+					</svg>
+					{#each response.left as left, leftIndex (`end-${left}-${leftIndex}`)}
+						{@const right = matchingAnswers[left]}
+						{@const rightIndex = response.right.indexOf(right)}
+						{#if rightIndex >= 0}
+							<button
+								type="button"
+								class="match-end match-end-left"
+								style={`--match-row: ${leftIndex}; ${matchStyleForIndex(leftIndex)}`}
+								aria-label={`Remove match for ${left}`}
+								onclick={(event) => handleRemoveMatchClick(event, left)}
+							></button>
+							<button
+								type="button"
+								class="match-end match-end-right"
+								style={`--match-row: ${rightIndex}; ${matchStyleForIndex(leftIndex)}`}
+								aria-label={`Remove match for ${left}`}
+								onclick={(event) => handleRemoveMatchClick(event, left)}
+							></button>
+						{/if}
+					{/each}
+				</div>
+				{#each response.left as left, rowIndex (`left-${left}-${rowIndex}`)}
+					<button
+						type="button"
+						class="match-option match-option-left"
+						class:active={selectedMatchIs('left', left)}
+						class:connected={Boolean(matchingAnswers[left])}
+						style={`grid-column: 1; grid-row: ${rowIndex + 1}; ${
+							matchingAnswers[left] ? matchStyleForIndex(rowIndex) : ''
+						}`}
+						aria-pressed={selectedMatchIs('left', left)}
+						aria-label={matchOptionLabel('left', left)}
+						onclick={(event) => handleMatchClick(event, 'left', left)}
+					>
+						<MathText text={left} />
+					</button>
+				{/each}
+				{#each response.right as right, rowIndex (`right-${right}-${rowIndex}`)}
+					{@const matchedLeft = leftForRight(right)}
+					<button
+						type="button"
+						class="match-option match-option-right"
+						class:active={selectedMatchIs('right', right)}
+						class:connected={Boolean(matchedLeft)}
+						style={`grid-column: 3; grid-row: ${rowIndex + 1}; ${
+							matchedLeft ? matchStyleForLeft(matchedLeft, response.left) : ''
+						}`}
+						aria-pressed={selectedMatchIs('right', right)}
+						aria-label={matchOptionLabel('right', right)}
+						onclick={(event) => handleMatchClick(event, 'right', right)}
+					>
+						<MathText text={right} />
+					</button>
+				{/each}
+			</div>
+		</div>
+	{:else if response.kind === 'asset-canvas'}
+		{@const asset = assets[response.assetId]}
+		{#if response.instructions}
+			<p class="asset-canvas-instructions">{response.instructions}</p>
+		{/if}
+		{#if asset}
+			{#if response.labelBank?.length}
+				<div class="graphic-label-bank" aria-label="Label choices">
+					{#each response.labelBank as label (label)}
+						<button
+							type="button"
+							class="graphic-label-chip"
+							class:active={activeGraphicLabel === label}
+							class:used={usedGraphicLabels().has(label)}
+							aria-pressed={activeGraphicLabel === label}
+							onclick={() => selectGraphicLabel(label)}
+						>
+							{label}
+						</button>
+					{/each}
+				</div>
+			{/if}
+			<figure
+				class="answer-canvas"
+				style={`--canvas-width: ${response.width ?? asset.width ?? 420}px`}
+			>
+				<figcaption>{response.label ?? asset.label}</figcaption>
+				<div class="asset-canvas-image-shell">
+					<img src={asset.src} alt={asset.alt} />
+					<svg
+						class="asset-canvas-drawing-layer"
+						class:read-only={readOnly}
+						viewBox="0 0 1000 1000"
+						preserveAspectRatio="none"
+						role="img"
+						aria-label={`Drawing layer for ${response.label ?? asset.label}`}
+						onpointerdown={startAssetCanvasDrawing}
+						onpointermove={continueAssetCanvasDrawing}
+						onpointerup={endAssetCanvasDrawing}
+						onpointercancel={endAssetCanvasDrawing}
+						onpointerleave={endAssetCanvasDrawing}
+					>
+						{#each assetCanvasStrokes as stroke, index (`asset-stroke-${index}`)}
+							<path d={assetCanvasPath(stroke)} />
+						{/each}
+					</svg>
+				</div>
+				<button
+					type="button"
+					class="clear-drawing-button"
+					disabled={readOnly || assetCanvasStrokes.length === 0}
+					onclick={clearAssetCanvasDrawing}>Clear drawing</button
+				>
+			</figure>
+		{:else}
+			<p class="missing-asset">Missing answer canvas: {response.assetId}</p>
+		{/if}
+		{#if response.lineCount || response.answerLabel}
+			<div class="asset-canvas-written-response">
+				{#if response.lineCount}
+					<label class="asset-canvas-working">
+						<span>Working</span>
+						<textarea
+							class="lined-textarea"
+							rows={response.lineCount}
+							style={`--answer-line-count: ${response.lineCount}`}
+							value={assetCanvasWorking}
+							aria-label="Written working"
+							use:autogrowTextarea={{
+								minLines: response.lineCount,
+								value: assetCanvasWorking
+							}}
+							oninput={(event) => setAssetCanvasWorking(event.currentTarget.value)}
+						></textarea>
+					</label>
+				{/if}
+				{#if response.answerLabel}
+					<label class="number-line asset-canvas-final-answer">
+						<span><MathText text={response.answerLabel} /></span>
+						<input
+							class="line-input"
+							value={assetCanvasFinalAnswer}
+							aria-label={`${response.answerLabel} answer`}
+							oninput={(event) => setAssetCanvasFinalAnswer(event.currentTarget.value)}
+						/>
+						{#if response.unit}
+							<span><MathText text={response.unit} /></span>
+						{/if}
+					</label>
+				{/if}
+			</div>
+		{/if}
+	{:else if response.kind === 'drawing-box'}
+		<figure
+			class="drawing-box"
+			class:has-grid={Boolean(response.grid)}
+			style={`--drawing-width: ${response.width ?? 420}px; --drawing-height: ${response.height ?? 180}px; --grid-rows: ${response.grid?.rows ?? 1}; --grid-columns: ${response.grid?.columns ?? 1}`}
+		>
+			{#if response.label || response.grid}
+				<figcaption>
+					{response.label ?? 'Drawing answer'}
+					{#if response.grid}
+						<span>{response.grid.rows} x {response.grid.columns} grid</span>
+					{/if}
+				</figcaption>
+			{/if}
+			<div class="drawing-grid-shell" class:with-row-labels={Boolean(response.rowLabels?.length)}>
+				{#if response.rowLabels?.length}
+					<div class="drawing-row-labels" aria-hidden="true">
+						{#each response.rowLabels as label}
+							<span>{label}</span>
+						{/each}
+					</div>
+				{/if}
+				<canvas
+					bind:this={drawingCanvas}
+					width={response.width ?? 420}
+					height={response.height ?? 180}
+					aria-label={response.label ?? 'Drawing answer'}
+					onpointerdown={startDrawing}
+					onpointermove={continueDrawing}
+					onpointerup={endDrawing}
+					onpointercancel={endDrawing}
+					onpointerleave={endDrawing}
+				></canvas>
+			</div>
+			<button type="button" class="clear-drawing-button" onclick={clearDrawing}>Clear</button>
+		</figure>
+	{:else if response.kind === 'equation-blanks'}
+		<div class="equation-blanks" aria-label="Equation answer">
+			{#each response.segments as segment, index (segment.kind === 'blank' ? segment.id : `${segment.kind}-${index}`)}
+				{#if segment.kind === 'blank'}
+					<input
+						class="equation-blank-input"
+						style={`--blank-width: ${segment.width ?? 4.5}rem`}
+						value={equationBlankAnswers[segment.id] ?? ''}
+						aria-label={segment.label}
+						oninput={(event) => setEquationBlank(segment.id, event.currentTarget.value)}
+					/>
+				{:else if segment.kind === 'math'}
+					<span class="equation-blank-math"><MathText text={`$${segment.text}$`} /></span>
+				{:else}
+					<span><MathText text={segment.text} /></span>
+				{/if}
+			{/each}
+		</div>
+	{:else if response.kind === 'image-label-zones'}
+		{@const asset = assets[response.assetId]}
+		{#if asset}
+			<div class="graphic-label-response">
+				<div class="graphic-label-bank" aria-label="Label choices">
+					{#each response.labels as label (label)}
+						<button
+							type="button"
+							class="graphic-label-chip"
+							class:active={activeGraphicLabel === label}
+							class:used={usedGraphicLabels().has(label)}
+							aria-pressed={activeGraphicLabel === label}
+							onclick={() => selectGraphicLabel(label)}
+						>
+							{label}
+						</button>
+					{/each}
+				</div>
+				<figure
+					class="graphic-label-figure"
+					style={`--graphic-width: ${response.width ?? asset.width ?? 640}px`}
+				>
+					<figcaption>{asset.label}</figcaption>
+					<div class="graphic-label-image-wrap">
+						<img src={asset.src} alt={asset.alt} />
+						{#each response.zones as zone (zone.id)}
+							<button
+								type="button"
+								class="graphic-label-zone"
+								class:filled={Boolean(graphicAnswers[zone.id])}
+								style={`left: ${zone.x * 100}%; top: ${zone.y * 100}%; width: ${zone.width * 100}%; height: ${zone.height * 100}%`}
+								aria-label={`${zone.label} label target${graphicAnswers[zone.id] ? `, ${graphicAnswers[zone.id]}` : ''}`}
+								onclick={() => placeGraphicLabel(zone.id)}
+							>
+								{graphicAnswers[zone.id] || ''}
+							</button>
+						{/each}
+					</div>
+				</figure>
+			</div>
+		{:else}
+			<p class="missing-asset">Missing label image: {response.assetId}</p>
+		{/if}
 	{/if}
-{/if}
+</fieldset>
 
 <style>
+	.response-fieldset {
+		min-width: 0;
+		margin: 0;
+		border: 0;
+		padding: 0;
+	}
+
 	.lined-textarea,
 	.line-input {
 		width: 100%;
@@ -1477,6 +1665,60 @@
 		height: auto;
 	}
 
+	.asset-canvas-instructions {
+		margin: 0.65rem 0 0;
+		color: var(--qc-response-ink, #000000);
+	}
+
+	.asset-canvas-image-shell {
+		position: relative;
+		isolation: isolate;
+	}
+
+	.asset-canvas-drawing-layer {
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		touch-action: none;
+		cursor: crosshair;
+	}
+
+	.asset-canvas-drawing-layer.read-only {
+		cursor: default;
+	}
+
+	.asset-canvas-drawing-layer path {
+		fill: none;
+		stroke: var(--qc-response-ink, #000000);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+		pointer-events: none;
+	}
+
+	.asset-canvas-written-response {
+		display: grid;
+		gap: 0.8rem;
+		margin-top: 0.85rem;
+	}
+
+	.asset-canvas-working > span {
+		font-weight: 700;
+	}
+
+	.asset-canvas-working .lined-textarea {
+		margin-top: 0.35rem;
+	}
+
+	.asset-canvas-final-answer {
+		grid-template-columns: minmax(7rem, max-content) minmax(7rem, 1fr) auto;
+		margin-top: 0.25rem;
+	}
+
 	.drawing-box {
 		width: min(100%, var(--drawing-width));
 		margin: 0.85rem auto 0.35rem;
@@ -1554,6 +1796,11 @@
 		font: inherit;
 		font-size: 0.86rem;
 		cursor: pointer;
+	}
+
+	.clear-drawing-button:disabled {
+		cursor: default;
+		opacity: 0.45;
 	}
 
 	.equation-blanks {

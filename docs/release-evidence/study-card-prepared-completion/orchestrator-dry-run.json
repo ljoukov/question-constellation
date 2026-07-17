@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "prepared-study-card-completion-orchestrator-preflight-v1",
+  "status": "passed-no-model-execution",
+  "lockPath": "docs/release-evidence/study-card-prepared-completion/prepared-run-lock.json",
+  "lockFingerprint": "60f63783f3ba87b3f631d5409f88039ad1d3e804c79dce4edf39deb768bb603c",
+  "statePath": "docs/release-evidence/study-card-prepared-completion/queue-state.json",
+  "maxModelConcurrency": 2,
+  "standardStage": {
+    "physicalBatches": 26,
+    "standardGenerationBatches": 24,
+    "archivedFreshReviewPhysicalBatches": 2,
+    "atomicExecutionUnits": 25,
+    "targets": 438,
+    "uniqueTargets": 438,
+    "existingImmutableOutputsValidated": 0
+  },
+  "transitionGate": {
+    "requiresAllStandardPhysicalBatchesAccepted": true,
+    "requiresRemainingPlannerTargets": 0,
+    "then": "run-the-13-hash-locked-literature-shards"
+  },
+  "literatureStage": {
+    "shards": 13,
+    "cards": 171,
+    "sources": 25,
+    "existingImmutableOutputsValidated": 0
+  },
+  "atomicRecoveryPolicy": "The two Combined Physics fresh-review physical batches share one executionGroupId and are launched once; both resulting artifacts are validated and mapped back to their physical batch ids.",
+  "acceptedOutputPolicy": "An existing immutable artifact is validated and reused. It is never regenerated.",
+  "executeCommand": "node scripts/run-prepared-study-card-completion.mjs --execute",
+  "modelCallsDuringDryRun": 0
+}

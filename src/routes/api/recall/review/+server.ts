@@ -16,8 +16,10 @@ const requestSchema = z.object({
 	contentRevision: z.number().int().min(1),
 	contentHash: z.string().trim().min(1).max(256),
 	grade: z.enum(['again', 'hard', 'good', 'easy']),
-	mode: z.enum(['recall', 'recognise', 'reverse']).default('recall'),
-	selectedChoiceKey: z.string().trim().min(1).max(64).nullable(),
+	mode: z.enum(['recall', 'recognise', 'reverse', 'true_false']).default('recall'),
+	selectedChoiceKey: z.string().trim().min(1).max(80).nullable(),
+	statementChoiceKey: z.string().trim().min(1).max(80).nullable(),
+	selectedTruth: z.boolean().nullable(),
 	sourceSessionId: z.string().trim().min(1).max(128),
 	responseDurationMs: z
 		.number()
@@ -61,13 +63,25 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const selectedChoice = body.selectedChoiceKey
 		? recallChoiceDiagnostic(card, body.selectedChoiceKey)
 		: null;
+	const statementChoice = body.statementChoiceKey
+		? recallChoiceDiagnostic(card, body.statementChoiceKey)
+		: null;
 	if (
 		(body.mode === 'recognise' && !selectedChoice) ||
-		(body.mode !== 'recognise' && body.selectedChoiceKey !== null)
+		(body.mode !== 'recognise' && body.selectedChoiceKey !== null) ||
+		(body.mode === 'true_false' && (!statementChoice || body.selectedTruth === null)) ||
+		(body.mode !== 'true_false' &&
+			(body.statementChoiceKey !== null || body.selectedTruth !== null))
 	) {
 		return json({ error: 'invalid_selected_choice' }, { status: 400 });
 	}
-	if (selectedChoice && !selectedChoice.isCorrect && body.grade !== 'again') {
+	const trueFalseCorrect = statementChoice
+		? statementChoice.isCorrect === body.selectedTruth
+		: null;
+	if (
+		(selectedChoice && !selectedChoice.isCorrect && body.grade !== 'again') ||
+		(trueFalseCorrect === false && body.grade !== 'again')
+	) {
 		return json({ error: 'inconsistent_review' }, { status: 400 });
 	}
 
@@ -81,6 +95,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 			existing.grade !== body.grade ||
 			existing.mode !== body.mode ||
 			existing.selectedChoiceKey !== body.selectedChoiceKey ||
+			(existing.statementChoiceKey ?? null) !== body.statementChoiceKey ||
+			(existing.selectedTruth ?? null) !== body.selectedTruth ||
 			existing.sourceSessionId !== body.sourceSessionId ||
 			existing.responseDurationMs !== body.responseDurationMs ||
 			existing.createdAt !== body.createdAt)
@@ -94,6 +110,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		grade: body.grade,
 		mode: body.mode,
 		selectedChoice,
+		statementChoice,
+		selectedTruth: body.selectedTruth,
 		sourceSessionId: body.sourceSessionId,
 		responseDurationMs: body.responseDurationMs,
 		createdAt: body.createdAt

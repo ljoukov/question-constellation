@@ -19,6 +19,8 @@ export type OcrLiteratureQuestionSource = {
 	topicPath: string[];
 	sourceRef: string;
 	marks: number | null;
+	practiceAvailable: boolean;
+	practiceUnavailableReason: string | null;
 };
 
 export type OcrLiteratureHubQuestion = OcrLiteratureQuestionSource & {
@@ -42,6 +44,8 @@ export type OcrLiteratureHub = {
 	selections: EnglishLiteratureSelections;
 	selectionCount: number;
 	questionCount: number;
+	availableQuestionCount: number;
+	unavailableQuestionCount: number;
 	sections: OcrLiteratureHubSection[];
 };
 
@@ -111,10 +115,16 @@ export function buildOcrEnglishLiteratureHub(
 			: []
 	}));
 
+	const questionsInCourse = sections.flatMap((section) => section.questions);
+	const availableQuestionCount = questionsInCourse.filter(
+		(question) => question.practiceAvailable
+	).length;
 	return {
 		selections,
 		selectionCount: selectionValues(selections).filter(Boolean).length,
-		questionCount: sections.reduce((total, section) => total + section.questions.length, 0),
+		questionCount: questionsInCourse.length,
+		availableQuestionCount,
+		unavailableQuestionCount: questionsInCourse.length - availableQuestionCount,
 		sections
 	};
 }
@@ -295,6 +305,7 @@ function normalize(value: string) {
 
 function sortQuestions(left: OcrLiteratureHubQuestion, right: OcrLiteratureHubQuestion) {
 	return (
+		Number(right.practiceAvailable) - Number(left.practiceAvailable) ||
 		(right.year ?? 0) - (left.year ?? 0) ||
 		(left.componentCode ?? '').localeCompare(right.componentCode ?? '') ||
 		left.sourceRef.localeCompare(right.sourceRef, undefined, { numeric: true })

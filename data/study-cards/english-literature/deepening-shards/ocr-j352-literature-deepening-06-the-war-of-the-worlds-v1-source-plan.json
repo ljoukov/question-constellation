@@ -1,0 +1,447 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "ready",
+          "expectedCardCount": 6
+        }
+      },
+      "sources": [
+        {
+          "id": "gutenberg-the-war-of-the-worlds",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-text",
+          "url": "https://www.gutenberg.org/cache/epub/36/pg36.txt",
+          "title": "The War of the Worlds by H. G. Wells",
+          "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "war-of-the-worlds-deep-plot-heat-ray",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter V; the Heat-Ray attacks",
+          "anchor": "It was sweeping round swiftly and steadily, this flaming death, this invisible, inevitable sword of heat."
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-leatherhead",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter X; the narrator takes his wife away",
+          "anchor": "We got to Leatherhead without misadventure about nine"
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-curate",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XIII; the narrator meets the curate",
+          "anchor": "I became aware of him as a seated figure in soot-smudged shirt sleeves"
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-rout",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XVI; London flees",
+          "anchor": "It was the beginning of the rout of civilisation, of the massacre of mankind."
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-thunder-child",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XVII; the warship intervenes",
+          "anchor": "coming to the rescue of the threatened shipping."
+        },
+        {
+          "id": "war-of-the-worlds-deep-plot-curate-struck",
+          "mode": "plot",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book Two, Chapter IV; the narrator silences the curate",
+          "anchor": "I turned the blade back and struck him with the butt. He went headlong forward and lay stretched on the ground."
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-intellects",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter I; the Martian minds",
+          "anchor": "intellects vast and cool and unsympathetic",
+          "requiredAnswer": "intellects vast and cool and unsympathetic"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-million",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter I; Ogilvy’s estimate",
+          "anchor": "The chances against anything manlike on Mars are a million to one",
+          "requiredAnswer": "The chances against anything manlike on Mars are a million to one"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-not-war",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book Two, Chapter VII; the artilleryman’s judgement",
+          "anchor": "This isn’t a war",
+          "requiredAnswer": "This isn’t a war"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-slay",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter VI; the Heat-Ray",
+          "anchor": "It is still a matter of wonder how the Martians are able to slay men so swiftly and so silently.",
+          "requiredAnswer": "It is still a matter of wonder how the Martians are able to slay men so swiftly and so silently."
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-stay",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter X; the narrator decides to leave",
+          "anchor": "We can’t possibly stay here",
+          "requiredAnswer": "We can’t possibly stay here"
+        },
+        {
+          "id": "war-of-the-worlds-deep-quotation-civilisation",
+          "mode": "quotation",
+          "sourceId": "gutenberg-the-war-of-the-worlds",
+          "locator": "Book One, Chapter XVI; London’s flight",
+          "anchor": "the rout of civilisation, of the massacre of mankind",
+          "requiredAnswer": "the rout of civilisation, of the massacre of mankind"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "failed-combined-physics-rollout-trace-recovery-v1",
+  "status": "exact_core_files_reconstructed_from_jsonl",
+  "policy": "Only the 12 cards accepted by the archived independent reviewer are treated as accepted evidence. The three rejected cards remain rejected; generated repair candidates are not accepted without a fresh independent review.",
+  "batchId": "aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1",
+  "outputDir": "data/study-cards/rollout-recovery/aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1",
+  "sessionRoot": "/home/yaroslav_volovich/.codex/sessions/2026/07/16",
+  "modelCallsDuringRecovery": 0,
+  "exactCoreFileHashes": {
+    "plan.json": "953b7d82b14be49a045d323b8a2cafa0ea05d913b0dc35d0696da0c97cb48a0b",
+    "candidate-cards.json": "d1f7616bb32594d5401a669bbb6fb304dda89037d48e73f4f7c97e1d9fda1034",
+    "review.json": "c3db5ff5900cd10ae5bd5b4bb06c51f94cd6de1252e9a752f873c28782fd4ee0",
+    "reviewed-repair-generation-1-model-output.json": "e5625995d660028d539514a667c1dac6cbdc6c0131f4b706e392b10513e6d2ee",
+    "source-evidence.json": "f0255476152410f713a2226a9a50d24bf7314c3eac0e8c7e8da03630fd76a7b0"
+  },
+  "reconstructedSummaryHashes": {
+    "generation/codex-run-summary.json": "afd2b4bbeec76eacb9418022307dfef12efe93f25022c3b1126f902510e64c36",
+    "review/codex-run-summary.json": "2e5ccff52c93f3a1859ee88a9ade9cebb7d3384236d75d5e856b7d5e3684a0cd",
+    "reviewed-repair-generation-1/codex-run-summary.json": "43b54c9f1e9f87c02721c252eecdeb24aed664c785b9335610017ac4b25a7f22"
+  },
+  "summaryIdentityPolicy": "Original SDK summary wrappers were absent. Minimal summaries are reconstructed from JSONL run ids, boundaries and token counts and are explicitly labelled; they are not claimed byte-identical to the missing wrappers.",
+  "sessions": {
+    "generator": {
+      "runId": "019f6c49-a3cc-7ee1-b385-9064ede9c439",
+      "rolloutFileName": "rollout-2026-07-16T11-56-33-019f6c49-a3cc-7ee1-b385-9064ede9c439.jsonl",
+      "rolloutHash": "a412ce8c380310b0c206acddccd0081931803fbc488b5daca61b6e59fa3f9313",
+      "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1/generation",
+      "startedAt": "2026-07-16T18:56:34.090Z",
+      "completedAt": "2026-07-16T19:02:22.881Z",
+      "promptHash": "115b86e2e1ebbf4bc52997990f494d444026c783444d953ed695d197f1c83eb7",
+      "modelOutputHash": "12418cbaafaee602f524baa9f9d07f58000bc3ef4f95e0554b09f20ead6ad067",
+      "usage": {
+        "input_tokens": 29508,
+        "cached_input_tokens": 0,
+        "output_tokens": 19201,
+        "reasoning_output_tokens": 12948,
+        "total_tokens": 48709
+      },
+      "rowCount": 39
+    },
+    "reviewer": {
+      "runId": "019f6c4e-fbb3-76f2-b189-dc3edf004d2f",
+      "rolloutFileName": "rollout-2026-07-16T12-02-23-019f6c4e-fbb3-76f2-b189-dc3edf004d2f.jsonl",
+      "rolloutHash": "870b6d6ed06344de8bb1b50b1b9608a0e8081ac8d7be7116c5570fa45396e0b3",
+      "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1/review",
+      "startedAt": "2026-07-16T19:02:24.135Z",
+      "completedAt": "2026-07-16T19:05:12.574Z",
+      "promptHash": "a74392329cf950fdb2cc3a73d19150bd28399d8d32a71f805ec969851b4b49eb",
+      "modelOutputHash": "4c8535d0977ef4b748a651f867fca219aa81ffff2ec2ee0ee0d1d46c278bad08",
+      "usage": {
+        "input_tokens": 36973,
+        "cached_input_tokens": 0,
+        "output_tokens": 9203,
+        "reasoning_output_tokens": 8130,
+        "total_tokens": 46176
+      },
+      "rowCount": 30
+    },
+    "repairGenerator": {
+      "runId": "019f6c51-9268-7420-9cad-77ae86eea363",
+      "rolloutFileName": "rollout-2026-07-16T12-05-13-019f6c51-9268-7420-9cad-77ae86eea363.jsonl",
+      "rolloutHash": "c05691859bff4d677ba85c49e75a05ecf8647afefeb428a64724e542a91d57c7",
+      "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1/reviewed-repair-generation-1",
+      "startedAt": "2026-07-16T19:05:13.800Z",
+      "completedAt": "2026-07-16T19:06:36.883Z",
+      "promptHash": "1308d1da74e04e5ef3621c085288a93490bbf764822ced030a1ccc45e7a7f126",
+      "modelOutputHash": "65b0584bfb6c772e71204bf2d0b1519f69cc9b8805d292cdaa99972ef9627d16",
+      "usage": {
+        "input_tokens": 18304,
+        "cached_input_tokens": 0,
+        "output_tokens": 4348,
+        "reasoning_output_tokens": 3106,
+        "total_tokens": 22652
+      },
+      "rowCount": 20
+    }
+  },
+  "counts": {
+    "generated": 15,
+    "reviewed": 15,
+    "acceptedByArchivedReviewer": 12,
+    "rejectedByArchivedReviewer": 3,
+    "generatedRepairCandidatesNotYetAccepted": 3
+  },
+  "acceptedCardIds": [
+    "aqa-8464-955b11dcf2-aqa-8464-physics-6-5-4-2-3-newtons-third-law-force-pair",
+    "aqa-8464-7c9085df32-aqa-8464-physics-6-5-4-3-1-stopping-distance-components",
+    "aqa-8464-befd51184a-aqa-8464-physics-6-5-4-3-2-driver-reaction-factors",
+    "aqa-8464-33cbec4d1f-aqa-8464-physics-6-5-4-3-3-braking-distance-conditions",
+    "aqa-8464-d86a40e656-aqa-8464-physics-6-5-4-3-4-braking-energy-change",
+    "aqa-8464-9b68727484-aqa-8464-physics-6-6-1-wave-frequency-definition",
+    "aqa-8464-f4686243a5-aqa-8464-physics-6-6-2-electromagnetic-spectrum-order",
+    "aqa-8464-db52375d36-aqa-8464-physics-6-6-2-2-infrared-surface-practical",
+    "aqa-8464-5830312136-aqa-8464-physics-6-6-2-3-ionising-wave-hazards",
+    "aqa-8464-c27f96ba5f-aqa-8464-physics-6-6-2-4-microwave-applications",
+    "aqa-8464-aef6715b9e-aqa-8464-physics-6-7-1-permanent-induced-magnets",
+    "aqa-8464-5eff9fe3d3-aqa-8464-physics-6-7-2-electromagnet-definition"
+  ],
+  "rejectedCardIds": [
+    "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+    "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+    "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum"
+  ],
+  "repairCandidateIds": [
+    "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+    "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+    "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum"
+  ]
+}

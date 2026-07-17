@@ -1,0 +1,67 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    }
+  ]
+}

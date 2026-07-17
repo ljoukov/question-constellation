@@ -1,0 +1,165 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8464-biology-digestive-enzyme-substrates-products",
+        "conceptKey": "aqa-8464-biology-amylase-protease-lipase-actions",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2-2-1",
+        "kind": "fact",
+        "visualCue": "🧪",
+        "front": "What do amylase, proteases and lipases break down, and what products are stated?",
+        "back": "Amylase breaks down starch; proteases break down proteins to amino acids; lipases break down lipids to glycerol and fatty acids.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The excerpt gives a distinct substrate-product relationship for each of the three digestive enzymes.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "Amylase breaks down starch; proteases break down proteins to amino acids; lipases break down lipids to glycerol and fatty acids.",
+            "isCorrect": true,
+            "feedback": "Correct: all three mappings match the specification.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Amylase breaks down proteins to amino acids; proteases break down starch; lipases break down lipids to glycerol and fatty acids.",
+            "isCorrect": false,
+            "feedback": "Amylase acts on starch, while proteases act on proteins.",
+            "misconception": "amylase-and-protease-swapped"
+          },
+          {
+            "key": "c",
+            "text": "Amylase breaks down starch; proteases break down lipids to glycerol and fatty acids; lipases break down proteins to amino acids.",
+            "isCorrect": false,
+            "feedback": "Proteases act on proteins, while lipases act on lipids.",
+            "misconception": "protease-and-lipase-swapped"
+          },
+          {
+            "key": "d",
+            "text": "Amylase, proteases and lipases all break their substrates down to simple sugars.",
+            "isCorrect": false,
+            "feedback": "Only the stated enzyme-specific products should be used; proteins yield amino acids and lipids yield glycerol and fatty acids.",
+            "misconception": "all-digestion-products-are-sugars"
+          }
+        ],
+        "sourceExcerpt": "Amylase is a carbohydrase which breaks down starch.\nProteases break down proteins to amino acids.\nLipases break down lipids (fats) to glycerol and fatty acids.",
+        "sourceLocator": "Official PDF pages 26-33; 4.2.2.1 The human digestive system"
+      },
+      "review": {
+        "cardId": "aqa-8464-biology-digestive-enzyme-substrates-products",
+        "accepted": false,
+        "issues": [
+          "The front asks about substrates and products across all three enzymes, but the canonical answer gives no product for amylase; the supplied excerpt gives none either, leaving the question-answer pair incomplete or ambiguous.",
+          "The explanation incorrectly claims that the excerpt gives a substrate-product relationship for each enzyme, although the amylase sentence identifies only its substrate."
+        ],
+        "learnerValue": [
+          "The protease and lipase mappings are accurate, and the choices target common enzyme swaps."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8464-biology-photosynthesis-endothermic-light-transfer",
+        "conceptKey": "aqa-8464-biology-photosynthesis-energy-transfer",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4-1-1",
+        "kind": "cause-consequence",
+        "visualCue": "🌿",
+        "front": "Why is photosynthesis described as an endothermic reaction?",
+        "back": "It is endothermic because light transfers energy from the environment to the chloroplasts.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The reaction takes in energy: light transfers it from the environment into chloroplasts.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "It is endothermic because light transfers energy from the environment to the chloroplasts.",
+            "isCorrect": true,
+            "feedback": "Correct: the direction of energy transfer matches the excerpt.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "It is exothermic because light transfers energy from chloroplasts to the environment.",
+            "isCorrect": false,
+            "feedback": "The energy transfer is from the environment to chloroplasts, so the reaction is endothermic.",
+            "misconception": "photosynthesis-energy-direction-reversed"
+          },
+          {
+            "key": "c",
+            "text": "It is endothermic because chloroplasts transfer energy to light in the environment.",
+            "isCorrect": false,
+            "feedback": "Light transfers energy into chloroplasts, not from chloroplasts into light.",
+            "misconception": "light-transfer-agent-reversed"
+          },
+          {
+            "key": "d",
+            "text": "It is exothermic because no energy is transferred by light.",
+            "isCorrect": false,
+            "feedback": "The excerpt explicitly states that light transfers energy to chloroplasts.",
+            "misconception": "photosynthesis-light-energy-omitted"
+          }
+        ],
+        "sourceExcerpt": "Students should be able to describe photosynthesis as an\nendothermic reaction in which energy is transferred from the\nenvironment to the chloroplasts by light.",
+        "sourceLocator": "Official PDF pages 39-42; 4.4.1.1 Photosynthetic reaction"
+      },
+      "review": {
+        "cardId": "aqa-8464-biology-photosynthesis-endothermic-light-transfer",
+        "accepted": false,
+        "issues": [
+          "Distractors b and c both encode essentially the same reversed energy-transfer misconception, while c's claim that chloroplasts transfer energy to environmental light is contrived and pedagogically implausible. The four-choice card therefore lacks three genuinely distinct misconceptions."
+        ],
+        "learnerValue": [
+          "The source-aligned core correctly links endothermic photosynthesis to energy transfer into chloroplasts by light."
+        ]
+      }
+    },
+    {
+      "stage": "deterministic-candidate-excluded",
+      "card": {
+        "id": "aqa-8464-biology-biodiversity-definition-stability",
+        "conceptKey": "aqa-8464-biology-biodiversity-and-ecosystem-stability",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-3-1",
+        "kind": "definition",
+        "visualCue": "🌍",
+        "front": "What is biodiversity, and how does great biodiversity affect ecosystem stability?",
+        "back": "Biodiversity is the variety of different species on Earth or within an ecosystem; great biodiversity supports ecosystem stability by reducing one species' dependence on another.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Biodiversity concerns the variety of species. Greater variety stabilises ecosystems by reducing dependence between species for food, shelter and maintenance of the physical environment.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "Biodiversity is the variety of different species on Earth or within an ecosystem; great biodiversity supports ecosystem stability by reducing one species' dependence on another.",
+            "isCorrect": true,
+            "feedback": "Correct: this includes both the definition and the stated stability relationship.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Biodiversity is the number of individuals in one species; high biodiversity increases dependence between species.",
+            "isCorrect": false,
+            "feedback": "Biodiversity is variety among species, and great biodiversity reduces dependence between species.",
+            "misconception": "biodiversity-confused-with-population-size"
+          },
+          {
+            "key": "c",
+            "text": "Biodiversity is the variety of non-living conditions only; it does not concern species.",
+            "isCorrect": false,
+            "feedback": "The definition concerns the variety of different species of organisms.",
+            "misconception": "biodiversity-confused-with-abiotic-variety"
+          }
+        ],
+        "sourceExcerpt": "Biodiversity is the variety of all the different species of organisms on\nearth, or within an ecosystem.\nA great biodiversity ensures the stability of ecosystems by reducing\nthe dependence of one species on another for food, shelter and the\nmaintenance of the physical environment.",
+        "sourceLocator": "Official PDF pages 59-65; 4.7.3.1 Biodiversity"
+      }
+    }
+  ]
+}

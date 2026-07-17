@@ -39,6 +39,7 @@ const initialIllustrationCheck = validatePhysicsIllustrationFingerprintState(
 );
 requirePassed(initialIllustrationCheck, 'Illustration fingerprint preflight');
 const primaryId = initialIllustrationCheck.primary.id;
+const storedFingerprint = initialIllustrationCheck.primary.source_fingerprint;
 
 if (!write) {
 	console.log(
@@ -57,6 +58,9 @@ if (!write) {
 				primaryIllustrationId: primaryId,
 				oldFingerprint: transition.oldFingerprint,
 				canonicalFingerprint: transition.canonicalFingerprint,
+				storedFingerprint,
+				legacyOldFingerprint: transition.legacyOldFingerprint,
+				legacyCanonicalFingerprint: transition.legacyCanonicalFingerprint,
 				fingerprintIdentityChanges: transition.changedPaths,
 				before: idPlan.summary
 			},
@@ -103,7 +107,9 @@ if (idPlan.status !== 'already-reconciled') {
 const canonicalTransition = buildPhysicsFingerprintTransition(canonicalCandidate, 'canonical');
 if (
 	canonicalTransition.oldFingerprint !== transition.oldFingerprint ||
-	canonicalTransition.canonicalFingerprint !== transition.canonicalFingerprint
+	canonicalTransition.canonicalFingerprint !== transition.canonicalFingerprint ||
+	canonicalTransition.legacyOldFingerprint !== transition.legacyOldFingerprint ||
+	canonicalTransition.legacyCanonicalFingerprint !== transition.legacyCanonicalFingerprint
 ) {
 	throw new Error('Canonical candidate did not reproduce the preflight fingerprint transition.');
 }
@@ -124,7 +130,7 @@ if (beforeRebaseCheck.phase === 'fingerprint-rebase-pending') {
 	const rebasePlan = buildPublishedPrimaryFingerprintRebasePlan({
 		illustrationRows: afterIdentity.illustrationRows,
 		primaryId,
-		oldFingerprint: transition.oldFingerprint,
+		oldFingerprint: storedFingerprint,
 		canonicalFingerprint: transition.canonicalFingerprint
 	});
 	fingerprintBatchResults = await executeD1TransactionalBatch(rebasePlan.statements);
@@ -144,7 +150,7 @@ const finalIllustrationCheck = validatePhysicsIllustrationsAfterFingerprintRebas
 	after.illustrationRows,
 	{
 		primaryId,
-		oldFingerprint: transition.oldFingerprint,
+		oldFingerprint: storedFingerprint,
 		canonicalFingerprint: transition.canonicalFingerprint
 	}
 );
@@ -175,7 +181,7 @@ console.log(
 			identityStatementsSucceeded: identityBatchResults.length,
 			fingerprintStatementsSucceeded: fingerprintBatchResults.length,
 			primaryIllustrationId: primaryId,
-			oldFingerprint: transition.oldFingerprint,
+			oldFingerprint: storedFingerprint,
 			canonicalFingerprint: transition.canonicalFingerprint,
 			before: reconciliationSummary(before),
 			after: reconciliationSummary(after),

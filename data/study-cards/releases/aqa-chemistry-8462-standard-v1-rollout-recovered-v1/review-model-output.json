@@ -1,0 +1,330 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8462-4-1-atomic-number-protons",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes atomic number from neutron count, mass number and outer-shell electrons."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-1-isotopes-neutrons",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Directly rehearses the defining neutron-number difference between isotopes."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-1-groups-outer-electrons",
+      "accepted": false,
+      "issues": [
+        "The excerpt belongs to 4.1.2.1 The periodic table, but the curriculum component and locator incorrectly cite 4.1.1.7 Electronic structure."
+      ],
+      "learnerValue": [
+        "The causal link between outer-shell electrons and similar group properties is useful once correctly mapped."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-1-halogen-displacement",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the direction of halogen displacement against two plausible reactivity errors."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-2-ionic-electron-transfer",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines electron transfer and resulting ion charges while separating ionic and covalent models."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-2-covalent-shared-pair",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Concise retrieval of covalent bonding with distinct ionic and metallic distractors."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-2-ionic-conductivity",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links ionic conduction to both physical state and mobile charge carriers."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-2-metallic-conductivity",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that delocalised electrons, rather than atoms or ions, carry charge in metals."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-3-conservation-of-mass",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately connects conservation of atoms with equality of total reactant and product mass."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-3-relative-formula-mass",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the correct summation method against three distinct calculation errors."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-3-concentration-mass-volume",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the mass-per-volume relationship and its standard unit."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-3-percentage-yield",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes percentage yield from atom economy, raw yield and purity."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-4-metal-displacement",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides a clear retrieval check on the metal-displacement reactivity rule."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-4-carbon-reduction-extraction",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects a metal's position relative to carbon with extraction by oxygen loss."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-4-neutralisation-products",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts ordinary neutralisation products with the additional carbon dioxide from carbonates."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-4-electrolysis-ion-movement",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately pairs each ion charge with the oppositely charged electrode."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-5-exothermic-endothermic",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Directly contrasts the two directions of energy transfer."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-5-activation-energy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Defines the reaction-energy threshold and distinguishes it from other energy quantities."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-5-batteries-series",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the specification's relationship between series-connected cells and increased voltage."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-5-hydrogen-fuel-cell",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the overall hydrogen-to-water change without requiring Higher-tier half-equations."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-6-measuring-reaction-rate",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links reaction rate to monitored reactant consumption or product formation over time."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-6-collision-theory",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separately checks the collision and sufficient-energy requirements."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-6-catalyst-pathway",
+      "accepted": false,
+      "issues": [
+        "The explanation is malformed: “remaining unused up by the reaction” is ungrammatical and obscures the required “not used up” point."
+      ],
+      "learnerValue": [
+        "The prompt and answer otherwise combine both essential catalyst properties in one retrieval."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-6-equilibrium-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes dynamic equilibrium from stopped reactions, equal amounts and unequal rates."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-7-hydrocarbon-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly tests the exclusive hydrogen-and-carbon composition of hydrocarbons."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-7-alkane-general-formula",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the alkane formula against common homologous-series and algebraic errors."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-7-fractional-distillation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Corrects the misconception that crude-oil fractions are elements or single pure compounds."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-7-cracking-purpose",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates chemical cracking from polymerisation and physical fractionation."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-8-pure-substance",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the chemical definition of purity from everyday purity, formulations and elements alone."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-8-chromatography-phases",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links chromatographic separation to distribution between stationary and mobile phases."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-8-hydrogen-gas-test",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Uses the three other prescribed gas tests as strong, distinct distractors."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-8-halide-precipitates",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the required reagents with all three diagnostic silver-halide colours."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-9-atmosphere-proportions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately rehearses the approximate four-fifths to one-fifth atmospheric composition."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-9-oxygen-photosynthesis",
+      "accepted": false,
+      "issues": [
+        "The ⛽ cue is not meaningfully related to algae, plants, photosynthesis or atmospheric oxygen formation and may instead cue the combustion distractor."
+      ],
+      "learnerValue": [
+        "The underlying question otherwise provides a concise source-backed retrieval of photosynthesis."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-9-greenhouse-gases",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both the named greenhouse gases and their stated temperature-maintaining role."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-9-sulfur-nitrogen-oxide-effects",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes these pollutants' effects from those of carbon monoxide and particulates."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-10-potable-water",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly separates safe-to-drink water from chemically pure water."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-10-sewage-treatment",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the full sequence and correctly assigns anaerobic and aerobic treatment to different streams."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-10-life-cycle-assessment",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Covers the complete product life cycle, including transport and distribution."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-4-10-haber-conditions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately retrieves all three specified Haber-process conditions with distinct distractors."
+      ]
+    }
+  ]
+}

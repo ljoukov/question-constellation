@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "ocr-j352-literature-deepening-shards-v1",
+  "baseSourcePlan": "data/study-cards/english-literature/ocr-j352-source-plan.json",
+  "masterSourcePlan": "data/study-cards/english-literature/ocr-j352-deepening-source-plan.json",
+  "masterSourcePlanHash": "8a8caeb493b94f1aa8448083b96c4790ca38af83bc4e6ac5072071cde189e1cf",
+  "additiveContext": {
+    "artifactPath": "data/study-cards/releases/ocr-j352-literature-standard-v1/accepted-study-cards.json",
+    "artifactHash": "f315f85ca91f288668a3ff54404bc4d52646cd9a7afb647b95df9c08e0fbdb84"
+  },
+  "rightsBoundary": {
+    "modernPrimaryTextQuotations": "withheld",
+    "poetryCompleteness": "withheld; only edition-verified public-domain poems are included",
+    "licensedSecondarySynopses": "plot-only, attributed, no primary-text quotation inference"
+  },
+  "counts": {
+    "plot": 96,
+    "quotation": 72,
+    "method": 3
+  },
+  "totalCards": 171,
+  "shards": [
+    {
+      "index": 1,
+      "releaseId": "ocr-j352-literature-deepening-01-modern-prose-01-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-01-modern-prose-01-v1-source-plan.json",
+      "sourcePlanHash": "e1324e32edb54dc0112c225a26574714a5c1cc8c23ea1db5ca5aa29d00d70367",
+      "titles": [
+        "Anita and Me",
+        "Never Let Me Go",
+        "Animal Farm"
+      ],
+      "expectedCardCount": 18
+    },
+    {
+      "index": 2,
+      "releaseId": "ocr-j352-literature-deepening-02-modern-prose-02-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-02-modern-prose-02-v1-source-plan.json",
+      "sourcePlanHash": "8e4a8af7829047f3ca875a7e64fc59e0508814c639443cff8bc640bf59df3e20",
+      "titles": [
+        "An Inspector Calls",
+        "Leave Taking",
+        "DNA"
+      ],
+      "expectedCardCount": 18
+    },
+    {
+      "index": 3,
+      "releaseId": "ocr-j352-literature-deepening-03-great-expectations-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-03-great-expectations-v1-source-plan.json",
+      "sourcePlanHash": "595cf4f8025c6b96b1638b22336805fdc21528316d88c0ddfe21868696b09e6c",
+      "titles": [
+        "Great Expectations"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 4,
+      "releaseId": "ocr-j352-literature-deepening-04-a-christmas-carol-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-04-a-christmas-carol-v1-source-plan.json",
+      "sourcePlanHash": "260836db6edc8fc08516e83d8bc0e65685f032a3b028f3b314adb42d2782f20a",
+      "titles": [
+        "A Christmas Carol"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 5,
+      "releaseId": "ocr-j352-literature-deepening-05-pride-and-prejudice-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-05-pride-and-prejudice-v1-source-plan.json",
+      "sourcePlanHash": "28e21ca2634f29c906f3107cc383e9f1fa03dd59e7691bacae2868e80ee751cc",
+      "titles": [
+        "Pride and Prejudice"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 6,
+      "releaseId": "ocr-j352-literature-deepening-06-the-war-of-the-worlds-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-06-the-war-of-the-worlds-v1-source-plan.json",
+      "sourcePlanHash": "8714784a88f7356f7e0fafe40dcedcbef0d56587276ba7f68361c2a7a5ba557d",
+      "titles": [
+        "The War of the Worlds"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 7,
+      "releaseId": "ocr-j352-literature-deepening-07-the-strange-case-of-dr-jekyll-and-mr-hyde-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-07-the-strange-case-of-dr-jekyll-and-mr-hyde-v1-source-plan.json",
+      "sourcePlanHash": "9af7e216858ab933977dcace162863c8baa326448d0bd649144088b5d75649ec",
+      "titles": [
+        "The Strange Case of Dr Jekyll and Mr Hyde"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 8,
+      "releaseId": "ocr-j352-literature-deepening-08-jane-eyre-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-08-jane-eyre-v1-source-plan.json",
+      "sourcePlanHash": "1b8aa2267bce019024b3736d80b84f1edb01c08e3b245e5a673d65ff1bddc202",
+      "titles": [
+        "Jane Eyre"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 9,
+      "releaseId": "ocr-j352-literature-deepening-09-romeo-and-juliet-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-09-romeo-and-juliet-v1-source-plan.json",
+      "sourcePlanHash": "f185f960d379a6de4eda7b3fba7f3caf73e6881c49f1fe0da84fadcd0e917f88",
+      "titles": [
+        "Romeo and Juliet"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 10,
+      "releaseId": "ocr-j352-literature-deepening-10-the-merchant-of-venice-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-10-the-merchant-of-venice-v1-source-plan.json",
+      "sourcePlanHash": "70d8396ca4b91e00378d84bd5870e6331d9fd39bc9b8696530f036c3dda081e6",
+      "titles": [
+        "The Merchant of Venice"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 11,
+      "releaseId": "ocr-j352-literature-deepening-11-macbeth-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-11-macbeth-v1-source-plan.json",
+      "sourcePlanHash": "b2fa27a98a9712594be0c0fc7d2742aee9aebeb709ec9f96935ac3b2c9142fc4",
+      "titles": [
+        "Macbeth"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 12,
+      "releaseId": "ocr-j352-literature-deepening-12-much-ado-about-nothing-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-12-much-ado-about-nothing-v1-source-plan.json",
+      "sourcePlanHash": "a0ba30a44c7e3eaf03289de36dd57efe50d987b72fb5eb5114dd6db430c841b1",
+      "titles": [
+        "Much Ado About Nothing"
+      ],
+      "expectedCardCount": 12
+    },
+    {
+      "index": 13,
+      "releaseId": "ocr-j352-literature-deepening-13-poetry-public-domain-v1",
+      "sourcePlanPath": "data/study-cards/english-literature/deepening-shards/ocr-j352-literature-deepening-13-poetry-public-domain-v1-source-plan.json",
+      "sourcePlanHash": "04bc97423e3271ea28e8e5a138abdefb088bcd5dcd9a359a3f4e8adb978e7729",
+      "titles": [
+        "Love and Relationships",
+        "Conflict",
+        "Youth and Age"
+      ],
+      "expectedCardCount": 15
+    }
+  ]
+}

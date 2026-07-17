@@ -1,0 +1,28 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-376687c1fd-aqa-8464-physics-higher-momentum-equation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests accurate recall of the Higher-tier momentum equation with three distinct, plausible misconceptions."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-a66a4f9b72-aqa-8464-physics-higher-flemings-left-hand-rule-quantities",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the three quantities whose relative orientations are represented by Fleming’s left-hand rule."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-08708af18a-aqa-8464-physics-higher-electric-motor-coil-rotation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Checks the source-supported effect of a magnetic field on a current-carrying coil and connects it to electric motors."
+      ]
+    }
+  ]
+}

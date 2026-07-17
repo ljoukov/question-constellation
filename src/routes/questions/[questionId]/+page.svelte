@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
-	import { ArrowRight, Eye } from '@lucide/svelte';
+	import { ArrowRight, CircleAlert, Eye } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -30,7 +31,7 @@
 		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
 	);
 	const practiceHref = $derived(
-		`${resolve('/questions/[questionId]/practice', { questionId: data.question.id })}?entry=question&returnTo=${encodeURIComponent(`/questions/${encodeURIComponent(data.question.id)}`)}`
+		`${resolve('/questions/[questionId]/practice', { questionId: data.question.id })}?entry=question&returnTo=${encodeURIComponent(`/questions/${encodeURIComponent(data.question.id)}`)}` as ResolvedPathname
 	);
 	const contextLine = $derived(
 		[
@@ -73,6 +74,16 @@
 			showMeta={false}
 			assetLoading="eager"
 		/>
+
+		{#if !data.practiceAvailable && data.question.practiceUnavailableReason}
+			<section class="qc-warning-panel" aria-label="Practice unavailable">
+				<CircleAlert size={19} aria-hidden="true" />
+				<div>
+					<p class="qc-panel-label">Practice unavailable</p>
+					<p><MathText text={data.question.practiceUnavailableReason} /></p>
+				</div>
+			</section>
+		{/if}
 
 		<div class="qc-public-question-actions" aria-label="Question actions">
 			{#if data.practiceAvailable}

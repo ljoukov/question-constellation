@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "accepted-descendant-study-card-rollout-recovery-v1",
+  "sourceDate": "2026-07-16",
+  "queueEvidence": {
+    "totalJobs": 35,
+    "acceptedJobs": 12,
+    "failedAtAcceptedSnapshot": 1,
+    "runningAtAcceptedSnapshot": 2,
+    "queuedAtAcceptedSnapshot": 20,
+    "policy": "Recover only jobs already recorded as accepted. Failed, running and queued jobs are excluded."
+  },
+  "releases": [
+    {
+      "batchId": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1",
+      "subject": "Biology",
+      "mode": "shared",
+      "generatorRunId": "019f6c35-25b3-7801-8e63-33fd77882660",
+      "reviewerRunId": "019f6c36-600a-7e23-b45f-5fae8e844bc0",
+      "expectedAcceptedCards": 1,
+      "historicalArtifactHash": "8713257a89d3c4ff43d9b31f17b3b5ebcab75e380502831ff767bd92faedb59b"
+    },
+    {
+      "batchId": "aqa-chemistry-8462-chemistry-shared-descendants-06-1e5bffa877-v1",
+      "subject": "Chemistry",
+      "mode": "shared",
+      "generatorRunId": "019f6c35-25b4-71d1-a502-94f49cc64a1e",
+      "reviewerRunId": "019f6c36-8014-7d23-a350-ef755bba5f67",
+      "expectedAcceptedCards": 2
+    },
+    {
+      "batchId": "aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1",
+      "subject": "Biology",
+      "mode": "higher-only",
+      "generatorRunId": "019f6c36-878d-7f23-a100-a120505499a3",
+      "reviewerRunId": "019f6c39-4094-7391-bd67-41419ac7557e",
+      "expectedAcceptedCards": 2,
+      "historicalArtifactHash": "1d237d9c32d15b9d60af3fbc73492fe61890a67a30370d8f735e3311d1be4968"
+    },
+    {
+      "batchId": "aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1",
+      "subject": "Physics",
+      "mode": "higher-only",
+      "generatorRunId": "019f6c36-b4d8-7bd0-be5f-1c5fa88a689a",
+      "reviewerRunId": "019f6c38-2f6a-7661-9d28-ad9119b8b275",
+      "expectedAcceptedCards": 3,
+      "historicalArtifactHash": "6bd297e613cc326790e2195048879a8a02e7490a9a4b4c76b5df3308af7e1a96"
+    },
+    {
+      "batchId": "aqa-biology-8461-biology-higher-only-descendants-01-c09cc8b56a-v1",
+      "subject": "Biology",
+      "mode": "higher-only",
+      "generatorRunId": "019f6c38-9a57-7621-9d64-4e9ead62dbc4",
+      "reviewerRunId": "019f6c3d-09b8-7523-9185-b7953936e085",
+      "expectedAcceptedCards": 5
+    },
+    {
+      "batchId": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1",
+      "subject": "History",
+      "mode": "all",
+      "generatorRunId": "019f6c39-8150-7552-8da1-765f5fe1f2c4",
+      "reviewerRunId": "019f6c3d-e91d-7703-93a9-6fa32a490f32",
+      "expectedAcceptedCards": 5
+    },
+    {
+      "batchId": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1",
+      "subject": "Biology",
+      "mode": "shared",
+      "generatorRunId": "019f6c3d-681a-76d0-8110-4315f4caf305",
+      "reviewerRunId": "019f6c41-85ef-7183-aa99-788824bc86d9",
+      "expectedAcceptedCards": 7
+    },
+    {
+      "batchId": "aqa-combined-science-trilogy-8464-chemistry-shared-descendants-04-4923546ec4-v1",
+      "subject": "Chemistry",
+      "mode": "shared",
+      "generatorRunId": "019f6c3e-dbfe-7b51-9e4a-70d4335b95c5",
+      "reviewerRunId": "019f6c41-a6f7-70f0-a275-16ed2928915f",
+      "expectedAcceptedCards": 7
+    },
+    {
+      "batchId": "aqa-geography-8035-geography-all-descendants-01-b5a366b391-v1",
+      "subject": "Geography",
+      "mode": "all",
+      "generatorRunId": "019f6c42-01b8-77a3-bb10-6362daf6d155",
+      "reviewerRunId": "019f6c46-0782-7dc3-8281-7fda1fed081b",
+      "expectedAcceptedCards": 8
+    },
+    {
+      "batchId": "aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1",
+      "subject": "Chemistry",
+      "mode": "higher-only",
+      "generatorRunId": "019f6c42-37a7-7a01-9dd0-5ccefad54e8f",
+      "reviewerRunId": "019f6c47-bd31-79a1-8026-2ba5cb75ea31",
+      "expectedAcceptedCards": 13,
+      "reviewedRepair": {
+        "generatorRunId": "019f6c49-0960-7d10-a415-0ba69e5daf57",
+        "reviewerRunId": "019f6c49-7d8d-79c1-ad47-b5aae21075a2"
+      }
+    },
+    {
+      "batchId": "aqa-physics-8463-physics-higher-only-descendants-01-4ad9f853fc-v1",
+      "subject": "Physics",
+      "mode": "higher-only",
+      "generatorRunId": "019f6c46-8457-7aa2-95e6-64d1b3b989e2",
+      "reviewerRunId": "019f6c4a-80ee-7be0-899a-501cb7325f8a",
+      "expectedAcceptedCards": 13
+    },
+    {
+      "batchId": "aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1",
+      "subject": "Physics",
+      "mode": "shared",
+      "generatorRunId": "019f6c4b-2a19-7fa2-bd09-f0112112a537",
+      "reviewerRunId": "019f6c50-2200-7030-897b-e8b041a8279e",
+      "expectedAcceptedCards": 16,
+      "historicalArtifactHash": "5be13a4da939b08aa6836073ccb461c3b7f7b11f6c727aacd99f571596eb56b1",
+      "postAcceptanceScopeCorrection": "remove-foundation-targets-beneath-higher-only-momentum-ancestor"
+    }
+  ]
+}

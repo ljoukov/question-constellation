@@ -1,0 +1,262 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-physics-8463-v1-1-energy-specific-heat-capacity",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Precisely distinguishes specific heat capacity from latent heat and mass-independent heating."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-energy-power-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly establishes power as a rate rather than an energy total or elapsed time."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-energy-conservation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces conservation while distinguishing dissipation from destruction."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-energy-renewable-resource",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the defining replenishment condition for renewable resources."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-electricity-current-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates current from charge and power by focusing on rate of charge flow."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-electricity-resistance-current-effect",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Checks the resistance–current relationship while explicitly holding potential difference fixed."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-electricity-series-circuit-rules",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Integrates the three central series-circuit rules and contrasts them with parallel rules."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-electricity-mains-wire-roles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds safety-relevant recall of the distinct live, neutral and earth-wire roles."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-particles-density-volume-method",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the required practical choice of volume method for regular and irregular solids."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-particles-internal-energy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes internal energy from kinetic energy alone and from heating input."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-particles-specific-latent-heat",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts specific latent heat with specific heat capacity using both mass and temperature conditions."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-particles-gas-volume-pressure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Checks the constant-temperature relationship between increased volume and decreased pressure."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-atomic-atom-structure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests particle locations and charges in the basic atomic model."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-atomic-isotope-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Targets neutron number as the defining difference between isotopes of one element."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-atomic-radioactive-decay",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines nuclear instability, radiation emission, increasing stability and randomness."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-atomic-half-life",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides both equivalent assessable definitions of half-life."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-forces-scalar-vector",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Cleanly tests direction as the distinguishing feature of a vector."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-forces-work-done-condition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Corrects the misconception that force or motion alone necessarily means work is done."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-forces-newton-second-law",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both proportional relationships in Newton's Second Law."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-forces-stopping-distance",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the additive structure of stopping distance."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-waves-transverse-longitudinal-examples",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Uses canonical examples to distinguish transverse and longitudinal waves."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-waves-frequency-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates frequency from amplitude and wavelength."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-waves-electromagnetic-spectrum-order",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Supports ordered retrieval of the complete electromagnetic spectrum in the specified direction."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-waves-perfect-black-body",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests complete absorption and the absence of reflection or transmission."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-magnetism-pole-interactions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Checks both like-pole and unlike-pole interactions."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-magnetism-permanent-induced",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes self-produced magnetic fields from induced magnetism."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-magnetism-magnetic-field-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Defines a magnetic field through the force experienced in the surrounding region."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-magnetism-electromagnet-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides concise recall of the specification's electromagnet definition."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-space-solar-system-components",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests substantive knowledge of solar-system membership and hierarchy."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-space-supernova-elements",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links supernovae to both heavy-element production and element distribution."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-space-orbital-force",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests gravity's role as the force maintaining circular orbits."
+      ]
+    },
+    {
+      "cardId": "aqa-physics-8463-v1-1-space-red-shift-evidence",
+      "accepted": false,
+      "issues": [
+        "The 📈 visual cue leaks the correct answer by signalling growth or expansion when the choices explicitly contrast an expanding, contracting and unchanging universe."
+      ],
+      "learnerValue": [
+        "The underlying source-backed link between red-shift, universal expansion and the Big Bang theory is otherwise accurate and useful."
+      ]
+    }
+  ]
+}

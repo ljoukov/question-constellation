@@ -5,6 +5,10 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { d1Rows } from './lib/d1-rest.mjs';
 import { readJson, writeJson } from './lib/llm-extraction-pipeline.mjs';
+import {
+	resolveSelectivePaperBatchLock,
+	sealSelectivePaperCohortRows
+} from './lib/selective-paper-cohort-lock.mjs';
 
 const rootDir = process.cwd();
 
@@ -15,6 +19,7 @@ node scripts/run-codex-production-import-batch.mjs --paper=<source-document-id-o
 
 Options:
   --manifest=data/aqa-gcse-history-geography-computer-science/manifest.json
+  --cohort-lock=data/release/selective-paper-cohort-lock.json
   --data-root=data/aqa-gcse-history-geography-computer-science
   --subject=all|computer-science|geography|history|biology|chemistry|physics|english
   --max-papers=<n>
@@ -33,6 +38,8 @@ Options:
   --existing-chain-max-chains=<n>
   --allow-unpublishable-source-drops
   --reuse-existing-extraction
+  --resume-passed-phases            explicitly reuse independently validated passed artifacts
+  --rerun-passed-phases             opt out of safe passed-phase reuse on forced paper retries
   --generate-chain-illustrations       compatibility flag; real D1 imports generate by default
   --skip-chain-illustrations           opt out of automatic post-import illustration generation
   --require-chain-illustrations        fail the batch if an accepted chain has no passing pair
@@ -118,6 +125,32 @@ if (!all && !paperArg && subjectArg === 'all') {
 }
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const embeddedCohortLock = manifest.cohort_lock ?? null;
+const cohortLockArgument = stringArg('cohort-lock', embeddedCohortLock?.path ?? '');
+let cohortLockEvidence = null;
+let manifestRows = manifest.rows ?? [];
+const resolvedBatchLock = resolveSelectivePaperBatchLock({
+	manifest,
+	rootDir,
+	requestedLockPath: cohortLockArgument
+});
+if (resolvedBatchLock) {
+	const { loaded, relativePath: relativeLockPath } = resolvedBatchLock;
+	manifestRows = sealSelectivePaperCohortRows({
+		rows: manifestRows,
+		lock: loaded.lock,
+		subset: manifest.subset ?? 'all',
+		rootDir,
+		verifyLocalFiles: true
+	});
+	cohortLockEvidence = {
+		path: relativeLockPath,
+		sha256: loaded.sha256,
+		cohortId: loaded.lock.cohortId,
+		subset: manifest.subset ?? 'all',
+		papers: manifestRows.length
+	};
+}
 // TODO(curriculum-notices): add a reviewed corpus-level pass after several papers can be compared.
 // Ask for a short learner-facing title and one or two sentences only when the context changes how
 // imported questions should be used, and require supporting source-document IDs. Do not turn paper
@@ -126,10 +159,10 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 // the previous version; this question bank keeps them for essay practice."
 // A single-paper extraction must not infer a curriculum transition by itself.
 const importedSourceDocumentIds = skipImported
-	? await loadImportedSourceDocumentIds(manifest.rows ?? [])
+	? await loadImportedSourceDocumentIds(manifestRows)
 	: new Set();
 const skippedImportedRows = [];
-const selected = selectRows(manifest.rows ?? []);
+const selected = selectRows(manifestRows);
 if (selected.length === 0) {
 	if (!skipImported || skippedImportedRows.length === 0) {
 		throw new Error('No manifest rows matched the selection.');
@@ -162,6 +195,7 @@ if (dryRun) {
 		concurrency,
 		paperAttempts,
 		manifest: relative(manifestPath),
+		cohortLock: cohortLockEvidence,
 		dataRoot: relative(dataRoot),
 		workRoot: relative(workRoot),
 		skipImported,
@@ -308,6 +342,7 @@ function documentSubdir(document) {
 function supportingDocumentsFor(row) {
 	const documents = [];
 	if (row.examiner_report) documents.push(row.examiner_report);
+	documents.push(...(row.examiner_reports ?? []));
 	documents.push(...(row.supporting_documents ?? []));
 
 	const seen = new Set();
@@ -346,6 +381,7 @@ function productionCommand(row, paper) {
 	for (const supportingDocumentPath of paper.supportingDocumentPaths) {
 		args.push(`--supporting-document=${supportingDocumentPath}`);
 	}
+	if (cohortLockEvidence) args.push(`--cohort-lock=${cohortLockEvidence.path}`);
 	if (paper.existingChainsPath) args.push(`--existing-chains=${paper.existingChainsPath}`);
 	for (const name of [
 		'existing-chain-input-root',
@@ -378,8 +414,11 @@ function productionCommand(row, paper) {
 		'no-import-check',
 		'skip-d1-conflict-check',
 		'allow-shared-chain-updates',
+		'allow-visible-source-mismatch',
 		'allow-unpublishable-source-drops',
 		'reuse-existing-extraction',
+		'resume-passed-phases',
+		'rerun-passed-phases',
 		'allow-dropped-questions',
 		'skip-r2-upload',
 		'import'
@@ -566,6 +605,7 @@ function summary(status) {
 		concurrency,
 		paperAttempts,
 		manifest: relative(manifestPath),
+		cohortLock: cohortLockEvidence,
 		dataRoot: relative(dataRoot),
 		workRoot: relative(workRoot),
 		runIdPrefix,
@@ -596,6 +636,7 @@ function emptySelectionSummary(status) {
 		concurrency,
 		paperAttempts,
 		manifest: relative(manifestPath),
+		cohortLock: cohortLockEvidence,
 		dataRoot: relative(dataRoot),
 		workRoot: relative(workRoot),
 		runIdPrefix,
@@ -635,11 +676,12 @@ function canonicalSubject(value) {
 
 function sourceDocumentIdFor(row) {
 	if (row.source_document_id) return row.source_document_id;
+	const board = slugPart(row.board ?? manifest.board ?? 'source');
 	const spec = slugPart(row.spec_code ?? manifest.spec_code ?? row.unit_code ?? row.component);
 	const unit = slugPart(row.unit_code ?? row.component ?? row.paper);
 	const series = slugPart(row.series_code ?? row.series ?? row.year);
 	const componentParts = unit.startsWith(spec) ? [unit] : [spec, unit];
-	return ['ocr', ...componentParts, 'qp', series].filter(Boolean).join('-');
+	return [board, ...componentParts, 'qp', series].filter(Boolean).join('-');
 }
 
 function markSchemeDocumentIdFor(row) {

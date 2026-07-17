@@ -79,6 +79,7 @@ const baseRow = {
 	memory_tip: 'Memory cells remember the antigen.',
 	content_revision: 2,
 	content_hash: 'a'.repeat(64),
+	generation_prompt_version: 'recall-card-compiler-v9',
 	provenance_json: '{}',
 	offering_id: generatedScope.offeringId,
 	curriculum_component_id: 'aqa-gcse-combined-science-8464-v1.0:4-3-1-7',
@@ -127,6 +128,95 @@ function validRows() {
 	];
 }
 
+function standardStudyRow(
+	overrides: Partial<{
+		id: string;
+		board: 'AQA' | 'OCR';
+		subject:
+			| 'Biology'
+			| 'Chemistry'
+			| 'Physics'
+			| 'Computer Science'
+			| 'Geography'
+			| 'History'
+			| 'English Language'
+			| 'English Literature';
+		offering_id: string;
+		topic_component_id: string;
+		topic_title: string;
+		topic_paper: string;
+		emoji: string;
+		kind: string;
+		choices_json: string;
+	}> = {}
+) {
+	const back = 'The reviewed answer';
+	return {
+		id: overrides.id ?? 'standard-lit-card',
+		release_id: 'standard-release',
+		concept_key: 'reviewed-concept',
+		board: overrides.board ?? 'OCR',
+		qualification: 'GCSE',
+		subject: overrides.subject ?? 'English Literature',
+		kind: overrides.kind ?? 'quotation',
+		emoji: overrides.emoji ?? '📖',
+		front: 'Which answer matches this reviewed prompt?',
+		back,
+		reverse_front: null,
+		reverse_back: null,
+		explanation: 'This explanation is grounded in the reviewed source.',
+		memory_tip: null,
+		content_revision: 1,
+		content_hash: 'c'.repeat(64),
+		offering_id: overrides.offering_id ?? 'ocr-gcse-english-literature-j352-v3.0:higher',
+		curriculum_component_id: 'ocr-j352-macbeth:ambition',
+		topic_component_id: overrides.topic_component_id ?? 'ocr-j352-macbeth',
+		target_code: 'Macbeth.ambition',
+		topic_code: 'Macbeth',
+		topic_title: overrides.topic_title ?? 'Macbeth',
+		topic_paper: overrides.topic_paper ?? 'Component 01',
+		source_kind: 'primary-text',
+		source_url: 'https://example.test/macbeth',
+		source_title: 'Macbeth',
+		source_locator: 'Act 1, Scene 7',
+		rights_basis: 'Public-domain primary text.',
+		choices_json:
+			overrides.choices_json ??
+			JSON.stringify([
+				{
+					key: 'reviewed-answer',
+					text: back,
+					isCorrect: true,
+					feedback: 'This is the reviewed answer.',
+					misconception: null
+				},
+				{
+					key: 'wrong-one',
+					text: 'A first misconception',
+					isCorrect: false,
+					feedback: 'This confuses the first idea.',
+					misconception: 'First misconception'
+				},
+				{
+					key: 'wrong-two',
+					text: 'A second misconception',
+					isCorrect: false,
+					feedback: 'This confuses the second idea.',
+					misconception: 'Second misconception'
+				}
+			])
+	};
+}
+
+function mockMissingRuntimeCatalogs() {
+	queryRows.mockImplementation((sql: string) => {
+		if (sql.includes('FROM study_card_releases release')) {
+			throw new Error('D1_ERROR: no such table: study_card_releases');
+		}
+		throw new Error('D1_ERROR: no such table: recall_cards');
+	});
+}
+
 beforeEach(() => {
 	queryRows.mockReset();
 	clearRecallCatalogCacheForTests();
@@ -141,10 +231,107 @@ describe('recall catalog read path', () => {
 		});
 	});
 
+	it('hydrates a ready standard Literature card with exact board, topic and source metadata', async () => {
+		const row = standardStudyRow();
+		queryRows.mockResolvedValue([row]);
+
+		const cards = await getRecallCards({
+			subject: 'English Literature',
+			offeringId: row.offering_id,
+			topicComponentId: row.topic_component_id
+		});
+
+		expect(cards).toEqual([
+			expect.objectContaining({
+				id: row.id,
+				board: 'OCR',
+				subject: 'English Literature',
+				kind: 'quotation',
+				topicId: row.topic_component_id,
+				topicTitle: 'Macbeth',
+				topicPaper: 'Component 01',
+				offeringId: row.offering_id,
+				sourceKind: 'primary_text',
+				sourceLocator: 'Act 1, Scene 7',
+				distractors: ['A first misconception', 'A second misconception']
+			})
+		]);
+		expect(queryRows).toHaveBeenCalledWith(expect.any(String), [
+			'OCR',
+			'English Literature',
+			row.offering_id,
+			row.topic_component_id
+		]);
+	});
+
+	it('passes every supported exact offering through the standard runtime adapter', async () => {
+		const offerings = [
+			['Biology', 'aqa-gcse-biology-8461-v1.0:foundation'],
+			['Biology', 'aqa-gcse-biology-8461-v1.0:higher'],
+			['Chemistry', 'aqa-gcse-chemistry-8462-v1.1:foundation'],
+			['Chemistry', 'aqa-gcse-chemistry-8462-v1.1:higher'],
+			['Physics', 'aqa-gcse-physics-8463-v1.1:foundation'],
+			['Physics', 'aqa-gcse-physics-8463-v1.1:higher'],
+			['Biology', 'aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation'],
+			['Biology', 'aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher'],
+			['Chemistry', 'aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:foundation'],
+			['Chemistry', 'aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher'],
+			['Physics', 'aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation'],
+			['Physics', 'aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher'],
+			['Computer Science', 'aqa-gcse-computer-science-8525-v1.3-2027:higher'],
+			['Geography', 'aqa-gcse-geography-8035-v1.1:higher'],
+			['History', 'aqa-gcse-history-8145-v1.3:higher'],
+			['English Language', 'ocr-gcse-english-language-j351-v2.0:higher'],
+			['English Literature', 'ocr-gcse-english-literature-j352-v3.0:higher']
+		] as const;
+		const cueBySubject = {
+			Biology: '🔬',
+			Chemistry: '🧪',
+			Physics: '⚡',
+			'Computer Science': '💻',
+			Geography: '🗺️',
+			History: '🏛️',
+			'English Language': '✍️',
+			'English Literature': '📖'
+		} as const;
+
+		for (const [index, [subject, offeringId]] of offerings.entries()) {
+			clearRecallCatalogCacheForTests();
+			queryRows.mockReset();
+			const board = subject.startsWith('English') ? 'OCR' : 'AQA';
+			const topicComponentId = `${offeringId}:topic`;
+			const row = standardStudyRow({
+				id: `standard-${index}`,
+				board,
+				subject,
+				offering_id: offeringId,
+				topic_component_id: topicComponentId,
+				topic_title: `Topic ${index}`,
+				emoji: cueBySubject[subject],
+				kind: 'definition'
+			});
+			queryRows.mockImplementation((sql: string) =>
+				sql.includes('FROM study_card_releases release') ? [row] : []
+			);
+
+			const cards = await getRecallCards({ subject, offeringId, topicComponentId });
+			expect(
+				cards.some((card) => card.id === row.id),
+				`${subject} · ${offeringId}`
+			).toBe(true);
+			expect(queryRows).toHaveBeenCalledWith(expect.any(String), [
+				board,
+				subject,
+				offeringId,
+				topicComponentId
+			]);
+		}
+	});
+
 	it('uses an eligible imported D1 offering as the complete authoritative catalog', async () => {
 		queryRows.mockResolvedValue(validRows());
 		expect(SUPPORTED_RECALL_BUNDLE_SCHEMA_VERSION).toBe('recall-card-bundle-v2');
-		expect(SUPPORTED_RECALL_PROMPT_VERSION).toBe('recall-card-compiler-v9');
+		expect(SUPPORTED_RECALL_PROMPT_VERSION).toBe('recall-card-compiler-v10');
 		expect(SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_SCHEMA_VERSION).toBe(
 			'recall-memory-tip-enrichment-v1'
 		);
@@ -156,7 +343,8 @@ describe('recall catalog read path', () => {
 			'recall-card-compiler-v6',
 			'recall-card-compiler-v7',
 			'recall-card-compiler-v8',
-			'recall-card-compiler-v9'
+			'recall-card-compiler-v9',
+			'recall-card-compiler-v10'
 		]);
 
 		const cards = await getRecallCards(generatedScope);
@@ -179,8 +367,11 @@ describe('recall catalog read path', () => {
 		});
 		expect(cards[0]?.distractors).toHaveLength(3);
 		expect(await getRecallCardById('generated-vaccine', generatedScope)).toBe(cards[0]);
-		expect(queryRows).toHaveBeenCalledTimes(1);
+		expect(queryRows).toHaveBeenCalledTimes(2);
 		expect(recallCatalogQueryForTests).toContain('JOIN recall_generation_runs generation_run');
+		expect(recallCatalogQueryForTests).toContain(
+			'generation_run.prompt_version AS generation_prompt_version'
+		);
 		expect(recallCatalogQueryForTests).toContain('WITH imported_memory_tip_enrichments AS');
 		expect(recallCatalogQueryForTests).toContain(
 			'LEFT JOIN imported_memory_tip_enrichments memory_tip_enrichment'
@@ -225,7 +416,7 @@ describe('recall catalog read path', () => {
 		expect(recallCatalogQueryForTests).toContain("generation_run.status = 'imported'");
 		expect(recallCatalogQueryForTests).toContain('generation_run.schema_version = ?');
 		expect(recallCatalogQueryForTests).toContain(
-			'generation_run.prompt_version IN (?, ?, ?, ?, ?)'
+			'generation_run.prompt_version IN (?, ?, ?, ?, ?, ?)'
 		);
 		expect(recallCatalogQueryForTests).toContain(
 			'c.source_fingerprint = generation_run.source_fingerprint'
@@ -246,6 +437,25 @@ describe('recall catalog read path', () => {
 			'Biology',
 			generatedScope.offeringId
 		]);
+	});
+
+	it('does not relax compiler-v5 through compiler-v9 cards to three choices', async () => {
+		queryRows.mockResolvedValue(validRows().slice(0, 3));
+
+		await expect(getRecallCards(generatedScope)).resolves.toEqual([]);
+	});
+
+	it('serves a compiler-v10 recall card with three reviewed choices', async () => {
+		queryRows.mockResolvedValue(
+			validRows()
+				.slice(0, 3)
+				.map((row) => ({ ...row, generation_prompt_version: 'recall-card-compiler-v10' }))
+		);
+
+		const cards = await getRecallCards(generatedScope);
+		expect(cards).toHaveLength(1);
+		expect(cards[0]?.distractors).toHaveLength(2);
+		expect(Object.keys(cards[0]?.choiceKeys ?? {})).toHaveLength(3);
 	});
 
 	it('uses a reviewed enrichment as the effective learner-facing content identity', async () => {
@@ -554,7 +764,7 @@ describe('recall catalog read path', () => {
 	});
 
 	it('uses the versioned static deck only for the exact AQA Separate Science Higher offering', async () => {
-		queryRows.mockRejectedValue(new Error('D1_ERROR: no such table: recall_cards'));
+		mockMissingRuntimeCatalogs();
 
 		const cards = await getRecallCards(separateHigherScope);
 		expect(cards.length).toBeGreaterThan(20);
@@ -579,7 +789,7 @@ describe('recall catalog read path', () => {
 	});
 
 	it('versions and re-hashes every enriched fallback card without changing its identity', async () => {
-		queryRows.mockRejectedValue(new Error('D1_ERROR: no such table: recall_cards'));
+		mockMissingRuntimeCatalogs();
 		const cards = (
 			await Promise.all(
 				(['Biology', 'Chemistry', 'Physics'] as const).map((subject) =>
@@ -644,7 +854,7 @@ describe('recall catalog read path', () => {
 	});
 
 	it('does not leak Separate Science static cards into Combined Science or Foundation', async () => {
-		queryRows.mockRejectedValue(new Error('D1_ERROR: no such table: recall_cards'));
+		mockMissingRuntimeCatalogs();
 
 		await expect(getRecallCards(generatedScope)).resolves.toEqual([]);
 		clearRecallCatalogCacheForTests();
@@ -673,11 +883,11 @@ describe('recall catalog read path', () => {
 
 		await getRecallCards(generatedScope);
 		await getRecallCards(generatedScope);
-		expect(queryRows).toHaveBeenCalledTimes(1);
+		expect(queryRows).toHaveBeenCalledTimes(2);
 
 		now.mockReturnValue(10_000 + RECALL_CATALOG_CACHE_TTL_MS + 1);
 		await getRecallCards(generatedScope);
-		expect(queryRows).toHaveBeenCalledTimes(2);
+		expect(queryRows).toHaveBeenCalledTimes(4);
 		now.mockRestore();
 	});
 });
@@ -705,7 +915,8 @@ function recallCatalogDatabase(): DatabaseSync {
 	for (const migration of [
 		'migrations/0018_recall_catalog.sql',
 		'migrations/0019_recall_draft_first.sql',
-		'migrations/0020_recall_memory_tip_enrichments.sql'
+		'migrations/0020_recall_memory_tip_enrichments.sql',
+		'migrations/0023_recall_three_or_four_choices.sql'
 	]) {
 		db.exec(readFileSync(path.resolve(migration), 'utf8'));
 	}

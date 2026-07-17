@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "study-card-base-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered_under_new_identity",
+  "historicalReleaseId": "aqa-combined-chemistry-8464-standard-v1",
+  "recoveredReleaseId": "aqa-combined-chemistry-8464-standard-v1-rollout-recovered-v1",
+  "identityPolicy": "The explicit recovery id preserves reviewed content and provenance without claiming byte identity with the absent historical artifact wrapper.",
+  "generator": {
+    "runId": "019f6c18-d2b3-70d1-bd85-198a97e2179e",
+    "rolloutFileName": "rollout-2026-07-16T11-03-14-019f6c18-d2b3-70d1-bd85-198a97e2179e.jsonl",
+    "rolloutHash": "b5c5f52bfb9672efe72cec11b54e4e5b79a405653e105ab19b3882bf050c5276",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-chemistry-8464-standard-v1/generation",
+    "startedAt": "2026-07-16T18:03:14.126Z",
+    "completedAt": "2026-07-16T18:16:23.542Z",
+    "promptHash": "19ad686b9e34042b271342960322e1b5eafb9295c1c6c2e9c40705bef1f8e812",
+    "modelOutputHash": "6d45178e3cf687c0aa28d3f90e79cffc702d0dc922d2fcc1de32cc13e410d1b2"
+  },
+  "reviewer": {
+    "runId": "019f6c24-fc72-73e2-9745-10fbbbe6dfdb",
+    "rolloutFileName": "rollout-2026-07-16T11-16-31-019f6c24-fc72-73e2-9745-10fbbbe6dfdb.jsonl",
+    "rolloutHash": "fa357042d88e0a2328f00f3b87f983bf2d850a75664b06904ac2e248a094b126",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-chemistry-8464-standard-v1/review",
+    "startedAt": "2026-07-16T18:16:31.339Z",
+    "completedAt": "2026-07-16T18:21:45.482Z",
+    "promptHash": "f57052cd58d0e47b0d864f9371aa858866271a4cc47134c045ab483a5ef3435b",
+    "modelOutputHash": "112aaf1ed4395d9fc8cd9ada14cffc8cb11db4c4ea1caf165a96db724811344c"
+  },
+  "reviewedRepairAttempts": [],
+  "counts": {
+    "generated": 40,
+    "reviewCandidates": 38,
+    "accepted": 35,
+    "distinctTargetComponents": 34,
+    "plannerEligibleTargetComponents": 34,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 20,
+    "readyCoverageRows": 20,
+    "withheldCoverageRows": 0,
+    "sessions": 2
+  },
+  "nonPlannerEligibleAcceptedComponentIds": [],
+  "offeringCoverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:foundation",
+      "ready": 10,
+      "withheld": 0,
+      "coverageRows": 10,
+      "cardCount": 35
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "ready": 10,
+      "withheld": 0,
+      "coverageRows": 10,
+      "cardCount": 35
+    }
+  ],
+  "modelCallsDuringRecovery": 0,
+  "artifactHash": "aeebc078d860b616777a518449d885092c0ecee12f64e5878015e8ba65bbf2da"
+}

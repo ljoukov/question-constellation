@@ -1,0 +1,20 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-5c8f37af6e-aqa-8464-biology-4-5-3-5-ivf-treatment-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the complete, source-supported IVF sequence and distinguishes three plausible ordering or transfer misconceptions."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-38aec6e8ab-aqa-8464-biology-4-5-3-6-adrenaline-thyroxine-comparison",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the source-supported glands, roles and feedback control while diagnosing three distinct hormone misconceptions."
+      ]
+    }
+  ]
+}

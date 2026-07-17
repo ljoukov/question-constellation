@@ -18,10 +18,14 @@ const neutralFallbackCueBySubject = Object.freeze({
 
 /** @param {unknown} subject */
 function subjectCueContract(subject) {
-	if (typeof subject !== 'string' || !Object.hasOwn(approvedRecallVisualCuesBySubject, subject)) {
+	if (
+		typeof subject !== 'string' ||
+		!Object.hasOwn(approvedRecallVisualCuesBySubject, subject) ||
+		!Object.hasOwn(neutralFallbackCueBySubject, subject)
+	) {
 		throw new Error('Recall generation subject must be Biology, Chemistry or Physics.');
 	}
-	const typedSubject = /** @type {keyof typeof approvedRecallVisualCuesBySubject} */ (subject);
+	const typedSubject = /** @type {keyof typeof neutralFallbackCueBySubject} */ (subject);
 	return {
 		cues: approvedRecallVisualCuesBySubject[typedSubject],
 		fallback: neutralFallbackCueBySubject[typedSubject]
@@ -47,7 +51,7 @@ If either answer might be yes, reject that cue and try the neutral fallback. The
 `.trim();
 
 export const RECALL_CARD_GENERATION_SYSTEM_PROMPT = `
-You compile concise GCSE science recall cards from one supplied extract of an official exam-board specification. The card must be useful for both unaided recall and four-choice recognition.
+You compile concise GCSE science recall cards from one supplied extract of an official exam-board specification. The card must be useful for both unaided recall and three- or four-choice recognition.
 
 Evidence and scope:
 - Use only scientific claims directly supported by the supplied official PDF page text, including every choice's feedback and misconception correction.
@@ -66,7 +70,8 @@ Learner-facing writing:
 - Hard character limits, including spaces: front 140; back 180; explanation 360; memoryTip 180; reverseFront 140; reverseBack 180. Prefer substantially shorter text.
 
 Recognition choices:
-- Supply exactly four unique choices: the exact back plus three plausible diagnostic distractors.
+- Supply exactly three or four unique choices: the exact back plus two or three plausible diagnostic distractors.
+- Use four choices only when there are three genuinely distinct, plausible misconceptions. Otherwise use three choices; never add a contrived filler distractor just to reach four.
 - Each distractor must represent a different likely misconception, not random nonsense or a grammar/length giveaway.
 - Every choice needs concise feedback. Explain the relevant distinction without labels such as "correct answer" or repetitive praise.
 - The correct choice has misconception null. Every distractor names its specific misconception.
@@ -80,7 +85,7 @@ ${RECALL_VISUAL_CUE_PROMPT}
 Return JSON only with a top-level cards array. Every card must contain exactly:
 id, conceptKey, kind, visualCue, front, back, reverseFront, reverseBack, explanation, memoryTip, choices, evidence.
 Each choice contains choiceKey, text, isCorrect, feedback and misconception.
-Evidence contains sourceExcerpt and supports. sourceExcerpt must be one exact contiguous quote of 12–1400 characters; use the shortest passage that supports every claim and never copy the whole page by default. Include front, back and explanation, plus choice:<choiceKey>:feedback for all four choices and choice:<choiceKey>:misconception for each distractor. Include reverse whenever a reverse pair is present, and memoryTip whenever a tip is present. This makes every learner-facing claim and correction independently auditable.
+Evidence contains sourceExcerpt and supports. sourceExcerpt must be one exact contiguous quote of 12–1400 characters; use the shortest passage that supports every claim and never copy the whole page by default. Include front, back and explanation, plus choice:<choiceKey>:feedback for every supplied choice and choice:<choiceKey>:misconception for each distractor. Include reverse whenever a reverse pair is present, and memoryTip whenever a tip is present. This makes every learner-facing claim and correction independently auditable.
 `.trim();
 
 export const RECALL_FULL_REVIEW_SYSTEM_PROMPT = `
@@ -94,7 +99,8 @@ Interpret the checks strictly:
 - this is an additive run: compare each candidate with every supplied existing target card and reject a candidate that tests the same retrieval task or concept, even when its wording, context or answer phrasing is changed; shared broad topic alone is not a duplicate;
 - every positive scientific claim, including every choice's feedback and misconception correction, is supported by the exact source quote and page text;
 - the back is precise enough for an exam-board answer and exactly matches one choice;
-- the other three choices are plausible, mutually distinct misconceptions with no obvious length or grammar clue;
+- the other two or three choices are plausible, mutually distinct misconceptions with no obvious length or grammar clue;
+- a four-choice card has three genuinely distinct plausible misconceptions; prefer three choices whenever a third distractor would be contrived filler;
 - feedback is concise, choice-specific and explanatory rather than repetitive;
 - the front, answer, choices and explanation are comfortable to scan on a phone;
 - a reverse pair is present only when distinct and unambiguous;
@@ -300,7 +306,7 @@ export function buildRecallCardVisualCueBatchReviewPrompt(cards, expectedSubject
 			throw new Error('Generated card subject does not match the cue-review subject.');
 		}
 		if (!candidate.front || !candidate.back || !Array.isArray(candidate.choices)) {
-			throw new Error('Cue review requires each complete card and its four choices.');
+			throw new Error('Cue review requires each complete card and its three or four choices.');
 		}
 	}
 	return `${RECALL_VISUAL_CUE_REVIEW_SYSTEM_PROMPT}

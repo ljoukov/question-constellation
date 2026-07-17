@@ -1,0 +1,60 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8461-06f9bec5f0-aqa-8461-4-7-4-1-trophic-level-numbering",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both the numbering rule and identification of level 1, with three distinct misconceptions."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-73fc2e53cf-aqa-8461-4-7-4-2-pyramid-biomass-representation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes biomass from organism count and biomass transfer while testing pyramid orientation."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-198c622548-aqa-8461-4-7-5-food-security-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the precise definition against plausible confusion with food safety and national self-sufficiency."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-cb471dbfd3-aqa-8461-4-7-5-1-rain-failure-food-production",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests a specified environmental example while challenging overgeneralisation and denial of its effect."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-ff66a1723f-aqa-8461-4-7-5-2-food-animal-energy-controls",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Requires recall of both stated efficiency controls and separates them from the distinct role of high-protein feed."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-502a6b1953-aqa-8461-4-7-5-3-sustainable-fish-stock-controls",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Checks that learners retain both complementary controls used to conserve fish stocks."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-bd4a4b6085-aqa-8461-4-7-5-4-fusarium-mycoprotein-process",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests culture conditions and downstream processing while distinguishing mycoprotein production from bacterial insulin production."
+      ]
+    }
+  ]
+}

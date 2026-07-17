@@ -1,0 +1,18 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-chemistry-8462-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-chemistry-8462-v1.1:higher",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

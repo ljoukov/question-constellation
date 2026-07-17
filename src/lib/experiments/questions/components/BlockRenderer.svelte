@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ExamPaperAsset, ExamQuestionBlock } from '../types';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
+	import CalibratedPaperImage from '$lib/components/CalibratedPaperImage.svelte';
 	import { diagnoseResourceLoadFailure, type RequestFailure } from '$lib/requestFailure';
 	import MathText from './MathText.svelte';
 
@@ -48,11 +49,20 @@
 	{#if asset && !failedAssetIds.has(block.assetId)}
 		<figure class="exam-figure" style={`--figure-width: ${block.width ?? asset.width ?? 360}px`}>
 			<figcaption>{block.label ?? asset.label}</figcaption>
-			<img
-				src={retrySrc(asset.src, block.assetId)}
-				alt={asset.alt}
-				onerror={() => void markImageFailed(block.assetId, asset.src)}
-			/>
+			{#if asset.paperMeasurement}
+				<CalibratedPaperImage
+					src={retrySrc(asset.src, block.assetId)}
+					alt={asset.alt}
+					measurement={asset.paperMeasurement}
+					onerror={() => markImageFailed(block.assetId, asset.src)}
+				/>
+			{:else}
+				<img
+					src={retrySrc(asset.src, block.assetId)}
+					alt={asset.alt}
+					onerror={() => void markImageFailed(block.assetId, asset.src)}
+				/>
+			{/if}
 		</figure>
 	{:else if asset && assetFailures[block.assetId]}
 		<RequestFailureNotice

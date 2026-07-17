@@ -1,0 +1,22 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8462-51ef1403c8-aqa-8462-haber-process-raw-materials",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests an essential Haber-process fact with a concise, unambiguous answer.",
+        "Distractors target plausible confusion with oxygen and with ammonia as the product."
+      ]
+    },
+    {
+      "cardId": "aqa-8462-ef5a2661e3-aqa-8462-npk-fertiliser-elements",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests accurate recall of the three elements represented by NPK.",
+        "Distractors use plausible element substitutions and provide specific corrective feedback."
+      ]
+    }
+  ]
+}

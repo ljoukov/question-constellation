@@ -1,0 +1,14 @@
+{
+  "reviews": [
+    {
+      "cardId": "forces-scalar-vector-difference",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes scalar and vector quantities using the exact specification wording.",
+        "Distractors target two distinct, plausible misconceptions about direction.",
+        "Feedback directly corrects each misconception, and the visual cue is relevant without revealing the answer."
+      ]
+    }
+  ]
+}

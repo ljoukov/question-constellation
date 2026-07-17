@@ -1,0 +1,128 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-physics-higher-momentum-equation",
+      "conceptKey": "physics-momentum-equation-p-equals-mv",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5",
+      "kind": "formula",
+      "visualCue": "🏃",
+      "front": "What equation defines momentum, p, in terms of mass, m, and velocity, v?",
+      "back": "momentum = mass × velocity (p = m v)",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Momentum is mass multiplied by velocity; symbolically, p = m v.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "momentum = mass × velocity (p = m v)",
+          "isCorrect": true,
+          "feedback": "Correct: momentum is defined as mass multiplied by velocity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "momentum = mass ÷ velocity (p = m ÷ v)",
+          "isCorrect": false,
+          "feedback": "Velocity is multiplied by mass, not used as a divisor.",
+          "misconception": "divides-mass-by-velocity"
+        },
+        {
+          "key": "c",
+          "text": "momentum = velocity ÷ mass (p = v ÷ m)",
+          "isCorrect": false,
+          "feedback": "The defining equation multiplies mass and velocity.",
+          "misconception": "divides-velocity-by-mass"
+        },
+        {
+          "key": "d",
+          "text": "momentum = mass × acceleration (p = m a)",
+          "isCorrect": false,
+          "feedback": "This substitutes acceleration for velocity; momentum uses velocity.",
+          "misconception": "confuses-velocity-with-acceleration"
+        }
+      ],
+      "sourceExcerpt": "Momentum is defined by the equation:\nmomentum = mass × velocity\np = m v",
+      "sourceLocator": "Official PDF pages 154-154; 6.5.5 Momentum (HT only)"
+    },
+    {
+      "id": "aqa-8464-physics-higher-flemings-left-hand-rule-quantities",
+      "conceptKey": "flemings-left-hand-rule-relative-orientation-force-current-magnetic-field",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2-2",
+      "kind": "method",
+      "visualCue": "🔀",
+      "front": "Which three quantities have their relative orientation represented by Fleming’s left-hand rule?",
+      "back": "The force, the current in the conductor, and the magnetic field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The rule represents the relative orientation of the force, the current in the conductor and the magnetic field.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The current, the potential difference, and the resistance.",
+          "isCorrect": false,
+          "feedback": "The rule relates force, current in the conductor and magnetic field.",
+          "misconception": "confuses-left-hand-rule-with-circuit-quantities"
+        },
+        {
+          "key": "b",
+          "text": "The force, the current in the conductor, and the magnetic field.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three quantities whose relative orientation the rule represents.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The force, the electric field, and the potential difference.",
+          "isCorrect": false,
+          "feedback": "The stated quantities include current in the conductor and magnetic field, not electric field and potential difference.",
+          "misconception": "substitutes-electric-field-quantities"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to show that Fleming's left-hand rule\nrepresents the relative orientation of the force, the current in the\nconductor and the magnetic field.",
+      "sourceLocator": "Official PDF pages 161-162; 6.7.2.2 Fleming's left-hand rule (HT only)"
+    },
+    {
+      "id": "aqa-8464-physics-higher-electric-motor-coil-rotation",
+      "conceptKey": "current-carrying-coil-magnetic-field-tends-to-rotate",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "🔌",
+      "front": "What happens to a coil of wire carrying a current when it is in a magnetic field?",
+      "back": "It tends to rotate.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This tendency to rotate is the basis of an electric motor.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It remains stationary.",
+          "isCorrect": false,
+          "feedback": "The current-carrying coil tends to rotate.",
+          "misconception": "assumes-current-carrying-coil-stays-still"
+        },
+        {
+          "key": "b",
+          "text": "It moves in a straight line without rotating.",
+          "isCorrect": false,
+          "feedback": "The stated motion is rotation, not straight-line motion.",
+          "misconception": "confuses-rotation-with-linear-motion"
+        },
+        {
+          "key": "c",
+          "text": "It tends to rotate.",
+          "isCorrect": true,
+          "feedback": "Correct: the coil tends to rotate in the magnetic field.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "A coil of wire carrying a current in a magnetic field tends to rotate.\nThis is the basis of an electric motor.",
+      "sourceLocator": "Official PDF pages 161-162; 6.7.2.3 Electric motors (HT only)"
+    }
+  ]
+}

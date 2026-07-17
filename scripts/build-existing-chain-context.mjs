@@ -15,6 +15,7 @@ const maxQuestionRefs = integerArg('max-question-refs', 8, 0);
 const maxExamplesPerChain = integerArg('max-examples-per-chain', maxQuestionRefs || 8, 0);
 const maxMarkItemsPerExample = integerArg('max-mark-items-per-example', 8, 0);
 const maxChains = integerArg('max-chains', 0, 0);
+const generatedAt = generatedAtArg(stringArg('generated-at', ''));
 const useD1 = hasArg('d1');
 const recursive = !hasArg('no-recursive');
 const dryRun = hasArg('dry-run');
@@ -69,7 +70,7 @@ const answerChains = [...chainMap.values()]
 
 const output = {
 	version: 1,
-	generatedAt: new Date().toISOString(),
+	generatedAt,
 	source: inputPath || relative(inputRoot),
 	paper: paperArg || null,
 	subject: subjectArg,
@@ -116,6 +117,15 @@ function integerArg(name, defaultValue, minValue) {
 	const value = Number(raw);
 	if (!Number.isInteger(value) || value < minValue) {
 		throw new Error(`--${name} must be an integer >= ${minValue}.`);
+	}
+	return value;
+}
+
+function generatedAtArg(value) {
+	if (!value) return new Date().toISOString();
+	const parsed = new Date(value);
+	if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== value) {
+		throw new Error('--generated-at must be an exact ISO-8601 UTC timestamp.');
 	}
 	return value;
 }
@@ -234,13 +244,16 @@ async function buildD1Context() {
 		subject: d1Subject,
 		includeExamples: true,
 		maxExamplesPerChain,
-		maxMarkItemsPerExample
+		maxMarkItemsPerExample,
+		// Rendering overlays are optional learner-delivery metadata, not a
+		// prerequisite for reusing an independently reviewed chain definition.
+		requireRenderingOverlay: false
 	});
 	if (maxChains > 0) publicChains = publicChains.slice(0, maxChains);
 	const answerChains = publicChains.map((chain) => d1ChainRecord(chain));
 	const output = {
 		version: 1,
-		generatedAt: new Date().toISOString(),
+		generatedAt,
 		source: 'd1:public-chains',
 		paper: paperArg || null,
 		subject: subjectArg,

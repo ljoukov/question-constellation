@@ -1,0 +1,277 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-1348704769-aqa-8464-5-9-2-3-global-temperature-climate-change",
+      "conceptKey": "aqa-8464-1348704769-aqa-8464-climate-change-major-cause",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "♻️",
+      "front": "According to AQA, what is a major cause of climate change?",
+      "back": "An increase in average global temperature.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification identifies an increase in average global temperature as a major cause of climate change.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A decrease in average global temperature.",
+          "isCorrect": false,
+          "feedback": "The source specifies an increase in average global temperature.",
+          "misconception": "reverses-temperature-direction"
+        },
+        {
+          "key": "b",
+          "text": "An increase in average global temperature.",
+          "isCorrect": true,
+          "feedback": "Correct: this is identified as a major cause of climate change.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "No change in average global temperature.",
+          "isCorrect": false,
+          "feedback": "The source identifies an increase rather than no change.",
+          "misconception": "misses-temperature-increase"
+        }
+      ],
+      "sourceExcerpt": "An increase in average global temperature is a major cause of\nclimate change.",
+      "sourceLocator": "Official PDF pages 113-114; 5.9.2.3 Global climate change"
+    },
+    {
+      "id": "aqa-8464-1e70cf1716-aqa-8464-5-9-2-4-carbon-footprint-definition",
+      "conceptKey": "aqa-8464-1e70cf1716-aqa-8464-carbon-footprint-full-life-cycle-definition",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-2-4",
+      "kind": "definition",
+      "visualCue": "⚖️",
+      "front": "How does AQA define the carbon footprint of a product, service or event?",
+      "back": "The total amount of carbon dioxide and other greenhouse gases emitted over its full life cycle.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition covers carbon dioxide and other greenhouse gases emitted across the full life cycle of a product, service or event.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The total amount of carbon dioxide and other greenhouse gases emitted over its full life cycle.",
+          "isCorrect": true,
+          "feedback": "Correct: the definition includes other greenhouse gases and the full life cycle.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only the carbon dioxide emitted while it is being used.",
+          "isCorrect": false,
+          "feedback": "The definition includes other greenhouse gases and covers the full life cycle, not only use.",
+          "misconception": "use-stage-only-carbon-dioxide"
+        },
+        {
+          "key": "c",
+          "text": "The total amount of solid waste produced when it is disposed of.",
+          "isCorrect": false,
+          "feedback": "The definition concerns emitted carbon dioxide and other greenhouse gases, not solid waste alone.",
+          "misconception": "confuses-emissions-with-solid-waste"
+        }
+      ],
+      "sourceExcerpt": "The carbon footprint is the total amount of carbon dioxide and other\ngreenhouse gases emitted over the full life cycle of a product,\nservice or event.",
+      "sourceLocator": "Official PDF pages 113-114; 5.9.2.4 The carbon footprint and its reduction"
+    },
+    {
+      "id": "aqa-8464-566e5b15f6-aqa-8464-5-9-3-substances-released-by-burning-fuels",
+      "conceptKey": "aqa-8464-566e5b15f6-aqa-8464-fuel-combustion-atmospheric-releases",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-3",
+      "kind": "fact",
+      "visualCue": "⛽",
+      "front": "Which gases and other materials may be released into the atmosphere when a fuel is burned?",
+      "back": "Carbon dioxide, water vapour, carbon monoxide, sulfur dioxide and oxides of nitrogen may be released; solid particles and unburned hydrocarbons may also be released and form particulates.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Burning a fuel may release the five listed gases as well as solid particles and unburned hydrocarbons that form particulates.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Carbon dioxide, water vapour, carbon monoxide, sulfur dioxide and oxides of nitrogen may be released; solid particles and unburned hydrocarbons may also be released and form particulates.",
+          "isCorrect": true,
+          "feedback": "Correct: this includes the listed gases and the materials that form particulates.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only carbon dioxide and water vapour may be released.",
+          "isCorrect": false,
+          "feedback": "The source also lists carbon monoxide, sulfur dioxide, oxides of nitrogen, solid particles and unburned hydrocarbons.",
+          "misconception": "assumes-only-complete-combustion-products"
+        },
+        {
+          "key": "c",
+          "text": "Only solid carbon particles may be released.",
+          "isCorrect": false,
+          "feedback": "The source lists several gases and also mentions unburned hydrocarbons, so solid particles alone are incomplete.",
+          "misconception": "reduces-all-emissions-to-soot"
+        }
+      ],
+      "sourceExcerpt": "The gases released into the atmosphere when a fuel is burned may\ninclude carbon dioxide, water vapour, carbon monoxide, sulfur\ndioxide and oxides of nitrogen. Solid particles and unburned\nhydrocarbons may also be released that form particulates in the\natmosphere.",
+      "sourceLocator": "Official PDF pages 113-114; 5.9.3 Common atmospheric pollutants and their sources"
+    },
+    {
+      "id": "aqa-8464-a0e9a8ac96-aqa-8464-5-9-3-1-elemental-composition-of-most-fuels",
+      "conceptKey": "aqa-8464-a0e9a8ac96-aqa-8464-most-fuels-carbon-hydrogen-sulfur",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-3-1",
+      "kind": "fact",
+      "visualCue": "⚛️",
+      "front": "What does AQA state about the elemental composition of most fuels, including coal?",
+      "back": "Most fuels, including coal, contain carbon and/or hydrogen and may also contain some sulfur.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification says carbon and/or hydrogen are present, while some sulfur may also be present.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Most fuels, including coal, contain carbon and/or hydrogen and may also contain some sulfur.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both “and/or” and “may”.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Most fuels, including coal, contain sulfur but neither carbon nor hydrogen.",
+          "isCorrect": false,
+          "feedback": "The source states that most fuels contain carbon and/or hydrogen.",
+          "misconception": "omits-carbon-and-hydrogen"
+        },
+        {
+          "key": "c",
+          "text": "Most fuels, including coal, must contain carbon, hydrogen and sulfur.",
+          "isCorrect": false,
+          "feedback": "The source says carbon and/or hydrogen and only that some sulfur may be present.",
+          "misconception": "turns-qualified-composition-into-universal"
+        }
+      ],
+      "sourceExcerpt": "Most fuels, including coal, contain carbon and/or hydrogen and may\nalso contain some sulfur.",
+      "sourceLocator": "Official PDF pages 113-114; 5.9.3.1 Atmospheric pollutants from fuels"
+    },
+    {
+      "id": "aqa-8464-019dc4b0be-aqa-8464-5-10-1-potable-water-versus-pure-water",
+      "conceptKey": "aqa-8464-019dc4b0be-aqa-8464-potable-water-safety-and-purity",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-1",
+      "kind": "comparison",
+      "visualCue": "🫧",
+      "front": "What is potable water, and why is it not chemically pure water?",
+      "back": "Water that is safe to drink; it is not chemically pure because it contains dissolved substances.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "For human drinking water, dissolved salts and microbes should be at sufficiently low levels. Potable water can still contain dissolved substances.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Water that is safe to drink; it is not chemically pure because it contains dissolved substances.",
+          "isCorrect": true,
+          "feedback": "Correct: potable refers to safety for drinking, not chemical purity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Water that is safe to drink and chemically pure because it contains no dissolved substances.",
+          "isCorrect": false,
+          "feedback": "The source states that potable water contains dissolved substances and is therefore not chemically pure.",
+          "misconception": "equates-potable-with-chemically-pure"
+        },
+        {
+          "key": "c",
+          "text": "Water containing dissolved substances, whether or not it is safe to drink.",
+          "isCorrect": false,
+          "feedback": "The source defines potable water as water that is safe to drink.",
+          "misconception": "ignores-drinking-safety"
+        }
+      ],
+      "sourceExcerpt": "Water of appropriate quality is essential for life. For humans,\ndrinking water should have sufficiently low levels of dissolved salts\nand microbes. Water that is safe to drink is called potable water.\nPotable water is not pure water in the chemical sense because it\ncontains dissolved substances.",
+      "sourceLocator": "Official PDF pages 116-120; 5.10.1 Using the Earth's resources and obtaining potable water"
+    },
+    {
+      "id": "aqa-8464-42712c9975-aqa-8464-5-10-2-life-cycle-assessment-stages",
+      "conceptKey": "aqa-8464-42712c9975-aqa-8464-lca-four-product-life-stages",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-2",
+      "kind": "process",
+      "visualCue": "♻️",
+      "front": "Which stages of a product does an AQA life cycle assessment assess?",
+      "back": "Extracting and processing raw materials; manufacturing and packaging; use and operation during the product’s lifetime; and disposal at the end of its useful life, including transport and distribution at each stage.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An LCA assesses environmental impact across raw-material extraction and processing, manufacture and packaging, use and operation, and end-of-life disposal, with transport and distribution included at each stage.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Extracting and processing raw materials; manufacturing and packaging; use and operation during the product’s lifetime; and disposal at the end of its useful life, including transport and distribution at each stage.",
+          "isCorrect": true,
+          "feedback": "Correct: this covers all the listed life-cycle stages.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Manufacturing and packaging, followed by use; raw-material extraction, disposal and transport are excluded.",
+          "isCorrect": false,
+          "feedback": "An LCA also includes raw-material extraction and processing, disposal, transport and distribution.",
+          "misconception": "uses-incomplete-life-cycle-boundary"
+        },
+        {
+          "key": "c",
+          "text": "Raw-material extraction and final disposal only; manufacturing, use and distribution are excluded.",
+          "isCorrect": false,
+          "feedback": "Manufacturing and packaging, use and operation, and distribution are also included.",
+          "misconception": "omits-middle-life-cycle-stages"
+        }
+      ],
+      "sourceExcerpt": "Life cycle assessments (LCAs) are carried out to assess the\nenvironmental impact of products in each of these stages:\n• extracting and processing raw materials\n• manufacturing and packaging\n• use and operation during its lifetime\n• disposal at the end of its useful life, including transport and\ndistribution at each stage.",
+      "sourceLocator": "Official PDF pages 116-120; 5.10.2 Life cycle assessment and recycling"
+    },
+    {
+      "id": "aqa-8464-ae37916f52-aqa-8464-5-10-2-2-benefits-of-reduce-reuse-recycle",
+      "conceptKey": "aqa-8464-ae37916f52-aqa-8464-reduce-reuse-recycle-four-reductions",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-2-2",
+      "kind": "cause-consequence",
+      "visualCue": "♻️",
+      "front": "What does reducing use, reusing and recycling materials by end users reduce?",
+      "back": "The use of limited resources, the use of energy sources, waste and environmental impacts.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Reducing use, reusing and recycling materials reduces all four: limited-resource use, energy-source use, waste and environmental impacts.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The use of limited resources, the use of energy sources, waste and environmental impacts.",
+          "isCorrect": true,
+          "feedback": "Correct: all four reductions are stated in the specification.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only the use of limited resources and the use of energy sources.",
+          "isCorrect": false,
+          "feedback": "The source also says that waste and environmental impacts are reduced.",
+          "misconception": "omits-waste-and-environmental-impacts"
+        },
+        {
+          "key": "c",
+          "text": "Only waste and environmental impacts.",
+          "isCorrect": false,
+          "feedback": "The source also says that the use of limited resources and energy sources is reduced.",
+          "misconception": "omits-resource-and-energy-use"
+        }
+      ],
+      "sourceExcerpt": "The reduction in use, reuse and recycling of materials by end users\nreduces the use of limited resources, use of energy sources, waste\nand environmental impacts.",
+      "sourceLocator": "Official PDF pages 116-120; 5.10.2.2 Ways of reducing the use of resources"
+    }
+  ]
+}

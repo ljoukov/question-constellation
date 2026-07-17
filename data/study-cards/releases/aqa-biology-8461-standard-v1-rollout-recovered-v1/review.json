@@ -1,0 +1,223 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-biology-8461-card-eukaryotic-prokaryotic-genetic-material",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the nuclear-versus-loop distinction while preserving that plasmids are optional."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-magnification-equation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the core magnification ratio with useful inversion and multiplication distractors."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-cell-cycle-mitosis-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the ordered cell-cycle sequence and distinguishes mitosis from meiosis."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-diffusion-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Secures the net high-to-low movement of diffusion while contrasting osmosis."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-organisation-hierarchy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds the cells-to-organism hierarchy as an ordered retrieval chain."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-digestive-enzyme-products",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links each digestive-enzyme group to its substrate and products."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-ventricle-circulation-destinations",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Fixes the right- and left-ventricle destinations in double circulation."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-xylem-phloem-transport",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts xylem and phloem by cargo and the directions stated in the specification."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-pathogen-types-spread",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the pathogen definition, four pathogen groups and three transmission routes."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-white-blood-cell-defences",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves all three specified white-blood-cell defence mechanisms."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-vaccination-antibody-response",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects vaccine exposure to the rapid, specific response upon re-entry."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-antibiotics-painkillers-limits",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates antibiotics' viral limitation from painkillers' symptom-only role."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-photosynthesis-rate-factors",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides concise retrieval of all four specified photosynthesis-rate factors."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-respiration-word-equations",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts aerobic and muscle-anaerobic respiration through their word equations."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-exercise-oxygen-response",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links the three exercise responses to anaerobic respiration, lactic acid and fatigue."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-homeostasis-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the complete definition, including optimum function and responses to change."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-nervous-response-pathway",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Practises the full nervous-response pathway in its correct order."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-insulin-high-blood-glucose",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects high blood glucose to insulin, cellular uptake and glycogen storage."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-menstrual-hormone-roles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Differentiates the Foundation-tier roles of all four menstrual-cycle hormones."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-meiosis-outcome",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the copy–two divisions–four different gametes sequence."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-dna-gene-genome-relationship",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds a useful structural relationship among DNA, chromosomes, genes and the genome."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-dominant-recessive-homozygous-heterozygous",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts both allele-expression rules and both allele-pair terms."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-evolution-natural-selection-speciation",
+      "accepted": false,
+      "issues": [
+        "The quoted wording is from 4.6.2.2 Evolution, not the cited 4.6.3.2 Speciation (biology only), so the source locator is inaccurate.",
+        "The curriculum component maps the card to the Darwin-and-Wallace speciation topic rather than the evolution topic that directly contains both tested statements."
+      ],
+      "learnerValue": [
+        "The prompt usefully links selection of suited phenotypes to the fertile-offspring boundary between species."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-ecosystem-interdependence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the ecosystem definition to the community-wide consequence of interdependence."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-carbon-water-cycles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts the specified roles of the carbon and water cycles in one retrieval route."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-biodiversity-stability",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links the definition of biodiversity to its stated contribution to ecosystem stability."
+      ]
+    },
+    {
+      "cardId": "aqa-biology-8461-card-biomass-transfer-losses",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the approximate transfer percentage with the main routes of biomass loss."
+      ]
+    }
+  ]
+}

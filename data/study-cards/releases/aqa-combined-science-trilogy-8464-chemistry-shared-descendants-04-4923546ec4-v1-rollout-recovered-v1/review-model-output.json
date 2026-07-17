@@ -1,0 +1,60 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-1348704769-aqa-8464-5-9-2-3-global-temperature-climate-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the specified causal link between rising average global temperature and climate change."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-1e70cf1716-aqa-8464-5-9-2-4-carbon-footprint-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Secures the full definition, including all greenhouse gases and the complete life cycle."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-566e5b15f6-aqa-8464-5-9-3-substances-released-by-burning-fuels",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds accurate recall of the gaseous and particulate emissions that may result from burning fuels."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-a0e9a8ac96-aqa-8464-5-9-3-1-elemental-composition-of-most-fuels",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests careful understanding of the qualified composition statement, including “and/or” and optional sulfur."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-019dc4b0be-aqa-8464-5-10-1-potable-water-versus-pure-water",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes drinking-water safety from chemical purity."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-42712c9975-aqa-8464-5-10-2-life-cycle-assessment-stages",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces all assessed life-cycle stages and the inclusion of transport and distribution."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-ae37916f52-aqa-8464-5-10-2-2-benefits-of-reduce-reuse-recycle",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests recall of all four benefits of reducing use, reusing and recycling materials."
+      ]
+    }
+  ]
+}

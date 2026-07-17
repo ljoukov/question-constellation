@@ -9,7 +9,7 @@
 	<title>{data.subject} Flashcards | Question Constellation</title>
 	<meta
 		name="description"
-		content={`AQA GCSE ${data.subject} flashcards with visible specification coverage.`}
+		content={`${data.board} GCSE ${data.subject} flashcards with visible specification coverage.`}
 	/>
 </svelte:head>
 

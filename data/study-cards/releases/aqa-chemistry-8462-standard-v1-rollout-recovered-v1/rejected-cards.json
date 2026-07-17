@@ -1,0 +1,174 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8462-4-1-groups-outer-electrons",
+        "conceptKey": "periodic-groups-outer-electrons",
+        "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1",
+        "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-1-1-7",
+        "kind": "cause-consequence",
+        "visualCue": "⚛️",
+        "front": "Why do elements in the same periodic-table group have similar chemical properties?",
+        "back": "They have the same number of electrons in their outer shell.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The same number of outer electrons gives elements in a group similar chemical properties.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "They have the same atomic number.",
+            "isCorrect": false,
+            "feedback": "The cited explanation is based on outer-shell electrons, not atomic number.",
+            "misconception": "confuses-group-membership-with-same-element"
+          },
+          {
+            "key": "b",
+            "text": "They have the same number of electrons in their outer shell.",
+            "isCorrect": true,
+            "feedback": "Correct: the shared outer-electron count explains the similar properties.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "They have the same total number of electrons.",
+            "isCorrect": false,
+            "feedback": "The specification identifies outer-shell electrons specifically.",
+            "misconception": "confuses-total-electrons-with-outer-electrons"
+          },
+          {
+            "key": "d",
+            "text": "They have the same number of neutrons.",
+            "isCorrect": false,
+            "feedback": "Neutron number is not the stated reason for similar group properties.",
+            "misconception": "attributes-group-properties-to-neutrons"
+          }
+        ],
+        "sourceExcerpt": "Elements in the same group in the periodic table have the same\nnumber of electrons in their outer shell (outer electrons) and this\ngives them similar chemical properties.",
+        "sourceLocator": "Official PDF pages 17-26; 4.1.1.7 Electronic structure"
+      },
+      "review": {
+        "cardId": "aqa-8462-4-1-groups-outer-electrons",
+        "accepted": false,
+        "issues": [
+          "The excerpt belongs to 4.1.2.1 The periodic table, but the curriculum component and locator incorrectly cite 4.1.1.7 Electronic structure."
+        ],
+        "learnerValue": [
+          "The causal link between outer-shell electrons and similar group properties is useful once correctly mapped."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8462-4-6-catalyst-pathway",
+        "conceptKey": "catalyst-lower-activation-energy",
+        "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6",
+        "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-6-1-4",
+        "kind": "cause-consequence",
+        "visualCue": "⏱️",
+        "front": "How does a catalyst increase reaction rate, and what happens to the catalyst during the reaction?",
+        "back": "It provides a different pathway with lower activation energy and is not used up.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "A catalyst increases rate through an alternative, lower-activation-energy pathway while remaining unused up by the reaction.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "It provides a pathway with higher activation energy and is used up.",
+            "isCorrect": false,
+            "feedback": "Both parts are reversed: the pathway has lower activation energy and the catalyst is not used up.",
+            "misconception": "reverses-catalyst-action"
+          },
+          {
+            "key": "b",
+            "text": "It supplies energy directly and is consumed by the reaction.",
+            "isCorrect": false,
+            "feedback": "The catalyst provides a different pathway and is not used up.",
+            "misconception": "treats-catalyst-as-consumed-energy-source"
+          },
+          {
+            "key": "c",
+            "text": "It provides a different pathway with lower activation energy and is not used up.",
+            "isCorrect": true,
+            "feedback": "Correct: this is the specified catalytic action.",
+            "misconception": null
+          }
+        ],
+        "sourceExcerpt": "Catalysts change the rate of chemical reactions but are not used up\nduring the reaction. Different reactions need different catalysts.\nEnzymes act as catalysts in biological systems.\nCatalysts increase the rate of reaction by providing a different\npathway for the reaction that has a lower activation energy.",
+        "sourceLocator": "Official PDF pages 55-61; 4.6.1.4 Catalysts"
+      },
+      "review": {
+        "cardId": "aqa-8462-4-6-catalyst-pathway",
+        "accepted": false,
+        "issues": [
+          "The explanation is malformed: “remaining unused up by the reaction” is ungrammatical and obscures the required “not used up” point."
+        ],
+        "learnerValue": [
+          "The prompt and answer otherwise combine both essential catalyst properties in one retrieval."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8462-4-9-oxygen-photosynthesis",
+        "conceptKey": "atmospheric-oxygen-photosynthesis",
+        "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9",
+        "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-9-1-3",
+        "kind": "cause-consequence",
+        "visualCue": "⛽",
+        "front": "Which process by algae and plants produced the oxygen now in the atmosphere?",
+        "back": "Photosynthesis.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "The specification attributes the production of present atmospheric oxygen by algae and plants to photosynthesis.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "Respiration.",
+            "isCorrect": false,
+            "feedback": "The cited process is photosynthesis.",
+            "misconception": "confuses-photosynthesis-with-respiration"
+          },
+          {
+            "key": "b",
+            "text": "Photosynthesis.",
+            "isCorrect": true,
+            "feedback": "Correct: algae and plants produced atmospheric oxygen by photosynthesis.",
+            "misconception": null
+          },
+          {
+            "key": "c",
+            "text": "Combustion.",
+            "isCorrect": false,
+            "feedback": "Combustion is not the process identified in the excerpt.",
+            "misconception": "attributes-atmospheric-oxygen-to-combustion"
+          },
+          {
+            "key": "d",
+            "text": "Condensation.",
+            "isCorrect": false,
+            "feedback": "Condensation is not the stated source process for atmospheric oxygen.",
+            "misconception": "confuses-gas-production-with-condensation"
+          }
+        ],
+        "sourceExcerpt": "Algae and plants produced the oxygen that is now in the\natmosphere by photosynthesis, which can be represented by the\nequation:",
+        "sourceLocator": "Official PDF pages 75-80; 4.9.1.3 How oxygen increased"
+      },
+      "review": {
+        "cardId": "aqa-8462-4-9-oxygen-photosynthesis",
+        "accepted": false,
+        "issues": [
+          "The ⛽ cue is not meaningfully related to algae, plants, photosynthesis or atmospheric oxygen formation and may instead cue the combustion distractor."
+        ],
+        "learnerValue": [
+          "The underlying question otherwise provides a concise source-backed retrieval of photosynthesis."
+        ]
+      }
+    }
+  ]
+}

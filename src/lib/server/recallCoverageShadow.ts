@@ -1,4 +1,4 @@
-import type { RecallCard, RecallSubject } from '$lib/recall/aqaScienceRecall';
+import type { RecallCard, RecallRuntimeSubject } from '$lib/recall/aqaScienceRecall';
 import type { AdminUser } from '$lib/server/auth/session';
 import { getCurriculumOffering } from '$lib/server/curriculumCatalog';
 import {
@@ -79,7 +79,7 @@ export async function recordRecallCoverageMisses({
 	canonicalCards
 }: {
 	user: AdminUser;
-	subject: RecallSubject;
+	subject: RecallRuntimeSubject;
 	canonicalCards: readonly RecallCard[];
 }): Promise<number> {
 	const settings = await getLearnerProfileSettings(user);

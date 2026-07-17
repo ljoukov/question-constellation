@@ -17,6 +17,7 @@ import {
 	sourceFingerprint,
 	validateDarkVisualJudge,
 	validateLightEditJudge,
+	validatePreparedIllustrationRelease,
 	validateSemanticPlan,
 	validateVisualJudge,
 	visualJudgePrompt,
@@ -92,6 +93,26 @@ const candidate = {
 	updatedAt: '2026-07-12T00:00:00Z',
 	steps,
 	members
+};
+
+type FingerprintCandidate = typeof candidate & {
+	steps: Array<(typeof candidate.steps)[number] & { chainId?: string }>;
+	members: Array<
+		(typeof candidate.members)[number] & {
+			chainId?: string;
+			commandWord?: string;
+			paper?: string;
+			series?: string;
+			year?: number;
+		}
+	>;
+};
+
+type IllustrationGlitchFinding = {
+	glitchId: keyof typeof CHAIN_ILLUSTRATION_GLITCH_CATALOGUE;
+	themes: Array<'dark' | 'light'>;
+	panelOrders: number[];
+	defect: string;
 };
 
 const decision = {
@@ -188,6 +209,42 @@ describe('chain illustration evidence and prompt pipeline', () => {
 		expect(lightPrompt).toContain('same locations');
 		expect(lightPrompt).toContain('Do not add or reproduce a question-specific');
 		expect(sourceFingerprint(candidate)).toHaveLength(64);
+	});
+
+	it('fingerprints every source field that can affect eligibility or the semantic plan', () => {
+		const baseline = sourceFingerprint(candidate);
+		const mutations: Array<(fingerprintCandidate: FingerprintCandidate) => void> = [
+			(fingerprintCandidate) => (fingerprintCandidate.slug = 'changed-slug'),
+			(fingerprintCandidate) => (fingerprintCandidate.steps[0].chainId = 'changed-chain'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].chainId = 'changed-chain'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].questionStatus = 'draft'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].questionNeedsReview = 1),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].membershipNeedsReview = 1),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].extractionConfidence = 0.79),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].sourceQuestionRef = '99.9'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].commandWord = 'Evaluate'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].paper = 'Paper 9'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].series = 'November'),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].year = 2025),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].overlayCount = 1),
+			(fingerprintCandidate) =>
+				(fingerprintCandidate.members[0].markSchemeItems[0].confidence = 0.79),
+			(fingerprintCandidate) =>
+				(fingerprintCandidate.members[0].checklistItems[0].required = false),
+			(fingerprintCandidate) =>
+				(fingerprintCandidate.members[0].checklistItems[0].confidence = 0.81),
+			(fingerprintCandidate) =>
+				(fingerprintCandidate.members[0].checklistItems[0].needsHumanReview = 1),
+			(fingerprintCandidate) => (fingerprintCandidate.members[0].modelAnswers[0].confidence = 0.81),
+			(fingerprintCandidate) =>
+				(fingerprintCandidate.members[0].modelAnswers[0].needsHumanReview = 1)
+		];
+
+		for (const mutate of mutations) {
+			const changed: FingerprintCandidate = structuredClone(candidate);
+			mutate(changed);
+			expect(sourceFingerprint(changed)).not.toBe(baseline);
+		}
 	});
 
 	it('keeps the full glitch catalogue in the judge and only triggered rules in a fresh retry', () => {
@@ -370,6 +427,36 @@ describe('chain illustration evidence and prompt pipeline', () => {
 		expect(source).not.toContain('generateAndJudgeAttempt');
 	});
 
+	it('blocks the complete release before publication when any accepted job is not ready', () => {
+		const acceptedItem = {
+			id: 'illustration-physics-chain',
+			answerChainId: 'physics-chain'
+		};
+		expect(
+			validatePreparedIllustrationRelease({
+				decisions: [decision],
+				jobs: [{ chainId: 'physics-chain', status: 'ready' }],
+				prepared: [{ chainId: 'physics-chain', item: acceptedItem }]
+			})
+		).toEqual([acceptedItem]);
+		expect(() =>
+			validatePreparedIllustrationRelease({
+				decisions: [decision],
+				jobs: [{ chainId: 'physics-chain', status: 'no-passing-pair' }],
+				prepared: []
+			})
+		).toThrow('not ready for fail-closed batch publication');
+
+		const source = readFileSync('scripts/generate-chain-illustrations.mjs', 'utf8');
+		const terminalGate = source.indexOf('validatePreparedIllustrationRelease({');
+		const batchPublish = source.indexOf('await publishChainIllustrationBatch(');
+		const generationStart = source.indexOf('async function generateAndValidate');
+		const generationEnd = source.indexOf('async function assertPreparedBatchSourcesAreCurrent');
+		expect(terminalGate).toBeGreaterThan(source.indexOf('const failedAccepted'));
+		expect(batchPublish).toBeGreaterThan(terminalGate);
+		expect(source.slice(generationStart, generationEnd)).not.toContain('publishChainIllustration');
+	});
+
 	it('rejects a visual plan that reorders or drops source steps', () => {
 		const bad = structuredClone(decision);
 		bad.visualSteps[1].sourceStepIds = ['s3'];
@@ -534,7 +621,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 							relationship: 'The collision redistributes conserved momentum.'
 						}
 					],
-					unintendedTakeaways: [],
+					unintendedTakeaways: [] as string[],
 					takeawayMatchesGoal: true,
 					panelAudits: steps.map((step, index) => ({
 						order: index + 1,
@@ -573,7 +660,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 							relationship: 'The collision redistributes conserved momentum.'
 						}
 					],
-					unintendedTakeaways: [],
+					unintendedTakeaways: [] as string[],
 					takeawayMatchesGoal: true,
 					panelAudits: steps.map((step, index) => ({
 						order: index + 1,
@@ -594,7 +681,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 				score: 4,
 				defects: []
 			},
-			glitchFindings: [],
+			glitchFindings: [] as IllustrationGlitchFinding[],
 			pass: true,
 			rationale: 'Both variants are correct and the light edit changes only the theme.'
 		};
@@ -614,7 +701,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 
 		const darkJudge = {
 			variant: structuredClone(judge.variants[0]),
-			glitchFindings: [],
+			glitchFindings: [] as IllustrationGlitchFinding[],
 			pass: true,
 			rationale: 'The dark original passes independently before any light edit.'
 		};
@@ -643,7 +730,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			issues: []
 		});
 
-		const invalidDarkThemeFinding = structuredClone(darkJudge) as any;
+		const invalidDarkThemeFinding = structuredClone(darkJudge);
 		invalidDarkThemeFinding.glitchFindings = [
 			{
 				glitchId: 'bypass_topology',
@@ -725,7 +812,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			'noQuestionSpecificValues',
 			'takeawayMatchesGoal'
 		] as const) {
-			const rejected: any = structuredClone(judge);
+			const rejected = structuredClone(judge);
 			rejected.variants[0][hardFailure] = false;
 			if (hardFailure === 'noQuestionSpecificValues') {
 				rejected.glitchFindings = [
@@ -757,7 +844,7 @@ describe('chain illustration evidence and prompt pipeline', () => {
 			)
 		).toContain('learner reconstruction requires two takeaways');
 
-		const misleadingLearningAudit: any = structuredClone(judge);
+		const misleadingLearningAudit = structuredClone(judge);
 		misleadingLearningAudit.variants[0].unintendedTakeaways = [
 			'Momentum appears to be created at impact.'
 		];

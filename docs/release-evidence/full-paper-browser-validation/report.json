@@ -1,0 +1,3948 @@
+{
+  "schemaVersion": "full-paper-real-chrome-acceptance-v1",
+  "status": "passed",
+  "startedAt": "2026-07-17T00:38:50.589Z",
+  "finishedAt": "2026-07-17T00:39:36.778Z",
+  "baseUrl": "http://127.0.0.1:5173/",
+  "chrome": {
+    "binary": "/usr/bin/google-chrome",
+    "version": "Chrome/149.0.7827.155",
+    "headless": true
+  },
+  "configuration": {
+    "approvedPaper": "aqa-8464p2h-jun24",
+    "approvedPath": "/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+    "controlPaper": "aqa-8464p1h-jun24",
+    "controlCatalogPath": "/past-papers/gcse/aqa/combined-physics-higher/2024-june-paper-1-physics",
+    "viewports": [
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      }
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "screenshots": true,
+    "gradingPolicy": "Approved paper submission prohibited; no complete-paper grading requested."
+  },
+  "summary": {
+    "caseCount": 6,
+    "passedCaseCount": 6,
+    "failedCaseCount": 0,
+    "controlPassed": true,
+    "approvedGradeRequestCount": 0,
+    "startScreenshotCount": 6,
+    "inProgressScreenshotCount": 6,
+    "documentOverflowCount": 0
+  },
+  "fatalError": null,
+  "cases": [
+    {
+      "status": "passed",
+      "name": "mobile/light",
+      "durationMs": 5867,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": "light",
+      "detailed": false,
+      "userId": "ux-cleanup-test-user",
+      "startState": {
+        "heading": "AQA GCSE Physics: Paper 2 Higher",
+        "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+        "facts": [
+          "Time 75 minutes",
+          "Marks 70",
+          "Questions 6"
+        ],
+        "startButton": "Start paper",
+        "signedIn": false
+      },
+      "blankConfirmation": {
+        "buttonFound": true,
+        "message": "30 answers are still blank. Finish the paper anyway?",
+        "confirmationCount": 1,
+        "statusAfter": "in_progress"
+      },
+      "responseEntry": {
+        "typedRef": "01.1",
+        "typedAriaLabel": "10 line answer",
+        "typedText": "The measured wavelength decreases as the generator frequency increases.",
+        "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+        "fixedRef": "01.2",
+        "fixedLabel": "f = λ × v",
+        "fixedStored": "f = λ × v",
+        "answerCount": 2
+      },
+      "detailedChecks": null,
+      "dom": {
+        "start": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "light",
+          "language": "en",
+          "h1": [
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [],
+          "landmarks": {
+            "main": 1,
+            "nav": 0,
+            "aside": 0
+          },
+          "controls": {
+            "links": 0,
+            "buttons": 1,
+            "inputs": 0,
+            "labels": [
+              "Start paper"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 311
+        },
+        "inProgress": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "light",
+          "language": "en",
+          "h1": [
+            "1:14:59",
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [
+            "Question 01",
+            "Question 02",
+            "Question 03",
+            "Question 04",
+            "Question 05",
+            "Question 06"
+          ],
+          "landmarks": {
+            "main": 1,
+            "nav": 1,
+            "aside": 0
+          },
+          "controls": {
+            "links": 6,
+            "buttons": 14,
+            "inputs": 30,
+            "labels": [
+              "Question 01: 2 of 3 answers started",
+              "Question 02: 0 of 7 answers started",
+              "Question 03: 0 of 7 answers started",
+              "Question 04: 0 of 5 answers started",
+              "Question 05: 0 of 4 answers started",
+              "Question 06: 0 of 4 answers started",
+              "10 line answer",
+              "f = λ × v ✓",
+              "λ = f × v",
+              "v = f × λ",
+              "6 line answer",
+              "4 line answer",
+              "Elastic potential energy answer",
+              "Unit answer",
+              "4 line answer",
+              "4 line answer",
+              "2 line answer",
+              "2 line answer",
+              "4 line answer",
+              "1 line answer",
+              "2 line answer",
+              "1 line answer",
+              "1 line answer",
+              "4 line answer",
+              "6 line answer",
+              "8 line answer",
+              "Into the page",
+              "Out of the page",
+              "To the left",
+              "To the right"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 7980
+        }
+      },
+      "layouts": {
+        "start": {
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 390,
+            "scrollWidth": 390,
+            "clientHeight": 844,
+            "scrollHeight": 844
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [],
+          "horizontalScrollRegions": []
+        },
+        "inProgress": {
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 390,
+            "scrollWidth": 390,
+            "clientHeight": 844,
+            "scrollHeight": 15317
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-01",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 01"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 63,
+              "overflowX": "hidden",
+              "textSample": "v=f×λv = f \\times \\lambda"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-02",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 02"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 71,
+              "overflowX": "hidden",
+              "textSample": "Ee=12ke2E_e = \\frac{1}{2} k e^2"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 197,
+              "overflowX": "hidden",
+              "textSample": "spring constant=8500 N/m\\text{spring constant} = 8500\\ \\text{N/m}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-03",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 03"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 40,
+              "overflowX": "hidden",
+              "textSample": "T=1fT = \\frac{1}{f}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-04",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 04"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 55,
+              "overflowX": "hidden",
+              "textSample": "F=BIlF = B I l"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-05",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 05"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 68,
+              "overflowX": "hidden",
+              "textSample": "a=v−uta = \\frac{v-u}{t}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 53,
+              "overflowX": "hidden",
+              "textSample": "F=maF = m a"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 51,
+              "overflowX": "hidden",
+              "textSample": "p=mvp = m v"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-06",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 06"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 94,
+              "overflowX": "hidden",
+              "textSample": "v2−u2=2asv^2-u^2 = 2 a s"
+            }
+          ],
+          "horizontalScrollRegions": [
+            {
+              "kind": "horizontal-scroll-region",
+              "selector": "nav.question-navigator.svelte-127acvi",
+              "left": 19.4,
+              "right": 370.6,
+              "width": 351.2,
+              "clientWidth": 351,
+              "scrollWidth": 366,
+              "overflowX": "auto",
+              "textSample": "012/3020/7030/7040/5050/4060/4"
+            }
+          ]
+        }
+      },
+      "network": {
+        "documentResponses": [
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        ],
+        "errorResponses": [],
+        "failedRequests": [],
+        "gradeRequests": [],
+        "console": [],
+        "exceptions": [],
+        "logs": [
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit"
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "name": "start-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 390,
+              "scrollWidth": 390,
+              "clientHeight": 844,
+              "scrollHeight": 844
+            }
+          }
+        },
+        {
+          "name": "start-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "start-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 0
+          }
+        },
+        {
+          "name": "signed-start-state",
+          "passed": true,
+          "evidence": {
+            "heading": "AQA GCSE Physics: Paper 2 Higher",
+            "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+            "facts": [
+              "Time 75 minutes",
+              "Marks 70",
+              "Questions 6"
+            ],
+            "startButton": "Start paper",
+            "signedIn": false
+          }
+        },
+        {
+          "name": "signed-route-gate",
+          "passed": true,
+          "evidence": {
+            "accountControlVisible": false,
+            "note": "The experiment shell omits the account menu; rendering the sitting component requires server user data."
+          }
+        },
+        {
+          "name": "theme-start",
+          "passed": true,
+          "evidence": {
+            "active": "light"
+          }
+        },
+        {
+          "name": "session-started",
+          "passed": true,
+          "evidence": {
+            "status": "in_progress",
+            "sessionIdPresent": true,
+            "signedStorageOwnerPresent": true
+          }
+        },
+        {
+          "name": "blank-confirmation-cancelled",
+          "passed": true,
+          "evidence": {
+            "buttonFound": true,
+            "message": "30 answers are still blank. Finish the paper anyway?",
+            "confirmationCount": 1,
+            "statusAfter": "in_progress"
+          }
+        },
+        {
+          "name": "normal-caret-typing",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "fixed-response-stored",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "in-progress-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 390,
+              "scrollWidth": 390,
+              "clientHeight": 844,
+              "scrollHeight": 15317
+            }
+          }
+        },
+        {
+          "name": "in-progress-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "in-progress-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 15
+          }
+        },
+        {
+          "name": "in-progress-dashboard",
+          "passed": true,
+          "evidence": {
+            "h1": [
+              "1:14:59",
+              "AQA GCSE Physics: Paper 2 Higher"
+            ]
+          }
+        },
+        {
+          "name": "theme-in-progress",
+          "passed": true,
+          "evidence": {
+            "active": "light"
+          }
+        },
+        {
+          "name": "approved-paper-never-graded",
+          "passed": true,
+          "evidence": {
+            "gradeRequestCount": 0
+          }
+        },
+        {
+          "name": "document-response-ok",
+          "passed": true,
+          "evidence": {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        },
+        {
+          "name": "no-page-errors",
+          "passed": true,
+          "evidence": {
+            "consoleErrors": [],
+            "logErrors": [],
+            "exceptions": []
+          }
+        },
+        {
+          "name": "no-network-failures",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "no-unexpected-http-errors",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "local-sitting-cleanup",
+          "passed": true,
+          "evidence": {
+            "removed": 1,
+            "remaining": 0
+          }
+        }
+      ],
+      "cleanup": {
+        "removed": 1,
+        "remaining": 0
+      },
+      "screenshots": {
+        "start": "screenshots/start--mobile--light.jpg",
+        "responses": null,
+        "inProgress": "screenshots/in-progress--mobile--light.jpg"
+      },
+      "error": null
+    },
+    {
+      "status": "passed",
+      "name": "mobile/dark",
+      "durationMs": 5180,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": "dark",
+      "detailed": false,
+      "userId": "ux-cleanup-test-user",
+      "startState": {
+        "heading": "AQA GCSE Physics: Paper 2 Higher",
+        "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+        "facts": [
+          "Time 75 minutes",
+          "Marks 70",
+          "Questions 6"
+        ],
+        "startButton": "Start paper",
+        "signedIn": false
+      },
+      "blankConfirmation": {
+        "buttonFound": true,
+        "message": "30 answers are still blank. Finish the paper anyway?",
+        "confirmationCount": 1,
+        "statusAfter": "in_progress"
+      },
+      "responseEntry": {
+        "typedRef": "01.1",
+        "typedAriaLabel": "10 line answer",
+        "typedText": "The measured wavelength decreases as the generator frequency increases.",
+        "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+        "fixedRef": "01.2",
+        "fixedLabel": "f = λ × v",
+        "fixedStored": "f = λ × v",
+        "answerCount": 2
+      },
+      "detailedChecks": null,
+      "dom": {
+        "start": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "dark",
+          "language": "en",
+          "h1": [
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [],
+          "landmarks": {
+            "main": 1,
+            "nav": 0,
+            "aside": 0
+          },
+          "controls": {
+            "links": 0,
+            "buttons": 1,
+            "inputs": 0,
+            "labels": [
+              "Start paper"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 311
+        },
+        "inProgress": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "dark",
+          "language": "en",
+          "h1": [
+            "1:14:59",
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [
+            "Question 01",
+            "Question 02",
+            "Question 03",
+            "Question 04",
+            "Question 05",
+            "Question 06"
+          ],
+          "landmarks": {
+            "main": 1,
+            "nav": 1,
+            "aside": 0
+          },
+          "controls": {
+            "links": 6,
+            "buttons": 14,
+            "inputs": 30,
+            "labels": [
+              "Question 01: 2 of 3 answers started",
+              "Question 02: 0 of 7 answers started",
+              "Question 03: 0 of 7 answers started",
+              "Question 04: 0 of 5 answers started",
+              "Question 05: 0 of 4 answers started",
+              "Question 06: 0 of 4 answers started",
+              "10 line answer",
+              "f = λ × v ✓",
+              "λ = f × v",
+              "v = f × λ",
+              "6 line answer",
+              "4 line answer",
+              "Elastic potential energy answer",
+              "Unit answer",
+              "4 line answer",
+              "4 line answer",
+              "2 line answer",
+              "2 line answer",
+              "4 line answer",
+              "1 line answer",
+              "2 line answer",
+              "1 line answer",
+              "1 line answer",
+              "4 line answer",
+              "6 line answer",
+              "8 line answer",
+              "Into the page",
+              "Out of the page",
+              "To the left",
+              "To the right"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 7980
+        }
+      },
+      "layouts": {
+        "start": {
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 390,
+            "scrollWidth": 390,
+            "clientHeight": 844,
+            "scrollHeight": 844
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [],
+          "horizontalScrollRegions": []
+        },
+        "inProgress": {
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 390,
+            "scrollWidth": 390,
+            "clientHeight": 844,
+            "scrollHeight": 15317
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-01",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 01"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 63,
+              "overflowX": "hidden",
+              "textSample": "v=f×λv = f \\times \\lambda"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-02",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 02"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 71,
+              "overflowX": "hidden",
+              "textSample": "Ee=12ke2E_e = \\frac{1}{2} k e^2"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 197,
+              "overflowX": "hidden",
+              "textSample": "spring constant=8500 N/m\\text{spring constant} = 8500\\ \\text{N/m}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-03",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 03"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 40,
+              "overflowX": "hidden",
+              "textSample": "T=1fT = \\frac{1}{f}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-04",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 04"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 55,
+              "overflowX": "hidden",
+              "textSample": "F=BIlF = B I l"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-05",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 05"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 68,
+              "overflowX": "hidden",
+              "textSample": "a=v−uta = \\frac{v-u}{t}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 53,
+              "overflowX": "hidden",
+              "textSample": "F=maF = m a"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 51,
+              "overflowX": "hidden",
+              "textSample": "p=mvp = m v"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-06",
+              "left": 15.8,
+              "right": 16.8,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 06"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 195,
+              "right": 196,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 94,
+              "overflowX": "hidden",
+              "textSample": "v2−u2=2asv^2-u^2 = 2 a s"
+            }
+          ],
+          "horizontalScrollRegions": [
+            {
+              "kind": "horizontal-scroll-region",
+              "selector": "nav.question-navigator.svelte-127acvi",
+              "left": 19.4,
+              "right": 370.6,
+              "width": 351.2,
+              "clientWidth": 351,
+              "scrollWidth": 366,
+              "overflowX": "auto",
+              "textSample": "012/3020/7030/7040/5050/4060/4"
+            }
+          ]
+        }
+      },
+      "network": {
+        "documentResponses": [
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        ],
+        "errorResponses": [],
+        "failedRequests": [],
+        "gradeRequests": [],
+        "console": [],
+        "exceptions": [],
+        "logs": [
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit"
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "name": "start-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 390,
+              "scrollWidth": 390,
+              "clientHeight": 844,
+              "scrollHeight": 844
+            }
+          }
+        },
+        {
+          "name": "start-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "start-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 0
+          }
+        },
+        {
+          "name": "signed-start-state",
+          "passed": true,
+          "evidence": {
+            "heading": "AQA GCSE Physics: Paper 2 Higher",
+            "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+            "facts": [
+              "Time 75 minutes",
+              "Marks 70",
+              "Questions 6"
+            ],
+            "startButton": "Start paper",
+            "signedIn": false
+          }
+        },
+        {
+          "name": "signed-route-gate",
+          "passed": true,
+          "evidence": {
+            "accountControlVisible": false,
+            "note": "The experiment shell omits the account menu; rendering the sitting component requires server user data."
+          }
+        },
+        {
+          "name": "theme-start",
+          "passed": true,
+          "evidence": {
+            "active": "dark"
+          }
+        },
+        {
+          "name": "session-started",
+          "passed": true,
+          "evidence": {
+            "status": "in_progress",
+            "sessionIdPresent": true,
+            "signedStorageOwnerPresent": true
+          }
+        },
+        {
+          "name": "blank-confirmation-cancelled",
+          "passed": true,
+          "evidence": {
+            "buttonFound": true,
+            "message": "30 answers are still blank. Finish the paper anyway?",
+            "confirmationCount": 1,
+            "statusAfter": "in_progress"
+          }
+        },
+        {
+          "name": "normal-caret-typing",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "fixed-response-stored",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "in-progress-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 390,
+              "scrollWidth": 390,
+              "clientHeight": 844,
+              "scrollHeight": 15317
+            }
+          }
+        },
+        {
+          "name": "in-progress-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "in-progress-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 15
+          }
+        },
+        {
+          "name": "in-progress-dashboard",
+          "passed": true,
+          "evidence": {
+            "h1": [
+              "1:14:59",
+              "AQA GCSE Physics: Paper 2 Higher"
+            ]
+          }
+        },
+        {
+          "name": "theme-in-progress",
+          "passed": true,
+          "evidence": {
+            "active": "dark"
+          }
+        },
+        {
+          "name": "approved-paper-never-graded",
+          "passed": true,
+          "evidence": {
+            "gradeRequestCount": 0
+          }
+        },
+        {
+          "name": "document-response-ok",
+          "passed": true,
+          "evidence": {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        },
+        {
+          "name": "no-page-errors",
+          "passed": true,
+          "evidence": {
+            "consoleErrors": [],
+            "logErrors": [],
+            "exceptions": []
+          }
+        },
+        {
+          "name": "no-network-failures",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "no-unexpected-http-errors",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "local-sitting-cleanup",
+          "passed": true,
+          "evidence": {
+            "removed": 1,
+            "remaining": 0
+          }
+        }
+      ],
+      "cleanup": {
+        "removed": 1,
+        "remaining": 0
+      },
+      "screenshots": {
+        "start": "screenshots/start--mobile--dark.jpg",
+        "responses": null,
+        "inProgress": "screenshots/in-progress--mobile--dark.jpg"
+      },
+      "error": null
+    },
+    {
+      "status": "passed",
+      "name": "ipad/light",
+      "durationMs": 4849,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": "light",
+      "detailed": false,
+      "userId": "ux-cleanup-test-user",
+      "startState": {
+        "heading": "AQA GCSE Physics: Paper 2 Higher",
+        "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+        "facts": [
+          "Time 75 minutes",
+          "Marks 70",
+          "Questions 6"
+        ],
+        "startButton": "Start paper",
+        "signedIn": false
+      },
+      "blankConfirmation": {
+        "buttonFound": true,
+        "message": "30 answers are still blank. Finish the paper anyway?",
+        "confirmationCount": 1,
+        "statusAfter": "in_progress"
+      },
+      "responseEntry": {
+        "typedRef": "01.1",
+        "typedAriaLabel": "10 line answer",
+        "typedText": "The measured wavelength decreases as the generator frequency increases.",
+        "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+        "fixedRef": "01.2",
+        "fixedLabel": "f = λ × v",
+        "fixedStored": "f = λ × v",
+        "answerCount": 2
+      },
+      "detailedChecks": null,
+      "dom": {
+        "start": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "light",
+          "language": "en",
+          "h1": [
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [],
+          "landmarks": {
+            "main": 1,
+            "nav": 0,
+            "aside": 0
+          },
+          "controls": {
+            "links": 0,
+            "buttons": 1,
+            "inputs": 0,
+            "labels": [
+              "Start paper"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 311
+        },
+        "inProgress": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "light",
+          "language": "en",
+          "h1": [
+            "1:14:59",
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [
+            "Question 01",
+            "Question 02",
+            "Question 03",
+            "Question 04",
+            "Question 05",
+            "Question 06"
+          ],
+          "landmarks": {
+            "main": 1,
+            "nav": 1,
+            "aside": 0
+          },
+          "controls": {
+            "links": 6,
+            "buttons": 14,
+            "inputs": 30,
+            "labels": [
+              "Question 01: 2 of 3 answers started",
+              "Question 02: 0 of 7 answers started",
+              "Question 03: 0 of 7 answers started",
+              "Question 04: 0 of 5 answers started",
+              "Question 05: 0 of 4 answers started",
+              "Question 06: 0 of 4 answers started",
+              "10 line answer",
+              "f = λ × v ✓",
+              "λ = f × v",
+              "v = f × λ",
+              "6 line answer",
+              "4 line answer",
+              "Elastic potential energy answer",
+              "Unit answer",
+              "4 line answer",
+              "4 line answer",
+              "2 line answer",
+              "2 line answer",
+              "4 line answer",
+              "1 line answer",
+              "2 line answer",
+              "1 line answer",
+              "1 line answer",
+              "4 line answer",
+              "6 line answer",
+              "8 line answer",
+              "Into the page",
+              "Out of the page",
+              "To the left",
+              "To the right"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 7980
+        }
+      },
+      "layouts": {
+        "start": {
+          "viewport": {
+            "width": 820,
+            "height": 1180,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 820,
+            "scrollWidth": 820,
+            "clientHeight": 1180,
+            "scrollHeight": 1180
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [],
+          "horizontalScrollRegions": []
+        },
+        "inProgress": {
+          "viewport": {
+            "width": 820,
+            "height": 1180,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 820,
+            "scrollWidth": 820,
+            "clientHeight": 1180,
+            "scrollHeight": 14285
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-01",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 01"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 63,
+              "overflowX": "hidden",
+              "textSample": "v=f×λv = f \\times \\lambda"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-02",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 02"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 71,
+              "overflowX": "hidden",
+              "textSample": "Ee=12ke2E_e = \\frac{1}{2} k e^2"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 197,
+              "overflowX": "hidden",
+              "textSample": "spring constant=8500 N/m\\text{spring constant} = 8500\\ \\text{N/m}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-03",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 03"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 40,
+              "overflowX": "hidden",
+              "textSample": "T=1fT = \\frac{1}{f}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-04",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 04"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 55,
+              "overflowX": "hidden",
+              "textSample": "F=BIlF = B I l"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-05",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 05"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 68,
+              "overflowX": "hidden",
+              "textSample": "a=v−uta = \\frac{v-u}{t}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 53,
+              "overflowX": "hidden",
+              "textSample": "F=maF = m a"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 51,
+              "overflowX": "hidden",
+              "textSample": "p=mvp = m v"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-06",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 06"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 94,
+              "overflowX": "hidden",
+              "textSample": "v2−u2=2asv^2-u^2 = 2 a s"
+            }
+          ],
+          "horizontalScrollRegions": []
+        }
+      },
+      "network": {
+        "documentResponses": [
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        ],
+        "errorResponses": [],
+        "failedRequests": [],
+        "gradeRequests": [],
+        "console": [],
+        "exceptions": [],
+        "logs": [
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit"
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "name": "start-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 820,
+              "scrollWidth": 820,
+              "clientHeight": 1180,
+              "scrollHeight": 1180
+            }
+          }
+        },
+        {
+          "name": "start-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "start-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 0
+          }
+        },
+        {
+          "name": "signed-start-state",
+          "passed": true,
+          "evidence": {
+            "heading": "AQA GCSE Physics: Paper 2 Higher",
+            "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+            "facts": [
+              "Time 75 minutes",
+              "Marks 70",
+              "Questions 6"
+            ],
+            "startButton": "Start paper",
+            "signedIn": false
+          }
+        },
+        {
+          "name": "signed-route-gate",
+          "passed": true,
+          "evidence": {
+            "accountControlVisible": false,
+            "note": "The experiment shell omits the account menu; rendering the sitting component requires server user data."
+          }
+        },
+        {
+          "name": "theme-start",
+          "passed": true,
+          "evidence": {
+            "active": "light"
+          }
+        },
+        {
+          "name": "session-started",
+          "passed": true,
+          "evidence": {
+            "status": "in_progress",
+            "sessionIdPresent": true,
+            "signedStorageOwnerPresent": true
+          }
+        },
+        {
+          "name": "blank-confirmation-cancelled",
+          "passed": true,
+          "evidence": {
+            "buttonFound": true,
+            "message": "30 answers are still blank. Finish the paper anyway?",
+            "confirmationCount": 1,
+            "statusAfter": "in_progress"
+          }
+        },
+        {
+          "name": "normal-caret-typing",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "fixed-response-stored",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "in-progress-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 820,
+              "scrollWidth": 820,
+              "clientHeight": 1180,
+              "scrollHeight": 14285
+            }
+          }
+        },
+        {
+          "name": "in-progress-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "in-progress-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 15
+          }
+        },
+        {
+          "name": "in-progress-dashboard",
+          "passed": true,
+          "evidence": {
+            "h1": [
+              "1:14:59",
+              "AQA GCSE Physics: Paper 2 Higher"
+            ]
+          }
+        },
+        {
+          "name": "theme-in-progress",
+          "passed": true,
+          "evidence": {
+            "active": "light"
+          }
+        },
+        {
+          "name": "approved-paper-never-graded",
+          "passed": true,
+          "evidence": {
+            "gradeRequestCount": 0
+          }
+        },
+        {
+          "name": "document-response-ok",
+          "passed": true,
+          "evidence": {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        },
+        {
+          "name": "no-page-errors",
+          "passed": true,
+          "evidence": {
+            "consoleErrors": [],
+            "logErrors": [],
+            "exceptions": []
+          }
+        },
+        {
+          "name": "no-network-failures",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "no-unexpected-http-errors",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "local-sitting-cleanup",
+          "passed": true,
+          "evidence": {
+            "removed": 1,
+            "remaining": 0
+          }
+        }
+      ],
+      "cleanup": {
+        "removed": 1,
+        "remaining": 0
+      },
+      "screenshots": {
+        "start": "screenshots/start--ipad--light.jpg",
+        "responses": null,
+        "inProgress": "screenshots/in-progress--ipad--light.jpg"
+      },
+      "error": null
+    },
+    {
+      "status": "passed",
+      "name": "ipad/dark",
+      "durationMs": 5219,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": "dark",
+      "detailed": false,
+      "userId": "ux-cleanup-test-user",
+      "startState": {
+        "heading": "AQA GCSE Physics: Paper 2 Higher",
+        "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+        "facts": [
+          "Time 75 minutes",
+          "Marks 70",
+          "Questions 6"
+        ],
+        "startButton": "Start paper",
+        "signedIn": false
+      },
+      "blankConfirmation": {
+        "buttonFound": true,
+        "message": "30 answers are still blank. Finish the paper anyway?",
+        "confirmationCount": 1,
+        "statusAfter": "in_progress"
+      },
+      "responseEntry": {
+        "typedRef": "01.1",
+        "typedAriaLabel": "10 line answer",
+        "typedText": "The measured wavelength decreases as the generator frequency increases.",
+        "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+        "fixedRef": "01.2",
+        "fixedLabel": "f = λ × v",
+        "fixedStored": "f = λ × v",
+        "answerCount": 2
+      },
+      "detailedChecks": null,
+      "dom": {
+        "start": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "dark",
+          "language": "en",
+          "h1": [
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [],
+          "landmarks": {
+            "main": 1,
+            "nav": 0,
+            "aside": 0
+          },
+          "controls": {
+            "links": 0,
+            "buttons": 1,
+            "inputs": 0,
+            "labels": [
+              "Start paper"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 311
+        },
+        "inProgress": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "dark",
+          "language": "en",
+          "h1": [
+            "1:14:59",
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [
+            "Question 01",
+            "Question 02",
+            "Question 03",
+            "Question 04",
+            "Question 05",
+            "Question 06"
+          ],
+          "landmarks": {
+            "main": 1,
+            "nav": 1,
+            "aside": 0
+          },
+          "controls": {
+            "links": 6,
+            "buttons": 14,
+            "inputs": 30,
+            "labels": [
+              "Question 01: 2 of 3 answers started",
+              "Question 02: 0 of 7 answers started",
+              "Question 03: 0 of 7 answers started",
+              "Question 04: 0 of 5 answers started",
+              "Question 05: 0 of 4 answers started",
+              "Question 06: 0 of 4 answers started",
+              "10 line answer",
+              "f = λ × v ✓",
+              "λ = f × v",
+              "v = f × λ",
+              "6 line answer",
+              "4 line answer",
+              "Elastic potential energy answer",
+              "Unit answer",
+              "4 line answer",
+              "4 line answer",
+              "2 line answer",
+              "2 line answer",
+              "4 line answer",
+              "1 line answer",
+              "2 line answer",
+              "1 line answer",
+              "1 line answer",
+              "4 line answer",
+              "6 line answer",
+              "8 line answer",
+              "Into the page",
+              "Out of the page",
+              "To the left",
+              "To the right"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 7980
+        }
+      },
+      "layouts": {
+        "start": {
+          "viewport": {
+            "width": 820,
+            "height": 1180,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 820,
+            "scrollWidth": 820,
+            "clientHeight": 1180,
+            "scrollHeight": 1180
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [],
+          "horizontalScrollRegions": []
+        },
+        "inProgress": {
+          "viewport": {
+            "width": 820,
+            "height": 1180,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 820,
+            "scrollWidth": 820,
+            "clientHeight": 1180,
+            "scrollHeight": 14285
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-01",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 01"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 63,
+              "overflowX": "hidden",
+              "textSample": "v=f×λv = f \\times \\lambda"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-02",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 02"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 71,
+              "overflowX": "hidden",
+              "textSample": "Ee=12ke2E_e = \\frac{1}{2} k e^2"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 197,
+              "overflowX": "hidden",
+              "textSample": "spring constant=8500 N/m\\text{spring constant} = 8500\\ \\text{N/m}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-03",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 03"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 40,
+              "overflowX": "hidden",
+              "textSample": "T=1fT = \\frac{1}{f}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-04",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 04"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 55,
+              "overflowX": "hidden",
+              "textSample": "F=BIlF = B I l"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-05",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 05"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 68,
+              "overflowX": "hidden",
+              "textSample": "a=v−uta = \\frac{v-u}{t}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 53,
+              "overflowX": "hidden",
+              "textSample": "F=maF = m a"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 51,
+              "overflowX": "hidden",
+              "textSample": "p=mvp = m v"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-06",
+              "left": 171,
+              "right": 172,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 06"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 472,
+              "right": 473,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 94,
+              "overflowX": "hidden",
+              "textSample": "v2−u2=2asv^2-u^2 = 2 a s"
+            }
+          ],
+          "horizontalScrollRegions": []
+        }
+      },
+      "network": {
+        "documentResponses": [
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        ],
+        "errorResponses": [],
+        "failedRequests": [],
+        "gradeRequests": [],
+        "console": [],
+        "exceptions": [],
+        "logs": [
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit"
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "name": "start-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 820,
+              "scrollWidth": 820,
+              "clientHeight": 1180,
+              "scrollHeight": 1180
+            }
+          }
+        },
+        {
+          "name": "start-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "start-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 0
+          }
+        },
+        {
+          "name": "signed-start-state",
+          "passed": true,
+          "evidence": {
+            "heading": "AQA GCSE Physics: Paper 2 Higher",
+            "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+            "facts": [
+              "Time 75 minutes",
+              "Marks 70",
+              "Questions 6"
+            ],
+            "startButton": "Start paper",
+            "signedIn": false
+          }
+        },
+        {
+          "name": "signed-route-gate",
+          "passed": true,
+          "evidence": {
+            "accountControlVisible": false,
+            "note": "The experiment shell omits the account menu; rendering the sitting component requires server user data."
+          }
+        },
+        {
+          "name": "theme-start",
+          "passed": true,
+          "evidence": {
+            "active": "dark"
+          }
+        },
+        {
+          "name": "session-started",
+          "passed": true,
+          "evidence": {
+            "status": "in_progress",
+            "sessionIdPresent": true,
+            "signedStorageOwnerPresent": true
+          }
+        },
+        {
+          "name": "blank-confirmation-cancelled",
+          "passed": true,
+          "evidence": {
+            "buttonFound": true,
+            "message": "30 answers are still blank. Finish the paper anyway?",
+            "confirmationCount": 1,
+            "statusAfter": "in_progress"
+          }
+        },
+        {
+          "name": "normal-caret-typing",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "fixed-response-stored",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "in-progress-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 820,
+              "scrollWidth": 820,
+              "clientHeight": 1180,
+              "scrollHeight": 14285
+            }
+          }
+        },
+        {
+          "name": "in-progress-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "in-progress-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 15
+          }
+        },
+        {
+          "name": "in-progress-dashboard",
+          "passed": true,
+          "evidence": {
+            "h1": [
+              "1:14:59",
+              "AQA GCSE Physics: Paper 2 Higher"
+            ]
+          }
+        },
+        {
+          "name": "theme-in-progress",
+          "passed": true,
+          "evidence": {
+            "active": "dark"
+          }
+        },
+        {
+          "name": "approved-paper-never-graded",
+          "passed": true,
+          "evidence": {
+            "gradeRequestCount": 0
+          }
+        },
+        {
+          "name": "document-response-ok",
+          "passed": true,
+          "evidence": {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        },
+        {
+          "name": "no-page-errors",
+          "passed": true,
+          "evidence": {
+            "consoleErrors": [],
+            "logErrors": [],
+            "exceptions": []
+          }
+        },
+        {
+          "name": "no-network-failures",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "no-unexpected-http-errors",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "local-sitting-cleanup",
+          "passed": true,
+          "evidence": {
+            "removed": 1,
+            "remaining": 0
+          }
+        }
+      ],
+      "cleanup": {
+        "removed": 1,
+        "remaining": 0
+      },
+      "screenshots": {
+        "start": "screenshots/start--ipad--dark.jpg",
+        "responses": null,
+        "inProgress": "screenshots/in-progress--ipad--dark.jpg"
+      },
+      "error": null
+    },
+    {
+      "status": "passed",
+      "name": "laptop/light",
+      "durationMs": 11766,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": "light",
+      "detailed": true,
+      "userId": "ux-cleanup-test-user",
+      "startState": {
+        "heading": "AQA GCSE Physics: Paper 2 Higher",
+        "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+        "facts": [
+          "Time 75 minutes",
+          "Marks 70",
+          "Questions 6"
+        ],
+        "startButton": "Start paper",
+        "signedIn": false
+      },
+      "blankConfirmation": {
+        "buttonFound": true,
+        "message": "30 answers are still blank. Finish the paper anyway?",
+        "confirmationCount": 1,
+        "statusAfter": "in_progress"
+      },
+      "responseEntry": {
+        "typedRef": "01.1",
+        "typedAriaLabel": "10 line answer",
+        "typedText": "The measured wavelength decreases as the generator frequency increases.",
+        "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+        "fixedRef": "01.2",
+        "fixedLabel": "f = λ × v",
+        "fixedStored": "f = λ × v",
+        "answerCount": 2
+      },
+      "detailedChecks": {
+        "guard": {
+          "found": true,
+          "partRef": "01.1",
+          "overlong": {
+            "warning": "Question 01.1 exceeds the 5,000-character checking limit. Shorten it before finishing.",
+            "finishDisabled": true,
+            "valueLength": 5001
+          },
+          "eventResults": {
+            "copy": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "cut": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "paste": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "drop": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "beforeinput": {
+              "defaultPrevented": true,
+              "dispatched": false
+            }
+          },
+          "valueBeforeBlockedEvents": "Ordinary typing still works after blocked external input.",
+          "valueAfterBlockedEvents": "Ordinary typing still works after blocked external input.",
+          "integrityNotice": "Paste and drop are blocked during a full-paper sitting. Type each answer yourself.",
+          "userSelect": {
+            "prompt": "none",
+            "editor": "text"
+          }
+        },
+        "timing": {
+          "linkCount": 6,
+          "label": "Question 02: 0 of 7 answers started",
+          "href": "#02.1",
+          "priorRef": "01.1",
+          "activeAfter": "02.1",
+          "priorDurationBefore": 223,
+          "priorDurationAfter": 1186,
+          "deltaMs": 963
+        },
+        "resume": {
+          "sameSession": true,
+          "sameStartedAt": true,
+          "answersPreserved": true,
+          "status": "in_progress",
+          "elapsedBefore": 1224,
+          "elapsedAfter": 6927,
+          "wallClockDeltaMs": 5703
+        },
+        "assertions": [
+          {
+            "name": "5000-character-guard",
+            "passed": true,
+            "evidence": {
+              "warning": "Question 01.1 exceeds the 5,000-character checking limit. Shorten it before finishing.",
+              "finishDisabled": true,
+              "valueLength": 5001
+            }
+          },
+          {
+            "name": "external-input-events-blocked",
+            "passed": true,
+            "evidence": {
+              "copy": {
+                "defaultPrevented": true,
+                "dispatched": false
+              },
+              "cut": {
+                "defaultPrevented": true,
+                "dispatched": false
+              },
+              "paste": {
+                "defaultPrevented": true,
+                "dispatched": false
+              },
+              "drop": {
+                "defaultPrevented": true,
+                "dispatched": false
+              },
+              "beforeinput": {
+                "defaultPrevented": true,
+                "dispatched": false
+              }
+            }
+          },
+          {
+            "name": "blocked-input-does-not-change-answer",
+            "passed": true,
+            "evidence": {
+              "before": "Ordinary typing still works after blocked external input.",
+              "after": "Ordinary typing still works after blocked external input."
+            }
+          },
+          {
+            "name": "text-selection-policy",
+            "passed": true,
+            "evidence": {
+              "prompt": "none",
+              "editor": "text"
+            }
+          },
+          {
+            "name": "part-navigation-focus-timing",
+            "passed": true,
+            "evidence": {
+              "linkCount": 6,
+              "label": "Question 02: 0 of 7 answers started",
+              "href": "#02.1",
+              "priorRef": "01.1",
+              "activeAfter": "02.1",
+              "priorDurationBefore": 223,
+              "priorDurationAfter": 1186,
+              "deltaMs": 963
+            }
+          },
+          {
+            "name": "reload-resume-wall-clock",
+            "passed": true,
+            "evidence": {
+              "sameSession": true,
+              "sameStartedAt": true,
+              "answersPreserved": true,
+              "status": "in_progress",
+              "elapsedBefore": 1224,
+              "elapsedAfter": 6927,
+              "wallClockDeltaMs": 5703
+            }
+          }
+        ]
+      },
+      "dom": {
+        "start": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "light",
+          "language": "en",
+          "h1": [
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [],
+          "landmarks": {
+            "main": 1,
+            "nav": 0,
+            "aside": 0
+          },
+          "controls": {
+            "links": 0,
+            "buttons": 1,
+            "inputs": 0,
+            "labels": [
+              "Start paper"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 311
+        },
+        "inProgress": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit#02.1",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "light",
+          "language": "en",
+          "h1": [
+            "1:14:53",
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [
+            "Question 01",
+            "Question 02",
+            "Question 03",
+            "Question 04",
+            "Question 05",
+            "Question 06"
+          ],
+          "landmarks": {
+            "main": 1,
+            "nav": 1,
+            "aside": 0
+          },
+          "controls": {
+            "links": 6,
+            "buttons": 14,
+            "inputs": 30,
+            "labels": [
+              "Question 01: 2 of 3 answers started",
+              "Question 02: 0 of 7 answers started",
+              "Question 03: 0 of 7 answers started",
+              "Question 04: 0 of 5 answers started",
+              "Question 05: 0 of 4 answers started",
+              "Question 06: 0 of 4 answers started",
+              "10 line answer",
+              "f = λ × v ✓",
+              "λ = f × v",
+              "v = f × λ",
+              "6 line answer",
+              "4 line answer",
+              "Elastic potential energy answer",
+              "Unit answer",
+              "4 line answer",
+              "4 line answer",
+              "2 line answer",
+              "2 line answer",
+              "4 line answer",
+              "1 line answer",
+              "2 line answer",
+              "1 line answer",
+              "1 line answer",
+              "4 line answer",
+              "6 line answer",
+              "8 line answer",
+              "Into the page",
+              "Out of the page",
+              "To the left",
+              "To the right"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 7980
+        }
+      },
+      "layouts": {
+        "start": {
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 1440,
+            "scrollWidth": 1440,
+            "clientHeight": 900,
+            "scrollHeight": 900
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [],
+          "horizontalScrollRegions": []
+        },
+        "inProgress": {
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 1425,
+            "scrollWidth": 1425,
+            "clientHeight": 900,
+            "scrollHeight": 14134
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-01",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 01"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 63,
+              "overflowX": "hidden",
+              "textSample": "v=f×λv = f \\times \\lambda"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-02",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 02"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 71,
+              "overflowX": "hidden",
+              "textSample": "Ee=12ke2E_e = \\frac{1}{2} k e^2"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 197,
+              "overflowX": "hidden",
+              "textSample": "spring constant=8500 N/m\\text{spring constant} = 8500\\ \\text{N/m}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-03",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 03"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 40,
+              "overflowX": "hidden",
+              "textSample": "T=1fT = \\frac{1}{f}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-04",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 04"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 55,
+              "overflowX": "hidden",
+              "textSample": "F=BIlF = B I l"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-05",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 05"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 68,
+              "overflowX": "hidden",
+              "textSample": "a=v−uta = \\frac{v-u}{t}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 53,
+              "overflowX": "hidden",
+              "textSample": "F=maF = m a"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 51,
+              "overflowX": "hidden",
+              "textSample": "p=mvp = m v"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-06",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 06"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 94,
+              "overflowX": "hidden",
+              "textSample": "v2−u2=2asv^2-u^2 = 2 a s"
+            }
+          ],
+          "horizontalScrollRegions": []
+        }
+      },
+      "network": {
+        "documentResponses": [
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          },
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        ],
+        "errorResponses": [],
+        "failedRequests": [],
+        "gradeRequests": [],
+        "console": [],
+        "exceptions": [],
+        "logs": [
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit"
+          },
+          {
+            "level": "warning",
+            "text": "The resource http://127.0.0.1:5173/brand/question-constellation-logo.svg was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit#02.1"
+          },
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit#02.1"
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "name": "start-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 1440,
+              "scrollWidth": 1440,
+              "clientHeight": 900,
+              "scrollHeight": 900
+            }
+          }
+        },
+        {
+          "name": "start-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "start-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 0
+          }
+        },
+        {
+          "name": "signed-start-state",
+          "passed": true,
+          "evidence": {
+            "heading": "AQA GCSE Physics: Paper 2 Higher",
+            "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+            "facts": [
+              "Time 75 minutes",
+              "Marks 70",
+              "Questions 6"
+            ],
+            "startButton": "Start paper",
+            "signedIn": false
+          }
+        },
+        {
+          "name": "signed-route-gate",
+          "passed": true,
+          "evidence": {
+            "accountControlVisible": false,
+            "note": "The experiment shell omits the account menu; rendering the sitting component requires server user data."
+          }
+        },
+        {
+          "name": "theme-start",
+          "passed": true,
+          "evidence": {
+            "active": "light"
+          }
+        },
+        {
+          "name": "session-started",
+          "passed": true,
+          "evidence": {
+            "status": "in_progress",
+            "sessionIdPresent": true,
+            "signedStorageOwnerPresent": true
+          }
+        },
+        {
+          "name": "blank-confirmation-cancelled",
+          "passed": true,
+          "evidence": {
+            "buttonFound": true,
+            "message": "30 answers are still blank. Finish the paper anyway?",
+            "confirmationCount": 1,
+            "statusAfter": "in_progress"
+          }
+        },
+        {
+          "name": "normal-caret-typing",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "fixed-response-stored",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "5000-character-guard",
+          "passed": true,
+          "evidence": {
+            "warning": "Question 01.1 exceeds the 5,000-character checking limit. Shorten it before finishing.",
+            "finishDisabled": true,
+            "valueLength": 5001
+          }
+        },
+        {
+          "name": "external-input-events-blocked",
+          "passed": true,
+          "evidence": {
+            "copy": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "cut": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "paste": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "drop": {
+              "defaultPrevented": true,
+              "dispatched": false
+            },
+            "beforeinput": {
+              "defaultPrevented": true,
+              "dispatched": false
+            }
+          }
+        },
+        {
+          "name": "blocked-input-does-not-change-answer",
+          "passed": true,
+          "evidence": {
+            "before": "Ordinary typing still works after blocked external input.",
+            "after": "Ordinary typing still works after blocked external input."
+          }
+        },
+        {
+          "name": "text-selection-policy",
+          "passed": true,
+          "evidence": {
+            "prompt": "none",
+            "editor": "text"
+          }
+        },
+        {
+          "name": "part-navigation-focus-timing",
+          "passed": true,
+          "evidence": {
+            "linkCount": 6,
+            "label": "Question 02: 0 of 7 answers started",
+            "href": "#02.1",
+            "priorRef": "01.1",
+            "activeAfter": "02.1",
+            "priorDurationBefore": 223,
+            "priorDurationAfter": 1186,
+            "deltaMs": 963
+          }
+        },
+        {
+          "name": "reload-resume-wall-clock",
+          "passed": true,
+          "evidence": {
+            "sameSession": true,
+            "sameStartedAt": true,
+            "answersPreserved": true,
+            "status": "in_progress",
+            "elapsedBefore": 1224,
+            "elapsedAfter": 6927,
+            "wallClockDeltaMs": 5703
+          }
+        },
+        {
+          "name": "in-progress-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 1425,
+              "scrollWidth": 1425,
+              "clientHeight": 900,
+              "scrollHeight": 14134
+            }
+          }
+        },
+        {
+          "name": "in-progress-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "in-progress-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 15
+          }
+        },
+        {
+          "name": "in-progress-dashboard",
+          "passed": true,
+          "evidence": {
+            "h1": [
+              "1:14:53",
+              "AQA GCSE Physics: Paper 2 Higher"
+            ]
+          }
+        },
+        {
+          "name": "theme-in-progress",
+          "passed": true,
+          "evidence": {
+            "active": "light"
+          }
+        },
+        {
+          "name": "approved-paper-never-graded",
+          "passed": true,
+          "evidence": {
+            "gradeRequestCount": 0
+          }
+        },
+        {
+          "name": "document-response-ok",
+          "passed": true,
+          "evidence": {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        },
+        {
+          "name": "no-page-errors",
+          "passed": true,
+          "evidence": {
+            "consoleErrors": [],
+            "logErrors": [],
+            "exceptions": []
+          }
+        },
+        {
+          "name": "no-network-failures",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "no-unexpected-http-errors",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "local-sitting-cleanup",
+          "passed": true,
+          "evidence": {
+            "removed": 1,
+            "remaining": 0
+          }
+        }
+      ],
+      "cleanup": {
+        "removed": 1,
+        "remaining": 0
+      },
+      "screenshots": {
+        "start": "screenshots/start--laptop--light.jpg",
+        "responses": "screenshots/responses--laptop--light.jpg",
+        "inProgress": "screenshots/in-progress--laptop--light.jpg"
+      },
+      "error": null
+    },
+    {
+      "status": "passed",
+      "name": "laptop/dark",
+      "durationMs": 5220,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": "dark",
+      "detailed": false,
+      "userId": "ux-cleanup-test-user",
+      "startState": {
+        "heading": "AQA GCSE Physics: Paper 2 Higher",
+        "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+        "facts": [
+          "Time 75 minutes",
+          "Marks 70",
+          "Questions 6"
+        ],
+        "startButton": "Start paper",
+        "signedIn": false
+      },
+      "blankConfirmation": {
+        "buttonFound": true,
+        "message": "30 answers are still blank. Finish the paper anyway?",
+        "confirmationCount": 1,
+        "statusAfter": "in_progress"
+      },
+      "responseEntry": {
+        "typedRef": "01.1",
+        "typedAriaLabel": "10 line answer",
+        "typedText": "The measured wavelength decreases as the generator frequency increases.",
+        "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+        "fixedRef": "01.2",
+        "fixedLabel": "f = λ × v",
+        "fixedStored": "f = λ × v",
+        "answerCount": 2
+      },
+      "detailedChecks": null,
+      "dom": {
+        "start": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "dark",
+          "language": "en",
+          "h1": [
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [],
+          "landmarks": {
+            "main": 1,
+            "nav": 0,
+            "aside": 0
+          },
+          "controls": {
+            "links": 0,
+            "buttons": 1,
+            "inputs": 0,
+            "labels": [
+              "Start paper"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 311
+        },
+        "inProgress": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+          "title": "AQA GCSE Physics: Paper 2 Higher | Online GCSE paper",
+          "theme": "dark",
+          "language": "en",
+          "h1": [
+            "1:14:59",
+            "AQA GCSE Physics: Paper 2 Higher"
+          ],
+          "h2": [
+            "Question 01",
+            "Question 02",
+            "Question 03",
+            "Question 04",
+            "Question 05",
+            "Question 06"
+          ],
+          "landmarks": {
+            "main": 1,
+            "nav": 1,
+            "aside": 0
+          },
+          "controls": {
+            "links": 6,
+            "buttons": 14,
+            "inputs": 30,
+            "labels": [
+              "Question 01: 2 of 3 answers started",
+              "Question 02: 0 of 7 answers started",
+              "Question 03: 0 of 7 answers started",
+              "Question 04: 0 of 5 answers started",
+              "Question 05: 0 of 4 answers started",
+              "Question 06: 0 of 4 answers started",
+              "10 line answer",
+              "f = λ × v ✓",
+              "λ = f × v",
+              "v = f × λ",
+              "6 line answer",
+              "4 line answer",
+              "Elastic potential energy answer",
+              "Unit answer",
+              "4 line answer",
+              "4 line answer",
+              "2 line answer",
+              "2 line answer",
+              "4 line answer",
+              "1 line answer",
+              "2 line answer",
+              "1 line answer",
+              "1 line answer",
+              "4 line answer",
+              "6 line answer",
+              "8 line answer",
+              "Into the page",
+              "Out of the page",
+              "To the left",
+              "To the right"
+            ]
+          },
+          "activeStep": null,
+          "feedbackVisible": false,
+          "signedIn": false,
+          "bodyTextLength": 7980
+        }
+      },
+      "layouts": {
+        "start": {
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 1440,
+            "scrollWidth": 1440,
+            "clientHeight": 900,
+            "scrollHeight": 900
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [],
+          "horizontalScrollRegions": []
+        },
+        "inProgress": {
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "devicePixelRatio": 1
+          },
+          "document": {
+            "clientWidth": 1425,
+            "scrollWidth": 1425,
+            "clientHeight": 900,
+            "scrollHeight": 14134
+          },
+          "documentHorizontalOverflow": false,
+          "viewportProtrusions": [],
+          "clippedContent": [
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-01",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 01"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 63,
+              "overflowX": "hidden",
+              "textSample": "v=f×λv = f \\times \\lambda"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-02",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 02"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 71,
+              "overflowX": "hidden",
+              "textSample": "Ee=12ke2E_e = \\frac{1}{2} k e^2"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 197,
+              "overflowX": "hidden",
+              "textSample": "spring constant=8500 N/m\\text{spring constant} = 8500\\ \\text{N/m}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-03",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 03"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 40,
+              "overflowX": "hidden",
+              "textSample": "T=1fT = \\frac{1}{f}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-04",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 04"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 55,
+              "overflowX": "hidden",
+              "textSample": "F=BIlF = B I l"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-05",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 05"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 68,
+              "overflowX": "hidden",
+              "textSample": "a=v−uta = \\frac{v-u}{t}"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 53,
+              "overflowX": "hidden",
+              "textSample": "F=maF = m a"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 51,
+              "overflowX": "hidden",
+              "textSample": "p=mvp = m v"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "h2#question-06",
+              "left": 417.5,
+              "right": 418.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 129,
+              "overflowX": "hidden",
+              "textSample": "Question 06"
+            },
+            {
+              "kind": "clipped-content",
+              "selector": "span.katex-mathml",
+              "left": 774.5,
+              "right": 775.5,
+              "width": 1,
+              "clientWidth": 1,
+              "scrollWidth": 94,
+              "overflowX": "hidden",
+              "textSample": "v2−u2=2asv^2-u^2 = 2 a s"
+            }
+          ],
+          "horizontalScrollRegions": []
+        }
+      },
+      "network": {
+        "documentResponses": [
+          {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        ],
+        "errorResponses": [],
+        "failedRequests": [],
+        "gradeRequests": [],
+        "console": [],
+        "exceptions": [],
+        "logs": [
+          {
+            "level": "warning",
+            "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit"
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "name": "start-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 1440,
+              "scrollWidth": 1440,
+              "clientHeight": 900,
+              "scrollHeight": 900
+            }
+          }
+        },
+        {
+          "name": "start-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "start-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 0
+          }
+        },
+        {
+          "name": "signed-start-state",
+          "passed": true,
+          "evidence": {
+            "heading": "AQA GCSE Physics: Paper 2 Higher",
+            "intro": "This is the complete reviewed online paper. The timer starts when you press start and keeps running if you reload or close this tab.",
+            "facts": [
+              "Time 75 minutes",
+              "Marks 70",
+              "Questions 6"
+            ],
+            "startButton": "Start paper",
+            "signedIn": false
+          }
+        },
+        {
+          "name": "signed-route-gate",
+          "passed": true,
+          "evidence": {
+            "accountControlVisible": false,
+            "note": "The experiment shell omits the account menu; rendering the sitting component requires server user data."
+          }
+        },
+        {
+          "name": "theme-start",
+          "passed": true,
+          "evidence": {
+            "active": "dark"
+          }
+        },
+        {
+          "name": "session-started",
+          "passed": true,
+          "evidence": {
+            "status": "in_progress",
+            "sessionIdPresent": true,
+            "signedStorageOwnerPresent": true
+          }
+        },
+        {
+          "name": "blank-confirmation-cancelled",
+          "passed": true,
+          "evidence": {
+            "buttonFound": true,
+            "message": "30 answers are still blank. Finish the paper anyway?",
+            "confirmationCount": 1,
+            "statusAfter": "in_progress"
+          }
+        },
+        {
+          "name": "normal-caret-typing",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "fixed-response-stored",
+          "passed": true,
+          "evidence": {
+            "typedRef": "01.1",
+            "typedAriaLabel": "10 line answer",
+            "typedText": "The measured wavelength decreases as the generator frequency increases.",
+            "typedStored": "The measured wavelength decreases as the generator frequency increases.",
+            "fixedRef": "01.2",
+            "fixedLabel": "f = λ × v",
+            "fixedStored": "f = λ × v",
+            "answerCount": 2
+          }
+        },
+        {
+          "name": "in-progress-no-document-overflow",
+          "passed": true,
+          "evidence": {
+            "document": {
+              "clientWidth": 1425,
+              "scrollWidth": 1425,
+              "clientHeight": 900,
+              "scrollHeight": 14134
+            }
+          }
+        },
+        {
+          "name": "in-progress-no-viewport-protrusions",
+          "passed": true,
+          "evidence": {
+            "protrusions": []
+          }
+        },
+        {
+          "name": "in-progress-no-clipped-content",
+          "passed": true,
+          "evidence": {
+            "clippedContent": [],
+            "ignoredAccessibilityClippingCount": 15
+          }
+        },
+        {
+          "name": "in-progress-dashboard",
+          "passed": true,
+          "evidence": {
+            "h1": [
+              "1:14:59",
+              "AQA GCSE Physics: Paper 2 Higher"
+            ]
+          }
+        },
+        {
+          "name": "theme-in-progress",
+          "passed": true,
+          "evidence": {
+            "active": "dark"
+          }
+        },
+        {
+          "name": "approved-paper-never-graded",
+          "passed": true,
+          "evidence": {
+            "gradeRequestCount": 0
+          }
+        },
+        {
+          "name": "document-response-ok",
+          "passed": true,
+          "evidence": {
+            "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p2h-jun24?mode=sit",
+            "status": 200,
+            "type": "Document"
+          }
+        },
+        {
+          "name": "no-page-errors",
+          "passed": true,
+          "evidence": {
+            "consoleErrors": [],
+            "logErrors": [],
+            "exceptions": []
+          }
+        },
+        {
+          "name": "no-network-failures",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "no-unexpected-http-errors",
+          "passed": true,
+          "evidence": []
+        },
+        {
+          "name": "local-sitting-cleanup",
+          "passed": true,
+          "evidence": {
+            "removed": 1,
+            "remaining": 0
+          }
+        }
+      ],
+      "cleanup": {
+        "removed": 1,
+        "remaining": 0
+      },
+      "screenshots": {
+        "start": "screenshots/start--laptop--dark.jpg",
+        "responses": null,
+        "inProgress": "screenshots/in-progress--laptop--dark.jpg"
+      },
+      "error": null
+    }
+  ],
+  "control": {
+    "status": "passed",
+    "durationMs": 3520,
+    "catalog": {
+      "title": "AQA Combined Physics Higher Paper 1 Physics June 2024",
+      "signedIn": true,
+      "onlineSittingCard": false,
+      "sittingLinks": [],
+      "documents": [
+        "Question paper PDF · opens in a new tab",
+        "Mark scheme PDF · opens in a new tab"
+      ]
+    },
+    "directExperiment": {
+      "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p1h-jun24?mode=sit",
+      "status": 404,
+      "location": ""
+    },
+    "refusal": {
+      "status": 503,
+      "body": {
+        "error": "paper_sitting_unavailable",
+        "message": "The paper review could not be verified right now."
+      }
+    },
+    "evidence": {
+      "sessionId": "e2d322b8-a0b3-428a-95a0-56deda6195e0",
+      "before": {
+        "attempts": 0,
+        "evidence": 0
+      },
+      "after": {
+        "attempts": 0,
+        "evidence": 0
+      }
+    },
+    "layout": {
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "devicePixelRatio": 1
+      },
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 900,
+        "scrollHeight": 900
+      },
+      "documentHorizontalOverflow": false,
+      "viewportProtrusions": [],
+      "clippedContent": [],
+      "horizontalScrollRegions": []
+    },
+    "network": {
+      "documentResponses": [
+        {
+          "url": "http://127.0.0.1:5173/past-papers/gcse/aqa/combined-physics-higher/2024-june-paper-1-physics",
+          "status": 200,
+          "type": "Document"
+        }
+      ],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:5173/api/experiments/questions/aqa-8464p1h-jun24/01/grade",
+          "status": 503,
+          "type": "Fetch"
+        }
+      ],
+      "failedRequests": [],
+      "gradeRequests": [
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:5173/api/experiments/questions/aqa-8464p1h-jun24/01/grade"
+        }
+      ],
+      "console": [],
+      "exceptions": [],
+      "logs": [
+        {
+          "level": "warning",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/past-papers/gcse/aqa/combined-physics-higher/2024-june-paper-1-physics"
+        },
+        {
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:5173/api/experiments/questions/aqa-8464p1h-jun24/01/grade"
+        }
+      ]
+    },
+    "assertions": [
+      {
+        "name": "control-not-advertised-as-online-sitting",
+        "passed": true,
+        "evidence": {
+          "title": "AQA Combined Physics Higher Paper 1 Physics June 2024",
+          "signedIn": true,
+          "onlineSittingCard": false,
+          "sittingLinks": [],
+          "documents": [
+            "Question paper PDF · opens in a new tab",
+            "Mark scheme PDF · opens in a new tab"
+          ]
+        }
+      },
+      {
+        "name": "control-catalog-signed-in",
+        "passed": true,
+        "evidence": {
+          "title": "AQA Combined Physics Higher Paper 1 Physics June 2024",
+          "signedIn": true,
+          "onlineSittingCard": false,
+          "sittingLinks": [],
+          "documents": [
+            "Question paper PDF · opens in a new tab",
+            "Mark scheme PDF · opens in a new tab"
+          ]
+        }
+      },
+      {
+        "name": "control-catalog-no-document-overflow",
+        "passed": true,
+        "evidence": {
+          "document": {
+            "clientWidth": 1440,
+            "scrollWidth": 1440,
+            "clientHeight": 900,
+            "scrollHeight": 900
+          }
+        }
+      },
+      {
+        "name": "control-catalog-no-viewport-protrusions",
+        "passed": true,
+        "evidence": {
+          "protrusions": []
+        }
+      },
+      {
+        "name": "control-catalog-no-clipped-content",
+        "passed": true,
+        "evidence": {
+          "clippedContent": [],
+          "ignoredAccessibilityClippingCount": 0
+        }
+      },
+      {
+        "name": "control-renderer-not-exposed",
+        "passed": true,
+        "evidence": {
+          "url": "http://127.0.0.1:5173/experiments/questions/aqa-8464p1h-jun24?mode=sit",
+          "status": 404,
+          "location": ""
+        }
+      },
+      {
+        "name": "control-grade-post-refused-before-model",
+        "passed": true,
+        "evidence": {
+          "status": 503,
+          "body": {
+            "error": "paper_sitting_unavailable",
+            "message": "The paper review could not be verified right now."
+          }
+        }
+      },
+      {
+        "name": "control-refusal-created-no-evidence",
+        "passed": true,
+        "evidence": {
+          "before": {
+            "attempts": 0,
+            "evidence": 0
+          },
+          "after": {
+            "attempts": 0,
+            "evidence": 0
+          }
+        }
+      },
+      {
+        "name": "one-intentional-control-grade-request",
+        "passed": true,
+        "evidence": {
+          "gradeRequests": [
+            {
+              "method": "POST",
+              "url": "http://127.0.0.1:5173/api/experiments/questions/aqa-8464p1h-jun24/01/grade"
+            }
+          ]
+        }
+      },
+      {
+        "name": "document-response-ok",
+        "passed": true,
+        "evidence": {
+          "url": "http://127.0.0.1:5173/past-papers/gcse/aqa/combined-physics-higher/2024-june-paper-1-physics",
+          "status": 200,
+          "type": "Document"
+        }
+      },
+      {
+        "name": "no-page-errors",
+        "passed": true,
+        "evidence": {
+          "consoleErrors": [],
+          "logErrors": [],
+          "exceptions": []
+        }
+      },
+      {
+        "name": "no-network-failures",
+        "passed": true,
+        "evidence": []
+      },
+      {
+        "name": "no-unexpected-http-errors",
+        "passed": true,
+        "evidence": []
+      }
+    ],
+    "screenshot": "screenshots/control-catalog--laptop--light.jpg",
+    "error": null
+  },
+  "approvalConsistency": {
+    "paperSlug": "aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp",
+    "route": {
+      "url": "http://127.0.0.1:5173/experiments/questions/aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp?mode=sit",
+      "status": 200,
+      "available": false,
+      "reason": "unsupported_response",
+      "reviewedAt": "2026-07-16T23:45:38.074Z",
+      "rendersPreview": true
+    },
+    "catalog": {
+      "url": "http://127.0.0.1:5173/past-papers/gcse/aqa/computer-science/2024-june-paper-1a-computational-thinking-and-programming-skills-c",
+      "status": 200,
+      "hasOnlineSittingCard": false,
+      "hasSittingHref": false
+    },
+    "reviewRows": [
+      {
+        "source_document_id": "aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp",
+        "past_paper_entry_id": "aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c",
+        "status": "approved",
+        "expected_question_count": 36,
+        "expected_total_marks": 90,
+        "duration_minutes": 120,
+        "reviewed_at": "2026-07-16T23:45:38.074Z"
+      }
+    ]
+  }
+}

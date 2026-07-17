@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "prepared-study-card-completion-lock-v1",
+  "executionQueue": {
+    "path": "docs/release-evidence/study-card-descendant-coverage/tier-safe-execution-queue.json",
+    "sha256": "05ff931b8885937ace380864faa5c1319851c64702c2f5a7b2c81d77ffaee0f8"
+  },
+  "literatureQueue": {
+    "path": "docs/release-evidence/english-literature-deepening/queue-preflight.json",
+    "sha256": "2e69385377bdc39e3c0ab770a074efba76f7749d3515075248c6b85848851294"
+  },
+  "coverageLedger": {
+    "path": "docs/release-evidence/study-card-coverage-ledger.json",
+    "sha256": "36c7db70e3ce588bd775a66d906dc30f0a81ba06b8982bf1590d3e03e13e7408"
+  },
+  "literatureSourcePreflight": {
+    "path": "docs/release-evidence/english-literature-deepening/source-preflight.json",
+    "sha256": "ad01e50ce2c0c80f4d57ddaa429c20e43ed196dc28ec60b512f8e0e2dd000394"
+  },
+  "counts": {
+    "standardPhysicalBatches": 26,
+    "standardGenerationBatches": 24,
+    "archivedFreshReviewPhysicalBatches": 2,
+    "atomicStandardExecutionUnits": 25,
+    "standardTargets": 438,
+    "literatureShards": 13,
+    "literatureCards": 171
+  },
+  "maxModelConcurrency": 2,
+  "stageOrder": [
+    "standard-study-cards",
+    "english-literature"
+  ],
+  "executeCommand": "node scripts/run-prepared-study-card-completion.mjs --execute",
+  "lockFingerprint": "60f63783f3ba87b3f631d5409f88039ad1d3e804c79dce4edf39deb768bb603c"
+}

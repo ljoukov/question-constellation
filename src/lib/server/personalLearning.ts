@@ -3,13 +3,23 @@ import { getCurriculumProfileSnapshot } from '$lib/server/curriculumCatalog';
 import {
 	recallCards,
 	recallCurriculumTopics,
+	recallSubjects,
+	runtimeRecallSubjects,
 	type RecallCard,
+	type RecallRuntimeSubject,
 	type RecallSubject
 } from '$lib/recall/aqaScienceRecall';
 import { recallEvidenceComponentId } from '$lib/server/recallCatalog';
 import { recallActivityHref, recallCoverageHref } from '$lib/recall/routes';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
+import {
+	constructedAnswerIsIndependent,
+	normalizeConstructedAnswerAssistance,
+	type ConstructedAnswerAssistance,
+	type ExternalInputSource
+} from '$lib/learning/answerAssistance';
 import { enabledProfileCombinationForQuestion } from '$lib/learning/profileQuestionCompatibility';
+import { isScienceLearnerSubject } from '$lib/learning/subjects';
 import {
 	getPracticePageData,
 	type ChainStep,
@@ -369,7 +379,10 @@ export type GapFinalJudgeResult = {
 	summary: string;
 	presentStepIds: string[];
 	missingStepIds: string[];
+	targetStepPresent: boolean;
 	gapClosed: boolean;
+	externalInputDetected: boolean;
+	externalInputSources: ExternalInputSource[];
 };
 
 export type RecallReviewGrade = 'again' | 'hard' | 'good' | 'easy';
@@ -1712,14 +1725,16 @@ export async function getPersonalDashboard(user: AdminUser): Promise<PersonalDas
 	};
 }
 
-function recallSubject(value: string): RecallSubject | null {
-	if (value === 'Biology' || value === 'Chemistry' || value === 'Physics') return value;
-	return null;
+function recallSubject(value: string): RecallRuntimeSubject | null {
+	return value !== 'All subjects' && runtimeRecallSubjects.includes(value as RecallRuntimeSubject)
+		? (value as RecallRuntimeSubject)
+		: null;
 }
 
 function recallPromptForQuestion(data: PracticePageData): SavedAttemptSummary['recallPrompt'] {
-	const subject = recallSubject(data.question.meta.subject);
-	if (!subject) return null;
+	const runtimeSubject = recallSubject(data.question.meta.subject);
+	if (!runtimeSubject || !recallSubjects.includes(runtimeSubject as RecallSubject)) return null;
+	const subject = runtimeSubject as RecallSubject;
 	const topicText = data.question.meta.topic.toLowerCase();
 	const topic =
 		recallCurriculumTopics.find(
@@ -1811,13 +1826,15 @@ export async function recordQuestionAttempt({
 	questionId,
 	answer,
 	result,
-	attemptId: requestedAttemptId
+	attemptId: requestedAttemptId,
+	assistance
 }: {
 	user: AdminUser;
 	questionId: string;
 	answer: string;
 	result: QuestionGradeResult;
 	attemptId?: string;
+	assistance?: ConstructedAnswerAssistance;
 }): Promise<SavedAttemptSummary | null> {
 	await upsertUserProfile(user);
 	const [data, sourceRows, settings] = await Promise.all([
@@ -1853,14 +1870,21 @@ export async function recordQuestionAttempt({
 	const storedCourse = learnerSubject.course;
 	const storedTier = learnerSubject.tier;
 	const attemptId = requestedAttemptId ?? randomId('attempt');
+	const normalizedAssistance = normalizeConstructedAnswerAssistance(assistance);
+	const presentStepIdsJson = jsonString(result.presentStepIds);
+	const missingStepIdsJson = jsonString(result.missingStepIds);
+	const topicPathJson = jsonString([data.question.meta.topic].filter(Boolean));
+	const independent = constructedAnswerIsIndependent(normalizedAssistance) ? 1 : 0;
+	const assistanceJson = jsonString(normalizedAssistance);
 	const insertedAttempt = await queryPersonalFirst<{ id: string }>(
 		`INSERT INTO user_question_attempts (
 		   id, user_id, question_id, answer_chain_id, answer_text, result,
 		   awarded_marks, max_marks, present_step_ids_json, missing_step_ids_json,
 		   feedback_markdown, model, model_version, question_title, source_question_ref,
-		   board, qualification, subject, course, tier, paper, topic_path_json, chain_title
+		   board, qualification, subject, course, tier, paper, topic_path_json, chain_title,
+		   independent, assistance_json
 		 )
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		 ON CONFLICT(id) DO NOTHING
 		 RETURNING id`,
 		[
@@ -1872,8 +1896,8 @@ export async function recordQuestionAttempt({
 			result.result,
 			result.awardedMarks,
 			result.maxMarks,
-			jsonString(result.presentStepIds),
-			jsonString(result.missingStepIds),
+			presentStepIdsJson,
+			missingStepIdsJson,
 			result.feedbackMarkdown,
 			result.model,
 			result.modelVersion,
@@ -1885,28 +1909,79 @@ export async function recordQuestionAttempt({
 			storedCourse,
 			storedTier,
 			data.question.meta.paper,
-			jsonString([data.question.meta.topic].filter(Boolean)),
-			data.chain.title
+			topicPathJson,
+			data.chain.title,
+			independent,
+			assistanceJson
 		]
 	);
 	if (!insertedAttempt) {
-		const existing = await queryPersonalFirst<{ id: string }>(
-			`SELECT id FROM user_question_attempts WHERE id = ? AND user_id = ? AND question_id = ?`,
-			[attemptId, user.uid, questionId]
+		const existing = await queryPersonalFirst<{ matches_write: number }>(
+			`SELECT CASE WHEN
+			   user_id = ? AND question_id = ? AND answer_chain_id = ?
+			   AND answer_text = ? AND result = ?
+			   AND awarded_marks = ? AND max_marks = ?
+			   AND present_step_ids_json = ? AND missing_step_ids_json = ?
+			   AND feedback_markdown = ?
+			   AND COALESCE(model, '') = COALESCE(?, '')
+			   AND COALESCE(model_version, '') = COALESCE(?, '')
+			   AND COALESCE(question_title, '') = COALESCE(?, '')
+			   AND COALESCE(source_question_ref, '') = COALESCE(?, '')
+			   AND COALESCE(board, '') = COALESCE(?, '')
+			   AND COALESCE(qualification, '') = COALESCE(?, '')
+			   AND COALESCE(subject, '') = COALESCE(?, '')
+			   AND COALESCE(course, '') = COALESCE(?, '')
+			   AND COALESCE(tier, '') = COALESCE(?, '')
+			   AND COALESCE(paper, '') = COALESCE(?, '')
+			   AND topic_path_json = ?
+			   AND COALESCE(chain_title, '') = COALESCE(?, '')
+			   AND independent = ? AND assistance_json = ?
+			 THEN 1 ELSE 0 END AS matches_write
+			 FROM user_question_attempts
+			 WHERE id = ?`,
+			[
+				user.uid,
+				questionId,
+				data.chain.id,
+				answer,
+				result.result,
+				result.awardedMarks,
+				result.maxMarks,
+				presentStepIdsJson,
+				missingStepIdsJson,
+				result.feedbackMarkdown,
+				result.model,
+				result.modelVersion,
+				data.question.title,
+				data.question.sourceRef,
+				learnerSubject.board,
+				learnerSubject.qualification,
+				storedSubject,
+				storedCourse,
+				storedTier,
+				data.question.meta.paper,
+				topicPathJson,
+				data.chain.title,
+				independent,
+				assistanceJson,
+				attemptId
+			]
 		);
-		if (!existing) throw new Error('Attempt id is already in use.');
+		if (existing?.matches_write !== 1) {
+			throw new Error('Attempt id is already in use for a different canonical write.');
+		}
 	}
 
-	const shouldUseRecallInsteadOfGap =
-		data.question.meta.marks <= 2 ||
-		data.chain.steps.length <= 2 ||
-		/recall/i.test(data.chain.title);
+	const followUpKind = questionAttemptFollowUpKind({
+		subject: learnerSubject.subject,
+		marks: data.question.meta.marks,
+		chainStepCount: data.chain.steps.length,
+		chainTitle: data.chain.title
+	});
 	const recallPrompt =
-		shouldUseRecallInsteadOfGap && result.result !== 'correct'
-			? recallPromptForQuestion(data)
-			: null;
+		followUpKind === 'recall' && result.result !== 'correct' ? recallPromptForQuestion(data) : null;
 
-	if (shouldUseRecallInsteadOfGap) {
+	if (followUpKind !== 'close_gap') {
 		return {
 			id: attemptId,
 			activeGaps: [],
@@ -2026,6 +2101,36 @@ export async function recordQuestionAttempt({
 	};
 }
 
+export function scienceAttemptFollowUpKind({
+	marks,
+	chainStepCount,
+	chainTitle
+}: {
+	marks: number;
+	chainStepCount: number;
+	chainTitle: string;
+}): 'recall' | 'close_gap' | 'none' {
+	const recallShaped = chainStepCount <= 2 || /recall/i.test(chainTitle);
+	if (marks >= 1 && marks <= 3) return 'recall';
+	if (marks >= 4 && marks <= 6) return recallShaped ? 'recall' : 'close_gap';
+	return 'none';
+}
+
+export function questionAttemptFollowUpKind({
+	subject,
+	marks,
+	chainStepCount,
+	chainTitle
+}: {
+	subject: string;
+	marks: number;
+	chainStepCount: number;
+	chainTitle: string;
+}): 'recall' | 'close_gap' | 'none' {
+	if (!isScienceLearnerSubject(subject)) return 'none';
+	return scienceAttemptFollowUpKind({ marks, chainStepCount, chainTitle });
+}
+
 async function getChainSteps(chainId: string): Promise<ChainStepRow[]> {
 	return await queryRows<ChainStepRow>(
 		`SELECT id, display_order, step_text, step_role, explanation, common_omission, evidence_json
@@ -2097,14 +2202,14 @@ export function gapGuidedQuestionPrompt({
 	const previousLabel = previous ? chainStepLabel(previous) : null;
 	const targetLabel = chainStepLabel(target);
 	const nextLabel = next ? chainStepLabel(next) : null;
-	if (kind === 'previous') return `Add the step immediately before: ${targetLabel}`;
-	if (kind === 'next') return `Add the next step after: ${targetLabel}`;
+	if (kind === 'previous') return `What happens immediately before ${targetLabel}?`;
+	if (kind === 'next') return `What happens immediately after ${targetLabel}?`;
 	if (previousLabel && nextLabel) {
-		return `Complete the missing link: ${previousLabel} → ? → ${nextLabel}`;
+		return `What causal step connects “${previousLabel}” to “${nextLabel}”?`;
 	}
-	if (previousLabel) return `Add the next step after: ${previousLabel}`;
-	if (nextLabel) return `Add the step immediately before: ${nextLabel}`;
-	return 'Add the missing process that completes the explanation.';
+	if (previousLabel) return `What happens immediately after ${previousLabel}?`;
+	if (nextLabel) return `What must happen immediately before ${nextLabel}?`;
+	return 'Which specific process completes this explanation?';
 }
 
 function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuidedQuestion[] {
@@ -2406,13 +2511,15 @@ export async function judgeGapFinalAnswer({
 	gapId,
 	answer,
 	guidedAnswers,
-	submissionId
+	submissionId,
+	assistance
 }: {
 	userId: string;
 	gapId: string;
 	answer: string;
 	guidedAnswers: Record<string, string>;
 	submissionId?: string;
+	assistance?: ConstructedAnswerAssistance;
 }): Promise<GapFinalJudgeResult | null> {
 	const data = await getGapLearningData(userId, gapId);
 	if (!data) return null;
@@ -2423,7 +2530,9 @@ export async function judgeGapFinalAnswer({
 	const missingStepIds = data.chain.steps
 		.filter((step) => !present.has(step.id))
 		.map((step) => step.id);
-	const gapClosed = present.has(data.presentation.targetStepId);
+	const normalizedAssistance = normalizeConstructedAnswerAssistance(assistance);
+	const targetStepPresent = present.has(data.presentation.targetStepId);
+	const gapClosed = targetStepPresent && !normalizedAssistance.externalInputDetected;
 	const maxMarks = data.presentation.maxMarks;
 	const awardedMarks = Math.min(
 		maxMarks,
@@ -2432,16 +2541,20 @@ export async function judgeGapFinalAnswer({
 			Math.round((presentStepIds.length / Math.max(1, data.chain.steps.length)) * maxMarks)
 		)
 	);
-	const summary = gapClosed
-		? 'The missing step is now explicit. Use the same method on the next similar question.'
-		: 'The answer still needs the target missing step. Add it directly, then connect it to the next step.';
+	const summary =
+		normalizedAssistance.externalInputDetected && targetStepPresent
+			? 'The missing step is present. Because text was pasted or dropped, this check stays as assisted practice and the gap remains open.'
+			: gapClosed
+				? 'The missing step is now explicit. Use the same method on the next similar question.'
+				: 'The answer still needs the target missing step. Add it directly, then connect it to the next step.';
 	const runId = submissionId ?? randomId('gaprun');
 
 	const insertedRun = await queryPersonalFirst<{ id: string }>(
 		`INSERT INTO user_gap_builder_runs (
-		   id, user_id, gap_id, phase, guided_answers_json, final_answer, result_json
+		   id, user_id, gap_id, phase, guided_answers_json, final_answer, result_json,
+		   assistance_json
 		 )
-		 VALUES (?, ?, ?, 'final_check', ?, ?, ?)
+		 VALUES (?, ?, ?, 'final_check', ?, ?, ?, ?)
 		 ON CONFLICT(id) DO NOTHING
 		 RETURNING id`,
 		[
@@ -2450,14 +2563,23 @@ export async function judgeGapFinalAnswer({
 			gapId,
 			jsonString(guidedAnswers),
 			answer,
-			jsonString({ awardedMarks, maxMarks, presentStepIds, missingStepIds, gapClosed })
+			jsonString({
+				awardedMarks,
+				maxMarks,
+				presentStepIds,
+				missingStepIds,
+				targetStepPresent,
+				gapClosed
+			}),
+			jsonString(normalizedAssistance)
 		]
 	);
 	if (!insertedRun) {
 		const existing = await queryPersonalFirst<{ id: string }>(
 			`SELECT id FROM user_gap_builder_runs
-			 WHERE id = ? AND user_id = ? AND gap_id = ? AND final_answer = ?`,
-			[runId, userId, gapId, answer]
+			 WHERE id = ? AND user_id = ? AND gap_id = ? AND final_answer = ?
+			   AND assistance_json = ?`,
+			[runId, userId, gapId, answer, jsonString(normalizedAssistance)]
 		);
 		if (!existing) throw new Error('Gap response id is already in use.');
 	}
@@ -2484,7 +2606,10 @@ export async function judgeGapFinalAnswer({
 		summary,
 		presentStepIds,
 		missingStepIds,
-		gapClosed
+		targetStepPresent,
+		gapClosed,
+		externalInputDetected: normalizedAssistance.externalInputDetected,
+		externalInputSources: normalizedAssistance.externalInputSources
 	};
 }
 

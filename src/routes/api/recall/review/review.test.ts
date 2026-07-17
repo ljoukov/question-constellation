@@ -53,6 +53,8 @@ function requestBody(overrides: Record<string, unknown> = {}) {
 		grade: 'good',
 		mode: 'recall',
 		selectedChoiceKey: null,
+		statementChoiceKey: null,
+		selectedTruth: null,
 		sourceSessionId: 'session-1',
 		responseDurationMs: 3_000,
 		createdAt: Date.UTC(2026, 6, 15),
@@ -155,6 +157,44 @@ describe('POST /api/recall/review', () => {
 		);
 	});
 
+	it('validates true-or-false against the canonical statement choice', async () => {
+		const response = await post(
+			requestBody({
+				mode: 'true_false',
+				statementChoiceKey: 'confuses-cell-location',
+				selectedTruth: false
+			})
+		);
+
+		expect(response.status).toBe(200);
+		expect(mocks.recordRecallReviewEvidence).toHaveBeenCalledWith(
+			expect.objectContaining({
+				selectedChoice: null,
+				statementChoice: {
+					key: 'confuses-cell-location',
+					text: 'Cytoplasm',
+					isCorrect: false,
+					misconception: 'Confuses where genetic material is enclosed.'
+				},
+				selectedTruth: false
+			})
+		);
+	});
+
+	it('does not allow an incorrectly judged statement to be submitted as remembered', async () => {
+		const response = await post(
+			requestBody({
+				mode: 'true_false',
+				statementChoiceKey: 'confuses-cell-location',
+				selectedTruth: true
+			})
+		);
+
+		expect(response.status).toBe(400);
+		expect(await response.json()).toEqual({ error: 'inconsistent_review' });
+		expect(mocks.recordRecallReviewEvidence).not.toHaveBeenCalled();
+	});
+
 	it('rejects a spoofed or cross-card choice key before writing evidence', async () => {
 		const response = await post(
 			requestBody({ grade: 'again', mode: 'recognise', selectedChoiceKey: 'other-card-choice' })
@@ -184,6 +224,8 @@ describe('POST /api/recall/review', () => {
 			grade: 'again',
 			mode: 'recognise',
 			selectedChoiceKey: 'confuses-cell-location',
+			statementChoiceKey: null,
+			selectedTruth: null,
 			sourceSessionId: 'session-1',
 			responseDurationMs: 3_000,
 			createdAt: Date.UTC(2026, 6, 15)
@@ -209,6 +251,8 @@ describe('POST /api/recall/review', () => {
 			grade: 'again',
 			mode: 'recognise',
 			selectedChoiceKey: 'correct',
+			statementChoiceKey: null,
+			selectedTruth: null,
 			sourceSessionId: 'session-1',
 			responseDurationMs: 3_000,
 			createdAt: Date.UTC(2026, 6, 15)

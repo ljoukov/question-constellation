@@ -4,6 +4,7 @@ import {
 	pastPaperPageLabel,
 	pastPaperSubjectPath
 } from '$lib/pastPapers/gcsePastPapers';
+import { getSittablePaperForPastPaperEntry } from '$lib/server/paperSittingReadiness';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -26,6 +27,16 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			localPath: subjectPath,
 			paperLocalPath: pastPaperEntryPath(page, candidate)
 		}));
+	let sitting: Awaited<ReturnType<typeof getSittablePaperForPastPaperEntry>> = null;
+	try {
+		sitting = await getSittablePaperForPastPaperEntry(entry.id);
+	} catch (cause) {
+		// An optional online sitting must never take down public PDF browsing.
+		console.error('[past-paper-sitting] readiness lookup failed', {
+			entryId: entry.id,
+			cause: cause instanceof Error ? cause.message : String(cause)
+		});
+	}
 
 	return {
 		page: {
@@ -42,6 +53,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			entry,
 			relatedRows
 		},
+		sitting: sitting
+			? {
+					href: `/experiments/questions/${sitting.paper.id}?mode=sit`,
+					durationMinutes: sitting.availability.durationMinutes,
+					totalMarks: sitting.availability.totalMarks,
+					questionCount: sitting.availability.inventoryQuestionCount
+				}
+			: null,
 		user: locals.user
 	};
 };

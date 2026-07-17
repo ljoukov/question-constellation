@@ -49,6 +49,27 @@ describe('supportsLearnerPracticeInput', () => {
 		).toBe(false);
 	});
 
+	it('allows a reviewed source canvas when it also has real written-answer fields', () => {
+		expect(
+			supportsLearnerPracticeInput({
+				answerFormat: 'asset-canvas',
+				prompt: 'Draw a tangent on Figure 12, show your working and calculate the rate.',
+				responseKind: 'asset-canvas',
+				responseHasWrittenFields: true,
+				hasReferencedSourceMaterial: true
+			})
+		).toBe(true);
+		expect(
+			supportsLearnerPracticeInput({
+				answerFormat: 'asset-canvas',
+				prompt: 'Sketch a line on Figure 13.',
+				responseKind: 'asset-canvas',
+				responseHasWrittenFields: false,
+				hasReferencedSourceMaterial: true
+			})
+		).toBe(false);
+	});
+
 	it('fails closed for inconsistent stored and reviewed interaction types', () => {
 		expect(
 			supportsLearnerPracticeInput({

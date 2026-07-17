@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { RECALL_GENERATION_OUTPUT_SCHEMA } from '../../../scripts/lib/recall-card-bundle.mjs';
 import {
 	RECALL_CARD_GENERATION_SYSTEM_PROMPT,
 	RECALL_FULL_REVIEW_SYSTEM_PROMPT,
@@ -47,7 +48,18 @@ describe('recall card generation prompt', () => {
 			'sourceExcerpt must be one exact contiguous quote of 12–1400 characters'
 		);
 		expect(prompt).toContain('each choice text 180; feedback 220; misconception 160');
-		expect(prompt).toContain('recall-card-bundle-v2 / recall-card-compiler-v9');
+		expect(prompt).toContain('recall-card-bundle-v2 / recall-card-compiler-v10');
+		expect(prompt).toContain('exactly three or four unique choices');
+		expect(prompt).toContain(
+			'Use four choices only when there are three genuinely distinct, plausible misconceptions'
+		);
+		expect(prompt).toContain('never add a contrived filler distractor just to reach four');
+		expect(RECALL_GENERATION_OUTPUT_SCHEMA.properties.cards.items.properties.choices).toMatchObject(
+			{
+				minItems: 3,
+				maxItems: 4
+			}
+		);
 		expect(prompt).toContain('<official_curriculum>');
 		expect(prompt).toContain('The heart pumps blood around the body.');
 		expect(prompt).toContain('Generation mode: additive only');

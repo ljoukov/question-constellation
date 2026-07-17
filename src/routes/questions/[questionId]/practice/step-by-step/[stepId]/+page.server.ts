@@ -1,4 +1,4 @@
-import { getPracticePageData } from '$lib/server/questionData';
+import { getPracticePageData, getQuestionChainPageData } from '$lib/server/questionData';
 import { getQuestionDraft } from '$lib/server/questionDrafts';
 import { withEnglishPracticeContext } from '$lib/englishPracticeNavigation';
 import { error, redirect } from '@sveltejs/kit';
@@ -9,6 +9,10 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	try {
 		practiceData = await getPracticePageData(params.questionId);
 	} catch {
+		const questionData = await getQuestionChainPageData(params.questionId).catch(() => null);
+		if (questionData && !questionData.question.practiceAvailable) {
+			throw redirect(303, `/questions/${encodeURIComponent(params.questionId)}`);
+		}
 		throw error(404, 'Practice question not found.');
 	}
 

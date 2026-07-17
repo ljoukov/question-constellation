@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "final-study-card-baseline-v1",
+  "status": "locked",
+  "definition": "Accepted artifacts that existed before the hash-locked 438-card completion queue and 171-card English Literature deepening queue. Candidate, rejected, interrupted and quarantined outputs are excluded.",
+  "counts": {
+    "releases": 24,
+    "cards": 488
+  },
+  "releases": [
+    { "releaseId": "aqa-biology-8461-biology-higher-only-descendants-01-c09cc8b56a-v1-rollout-recovered-v1", "artifactHash": "ebdb9a94dbca1395ee4f569222bc6d49a9a1492a44244a2f5f7a71c0e45dae48", "cards": 5 },
+    { "releaseId": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1-rollout-recovered-v1", "artifactHash": "90fb530d2fd42faf442b8af826cd10cac51a7505ee21f1ea5ded6f2bf2786fb0", "cards": 7 },
+    { "releaseId": "aqa-biology-8461-standard-v1-rollout-recovered-v1", "artifactHash": "2ad49f74c04907c9fe942451fd57b46138e526cc55dd31649b4edf24db3faa68", "cards": 26 },
+    { "releaseId": "aqa-chemistry-8462-chemistry-shared-descendants-06-1e5bffa877-v1-rollout-recovered-v1", "artifactHash": "cb02655fcbc7c8bd78f242b5b265557ae07552fb993beddc919f9c4b87c0bffc", "cards": 2 },
+    { "releaseId": "aqa-chemistry-8462-standard-v1-rollout-recovered-v1", "artifactHash": "f06a69affa54f29e3f98bf1af300186394dfdfa9a6b473e2e65ca6bba4116218", "cards": 37 },
+    { "releaseId": "aqa-combined-biology-8464-standard-v1-rollout-recovered-v1", "artifactHash": "cfd93c38304e90a5c04b5e641fc978674b0f0133e1e92fee6923ae1ef695df23", "cards": 25 },
+    { "releaseId": "aqa-combined-chemistry-8464-standard-v1-rollout-recovered-v1", "artifactHash": "aeebc078d860b616777a518449d885092c0ecee12f64e5878015e8ba65bbf2da", "cards": 35 },
+    { "releaseId": "aqa-combined-physics-8464-standard-v1-rollout-recovered-v1", "artifactHash": "23a7e78d59413c50e84f01b71a964d66145b1136b19e55d070c57c1fac928d04", "cards": 26 },
+    { "releaseId": "aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1-rollout-recovered-v1", "artifactHash": "1dffd173fdbeec0015fcd11756d4b073fa7745761d56804f3690f90e5d070321", "cards": 2 },
+    { "releaseId": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1-rollout-recovered-v1", "artifactHash": "a54e1a8e3f38a0a8df37d22d6c070bc557413b8cfee11ffb8677d5788540d871", "cards": 1 },
+    { "releaseId": "aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1-rollout-recovered-v1", "artifactHash": "272d8c08cdcc53ebd909343285358d7a3b9d1482e16c500cfac3ebad755aa993", "cards": 13 },
+    { "releaseId": "aqa-combined-science-trilogy-8464-chemistry-shared-descendants-04-4923546ec4-v1-rollout-recovered-v1", "artifactHash": "4d410a029e12f9d2ca741d1d8450679f416034ef9318f8701d573f5ff04dc45f", "cards": 7 },
+    { "releaseId": "aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1-rollout-recovered-v1", "artifactHash": "99ff8a312dfadfa40b6edb8c57ed9244dd6347f53117a31cd04cfe751f81d9a1", "cards": 3 },
+    {
+      "releaseId": "aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1",
+      "artifactHash": "594b25a0d329e6f2f7ede7bab801b705d1a5d9467f2ba7797799a49069754e16",
+      "cards": 12,
+      "acceptanceEvidencePath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1/recovery-evidence.json",
+      "acceptanceEvidenceHash": "1d0b89d7cab001dbec8f13ef6531066d89105625ef2d1265a2059ae8d0a0ef2b"
+    },
+    { "releaseId": "aqa-computer-science-2027-standard-v1", "artifactHash": "56ff1f5a5957820626f25c4e2d9f2589da4dfd606d41c9fbc6e44274eedcdada", "cards": 31 },
+    { "releaseId": "aqa-geography-8035-geography-all-descendants-01-b5a366b391-v1-rollout-recovered-v1", "artifactHash": "eba57884ac0d59ddde23836eeeb80041630e1e190470d3e546dc67ae121ead3a", "cards": 8 },
+    { "releaseId": "aqa-geography-8035-standard-v1", "artifactHash": "4f0aa52713f14633753de06296d9983b1ad660de1df8a9255998c57e069963b6", "cards": 35 },
+    { "releaseId": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1-rollout-recovered-v1", "artifactHash": "6a51ee5964b9437030870886db52684116d158d5cd6ae8fea701357ecb3b3c42", "cards": 5 },
+    { "releaseId": "aqa-history-8145-standard-v1-rollout-recovered-v1", "artifactHash": "e24a124a056942a0791b22bf13197fd11350b430dc3242fa02d847760fbc5db5", "cards": 73 },
+    { "releaseId": "aqa-physics-8463-physics-higher-only-descendants-01-4ad9f853fc-v1-rollout-recovered-v1", "artifactHash": "9cfd8fe1111533dfc70393aa47b534593dbc19f11de4097bf9bf7a4ed6876be4", "cards": 13 },
+    { "releaseId": "aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1-rollout-recovered-v1", "artifactHash": "06f144955f700fadf6124a36c914e68837ab5a14aa6ec66ede3d050cd9d6a3b3", "cards": 16 },
+    { "releaseId": "aqa-physics-8463-standard-v1-rollout-recovered-v1", "artifactHash": "4c33d24475dd773471ec537f7da5672d0a4594262c895808c06d9a2b726fb7f4", "cards": 31 },
+    { "releaseId": "ocr-english-language-j351-standard-v1-rollout-recovered-v1", "artifactHash": "f469c3e2286c242bcc1535312eea79762e3d7cee7002dde4e34ad8493c2a15fc", "cards": 8 },
+    { "releaseId": "ocr-j352-literature-standard-v1", "artifactHash": "f315f85ca91f288668a3ff54404bc4d52646cd9a7afb647b95df9c08e0fbdb84", "cards": 67 }
+  ]
+}

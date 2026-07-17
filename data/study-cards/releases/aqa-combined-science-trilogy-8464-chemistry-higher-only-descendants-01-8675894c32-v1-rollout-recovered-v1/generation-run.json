@@ -1,0 +1,41 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalBatchId": "aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1",
+    "recoveredReleaseId": "aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "subject": "Chemistry",
+    "mode": "higher-only",
+    "offeringIds": [
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher"
+    ],
+    "requiredComponentIds": [
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-1",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-2",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-3",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-4",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-1-4",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-2-5",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-3-5",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5-1-3",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-4",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-5",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-6",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-7",
+      "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-1-4"
+    ],
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 13,
+    "accepted": 13,
+    "rejectedByInitialReviewer": 1,
+    "reviewerRepairAttempts": 1,
+    "readyCoverageRows": 5,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "272d8c08cdcc53ebd909343285358d7a3b9d1482e16c500cfac3ebad755aa993",
+  "modelCallsDuringRecovery": 0
+}

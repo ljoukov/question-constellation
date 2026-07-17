@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "study-card-base-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered_under_new_identity",
+  "historicalReleaseId": "aqa-history-8145-standard-v1",
+  "recoveredReleaseId": "aqa-history-8145-standard-v1-rollout-recovered-v1",
+  "identityPolicy": "The explicit recovery id preserves reviewed content and provenance without claiming byte identity with the absent historical artifact wrapper.",
+  "generator": {
+    "runId": "019f6bcf-37cf-78e2-9ea0-e534dac0309c",
+    "rolloutFileName": "rollout-2026-07-16T09-42-50-019f6bcf-37cf-78e2-9ea0-e534dac0309c.jsonl",
+    "rolloutHash": "1fb3f1eb3d6a12e43431e2f4f24130bd3f59bd6f5f581427631d6b6c37bfb80e",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1/generation",
+    "startedAt": "2026-07-16T16:42:50.388Z",
+    "completedAt": "2026-07-16T16:56:05.535Z",
+    "promptHash": "3a9413f3f5da88a90fe74fe202333f23dbda1b1dffcdcb9430e0fb8ff3c3d8ff",
+    "modelOutputHash": "d9779945dc516c05e884b3722e29c7e7a66bb6dc873a1353ce1b334bd116f1fe"
+  },
+  "reviewer": {
+    "runId": "019f6be5-ab67-76c2-9aa5-2e869bcfb19d",
+    "rolloutFileName": "rollout-2026-07-16T10-07-21-019f6be5-ab67-76c2-9aa5-2e869bcfb19d.jsonl",
+    "rolloutHash": "0a4f5abfa09fccf0a3a04b5b1ed52e8da905f92aa22f57bc2ea3ffc061c12ba2",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1/review",
+    "startedAt": "2026-07-16T17:07:21.721Z",
+    "completedAt": "2026-07-16T17:16:05.526Z",
+    "promptHash": "7a108894ea1c1dd35c0bde7b83f6156a6f6ae1baf9712639a1355010fddef5c6",
+    "modelOutputHash": "c61f8bd5fa5248805eee131272ea723bf15fb7fcca20a68b60af1f668b8e239e"
+  },
+  "deterministicRepair": {
+    "runId": "019f6be5-1bab-7860-8401-a10f480e917c",
+    "rolloutFileName": "rollout-2026-07-16T10-06-44-019f6be5-1bab-7860-8401-a10f480e917c.jsonl",
+    "rolloutHash": "0dd6ca2831921686040c97b2db3432376b893ba82297c328f667107934a0149e",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1/repair-generation",
+    "startedAt": "2026-07-16T17:06:44.937Z",
+    "completedAt": "2026-07-16T17:07:21.018Z",
+    "promptHash": "9bc4a710964f061f6c0a3275268ef83adf715a5ae3cbcbb940238d2b522fbfb4",
+    "modelOutputHash": "e7935d7da544199fe46af4a291b55053ef41c92395c9030b96c30a3448739d7a",
+    "acceptedCardIds": [
+      "aqa-8145-321ad-sacco-vanzetti-red-scare"
+    ],
+    "unacceptedCardIds": []
+  },
+  "reviewedRepairAttempts": [
+    {
+      "attempt": 1,
+      "accepted": false,
+      "cardId": "aqa-8145-321ab-stresemann-era-dates",
+      "generator": {
+        "runId": "019f6bf3-dad1-7060-839e-2d726e78cc66",
+        "rolloutFileName": "rollout-2026-07-16T10-22-51-019f6bf3-dad1-7060-839e-2d726e78cc66.jsonl",
+        "rolloutHash": "fb93c9a3826aab32d109690e3de90cd8572056f251b970663d280399f4fa724e",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1-reviewed-card-repair/reviewed-repair-generation",
+        "startedAt": "2026-07-16T17:22:51.373Z",
+        "completedAt": "2026-07-16T17:23:20.216Z",
+        "promptHash": "519538793cf02c1098f23c3358109177a0fa130e3c38ff5ebb532d3bf1cad11e",
+        "modelOutputHash": "eacdd75b8058b16170d5aae7a49c3e22cd7587a359befb042cf3a0f1e84ed62a"
+      },
+      "reviewer": {
+        "runId": "019f6bf4-4e8a-7d63-bd42-ba33789591ff",
+        "rolloutFileName": "rollout-2026-07-16T10-23-21-019f6bf4-4e8a-7d63-bd42-ba33789591ff.jsonl",
+        "rolloutHash": "6a84f69e6366ec2bdef87327189b45125e09eec2480b8e6101c3c5affdce7f98",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1-reviewed-card-repair/reviewed-repair-review",
+        "startedAt": "2026-07-16T17:23:21.017Z",
+        "completedAt": "2026-07-16T17:23:33.989Z",
+        "promptHash": "8163d323f752b96ab82487cb55ac3c762e938d6d45dba1276ff75890f8f7fe34",
+        "modelOutputHash": "641ed4e66a6aaa1ad1c1719172ae3a71a886967926c840d9702a8daf973727b4"
+      }
+    },
+    {
+      "attempt": 2,
+      "accepted": false,
+      "cardId": "aqa-8145-321ab-stresemann-era-dates",
+      "generator": {
+        "runId": "019f6bf8-0e11-7072-9045-5bbb7a4ebfff",
+        "rolloutFileName": "rollout-2026-07-16T10-27-26-019f6bf8-0e11-7072-9045-5bbb7a4ebfff.jsonl",
+        "rolloutHash": "14881936410ab4de98d2801d2d95ab700ab1c8e085528a4b216275c174961f11",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1-reviewed-card-repair/reviewed-repair-generation",
+        "startedAt": "2026-07-16T17:27:26.605Z",
+        "completedAt": "2026-07-16T17:27:49.827Z",
+        "promptHash": "44e7643a1ba2a4df8a3b8ed3428ca0cb4ebdb17af0e394171bd3011fb7162887",
+        "modelOutputHash": "43d3e8b7c29d5abaa4b11b7d72a57eb38eacbbdc6fc47e79f3fef40aa6cbf578"
+      },
+      "reviewer": {
+        "runId": "019f6bf8-6b42-7523-a89a-7a1b8ef7be66",
+        "rolloutFileName": "rollout-2026-07-16T10-27-50-019f6bf8-6b42-7523-a89a-7a1b8ef7be66.jsonl",
+        "rolloutHash": "fd382c0269ce8154c758910b94922e1941cde08973a816dc645e4e21205f22ff",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1-reviewed-card-repair/reviewed-repair-review",
+        "startedAt": "2026-07-16T17:27:50.480Z",
+        "completedAt": "2026-07-16T17:28:06.531Z",
+        "promptHash": "1b50a99845550205a97dae28843f5fc298f1aa27c383a3c0ba9969e81ce7f417",
+        "modelOutputHash": "e340cff758ac0c2ce1f601b5e7dcbde730d7e08fdf36b4ed188c4815b15dc06b"
+      }
+    },
+    {
+      "attempt": 3,
+      "accepted": true,
+      "cardId": "aqa-8145-321ab-stresemann-era-dates",
+      "generator": {
+        "runId": "019f6bfb-0a55-7653-97dc-36cc4d3cd8f2",
+        "rolloutFileName": "rollout-2026-07-16T10-30-42-019f6bfb-0a55-7653-97dc-36cc4d3cd8f2.jsonl",
+        "rolloutHash": "591f27e80ce6b216ab09c4a5252fae3e6e24b64056adf120463d3813cc0a9c20",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1-reviewed-card-repair/reviewed-repair-generation",
+        "startedAt": "2026-07-16T17:30:42.262Z",
+        "completedAt": "2026-07-16T17:30:55.095Z",
+        "promptHash": "c4824403797a21f88a91c518de8fc5abd2b2a9fd0bee43596899e3a0a4c1f4ea",
+        "modelOutputHash": "aec4e379290c62f8954410c23e5e7f3523d8531cdd9b4f2a0c64cdc93149f14a"
+      },
+      "reviewer": {
+        "runId": "019f6bfb-3f0d-7a81-a60d-3457c30fccd3",
+        "rolloutFileName": "rollout-2026-07-16T10-30-55-019f6bfb-3f0d-7a81-a60d-3457c30fccd3.jsonl",
+        "rolloutHash": "12692557e6f578ef378f169ce612c7d59cd0c02ae9a0c6127996c33dc702fcf6",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-standard-v1-reviewed-card-repair/reviewed-repair-review",
+        "startedAt": "2026-07-16T17:30:55.766Z",
+        "completedAt": "2026-07-16T17:31:04.623Z",
+        "promptHash": "328fb58a681e09cc826c9d539d378ec0256e101112c38efbc699e212c3bb5c35",
+        "modelOutputHash": "d88cfd4b38e78130d53b4ea13f9309ef0bd004121f355ed3b23f5d36d3d08fda"
+      }
+    }
+  ],
+  "counts": {
+    "generated": 80,
+    "reviewCandidates": 80,
+    "accepted": 73,
+    "distinctTargetComponents": 50,
+    "plannerEligibleTargetComponents": 50,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 16,
+    "readyCoverageRows": 16,
+    "withheldCoverageRows": 0,
+    "sessions": 9
+  },
+  "nonPlannerEligibleAcceptedComponentIds": [],
+  "offeringCoverage": [
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "ready": 16,
+      "withheld": 0,
+      "coverageRows": 16,
+      "cardCount": 73
+    }
+  ],
+  "modelCallsDuringRecovery": 0,
+  "artifactHash": "e24a124a056942a0791b22bf13197fd11350b430dc3242fa02d847760fbc5db5"
+}

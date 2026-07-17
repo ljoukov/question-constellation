@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1",
+  "recoveredReleaseId": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "generator": {
+    "runId": "019f6c3d-681a-76d0-8110-4315f4caf305",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-43-11-019f6c3d-681a-76d0-8110-4315f4caf305.jsonl",
+    "jsonlHash": "767de3914e34600465d23f988f3f9e3b50e200b6c99ac8696c7ea64d63f41a65",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1/generation",
+    "startedAt": "2026-07-16T18:43:11.641Z",
+    "completedAt": "2026-07-16T18:47:40.693Z",
+    "modelOutputHash": "ccc9fa4baf2055b114c7eb26c864280a264596076bc1cb27e2ce6c6df9b9723d"
+  },
+  "reviewer": {
+    "runId": "019f6c41-85ef-7183-aa99-788824bc86d9",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-47-41-019f6c41-85ef-7183-aa99-788824bc86d9.jsonl",
+    "jsonlHash": "4909d3dd1608e626d0da1de51cf59a4df83b0b4e4a71a94aeb8a147752142277",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1/review",
+    "startedAt": "2026-07-16T18:47:41.497Z",
+    "completedAt": "2026-07-16T18:48:12.017Z",
+    "modelOutputHash": "4bd18f226fa63056fd80d39b8eca4ae44ba10f9dae743cbb1b652b9596f3cd12"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "90fb530d2fd42faf442b8af826cd10cac51a7505ee21f1ea5ded6f2bf2786fb0"
+}

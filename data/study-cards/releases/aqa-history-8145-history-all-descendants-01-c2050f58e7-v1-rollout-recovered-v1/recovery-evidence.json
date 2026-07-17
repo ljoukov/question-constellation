@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1",
+  "recoveredReleaseId": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "generator": {
+    "runId": "019f6c39-8150-7552-8da1-765f5fe1f2c4",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-38-55-019f6c39-8150-7552-8da1-765f5fe1f2c4.jsonl",
+    "jsonlHash": "d28b310301493ccef2bf5d6fda740144fdb5c18cf07c6059fb8316ccdbfd6d1b",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-history-all-descendants-01-c2050f58e7-v1/generation",
+    "startedAt": "2026-07-16T18:38:55.962Z",
+    "completedAt": "2026-07-16T18:43:43.992Z",
+    "modelOutputHash": "ee18d8a5a4f09ff7a2d2ef72cf2d335d043895c4a3b0973124a3c65444ae119d"
+  },
+  "reviewer": {
+    "runId": "019f6c3d-e91d-7703-93a9-6fa32a490f32",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-43-44-019f6c3d-e91d-7703-93a9-6fa32a490f32.jsonl",
+    "jsonlHash": "ba03a7eb45caa128871a3fe78fc0dd0c421959ec96f4b50f56b7c2af1286ffcc",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-history-8145-history-all-descendants-01-c2050f58e7-v1/review",
+    "startedAt": "2026-07-16T18:43:44.720Z",
+    "completedAt": "2026-07-16T18:44:45.877Z",
+    "modelOutputHash": "d3a2b216ab9f7d4973c2078d6eb93833fb329246a5f1b8d97534a4278c26e705"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "6a51ee5964b9437030870886db52684116d158d5cd6ae8fea701357ecb3b3c42"
+}

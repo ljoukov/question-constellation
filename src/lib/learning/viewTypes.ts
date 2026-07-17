@@ -13,7 +13,7 @@ export type CurriculumScopeView = {
 
 export type LearningActionView = {
 	id: string;
-	kind: 'scope' | 'recall' | 'close_gap' | 'apply_chain' | 'subject';
+	kind: 'scope' | 'resume' | 'recall' | 'close_gap' | 'apply_chain' | 'subject';
 	eyebrow: string;
 	title: string;
 	detail: string;
@@ -43,10 +43,10 @@ export type SubjectProgressView = {
 	dueCount: number;
 	examAnswerCount: number;
 	evidenceLabel: string;
-	gradeEstimate: {
+	checkedAnswerPerformance: {
 		label: string;
 		detail: string;
-		range: string | null;
+		value: string | null;
 	};
 };
 

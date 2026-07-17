@@ -1,0 +1,108 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8463-8ecaff2251-aqa-8463-4-3-3-3-work-on-gas-energy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately tests the causal link between work done, internal energy and possible temperature increase."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-697f402e56-aqa-8463-4-5-5-1-2-liquid-pressure-height-density",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both specified factors affecting liquid pressure with distinct misconceptions."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-73c844d589-aqa-8463-4-5-7-conservation-of-momentum",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes conservation of total momentum from unchanged individual momentum or zero final momentum."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-450adcac33-aqa-8463-4-6-1-4-human-hearing-range",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Directly tests the specified normal human hearing range using plausible boundary errors."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-d95a5f1a9c-aqa-8463-4-6-1-5-p-and-s-wave-properties",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Efficiently compares both wave type and liquid transmission for P-waves and S-waves."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-e04b8988d4-aqa-8463-4-7-2-2-fleming-left-hand-rule-quantities",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the three quantities represented by Fleming’s left-hand rule and diagnoses common substitutions."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-e4159aff46-aqa-8463-4-7-2-3-current-coil-rotation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the two necessary conditions behind the rotational effect in an electric motor."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-ef4d3146a1-aqa-8463-4-7-2-4-loudspeaker-energy-conversion",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes conversion direction from the named motor-effect mechanism."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-82577ca9db-aqa-8463-4-7-3-induced-current-opposition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests that the induced magnetic field opposes either form of original change specified by AQA."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-f31279f792-aqa-8463-4-7-3-1-generator-effect-conditions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates the conditions for inducing potential difference from the complete-circuit condition for current."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-282c64b936-aqa-8463-4-7-3-2-alternator-dynamo-output",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly tests the specified alternator–dynamo distinction with plausible output confusions."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-a8138a28f3-aqa-8463-4-7-3-3-microphone-conversion",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes microphone conversion direction and generator-effect mechanism from loudspeaker misconceptions."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-0e8a5cc37d-aqa-8463-4-7-3-4-basic-transformer-structure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both the basic transformer structure and the specified reason for using an iron core."
+      ]
+    }
+  ]
+}

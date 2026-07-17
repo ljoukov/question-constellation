@@ -1,0 +1,65 @@
+{
+	"schemaVersion": "recovered-paper-sitting-approval-manifest-v1",
+	"cohortId": "current-model-representative-20-july-2026",
+	"scope": "Complete AQA June 2024 Higher science papers whose current-model temporary work directories were removed after successful import.",
+	"model": "gpt-5.6-sol",
+	"thinkingLevel": "max",
+	"papers": [
+		{
+			"sourceDocumentId": "aqa-8464b2h-qp-jun24",
+			"componentCode": "8464B2H",
+			"pastPaperEntryId": "aqa-combined-biology-higher-2024-june-paper-2-biology",
+			"durationMinutes": 75,
+			"expectedQuestionCount": 34,
+			"expectedMarkTotal": 70
+		},
+		{
+			"sourceDocumentId": "aqa-8464c1h-qp-jun24",
+			"componentCode": "8464C1H",
+			"pastPaperEntryId": "aqa-combined-chemistry-higher-2024-june-paper-1-chemistry",
+			"durationMinutes": 75,
+			"expectedQuestionCount": 32,
+			"expectedMarkTotal": 70
+		},
+		{
+			"sourceDocumentId": "aqa-84611h-qp-jun24",
+			"componentCode": "84611H",
+			"pastPaperEntryId": "aqa-biology-higher-2024-june-paper-1",
+			"durationMinutes": 105,
+			"expectedQuestionCount": 48,
+			"expectedMarkTotal": 100
+		},
+		{
+			"sourceDocumentId": "aqa-84612h-qp-jun24",
+			"componentCode": "84612H",
+			"pastPaperEntryId": "aqa-biology-higher-2024-june-paper-2",
+			"durationMinutes": 105,
+			"expectedQuestionCount": 43,
+			"expectedMarkTotal": 100
+		},
+		{
+			"sourceDocumentId": "aqa-84621h-qp-jun24",
+			"componentCode": "84621H",
+			"pastPaperEntryId": "aqa-chemistry-higher-2024-june-paper-1",
+			"durationMinutes": 105,
+			"expectedQuestionCount": 44,
+			"expectedMarkTotal": 100
+		},
+		{
+			"sourceDocumentId": "aqa-84622h-qp-jun24",
+			"componentCode": "84622H",
+			"pastPaperEntryId": "aqa-chemistry-higher-2024-june-paper-2",
+			"durationMinutes": 105,
+			"expectedQuestionCount": 47,
+			"expectedMarkTotal": 100
+		},
+		{
+			"sourceDocumentId": "aqa-84632h-qp-jun24",
+			"componentCode": "84632H",
+			"pastPaperEntryId": "aqa-physics-higher-2024-june-paper-2",
+			"durationMinutes": 105,
+			"expectedQuestionCount": 43,
+			"expectedMarkTotal": 100
+		}
+	]
+}

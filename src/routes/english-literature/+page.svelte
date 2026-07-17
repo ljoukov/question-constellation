@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import QuestionBankQuestionCard from '$lib/components/QuestionBankQuestionCard.svelte';
 	import type { OcrLiteratureArea } from '$lib/englishLiteratureHub';
-	import {
-		ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR,
-		profileAnchorHref
-	} from '$lib/profileNavigation';
-	import { BookOpenCheck } from '@lucide/svelte';
+	import { ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR } from '$lib/profileNavigation';
+	import { recallSessionHref } from '$lib/recall/routes';
+	import { BookOpenCheck, ChevronRight } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	const initialVisibleCount = 4;
 	let visibleCounts = $state<Record<OcrLiteratureArea, number>>({
@@ -21,10 +21,14 @@
 		shakespeare: initialVisibleCount
 	});
 
-	const profilePath = resolve('/profile');
-	const courseTextsProfileHref = profileAnchorHref(
-		profilePath,
-		ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR
+	const courseTextsProfileHref = resolve(`/profile#${ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR}`);
+	const literatureCardsHref = resolveInternalPath(
+		recallSessionHref({
+			subject: 'English Literature',
+			activity: 'flashcards',
+			size: 10,
+			returnTo: '/english-literature'
+		})
 	);
 
 	function questionHref(question: (typeof data.hub.sections)[number]['questions'][number]) {
@@ -90,16 +94,32 @@
 			</p>
 
 			<div class="qc-topic-card-meta" aria-label="Course question count">
-				<span>{data.hub.questionCount} questions</span>
+				<span>{data.hub.availableQuestionCount} ready to practise</span>
 				<span>Paper 1 and Paper 2</span>
 			</div>
+
+			{#if data.user}
+				<a
+					class="qc-dashboard-profile-link"
+					href={literatureCardsHref}
+					data-analytics-label="English Literature plot and quotation cards"
+				>
+					<span>Plot and quotations</span>
+					<strong>Review study cards</strong>
+					<ChevronRight size={18} aria-hidden="true" />
+				</a>
+			{/if}
 
 			<nav class="qc-real-chain-list" aria-label="Jump to your course section">
 				{#each data.hub.sections as section (section.id)}
 					<a href={`#${section.id}`}>
 						<span>{section.paperNumber}</span>
 						<span>{section.selection ?? section.category}</span>
-						<small>{section.category} · {section.questions.length} questions</small>
+						<small
+							>{section.category} · {section.questions.filter(
+								(question) => question.practiceAvailable
+							).length} ready</small
+						>
 					</a>
 				{/each}
 			</nav>
@@ -125,7 +145,10 @@
 							<p>{section.taskSummary}</p>
 							<div class="qc-topic-card-meta" aria-label={`${section.category} metadata`}>
 								<span>{section.markShape}</span>
-								<span>{section.questions.length} questions</span>
+								<span
+									>{section.questions.filter((question) => question.practiceAvailable).length}
+									ready · {section.questions.length} imported</span
+								>
 							</div>
 						</div>
 					</header>
@@ -143,6 +166,7 @@
 								title={promptHeading(question)}
 								detail={promptDetail(question)}
 								tag={metaLine([question.questionType, question.formatNote])}
+								unavailableReason={question.practiceUnavailableReason}
 							/>
 						{/each}
 					</div>

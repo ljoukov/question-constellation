@@ -3,6 +3,7 @@ type LearnerPracticeInput = {
 	prompt: string;
 	context?: string | null;
 	responseKind?: string | null;
+	responseHasWrittenFields?: boolean;
 	hasReferencedSourceMaterial?: boolean;
 };
 
@@ -75,11 +76,14 @@ export function supportsLearnerPracticeInput({
 	prompt,
 	context,
 	responseKind,
+	responseHasWrittenFields = false,
 	hasReferencedSourceMaterial = false
 }: LearnerPracticeInput) {
 	const format = normalized(answerFormat);
 	const interaction = normalized(responseKind);
-	if (promptRequiresDirectVisualInteraction(prompt)) return false;
+	const supportedMixedAssetCanvas =
+		interaction === 'asset canvas' && responseHasWrittenFields && hasReferencedSourceMaterial;
+	if (promptRequiresDirectVisualInteraction(prompt) && !supportedMixedAssetCanvas) return false;
 	if (promptRequiresEquationBlanks(prompt)) return interaction === 'equation blanks';
 	if (promptReferencesExamSource(prompt, context) && !hasReferencedSourceMaterial) return false;
 	if (promptHasUnresolvedDependency(prompt, context, hasReferencedSourceMaterial)) return false;
@@ -88,6 +92,9 @@ export function supportsLearnerPracticeInput({
 		return !format || format === 'choice';
 	}
 	if (format === 'choice') return false;
+	if (interaction === 'asset canvas' || format === 'asset canvas') {
+		return supportedMixedAssetCanvas;
+	}
 
 	const supportedTextKinds = new Set(['lines', 'labeled lines']);
 	if (format && !supportedTextKinds.has(format)) return false;

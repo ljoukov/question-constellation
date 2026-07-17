@@ -1,0 +1,571 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "Plot recall is not applicable to a thematic poetry cluster."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "partialCardCount": 4,
+          "reason": "Only edition-verified public-domain poems are included; full anthology quotation coverage remains withheld because the current cluster includes in-copyright poems."
+        },
+        "method": {
+          "status": "ready",
+          "expectedCardCount": 1
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-j352-specification-love-poetry",
+          "kind": "curriculum-specification",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+          "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+          "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+        },
+        {
+          "id": "ocr-love-poetry-current-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/654700-love-and-relationships.pdf",
+          "title": "OCR Love and Relationships Poetry Teacher Guide, updated cluster",
+          "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+          "verificationAnchors": [
+            "A Song",
+            "Bright Star"
+          ]
+        },
+        {
+          "id": "ocr-anthology-public-domain-love",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-anthology-pdf",
+          "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+          "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+          "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "love-poetry-deep-quotation-song-love",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "A Song by Helen Maria Williams, lines 7–8, anthology page 7",
+          "anchor": "I only meant his love.",
+          "requiredAnswer": "I only meant his love."
+        },
+        {
+          "id": "love-poetry-deep-quotation-song-storm",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "A Song by Helen Maria Williams, line 24, anthology page 7",
+          "anchor": "The storm is in my soul.",
+          "requiredAnswer": "The storm is in my soul."
+        },
+        {
+          "id": "love-poetry-deep-quotation-bright-star-breast",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "Bright Star by John Keats, line 10, anthology page 8",
+          "anchor": "Pillow’d upon my fair love’s ripening breast,",
+          "requiredAnswer": "Pillow’d upon my fair love’s ripening breast,"
+        },
+        {
+          "id": "love-poetry-deep-quotation-bright-star-unrest",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-love",
+          "locator": "Bright Star by John Keats, line 12, anthology page 8",
+          "anchor": "Awake for ever in a sweet unrest,",
+          "requiredAnswer": "Awake for ever in a sweet unrest,"
+        },
+        {
+          "id": "love-poetry-deep-method-quote-to-interpretation",
+          "mode": "method",
+          "sourceId": "ocr-j352-specification-love-poetry",
+          "locator": "J352 specification, physical PDF page 19; effective use of quotations",
+          "approvedExcerpt": "use textual references and quotations effectively to support views"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "Plot recall is not applicable to a thematic poetry cluster."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "partialCardCount": 4,
+          "reason": "Only edition-verified public-domain poems are included; full anthology quotation coverage remains withheld because the current cluster includes in-copyright poems."
+        },
+        "method": {
+          "status": "ready",
+          "expectedCardCount": 1
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-j352-specification-conflict-poetry",
+          "kind": "curriculum-specification",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+          "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+          "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+        },
+        {
+          "id": "ocr-conflict-poetry-current-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/654699-conflict.pdf",
+          "title": "OCR Conflict Poetry Teacher Guide, updated cluster",
+          "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+          "verificationAnchors": [
+            "Boat Stealing",
+            "The Destruction of Sennacherib"
+          ]
+        },
+        {
+          "id": "ocr-anthology-public-domain-conflict",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-anthology-pdf",
+          "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+          "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+          "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "conflict-poetry-deep-quotation-boat-cliff",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "Boat Stealing by William Wordsworth, lines 27–28, anthology page 20",
+          "anchor": "a huge cliff, As if with voluntary power instinct,",
+          "requiredAnswer": "a huge cliff, As if with voluntary power instinct,"
+        },
+        {
+          "id": "conflict-poetry-deep-quotation-boat-dreams",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "Boat Stealing by William Wordsworth, line 48, anthology page 20",
+          "anchor": "By day, and were the trouble of my dreams.",
+          "requiredAnswer": "By day, and were the trouble of my dreams."
+        },
+        {
+          "id": "conflict-poetry-deep-quotation-sennacherib-autumn",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "The Destruction of Sennacherib by Lord Byron, line 7, anthology page 21",
+          "anchor": "Like the leaves of the forest when Autumn hath blown,",
+          "requiredAnswer": "Like the leaves of the forest when Autumn hath blown,"
+        },
+        {
+          "id": "conflict-poetry-deep-quotation-sennacherib-snow",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-conflict",
+          "locator": "The Destruction of Sennacherib by Lord Byron, line 24, anthology page 21",
+          "anchor": "Hath melted like snow in the glance of the Lord!",
+          "requiredAnswer": "Hath melted like snow in the glance of the Lord!"
+        },
+        {
+          "id": "conflict-poetry-deep-method-quote-to-interpretation",
+          "mode": "method",
+          "sourceId": "ocr-j352-specification-conflict-poetry",
+          "locator": "J352 specification, physical PDF page 19; effective use of quotations",
+          "approvedExcerpt": "use textual references and quotations effectively to support views"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "Plot recall is not applicable to a thematic poetry cluster."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "partialCardCount": 4,
+          "reason": "Only edition-verified public-domain poems are included; full anthology quotation coverage remains withheld because the current cluster includes in-copyright poems."
+        },
+        "method": {
+          "status": "ready",
+          "expectedCardCount": 1
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-j352-specification-youth-poetry",
+          "kind": "curriculum-specification",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+          "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+          "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+        },
+        {
+          "id": "ocr-youth-poetry-current-teacher-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/654698-youth-and-age.pdf",
+          "title": "OCR Youth and Age Poetry Teacher Guide, updated cluster",
+          "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+          "verificationAnchors": [
+            "Holy Thursday",
+            "The Bluebell"
+          ]
+        },
+        {
+          "id": "ocr-anthology-public-domain-youth",
+          "kind": "primary-text",
+          "retrievalType": "public-domain-anthology-pdf",
+          "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+          "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+          "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "youth-poetry-deep-quotation-holy-flowers",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "Holy Thursday by William Blake, line 5, anthology page 32",
+          "anchor": "O what a multitude they seemed, these flowers of London town!",
+          "requiredAnswer": "O what a multitude they seemed, these flowers of London town!"
+        },
+        {
+          "id": "youth-poetry-deep-quotation-holy-hands",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "Holy Thursday by William Blake, line 8, anthology page 32",
+          "anchor": "Thousands of little boys and girls raising their innocent hands.",
+          "requiredAnswer": "Thousands of little boys and girls raising their innocent hands."
+        },
+        {
+          "id": "youth-poetry-deep-quotation-bluebell-spirit",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "The Bluebell by Anne Brontë, lines 1–2, anthology page 34",
+          "anchor": "A fine and subtle spirit dwells In every little flower,",
+          "requiredAnswer": "A fine and subtle spirit dwells In every little flower,"
+        },
+        {
+          "id": "youth-poetry-deep-quotation-bluebell-childhood",
+          "mode": "quotation",
+          "sourceId": "ocr-anthology-public-domain-youth",
+          "locator": "The Bluebell by Anne Brontë, line 34, anthology page 34",
+          "anchor": "My happy childhood’s hours",
+          "requiredAnswer": "My happy childhood’s hours"
+        },
+        {
+          "id": "youth-poetry-deep-method-quote-to-interpretation",
+          "mode": "method",
+          "sourceId": "ocr-j352-specification-youth-poetry",
+          "locator": "J352 specification, physical PDF page 19; effective use of quotations",
+          "approvedExcerpt": "use textual references and quotations effectively to support views"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    }
+  ]
+}

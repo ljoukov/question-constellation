@@ -1,0 +1,147 @@
+You are performing a narrowly scoped repair of cards rejected by an independent reviewer in an import-grade descendant-coverage release.
+
+Return exactly 1 replacement cards in the listed order. Preserve every id, conceptKey, topicComponentId and curriculumComponentId exactly. Address every reviewer issue using only the exact official component supplied for that card. Do not alter or discuss accepted cards.
+
+Every sourceExcerpt must be one exact contiguous substring of at most 400 characters from that component's text, without reflow or control bytes. Front, back, explanation, feedback and any memoryTip must be fully entailed. memoryTip may be null. Use exactly three or four unique choices with one exact correct answer; four is allowed only for three distinct plausible misconceptions. Keep a meaningful allowed subject emoji that does not reveal the answer. Output JSON only.
+
+Rejected cards and required identities:
+[
+  {
+    "requiredIdentity": {
+      "id": "forces-scalar-vector-difference",
+      "conceptKey": "forces-scalar-versus-vector",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1"
+    },
+    "reviewer": {
+      "cardId": "forces-scalar-vector-difference",
+      "accepted": false,
+      "issues": [
+        "Choice b, which says a scalar has direction only, is not a pedagogically plausible misconception: a physical quantity cannot be specified by direction without magnitude, and this is not a genuine reversal of the definitions. The four-choice card therefore lacks three sound distractors."
+      ],
+      "learnerValue": [
+        "The canonical scalar–vector distinction is accurate and important."
+      ]
+    },
+    "rejectedCandidate": {
+      "id": "forces-scalar-vector-difference",
+      "conceptKey": "forces-scalar-versus-vector",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1",
+      "kind": "comparison",
+      "visualCue": "🏎️",
+      "front": "How do scalar and vector quantities differ?",
+      "back": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Magnitude is sufficient for a scalar, whereas a vector also requires an associated direction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+          "isCorrect": true,
+          "feedback": "Correct: direction distinguishes the vector from the scalar.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A scalar has direction only; a vector has magnitude only.",
+          "isCorrect": false,
+          "feedback": "A scalar has magnitude only, while a vector has both magnitude and direction.",
+          "misconception": "forces-scalar-vector-properties-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both scalars and vectors have magnitude only.",
+          "isCorrect": false,
+          "feedback": "A vector also has an associated direction.",
+          "misconception": "forces-vectors-have-no-direction"
+        },
+        {
+          "key": "d",
+          "text": "Both scalars and vectors have magnitude and direction.",
+          "isCorrect": false,
+          "feedback": "A scalar has magnitude only and does not include an associated direction.",
+          "misconception": "forces-scalars-have-direction"
+        }
+      ],
+      "sourceExcerpt": "Scalar quantities have magnitude only.\nVector quantities have magnitude and an associated direction.",
+      "sourceLocator": "Official PDF pages 143-155; 6.5.1.1 Scalar and vector quantities"
+    }
+  }
+]
+
+Official source scope:
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "offerings": [
+    {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "profileSubject": "Physics",
+      "course": "Combined Science",
+      "tier": "Foundation",
+      "label": "AQA Combined Science: Trilogy · Physics · Foundation",
+      "selectableComponentIds": [
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+      ]
+    },
+    {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "profileSubject": "Physics",
+      "course": "Combined Science",
+      "tier": "Higher",
+      "label": "AQA Combined Science: Trilogy · Physics · Higher",
+      "selectableComponentIds": [
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "code": "6.5",
+      "title": "Forces",
+      "paper": "Physics Paper 2",
+      "pageStart": 143,
+      "pageEnd": 155,
+      "components": [
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1",
+          "code": "6.5.1.1",
+          "title": "Scalar and vector quantities",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 143-155; 6.5.1.1 Scalar and vector quantities",
+          "text": "Official PDF pages 143-155\nScalar and vector quantities\nContent Key opportunities for\nskills development\nScalar quantities have magnitude only.\nVector quantities have magnitude and an associated direction.\nA vector quantity may be represented by an arrow. The length of\nthe arrow represents the magnitude, and the direction of the arrow\nthe direction of the vector quantity.\n6.5.1.2 Contact and non-contact forces\nContent Key opportunities for\nskills development\nA force is a push or pull that acts on an object due to the interaction\nwith another object. All forces between objects are either:\n• contact forces – the objects are physically touching\n• non-contact forces – the objects are physically separated.\nExamples of contact forces include friction, air resistance, tension\nand normal contact force.\nExamples of non-contact forces are gravitational force, electrostatic\nforce and magnetic force.\nForce is a vector quantity.\nStudents should be able to describe the interaction between pairs\nof objects which produce a force on each object. The forces to be\nrepresented as vectors.\n6.5.1.3 Gravity\nContent Key opportunities for\nskills development\nWeight is the force acting on an object due to gravity. The force of\ngravity close to the Earth is due to the gravitational field around the\nEarth.\nThe weight of an object depends on the gravitational field strength\nat the point where the object is.\n144 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\nContent Key opportunities for\nskills development\nThe weight of an object can be calculated using the equation:\nweight = mass × gravitational field strength\nW = m g\nweight, W, in newtons, N\nmass, m, in kilograms, kg\ngravitational field strength, g, in newtons per kilogram, N/kg (In any\ncalculation the value of the gravitational field strength (g) will be\ngiven.)\nThe weight of an object may be considered to act at a single point\nreferred to as the object’s ‘centre of mass’.\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\nThe weight of an object and the mass of an object are directly\nproportional.\nWeight is measured using a calibrated spring-balance (a\nnewtonmeter).\nMS 3a\nStudents should recognise\nand be able to use the\nsymbol for proportionality, ∝\n6.5.1.4 Resultant forces\nContent Key opportunities for\nskills development\nA number of forces acting on an object may be replaced by a single\nforce that has the same effect as all the original forces acting\ntogether. This single force is called the resultant force.\nStudents should be able to calculate the resultant of two forces that\nact in a straight line.\n(HT only) Students should be able to:\n• describe examples of the forces acting on an isolated object\nor system\n• use free body diagrams to describe qualitatively examples\nwhere several forces lead to a resultant force on an object,\nincluding balanced forces when the resultant force is zero.\n(HT only) A single force can be resolved into two components\nacting at right angles to each other. The two component forces\ntogether have the same effect as the single force.\nWS 1.2\n(HT only) Students should be able to use vector diagrams to\nillustrate resolution of forces, equilibrium situations and determine\nthe resultant of two forces, to include both magnitude and direction\n(scale drawings only).\nMS 4a, 5a, b\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 145\n6.5.2 Work done and energy transfer\nContent Key opportunities for\nskills development\nWhen a force causes an object to move through a distance work is\ndone on the object. So a force does work on an object when the\nforce causes a displacement of the object.\nThe work done by a force on an object can be calculated using the\nequation:\nwork done = force × distance\nmoved along the line of action of the force\nW = F s\nwork done, W, in joules, J\nforce, F, in newtons, N\ndistance, s, in metres\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\nOne joule of work is done when a force of one newton causes a\ndisplacement of one metre.\n1 joule = 1 newton-metre\nStudents should be able to describe the energy transfer involved\nwhen work is done.\nWS 4.5\nStudents should be able to convert between newton-metres and\njoules.\nWork done against the frictional forces acting on an object causes a\nrise in the temperature of the object.\nMS 1c\nWS 4.5\n6.5.3 Forces and elasticity\nContent Key opportunities for\nskills development\nStudents should be able to:\n• give examples of the forces involved in stretching, bending or\ncompressing an object\n• explain why, to change the shape of an object (by stretching,\nbending or compressing), more than one force has to be\napplied – this is limited to stationary objects only\n• describe the difference between elastic deformation and\ninelastic deformation caused by stretching forces.\nThe extension of an elastic object, such as a spring, is directly\nproportional to the force applied, provided that the limit of\nproportionality is not exceeded.\n146 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\nContent Key opportunities for\nskills development\nf orce = spring constant × extension\nF = k e\nforce, F, in newtons, N\nspring constant, k, in newtons per metre, N/m\nextension, e, in metres, m\nMS 3b, c, 4a\nStudents should be able to\nrecall and apply this\nequation.\nThis relationship also applies to the compression of an elastic\nobject, where ‘e’ would be the compression of the object.\nA force that stretches (or compresses) a spring does work and\nelastic potential energy is stored in the spring. Provided the spring\nis not inelastically deformed, the work done on the spring and the\nelastic potential energy stored are equal.\nStudents should be able to:\n• describe the difference between a linear and non-linear\nrelationship between force and extension\n• calculate a spring constant in linear cases\nMS 3b, c, 4a\n• interpret data from an investigation of the relationship\nbetween force and extension\nWS 3.5\n• calculate work done in stretching (or compressing) a spring\n(up to the limit of proportionality) using the equation:\nelastic potential energy = 0.5 × spring constant × extension\n2\nEe = 1\n2\nk e2\nMS 3c\nStudents should be able to\napply this equation which is\ngiven on the Physics\nequation sheet.\nThis equation is also given\nin Changes in energy (page\n122).\nStudents should be able to calculate relevant values of stored\nenergy and energy transfers.\nMS 3c\nRequired practical activity 18: investigate the relationship between force and extension for a\nspring.\nAT skills covered by this practical activity: physics AT 1 and 2.\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 188).\n6.5.4 Forces and motion\n6.5.4.1 Describing motion along a line\nAQA GCSE Combined Science: Trilogy"
+        }
+      ]
+    }
+  ]
+}

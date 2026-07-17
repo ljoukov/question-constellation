@@ -1,0 +1,668 @@
+{
+  "schemaVersion": "study-card-model-lineage-v2",
+  "status": "passed",
+  "releaseId": "aqa-geography-8035-standard-v1",
+  "requiredModel": "gpt-5.6-sol",
+  "requiredThinkingLevel": "max",
+  "artifact": {
+    "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/accepted-study-cards.json",
+    "fileSha256": "c8dd55e2845b7cffa7bda1fd1f1d818c4b9da6cec6236d134ef7d6b85ac62e88",
+    "semanticSha256": "4f0aa52713f14633753de06296d9983b1ad660de1df8a9255998c57e069963b6",
+    "acceptedCardCount": 35,
+    "acceptedCardIdsSha256": "31322525301f660bfc529495263d85d55c7a13596846813de9ad8fa28ccc58e7",
+    "acceptedCardContent": [
+      {
+        "cardId": "aqa-8035-311-climate-change-tropical-storm-aspects",
+        "semanticSha256": "f06f9fce4bbc71c6c969c16060df46832bfe77ec2e9c1a7e0e67225b6cb5e465"
+      },
+      {
+        "cardId": "aqa-8035-311-mitigation-adaptation",
+        "semanticSha256": "91361459b8465a7529fd0d06cf49fe545217e2f8afbf5d339f9c62ab613378e7"
+      },
+      {
+        "cardId": "aqa-8035-311-tectonic-risk-reduction",
+        "semanticSha256": "e57d5bab721d72ec37bcddc26a8fd89db86915d8dd0fc5842ee658f6a7d91a9a"
+      },
+      {
+        "cardId": "aqa-8035-312-ecosystem-component-types",
+        "semanticSha256": "77f8d5029a334dd060bb1f008316e189611ca7c38eb979b44ab78fdbfcec2e49"
+      },
+      {
+        "cardId": "aqa-8035-312-rainforest-deforestation-causes",
+        "semanticSha256": "2fad087beabcac4a4fd2646fdb339a34b21e2e2ce9b985b982bbbd1f5b6d229a"
+      },
+      {
+        "cardId": "aqa-8035-312-rainforest-deforestation-impacts",
+        "semanticSha256": "31d136278c80e66dd99b3cf7ffd11d99e7c4e9e46e162d6151697957b906a9c5"
+      },
+      {
+        "cardId": "aqa-8035-312-sustainable-rainforest-management",
+        "semanticSha256": "17a17c80ada81289a2a7eb7b47f62122f334086f90195986422f298f1225cd71"
+      },
+      {
+        "cardId": "aqa-8035-313-coastal-management-categories",
+        "semanticSha256": "62644c1d86b119afb7bb1baf6b17c88b7d08d7a343d70ea8321c169ee0217724"
+      },
+      {
+        "cardId": "aqa-8035-313-coastal-process-groups",
+        "semanticSha256": "9f02f9831ccb0fecedcba277ded02784bd5589a6634cc45898e54157c5ada0fe"
+      },
+      {
+        "cardId": "aqa-8035-313-glacial-process-groups",
+        "semanticSha256": "ea36eeced6a7340ff18f30bbb751757b225422207d0ed479935884317a3c2d64"
+      },
+      {
+        "cardId": "aqa-8035-313-river-flood-risk-factors",
+        "semanticSha256": "a16a5be24fbb15446a5604a09e1810810f13d12abc0a93695151730f82622f00"
+      },
+      {
+        "cardId": "aqa-8035-321-urban-environmental-challenges",
+        "semanticSha256": "0fe6d1bc49d59371defdc01843f6f6cfb7f37bd9d8a712a66a95e6f0458b0765"
+      },
+      {
+        "cardId": "aqa-8035-321-urban-industry-stimulus",
+        "semanticSha256": "0adacfd34182946f5629b749ef9474022b977c1b34f961e443114f120efd4e71"
+      },
+      {
+        "cardId": "aqa-8035-321-urban-social-opportunities",
+        "semanticSha256": "240c28092979bc568a012ab820e3006f2c61b44d7b91ac2b9341e30864a2cb72"
+      },
+      {
+        "cardId": "aqa-8035-321-urbanisation-rate-factors",
+        "semanticSha256": "fb05837caf81726c7c52d7b570f8a4a1b54efdaa35c1f9606b63ef8e956f79d3"
+      },
+      {
+        "cardId": "aqa-8035-322-development-gap-strategies",
+        "semanticSha256": "48c37c873d4f913829dfc1c4e7588b6316eb77f6664e7e7f804795b82badd423"
+      },
+      {
+        "cardId": "aqa-8035-322-development-measures",
+        "semanticSha256": "d238616ae6312ba896cc9b1e979c2cf3121e4469ab6e9a2ecff37f281b0e4e9f"
+      },
+      {
+        "cardId": "aqa-8035-322-uneven-development-causes",
+        "semanticSha256": "5e96caf6d5dbf2baba8f71fb0cb725728d045a43bb368445901b0adb5a039c2c"
+      },
+      {
+        "cardId": "aqa-8035-322-uneven-development-consequences",
+        "semanticSha256": "4132d6e3cbe9eea005fd44b70af7ee3e2bd66357364796265c6164b75c96e394"
+      },
+      {
+        "cardId": "aqa-8035-323-energy-consumption-reasons",
+        "semanticSha256": "3476524d76c51d471d252be138d3177fe575face7c5ea80c4f37916bd2c7eccf"
+      },
+      {
+        "cardId": "aqa-8035-323-global-food-supply-factors",
+        "semanticSha256": "99ca3e57b6f1f5c36785004ee25c0013372d6dbf6a00f7a12a6fe45719bb4493"
+      },
+      {
+        "cardId": "aqa-8035-323-resources-development-wellbeing",
+        "semanticSha256": "04bd107cdc04b63e63b520b319b8472e463f31b0d36420d2790380301027f8de"
+      },
+      {
+        "cardId": "aqa-8035-323-water-supply-strategies",
+        "semanticSha256": "14252eabcbdda86d5b0d63d53534d9e871701e05bbe2b6ff1d37171291c021ce"
+      },
+      {
+        "cardId": "aqa-8035-331-issue-evaluation-decision-method",
+        "semanticSha256": "2b731690bdaaddde855035064f1940929e42db9f1552d3861e43321221b5d84d"
+      },
+      {
+        "cardId": "aqa-8035-331-resource-booklet-formats",
+        "semanticSha256": "6791a18e7c0fff018321ff5a5d812a7c85374bc054ca2e745abb35f919e9ee9a"
+      },
+      {
+        "cardId": "aqa-8035-331-secondary-sources",
+        "semanticSha256": "282524942da6b0d5ec99aeba7fd73dd410f463f928210dd9e1254012ddcb4a55"
+      },
+      {
+        "cardId": "aqa-8035-331-synoptic-issue-evaluation",
+        "semanticSha256": "9a4641eb72b0e5ff0edfc1120eb81f48964421c13428559795ec1336b04c9035"
+      },
+      {
+        "cardId": "aqa-8035-332-contrasting-environments-coverage",
+        "semanticSha256": "18e84363893e8534388175d364a3a6202c1d198bb607788f44352ada9ec76165"
+      },
+      {
+        "cardId": "aqa-8035-332-enquiry-evaluation-criteria",
+        "semanticSha256": "4190e2d5074cc62705010c166def647c974755e8b3b76f06aeb52e6b0a9e3879"
+      },
+      {
+        "cardId": "aqa-8035-332-fieldwork-data-analysis-actions",
+        "semanticSha256": "9ca85a3724c4a6f7510294e458cb13f1ebdc23bc4e8643dba940d2f33394716d"
+      },
+      {
+        "cardId": "aqa-8035-332-primary-data-requirement",
+        "semanticSha256": "5c7327b93a65cdbf55c5ad269afc102abfb5cd3f8d1dba22c7b13703ce732d54"
+      },
+      {
+        "cardId": "aqa-8035-34-bivariate-relationship-skills",
+        "semanticSha256": "14f57262c94ee3ef1d75993af428b0638b9820c8b466256843affd6ae23e1471"
+      },
+      {
+        "cardId": "aqa-8035-34-graph-chart-types",
+        "semanticSha256": "4d5f18a4c386806798220ad0cd31fcb9ffa0b3ee452ead4a37bb892482d0cf7e"
+      },
+      {
+        "cardId": "aqa-8035-34-os-scales-grid-references",
+        "semanticSha256": "1a387eae7baf3ca488d66bbeb6563245d4465a28b3fd7dd9914b2fe4e2371ba4"
+      },
+      {
+        "cardId": "aqa-8035-34-statistical-measures",
+        "semanticSha256": "a2113189a6921180d7058b53066ebb364eb9d3e821b38a6cc4e059a8d59ca6f2"
+      }
+    ],
+    "acceptedCardContentSha256": "fb3374f54a5b45b679a370867f8717a67cd3ec9747789770512fff8c8c2eda1e",
+    "sourceManifestHash": "ee507123e6b940d2d42ccaacee0293bf8c2b37db65d43417b45b23c16744556c"
+  },
+  "generationRun": {
+    "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/generation-run.json",
+    "sha256": "313118b6b22d78fc0fa1e9edb4c6aa777fee50dc7d489ba25bfec2055d1b726c"
+  },
+  "runs": [
+    {
+      "stage": "generation",
+      "role": "generator",
+      "status": "passed",
+      "runId": "019f6b90-ee9c-7383-aeba-84d0484f2b06",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T15:34:48.943Z",
+      "finishedAt": "2026-07-16T15:44:37.087Z",
+      "summary": {
+        "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/generation-codex-run-summary.json",
+        "sha256": "322ea1410e110e21eb038aa6c97c91fc0f8792db80dd5a94506216464754a2c7"
+      },
+      "eventStream": {
+        "sourceFileName": "generation-rollout-source.jsonl",
+        "sha256": "1ca42c80f4e66d74dc7a6a24cfa2dc1aa907d680b154e5b1051a6b374246814e",
+        "sanitizedEventCount": 46
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/generation-prompt.txt",
+        "sha256": "aecd4c9e785544aac5c84bfe38f13fc9fe5f637be0953e586271a42e044ceb36"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/generation-model-output.json",
+        "sha256": "e7f74159404685a71ebee6abf023eb68ec4a55ac198fb9dee92586fc61d092bc"
+      },
+      "generatedCardIds": [
+        "aqa-8035-311-climate-change-tropical-storm-aspects",
+        "aqa-8035-311-mitigation-adaptation",
+        "aqa-8035-311-plate-margin-types",
+        "aqa-8035-311-tectonic-risk-reduction",
+        "aqa-8035-312-ecosystem-component-types",
+        "aqa-8035-312-rainforest-deforestation-causes",
+        "aqa-8035-312-rainforest-deforestation-impacts",
+        "aqa-8035-312-sustainable-rainforest-management",
+        "aqa-8035-313-coastal-management-categories",
+        "aqa-8035-313-coastal-process-groups",
+        "aqa-8035-313-glacial-process-groups",
+        "aqa-8035-313-river-flood-risk-factors",
+        "aqa-8035-321-urban-environmental-challenges",
+        "aqa-8035-321-urban-industry-stimulus",
+        "aqa-8035-321-urban-social-opportunities",
+        "aqa-8035-321-urbanisation-rate-factors",
+        "aqa-8035-322-development-gap-strategies",
+        "aqa-8035-322-development-measures",
+        "aqa-8035-322-uneven-development-causes",
+        "aqa-8035-322-uneven-development-consequences",
+        "aqa-8035-323-energy-consumption-reasons",
+        "aqa-8035-323-global-food-supply-factors",
+        "aqa-8035-323-resources-development-wellbeing",
+        "aqa-8035-323-water-supply-strategies",
+        "aqa-8035-331-issue-evaluation-decision-method",
+        "aqa-8035-331-resource-booklet-formats",
+        "aqa-8035-331-secondary-sources",
+        "aqa-8035-331-synoptic-issue-evaluation",
+        "aqa-8035-332-contrasting-environments-coverage",
+        "aqa-8035-332-enquiry-evaluation-criteria",
+        "aqa-8035-332-fieldwork-data-analysis-actions",
+        "aqa-8035-332-primary-data-requirement",
+        "aqa-8035-34-bivariate-relationship-skills",
+        "aqa-8035-34-graph-chart-types",
+        "aqa-8035-34-os-scales-grid-references",
+        "aqa-8035-34-statistical-measures"
+      ],
+      "generatedCardContent": [
+        {
+          "cardId": "aqa-8035-311-climate-change-tropical-storm-aspects",
+          "semanticSha256": "f06f9fce4bbc71c6c969c16060df46832bfe77ec2e9c1a7e0e67225b6cb5e465"
+        },
+        {
+          "cardId": "aqa-8035-311-mitigation-adaptation",
+          "semanticSha256": "91361459b8465a7529fd0d06cf49fe545217e2f8afbf5d339f9c62ab613378e7"
+        },
+        {
+          "cardId": "aqa-8035-311-plate-margin-types",
+          "semanticSha256": "2729725d176eb00506e9a448a1adad5f6a239a93e99b341831c9b0b9ebf5153b"
+        },
+        {
+          "cardId": "aqa-8035-311-tectonic-risk-reduction",
+          "semanticSha256": "e57d5bab721d72ec37bcddc26a8fd89db86915d8dd0fc5842ee658f6a7d91a9a"
+        },
+        {
+          "cardId": "aqa-8035-312-ecosystem-component-types",
+          "semanticSha256": "77f8d5029a334dd060bb1f008316e189611ca7c38eb979b44ab78fdbfcec2e49"
+        },
+        {
+          "cardId": "aqa-8035-312-rainforest-deforestation-causes",
+          "semanticSha256": "2fad087beabcac4a4fd2646fdb339a34b21e2e2ce9b985b982bbbd1f5b6d229a"
+        },
+        {
+          "cardId": "aqa-8035-312-rainforest-deforestation-impacts",
+          "semanticSha256": "31d136278c80e66dd99b3cf7ffd11d99e7c4e9e46e162d6151697957b906a9c5"
+        },
+        {
+          "cardId": "aqa-8035-312-sustainable-rainforest-management",
+          "semanticSha256": "17a17c80ada81289a2a7eb7b47f62122f334086f90195986422f298f1225cd71"
+        },
+        {
+          "cardId": "aqa-8035-313-coastal-management-categories",
+          "semanticSha256": "62644c1d86b119afb7bb1baf6b17c88b7d08d7a343d70ea8321c169ee0217724"
+        },
+        {
+          "cardId": "aqa-8035-313-coastal-process-groups",
+          "semanticSha256": "9f02f9831ccb0fecedcba277ded02784bd5589a6634cc45898e54157c5ada0fe"
+        },
+        {
+          "cardId": "aqa-8035-313-glacial-process-groups",
+          "semanticSha256": "ea36eeced6a7340ff18f30bbb751757b225422207d0ed479935884317a3c2d64"
+        },
+        {
+          "cardId": "aqa-8035-313-river-flood-risk-factors",
+          "semanticSha256": "a16a5be24fbb15446a5604a09e1810810f13d12abc0a93695151730f82622f00"
+        },
+        {
+          "cardId": "aqa-8035-321-urban-environmental-challenges",
+          "semanticSha256": "0fe6d1bc49d59371defdc01843f6f6cfb7f37bd9d8a712a66a95e6f0458b0765"
+        },
+        {
+          "cardId": "aqa-8035-321-urban-industry-stimulus",
+          "semanticSha256": "0adacfd34182946f5629b749ef9474022b977c1b34f961e443114f120efd4e71"
+        },
+        {
+          "cardId": "aqa-8035-321-urban-social-opportunities",
+          "semanticSha256": "240c28092979bc568a012ab820e3006f2c61b44d7b91ac2b9341e30864a2cb72"
+        },
+        {
+          "cardId": "aqa-8035-321-urbanisation-rate-factors",
+          "semanticSha256": "fb05837caf81726c7c52d7b570f8a4a1b54efdaa35c1f9606b63ef8e956f79d3"
+        },
+        {
+          "cardId": "aqa-8035-322-development-gap-strategies",
+          "semanticSha256": "48c37c873d4f913829dfc1c4e7588b6316eb77f6664e7e7f804795b82badd423"
+        },
+        {
+          "cardId": "aqa-8035-322-development-measures",
+          "semanticSha256": "d238616ae6312ba896cc9b1e979c2cf3121e4469ab6e9a2ecff37f281b0e4e9f"
+        },
+        {
+          "cardId": "aqa-8035-322-uneven-development-causes",
+          "semanticSha256": "5e96caf6d5dbf2baba8f71fb0cb725728d045a43bb368445901b0adb5a039c2c"
+        },
+        {
+          "cardId": "aqa-8035-322-uneven-development-consequences",
+          "semanticSha256": "4132d6e3cbe9eea005fd44b70af7ee3e2bd66357364796265c6164b75c96e394"
+        },
+        {
+          "cardId": "aqa-8035-323-energy-consumption-reasons",
+          "semanticSha256": "3476524d76c51d471d252be138d3177fe575face7c5ea80c4f37916bd2c7eccf"
+        },
+        {
+          "cardId": "aqa-8035-323-global-food-supply-factors",
+          "semanticSha256": "99ca3e57b6f1f5c36785004ee25c0013372d6dbf6a00f7a12a6fe45719bb4493"
+        },
+        {
+          "cardId": "aqa-8035-323-resources-development-wellbeing",
+          "semanticSha256": "04bd107cdc04b63e63b520b319b8472e463f31b0d36420d2790380301027f8de"
+        },
+        {
+          "cardId": "aqa-8035-323-water-supply-strategies",
+          "semanticSha256": "14252eabcbdda86d5b0d63d53534d9e871701e05bbe2b6ff1d37171291c021ce"
+        },
+        {
+          "cardId": "aqa-8035-331-issue-evaluation-decision-method",
+          "semanticSha256": "2b731690bdaaddde855035064f1940929e42db9f1552d3861e43321221b5d84d"
+        },
+        {
+          "cardId": "aqa-8035-331-resource-booklet-formats",
+          "semanticSha256": "6791a18e7c0fff018321ff5a5d812a7c85374bc054ca2e745abb35f919e9ee9a"
+        },
+        {
+          "cardId": "aqa-8035-331-secondary-sources",
+          "semanticSha256": "282524942da6b0d5ec99aeba7fd73dd410f463f928210dd9e1254012ddcb4a55"
+        },
+        {
+          "cardId": "aqa-8035-331-synoptic-issue-evaluation",
+          "semanticSha256": "9a4641eb72b0e5ff0edfc1120eb81f48964421c13428559795ec1336b04c9035"
+        },
+        {
+          "cardId": "aqa-8035-332-contrasting-environments-coverage",
+          "semanticSha256": "18e84363893e8534388175d364a3a6202c1d198bb607788f44352ada9ec76165"
+        },
+        {
+          "cardId": "aqa-8035-332-enquiry-evaluation-criteria",
+          "semanticSha256": "4190e2d5074cc62705010c166def647c974755e8b3b76f06aeb52e6b0a9e3879"
+        },
+        {
+          "cardId": "aqa-8035-332-fieldwork-data-analysis-actions",
+          "semanticSha256": "9ca85a3724c4a6f7510294e458cb13f1ebdc23bc4e8643dba940d2f33394716d"
+        },
+        {
+          "cardId": "aqa-8035-332-primary-data-requirement",
+          "semanticSha256": "5c7327b93a65cdbf55c5ad269afc102abfb5cd3f8d1dba22c7b13703ce732d54"
+        },
+        {
+          "cardId": "aqa-8035-34-bivariate-relationship-skills",
+          "semanticSha256": "14f57262c94ee3ef1d75993af428b0638b9820c8b466256843affd6ae23e1471"
+        },
+        {
+          "cardId": "aqa-8035-34-graph-chart-types",
+          "semanticSha256": "4d5f18a4c386806798220ad0cd31fcb9ffa0b3ee452ead4a37bb892482d0cf7e"
+        },
+        {
+          "cardId": "aqa-8035-34-os-scales-grid-references",
+          "semanticSha256": "1a387eae7baf3ca488d66bbeb6563245d4465a28b3fd7dd9914b2fe4e2371ba4"
+        },
+        {
+          "cardId": "aqa-8035-34-statistical-measures",
+          "semanticSha256": "a2113189a6921180d7058b53066ebb364eb9d3e821b38a6cc4e059a8d59ca6f2"
+        }
+      ],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "review",
+      "role": "reviewer",
+      "status": "passed",
+      "runId": "019f6b99-ed96-7413-909e-38deaee413e3",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T15:44:38.734Z",
+      "finishedAt": "2026-07-16T15:48:24.609Z",
+      "summary": {
+        "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/review-codex-run-summary.json",
+        "sha256": "e9750ca4661b3b3098ddf1a9f464a0dd17f4f707a9daa7423b7b02fb62a6a2ba"
+      },
+      "eventStream": {
+        "sourceFileName": "review-rollout-source.jsonl",
+        "sha256": "553ecb3aa67fb08e03e8e9a4348be42c2fd91b6a31c30d08b1dc870c95723b80",
+        "sanitizedEventCount": 34
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/review-prompt.txt",
+        "sha256": "89cc911775f4f400982cd665a8be987f0de09b77ff54012ad66b2f1d2e6b61bd"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/aqa-geography-8035-standard-v1/review-model-output.json",
+        "sha256": "86b98355cd4462ffaae98f40d633073af1d0963f3eb6b8d970f6008e3780faf3"
+      },
+      "generatedCardIds": [],
+      "generatedCardContent": [],
+      "reviewedAcceptedCardIds": [
+        "aqa-8035-311-climate-change-tropical-storm-aspects",
+        "aqa-8035-311-mitigation-adaptation",
+        "aqa-8035-311-tectonic-risk-reduction",
+        "aqa-8035-312-ecosystem-component-types",
+        "aqa-8035-312-rainforest-deforestation-causes",
+        "aqa-8035-312-rainforest-deforestation-impacts",
+        "aqa-8035-312-sustainable-rainforest-management",
+        "aqa-8035-313-coastal-management-categories",
+        "aqa-8035-313-coastal-process-groups",
+        "aqa-8035-313-glacial-process-groups",
+        "aqa-8035-313-river-flood-risk-factors",
+        "aqa-8035-321-urban-environmental-challenges",
+        "aqa-8035-321-urban-industry-stimulus",
+        "aqa-8035-321-urban-social-opportunities",
+        "aqa-8035-321-urbanisation-rate-factors",
+        "aqa-8035-322-development-gap-strategies",
+        "aqa-8035-322-development-measures",
+        "aqa-8035-322-uneven-development-causes",
+        "aqa-8035-322-uneven-development-consequences",
+        "aqa-8035-323-energy-consumption-reasons",
+        "aqa-8035-323-global-food-supply-factors",
+        "aqa-8035-323-resources-development-wellbeing",
+        "aqa-8035-323-water-supply-strategies",
+        "aqa-8035-331-issue-evaluation-decision-method",
+        "aqa-8035-331-resource-booklet-formats",
+        "aqa-8035-331-secondary-sources",
+        "aqa-8035-331-synoptic-issue-evaluation",
+        "aqa-8035-332-contrasting-environments-coverage",
+        "aqa-8035-332-enquiry-evaluation-criteria",
+        "aqa-8035-332-fieldwork-data-analysis-actions",
+        "aqa-8035-332-primary-data-requirement",
+        "aqa-8035-34-bivariate-relationship-skills",
+        "aqa-8035-34-graph-chart-types",
+        "aqa-8035-34-os-scales-grid-references",
+        "aqa-8035-34-statistical-measures"
+      ],
+      "reviewedAcceptedCardContent": [
+        {
+          "cardId": "aqa-8035-311-climate-change-tropical-storm-aspects",
+          "semanticSha256s": [
+            "f06f9fce4bbc71c6c969c16060df46832bfe77ec2e9c1a7e0e67225b6cb5e465"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-311-mitigation-adaptation",
+          "semanticSha256s": [
+            "91361459b8465a7529fd0d06cf49fe545217e2f8afbf5d339f9c62ab613378e7"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-311-tectonic-risk-reduction",
+          "semanticSha256s": [
+            "e57d5bab721d72ec37bcddc26a8fd89db86915d8dd0fc5842ee658f6a7d91a9a"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-312-ecosystem-component-types",
+          "semanticSha256s": [
+            "77f8d5029a334dd060bb1f008316e189611ca7c38eb979b44ab78fdbfcec2e49"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-312-rainforest-deforestation-causes",
+          "semanticSha256s": [
+            "2fad087beabcac4a4fd2646fdb339a34b21e2e2ce9b985b982bbbd1f5b6d229a"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-312-rainforest-deforestation-impacts",
+          "semanticSha256s": [
+            "31d136278c80e66dd99b3cf7ffd11d99e7c4e9e46e162d6151697957b906a9c5"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-312-sustainable-rainforest-management",
+          "semanticSha256s": [
+            "17a17c80ada81289a2a7eb7b47f62122f334086f90195986422f298f1225cd71"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-313-coastal-management-categories",
+          "semanticSha256s": [
+            "62644c1d86b119afb7bb1baf6b17c88b7d08d7a343d70ea8321c169ee0217724"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-313-coastal-process-groups",
+          "semanticSha256s": [
+            "9f02f9831ccb0fecedcba277ded02784bd5589a6634cc45898e54157c5ada0fe"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-313-glacial-process-groups",
+          "semanticSha256s": [
+            "ea36eeced6a7340ff18f30bbb751757b225422207d0ed479935884317a3c2d64"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-313-river-flood-risk-factors",
+          "semanticSha256s": [
+            "a16a5be24fbb15446a5604a09e1810810f13d12abc0a93695151730f82622f00"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-321-urban-environmental-challenges",
+          "semanticSha256s": [
+            "0fe6d1bc49d59371defdc01843f6f6cfb7f37bd9d8a712a66a95e6f0458b0765"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-321-urban-industry-stimulus",
+          "semanticSha256s": [
+            "0adacfd34182946f5629b749ef9474022b977c1b34f961e443114f120efd4e71"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-321-urban-social-opportunities",
+          "semanticSha256s": [
+            "240c28092979bc568a012ab820e3006f2c61b44d7b91ac2b9341e30864a2cb72"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-321-urbanisation-rate-factors",
+          "semanticSha256s": [
+            "fb05837caf81726c7c52d7b570f8a4a1b54efdaa35c1f9606b63ef8e956f79d3"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-322-development-gap-strategies",
+          "semanticSha256s": [
+            "48c37c873d4f913829dfc1c4e7588b6316eb77f6664e7e7f804795b82badd423"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-322-development-measures",
+          "semanticSha256s": [
+            "d238616ae6312ba896cc9b1e979c2cf3121e4469ab6e9a2ecff37f281b0e4e9f"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-322-uneven-development-causes",
+          "semanticSha256s": [
+            "5e96caf6d5dbf2baba8f71fb0cb725728d045a43bb368445901b0adb5a039c2c"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-322-uneven-development-consequences",
+          "semanticSha256s": [
+            "4132d6e3cbe9eea005fd44b70af7ee3e2bd66357364796265c6164b75c96e394"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-323-energy-consumption-reasons",
+          "semanticSha256s": [
+            "3476524d76c51d471d252be138d3177fe575face7c5ea80c4f37916bd2c7eccf"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-323-global-food-supply-factors",
+          "semanticSha256s": [
+            "99ca3e57b6f1f5c36785004ee25c0013372d6dbf6a00f7a12a6fe45719bb4493"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-323-resources-development-wellbeing",
+          "semanticSha256s": [
+            "04bd107cdc04b63e63b520b319b8472e463f31b0d36420d2790380301027f8de"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-323-water-supply-strategies",
+          "semanticSha256s": [
+            "14252eabcbdda86d5b0d63d53534d9e871701e05bbe2b6ff1d37171291c021ce"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-331-issue-evaluation-decision-method",
+          "semanticSha256s": [
+            "2b731690bdaaddde855035064f1940929e42db9f1552d3861e43321221b5d84d"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-331-resource-booklet-formats",
+          "semanticSha256s": [
+            "6791a18e7c0fff018321ff5a5d812a7c85374bc054ca2e745abb35f919e9ee9a"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-331-secondary-sources",
+          "semanticSha256s": [
+            "282524942da6b0d5ec99aeba7fd73dd410f463f928210dd9e1254012ddcb4a55"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-331-synoptic-issue-evaluation",
+          "semanticSha256s": [
+            "9a4641eb72b0e5ff0edfc1120eb81f48964421c13428559795ec1336b04c9035"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-332-contrasting-environments-coverage",
+          "semanticSha256s": [
+            "18e84363893e8534388175d364a3a6202c1d198bb607788f44352ada9ec76165"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-332-enquiry-evaluation-criteria",
+          "semanticSha256s": [
+            "4190e2d5074cc62705010c166def647c974755e8b3b76f06aeb52e6b0a9e3879"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-332-fieldwork-data-analysis-actions",
+          "semanticSha256s": [
+            "9ca85a3724c4a6f7510294e458cb13f1ebdc23bc4e8643dba940d2f33394716d"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-332-primary-data-requirement",
+          "semanticSha256s": [
+            "5c7327b93a65cdbf55c5ad269afc102abfb5cd3f8d1dba22c7b13703ce732d54"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-34-bivariate-relationship-skills",
+          "semanticSha256s": [
+            "14f57262c94ee3ef1d75993af428b0638b9820c8b466256843affd6ae23e1471"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-34-graph-chart-types",
+          "semanticSha256s": [
+            "4d5f18a4c386806798220ad0cd31fcb9ffa0b3ee452ead4a37bb892482d0cf7e"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-34-os-scales-grid-references",
+          "semanticSha256s": [
+            "1a387eae7baf3ca488d66bbeb6563245d4465a28b3fd7dd9914b2fe4e2371ba4"
+          ]
+        },
+        {
+          "cardId": "aqa-8035-34-statistical-measures",
+          "semanticSha256s": [
+            "a2113189a6921180d7058b53066ebb364eb9d3e821b38a6cc4e059a8d59ca6f2"
+          ]
+        }
+      ]
+    }
+  ],
+  "linkage": {
+    "contentProjection": "study-card-learner-content-v1",
+    "allowedDeterministicBinding": "board/qualification/subject/contentRevision, official source metadata, offering targets and normalized choice keys are bound after model review; all learner-visible fields, ordered choice content, source excerpt and component identities hash exactly",
+    "generatorOutputSha256": "128437acfb3b896dfdf7f1e2714c584a61c3770d1d635678d751938ff7aa8577",
+    "reviewerInputSha256": "e716993d36123b8aaa7de9bea7abd824ea3b0cba077dc37824e049aa0020758f",
+    "reviewerOutputSha256": "72d455c70caeba8791253eccdbbdde63926dcdb83d33f87edd02f4fe93ed9332",
+    "generatedAcceptedCardIdsSha256": "31322525301f660bfc529495263d85d55c7a13596846813de9ad8fa28ccc58e7",
+    "reviewedAcceptedCardIdsSha256": "31322525301f660bfc529495263d85d55c7a13596846813de9ad8fa28ccc58e7",
+    "generatedAcceptedCardContentSha256": "fb3374f54a5b45b679a370867f8717a67cd3ec9747789770512fff8c8c2eda1e",
+    "reviewedAcceptedCardContentSha256": "fb3374f54a5b45b679a370867f8717a67cd3ec9747789770512fff8c8c2eda1e",
+    "acceptedArtifactCardContentSha256": "fb3374f54a5b45b679a370867f8717a67cd3ec9747789770512fff8c8c2eda1e",
+    "acceptedArtifactSha256": "c8dd55e2845b7cffa7bda1fd1f1d818c4b9da6cec6236d134ef7d6b85ac62e88"
+  }
+}

@@ -1,0 +1,1315 @@
+{
+  "schemaVersion": "study-card-model-lineage-v2",
+  "status": "passed",
+  "releaseId": "ocr-j352-literature-standard-v1",
+  "requiredModel": "gpt-5.6-sol",
+  "requiredThinkingLevel": "max",
+  "artifact": {
+    "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/accepted-study-cards.json",
+    "fileSha256": "ea335315a7b8a2b3c384534b322bdd1623398cbf9e8b478a8dcc838e2a7282be",
+    "semanticSha256": "f315f85ca91f288668a3ff54404bc4d52646cd9a7afb647b95df9c08e0fbdb84",
+    "acceptedCardCount": 67,
+    "acceptedCardIdsSha256": "57a3ef245f2018ebd3c9f9309ca7f042a380eab7618305c10bb68bd4dd7ce9bf",
+    "acceptedCardContent": [
+      {
+        "cardId": "ocr-j352-card-a-christmas-carol-plot-marley-dead",
+        "semanticSha256": "6820d5adf5935d0d968b52db2569ef2936ee856cdafdd4648e0adb753098fd0a"
+      },
+      {
+        "cardId": "ocr-j352-card-a-christmas-carol-plot-scrooge-changed",
+        "semanticSha256": "105de0fcaad9489bee7abdfaf79bc328af534977306a45775a99b02ac1938752"
+      },
+      {
+        "cardId": "ocr-j352-card-a-christmas-carol-quotation-honour-christmas",
+        "semanticSha256": "eb666f326da796d5dfb52667f858092912c2a53e26b2b8e57d9eb1d539db91b6"
+      },
+      {
+        "cardId": "ocr-j352-card-a-christmas-carol-quotation-tiny-tim",
+        "semanticSha256": "406bc5937a49f0a445977e1b9f3df73efa4b05d4decb3bb8c241e5f0e07125a3"
+      },
+      {
+        "cardId": "ocr-j352-card-an-inspector-calls-plot-final-call",
+        "semanticSha256": "5691f6e37128cb2b05521322fa14ca195cf26b983d1936cff9eb0362e8a9fa31"
+      },
+      {
+        "cardId": "ocr-j352-card-an-inspector-calls-plot-goole-arrives",
+        "semanticSha256": "9cc080de718c826fc429c5c9391802b9e6b309a62164385cda1ffae972850990"
+      },
+      {
+        "cardId": "ocr-j352-card-animal-farm-plot-new-tyranny",
+        "semanticSha256": "cfa1a4f9872d6a4ed8c787ade82cbd121beda105aea989336050ed7a55326df2"
+      },
+      {
+        "cardId": "ocr-j352-card-animal-farm-plot-rebellion",
+        "semanticSha256": "39b1edd88ab922e8a9cca4a6f40032a1c12547830634d2e7f5bdb32f3002d284"
+      },
+      {
+        "cardId": "ocr-j352-card-anita-and-me-plot-friendship",
+        "semanticSha256": "b0bf8b901012e496c9590f84deb46ca8a7b5a4481c658708f6fbb8399e5d9f74"
+      },
+      {
+        "cardId": "ocr-j352-card-anita-and-me-plot-leaves-tollington",
+        "semanticSha256": "c5b4534a37589c0b6f8234bf188731538a72030f882fd0e53e132170e6408faa"
+      },
+      {
+        "cardId": "ocr-j352-card-conflict-poetry-method-connections-contrasts",
+        "semanticSha256": "ed7555207d108e8ccfe6d10fa6ae65519f59b76b2a1ccfb0e62b9cc46bb4631a"
+      },
+      {
+        "cardId": "ocr-j352-card-conflict-poetry-method-evidence-supported-response",
+        "semanticSha256": "c7f836eaccfb2fd76677a40cf1099b9cad872eabae786c49410ea28271de4f6a"
+      },
+      {
+        "cardId": "ocr-j352-card-conflict-poetry-method-language-form-structure",
+        "semanticSha256": "33baf19491dd3d905c05a20a9194ad24c46acdb85eefe7b7a6ccf7765f55e755"
+      },
+      {
+        "cardId": "ocr-j352-card-conflict-poetry-quotation-boat-stealing",
+        "semanticSha256": "107124ed834ed1ac922a65da1d32bbf4f1833a0d804e95dd47cd8299a6c20dd7"
+      },
+      {
+        "cardId": "ocr-j352-card-conflict-poetry-quotation-sennacherib",
+        "semanticSha256": "66f26d0582a1b78304158a7e485327d1ffd41e21a509364b3aa5b36cf03e157b"
+      },
+      {
+        "cardId": "ocr-j352-card-dna-plot-accident",
+        "semanticSha256": "76b2b8f9679fa58ebf15241ca64d86d8aa3d80213be6c7dd30e8bf826d58444c"
+      },
+      {
+        "cardId": "ocr-j352-card-dna-plot-cover-up",
+        "semanticSha256": "eb2932216764afc447f604319f7e8c5998596fbe482bde8eba8c40fd43a30b9b"
+      },
+      {
+        "cardId": "ocr-j352-card-great-expectations-plot-benefactor-reveal",
+        "semanticSha256": "43e42e2bef232b28da45484a0e61224d74cdae06924f1e0d8c48c40f6a892a02"
+      },
+      {
+        "cardId": "ocr-j352-card-great-expectations-plot-pip-aids-convict",
+        "semanticSha256": "ca3cdf430f4978443d40f51fd42088634d4cc9dd35b8bb900a3efa63527884e9"
+      },
+      {
+        "cardId": "ocr-j352-card-great-expectations-quotation-estella-heart",
+        "semanticSha256": "963938a268cde38432666d3b1f23276891cb2c2a6df23ae7f417703258c65151"
+      },
+      {
+        "cardId": "ocr-j352-card-great-expectations-quotation-opening-name",
+        "semanticSha256": "22576dc30e74452863cd284787fd5904ba14f1b2f2ceaf8d0be131f8f46b05d4"
+      },
+      {
+        "cardId": "ocr-j352-card-jane-eyre-plot-thornfield-fire",
+        "semanticSha256": "49315787cac609d6b3093ad869bb9a09a112a34080554760fc8e3be597e98090"
+      },
+      {
+        "cardId": "ocr-j352-card-jane-eyre-plot-wife-reveal",
+        "semanticSha256": "d852b40041b5c46aa6fef20f0b697cf45e875e25ae997e04f01d470b2cb56c17"
+      },
+      {
+        "cardId": "ocr-j352-card-jane-eyre-quotation-no-bird",
+        "semanticSha256": "1a4a30676d89311ae91451388e207c7576d05e182ac43c75d299833e08506e0f"
+      },
+      {
+        "cardId": "ocr-j352-card-jane-eyre-quotation-reader-married",
+        "semanticSha256": "f7a1cb121c69b6955f812f41b55b6c8ca22170a0c9851d4dd6f570507c8d3506"
+      },
+      {
+        "cardId": "ocr-j352-card-jekyll-and-hyde-plot-cabinet-body",
+        "semanticSha256": "cfb72e17c62c540c7ce41751f0b6b90e7a999b337218dffcf5d3fa0287111a91"
+      },
+      {
+        "cardId": "ocr-j352-card-jekyll-and-hyde-plot-child",
+        "semanticSha256": "60c6726cf29ba65b085ba54b9aa348977b86669e47ccafa72b9a1932dfaa9fa7"
+      },
+      {
+        "cardId": "ocr-j352-card-jekyll-and-hyde-quotation-sufferers",
+        "semanticSha256": "ae01e6699886465f42fe482540215cf45a58fd16200ae073b505c600e0f718c5"
+      },
+      {
+        "cardId": "ocr-j352-card-jekyll-and-hyde-quotation-two",
+        "semanticSha256": "236f3b63535e0340b339843e4e84a6667c9eca8183779ba231400a1ff1cbdefa"
+      },
+      {
+        "cardId": "ocr-j352-card-leave-taking-plot-countries-cultures",
+        "semanticSha256": "edc2a5308f320fec0444f25a7fabf474b3896f8232282532be4080d8ec7b13d8"
+      },
+      {
+        "cardId": "ocr-j352-card-leave-taking-plot-obeah-visit",
+        "semanticSha256": "077687daea61fb236c5b6de0e2ed489849328d56b4e3981fa8937deddfac5eaa"
+      },
+      {
+        "cardId": "ocr-j352-card-love-poetry-method-connections-contrasts",
+        "semanticSha256": "f95927848c216fa4c6518c0dd4190d98abc167701d91a6047e632d43a260bf7d"
+      },
+      {
+        "cardId": "ocr-j352-card-love-poetry-method-evidence-supported-response",
+        "semanticSha256": "18bdf30de4b8d765420e088ccc34e8b939a5eb35ddc125e8877997d06cbfab47"
+      },
+      {
+        "cardId": "ocr-j352-card-love-poetry-method-language-form-structure",
+        "semanticSha256": "524bf4b7096f31ddd720d616c7711f52318629b9a7401b6f14c0b8d48884a2d4"
+      },
+      {
+        "cardId": "ocr-j352-card-love-poetry-quotation-a-song",
+        "semanticSha256": "fea63301ec282a6a77f10659c679e0455a971789e1e8479e7fcd68d395ec7204"
+      },
+      {
+        "cardId": "ocr-j352-card-love-poetry-quotation-bright-star",
+        "semanticSha256": "799f8147674310f3f63f8ef06cb954cc1866659031f22bf0e6e1ffad455d1a27"
+      },
+      {
+        "cardId": "ocr-j352-card-macbeth-plot-final-fight",
+        "semanticSha256": "3a6d50abac0b838a972fbe6fcdefb5f127c95c6c9229e9b53cbbc581269e1025"
+      },
+      {
+        "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+        "semanticSha256": "0a9712df2549281e50f086dd16d2f6037fb32638313b6c2d072c5f309fa4a803"
+      },
+      {
+        "cardId": "ocr-j352-card-macbeth-quotation-ambition",
+        "semanticSha256": "0fd38d6a895d68c53afca838a581e61555a2ced4d2fd7ffcc70e0446b5372ad0"
+      },
+      {
+        "cardId": "ocr-j352-card-macbeth-quotation-fair-foul",
+        "semanticSha256": "5dffebb76b9a6cab874212c5b8c0513b459c235a8dce583e89efe7d9246cec64"
+      },
+      {
+        "cardId": "ocr-j352-card-merchant-of-venice-plot-bond-forfeit",
+        "semanticSha256": "b86c0d4f15e9453ad2a41ad3835c3422212baae7b347a8c50438a7b92d331fd3"
+      },
+      {
+        "cardId": "ocr-j352-card-merchant-of-venice-plot-no-blood",
+        "semanticSha256": "5b86b9514df0e006c0785f9dc7ff31a20d584317051591f1c3ffc8720172c8bd"
+      },
+      {
+        "cardId": "ocr-j352-card-merchant-of-venice-quotation-bleed",
+        "semanticSha256": "388e44d6294164ae1efa497b6335ca1742e5479c368ab0d2e67bb6f2a2cc664c"
+      },
+      {
+        "cardId": "ocr-j352-card-merchant-of-venice-quotation-mercy",
+        "semanticSha256": "e147e878f57932e4e08a6fe9b39edc1dc88c6298152fe868b9bab1e07a6244d9"
+      },
+      {
+        "cardId": "ocr-j352-card-much-ado-plot-hero-revealed",
+        "semanticSha256": "a74f3cd1979cfd0637115c63e8bad24dad6e52ed5d25e796a0c3c1dab474d01d"
+      },
+      {
+        "cardId": "ocr-j352-card-much-ado-plot-kill-claudio",
+        "semanticSha256": "55820e34d610ce3b7b618aaf9d6b16f74b84399e2a6ea887d4511a7641750376"
+      },
+      {
+        "cardId": "ocr-j352-card-much-ado-quotation-cupid-traps",
+        "semanticSha256": "89db455f8ea36226732736b7e6cd9d6a092c8314f2d7129675ec0eb3a627706c"
+      },
+      {
+        "cardId": "ocr-j352-card-much-ado-quotation-dog-bark",
+        "semanticSha256": "a101515e6ea2095ec72d7465364c1bd838acc0ff929e9821f5045f7b22f41fd3"
+      },
+      {
+        "cardId": "ocr-j352-card-never-let-me-go-plot-fate",
+        "semanticSha256": "30dd8bbc648c6fe0f2aabe40a96a29006e57a6c12fa0200359baf17986bfcf15"
+      },
+      {
+        "cardId": "ocr-j352-card-never-let-me-go-plot-kathy-hailsham",
+        "semanticSha256": "8926fcd9fe68427e76621027b5a6f058da8b26e38e8e4de8a3411d105b9d6e8f"
+      },
+      {
+        "cardId": "ocr-j352-card-pride-and-prejudice-plot-first-proposal",
+        "semanticSha256": "9128cd83ddfaf13fccc1229420454cc303fceb54022e96b6f163c3c197688e9f"
+      },
+      {
+        "cardId": "ocr-j352-card-pride-and-prejudice-plot-jane-bingley-engagement",
+        "semanticSha256": "018f73ee9f9dcb0974abd0577cd10625804e9185ad653d451255f4165eb7656a"
+      },
+      {
+        "cardId": "ocr-j352-card-pride-and-prejudice-quotation-darcy-opinion",
+        "semanticSha256": "e722617388e71d57d539dbe4332feea9a259a5863b357882c35ae92f179e58fb"
+      },
+      {
+        "cardId": "ocr-j352-card-pride-and-prejudice-quotation-opening",
+        "semanticSha256": "662f91907a285732af8e2a3db72fe7966b7aae1a567a64c50a3f26eb530224f6"
+      },
+      {
+        "cardId": "ocr-j352-card-romeo-and-juliet-plot-mercutio-dies",
+        "semanticSha256": "227fdc8b47a5d3fdf031988e14e692c162857f40dd3fdb9e859cae0ae2dcf516"
+      },
+      {
+        "cardId": "ocr-j352-card-romeo-and-juliet-plot-romeo-dies",
+        "semanticSha256": "64b007eedb5fcaa228080977a627d209500de94e280be1532c081744d42ed7a7"
+      },
+      {
+        "cardId": "ocr-j352-card-romeo-and-juliet-quotation-wherefore",
+        "semanticSha256": "bb9f874515e6ca05df5680fb6373e2e33a69c453f7a8f3f2c453128c88f199c6"
+      },
+      {
+        "cardId": "ocr-j352-card-romeo-and-juliet-quotation-window",
+        "semanticSha256": "d94e7dd6b9b342f0f47ff218974d6c14c4bd1623ef5c7bffd3305eb650f151a4"
+      },
+      {
+        "cardId": "ocr-j352-card-war-of-the-worlds-plot-bacteria-defeat",
+        "semanticSha256": "63f61b53a6300e43dead30b86ca2165569f3c2e55350724a891b72b7929af56c"
+      },
+      {
+        "cardId": "ocr-j352-card-war-of-the-worlds-plot-cylinder-opens",
+        "semanticSha256": "e03ea3fa99f66e5876575769c1874d06fc75732ccf98efa6c075b5274fe57446"
+      },
+      {
+        "cardId": "ocr-j352-card-war-of-the-worlds-quotation-birthright",
+        "semanticSha256": "9b339119d36dac2d34173b76c5d3d84038f21f917b2d3a66055e56831247e8bb"
+      },
+      {
+        "cardId": "ocr-j352-card-war-of-the-worlds-quotation-opening",
+        "semanticSha256": "6f2dcf171041cd861ea4266dff91c43309e87417bd9a03346ebef446fd420012"
+      },
+      {
+        "cardId": "ocr-j352-card-youth-poetry-method-connections-contrasts",
+        "semanticSha256": "5d32eb417285bc0a2140a875af94cff90124a8049f46e0b6c1648977c87b58db"
+      },
+      {
+        "cardId": "ocr-j352-card-youth-poetry-method-evidence-supported-response",
+        "semanticSha256": "fe6fa9f8e51cb4c022a1af7d8219e2103290a0a69f927576c37fcfe97d6d27bd"
+      },
+      {
+        "cardId": "ocr-j352-card-youth-poetry-method-language-form-structure",
+        "semanticSha256": "b4bc14a17723a0b452736f568e3b708d89dd3af8cf975a28b6f58f7d1103046f"
+      },
+      {
+        "cardId": "ocr-j352-card-youth-poetry-quotation-bluebell",
+        "semanticSha256": "85a1487165f95f7a6413da0f4435c36cc8853fcabe0c3b170865cde7e9d0c046"
+      },
+      {
+        "cardId": "ocr-j352-card-youth-poetry-quotation-holy-thursday",
+        "semanticSha256": "ede717770b0ca2b121637d3b1b87c2403afeec186121cb4ff5620ffa25c59271"
+      }
+    ],
+    "acceptedCardContentSha256": "098594c033d0eab0484c84d3c2d69d331970def669c5c47074cbd95913c3397e",
+    "sourceManifestHash": "018339914752ba82509107df2bc8c16f645846f172ad3154207dff12841d5915"
+  },
+  "generationRun": {
+    "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/generation-run.json",
+    "sha256": "54b5c34ec3c05016263149eae9fcf7d8b8f6fdb554827d7431f34e23741e1999"
+  },
+  "runs": [
+    {
+      "stage": "base-generation",
+      "role": "generator",
+      "status": "passed",
+      "runId": "019f6baa-297d-74c0-8469-8323535348c2",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T16:02:22.436Z",
+      "finishedAt": "2026-07-16T16:16:12.855Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/base-generation-codex-run-summary.json",
+        "sha256": "e485d919f54233d34d4e15f7cd5f04ccf4d5a957fdafdd995f766874f8845c45"
+      },
+      "eventStream": {
+        "sourceFileName": "rollout-2026-07-16T09-02-21-019f6baa-297d-74c0-8469-8323535348c2.jsonl",
+        "sha256": "f8a0aef9fc6e38338f2138ab4808dd740f1ad9bb1df24eb67648530011460330",
+        "sanitizedEventCount": 43
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/base-generation-prompt.txt",
+        "sha256": "9e3e3120652f783697243648927b9a3841c155d977d5a520378205119be26dbe"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/base-generation-model-output.json",
+        "sha256": "3dff4fe91bb3cad917b0d81e804cf708bb4d90b0478a0d8e6aa850e203ba5a6d"
+      },
+      "generatedCardIds": [
+        "ocr-j352-card-a-christmas-carol-plot-marley-dead",
+        "ocr-j352-card-a-christmas-carol-plot-scrooge-changed",
+        "ocr-j352-card-a-christmas-carol-quotation-honour-christmas",
+        "ocr-j352-card-a-christmas-carol-quotation-tiny-tim",
+        "ocr-j352-card-an-inspector-calls-plot-final-call",
+        "ocr-j352-card-an-inspector-calls-plot-goole-arrives",
+        "ocr-j352-card-animal-farm-plot-new-tyranny",
+        "ocr-j352-card-animal-farm-plot-rebellion",
+        "ocr-j352-card-anita-and-me-plot-friendship",
+        "ocr-j352-card-anita-and-me-plot-leaves-tollington",
+        "ocr-j352-card-conflict-poetry-method-connections-contrasts",
+        "ocr-j352-card-conflict-poetry-method-evidence-supported-response",
+        "ocr-j352-card-conflict-poetry-method-language-form-structure",
+        "ocr-j352-card-conflict-poetry-quotation-boat-stealing",
+        "ocr-j352-card-conflict-poetry-quotation-sennacherib",
+        "ocr-j352-card-dna-plot-accident",
+        "ocr-j352-card-dna-plot-cover-up",
+        "ocr-j352-card-great-expectations-plot-benefactor-reveal",
+        "ocr-j352-card-great-expectations-plot-pip-aids-convict",
+        "ocr-j352-card-great-expectations-quotation-estella-heart",
+        "ocr-j352-card-great-expectations-quotation-opening-name",
+        "ocr-j352-card-jane-eyre-plot-thornfield-fire",
+        "ocr-j352-card-jane-eyre-plot-wife-reveal",
+        "ocr-j352-card-jane-eyre-quotation-no-bird",
+        "ocr-j352-card-jane-eyre-quotation-reader-married",
+        "ocr-j352-card-jekyll-and-hyde-plot-cabinet-body",
+        "ocr-j352-card-jekyll-and-hyde-plot-child",
+        "ocr-j352-card-jekyll-and-hyde-quotation-sufferers",
+        "ocr-j352-card-jekyll-and-hyde-quotation-two",
+        "ocr-j352-card-leave-taking-plot-countries-cultures",
+        "ocr-j352-card-leave-taking-plot-obeah-visit",
+        "ocr-j352-card-love-poetry-method-connections-contrasts",
+        "ocr-j352-card-love-poetry-method-evidence-supported-response",
+        "ocr-j352-card-love-poetry-method-language-form-structure",
+        "ocr-j352-card-love-poetry-quotation-a-song",
+        "ocr-j352-card-love-poetry-quotation-bright-star",
+        "ocr-j352-card-macbeth-plot-final-fight",
+        "ocr-j352-card-macbeth-plot-murder-sleep",
+        "ocr-j352-card-macbeth-quotation-ambition",
+        "ocr-j352-card-macbeth-quotation-fair-foul",
+        "ocr-j352-card-merchant-of-venice-plot-bond-forfeit",
+        "ocr-j352-card-merchant-of-venice-plot-no-blood",
+        "ocr-j352-card-merchant-of-venice-quotation-bleed",
+        "ocr-j352-card-merchant-of-venice-quotation-mercy",
+        "ocr-j352-card-much-ado-plot-hero-revealed",
+        "ocr-j352-card-much-ado-plot-kill-claudio",
+        "ocr-j352-card-much-ado-quotation-cupid-traps",
+        "ocr-j352-card-much-ado-quotation-dog-bark",
+        "ocr-j352-card-never-let-me-go-plot-fate",
+        "ocr-j352-card-never-let-me-go-plot-kathy-hailsham",
+        "ocr-j352-card-pride-and-prejudice-plot-first-proposal",
+        "ocr-j352-card-pride-and-prejudice-plot-jane-bingley-engagement",
+        "ocr-j352-card-pride-and-prejudice-quotation-darcy-opinion",
+        "ocr-j352-card-pride-and-prejudice-quotation-opening",
+        "ocr-j352-card-romeo-and-juliet-plot-mercutio-dies",
+        "ocr-j352-card-romeo-and-juliet-plot-romeo-dies",
+        "ocr-j352-card-romeo-and-juliet-quotation-wherefore",
+        "ocr-j352-card-romeo-and-juliet-quotation-window",
+        "ocr-j352-card-war-of-the-worlds-plot-bacteria-defeat",
+        "ocr-j352-card-war-of-the-worlds-plot-cylinder-opens",
+        "ocr-j352-card-war-of-the-worlds-quotation-birthright",
+        "ocr-j352-card-war-of-the-worlds-quotation-opening",
+        "ocr-j352-card-youth-poetry-method-connections-contrasts",
+        "ocr-j352-card-youth-poetry-method-evidence-supported-response",
+        "ocr-j352-card-youth-poetry-method-language-form-structure",
+        "ocr-j352-card-youth-poetry-quotation-bluebell",
+        "ocr-j352-card-youth-poetry-quotation-holy-thursday"
+      ],
+      "generatedCardContent": [
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-plot-marley-dead",
+          "semanticSha256": "6820d5adf5935d0d968b52db2569ef2936ee856cdafdd4648e0adb753098fd0a"
+        },
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-plot-scrooge-changed",
+          "semanticSha256": "105de0fcaad9489bee7abdfaf79bc328af534977306a45775a99b02ac1938752"
+        },
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-quotation-honour-christmas",
+          "semanticSha256": "eb666f326da796d5dfb52667f858092912c2a53e26b2b8e57d9eb1d539db91b6"
+        },
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-quotation-tiny-tim",
+          "semanticSha256": "406bc5937a49f0a445977e1b9f3df73efa4b05d4decb3bb8c241e5f0e07125a3"
+        },
+        {
+          "cardId": "ocr-j352-card-an-inspector-calls-plot-final-call",
+          "semanticSha256": "5691f6e37128cb2b05521322fa14ca195cf26b983d1936cff9eb0362e8a9fa31"
+        },
+        {
+          "cardId": "ocr-j352-card-an-inspector-calls-plot-goole-arrives",
+          "semanticSha256": "9cc080de718c826fc429c5c9391802b9e6b309a62164385cda1ffae972850990"
+        },
+        {
+          "cardId": "ocr-j352-card-animal-farm-plot-new-tyranny",
+          "semanticSha256": "cfa1a4f9872d6a4ed8c787ade82cbd121beda105aea989336050ed7a55326df2"
+        },
+        {
+          "cardId": "ocr-j352-card-animal-farm-plot-rebellion",
+          "semanticSha256": "39b1edd88ab922e8a9cca4a6f40032a1c12547830634d2e7f5bdb32f3002d284"
+        },
+        {
+          "cardId": "ocr-j352-card-anita-and-me-plot-friendship",
+          "semanticSha256": "b0bf8b901012e496c9590f84deb46ca8a7b5a4481c658708f6fbb8399e5d9f74"
+        },
+        {
+          "cardId": "ocr-j352-card-anita-and-me-plot-leaves-tollington",
+          "semanticSha256": "c5b4534a37589c0b6f8234bf188731538a72030f882fd0e53e132170e6408faa"
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-method-connections-contrasts",
+          "semanticSha256": "ed7555207d108e8ccfe6d10fa6ae65519f59b76b2a1ccfb0e62b9cc46bb4631a"
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-method-evidence-supported-response",
+          "semanticSha256": "c7f836eaccfb2fd76677a40cf1099b9cad872eabae786c49410ea28271de4f6a"
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-method-language-form-structure",
+          "semanticSha256": "33baf19491dd3d905c05a20a9194ad24c46acdb85eefe7b7a6ccf7765f55e755"
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-quotation-boat-stealing",
+          "semanticSha256": "107124ed834ed1ac922a65da1d32bbf4f1833a0d804e95dd47cd8299a6c20dd7"
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-quotation-sennacherib",
+          "semanticSha256": "66f26d0582a1b78304158a7e485327d1ffd41e21a509364b3aa5b36cf03e157b"
+        },
+        {
+          "cardId": "ocr-j352-card-dna-plot-accident",
+          "semanticSha256": "76b2b8f9679fa58ebf15241ca64d86d8aa3d80213be6c7dd30e8bf826d58444c"
+        },
+        {
+          "cardId": "ocr-j352-card-dna-plot-cover-up",
+          "semanticSha256": "eb2932216764afc447f604319f7e8c5998596fbe482bde8eba8c40fd43a30b9b"
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-plot-benefactor-reveal",
+          "semanticSha256": "43e42e2bef232b28da45484a0e61224d74cdae06924f1e0d8c48c40f6a892a02"
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-plot-pip-aids-convict",
+          "semanticSha256": "ca3cdf430f4978443d40f51fd42088634d4cc9dd35b8bb900a3efa63527884e9"
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-quotation-estella-heart",
+          "semanticSha256": "963938a268cde38432666d3b1f23276891cb2c2a6df23ae7f417703258c65151"
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-quotation-opening-name",
+          "semanticSha256": "22576dc30e74452863cd284787fd5904ba14f1b2f2ceaf8d0be131f8f46b05d4"
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-plot-thornfield-fire",
+          "semanticSha256": "49315787cac609d6b3093ad869bb9a09a112a34080554760fc8e3be597e98090"
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-plot-wife-reveal",
+          "semanticSha256": "d852b40041b5c46aa6fef20f0b697cf45e875e25ae997e04f01d470b2cb56c17"
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-quotation-no-bird",
+          "semanticSha256": "1a4a30676d89311ae91451388e207c7576d05e182ac43c75d299833e08506e0f"
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-quotation-reader-married",
+          "semanticSha256": "f7a1cb121c69b6955f812f41b55b6c8ca22170a0c9851d4dd6f570507c8d3506"
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-plot-cabinet-body",
+          "semanticSha256": "cfb72e17c62c540c7ce41751f0b6b90e7a999b337218dffcf5d3fa0287111a91"
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-plot-child",
+          "semanticSha256": "60c6726cf29ba65b085ba54b9aa348977b86669e47ccafa72b9a1932dfaa9fa7"
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-quotation-sufferers",
+          "semanticSha256": "ae01e6699886465f42fe482540215cf45a58fd16200ae073b505c600e0f718c5"
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-quotation-two",
+          "semanticSha256": "236f3b63535e0340b339843e4e84a6667c9eca8183779ba231400a1ff1cbdefa"
+        },
+        {
+          "cardId": "ocr-j352-card-leave-taking-plot-countries-cultures",
+          "semanticSha256": "edc2a5308f320fec0444f25a7fabf474b3896f8232282532be4080d8ec7b13d8"
+        },
+        {
+          "cardId": "ocr-j352-card-leave-taking-plot-obeah-visit",
+          "semanticSha256": "077687daea61fb236c5b6de0e2ed489849328d56b4e3981fa8937deddfac5eaa"
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-method-connections-contrasts",
+          "semanticSha256": "f95927848c216fa4c6518c0dd4190d98abc167701d91a6047e632d43a260bf7d"
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-method-evidence-supported-response",
+          "semanticSha256": "18bdf30de4b8d765420e088ccc34e8b939a5eb35ddc125e8877997d06cbfab47"
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-method-language-form-structure",
+          "semanticSha256": "524bf4b7096f31ddd720d616c7711f52318629b9a7401b6f14c0b8d48884a2d4"
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-quotation-a-song",
+          "semanticSha256": "fea63301ec282a6a77f10659c679e0455a971789e1e8479e7fcd68d395ec7204"
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-quotation-bright-star",
+          "semanticSha256": "799f8147674310f3f63f8ef06cb954cc1866659031f22bf0e6e1ffad455d1a27"
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-plot-final-fight",
+          "semanticSha256": "3a6d50abac0b838a972fbe6fcdefb5f127c95c6c9229e9b53cbbc581269e1025"
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+          "semanticSha256": "632160dd3dcea161146952f5984c5b79437bf10044fd2e422121c7c8926d1903"
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-quotation-ambition",
+          "semanticSha256": "0fd38d6a895d68c53afca838a581e61555a2ced4d2fd7ffcc70e0446b5372ad0"
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-quotation-fair-foul",
+          "semanticSha256": "5dffebb76b9a6cab874212c5b8c0513b459c235a8dce583e89efe7d9246cec64"
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-plot-bond-forfeit",
+          "semanticSha256": "b86c0d4f15e9453ad2a41ad3835c3422212baae7b347a8c50438a7b92d331fd3"
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-plot-no-blood",
+          "semanticSha256": "5b86b9514df0e006c0785f9dc7ff31a20d584317051591f1c3ffc8720172c8bd"
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-quotation-bleed",
+          "semanticSha256": "388e44d6294164ae1efa497b6335ca1742e5479c368ab0d2e67bb6f2a2cc664c"
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-quotation-mercy",
+          "semanticSha256": "e147e878f57932e4e08a6fe9b39edc1dc88c6298152fe868b9bab1e07a6244d9"
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-plot-hero-revealed",
+          "semanticSha256": "a74f3cd1979cfd0637115c63e8bad24dad6e52ed5d25e796a0c3c1dab474d01d"
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-plot-kill-claudio",
+          "semanticSha256": "55820e34d610ce3b7b618aaf9d6b16f74b84399e2a6ea887d4511a7641750376"
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-quotation-cupid-traps",
+          "semanticSha256": "89db455f8ea36226732736b7e6cd9d6a092c8314f2d7129675ec0eb3a627706c"
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-quotation-dog-bark",
+          "semanticSha256": "a101515e6ea2095ec72d7465364c1bd838acc0ff929e9821f5045f7b22f41fd3"
+        },
+        {
+          "cardId": "ocr-j352-card-never-let-me-go-plot-fate",
+          "semanticSha256": "30dd8bbc648c6fe0f2aabe40a96a29006e57a6c12fa0200359baf17986bfcf15"
+        },
+        {
+          "cardId": "ocr-j352-card-never-let-me-go-plot-kathy-hailsham",
+          "semanticSha256": "8926fcd9fe68427e76621027b5a6f058da8b26e38e8e4de8a3411d105b9d6e8f"
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-plot-first-proposal",
+          "semanticSha256": "9128cd83ddfaf13fccc1229420454cc303fceb54022e96b6f163c3c197688e9f"
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-plot-jane-bingley-engagement",
+          "semanticSha256": "018f73ee9f9dcb0974abd0577cd10625804e9185ad653d451255f4165eb7656a"
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-quotation-darcy-opinion",
+          "semanticSha256": "e722617388e71d57d539dbe4332feea9a259a5863b357882c35ae92f179e58fb"
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-quotation-opening",
+          "semanticSha256": "662f91907a285732af8e2a3db72fe7966b7aae1a567a64c50a3f26eb530224f6"
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-plot-mercutio-dies",
+          "semanticSha256": "227fdc8b47a5d3fdf031988e14e692c162857f40dd3fdb9e859cae0ae2dcf516"
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-plot-romeo-dies",
+          "semanticSha256": "64b007eedb5fcaa228080977a627d209500de94e280be1532c081744d42ed7a7"
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-quotation-wherefore",
+          "semanticSha256": "bb9f874515e6ca05df5680fb6373e2e33a69c453f7a8f3f2c453128c88f199c6"
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-quotation-window",
+          "semanticSha256": "d94e7dd6b9b342f0f47ff218974d6c14c4bd1623ef5c7bffd3305eb650f151a4"
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-plot-bacteria-defeat",
+          "semanticSha256": "63f61b53a6300e43dead30b86ca2165569f3c2e55350724a891b72b7929af56c"
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-plot-cylinder-opens",
+          "semanticSha256": "e03ea3fa99f66e5876575769c1874d06fc75732ccf98efa6c075b5274fe57446"
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-quotation-birthright",
+          "semanticSha256": "9b339119d36dac2d34173b76c5d3d84038f21f917b2d3a66055e56831247e8bb"
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-quotation-opening",
+          "semanticSha256": "6f2dcf171041cd861ea4266dff91c43309e87417bd9a03346ebef446fd420012"
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-method-connections-contrasts",
+          "semanticSha256": "5d32eb417285bc0a2140a875af94cff90124a8049f46e0b6c1648977c87b58db"
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-method-evidence-supported-response",
+          "semanticSha256": "fe6fa9f8e51cb4c022a1af7d8219e2103290a0a69f927576c37fcfe97d6d27bd"
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-method-language-form-structure",
+          "semanticSha256": "b4bc14a17723a0b452736f568e3b708d89dd3af8cf975a28b6f58f7d1103046f"
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-quotation-bluebell",
+          "semanticSha256": "85a1487165f95f7a6413da0f4435c36cc8853fcabe0c3b170865cde7e9d0c046"
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-quotation-holy-thursday",
+          "semanticSha256": "ede717770b0ca2b121637d3b1b87c2403afeec186121cb4ff5620ffa25c59271"
+        }
+      ],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "base-review",
+      "role": "reviewer",
+      "status": "passed",
+      "runId": "019f6bb6-db0a-76a3-bccb-e95bd910a0d8",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T16:16:14.497Z",
+      "finishedAt": "2026-07-16T16:23:44.787Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/base-review-codex-run-summary.json",
+        "sha256": "ece6e358dc00d862f3c75d3e0f821d1a415c139bf582ac20da02211bf57fa170"
+      },
+      "eventStream": {
+        "sourceFileName": "rollout-2026-07-16T09-16-13-019f6bb6-db0a-76a3-bccb-e95bd910a0d8.jsonl",
+        "sha256": "63e9d83cebd40db9c64bcd05bdcc58bad94c6ed6231a974a309ceb7b15ff394b",
+        "sanitizedEventCount": 44
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/base-review-prompt.txt",
+        "sha256": "1aaac91200cbcb17425cf150f3903d2afeeda53216015803328eab25b8b995de"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/base-review-model-output.json",
+        "sha256": "effc26932400856a3f58ac640eb7d6b6be400712953a4a2e520aa1104cc4a558"
+      },
+      "generatedCardIds": [],
+      "generatedCardContent": [],
+      "reviewedAcceptedCardIds": [
+        "ocr-j352-card-a-christmas-carol-plot-marley-dead",
+        "ocr-j352-card-a-christmas-carol-plot-scrooge-changed",
+        "ocr-j352-card-a-christmas-carol-quotation-honour-christmas",
+        "ocr-j352-card-a-christmas-carol-quotation-tiny-tim",
+        "ocr-j352-card-an-inspector-calls-plot-final-call",
+        "ocr-j352-card-an-inspector-calls-plot-goole-arrives",
+        "ocr-j352-card-animal-farm-plot-new-tyranny",
+        "ocr-j352-card-animal-farm-plot-rebellion",
+        "ocr-j352-card-anita-and-me-plot-friendship",
+        "ocr-j352-card-anita-and-me-plot-leaves-tollington",
+        "ocr-j352-card-conflict-poetry-method-connections-contrasts",
+        "ocr-j352-card-conflict-poetry-method-evidence-supported-response",
+        "ocr-j352-card-conflict-poetry-method-language-form-structure",
+        "ocr-j352-card-conflict-poetry-quotation-boat-stealing",
+        "ocr-j352-card-conflict-poetry-quotation-sennacherib",
+        "ocr-j352-card-dna-plot-accident",
+        "ocr-j352-card-dna-plot-cover-up",
+        "ocr-j352-card-great-expectations-plot-benefactor-reveal",
+        "ocr-j352-card-great-expectations-plot-pip-aids-convict",
+        "ocr-j352-card-great-expectations-quotation-estella-heart",
+        "ocr-j352-card-great-expectations-quotation-opening-name",
+        "ocr-j352-card-jane-eyre-plot-thornfield-fire",
+        "ocr-j352-card-jane-eyre-plot-wife-reveal",
+        "ocr-j352-card-jane-eyre-quotation-no-bird",
+        "ocr-j352-card-jane-eyre-quotation-reader-married",
+        "ocr-j352-card-jekyll-and-hyde-plot-cabinet-body",
+        "ocr-j352-card-jekyll-and-hyde-plot-child",
+        "ocr-j352-card-jekyll-and-hyde-quotation-sufferers",
+        "ocr-j352-card-jekyll-and-hyde-quotation-two",
+        "ocr-j352-card-leave-taking-plot-countries-cultures",
+        "ocr-j352-card-leave-taking-plot-obeah-visit",
+        "ocr-j352-card-love-poetry-method-connections-contrasts",
+        "ocr-j352-card-love-poetry-method-evidence-supported-response",
+        "ocr-j352-card-love-poetry-method-language-form-structure",
+        "ocr-j352-card-love-poetry-quotation-a-song",
+        "ocr-j352-card-love-poetry-quotation-bright-star",
+        "ocr-j352-card-macbeth-plot-final-fight",
+        "ocr-j352-card-macbeth-quotation-ambition",
+        "ocr-j352-card-macbeth-quotation-fair-foul",
+        "ocr-j352-card-merchant-of-venice-plot-bond-forfeit",
+        "ocr-j352-card-merchant-of-venice-plot-no-blood",
+        "ocr-j352-card-merchant-of-venice-quotation-bleed",
+        "ocr-j352-card-merchant-of-venice-quotation-mercy",
+        "ocr-j352-card-much-ado-plot-hero-revealed",
+        "ocr-j352-card-much-ado-plot-kill-claudio",
+        "ocr-j352-card-much-ado-quotation-cupid-traps",
+        "ocr-j352-card-much-ado-quotation-dog-bark",
+        "ocr-j352-card-never-let-me-go-plot-fate",
+        "ocr-j352-card-never-let-me-go-plot-kathy-hailsham",
+        "ocr-j352-card-pride-and-prejudice-plot-first-proposal",
+        "ocr-j352-card-pride-and-prejudice-plot-jane-bingley-engagement",
+        "ocr-j352-card-pride-and-prejudice-quotation-darcy-opinion",
+        "ocr-j352-card-pride-and-prejudice-quotation-opening",
+        "ocr-j352-card-romeo-and-juliet-plot-mercutio-dies",
+        "ocr-j352-card-romeo-and-juliet-plot-romeo-dies",
+        "ocr-j352-card-romeo-and-juliet-quotation-wherefore",
+        "ocr-j352-card-romeo-and-juliet-quotation-window",
+        "ocr-j352-card-war-of-the-worlds-plot-bacteria-defeat",
+        "ocr-j352-card-war-of-the-worlds-plot-cylinder-opens",
+        "ocr-j352-card-war-of-the-worlds-quotation-birthright",
+        "ocr-j352-card-war-of-the-worlds-quotation-opening",
+        "ocr-j352-card-youth-poetry-method-connections-contrasts",
+        "ocr-j352-card-youth-poetry-method-evidence-supported-response",
+        "ocr-j352-card-youth-poetry-method-language-form-structure",
+        "ocr-j352-card-youth-poetry-quotation-bluebell",
+        "ocr-j352-card-youth-poetry-quotation-holy-thursday"
+      ],
+      "reviewedAcceptedCardContent": [
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-plot-marley-dead",
+          "semanticSha256s": [
+            "6820d5adf5935d0d968b52db2569ef2936ee856cdafdd4648e0adb753098fd0a"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-plot-scrooge-changed",
+          "semanticSha256s": [
+            "105de0fcaad9489bee7abdfaf79bc328af534977306a45775a99b02ac1938752"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-quotation-honour-christmas",
+          "semanticSha256s": [
+            "eb666f326da796d5dfb52667f858092912c2a53e26b2b8e57d9eb1d539db91b6"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-a-christmas-carol-quotation-tiny-tim",
+          "semanticSha256s": [
+            "406bc5937a49f0a445977e1b9f3df73efa4b05d4decb3bb8c241e5f0e07125a3"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-an-inspector-calls-plot-final-call",
+          "semanticSha256s": [
+            "5691f6e37128cb2b05521322fa14ca195cf26b983d1936cff9eb0362e8a9fa31"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-an-inspector-calls-plot-goole-arrives",
+          "semanticSha256s": [
+            "9cc080de718c826fc429c5c9391802b9e6b309a62164385cda1ffae972850990"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-animal-farm-plot-new-tyranny",
+          "semanticSha256s": [
+            "cfa1a4f9872d6a4ed8c787ade82cbd121beda105aea989336050ed7a55326df2"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-animal-farm-plot-rebellion",
+          "semanticSha256s": [
+            "39b1edd88ab922e8a9cca4a6f40032a1c12547830634d2e7f5bdb32f3002d284"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-anita-and-me-plot-friendship",
+          "semanticSha256s": [
+            "b0bf8b901012e496c9590f84deb46ca8a7b5a4481c658708f6fbb8399e5d9f74"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-anita-and-me-plot-leaves-tollington",
+          "semanticSha256s": [
+            "c5b4534a37589c0b6f8234bf188731538a72030f882fd0e53e132170e6408faa"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-method-connections-contrasts",
+          "semanticSha256s": [
+            "ed7555207d108e8ccfe6d10fa6ae65519f59b76b2a1ccfb0e62b9cc46bb4631a"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-method-evidence-supported-response",
+          "semanticSha256s": [
+            "c7f836eaccfb2fd76677a40cf1099b9cad872eabae786c49410ea28271de4f6a"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-method-language-form-structure",
+          "semanticSha256s": [
+            "33baf19491dd3d905c05a20a9194ad24c46acdb85eefe7b7a6ccf7765f55e755"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-quotation-boat-stealing",
+          "semanticSha256s": [
+            "107124ed834ed1ac922a65da1d32bbf4f1833a0d804e95dd47cd8299a6c20dd7"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-conflict-poetry-quotation-sennacherib",
+          "semanticSha256s": [
+            "66f26d0582a1b78304158a7e485327d1ffd41e21a509364b3aa5b36cf03e157b"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-dna-plot-accident",
+          "semanticSha256s": [
+            "76b2b8f9679fa58ebf15241ca64d86d8aa3d80213be6c7dd30e8bf826d58444c"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-dna-plot-cover-up",
+          "semanticSha256s": [
+            "eb2932216764afc447f604319f7e8c5998596fbe482bde8eba8c40fd43a30b9b"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-plot-benefactor-reveal",
+          "semanticSha256s": [
+            "43e42e2bef232b28da45484a0e61224d74cdae06924f1e0d8c48c40f6a892a02"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-plot-pip-aids-convict",
+          "semanticSha256s": [
+            "ca3cdf430f4978443d40f51fd42088634d4cc9dd35b8bb900a3efa63527884e9"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-quotation-estella-heart",
+          "semanticSha256s": [
+            "963938a268cde38432666d3b1f23276891cb2c2a6df23ae7f417703258c65151"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-great-expectations-quotation-opening-name",
+          "semanticSha256s": [
+            "22576dc30e74452863cd284787fd5904ba14f1b2f2ceaf8d0be131f8f46b05d4"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-plot-thornfield-fire",
+          "semanticSha256s": [
+            "49315787cac609d6b3093ad869bb9a09a112a34080554760fc8e3be597e98090"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-plot-wife-reveal",
+          "semanticSha256s": [
+            "d852b40041b5c46aa6fef20f0b697cf45e875e25ae997e04f01d470b2cb56c17"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-quotation-no-bird",
+          "semanticSha256s": [
+            "1a4a30676d89311ae91451388e207c7576d05e182ac43c75d299833e08506e0f"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jane-eyre-quotation-reader-married",
+          "semanticSha256s": [
+            "f7a1cb121c69b6955f812f41b55b6c8ca22170a0c9851d4dd6f570507c8d3506"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-plot-cabinet-body",
+          "semanticSha256s": [
+            "cfb72e17c62c540c7ce41751f0b6b90e7a999b337218dffcf5d3fa0287111a91"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-plot-child",
+          "semanticSha256s": [
+            "60c6726cf29ba65b085ba54b9aa348977b86669e47ccafa72b9a1932dfaa9fa7"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-quotation-sufferers",
+          "semanticSha256s": [
+            "ae01e6699886465f42fe482540215cf45a58fd16200ae073b505c600e0f718c5"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-jekyll-and-hyde-quotation-two",
+          "semanticSha256s": [
+            "236f3b63535e0340b339843e4e84a6667c9eca8183779ba231400a1ff1cbdefa"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-leave-taking-plot-countries-cultures",
+          "semanticSha256s": [
+            "edc2a5308f320fec0444f25a7fabf474b3896f8232282532be4080d8ec7b13d8"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-leave-taking-plot-obeah-visit",
+          "semanticSha256s": [
+            "077687daea61fb236c5b6de0e2ed489849328d56b4e3981fa8937deddfac5eaa"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-method-connections-contrasts",
+          "semanticSha256s": [
+            "f95927848c216fa4c6518c0dd4190d98abc167701d91a6047e632d43a260bf7d"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-method-evidence-supported-response",
+          "semanticSha256s": [
+            "18bdf30de4b8d765420e088ccc34e8b939a5eb35ddc125e8877997d06cbfab47"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-method-language-form-structure",
+          "semanticSha256s": [
+            "524bf4b7096f31ddd720d616c7711f52318629b9a7401b6f14c0b8d48884a2d4"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-quotation-a-song",
+          "semanticSha256s": [
+            "fea63301ec282a6a77f10659c679e0455a971789e1e8479e7fcd68d395ec7204"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-love-poetry-quotation-bright-star",
+          "semanticSha256s": [
+            "799f8147674310f3f63f8ef06cb954cc1866659031f22bf0e6e1ffad455d1a27"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-plot-final-fight",
+          "semanticSha256s": [
+            "3a6d50abac0b838a972fbe6fcdefb5f127c95c6c9229e9b53cbbc581269e1025"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-quotation-ambition",
+          "semanticSha256s": [
+            "0fd38d6a895d68c53afca838a581e61555a2ced4d2fd7ffcc70e0446b5372ad0"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-macbeth-quotation-fair-foul",
+          "semanticSha256s": [
+            "5dffebb76b9a6cab874212c5b8c0513b459c235a8dce583e89efe7d9246cec64"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-plot-bond-forfeit",
+          "semanticSha256s": [
+            "b86c0d4f15e9453ad2a41ad3835c3422212baae7b347a8c50438a7b92d331fd3"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-plot-no-blood",
+          "semanticSha256s": [
+            "5b86b9514df0e006c0785f9dc7ff31a20d584317051591f1c3ffc8720172c8bd"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-quotation-bleed",
+          "semanticSha256s": [
+            "388e44d6294164ae1efa497b6335ca1742e5479c368ab0d2e67bb6f2a2cc664c"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-merchant-of-venice-quotation-mercy",
+          "semanticSha256s": [
+            "e147e878f57932e4e08a6fe9b39edc1dc88c6298152fe868b9bab1e07a6244d9"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-plot-hero-revealed",
+          "semanticSha256s": [
+            "a74f3cd1979cfd0637115c63e8bad24dad6e52ed5d25e796a0c3c1dab474d01d"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-plot-kill-claudio",
+          "semanticSha256s": [
+            "55820e34d610ce3b7b618aaf9d6b16f74b84399e2a6ea887d4511a7641750376"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-quotation-cupid-traps",
+          "semanticSha256s": [
+            "89db455f8ea36226732736b7e6cd9d6a092c8314f2d7129675ec0eb3a627706c"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-much-ado-quotation-dog-bark",
+          "semanticSha256s": [
+            "a101515e6ea2095ec72d7465364c1bd838acc0ff929e9821f5045f7b22f41fd3"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-never-let-me-go-plot-fate",
+          "semanticSha256s": [
+            "30dd8bbc648c6fe0f2aabe40a96a29006e57a6c12fa0200359baf17986bfcf15"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-never-let-me-go-plot-kathy-hailsham",
+          "semanticSha256s": [
+            "8926fcd9fe68427e76621027b5a6f058da8b26e38e8e4de8a3411d105b9d6e8f"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-plot-first-proposal",
+          "semanticSha256s": [
+            "9128cd83ddfaf13fccc1229420454cc303fceb54022e96b6f163c3c197688e9f"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-plot-jane-bingley-engagement",
+          "semanticSha256s": [
+            "018f73ee9f9dcb0974abd0577cd10625804e9185ad653d451255f4165eb7656a"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-quotation-darcy-opinion",
+          "semanticSha256s": [
+            "e722617388e71d57d539dbe4332feea9a259a5863b357882c35ae92f179e58fb"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-pride-and-prejudice-quotation-opening",
+          "semanticSha256s": [
+            "662f91907a285732af8e2a3db72fe7966b7aae1a567a64c50a3f26eb530224f6"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-plot-mercutio-dies",
+          "semanticSha256s": [
+            "227fdc8b47a5d3fdf031988e14e692c162857f40dd3fdb9e859cae0ae2dcf516"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-plot-romeo-dies",
+          "semanticSha256s": [
+            "64b007eedb5fcaa228080977a627d209500de94e280be1532c081744d42ed7a7"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-quotation-wherefore",
+          "semanticSha256s": [
+            "bb9f874515e6ca05df5680fb6373e2e33a69c453f7a8f3f2c453128c88f199c6"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-romeo-and-juliet-quotation-window",
+          "semanticSha256s": [
+            "d94e7dd6b9b342f0f47ff218974d6c14c4bd1623ef5c7bffd3305eb650f151a4"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-plot-bacteria-defeat",
+          "semanticSha256s": [
+            "63f61b53a6300e43dead30b86ca2165569f3c2e55350724a891b72b7929af56c"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-plot-cylinder-opens",
+          "semanticSha256s": [
+            "e03ea3fa99f66e5876575769c1874d06fc75732ccf98efa6c075b5274fe57446"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-quotation-birthright",
+          "semanticSha256s": [
+            "9b339119d36dac2d34173b76c5d3d84038f21f917b2d3a66055e56831247e8bb"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-war-of-the-worlds-quotation-opening",
+          "semanticSha256s": [
+            "6f2dcf171041cd861ea4266dff91c43309e87417bd9a03346ebef446fd420012"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-method-connections-contrasts",
+          "semanticSha256s": [
+            "5d32eb417285bc0a2140a875af94cff90124a8049f46e0b6c1648977c87b58db"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-method-evidence-supported-response",
+          "semanticSha256s": [
+            "fe6fa9f8e51cb4c022a1af7d8219e2103290a0a69f927576c37fcfe97d6d27bd"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-method-language-form-structure",
+          "semanticSha256s": [
+            "b4bc14a17723a0b452736f568e3b708d89dd3af8cf975a28b6f58f7d1103046f"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-quotation-bluebell",
+          "semanticSha256s": [
+            "85a1487165f95f7a6413da0f4435c36cc8853fcabe0c3b170865cde7e9d0c046"
+          ]
+        },
+        {
+          "cardId": "ocr-j352-card-youth-poetry-quotation-holy-thursday",
+          "semanticSha256s": [
+            "ede717770b0ca2b121637d3b1b87c2403afeec186121cb4ff5620ffa25c59271"
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "rejected-repair-attempt-1-generation",
+      "role": "generator",
+      "status": "passed",
+      "runId": "019f6bc7-dc4d-7a82-8940-990aeb6a23b4",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T16:34:48.792Z",
+      "finishedAt": "2026-07-16T16:35:01.903Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/rejected-repair-attempt-1-generation-codex-run-summary.json",
+        "sha256": "d010e87444f69900c6c96bb0fb8b241b0a8bbbfc01c3ff37a5f0e0d0d04973e5"
+      },
+      "eventStream": {
+        "sourceFileName": "rollout-2026-07-16T09-34-48-019f6bc7-dc4d-7a82-8940-990aeb6a23b4.jsonl",
+        "sha256": "cc94b3bef6cf18a4806f4ac0c1ad669e6ecb16e6834130bac91e0ab2dac4523a",
+        "sanitizedEventCount": 15
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/rejected-repair-attempt-1-generation-prompt.txt",
+        "sha256": "e627a9176551f9ba764b68878a58a6a9010e47b53d5cb8f294407c3075b36f33"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/rejected-repair-attempt-1-generation-model-output.json",
+        "sha256": "993f09389314a1539402b82eaf558005f0f151cebc04364d7cea9702c318d1dc"
+      },
+      "generatedCardIds": [
+        "ocr-j352-card-macbeth-plot-murder-sleep"
+      ],
+      "generatedCardContent": [
+        {
+          "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+          "semanticSha256": "a8158418099be7f56bab4b1a402a6475a36f69ef14b53c858281d0504d1b5c42"
+        }
+      ],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "rejected-repair-attempt-1-review",
+      "role": "reviewer",
+      "status": "passed",
+      "runId": "019f6bc8-14e7-73a3-9966-0184c9d1ff8a",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T16:35:03.239Z",
+      "finishedAt": "2026-07-16T16:35:47.050Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/rejected-repair-attempt-1-review-codex-run-summary.json",
+        "sha256": "51ce2558a96bf7f243f33ec8d71b66f5977d8a893f619fda8e5e8ca6c4ea686b"
+      },
+      "eventStream": {
+        "sourceFileName": "rollout-2026-07-16T09-35-02-019f6bc8-14e7-73a3-9966-0184c9d1ff8a.jsonl",
+        "sha256": "bce8efc70e8ded7948322d8d7588b3cbd842729373109a2b5b18c69d793a3979",
+        "sanitizedEventCount": 17
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/rejected-repair-attempt-1-review-prompt.txt",
+        "sha256": "d6ce858c8a2c182589d4e26807c22f45800cd82d39a6e414398efdab9944d92f"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/rejected-repair-attempt-1-review-model-output.json",
+        "sha256": "cd480e187b91e99c18267ce4b467489d02441564e4884f6acf1e52ebed5c4c62"
+      },
+      "generatedCardIds": [],
+      "generatedCardContent": [],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "repair-generation",
+      "role": "generator",
+      "status": "passed",
+      "runId": "019f6bcb-adfe-7291-ba02-8558a717aacc",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T16:38:59.098Z",
+      "finishedAt": "2026-07-16T16:39:41.835Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/repair-generation-codex-run-summary.json",
+        "sha256": "c9d3788219afbaeef03f7fec015f0049e97b0879175d1b9fdf1cfc6876234510"
+      },
+      "eventStream": {
+        "sourceFileName": "rollout-2026-07-16T09-38-58-019f6bcb-adfe-7291-ba02-8558a717aacc.jsonl",
+        "sha256": "1987b7a4cab2947aa1dc428923d670447ea45e54c380d3fab6c36078bf15df7b",
+        "sanitizedEventCount": 17
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/repair-generation-prompt.txt",
+        "sha256": "426b75d61a1047025ebab486867309a483bb2c9b2e29002519e8f4e78be72738"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/repair-generation-model-output.json",
+        "sha256": "58ac3f98ec7db7ecc756c0f8151c1cb9694f9481e12ddd2f51bd3e1d53fc63f9"
+      },
+      "generatedCardIds": [
+        "ocr-j352-card-macbeth-plot-murder-sleep"
+      ],
+      "generatedCardContent": [
+        {
+          "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+          "semanticSha256": "0a9712df2549281e50f086dd16d2f6037fb32638313b6c2d072c5f309fa4a803"
+        }
+      ],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "repair-review",
+      "role": "reviewer",
+      "status": "passed",
+      "runId": "019f6bcc-5a18-76f3-9867-b6f7c0f814a5",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T16:39:43.024Z",
+      "finishedAt": "2026-07-16T16:39:53.845Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/repair-review-codex-run-summary.json",
+        "sha256": "dff5861b7b8e13a88e3ae14b43e6c4311253d26424ac152985404840e646a418"
+      },
+      "eventStream": {
+        "sourceFileName": "rollout-2026-07-16T09-39-42-019f6bcc-5a18-76f3-9867-b6f7c0f814a5.jsonl",
+        "sha256": "60fa3a0a1d8b1d7159af6043b1da2a4ad15ac7c4db11b6fe90009af5b39e4e34",
+        "sanitizedEventCount": 15
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/repair-review-prompt.txt",
+        "sha256": "bd9222da59c990a4f48d28603c1a7944dab1f5a27113d766b2c9d797b669dfa3"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-j352-literature-standard-v1/repair-review-model-output.json",
+        "sha256": "af9127d3c821f3e7f5962ca8a7273b2586f6ee21ebc60d6cacc802b2e193d116"
+      },
+      "generatedCardIds": [],
+      "generatedCardContent": [],
+      "reviewedAcceptedCardIds": [
+        "ocr-j352-card-macbeth-plot-murder-sleep"
+      ],
+      "reviewedAcceptedCardContent": [
+        {
+          "cardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+          "semanticSha256s": [
+            "0a9712df2549281e50f086dd16d2f6037fb32638313b6c2d072c5f309fa4a803"
+          ]
+        }
+      ]
+    }
+  ],
+  "linkage": {
+    "contentProjection": "study-card-learner-content-v1",
+    "allowedDeterministicBinding": "board/qualification/subject/contentRevision, official source metadata, offering targets and normalized choice keys are bound after model review; all learner-visible fields, ordered choice content, source excerpt and component identities hash exactly",
+    "generatorOutputSha256": "65e1940979d3ea68510990ad2c55747c6b7d934ddd2bdf3ceb528691caa2f4d2",
+    "reviewerInputSha256": "b89fbc4c09b9414aceae804f89169ba3c4eaec72465ed122fda24946eeceb631",
+    "reviewerOutputSha256": "f4e3dedf8e1016efd723120b4bbc4416a72eb89401f87357cc763a5902fa4855",
+    "generatedAcceptedCardIdsSha256": "57a3ef245f2018ebd3c9f9309ca7f042a380eab7618305c10bb68bd4dd7ce9bf",
+    "reviewedAcceptedCardIdsSha256": "57a3ef245f2018ebd3c9f9309ca7f042a380eab7618305c10bb68bd4dd7ce9bf",
+    "generatedAcceptedCardContentSha256": "098594c033d0eab0484c84d3c2d69d331970def669c5c47074cbd95913c3397e",
+    "reviewedAcceptedCardContentSha256": "098594c033d0eab0484c84d3c2d69d331970def669c5c47074cbd95913c3397e",
+    "acceptedArtifactCardContentSha256": "098594c033d0eab0484c84d3c2d69d331970def669c5c47074cbd95913c3397e",
+    "acceptedArtifactSha256": "ea335315a7b8a2b3c384534b322bdd1623398cbf9e8b478a8dcc838e2a7282be"
+  }
+}

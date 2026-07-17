@@ -1,0 +1,100 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-955b11dcf2-aqa-8464-physics-6-5-4-2-3-newtons-third-law-force-pair",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds precise recall of the equal-magnitude, opposite-direction force pair in Newton’s Third Law."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-7c9085df32-aqa-8464-physics-6-5-4-3-1-stopping-distance-components",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that stopping distance combines thinking distance and braking distance."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-befd51184a-aqa-8464-physics-6-5-4-3-2-driver-reaction-factors",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes driver reaction factors from road and vehicle factors affecting braking."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-33cbec4d1f-aqa-8464-physics-6-5-4-3-3-braking-distance-conditions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects adverse road and weather conditions and poor brakes or tyres with braking distance."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-d86a40e656-aqa-8464-physics-6-5-4-3-4-braking-energy-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both linked changes during braking: reduced kinetic energy and increased brake temperature."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-9b68727484-aqa-8464-physics-6-6-1-wave-frequency-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates frequency from amplitude, wavelength and period using their defining properties."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-f4686243a5-aqa-8464-physics-6-6-2-electromagnetic-spectrum-order",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds accurate recall of the electromagnetic spectrum from long to short wavelength."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-db52375d36-aqa-8464-physics-6-6-2-2-infrared-surface-practical",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Identifies the dependent relationship investigated in required practical activity 21."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-5830312136-aqa-8464-physics-6-6-2-3-ionising-wave-hazards",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links X-rays and gamma rays specifically to ionisation, gene mutation and cancer."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-c27f96ba5f-aqa-8464-physics-6-6-2-4-microwave-applications",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the distinctive pairing of microwaves with satellite communications and cooking."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-aef6715b9e-aqa-8464-physics-6-7-1-permanent-induced-magnets",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts permanent and induced magnetism, including what happens after the external field is removed."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-5eff9fe3d3-aqa-8464-physics-6-7-2-electromagnet-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds exact AQA recall of an electromagnet as a solenoid with an iron core."
+      ]
+    }
+  ]
+}

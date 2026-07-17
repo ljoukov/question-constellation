@@ -1,18 +1,55 @@
+import { isScienceLearnerSubject } from '$lib/learning/subjects';
 import {
 	recallCards as curatedRecallCards,
 	recallCurriculumTopics,
+	recallKindLabels,
 	type RecallCard,
 	type RecallCardDefinition,
 	type RecallCardKind,
+	type RecallRuntimeSubject,
 	type RecallSubject
 } from '$lib/recall/aqaScienceRecall';
 import { isApprovedRecallVisualCueForSubject } from '$lib/recall/visualCues.js';
 import { queryRows } from './db';
+import { studyCardRuntimeCatalogQuery } from './studyCardCatalogQuery';
+
+type StudyCardCatalogRow = {
+	id: string;
+	release_id: string;
+	concept_key: string;
+	board: 'AQA' | 'OCR';
+	qualification: 'GCSE';
+	subject: RecallRuntimeSubject;
+	kind: RecallCardKind;
+	emoji: string;
+	front: string;
+	back: string;
+	reverse_front: string | null;
+	reverse_back: string | null;
+	explanation: string;
+	memory_tip: string | null;
+	content_revision: number;
+	content_hash: string;
+	offering_id: string;
+	curriculum_component_id: string;
+	topic_component_id: string;
+	target_code: string;
+	topic_code: string;
+	topic_title: string;
+	topic_paper: string | null;
+	source_kind: string | null;
+	source_url: string | null;
+	source_title: string | null;
+	source_locator: string | null;
+	rights_basis: string | null;
+	choices_json: string;
+};
 
 type RecallCatalogRow = {
 	card_id: string;
 	concept_key: string;
-	subject: RecallSubject;
+	board: 'AQA' | 'OCR';
+	subject: RecallRuntimeSubject;
 	kind: RecallCardKind;
 	visual_cue: string;
 	front: string;
@@ -23,6 +60,7 @@ type RecallCatalogRow = {
 	memory_tip: string | null;
 	content_revision: number;
 	content_hash: string;
+	generation_prompt_version?: string;
 	provenance_json: string;
 	choice_key: string;
 	choice_text: string;
@@ -36,12 +74,25 @@ type RecallCatalogRow = {
 	target_code: string;
 	topic_code: string;
 	topic_title: string;
+	topic_paper: string | null;
 	source_url: string;
 	source_title: string;
+	source_kind?: string;
+	source_locator?: string;
+	rights_basis?: string;
+	catalog_source?: 'standard-study-card';
+};
+
+type StudyCardChoice = {
+	key: string;
+	text: string;
+	isCorrect: boolean;
+	feedback: string;
+	misconception: string | null;
 };
 
 export const SUPPORTED_RECALL_BUNDLE_SCHEMA_VERSION = 'recall-card-bundle-v2';
-export const SUPPORTED_RECALL_PROMPT_VERSION = 'recall-card-compiler-v9';
+export const SUPPORTED_RECALL_PROMPT_VERSION = 'recall-card-compiler-v10';
 export const SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_SCHEMA_VERSION =
 	'recall-memory-tip-enrichment-v1';
 export const SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_PROMPT_VERSION =
@@ -51,9 +102,45 @@ export const IMPORTABLE_RECALL_PROMPT_VERSIONS = [
 	'recall-card-compiler-v6',
 	'recall-card-compiler-v7',
 	'recall-card-compiler-v8',
+	'recall-card-compiler-v9',
 	SUPPORTED_RECALL_PROMPT_VERSION
 ] as const;
 export const RECALL_CATALOG_CACHE_TTL_MS = 30_000;
+
+const runtimeCatalogBySubject = Object.freeze({
+	Biology: {
+		board: 'AQA',
+		offeringId: 'aqa-gcse-biology-8461-v1.0:higher'
+	},
+	Chemistry: {
+		board: 'AQA',
+		offeringId: 'aqa-gcse-chemistry-8462-v1.1:higher'
+	},
+	Physics: {
+		board: 'AQA',
+		offeringId: 'aqa-gcse-physics-8463-v1.1:higher'
+	},
+	'Computer Science': {
+		board: 'AQA',
+		offeringId: 'aqa-gcse-computer-science-8525-v1.3-2027:higher'
+	},
+	Geography: {
+		board: 'AQA',
+		offeringId: 'aqa-gcse-geography-8035-v1.1:higher'
+	},
+	History: {
+		board: 'AQA',
+		offeringId: 'aqa-gcse-history-8145-v1.3:higher'
+	},
+	'English Language': {
+		board: 'OCR',
+		offeringId: 'ocr-gcse-english-language-j351-v2.0:higher'
+	},
+	'English Literature': {
+		board: 'OCR',
+		offeringId: 'ocr-gcse-english-literature-j352-v3.0:higher'
+	}
+} satisfies Record<RecallRuntimeSubject, { board: 'AQA' | 'OCR'; offeringId: string }>);
 
 const staticSeparateHigherOffering = Object.freeze({
 	Biology: {
@@ -89,6 +176,7 @@ const catalogSql = `WITH imported_memory_tip_enrichments AS (
 )
 SELECT c.id AS card_id,
        c.concept_key,
+       'AQA' AS board,
        c.subject,
        c.kind,
        c.visual_cue,
@@ -103,6 +191,7 @@ SELECT c.id AS card_id,
          c.content_revision
        ) AS content_revision,
        COALESCE(memory_tip_enrichment.effective_content_hash, c.content_hash) AS content_hash,
+       generation_run.prompt_version AS generation_prompt_version,
        c.provenance_json,
        ch.choice_key,
        ch.text AS choice_text,
@@ -116,6 +205,7 @@ SELECT c.id AS card_id,
        target_component.code AS target_code,
        topic_component.code AS topic_code,
        topic_component.title AS topic_title,
+       NULL AS topic_paper,
        specification.landing_url AS source_url,
        specification.title AS source_title
 FROM recall_cards c
@@ -162,34 +252,39 @@ WHERE c.status = 'published'
 ORDER BY c.subject, c.id, ch.display_order`;
 
 export type RecallCatalogScope = {
-	subject: RecallSubject;
+	subject: RecallRuntimeSubject;
 	offeringId: string;
+	topicComponentId?: string | null;
 };
 
-export function defaultRecallCatalogScope(subject: RecallSubject): RecallCatalogScope {
+export function recallBoardForSubject(subject: RecallRuntimeSubject): 'AQA' | 'OCR' {
+	return runtimeCatalogBySubject[subject].board;
+}
+
+export function defaultRecallCatalogScope(subject: RecallRuntimeSubject): RecallCatalogScope {
 	return {
 		subject,
-		offeringId: staticSeparateHigherOffering[subject].offeringId
+		offeringId: runtimeCatalogBySubject[subject].offeringId
 	};
 }
 
-type CatalogRead = { hasEligibleRows: boolean; cards: RecallCard[] };
 type CatalogCacheEntry = { expiresAt: number; promise: Promise<RecallCard[]> };
 
 const catalogCache = new Map<string, CatalogCacheEntry>();
 const canonicalChoiceKeyPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const canonicalContentHashPattern = /^[a-f0-9]{64}$/;
+const runtimeCardKinds = new Set<RecallCardKind>(Object.keys(recallKindLabels) as RecallCardKind[]);
 
 function isCanonicalChoiceKey(value: string): boolean {
-	return value.length <= 64 && canonicalChoiceKeyPattern.test(value);
+	return value.length <= 80 && canonicalChoiceKeyPattern.test(value);
 }
 
-function isValidMemoryTip(value: string | null): boolean {
+function isValidMemoryTip(value: string | null, maximumLength: number): boolean {
 	if (value === null || value.trim() === '') return true;
 	return (
 		value === value.trim() &&
 		value.length >= 8 &&
-		value.length <= 180 &&
+		value.length <= maximumLength &&
 		!/[\u0000-\u001f\u007f]/.test(value)
 	);
 }
@@ -203,6 +298,9 @@ function normalized(value: string): string {
 }
 
 function topicIdFor(row: RecallCatalogRow): string | null {
+	if (row.catalog_source === 'standard-study-card') {
+		return row.topic_component_id.trim() || null;
+	}
 	return (
 		recallCurriculumTopics.find(
 			(topic) =>
@@ -226,6 +324,16 @@ function parseProvenance(value: string): Record<string, unknown> {
 	}
 }
 
+function learnerSourceKind(value: string | undefined): RecallCardDefinition['sourceKind'] {
+	if (value === 'primary-text') return 'primary_text';
+	if (value === 'secondary-source') return 'licensed_summary';
+	if (value === 'original-synthesis') return 'original_synthesis';
+	if (value === 'curriculum-specification' || value === 'official-web-page') {
+		return 'official_specification';
+	}
+	return 'official_exam_material';
+}
+
 function hydrateCatalogRows(rows: RecallCatalogRow[]): RecallCard[] {
 	const grouped = new Map<string, RecallCatalogRow[]>();
 	for (const row of rows) {
@@ -244,19 +352,42 @@ function hydrateCatalogRows(rows: RecallCatalogRow[]): RecallCard[] {
 			orderedChoices.map((choice) => normalized(choice.choice_text))
 		);
 		const choiceKeySet = new Set(orderedChoices.map((choice) => choice.choice_key));
+		const permitsVariableChoiceCount =
+			row.catalog_source === 'standard-study-card' ||
+			row.generation_prompt_version === SUPPORTED_RECALL_PROMPT_VERSION;
+		const validChoiceCount = permitsVariableChoiceCount
+			? orderedChoices.length === 3 || orderedChoices.length === 4
+			: orderedChoices.length === 4;
+		const expectedBoard = runtimeCatalogBySubject[row.subject]?.board;
+		const rowBoard =
+			row.catalog_source === 'standard-study-card' ? row.board : (row.board ?? 'AQA');
+		const staticTopic = recallCurriculumTopics.find((topic) => topic.id === topicId);
 		if (
 			!topicId ||
+			!expectedBoard ||
+			rowBoard !== expectedBoard ||
+			!runtimeCardKinds.has(row.kind) ||
+			!row.front?.trim() ||
+			!row.back?.trim() ||
+			!row.explanation?.trim() ||
+			!row.offering_id?.trim() ||
+			!row.curriculum_component_id?.trim() ||
+			!row.topic_component_id?.trim() ||
+			!row.target_code?.trim() ||
+			!row.topic_title?.trim() ||
+			!/^https:\/\//.test(row.source_url) ||
+			!row.source_title?.trim() ||
 			!isApprovedRecallVisualCueForSubject(row.visual_cue, row.subject) ||
-			!isValidMemoryTip(row.memory_tip) ||
+			!isValidMemoryTip(row.memory_tip, row.catalog_source ? 240 : 180) ||
 			!Number.isInteger(row.content_revision) ||
 			row.content_revision < 1 ||
 			!canonicalContentHashPattern.test(row.content_hash) ||
-			orderedChoices.length !== 4 ||
+			!validChoiceCount ||
 			orderedChoices.some((choice, index) => choice.choice_order !== index) ||
 			correctChoices.length !== 1 ||
 			correctChoices[0]?.choice_text.trim() !== row.back.trim() ||
-			normalizedChoices.size !== 4 ||
-			choiceKeySet.size !== 4 ||
+			normalizedChoices.size !== orderedChoices.length ||
+			choiceKeySet.size !== orderedChoices.length ||
 			orderedChoices.some(
 				(choice) => !isCanonicalChoiceKey(choice.choice_key) || !choice.choice_feedback.trim()
 			) ||
@@ -286,10 +417,12 @@ function hydrateCatalogRows(rows: RecallCatalogRow[]): RecallCard[] {
 
 		cards.push({
 			id: row.card_id,
-			board: 'AQA',
+			board: rowBoard,
 			qualification: 'GCSE',
 			subject: row.subject,
 			topicId,
+			topicTitle: row.topic_title,
+			topicPaper: row.topic_paper?.trim() || staticTopic?.paper || 'GCSE',
 			specRef: row.target_code,
 			kind: row.kind,
 			visualCue: row.visual_cue,
@@ -314,20 +447,133 @@ function hydrateCatalogRows(rows: RecallCatalogRow[]): RecallCard[] {
 			sourceTitle:
 				typeof provenance.sourceTitle === 'string' && provenance.sourceTitle.trim()
 					? provenance.sourceTitle.trim()
-					: row.source_title
+					: row.source_title,
+			sourceKind: learnerSourceKind(row.source_kind ?? 'curriculum-specification'),
+			sourceLocator: row.source_locator?.trim() || undefined,
+			rightsBasis: row.rights_basis?.trim() || undefined
 		});
 	}
 	return cards;
 }
 
-function missingCatalogTable(cause: unknown): boolean {
+function parseStudyCardChoices(value: unknown): StudyCardChoice[] | null {
+	if (typeof value !== 'string') return null;
+	try {
+		const parsed = JSON.parse(value) as unknown;
+		if (!Array.isArray(parsed) || (parsed.length !== 3 && parsed.length !== 4)) return null;
+		const choices: StudyCardChoice[] = [];
+		for (const candidate of parsed) {
+			if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return null;
+			const row = candidate as Record<string, unknown>;
+			if (
+				typeof row.key !== 'string' ||
+				typeof row.text !== 'string' ||
+				typeof row.isCorrect !== 'boolean' ||
+				typeof row.feedback !== 'string' ||
+				!(row.misconception === null || typeof row.misconception === 'string')
+			) {
+				return null;
+			}
+			choices.push({
+				key: row.key,
+				text: row.text,
+				isCorrect: row.isCorrect,
+				feedback: row.feedback,
+				misconception: row.misconception
+			});
+		}
+		return choices;
+	} catch {
+		return null;
+	}
+}
+
+function studyRowsAsRecallRows(rows: StudyCardCatalogRow[]): RecallCatalogRow[] {
+	return rows.flatMap((row) => {
+		const choices = parseStudyCardChoices(row?.choices_json);
+		const sourceUrl = row?.source_url;
+		const sourceTitle = row?.source_title;
+		if (
+			!choices ||
+			(row.board !== 'AQA' && row.board !== 'OCR') ||
+			row.qualification !== 'GCSE' ||
+			!runtimeCatalogBySubject[row.subject] ||
+			!runtimeCardKinds.has(row.kind) ||
+			typeof sourceUrl !== 'string' ||
+			typeof sourceTitle !== 'string'
+		) {
+			return [];
+		}
+		return choices.map((choice, choiceOrder) => ({
+			card_id: row.id,
+			concept_key: row.concept_key,
+			board: row.board,
+			subject: row.subject,
+			kind: row.kind,
+			visual_cue: row.emoji,
+			front: row.front,
+			back: row.back,
+			reverse_front: row.reverse_front,
+			reverse_back: row.reverse_back,
+			explanation: row.explanation,
+			memory_tip: row.memory_tip,
+			content_revision: row.content_revision,
+			content_hash: row.content_hash,
+			provenance_json: '{}',
+			choice_key: choice.key,
+			choice_text: choice.text,
+			choice_order: choiceOrder,
+			is_correct: choice.isCorrect ? 1 : 0,
+			choice_feedback: choice.feedback,
+			choice_misconception: choice.misconception,
+			offering_id: row.offering_id,
+			curriculum_component_id: row.curriculum_component_id,
+			topic_component_id: row.topic_component_id,
+			target_code: row.target_code,
+			topic_code: row.topic_code,
+			topic_title: row.topic_title,
+			topic_paper: row.topic_paper,
+			source_url: sourceUrl,
+			source_title: sourceTitle,
+			source_kind: row.source_kind ?? undefined,
+			source_locator: row.source_locator ?? undefined,
+			rights_basis: row.rights_basis ?? undefined,
+			catalog_source: 'standard-study-card' as const
+		}));
+	});
+}
+
+function missingStandardCatalogTable(cause: unknown): boolean {
+	const message = cause instanceof Error ? cause.message : String(cause);
+	return /no such table:\s*study_(?:card_releases|cards|card_choices|card_sources|card_targets|deck_coverage)/i.test(
+		message
+	);
+}
+
+function missingLegacyCatalogTable(cause: unknown): boolean {
 	const message = cause instanceof Error ? cause.message : String(cause);
 	return /no such table:\s*recall_(?:generation_runs|cards|card_choices|card_curriculum_targets|memory_tip_enrichment_runs|card_memory_tip_enrichments)/i.test(
 		message
 	);
 }
 
-async function readGeneratedRecallCards(scope: RecallCatalogScope): Promise<CatalogRead> {
+async function readStandardStudyCards(scope: RecallCatalogScope): Promise<RecallCard[]> {
+	try {
+		const rows = await queryRows<StudyCardCatalogRow>(studyCardRuntimeCatalogQuery, [
+			recallBoardForSubject(scope.subject),
+			scope.subject,
+			scope.offeringId,
+			scope.topicComponentId?.trim() || null
+		]);
+		return Array.isArray(rows) ? hydrateCatalogRows(studyRowsAsRecallRows(rows)) : [];
+	} catch (cause) {
+		if (missingStandardCatalogTable(cause)) return [];
+		throw cause;
+	}
+}
+
+async function readGeneratedRecallCards(scope: RecallCatalogScope): Promise<RecallCard[]> {
+	if (!isScienceLearnerSubject(scope.subject)) return [];
 	try {
 		const rows = await queryRows<RecallCatalogRow>(catalogSql, [
 			SUPPORTED_RECALL_MEMORY_TIP_ENRICHMENT_SCHEMA_VERSION,
@@ -337,11 +583,14 @@ async function readGeneratedRecallCards(scope: RecallCatalogScope): Promise<Cata
 			scope.subject,
 			scope.offeringId
 		]);
-		return { hasEligibleRows: rows.length > 0, cards: hydrateCatalogRows(rows) };
+		const cards = Array.isArray(rows) ? hydrateCatalogRows(rows) : [];
+		return scope.topicComponentId
+			? cards.filter((card) => card.topicComponentId === scope.topicComponentId)
+			: cards;
 	} catch (cause) {
 		// A fresh local database may not have applied 0018/0020 yet. Production and
 		// configured local D1 environments must surface every other failure.
-		if (missingCatalogTable(cause)) return { hasEligibleRows: false, cards: [] };
+		if (missingLegacyCatalogTable(cause)) return [];
 		throw cause;
 	}
 }
@@ -378,10 +627,11 @@ function curriculumComponentId(specificationId: string, specRef: string): string
 }
 
 async function staticFallbackCards(scope: RecallCatalogScope): Promise<RecallCard[]> {
+	if (!isScienceLearnerSubject(scope.subject)) return [];
 	const fallback = staticSeparateHigherOffering[scope.subject];
 	if (scope.offeringId !== fallback.offeringId) return [];
 	const definitions = curatedRecallCards.filter((card) => card.subject === scope.subject);
-	return await Promise.all(
+	const hydrated = await Promise.all(
 		definitions.map(async (card) => {
 			const topic = recallCurriculumTopics.find(
 				(entry) => entry.subject === card.subject && entry.id === card.topicId
@@ -395,25 +645,27 @@ async function staticFallbackCards(scope: RecallCatalogScope): Promise<RecallCar
 			]);
 			return {
 				...card,
+				topicTitle: topic.title,
+				topicPaper: topic.paper,
 				choiceKeys,
 				offeringId: fallback.offeringId,
 				curriculumComponentId: curriculumComponentId(fallback.specificationId, card.specRef),
 				topicComponentId: curriculumComponentId(fallback.specificationId, topic.specRef),
 				contentRevision: 1,
 				contentHash: await sha256(staticCardContent(card))
-			};
+			} satisfies RecallCard;
 		})
 	);
+	return scope.topicComponentId
+		? hydrated.filter((card) => card.topicComponentId === scope.topicComponentId)
+		: hydrated;
 }
 
-function mergePublishedRecallCards(
-	generated: readonly RecallCard[],
-	fallback: readonly RecallCard[]
-): RecallCard[] {
+function mergePublishedRecallCards(catalogs: readonly (readonly RecallCard[])[]): RecallCard[] {
 	const seenIds = new Set<string>();
 	const seenContent = new Set<string>();
 	const merged: RecallCard[] = [];
-	for (const card of [...generated, ...fallback]) {
+	for (const card of catalogs.flat()) {
 		const contentKey = `${normalized(card.front)}\u0000${normalized(card.back)}`;
 		if (seenIds.has(card.id) || seenContent.has(contentKey)) continue;
 		seenIds.add(card.id);
@@ -425,20 +677,21 @@ function mergePublishedRecallCards(
 
 export async function getRecallCards(scope?: RecallCatalogScope): Promise<RecallCard[]> {
 	if (!scope) return [];
-	const key = `${scope.subject}|${scope.offeringId}`;
+	const key = `${scope.subject}|${scope.offeringId}|${scope.topicComponentId?.trim() || '*'}`;
 	const now = Date.now();
 	const current = catalogCache.get(key);
 	if (current && current.expiresAt > now) return await current.promise;
 
 	const promise = (async () => {
-		const generated = await readGeneratedRecallCards(scope);
-		const fallback = await staticFallbackCards(scope);
-		// A focused import is an overlay, not evidence that the whole offering has
-		// been generated. Keep every ready canonical card available and let reviewed
-		// D1 content win only exact ID/content collisions. An offering-wide catalog
-		// can replace its predecessor only through a future explicit coverage release.
-		if (generated.hasEligibleRows) return mergePublishedRecallCards(generated.cards, fallback);
-		return fallback;
+		const [standard, generated, fallback] = await Promise.all([
+			readStandardStudyCards(scope),
+			readGeneratedRecallCards(scope),
+			staticFallbackCards(scope)
+		]);
+		// Standard releases are the cross-subject runtime catalog. Legacy reviewed
+		// science cards and the exact Separate-Higher static bank remain overlays,
+		// with earlier sources winning only exact identity/content collisions.
+		return mergePublishedRecallCards([standard, generated, fallback]);
 	})();
 	const entry = { expiresAt: now + RECALL_CATALOG_CACHE_TTL_MS, promise };
 	catalogCache.set(key, entry);

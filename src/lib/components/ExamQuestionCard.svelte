@@ -1,7 +1,11 @@
 <script lang="ts">
 	import BlockRenderer from '$lib/experiments/questions/components/BlockRenderer.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import type { ExamPaperAsset, ExamQuestionBlock } from '$lib/experiments/questions/types';
+	import type {
+		ExamPaperAsset,
+		ExamQuestionBlock,
+		PaperMeasurement
+	} from '$lib/experiments/questions/types';
 	import { markLabel } from '$lib/marks';
 	import QuestionAssetFigure from './QuestionAssetFigure.svelte';
 
@@ -12,6 +16,7 @@
 		sourceLabel: string;
 		paperWidthPx?: number | null;
 		paperHeightPx?: number | null;
+		paperMeasurement?: PaperMeasurement | null;
 	};
 
 	type ExamQuestion = {
@@ -73,7 +78,8 @@
 					label: asset.sourceLabel,
 					src: asset.publicPath,
 					alt: asset.altText,
-					width: asset.paperWidthPx ?? undefined
+					width: asset.paperWidthPx ?? undefined,
+					paperMeasurement: asset.paperMeasurement ?? null
 				}
 			])
 		) as Record<string, ExamPaperAsset>

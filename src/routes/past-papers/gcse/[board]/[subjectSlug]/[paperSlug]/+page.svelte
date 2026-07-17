@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import { Download, FileCheck2, FileText, Layers } from '@lucide/svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import PastPaperDownloadRows from '$lib/pastPapers/PastPaperDownloadRows.svelte';
@@ -7,6 +8,7 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	const paperTitle = $derived(
 		`${data.page.pageLabel} ${data.page.entry.paper} ${data.page.entry.series} ${data.page.entry.year}`
@@ -138,6 +140,20 @@
 			<h1 id="paper-title">{paperTitle}</h1>
 		</section>
 
+		{#if data.sitting}
+			<section class="online-sitting" aria-labelledby="online-sitting-title">
+				<div>
+					<p>Reviewed online paper</p>
+					<h2 id="online-sitting-title">Sit this paper in the browser</h2>
+					<span>
+						{data.sitting.durationMinutes} minutes · {data.sitting.totalMarks} marks ·
+						{data.sitting.questionCount} reviewed questions
+					</span>
+				</div>
+				<a href={resolveInternalPath(data.sitting.href)}>Start or resume</a>
+			</section>
+		{/if}
+
 		<section class="download-section" aria-labelledby="download-title">
 			<div class="section-heading">
 				<h2 id="download-title">Files</h2>
@@ -237,6 +253,54 @@
 	.download-section,
 	.related-section {
 		padding-top: 1.6rem;
+	}
+
+	.online-sitting {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 1.2rem;
+		border: 1px solid #9ec7ad;
+		padding: 1rem;
+		background: #f0faf4;
+		color: #173d31;
+	}
+
+	.online-sitting p,
+	.online-sitting h2,
+	.online-sitting span {
+		margin: 0;
+	}
+
+	.online-sitting p {
+		color: #176340;
+		font-size: 0.76rem;
+		font-weight: 740;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+	}
+
+	.online-sitting h2 {
+		margin-top: 0.2rem;
+		font-size: 1.08rem;
+	}
+
+	.online-sitting span {
+		display: block;
+		margin-top: 0.28rem;
+		color: #526b61;
+		font-size: 0.84rem;
+	}
+
+	.online-sitting a {
+		border-radius: 0.3rem;
+		padding: 0.65rem 0.85rem;
+		background: #176340;
+		color: white;
+		font-weight: 720;
+		text-decoration: none;
 	}
 
 	.section-heading {
@@ -368,6 +432,17 @@
 	:global(:root[data-theme='dark']) .related-section :global(.paper-table) {
 		border-color: #263449;
 		background: rgba(15, 23, 42, 0.78);
+	}
+
+	:global(:root[data-theme='dark']) .online-sitting {
+		border-color: #35644c;
+		background: #0d231a;
+		color: #dff5e7;
+	}
+
+	:global(:root[data-theme='dark']) .online-sitting p,
+	:global(:root[data-theme='dark']) .online-sitting span {
+		color: #9bd8b2;
 	}
 
 	:global(:root[data-theme='dark']) .document-card:hover,

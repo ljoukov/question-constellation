@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1",
+  "recoveredReleaseId": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "historicalArtifactHash": "8713257a89d3c4ff43d9b31f17b3b5ebcab75e380502831ff767bd92faedb59b",
+  "generator": {
+    "runId": "019f6c35-25b3-7801-8e63-33fd77882660",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-34-10-019f6c35-25b3-7801-8e63-33fd77882660.jsonl",
+    "jsonlHash": "65c31386fee894f668a52d5f5153d02fa9c3bf7757bf00b0249ff2dcf7e4544f",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1/generation",
+    "startedAt": "2026-07-16T18:34:10.453Z",
+    "completedAt": "2026-07-16T18:35:30.211Z",
+    "modelOutputHash": "5a4df24a5db5e1f04bda4b3ced33fac5ea9e63c097c861aa4d5b354344d1044c"
+  },
+  "reviewer": {
+    "runId": "019f6c36-600a-7e23-b45f-5fae8e844bc0",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-35-30-019f6c36-600a-7e23-b45f-5fae8e844bc0.jsonl",
+    "jsonlHash": "c8e748b8f5f17a68afa68264b432307804eedff0d91df032ea3ce2700ad4ff69",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1/review",
+    "startedAt": "2026-07-16T18:35:30.832Z",
+    "completedAt": "2026-07-16T18:35:39.424Z",
+    "modelOutputHash": "903e4ac50dc9468cdd8662f208d0d6f0c71ea65677d81ac41d69b3ed9e628798"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "a54e1a8e3f38a0a8df37d22d6c070bc557413b8cfee11ffb8677d5788540d871"
+}

@@ -1,0 +1,18 @@
+{
+  "coverage": [
+    {
+      "offeringId": "ocr-gcse-english-language-j351-v2.0:higher",
+      "topicComponentId": "ocr-gcse-english-language-j351-v2.0:01",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-language-j351-v2.0:higher",
+      "topicComponentId": "ocr-gcse-english-language-j351-v2.0:02",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    }
+  ]
+}

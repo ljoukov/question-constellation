@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { PracticePageData } from './questionData';
-import { isQuestionInGapScope, type GapFollowUpScope } from './personalLearning';
+import {
+	isQuestionInGapScope,
+	questionAttemptFollowUpKind,
+	type GapFollowUpScope
+} from './personalLearning';
 
 function scienceQuestion({
 	id,
@@ -108,5 +112,72 @@ describe('gap follow-up question scope', () => {
 				source
 			)
 		).toBe(true);
+	});
+});
+
+describe('science attempt follow-up routing', () => {
+	it.each([
+		{ marks: 3, expected: 'recall' },
+		{ marks: 4, expected: 'close_gap' },
+		{ marks: 6, expected: 'close_gap' },
+		{ marks: 7, expected: 'none' }
+	] as const)('routes a $marks-mark causal question to $expected', ({ marks, expected }) => {
+		expect(
+			questionAttemptFollowUpKind({
+				subject: 'Biology',
+				marks,
+				chainStepCount: 4,
+				chainTitle: 'Cause to process to effect'
+			})
+		).toBe(expected);
+	});
+
+	it('keeps short or explicitly recall-shaped chains out of close-gap practice', () => {
+		expect(
+			questionAttemptFollowUpKind({
+				subject: 'Chemistry',
+				marks: 4,
+				chainStepCount: 2,
+				chainTitle: 'Short chain'
+			})
+		).toBe('recall');
+		expect(
+			questionAttemptFollowUpKind({
+				subject: 'Physics',
+				marks: 6,
+				chainStepCount: 4,
+				chainTitle: 'Recall the named structure'
+			})
+		).toBe('recall');
+	});
+
+	it('never creates the science close-gap flow for another subject', () => {
+		expect(
+			questionAttemptFollowUpKind({
+				subject: 'Geography',
+				marks: 4,
+				chainStepCount: 4,
+				chainTitle: 'Cause to process to effect'
+			})
+		).toBe('none');
+	});
+
+	it('keeps the mark range authoritative even for recall-shaped outliers', () => {
+		expect(
+			questionAttemptFollowUpKind({
+				subject: 'Physics',
+				marks: 7,
+				chainStepCount: 2,
+				chainTitle: 'Recall a named law'
+			})
+		).toBe('none');
+		expect(
+			questionAttemptFollowUpKind({
+				subject: 'Biology',
+				marks: 0,
+				chainStepCount: 1,
+				chainTitle: 'Recall a named structure'
+			})
+		).toBe('none');
 	});
 });

@@ -1,4 +1,8 @@
 import { gradeQuestionAnswerStreaming, type GradeStreamDelta } from '$lib/server/answerGrading';
+import {
+	constructedAnswerIsIndependent,
+	normalizeConstructedAnswerAssistance
+} from '$lib/learning/answerAssistance';
 import { recordQuestionAttempt } from '$lib/server/personalLearning';
 import { recordQuestionAttemptEvidence } from '$lib/server/subjectLearning';
 import { createSseStream, sseResponse } from '$lib/server/sse';
@@ -33,12 +37,19 @@ const requestSchema = z.object({
 		.object({
 			hintOpened: z.boolean().default(false),
 			markingPointsViewed: z.boolean().default(false),
-			feedbackRewrite: z.boolean().default(false)
+			feedbackRewrite: z.boolean().default(false),
+			externalInputDetected: z.boolean().default(false),
+			externalInputSources: z
+				.array(z.enum(['paste', 'drop']))
+				.max(2)
+				.default([])
 		})
 		.default({
 			hintOpened: false,
 			markingPointsViewed: false,
-			feedbackRewrite: false
+			feedbackRewrite: false,
+			externalInputDetected: false,
+			externalInputSources: []
 		})
 });
 
@@ -123,6 +134,7 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 
 	void (async () => {
 		try {
+			const assistance = normalizeConstructedAnswerAssistance(body.assistance);
 			const result = await gradeQuestionAnswerStreaming({
 				questionId,
 				studentAnswer: body.answer,
@@ -137,7 +149,8 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 					questionId,
 					answer: body.answer,
 					result,
-					attemptId: body.attemptId
+					attemptId: body.attemptId,
+					assistance
 				});
 				if (savedAttempt) {
 					await recordQuestionAttemptEvidence({
@@ -145,7 +158,7 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 						attemptId: savedAttempt.id,
 						questionId,
 						result,
-						assistance: body.assistance,
+						assistance,
 						sourceSessionId: body.sourceSessionId,
 						responseDurationMs: body.responseDurationMs
 					});
@@ -160,7 +173,15 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 
 			send({
 				event: 'done',
-				data: JSON.stringify({ ...result, savedAttempt })
+				data: JSON.stringify({
+					...result,
+					savedAttempt,
+					evidence: {
+						independent: constructedAnswerIsIndependent(assistance),
+						externalInputDetected: assistance.externalInputDetected,
+						externalInputSources: assistance.externalInputSources
+					}
+				})
 			});
 		} catch (error) {
 			console.error('[question-grade] failed to grade answer', {

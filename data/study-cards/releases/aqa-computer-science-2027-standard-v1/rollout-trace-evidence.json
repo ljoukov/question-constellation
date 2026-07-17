@@ -1,0 +1,26 @@
+{
+	"schemaVersion": "study-card-rollout-content-addressed-evidence-v1",
+	"status": "passed",
+	"releaseId": "aqa-computer-science-2027-standard-v1",
+	"acceptedArtifactSha256": "21591d37a66686ab1c1eeed811893e8c8883a17d09a1515005f50819e2b2cebf",
+	"runs": {
+		"generation": {
+			"runId": "019f6b9d-9a14-71c1-b821-25d0d50bc751",
+			"jsonlFileName": "generation-rollout-source.jsonl",
+			"eventStreamSha256": "957341cd8bbb97ed690103ddca5ae66da04b70ecc251bdea14d2711f8f79cde0",
+			"sanitizedEventCount": 46,
+			"promptSha256": "f1589c784fed821e145b05b10429140bd161e989fe93ecf251cf2eba4dfd642b",
+			"modelOutputSha256": "0d5786b6436a7fb97fa8b2863c9d2bbb1414ea0ce87a92521beb4c9047aa2fd7",
+			"summarySha256": "e8e2316a697c6676d4f6597aad034f0d16fe47059324d5fbb63facee28382d30"
+		},
+		"review": {
+			"runId": "019f6ba6-a6ba-7640-bbe1-66ab1cd369f9",
+			"jsonlFileName": "review-rollout-source.jsonl",
+			"eventStreamSha256": "6ad83e0b12aa7c13d38cda17d3504b9e404af754c3c041880408b37cbc702aa8",
+			"sanitizedEventCount": 22,
+			"promptSha256": "b908902a5c2702d7a2e78cf2be02d3a7d251dafe7608d4a579abd0d66a74901a",
+			"modelOutputSha256": "75fec6a64a4212f99f433a5df2137b35a90e0757841ddd873fe778b3df4623d6",
+			"summarySha256": "7b8db9875b862f68ab6887da0a9a1bb12b284c5c7f1140e326a6c5712d53580b"
+		}
+	}
+}

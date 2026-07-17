@@ -1,9 +1,16 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import type { AdminUser } from '$lib/server/auth/session';
-	import { ArrowRight, Brain, CheckSquare } from '@lucide/svelte';
-	import type { RecallCardDefinition, RecallSubject, RecallTopic } from './aqaScienceRecall';
+	import { ArrowRight, Brain, CheckSquare, CircleHelp } from '@lucide/svelte';
+	import {
+		runtimeRecallSubjects,
+		type RecallCard,
+		type RecallRuntimeSubject,
+		type RecallTopic
+	} from './aqaScienceRecall';
 	import {
 		recallActivityHref,
 		recallActivityLabel,
@@ -14,19 +21,22 @@
 
 	let {
 		subject,
+		board,
 		activity,
 		pageKind: _pageKind = 'activity',
 		cards,
 		topics,
 		user = null
 	}: {
-		subject: RecallSubject;
+		subject: RecallRuntimeSubject;
+		board: 'AQA' | 'OCR';
 		activity: RecallActivity;
 		pageKind?: 'activity' | 'coverage';
-		cards: RecallCardDefinition[];
+		cards: RecallCard[];
 		topics: RecallTopic[];
 		user?: AdminUser | null;
 	} = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	const title = $derived(recallActivityLabel(activity));
 	const returnTo = $derived(recallActivityHref(subject, activity));
@@ -34,21 +44,23 @@
 		topics.filter((topic) => cards.some((card) => card.topicId === topic.id)).length
 	);
 	const quickStartSize = $derived(Math.min(10, cards.length));
-	const subjectOptions = ['Biology', 'Chemistry', 'Physics'];
-	const browseHref = $derived(`/chains?subject=${encodeURIComponent(subject)}`);
+	const subjectOptions = runtimeRecallSubjects.filter((option) => option !== 'All subjects');
+	const browseHref = $derived(resolve(`/chains?subject=${encodeURIComponent(subject)}`));
 
 	function cardsForTopic(topicId: string) {
 		return cards.filter((card) => card.topicId === topicId);
 	}
 
-	function startHref(topic = 'all') {
-		return recallSessionHref({
-			subject,
-			activity,
-			topic,
-			size: Math.min(10, cards.length),
-			returnTo
-		});
+	function startHref(topic = 'all'): ResolvedPathname {
+		return resolveInternalPath(
+			recallSessionHref({
+				subject,
+				activity,
+				topic,
+				size: Math.min(10, cards.length),
+				returnTo
+			})
+		);
 	}
 </script>
 
@@ -60,7 +72,7 @@
 		showSearch={false}
 		showNavigation
 		onSubjectChange={(nextSubject) => {
-			const slug = recallSubjectSlugs[nextSubject as RecallSubject];
+			const slug = recallSubjectSlugs[nextSubject as RecallRuntimeSubject];
 			if (slug) window.location.href = `/recall/${slug}/${activity}`;
 		}}
 	/>
@@ -68,21 +80,31 @@
 	<div class="recall-route-shell">
 		<header class="recall-route-header">
 			<div>
-				<p class="recall-route-kicker">AQA GCSE {subject}</p>
+				<p class="recall-route-kicker">{board} GCSE {subject}</p>
 				<h1>{title}</h1>
 				<p>Start a quick mixed stack, or choose one curriculum topic.</p>
 			</div>
 			<nav class="recall-activity-switch" aria-label="Recall activity">
 				<a
 					class:active={activity === 'flashcards'}
-					href={recallActivityHref(subject, 'flashcards')}
+					href={resolveInternalPath(recallActivityHref(subject, 'flashcards'))}
 				>
 					<Brain size={17} aria-hidden="true" />
 					Flashcards
 				</a>
-				<a class:active={activity === 'mcq'} href={recallActivityHref(subject, 'mcq')}>
+				<a
+					class:active={activity === 'mcq'}
+					href={resolveInternalPath(recallActivityHref(subject, 'mcq'))}
+				>
 					<CheckSquare size={17} aria-hidden="true" />
 					Multiple choice
+				</a>
+				<a
+					class:active={activity === 'true-false'}
+					href={resolveInternalPath(recallActivityHref(subject, 'true-false'))}
+				>
+					<CircleHelp size={17} aria-hidden="true" />
+					True or false
 				</a>
 			</nav>
 		</header>

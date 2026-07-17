@@ -1,0 +1,74 @@
+{
+	"schemaVersion": "standard-study-card-supplemental-source-recovery-v1",
+	"recoveryId": "aqa-8525-hardware-software-mark-scheme-v1",
+	"promptVersion": "standard-study-card-supplemental-source-recovery-v1",
+	"batchId": "aqa-computer-science-8525-computer-science-all-descendants-01-ea3593b819-v1",
+	"specificationId": "aqa-gcse-computer-science-8525-v1.3-2027",
+	"subject": "Computer Science",
+	"baseWorkDir": "tmp/study-card-generation/aqa-computer-science-8525-computer-science-all-descendants-01-ea3593b819-v1",
+	"artifactPath": "data/study-cards/releases/aqa-computer-science-8525-computer-science-all-descendants-01-ea3593b819-v1/accepted-study-cards.json",
+	"queueStatePath": "docs/release-evidence/study-card-descendant-coverage/queue-state.json",
+	"model": "gpt-5.6-sol",
+	"thinkingLevel": "max",
+	"expectedBase": {
+		"candidateCount": 18,
+		"acceptedCount": 17,
+		"rejectedCount": 1,
+		"generatorRunId": "019f6c53-7eac-7261-925c-5237fc67de5f",
+		"reviewerRunId": "019f6c5b-b976-79c3-bbce-db7ecfa4a79f"
+	},
+	"baseTraceFiles": {
+		"plan.json": "4112a1ddf047dbf9f49b2cf6377b3559bef7bb3b93970c7898210ea08360d468",
+		"source-evidence.json": "974fc5a62063e29e79ca8dc85dd8bc0dc8aead1b9fca385bcc1a70327072b420",
+		"candidate-cards.json": "fca5092f8002abfd2e401b8144439a71d92ab42da8db2eba1f0cd796200b739e",
+		"review.json": "59deb2db1ee24e8ec5a2d9f5185d7a51c010e34f5991373ed2a628edffb4fadf",
+		"generation/codex-run-summary.json": "45d18e91becafded4ea2e3f089cc06b80f42fb389584193b69fad80ba07ccf5e",
+		"review/codex-run-summary.json": "44f33f5cb90c802980742b10d189bdec6bd8affed6f454f6acd9e045a00ae9c3"
+	},
+	"requiredIdentity": {
+		"id": "aqa-8525-145da157fc-aqa-8525-card-3-4-1-hardware-software",
+		"conceptKey": "aqa-8525-145da157fc-aqa-8525-hardware-software-relationship",
+		"topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+		"curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4-1"
+	},
+	"allowedVisualCues": ["💻", "🧮", "🔐", "🗄️", "🌐", "🧩", "🔀", "📈"],
+	"retrieval": {
+		"kind": "definition",
+		"front": "What is software, and how does it relate to hardware?",
+		"back": "A program, code or instructions executed by, or controlling the operation of, hardware.",
+		"reverseFront": null,
+		"reverseBack": null,
+		"memoryTip": null
+	},
+	"answerSourceId": "aqa-85252-jun23-mark-scheme-q09-1",
+	"sources": [
+		{
+			"id": "aqa-85252-jun23-question-paper-q09-1",
+			"kind": "question-paper",
+			"url": "https://cdn.sanity.io/files/p28bar15/green/52f67d882ddb6f4df1a8fc8f9a9670163bc5242c.pdf",
+			"title": "Question paper: Paper 2 Computing concepts - June 2023",
+			"localPath": "data/aqa-gcse-history-geography-computer-science/question-papers/AQA-85252-QP-JUN23.PDF",
+			"sha256": "8433047a46c08d03325fcb0a580ba9b744386f7d7b8dbd1912fe22a4ad9f767e",
+			"pdfPage": 10,
+			"pageTextSha256": "9b0ca3a1d6800f8ed5b717d81882d7ec1c2fe11f5ddc42e65a942c42020b9f75",
+			"locator": "PDF page 10; question 09.1",
+			"excerpt": "0 9 . 1 Define the term software.",
+			"rightsBasis": "official_exam_board_question_paper",
+			"supports": ["front"]
+		},
+		{
+			"id": "aqa-85252-jun23-mark-scheme-q09-1",
+			"kind": "mark-scheme",
+			"url": "https://cdn.sanity.io/files/p28bar15/green/642bc63cc1a2bde5150267668b706cbdaa16b9fc.pdf",
+			"title": "Mark scheme: Paper 2 Computing concepts - June 2023",
+			"localPath": "data/aqa-gcse-history-geography-computer-science/mark-schemes/AQA-85252-MS-JUN23.PDF",
+			"sha256": "f32360582e4f42933eabd545fd13e080fbf56ee6aa7e12c3996fc8f00593c21a",
+			"pdfPage": 9,
+			"pageTextSha256": "3605a4133faae61d44641d152a80cdcf9c59d723bf8b9a329d3275e5c259a1a6",
+			"locator": "PDF page 9; question 09.1",
+			"excerpt": "program / code / instructions (executed by / controls the operation of the\nhardware);",
+			"rightsBasis": "official_exam_board_mark_scheme",
+			"supports": ["front", "back", "explanation"]
+		}
+	]
+}

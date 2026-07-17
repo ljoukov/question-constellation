@@ -1,0 +1,956 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c42-37a7-7a01-9dd0-5ccefad54e8f"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c47-bd31-79a1-8026-2ba5cb75ea31",
+      "independentTurn": true
+    },
+    "supplementalRuns": [
+      {
+        "purpose": "targeted-card-repair",
+        "promptVersion": "standard-study-card-reviewed-repair-v3",
+        "cardIds": [
+          "aqa-8464-cdcf4e788e-aqa-8464-5-3-2-1-mole-mass-relative-formula-mass"
+        ],
+        "generator": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "runId": "019f6c49-0960-7d10-a415-0ba69e5daf57"
+        },
+        "reviewer": {
+          "model": "gpt-5.6-sol",
+          "thinkingLevel": "max",
+          "runId": "019f6c49-7d8d-79c1-ad47-b5aae21075a2",
+          "independentTurn": true
+        },
+        "startedAt": "2026-07-16T18:55:53.833Z",
+        "finishedAt": "2026-07-16T18:56:32.400Z"
+      }
+    ],
+    "startedAt": "2026-07-16T18:48:27.004Z",
+    "finishedAt": "2026-07-16T18:56:32.400Z",
+    "sourceManifestHash": "510e42efa142835d2f91545918f2c623806381c5d8668c1a875357b03659aa09",
+    "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-chemistry-higher-only-descendants-01-8675894c32-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8464-cdcf4e788e-aqa-8464-5-3-2-1-mole-mass-relative-formula-mass",
+      "conceptKey": "aqa-8464-cdcf4e788e-aqa-8464-mole-mass-relative-formula-mass",
+      "kind": "fact",
+      "visualCue": "📏",
+      "front": "How is the mass of one mole of a substance in grams related to its relative formula mass?",
+      "back": "It is numerically equal to the substance's relative formula mass.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "For a substance, the numerical value of the mass of one mole in grams equals its relative formula mass.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is numerically equal to the substance's relative formula mass.",
+          "isCorrect": true,
+          "feedback": "Correct. The mass of one mole in grams is numerically equal to the relative formula mass.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It is numerically equal to the relative formula mass when measured in kilograms.",
+          "isCorrect": false,
+          "feedback": "The numerical equality applies when the mass of one mole is measured in grams, not kilograms.",
+          "misconception": "wrong-mass-unit"
+        },
+        {
+          "key": "c",
+          "text": "It is the same for every substance because every mole contains the same number of particles.",
+          "isCorrect": false,
+          "feedback": "Moles contain the same number of stated particles, but the mass of one mole in grams is tied to the substance's relative formula mass.",
+          "misconception": "confuses-equal-particle-number-with-equal-mass"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 86-88; 5.3.2.1 Moles (HT only)",
+          "excerpt": "The mass of one mole of a substance in grams is numerically equal\nto its relative formula mass.\nOne mole of a substance contains the same number of the stated\nparticles, atoms, molecules or ions as one mole of any other\nsubstance.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-1",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-d409fabab9-aqa-8464-5-3-2-2-balanced-symbol-equation-masses",
+      "conceptKey": "aqa-8464-d409fabab9-aqa-8464-balanced-symbol-equation-mass-calculation",
+      "kind": "method",
+      "visualCue": "📏",
+      "front": "What type of equation can be used to calculate the masses of reactants and products?",
+      "back": "A balanced symbol equation.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Reactant and product masses can be calculated from balanced symbol equations.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A balanced symbol equation.",
+          "isCorrect": true,
+          "feedback": "Correct: the mass calculation is based on a balanced symbol equation.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An unbalanced symbol equation.",
+          "isCorrect": false,
+          "feedback": "Balancing is required; the source specifies balanced symbol equations.",
+          "misconception": "ignores-equation-balancing"
+        },
+        {
+          "key": "c",
+          "text": "A word equation, whether balanced or not.",
+          "isCorrect": false,
+          "feedback": "The source specifically identifies balanced symbol equations.",
+          "misconception": "uses-word-equation-for-stoichiometry"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 86-88; 5.3.2.2 Amounts of substances in equations (HT only)",
+          "excerpt": "The masses of reactants and products can be calculated from\nbalanced symbol equations.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-362c521459-aqa-8464-5-3-2-3-mass-moles-whole-number-ratio",
+      "conceptKey": "aqa-8464-362c521459-aqa-8464-balancing-equations-from-masses",
+      "kind": "process",
+      "visualCue": "🧪",
+      "front": "How can balancing numbers be calculated when the masses of reactants and products are given in grams?",
+      "back": "Convert the masses in grams to moles, then convert the mole amounts to a simple whole-number ratio.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The supported sequence is masses in grams to amounts in moles, followed by a simple whole-number mole ratio.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Convert the masses in grams to moles, then convert the mole amounts to a simple whole-number ratio.",
+          "isCorrect": true,
+          "feedback": "Correct: the balancing numbers come from the simple whole-number ratio of the mole amounts.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Use the masses in grams directly as the balancing numbers.",
+          "isCorrect": false,
+          "feedback": "The masses must first be converted from grams to amounts in moles.",
+          "misconception": "uses-gram-masses-as-coefficients"
+        },
+        {
+          "key": "c",
+          "text": "Convert the masses to moles and use those values directly, without finding a simple whole-number ratio.",
+          "isCorrect": false,
+          "feedback": "The mole amounts must still be converted to a simple whole-number ratio.",
+          "misconception": "stops-before-whole-number-ratio"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 86-88; 5.3.2.3 Using moles to balance equations (HT only)",
+          "excerpt": "The balancing numbers in a symbol equation can be calculated\nfrom the masses of reactants and products by converting the\nmasses in grams to amounts in moles and converting the numbers\nof moles to simple whole number ratios.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-b83e318a91-aqa-8464-5-3-2-4-limiting-reactant-definition",
+      "conceptKey": "aqa-8464-b83e318a91-aqa-8464-limiting-reactant-completely-used-up",
+      "kind": "definition",
+      "visualCue": "🧪",
+      "front": "In a reaction involving two reactants, what is the limiting reactant?",
+      "back": "The reactant that is completely used up and therefore limits the amount of products.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The limiting reactant is completely used up, so it limits the amount of products.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The reactant that is completely used up and therefore limits the amount of products.",
+          "isCorrect": true,
+          "feedback": "Correct: complete use of this reactant limits how much product can form.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The reactant that is deliberately used in excess.",
+          "isCorrect": false,
+          "feedback": "The limiting reactant is the one completely used up, not the reactant used in excess.",
+          "misconception": "confuses-excess-with-limiting-reactant"
+        },
+        {
+          "key": "c",
+          "text": "Whichever reactant has the smaller starting mass.",
+          "isCorrect": false,
+          "feedback": "Starting mass is not the definition; the limiting reactant is identified by being completely used up.",
+          "misconception": "uses-smallest-mass-rule"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 86-88; 5.3.2.4 Limiting reactants (HT only)",
+          "excerpt": "In a chemical reaction involving two reactants, it is common to use\nan excess of one of the reactants to ensure that all of the other\nreactant is used. The reactant that is completely used up is called\nthe limiting reactant because it limits the amount of products.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-4",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-836e8da193-aqa-8464-5-4-1-4-electron-oxidation-reduction",
+      "conceptKey": "aqa-8464-836e8da193-aqa-8464-oxidation-loss-reduction-gain-electrons",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "In terms of electrons, what are oxidation and reduction?",
+      "back": "Oxidation is loss of electrons; reduction is gain of electrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Oxidation and reduction are distinguished by electron transfer: loss for oxidation and gain for reduction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Oxidation is loss of electrons; reduction is gain of electrons.",
+          "isCorrect": true,
+          "feedback": "Correct: oxidation is electron loss and reduction is electron gain.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Oxidation is gain of electrons; reduction is loss of electrons.",
+          "isCorrect": false,
+          "feedback": "The electron changes are reversed: oxidation is loss and reduction is gain.",
+          "misconception": "reverses-electron-transfer"
+        },
+        {
+          "key": "c",
+          "text": "Oxidation is loss of protons; reduction is gain of protons.",
+          "isCorrect": false,
+          "feedback": "These definitions concern electrons, not protons.",
+          "misconception": "confuses-electrons-with-protons"
+        },
+        {
+          "key": "d",
+          "text": "Oxidation and reduction both involve loss of electrons.",
+          "isCorrect": false,
+          "feedback": "Only oxidation is electron loss; reduction is electron gain.",
+          "misconception": "treats-both-as-electron-loss"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 90-95; 5.4.1.4 Oxidation and reduction in terms of electrons (HT only)",
+          "excerpt": "Oxidation is the loss of electrons and reduction is the gain of\nelectrons.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-1-4",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-961f56ec9d-aqa-8464-5-4-2-5-strong-weak-acid-ionisation",
+      "conceptKey": "aqa-8464-961f56ec9d-aqa-8464-strong-weak-acid-degree-of-ionisation",
+      "kind": "comparison",
+      "visualCue": "🧪",
+      "front": "How do strong and weak acids differ in their ionisation in aqueous solution?",
+      "back": "A strong acid is completely ionised; a weak acid is only partially ionised.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The distinction is the degree of ionisation in aqueous solution: complete for a strong acid and only partial for a weak acid.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A strong acid is completely ionised; a weak acid is only partially ionised.",
+          "isCorrect": true,
+          "feedback": "Correct: complete ionisation defines a strong acid, while partial ionisation defines a weak acid.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A strong acid is only partially ionised; a weak acid is completely ionised.",
+          "isCorrect": false,
+          "feedback": "The definitions are reversed: the strong acid is completely ionised.",
+          "misconception": "reverses-ionisation-definitions"
+        },
+        {
+          "key": "c",
+          "text": "Both are only partially ionised, with the strong acid ionised to a greater extent.",
+          "isCorrect": false,
+          "feedback": "The source defines a strong acid as completely, not partially, ionised.",
+          "misconception": "treats-strong-acid-as-partially-ionised"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 90-95; 5.4.2.5 Strong and weak acids (HT only)",
+          "excerpt": "A strong acid is completely ionised in aqueous solution. Examples\nof strong acids are hydrochloric, nitric and sulfuric acids.\nA weak acid is only partially ionised in aqueous solution.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-2-5",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-eb6e44ff4c-aqa-8464-5-4-3-5-electrode-electron-transfer",
+      "conceptKey": "aqa-8464-eb6e44ff4c-aqa-8464-cathode-reduction-anode-oxidation",
+      "kind": "process",
+      "visualCue": "⚡",
+      "front": "During electrolysis, what happens to ions at the cathode and anode, and which redox process occurs at each?",
+      "back": "At the cathode, positive ions gain electrons (reduction); at the anode, negative ions lose electrons (oxidation).",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Cathode reactions are reductions because positively charged ions gain electrons. Anode reactions are oxidations because negatively charged ions lose electrons.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "At the cathode, positive ions gain electrons (reduction); at the anode, negative ions lose electrons (oxidation).",
+          "isCorrect": true,
+          "feedback": "Correct: electron gain occurs at the cathode and electron loss occurs at the anode.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "At the cathode, positive ions lose electrons (oxidation); at the anode, negative ions gain electrons (reduction).",
+          "isCorrect": false,
+          "feedback": "The electron changes are reversed: cathode ions gain electrons and anode ions lose them.",
+          "misconception": "reverses-electrode-electron-transfer"
+        },
+        {
+          "key": "c",
+          "text": "At the cathode, negative ions gain electrons (reduction); at the anode, positive ions lose electrons (oxidation).",
+          "isCorrect": false,
+          "feedback": "The ion charges are reversed: positive ions react at the cathode and negative ions at the anode.",
+          "misconception": "reverses-ions-at-electrodes"
+        },
+        {
+          "key": "d",
+          "text": "At both electrodes, ions gain electrons and undergo reduction.",
+          "isCorrect": false,
+          "feedback": "Only the cathode reaction is reduction; the anode reaction is oxidation.",
+          "misconception": "treats-both-electrodes-as-reduction"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 90-95; 5.4.3.5 Representation of reactions at electrodes as half equations (HT only)",
+          "excerpt": "During electrolysis, at the cathode (negative electrode), positively\ncharged ions gain electrons and so the reactions are reductions.\nAt the anode (positive electrode), negatively charged ions lose\nelectrons and so the reactions are oxidations.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-3-5",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-73b6169329-aqa-8464-5-5-1-3-bond-energy-overall-change",
+      "conceptKey": "aqa-8464-73b6169329-aqa-8464-overall-energy-change-from-bond-energies",
+      "kind": "formula",
+      "visualCue": "🔗",
+      "front": "How is the overall energy change of a reaction calculated from bond energies?",
+      "back": "Overall energy change = energy needed to break reactant bonds − energy released when product bonds form.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The overall change is the sum of the energy needed to break reactant bonds minus the sum released when product bonds form.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Overall energy change = energy needed to break reactant bonds − energy released when product bonds form.",
+          "isCorrect": true,
+          "feedback": "Correct: subtract the product-bond formation total from the reactant-bond breaking total.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Overall energy change = energy needed to break reactant bonds + energy released when product bonds form.",
+          "isCorrect": false,
+          "feedback": "The overall change is the difference between the two energy sums, not their total.",
+          "misconception": "adds-bond-energy-totals"
+        },
+        {
+          "key": "c",
+          "text": "Overall energy change = energy released when product bonds form − energy needed to break reactant bonds.",
+          "isCorrect": false,
+          "feedback": "This reverses the calculation: the breaking total comes before the forming total.",
+          "misconception": "reverses-bond-energy-subtraction"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 97-97; 5.5.1.3 The energy change of reactions (HT only)",
+          "excerpt": "The difference between the sum of the energy needed to break\nbonds in the reactants and the sum of the energy released when\nbonds in the products are formed is the overall energy change of\nthe reaction.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5-1-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-5efc50b1f4-aqa-8464-5-6-2-4-equilibrium-counteracts-change",
+      "conceptKey": "aqa-8464-5efc50b1f4-aqa-8464-le-chatelier-counteracts-condition-change",
+      "kind": "cause-consequence",
+      "visualCue": "⚖️",
+      "front": "If conditions are changed while a chemical system is at equilibrium, how does the system respond?",
+      "back": "It responds to counteract the change.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Le Chatelier’s Principle is used to predict the effects of the system's counteracting response to changed conditions.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It responds to counteract the change.",
+          "isCorrect": true,
+          "feedback": "Correct: an equilibrium system responds by counteracting a change in conditions.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It responds to reinforce the change.",
+          "isCorrect": false,
+          "feedback": "The response counteracts the change rather than reinforcing it.",
+          "misconception": "reverses-le-chatelier-response"
+        },
+        {
+          "key": "c",
+          "text": "It does not respond because equilibrium fixes the relative amounts permanently.",
+          "isCorrect": false,
+          "feedback": "The source says the system responds when its conditions are changed.",
+          "misconception": "treats-equilibrium-as-unresponsive"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 103-104; 5.6.2.4 The effect of changing conditions on equilibrium (HT only)",
+          "excerpt": "If a system is at equilibrium and a change is made to any of the\nconditions, then the system responds to counteract the change.\nThe effects of changing conditions on a system at equilibrium can\nbe predicted using Le Chatelier’s Principle.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-4",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-397272bc0b-aqa-8464-5-6-2-5-reactant-concentration-product-shift",
+      "conceptKey": "aqa-8464-397272bc0b-aqa-8464-increased-reactant-concentration-forms-products",
+      "kind": "cause-consequence",
+      "visualCue": "⚖️",
+      "front": "At equilibrium, what happens when the concentration of a reactant is increased?",
+      "back": "More products form until equilibrium is reached again.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Increasing a reactant's concentration causes more products to form until equilibrium is reached again.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "More products form until equilibrium is reached again.",
+          "isCorrect": true,
+          "feedback": "Correct: the system forms more products before reaching equilibrium again.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "More reactants form until equilibrium is reached again.",
+          "isCorrect": false,
+          "feedback": "Increasing a reactant concentration causes more products, not more reactants, to form.",
+          "misconception": "predicts-reverse-concentration-shift"
+        },
+        {
+          "key": "c",
+          "text": "Nothing changes because the system remains at the same equilibrium.",
+          "isCorrect": false,
+          "feedback": "The system changes by forming more products until equilibrium is reached again.",
+          "misconception": "assumes-concentration-change-has-no-effect"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 103-104; 5.6.2.5 The effect of changing concentration (HT only)",
+          "excerpt": "If the concentration of a reactant is increased, more products will be\nformed until equilibrium is reached again.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-5",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-e65f1fefb8-aqa-8464-5-6-2-6-temperature-equilibrium-endo-exo",
+      "conceptKey": "aqa-8464-e65f1fefb8-aqa-8464-temperature-increase-equilibrium-products",
+      "kind": "cause-consequence",
+      "visualCue": "🌡️",
+      "front": "How does increasing temperature affect the relative amount of products at equilibrium for endothermic and exothermic reactions?",
+      "back": "It increases products for an endothermic reaction and decreases products for an exothermic reaction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "At equilibrium, a temperature increase raises the relative product amount for an endothermic reaction but lowers it for an exothermic reaction.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It increases products for an endothermic reaction and decreases products for an exothermic reaction.",
+          "isCorrect": true,
+          "feedback": "Correct: the two reaction types respond in opposite directions to a temperature increase.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It decreases products for an endothermic reaction and increases products for an exothermic reaction.",
+          "isCorrect": false,
+          "feedback": "The effects are reversed: endothermic products increase and exothermic products decrease.",
+          "misconception": "reverses-temperature-equilibrium-effects"
+        },
+        {
+          "key": "c",
+          "text": "It increases products for both endothermic and exothermic reactions.",
+          "isCorrect": false,
+          "feedback": "Only the endothermic reaction has an increased relative amount of products.",
+          "misconception": "assumes-temperature-increases-all-products"
+        },
+        {
+          "key": "d",
+          "text": "It decreases products for both endothermic and exothermic reactions.",
+          "isCorrect": false,
+          "feedback": "Only the exothermic reaction has a decreased relative amount of products.",
+          "misconception": "assumes-temperature-decreases-all-products"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 103-104; 5.6.2.6 The effect of temperature changes on equilibrium (HT only)",
+          "excerpt": "If the temperature of a system at equilibrium is increased:\n• the relative amount of products at equilibrium increases for an\nendothermic reaction\n• the relative amount of products at equilibrium decreases for\nan exothermic reaction.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-6",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-40a94cfe31-aqa-8464-5-6-2-7-pressure-equilibrium-molecule-count",
+      "conceptKey": "aqa-8464-40a94cfe31-aqa-8464-pressure-shift-gaseous-equilibrium",
+      "kind": "cause-consequence",
+      "visualCue": "⛽",
+      "front": "For a gaseous reaction at equilibrium, how do an increase and a decrease in pressure shift the equilibrium position?",
+      "back": "An increase shifts towards the side with fewer molecules; a decrease shifts towards the side with more molecules, using the molecule numbers shown by the symbol equation.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "For gaseous equilibria, increased pressure shifts towards the smaller molecule count and decreased pressure shifts towards the larger count shown by the symbol equation.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "An increase shifts towards the side with fewer molecules; a decrease shifts towards the side with more molecules, using the molecule numbers shown by the symbol equation.",
+          "isCorrect": true,
+          "feedback": "Correct: increased pressure favours the smaller molecule count and decreased pressure favours the larger count.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An increase shifts towards the side with more molecules; a decrease shifts towards the side with fewer molecules, using the molecule numbers shown by the symbol equation.",
+          "isCorrect": false,
+          "feedback": "The directions are reversed: increased pressure shifts towards fewer molecules.",
+          "misconception": "reverses-pressure-equilibrium-shifts"
+        },
+        {
+          "key": "c",
+          "text": "Both an increase and a decrease shift towards the side with fewer molecules.",
+          "isCorrect": false,
+          "feedback": "A decrease in pressure shifts towards the side with the larger number of molecules.",
+          "misconception": "uses-high-pressure-rule-for-both-changes"
+        },
+        {
+          "key": "d",
+          "text": "Neither pressure change shifts the equilibrium position.",
+          "isCorrect": false,
+          "feedback": "Both changes can shift gaseous equilibrium, in opposite directions based on molecule numbers.",
+          "misconception": "assumes-pressure-has-no-equilibrium-effect"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 103-104; 5.6.2.7 The effect of pressure changes on equilibrium (HT only)",
+          "excerpt": "For gaseous reactions at equilibrium:\n• an increase in pressure causes the equilibrium position to\nshift towards the side with the smaller number of molecules as\nshown by the symbol equation for that reaction\n• a decrease in pressure causes the equilibrium position to shift\ntowards the side with the larger number of molecules as\nshown by the symbol equation for that reaction.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-7",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-0a045fd529-aqa-8464-5-10-1-4-phytomining-bioleaching-methods",
+      "conceptKey": "aqa-8464-0a045fd529-aqa-8464-phytomining-bioleaching-comparison",
+      "kind": "comparison",
+      "visualCue": "♻️",
+      "front": "How do phytomining and bioleaching produce materials containing metal compounds?",
+      "back": "Phytomining uses plants that are harvested and burned to produce ash containing metal compounds; bioleaching uses bacteria to produce leachate solutions containing metal compounds.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Phytomining produces metal-compound-containing ash from harvested and burned plants, while bioleaching uses bacteria to produce metal-compound-containing leachate; the compounds can then be processed to obtain the metal.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Phytomining uses plants that are harvested and burned to produce ash containing metal compounds; bioleaching uses bacteria to produce leachate solutions containing metal compounds.",
+          "isCorrect": true,
+          "feedback": "Correct: plants produce the ash in phytomining, while bacteria produce the leachate in bioleaching.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Phytomining uses bacteria to produce leachate; bioleaching uses plants that are harvested and burned to produce ash.",
+          "isCorrect": false,
+          "feedback": "The methods are reversed: phytomining uses plants and bioleaching uses bacteria.",
+          "misconception": "reverses-phytomining-and-bioleaching"
+        },
+        {
+          "key": "c",
+          "text": "Both methods produce the metal directly, so no further processing of metal compounds is needed.",
+          "isCorrect": false,
+          "feedback": "Both methods yield material containing metal compounds, which can then be processed to obtain the metal.",
+          "misconception": "assumes-biological-methods-produce-metal-directly"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 118-118; 5.10.1.4 Alternative methods of extracting metals (HT only)",
+          "excerpt": "Phytomining uses plants to absorb metal compounds. The plants\nare harvested and then burned to produce ash that contains metal\ncompounds.\nBioleaching uses bacteria to produce leachate solutions that\ncontain metal compounds.\nThe metal compounds can be processed to obtain the metal.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-1-4",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    }
+  ]
+}

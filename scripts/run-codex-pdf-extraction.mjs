@@ -5,7 +5,18 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSyn
 import path from 'node:path';
 import { copyCodexImportHelperBundle } from './lib/codex-import-helper-bundle.mjs';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
+import {
+	binaryArtifact,
+	fileSha256,
+	jsonArtifact,
+	phaseArtifacts
+} from './lib/codex-phase-artifacts.mjs';
 import { deterministicCandidateIssues } from './lib/llm-extraction-pipeline.mjs';
+import {
+	assertExactOcrEnglishCopyrightSubsetDrops,
+	expectedOcrEnglishCopyrightSubsetDrops
+} from './lib/ocr-english-copyright-subsets.mjs';
+import { assertOcrEnglishJune2024OriginalInventory } from './lib/ocr-j351-june-2024-inventory.mjs';
 
 const rootDir = process.cwd();
 loadDefaultEnv(rootDir);
@@ -28,6 +39,14 @@ node scripts/run-codex-pdf-extraction.mjs \\
 Optional:
   --mark-scheme-document-id=<stable-mark-scheme-id>
   --supporting-document=<insert-or-examiner-report.pdf>
+  --supporting-document-type=<locked-document-type> (repeat in source order)
+  --supporting-document-filename=<locked-filename.pdf> (repeat in source order)
+  --expected-question-paper-sha256=<pinned-sha256>
+  --expected-mark-scheme-sha256=<pinned-sha256>
+  --expected-supporting-document-sha256=<pinned-sha256> (repeat in source order)
+  --canonical-question-paper=<canonical-source-path>
+  --canonical-mark-scheme=<canonical-source-path>
+  --canonical-supporting-document=<canonical-source-path> (repeat in source order)
   --board=AQA
   --qualification=GCSE
   --subject=Biology|Chemistry|Physics|Computer Science|Geography|History
@@ -50,6 +69,8 @@ Optional:
   --thinking-level=max
   --timeout-ms=7200000
   --allow-unpublishable-source-drops
+  --reviewed-repair-evidence=<bounded-repair-evidence.json>
+  --reviewed-asset-repair-evidence=<bounded-asset-repair-evidence.json>
   --reuse-existing-extraction
   --force
   --dry-run`;
@@ -71,6 +92,18 @@ const markSchemeDocumentId = stringArg(
 const supportingDocumentPaths = repeatedStringArg('supporting-document').map((filePath) =>
 	path.resolve(rootDir, filePath)
 );
+const expectedQuestionPaperSha256 = sha256Arg('expected-question-paper-sha256');
+const expectedMarkSchemeSha256 = sha256Arg('expected-mark-scheme-sha256');
+const expectedSupportingDocumentSha256s = repeatedStringArg(
+	'expected-supporting-document-sha256'
+).map((value) => validatedSha256(value, 'expected-supporting-document-sha256'));
+const canonicalQuestionPaperPath = optionalResolvedPathArg('canonical-question-paper');
+const canonicalMarkSchemePath = optionalResolvedPathArg('canonical-mark-scheme');
+const canonicalSupportingDocumentPaths = repeatedStringArg('canonical-supporting-document').map(
+	(filePath) => path.resolve(rootDir, filePath)
+);
+const supportingDocumentTypes = repeatedStringArg('supporting-document-type');
+const supportingDocumentFilenames = repeatedStringArg('supporting-document-filename');
 const workDir = path.resolve(
 	rootDir,
 	stringArg('work-dir', path.join('tmp/codex-pdf-extraction', sourceDocumentId))
@@ -92,16 +125,113 @@ const dryRun = hasArg('dry-run');
 const force = hasArg('force');
 const allowUnpublishableSourceDrops = hasArg('allow-unpublishable-source-drops');
 const reuseExistingExtraction = hasArg('reuse-existing-extraction');
+const reviewedRepairEvidenceArg = stringArg('reviewed-repair-evidence', '');
+const reviewedRepairEvidencePath = reviewedRepairEvidenceArg
+	? path.resolve(rootDir, reviewedRepairEvidenceArg)
+	: null;
+const reviewedAssetRepairEvidenceArg = stringArg('reviewed-asset-repair-evidence', '');
+const reviewedAssetRepairEvidencePath = reviewedAssetRepairEvidenceArg
+	? path.resolve(rootDir, reviewedAssetRepairEvidenceArg)
+	: null;
 
 for (const filePath of [questionPaperPath, markSchemePath, ...supportingDocumentPaths]) {
 	if (!existsSync(filePath)) throw new Error(`Input file does not exist: ${filePath}`);
 }
+if (reviewedRepairEvidencePath && !existsSync(reviewedRepairEvidencePath)) {
+	throw new Error(`Reviewed repair evidence does not exist: ${reviewedRepairEvidencePath}`);
+}
+if (reviewedRepairEvidencePath && !reuseExistingExtraction) {
+	throw new Error('--reviewed-repair-evidence requires --reuse-existing-extraction.');
+}
+if (reviewedAssetRepairEvidencePath && !existsSync(reviewedAssetRepairEvidencePath)) {
+	throw new Error(
+		`Reviewed asset repair evidence does not exist: ${reviewedAssetRepairEvidencePath}`
+	);
+}
+if (reviewedAssetRepairEvidencePath && !reuseExistingExtraction) {
+	throw new Error('--reviewed-asset-repair-evidence requires --reuse-existing-extraction.');
+}
+if (
+	(expectedQuestionPaperSha256 ||
+		expectedMarkSchemeSha256 ||
+		expectedSupportingDocumentSha256s.length > 0) &&
+	(!expectedQuestionPaperSha256 ||
+		!expectedMarkSchemeSha256 ||
+		expectedSupportingDocumentSha256s.length !== supportingDocumentPaths.length ||
+		!canonicalQuestionPaperPath ||
+		!canonicalMarkSchemePath ||
+		canonicalSupportingDocumentPaths.length !== supportingDocumentPaths.length)
+) {
+	throw new Error(
+		'Pinned source hashes require canonical question-paper/mark-scheme paths and one ordered hash/path per supporting document.'
+	);
+}
+if (
+	!expectedQuestionPaperSha256 &&
+	(canonicalQuestionPaperPath ||
+		canonicalMarkSchemePath ||
+		canonicalSupportingDocumentPaths.length > 0)
+) {
+	throw new Error('Canonical source paths require the complete pinned source-hash contract.');
+}
+const exactSupportingDocumentMetadataProvided =
+	supportingDocumentTypes.length > 0 || supportingDocumentFilenames.length > 0;
+if (
+	exactSupportingDocumentMetadataProvided &&
+	(supportingDocumentTypes.length !== supportingDocumentPaths.length ||
+		supportingDocumentFilenames.length !== supportingDocumentPaths.length)
+) {
+	throw new Error(
+		'Supporting-document metadata requires one ordered --supporting-document-type and --supporting-document-filename per supporting document.'
+	);
+}
+if (
+	expectedQuestionPaperSha256 &&
+	supportingDocumentPaths.length > 0 &&
+	!exactSupportingDocumentMetadataProvided
+) {
+	throw new Error(
+		'Pinned supporting documents require exact ordered --supporting-document-type and --supporting-document-filename metadata.'
+	);
+}
+const supportingDocumentIdentities = supportingDocumentPaths.map((filePath, index) => {
+	const identityPath = canonicalSupportingDocumentPaths[index] ?? filePath;
+	const filename = exactSupportingDocumentMetadataProvided
+		? validatedSupportingDocumentFilename(supportingDocumentFilenames[index])
+		: path.basename(identityPath);
+	if (filename !== path.basename(identityPath)) {
+		throw new Error(
+			`Supporting document ${index + 1} filename differs from its canonical source path.`
+		);
+	}
+	return {
+		documentType: exactSupportingDocumentMetadataProvided
+			? validatedSupportingDocumentType(supportingDocumentTypes[index])
+			: supportingDocumentType(identityPath),
+		filename
+	};
+});
 
 const plan = {
 	sourceDocumentId,
 	questionPaperPath: relative(questionPaperPath),
 	markSchemePath: relative(markSchemePath),
 	supportingDocumentPaths: supportingDocumentPaths.map(relative),
+	expectedSourceHashes: expectedQuestionPaperSha256
+		? {
+				questionPaper: expectedQuestionPaperSha256,
+				markScheme: expectedMarkSchemeSha256,
+				supportingDocuments: expectedSupportingDocumentSha256s
+			}
+		: null,
+	canonicalSourcePaths: canonicalQuestionPaperPath
+		? {
+				questionPaper: relative(canonicalQuestionPaperPath),
+				markScheme: relative(canonicalMarkSchemePath),
+				supportingDocuments: canonicalSupportingDocumentPaths.map(relative)
+			}
+		: null,
+	supportingDocumentMetadata: supportingDocumentIdentities,
 	workDir: relative(workDir),
 	outputPath: relative(outputPath),
 	summaryPath: relative(summaryPath),
@@ -109,7 +239,14 @@ const plan = {
 	thinkingLevel,
 	expectedMarks,
 	expectedQuestions,
-	reuseExistingExtraction
+	reviewedRepairEvidencePath: reviewedRepairEvidencePath
+		? relative(reviewedRepairEvidencePath)
+		: null,
+	reviewedAssetRepairEvidencePath: reviewedAssetRepairEvidencePath
+		? relative(reviewedAssetRepairEvidencePath)
+		: null,
+	reuseExistingExtraction,
+	allowUnpublishableSourceDrops
 };
 
 if (dryRun) {
@@ -122,11 +259,14 @@ if (reuseExistingExtraction) {
 	if (!existsSync(workDir)) {
 		throw new Error(`Cannot reuse missing work dir: ${relative(workDir)}`);
 	}
+	// Reuse the expensive model observations/fragments, but reprocess them with current deterministic logic.
+	copyCodexImportHelperBundle({ rootDir, workDir });
 } else {
 	prepareWorkDir();
 	prompt = buildExtractionPrompt();
 	writeFileSync(path.join(workDir, 'prompt.md'), prompt);
 }
+verifyStagedInputHashes();
 
 const startedAt = new Date().toISOString();
 let codexSummary = null;
@@ -145,8 +285,21 @@ try {
 			timeoutMs
 		});
 	}
+	verifyStagedInputHashes();
 	let normalizedPath = ensureNormalizedExtraction();
+	const reviewedRepairEvidence = reviewedRepairEvidencePath
+		? validateReviewedRepairEvidence(normalizedPath)
+		: null;
+	const reviewedAssetRepairEvidence = reviewedAssetRepairEvidencePath
+		? validateReviewedAssetRepairEvidence(normalizedPath)
+		: null;
+	const originalInventoryAudit = assertOcrEnglishJune2024OriginalInventory({
+		sourceDocumentId,
+		questions: readJson(normalizedPath).questions
+	});
+	const originalInventoryLock = originalInventoryAudit.applies ? originalInventoryAudit : null;
 	let droppedExtractionQuestions = [];
+	let publishableSubset = null;
 	let validationResult = validateExtraction(normalizedPath, {
 		allowFailure: allowUnpublishableSourceDrops
 	});
@@ -157,7 +310,15 @@ try {
 		);
 		normalizedPath = dropResult.outputPath;
 		droppedExtractionQuestions = dropResult.dropped;
-		validationResult = validateExtraction(normalizedPath);
+		publishableSubset = dropResult.evidence;
+		validationResult = validateExtraction(normalizedPath, { includeExpectedTotals: false });
+	}
+	if (allowUnpublishableSourceDrops && expectedOcrEnglishCopyrightSubsetDrops(sourceDocumentId)) {
+		assertExactOcrEnglishCopyrightSubsetDrops({
+			sourceDocumentId,
+			originalInventoryLock,
+			droppedRows: droppedExtractionQuestions
+		});
 	}
 	mkdirSync(path.dirname(outputPath), { recursive: true });
 	copyFileSync(normalizedPath, outputPath);
@@ -168,7 +329,48 @@ try {
 		plan,
 		codex: codexSummary,
 		validation: validationResult.validation,
+		originalInventoryLock,
+		reviewedRepairEvidence,
+		reviewedAssetRepairEvidence,
 		droppedExtractionQuestions,
+		publishableSubset,
+		phaseArtifacts: phaseArtifacts({
+			inputs: {
+				questionPaper: canonicalInputArtifact(
+					canonicalQuestionPaperPath,
+					questionPaperPath,
+					expectedQuestionPaperSha256
+				),
+				markScheme: canonicalInputArtifact(
+					canonicalMarkSchemePath,
+					markSchemePath,
+					expectedMarkSchemeSha256
+				),
+				supportingDocuments: supportingDocumentPaths.map((filePath, index) =>
+					canonicalInputArtifact(
+						canonicalSupportingDocumentPaths[index],
+						filePath,
+						expectedSupportingDocumentSha256s[index]
+					)
+				),
+				supportingDocumentMetadata: supportingDocumentIdentities,
+				...(expectedQuestionPaperSha256
+					? { verifiedModelInputSnapshots: verifiedModelInputSnapshotAttestation() }
+					: {}),
+				...(reviewedRepairEvidence
+					? { reviewedRepairEvidence: reviewedRepairEvidence.artifact }
+					: {}),
+				...(reviewedAssetRepairEvidence
+					? { reviewedAssetRepairEvidence: reviewedAssetRepairEvidence.artifact }
+					: {})
+			},
+			outputs: {
+				extraction: jsonArtifact(outputPath, { rootDir }),
+				...(reviewedAssetRepairEvidence
+					? { reviewedAssets: [reviewedAssetRepairEvidence.outputAsset] }
+					: {})
+			}
+		}),
 		artifacts: artifacts(normalizedPath)
 	};
 	writeJson(summaryPath, summary);
@@ -186,6 +388,67 @@ try {
 	writeJson(summaryPath, summary);
 	console.error(JSON.stringify(summary, null, 2));
 	process.exit(1);
+}
+
+function validateReviewedRepairEvidence(normalizedPath) {
+	const evidence = readJson(reviewedRepairEvidencePath);
+	const normalizedArtifact = jsonArtifact(normalizedPath, { rootDir });
+	if (
+		evidence?.schemaVersion !== 'codex-reviewed-extraction-repair-v1' ||
+		evidence?.status !== 'passed' ||
+		evidence?.sourceDocumentId !== sourceDocumentId ||
+		evidence?.outputArtifact?.sha256 !== normalizedArtifact.sha256 ||
+		evidence?.outputArtifact?.canonicalJsonSha256 !== normalizedArtifact.canonicalJsonSha256 ||
+		evidence?.deterministicValidation?.status !== 'passed' ||
+		!Array.isArray(evidence?.changedPaths) ||
+		evidence.changedPaths.length === 0 ||
+		evidence?.invariants?.noOtherFieldsChanged !== true ||
+		evidence?.invariants?.deterministicValidationPassed !== true
+	) {
+		throw new Error(
+			`Reviewed repair evidence does not bind exactly to the reused normalized extraction: ${relative(reviewedRepairEvidencePath)}`
+		);
+	}
+	return {
+		status: 'passed',
+		artifact: jsonArtifact(reviewedRepairEvidencePath, { rootDir }),
+		outputArtifact: evidence.outputArtifact,
+		changedPaths: evidence.changedPaths,
+		repairs: evidence.repairs
+	};
+}
+
+function validateReviewedAssetRepairEvidence(normalizedPath) {
+	const evidence = readJson(reviewedAssetRepairEvidencePath);
+	const normalizedArtifact = jsonArtifact(normalizedPath, { rootDir });
+	const outputAssetPath = evidence?.outputAsset?.path
+		? path.resolve(rootDir, evidence.outputAsset.path)
+		: null;
+	const currentOutputAsset = outputAssetPath ? binaryArtifact(outputAssetPath, { rootDir }) : null;
+	if (
+		evidence?.schemaVersion !== 'codex-reviewed-extraction-asset-repair-v1' ||
+		evidence?.status !== 'passed' ||
+		evidence?.sourceDocumentId !== sourceDocumentId ||
+		evidence?.unchangedCandidateArtifact?.sha256 !== normalizedArtifact.sha256 ||
+		evidence?.unchangedCandidateArtifact?.canonicalJsonSha256 !==
+			normalizedArtifact.canonicalJsonSha256 ||
+		!currentOutputAsset?.sha256 ||
+		evidence?.outputAsset?.sha256 !== currentOutputAsset.sha256 ||
+		evidence?.deterministicValidation?.status !== 'passed' ||
+		evidence?.repair?.sourceQuestionRef === undefined ||
+		evidence?.invariants?.noExtractionJsonChanged !== true ||
+		evidence?.invariants?.deterministicValidationPassed !== true
+	) {
+		throw new Error(
+			`Reviewed asset repair evidence does not bind exactly to the reused extraction and live asset: ${relative(reviewedAssetRepairEvidencePath)}`
+		);
+	}
+	return {
+		status: 'passed',
+		artifact: jsonArtifact(reviewedAssetRepairEvidencePath, { rootDir }),
+		outputAsset: currentOutputAsset,
+		repair: evidence.repair
+	};
 }
 
 function prepareWorkDir() {
@@ -216,6 +479,32 @@ function prepareWorkDir() {
 	writeJson(path.join(workDir, 'metadata.json'), metadata());
 }
 
+function verifyStagedInputHashes() {
+	if (!expectedQuestionPaperSha256) return;
+	const records = [
+		{
+			label: 'question paper',
+			filePath: path.join(workDir, 'question-paper.pdf'),
+			expectedSha256: expectedQuestionPaperSha256
+		},
+		{
+			label: 'mark scheme',
+			filePath: path.join(workDir, 'mark-scheme.pdf'),
+			expectedSha256: expectedMarkSchemeSha256
+		},
+		...expectedSupportingDocumentSha256s.map((expectedSha256, index) => ({
+			label: `supporting document ${index + 1}`,
+			filePath: path.join(workDir, `supporting-${String(index + 1).padStart(2, '0')}.pdf`),
+			expectedSha256
+		}))
+	];
+	for (const record of records) {
+		if (fileSha256(record.filePath) !== record.expectedSha256) {
+			throw new Error(`Staged ${record.label} differs from its pinned SHA-256.`);
+		}
+	}
+}
+
 function metadata() {
 	const common = {
 		board: stringArg('board', 'AQA'),
@@ -239,7 +528,7 @@ function metadata() {
 			title: stringArg('question-paper-title', sourceDocumentId),
 			sourceUrl: stringArg('question-paper-url', ''),
 			path: 'question-paper.pdf',
-			originalPath: questionPaperPath,
+			originalPath: canonicalQuestionPaperPath ?? questionPaperPath,
 			pageCount: pdfPageCount(questionPaperPath)
 		},
 		markScheme: {
@@ -249,17 +538,43 @@ function metadata() {
 			title: stringArg('mark-scheme-title', markSchemeDocumentId),
 			sourceUrl: stringArg('mark-scheme-url', ''),
 			path: 'mark-scheme.pdf',
-			originalPath: markSchemePath,
+			originalPath: canonicalMarkSchemePath ?? markSchemePath,
 			pageCount: pdfPageCount(markSchemePath)
 		},
-		supportingDocuments: supportingDocumentPaths.map((filePath, index) => ({
-			id: `${sourceDocumentId}-support-${index + 1}`,
-			docType: supportingDocumentType(filePath),
-			title: path.basename(filePath),
-			path: `supporting-${String(index + 1).padStart(2, '0')}.pdf`,
-			originalPath: filePath,
-			pageCount: pdfPageCount(filePath)
-		}))
+		supportingDocuments: supportingDocumentPaths.map((filePath, index) => {
+			const identityPath = canonicalSupportingDocumentPaths[index] ?? filePath;
+			const identity = supportingDocumentIdentities[index];
+			return {
+				id: `${sourceDocumentId}-support-${index + 1}`,
+				docType: identity.documentType,
+				title: identity.filename,
+				path: `supporting-${String(index + 1).padStart(2, '0')}.pdf`,
+				originalPath: identityPath,
+				pageCount: pdfPageCount(filePath)
+			};
+		})
+	};
+}
+
+function canonicalInputArtifact(canonicalPath, fallbackPath, expectedSha256) {
+	return canonicalPath && expectedSha256
+		? { path: relative(canonicalPath), sha256: expectedSha256 }
+		: binaryArtifact(fallbackPath, { rootDir });
+}
+
+function verifiedModelInputSnapshotAttestation() {
+	return {
+		schemaVersion: 'verified-source-snapshot-attestation-v1',
+		sourceDocumentId,
+		snapshots: {
+			questionPaper: binaryArtifact(path.join(workDir, 'question-paper.pdf'), { rootDir }),
+			markScheme: binaryArtifact(path.join(workDir, 'mark-scheme.pdf'), { rootDir }),
+			supportingDocuments: expectedSupportingDocumentSha256s.map((_, index) =>
+				binaryArtifact(path.join(workDir, `supporting-${String(index + 1).padStart(2, '0')}.pdf`), {
+					rootDir
+				})
+			)
+		}
 	};
 }
 
@@ -272,7 +587,9 @@ function pdfPageCount(filePath) {
 
 function supportingDocumentType(filePath) {
 	const basename = path.basename(filePath).toLowerCase();
-	if (/\bwre\b|examiner|examiners|report/.test(basename)) return 'examiner_report';
+	if (/\bwre\b|(?:^|-)er(?:-|\.pdf$)|examiner|examiners|report/.test(basename)) {
+		return 'examiner_report';
+	}
 	if (/\bins\b|insert|preliminary/.test(basename)) return 'insert';
 	return 'supporting_document';
 }
@@ -366,13 +683,14 @@ function buildExtractionPrompt() {
 							? [
 									'',
 									'Known fragile checks for Computer Science 2024 Paper 2: verify response controls and figure crops from rendered pages before final validation.',
-									'Exact line-count expectations from rendered source/judge evidence are: 02.1 = 2, 02.2 = 5, 05.3 = 7, 06.0 = 7, 07.3 = 2, 08.1 = 15 total with 5 lines each for Control unit / Clock / Cache, 08.2 = 6 total with 2 lines each for responses 1, 2, and 3, 09.1 = 2, 09.2 = 10, 11.0 = 12, 12.0 = 24, 13.1 = 4, 13.2 = 34 across pages 20 and 21, 14.0 = 6 total with 3 lines for SMTP and 3 for IMAP, 15.0 = 6, 16.0 = 8, 17.0 = 10 total with one name line plus four description lines for each of two malware entries, 18.1 = 4, 18.2 = 6, 18.3 = 4, 18.6 = 6, 19.1 = 4, and 19.2 = 14 total with 7 lines for CAPTCHA and 7 for Email confirmations. If your extraction undercounts any visible ruled lines, repair before validation.',
+									'Exact line-count expectations from rendered source/judge evidence are: 02.1 = 2, 02.2 = 5, 04.2 = 2, 05.3 = 7, 06.0 = 7, 07.3 = 2, 08.1 = 15 total with 5 lines each for Control unit / Clock / Cache, 08.2 = 6 total with 2 lines each for responses 1, 2, and 3, 09.1 = 2, 09.2 = 10, 11.0 = 12, 12.0 = 24, 13.1 = 4, 13.2 = 34 across pages 20 and 21, 14.0 = 6 total with 3 lines for SMTP and 3 for IMAP, 15.0 = 6, 16.0 = 8, 17.0 = 10 total with one name line plus four description lines for each of two malware entries, 18.1 = 4, 18.2 = 6, 18.3 = 4, 18.6 = 6, 19.1 = 4, and 19.2 = 14 total with 7 lines for CAPTCHA and 7 for Email confirmations. If your extraction undercounts any visible ruled lines, repair before validation.',
 									'For Figure 2 on pages 6 and 8, crop the complete four-image figure including Images A, B, C, and D with labels and all grid edges. At 180 DPI, use a generous figure-only crop about x=270, y=230, width=1050, height=780, then inspect the crop. Do not use a 900x650 crop; it clips the right/lower figure content.',
 									'For Figure 8 on page 26, crop the complete database figure including Film, Performance, and Actor tables and all Actor rows. A crop ending before Tom Hanks and Lea Thompson is incomplete; use a taller crop such as x=340, y=410, width=980, height=1400, then inspect it.',
-									'For the Q07 logic/Huffman figures, crop complete figure-only surfaces: Figure 5 on page 12 should include the title, header, all eight truth-table rows, final row and bottom table border; use about x=250, y=245, width=1100, height=820 at 180 DPI, then inspect. Figure 6 on page 13 must include the complete circuit, right-side output line and Q label; use about x=315, y=270, width=1010, height=610, then inspect. Figure 7 on page 16 must include the complete Huffman tree including the full rightmost P leaf; use about x=315, y=245, width=930, height=660, then inspect.',
+									'For the Q07 logic/Huffman figures, crop complete figure-only surfaces: Figure 5 on page 12 should include the title, header, all eight truth-table rows, final row and bottom table border; use about x=250, y=245, width=1100, height=820 at 180 DPI, then inspect. The Q07.2 circuit response crop must preserve inputs A/B/C, the connector rails, empty boxes X/Y/Z, and output Z. Figure 6 on page 13 must include the complete circuit, right-side output line and Q label; use about x=315, y=270, width=1010, height=610, then inspect. Figure 7 on page 16 must include the complete Huffman tree including the full rightmost P leaf; use about x=315, y=245, width=930, height=660, then inspect.',
 									'Do not put solved or derived facts into learner-visible prompts. For Q05.3, do not state that Image D is 8 by 5 pixels, uses three colours, or needs 2 bits per pixel in contextText/stemBlocks/selfContainedPromptText; provide Figure 2 and ask the official calculation. For Q06.0, do not add "decimal megabytes" or "as in the paper" to learner-facing text. For Q07.1, do not name Figure 4 as an OR gate in learner-facing text. For Q07.3, do not name the NOT, AND, or OR gates in learner-facing text; attach/render Figure 6 and keep the answer in markSchemeItems/modelAnswer only.',
-									'Represent Figure 1 for Q04.1/Q04.2 as a structured code block containing 00110011 instead of attaching a screenshot asset. For Q05.4, carry forward the repeated Figure 2/Image D context as well as Figure 3. For Q07.2, the learner label bank must be AND, XOR, NOT and the key must be box-X = AND, box-Y = XOR, box-Z = NOT. For Q18.5 and Q18.7, structured SQL code blocks are sufficient; if you attach SQL skeleton crops, they must be tight skeleton-only crops and not include neighboring prompt text or response lines.',
-									'For Q07.1, preserve the official truth-table answer options A-D as renderable tables, not prose summaries. Option A is the unusual printed two-column A/B table with rows 0 1 and 1 0; options B-D are A/B/Q tables with four rows each. Use multi-line choice option strings or structured table blocks, but the learner-visible view must show the table data and lozenge choices faithfully.',
+									'Represent Figure 1 for Q04.1/Q04.2 as a structured code block containing 00110011 instead of attaching a screenshot asset. For Q05.4, carry forward the repeated Figure 2/Image D context as well as Figure 3. For Q07.2, do not show AND, XOR, NOT, OR, or any other candidate gate bank: the official boxes are unrestricted recall. Render the circuit crop as learner-visible evidence and use labeled free-text fields X, Y, and Z; keep the hidden grading key X = AND, Y = XOR, Z = NOT. For Q18.5 and Q18.7, structured SQL code blocks are sufficient; if you attach SQL skeleton crops, they must be tight skeleton-only crops and not include neighboring prompt text or response lines.',
+									'For Q07.1, preserve the official truth-table answer options A-D as renderable tables, not prose summaries. Option A is the unusual printed two-column A/B table with rows 0 1 and 1 0; options B-D are A/B/Q tables with four rows each. Use multi-line choice option strings or structured table blocks, but the learner-visible view must show the table data and lozenge choices faithfully. The hidden correctAnswers value must equal the complete learner-visible option C string exactly; do not fragment the table into aliases or key only the letter C when the submitted value is the full option string.',
+									"For Q18.6, use the self-contained official model answer condition WHERE Title = 'Toy Story 3'. Do not use WHERE FilmID = 101 unless Figure 8 is explicitly required and learner-visible for that atomic question.",
 									'For Q03.0 and Q09.1, preserve the official partial-mark split as separate 1-mark positive rows, not one collapsed 2-mark row. Q03.0 is credited as separate binary parts 11010 and 101, and the complete model answer must be 11010101. Q09.1 is credited as separate parts A and DDED. For Q13.2, include the official level mark bands as ranges 5-6, 3-4, and 1-2, not only representative 6/4/2 marks.'
 								].join('\n')
 							: sourceDocumentId === 'aqa-computer-science-2023-june-paper-2-computing-concepts-qp'
@@ -774,8 +1092,10 @@ Required extraction coverage:
 - For reaction-specific questions about how pressure changes equilibrium position, direction, or product yield, include the exact reversible equation in a learner-visible equation block. Preserve coefficients, formulae, state symbols, and therefore the molecule/mole count on each side. A generic sentence such as "the forward reaction has fewer molecules" or an equation available only in another subquestion/mark scheme is not a complete learner source.
 - For multipart questions, do not rely on a later renderer or judge to rediscover parent context from the PDF. Carry the exact source setup forward to every subpart that needs it, especially investigation descriptions, study/survey setup, graph/table captions and units, figure definitions, named treatments/organisms, and preceding sentences that define abbreviations.
 - If an atomic question depends on a figure, image, graph, table, source extract, or data grid printed earlier in the same parent question, carry that earlier dependency forward even when it is not repeated on the same page. This is especially important for prompts like "Image D", "the image", "the graph", "the source", "these data", or "the table" where a later figure encodes data derived from an earlier figure.
+- For English Literature, every task that supplies a printed extract, poem, or pair of sources must preserve the complete official learner source before the marked prompt. Use source-verbatim paragraph/list blocks with real line and stanza breaks, or complete readable official source-page/printed-extract assets. A synopsis, selfContainedPromptText, model answer, or mark-scheme indicative content is not a substitute. Two-extract and two-poem comparisons require both complete sources in their printed order with identities/titles/speakers intact; one source or one asset is insufficient. Extract-plus-wider-text tasks require the full printed extract, while the wider-work knowledge remains learner recall. Whole-text questions do not require a source that the paper does not print. Add question.selfContainment with status, requiresContext/requiresAssets, exact requiredAssetLabels, and requiredSourceCount. For every source-dependent task, set status="source_complete" only after all required printed sources are complete and learner-visible; never use that status for a partial, hidden, placeholder, copyright-flagged, or review-flagged source. Use requiredSourceCount=1 for one printed extract/poem plus recalled wider-work or anthology knowledge, and 2 for two printed extracts/poems. If one verified image genuinely contains both printed sources, set completeSourceBundle=true; otherwise declare both exact source asset labels. Give every source asset a stable id, an official sourceLabel, role source-page/source-text/printed-extract, required=true, and a concrete local filePath. If any overlay blocks exist, add a figure block before the prompt whose assetId exactly matches each source asset id; an unreferenced asset is hidden by the renderer and does not count. Keep source assets free of placeholder/copyright/review flags.
 - Do not duplicate learner-visible setup between any rendered blocks or between contextText and rendered blocks. Put shared setup, figure/table introductions, and source context in stemBlocks or leadBlocks; keep promptBlocks to the marked instruction/question only. If a sentence appears in stemBlocks/leadBlocks/promptBlocks/afterResponseBlocks, do not copy the same sentence into contextText. For table blocks, put table captions and data in the table block but do not prepend the same paragraph already present in a neighboring paragraph block. selfContainedPromptText may repeat context for standalone grading, but rendered blocks and contextText must not repeat the same sentence.
 - For fixed-response, multiple-choice, matching, choice-table, equation-blank, and asset-canvas answer keys, store exact answers in response.correctAnswers plus markSchemeItems/markChecklist. Do not add a redundant modelAnswer that only repeats the fixed answer; modelAnswer is for written-response grading support.
+- For a written response, emit modelAnswer as an object with student-facing answerText, your numeric source-alignment confidence from 0 to 1, and needsHumanReview. Never emit modelAnswer as a bare string or leave its confidence null; use the official mark-scheme evidence to decide the confidence, and set needsHumanReview when that evidence is not strong enough.
 - selfContainedPromptText must make the question standalone without revealing the answer. For equation-blanks, fill-in blanks, graph/table selection, calculation, fixed-choice, logic-gate, diagram-interpretation, and other keyed responses, never place the completed answer, selected option, gate/function name, derived dimensions, calculated intermediate values, or mark-scheme-derived facts in selfContainedPromptText or learner-visible prompt/context blocks. Learner-visible blocks should preserve official source evidence and task wording; put solved facts only in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.
 - For Computer Science code, SQL, pseudo-code, database, Boolean logic, Huffman/tree/graph, circuit, and truth-table questions, treat the printed code/diagram/skeleton as learner-visible source evidence, not as disposable prose. Reproduce exact visible labels, placeholder letters, line breaks, indentation, brackets, punctuation, table headers, and target positions in stemBlocks/promptBlocks/response metadata. Verify these surfaces from rendered pages or embedded images before final JSON.
 - For SQL/program/code skeleton questions with labels such as A, B, C or numbered blanks, the learner-visible blocks must show where each label sits in the official skeleton. Do not flatten a labelled skeleton into a generic sentence like "INSERT INTO ( )", and do not rename official labels to generic "first/second/third" fields.
@@ -786,6 +1106,7 @@ Required extraction coverage:
 - For response.kind "matching", include the learner-visible descriptions/prompts in response.left and the selectable letters/items in response.right. Do not use prompts/options alone; those can normalize, but left/right is the app-rendered shape.
 - If the printed task says to complete, finish, balance, or fill in a word, symbol, balanced, chemical, or ionic equation, use response.kind="equation-blanks" with the printed text/math/blank segments in order and a keyed correctAnswers target for every blank. Never replace an equation-completion surface with generic lines or a textarea.
 - If the paper asks for two or more separately named written fields, such as Test and Result/Observation, use response.kind="labeled-lines" with one field per exact printed label and the correct visible line count for each. Never merge those fields into one generic textarea.
+- response.unit is only for a unit visibly preprinted beside the learner answer field. Never infer it from the mark scheme or fill it with a unit the learner is asked to supply. If the prompt says to give the unit, or the paper prints a separate blank labelled Unit, leave response.unit null and make the written final-answer field require both the learner-supplied value and unit.
 - Use only app block kinds for learner-visible content: paragraph, figure, table, structured-table, key, ordered-list, bullet-list, equation. For formulae, Boolean expressions, equations, overlines, subscripts/superscripts, fractions, and charges, use block kind "equation" with renderable text/LaTeX notation; do not emit unsupported block kinds such as "formula" or "math".
 - Response-line precision policy: exact counts matter for short controls, not long essay boxes. For expected counts of 1-5 visible lines, count exactly. For 6-10 visible lines, a one-line tolerance is acceptable. For long written responses over 10 lines, an approximate count within about 20% is enough; the app renders these as substantial resizable long-answer areas. Do not spend time reconciling every continuation-page ruled line for long essays unless the count is missing, collapsed to an obviously tiny response, or outside a plausible long-answer range.
 - For response.kind "lines" and every labeled-lines field, count the number of visible ruled horizontal writing lines in the answer area from rendered pages. Do not infer short line counts from marks or command words, including one-mark "state" questions. Do not count the gaps between rules and do not subtract one from the number of rules; a learner can write on each visible rule. Use rendered-page crops and bash pdf-tools.sh line-count for short written responses and for long responses only enough to size the answer box plausibly. Put brief line-count evidence in response.lineCountEvidence or the field's lineCountEvidence.
@@ -877,8 +1198,11 @@ function ensureNormalizedExtraction() {
 	return normalizedPath;
 }
 
-function validateExtraction(normalizedPath, { allowFailure = false } = {}) {
-	const args = validateExtractionArgs(normalizedPath);
+function validateExtraction(
+	normalizedPath,
+	{ allowFailure = false, includeExpectedTotals = true } = {}
+) {
+	const args = validateExtractionArgs(normalizedPath, { includeExpectedTotals });
 	const result = runHelperResult(args);
 	const validationPath = path.join(workDir, 'validation.json');
 	if (result.status !== 0) {
@@ -894,19 +1218,23 @@ function validateExtraction(normalizedPath, { allowFailure = false } = {}) {
 	return { validation: readJson(validationPath), failed: false };
 }
 
-function validateExtractionArgs(normalizedPath) {
+function validateExtractionArgs(normalizedPath, { includeExpectedTotals = true } = {}) {
 	const args = [
 		'validate-extraction',
 		`--input=${path.basename(normalizedPath)}`,
 		'--output=validation.json'
 	];
-	if (expectedMarks !== null) args.push(`--expected-marks=${expectedMarks}`);
-	if (expectedQuestions !== null) args.push(`--expected-questions=${expectedQuestions}`);
+	if (includeExpectedTotals && expectedMarks !== null)
+		args.push(`--expected-marks=${expectedMarks}`);
+	if (includeExpectedTotals && expectedQuestions !== null) {
+		args.push(`--expected-questions=${expectedQuestions}`);
+	}
 	return args;
 }
 
 function writePublishableExtractionSubset(normalizedPath, failedValidation) {
 	const paper = readJson(normalizedPath);
+	const originalQuestions = paper.questions ?? [];
 	const issueMap = deterministicIssueMap(paper, failedValidation);
 	const keptQuestions = [];
 	const dropped = [];
@@ -915,6 +1243,8 @@ function writePublishableExtractionSubset(normalizedPath, failedValidation) {
 		if (isAllowedUnpublishableSourceDrop(question, issues)) {
 			dropped.push({
 				sourceQuestionRef: question.sourceQuestionRef,
+				marks: Number(question.marks ?? 0),
+				deterministicReason: 'known_unresolved_copyright_source',
 				reasons: allowedDropReasons(question, issues)
 			});
 			continue;
@@ -939,7 +1269,47 @@ function writePublishableExtractionSubset(normalizedPath, failedValidation) {
 	};
 	const outputPath = path.join(workDir, 'normalized-extraction.publishable.json');
 	writeJson(outputPath, output);
-	return { outputPath, dropped };
+	const originalMarkTotal = questionMarkTotal(originalQuestions);
+	const retainedMarkTotal = questionMarkTotal(keptQuestions);
+	const droppedMarkTotal = dropped.reduce((total, item) => total + item.marks, 0);
+	const invariants = {
+		questionCountConserved: originalQuestions.length === keptQuestions.length + dropped.length,
+		markTotalConserved: originalMarkTotal === retainedMarkTotal + droppedMarkTotal,
+		onlyKnownUnresolvedCopyrightSource: dropped.every(
+			(item) => item.deterministicReason === 'known_unresolved_copyright_source'
+		)
+	};
+	if (!Object.values(invariants).every(Boolean)) {
+		throw new Error('Publishable-subset conservation or reason invariant failed.');
+	}
+	return {
+		outputPath,
+		dropped,
+		evidence: {
+			status: 'passed',
+			policy: 'known_unresolved_copyright_source_only_v1',
+			original: {
+				artifact: jsonArtifact(normalizedPath, { rootDir }),
+				questionCount: originalQuestions.length,
+				markTotal: originalMarkTotal
+			},
+			retained: {
+				artifact: jsonArtifact(outputPath, { rootDir }),
+				questionCount: keptQuestions.length,
+				markTotal: retainedMarkTotal
+			},
+			dropped: {
+				questionCount: dropped.length,
+				markTotal: droppedMarkTotal,
+				questions: dropped
+			},
+			invariants
+		}
+	};
+}
+
+function questionMarkTotal(questions) {
+	return questions.reduce((total, question) => total + Number(question?.marks ?? 0), 0);
 }
 
 function deterministicIssueMap(paper, validation) {
@@ -1035,6 +1405,45 @@ function repeatedStringArg(name) {
 		.filter((candidate) => candidate.startsWith(prefix))
 		.map((candidate) => candidate.slice(prefix.length))
 		.filter(Boolean);
+}
+
+function sha256Arg(name) {
+	const value = stringArg(name, '');
+	return value ? validatedSha256(value, name) : null;
+}
+
+function optionalResolvedPathArg(name) {
+	const value = stringArg(name, '');
+	return value ? path.resolve(rootDir, value) : null;
+}
+
+function validatedSha256(value, name) {
+	if (!/^[a-f0-9]{64}$/.test(value)) {
+		throw new Error(`--${name} must be a lowercase SHA-256.`);
+	}
+	return value;
+}
+
+function validatedSupportingDocumentType(value) {
+	if (!/^[a-z][a-z0-9_]*$/.test(String(value ?? ''))) {
+		throw new Error(
+			'--supporting-document-type must be a lowercase document-type token such as examiner_report or insert.'
+		);
+	}
+	return value;
+}
+
+function validatedSupportingDocumentFilename(value) {
+	if (
+		!String(value ?? '').trim() ||
+		value.includes('/') ||
+		value.includes('\\') ||
+		path.basename(value) !== value ||
+		path.extname(value).toLowerCase() !== '.pdf'
+	) {
+		throw new Error('--supporting-document-filename must be one exact PDF basename.');
+	}
+	return value;
 }
 
 function requiredStringArg(name) {

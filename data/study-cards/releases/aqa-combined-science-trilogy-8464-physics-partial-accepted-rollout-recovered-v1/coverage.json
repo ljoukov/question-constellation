@@ -1,0 +1,46 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "status": "ready",
+      "cardCount": 5,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "status": "ready",
+      "cardCount": 5,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "status": "ready",
+      "cardCount": 5,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "status": "ready",
+      "cardCount": 5,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

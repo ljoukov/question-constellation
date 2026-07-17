@@ -1,0 +1,76 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8035-56463076a0-aqa-8035-v1-1-natural-hazard-risk-targets",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests concise recall of the two specified targets of natural-hazard risk.",
+        "Distractors diagnose omission of either target."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-f418b00e71-aqa-8035-v1-1-hot-desert-desertification-causes",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the complete source-supported set of desertification causes.",
+        "Distractors distinguish causes from risk-reduction strategies."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-a7ac437553-aqa-8035-v1-1-cold-environment-development-conservation-balance",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the central balance between development and conservation.",
+        "Distractors diagnose one-sided understanding."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-9d643ce4a7-aqa-8035-v1-1-uk-landscape-overview-locations",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests all landscape features required in the UK overview.",
+        "Distractors diagnose omission of relief or river systems."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-d79f90cd86-aqa-8035-v1-1-fieldwork-data-collection-considerations",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the complete set of considerations tied specifically to fieldwork design and collection.",
+        "Distractors distinguish these considerations from adjacent numerical skills."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-9fa6795b25-aqa-8035-v1-1-geographical-data-source-categories",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that geographical work draws on both primary and secondary sources.",
+        "Distractors diagnose omission of either source category."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-5bb64ec97b-aqa-8035-v1-1-enquiry-conclusion-qualities",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the exact qualities required of geographical conclusions.",
+        "Distractors distinguish conclusion quality from nearby writing and communication requirements."
+      ]
+    },
+    {
+      "cardId": "aqa-8035-eee6aad3e6-aqa-8035-v1-1-literacy-target-audiences",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the audience-awareness required in geographical communication.",
+        "Distractors diagnose misreading “most” as “only” and reducing a range to one audience."
+      ]
+    }
+  ]
+}

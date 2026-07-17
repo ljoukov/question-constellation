@@ -1,0 +1,88 @@
+{
+  "status": "accepted",
+  "plan": {
+    "schemaVersion": "standard-study-deck-v1",
+    "promptVersion": "standard-study-card-compiler-v2",
+    "batchId": "aqa-geography-8035-standard-v1",
+    "specificationId": "aqa-gcse-geography-8035-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Geography",
+    "offeringIds": [
+      "aqa-gcse-geography-8035-v1.1:higher"
+    ],
+    "topicComponentIds": [
+      "aqa-gcse-geography-8035-v1.1:3-1-1",
+      "aqa-gcse-geography-8035-v1.1:3-1-2",
+      "aqa-gcse-geography-8035-v1.1:3-1-3",
+      "aqa-gcse-geography-8035-v1.1:3-2-1",
+      "aqa-gcse-geography-8035-v1.1:3-2-2",
+      "aqa-gcse-geography-8035-v1.1:3-2-3",
+      "aqa-gcse-geography-8035-v1.1:3-3-1",
+      "aqa-gcse-geography-8035-v1.1:3-3-2",
+      "aqa-gcse-geography-8035-v1.1:3-4"
+    ],
+    "countPerTopic": 4,
+    "minimumAcceptedPerTopic": 3,
+    "expectedCardCount": 36,
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max",
+    "sourcePdf": {
+      "path": "data/curricula/sources/aqa-gcse-geography-8035-v1.1.pdf",
+      "sha256": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4"
+    }
+  },
+  "run": {
+    "id": "aqa-geography-8035-standard-v1",
+    "startedAt": "2026-07-16T15:34:47.869Z",
+    "finishedAt": "2026-07-16T15:53:39.249Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "threadId": "019f6b90-ee9c-7383-aeba-84d0484f2b06"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "threadId": "019f6b99-ed96-7413-909e-38deaee413e3",
+      "independentTurn": true
+    }
+  },
+  "counts": {
+    "generated": 36,
+    "deterministicInvalid": 0,
+    "targetedCoverageRepairs": 0,
+    "reviewerRepairAttempts": 0,
+    "reviewerRepairAccepted": 0,
+    "sentForReview": 36,
+    "accepted": 35,
+    "rejectedByReviewer": 1,
+    "readyCoverageRows": 9,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/aqa-geography-8035-standard-v1/accepted-study-cards.json",
+  "artifactHash": "4f0aa52713f14633753de06296d9983b1ad660de1df8a9255998c57e069963b6",
+  "modelUsage": {
+    "generator": {
+      "input_tokens": 45236,
+      "cached_input_tokens": 0,
+      "output_tokens": 32475,
+      "reasoning_output_tokens": 16270,
+      "total_tokens": 77711
+    },
+    "reviewer": {
+      "input_tokens": 65053,
+      "cached_input_tokens": 7936,
+      "output_tokens": 12097,
+      "reasoning_output_tokens": 10358,
+      "total_tokens": 77150
+    }
+  },
+  "recovery": {
+    "status": "reconstructed-from-preserved-rollout-jsonl",
+    "timestampBoundaryPolicy": "release timestamps use preserved generation session start and review session completion boundaries because the deleted wrapper timestamps were not emitted to JSONL",
+    "generationSessionSha256": "1ca42c80f4e66d74dc7a6a24cfa2dc1aa907d680b154e5b1051a6b374246814e",
+    "reviewSessionSha256": "553ecb3aa67fb08e03e8e9a4348be42c2fd91b6a31c30d08b1dc870c95723b80",
+    "historicalAcceptedArtifactBytes": 115197
+  }
+}

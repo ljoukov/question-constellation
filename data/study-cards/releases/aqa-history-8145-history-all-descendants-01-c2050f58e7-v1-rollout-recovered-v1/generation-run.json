@@ -1,0 +1,33 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalBatchId": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1",
+    "recoveredReleaseId": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-history-8145-v1.3",
+    "subject": "History",
+    "mode": "all",
+    "offeringIds": [
+      "aqa-gcse-history-8145-v1.3:higher"
+    ],
+    "requiredComponentIds": [
+      "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-2",
+      "aqa-gcse-history-8145-v1.3:3-3-2-ba-part-4",
+      "aqa-gcse-history-8145-v1.3:3-3-2-bb-part-4",
+      "aqa-gcse-history-8145-v1.3:3-3-2-bc-part-4",
+      "aqa-gcse-history-8145-v1.3:3-3-2-bd-part-4"
+    ],
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 5,
+    "accepted": 5,
+    "rejectedByInitialReviewer": 0,
+    "reviewerRepairAttempts": 0,
+    "readyCoverageRows": 5,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/aqa-history-8145-history-all-descendants-01-c2050f58e7-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "6a51ee5964b9437030870886db52684116d158d5cd6ae8fea701357ecb3b3c42",
+  "modelCallsDuringRecovery": 0
+}

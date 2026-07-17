@@ -1,0 +1,572 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c3d-681a-76d0-8110-4315f4caf305"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c41-85ef-7183-aa99-788824bc86d9",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:43:11.641Z",
+    "finishedAt": "2026-07-16T18:48:12.017Z",
+    "sourceManifestHash": "8814039a3659e5e282021177062dc5f0a7021e0e5726a998df83f1fef0f52d38",
+    "artifactPath": "data/study-cards/releases/aqa-biology-8461-biology-shared-descendants-05-5678419bdf-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8461-06f9bec5f0-aqa-8461-4-7-4-1-trophic-level-numbering",
+      "conceptKey": "aqa-8461-06f9bec5f0-aqa-8461-trophic-level-numbering-and-level-one",
+      "kind": "structure",
+      "visualCue": "🌍",
+      "front": "How are trophic levels numbered along a food chain, and which organisms form trophic level 1?",
+      "back": "Numbering starts at level 1 and follows how far an organism is along the food chain; plants and algae are level 1 producers.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Trophic-level numbering begins with plants and algae at level 1. Subsequent levels are numbered by how far the organism is along the food chain.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Numbering starts at level 1 and follows how far an organism is along the food chain; plants and algae are level 1 producers.",
+          "isCorrect": true,
+          "feedback": "Correct: numbering starts with plants and algae at level 1, then follows position along the food chain.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Numbering starts at level 1 and follows organism size; plants and algae are level 1 producers.",
+          "isCorrect": false,
+          "feedback": "Level numbers follow position along the food chain, not organism size.",
+          "misconception": "numbering-by-organism-size"
+        },
+        {
+          "key": "c",
+          "text": "Numbering starts at level 1 and follows how far an organism is along the food chain; carnivores are level 1 producers.",
+          "isCorrect": false,
+          "feedback": "Level 1 producers are plants and algae, not carnivores.",
+          "misconception": "carnivores-as-level-one-producers"
+        },
+        {
+          "key": "d",
+          "text": "Numbering starts with plants and algae at the highest level and runs backwards along the food chain.",
+          "isCorrect": false,
+          "feedback": "The source starts numbering at level 1 with plants and algae, then numbers subsequent levels along the chain.",
+          "misconception": "reversed-trophic-level-numbering"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.4.1 Trophic levels",
+          "excerpt": "Trophic levels can be represented by numbers, starting at level 1 with\nplants and algae. Further trophic levels are numbered subsequently\naccording to how far the organism is along the food chain.\nLevel 1: Plants and algae make their own food and are called producers.",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-4-1",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-4-1",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8461-73fc2e53cf-aqa-8461-4-7-4-2-pyramid-biomass-representation",
+      "conceptKey": "aqa-8461-73fc2e53cf-aqa-8461-pyramid-of-biomass-representation",
+      "kind": "definition",
+      "visualCue": "🔬",
+      "front": "What does a pyramid of biomass represent, and where is trophic level 1 placed?",
+      "back": "It represents the relative biomass in each food-chain level, with trophic level 1 at the bottom.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A pyramid represents the relative amount of biomass in each level of a food chain, and trophic level 1 is at the bottom.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It represents the relative biomass in each food-chain level, with trophic level 1 at the bottom.",
+          "isCorrect": true,
+          "feedback": "Correct: it shows relative biomass, with trophic level 1 at the bottom.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It represents the number of organisms in each food-chain level, with trophic level 1 at the bottom.",
+          "isCorrect": false,
+          "feedback": "A pyramid of biomass represents relative biomass, not organism numbers.",
+          "misconception": "confusing-biomass-with-organism-count"
+        },
+        {
+          "key": "c",
+          "text": "It represents the relative biomass in each food-chain level, with trophic level 1 at the top.",
+          "isCorrect": false,
+          "feedback": "The biomass measure is correct, but trophic level 1 belongs at the bottom.",
+          "misconception": "placing-trophic-level-one-at-top"
+        },
+        {
+          "key": "d",
+          "text": "It represents biomass transfer between food-chain levels, with trophic level 1 at the bottom.",
+          "isCorrect": false,
+          "feedback": "It represents the relative amount of biomass in each level, rather than biomass transfer between levels.",
+          "misconception": "confusing-biomass-amount-with-transfer"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.4.2 Pyramids of biomass",
+          "excerpt": "Pyramids of biomass can be constructed to represent the relative\namount of biomass in each level of a food chain. Trophic level 1 is at the\nbottom of the pyramid.",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-4-2",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-4-2",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8461-198c622548-aqa-8461-4-7-5-food-security-definition",
+      "conceptKey": "aqa-8461-198c622548-aqa-8461-food-security-definition",
+      "kind": "definition",
+      "visualCue": "🌿",
+      "front": "In food production, what is food security?",
+      "back": "Having enough food to feed a population.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Food security concerns whether there is enough food to feed a population.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Having enough food to feed a population.",
+          "isCorrect": true,
+          "feedback": "Correct: food security means having enough food for a population.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Keeping food free from contamination.",
+          "isCorrect": false,
+          "feedback": "The cited definition concerns having enough food for a population, not contamination control.",
+          "misconception": "confusing-food-security-with-food-safety"
+        },
+        {
+          "key": "c",
+          "text": "Producing all food within the population's own country.",
+          "isCorrect": false,
+          "feedback": "The definition requires enough food to feed the population; it does not specify where that food is produced.",
+          "misconception": "confusing-food-security-with-self-sufficiency"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.5 Food production (biology only)",
+          "excerpt": "Food security is having enough food to feed a population.",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8461-cb471dbfd3-aqa-8461-4-7-5-1-rain-failure-food-production",
+      "conceptKey": "aqa-8461-cb471dbfd3-aqa-8461-rain-failure-food-production-example",
+      "kind": "cause-consequence",
+      "visualCue": "🌡️",
+      "front": "What example does AQA give of environmental change affecting food production?",
+      "back": "If rains fail, widespread famine can occur in some countries.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Failed rains are given as an example of environmental change affecting food production, with widespread famine occurring in some countries.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "If rains fail, widespread famine can occur in some countries.",
+          "isCorrect": true,
+          "feedback": "Correct: the example links failed rains with widespread famine in some countries.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Failed rains inevitably cause famine in every country.",
+          "isCorrect": false,
+          "feedback": "The source limits the example to some countries and does not state an inevitable worldwide outcome.",
+          "misconception": "overgeneralising-the-failed-rain-example"
+        },
+        {
+          "key": "c",
+          "text": "Failed rains leave food production unaffected.",
+          "isCorrect": false,
+          "feedback": "The source presents failed rains and famine as an example of environmental change affecting food production.",
+          "misconception": "denying-environmental-effects-on-food-production"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.5.1 Factors affecting food security",
+          "excerpt": "environmental changes that affect food production, such as\nwidespread famine occurring in some countries if rains fail",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-1",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-1",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8461-ff66a1723f-aqa-8461-4-7-5-2-food-animal-energy-controls",
+      "conceptKey": "aqa-8461-ff66a1723f-aqa-8461-food-animal-environmental-energy-controls",
+      "kind": "method",
+      "visualCue": "🏋️",
+      "front": "Which two controls can improve food-production efficiency by restricting energy transfer from food animals to the environment?",
+      "back": "Limit their movement and control the temperature of their surroundings.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Limiting movement and controlling the surrounding temperature restrict energy transfer from food animals to the environment, which can improve food-production efficiency.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Limit their movement and control the temperature of their surroundings.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two stated controls for restricting energy transfer to the environment.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Increase their movement and control the temperature of their surroundings.",
+          "isCorrect": false,
+          "feedback": "Movement should be limited, while the temperature of the surroundings is controlled.",
+          "misconception": "reversing-the-movement-control"
+        },
+        {
+          "key": "c",
+          "text": "Limit their movement and feed them high-protein food.",
+          "isCorrect": false,
+          "feedback": "High-protein food is stated to increase growth; the environmental-energy controls are limited movement and controlled temperature.",
+          "misconception": "substituting-feed-for-temperature-control"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.5.2 Farming techniques",
+          "excerpt": "The efficiency of food production can be improved by restricting energy\ntransfer from food animals to the environment. This can be done by\nlimiting their movement and by controlling the temperature of their\nsurroundings.\nSome animals are fed high protein foods to increase growth.",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-2",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-2",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8461-502a6b1953-aqa-8461-4-7-5-3-sustainable-fish-stock-controls",
+      "conceptKey": "aqa-8461-502a6b1953-aqa-8461-net-size-and-fishing-quota-controls",
+      "kind": "method",
+      "visualCue": "💧",
+      "front": "Which two controls does AQA identify for conserving fish stocks at a sustainable level?",
+      "back": "Control net size and introduce fishing quotas.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Both net-size control and fishing quotas play important roles in conserving fish stocks at a sustainable level.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Control net size and introduce fishing quotas.",
+          "isCorrect": true,
+          "feedback": "Correct: both controls are identified as important for sustainable fish stocks.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Control net size but remove fishing quotas.",
+          "isCorrect": false,
+          "feedback": "Fishing quotas should be introduced; they also play an important conservation role.",
+          "misconception": "omitting-fishing-quotas"
+        },
+        {
+          "key": "c",
+          "text": "Introduce fishing quotas but leave net size uncontrolled.",
+          "isCorrect": false,
+          "feedback": "Net-size control is also identified as important for conserving fish stocks.",
+          "misconception": "omitting-net-size-control"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.5.3 Sustainable fisheries",
+          "excerpt": "Control of net size and the introduction of fishing quotas play important\nroles in conservation of fish stocks at a sustainable level.",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-3",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-3",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8461-bd4a4b6085-aqa-8461-4-7-5-4-fusarium-mycoprotein-process",
+      "conceptKey": "aqa-8461-bd4a4b6085-aqa-8461-fusarium-mycoprotein-production-process",
+      "kind": "process",
+      "visualCue": "🍄",
+      "front": "How is Fusarium cultured and processed when producing mycoprotein?",
+      "back": "Grow it on glucose syrup in aerobic conditions, then harvest and purify the biomass.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Fusarium is grown on glucose syrup under aerobic conditions. Its biomass is then harvested and purified to produce mycoprotein.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Grow it on glucose syrup in aerobic conditions, then harvest and purify the biomass.",
+          "isCorrect": true,
+          "feedback": "Correct: aerobic growth on glucose syrup is followed by harvesting and purification of the biomass.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Grow it on glucose syrup in anaerobic conditions, then harvest and purify the biomass.",
+          "isCorrect": false,
+          "feedback": "The specified growth conditions are aerobic, not anaerobic.",
+          "misconception": "using-anaerobic-fusarium-conditions"
+        },
+        {
+          "key": "c",
+          "text": "Grow it on glucose syrup in aerobic conditions, then harvest and purify human insulin.",
+          "isCorrect": false,
+          "feedback": "Fusarium produces mycoprotein; human insulin is produced by a genetically modified bacterium.",
+          "misconception": "confusing-fusarium-with-insulin-producing-bacteria"
+        },
+        {
+          "key": "d",
+          "text": "Grow it on glucose syrup in aerobic conditions and use the culture without harvesting or purification.",
+          "isCorrect": false,
+          "feedback": "The biomass must be harvested and purified after growth.",
+          "misconception": "omitting-biomass-harvesting-and-purification"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification",
+          "title": "AQA GCSE Biology (8461)",
+          "locator": "Official PDF pages 71-74; 4.7.5.4 Role of biotechnology",
+          "excerpt": "The fungus Fusarium is useful for producing mycoprotein, a protein-rich\nfood suitable for vegetarians. The fungus is grown on glucose syrup, in\naerobic conditions, and the biomass is harvested and purified.\nA genetically modified bacterium produces human insulin.",
+          "sourceHash": "effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-4",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+          "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-7-5-4",
+          "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "status": "ready",
+      "cardCount": 7,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "status": "ready",
+      "cardCount": 7,
+      "reason": null
+    }
+  ]
+}

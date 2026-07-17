@@ -1,0 +1,1476 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8525-3-1-algorithm-definition",
+      "conceptKey": "aqa-8525-algorithm-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1-1",
+      "kind": "definition",
+      "visualCue": "🧮",
+      "front": "In computer science, what is an algorithm?",
+      "back": "A sequence of steps that can be followed to complete a task.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition requires multiple followable steps directed towards completing a task.",
+      "memoryTip": "Picture numbered stepping stones leading to a finish flag: sequence → follow → complete.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "A sequence of steps that can be followed to complete a task.",
+          "isCorrect": true,
+          "feedback": "Correct. This includes both the followable sequence and the task outcome.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A computer program that completes a task.",
+          "isCorrect": false,
+          "feedback": "A program implements an algorithm; it is not the algorithm itself.",
+          "misconception": "program-algorithm-confusion"
+        },
+        {
+          "key": "c",
+          "text": "A single instruction that a computer executes.",
+          "isCorrect": false,
+          "feedback": "The definition requires a sequence of steps, not one instruction.",
+          "misconception": "single-step-confusion"
+        },
+        {
+          "key": "d",
+          "text": "A flowchart that represents a task.",
+          "isCorrect": false,
+          "feedback": "A flowchart can represent an algorithm but is not its definition.",
+          "misconception": "representation-definition-confusion"
+        }
+      ],
+      "sourceExcerpt": "An algorithm is a sequence of steps that can be\nfollowed to complete a task.",
+      "sourceLocator": "Official PDF pages 10-11; 3.1.1 Representing algorithms"
+    },
+    {
+      "id": "aqa-8525-3-1-decomposition-definition",
+      "conceptKey": "aqa-8525-decomposition-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1-1",
+      "kind": "process",
+      "visualCue": "💻",
+      "front": "What does decomposition mean in computational problem solving?",
+      "back": "Breaking a problem into sub-problems so each accomplishes an identifiable task and might itself be subdivided.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Each resulting sub-problem has an identifiable task and may be divided again.",
+      "memoryTip": "Draw a problem as a tree: split its trunk into labelled branches, then branch again where needed.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Removing unnecessary detail from a problem.",
+          "isCorrect": false,
+          "feedback": "That is abstraction, not decomposition.",
+          "misconception": "abstraction-decomposition-confusion"
+        },
+        {
+          "key": "b",
+          "text": "Breaking a problem into sub-problems so each accomplishes an identifiable task and might itself be subdivided.",
+          "isCorrect": true,
+          "feedback": "Correct. It preserves both identifiable tasks and possible further subdivision.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Writing a sequence of steps that completes a task.",
+          "isCorrect": false,
+          "feedback": "That describes an algorithm rather than decomposition.",
+          "misconception": "algorithm-decomposition-confusion"
+        },
+        {
+          "key": "d",
+          "text": "Identifying the inputs, processing and outputs within an algorithm.",
+          "isCorrect": false,
+          "feedback": "That analyses an algorithm's stages rather than breaking down a problem.",
+          "misconception": "ipo-decomposition-confusion"
+        }
+      ],
+      "sourceExcerpt": "Decomposition means breaking a problem into\na number of sub-problems, so that each sub-\nproblem accomplishes an identifiable task,\nwhich might itself be further subdivided.",
+      "sourceLocator": "Official PDF pages 10-11; 3.1.1 Representing algorithms"
+    },
+    {
+      "id": "aqa-8525-3-1-abstraction-definition",
+      "conceptKey": "aqa-8525-abstraction-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1-1",
+      "kind": "definition",
+      "visualCue": "💻",
+      "front": "What is abstraction in computational problem solving?",
+      "back": "The process of removing unnecessary detail from a problem.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The detail removed is specifically unnecessary detail, rather than all detail.",
+      "memoryTip": "Imagine fading the clutter on a busy screen while leaving the problem itself visible.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Breaking a problem into identifiable sub-problems.",
+          "isCorrect": false,
+          "feedback": "That is decomposition.",
+          "misconception": "decomposition-abstraction-confusion"
+        },
+        {
+          "key": "b",
+          "text": "Implementing an algorithm as a computer program.",
+          "isCorrect": false,
+          "feedback": "Implementation describes the program–algorithm relationship, not abstraction.",
+          "misconception": "implementation-abstraction-confusion"
+        },
+        {
+          "key": "c",
+          "text": "The process of removing unnecessary detail from a problem.",
+          "isCorrect": true,
+          "feedback": "Correct. The key qualifier is unnecessary detail.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Using trace tables and visual inspection to determine an algorithm's purpose.",
+          "isCorrect": false,
+          "feedback": "Those methods determine purpose rather than remove detail.",
+          "misconception": "tracing-abstraction-confusion"
+        }
+      ],
+      "sourceExcerpt": "Abstraction is the process of removing\nunnecessary detail from a problem.",
+      "sourceLocator": "Official PDF pages 10-11; 3.1.1 Representing algorithms"
+    },
+    {
+      "id": "aqa-8525-3-1-algorithm-program-relationship",
+      "conceptKey": "aqa-8525-algorithm-program-relationship",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1-1",
+      "kind": "comparison",
+      "visualCue": "💻",
+      "front": "How does AQA distinguish an algorithm from a computer program?",
+      "back": "A computer program is an implementation of an algorithm; an algorithm is not a computer program.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Implementation is the stated relationship, while identity between the two is explicitly rejected.",
+      "memoryTip": "Use two symbols: program = implementation; algorithm ≠ program.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "An algorithm is an implementation of a computer program.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated relationship.",
+          "misconception": "reversed-implementation-relationship"
+        },
+        {
+          "key": "b",
+          "text": "An algorithm and a program are the same when written in pseudo-code.",
+          "isCorrect": false,
+          "feedback": "The distinction remains: an algorithm is not a computer program.",
+          "misconception": "pseudocode-removes-distinction"
+        },
+        {
+          "key": "c",
+          "text": "A computer program is a flowchart representation of an algorithm.",
+          "isCorrect": false,
+          "feedback": "A flowchart is a possible representation; it does not define a program.",
+          "misconception": "program-flowchart-confusion"
+        },
+        {
+          "key": "d",
+          "text": "A computer program is an implementation of an algorithm; an algorithm is not a computer program.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves both implementation and non-identity.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Be aware that a computer program is an\nimplementation of an algorithm and that an\nalgorithm is not a computer program.",
+      "sourceLocator": "Official PDF pages 10-11; 3.1.1 Representing algorithms"
+    },
+    {
+      "id": "aqa-8525-3-2-required-data-types",
+      "conceptKey": "aqa-8525-required-data-types",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2-1",
+      "kind": "fact",
+      "visualCue": "💻",
+      "front": "Which five data types must be understood and used appropriately?",
+      "back": "integer, real, Boolean, character and string.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Programming languages may use other names, such as float for real, but AQA uses these general names in exams.",
+      "memoryTip": "Write the initials I–R–B–C–S first, then expand each one before checking the list.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "integer, real, Boolean, character and string.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the five general names listed by AQA.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "integer, float, Boolean, array and record.",
+          "isCorrect": false,
+          "feedback": "Float may name real in some languages, while arrays and records are listed as data structures.",
+          "misconception": "language-alias-and-structure-mix"
+        },
+        {
+          "key": "c",
+          "text": "variable declaration, constant declaration, assignment, iteration and selection.",
+          "isCorrect": false,
+          "feedback": "These are programming statement types, not the specified data-type set.",
+          "misconception": "statement-types-as-data-types"
+        },
+        {
+          "key": "d",
+          "text": "length, position, substring, concatenation and conversion.",
+          "isCorrect": false,
+          "feedback": "These belong to string-handling operations.",
+          "misconception": "string-operations-as-data-types"
+        }
+      ],
+      "sourceExcerpt": "Understand and use the following appropriately:\n• integer\n• real\n• Boolean\n• character\n• string.\nDepending on the actual programming\nlanguage(s) being used, these data types may\nhave other names. For example real numbers\nmay be described as float. In exams we will use\nthe general names given opposite.",
+      "sourceLocator": "Official PDF pages 11-17; 3.2.1 Data types"
+    },
+    {
+      "id": "aqa-8525-3-2-imperative-combining-principles",
+      "conceptKey": "aqa-8525-imperative-combining-principles",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2-2",
+      "kind": "structure",
+      "visualCue": "💻",
+      "front": "What three combining principles are basic to all high-level imperative programming languages?",
+      "back": "sequence, iteration/repetition and selection/choice.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "AQA pairs iteration with repetition and selection with choice when naming the three principles.",
+      "memoryTip": "Recall S–I–S by sketching a straight route, a loop and a fork.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "declaration, assignment and subroutine.",
+          "isCorrect": false,
+          "feedback": "These are statement types, not the three combining principles.",
+          "misconception": "statement-types-as-principles"
+        },
+        {
+          "key": "b",
+          "text": "sequence, iteration/repetition and selection/choice.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the three principles in the specification.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "input, processing and output.",
+          "isCorrect": false,
+          "feedback": "That framework is used to explain simple algorithms.",
+          "misconception": "ipo-as-combining-principles"
+        },
+        {
+          "key": "d",
+          "text": "integer, real and Boolean.",
+          "isCorrect": false,
+          "feedback": "These are data types rather than program-combining principles.",
+          "misconception": "data-types-as-principles"
+        }
+      ],
+      "sourceExcerpt": "The three combining principles (sequence,\niteration/repetition and selection/choice) are\nbasic to all high-level imperative programming\nlanguages.",
+      "sourceLocator": "Official PDF pages 11-17; 3.2.2 Programming concepts"
+    },
+    {
+      "id": "aqa-8525-3-2-div-mod-eleven-two",
+      "conceptKey": "aqa-8525-div-mod-eleven-two",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2-3",
+      "kind": "test-result",
+      "visualCue": "🧮",
+      "front": "For 11 divided by 2, what do 11 DIV 2 and 11 MOD 2 produce?",
+      "back": "11 DIV 2 = 5 and 11 MOD 2 = 1.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "DIV gives the integer quotient in the example, while MOD gives its remainder.",
+      "memoryTip": "Rebuild the result from 11 = 2 × 5 + 1: quotient 5, remainder 1.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "11 DIV 2 = 4 and 11 MOD 2 = 3.",
+          "isCorrect": false,
+          "feedback": "The cited example gives quotient 5 and remainder 1.",
+          "misconception": "incorrect-quotient-and-remainder"
+        },
+        {
+          "key": "b",
+          "text": "11 DIV 2 = 5 and 11 MOD 2 = 0.",
+          "isCorrect": false,
+          "feedback": "The quotient is right, but the stated remainder is 1.",
+          "misconception": "discarded-remainder"
+        },
+        {
+          "key": "c",
+          "text": "11 DIV 2 = 5 and 11 MOD 2 = 1.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the example's integer quotient and remainder.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "11 DIV 2 = 5.5 and 11 MOD 2 = 1.",
+          "isCorrect": false,
+          "feedback": "DIV produces the integer quotient in this example, not the real-division result.",
+          "misconception": "real-division-for-div"
+        }
+      ],
+      "sourceExcerpt": "Integer division: the integer quotient of 11\ndivided by 2 (11 DIV 2) = 5\nRemainder: the remainder when 11 is divided\nby 2 (11 MOD 2) = 1",
+      "sourceLocator": "Official PDF pages 11-17; 3.2.3 Arithmetic operations in a programming language"
+    },
+    {
+      "id": "aqa-8525-3-2-subroutine-definition",
+      "conceptKey": "aqa-8525-subroutine-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2-2",
+      "kind": "definition",
+      "visualCue": "🧩",
+      "front": "What is a subroutine?",
+      "back": "A named ‘out of line’ block of code that may be called by writing its name in a program statement.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The block is named, and writing that name in a program statement may execute or call it.",
+      "memoryTip": "Imagine a detached code block with a name tag; writing the tag calls the block.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "A variable that usually exists only while a subroutine executes.",
+          "isCorrect": false,
+          "feedback": "That describes a usual feature of a local variable, not a subroutine.",
+          "misconception": "local-variable-as-subroutine"
+        },
+        {
+          "key": "b",
+          "text": "A value passed into a program through keyboard input.",
+          "isCorrect": false,
+          "feedback": "Keyboard input is not the definition of a subroutine.",
+          "misconception": "input-as-subroutine"
+        },
+        {
+          "key": "c",
+          "text": "A condition-controlled block that repeats instructions.",
+          "isCorrect": false,
+          "feedback": "That describes an iterative structure rather than the general subroutine concept.",
+          "misconception": "iteration-as-subroutine"
+        },
+        {
+          "key": "d",
+          "text": "A named ‘out of line’ block of code that may be called by writing its name in a program statement.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves the named block and the stated way it may be called.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Students should know that a subroutine is a\nnamed ‘out of line’ block of code that may be\nexecuted (called) by simply writing its name in a\nprogram statement.",
+      "sourceLocator": "Official PDF pages 11-17; 3.2.2 Programming concepts"
+    },
+    {
+      "id": "aqa-8525-3-3-equivalent-255-representations",
+      "conceptKey": "aqa-8525-equivalent-255-representations",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3-2",
+      "kind": "comparison",
+      "visualCue": "🧮",
+      "front": "Give the equivalent decimal, binary and hexadecimal representations of the value 255.",
+      "back": "decimal 255, binary 1111 1111 and hexadecimal FF.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The excerpt labels these values as equivalent, so only their number-base notation differs.",
+      "memoryTip": "Link one endpoint to two visual patterns: eight binary 1s and two hexadecimal Fs.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "decimal 255, binary 1111 1111 and hexadecimal FF.",
+          "isCorrect": true,
+          "feedback": "Correct. All three are the stated equivalent values.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "decimal 255, binary 1111 1110 and hexadecimal FF.",
+          "isCorrect": false,
+          "feedback": "The specified binary equivalent is 1111 1111.",
+          "misconception": "binary-one-too-low"
+        },
+        {
+          "key": "c",
+          "text": "decimal 256, binary 1111 1111 and hexadecimal FF.",
+          "isCorrect": false,
+          "feedback": "The cited decimal value is 255.",
+          "misconception": "decimal-off-by-one"
+        },
+        {
+          "key": "d",
+          "text": "decimal 255, binary 1111 1111 and hexadecimal F0.",
+          "isCorrect": false,
+          "feedback": "The specified hexadecimal equivalent is FF.",
+          "misconception": "incorrect-hexadecimal-equivalent"
+        }
+      ],
+      "sourceExcerpt": "The following equivalent maximum values will\nbe used:\n• decimal: 255\n• binary: 1111 1111\n• hexadecimal: FF",
+      "sourceLocator": "Official PDF pages 18-21; 3.3.2 Converting between number bases"
+    },
+    {
+      "id": "aqa-8525-3-3-bit-byte-units-symbols",
+      "conceptKey": "aqa-8525-bit-byte-units-symbols",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3-3",
+      "kind": "unit",
+      "visualCue": "🧮",
+      "front": "How many bits form a byte, and which symbols distinguish bit from byte?",
+      "back": "A byte is 8 bits; b represents bit and B represents byte.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Capitalisation matters: lowercase b and uppercase B represent different information units.",
+      "memoryTip": "Picture a large B holding eight dots, while the small b labels one bit.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "A byte is 8 bits; b represents byte and B represents bit.",
+          "isCorrect": false,
+          "feedback": "The number is right, but the symbols are reversed.",
+          "misconception": "bit-byte-symbol-reversal"
+        },
+        {
+          "key": "b",
+          "text": "A byte is 8 bits; b represents bit and B represents byte.",
+          "isCorrect": true,
+          "feedback": "Correct. This gives both the group size and the case-sensitive symbols.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "A byte is 4 bits; b represents bit and B represents byte.",
+          "isCorrect": false,
+          "feedback": "The symbols are right, but a byte is a group of 8 bits.",
+          "misconception": "four-bit-byte"
+        },
+        {
+          "key": "d",
+          "text": "A bit is 8 bytes; b and B both represent bit.",
+          "isCorrect": false,
+          "feedback": "This reverses the unit relationship and ignores the symbol distinction.",
+          "misconception": "reversed-unit-hierarchy"
+        }
+      ],
+      "sourceExcerpt": "Know that:\n• a bit is the fundamental unit of information\n• a byte is a group of 8 bits.\nA bit is either a 0 or a 1.\n• b represents bit\n• B represents byte",
+      "sourceLocator": "Official PDF pages 18-21; 3.3.3 Units of information"
+    },
+    {
+      "id": "aqa-8525-3-3-bitmap-file-size-formulas",
+      "conceptKey": "aqa-8525-bitmap-file-size-formulas",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3-6",
+      "kind": "formula",
+      "visualCue": "🧮",
+      "front": "For a bitmap with width W, height H and colour depth D bits per pixel, what are the file-size formulas in bits and bytes?",
+      "back": "bits = W × H × D; bytes = (W × H × D) ÷ 8.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "W is image width, H is image height and D is colour depth in bits; division by 8 converts the result to bytes.",
+      "memoryTip": "Draw a W-by-H rectangle, write D inside it, then add ÷8 only on the route to bytes.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "bits = W × H; bytes = (W × H) ÷ D.",
+          "isCorrect": false,
+          "feedback": "This omits colour depth from the bit total.",
+          "misconception": "omitted-colour-depth"
+        },
+        {
+          "key": "b",
+          "text": "bits = W + H + D; bytes = (W + H + D) ÷ 8.",
+          "isCorrect": false,
+          "feedback": "The formula multiplies width, height and colour depth rather than adding them.",
+          "misconception": "added-bitmap-dimensions"
+        },
+        {
+          "key": "c",
+          "text": "bits = W × H × D; bytes = (W × H × D) ÷ 8.",
+          "isCorrect": true,
+          "feedback": "Correct. The byte formula divides the bit result by 8.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "bits = W × H × D × 8; bytes = W × H × D.",
+          "isCorrect": false,
+          "feedback": "Multiplying by 8 reverses the stated bits-to-bytes conversion.",
+          "misconception": "reversed-bit-byte-conversion"
+        }
+      ],
+      "sourceExcerpt": "Size = (bits) = W x H x D\nSize = (bytes) = (W x H x D)/8\nW = image width\nH = image height\nD = colour depth in bits.",
+      "sourceLocator": "Official PDF pages 18-21; 3.3.6 Representing images"
+    },
+    {
+      "id": "aqa-8525-3-3-sound-file-size-formula",
+      "conceptKey": "aqa-8525-sound-file-size-formula",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3-7",
+      "kind": "formula",
+      "visualCue": "📈",
+      "front": "What formula calculates a digital sound file's size in bits from sampling rate, sample resolution and duration?",
+      "back": "file size (bits) = sampling rate × sample resolution × number of seconds.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The formula's rate, res and secs variables correspond respectively to sampling rate, sample resolution and number of seconds.",
+      "memoryTip": "Sketch three linked dials labelled rate, res and secs, with multiplication signs between them.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "file size (bits) = sampling rate × sample resolution ÷ number of seconds.",
+          "isCorrect": false,
+          "feedback": "Duration is multiplied in the stated formula, not used as a divisor.",
+          "misconception": "duration-as-divisor"
+        },
+        {
+          "key": "b",
+          "text": "file size (bits) = sampling rate + sample resolution + number of seconds.",
+          "isCorrect": false,
+          "feedback": "The three quantities are multiplied rather than added.",
+          "misconception": "added-sound-factors"
+        },
+        {
+          "key": "c",
+          "text": "file size (bits) = sampling rate × number of seconds.",
+          "isCorrect": false,
+          "feedback": "This leaves out sample resolution.",
+          "misconception": "omitted-sample-resolution"
+        },
+        {
+          "key": "d",
+          "text": "file size (bits) = sampling rate × sample resolution × number of seconds.",
+          "isCorrect": true,
+          "feedback": "Correct. It includes all three stated factors.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "File size (bits) = rate x res x secs\nrate = sampling rate\nres = sample resolution\nsecs = number of seconds",
+      "sourceLocator": "Official PDF pages 18-21; 3.3.7 Representing sound"
+    },
+    {
+      "id": "aqa-8525-3-4-system-application-software-roles",
+      "conceptKey": "aqa-8525-system-application-software-roles",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4-3",
+      "kind": "comparison",
+      "visualCue": "💻",
+      "front": "How do system software and application software differ in their roles?",
+      "back": "System software manages computer system resources and acts as a platform to run application software; application software performs end-user tasks.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Resource management and the application platform belong to system software; end-user tasks belong to application software.",
+      "memoryTip": "Picture a platform underneath labelled system and an end-user task running on top labelled application.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "System software manages computer system resources and acts as a platform to run application software; application software performs end-user tasks.",
+          "isCorrect": true,
+          "feedback": "Correct. The two roles are assigned as stated in the specification.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Application software manages system resources; system software performs end-user tasks.",
+          "isCorrect": false,
+          "feedback": "This reverses the two roles.",
+          "misconception": "reversed-software-roles"
+        },
+        {
+          "key": "c",
+          "text": "Both types perform end-user tasks, and neither manages computer system resources.",
+          "isCorrect": false,
+          "feedback": "System software is specifically associated with managing system resources.",
+          "misconception": "software-types-have-identical-roles"
+        },
+        {
+          "key": "d",
+          "text": "System software manages only security, while application software manages all other resources.",
+          "isCorrect": false,
+          "feedback": "System software's stated role is broader computer-system resource management.",
+          "misconception": "system-software-security-only"
+        }
+      ],
+      "sourceExcerpt": "Students should understand that:\n• system software manages the computer\nsystem resources and acts as a platform\nto run application software\n• application software is software that\nperforms end-user tasks.",
+      "sourceLocator": "Official PDF pages 22-26; 3.4.3 Software classification"
+    },
+    {
+      "id": "aqa-8525-3-4-translator-machine-code-output",
+      "conceptKey": "aqa-8525-translator-machine-code-output",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4-4",
+      "kind": "process",
+      "visualCue": "🔀",
+      "front": "How do assemblers, compilers and interpreters differ in whether they translate directly into machine code?",
+      "back": "Assemblers and compilers translate input directly into machine code; interpreters do not generate machine code directly.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Instead of generating machine code directly, an interpreter calls suitable machine-code subroutines within its own code to carry out statements.",
+      "memoryTip": "Group C and A on a direct route; put I on an indirect route.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Interpreters and compilers translate directly into machine code; assemblers do not.",
+          "isCorrect": false,
+          "feedback": "This incorrectly swaps the interpreter and assembler behaviours.",
+          "misconception": "interpreter-assembler-swap"
+        },
+        {
+          "key": "b",
+          "text": "Assemblers and compilers translate input directly into machine code; interpreters do not generate machine code directly.",
+          "isCorrect": true,
+          "feedback": "Correct. It preserves the direct versus non-direct distinction.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Assemblers, compilers and interpreters all generate machine code directly.",
+          "isCorrect": false,
+          "feedback": "Interpreters are explicitly stated not to generate it directly.",
+          "misconception": "all-translators-direct"
+        },
+        {
+          "key": "d",
+          "text": "None of the three translators produces or uses machine code.",
+          "isCorrect": false,
+          "feedback": "Assemblers and compilers translate their input directly into machine code.",
+          "misconception": "translators-unrelated-to-machine-code"
+        }
+      ],
+      "sourceExcerpt": "Students will need to know that:\n• assemblers and compilers translate their\ninput into machine code directly\n• each line of assembly language is\nassembled into a single machine code\ninstruction\n• interpreters do not generate machine\ncode directly (they call appropriate\nmachine code subroutines within their\nown code to carry out statements).",
+      "sourceLocator": "Official PDF pages 22-26; 3.4.4 Classification of programming languages and translators"
+    },
+    {
+      "id": "aqa-8525-3-4-fetch-decode-execute-cycle",
+      "conceptKey": "aqa-8525-fetch-decode-execute-cycle",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4-5",
+      "kind": "chronology",
+      "visualCue": "🧩",
+      "front": "What is the ordered sequence of the Fetch-Execute cycle, and what happens at each stage?",
+      "back": "Fetch the next instruction from main memory; decode it to work out what it is; execute it.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The CPU continually follows this sequence, and execution may include reading from or writing to main memory.",
+      "memoryTip": "Use the three-beat cue F–D–E: fetch, decipher, enact.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Decode the instruction; fetch it from main memory; execute it.",
+          "isCorrect": false,
+          "feedback": "The instruction must be fetched before it is decoded.",
+          "misconception": "decode-before-fetch"
+        },
+        {
+          "key": "b",
+          "text": "Fetch the instruction; execute it; decode the result.",
+          "isCorrect": false,
+          "feedback": "Decoding occurs before execution.",
+          "misconception": "execute-before-decode"
+        },
+        {
+          "key": "c",
+          "text": "Fetch the next instruction from main memory; decode it to work out what it is; execute it.",
+          "isCorrect": true,
+          "feedback": "Correct. This gives the stated order and purpose of each stage.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Execute an instruction; decode the next one; fetch it from main memory.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated cycle order.",
+          "misconception": "reversed-fetch-execute-cycle"
+        }
+      ],
+      "sourceExcerpt": "The CPU continually reads instructions stored\nin main memory and executes them as\nrequired:\n• fetch: the next instruction is fetched to the\nCPU from main memory\n• decode: the instruction is decoded to work\nout what it is\n• execute: the instruction is executed\n(carried out). This may include reading/\nwriting from/to main memory.",
+      "sourceLocator": "Official PDF pages 22-26; 3.4.5 Systems architecture"
+    },
+    {
+      "id": "aqa-8525-3-4-main-memory-secondary-storage",
+      "conceptKey": "aqa-8525-main-memory-secondary-storage",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4-5",
+      "kind": "comparison",
+      "visualCue": "🗄️",
+      "front": "How does AQA distinguish main memory from secondary storage by CPU access and volatility?",
+      "back": "Main memory is directly accessible by the CPU, except cache and registers; secondary storage is non-volatile and not directly accessible by the CPU.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Direct CPU accessibility defines main memory in this distinction, while secondary storage combines non-volatility with no direct CPU access.",
+      "memoryTip": "Draw a CPU arrow to main memory; omit that arrow for secondary storage and label it non-volatile.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Both main memory and secondary storage are directly accessible by the CPU and volatile.",
+          "isCorrect": false,
+          "feedback": "Secondary storage is stated to be non-volatile and not directly accessible.",
+          "misconception": "secondary-storage-as-main-memory"
+        },
+        {
+          "key": "b",
+          "text": "Secondary storage is directly accessible by the CPU, while main memory is always non-volatile.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated CPU-access relationship.",
+          "misconception": "reversed-memory-access"
+        },
+        {
+          "key": "c",
+          "text": "Main memory includes cache and registers, while secondary storage may be volatile.",
+          "isCorrect": false,
+          "feedback": "Cache and registers are excluded here, and secondary storage is non-volatile.",
+          "misconception": "cache-register-inclusion"
+        },
+        {
+          "key": "d",
+          "text": "Main memory is directly accessible by the CPU, except cache and registers; secondary storage is non-volatile and not directly accessible by the CPU.",
+          "isCorrect": true,
+          "feedback": "Correct. Both parts preserve AQA's stated distinction.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Main memory will be considered to be any form\nof memory that is directly accessible by the\nCPU (except for cache and registers).\nSecondary storage is considered to be any non-\nvolatile storage mechanism not directly\naccessible by the CPU.",
+      "sourceLocator": "Official PDF pages 22-26; 3.4.5 Systems architecture"
+    },
+    {
+      "id": "aqa-8525-3-5-lan-wan-scope-ownership",
+      "conceptKey": "aqa-8525-lan-wan-scope-ownership",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "kind": "comparison",
+      "visualCue": "🌐",
+      "front": "What typical differences does AQA give between LANs and WANs in geographical scope and ownership?",
+      "back": "A LAN usually covers a relatively small area and is often owned and managed by one person or organisation; a WAN usually covers a wide area and is often under collective or distributed ownership.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "AQA uses usually for geographical scope and often for ownership, so these are qualified typical differences rather than universal rules.",
+      "memoryTip": "Picture a small single-owner circle beside a wide shared map, but attach ‘usually’ and ‘often’ labels.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "A LAN usually covers a relatively small area and is often owned and managed by one person or organisation; a WAN usually covers a wide area and is often under collective or distributed ownership.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves both contrasts and their qualifiers.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A LAN usually covers a wide area, while a WAN usually covers a relatively small area.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated geographical scopes.",
+          "misconception": "lan-wan-scope-reversal"
+        },
+        {
+          "key": "c",
+          "text": "A LAN is always owned by one person, while a WAN is always owned by one organisation.",
+          "isCorrect": false,
+          "feedback": "The source uses often and gives collective or distributed ownership for WANs.",
+          "misconception": "absolute-network-ownership"
+        },
+        {
+          "key": "d",
+          "text": "LANs are wired networks and WANs are wireless networks.",
+          "isCorrect": false,
+          "feedback": "Networks can be wired or wireless; that is not the LAN–WAN distinction given here.",
+          "misconception": "network-medium-as-network-type"
+        }
+      ],
+      "sourceExcerpt": "LAN – know that these usually cover relatively\nsmall geographical areas.\nLAN – know that these are often owned and\ncontrolled/managed by a single person or\norganisation.\nWAN – know that the Internet is the biggest\nexample of a WAN.\nWAN – know that these usually cover a wide\ngeographic area.\nWAN – know that these are often under\ncollective or distributed ownership.",
+      "sourceLocator": "Official PDF pages 27-28; 3.5 Fundamentals of computer networks"
+    },
+    {
+      "id": "aqa-8525-3-5-tcp-ip-layer-sequence",
+      "conceptKey": "aqa-8525-tcp-ip-layer-sequence",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "kind": "structure",
+      "visualCue": "🌐",
+      "front": "In the sequence listed by AQA, which four layers make up the four-layer TCP/IP model?",
+      "back": "application, transport, internet and link.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These are the four layer names in the sequence used by the specification.",
+      "memoryTip": "Use the initials A–T–I–L and expand them in that order.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "application, internet, transport and link.",
+          "isCorrect": false,
+          "feedback": "Internet and transport are out of the listed sequence.",
+          "misconception": "internet-transport-order-swap"
+        },
+        {
+          "key": "b",
+          "text": "application, transport, internet and link.",
+          "isCorrect": true,
+          "feedback": "Correct. This matches all four names and their listed sequence.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "link, internet, transport and application.",
+          "isCorrect": false,
+          "feedback": "This reverses the listed sequence.",
+          "misconception": "reversed-tcp-ip-layer-sequence"
+        },
+        {
+          "key": "d",
+          "text": "transport, application, link and internet.",
+          "isCorrect": false,
+          "feedback": "All four layers are displaced from the specified sequence.",
+          "misconception": "scrambled-tcp-ip-layer-sequence"
+        }
+      ],
+      "sourceExcerpt": "Describe the 4 layer TCP/IP model:\n• application layer\n• transport layer\n• internet layer\n• link layer.",
+      "sourceLocator": "Official PDF pages 27-28; 3.5 Fundamentals of computer networks"
+    },
+    {
+      "id": "aqa-8525-3-5-protocol-layer-mapping",
+      "conceptKey": "aqa-8525-protocol-layer-mapping",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "kind": "fact",
+      "visualCue": "🌐",
+      "front": "At which TCP/IP layers do HTTP, HTTPS, SMTP, IMAP, TCP and IP operate?",
+      "back": "HTTP, HTTPS, SMTP and IMAP → application; TCP → transport; IP → internet.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The four application protocols share one layer, while TCP and IP are assigned separately to the transport and internet layers.",
+      "memoryTip": "Build three rows: four H/H/S/I protocols together, then TCP alone, then IP alone.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "HTTP, HTTPS, SMTP and IMAP → transport; TCP → internet; IP → link.",
+          "isCorrect": false,
+          "feedback": "Each protocol group has been shifted away from its stated layer.",
+          "misconception": "protocol-layers-shifted"
+        },
+        {
+          "key": "b",
+          "text": "HTTP, HTTPS, SMTP and IMAP → application; TCP → internet; IP → transport.",
+          "isCorrect": false,
+          "feedback": "The application mapping is right, but TCP and IP are swapped.",
+          "misconception": "tcp-ip-layer-swap"
+        },
+        {
+          "key": "c",
+          "text": "HTTP, HTTPS, SMTP and IMAP → application; TCP → transport; IP → internet.",
+          "isCorrect": true,
+          "feedback": "Correct. All three mappings match the specification.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "HTTP, HTTPS, SMTP, IMAP, TCP and IP → link.",
+          "isCorrect": false,
+          "feedback": "The listed protocols are not all assigned to the link layer.",
+          "misconception": "all-protocols-at-link-layer"
+        }
+      ],
+      "sourceExcerpt": "Understand that the HTTP, HTTPS, SMTP and\nIMAP protocols operate at the application layer.\nUnderstand that the TCP protocol operates at\nthe transport layer.\nUnderstand that the IP protocol operates at the\ninternet layer.",
+      "sourceLocator": "Official PDF pages 27-28; 3.5 Fundamentals of computer networks"
+    },
+    {
+      "id": "aqa-8525-3-5-firewall-definition",
+      "conceptKey": "aqa-8525-firewall-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "kind": "definition",
+      "visualCue": "🌐",
+      "front": "What is a firewall, and how does it decide what network traffic to permit?",
+      "back": "A network security device that monitors incoming and outgoing traffic and allows or blocks specific traffic using defined security rules.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Its allow-or-block decision is made for specific traffic according to a defined set of rules.",
+      "memoryTip": "Picture a gate watching arrows in both directions while checking each against a rule list.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "A method that permits or blocks devices using the physical address in their network adapter.",
+          "isCorrect": false,
+          "feedback": "That describes MAC address filtering rather than a firewall.",
+          "misconception": "mac-filtering-as-firewall"
+        },
+        {
+          "key": "b",
+          "text": "A protocol that provides an encrypted version of HTTP for more secure web transactions.",
+          "isCorrect": false,
+          "feedback": "That describes HTTPS rather than a firewall.",
+          "misconception": "https-as-firewall"
+        },
+        {
+          "key": "c",
+          "text": "The TCP/IP layer that sets up communication and agrees settings such as packet size.",
+          "isCorrect": false,
+          "feedback": "That is the stated transport-layer function, not a firewall.",
+          "misconception": "transport-layer-as-firewall"
+        },
+        {
+          "key": "d",
+          "text": "A network security device that monitors incoming and outgoing traffic and allows or blocks specific traffic using defined security rules.",
+          "isCorrect": true,
+          "feedback": "Correct. It includes monitoring, direction and rule-based decisions.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Students should be aware that a firewall\nis a network security device that monitors\nincoming and outgoing network traffic and\ndecides whether to allow or block specific traffic\nbased on a defined set of security rules.",
+      "sourceLocator": "Official PDF pages 27-28; 3.5 Fundamentals of computer networks"
+    },
+    {
+      "id": "aqa-8525-3-6-cyber-security-definition",
+      "conceptKey": "aqa-8525-cyber-security-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6-1",
+      "kind": "definition",
+      "visualCue": "🌐",
+      "front": "What is cyber security?",
+      "back": "Processes, practices and technologies designed to protect networks, computers, programs and data from attack, damage or unauthorised access.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The protection covers four named targets and three named harms: attack, damage and unauthorised access.",
+      "memoryTip": "Picture four protected boxes—network, computer, program, data—behind one three-part shield.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Processes, practices and technologies designed to protect networks, computers, programs and data from attack, damage or unauthorised access.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves the protected targets and purposes.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An umbrella term for hostile or intrusive software.",
+          "isCorrect": false,
+          "feedback": "That defines malware, which is one cyber security threat.",
+          "misconception": "malware-as-cyber-security"
+        },
+        {
+          "key": "c",
+          "text": "Attempting to access resources without normal access information.",
+          "isCorrect": false,
+          "feedback": "That describes penetration testing rather than cyber security as a whole.",
+          "misconception": "penetration-testing-as-cyber-security"
+        },
+        {
+          "key": "d",
+          "text": "Manipulating people so that they give up confidential information.",
+          "isCorrect": false,
+          "feedback": "That defines social engineering.",
+          "misconception": "social-engineering-as-cyber-security"
+        }
+      ],
+      "sourceExcerpt": "Students should know that cyber security\nconsists of the processes, practices and\ntechnologies designed to protect networks,\ncomputers, programs and data from attack,\ndamage or unauthorised access.",
+      "sourceLocator": "Official PDF pages 29-30; 3.6.1 Fundamentals of cyber security"
+    },
+    {
+      "id": "aqa-8525-3-6-penetration-testing-definition",
+      "conceptKey": "aqa-8525-penetration-testing-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6-2",
+      "kind": "method",
+      "visualCue": "💻",
+      "front": "What is penetration testing?",
+      "back": "Attempting to gain access to resources without knowledge of usernames, passwords and other normal means of access.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition specifically describes an access attempt made without knowledge of usernames, passwords and other normal access means.",
+      "memoryTip": "Imagine testing a side entrance without using the ordinary sign-in route.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Redirecting a website's traffic to a fake website.",
+          "isCorrect": false,
+          "feedback": "That defines pharming.",
+          "misconception": "pharming-as-penetration-testing"
+        },
+        {
+          "key": "b",
+          "text": "Attempting to gain access to resources without knowledge of usernames, passwords and other normal means of access.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves the full ‘without knowledge of’ qualifier.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Manipulating people so they give up confidential information.",
+          "isCorrect": false,
+          "feedback": "That defines social engineering.",
+          "misconception": "social-engineering-as-penetration-testing"
+        },
+        {
+          "key": "d",
+          "text": "Using hostile or intrusive software to describe every access attempt.",
+          "isCorrect": false,
+          "feedback": "Hostile or intrusive software falls under malware, not this definition.",
+          "misconception": "malware-as-penetration-testing"
+        }
+      ],
+      "sourceExcerpt": "Penetration testing is the process of attempting\nto gain access to resources without knowledge\nof usernames, passwords and other normal\nmeans of access.",
+      "sourceLocator": "Official PDF pages 29-30; 3.6.2 Cyber security threats"
+    },
+    {
+      "id": "aqa-8525-3-6-phishing-shouldering-comparison",
+      "conceptKey": "aqa-8525-phishing-shouldering-comparison",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6-2-1",
+      "kind": "comparison",
+      "visualCue": "🌐",
+      "front": "How do phishing and shouldering differ as forms of social engineering?",
+      "back": "Phishing fraudulently obtains private information, often using email or SMS; shouldering observes a person’s private information over their shoulder.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Email or SMS are qualified as frequent phishing channels, whereas shouldering is based on observing private information over a person's shoulder.",
+      "memoryTip": "Pair phishing with an envelope or message bubble; pair shouldering with a person standing behind another.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Phishing observes information over a shoulder; shouldering often uses email or SMS.",
+          "isCorrect": false,
+          "feedback": "This reverses the two descriptions.",
+          "misconception": "phishing-shouldering-reversal"
+        },
+        {
+          "key": "b",
+          "text": "Both phishing and shouldering redirect website traffic to a fake website.",
+          "isCorrect": false,
+          "feedback": "Website redirection describes pharming, not either definition here.",
+          "misconception": "pharming-for-social-engineering-forms"
+        },
+        {
+          "key": "c",
+          "text": "Phishing fraudulently obtains private information, often using email or SMS; shouldering observes a person’s private information over their shoulder.",
+          "isCorrect": true,
+          "feedback": "Correct. It preserves both mechanisms and the ‘often’ qualifier.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "Phishing observes information over a shoulder; shouldering uses an invented scenario.",
+          "isCorrect": false,
+          "feedback": "This mixes shouldering with phishing and blagging.",
+          "misconception": "three-form-social-engineering-mix"
+        }
+      ],
+      "sourceExcerpt": "Phishing is a technique of fraudulently obtaining\nprivate information, often using email or SMS.\nShouldering is observing a person's private\ninformation over their shoulder eg cashpoint\nmachine PIN numbers.",
+      "sourceLocator": "Official PDF pages 29-30; 3.6.2.1 Social engineering"
+    },
+    {
+      "id": "aqa-8525-3-6-malware-definition",
+      "conceptKey": "aqa-8525-malware-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6-2-2",
+      "kind": "definition",
+      "visualCue": "💻",
+      "front": "What does the term malware mean?",
+      "back": "An umbrella term for a variety of forms of hostile or intrusive software.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Computer viruses, trojans and spyware are the three forms listed under this umbrella term.",
+      "memoryTip": "Picture an umbrella marked M covering the initials V–T–S: virus, trojan, spyware.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "The art of manipulating people so they give up confidential information.",
+          "isCorrect": false,
+          "feedback": "That defines social engineering.",
+          "misconception": "social-engineering-as-malware"
+        },
+        {
+          "key": "b",
+          "text": "A cyber attack intended to redirect website traffic to a fake website.",
+          "isCorrect": false,
+          "feedback": "That defines pharming.",
+          "misconception": "pharming-as-malware"
+        },
+        {
+          "key": "c",
+          "text": "An attempt to access resources without normal access information.",
+          "isCorrect": false,
+          "feedback": "That describes penetration testing.",
+          "misconception": "penetration-testing-as-malware"
+        },
+        {
+          "key": "d",
+          "text": "An umbrella term for a variety of forms of hostile or intrusive software.",
+          "isCorrect": true,
+          "feedback": "Correct. Malware covers a variety of hostile or intrusive software forms.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Describe the following forms of malware:\n• computer virus\n• trojan\n• spyware.\nMalware is an umbrella term used to refer to a\nvariety of forms of hostile or intrusive software.",
+      "sourceLocator": "Official PDF pages 29-30; 3.6.2.2 Malicious code (malware)"
+    },
+    {
+      "id": "aqa-8525-3-7-relational-database-consistency-benefit",
+      "conceptKey": "aqa-8525-relational-database-consistency-benefit",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7-1",
+      "kind": "cause-consequence",
+      "visualCue": "🗄️",
+      "front": "What benefit does the use of a relational database provide concerning inconsistency and redundancy?",
+      "back": "It facilitates the elimination of data inconsistency and data redundancy.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The wording is facilitates: using a relational database supports elimination rather than guaranteeing it automatically.",
+      "memoryTip": "Link relational database to two I/R warning flags being removed: inconsistency and redundancy.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "It facilitates the elimination of data inconsistency and data redundancy.",
+          "isCorrect": true,
+          "feedback": "Correct. This retains the important qualifier ‘facilitates’.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It guarantees that data inconsistency and redundancy can never occur.",
+          "isCorrect": false,
+          "feedback": "Guarantees is stronger than the source's facilitates.",
+          "misconception": "facilitation-treated-as-guarantee"
+        },
+        {
+          "key": "c",
+          "text": "It facilitates keeping every record duplicated across several tables.",
+          "isCorrect": false,
+          "feedback": "Duplication conflicts with eliminating data redundancy.",
+          "misconception": "redundancy-as-relational-benefit"
+        },
+        {
+          "key": "d",
+          "text": "It eliminates the need for primary and foreign keys.",
+          "isCorrect": false,
+          "feedback": "Primary and foreign keys remain listed relational-database concepts.",
+          "misconception": "relational-database-removes-keys"
+        }
+      ],
+      "sourceExcerpt": "Understand that the use of a relational\ndatabase facilitates the elimination of data\ninconsistency and data redundancy.",
+      "sourceLocator": "Official PDF pages 31-32; 3.7.1 Relational databases"
+    },
+    {
+      "id": "aqa-8525-3-7-sql-retrieval-command-set",
+      "conceptKey": "aqa-8525-sql-retrieval-command-set",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7-2",
+      "kind": "method",
+      "visualCue": "🗄️",
+      "front": "Which SQL commands are specified for retrieving data from a relational database?",
+      "back": "SELECT, FROM, WHERE and ORDER BY … ASC | DESC.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "ORDER BY is included with the two stated ordering alternatives, ASC and DESC.",
+      "memoryTip": "Write S–F–W–O first: SELECT, FROM, WHERE, ORDER.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "SELECT, FROM, INSERT and VALUES.",
+          "isCorrect": false,
+          "feedback": "INSERT and VALUES belong to the specified insertion form.",
+          "misconception": "insert-commands-in-retrieval-set"
+        },
+        {
+          "key": "b",
+          "text": "SELECT, FROM, WHERE and ORDER BY … ASC | DESC.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the full retrieval-command set listed.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "UPDATE, SET, WHERE and DELETE.",
+          "isCorrect": false,
+          "feedback": "These are associated with editing and deleting data.",
+          "misconception": "edit-delete-commands-for-retrieval"
+        },
+        {
+          "key": "d",
+          "text": "ORDER BY, INSERT, UPDATE and DELETE.",
+          "isCorrect": false,
+          "feedback": "This mixes one retrieval command with insertion, editing and deletion commands.",
+          "misconception": "mixed-sql-operation-command-set"
+        }
+      ],
+      "sourceExcerpt": "Be able to use SQL to retrieve data from a\nrelational database, using the commands:\n• SELECT\n• FROM\n• WHERE\n• ORDER BY…ASC | DESC",
+      "sourceLocator": "Official PDF pages 31-32; 3.7.2 Structured query language (SQL)"
+    },
+    {
+      "id": "aqa-8525-3-7-sql-insert-structure",
+      "conceptKey": "aqa-8525-sql-insert-structure",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7-2",
+      "kind": "structure",
+      "visualCue": "🗄️",
+      "front": "What SQL structure is specified for inserting data into named columns of a table?",
+      "back": "INSERT INTO table_name (column1, column2 …) VALUES (value1, value2 …)",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specified form places the table and column list after INSERT INTO, followed by the VALUES list.",
+      "memoryTip": "Recall two chunks: I–I–T for the destination, then V for the values.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "INSERT table_name VALUES (value1, value2 …) INTO (column1, column2 …)",
+          "isCorrect": false,
+          "feedback": "INTO and the column list are in the wrong positions.",
+          "misconception": "insert-clauses-reordered"
+        },
+        {
+          "key": "b",
+          "text": "UPDATE table_name (column1, column2 …) VALUES (value1, value2 …)",
+          "isCorrect": false,
+          "feedback": "UPDATE begins the edit form, not the insertion form.",
+          "misconception": "update-used-for-insertion"
+        },
+        {
+          "key": "c",
+          "text": "INSERT INTO table_name (column1, column2 …) VALUES (value1, value2 …)",
+          "isCorrect": true,
+          "feedback": "Correct. It follows the specified INSERT INTO and VALUES structure.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "INSERT INTO table_name VALUES (column1, column2 …) (value1, value2 …)",
+          "isCorrect": false,
+          "feedback": "The named columns belong before VALUES in the specified form.",
+          "misconception": "columns-placed-as-values"
+        }
+      ],
+      "sourceExcerpt": "Be able to use SQL to insert data into a\nrelational database using the commands.\nINSERT INTO table_name (column1,\ncolumn 2 …)\nVALUES (value1, value2 …)",
+      "sourceLocator": "Official PDF pages 31-32; 3.7.2 Structured query language (SQL)"
+    },
+    {
+      "id": "aqa-8525-3-7-sql-update-delete-structures",
+      "conceptKey": "aqa-8525-sql-update-delete-structures",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7-2",
+      "kind": "method",
+      "visualCue": "🗄️",
+      "front": "What SQL structures are specified for editing and deleting data under a condition?",
+      "back": "Edit: UPDATE table_name SET column1 = value1, column2 = value2 … WHERE condition. Delete: DELETE FROM table_name WHERE condition.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Both structures use WHERE condition; the editing structure additionally uses UPDATE and SET.",
+      "memoryTip": "Use two initial chains: U–S–W for edit and D–F–W for delete.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Edit: UPDATE table_name column1 = value1. Delete: DELETE table_name condition.",
+          "isCorrect": false,
+          "feedback": "This omits SET and WHERE from edit and FROM and WHERE from delete.",
+          "misconception": "missing-update-delete-clauses"
+        },
+        {
+          "key": "b",
+          "text": "Edit: DELETE FROM table_name SET values. Delete: UPDATE table_name WHERE condition.",
+          "isCorrect": false,
+          "feedback": "The UPDATE and DELETE operations have been swapped.",
+          "misconception": "update-delete-operation-swap"
+        },
+        {
+          "key": "c",
+          "text": "Edit: INSERT INTO table_name VALUES (value1). Delete: SELECT FROM table_name.",
+          "isCorrect": false,
+          "feedback": "INSERT performs insertion, while SELECT belongs to retrieval.",
+          "misconception": "insert-select-for-edit-delete"
+        },
+        {
+          "key": "d",
+          "text": "Edit: UPDATE table_name SET column1 = value1, column2 = value2 … WHERE condition. Delete: DELETE FROM table_name WHERE condition.",
+          "isCorrect": true,
+          "feedback": "Correct. Both structures match the specified command patterns.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Be able to use SQL to edit and delete data in a\ndatabase using the commands.\nUPDATE table_name\nSET column1 = value1, column2\n= value2 ...\nWHERE condition\nDELETE FROM table_name WHERE\ncondition",
+      "sourceLocator": "Official PDF pages 31-32; 3.7.2 Structured query language (SQL)"
+    },
+    {
+      "id": "aqa-8525-3-8-hacking-definition",
+      "conceptKey": "aqa-8525-hacking-definition",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "kind": "definition",
+      "visualCue": "🌐",
+      "front": "In this specification's societal-impact context, what is hacking?",
+      "back": "Unauthorised access to a computer system.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition depends on the access being unauthorised and its target being a computer system.",
+      "memoryTip": "Attach the prefix un- to access: it marks the missing authorisation.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Unauthorised access to a computer system.",
+          "isCorrect": true,
+          "feedback": "Correct. This matches the specification's parenthetical definition.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Authorised access to a computer system.",
+          "isCorrect": false,
+          "feedback": "The defining qualifier is unauthorised.",
+          "misconception": "authorised-access-as-hacking"
+        },
+        {
+          "key": "c",
+          "text": "Unauthorised access only to private data.",
+          "isCorrect": false,
+          "feedback": "The stated target is a computer system, not only private data.",
+          "misconception": "hacking-narrowed-to-private-data"
+        },
+        {
+          "key": "d",
+          "text": "Any use of a computer system that affects privacy.",
+          "isCorrect": false,
+          "feedback": "This is broader than the stated definition of hacking.",
+          "misconception": "all-privacy-impact-as-hacking"
+        }
+      ],
+      "sourceExcerpt": "• hacking (unauthorised access to a\ncomputer system)",
+      "sourceLocator": "Official PDF pages 33-34; 3.8 Ethical, legal and environmental impacts of digital technology on wider society, including issues of privacy"
+    },
+    {
+      "id": "aqa-8525-3-8-citizen-privacy-position",
+      "conceptKey": "aqa-8525-citizen-privacy-position",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "kind": "context",
+      "visualCue": "🌐",
+      "front": "What qualified position does the specification give for ordinary citizens regarding privacy and state access?",
+      "back": "Ordinary citizens normally value their privacy and may dislike governments or security services having too much access.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Normally and may must be retained: the source presents a common position rather than an absolute rule about every citizen.",
+      "memoryTip": "Pin the qualifiers N–M beside the idea: normally value, may dislike.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Ordinary citizens always oppose any government access to data.",
+          "isCorrect": false,
+          "feedback": "Always and any are stronger than normally, may and too much access.",
+          "misconception": "privacy-view-made-absolute"
+        },
+        {
+          "key": "b",
+          "text": "Ordinary citizens normally value their privacy and may dislike governments or security services having too much access.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves both the position and its qualifiers.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Ordinary citizens normally want governments to have unrestricted access to private data.",
+          "isCorrect": false,
+          "feedback": "This reverses the privacy concern stated in the excerpt.",
+          "misconception": "citizen-privacy-position-reversed"
+        },
+        {
+          "key": "d",
+          "text": "Only governments and security services value privacy.",
+          "isCorrect": false,
+          "feedback": "The cited statement specifically says ordinary citizens normally value it.",
+          "misconception": "privacy-valued-only-by-state"
+        }
+      ],
+      "sourceExcerpt": "Students should be aware that ordinary citizens\nnormally value their privacy and may not like it\nwhen governments or security services have\ntoo much access.",
+      "sourceLocator": "Official PDF pages 33-34; 3.8 Ethical, legal and environmental impacts of digital technology on wider society, including issues of privacy"
+    },
+    {
+      "id": "aqa-8525-3-8-state-private-data-argument",
+      "conceptKey": "aqa-8525-state-private-data-argument",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "kind": "context",
+      "visualCue": "🌐",
+      "front": "What qualified argument do governments and security services often make for accessing private data?",
+      "back": "They often argue that they cannot keep citizens safe from terrorism and other attacks unless they have access to private data.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The source reports this as an argument made often; it does not present it as an unqualified universal fact.",
+      "memoryTip": "Hold onto O–U: often argue; unless they have access.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "They always claim that unlimited data access guarantees there will be no attacks.",
+          "isCorrect": false,
+          "feedback": "Always, unlimited and guarantees are stronger than the reported argument.",
+          "misconception": "state-argument-overstated"
+        },
+        {
+          "key": "b",
+          "text": "They often argue that citizens can be kept safe without access to private data.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated unless relationship.",
+          "misconception": "private-data-argument-reversed"
+        },
+        {
+          "key": "c",
+          "text": "They often argue that they cannot keep citizens safe from terrorism and other attacks unless they have access to private data.",
+          "isCorrect": true,
+          "feedback": "Correct. This preserves both often and unless.",
+          "misconception": null
+        },
+        {
+          "key": "d",
+          "text": "They argue that ordinary citizens do not value privacy.",
+          "isCorrect": false,
+          "feedback": "The cited argument concerns safety and access, not a denial that citizens value privacy.",
+          "misconception": "safety-argument-confused-with-citizen-view"
+        }
+      ],
+      "sourceExcerpt": "Students should be aware that governments\nand security services often argue that they\ncannot keep their citizens safe from terrorism\nand other attacks unless they have access to\nprivate data.",
+      "sourceLocator": "Official PDF pages 33-34; 3.8 Ethical, legal and environmental impacts of digital technology on wider society, including issues of privacy"
+    },
+    {
+      "id": "aqa-8525-3-8-societal-impact-analysis-framework",
+      "conceptKey": "aqa-8525-societal-impact-analysis-framework",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "curriculumComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "kind": "method",
+      "visualCue": "🌐",
+      "front": "When analysing digital technology's impact on society, which dimensions should be considered?",
+      "back": "Ethical, legal and environmental impacts and risks, with data privacy considered where it arises.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Privacy is conditional on privacy issues arising; ethical, legal and environmental impacts and risks are the other stated dimensions.",
+      "memoryTip": "Run an E–L–E check, then add P only if privacy arises.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Only legal impacts and data privacy.",
+          "isCorrect": false,
+          "feedback": "This omits the ethical and environmental dimensions.",
+          "misconception": "societal-analysis-too-narrow"
+        },
+        {
+          "key": "b",
+          "text": "Only current environmental benefits.",
+          "isCorrect": false,
+          "feedback": "The framework includes impacts and risks across ethical, legal and environmental dimensions.",
+          "misconception": "environmental-benefits-only"
+        },
+        {
+          "key": "c",
+          "text": "Ethical, legal and environmental impacts, but never data privacy.",
+          "isCorrect": false,
+          "feedback": "Data privacy should be considered where privacy issues arise.",
+          "misconception": "privacy-excluded-from-analysis"
+        },
+        {
+          "key": "d",
+          "text": "Ethical, legal and environmental impacts and risks, with data privacy considered where it arises.",
+          "isCorrect": true,
+          "feedback": "Correct. This includes every stated dimension and preserves the privacy qualifier.",
+          "misconception": null
+        }
+      ],
+      "sourceExcerpt": "Explain the current ethical, legal and\nenvironmental impacts and risks of digital\ntechnology on society. Where data privacy\nissues arise these should be considered.",
+      "sourceLocator": "Official PDF pages 33-34; 3.8 Ethical, legal and environmental impacts of digital technology on wider society, including issues of privacy"
+    }
+  ]
+}

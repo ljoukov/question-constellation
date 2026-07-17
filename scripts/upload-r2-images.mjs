@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
 import { execFile } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileSha256 } from './lib/codex-phase-artifacts.mjs';
+import { assertLearnerVisibleAssetBundleCurrent } from './lib/learner-visible-asset-binding.mjs';
+import { assertBoundJsonInputCurrent, captureBoundJsonInput } from './lib/phase-input-binding.mjs';
 
 const rootDir = process.cwd();
 const defaultAssetRoots = [
@@ -20,18 +24,41 @@ const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const explicitAssetRoot = stringArg('asset-root', '');
 const baselinePath = stringArg('referenced-baseline', '');
+const expectedBaselineSha256 = stringArg('expected-baseline-sha256', '');
+const expectedBaselineCanonicalJsonSha256 = stringArg(
+	'expected-baseline-canonical-json-sha256',
+	''
+);
+const assetManifestPath = stringArg('asset-manifest', '');
+const expectedAssetManifestSha256 = stringArg('expected-asset-manifest-sha256', '');
+const expectedAssetManifestCanonicalJsonSha256 = stringArg(
+	'expected-asset-manifest-canonical-json-sha256',
+	''
+);
+if (Boolean(expectedBaselineSha256) !== Boolean(expectedBaselineCanonicalJsonSha256)) {
+	throw new Error('Pass both expected referenced-baseline hashes together.');
+}
+if (Boolean(expectedAssetManifestSha256) !== Boolean(expectedAssetManifestCanonicalJsonSha256)) {
+	throw new Error('Pass both expected learner asset manifest hashes together.');
+}
+if (assetManifestPath && !baselinePath) {
+	throw new Error('An exact learner asset manifest requires --referenced-baseline=<json>.');
+}
 const sourceDocumentId = stringArg('source-document-id', '');
 const localAssetRoot = resolveAssetRoot();
 const limit = integerArg('limit', null, 1);
 const offset = integerArg('offset', 0, 0);
 const concurrency = integerArg('concurrency', defaultConcurrency, 1);
 const maxRetries = integerArg('retries', 3, 0);
+let baselineBinding = null;
+let assetManifestBinding = null;
 
 const usage = `Usage:
-node scripts/upload-r2-images.mjs [--dry-run] [--asset-root=<dir>] [--referenced-baseline=<json>] [--source-document-id=<id>]
+node scripts/upload-r2-images.mjs [--dry-run] [--asset-root=<dir>] [--referenced-baseline=<json>] [--asset-manifest=<json>] [--source-document-id=<id>]
 
 Defaults to uploading all local assets from the first existing current extraction asset root.
 Use --referenced-baseline=<json> only to filter uploads to assets referenced by an existing extraction JSON.
+Use --asset-manifest=<json> to require exact staged bytes and mandatory remote readback verification.
 Use --source-document-id=<id> for Codex SDK extraction assets that should be stored under images/papers/<id>/.`;
 
 if (args.has('--help')) {
@@ -119,11 +146,21 @@ function assertPathExists(filePath, description) {
 }
 
 function assertInputsAvailable() {
-	assertPathExists(localAssetRoot, 'Local question-paper asset directory');
+	if (!assetManifestPath) {
+		assertPathExists(localAssetRoot, 'Local question-paper asset directory');
+	}
 	if (baselinePath) {
 		assertPathExists(
 			path.isAbsolute(baselinePath) ? baselinePath : path.join(rootDir, baselinePath),
 			'Referenced extraction JSON'
+		);
+	}
+	if (assetManifestPath) {
+		assertPathExists(
+			path.isAbsolute(assetManifestPath)
+				? assetManifestPath
+				: path.join(rootDir, assetManifestPath),
+			'Learner asset manifest'
 		);
 	}
 }
@@ -132,7 +169,16 @@ function referencedUploadItems() {
 	const resolvedBaselinePath = path.isAbsolute(baselinePath)
 		? baselinePath
 		: path.join(rootDir, baselinePath);
-	const baseline = JSON.parse(readFileSync(resolvedBaselinePath, 'utf8'));
+	if (!baselineBinding) {
+		baselineBinding = captureBoundJsonInput(resolvedBaselinePath, {
+			rootDir,
+			expectedSha256: expectedBaselineSha256,
+			expectedCanonicalJsonSha256: expectedBaselineCanonicalJsonSha256,
+			label: 'Referenced extraction baseline'
+		});
+	}
+	const baseline = baselineBinding.value;
+	if (assetManifestPath) return manifestUploadItems(baseline);
 	const items = new Map();
 
 	for (const question of baseline.questions ?? []) {
@@ -146,6 +192,40 @@ function referencedUploadItems() {
 	}
 
 	return Array.from(items.values()).sort((a, b) => a.key.localeCompare(b.key));
+}
+
+function manifestUploadItems(baseline) {
+	if (!assetManifestBinding) {
+		const resolvedManifestPath = path.isAbsolute(assetManifestPath)
+			? assetManifestPath
+			: path.join(rootDir, assetManifestPath);
+		assetManifestBinding = captureBoundJsonInput(resolvedManifestPath, {
+			rootDir,
+			expectedSha256: expectedAssetManifestSha256,
+			expectedCanonicalJsonSha256: expectedAssetManifestCanonicalJsonSha256,
+			label: 'Learner asset manifest'
+		});
+	}
+	assertLearnerVisibleAssetBundleCurrent({
+		paper: baseline,
+		manifest: assetManifestBinding.value,
+		rootDir
+	});
+	if (sourceDocumentId && assetManifestBinding.value.sourceDocumentId !== sourceDocumentId) {
+		throw new Error('Learner asset manifest source document id differs from the upload target.');
+	}
+	return assetManifestBinding.value.entries
+		.map((entry) => {
+			const filePath = path.resolve(rootDir, entry.snapshotPath);
+			return {
+				filePath,
+				key: entry.r2Key,
+				contentType: entry.contentType,
+				size: entry.size,
+				sha256: entry.sha256
+			};
+		})
+		.sort((left, right) => left.key.localeCompare(right.key));
 }
 
 function runWranglerPutOnce(item) {
@@ -183,7 +263,14 @@ async function runWranglerPut(item) {
 	let attempt = 0;
 	while (true) {
 		try {
+			assertUploadInputsCurrent();
+			assertUploadItemCurrent(item);
 			await runWranglerPutOnce(item);
+			assertUploadInputsCurrent();
+			assertUploadItemCurrent(item);
+			if (assetManifestBinding) await verifyRemoteObject(item);
+			assertUploadInputsCurrent();
+			assertUploadItemCurrent(item);
 			return;
 		} catch (error) {
 			attempt += 1;
@@ -192,6 +279,63 @@ async function runWranglerPut(item) {
 			console.warn(`Retrying ${item.key} after upload failure (${attempt}/${maxRetries})`);
 			await new Promise((resolve) => setTimeout(resolve, delayMs));
 		}
+	}
+}
+
+function assertUploadInputsCurrent() {
+	if (baselineBinding) {
+		assertBoundJsonInputCurrent(baselineBinding, {
+			label: 'Referenced extraction baseline'
+		});
+	}
+	if (assetManifestBinding) {
+		assertBoundJsonInputCurrent(assetManifestBinding, {
+			label: 'Learner asset manifest'
+		});
+		assertLearnerVisibleAssetBundleCurrent({
+			paper: baselineBinding.value,
+			manifest: assetManifestBinding.value,
+			rootDir
+		});
+	}
+}
+
+function assertUploadItemCurrent(item) {
+	if (!item.sha256) return;
+	const stats = statSync(item.filePath);
+	if (stats.size !== item.size || fileSha256(item.filePath) !== item.sha256) {
+		throw new Error(`Staged learner asset changed before upload/readback: ${item.key}`);
+	}
+}
+
+async function verifyRemoteObject(item) {
+	const readbackRoot = mkdtempSync(path.join(tmpdir(), 'question-r2-readback-'));
+	const outputPath = path.join(readbackRoot, 'object');
+	try {
+		await new Promise((resolve, reject) => {
+			const child = execFile(
+				wranglerCommand,
+				['r2', 'object', 'get', `${bucketName}/${item.key}`, '--remote', '--file', outputPath],
+				{ cwd: rootDir, maxBuffer: 1024 * 1024 },
+				(error, stdout, stderr) => {
+					if (error) {
+						reject(new Error(stderr || stdout || error.message));
+						return;
+					}
+					resolve();
+				}
+			);
+			child.stdin?.end();
+		});
+		if (
+			!existsSync(outputPath) ||
+			statSync(outputPath).size !== item.size ||
+			fileSha256(outputPath) !== item.sha256
+		) {
+			throw new Error(`Remote R2 readback differs from staged bytes: ${item.key}`);
+		}
+	} finally {
+		rmSync(readbackRoot, { recursive: true, force: true });
 	}
 }
 
@@ -232,6 +376,10 @@ console.log(
 			total_files: allItems.length,
 			source: baselinePath ? 'referenced_extraction_assets' : 'all_local_assets',
 			referenced_baseline: baselinePath || null,
+			referenced_baseline_artifact: baselineBinding?.artifact ?? null,
+			learner_asset_manifest: assetManifestPath || null,
+			learner_asset_manifest_artifact: assetManifestBinding?.artifact ?? null,
+			remote_readback_required: Boolean(assetManifestBinding),
 			source_document_id: sourceDocumentId || null,
 			offset,
 			selected_files: items.length,
@@ -255,6 +403,7 @@ if (dryRun) {
 
 try {
 	await runQueue(items);
+	assertUploadInputsCurrent();
 } catch (error) {
 	console.error(error instanceof Error ? error.message : String(error));
 	process.exit(1);

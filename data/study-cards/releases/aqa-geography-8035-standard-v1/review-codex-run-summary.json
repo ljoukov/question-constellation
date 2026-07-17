@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f6b99-ed96-7413-909e-38deaee413e3",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-geography-8035-standard-v1/review",
+  "startedAt": "2026-07-16T15:44:38.734Z",
+  "finishedAt": "2026-07-16T15:48:24.609Z",
+  "durationSeconds": 225.875,
+  "events": 34,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 20,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 65053,
+    "cached_input_tokens": 7936,
+    "output_tokens": 12097,
+    "reasoning_output_tokens": 10358,
+    "total_tokens": 77150
+  },
+  "failedCommands": [],
+  "recovery": "summary reconstructed from preserved rollout JSONL boundaries and token counts"
+}

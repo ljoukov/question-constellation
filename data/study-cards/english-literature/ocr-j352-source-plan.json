@@ -1,0 +1,987 @@
+{
+	"schemaVersion": "ocr-j352-literature-source-plan-v1",
+	"specificationId": "ocr-gcse-english-literature-j352-v3.0",
+	"offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+	"topics": [
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+			"title": "Anita and Me",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+				}
+			},
+			"sources": [
+				{
+					"id": "ocr-anita-and-me-delivery-guide",
+					"kind": "supporting-document",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/358302-anita-and-me-delivery-guide.pdf",
+					"title": "OCR J352 Anita and Me Delivery Guide",
+					"rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "anita-and-me-plot-friendship",
+					"mode": "plot",
+					"sourceId": "ocr-anita-and-me-delivery-guide",
+					"locator": "OCR Delivery Guide, printed page 5; synopsis",
+					"approvedExcerpt": "Meena befriends the bad girl of the village Anita Rutter."
+				},
+				{
+					"id": "anita-and-me-plot-leaves-tollington",
+					"mode": "plot",
+					"sourceId": "ocr-anita-and-me-delivery-guide",
+					"locator": "OCR Delivery Guide, printed page 5; end of synopsis",
+					"approvedExcerpt": "At the end of the novel, Meena and her parents leave Tollington to start a new life in Wolverhampton."
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+			"title": "Never Let Me Go",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+				}
+			},
+			"sources": [
+				{
+					"id": "faber-never-let-me-go-summary",
+					"kind": "secondary-source",
+					"retrievalType": "copyrighted-web-synopsis",
+					"url": "https://www.faber.co.uk/product/9780571335770-never-let-me-go/",
+					"title": "Faber: Never Let Me Go with GCSE and A Level study guide",
+					"rightsBasis": "Publisher-owned synopsis used only as short attributed factual excerpts; no primary-text quotation is permitted."
+				}
+			],
+			"evidence": [
+				{
+					"id": "never-let-me-go-plot-kathy-hailsham",
+					"mode": "plot",
+					"sourceId": "faber-never-let-me-go-summary",
+					"locator": "Publisher summary; Kathy's recollection of Hailsham",
+					"approvedExcerpt": "Narrated by Kathy, now thirty-one, Never Let Me Go hauntingly dramatises her attempts"
+				},
+				{
+					"id": "never-let-me-go-plot-fate",
+					"mode": "plot",
+					"sourceId": "faber-never-let-me-go-summary",
+					"locator": "Publisher summary; the friends' fate",
+					"approvedExcerpt": "with the fate that has always awaited her and her closest friends"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+			"title": "Animal Farm",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "No globally reusable licensed primary-text quotation source is available to this pipeline."
+				}
+			},
+			"sources": [
+				{
+					"id": "penguin-animal-farm-summary",
+					"kind": "secondary-source",
+					"retrievalType": "copyrighted-web-synopsis",
+					"url": "https://www.penguin.co.uk/books/57033/animal-farm-by-orwell-george/9780241453865",
+					"title": "Penguin: Animal Farm by George Orwell",
+					"rightsBasis": "Publisher-owned synopsis used only as short attributed factual excerpts; no primary-text quotation is permitted."
+				}
+			],
+			"evidence": [
+				{
+					"id": "animal-farm-plot-rebellion",
+					"mode": "plot",
+					"sourceId": "penguin-animal-farm-summary",
+					"locator": "Publisher synopsis; the animals' rebellion",
+					"approvedExcerpt": "When the downtrodden animals of Manor Farm overthrow their master, Mr Jones"
+				},
+				{
+					"id": "animal-farm-plot-new-tyranny",
+					"mode": "plot",
+					"sourceId": "penguin-animal-farm-summary",
+					"locator": "Publisher synopsis; the rebellion's outcome",
+					"approvedExcerpt": "one form of tyranny is replaced with another"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+			"title": "An Inspector Calls",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+				}
+			},
+			"sources": [
+				{
+					"id": "pearson-an-inspector-calls-set-text-guide",
+					"kind": "supporting-document",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Drama/2016/teaching-and-learning-materials/gcse-set-text-guide-an-inspector-calls.pdf",
+					"title": "Pearson Edexcel GCSE Drama Prescribed Text Guide: An Inspector Calls",
+					"rightsBasis": "Official awarding-body teaching guide used for educational criticism and review; only short attributed factual excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "an-inspector-calls-plot-goole-arrives",
+					"mode": "plot",
+					"sourceId": "pearson-an-inspector-calls-set-text-guide",
+					"locator": "Pearson prescribed text guide, page 3; Act One summary",
+					"approvedExcerpt": "Inspector Goole enters to bring news of the death of a girl, Eva Smith, in the infirmary."
+				},
+				{
+					"id": "an-inspector-calls-plot-final-call",
+					"mode": "plot",
+					"sourceId": "pearson-an-inspector-calls-set-text-guide",
+					"locator": "Pearson prescribed text guide, page 4; Act Three summary",
+					"approvedExcerpt": "The phone rings – it is the police. A girl has died on the way to the infirmary"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+			"title": "Leave Taking",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+				}
+			},
+			"sources": [
+				{
+					"id": "nick-hern-leave-taking-summary",
+					"kind": "secondary-source",
+					"retrievalType": "copyrighted-web-synopsis",
+					"url": "https://www.nickhernbooks.co.uk/leave-taking",
+					"title": "Nick Hern Books: Leave Taking by Winsome Pinnock",
+					"rightsBasis": "Publisher-owned synopsis used only as short attributed factual excerpts; no primary-text quotation is permitted."
+				}
+			],
+			"evidence": [
+				{
+					"id": "leave-taking-plot-obeah-visit",
+					"mode": "plot",
+					"sourceId": "nick-hern-leave-taking-summary",
+					"locator": "Publisher synopsis; Enid takes her daughters to Mai",
+					"approvedExcerpt": "When Enid takes her daughters to the local obeah woman"
+				},
+				{
+					"id": "leave-taking-plot-countries-cultures",
+					"mode": "plot",
+					"sourceId": "nick-hern-leave-taking-summary",
+					"locator": "Publisher synopsis; consequences for Del, Viv and Enid",
+					"approvedExcerpt": "as they negotiate the frictions between their countries and cultures"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+			"title": "DNA",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+				}
+			},
+			"sources": [
+				{
+					"id": "ocr-dna-delivery-guide",
+					"kind": "supporting-document",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/208645-dna-delivery-guide.pdf",
+					"title": "OCR J352 DNA Delivery Guide",
+					"rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "dna-plot-accident",
+					"mode": "plot",
+					"sourceId": "ocr-dna-delivery-guide",
+					"locator": "OCR Delivery Guide, printed page 6; structure",
+					"approvedExcerpt": "It starts with Jan and Mark in a street discussing a mysterious death"
+				},
+				{
+					"id": "dna-plot-cover-up",
+					"mode": "plot",
+					"sourceId": "ocr-dna-delivery-guide",
+					"locator": "OCR Delivery Guide, printed page 7; Phil and Adam",
+					"approvedExcerpt": "his ruthless handling of the reappearance of Adam"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+			"title": "Great Expectations",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-great-expectations",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+					"title": "Great Expectations by Charles Dickens",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "great-expectations-plot-pip-aids-convict",
+					"mode": "plot",
+					"sourceId": "gutenberg-great-expectations",
+					"locator": "Chapter II; Pip steals food for the convict",
+					"anchor": "some bread, some rind of cheese, about half a jar of mincemeat"
+				},
+				{
+					"id": "great-expectations-plot-benefactor-reveal",
+					"mode": "plot",
+					"sourceId": "gutenberg-great-expectations",
+					"locator": "Chapter XXXIX; Magwitch identifies himself as Pip's benefactor",
+					"anchor": "Yes, Pip, dear boy, I’ve made a gentleman on you!"
+				},
+				{
+					"id": "great-expectations-quotation-opening-name",
+					"mode": "quotation",
+					"sourceId": "gutenberg-great-expectations",
+					"locator": "Chapter I; Pip explains his name",
+					"anchor": "My father’s family name being Pirrip, and my Christian name Philip",
+					"requiredAnswer": "My father’s family name being Pirrip, and my Christian name Philip"
+				},
+				{
+					"id": "great-expectations-quotation-estella-heart",
+					"mode": "quotation",
+					"sourceId": "gutenberg-great-expectations",
+					"locator": "Chapter XXIX; Estella warns Pip",
+					"anchor": "I have no heart,—if that has anything to do with my memory.",
+					"requiredAnswer": "I have no heart,—if that has anything to do with my memory."
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+			"title": "A Christmas Carol",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-a-christmas-carol",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/46/pg46.txt",
+					"title": "A Christmas Carol by Charles Dickens",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "a-christmas-carol-plot-marley-dead",
+					"mode": "plot",
+					"sourceId": "gutenberg-a-christmas-carol",
+					"locator": "Stave I; the narrator establishes Marley's death",
+					"anchor": "MARLEY was dead: to begin with."
+				},
+				{
+					"id": "a-christmas-carol-plot-scrooge-changed",
+					"mode": "plot",
+					"sourceId": "gutenberg-a-christmas-carol",
+					"locator": "Stave V; Scrooge keeps his promises",
+					"anchor": "Scrooge was better than his word."
+				},
+				{
+					"id": "a-christmas-carol-quotation-honour-christmas",
+					"mode": "quotation",
+					"sourceId": "gutenberg-a-christmas-carol",
+					"locator": "Stave IV; Scrooge promises to change",
+					"anchor": "I will honour Christmas in my heart, and try to keep it all the year.",
+					"requiredAnswer": "I will honour Christmas in my heart, and try to keep it all the year."
+				},
+				{
+					"id": "a-christmas-carol-quotation-tiny-tim",
+					"mode": "quotation",
+					"sourceId": "gutenberg-a-christmas-carol",
+					"locator": "Stave III; Tiny Tim's toast",
+					"anchor": "God bless us every one!",
+					"requiredAnswer": "God bless us every one!"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+			"title": "Pride and Prejudice",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-pride-and-prejudice",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
+					"title": "Pride and Prejudice by Jane Austen",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "pride-and-prejudice-plot-first-proposal",
+					"mode": "plot",
+					"sourceId": "gutenberg-pride-and-prejudice",
+					"locator": "Chapter XXXIV; Darcy's first proposal",
+					"anchor": "You must allow me to tell you how ardently I admire and love you."
+				},
+				{
+					"id": "pride-and-prejudice-plot-jane-bingley-engagement",
+					"mode": "plot",
+					"sourceId": "gutenberg-pride-and-prejudice",
+					"locator": "Chapter LVI; Jane and Bingley's engagement",
+					"anchor": "about a week after Bingley’s engagement with Jane had been formed"
+				},
+				{
+					"id": "pride-and-prejudice-quotation-opening",
+					"mode": "quotation",
+					"sourceId": "gutenberg-pride-and-prejudice",
+					"locator": "Chapter I; opening sentence",
+					"anchor": "It is a truth universally acknowledged, that a single man in possession",
+					"requiredAnswer": "It is a truth universally acknowledged"
+				},
+				{
+					"id": "pride-and-prejudice-quotation-darcy-opinion",
+					"mode": "quotation",
+					"sourceId": "gutenberg-pride-and-prejudice",
+					"locator": "Chapter XI; Darcy describes his resentment",
+					"anchor": "My good opinion once lost is lost for ever.",
+					"requiredAnswer": "My good opinion once lost is lost for ever."
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+			"title": "The War of the Worlds",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-the-war-of-the-worlds",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/36/pg36.txt",
+					"title": "The War of the Worlds by H. G. Wells",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "war-of-the-worlds-plot-cylinder-opens",
+					"mode": "plot",
+					"sourceId": "gutenberg-the-war-of-the-worlds",
+					"locator": "Book One, Chapter IV; the cylinder opens",
+					"anchor": "The end of the cylinder was being screwed out from within."
+				},
+				{
+					"id": "war-of-the-worlds-plot-bacteria-defeat",
+					"mode": "plot",
+					"sourceId": "gutenberg-the-war-of-the-worlds",
+					"locator": "Book Two, Chapter VIII; the Martians' defeat",
+					"anchor": "Martians—_dead!_—slain by the putrefactive and disease bacteria"
+				},
+				{
+					"id": "war-of-the-worlds-quotation-opening",
+					"mode": "quotation",
+					"sourceId": "gutenberg-the-war-of-the-worlds",
+					"locator": "Book One, Chapter I; opening sentence",
+					"anchor": "No one would have believed in the last years of the nineteenth century",
+					"requiredAnswer": "No one would have believed in the last years of the nineteenth century"
+				},
+				{
+					"id": "war-of-the-worlds-quotation-birthright",
+					"mode": "quotation",
+					"sourceId": "gutenberg-the-war-of-the-worlds",
+					"locator": "Book Two, Chapter VIII; the narrator reflects on survival",
+					"anchor": "By the toll of a billion deaths man has bought his birthright of the earth",
+					"requiredAnswer": "By the toll of a billion deaths man has bought his birthright of the earth"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+			"title": "The Strange Case of Dr Jekyll and Mr Hyde",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-jekyll-and-hyde",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/43/pg43.txt",
+					"title": "The Strange Case of Dr Jekyll and Mr Hyde by Robert Louis Stevenson",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "jekyll-and-hyde-plot-child",
+					"mode": "plot",
+					"sourceId": "gutenberg-jekyll-and-hyde",
+					"locator": "Story of the Door; Hyde tramples the child",
+					"anchor": "trampled calmly over the child’s body and left her screaming"
+				},
+				{
+					"id": "jekyll-and-hyde-plot-cabinet-body",
+					"mode": "plot",
+					"sourceId": "gutenberg-jekyll-and-hyde",
+					"locator": "The Last Night; Utterson and Poole enter the cabinet",
+					"anchor": "Right in the middle there lay the body of a man sorely contorted"
+				},
+				{
+					"id": "jekyll-and-hyde-quotation-two",
+					"mode": "quotation",
+					"sourceId": "gutenberg-jekyll-and-hyde",
+					"locator": "Henry Jekyll's Full Statement of the Case; Jekyll states his theory",
+					"anchor": "man is not truly one, but truly two",
+					"requiredAnswer": "man is not truly one, but truly two"
+				},
+				{
+					"id": "jekyll-and-hyde-quotation-sufferers",
+					"mode": "quotation",
+					"sourceId": "gutenberg-jekyll-and-hyde",
+					"locator": "Remarkable Incident of Dr Lanyon; Jekyll writes to Utterson",
+					"anchor": "I am the chief of sinners, I am the chief of sufferers also.",
+					"requiredAnswer": "I am the chief of sinners, I am the chief of sufferers also."
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+			"title": "Jane Eyre",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-jane-eyre",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1260/pg1260.txt",
+					"title": "Jane Eyre by Charlotte Brontë",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "jane-eyre-plot-wife-reveal",
+					"mode": "plot",
+					"sourceId": "gutenberg-jane-eyre",
+					"locator": "Chapter XXVI; Rochester's existing marriage is revealed",
+					"anchor": "Rochester has a wife now living."
+				},
+				{
+					"id": "jane-eyre-plot-thornfield-fire",
+					"mode": "plot",
+					"sourceId": "gutenberg-jane-eyre",
+					"locator": "Chapter XXXVI; Jane learns what happened to Thornfield",
+					"anchor": "Thornfield Hall is quite a ruin: it was burnt down"
+				},
+				{
+					"id": "jane-eyre-quotation-no-bird",
+					"mode": "quotation",
+					"sourceId": "gutenberg-jane-eyre",
+					"locator": "Chapter XXIII; Jane asserts her independence",
+					"anchor": "I am no bird; and no net ensnares me; I am a free human being",
+					"requiredAnswer": "I am no bird; and no net ensnares me; I am a free human being"
+				},
+				{
+					"id": "jane-eyre-quotation-reader-married",
+					"mode": "quotation",
+					"sourceId": "gutenberg-jane-eyre",
+					"locator": "Chapter XXXVIII; Jane states the outcome",
+					"anchor": "Reader, I married him.",
+					"requiredAnswer": "Reader, I married him."
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+			"title": "Love and Relationships",
+			"coverage": {
+				"plot": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "Plot recall is not applicable to a thematic poetry cluster."
+				},
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"partialCardCount": 2,
+					"reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+				},
+				"method": { "status": "ready", "expectedCardCount": 3 }
+			},
+			"sources": [
+				{
+					"id": "ocr-j352-specification-love-poetry",
+					"kind": "curriculum-specification",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+					"title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+					"rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+				},
+				{
+					"id": "ocr-love-poetry-current-teacher-guide",
+					"kind": "supporting-document",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/654700-love-and-relationships.pdf",
+					"title": "OCR Love and Relationships Poetry Teacher Guide, updated cluster",
+					"rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+					"verificationAnchors": ["A Song", "Bright Star"]
+				},
+				{
+					"id": "ocr-anthology-public-domain-love",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-anthology-pdf",
+					"url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+					"title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+					"rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+				}
+			],
+			"evidence": [
+				{
+					"id": "love-poetry-method-evidence-supported-response",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-love-poetry",
+					"locator": "J352 specification, physical PDF page 19; Poetry across time critical reading skills",
+					"approvedExcerpt": "make an informed personal response, justifying a point of view by referring closely to evidence in the text"
+				},
+				{
+					"id": "love-poetry-method-language-form-structure",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-love-poetry",
+					"locator": "J352 specification, physical PDF page 18; critical reading skills",
+					"approvedExcerpt": "Learners analyse and evaluate how language, form and structure inform and impact on their reading of poetry."
+				},
+				{
+					"id": "love-poetry-method-connections-contrasts",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-love-poetry",
+					"locator": "J352 specification, physical PDF page 18; comparative understanding",
+					"approvedExcerpt": "learners make connections and contrasts between poems, comparing features and qualities."
+				},
+				{
+					"id": "love-poetry-quotation-a-song",
+					"mode": "quotation",
+					"sourceId": "ocr-anthology-public-domain-love",
+					"locator": "Love and Relationships, A Song by Helen Maria Williams, lines 3-4, anthology page 7",
+					"anchor": "He gave a boon I valued more — He gave me all his heart!",
+					"requiredAnswer": "He gave a boon I valued more — He gave me all his heart!"
+				},
+				{
+					"id": "love-poetry-quotation-bright-star",
+					"mode": "quotation",
+					"sourceId": "ocr-anthology-public-domain-love",
+					"locator": "Love and Relationships, Bright Star by John Keats, line 1, anthology page 8",
+					"anchor": "Bright star, would I were stedfast as thou art–",
+					"requiredAnswer": "Bright star, would I were stedfast as thou art–"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+			"title": "Conflict",
+			"coverage": {
+				"plot": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "Plot recall is not applicable to a thematic poetry cluster."
+				},
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"partialCardCount": 2,
+					"reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+				},
+				"method": { "status": "ready", "expectedCardCount": 3 }
+			},
+			"sources": [
+				{
+					"id": "ocr-j352-specification-conflict-poetry",
+					"kind": "curriculum-specification",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+					"title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+					"rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+				},
+				{
+					"id": "ocr-conflict-poetry-current-teacher-guide",
+					"kind": "supporting-document",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/654699-conflict.pdf",
+					"title": "OCR Conflict Poetry Teacher Guide, updated cluster",
+					"rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+					"verificationAnchors": ["Boat Stealing", "The Destruction of Sennacherib"]
+				},
+				{
+					"id": "ocr-anthology-public-domain-conflict",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-anthology-pdf",
+					"url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+					"title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+					"rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+				}
+			],
+			"evidence": [
+				{
+					"id": "conflict-poetry-method-evidence-supported-response",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-conflict-poetry",
+					"locator": "J352 specification, physical PDF page 19; Poetry across time critical reading skills",
+					"approvedExcerpt": "make an informed personal response, justifying a point of view by referring closely to evidence in the text"
+				},
+				{
+					"id": "conflict-poetry-method-language-form-structure",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-conflict-poetry",
+					"locator": "J352 specification, physical PDF page 18; critical reading skills",
+					"approvedExcerpt": "Learners analyse and evaluate how language, form and structure inform and impact on their reading of poetry."
+				},
+				{
+					"id": "conflict-poetry-method-connections-contrasts",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-conflict-poetry",
+					"locator": "J352 specification, physical PDF page 18; comparative understanding",
+					"approvedExcerpt": "learners make connections and contrasts between poems, comparing features and qualities."
+				},
+				{
+					"id": "conflict-poetry-quotation-boat-stealing",
+					"mode": "quotation",
+					"sourceId": "ocr-anthology-public-domain-conflict",
+					"locator": "Conflict, Boat Stealing by William Wordsworth, line 9, anthology page 20",
+					"anchor": "It was an act of stealth",
+					"requiredAnswer": "It was an act of stealth"
+				},
+				{
+					"id": "conflict-poetry-quotation-sennacherib",
+					"mode": "quotation",
+					"sourceId": "ocr-anthology-public-domain-conflict",
+					"locator": "Conflict, The Destruction of Sennacherib by Lord Byron, line 1, anthology page 21",
+					"anchor": "The Assyrian came down like the wolf on the fold,",
+					"requiredAnswer": "The Assyrian came down like the wolf on the fold,"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+			"title": "Youth and Age",
+			"coverage": {
+				"plot": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"reason": "Plot recall is not applicable to a thematic poetry cluster."
+				},
+				"quotation": {
+					"status": "withheld",
+					"expectedCardCount": 0,
+					"partialCardCount": 2,
+					"reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+				},
+				"method": { "status": "ready", "expectedCardCount": 3 }
+			},
+			"sources": [
+				{
+					"id": "ocr-j352-specification-youth-poetry",
+					"kind": "curriculum-specification",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+					"title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+					"rightsBasis": "Official exam-board specification used as short attributed curriculum evidence."
+				},
+				{
+					"id": "ocr-youth-poetry-current-teacher-guide",
+					"kind": "supporting-document",
+					"retrievalType": "official-resource-pdf",
+					"url": "https://www.ocr.org.uk/Images/654698-youth-and-age.pdf",
+					"title": "OCR Youth and Age Poetry Teacher Guide, updated cluster",
+					"rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+					"verificationAnchors": ["Holy Thursday", "The Bluebell"]
+				},
+				{
+					"id": "ocr-anthology-public-domain-youth",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-anthology-pdf",
+					"url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+					"title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+					"rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition."
+				}
+			],
+			"evidence": [
+				{
+					"id": "youth-poetry-method-evidence-supported-response",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-youth-poetry",
+					"locator": "J352 specification, physical PDF page 19; Poetry across time critical reading skills",
+					"approvedExcerpt": "make an informed personal response, justifying a point of view by referring closely to evidence in the text"
+				},
+				{
+					"id": "youth-poetry-method-language-form-structure",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-youth-poetry",
+					"locator": "J352 specification, physical PDF page 18; critical reading skills",
+					"approvedExcerpt": "Learners analyse and evaluate how language, form and structure inform and impact on their reading of poetry."
+				},
+				{
+					"id": "youth-poetry-method-connections-contrasts",
+					"mode": "method",
+					"sourceId": "ocr-j352-specification-youth-poetry",
+					"locator": "J352 specification, physical PDF page 18; comparative understanding",
+					"approvedExcerpt": "learners make connections and contrasts between poems, comparing features and qualities."
+				},
+				{
+					"id": "youth-poetry-quotation-holy-thursday",
+					"mode": "quotation",
+					"sourceId": "ocr-anthology-public-domain-youth",
+					"locator": "Youth and Age, Holy Thursday by William Blake, line 12, anthology page 32",
+					"anchor": "Then cherish pity, lest you drive an angel from your door.",
+					"requiredAnswer": "Then cherish pity, lest you drive an angel from your door."
+				},
+				{
+					"id": "youth-poetry-quotation-bluebell",
+					"mode": "quotation",
+					"sourceId": "ocr-anthology-public-domain-youth",
+					"locator": "Youth and Age, The Bluebell by Anne Brontë, lines 5-6, anthology page 34",
+					"anchor": "There is a silent eloquence In every wild bluebell",
+					"requiredAnswer": "There is a silent eloquence In every wild bluebell"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+			"title": "Romeo and Juliet",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-romeo-and-juliet",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1513/pg1513.txt",
+					"title": "Romeo and Juliet by William Shakespeare",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "romeo-and-juliet-plot-mercutio-dies",
+					"mode": "plot",
+					"sourceId": "gutenberg-romeo-and-juliet",
+					"locator": "Act 3, Scene 1; Mercutio is fatally wounded",
+					"anchor": "A plague o’ both your houses. I am sped."
+				},
+				{
+					"id": "romeo-and-juliet-plot-romeo-dies",
+					"mode": "plot",
+					"sourceId": "gutenberg-romeo-and-juliet",
+					"locator": "Act 5, Scene 3; Romeo drinks the poison",
+					"anchor": "Thy drugs are quick. Thus with a kiss I die."
+				},
+				{
+					"id": "romeo-and-juliet-quotation-window",
+					"mode": "quotation",
+					"sourceId": "gutenberg-romeo-and-juliet",
+					"locator": "Act 2, Scene 2; Romeo sees Juliet",
+					"anchor": "But soft, what light through yonder window breaks?",
+					"requiredAnswer": "But soft, what light through yonder window breaks?"
+				},
+				{
+					"id": "romeo-and-juliet-quotation-wherefore",
+					"mode": "quotation",
+					"sourceId": "gutenberg-romeo-and-juliet",
+					"locator": "Act 2, Scene 2; Juliet questions Romeo's name",
+					"anchor": "O Romeo, Romeo, wherefore art thou Romeo?",
+					"requiredAnswer": "O Romeo, Romeo, wherefore art thou Romeo?"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+			"title": "The Merchant of Venice",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-the-merchant-of-venice",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1515/pg1515.txt",
+					"title": "The Merchant of Venice by William Shakespeare",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "merchant-of-venice-plot-bond-forfeit",
+					"mode": "plot",
+					"sourceId": "gutenberg-the-merchant-of-venice",
+					"locator": "Act 4, Scene 1; the court considers the forfeited bond",
+					"anchor": "this bond is forfeit, And lawfully by this the Jew may claim A pound of flesh"
+				},
+				{
+					"id": "merchant-of-venice-plot-no-blood",
+					"mode": "plot",
+					"sourceId": "gutenberg-the-merchant-of-venice",
+					"locator": "Act 4, Scene 1; Portia identifies the bond's limit",
+					"anchor": "This bond doth give thee here no jot of blood."
+				},
+				{
+					"id": "merchant-of-venice-quotation-mercy",
+					"mode": "quotation",
+					"sourceId": "gutenberg-the-merchant-of-venice",
+					"locator": "Act 4, Scene 1; Portia appeals for mercy",
+					"anchor": "The quality of mercy is not strain’d,",
+					"requiredAnswer": "The quality of mercy is not strain’d"
+				},
+				{
+					"id": "merchant-of-venice-quotation-bleed",
+					"mode": "quotation",
+					"sourceId": "gutenberg-the-merchant-of-venice",
+					"locator": "Act 3, Scene 1; Shylock argues for common humanity",
+					"anchor": "If you prick us, do we not bleed?",
+					"requiredAnswer": "If you prick us, do we not bleed?"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+			"title": "Macbeth",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-macbeth",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1533/pg1533.txt",
+					"title": "Macbeth by William Shakespeare",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "macbeth-plot-murder-sleep",
+					"mode": "plot",
+					"sourceId": "gutenberg-macbeth",
+					"locator": "Act 2, Scene 2; Macbeth returns after killing Duncan",
+					"anchor": "Macbeth does murder sleep,”—the innocent sleep"
+				},
+				{
+					"id": "macbeth-plot-final-fight",
+					"mode": "plot",
+					"sourceId": "gutenberg-macbeth",
+					"locator": "Act 5, Scene 8; Macduff confronts Macbeth",
+					"anchor": "Turn, hell-hound, turn!"
+				},
+				{
+					"id": "macbeth-quotation-fair-foul",
+					"mode": "quotation",
+					"sourceId": "gutenberg-macbeth",
+					"locator": "Act 1, Scene 1; the witches close the scene",
+					"anchor": "Fair is foul, and foul is fair:",
+					"requiredAnswer": "Fair is foul, and foul is fair:"
+				},
+				{
+					"id": "macbeth-quotation-ambition",
+					"mode": "quotation",
+					"sourceId": "gutenberg-macbeth",
+					"locator": "Act 1, Scene 7; Macbeth identifies his motive",
+					"anchor": "Vaulting ambition, which o’erleaps itself",
+					"requiredAnswer": "Vaulting ambition, which o’erleaps itself"
+				}
+			]
+		},
+		{
+			"topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+			"title": "Much Ado About Nothing",
+			"coverage": {
+				"plot": { "status": "ready", "expectedCardCount": 2 },
+				"quotation": { "status": "ready", "expectedCardCount": 2 }
+			},
+			"sources": [
+				{
+					"id": "gutenberg-much-ado-about-nothing",
+					"kind": "primary-text",
+					"retrievalType": "public-domain-text",
+					"url": "https://www.gutenberg.org/cache/epub/1519/pg1519.txt",
+					"title": "Much Ado About Nothing by William Shakespeare",
+					"rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained."
+				}
+			],
+			"evidence": [
+				{
+					"id": "much-ado-plot-kill-claudio",
+					"mode": "plot",
+					"sourceId": "gutenberg-much-ado-about-nothing",
+					"locator": "Act 4, Scene 1; Beatrice asks Benedick to challenge Claudio",
+					"anchor": "Kill Claudio."
+				},
+				{
+					"id": "much-ado-plot-hero-revealed",
+					"mode": "plot",
+					"sourceId": "gutenberg-much-ado-about-nothing",
+					"locator": "Act 5, Scene 4; Hero reveals herself",
+					"anchor": "One Hero died defil’d, but I do live"
+				},
+				{
+					"id": "much-ado-quotation-dog-bark",
+					"mode": "quotation",
+					"sourceId": "gutenberg-much-ado-about-nothing",
+					"locator": "Act 1, Scene 1; Beatrice rejects romance",
+					"anchor": "I had rather hear my dog bark at a crow than a man swear he loves me.",
+					"requiredAnswer": "I had rather hear my dog bark at a crow than a man swear he loves me."
+				},
+				{
+					"id": "much-ado-quotation-cupid-traps",
+					"mode": "quotation",
+					"sourceId": "gutenberg-much-ado-about-nothing",
+					"locator": "Act 3, Scene 1; Hero observes Beatrice",
+					"anchor": "Some Cupid kills with arrows, some with traps.",
+					"requiredAnswer": "Some Cupid kills with arrows, some with traps."
+				}
+			]
+		}
+	]
+}

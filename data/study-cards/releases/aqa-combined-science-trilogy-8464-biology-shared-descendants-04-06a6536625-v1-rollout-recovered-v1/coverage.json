@@ -1,0 +1,18 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    }
+  ]
+}

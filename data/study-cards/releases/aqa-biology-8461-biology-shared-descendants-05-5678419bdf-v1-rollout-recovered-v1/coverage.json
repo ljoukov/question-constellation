@@ -1,0 +1,18 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "status": "ready",
+      "cardCount": 7,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-7",
+      "status": "ready",
+      "cardCount": 7,
+      "reason": null
+    }
+  ]
+}

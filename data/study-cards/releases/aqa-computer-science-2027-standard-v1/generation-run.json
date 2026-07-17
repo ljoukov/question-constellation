@@ -1,0 +1,87 @@
+{
+  "status": "accepted",
+  "plan": {
+    "schemaVersion": "standard-study-deck-v1",
+    "promptVersion": "standard-study-card-compiler-v2",
+    "batchId": "aqa-computer-science-2027-standard-v1",
+    "specificationId": "aqa-gcse-computer-science-8525-v1.3-2027",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Computer Science",
+    "offeringIds": [
+      "aqa-gcse-computer-science-8525-v1.3-2027:higher"
+    ],
+    "topicComponentIds": [
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+      "aqa-gcse-computer-science-8525-v1.3-2027:3-8"
+    ],
+    "countPerTopic": 4,
+    "minimumAcceptedPerTopic": 3,
+    "expectedCardCount": 32,
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max",
+    "sourcePdf": {
+      "path": "data/curricula/sources/aqa-gcse-computer-science-8525-v1.3-2027.pdf",
+      "sha256": "a6916140049bd9130eead2061b41ca3be228e368ff73b7d5ce3e2fce0fe5527a"
+    }
+  },
+  "run": {
+    "id": "aqa-computer-science-2027-standard-v1",
+    "startedAt": "2026-07-16T15:48:37.917Z",
+    "finishedAt": "2026-07-16T16:00:29.637Z",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "threadId": "019f6b9d-9a14-71c1-b821-25d0d50bc751"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "threadId": "019f6ba6-a6ba-7640-bbe1-66ab1cd369f9",
+      "independentTurn": true
+    }
+  },
+  "counts": {
+    "generated": 32,
+    "deterministicInvalid": 0,
+    "targetedCoverageRepairs": 0,
+    "reviewerRepairAttempts": 0,
+    "reviewerRepairAccepted": 0,
+    "sentForReview": 32,
+    "accepted": 31,
+    "rejectedByReviewer": 1,
+    "readyCoverageRows": 8,
+    "withheldCoverageRows": 0
+  },
+  "artifactPath": "data/study-cards/releases/aqa-computer-science-2027-standard-v1/accepted-study-cards.json",
+  "artifactHash": "56ff1f5a5957820626f25c4e2d9f2589da4dfd606d41c9fbc6e44274eedcdada",
+  "modelUsage": {
+    "generator": {
+      "input_tokens": 59120,
+      "cached_input_tokens": 0,
+      "output_tokens": 31113,
+      "reasoning_output_tokens": 16574,
+      "total_tokens": 90233
+    },
+    "reviewer": {
+      "input_tokens": 76801,
+      "cached_input_tokens": 0,
+      "output_tokens": 5656,
+      "reasoning_output_tokens": 4142,
+      "total_tokens": 82457
+    }
+  },
+  "recovery": {
+    "status": "reconstructed-from-preserved-rollout-jsonl",
+    "timestampBoundaryPolicy": "release timestamps use preserved generation session start and review session completion boundaries because the deleted wrapper timestamps were not emitted to JSONL",
+    "generationSessionSha256": "957341cd8bbb97ed690103ddca5ae66da04b70ecc251bdea14d2711f8f79cde0",
+    "reviewSessionSha256": "6ad83e0b12aa7c13d38cda17d3504b9e404af754c3c041880408b37cbc702aa8",
+    "historicalAcceptedArtifactBytes": 102710
+  }
+}

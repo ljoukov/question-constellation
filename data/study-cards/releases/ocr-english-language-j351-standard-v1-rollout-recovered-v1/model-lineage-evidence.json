@@ -1,0 +1,231 @@
+{
+  "schemaVersion": "study-card-model-lineage-v2",
+  "status": "passed",
+  "releaseId": "ocr-english-language-j351-standard-v1-rollout-recovered-v1",
+  "requiredModel": "gpt-5.6-sol",
+  "requiredThinkingLevel": "max",
+  "artifact": {
+    "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+    "fileSha256": "a570044e2ecfab6d96b53ba8ce4abd545721119359d7cce3e995fd86b98928be",
+    "semanticSha256": "f469c3e2286c242bcc1535312eea79762e3d7cee7002dde4e34ad8493c2a15fc",
+    "acceptedCardCount": 8,
+    "acceptedCardIdsSha256": "8efd611d361bf0a3019744c50846e3700d3aaecdc32c027c39d1121765fd3e8c",
+    "acceptedCardContent": [
+      {
+        "cardId": "ocr-j351-v2-0-01-adapt-tone-style-register",
+        "semanticSha256": "8e43169efa17fd1b4cb5f627e234fb7598e0898748ab95f9573ccdbf6d7829b4"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-01-evaluate-usefulness-bias-evidence",
+        "semanticSha256": "63fec2d89cd77e05156fb1ab3bf095e6ea95f03d209d04352bb423fc843670a0"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-01-section-reading-writing",
+        "semanticSha256": "07c3c7480cbd9784d3ffa5358bff0c8b904be6a481316a1c02f04b393f074c8b"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-01-single-summary-multiple-synthesis",
+        "semanticSha256": "fb6bbb0540272caae326067470c85c78b1323ac0464177122c339a1f82eaf2b2"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-02-consistent-narrative-viewpoint",
+        "semanticSha256": "772f5076c2522eea6fa4ef62fb2244765c96bc28036605423d81c9fbf0f8242c"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-02-narrative-structure-deliberate-effects",
+        "semanticSha256": "21b4819eaccb2d1f052b9090c5d6683879e987bde08fb24be00305ca3ac7abd8"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-02-reader-impact-language-structure-grammar",
+        "semanticSha256": "6b3c1643dd43ffa9815160fd10d6f3d1022406a62c437e4d90026d65bbeb4d99"
+      },
+      {
+        "cardId": "ocr-j351-v2-0-02-reading-text-period-and-genre",
+        "semanticSha256": "17e20bb4f025eeb53d88f153b6d40bd78c0cbbd47e8bc8936d27cc7c094beb37"
+      }
+    ],
+    "acceptedCardContentSha256": "14002730e88d4c28cff2189e07d83e7a3f14ce702c108bec0f1efc146fe575cf",
+    "sourceManifestHash": "d081f5c50e8c25b71e390a1f04263dfe4af11c5d7e1929b285483a654bfe9fac"
+  },
+  "generationRun": {
+    "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/generation-run.json",
+    "sha256": "4b01e61ab9de15bce0c08462ee1e0fe0defd6da68205f2f342d4ba211b58b510"
+  },
+  "runs": [
+    {
+      "stage": "generation",
+      "role": "generator",
+      "status": "passed",
+      "runId": "019f6b86-f09e-7ab0-a320-bc0b04215f77",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T15:23:54.361Z",
+      "finishedAt": "2026-07-16T15:28:06.513Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/generation-codex-run-summary.json",
+        "sha256": "aba76f657aa3b6e61c10a08ad6c6a265b59b7983473511bdfb09cdcdd0394637"
+      },
+      "eventStream": {
+        "sourceFileName": "generation-rollout-source.jsonl",
+        "sha256": "19d1ed8b7fca635a7584fc953430707aefef2aeef62308c22d713b7f0b7fe9ce",
+        "sanitizedEventCount": 34
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/generation-prompt.txt",
+        "sha256": "0e06e7b731b5132249f46e3eca268699eab407f640573862d792c5946a2e08d1"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/generation-model-output.json",
+        "sha256": "c25a780f5c6885989f6f155cde17f1b09a8915ad6e5e8bc6322d9ac0c4ec33ba"
+      },
+      "generatedCardIds": [
+        "ocr-j351-v2-0-01-adapt-tone-style-register",
+        "ocr-j351-v2-0-01-evaluate-usefulness-bias-evidence",
+        "ocr-j351-v2-0-01-section-reading-writing",
+        "ocr-j351-v2-0-01-single-summary-multiple-synthesis",
+        "ocr-j351-v2-0-02-consistent-narrative-viewpoint",
+        "ocr-j351-v2-0-02-narrative-structure-deliberate-effects",
+        "ocr-j351-v2-0-02-reader-impact-language-structure-grammar",
+        "ocr-j351-v2-0-02-reading-text-period-and-genre"
+      ],
+      "generatedCardContent": [
+        {
+          "cardId": "ocr-j351-v2-0-01-adapt-tone-style-register",
+          "semanticSha256": "8e43169efa17fd1b4cb5f627e234fb7598e0898748ab95f9573ccdbf6d7829b4"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-01-evaluate-usefulness-bias-evidence",
+          "semanticSha256": "63fec2d89cd77e05156fb1ab3bf095e6ea95f03d209d04352bb423fc843670a0"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-01-section-reading-writing",
+          "semanticSha256": "07c3c7480cbd9784d3ffa5358bff0c8b904be6a481316a1c02f04b393f074c8b"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-01-single-summary-multiple-synthesis",
+          "semanticSha256": "fb6bbb0540272caae326067470c85c78b1323ac0464177122c339a1f82eaf2b2"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-consistent-narrative-viewpoint",
+          "semanticSha256": "772f5076c2522eea6fa4ef62fb2244765c96bc28036605423d81c9fbf0f8242c"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-narrative-structure-deliberate-effects",
+          "semanticSha256": "21b4819eaccb2d1f052b9090c5d6683879e987bde08fb24be00305ca3ac7abd8"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-reader-impact-language-structure-grammar",
+          "semanticSha256": "6b3c1643dd43ffa9815160fd10d6f3d1022406a62c437e4d90026d65bbeb4d99"
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-reading-text-period-and-genre",
+          "semanticSha256": "17e20bb4f025eeb53d88f153b6d40bd78c0cbbd47e8bc8936d27cc7c094beb37"
+        }
+      ],
+      "reviewedAcceptedCardIds": [],
+      "reviewedAcceptedCardContent": []
+    },
+    {
+      "stage": "review",
+      "role": "reviewer",
+      "status": "passed",
+      "runId": "019f6b8a-cf6f-7133-bc3d-ce052b242740",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "startedAt": "2026-07-16T15:28:07.784Z",
+      "finishedAt": "2026-07-16T15:28:39.851Z",
+      "summary": {
+        "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/review-codex-run-summary.json",
+        "sha256": "580c2d611d0e7e996feca9d87be86761fc7200a0bdc902ebbd60012711368eb3"
+      },
+      "eventStream": {
+        "sourceFileName": "review-rollout-source.jsonl",
+        "sha256": "861a187f58701403a5a434c57bd99e65685cc923e5f227c2a9d56036250653e1",
+        "sanitizedEventCount": 16
+      },
+      "prompt": {
+        "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/review-prompt.txt",
+        "sha256": "ec01196b6c111ee27f989676adbdcb241d413b6972dd80b911eae23a966def41"
+      },
+      "modelOutput": {
+        "path": "data/study-cards/releases/ocr-english-language-j351-standard-v1-rollout-recovered-v1/review-model-output.json",
+        "sha256": "f0c5521def1f1be7b42d0963ed24608cd0ee536009180e1d45cbee901246983a"
+      },
+      "generatedCardIds": [],
+      "generatedCardContent": [],
+      "reviewedAcceptedCardIds": [
+        "ocr-j351-v2-0-01-adapt-tone-style-register",
+        "ocr-j351-v2-0-01-evaluate-usefulness-bias-evidence",
+        "ocr-j351-v2-0-01-section-reading-writing",
+        "ocr-j351-v2-0-01-single-summary-multiple-synthesis",
+        "ocr-j351-v2-0-02-consistent-narrative-viewpoint",
+        "ocr-j351-v2-0-02-narrative-structure-deliberate-effects",
+        "ocr-j351-v2-0-02-reader-impact-language-structure-grammar",
+        "ocr-j351-v2-0-02-reading-text-period-and-genre"
+      ],
+      "reviewedAcceptedCardContent": [
+        {
+          "cardId": "ocr-j351-v2-0-01-adapt-tone-style-register",
+          "semanticSha256s": [
+            "8e43169efa17fd1b4cb5f627e234fb7598e0898748ab95f9573ccdbf6d7829b4"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-01-evaluate-usefulness-bias-evidence",
+          "semanticSha256s": [
+            "63fec2d89cd77e05156fb1ab3bf095e6ea95f03d209d04352bb423fc843670a0"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-01-section-reading-writing",
+          "semanticSha256s": [
+            "07c3c7480cbd9784d3ffa5358bff0c8b904be6a481316a1c02f04b393f074c8b"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-01-single-summary-multiple-synthesis",
+          "semanticSha256s": [
+            "fb6bbb0540272caae326067470c85c78b1323ac0464177122c339a1f82eaf2b2"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-consistent-narrative-viewpoint",
+          "semanticSha256s": [
+            "772f5076c2522eea6fa4ef62fb2244765c96bc28036605423d81c9fbf0f8242c"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-narrative-structure-deliberate-effects",
+          "semanticSha256s": [
+            "21b4819eaccb2d1f052b9090c5d6683879e987bde08fb24be00305ca3ac7abd8"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-reader-impact-language-structure-grammar",
+          "semanticSha256s": [
+            "6b3c1643dd43ffa9815160fd10d6f3d1022406a62c437e4d90026d65bbeb4d99"
+          ]
+        },
+        {
+          "cardId": "ocr-j351-v2-0-02-reading-text-period-and-genre",
+          "semanticSha256s": [
+            "17e20bb4f025eeb53d88f153b6d40bd78c0cbbd47e8bc8936d27cc7c094beb37"
+          ]
+        }
+      ]
+    }
+  ],
+  "linkage": {
+    "contentProjection": "study-card-learner-content-v1",
+    "allowedDeterministicBinding": "board/qualification/subject/contentRevision, official source metadata, offering targets and normalized choice keys are bound after model review; all learner-visible fields, ordered choice content, source excerpt and component identities hash exactly",
+    "generatorOutputSha256": "b3f5abd1fb7691b29ee1e707ac33579182a49eafe058405dffe2d19da814a253",
+    "reviewerInputSha256": "1006857b0e6bd17adbd62ff1b82a700c1d40385fa645dad534f1a375318e38b6",
+    "reviewerOutputSha256": "bc5feaf9131e2d8fd25df2878fdc92b74de701ea652f079641519edcae3e9939",
+    "generatedAcceptedCardIdsSha256": "8efd611d361bf0a3019744c50846e3700d3aaecdc32c027c39d1121765fd3e8c",
+    "reviewedAcceptedCardIdsSha256": "8efd611d361bf0a3019744c50846e3700d3aaecdc32c027c39d1121765fd3e8c",
+    "generatedAcceptedCardContentSha256": "14002730e88d4c28cff2189e07d83e7a3f14ce702c108bec0f1efc146fe575cf",
+    "reviewedAcceptedCardContentSha256": "14002730e88d4c28cff2189e07d83e7a3f14ce702c108bec0f1efc146fe575cf",
+    "acceptedArtifactCardContentSha256": "14002730e88d4c28cff2189e07d83e7a3f14ce702c108bec0f1efc146fe575cf",
+    "acceptedArtifactSha256": "a570044e2ecfab6d96b53ba8ce4abd545721119359d7cce3e995fd86b98928be"
+  }
+}

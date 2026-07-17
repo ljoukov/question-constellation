@@ -1,0 +1,105 @@
+{
+	"schemaVersion": "english-literature-practice-validation-current-preflight-v1",
+	"snapshotDate": "2026-07-16",
+	"status": "blocked_awaiting_ocr_j352_replacement_imports",
+	"readOnly": true,
+	"modelCalls": 0,
+	"d1Writes": 0,
+	"productionCandidateCount": 255,
+	"coverage": [
+		{
+			"taskKind": "poetry-comparison",
+			"candidateCount": 21,
+			"eligibleCount": 0,
+			"requiredCount": 2
+		},
+		{
+			"taskKind": "extract-comparison",
+			"candidateCount": 35,
+			"eligibleCount": 0,
+			"requiredCount": 2
+		},
+		{
+			"taskKind": "extract-and-wider",
+			"candidateCount": 68,
+			"eligibleCount": 0,
+			"requiredCount": 2
+		},
+		{
+			"taskKind": "whole-text-judgement",
+			"candidateCount": 60,
+			"eligibleCount": 0,
+			"requiredCount": 2
+		},
+		{
+			"taskKind": "single-text-analysis",
+			"candidateCount": 71,
+			"eligibleCount": 0,
+			"requiredCount": 2
+		}
+	],
+	"blockingIssueCounts": {
+		"reviewed_overlay_missing": 255,
+		"reviewed_source_grounded_model_answer_missing": 192,
+		"self_containment_status_not_source_complete": 143,
+		"required_source_count_missing": 143,
+		"runtime_practice_source_gate_failed": 139,
+		"required_source_labels_missing": 139,
+		"extract_and_wider_source_count_not_one": 68,
+		"checklist_not_grounded_in_raw_mark_row": 45,
+		"two_extract_source_count_not_two": 35,
+		"raw_mark_scheme_evidence_missing": 25,
+		"poetry_source_count_not_explicit": 21,
+		"source_asset_hidden_by_overlay": 4
+	},
+	"ocrReplacementState": {
+		"retryRun": "not_started",
+		"sourceIdsWillBeReplacedInPlace": true,
+		"legacyJ35201": {
+			"questionCount": 23,
+			"alternativeRouteMarks": 680,
+			"completeTimedPaperEligible": false
+		},
+		"legacyJ35202": {
+			"questionCount": 14,
+			"alternativeRouteMarks": 440,
+			"completeTimedPaperEligible": false
+		},
+		"reviewedExactShaFallbackImplemented": true,
+		"matchedOcrQuestionPaperAndMarkSchemeHashes": 8,
+		"extractionGoldenTests": {
+			"passed": 14,
+			"total": 14
+		},
+		"requiredRomeoAndJulietReplacement": "J352/02 official Question 4"
+	},
+	"runtimeSourceStatusAlignment": {
+		"status": "pending_replacement_acceptance",
+		"currentlyRunnableSourceDependentRows": [
+			"english-lit-romeo-juliet-fate-guided",
+			"ocr-j352-02-jun23-01-1a",
+			"ocr-j352-02-jun23-02-1a",
+			"ocr-j352-02-jun23-03-1a"
+		],
+		"otherCurrentlyRunnableSourceDependentRows": [],
+		"migrationOrder": [
+			"accept J352/02 official Question 4 replacement",
+			"apply migration 0024 to remove the guided seed",
+			"apply guarded migration 0025 to canonicalize exactly three visually audited June 2023 poetry rows",
+			"require self_containment_json.status=source_complete in runtime eligibility"
+		],
+		"requiredRuntimeTests": [
+			"source-dependent rows with missing or wrong status are blocked",
+			"the three canonical June 2023 poetry rows remain launchable",
+			"accepted J352/02 official Question 4 remains launchable",
+			"source-independent whole-text and single-text tasks remain launchable"
+		],
+		"legacyPoetryRowsSelectorReadyAfter0025Alone": false,
+		"remainingLegacyPoetrySelectorNeeds": [
+			"reviewed rendering overlays",
+			"substantive source-grounded model answers"
+		]
+	},
+	"nextGate": "Run and accept the OCR J352 replacement imports, then rerun the selector with a real local base URL and --require-ready.",
+	"protocol": "docs/release-evidence/english-literature-practice-validation-protocol.md"
+}

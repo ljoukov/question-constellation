@@ -1,4 +1,9 @@
 import { storedQuestionTitle, storedQuestionTitleIssues } from '$lib/storedQuestionTitle.js';
+import {
+	constructedAnswerIsIndependent,
+	normalizeConstructedAnswerAssistance,
+	type ConstructedAnswerAssistance
+} from '$lib/learning/answerAssistance';
 import { curriculumOfferingTopics } from '$lib/curriculum/catalog';
 import type { CurriculumSelectionGroup } from '$lib/curriculum/catalog';
 import type { StemCurriculumTopic } from '$lib/curriculum/aqaStem';
@@ -16,9 +21,15 @@ import {
 	isScienceLearnerSubject,
 	learnerSubjectHref,
 	learnerSubjectScopeHref,
+	supportedLearnerSubjects,
 	type SupportedLearnerSubject
 } from '$lib/learning/subjects';
 import { supportsLearnerPracticeInput } from '$lib/learning/practiceEligibility';
+import { deriveCheckedAnswerPerformance } from '$lib/learning/workingGradeEstimate';
+import {
+	englishPracticeEligibility,
+	type EnglishSourceAssetEvidence
+} from '$lib/englishPracticeEligibility';
 import { enabledProfileCombinationForQuestion } from '$lib/learning/profileQuestionCompatibility';
 import type { EnglishLiteratureSelections } from '$lib/englishLiteratureProfile';
 import type {
@@ -37,6 +48,7 @@ import {
 import {
 	recallCurriculumTopics,
 	type RecallCard,
+	type RecallRuntimeSubject,
 	type RecallSubject,
 	type RecallTopic
 } from '$lib/recall/aqaScienceRecall';
@@ -59,6 +71,7 @@ import {
 	type LearnerSubject
 } from '$lib/server/personalLearning';
 import { getCurriculumOffering } from '$lib/server/curriculumCatalog';
+import { getLatestResumeActionsBySubject } from '$lib/server/learningResume';
 import {
 	executePersonalQuery,
 	queryPersonalFirst,
@@ -129,6 +142,7 @@ type AttemptRow = {
 	result: string;
 	awarded_marks: number;
 	max_marks: number;
+	independent: number;
 	topic_path_json: string;
 	created_at: string;
 };
@@ -153,6 +167,10 @@ type QuestionCandidateRow = {
 	subject: string | null;
 	prompt_text: string;
 	self_contained_prompt_text: string | null;
+	context_text: string | null;
+	self_containment_json: string | null;
+	reviewed_source_assets_json: string | null;
+	reviewed_render_json: string | null;
 	metadata_json: string;
 	source_question_ref: string;
 	marks: number | null;
@@ -288,7 +306,7 @@ function courseLabel(subject: LearnerSubject): string {
 }
 
 function recallTopicForOfficialTopic(
-	subject: RecallSubject,
+	subject: RecallRuntimeSubject,
 	topic: StemCurriculumTopic
 ): RecallTopic | null {
 	return (
@@ -303,10 +321,12 @@ function recallTopicForOfficialTopic(
 }
 
 function officialTopicForRecallTopic(
-	subject: RecallSubject,
+	subject: RecallRuntimeSubject,
 	recallTopicId: string,
 	topics: StemCurriculumTopic[]
 ): StemCurriculumTopic | null {
+	const directlyMappedTopic = topics.find((topic) => topic.id === recallTopicId);
+	if (directlyMappedTopic) return directlyMappedTopic;
 	const recallTopic = recallCurriculumTopics.find(
 		(entry) => entry.subject === subject && entry.id === recallTopicId
 	);
@@ -320,10 +340,10 @@ function officialTopicForRecallTopic(
 
 async function recallCatalogScopeForSettings(
 	settings: LearnerProfileSettings,
-	subject: RecallSubject
+	subject: RecallRuntimeSubject
 ): Promise<RecallCatalogScope | null> {
 	const learnerSubject = settings.subjects.find(
-		(entry) => entry.enabled && entry.subject === subject && entry.board === 'AQA'
+		(entry) => entry.enabled && entry.subject === subject
 	);
 	if (!learnerSubject) return null;
 	const offering = await getCurriculumOffering({
@@ -338,7 +358,7 @@ async function recallCatalogScopeForSettings(
 
 export async function getRecallCatalogScopeForLearner(
 	user: AdminUser,
-	subject: RecallSubject
+	subject: RecallRuntimeSubject
 ): Promise<RecallCatalogScope | null> {
 	return await recallCatalogScopeForSettings(await getLearnerProfileSettings(user), subject);
 }
@@ -348,7 +368,14 @@ export async function getRecallCardForLearner(
 	cardId: string
 ): Promise<RecallCard | null> {
 	const settings = await getLearnerProfileSettings(user);
-	for (const subject of ['Biology', 'Chemistry', 'Physics'] as const) {
+	for (const learnerSubject of settings.subjects) {
+		if (
+			!learnerSubject.enabled ||
+			!supportedLearnerSubjects.includes(learnerSubject.subject as RecallRuntimeSubject)
+		) {
+			continue;
+		}
+		const subject = learnerSubject.subject as RecallRuntimeSubject;
 		const scope = await recallCatalogScopeForSettings(settings, subject);
 		if (!scope) continue;
 		const card = await getRecallCardById(cardId, scope);
@@ -640,7 +667,10 @@ async function readSubjectEvidence(
 	userId: string,
 	subject: LearnerSubject
 ): Promise<SubjectEvidenceBundle> {
-	const catalogCardsPromise = isScienceLearnerSubject(subject.subject)
+	const runtimeSubject = supportedLearnerSubjects.includes(subject.subject as RecallRuntimeSubject)
+		? (subject.subject as RecallRuntimeSubject)
+		: null;
+	const catalogCardsPromise = runtimeSubject
 		? getCurriculumOffering({
 				board: subject.board,
 				qualification: subject.qualification,
@@ -648,12 +678,7 @@ async function readSubjectEvidence(
 				course: subject.course,
 				tier: subject.tier
 			}).then((offering) =>
-				offering
-					? getRecallCards({
-							subject: subject.subject as RecallSubject,
-							offeringId: offering.id
-						})
-					: []
+				offering ? getRecallCards({ subject: runtimeSubject, offeringId: offering.id }) : []
 			)
 		: Promise.resolve([]);
 	const catalogCards = await catalogCardsPromise;
@@ -716,7 +741,7 @@ async function readSubjectEvidence(
 			[userId, subject.subject, subject.course, subject.tier]
 		),
 		queryPersonalRows<AttemptRow>(
-			`SELECT id, question_id, answer_chain_id, result, awarded_marks, max_marks,
+			`SELECT id, question_id, answer_chain_id, result, awarded_marks, max_marks, independent,
 			        topic_path_json, created_at
 			 FROM user_question_attempts
 			 WHERE user_id = ? AND subject = ? AND course = ? AND tier = ?
@@ -768,7 +793,8 @@ async function readQuestionCandidates(
 	return await queryRows<QuestionCandidateRow>(
 		`WITH RECURSIVE candidate_questions AS MATERIALIZED (
 		   SELECT
-		     q.id, q.subject, q.prompt_text, q.self_contained_prompt_text, q.metadata_json,
+		     q.id, q.subject, q.prompt_text, q.self_contained_prompt_text, q.context_text,
+		     q.self_containment_json, q.metadata_json,
 		     q.source_question_ref, q.marks, q.answer_format, q.paper, q.topic_path_json,
 		     q.spec_ref,
 		     (SELECT ma.answer_text
@@ -786,6 +812,27 @@ async function readQuestionCandidates(
 		         WHEN 'vision-extracted' THEN 2 ELSE 3 END,
 		         qro.overlay_version DESC
 		       LIMIT 1) AS response_kind,
+		     (SELECT json_group_array(json_object(
+		               'id', qa.id,
+		               'publicPath', qa.public_path,
+		               'role', qa.role,
+		               'sourceLabel', qa.source_label,
+		               'altText', qa.alt_text,
+		               'required', qa.required
+		             ))
+		        FROM question_assets qa
+		       WHERE qa.question_id = q.id
+		         AND qa.needs_human_review = 0
+		         AND COALESCE(TRIM(qa.public_path), '') <> '') AS reviewed_source_assets_json,
+		     (SELECT qro.render_json
+		        FROM question_rendering_overlays qro
+		       WHERE qro.question_id = q.id
+		         AND qro.needs_human_review = 0
+		       ORDER BY CASE qro.provenance
+		         WHEN 'manual' THEN 0 WHEN 'pdf-geometry' THEN 1
+		         WHEN 'vision-extracted' THEN 2 ELSE 3 END,
+		         qro.overlay_version DESC
+		       LIMIT 1) AS reviewed_render_json,
 		     qac.answer_chain_id, ac.title AS chain_title,
 		     qac.transfer_distance, COALESCE(qac.fit_confidence, 0) AS fit_confidence,
 		     CASE qac.transfer_distance
@@ -858,6 +905,8 @@ async function readQuestionCandidates(
 		 )
 		 SELECT
 		   candidate.id, candidate.subject, candidate.prompt_text, candidate.self_contained_prompt_text,
+		   candidate.context_text, candidate.self_containment_json,
+		   candidate.reviewed_source_assets_json, candidate.reviewed_render_json,
 		   candidate.metadata_json, candidate.source_question_ref, candidate.marks,
 		   candidate.answer_format, candidate.response_kind, candidate.paper,
 		   candidate.topic_path_json, candidate.spec_ref, candidate.reviewed_answer_text,
@@ -949,7 +998,7 @@ function topicProgress(
 	topics: StemCurriculumTopic[],
 	scope: CurriculumScopeView,
 	bundle: SubjectEvidenceBundle,
-	subject: RecallSubject | null
+	subject: RecallRuntimeSubject | null
 ): CurriculumTopicProgressView[] {
 	const included = new Set(scope.includedTopicIds);
 	const topicEvidenceCounts = new Map(
@@ -958,12 +1007,19 @@ function topicProgress(
 	const now = Date.now();
 	return topics.map((topic) => {
 		const stateRow = stateForTopic(topic, bundle.states);
-		const recallTopic = subject ? recallTopicForOfficialTopic(subject, topic) : null;
-		const dueCount = recallTopic
-			? bundle.reviews.filter(
-					(review) => review.topic_id === recallTopic.id && Date.parse(review.due_at) <= now
-				).length
-			: 0;
+		const staticRecallTopic = subject ? recallTopicForOfficialTopic(subject, topic) : null;
+		const cardTopicIds = new Set(
+			bundle.recallCards
+				.filter(
+					(card) =>
+						card.topicComponentId === topic.id ||
+						(Boolean(staticRecallTopic) && card.topicId === staticRecallTopic?.id)
+				)
+				.map((card) => card.topicId)
+		);
+		const dueCount = bundle.reviews.filter(
+			(review) => cardTopicIds.has(review.topic_id) && Date.parse(review.due_at) <= now
+		).length;
 		const state = learnerFacingState(dueCount > 0 ? 'due' : (stateRow?.state ?? null));
 		return {
 			id: topic.id,
@@ -999,7 +1055,7 @@ function recommendedPracticeHref(subject: string, questionId: string): string {
 }
 
 function directRecallAction(
-	subject: RecallSubject,
+	subject: RecallRuntimeSubject,
 	topic: StemCurriculumTopic,
 	cards: RecallCard[],
 	curriculumOrder: number,
@@ -1007,15 +1063,20 @@ function directRecallAction(
 	state: LearnerState,
 	uncertainty: LearnerUncertainty
 ): CandidateDetail | null {
-	const recallTopic = recallTopicForOfficialTopic(subject, topic);
-	if (!recallTopic) return null;
-	const cardCount = cards.filter((card) => card.topicId === recallTopic.id).length;
+	const staticRecallTopic = recallTopicForOfficialTopic(subject, topic);
+	const topicId = cards.some((card) => card.topicComponentId === topic.id)
+		? topic.id
+		: staticRecallTopic?.id;
+	if (!topicId) return null;
+	const cardCount = cards.filter(
+		(card) => card.topicComponentId === topic.id || card.topicId === topicId
+	).length;
 	if (cardCount === 0) return null;
 	const size = Math.min(8, cardCount);
 	const baseHref = recallSessionHref({
 		subject,
 		activity: 'flashcards',
-		topic: recallTopic.id,
+		topic: topicId,
 		size,
 		returnTo: learnerSubjectHref(subject)
 	});
@@ -1026,7 +1087,7 @@ function directRecallAction(
 			subject,
 			kind: 'recall',
 			curriculumComponentId: topic.id,
-			componentId: recallTopic.id,
+			componentId: topicId,
 			state,
 			uncertainty,
 			estimatedMinutes: Math.max(4, Math.min(8, size)),
@@ -1175,9 +1236,28 @@ function quickQuestionCandidate(
 export function supportsTextPracticeRecommendation(
 	question: Pick<
 		QuestionCandidateRow,
-		'answer_format' | 'prompt_text' | 'self_contained_prompt_text'
+		| 'subject'
+		| 'answer_format'
+		| 'prompt_text'
+		| 'self_contained_prompt_text'
+		| 'context_text'
+		| 'self_containment_json'
+		| 'reviewed_source_assets_json'
+		| 'reviewed_render_json'
 	> & { response_kind?: string | null }
 ): boolean {
+	if (/english/i.test(question.subject ?? '')) {
+		return englishPracticeEligibility({
+			subject: question.subject,
+			prompt: question.prompt_text,
+			context: question.context_text,
+			selfContainedPrompt: question.self_contained_prompt_text,
+			selfContainmentJson: question.self_containment_json,
+			assets: parseJson<EnglishSourceAssetEvidence[]>(question.reviewed_source_assets_json, []),
+			renderingOverlay: parseJson<unknown>(question.reviewed_render_json, null),
+			reviewed: true
+		}).available;
+	}
 	const prompt = `${question.prompt_text}\n${question.self_contained_prompt_text ?? ''}`;
 	return supportsLearnerPracticeInput({
 		answerFormat: question.answer_format,
@@ -1221,15 +1301,18 @@ function chooseCandidateDetails(
 } {
 	const includedIds = new Set(scope.includedTopicIds);
 	const details: CandidateDetail[] = [];
+	const recallSubject = supportedLearnerSubjects.includes(subject.subject as RecallRuntimeSubject)
+		? (subject.subject as RecallRuntimeSubject)
+		: null;
 	const scienceSubject = isScienceLearnerSubject(subject.subject)
 		? (subject.subject as RecallSubject)
 		: null;
-	if (scienceSubject) {
+	if (recallSubject) {
 		for (const topic of topics.filter((entry) => includedIds.has(entry.id))) {
 			const topicView = topicViews.find((entry) => entry.id === topic.id);
 			const stateRow = stateForTopic(topic, bundle.states);
 			const detail = directRecallAction(
-				scienceSubject,
+				recallSubject,
 				topic,
 				bundle.recallCards,
 				topics.findIndex((entry) => entry.id === topic.id),
@@ -1343,10 +1426,14 @@ function chooseCandidateDetails(
 
 	const firstByKind = new Map<LearningActionCandidate['kind'], LearningActionView>();
 	let directRecallAlternative: LearningActionView | null = null;
+	let directQuickAlternative: LearningActionView | null = null;
 	for (const rankedAction of ranked) {
 		const action = detailById.get(rankedAction.candidate.id)?.action;
 		if (!directRecallAlternative && rankedAction.candidate.id.startsWith('recall:') && action) {
 			directRecallAlternative = action;
+		}
+		if (!directQuickAlternative && rankedAction.candidate.id.startsWith('quick:') && action) {
+			directQuickAlternative = action;
 		}
 		if (action && !firstByKind.has(rankedAction.candidate.kind)) {
 			firstByKind.set(rankedAction.candidate.kind, action);
@@ -1355,15 +1442,22 @@ function chooseCandidateDetails(
 
 	const alternatives: LearningActionView[] = [
 		directRecallAlternative ??
-			firstByKind.get('recall') ??
 			emptyAlternative(
 				'recall',
-				'Quick recall',
-				'Flashcards, multiple choice, or a short exam check—selected automatically.',
-				scienceSubject
-					? 'No recall items match the selected chapters yet.'
+				'Study cards',
+				'Flashcards, multiple choice, and true or false from the standard deck.',
+				recallSubject
+					? `No recall items match the selected ${scope.unitPlural} yet.`
 					: 'Recall sets are not available for this course yet.',
 				learnerSubjectHref(subject.subject)
+			),
+		directQuickAlternative ??
+			emptyAlternative(
+				'recall',
+				'1–3 mark questions',
+				'Write a short exam answer from memory, then check it.',
+				'No suitable reviewed short question matches this course scope yet.',
+				scope.href ?? learnerSubjectHref(subject.subject)
 			),
 		firstByKind.get('close_gap') ??
 			emptyAlternative(
@@ -1628,25 +1722,27 @@ async function buildSubjectView(
 	const scope =
 		profileCourseScope?.scope ??
 		scopeView(subject.subject, currentScopeRow, topics, curriculum?.groups ?? []);
-	const foundationUnavailable =
+	const foundationQuestionsUnavailable =
 		isScienceLearnerSubject(subject.subject) && subject.tier === 'Foundation';
 	const questions =
 		curriculum &&
 		scope.status !== 'not_set' &&
 		scope.status !== 'not_available' &&
 		!usesProfileCourseConfiguration &&
-		!foundationUnavailable
+		!foundationQuestionsUnavailable
 			? await readQuestionCandidates(subject, curriculum.specificationId, scope)
 			: [];
 	const topicViews = topicProgress(
 		topics,
 		scope,
 		bundle,
-		isScienceLearnerSubject(subject.subject) ? subject.subject : null
+		supportedLearnerSubjects.includes(subject.subject as RecallRuntimeSubject)
+			? (subject.subject as RecallRuntimeSubject)
+			: null
 	);
 	const candidateResult = chooseCandidateDetails(
 		subject,
-		foundationUnavailable ? { ...scope, includedTopicIds: [] } : scope,
+		scope,
 		topics,
 		topicViews,
 		bundle,
@@ -1692,7 +1788,11 @@ async function buildSubjectView(
 	}
 	const includedTopicViews = topicViews.filter((topic) => topic.included);
 	const includedTopicIds = new Set(scope.includedTopicIds);
-	const scopedRecallSubject = isScienceLearnerSubject(subject.subject) ? subject.subject : null;
+	const scopedRecallSubject = supportedLearnerSubjects.includes(
+		subject.subject as RecallRuntimeSubject
+	)
+		? (subject.subject as RecallRuntimeSubject)
+		: null;
 	const scopedAttempts =
 		topics.length === 0
 			? bundle.attempts
@@ -1704,7 +1804,10 @@ async function buildSubjectView(
 		topics.length === 0 || !scopedRecallSubject
 			? bundle.reviews
 			: bundle.reviews.filter((review) => {
-					const topic = officialTopicForRecallTopic(scopedRecallSubject, review.topic_id, topics);
+					const card = bundle.recallCards.find((candidate) => candidate.id === review.card_id);
+					const topic = card
+						? topics.find((candidate) => candidate.id === card.topicComponentId)
+						: officialTopicForRecallTopic(scopedRecallSubject, review.topic_id, topics);
 					return Boolean(topic && includedTopicIds.has(topic.id));
 				});
 	const scopedRecallCheckCount = scopedReviews.reduce(
@@ -1715,18 +1818,35 @@ async function buildSubjectView(
 	const secureCount = includedTopicViews.filter((topic) => topic.state === 'secure').length;
 	const dueCardCount = includedTopicViews.reduce((sum, topic) => sum + topic.dueCount, 0);
 	const examAnswerCount = scopedAttempts.filter((attempt) => attempt.max_marks >= 3).length;
+	const total = scope.status === 'not_available' ? 0 : scope.includedCount;
+	const independentAttempts = scopedAttempts.filter((attempt) => attempt.independent === 1);
+	const independentlyObservedTopicIds = new Set(
+		independentAttempts.flatMap((attempt) => {
+			const topic = officialTopicForQuestion(topics, attempt);
+			return topic && includedTopicIds.has(topic.id) ? [topic.id] : [];
+		})
+	);
+	const checkedAnswerPerformance = deriveCheckedAnswerPerformance({
+		attempts: independentAttempts.map((attempt) => ({
+			questionId: attempt.question_id,
+			awardedMarks: attempt.awarded_marks,
+			maxMarks: attempt.max_marks
+		})),
+		observedTopicCount: independentlyObservedTopicIds.size,
+		includedTopicCount: total,
+		offeringId: curriculum?.id ?? null
+	});
 	const englishLiteratureCourseIsComplete =
 		usesProfileCourseConfiguration &&
 		profileCourseScope?.configuration.selectedCount ===
 			profileCourseScope?.configuration.totalCount;
 	const nextAction = englishLiteratureCourseIsComplete
 		? ocrEnglishLiteraturePracticeAction()
-		: foundationUnavailable
+		: foundationQuestionsUnavailable && !recommendedAction
 			? unavailableFoundationAction()
 			: scope.status === 'not_set'
 				? scopeSetupAction(subject, scope, profileCourseScope?.configuration ?? null)
 				: (recommendedAction ?? fallbackSubjectAction(subject, scope));
-	const total = scope.status === 'not_available' ? 0 : scope.includedCount;
 	const coverageLabel =
 		scope.status === 'not_set'
 			? `Choose ${scope.unitPlural} to begin`
@@ -1760,12 +1880,7 @@ async function buildSubjectView(
 			dueCount: dueCardCount,
 			examAnswerCount,
 			evidenceLabel,
-			gradeEstimate: {
-				label: 'No grade estimate yet',
-				detail:
-					'Recall checks show what to revisit. A grade range needs answers from a representative set of exam questions.',
-				range: null
-			}
+			checkedAnswerPerformance
 		},
 		nextAction,
 		alternatives: candidateResult.alternatives,
@@ -1780,7 +1895,7 @@ async function buildSubjectView(
 export async function getSignedInLearningHome(user: AdminUser): Promise<SignedInLearningHome> {
 	const settings = await getLearnerProfileSettings(user);
 	const enabledSubjects = settings.subjects.filter((subject) => subject.enabled);
-	const [subjects, weekly] = await Promise.all([
+	const [builtSubjects, weekly] = await Promise.all([
 		Promise.all(
 			enabledSubjects.map((subject) =>
 				buildSubjectView(user.uid, subject, settings.englishLiteratureSelections)
@@ -1803,6 +1918,34 @@ export async function getSignedInLearningHome(user: AdminUser): Promise<SignedIn
 			[user.uid, user.uid, user.uid]
 		)
 	]);
+	const resumeActions = await getLatestResumeActionsBySubject(
+		user.uid,
+		enabledSubjects,
+		new Map(
+			builtSubjects.map((subject) => [
+				subject.subject,
+				new Set(
+					subject.scope.status === 'all' || subject.scope.status === 'selected'
+						? subject.scope.includedTopicIds
+						: []
+				)
+			])
+		)
+	);
+	const subjects = builtSubjects.map((subject) => {
+		const resumeAction = resumeActions.get(subject.subject);
+		if (!resumeAction) return subject;
+		const alternatives = [subject.nextAction, ...subject.alternatives].filter(
+			(action, index, actions) =>
+				action.id !== resumeAction.id &&
+				actions.findIndex((candidate) => candidate.id === action.id) === index
+		);
+		return {
+			...subject,
+			nextAction: resumeAction,
+			alternatives
+		};
+	});
 	return {
 		studentName: (user.name ?? '').trim().split(/\s+/)[0] ?? '',
 		subjects,
@@ -2089,6 +2232,7 @@ export async function recordLearnerEvidence(input: EvidenceWriteInput): Promise<
 		input.responseDurationMs <= 6 * 60 * 60 * 1000
 			? Math.round(input.responseDurationMs)
 			: null;
+	const metadataJson = JSON.stringify(input.metadata ?? {});
 	const inserted = await queryPersonalFirst<{ id: string }>(
 		`INSERT INTO user_learning_evidence (
 		   id, user_id, subject, board, qualification, course, tier, curriculum_component_id,
@@ -2123,7 +2267,7 @@ export async function recordLearnerEvidence(input: EvidenceWriteInput): Promise<
 			input.answerChainId ?? null,
 			responseDurationMs,
 			occurredAt,
-			JSON.stringify(input.metadata ?? {})
+			metadataJson
 		]
 	);
 	if (!inserted) {
@@ -2134,12 +2278,18 @@ export async function recordLearnerEvidence(input: EvidenceWriteInput): Promise<
 			   AND COALESCE(tier, '') = COALESCE(?, '')
 			   AND curriculum_component_id = ?
 			   AND component_kind = ? AND component_id = ?
+			   AND COALESCE(component_title, '') = COALESCE(?, '')
 			   AND evidence_kind = ? AND outcome = ?
+			   AND independent = ?
+			   AND COALESCE(awarded_marks, -1) = COALESCE(?, -1)
+			   AND COALESCE(max_marks, -1) = COALESCE(?, -1)
 			   AND COALESCE(source_item_id, '') = COALESCE(?, '')
 			   AND COALESCE(source_attempt_id, '') = COALESCE(?, '')
 			   AND COALESCE(source_session_id, '') = COALESCE(?, '')
 			   AND COALESCE(question_id, '') = COALESCE(?, '')
 			   AND COALESCE(answer_chain_id, '') = COALESCE(?, '')
+			   AND COALESCE(response_duration_ms, -1) = COALESCE(?, -1)
+			   AND metadata_json = ?
 			 THEN 1 ELSE 0 END AS matches_write
 			 FROM user_learning_evidence
 			 WHERE id = ?`,
@@ -2153,13 +2303,19 @@ export async function recordLearnerEvidence(input: EvidenceWriteInput): Promise<
 				input.curriculumComponentId ?? input.topic.id,
 				input.componentKind,
 				input.componentId,
+				input.componentTitle,
 				input.evidenceKind,
 				input.outcome,
+				input.independent ? 1 : 0,
+				input.awardedMarks ?? null,
+				input.maxMarks ?? null,
 				input.sourceItemId,
 				input.sourceAttemptId ?? null,
 				input.sourceSessionId ?? null,
 				input.questionId ?? null,
 				input.answerChainId ?? null,
+				responseDurationMs,
+				metadataJson,
 				input.id
 			]
 		);
@@ -2190,16 +2346,15 @@ export async function recordLearnerEvidence(input: EvidenceWriteInput): Promise<
 
 export async function isRecallTopicWithinLearnerScope(
 	userId: string,
-	subject: RecallSubject,
+	subject: RecallRuntimeSubject,
 	recallTopicId: string
 ): Promise<boolean> {
 	const context = await recallScopeContext(userId, subject);
 	if (!context) return false;
-	const { scope, curriculum } = context;
+	const { selectedTopicIds, curriculum } = context;
 	const officialTopic = officialTopicForRecallTopic(subject, recallTopicId, curriculum.topics);
 	if (!officialTopic) return false;
-	if (scope.scope_mode === 'all') return true;
-	return validSelectedTopicIds(scope, curriculum.topics).includes(officialTopic.id);
+	return selectedTopicIds === null || selectedTopicIds.has(officialTopic.id);
 }
 
 export async function isRecallCardWithinLearnerScope(
@@ -2211,15 +2366,13 @@ export async function isRecallCardWithinLearnerScope(
 
 export async function recallCardsWithinLearnerScope(
 	userId: string,
-	subject: RecallSubject,
+	subject: RecallRuntimeSubject,
 	cards: RecallCard[]
 ): Promise<RecallCard[]> {
 	const context = await recallScopeContext(userId, subject);
 	if (!context) return [];
-	const { scope, curriculum } = context;
+	const { selectedTopicIds, curriculum } = context;
 	const topicIds = new Set(curriculum.topics.map((topic) => topic.id));
-	const selectedTopicIds =
-		scope.scope_mode === 'all' ? null : new Set(validSelectedTopicIds(scope, curriculum.topics));
 	return cards.filter(
 		(card) =>
 			card.subject === subject &&
@@ -2231,25 +2384,84 @@ export async function recallCardsWithinLearnerScope(
 
 async function recallScopeContext(
 	userId: string,
-	subject: RecallSubject
-): Promise<{ scope: CurriculumScopeRow; curriculum: LearnerCurriculum } | null> {
+	subject: RecallRuntimeSubject
+): Promise<{
+	curriculum: LearnerCurriculum;
+	selectedTopicIds: Set<string> | null;
+} | null> {
+	const profile = await queryPersonalFirst<{
+		board: string;
+		qualification: string;
+		course: string;
+		tier: string;
+	}>(
+		`SELECT board, qualification, course, tier
+		 FROM user_profile_subjects
+		 WHERE user_id = ? AND subject = ? AND enabled = 1`,
+		[userId, subject]
+	);
+	if (!profile) return null;
+	const curriculum = await curriculumForLearnerSubject({
+		subject,
+		board: profile.board,
+		qualification: profile.qualification,
+		course: profile.course as LearnerSubject['course'],
+		tier: profile.tier as LearnerSubject['tier']
+	});
+	if (!curriculum) return null;
+
+	if (subject === 'English Literature') {
+		const selections = await queryPersonalFirst<{
+			modern_text: string | null;
+			nineteenth_century_novel: string | null;
+			poetry_cluster: string | null;
+			shakespeare_play: string | null;
+		}>(
+			`SELECT modern_text, nineteenth_century_novel, poetry_cluster, shakespeare_play
+			 FROM user_english_literature_selections
+			 WHERE user_id = ?`,
+			[userId]
+		);
+		const titles = selections
+			? [
+					selections.modern_text,
+					selections.nineteenth_century_novel,
+					selections.poetry_cluster,
+					selections.shakespeare_play
+				].filter((title): title is string => Boolean(title?.trim()))
+			: [];
+		if (titles.length !== 4) return { curriculum, selectedTopicIds: new Set() };
+		const selectedTopicIds = new Set(
+			titles.flatMap((title) => {
+				const topic = curriculum.topics.find(
+					(candidate) => normalized(candidate.title) === normalized(title)
+				);
+				return topic ? [topic.id] : [];
+			})
+		);
+		return {
+			curriculum,
+			selectedTopicIds: selectedTopicIds.size === 4 ? selectedTopicIds : new Set()
+		};
+	}
+
 	const scope = await readCurriculumScope(userId, subject);
-	if (!scope) return null;
 	if (
-		scope.board !== 'AQA' ||
-		scope.qualification !== 'GCSE' ||
-		(scope.course !== 'Combined Science' && scope.course !== 'Separate Science')
+		!scope ||
+		scope.board !== profile.board ||
+		scope.qualification !== profile.qualification ||
+		scope.course !== profile.course ||
+		scope.tier !== profile.tier ||
+		scope.specification_code !== curriculum.specificationCode ||
+		scope.specification_version !== curriculum.specificationVersion
 	) {
 		return null;
 	}
-	const curriculum = await curriculumForLearnerSubject({
-		subject,
-		board: scope.board,
-		qualification: scope.qualification,
-		course: scope.course as LearnerSubject['course'],
-		tier: scope.tier as LearnerSubject['tier']
-	});
-	return curriculum ? { scope, curriculum } : null;
+	return {
+		curriculum,
+		selectedTopicIds:
+			scope.scope_mode === 'all' ? null : new Set(validSelectedTopicIds(scope, curriculum.topics))
+	};
 }
 
 export async function hasLearnerEvidence(userId: string, evidenceId: string): Promise<boolean> {
@@ -2267,6 +2479,8 @@ export type RecallReviewEvidenceReceipt = {
 	grade: string;
 	mode: string;
 	selectedChoiceKey: string | null;
+	statementChoiceKey?: string | null;
+	selectedTruth?: boolean | null;
 	sourceSessionId: string | null;
 	responseDurationMs: number | null;
 	createdAt: number;
@@ -2296,6 +2510,8 @@ export async function getRecallReviewEvidenceReceipt(
 	const grade = metadata.grade;
 	const mode = metadata.mode;
 	const selectedChoiceKey = metadata.selectedChoiceKey;
+	const statementChoiceKey = metadata.statementChoiceKey ?? null;
+	const selectedTruth = metadata.selectedTruth ?? null;
 	const createdAt = Date.parse(row.occurred_at);
 	if (
 		typeof contentRevision !== 'number' ||
@@ -2304,11 +2520,13 @@ export async function getRecallReviewEvidenceReceipt(
 		typeof grade !== 'string' ||
 		typeof mode !== 'string' ||
 		(selectedChoiceKey !== null && typeof selectedChoiceKey !== 'string') ||
+		(statementChoiceKey !== null && typeof statementChoiceKey !== 'string') ||
+		(selectedTruth !== null && typeof selectedTruth !== 'boolean') ||
 		!Number.isFinite(createdAt)
 	) {
 		return null;
 	}
-	return {
+	const receipt: RecallReviewEvidenceReceipt = {
 		cardId: row.source_item_id,
 		contentRevision,
 		contentHash,
@@ -2319,6 +2537,11 @@ export async function getRecallReviewEvidenceReceipt(
 		responseDurationMs: row.response_duration_ms,
 		createdAt
 	};
+	if (metadata.statementChoiceKey !== undefined || metadata.selectedTruth !== undefined) {
+		receipt.statementChoiceKey = statementChoiceKey as string | null;
+		receipt.selectedTruth = selectedTruth as boolean | null;
+	}
+	return receipt;
 }
 
 export async function recordRecallReviewEvidence({
@@ -2328,6 +2551,8 @@ export async function recordRecallReviewEvidence({
 	grade,
 	mode,
 	selectedChoice,
+	statementChoice,
+	selectedTruth,
 	sourceSessionId,
 	responseDurationMs,
 	createdAt
@@ -2336,8 +2561,10 @@ export async function recordRecallReviewEvidence({
 	reviewId: string;
 	card: RecallCard;
 	grade: 'again' | 'hard' | 'good' | 'easy';
-	mode: 'recall' | 'recognise' | 'reverse';
+	mode: 'recall' | 'recognise' | 'reverse' | 'true_false';
 	selectedChoice: RecallChoiceDiagnostic | null;
+	statementChoice: RecallChoiceDiagnostic | null;
+	selectedTruth: boolean | null;
 	sourceSessionId?: string | null;
 	responseDurationMs?: number | null;
 	createdAt: number;
@@ -2354,10 +2581,15 @@ export async function recordRecallReviewEvidence({
 	const topic = curriculum.topics.find((entry) => entry.id === card.topicComponentId) ?? null;
 	if (!topic) throw new Error('Recall card is not mapped to the official curriculum.');
 	const recognition = mode === 'recognise';
+	const trueFalse = mode === 'true_false';
 	if (recognition !== Boolean(selectedChoice)) {
 		throw new Error('Recall recognition evidence requires one canonical selected choice.');
 	}
+	if (trueFalse !== Boolean(statementChoice) || trueFalse !== (selectedTruth !== null)) {
+		throw new Error('True-or-false evidence requires one canonical statement and one answer.');
+	}
 	const positive = grade === 'good' || grade === 'easy';
+	const trueFalseCorrect = statementChoice ? statementChoice.isCorrect === selectedTruth : null;
 	await recordLearnerEvidence({
 		id: `recall_${reviewId}`,
 		user,
@@ -2369,14 +2601,22 @@ export async function recordRecallReviewEvidence({
 		componentKind: 'recall_card',
 		componentId: recallEvidenceComponentId(card),
 		componentTitle: card.front,
-		evidenceKind: recognition ? 'multiple_choice' : 'flashcard_self_rating',
+		evidenceKind: recognition
+			? 'multiple_choice'
+			: trueFalse
+				? 'true_false'
+				: 'flashcard_self_rating',
 		outcome: recognition
 			? selectedChoice!.isCorrect
 				? 'correct'
 				: 'incorrect'
-			: positive
-				? 'known'
-				: 'unsure',
+			: trueFalse
+				? trueFalseCorrect
+					? 'correct'
+					: 'incorrect'
+				: positive
+					? 'known'
+					: 'unsure',
 		independent: false,
 		sourceItemId: card.id,
 		sourceAttemptId: reviewId,
@@ -2393,7 +2633,12 @@ export async function recordRecallReviewEvidence({
 			contentHash: card.contentHash,
 			selectedChoiceKey: selectedChoice?.key ?? null,
 			selectedChoiceCorrect: selectedChoice?.isCorrect ?? null,
-			selectedChoiceMisconception: selectedChoice?.misconception ?? null
+			selectedChoiceMisconception: selectedChoice?.misconception ?? null,
+			statementChoiceKey: statementChoice?.key ?? null,
+			statementChoiceCorrect: statementChoice?.isCorrect ?? null,
+			statementChoiceMisconception: statementChoice?.misconception ?? null,
+			selectedTruth,
+			trueFalseCorrect
 		},
 		occurredAt: new Date(createdAt).toISOString()
 	});
@@ -2421,20 +2666,18 @@ export async function recordQuestionAttemptEvidence({
 	result,
 	assistance,
 	sourceSessionId,
-	responseDurationMs
+	responseDurationMs,
+	occurredAt
 }: {
 	user: AdminUser;
 	attemptId: string;
 	questionId: string;
 	result: QuestionGradeResult;
-	assistance?: {
-		hintOpened?: boolean;
-		markingPointsViewed?: boolean;
-		feedbackRewrite?: boolean;
-	};
+	assistance?: ConstructedAnswerAssistance;
 	sourceSessionId?: string | null;
 	responseDurationMs?: number | null;
-}): Promise<void> {
+	occurredAt?: string;
+}): Promise<boolean> {
 	const [rows, settings] = await Promise.all([
 		queryRows<QuestionEvidenceRow>(
 			`SELECT q.id, q.board, q.qualification, q.subject, q.subject_area, q.component_code, q.tier,
@@ -2450,7 +2693,7 @@ export async function recordQuestionAttemptEvidence({
 		getLearnerProfileSettings(user)
 	]);
 	const row = rows[0];
-	if (!row) return;
+	if (!row) return false;
 	const learnerSubject = enabledProfileCombinationForQuestion(settings.subjects, {
 		board: row.board,
 		qualification: row.qualification,
@@ -2459,17 +2702,14 @@ export async function recordQuestionAttemptEvidence({
 		componentCode: row.component_code,
 		tier: row.tier
 	});
-	if (!learnerSubject || !isScienceLearnerSubject(learnerSubject.subject)) return;
-	const subject = learnerSubject.subject as RecallSubject;
+	if (!learnerSubject) return false;
+	const subject = learnerSubject.subject as SupportedLearnerSubject;
 	const curriculum = await curriculumForLearnerSubject(learnerSubject);
-	if (!curriculum) return;
+	if (!curriculum) return false;
 	const topic = await curriculumTopicForStoredQuestion(curriculum, questionId, row);
-	if (!topic) return;
-	const independent = !(
-		assistance?.hintOpened ||
-		assistance?.markingPointsViewed ||
-		assistance?.feedbackRewrite
-	);
+	if (!topic) return false;
+	const normalizedAssistance = normalizeConstructedAnswerAssistance(assistance);
+	const independent = constructedAnswerIsIndependent(normalizedAssistance);
 	const isFixedChoice = result.modelVersion === 'fixed-choice-v1';
 	const evidenceKind: EvidenceKind = isFixedChoice
 		? 'multiple_choice'
@@ -2487,6 +2727,8 @@ export async function recordQuestionAttemptEvidence({
 		id: `attempt_${attemptId}`,
 		user,
 		subject,
+		board: learnerSubject.board,
+		qualification: learnerSubject.qualification,
 		course: learnerSubject.course,
 		tier: learnerSubject.tier,
 		topic,
@@ -2500,11 +2742,12 @@ export async function recordQuestionAttemptEvidence({
 		sourceAttemptId: attemptId,
 		sourceSessionId,
 		responseDurationMs,
+		occurredAt,
 		questionId,
 		answerChainId: row.answer_chain_id,
 		awardedMarks: result.awardedMarks,
 		maxMarks: result.maxMarks,
-		metadata: { transferDistance: row.transfer_distance, assistance: assistance ?? {} }
+		metadata: { transferDistance: row.transfer_distance, assistance: normalizedAssistance }
 	});
 
 	const stepRows = await queryRows<{ id: string; step_text: string }>(
@@ -2522,6 +2765,8 @@ export async function recordQuestionAttemptEvidence({
 			id: `attempt_${attemptId}_${step.id}`,
 			user,
 			subject,
+			board: learnerSubject.board,
+			qualification: learnerSubject.qualification,
 			course: learnerSubject.course,
 			tier: learnerSubject.tier,
 			topic,
@@ -2535,9 +2780,10 @@ export async function recordQuestionAttemptEvidence({
 			sourceAttemptId: attemptId,
 			sourceSessionId,
 			responseDurationMs,
+			occurredAt,
 			questionId,
 			answerChainId: row.answer_chain_id,
-			metadata: { transferDistance: row.transfer_distance, assistance: assistance ?? {} }
+			metadata: { transferDistance: row.transfer_distance, assistance: normalizedAssistance }
 		});
 	}
 
@@ -2570,7 +2816,7 @@ export async function recordQuestionAttemptEvidence({
 				]
 			);
 		}
-	} else if (assistance?.feedbackRewrite) {
+	} else if (normalizedAssistance.feedbackRewrite) {
 		for (const stepId of present) {
 			await executePersonalQuery(
 				`UPDATE user_chain_gaps
@@ -2597,6 +2843,7 @@ export async function recordQuestionAttemptEvidence({
 			);
 		}
 	}
+	return true;
 }
 
 export async function recordEnglishStepAttemptEvidence({
@@ -2606,6 +2853,7 @@ export async function recordEnglishStepAttemptEvidence({
 	stepId,
 	result,
 	hintOpened = false,
+	assistance,
 	sourceSessionId,
 	responseDurationMs
 }: {
@@ -2615,6 +2863,7 @@ export async function recordEnglishStepAttemptEvidence({
 	stepId: string;
 	result: EnglishStepGradeResult;
 	hintOpened?: boolean;
+	assistance?: ConstructedAnswerAssistance;
 	sourceSessionId?: string | null;
 	responseDurationMs?: number | null;
 }): Promise<void> {
@@ -2663,6 +2912,10 @@ export async function recordEnglishStepAttemptEvidence({
 			specUrl: curriculum.specificationUrl
 		} satisfies StemCurriculumTopic);
 	const metCount = result.checks.filter((check) => check.status === 'met').length;
+	const normalizedAssistance = normalizeConstructedAnswerAssistance({
+		...assistance,
+		hintOpened
+	});
 	const outcome: EvidenceOutcome =
 		result.decision === 'pass' ? 'correct' : metCount > 0 ? 'partial' : 'incorrect';
 	const common = {
@@ -2694,6 +2947,7 @@ export async function recordEnglishStepAttemptEvidence({
 		metadata: {
 			guided: true,
 			hintOpened,
+			assistance: normalizedAssistance,
 			decision: result.decision,
 			confidence: result.confidence,
 			learnerModel: result.learnerModel,
@@ -2713,6 +2967,7 @@ export async function recordEnglishStepAttemptEvidence({
 			metadata: {
 				guided: true,
 				hintOpened,
+				assistance: normalizedAssistance,
 				stepId,
 				feedback: check.feedback,
 				curriculumMapping: mappedTopic ? 'question' : 'specification_root'
@@ -2723,7 +2978,7 @@ export async function recordEnglishStepAttemptEvidence({
 
 export async function getRecallReviewSnapshot(
 	user: AdminUser,
-	subject: RecallSubject,
+	subject: RecallRuntimeSubject,
 	cards: RecallCard[]
 ): Promise<RecallReviewRow[]> {
 	const settings = await getLearnerProfileSettings(user);
@@ -2830,7 +3085,7 @@ export async function recordGapOutcomeEvidence({
 		tier: learnerSubject?.tier,
 		topic,
 		evidenceKind: 'short_constructed' as const,
-		outcome: result.gapClosed ? ('correct' as const) : ('incorrect' as const),
+		outcome: result.targetStepPresent ? ('correct' as const) : ('incorrect' as const),
 		independent: false,
 		sourceItemId: gap.source_question_id ?? gapId,
 		sourceAttemptId: result.runId,
@@ -2840,7 +3095,12 @@ export async function recordGapOutcomeEvidence({
 		answerChainId: gap.answer_chain_id,
 		awardedMarks: result.awardedMarks,
 		maxMarks: result.maxMarks,
-		metadata: { guidedGapCheck: true, gapId }
+		metadata: {
+			guidedGapCheck: true,
+			gapId,
+			externalInputDetected: result.externalInputDetected,
+			externalInputSources: result.externalInputSources
+		}
 	};
 	await recordLearnerEvidence({
 		...common,

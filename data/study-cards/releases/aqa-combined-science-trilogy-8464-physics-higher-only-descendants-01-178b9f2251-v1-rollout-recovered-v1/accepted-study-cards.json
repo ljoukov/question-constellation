@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c36-b4d8-7bd0-be5f-1c5fa88a689a"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c38-2f6a-7661-9d28-ad9119b8b275",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:35:52.557Z",
+    "finishedAt": "2026-07-16T18:37:55.695Z",
+    "sourceManifestHash": "b9e444f7c1bd88593ace7344c0d97ff468340db99b50b9244773a3a463fd672b",
+    "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8464-376687c1fd-aqa-8464-physics-higher-momentum-equation",
+      "conceptKey": "aqa-8464-376687c1fd-physics-momentum-equation-p-equals-mv",
+      "kind": "formula",
+      "visualCue": "🏃",
+      "front": "What equation defines momentum, p, in terms of mass, m, and velocity, v?",
+      "back": "momentum = mass × velocity (p = m v)",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Momentum is mass multiplied by velocity; symbolically, p = m v.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "momentum = mass × velocity (p = m v)",
+          "isCorrect": true,
+          "feedback": "Correct: momentum is defined as mass multiplied by velocity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "momentum = mass ÷ velocity (p = m ÷ v)",
+          "isCorrect": false,
+          "feedback": "Velocity is multiplied by mass, not used as a divisor.",
+          "misconception": "divides-mass-by-velocity"
+        },
+        {
+          "key": "c",
+          "text": "momentum = velocity ÷ mass (p = v ÷ m)",
+          "isCorrect": false,
+          "feedback": "The defining equation multiplies mass and velocity.",
+          "misconception": "divides-velocity-by-mass"
+        },
+        {
+          "key": "d",
+          "text": "momentum = mass × acceleration (p = m a)",
+          "isCorrect": false,
+          "feedback": "This substitutes acceleration for velocity; momentum uses velocity.",
+          "misconception": "confuses-velocity-with-acceleration"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 154-154; 6.5.5 Momentum (HT only)",
+          "excerpt": "Momentum is defined by the equation:\nmomentum = mass × velocity\np = m v",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-a66a4f9b72-aqa-8464-physics-higher-flemings-left-hand-rule-quantities",
+      "conceptKey": "aqa-8464-a66a4f9b72-flemings-left-hand-rule-relative-orientation-force-current-magnetic-field",
+      "kind": "method",
+      "visualCue": "🔀",
+      "front": "Which three quantities have their relative orientation represented by Fleming’s left-hand rule?",
+      "back": "The force, the current in the conductor, and the magnetic field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The rule represents the relative orientation of the force, the current in the conductor and the magnetic field.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The current, the potential difference, and the resistance.",
+          "isCorrect": false,
+          "feedback": "The rule relates force, current in the conductor and magnetic field.",
+          "misconception": "confuses-left-hand-rule-with-circuit-quantities"
+        },
+        {
+          "key": "b",
+          "text": "The force, the current in the conductor, and the magnetic field.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three quantities whose relative orientation the rule represents.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The force, the electric field, and the potential difference.",
+          "isCorrect": false,
+          "feedback": "The stated quantities include current in the conductor and magnetic field, not electric field and potential difference.",
+          "misconception": "substitutes-electric-field-quantities"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 161-162; 6.7.2.2 Fleming's left-hand rule (HT only)",
+          "excerpt": "Students should be able to show that Fleming's left-hand rule\nrepresents the relative orientation of the force, the current in the\nconductor and the magnetic field.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2-2",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-08708af18a-aqa-8464-physics-higher-electric-motor-coil-rotation",
+      "conceptKey": "aqa-8464-08708af18a-current-carrying-coil-magnetic-field-tends-to-rotate",
+      "kind": "cause-consequence",
+      "visualCue": "🔌",
+      "front": "What happens to a coil of wire carrying a current when it is in a magnetic field?",
+      "back": "It tends to rotate.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This tendency to rotate is the basis of an electric motor.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It remains stationary.",
+          "isCorrect": false,
+          "feedback": "The current-carrying coil tends to rotate.",
+          "misconception": "assumes-current-carrying-coil-stays-still"
+        },
+        {
+          "key": "b",
+          "text": "It moves in a straight line without rotating.",
+          "isCorrect": false,
+          "feedback": "The stated motion is rotation, not straight-line motion.",
+          "misconception": "confuses-rotation-with-linear-motion"
+        },
+        {
+          "key": "c",
+          "text": "It tends to rotate.",
+          "isCorrect": true,
+          "feedback": "Correct: the coil tends to rotate in the magnetic field.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 161-162; 6.7.2.3 Electric motors (HT only)",
+          "excerpt": "A coil of wire carrying a current in a magnetic field tends to rotate.\nThis is the basis of an electric motor.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2-3",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

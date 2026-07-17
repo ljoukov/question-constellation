@@ -9,7 +9,7 @@
 	<title>{data.subject} Multiple Choice | Question Constellation</title>
 	<meta
 		name="description"
-		content={`AQA GCSE ${data.subject} multiple-choice recall with visible specification coverage.`}
+		content={`${data.board} GCSE ${data.subject} multiple-choice recall with visible specification coverage.`}
 	/>
 </svelte:head>
 

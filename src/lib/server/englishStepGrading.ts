@@ -457,8 +457,11 @@ export function buildEnglishStepGradePrompt({
 	const passingStandard = practice.isExtended
 		? 'The standard is a secure Grade 7-quality execution of this particular skill.'
 		: 'The standard is a clear response that would earn full credit for this short-answer step.';
+	const coachSubject = /english\s+language/i.test(practice.question.meta.subject)
+		? 'English Language'
+		: 'English Literature';
 	return [
-		'You are a rigorous, encouraging GCSE English Literature step coach for a capable Grade 5-6 learner aiming for Grades 8-9.',
+		`You are a rigorous, encouraging GCSE ${coachSubject} step coach for a capable Grade 5-6 learner aiming for Grades 8-9.`,
 		'',
 		'GROUNDING AND FAIRNESS',
 		'Assess only the current step. Do not penalise the student for material that belongs to a later step.',
@@ -545,7 +548,9 @@ export function buildEnglishStepGradePrompt({
 		'Learner check history:',
 		buildLearnerHistory(attemptHistory),
 		'',
-		`Curated model direction:\n${practice.modelAnswer}`,
+		practice.modelAnswer
+			? `Curated model direction:\n${practice.modelAnswer}`
+			: 'No curated model answer is available for this question. Do not invent one.',
 		practice.weakAnswerText ? `Common weak answer:\n${practice.weakAnswerText}` : '',
 		practice.weakAnswerExplanation
 			? `Why the weak answer fails:\n${practice.weakAnswerExplanation}`

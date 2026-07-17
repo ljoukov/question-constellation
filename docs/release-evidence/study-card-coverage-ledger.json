@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "study-card-coverage-ledger-v1",
+  "status": "reconciled",
+  "definition": "Eligible means official section/topic descendants beneath selectable roots, partitioned once by inherited tier scope. Covered means at least one accepted reviewed card targets that exact eligible component in the applicable offering group.",
+  "canonical": {
+    "eligible": 789,
+    "covered": 351,
+    "uncovered": 438,
+    "coverageEquation": "36 existing-base + 221 recovered-base + 82 completed accepted-descendant + 12 partial accepted-descendant = 351 covered; 789 - 351 = 438 uncovered"
+  },
+  "components": {
+    "existingBaseCovered": 36,
+    "recoveredBaseCovered": 221,
+    "allBaseCovered": 257,
+    "acceptedDescendantCovered": 82,
+    "combinedPhysicsPartialAcceptedCovered": 12,
+    "allAcceptedDescendantCovered": 94
+  },
+  "historicalSnapshots": {
+    "missingRecoveredBaseSnapshot": {
+      "covered": 118,
+      "uncovered": 671,
+      "status": "superseded-missing-seven-recovered-base-artifacts",
+      "evidencePath": "docs/release-evidence/study-card-descendant-coverage/queue-state.json"
+    },
+    "preDescendantQueueInput": {
+      "covered": 257,
+      "uncovered": 532,
+      "status": "historically-valid-before-the-12-accepted-descendant-jobs",
+      "evidencePath": "docs/release-evidence/study-card-descendant-coverage/recovered-before.json"
+    },
+    "prePartialAcceptedRecovery": {
+      "covered": 339,
+      "uncovered": 450,
+      "status": "superseded-after-materializing-12-archived-review-acceptances",
+      "evidencePath": "docs/release-evidence/study-card-descendant-coverage/completion-queue.json"
+    },
+    "currentAfterPartialAcceptedRecovery": {
+      "covered": 351,
+      "uncovered": 438,
+      "status": "canonical"
+    }
+  },
+  "baseRecovery": {
+    "acceptedCards": 253,
+    "distinctTargetComponents": 222,
+    "plannerEligibleTargetComponents": 221
+  },
+  "acceptedDescendantRecovery": {
+    "releases": 12,
+    "acceptedCards": 82,
+    "plannerEligibleTargetComponents": 82
+  },
+  "combinedPhysicsPartialAcceptedRecovery": {
+    "releaseId": "aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1",
+    "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1/accepted-study-cards.json",
+    "acceptedCards": 12,
+    "plannerEligibleTargetComponents": 12,
+    "rejectedTargetsRemainingQueued": 3,
+    "modelCalls": 0
+  },
+  "modelCallsDuringReconciliation": 0
+}

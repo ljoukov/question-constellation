@@ -22,7 +22,8 @@ import {
 	slugify,
 	validateSemanticPlan,
 	validateDarkVisualJudge,
-	validateLightEditJudge
+	validateLightEditJudge,
+	validatePreparedIllustrationRelease
 } from './lib/chain-illustration-pipeline.mjs';
 import { loadChainIllustrationCandidates } from './lib/chain-illustration-candidates.mjs';
 import {
@@ -30,7 +31,7 @@ import {
 	createIpadPreview,
 	fileSha256,
 	hardImageCheck,
-	publishChainIllustration
+	publishChainIllustrationBatch
 } from './lib/chain-illustration-publisher.mjs';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
 import { writeJson } from './lib/llm-extraction-pipeline.mjs';
@@ -60,6 +61,8 @@ Options:
   --timeout-ms=7200000
   --image-timeout-ms=7200000
   --publish                                upload passing dark/light pairs to R2 and D1
+  --release-manifest=<path>                write an exact published-pair manifest after a
+                                           successful published run
   --require                                fail if any accepted chain has no passing pair
   --include-existing                       regenerate even when the source fingerprint is current
   --replace-work-root                      replace a prior sentinel-owned work directory
@@ -89,6 +92,7 @@ const maxGenerationAttempts = integerArg('max-generation-attempts', 3, 1);
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
 const imageTimeoutMs = integerArg('image-timeout-ms', timeoutMs, 1);
 const publish = hasArg('publish');
+const releaseManifestPath = optionalPathArg('release-manifest');
 const requirePairs = hasArg('require');
 const includeExisting = hasArg('include-existing');
 const replaceWorkRoot = hasArg('replace-work-root');
@@ -96,6 +100,14 @@ const dryRun = hasArg('dry-run');
 
 if (imageModel !== 'chatgpt-gpt-image-2') {
 	throw new Error('The automated pipeline currently supports only chatgpt-gpt-image-2.');
+}
+if (releaseManifestPath && !publish) {
+	throw new Error('--release-manifest requires --publish.');
+}
+if (releaseManifestPath && !requirePairs) {
+	throw new Error(
+		'--release-manifest requires --require so a partial release cannot be published.'
+	);
 }
 
 const selection = await loadChainIllustrationCandidates({
@@ -132,19 +144,13 @@ const plan = {
 };
 
 if (dryRun || selection.eligible.length === 0) {
-	console.log(
-		JSON.stringify(
-			{
-				status: dryRun ? 'dry-run' : 'passed',
-				plan,
-				message: selection.eligible.length
-					? 'Mechanical candidates are ready for the semantic gate.'
-					: 'No eligible chains need illustrations.'
-			},
-			null,
-			2
-		)
-	);
+	await writeStdoutJson({
+		status: dryRun ? 'dry-run' : 'passed',
+		plan,
+		message: selection.eligible.length
+			? 'Mechanical candidates are ready for the semantic gate.'
+			: 'No eligible chains need illustrations.'
+	});
 	process.exit(0);
 }
 
@@ -155,6 +161,7 @@ writeFileSync(path.join(workRoot, 'planner-prompt.md'), plannerPrompt);
 const startedAt = new Date().toISOString();
 let plannerRun = null;
 const jobs = [];
+const preparedJobs = [];
 
 try {
 	plannerRun = await runCodexSdkTurn({
@@ -189,14 +196,37 @@ try {
 			});
 			continue;
 		}
-		jobs.push(await generateValidateAndMaybePublish(candidate, decision));
+		const prepared = await generateAndValidate(candidate, decision);
+		jobs.push(prepared.job);
+		if (prepared.item) preparedJobs.push(prepared);
 	}
 
 	const failedAccepted = jobs.filter(
 		(job) => job.status === 'no-passing-pair' || job.status === 'failed'
 	);
+	if (publish && failedAccepted.length === 0) {
+		const publishItems = validatePreparedIllustrationRelease({
+			decisions: semanticPlan.decisions,
+			jobs,
+			prepared: preparedJobs.map(({ job, item }) => ({ chainId: job.chainId, item }))
+		});
+		await assertPreparedBatchSourcesAreCurrent(preparedJobs);
+		const publication = await publishChainIllustrationBatch(publishItems, {
+			rootDir,
+			beforeD1: () => assertPreparedBatchSourcesAreCurrent(preparedJobs)
+		});
+		const publicationById = new Map(
+			publication.items.map((result) => [result.illustrationId, result])
+		);
+		for (const prepared of preparedJobs) {
+			prepared.job.status = 'published';
+			prepared.job.publication = publicationById.get(prepared.item.id) ?? null;
+			writeJson(path.join(prepared.jobDir, 'job.json'), prepared.job);
+		}
+	}
 	const summary = {
-		status: requirePairs && failedAccepted.length ? 'failed' : 'passed',
+		schemaVersion: 'chain-illustration-run-summary-v1',
+		status: (requirePairs || publish) && failedAccepted.length ? 'failed' : 'passed',
 		startedAt,
 		finishedAt: new Date().toISOString(),
 		plan,
@@ -204,10 +234,21 @@ try {
 		jobs,
 		counts: summarizeJobs(jobs)
 	};
-	writeJson(path.join(workRoot, 'summary.json'), summary);
+	const summaryPath = path.join(workRoot, 'summary.json');
+	writeJson(summaryPath, summary);
+	if (releaseManifestPath && summary.status === 'passed') {
+		if (!jobs.some((job) => job.status === 'published')) {
+			throw new Error('A release manifest requires at least one published illustration pair.');
+		}
+		writeReleaseManifest(summary, summaryPath, releaseManifestPath);
+	}
 	console.log(
 		JSON.stringify(
-			{ ...summary, summaryPath: relative(path.join(workRoot, 'summary.json')) },
+			{
+				...summary,
+				summaryPath: relative(summaryPath),
+				releaseManifestPath: releaseManifestPath ? relative(releaseManifestPath) : null
+			},
 			null,
 			2
 		)
@@ -234,7 +275,7 @@ try {
 	process.exit(1);
 }
 
-async function generateValidateAndMaybePublish(candidate, decision) {
+async function generateAndValidate(candidate, decision) {
 	const jobDir = path.join(workRoot, slugify(candidate.id));
 	mkdirSync(jobDir, { recursive: true });
 	const baseDarkPromptText = buildGenerationPrompt(candidate, decision);
@@ -294,7 +335,7 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				judge: { dark: lastAttempt?.judge ?? null }
 			};
 			writeJson(path.join(jobDir, 'job.json'), job);
-			return job;
+			return { job, item: null, jobDir };
 		}
 
 		const lightAttempts = [];
@@ -353,7 +394,7 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				}
 			};
 			writeJson(path.join(jobDir, 'job.json'), job);
-			return job;
+			return { job, item: null, jobDir };
 		}
 
 		const dark = acceptedDarkAttempt.dark;
@@ -477,20 +518,28 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 				notes: 'Automated generation path; no human audit was claimed.'
 			}
 		});
-		if (publish) await publishChainIllustration(item, { rootDir });
 		const job = {
 			chainId: candidate.id,
-			status: publish ? 'published' : 'ready',
+			illustrationId: item.id,
+			sourceQuestionId: item.sourceQuestionId,
+			status: 'ready',
 			variants: {
 				dark: {
 					path: relative(dark.filePath),
 					r2Key: darkR2Key,
-					publicPath: item.dark.publicPath
+					publicPath: item.dark.publicPath,
+					assetSha256: darkAssetSha256,
+					width: item.dark.width,
+					height: item.dark.height
 				},
 				light: {
 					path: relative(light.filePath),
 					r2Key: lightR2Key,
-					publicPath: item.light.publicPath
+					publicPath: item.light.publicPath,
+					assetSha256: lightAssetSha256,
+					width: item.light.width,
+					height: item.light.height,
+					derivedFromAssetSha256: darkAssetSha256
 				}
 			},
 			promptSha256,
@@ -507,7 +556,7 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 			}
 		};
 		writeJson(path.join(jobDir, 'job.json'), job);
-		return job;
+		return { job, item, jobDir };
 	} catch (error) {
 		const job = {
 			chainId: candidate.id,
@@ -515,9 +564,79 @@ async function generateValidateAndMaybePublish(candidate, decision) {
 			error: error instanceof Error ? error.message : String(error)
 		};
 		writeJson(path.join(jobDir, 'job.json'), job);
-		if (requirePairs) throw error;
-		return job;
+		return { job, item: null, jobDir };
 	}
+}
+
+async function assertPreparedBatchSourcesAreCurrent(preparedJobs) {
+	const chainIds = preparedJobs.map(({ job }) => job.chainId);
+	const fresh = await loadChainIllustrationCandidates({
+		rootDir,
+		chainIds,
+		limit: Math.max(chainIds.length, 1),
+		includeExisting: true
+	});
+	const freshByChainId = new Map(fresh.eligible.map((candidate) => [candidate.id, candidate]));
+	const stale = preparedJobs.filter(({ job }) => {
+		const candidate = freshByChainId.get(job.chainId);
+		return !candidate || candidate.sourceFingerprint !== job.sourceFingerprint;
+	});
+	if (stale.length > 0) {
+		throw new Error(
+			`Source evidence changed before batch publication for: ${stale
+				.map(({ job }) => job.chainId)
+				.join(', ')}.`
+		);
+	}
+}
+
+function writeReleaseManifest(summary, summaryPath, outputPath) {
+	const published = summary.jobs.filter((job) => job.status === 'published');
+	const trackedSummaryPath = path.join(
+		path.dirname(outputPath),
+		`${path.basename(outputPath, path.extname(outputPath)).replace(/-manifest$/, '')}-run-summary.json`
+	);
+	writeJson(trackedSummaryPath, summary);
+	const manifest = {
+		schemaVersion: 'chain-illustration-release-manifest-v1',
+		status: summary.status,
+		generatedAt: summary.finishedAt,
+		sourceSummary: {
+			path: relative(trackedSummaryPath),
+			sha256: fileSha256(trackedSummaryPath),
+			transientPath: relative(summaryPath),
+			transientSha256: fileSha256(summaryPath)
+		},
+		selection: {
+			selected: summary.plan.selected.length,
+			semanticRejected: summary.jobs.filter((job) => job.status === 'rejected-by-semantic-gate')
+				.length,
+			published: published.length,
+			maxChains: summary.plan.maxChains
+		},
+		pairs: published.map((job) => ({
+			id: job.illustrationId,
+			answerChainId: job.chainId,
+			sourceQuestionId: job.sourceQuestionId,
+			sourceFingerprint: job.sourceFingerprint,
+			dark: {
+				r2Key: job.variants.dark.r2Key,
+				publicPath: job.variants.dark.publicPath,
+				assetSha256: job.variants.dark.assetSha256,
+				width: job.variants.dark.width,
+				height: job.variants.dark.height
+			},
+			light: {
+				r2Key: job.variants.light.r2Key,
+				publicPath: job.variants.light.publicPath,
+				assetSha256: job.variants.light.assetSha256,
+				width: job.variants.light.width,
+				height: job.variants.light.height,
+				derivedFromAssetSha256: job.variants.light.derivedFromAssetSha256
+			}
+		}))
+	};
+	writeJson(outputPath, manifest);
 }
 
 async function generateAndJudgeDarkAttempt({
@@ -878,6 +997,11 @@ function stringArg(name, defaultValue) {
 	return arg ? arg.slice(prefix.length) : defaultValue;
 }
 
+function optionalPathArg(name) {
+	const value = stringArg(name, '');
+	return value ? path.resolve(rootDir, value) : null;
+}
+
 function stringArgs(name) {
 	const prefix = `--${name}=`;
 	return process.argv
@@ -894,6 +1018,16 @@ function integerArg(name, defaultValue, minValue) {
 		throw new Error(`--${name} must be an integer >= ${minValue}.`);
 	}
 	return value;
+}
+
+async function writeStdoutJson(value) {
+	const output = `${JSON.stringify(value, null, 2)}\n`;
+	await new Promise((resolve, reject) => {
+		process.stdout.write(output, (error) => {
+			if (error) reject(error);
+			else resolve();
+		});
+	});
 }
 
 function relative(filePath) {

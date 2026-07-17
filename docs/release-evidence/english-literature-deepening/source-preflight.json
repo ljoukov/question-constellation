@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-preflight-v1",
+  "status": "passed",
+  "startedAt": "2026-07-16T23:31:08.533Z",
+  "finishedAt": "2026-07-16T23:31:35.310Z",
+  "downloadedAt": "2026-07-16T23:31:08.617Z",
+  "masterSourcePlan": "data/study-cards/english-literature/ocr-j352-deepening-source-plan.json",
+  "masterSourcePlanHash": "8a8caeb493b94f1aa8448083b96c4790ca38af83bc4e6ac5072071cde189e1cf",
+  "preparedSourceManifestHash": "7d7941016a439cd0b283e7534756e2f8cc25c48e19faf753bcac7e2d6460bd4e",
+  "counts": {
+    "topics": 19,
+    "evidence": 171,
+    "sources": 25
+  },
+  "exactAnchorAndExcerptValidation": "passed",
+  "failClosed": true,
+  "sources": [
+    {
+      "id": "ocr-anita-and-me-delivery-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/358302-anita-and-me-delivery-guide.pdf",
+      "title": "OCR J352 Anita and Me Delivery Guide",
+      "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained.",
+      "sourceHash": "486d25dd707e7f91546f2f5d3151d376bd718c2781a06cfe5b690a05570c23b9"
+    },
+    {
+      "id": "wikipedia-never-let-me-go-plot",
+      "kind": "secondary-source",
+      "retrievalType": "licensed-web-synopsis",
+      "url": "https://en.wikipedia.org/wiki/Never_Let_Me_Go_(novel)",
+      "title": "Wikipedia: Never Let Me Go (novel)",
+      "rightsBasis": "Wikipedia text is licensed under CC BY-SA 4.0; short attributed secondary-source plot excerpts are retained with source attribution and share-alike notice.",
+      "sourceHash": "23c774c529e53a2a28c6de09eea14e5cbc8178a7f4f72df5282991f8b7051b66"
+    },
+    {
+      "id": "wikipedia-animal-farm-plot",
+      "kind": "secondary-source",
+      "retrievalType": "licensed-web-synopsis",
+      "url": "https://en.wikipedia.org/wiki/Animal_Farm",
+      "title": "Wikipedia: Animal Farm",
+      "rightsBasis": "Wikipedia text is licensed under CC BY-SA 4.0; short attributed secondary-source plot excerpts are retained with source attribution and share-alike notice.",
+      "sourceHash": "dcdfdb2d8f54278269e72db3578f3e1e155fd0b18d867c09c18ef2800606f82c"
+    },
+    {
+      "id": "pearson-an-inspector-calls-set-text-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Drama/2016/teaching-and-learning-materials/gcse-set-text-guide-an-inspector-calls.pdf",
+      "title": "Pearson Edexcel GCSE Drama Prescribed Text Guide: An Inspector Calls",
+      "rightsBasis": "Official awarding-body teaching guide used for educational criticism and review; only short attributed factual excerpts are retained.",
+      "sourceHash": "8ee357932db0084c761a0fa870154e5f3892477855be9d2b8be3cb883515ac00"
+    },
+    {
+      "id": "ocr-leave-taking-teacher-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/639352-leave-taking.pdf",
+      "title": "OCR GCSE English Literature Leave Taking Teacher Guide",
+      "rightsBasis": "Official OCR teaching resource used as short attributed factual evidence; no primary-text quotation is retained.",
+      "sourceHash": "23796b5b729a4e4556e43b2e9ee712b9a34b4593aa64129bfda4dc67835ab0c6"
+    },
+    {
+      "id": "ocr-dna-delivery-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/208645-dna-delivery-guide.pdf",
+      "title": "OCR J352 DNA Delivery Guide",
+      "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained.",
+      "sourceHash": "e9414d82aecf5d912d1a723f7aeae080bc16e058801b23111c2404e2f0ba7dee"
+    },
+    {
+      "id": "gutenberg-great-expectations",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+      "title": "Great Expectations by Charles Dickens",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "26ce833a278ba2c60e678456f9ef43b336ddcb93c3469c3b43aac4a6fefe19fd"
+    },
+    {
+      "id": "gutenberg-a-christmas-carol",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/46/pg46.txt",
+      "title": "A Christmas Carol by Charles Dickens",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "1f865ca425054466ef4c0332c0bad614a92bed0a57a926b55532086e943b3bdb"
+    },
+    {
+      "id": "gutenberg-pride-and-prejudice",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
+      "title": "Pride and Prejudice by Jane Austen",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "101fddbe7c28fd4267004de2ba4fdeb72dd4969689fc08a5167dcb91a40bf031"
+    },
+    {
+      "id": "gutenberg-the-war-of-the-worlds",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/36/pg36.txt",
+      "title": "The War of the Worlds by H. G. Wells",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "617f3e16aae11d02afca619ae8950cc9ba6be680a5a898344934efe6210bb0d9"
+    },
+    {
+      "id": "gutenberg-jekyll-and-hyde",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/43/pg43.txt",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde by Robert Louis Stevenson",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "b2caa26084ba311729931b72b9c4ee7ccb9370a4080d48cae86e24ad81cf14a3"
+    },
+    {
+      "id": "gutenberg-jane-eyre",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1260/pg1260.txt",
+      "title": "Jane Eyre by Charlotte Brontë",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "76c360aa718514ed2e1ca5a2684b31bdf13aa1c7cd4b1ad3ca99cee7bc8e1c36"
+    },
+    {
+      "id": "ocr-j352-specification-love-poetry",
+      "kind": "curriculum-specification",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+      "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+      "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence.",
+      "sourceHash": "7c2bbf0ecbea24e2636702de449d037a00b184b854ecdc8df0ec8ce94cc5ed8a"
+    },
+    {
+      "id": "ocr-love-poetry-current-teacher-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/654700-love-and-relationships.pdf",
+      "title": "OCR Love and Relationships Poetry Teacher Guide, updated cluster",
+      "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+      "sourceHash": "2140bf1093dfddda5bd0fe9c0bf596d82d5aefb490c15591d2c3b2c0ab7f9174"
+    },
+    {
+      "id": "ocr-anthology-public-domain-love",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-anthology-pdf",
+      "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+      "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+      "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition.",
+      "sourceHash": "53670157999399d5ea139df31c2ad307467e89e5b9c2590377a42b5bc76a5f66"
+    },
+    {
+      "id": "ocr-j352-specification-conflict-poetry",
+      "kind": "curriculum-specification",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+      "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+      "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence.",
+      "sourceHash": "7c2bbf0ecbea24e2636702de449d037a00b184b854ecdc8df0ec8ce94cc5ed8a"
+    },
+    {
+      "id": "ocr-conflict-poetry-current-teacher-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/654699-conflict.pdf",
+      "title": "OCR Conflict Poetry Teacher Guide, updated cluster",
+      "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+      "sourceHash": "742e786355ac2f7b9a98ea17d04013179bf70bdc7f83ef3d60d2b64697d38559"
+    },
+    {
+      "id": "ocr-anthology-public-domain-conflict",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-anthology-pdf",
+      "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+      "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+      "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition.",
+      "sourceHash": "53670157999399d5ea139df31c2ad307467e89e5b9c2590377a42b5bc76a5f66"
+    },
+    {
+      "id": "ocr-j352-specification-youth-poetry",
+      "kind": "curriculum-specification",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/168995-specification-accredited-gcse-english-literature-j352.pdf",
+      "title": "Cambridge OCR GCSE English Literature J352 Specification, version 3.0",
+      "rightsBasis": "Official exam-board specification used as short attributed curriculum evidence.",
+      "sourceHash": "7c2bbf0ecbea24e2636702de449d037a00b184b854ecdc8df0ec8ce94cc5ed8a"
+    },
+    {
+      "id": "ocr-youth-poetry-current-teacher-guide",
+      "kind": "supporting-document",
+      "retrievalType": "official-resource-pdf",
+      "url": "https://www.ocr.org.uk/Images/654698-youth-and-age.pdf",
+      "title": "OCR Youth and Age Poetry Teacher Guide, updated cluster",
+      "rightsBasis": "Official OCR post-2022 teaching guide; verification anchors confirm that the cited public-domain poems remain named in the updated cluster.",
+      "sourceHash": "4dfcd9fac234d5ed39966914e8f54c0c9d949e15d61c8c1f58c718167bf765ea"
+    },
+    {
+      "id": "ocr-anthology-public-domain-youth",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-anthology-pdf",
+      "url": "https://www.ocr.org.uk/Images/171147-poetry-anthology-towards-a-world-unknown.pdf",
+      "title": "Towards a World Unknown, updated September 2020: retained public-domain poems",
+      "rightsBasis": "The cited poems and authors are public domain in the UK and remain in the current cluster; exact short lines are retained from the identified OCR anthology edition.",
+      "sourceHash": "53670157999399d5ea139df31c2ad307467e89e5b9c2590377a42b5bc76a5f66"
+    },
+    {
+      "id": "gutenberg-romeo-and-juliet",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1513/pg1513.txt",
+      "title": "Romeo and Juliet by William Shakespeare",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "63710bcca9b05228d92da850856a609b33a344ccb778015c3b7059e2cc6bfcd6"
+    },
+    {
+      "id": "gutenberg-the-merchant-of-venice",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1515/pg1515.txt",
+      "title": "The Merchant of Venice by William Shakespeare",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "b2f56cb53b2c38bb8ce64b3df2f5d128e6020f7c34072734649157f6c00664dd"
+    },
+    {
+      "id": "gutenberg-macbeth",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1533/pg1533.txt",
+      "title": "Macbeth by William Shakespeare",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "0cc29cd2ce26d039cfda41b0d7455eee0fdac0911fbc9d42c2a56a046aa991e7"
+    },
+    {
+      "id": "gutenberg-much-ado-about-nothing",
+      "kind": "primary-text",
+      "retrievalType": "public-domain-text",
+      "url": "https://www.gutenberg.org/cache/epub/1519/pg1519.txt",
+      "title": "Much Ado About Nothing by William Shakespeare",
+      "rightsBasis": "Underlying work is public domain in the UK; Project Gutenberg plain-text edition; only short attributed excerpts are retained.",
+      "sourceHash": "7b3144843d315d65512b274e2d928a5b117bbc6e6f32f269d0db77750d66bcf9"
+    }
+  ],
+  "logPath": "tmp/study-card-generation/literature-deepening-logs/ocr-j352-literature-deepening-source-preflight-v1.log"
+}

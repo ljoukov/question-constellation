@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "study-card-base-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered_under_new_identity",
+  "historicalReleaseId": "aqa-combined-biology-8464-standard-v1",
+  "recoveredReleaseId": "aqa-combined-biology-8464-standard-v1-rollout-recovered-v1",
+  "identityPolicy": "The explicit recovery id preserves reviewed content and provenance without claiming byte identity with the absent historical artifact wrapper.",
+  "generator": {
+    "runId": "019f6c11-b988-7933-b4f4-09c525d34e76",
+    "rolloutFileName": "rollout-2026-07-16T10-55-28-019f6c11-b988-7933-b4f4-09c525d34e76.jsonl",
+    "rolloutHash": "0e789ec48afbe0fade92b164c0fb708deb8c2b38c03706098bced0c530691984",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-biology-8464-standard-v1/generation",
+    "startedAt": "2026-07-16T17:55:28.923Z",
+    "completedAt": "2026-07-16T18:05:05.350Z",
+    "promptHash": "5279c93a927e1d49387c45aadc3baf49a453eef149551dcfda96cdf5ea4d3ebc",
+    "modelOutputHash": "a60a015add1c1581a8ac7388292eae01daf9cb9be7238f07ce0fcd3ff1c530c9"
+  },
+  "reviewer": {
+    "runId": "019f6c1a-8864-7911-9e35-56d2f21c7e79",
+    "rolloutFileName": "rollout-2026-07-16T11-05-06-019f6c1a-8864-7911-9e35-56d2f21c7e79.jsonl",
+    "rolloutHash": "4a97cccf9531cf65f06cbbd974773128dd61eedfbf8ee05e923c2b3056b15840",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-biology-8464-standard-v1/review",
+    "startedAt": "2026-07-16T18:05:06.166Z",
+    "completedAt": "2026-07-16T18:12:21.767Z",
+    "promptHash": "1c4357a70410350e50d8ce0f99a520d7c154c5f9d74da8c515cf01b02d665ce7",
+    "modelOutputHash": "263e1d6cd695561321e1a551cf7accaa2029b6fe55b0f2075c740f8f02a90b37"
+  },
+  "reviewedRepairAttempts": [],
+  "counts": {
+    "generated": 28,
+    "reviewCandidates": 27,
+    "accepted": 25,
+    "distinctTargetComponents": 23,
+    "plannerEligibleTargetComponents": 23,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 14,
+    "readyCoverageRows": 14,
+    "withheldCoverageRows": 0,
+    "sessions": 2
+  },
+  "nonPlannerEligibleAcceptedComponentIds": [],
+  "offeringCoverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "ready": 7,
+      "withheld": 0,
+      "coverageRows": 7,
+      "cardCount": 25
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "ready": 7,
+      "withheld": 0,
+      "coverageRows": 7,
+      "cardCount": 25
+    }
+  ],
+  "modelCallsDuringRecovery": 0,
+  "artifactHash": "cfd93c38304e90a5c04b5e641fc978674b0f0133e1e92fee6923ae1ef695df23"
+}

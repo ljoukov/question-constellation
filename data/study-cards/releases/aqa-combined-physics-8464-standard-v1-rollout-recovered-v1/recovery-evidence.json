@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "study-card-base-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered_under_new_identity",
+  "historicalReleaseId": "aqa-combined-physics-8464-standard-v1",
+  "recoveredReleaseId": "aqa-combined-physics-8464-standard-v1-rollout-recovered-v1",
+  "identityPolicy": "The explicit recovery id preserves reviewed content and provenance without claiming byte identity with the absent historical artifact wrapper.",
+  "generator": {
+    "runId": "019f6c21-cdcd-79f1-9d07-e4658280830e",
+    "rolloutFileName": "rollout-2026-07-16T11-13-02-019f6c21-cdcd-79f1-9d07-e4658280830e.jsonl",
+    "rolloutHash": "0cd4c94e2e4337907972133ce7260c4d0f470d18161628707193204edd921f97",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-physics-8464-standard-v1/generation",
+    "startedAt": "2026-07-16T18:13:02.787Z",
+    "completedAt": "2026-07-16T18:20:10.974Z",
+    "promptHash": "7670071646651296d6ce00389985d53db261f958906aa666231a588b140f8098",
+    "modelOutputHash": "a81657be331acb06038676a3b0550865c4cf7b9f60aaf80c7d2356c5b390878f"
+  },
+  "reviewer": {
+    "runId": "019f6c28-59f2-73b2-9167-d3c0a44d2f9f",
+    "rolloutFileName": "rollout-2026-07-16T11-20-11-019f6c28-59f2-73b2-9167-d3c0a44d2f9f.jsonl",
+    "rolloutHash": "91b438161e4e9b78be1026ed6bd622a03e8a7f395192924bfd8744d7100df666",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-physics-8464-standard-v1/review",
+    "startedAt": "2026-07-16T18:20:11.755Z",
+    "completedAt": "2026-07-16T18:24:46.736Z",
+    "promptHash": "858a2cc912fe757aab9510cc1762ae68d4c73aba599cbdcbae576069cc0e09b3",
+    "modelOutputHash": "a83aa64459ea141e5400450dc42a142ddd88dc8405ccc6e234204c6cd72295ec"
+  },
+  "reviewedRepairAttempts": [
+    {
+      "attempt": 1,
+      "accepted": true,
+      "cardId": "forces-scalar-vector-difference",
+      "generator": {
+        "runId": "019f6c31-f7cc-7e22-ae0f-0544d1b140be",
+        "rolloutFileName": "rollout-2026-07-16T11-30-42-019f6c31-f7cc-7e22-ae0f-0544d1b140be.jsonl",
+        "rolloutHash": "9e5c1aef0996f4f2855d0f69f6a1b6637c9c3484ae49d8412f137e1f5eadbd44",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-physics-8464-standard-v1/reviewed-repair-generation-1",
+        "startedAt": "2026-07-16T18:30:42.280Z",
+        "completedAt": "2026-07-16T18:30:59.216Z",
+        "promptHash": "871c6b85b85b27448b6d2211647b9a0bfa1c65d4f459520d55661e2f27be7bfd",
+        "modelOutputHash": "c5f4dac3909826ca3f73ed76c29ded2f5fa1f7c59d133b5a7b7c2565fc48c178"
+      },
+      "reviewer": {
+        "runId": "019f6c32-422a-77e3-ae54-4a5d205c7bd1",
+        "rolloutFileName": "rollout-2026-07-16T11-31-01-019f6c32-422a-77e3-ae54-4a5d205c7bd1.jsonl",
+        "rolloutHash": "f4a5e098e15e7cec6f2fe4561568b682c8dd3ea3dcca2cf3c33d23446ec55280",
+        "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-physics-8464-standard-v1/reviewed-repair-review-1",
+        "startedAt": "2026-07-16T18:31:01.037Z",
+        "completedAt": "2026-07-16T18:31:14.602Z",
+        "promptHash": "ef5e419c03f65c8ba7f9f983b107e9c0fedf4004030798f6dce16844bb503f79",
+        "modelOutputHash": "136fdd411c81010013ce67756e942a2699867205776ab02215f76ea383e3bafe"
+      }
+    }
+  ],
+  "counts": {
+    "generated": 28,
+    "reviewCandidates": 28,
+    "accepted": 26,
+    "distinctTargetComponents": 23,
+    "plannerEligibleTargetComponents": 23,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 14,
+    "readyCoverageRows": 14,
+    "withheldCoverageRows": 0,
+    "sessions": 4
+  },
+  "nonPlannerEligibleAcceptedComponentIds": [],
+  "offeringCoverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "ready": 7,
+      "withheld": 0,
+      "coverageRows": 7,
+      "cardCount": 26
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "ready": 7,
+      "withheld": 0,
+      "coverageRows": 7,
+      "cardCount": 26
+    }
+  ],
+  "modelCallsDuringRecovery": 0,
+  "artifactHash": "23a7e78d59413c50e84f01b71a964d66145b1136b19e55d070c57c1fac928d04"
+}

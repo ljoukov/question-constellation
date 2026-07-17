@@ -1,0 +1,132 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8463-d6d0e2d29f-aqa-physics-8463-4-5-7-2-closed-system-momentum",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the precise conservation-of-momentum rule for a closed system."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-ba4007ba2c-aqa-physics-8463-4-5-7-3-force-causes-momentum-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links an applied force directly to a change in momentum."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-a5ef181398-aqa-physics-8463-4-6-1-longitudinal-wave-regions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds accurate recall of compressions and rarefactions in longitudinal waves."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-d68a81b022-aqa-physics-8463-4-6-1-3-wave-boundary-outcomes",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the three possible outcomes for waves at material boundaries."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-07c2eaa568-aqa-physics-8463-4-6-2-electromagnetic-spectrum-order",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Practises the complete electromagnetic-spectrum order while linking wavelength and frequency."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-ae913ec5db-aqa-physics-8463-4-6-2-2-infrared-surface-practical",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Secures the investigated relationship and variables in required practical activity 10."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-a2c5bed8ed-aqa-physics-8463-4-6-2-3-gamma-ray-origin",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates the nuclear origin of gamma rays from broader atomic changes and biological effects."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-ffa1e27395-aqa-physics-8463-4-6-2-4-microwave-applications",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the correct association between microwaves and their specified applications."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-f4013309f4-aqa-physics-8463-4-6-2-5-convex-concave-image-types",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clarifies the important difference between images formed by convex and concave lenses."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-b8b8eb007d-aqa-physics-8463-4-6-2-6-colour-filter-wavelength-selection",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces selective absorption and transmission as the mechanism of colour filters."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-a26023b39d-aqa-physics-8463-4-6-3-perfect-black-body-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines all defining absorption, reflection, transmission and emission properties of a perfect black body."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-bdee8d2251-aqa-physics-8463-4-6-3-2-temperature-emission-properties",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Targets the two emission characteristics controlled by temperature."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-98ecd6eaf1-aqa-physics-8463-4-7-1-permanent-induced-magnet-difference",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds a clear comparison between permanent and induced magnetism."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-0bd717991f-aqa-physics-8463-4-7-2-current-wire-magnetic-field",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects current to magnetic-field production and recalls both field-strength factors."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-303b9c16e2-aqa-physics-8463-4-8-1-gravity-maintains-circular-orbits",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces gravity's role as the force maintaining circular orbital motion."
+      ]
+    },
+    {
+      "cardId": "aqa-8463-4581f6edb9-aqa-physics-8463-4-8-2-red-shift-expansion-evidence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links the observation of galactic red-shift to expansion and support for the Big Bang theory."
+      ]
+    }
+  ]
+}

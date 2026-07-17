@@ -3,6 +3,7 @@
 	import { goto, pushState, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
 	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
@@ -14,25 +15,30 @@
 	import type {
 		RecallCard,
 		RecallCardKind,
-		RecallSubject,
+		RecallRuntimeSubject,
 		RecallTopic
 	} from '$lib/recall/aqaScienceRecall';
 	import { recallCardContentKey } from '$lib/recall/contentIdentity';
 	import { rankCanonicalRecallCards } from '$lib/recall/personalization';
+	import { recallActivityHref } from '$lib/recall/routes';
 	import {
 		readRecallSession,
 		recallSessionStorageKey,
 		type RecallSessionScope,
 		type StoredRecallSession
 	} from '$lib/recall/sessionState';
+	import { balancedTrueFalseClaim } from '$lib/recall/trueFalseClaims';
 	import {
 		cardsEligibleForRecallMode,
 		explicitReversePair,
 		mixedRecallPresentation,
+		recallDragIntent,
 		recallControlModel,
 		requeueRecallContentKey,
 		recallReviewDecision,
+		shouldRecordRecallWrongChoice,
 		shuffledRecallChoices,
+		type RecallDragIntent,
 		type RecallMcqFeedback,
 		type RecallPresentation,
 		type RecallReviewIntent
@@ -48,6 +54,7 @@
 		Brain,
 		CheckCircle2,
 		CircleX,
+		CircleHelp,
 		Eye,
 		Layers3,
 		RotateCcw,
@@ -57,9 +64,9 @@
 	} from '@lucide/svelte';
 	import { onMount, untrack } from 'svelte';
 
-	type Mode = 'mixed' | 'recall' | 'recognise' | 'reverse';
+	type Mode = 'mixed' | 'recall' | 'recognise' | 'truefalse' | 'reverse';
 	type Grade = 'again' | 'hard' | 'good' | 'easy';
-	type SubjectFilter = RecallSubject | 'All subjects';
+	type SubjectFilter = RecallRuntimeSubject | 'All subjects';
 	type KindFilter = RecallCardKind | 'all';
 	type CardMotion =
 		| 'idle'
@@ -83,6 +90,7 @@
 		wrongChoiceCount: number;
 		repeatedMisconceptionCount: number;
 	};
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	let {
 		data
@@ -134,6 +142,7 @@
 		{ value: 'mixed', label: 'Quick recall', icon: Layers3 },
 		{ value: 'recall', label: 'Flashcards', icon: Brain },
 		{ value: 'recognise', label: 'Multiple choice', icon: Target },
+		{ value: 'truefalse', label: 'True or false', icon: CircleHelp },
 		{ value: 'reverse', label: 'Reverse', icon: Shuffle }
 	];
 	const stackSizeOptions = [5, 8, 10, 15] as const;
@@ -211,7 +220,11 @@
 	let dragStartX = $state(0);
 	let dragStartY = $state(0);
 	let dragging = $state(false);
+	let dragIntent = $state<RecallDragIntent | null>(null);
 	let activePointerId = $state<number | null>(null);
+	let resultFaceElement = $state<HTMLElement | null>(null);
+	let resultFaceScrollable = $state(false);
+	let resultMeasureFrame: number | null = null;
 	let cardMotion = $state<CardMotion>('idle');
 	let motionTimer: ReturnType<typeof setTimeout> | null = null;
 	let recallSyncFailure = $state<RequestFailure | null>(null);
@@ -259,11 +272,25 @@
 	const currentPresentation = $derived<RecallPresentation>(
 		currentCard ? presentationFor(currentCard) : 'flashcard'
 	);
+	const currentTrueFalseClaim = $derived(
+		currentCard && currentPresentation === 'truefalse' ? trueFalseClaimFor(currentCard) : null
+	);
+	const currentCorrectChoice = $derived(
+		currentPresentation === 'truefalse'
+			? currentTrueFalseClaim?.isTrue
+				? 'True'
+				: 'False'
+			: currentCard?.back
+	);
 	const currentExplanation = $derived(currentCard ? explanationTextFor(currentCard) : null);
 	const currentMemoryTip = $derived(currentCard ? memoryTipFor(currentCard) : null);
 	const currentChoiceFeedback = $derived(
 		currentCard && selectedChoice
-			? (currentCard.choiceFeedback?.[selectedChoice]?.trim() ?? null)
+			? currentPresentation === 'truefalse'
+				? currentTrueFalseClaim && !currentTrueFalseClaim.isTrue
+					? (currentCard.choiceFeedback?.[currentTrueFalseClaim.text]?.trim() ?? null)
+					: null
+				: (currentCard.choiceFeedback?.[selectedChoice]?.trim() ?? null)
 			: null
 	);
 	const filteredCardCount = $derived(filteredCards.length);
@@ -296,7 +323,23 @@
 		})
 	);
 	const activityLabel = $derived(
-		mode === 'mixed' ? 'Quick recall' : mode === 'recognise' ? 'Multiple choice' : 'Flashcards'
+		mode === 'mixed'
+			? 'Quick recall'
+			: mode === 'recognise'
+				? 'Multiple choice'
+				: mode === 'truefalse'
+					? 'True or false'
+					: 'Flashcards'
+	);
+	const selectedBoard = $derived(
+		(selectedSubject === 'All subjects'
+			? data.cards[0]?.board
+			: data.cards.find((card) => card.subject === selectedSubject)?.board) ?? null
+	);
+	const setupKicker = $derived(
+		selectedSubject === 'All subjects'
+			? 'GCSE study cards'
+			: `${selectedBoard ? `${selectedBoard} ` : ''}GCSE ${selectedSubject}`
 	);
 	const completionReturnLabel = $derived.by(() => {
 		if (returnToHref.startsWith('/questions/')) return 'Back to question';
@@ -337,7 +380,7 @@
 		}
 		if (!currentCard) return '';
 		if (!revealed) return `Card ${cardPositionInSession + 1} of ${totalCards}.`;
-		if (currentPresentation === 'mcq') return '';
+		if (currentPresentation !== 'flashcard') return '';
 		return 'Answer shown.';
 	});
 
@@ -368,9 +411,20 @@
 		const nextSubject = validSubject(params.get('subject') ?? 'All subjects');
 		const nextTopic = params.get('topic') ?? 'all';
 		const nextKind = validKind(params.get('kind') ?? 'all');
-		const nextActivity = params.get('activity') === 'mcq' ? 'mcq' : 'flashcards';
+		const activityParam = params.get('activity');
+		const nextActivity =
+			activityParam === 'mcq'
+				? 'mcq'
+				: activityParam === 'true-false' || activityParam === 'true_false'
+					? 'true-false'
+					: 'flashcards';
 		const nextMode = validMode(
-			params.get('mode') ?? (nextActivity === 'mcq' ? 'recognise' : 'recall')
+			params.get('mode') ??
+				(nextActivity === 'mcq'
+					? 'recognise'
+					: nextActivity === 'true-false'
+						? 'truefalse'
+						: 'recall')
 		);
 		const nextSearch = params.get('q') ?? '';
 		const nextStackSize = validStackSize(params.get('size') ?? '10');
@@ -421,6 +475,39 @@
 		} catch {
 			// Recall still works when storage is unavailable.
 		}
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		const resultFace = resultFaceElement;
+		const showResult = revealed;
+		const presentation = currentPresentation;
+
+		if (!resultFace || !showResult) {
+			resultFaceScrollable = false;
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(() => {
+			scheduleResultScrollabilityUpdate();
+		});
+		resizeObserver.observe(resultFace);
+		const scrollContainer =
+			presentation === 'mcq' || presentation === 'truefalse'
+				? resultFace.querySelector<HTMLElement>('.mcq-answer')
+				: resultFace;
+		if (scrollContainer && scrollContainer !== resultFace) {
+			resizeObserver.observe(scrollContainer);
+		}
+		scheduleResultScrollabilityUpdate();
+
+		return () => {
+			resizeObserver.disconnect();
+			if (resultMeasureFrame !== null) {
+				cancelAnimationFrame(resultMeasureFrame);
+				resultMeasureFrame = null;
+			}
+		};
 	});
 
 	onMount(() => {
@@ -545,6 +632,30 @@
 		void flushRecallSync();
 	}
 
+	function measureResultScrollability() {
+		const resultFace = resultFaceElement;
+		if (!resultFace || !revealed) {
+			resultFaceScrollable = false;
+			return;
+		}
+		const scrollContainer =
+			currentPresentation === 'mcq' || currentPresentation === 'truefalse'
+				? resultFace.querySelector<HTMLElement>('.mcq-answer')
+				: resultFace;
+		resultFaceScrollable = Boolean(
+			scrollContainer && scrollContainer.scrollHeight - scrollContainer.clientHeight > 2
+		);
+	}
+
+	function scheduleResultScrollabilityUpdate() {
+		if (!browser) return;
+		if (resultMeasureFrame !== null) cancelAnimationFrame(resultMeasureFrame);
+		resultMeasureFrame = requestAnimationFrame(() => {
+			resultMeasureFrame = null;
+			measureResultScrollability();
+		});
+	}
+
 	function clearMotionTimer() {
 		if (!motionTimer) return;
 		clearTimeout(motionTimer);
@@ -663,16 +774,39 @@
 	}
 
 	function promptTextFor(card: RecallCard) {
+		if (mode === 'truefalse') {
+			const claim = trueFalseClaimFor(card);
+			return `${card.front}\n\nProposed answer: ${claim.text}`;
+		}
 		return mode === 'reverse' ? (explicitReversePair(card)?.front ?? '') : card.front;
 	}
 
 	function answerTextFor(card: RecallCard) {
+		if (mode === 'truefalse') {
+			const claim = trueFalseClaimFor(card);
+			return `${claim.isTrue ? 'True' : 'False'}. ${card.back}`;
+		}
 		return mode === 'reverse' ? (explicitReversePair(card)?.back ?? '') : card.back;
+	}
+
+	function trueFalseClaimFor(card: RecallCard) {
+		const claim = balancedTrueFalseClaim({
+			answer: card.back,
+			distractors: card.distractors ?? [],
+			cardKey: recallCardContentKey(card),
+			sessionId: recallSessionId,
+			sessionCardKeys: sessionCardContentKeys
+		});
+		return {
+			...claim,
+			choiceKey: card.choiceKeys[claim.text] ?? card.choiceKeys[card.back]
+		};
 	}
 
 	function presentationFor(card: RecallCard): RecallPresentation {
 		const hasMultipleChoiceOptions = answerChoices(card).length >= 2;
 		if (mode === 'recognise') return hasMultipleChoiceOptions ? 'mcq' : 'flashcard';
+		if (mode === 'truefalse') return 'truefalse';
 		if (mode === 'mixed') {
 			return mixedRecallPresentation(cardPositionInSession, hasMultipleChoiceOptions);
 		}
@@ -694,6 +828,13 @@
 	}
 
 	function answerChoices(card: RecallCard) {
+		if (mode === 'truefalse') {
+			return shuffledRecallChoices(
+				['True', 'False'],
+				`${recallCardContentKey(card)}\u0000truth-controls`,
+				recallSessionId || 'preview'
+			);
+		}
 		const uniqueChoices: string[] = [];
 		for (const choice of [card.back, ...(card.distractors ?? [])]) {
 			const normalized = choice.trim();
@@ -757,7 +898,7 @@
 		clearPersistedSession();
 		try {
 			await flushRecallSync();
-			await goto(returnToHref, { replaceState: true });
+			await goto(resolveInternalPath(returnToHref), { replaceState: true });
 		} finally {
 			leavingSession = false;
 		}
@@ -771,7 +912,9 @@
 		dragX = 0;
 		dragY = 0;
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
+		resultFaceScrollable = false;
 		cardStartedAt = sessionActive && !sessionComplete ? Date.now() : 0;
 		cardMotion = options?.entering ? 'entering' : 'idle';
 		if (options?.entering) {
@@ -807,8 +950,17 @@
 						? Math.max(1, previousInterval * 2 || 1)
 						: Math.max(3, previousInterval * 3 || 3);
 		const wrongChoices = { ...(previous?.wrongChoices ?? {}) };
-		if (!wasCorrect && chosenAnswer && chosenAnswer !== card.back) {
-			wrongChoices[chosenAnswer] = (wrongChoices[chosenAnswer] ?? 0) + 1;
+		if (
+			!wasCorrect &&
+			shouldRecordRecallWrongChoice({
+				chosenAnswer,
+				correctAnswer: card.back,
+				choiceKeys: card.choiceKeys
+			})
+		) {
+			// The non-null assertion follows from shouldRecordRecallWrongChoice.
+			const wrongAnswer = chosenAnswer!;
+			wrongChoices[wrongAnswer] = (wrongChoices[wrongAnswer] ?? 0) + 1;
 		}
 		const dueDelay = grade === 'again' ? 1000 * 60 * 5 : intervalDays * 24 * 60 * 60 * 1000;
 
@@ -835,8 +987,10 @@
 
 	function syncRecallReview(card: RecallCard, grade: Grade, selectedAnswer: string | null) {
 		if (!browser || !data.user) return;
-		const reviewMode: Exclude<Mode, 'mixed'> =
+		const pageMode: Exclude<Mode, 'mixed'> =
 			mode === 'mixed' ? (currentPresentation === 'mcq' ? 'recognise' : 'recall') : mode;
+		const reviewMode = pageMode === 'truefalse' ? 'true_false' : pageMode;
+		const trueFalseClaim = reviewMode === 'true_false' ? trueFalseClaimFor(card) : null;
 		queueRecallReview(data.user.uid, {
 			cardId: card.id,
 			contentRevision: card.contentRevision,
@@ -847,6 +1001,8 @@
 				reviewMode === 'recognise' && selectedAnswer
 					? (card.choiceKeys[selectedAnswer] ?? null)
 					: null,
+			statementChoiceKey: trueFalseClaim?.choiceKey ?? null,
+			selectedTruth: reviewMode === 'true_false' ? selectedAnswer === 'True' : null,
 			sourceSessionId: recallSessionId || createActivityId('recall-session'),
 			responseDurationMs: responseDurationMs(cardStartedAt)
 		});
@@ -856,9 +1012,9 @@
 	}
 
 	function chooseAnswer(card: RecallCard, choice: string) {
-		if (selectedChoice || cardBusy || currentPresentation !== 'mcq') return;
+		if (selectedChoice || cardBusy || currentPresentation === 'flashcard') return;
 		selectedChoice = choice;
-		const isCorrect = choice === card.back;
+		const isCorrect = choice === currentCorrectChoice;
 		if (isCorrect) haptics.success();
 		else haptics.error();
 		mcqFeedback = isCorrect ? 'correct' : 'incorrect';
@@ -874,9 +1030,10 @@
 	}
 
 	function revealCard() {
-		if (!currentCard || revealed || currentPresentation === 'mcq' || cardBusy) return;
+		if (!currentCard || revealed || currentPresentation !== 'flashcard' || cardBusy) return;
 		haptics.selection();
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
 		dragX = 0;
 		dragY = 0;
@@ -898,6 +1055,7 @@
 
 	function returnCard(afterReturn?: () => void) {
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
 		dragX = 0;
 		dragY = 0;
@@ -912,6 +1070,7 @@
 		if (!currentCard || cardMotion === 'exiting-left' || cardMotion === 'exiting-right') return;
 		const width = browser ? window.innerWidth : 420;
 		dragging = false;
+		dragIntent = null;
 		activePointerId = null;
 		dragX = direction === 'right' ? width * 1.18 : -width * 1.18;
 		dragY = Math.max(-86, Math.min(86, dragY));
@@ -929,7 +1088,8 @@
 		});
 		if (!decision) return;
 		haptics.selection();
-		const chosenAnswer = currentPresentation === 'mcq' ? (selectedChoice ?? undefined) : undefined;
+		const chosenAnswer =
+			currentPresentation !== 'flashcard' ? (selectedChoice ?? undefined) : undefined;
 		exitCard(decision.direction, () => {
 			if (intent === 'repeat') {
 				sessionCardContentKeys = requeueRecallContentKey(
@@ -967,33 +1127,68 @@
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
 		clearMotionTimer();
 		activePointerId = event.pointerId;
-		dragging = true;
-		cardMotion = 'dragging';
+		dragging = false;
+		dragIntent = 'pending';
 		dragStartX = event.clientX;
 		dragStartY = event.clientY;
 		dragX = 0;
 		dragY = 0;
-		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+		try {
+			(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+		} catch {
+			// Some WebKit versions reject capture while transferring a native touch gesture.
+		}
 	}
 
 	function handlePointerMove(event: PointerEvent) {
-		if (!dragging || activePointerId !== event.pointerId) return;
+		if (activePointerId !== event.pointerId) return;
+		const nextDragX = event.clientX - dragStartX;
+		const nextDragY = event.clientY - dragStartY;
+		const nextIntent = recallDragIntent(nextDragX, nextDragY, dragIntent ?? 'pending');
+
+		if (nextIntent === 'vertical') {
+			try {
+				(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+			} catch {
+				// The browser may already own a vertical scroll gesture.
+			}
+			activePointerId = null;
+			dragIntent = null;
+			dragging = false;
+			return;
+		}
+		dragIntent = nextIntent;
+		if (nextIntent !== 'horizontal') return;
+
 		event.preventDefault();
-		dragX = event.clientX - dragStartX;
-		dragY = event.clientY - dragStartY;
+		if (!dragging) {
+			dragging = true;
+			cardMotion = 'dragging';
+		}
+		dragX = nextDragX;
+		dragY = Math.max(-18, Math.min(18, nextDragY * 0.15));
 	}
 
 	function handlePointerUp(event: PointerEvent) {
-		if (!dragging || activePointerId !== event.pointerId) return;
+		if (activePointerId !== event.pointerId) return;
 		try {
 			(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
 		} catch {
 			// Pointer capture may already be released by the browser.
 		}
-		const direction = dragX > 0 ? 'right' : 'left';
-		const shouldAct = Math.abs(dragX) > 92 && Math.abs(dragX) > Math.abs(dragY);
-		dragging = false;
+		const completedHorizontalDrag = dragIntent === 'horizontal';
+		dragIntent = null;
 		activePointerId = null;
+		if (!completedHorizontalDrag) {
+			dragging = false;
+			dragX = 0;
+			dragY = 0;
+			return;
+		}
+
+		const direction = dragX > 0 ? 'right' : 'left';
+		const shouldAct = Math.abs(dragX) > 92;
+		dragging = false;
 		if (shouldAct) {
 			reviewCurrentCard(direction === 'right' ? 'next' : 'repeat');
 		} else {
@@ -1002,13 +1197,18 @@
 	}
 
 	function handlePointerCancel(event: PointerEvent) {
-		if (!dragging || activePointerId !== event.pointerId) return;
+		if (activePointerId !== event.pointerId) return;
 		try {
 			(event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
 		} catch {
 			// Pointer capture may already be released by the browser.
 		}
-		returnCard();
+		dragging = false;
+		dragIntent = null;
+		activePointerId = null;
+		dragX = 0;
+		dragY = 0;
+		cardMotion = 'idle';
 	}
 
 	function syncRecallUrl(
@@ -1021,13 +1221,16 @@
 		if (selectedSubject !== 'All subjects') params.set('subject', selectedSubject);
 		if (selectedTopic !== 'all') params.set('topic', selectedTopic);
 		if (selectedKind !== 'all') params.set('kind', selectedKind);
-		params.set('activity', mode === 'recognise' ? 'mcq' : 'flashcards');
+		params.set(
+			'activity',
+			mode === 'recognise' ? 'mcq' : mode === 'truefalse' ? 'true-false' : 'flashcards'
+		);
 		params.set('size', String(stackSize));
 		if (mode !== 'recall') params.set('mode', mode);
 		if (nextSessionActive) params.set('start', '1');
 		if (returnToHref !== '/') params.set('returnTo', returnToHref);
 		const suffix = params.toString();
-		const nextUrl = `${resolve('/recall')}${suffix ? `?${suffix}` : ''}`;
+		const nextUrl = suffix ? resolve(`/recall?${suffix}`) : resolve('/recall');
 		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
 		if (nextUrl === currentUrl) return;
 		if (historyMode === 'push') {
@@ -1042,9 +1245,12 @@
 		syncRecallUrl('replace');
 	}
 
-	function updateSubject(value: string) {
-		selectedSubject = validSubject(value);
-		syncRecallUrl('push');
+	async function updateSubject(value: string) {
+		const nextSubject = validSubject(value);
+		if (nextSubject === 'All subjects' || nextSubject === selectedSubject) return;
+		const activity =
+			mode === 'recognise' ? 'mcq' : mode === 'truefalse' ? 'true-false' : 'flashcards';
+		await goto(resolveInternalPath(recallActivityHref(nextSubject, activity)));
 	}
 
 	function updateMode(value: Mode) {
@@ -1073,10 +1279,12 @@
 </script>
 
 <svelte:head>
-	<title>AQA Science Recall Practice | Question Constellation</title>
+	<title
+		>{selectedSubject === 'All subjects' ? 'GCSE' : selectedSubject} Recall Practice | Question Constellation</title
+	>
 	<meta
 		name="description"
-		content="Practise compact AQA GCSE science recall cards for definitions, formulae, tests, units, and required practical facts."
+		content="Practise concise, curriculum-grounded GCSE cards with flashcards, multiple choice and true-or-false checks."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/recall" />
 </svelte:head>
@@ -1163,7 +1371,7 @@
 		{:else if currentCard}
 			<section
 				class="card-stage"
-				class:showing-result={currentPresentation === 'mcq' && revealed}
+				class:showing-result={currentPresentation !== 'flashcard' && revealed}
 				class:flipping-stack={cardMotion === 'flipping'}
 				class:moving-stack={['dragging', 'exiting-left', 'exiting-right'].includes(cardMotion)}
 			>
@@ -1178,7 +1386,7 @@
 								<span class="card-visual-cue" aria-hidden="true">{nextCard.visualCue}</span>
 							</header>
 							<section class="card-prompt">
-								<p>{topic?.title ?? 'AQA Science'}</p>
+								<p>{topic?.title ?? nextCard.subject}</p>
 								<h1><MathText text={promptTextFor(nextCard)} /></h1>
 							</section>
 						</div>
@@ -1187,13 +1395,18 @@
 				{#key currentCard.id}
 					<article
 						class="stack-card active"
+						data-recall-card-id={currentCard.id}
+						data-recall-offering-id={currentCard.offeringId}
+						data-recall-topic-component-id={currentCard.topicComponentId}
+						data-recall-content-revision={currentCard.contentRevision}
+						data-recall-content-hash={currentCard.contentHash}
 						class:entering={cardMotion === 'entering'}
 						class:dragging={cardMotion === 'dragging'}
 						class:returning={cardMotion === 'returning'}
 						class:answering={cardMotion === 'answering'}
 						class:flipping={cardMotion === 'flipping'}
 						class:revealed
-						class:mcq-card={currentPresentation === 'mcq'}
+						class:mcq-card={currentPresentation !== 'flashcard'}
 						class:mcq-correct={mcqFeedback === 'correct'}
 						class:mcq-incorrect={mcqFeedback === 'incorrect'}
 						class:exiting-left={cardMotion === 'exiting-left'}
@@ -1213,7 +1426,7 @@
 						<div class="card-flipper">
 							<div
 								class="card-face front"
-								class:mcq-front={currentPresentation === 'mcq'}
+								class:mcq-front={currentPresentation !== 'flashcard'}
 								aria-hidden={revealed}
 								inert={revealed}
 							>
@@ -1223,7 +1436,7 @@
 								</header>
 
 								<section class="card-prompt">
-									<p>{currentTopic?.title ?? 'AQA Science'}</p>
+									<p>{currentTopic?.title ?? currentCard.subject}</p>
 									<h1
 										id={`recall-prompt-${currentCard.id}`}
 										tabindex="-1"
@@ -1233,7 +1446,7 @@
 									</h1>
 								</section>
 
-								{#if currentPresentation === 'mcq'}
+								{#if currentPresentation !== 'flashcard'}
 									<div
 										class="choice-grid"
 										role="group"
@@ -1243,8 +1456,9 @@
 											<button
 												type="button"
 												class:selected={selectedChoice === choice}
-												class:correct={selectedChoice !== null && choice === currentCard.back}
-												class:incorrect={selectedChoice === choice && choice !== currentCard.back}
+												class:correct={selectedChoice !== null && choice === currentCorrectChoice}
+												class:incorrect={selectedChoice === choice &&
+													choice !== currentCorrectChoice}
 												disabled={selectedChoice !== null || cardBusy}
 												onclick={() => chooseAnswer(currentCard, choice)}
 											>
@@ -1266,11 +1480,13 @@
 
 							<div
 								class="card-face back"
-								class:mcq-result-face={currentPresentation === 'mcq'}
+								class:mcq-result-face={currentPresentation !== 'flashcard'}
+								class:allows-vertical-result-scroll={resultFaceScrollable}
 								aria-hidden={!revealed}
 								inert={!revealed}
+								bind:this={resultFaceElement}
 							>
-								{#if currentPresentation === 'mcq'}
+								{#if currentPresentation !== 'flashcard'}
 									<header
 										class="mcq-result-status"
 										class:correct={mcqFeedback === 'correct'}
@@ -1289,7 +1505,11 @@
 										<h1>{mcqFeedback === 'correct' ? 'That’s right' : 'Not quite'}</h1>
 									</header>
 
-									<section class="card-answer mcq-answer" aria-label="Answer feedback">
+									<section
+										class="card-answer mcq-answer"
+										class:allows-vertical-result-scroll={resultFaceScrollable}
+										aria-label="Answer feedback"
+									>
 										<div class="mcq-key-answer" id={`mcq-answer-${currentCard.id}`}>
 											<span>Correct answer</span>
 											<strong><MathText text={answerTextFor(currentCard)} /></strong>
@@ -1308,14 +1528,22 @@
 											</div>
 										{/if}
 
-										{#if selectedChoice && selectedChoice !== currentCard.back}
-											<details class="mcq-choice-review">
-												<summary>Review your choice</summary>
+										{#if selectedChoice && selectedChoice !== currentCorrectChoice}
+											<details
+												class="mcq-choice-review"
+												ontoggle={scheduleResultScrollabilityUpdate}
+											>
+												<summary>Review incorrect answer</summary>
 												<div class="mcq-choice-review-content">
-													<span>Your choice</span>
-													<strong><MathText text={selectedChoice} /></strong>
+													<div class="mcq-incorrect-answer">
+														<span>Incorrect answer</span>
+														<strong><MathText text={selectedChoice} /></strong>
+													</div>
 													{#if currentChoiceFeedback}
-														<p><MathText text={currentChoiceFeedback} /></p>
+														<div class="mcq-choice-reason">
+															<span>Why it’s incorrect</span>
+															<p><MathText text={currentChoiceFeedback} /></p>
+														</div>
 													{/if}
 												</div>
 											</details>
@@ -1350,51 +1578,53 @@
 				{/key}
 			</section>
 
-			<footer
-				class="session-actions"
-				class:prompt-actions={currentControls.phase === 'prompt'}
-				class:result-actions={currentControls.phase === 'result'}
-				class:single-action={currentControls.layout === 'single'}
-			>
-				{#if currentControls.phase === 'result'}
-					{#if currentControls.layout === 'split'}
+			{#if currentControls.layout !== 'none'}
+				<footer
+					class="session-actions"
+					class:prompt-actions={currentControls.phase === 'prompt'}
+					class:result-actions={currentControls.phase === 'result'}
+					class:single-action={currentControls.layout === 'single'}
+				>
+					{#if currentControls.phase === 'result'}
+						{#if currentControls.layout === 'split'}
+							<button
+								type="button"
+								class="session-secondary"
+								disabled={cardBusy}
+								aria-label="Put this card at the end of this set"
+								onclick={() => reviewCurrentCard('repeat')}
+							>
+								<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
+								{currentControls.repeatLabel}
+							</button>
+						{/if}
 						<button
 							type="button"
-							class="session-secondary"
+							class="session-primary session-next"
 							disabled={cardBusy}
-							aria-label="Put this card at the end of this set"
-							onclick={() => reviewCurrentCard('repeat')}
+							onclick={() => reviewCurrentCard('next')}
 						>
-							<RotateCcw size={18} aria-hidden="true" strokeWidth={2.2} />
-							{currentControls.repeatLabel}
+							{currentControls.nextLabel}
+							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
+						</button>
+					{:else if currentControls.action === 'reveal'}
+						<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
+							<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
+							{currentControls.label}
+						</button>
+					{:else if currentControls.action === 'skip'}
+						<button
+							type="button"
+							class="session-secondary session-skip"
+							disabled={cardBusy}
+							onclick={skipCurrentCard}
+						>
+							{currentControls.label}
+							<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
 						</button>
 					{/if}
-					<button
-						type="button"
-						class="session-primary session-next"
-						disabled={cardBusy}
-						onclick={() => reviewCurrentCard('next')}
-					>
-						{currentControls.nextLabel}
-						<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
-					</button>
-				{:else if currentControls.action === 'reveal'}
-					<button type="button" class="session-primary" disabled={cardBusy} onclick={revealCard}>
-						<Eye size={18} aria-hidden="true" strokeWidth={2.2} />
-						{currentControls.label}
-					</button>
-				{:else if currentControls.action === 'skip'}
-					<button
-						type="button"
-						class="session-secondary session-skip"
-						disabled={cardBusy}
-						onclick={skipCurrentCard}
-					>
-						{currentControls.label}
-						<ArrowRight size={18} aria-hidden="true" strokeWidth={2.2} />
-					</button>
-				{/if}
-			</footer>
+				</footer>
+			{/if}
 		{/if}
 	</main>
 {:else}
@@ -1408,12 +1638,9 @@
 
 		<section class="setup-shell" aria-label="Recall setup">
 			<div class="setup-copy">
-				<p class="recall-kicker">AQA GCSE Science</p>
+				<p class="recall-kicker">{setupKicker}</p>
 				<h1>Recall cards</h1>
-				<p>
-					Practise the small facts, equations, tests, units, and practical hooks that one- and
-					two-mark questions usually expect.
-				</p>
+				<p>Practise concise, reviewed knowledge from the exact course and topics in this deck.</p>
 				<div class="setup-stats" aria-label="Current recall stack">
 					<div>
 						<strong>{totalCards}</strong>
@@ -1903,7 +2130,7 @@
 	}
 
 	.card-stage.moving-stack .stack-card.preview.one {
-		opacity: 1;
+		opacity: 0.72;
 	}
 
 	.card-stage.flipping-stack .stack-card.preview {
@@ -2040,6 +2267,10 @@
 		transform: rotateY(180deg);
 	}
 
+	.card-face.back:not(.allows-vertical-result-scroll) {
+		touch-action: none;
+	}
+
 	.card-reveal-hitbox {
 		position: absolute;
 		inset: 0;
@@ -2164,6 +2395,11 @@
 		overscroll-behavior: contain;
 		scrollbar-gutter: stable;
 		-webkit-overflow-scrolling: touch;
+		touch-action: pan-y;
+	}
+
+	.card-answer.mcq-answer:not(.allows-vertical-result-scroll) {
+		touch-action: none;
 	}
 
 	.card-face.mcq-result-face {
@@ -2210,7 +2446,8 @@
 
 	.mcq-key-answer > span,
 	.mcq-memory-tip > span,
-	.mcq-choice-review-content > span {
+	.mcq-incorrect-answer > span,
+	.mcq-choice-reason > span {
 		color: var(--qc-ui-text-muted);
 		font-size: 0.78rem;
 		font-weight: 650;
@@ -2313,9 +2550,21 @@
 
 	.mcq-choice-review-content {
 		display: grid;
+		gap: 0.8rem;
+		min-width: 0;
+		padding: 0.2rem 0 0.1rem;
+	}
+
+	.mcq-incorrect-answer,
+	.mcq-choice-reason {
+		display: grid;
 		gap: 0.3rem;
 		min-width: 0;
-		padding: 0.2rem 0 0.1rem 0.85rem;
+		padding-left: 1.03rem;
+	}
+
+	.mcq-incorrect-answer {
+		padding-left: 0.85rem;
 		border-left: 0.18rem solid var(--qc-ui-danger);
 	}
 
@@ -2689,7 +2938,7 @@
 	}
 
 	:global(:root[data-theme='dark']) .card-stage.moving-stack .stack-card.preview.one {
-		opacity: 1;
+		opacity: 0.62;
 	}
 
 	:global(:root[data-theme='dark']) .card-stage.flipping-stack .stack-card.preview {
@@ -2739,6 +2988,12 @@
 		border-color: var(--qc-ui-danger);
 		background: color-mix(in srgb, var(--qc-ui-danger) 12%, var(--qc-ui-surface));
 		color: var(--qc-ui-danger);
+	}
+
+	@media (min-width: 621px) and (min-height: 900px) {
+		.stack-card {
+			height: min(100%, 40rem);
+		}
 	}
 
 	@media (min-width: 621px) and (max-height: 820px) {
@@ -2994,7 +3249,8 @@
 		}
 
 		.mcq-key-answer > span,
-		.mcq-choice-review-content > span {
+		.mcq-incorrect-answer > span,
+		.mcq-choice-reason > span {
 			font-size: 0.74rem;
 		}
 

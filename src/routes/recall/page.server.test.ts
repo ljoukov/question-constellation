@@ -36,7 +36,7 @@ const user = {
 	photoUrl: null
 };
 
-function card(id: string): RecallCard {
+function card(id: string, overrides: Partial<RecallCard> = {}): RecallCard {
 	return {
 		id,
 		board: 'AQA',
@@ -56,7 +56,8 @@ function card(id: string): RecallCard {
 		curriculumComponentId: `component-${id}`,
 		topicComponentId: 'topic-1',
 		contentRevision: 1,
-		contentHash: id.repeat(64).slice(0, 64)
+		contentHash: id.repeat(64).slice(0, 64),
+		...overrides
 	};
 }
 
@@ -93,6 +94,19 @@ beforeEach(() => {
 });
 
 describe('anonymous recall page load', () => {
+	it('does not treat the aggregate filter label as a concrete catalog subject', async () => {
+		mocks.getRecallCards.mockResolvedValueOnce([]);
+		const result = await loadRecall(
+			undefined,
+			null,
+			'https://constellation.eviworld.com/recall?start=1&subject=All%20subjects'
+		);
+
+		expect(mocks.defaultRecallCatalogScope).not.toHaveBeenCalled();
+		expect(mocks.getRecallCards).toHaveBeenCalledWith(undefined);
+		expect(result.cards).toEqual([]);
+	});
+
 	it('opens the same public catalog advertised by the activity page', async () => {
 		const result = await loadRecall(undefined, null);
 
@@ -104,9 +118,84 @@ describe('anonymous recall page load', () => {
 		expect(result.cards.map((item: RecallCard) => item.id)).toEqual(['a', 'b']);
 		expect(result.user).toBeNull();
 	});
+
+	it('opens a non-science public deck with its exact board and topic metadata', async () => {
+		const historyCard = card('h', {
+			board: 'AQA',
+			subject: 'History',
+			topicId: 'aqa-history-germany',
+			topicTitle: 'Germany, 1890–1945',
+			topicPaper: 'Paper 1',
+			topicComponentId: 'aqa-history-germany',
+			offeringId: 'aqa-gcse-history-8145-v1.3:higher',
+			kind: 'chronology',
+			visualCue: '🏛️'
+		});
+		mocks.defaultRecallCatalogScope.mockReturnValue({
+			subject: 'History',
+			offeringId: historyCard.offeringId
+		});
+		mocks.getRecallCards.mockResolvedValue([historyCard]);
+
+		const result = await loadRecall(
+			undefined,
+			null,
+			'https://constellation.eviworld.com/recall?start=1&subject=History&topic=aqa-history-germany&activity=true_false'
+		);
+
+		expect(mocks.defaultRecallCatalogScope).toHaveBeenCalledWith('History');
+		expect(result.cards).toEqual([historyCard]);
+		expect(result.initialActivity).toBe('true-false');
+		expect(result.initialMode).toBe('truefalse');
+		expect(result.topics).toEqual([
+			expect.objectContaining({
+				id: 'aqa-history-germany',
+				subject: 'History',
+				title: 'Germany, 1890–1945',
+				paper: 'Paper 1'
+			})
+		]);
+	});
 });
 
 describe('signed-in recall page load', () => {
+	it('uses an OCR Literature learner offering and preserves true-or-false mode', async () => {
+		const literatureCard = card('l', {
+			board: 'OCR',
+			subject: 'English Literature',
+			topicId: 'ocr-j352-macbeth',
+			topicTitle: 'Macbeth',
+			topicPaper: 'Component 01',
+			topicComponentId: 'ocr-j352-macbeth',
+			offeringId: 'ocr-gcse-english-literature-j352-v3.0:higher',
+			kind: 'quotation',
+			visualCue: '📖'
+		});
+		mocks.getRecallCatalogScopeForLearner.mockResolvedValue({
+			subject: 'English Literature',
+			offeringId: literatureCard.offeringId
+		});
+		mocks.getRecallCards.mockResolvedValue([literatureCard]);
+		mocks.recallCardsWithinLearnerScope.mockResolvedValue([literatureCard]);
+
+		const result = await loadRecall(
+			undefined,
+			user,
+			'https://constellation.eviworld.com/recall?start=1&subject=English%20Literature&topic=ocr-j352-macbeth&activity=true-false'
+		);
+
+		expect(mocks.getRecallCatalogScopeForLearner).toHaveBeenCalledWith(user, 'English Literature');
+		expect(mocks.recallCardsWithinLearnerScope).toHaveBeenCalledWith(
+			user.uid,
+			'English Literature',
+			[literatureCard]
+		);
+		expect(result.initialActivity).toBe('true-false');
+		expect(result.initialMode).toBe('truefalse');
+		expect(result.subjects).toContain('English Literature');
+		expect(result.subjects).not.toContain('All subjects');
+	});
+
 	it('opens the aggregate quick-start stack inside the learner curriculum scope', async () => {
 		const result = await loadRecall(
 			undefined,

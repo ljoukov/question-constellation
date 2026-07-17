@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 
 export const CURRICULUM_IMPORT_OWNER = 'official_curriculum_importer';
 export const CURRICULUM_PROFILE_SNAPSHOT_ID = 'gcse-current';
+export const REVIEWED_QUESTION_MAPPING_SCHEMA_VERSION = '2';
 
 const OFFICIAL_DOMAINS_BY_BOARD = new Map([
 	['aqa', ['aqa.org.uk']],
@@ -790,6 +791,73 @@ export function buildTrustedQuestionCurriculumMappings(questions, snapshot) {
 			ineligible.push({ questionId: question.id, reason: 'not clean and published' });
 			continue;
 		}
+		const parsedSpecReferences = parseStrictOfficialSpecReferences(question.spec_ref);
+		if (parsedSpecReferences) {
+			const resolved = [];
+			let failed = null;
+			for (const reference of parsedSpecReferences.references) {
+				const referenceCandidates = [];
+				for (const [specificationId, components] of componentsBySpec) {
+					const specification = specificationsById.get(specificationId);
+					if (!questionMatchesSpecification(question, specification)) continue;
+					for (const component of components) {
+						if (
+							component.code === reference ||
+							component.metadataJson.questionSpecRefs?.includes(reference) ||
+							component.metadataJson.specRefs?.includes(reference)
+						) {
+							referenceCandidates.push(component);
+						}
+					}
+				}
+				if (!referenceCandidates.length) {
+					failed = {
+						questionId: question.id,
+						reason: `strict spec_ref token has no exact curriculum component: ${reference}`
+					};
+					break;
+				}
+				const deepest = Math.max(...referenceCandidates.map((component) => component.depth));
+				const deepestCandidates = referenceCandidates.filter(
+					(component) => component.depth === deepest
+				);
+				const unique = new Map(deepestCandidates.map((component) => [component.id, component]));
+				if (unique.size !== 1) {
+					failed = {
+						questionId: question.id,
+						componentIds: [...unique.keys()].sort(),
+						reason: `multiple equally specific exact matches for spec_ref token ${reference}`
+					};
+					break;
+				}
+				resolved.push({ reference, component: unique.values().next().value });
+			}
+			if (failed) {
+				if (failed.componentIds) ambiguous.push(failed);
+				else unmapped.push(failed);
+				continue;
+			}
+			const uniqueResolved = [
+				...new Map(resolved.map((entry) => [entry.component.id, entry])).values()
+			];
+			const compound =
+				parsedSpecReferences.references.length > 1 || parsedSpecReferences.annotations.length > 0;
+			for (const [index, entry] of uniqueResolved.entries()) {
+				mappings.push({
+					questionId: question.id,
+					curriculumComponentId: entry.component.id,
+					specificationId: entry.component.specificationId,
+					isPrimary: index === 0,
+					confidence: 1,
+					mappingSource: `${CURRICULUM_IMPORT_OWNER}:${compound ? 'compound_spec_ref' : 'spec_ref'}`,
+					mappingNotes: compound
+						? `Exact official spec_ref tokens (${parsedSpecReferences.references.join(', ')}); known paper annotations (${parsedSpecReferences.annotations.join(', ') || 'none'}) are recorded but are not curriculum-component guesses.`
+						: 'Exact imported source identity; no keyword or prompt classification.',
+					reviewed: true
+				});
+			}
+			continue;
+		}
 		const candidates = [];
 		for (const [specificationId, components] of componentsBySpec) {
 			const specification = specificationsById.get(specificationId);
@@ -854,6 +922,468 @@ export function buildTrustedQuestionCurriculumMappings(questions, snapshot) {
 	return { mappings, unmapped, ambiguous, ineligible };
 }
 
+/**
+ * Parse a source `spec_ref` only when the complete value is an exact list of
+ * dotted official section identifiers plus known AQA paper annotations. The
+ * parser deliberately rejects prose or partially understood values instead of
+ * extracting convenient-looking numbers from them.
+ *
+ * @param {unknown} value
+ * @returns {{references: string[], annotations: string[]} | null}
+ */
+export function parseStrictOfficialSpecReferences(value) {
+	const raw = String(value ?? '').trim();
+	if (!raw) return null;
+	/** @type {string[]} */
+	const annotations = [];
+	let remainder = raw.replace(/\b(?:RPA|RP)\s*\d+\b/gi, (match) => {
+		annotations.push(match.replace(/\s+/g, ' ').toUpperCase());
+		return ' ';
+	});
+	remainder = remainder.replace(/\bWS\s*\d+(?:\.\d+)*\b/gi, (match) => {
+		annotations.push(match.replace(/\s+/g, ' ').toUpperCase());
+		return ' ';
+	});
+	/** @type {string[]} */
+	const references = [];
+	remainder = remainder.replace(/\b\d+(?:\.\d+)+\b/g, (match) => {
+		references.push(match);
+		return ' ';
+	});
+	if (remainder.replace(/[\s,;|]+/g, '')) return null;
+	const uniqueReferences = [...new Set(references)];
+	if (!uniqueReferences.length) return null;
+	return { references: uniqueReferences, annotations };
+}
+
+/**
+ * Build the immutable evidence payload used by a reviewed question-mapping
+ * artifact. The importer recomputes this from D1 on every run, so a mapping
+ * cannot silently survive a changed prompt, mark scheme, chain, paper identity,
+ * or question id.
+ *
+ * @param {any} question
+ */
+export function buildQuestionCurriculumMappingEvidence(question) {
+	let markSchemeItems = [];
+	let topicPath = [];
+	try {
+		const parsed = JSON.parse(question.mapping_evidence_mark_scheme_json ?? '[]');
+		if (Array.isArray(parsed)) markSchemeItems = parsed;
+	} catch {
+		// The artifact validator reports the resulting mismatch. Keep this helper
+		// total so malformed remote evidence cannot bypass fail-closed validation.
+	}
+	try {
+		const parsed = JSON.parse(question.topic_path_json ?? '[]');
+		if (Array.isArray(parsed)) topicPath = parsed;
+	} catch {
+		// Preserve an empty canonical value. A previously generated artifact with
+		// valid JSON will then fail its evidence comparison.
+	}
+	return {
+		sourceDocument: {
+			id: question.source_document_id ?? null,
+			docType: question.mapping_evidence_source_document_type ?? null,
+			board: question.mapping_evidence_source_document_board ?? null,
+			qualification: question.mapping_evidence_source_document_qualification ?? null,
+			subject: question.mapping_evidence_source_document_subject ?? null,
+			subjectArea: question.mapping_evidence_source_document_subject_area ?? null,
+			tier: question.mapping_evidence_source_document_tier ?? null,
+			paper: question.mapping_evidence_source_document_paper ?? null,
+			componentCode: question.mapping_evidence_source_document_component_code ?? null,
+			series: question.mapping_evidence_source_document_series ?? null,
+			year:
+				question.mapping_evidence_source_document_year === null ||
+				question.mapping_evidence_source_document_year === undefined
+					? null
+					: Number(question.mapping_evidence_source_document_year),
+			title: question.mapping_evidence_source_document_title ?? null,
+			sourceUrl: question.mapping_evidence_source_document_url ?? null,
+			fileHash: question.mapping_evidence_source_document_hash ?? null,
+			pageCount:
+				question.mapping_evidence_source_document_page_count === null ||
+				question.mapping_evidence_source_document_page_count === undefined
+					? null
+					: Number(question.mapping_evidence_source_document_page_count)
+		},
+		question: {
+			id: question.id ?? null,
+			sourceDocumentId: question.source_document_id ?? null,
+			sourceQuestionRef: question.source_question_ref ?? null,
+			componentCode: question.component_code ?? null,
+			specRef: question.spec_ref ?? null,
+			topicPath,
+			year: question.year === null || question.year === undefined ? null : Number(question.year),
+			promptText: question.prompt_text ?? null,
+			selfContainedPromptText: question.self_contained_prompt_text ?? null,
+			contextText: question.context_text ?? null,
+			marks: question.marks === null || question.marks === undefined ? null : Number(question.marks)
+		},
+		primaryAnswerChain: {
+			id: question.mapping_evidence_answer_chain_id ?? null,
+			title: question.mapping_evidence_answer_chain_title ?? null,
+			canonicalChainText: question.mapping_evidence_answer_chain_text ?? null,
+			fitNotes: question.mapping_evidence_chain_fit_notes ?? null
+		},
+		markSchemeItems: markSchemeItems.map((item) => ({
+			id: item.id ?? null,
+			sourceDocumentId: item.sourceDocumentId ?? null,
+			sourceDocument: {
+				id: item.sourceDocumentId ?? null,
+				docType: item.sourceDocumentDocType ?? null,
+				title: item.sourceDocumentTitle ?? null,
+				sourceUrl: item.sourceDocumentUrl ?? null,
+				fileHash: item.sourceDocumentHash ?? null
+			},
+			displayOrder:
+				item.displayOrder === null || item.displayOrder === undefined
+					? null
+					: Number(item.displayOrder),
+			itemType: item.itemType ?? null,
+			text: item.text ?? null,
+			marks: item.marks === null || item.marks === undefined ? null : Number(item.marks),
+			sourceRef: item.sourceRef ?? null
+		}))
+	};
+}
+
+/** @param {any} question */
+export function questionCurriculumMappingEvidenceHash(question) {
+	return sha256Stable(buildQuestionCurriculumMappingEvidence(question));
+}
+
+export class ReviewedQuestionMappingValidationError extends Error {
+	/** @param {string[]} issues */
+	constructor(issues) {
+		super(`Reviewed question mapping validation failed:\n- ${issues.join('\n- ')}`);
+		this.name = 'ReviewedQuestionMappingValidationError';
+		this.issues = issues;
+	}
+}
+
+/**
+ * Validate a checked-in, human-reviewable mapping ledger against both the
+ * official curriculum snapshot and the current stored question evidence.
+ * Unlike the exact-identifier mapper above, this path may bridge specification
+ * versions, but only when every question and target is explicitly listed.
+ *
+ * @param {unknown} input
+ * @param {{questions: any[], snapshot: ReturnType<typeof buildCurriculumImportSnapshot>}} context
+ */
+export function validateReviewedQuestionCurriculumMappingArtifact(input, { questions, snapshot }) {
+	/** @type {string[]} */
+	const issues = [];
+	if (!isRecord(input)) {
+		throw new ReviewedQuestionMappingValidationError(['artifact must be an object']);
+	}
+	const schemaVersion = String(input.schemaVersion ?? '');
+	if (schemaVersion !== REVIEWED_QUESTION_MAPPING_SCHEMA_VERSION) {
+		issues.push(
+			`schemaVersion must be ${REVIEWED_QUESTION_MAPPING_SCHEMA_VERSION}, received ${schemaVersion || '<empty>'}`
+		);
+	}
+	const artifactId = requireText(input.id, 'id', issues);
+	if (input.importOwner !== CURRICULUM_IMPORT_OWNER) {
+		issues.push(`importOwner must be ${CURRICULUM_IMPORT_OWNER}`);
+	}
+	const scope = isRecord(input.scope) ? input.scope : {};
+	if (!isRecord(input.scope)) issues.push('scope must be an object');
+	const sourceDocumentIds = requireStringArray(
+		scope.sourceDocumentIds,
+		'scope.sourceDocumentIds',
+		issues,
+		{ nonEmpty: true }
+	);
+	uniqueValues(sourceDocumentIds, 'scope source document id', issues);
+	const explicitQuestionIds =
+		scope.questionIds === undefined
+			? []
+			: requireStringArray(scope.questionIds, 'scope.questionIds', issues, { nonEmpty: true });
+	uniqueValues(explicitQuestionIds, 'scope question id', issues);
+	const scopeQuestionCount = requirePositiveInteger(
+		scope.questionCount,
+		'scope.questionCount',
+		issues
+	);
+	const scopeDocuments = new Set(sourceDocumentIds);
+	const explicitQuestionIdSet = new Set(explicitQuestionIds);
+	const scopeQuestions = questions.filter(
+		(question) =>
+			scopeDocuments.has(question.source_document_id) &&
+			(!explicitQuestionIds.length || explicitQuestionIdSet.has(question.id)) &&
+			normalized(question.board) === normalized(scope.board) &&
+			normalized(question.qualification) === normalized(scope.qualification) &&
+			[question.subject, question.subject_area]
+				.filter(Boolean)
+				.map(normalized)
+				.includes(normalized(scope.subject))
+	);
+	if (scopeQuestions.length !== scopeQuestionCount) {
+		issues.push(
+			`scope expected ${scopeQuestionCount} questions but current D1 evidence contains ${scopeQuestions.length}`
+		);
+	}
+	const questionById = new Map(scopeQuestions.map((question) => [question.id, question]));
+	for (const questionId of explicitQuestionIds) {
+		if (!questionById.has(questionId)) {
+			issues.push(
+				`scope question is missing, ineligible, or outside source documents: ${questionId}`
+			);
+		}
+	}
+	for (const sourceDocumentId of sourceDocumentIds) {
+		if (!scopeQuestions.some((question) => question.source_document_id === sourceDocumentId)) {
+			issues.push(`scope source document is missing from current D1 evidence: ${sourceDocumentId}`);
+		}
+	}
+
+	const specificationById = new Map(
+		snapshot.specifications.map((specification) => [specification.id, specification])
+	);
+	const componentById = new Map(snapshot.components.map((component) => [component.id, component]));
+	const specificationSources = Array.isArray(input.specificationSources)
+		? input.specificationSources
+		: [];
+	if (!specificationSources.length) issues.push('specificationSources must be a non-empty array');
+	const declaredSpecificationIds = new Set();
+	for (const [index, source] of specificationSources.entries()) {
+		const label = `specificationSources[${index}]`;
+		if (!isRecord(source)) {
+			issues.push(`${label} must be an object`);
+			continue;
+		}
+		const specificationId = requireText(source.specificationId, `${label}.specificationId`, issues);
+		const specification = specificationById.get(specificationId);
+		declaredSpecificationIds.add(specificationId);
+		if (!specification) {
+			issues.push(`${label} references an unknown specification: ${specificationId}`);
+			continue;
+		}
+		if (source.fileHash !== specification.fileHash) {
+			issues.push(`${label}.fileHash no longer matches ${specificationId}`);
+		}
+		if (source.version !== specification.version) {
+			issues.push(`${label}.version no longer matches ${specificationId}`);
+		}
+	}
+
+	const rawMappings = Array.isArray(input.mappings) ? input.mappings : [];
+	const rawWithheld = Array.isArray(input.withheldQuestions) ? input.withheldQuestions : [];
+	if (!Array.isArray(input.mappings)) issues.push('mappings must be an array');
+	if (!Array.isArray(input.withheldQuestions)) issues.push('withheldQuestions must be an array');
+	if (!rawMappings.length && !rawWithheld.length) {
+		issues.push('artifact must map or explicitly withhold at least one question');
+	}
+	const accountedQuestionIds = new Set();
+	const mappingKeys = new Set();
+	const mappings = [];
+	const withheld = [];
+	const targetWithholdings = [];
+
+	/** @param {any} entry @param {string} label */
+	const validateEvidenceEntry = (entry, label) => {
+		if (!isRecord(entry)) {
+			issues.push(`${label} must be an object`);
+			return null;
+		}
+		const questionId = requireText(entry.questionId, `${label}.questionId`, issues);
+		if (accountedQuestionIds.has(questionId)) {
+			issues.push(`${label} duplicates accounted question ${questionId}`);
+		}
+		accountedQuestionIds.add(questionId);
+		const question = questionById.get(questionId);
+		if (!question) {
+			issues.push(`${label} question is outside the exact artifact scope or stale: ${questionId}`);
+			return null;
+		}
+		const currentEvidence = buildQuestionCurriculumMappingEvidence(question);
+		if (!String(currentEvidence.sourceDocument.fileHash ?? '').trim()) {
+			issues.push(`${label} current question-paper evidence has no source-document hash`);
+		}
+		for (const [markIndex, markItem] of currentEvidence.markSchemeItems.entries()) {
+			if (!String(markItem.sourceDocumentId ?? '').trim()) {
+				issues.push(`${label} current mark-scheme row ${markIndex} has no source-document id`);
+			} else if (
+				markItem.sourceDocument?.id !== markItem.sourceDocumentId ||
+				!String(markItem.sourceDocument?.fileHash ?? '').trim()
+			) {
+				issues.push(
+					`${label} current mark-scheme row ${markIndex} has no matching hashed source document`
+				);
+			}
+		}
+		if (stableStringify(entry.evidence) !== stableStringify(currentEvidence)) {
+			issues.push(`${label}.evidence no longer matches stored prompt/chain/mark evidence`);
+		}
+		const currentHash = sha256Stable(currentEvidence);
+		if (entry.evidenceHash !== currentHash) {
+			issues.push(`${label}.evidenceHash no longer matches stored evidence`);
+		}
+		return { question, questionId, currentHash };
+	};
+
+	for (const [index, entry] of rawMappings.entries()) {
+		const label = `mappings[${index}]`;
+		const validated = validateEvidenceEntry(entry, label);
+		if (!validated) continue;
+		const sourceSpecificationId = requireText(
+			entry.sourceSpecificationId,
+			`${label}.sourceSpecificationId`,
+			issues
+		);
+		const sourceSpecification = specificationById.get(sourceSpecificationId);
+		if (!sourceSpecification) {
+			issues.push(`${label} references an unknown source specification: ${sourceSpecificationId}`);
+		} else {
+			const questionYear = Number(validated.question.year);
+			if (
+				(sourceSpecification.firstExamYear && questionYear < sourceSpecification.firstExamYear) ||
+				(sourceSpecification.lastExamYear && questionYear > sourceSpecification.lastExamYear)
+			) {
+				issues.push(`${label} question year is outside ${sourceSpecificationId}`);
+			}
+			if (
+				!String(validated.question.component_code ?? '').startsWith(
+					sourceSpecification.specificationCode
+				)
+			) {
+				issues.push(`${label} component code does not identify ${sourceSpecificationId}`);
+			}
+		}
+		const targets = Array.isArray(entry.targets) ? entry.targets : [];
+		const withheldTargets = Array.isArray(entry.withheldTargets) ? entry.withheldTargets : [];
+		if (!targets.length) issues.push(`${label}.targets must be a non-empty array`);
+		const accountedTargetSpecifications = new Set();
+		for (const [targetIndex, target] of targets.entries()) {
+			const targetLabel = `${label}.targets[${targetIndex}]`;
+			if (!isRecord(target)) {
+				issues.push(`${targetLabel} must be an object`);
+				continue;
+			}
+			const specificationId = requireText(
+				target.specificationId,
+				`${targetLabel}.specificationId`,
+				issues
+			);
+			const curriculumComponentId = requireText(
+				target.curriculumComponentId,
+				`${targetLabel}.curriculumComponentId`,
+				issues
+			);
+			if (!declaredSpecificationIds.has(specificationId)) {
+				issues.push(`${targetLabel} specification is absent from specificationSources`);
+			}
+			if (accountedTargetSpecifications.has(specificationId)) {
+				issues.push(`${targetLabel} duplicates specification ${specificationId}`);
+			}
+			accountedTargetSpecifications.add(specificationId);
+			const component = componentById.get(curriculumComponentId);
+			if (!component || component.specificationId !== specificationId) {
+				issues.push(`${targetLabel} component is stale or belongs to another specification`);
+				continue;
+			}
+			if (!component.selectable) {
+				issues.push(`${targetLabel} must target a learner-selectable curriculum component`);
+			}
+			if (target.curriculumCode !== component.code) {
+				issues.push(`${targetLabel}.curriculumCode no longer matches the official component`);
+			}
+			const confidence = Number(target.confidence);
+			if (!Number.isFinite(confidence) || confidence < 0 || confidence > 1) {
+				issues.push(`${targetLabel}.confidence must be between 0 and 1`);
+			}
+			const key = `${validated.questionId}\u0000${specificationId}`;
+			if (mappingKeys.has(key)) issues.push(`${targetLabel} duplicates mapping ${key}`);
+			mappingKeys.add(key);
+			mappings.push({
+				questionId: validated.questionId,
+				curriculumComponentId,
+				specificationId,
+				isPrimary: true,
+				confidence,
+				mappingSource: `${CURRICULUM_IMPORT_OWNER}:reviewed_artifact`,
+				mappingNotes: `${artifactId}; evidence ${validated.currentHash}; ${String(target.reviewNote ?? '').trim()}`,
+				reviewed: true
+			});
+		}
+		for (const [withheldIndex, target] of withheldTargets.entries()) {
+			const targetLabel = `${label}.withheldTargets[${withheldIndex}]`;
+			if (!isRecord(target)) {
+				issues.push(`${targetLabel} must be an object`);
+				continue;
+			}
+			const specificationId = requireText(
+				target.specificationId,
+				`${targetLabel}.specificationId`,
+				issues
+			);
+			if (!declaredSpecificationIds.has(specificationId)) {
+				issues.push(`${targetLabel} specification is absent from specificationSources`);
+			}
+			if (accountedTargetSpecifications.has(specificationId)) {
+				issues.push(`${targetLabel} duplicates specification ${specificationId}`);
+			}
+			accountedTargetSpecifications.add(specificationId);
+			const reason = requireText(target.reason, `${targetLabel}.reason`, issues);
+			targetWithholdings.push({
+				questionId: validated.questionId,
+				specificationId,
+				reason,
+				evidenceHash: validated.currentHash
+			});
+		}
+		for (const specificationId of declaredSpecificationIds) {
+			if (!accountedTargetSpecifications.has(specificationId)) {
+				issues.push(`${label} does not map or explicitly withhold target ${specificationId}`);
+			}
+		}
+	}
+
+	for (const [index, entry] of rawWithheld.entries()) {
+		const label = `withheldQuestions[${index}]`;
+		const validated = validateEvidenceEntry(entry, label);
+		if (!validated) continue;
+		const reason = requireText(entry.reason, `${label}.reason`, issues);
+		const sourceClassification = requireText(
+			entry.sourceClassification,
+			`${label}.sourceClassification`,
+			issues
+		);
+		withheld.push({
+			questionId: validated.questionId,
+			sourceClassification,
+			reason,
+			evidenceHash: validated.currentHash
+		});
+	}
+
+	for (const question of scopeQuestions) {
+		if (!accountedQuestionIds.has(question.id)) {
+			issues.push(`artifact does not account for in-scope question ${question.id}`);
+		}
+	}
+	if (accountedQuestionIds.size !== scopeQuestions.length) {
+		issues.push(
+			`artifact accounts for ${accountedQuestionIds.size} unique questions; scope contains ${scopeQuestions.length}`
+		);
+	}
+	if (issues.length) throw new ReviewedQuestionMappingValidationError(issues);
+	return {
+		artifactId,
+		mappings,
+		withheld,
+		targetWithholdings,
+		counts: {
+			scopeQuestions: scopeQuestions.length,
+			mappedQuestions: rawMappings.length,
+			mappingRows: mappings.length,
+			withheldQuestions: withheld.length,
+			withheldTargets: targetWithholdings.length
+		}
+	};
+}
+
 /** @param {any} question @param {any} specification */
 function questionMatchesSpecification(question, specification) {
 	if (!specification) return false;
@@ -869,7 +1399,11 @@ function questionMatchesSpecification(question, specification) {
 		.filter(Boolean)
 		.map(normalized);
 	if (!questionSubjects.some((subject) => specificationSubjects.includes(subject))) return false;
-	const questionYear = Number(question.year);
+	const rawQuestionYear = question.year;
+	const questionYear =
+		rawQuestionYear === null || rawQuestionYear === undefined || rawQuestionYear === ''
+			? Number.NaN
+			: Number(rawQuestionYear);
 	if (Number.isFinite(questionYear)) {
 		if (specification.firstExamYear && questionYear < specification.firstExamYear) return false;
 		if (specification.lastExamYear && questionYear > specification.lastExamYear) return false;

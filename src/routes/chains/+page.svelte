@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import QuestionBankFilters from '$lib/components/QuestionBankFilters.svelte';
 	import QuestionBankQuestionCard from '$lib/components/QuestionBankQuestionCard.svelte';
@@ -90,7 +91,7 @@
 		return question.preview;
 	}
 
-	function pageHref(targetPage: number) {
+	function pageHref(targetPage: number): ResolvedPathname {
 		const params = new URLSearchParams();
 		if (data.filters.search) params.set('q', data.filters.search);
 		if (data.filters.subject !== 'All subjects') params.set('subject', data.filters.subject);
@@ -99,7 +100,7 @@
 		if (data.filters.marks !== 'all') params.set('marks', data.filters.marks);
 		if (targetPage > 1) params.set('page', String(targetPage));
 		const query = params.toString();
-		return `${browseHref}${query ? `?${query}` : ''}`;
+		return `${browseHref}${query ? `?${query}` : ''}` as ResolvedPathname;
 	}
 </script>
 
@@ -162,6 +163,7 @@
 								meta={metaLine([question.sourceRef, markLabel(question.marks)])}
 								title={question.title}
 								detail={questionDetail(question)}
+								unavailableReason={question.practiceUnavailableReason}
 							/>
 						{/each}
 					</div>

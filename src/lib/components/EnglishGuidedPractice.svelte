@@ -2,6 +2,7 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
 	import { authStartHref } from '$lib/authReturn';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
@@ -15,6 +16,12 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import ResponseRenderer from '$lib/experiments/questions/components/ResponseRenderer.svelte';
 	import type { ExamResponse } from '$lib/experiments/questions/types';
+	import {
+		addExternalInputSource,
+		externalInputSourceFromBeforeInput,
+		normalizeExternalInputSources,
+		type ExternalInputSource
+	} from '$lib/learning/answerAssistance';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
 	import { learnerSubjectHref } from '$lib/learning/subjects';
 	import { markLabel } from '$lib/marks';
@@ -78,6 +85,11 @@
 		confidence: number;
 		model: string;
 		modelVersion: string;
+		evidence?: {
+			independent: boolean;
+			externalInputDetected: boolean;
+			externalInputSources: ExternalInputSource[];
+		};
 	};
 
 	type Stage = {
@@ -100,6 +112,8 @@
 		decision: 'pass' | 'revise';
 		checks: EnglishStepGradeResult['checks'];
 		nextImprovement: string;
+		externalInputDetected?: boolean;
+		externalInputSources?: ExternalInputSource[];
 	};
 
 	type Question = {
@@ -141,6 +155,7 @@
 		stepAnswers?: Record<string, string>;
 		stepResults?: Record<string, EnglishStepGradeResult>;
 		attemptHistory?: EnglishLearnerAttempt[];
+		externalInputSourcesByStep?: Record<string, ExternalInputSource[]>;
 		activitySessionId?: string;
 		responseStartedAt?: number;
 		pendingCheckId?: string;
@@ -174,6 +189,7 @@
 		userId?: string | null;
 		user?: AdminUser | null;
 	} = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	const subjects = [...BROWSE_SUBJECTS];
 	let loadedQuestionId = $state('');
@@ -182,6 +198,7 @@
 	let stepAnswers = $state<Record<string, string>>({});
 	let stepResults = $state<Record<string, EnglishStepGradeResult>>({});
 	let attemptHistory = $state<EnglishLearnerAttempt[]>([]);
+	let externalInputSourcesByStep = $state<Record<string, ExternalInputSource[]>>({});
 	let gradePhase = $state<GradePhase>('idle');
 	let gradeFailure = $state<RequestFailure | null>(null);
 	let gradeReasoningSummary = $state('');
@@ -208,15 +225,27 @@
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
-	const finderHref = $derived(`${resolve('/english')}?course=${encodeURIComponent(topbarSubject)}`);
+	const finderHref = $derived(resolve(`/english?course=${encodeURIComponent(topbarSubject)}`));
 	const requestedReturnTo = $derived(safeInternalReturnPath(page.url.searchParams.get('returnTo')));
 	const signedSubjectHref = $derived(
 		topbarSubject === 'English Literature' && question.meta.board === 'OCR'
 			? resolve('/english-literature')
-			: learnerSubjectHref(topbarSubject)
+			: resolveInternalPath(learnerSubjectHref(topbarSubject))
 	);
-	const completionHref = $derived(user ? (requestedReturnTo ?? signedSubjectHref) : finderHref);
-	const backHref = $derived(user ? (requestedReturnTo ?? signedSubjectHref) : finderHref);
+	const completionHref = $derived(
+		user
+			? requestedReturnTo
+				? resolveInternalPath(requestedReturnTo)
+				: signedSubjectHref
+			: finderHref
+	);
+	const backHref = $derived(
+		user
+			? requestedReturnTo
+				? resolveInternalPath(requestedReturnTo)
+				: signedSubjectHref
+			: finderHref
+	);
 	const backLabel = $derived(
 		user && requestedReturnTo?.startsWith('/questions/')
 			? 'Back to question'
@@ -286,12 +315,12 @@
 		return { kind: 'lines', count: isFinalStage ? practice.fullLineCount : practice.stepLineCount };
 	}
 
-	function stepHref(stage: Stage) {
+	function stepHref(stage: Stage): ResolvedPathname {
 		const path = resolve('/questions/[questionId]/practice/step-by-step/[stepId]', {
 			questionId: practice.questionId,
 			stepId: stage.id
 		});
-		return withEnglishPracticeContext(path, page.url.searchParams);
+		return withEnglishPracticeContext(path, page.url.searchParams) as ResolvedPathname;
 	}
 
 	function resultMatchesAnswer(
@@ -359,6 +388,7 @@
 					stepAnswers,
 					stepResults,
 					attemptHistory,
+					externalInputSourcesByStep,
 					activitySessionId,
 					responseStartedAt,
 					pendingCheckId,
@@ -410,12 +440,25 @@
 			.slice(-16);
 	}
 
+	function externalInputSourcesRecord(value: unknown) {
+		if (!isRecord(value)) return {};
+		return Object.fromEntries(
+			Object.entries(value).map(([stepId, sources]) => [
+				stepId,
+				normalizeExternalInputSources(sources)
+			])
+		);
+	}
+
 	function englishStateFromDraft(draft: PracticeDraftSave | SavedPracticeDraft | null) {
 		if (!draft || draft.draftKind !== 'english-guided' || !isRecord(draft.payload)) return null;
 		return {
 			stepAnswers: stringRecord(recordFromRecord(draft.payload, 'stepAnswers')),
 			stepResults: gradeResultRecord(recordFromRecord(draft.payload, 'stepResults')),
 			attemptHistory: learnerAttemptList(draft.payload.attemptHistory),
+			externalInputSourcesByStep: externalInputSourcesRecord(
+				draft.payload.externalInputSourcesByStep
+			),
 			activitySessionId:
 				typeof draft.payload.activitySessionId === 'string'
 					? draft.payload.activitySessionId
@@ -453,6 +496,7 @@
 			stepAnswers,
 			stepResults,
 			attemptHistory,
+			externalInputSourcesByStep,
 			activitySessionId,
 			responseStartedAt,
 			pendingCheckId,
@@ -489,10 +533,18 @@
 		if (!activeStage) return null;
 		if (!activitySessionId) activitySessionId = createActivityId('english-session');
 		if (!responseStartedAt) responseStartedAt = Date.now();
+		const externalInputSources = normalizeExternalInputSources(
+			externalInputSourcesByStep[activeStage.id]
+		);
+		const assistance = {
+			externalInputDetected: externalInputSources.length > 0,
+			externalInputSources
+		};
 		const signature = JSON.stringify({
 			stepId: activeStage.id,
 			answer: activeAnswer,
-			hintUsed
+			hintUsed,
+			assistance
 		});
 		if (!pendingCheckId || pendingCheckSignature !== signature) {
 			pendingCheckId = createActivityId('english-step');
@@ -504,7 +556,8 @@
 			checkId: pendingCheckId,
 			sourceSessionId: activitySessionId,
 			responseDurationMs: pendingResponseDurationMs,
-			hintOpened: hintUsed
+			hintOpened: hintUsed,
+			assistance
 		};
 	}
 
@@ -539,6 +592,10 @@
 				sourceSessionId?: string;
 				responseDurationMs?: number | null;
 				hintOpened?: boolean;
+				assistance?: {
+					externalInputDetected?: boolean;
+					externalInputSources?: ExternalInputSource[];
+				};
 				createdAt?: number;
 			};
 			const matches =
@@ -550,11 +607,22 @@
 			window.sessionStorage.removeItem(pendingGradeStorageKey);
 			if (matches) {
 				hintUsed = pending.hintOpened ?? hintUsed;
+				const restoredExternalInputSources = normalizeExternalInputSources(
+					pending.assistance?.externalInputSources
+				);
+				externalInputSourcesByStep = {
+					...externalInputSourcesByStep,
+					[activeStage.id]: restoredExternalInputSources
+				};
 				pendingCheckId = pending.checkId ?? '';
 				pendingCheckSignature = JSON.stringify({
 					stepId: pending.stepId,
 					answer: pending.answer?.trim(),
-					hintUsed: pending.hintOpened ?? hintUsed
+					hintUsed: pending.hintOpened ?? hintUsed,
+					assistance: {
+						externalInputDetected: restoredExternalInputSources.length > 0,
+						externalInputSources: restoredExternalInputSources
+					}
 				});
 				activitySessionId = pending.sourceSessionId || activitySessionId;
 				pendingResponseDurationMs = pending.responseDurationMs ?? null;
@@ -586,6 +654,33 @@
 			request.stageId === activeStage?.id &&
 			request.answer === activeAnswer
 		);
+	}
+
+	function markActiveExternalInput(source: ExternalInputSource) {
+		if (!activeStage) return;
+		externalInputSourcesByStep = {
+			...externalInputSourcesByStep,
+			[activeStage.id]: addExternalInputSource(
+				externalInputSourcesByStep[activeStage.id] ?? [],
+				source
+			)
+		};
+		pendingCheckId = '';
+		pendingCheckSignature = '';
+		pendingResponseDurationMs = null;
+		persistState();
+	}
+
+	function markActiveBeforeInput(event: InputEvent) {
+		const source = externalInputSourceFromBeforeInput(event.inputType);
+		if (!source) return;
+		event.preventDefault();
+		markActiveExternalInput(source);
+	}
+
+	function blockActiveExternalInput(event: Event, source: ExternalInputSource) {
+		event.preventDefault();
+		markActiveExternalInput(source);
 	}
 
 	function updateActiveAnswer(value: string) {
@@ -629,6 +724,7 @@
 		stepAnswers = blankStepAnswers();
 		stepResults = {};
 		attemptHistory = [];
+		externalInputSourcesByStep = {};
 		gradePhase = 'idle';
 		gradeFailure = null;
 		gradeReasoningSummary = '';
@@ -893,7 +989,9 @@
 					answer: request.answer,
 					decision: result.decision,
 					checks: result.checks,
-					nextImprovement: result.nextImprovement
+					nextImprovement: result.nextImprovement,
+					externalInputDetected: result.evidence?.externalInputDetected ?? false,
+					externalInputSources: result.evidence?.externalInputSources ?? []
 				}
 			].slice(-16);
 			gradePhase = 'done';
@@ -945,6 +1043,9 @@
 		stepAnswers = { ...blankStepAnswers(), ...(storedState?.stepAnswers ?? {}) };
 		stepResults = storedState?.stepResults ?? {};
 		attemptHistory = storedState?.attemptHistory ?? [];
+		externalInputSourcesByStep = externalInputSourcesRecord(
+			storedState?.externalInputSourcesByStep
+		);
 		activitySessionId = storedState?.activitySessionId || createActivityId('english-session');
 		responseStartedAt =
 			storedState?.responseStartedAt &&
@@ -1016,7 +1117,11 @@
 	/>
 </svelte:head>
 
-<main class="qc-step-practice-app">
+<main
+	class="qc-step-practice-app qc-test-taking-view"
+	oncopy={(event) => event.preventDefault()}
+	oncut={(event) => event.preventDefault()}
+>
 	<AppTopbar
 		{user}
 		subject={topbarSubject}
@@ -1049,7 +1154,7 @@
 					class="qc-step-source-link"
 					href={practice.sourcePaperUrl}
 					target="_blank"
-					rel="noreferrer"
+					rel="external noreferrer"
 				>
 					<span>
 						<strong>Open the full source paper</strong>
@@ -1140,7 +1245,12 @@
 						<span><MathText text={activeStage.goal} /></span>
 					</p>
 
-					<label class="qc-step-answer">
+					<label
+						class="qc-step-answer"
+						onpaste={(event) => blockActiveExternalInput(event, 'paste')}
+						ondrop={(event) => blockActiveExternalInput(event, 'drop')}
+						onbeforeinput={(event) => markActiveBeforeInput(event as InputEvent)}
+					>
 						<span><MathText text={activeStage.prompt} /></span>
 						<ResponseRenderer
 							response={lineResponse(activeStage)}
@@ -1148,6 +1258,11 @@
 							onAnswerChange={updateActiveAnswer}
 						/>
 					</label>
+					{#if (externalInputSourcesByStep[activeStage.id]?.length ?? 0) > 0}
+						<p class="qc-step-assistance-note" role="status">
+							Paste and drop are blocked here. Type the response yourself.
+						</p>
+					{/if}
 
 					<div class="qc-step-action-row">
 						{#if !activePassed}
@@ -1239,6 +1354,12 @@
 								/>
 							</div>
 						{:else if activeResult}
+							{#if activeResult.evidence?.externalInputDetected}
+								<p class="qc-step-assistance-note">
+									Paste and drop are blocked here. Type the response yourself; this attempted input
+									is not counted as independent evidence.
+								</p>
+							{/if}
 							<div class="qc-step-checks">
 								{#each activeResult.checks as check (check.id)}
 									<div class:met={check.status === 'met'}>
@@ -1809,6 +1930,15 @@
 
 	.qc-step-checks {
 		display: grid;
+	}
+
+	.qc-step-assistance-note {
+		margin: 0;
+		padding: 0.8rem 1.15rem;
+		border-bottom: 1px solid var(--qc-ui-border-subtle);
+		color: var(--qc-ui-text-muted);
+		font-size: 0.82rem;
+		line-height: 1.45;
 	}
 
 	.qc-step-checks > div {

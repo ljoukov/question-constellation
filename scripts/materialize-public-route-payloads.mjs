@@ -331,6 +331,27 @@ function assetWidth(metadataJson) {
 	return Math.round((candidate.width / candidate.x_ppi) * 96);
 }
 
+function assetPaperMeasurement(metadataJson) {
+	const measurement = parseJson(metadataJson, {})?.paper_measurement;
+	if (
+		measurement?.axis !== 'horizontal' ||
+		measurement.source_verified !== true ||
+		!Number.isFinite(measurement.pixel_width) ||
+		measurement.pixel_width <= 0 ||
+		!Number.isFinite(measurement.pixels_per_millimetre) ||
+		measurement.pixels_per_millimetre <= 0
+	) {
+		return null;
+	}
+	return {
+		axis: 'horizontal',
+		pixelWidth: measurement.pixel_width,
+		pixelsPerMillimetre: measurement.pixels_per_millimetre,
+		instructions:
+			typeof measurement.instructions === 'string' ? measurement.instructions : undefined
+	};
+}
+
 function assetSrc(publicPath, r2Key) {
 	const rawPath = publicPath || (r2Key ? `/${r2Key}` : '');
 	if (!rawPath) return '';
@@ -1165,7 +1186,8 @@ async function fetchPapersForQuestions({ rootDir, sourceDocumentIds }) {
 			label: row.source_label ?? 'Source image',
 			src: assetSrc(row.public_path, row.r2_key),
 			alt: row.alt_text ?? row.source_label ?? 'Question image',
-			width: assetWidth(row.metadata_json)
+			width: assetWidth(row.metadata_json),
+			paperMeasurement: assetPaperMeasurement(row.metadata_json)
 		};
 		assetsByDocument.set(row.source_document_id, documentAssets);
 	}

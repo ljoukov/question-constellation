@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "codex-reviewed-extraction-asset-repair-v1",
+  "status": "passed",
+  "sourceDocumentId": "aqa-geography-2024-june-paper-3-geographical-applications-qp",
+  "basis": "One official-PDF crop widened only at the right edge in response to the complete failed independent judge report. No extraction JSON, question, mark, key, prompt, model answer, chain, or other asset changed.",
+  "inputs": {
+    "candidate": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/aqa-geography-2024-paper-3-q04-2/failed-judge-20260717T0226Z/failed-candidate.json",
+      "sha256": "61fdb7e84e92347399f358f27058b46d6fe879751f9fa1f7fb5dfa4d2a02cebc",
+      "canonicalJsonSha256": "d798483dd59671dfdb424881711ec2d57b8b3f32a06ab973c52ef1d147ae3067"
+    },
+    "judgeReport": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/aqa-geography-2024-paper-3-q04-2/failed-judge-20260717T0226Z/judge-report.json",
+      "sha256": "1fa8136350976007d73d29a8940d0c56e23be71ae2f4ee768aa794d4bb71ea28",
+      "canonicalJsonSha256": "91654ea176d238a4e2c9d06f9a8da39131e4f0130e992b2296bb0e90bcee794c"
+    },
+    "questionPaper": {
+      "path": "data/aqa-gcse-history-geography-computer-science/question-papers/AQA-80353-QP-JUN24.PDF",
+      "sha256": "8d23077d12b26f56b46f86c641a24ac16981a66f10aa62c20c74c713ca9f1ed3"
+    },
+    "renderedOfficialPage": {
+      "path": "tmp/current-model-paper-cohort/retry-runs/aqa-geography-2024-june-paper-3-geographical-applications-qp/codex-extraction/qp-pages/page-11.png",
+      "sha256": "07a12a265b076ef360235aacf2cf6af1855383118a04e9d3dd50d3eb86f0533f"
+    },
+    "clippedAsset": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/aqa-geography-2024-paper-3-q04-2/failed-judge-20260717T0226Z/q04-2-pie-chart-clipped.png",
+      "sha256": "cc3389972fe32ab1f8dbd8309133dd197d173f23af242276c214cbd2c3539cd4"
+    }
+  },
+  "failedModelAudit": {
+    "status": "failed",
+    "verdict": "fail",
+    "score": 0.97,
+    "checkedRefs": [
+      "01.1",
+      "01.2",
+      "01.3",
+      "01.4",
+      "01.5",
+      "02.1",
+      "02.2",
+      "02.3",
+      "02.4",
+      "03.1",
+      "04.1",
+      "04.2",
+      "04.3",
+      "04.4",
+      "04.5",
+      "04.6",
+      "04.7",
+      "04.8",
+      "04.9",
+      "04.10",
+      "04.11",
+      "05.1",
+      "05.2",
+      "05.3",
+      "05.4"
+    ],
+    "requiredRepairs": [
+      {
+        "sourceQuestionRef": "04.2",
+        "issue": "The required pie-chart response asset clips three learner-visible key labels at the right edge.",
+        "repair": "Replace assets/q04-2-pie-chart.png with a wider crop from question-paper.pdf p.11 that retains the full chart and complete key text for all four categories."
+      }
+    ]
+  },
+  "repair": {
+    "sourceQuestionRef": "04.2",
+    "assetId": "q04-2-pie-chart",
+    "assetLabel": "Q04.2 pie chart response",
+    "officialPage": 11,
+    "beforeCrop": {
+      "x": 270,
+      "y": 270,
+      "width": 950,
+      "height": 700
+    },
+    "afterCrop": {
+      "x": 270,
+      "y": 270,
+      "width": 1070,
+      "height": 700
+    },
+    "changedGeometry": [
+      "width"
+    ],
+    "requiredKeyLabels": [
+      "Cheaper fares",
+      "Increased frequency",
+      "Shorter journey times",
+      "Increased parking charges"
+    ],
+    "clippedMissingLabels": [
+      "Increased frequency",
+      "Shorter journey times",
+      "Increased parking charges"
+    ],
+    "repairedMissingLabels": [],
+    "method": "ImageMagick crop of the unchanged 180-DPI official question-paper page render; no synthetic pixels, labels, annotations, or other edits."
+  },
+  "outputAsset": {
+    "path": "tmp/current-model-paper-cohort/retry-runs/aqa-geography-2024-june-paper-3-geographical-applications-qp/codex-extraction/assets/q04-2-pie-chart.png",
+    "sha256": "22e6a017d73b863bc788f38c3956b84dc0b9e943fb5f94e4f9ae507dbd1d1243",
+    "dimensions": {
+      "width": 1070,
+      "height": 700
+    }
+  },
+  "unchangedCandidateArtifact": {
+    "path": "tmp/current-model-paper-cohort/retry-runs/aqa-geography-2024-june-paper-3-geographical-applications-qp/raw/aqa-geography-2024-june-paper-3-geographical-applications-qp.json",
+    "sha256": "61fdb7e84e92347399f358f27058b46d6fe879751f9fa1f7fb5dfa4d2a02cebc",
+    "canonicalJsonSha256": "d798483dd59671dfdb424881711ec2d57b8b3f32a06ab973c52ef1d147ae3067"
+  },
+  "deterministicValidation": {
+    "status": "passed",
+    "sourceDocumentId": "aqa-geography-2024-june-paper-3-geographical-applications-qp",
+    "questionCount": 25,
+    "markTotal": 76,
+    "firstRef": "01.1",
+    "lastRef": "05.4",
+    "duplicateRefs": [],
+    "parentMarkTotals": {
+      "01": 17,
+      "02": 8,
+      "03": 12,
+      "04": 16,
+      "05": 23
+    },
+    "reviewQuestionRefs": [],
+    "blockingIssues": [],
+    "deterministicIssueCount": 0,
+    "deterministicIssues": [],
+    "artifact": {
+      "path": "tmp/current-model-paper-cohort/reviewed-repairs/aqa-geography-2024-paper-3-q04-2/validation.json",
+      "sha256": "f4665ab8e8014a3fc4475a1f4dc5be3cda99dfcc448620f736d14f2eb1ff4957",
+      "canonicalJsonSha256": "1c36b5836c4d0809effdb0e6e5ef1dd0e182e4d2bc74b52b45d0fdb225d3d9e6"
+    }
+  },
+  "invariants": {
+    "exactFailedCandidateHash": true,
+    "exactFailedJudgeHash": true,
+    "exactOfficialQuestionPaperHash": true,
+    "exactOfficialRenderedPageHash": true,
+    "exactClippedAssetHash": true,
+    "requiredRepairCountExact": true,
+    "onlyCropWidthChanged": true,
+    "allFourOfficialKeyLabelsVisibleAfterRepair": true,
+    "noExtractionJsonChanged": true,
+    "questionCountPreserved": true,
+    "markTotalPreserved": true,
+    "deterministicValidationPassed": true
+  }
+}

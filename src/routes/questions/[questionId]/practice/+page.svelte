@@ -2,6 +2,7 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
 	import { authStartHref } from '$lib/authReturn';
 	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
@@ -16,6 +17,11 @@
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import {
+		addExternalInputSource,
+		normalizeExternalInputSources,
+		type ExternalInputSource
+	} from '$lib/learning/answerAssistance';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
 	import {
 		fixedChoiceAnswerIsCorrect,
@@ -54,6 +60,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	type GradePhase = 'idle' | 'connecting' | 'calling' | 'thinking' | 'grading' | 'done' | 'error';
 	type GradeResult = {
@@ -67,6 +74,11 @@
 		thinkingMarkdown: string | null;
 		model: string;
 		modelVersion: string;
+		evidence?: {
+			independent: boolean;
+			externalInputDetected: boolean;
+			externalInputSources: ExternalInputSource[];
+		};
 		savedAttempt?: {
 			id: string;
 			activeGaps: Array<{ gapId: string; stepId: string; href: string }>;
@@ -97,6 +109,8 @@
 		pendingResponseDurationMs?: number | null;
 		hintUsed?: boolean;
 		markingPointsUsed?: boolean;
+		answerExternalInputSources?: ExternalInputSource[];
+		rewriteExternalInputSources?: ExternalInputSource[];
 		updatedAt?: number;
 	};
 
@@ -111,6 +125,8 @@
 	let showMarkingPoints = $state(false);
 	let hintUsed = $state(false);
 	let markingPointsUsed = $state(false);
+	let answerExternalInputSources = $state<ExternalInputSource[]>([]);
+	let rewriteExternalInputSources = $state<ExternalInputSource[]>([]);
 	let authDialogOpen = $state(false);
 	let checkingRewrite = $state(false);
 	let migratedAnonymousState = false;
@@ -174,7 +190,7 @@
 	const nextQuestionHref = $derived(
 		withPracticeContext(
 			resolve('/questions/[questionId]/practice', { questionId: data.nextQuestion.id })
-		)
+		) as ResolvedPathname
 	);
 	const constellationHref = $derived(
 		resolve('/constellations/[chainId]', { chainId: data.chain.id })
@@ -248,7 +264,11 @@
 						: 'Back to question'
 	);
 	const completionHref = $derived(
-		data.user ? (requestedReturnTo ?? subjectHubHref) : (requestedReturnTo ?? constellationHref)
+		data.user
+			? resolveInternalPath(requestedReturnTo ?? subjectHubHref)
+			: requestedReturnTo
+				? resolveInternalPath(requestedReturnTo)
+				: constellationHref
 	);
 	const completionLabel = $derived(
 		requestedReturnTo?.startsWith('/constellations/')
@@ -393,6 +413,8 @@
 					pendingResponseDurationMs,
 					hintUsed,
 					markingPointsUsed,
+					answerExternalInputSources,
+					rewriteExternalInputSources,
 					...overrides,
 					updatedAt: Date.now()
 				} satisfies StoredPracticeState)
@@ -414,6 +436,12 @@
 			view: view === 'result' ? 'result' : 'attempt',
 			hintUsed: draft.payload.hintUsed === true,
 			markingPointsUsed: draft.payload.markingPointsUsed === true,
+			answerExternalInputSources: normalizeExternalInputSources(
+				draft.payload.answerExternalInputSources
+			),
+			rewriteExternalInputSources: normalizeExternalInputSources(
+				draft.payload.rewriteExternalInputSources
+			),
 			updatedAt: draft.clientUpdatedAt
 		} satisfies StoredPracticeState;
 	}
@@ -454,6 +482,8 @@
 			pendingResponseDurationMs,
 			hintUsed,
 			markingPointsUsed,
+			answerExternalInputSources,
+			rewriteExternalInputSources,
 			...overrides
 		} satisfies Record<string, unknown>;
 	}
@@ -496,11 +526,28 @@
 	}
 
 	function currentAssistance(feedbackRewrite = false) {
+		const externalInputSources = feedbackRewrite
+			? rewriteExternalInputSources
+			: answerExternalInputSources;
 		return {
 			hintOpened: hintUsed,
 			markingPointsViewed: markingPointsUsed,
-			feedbackRewrite
+			feedbackRewrite,
+			externalInputDetected: externalInputSources.length > 0,
+			externalInputSources
 		};
+	}
+
+	function markAnswerExternalInput(source: ExternalInputSource, feedbackRewrite = false) {
+		if (feedbackRewrite) {
+			rewriteExternalInputSources = addExternalInputSource(rewriteExternalInputSources, source);
+		} else {
+			answerExternalInputSources = addExternalInputSource(answerExternalInputSources, source);
+		}
+		pendingAttemptId = '';
+		pendingAttemptSignature = '';
+		pendingResponseDurationMs = null;
+		persistSciencePracticeState();
 	}
 
 	function recordMarkSchemeReveal() {
@@ -570,6 +617,14 @@
 			if (matches) {
 				hintUsed = pending.assistance?.hintOpened ?? hintUsed;
 				markingPointsUsed = pending.assistance?.markingPointsViewed ?? markingPointsUsed;
+				const restoredExternalInputSources = normalizeExternalInputSources(
+					pending.assistance?.externalInputSources
+				);
+				if (pending.assistance?.feedbackRewrite) {
+					rewriteExternalInputSources = restoredExternalInputSources;
+				} else {
+					answerExternalInputSources = restoredExternalInputSources;
+				}
 				pendingAttemptId = pending.attemptId ?? '';
 				activitySessionId = pending.sourceSessionId || activitySessionId;
 				pendingResponseDurationMs = pending.responseDurationMs ?? null;
@@ -596,6 +651,12 @@
 		showMarkingPoints = false;
 		hintUsed = storedState?.hintUsed ?? false;
 		markingPointsUsed = storedState?.markingPointsUsed ?? false;
+		answerExternalInputSources = normalizeExternalInputSources(
+			storedState?.answerExternalInputSources
+		);
+		rewriteExternalInputSources = normalizeExternalInputSources(
+			storedState?.rewriteExternalInputSources
+		);
 		activitySessionId = storedState?.activitySessionId || createActivityId('science-session');
 		responseStartedAt =
 			storedState?.responseStartedAt &&
@@ -625,7 +686,9 @@
 			url.searchParams.delete('view');
 		}
 
-		const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+		const nextUrl = resolveInternalPath(
+			`/questions/${encodeURIComponent(data.question.id)}/practice${url.search}${url.hash}`
+		);
 		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
 		if (nextUrl === currentUrl) return;
 
@@ -642,6 +705,7 @@
 		gradeFailure = null;
 		gradePhase = 'idle';
 		rewriteText = '';
+		rewriteExternalInputSources = [];
 		if (requestedPracticeView === 'result') updatePracticeView('attempt', 'replace');
 	}
 
@@ -657,6 +721,8 @@
 		showMarkingPoints = false;
 		hintUsed = false;
 		markingPointsUsed = false;
+		answerExternalInputSources = [];
+		rewriteExternalInputSources = [];
 		checkingRewrite = false;
 		activitySessionId = createActivityId('science-session');
 		responseStartedAt = Date.now();
@@ -671,7 +737,9 @@
 			gradeResult: null,
 			view: 'attempt',
 			hintUsed: false,
-			markingPointsUsed: false
+			markingPointsUsed: false,
+			answerExternalInputSources: [],
+			rewriteExternalInputSources: []
 		});
 	}
 
@@ -708,6 +776,7 @@
 		const rewrittenAnswer = rewriteText.trim();
 		if (!rewrittenAnswer || isChecking) return;
 		answerText = rewrittenAnswer;
+		answerExternalInputSources = [...rewriteExternalInputSources];
 		pendingAttemptId = '';
 		pendingAttemptSignature = '';
 		pendingResponseDurationMs = null;
@@ -885,6 +954,7 @@
 			gradeResult = JSON.parse(message.data) as GradeResult;
 			request.completed = true;
 			rewriteText = request.answer;
+			rewriteExternalInputSources = [...answerExternalInputSources];
 			gradedAnswerText = request.answer;
 			gradePhase = 'done';
 			updatePracticeView('result');
@@ -1008,7 +1078,11 @@
 		user={data.user}
 	/>
 {:else}
-	<main class="qc-real-app qc-practice-page">
+	<main
+		class="qc-real-app qc-practice-page qc-test-taking-view"
+		oncopy={(event) => event.preventDefault()}
+		oncut={(event) => event.preventDefault()}
+	>
 		<AppTopbar
 			user={data.user}
 			subject={topbarSubject}
@@ -1039,8 +1113,10 @@
 							<a
 								class:active={question.id === data.question.id}
 								aria-current={question.id === data.question.id ? 'page' : undefined}
-								href={withPracticeContext(
-									resolve('/questions/[questionId]/practice', { questionId: question.id })
+								href={resolveInternalPath(
+									withPracticeContext(
+										resolve('/questions/[questionId]/practice', { questionId: question.id })
+									)
 								)}
 							>
 								<span>{index + 1}</span>
@@ -1069,6 +1145,7 @@
 							extended={data.question.meta.marks >= 20}
 							placeholder="Write your answer..."
 							onValueChange={setAnswerText}
+							onExternalInput={(source) => markAnswerExternalInput(source)}
 						/>
 						<div class="qc-practice-actions" aria-label="Answer actions">
 							<button
@@ -1143,6 +1220,12 @@
 								Complete the missing links below.
 							</p>
 						{/if}
+						{#if gradeResult?.evidence?.externalInputDetected}
+							<p class="qc-assisted-evidence-note">
+								Paste and drop are blocked here. Type the answer yourself; this attempted input is
+								not counted as independent evidence.
+							</p>
+						{/if}
 					</header>
 
 					{#if hasMissingLinks}
@@ -1176,6 +1259,7 @@
 							<p class="qc-panel-label">Answer chain</p>
 							<ol>
 								{#each data.chain.steps as step, index (step.id)}
+									{@const gapHref = gapHrefByStepId.get(step.id)}
 									<li
 										class:present={presentStepIds.has(step.id)}
 										class:missing={missingStepIds.has(step.id)}
@@ -1192,8 +1276,8 @@
 											</span>
 											<MathText text={step.short} />
 										</span>
-										{#if missingStepIds.has(step.id) && gapHrefByStepId.get(step.id)}
-											<a class="qc-inline-gap-link" href={gapHrefByStepId.get(step.id)}>
+										{#if missingStepIds.has(step.id) && gapHref}
+											<a class="qc-inline-gap-link" href={resolveInternalPath(gapHref)}>
 												Practise this step
 											</a>
 										{/if}
@@ -1215,6 +1299,7 @@
 								extended={data.question.meta.marks >= 20}
 								placeholder="Rewrite your answer..."
 								onValueChange={setRewriteText}
+								onExternalInput={(source) => markAnswerExternalInput(source, true)}
 							/>
 							<div class="qc-practice-actions">
 								<button
@@ -1262,7 +1347,7 @@
 									{recallPrompt.cardCount} cards for {recallPrompt.label.replace(/^.*?:\s*/, '')}
 								</p>
 							</div>
-							<a href={recallPrompt.href}>Open flashcards</a>
+							<a href={resolveInternalPath(recallPrompt.href)}>Open flashcards</a>
 						</section>
 					{/if}
 

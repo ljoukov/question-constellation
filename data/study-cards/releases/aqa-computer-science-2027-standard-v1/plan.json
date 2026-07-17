@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "promptVersion": "standard-study-card-compiler-v2",
+  "batchId": "aqa-computer-science-2027-standard-v1",
+  "specificationId": "aqa-gcse-computer-science-8525-v1.3-2027",
+  "board": "AQA",
+  "qualification": "GCSE",
+  "subject": "Computer Science",
+  "offeringIds": [
+    "aqa-gcse-computer-science-8525-v1.3-2027:higher"
+  ],
+  "topicComponentIds": [
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-8"
+  ],
+  "countPerTopic": 4,
+  "minimumAcceptedPerTopic": 3,
+  "expectedCardCount": 32,
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "sourcePdf": {
+    "path": "data/curricula/sources/aqa-gcse-computer-science-8525-v1.3-2027.pdf",
+    "sha256": "a6916140049bd9130eead2061b41ca3be228e368ff73b7d5ce3e2fce0fe5527a"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "status": "accepted_recovered_trace",
+  "releaseId": "ocr-j352-literature-standard-v1",
+  "basePromptVersion": "ocr-j352-literature-study-deck-compiler-v2",
+  "repairPromptVersion": "ocr-j352-literature-targeted-card-repair-v1",
+  "targetEvidenceId": "macbeth-plot-murder-sleep",
+  "targetCardId": "ocr-j352-card-macbeth-plot-murder-sleep",
+  "baseAcceptedCardCount": 66,
+  "mergedCardCount": 67,
+  "baseGeneratorRunId": "019f6baa-297d-74c0-8469-8323535348c2",
+  "baseReviewerRunId": "019f6bb6-db0a-76a3-bccb-e95bd910a0d8",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "rejectedAttemptRunIds": {
+    "generator": "019f6bc7-dc4d-7a82-8940-990aeb6a23b4",
+    "reviewer": "019f6bc8-14e7-73a3-9966-0184c9d1ff8a"
+  }
+}

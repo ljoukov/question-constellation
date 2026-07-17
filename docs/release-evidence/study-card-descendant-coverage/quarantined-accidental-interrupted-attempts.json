@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "study-card-accidental-interrupted-attempt-quarantine-v1",
+  "status": "quarantined-not-accepted",
+  "reason": "An accidental --help invocation started the runner because that CLI has no help-only mode. The exact process tree was terminated after approximately 15 seconds.",
+  "modelCallsInferredAsAccepted": 0,
+  "attempts": [
+    {
+      "batchId": "aqa-physics-8463-physics-higher-only-descendants-01-6fced879cf-v1",
+      "workDir": "tmp/study-card-generation/aqa-physics-8463-physics-higher-only-descendants-01-6fced879cf-v1",
+      "workDirExists": true,
+      "candidateExists": false,
+      "reviewExists": false,
+      "acceptedArtifactExists": false,
+      "disposition": "ignore-and-never-infer-acceptance"
+    },
+    {
+      "batchId": "aqa-biology-8461-biology-higher-only-descendants-01-f6a241e8b9-v1",
+      "workDir": "tmp/study-card-generation/aqa-biology-8461-biology-higher-only-descendants-01-f6a241e8b9-v1",
+      "workDirExists": true,
+      "candidateExists": false,
+      "reviewExists": false,
+      "acceptedArtifactExists": false,
+      "disposition": "ignore-and-never-infer-acceptance"
+    }
+  ]
+}

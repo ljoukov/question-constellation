@@ -1,0 +1,2644 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-geography-8035-standard-v1",
+    "promptVersion": "standard-study-card-compiler-v2",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6b90-ee9c-7383-aeba-84d0484f2b06"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6b99-ed96-7413-909e-38deaee413e3",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T15:34:47.869Z",
+    "finishedAt": "2026-07-16T15:53:39.249Z",
+    "sourceManifestHash": "ee507123e6b940d2d42ccaacee0293bf8c2b37db65d43417b45b23c16744556c",
+    "artifactPath": "data/study-cards/releases/aqa-geography-8035-standard-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8035-311-tectonic-risk-reduction",
+      "conceptKey": "aqa-geography-8035-tectonic-risk-reduction-methods",
+      "kind": "method",
+      "visualCue": "🌋",
+      "front": "Which four approaches can reduce risks from a tectonic hazard?",
+      "back": "Monitoring, prediction, protection and planning.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification states that these four approaches can reduce risks from a tectonic hazard.",
+      "memoryTip": "Picture four checkpoints around a hazard zone: monitor, predict, protect, plan.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Monitoring, prediction, protection and planning.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the four named risk-reduction approaches.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Primary and secondary effects; immediate and long-term responses.",
+          "isCorrect": false,
+          "feedback": "These classify effects and responses, rather than risk-reduction approaches.",
+          "misconception": "confuses-management-with-effects-and-responses"
+        },
+        {
+          "key": "c",
+          "text": "Constructive, destructive and conservative plate margins.",
+          "isCorrect": false,
+          "feedback": "These are plate-margin types, not hazard-management approaches.",
+          "misconception": "confuses-management-with-margin-types"
+        },
+        {
+          "key": "d",
+          "text": "Orbital changes, volcanic activity and solar output.",
+          "isCorrect": false,
+          "feedback": "These are named natural factors in climate change, not tectonic risk-reduction approaches.",
+          "misconception": "confuses-management-with-climate-drivers"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 9-11; 3.1.1.2 Tectonic hazards",
+          "excerpt": "How monitoring, prediction, protection and\nplanning can reduce the risks from a tectonic\nhazard.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-311-climate-change-tropical-storm-aspects",
+      "conceptKey": "aqa-geography-8035-climate-change-tropical-storm-aspects",
+      "kind": "cause-consequence",
+      "visualCue": "🌪️",
+      "front": "Which three aspects of tropical storms might climate change affect?",
+      "back": "Their distribution, frequency and intensity.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The wording is cautious: climate change might affect all three aspects.",
+      "memoryTip": "Use D-F-I: distribution, frequency, intensity.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Their distribution, frequency and intensity.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three aspects named in the climate-change statement.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Their causes, formation and development.",
+          "isCorrect": false,
+          "feedback": "These concern how tropical storms develop, not the three aspects named as potentially affected by climate change.",
+          "misconception": "confuses-storm-development-with-climate-effects"
+        },
+        {
+          "key": "c",
+          "text": "Their structure, features and physical conditions.",
+          "isCorrect": false,
+          "feedback": "These are storm characteristics and conditions, not the named climate-sensitive aspects.",
+          "misconception": "confuses-storm-structure-with-climate-effects"
+        },
+        {
+          "key": "d",
+          "text": "Their primary effects, secondary effects and responses.",
+          "isCorrect": false,
+          "feedback": "These concern impacts and responses, not distribution, frequency and intensity.",
+          "misconception": "confuses-climate-effects-with-impact-categories"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 9-11; 3.1.1.3 Weather hazards",
+          "excerpt": "How climate change might affect the\ndistribution, frequency and intensity of tropical\nstorms.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1-3",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-311-mitigation-adaptation",
+      "conceptKey": "aqa-geography-8035-climate-mitigation-adaptation-distinction",
+      "kind": "comparison",
+      "visualCue": "♻️",
+      "front": "How does the specification distinguish climate-change mitigation from adaptation?",
+      "back": "Mitigation reduces causes; adaptation responds to change.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Mitigation addresses the causes, whereas adaptation addresses the change being experienced.",
+      "memoryTip": "Pair M with minimise causes and A with adjust to change.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Mitigation reduces causes; adaptation responds to change.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves the specification's distinction.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Mitigation responds to change; adaptation reduces causes.",
+          "isCorrect": false,
+          "feedback": "This reverses the two meanings.",
+          "misconception": "reverses-mitigation-and-adaptation"
+        },
+        {
+          "key": "c",
+          "text": "Mitigation predicts change; adaptation monitors hazards.",
+          "isCorrect": false,
+          "feedback": "Prediction and monitoring are hazard-management approaches, not this distinction.",
+          "misconception": "confuses-climate-management-with-hazard-monitoring"
+        },
+        {
+          "key": "d",
+          "text": "Mitigation manages water supply; adaptation uses international agreements.",
+          "isCorrect": false,
+          "feedback": "This swaps examples: managing water supply is listed under adaptation, while international agreements are listed under mitigation.",
+          "misconception": "reverses-mitigation-and-adaptation-examples"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 9-11; 3.1.1.4 Climate change",
+          "excerpt": "Managing climate change involves both\nmitigation (reducing causes) and adaptation\n(responding to change).",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1-4",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-312-ecosystem-component-types",
+      "conceptKey": "aqa-geography-8035-ecosystem-biotic-abiotic-components",
+      "kind": "fact",
+      "visualCue": "🌳",
+      "front": "What two component types interact within ecosystems at a range of scales?",
+      "back": "Biotic and abiotic components.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Ecosystems involve interaction between these two component types and exist at a range of scales.",
+      "memoryTip": "Recall the two-column heading B/A before sorting ecosystem evidence.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Biotic and abiotic components.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two interacting component types.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Producers and consumers.",
+          "isCorrect": false,
+          "feedback": "These are roles considered within a small-scale ecosystem, not the two broad component types.",
+          "misconception": "confuses-component-types-with-feeding-roles"
+        },
+        {
+          "key": "c",
+          "text": "Food chains and food webs.",
+          "isCorrect": false,
+          "feedback": "These describe ecosystem relationships, not the two component types.",
+          "misconception": "confuses-components-with-feeding-relationships"
+        },
+        {
+          "key": "d",
+          "text": "Climate and water.",
+          "isCorrect": false,
+          "feedback": "These appear within rainforest interdependence, not as the two broad ecosystem component types.",
+          "misconception": "confuses-interdependent-elements-with-component-types"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 12-14; 3.1.2.1 Ecosystems",
+          "excerpt": "Ecosystems exist at a range of scales and\ninvolve the interaction between biotic and\nabiotic components.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-312-rainforest-deforestation-causes",
+      "conceptKey": "aqa-geography-8035-tropical-rainforest-deforestation-causes",
+      "kind": "cause-consequence",
+      "visualCue": "🌳",
+      "front": "Which activities and pressures are specified as causes of tropical-rainforest deforestation?",
+      "back": "Subsistence and commercial farming, logging, road building, mineral extraction, energy development, settlement and population growth.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The list includes both farming types, followed by logging, roads, extraction, energy development, settlement and population growth.",
+      "memoryTip": "Use the checklist F-L-R-M-E-S-P; it is a recall list, not a causal sequence.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Subsistence and commercial farming, logging, road building, mineral extraction, energy development, settlement and population growth.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified set of deforestation causes.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Economic development, soil erosion and contribution to climate change.",
+          "isCorrect": false,
+          "feedback": "These are specified impacts of deforestation, not causes.",
+          "misconception": "confuses-deforestation-causes-with-impacts"
+        },
+        {
+          "key": "c",
+          "text": "Selective logging and replanting, conservation and education, ecotourism, international hardwood agreements and debt reduction.",
+          "isCorrect": false,
+          "feedback": "These are sustainable rainforest-management strategies.",
+          "misconception": "confuses-deforestation-causes-with-management"
+        },
+        {
+          "key": "d",
+          "text": "Climate, water, soils, plants, animals and people.",
+          "isCorrect": false,
+          "feedback": "These are elements whose interdependence is studied in rainforests.",
+          "misconception": "confuses-deforestation-causes-with-rainforest-elements"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 12-14; 3.1.2.2 Tropical rainforests",
+          "excerpt": "• causes of deforestation – subsistence and\ncommercial farming, logging, road\nbuilding, mineral extraction, energy\ndevelopment, settlement, population\ngrowth",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-312-rainforest-deforestation-impacts",
+      "conceptKey": "aqa-geography-8035-tropical-rainforest-deforestation-impacts",
+      "kind": "cause-consequence",
+      "visualCue": "🌳",
+      "front": "What three impacts must a tropical-rainforest case study use to illustrate deforestation?",
+      "back": "Economic development, soil erosion and contribution to climate change.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specified impacts are economic development, soil erosion and a contribution to climate change.",
+      "memoryTip": "Use E-S-C: economy, soil, climate.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Economic development, soil erosion and contribution to climate change.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three specified impacts.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Logging, road building, mineral extraction and settlement.",
+          "isCorrect": false,
+          "feedback": "These are specified causes of deforestation.",
+          "misconception": "confuses-deforestation-impacts-with-causes"
+        },
+        {
+          "key": "c",
+          "text": "Selective logging, replanting, ecotourism and debt reduction.",
+          "isCorrect": false,
+          "feedback": "These belong to sustainable rainforest management.",
+          "misconception": "confuses-deforestation-impacts-with-management"
+        },
+        {
+          "key": "d",
+          "text": "Changing rates of deforestation, biodiversity and physical characteristics.",
+          "isCorrect": false,
+          "feedback": "These are rainforest study areas, not the three named case-study impacts.",
+          "misconception": "confuses-deforestation-impacts-with-study-areas"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 12-14; 3.1.2.2 Tropical rainforests",
+          "excerpt": "• impacts of deforestation – economic\ndevelopment, soil erosion, contribution to\nclimate change.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-312-sustainable-rainforest-management",
+      "conceptKey": "aqa-geography-8035-sustainable-tropical-rainforest-management",
+      "kind": "method",
+      "visualCue": "♻️",
+      "front": "Which strategies are specified for managing tropical rainforests sustainably?",
+      "back": "Selective logging and replanting; conservation and education; ecotourism; international agreements about the use of tropical hardwoods; debt reduction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "All five parts of the answer are explicitly linked to sustainable rainforest management.",
+      "memoryTip": "Use five recall stations: logs, learning, eco-visits, agreements, debt.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Selective logging and replanting; conservation and education; ecotourism; international agreements about the use of tropical hardwoods; debt reduction.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified sustainable-management set.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Commercial farming, logging, road building, mineral extraction and settlement.",
+          "isCorrect": false,
+          "feedback": "These are deforestation causes, not sustainable-management strategies.",
+          "misconception": "confuses-management-with-deforestation-drivers"
+        },
+        {
+          "key": "c",
+          "text": "Water and soil management, tree planting and appropriate technology.",
+          "isCorrect": false,
+          "feedback": "These are strategies for reducing desertification risk.",
+          "misconception": "confuses-rainforest-management-with-desertification-management"
+        },
+        {
+          "key": "d",
+          "text": "Technology, governments, international agreements and conservation groups.",
+          "isCorrect": false,
+          "feedback": "These are named approaches to balancing development and conservation in cold environments.",
+          "misconception": "confuses-rainforest-management-with-cold-environment-management"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 12-14; 3.1.2.2 Tropical rainforests",
+          "excerpt": "Strategies used to manage the rainforest\nsustainably – selective logging and replanting,\nconservation and education, ecotourism and\ninternational agreements about the use of\ntropical hardwoods, debt reduction.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-313-coastal-process-groups",
+      "conceptKey": "aqa-geography-8035-uk-coastal-process-classification",
+      "kind": "structure",
+      "visualCue": "🌊",
+      "front": "How are the named coastal processes grouped into weathering, mass movement, erosion and transportation?",
+      "back": "Weathering: mechanical and chemical; mass movement: sliding, slumping and rock falls; erosion: hydraulic power, abrasion and attrition; transportation: longshore drift.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification assigns each named process to one of these four coastal-process groups.",
+      "memoryTip": "Keep W-M-E-T, then attach 2-3-3-1 items in that order.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Weathering: mechanical and chemical; mass movement: sliding, slumping and rock falls; erosion: hydraulic power, abrasion and attrition; transportation: longshore drift.",
+          "isCorrect": true,
+          "feedback": "Correct: every process is in its specified coastal group.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Weathering: sliding and slumping; mass movement: mechanical and chemical; erosion: longshore drift; transportation: abrasion and attrition.",
+          "isCorrect": false,
+          "feedback": "This swaps the coastal-process groups.",
+          "misconception": "misclassifies-coastal-processes"
+        },
+        {
+          "key": "c",
+          "text": "Weathering: freeze-thaw; erosion: abrasion and plucking; movement: rotational slip and bulldozing; deposition: till and outwash.",
+          "isCorrect": false,
+          "feedback": "This is the glacial-process classification.",
+          "misconception": "confuses-coastal-processes-with-glacial-processes"
+        },
+        {
+          "key": "d",
+          "text": "Erosion: hydraulic action, abrasion, attrition and solution; transportation: traction, saltation, suspension and solution.",
+          "isCorrect": false,
+          "feedback": "These are the specified fluvial erosion and transportation groups.",
+          "misconception": "confuses-coastal-processes-with-fluvial-processes"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 14-17; 3.1.3.2 Coastal landscapes in the UK",
+          "excerpt": "Coastal processes:\n• weathering processes – mechanical,\nchemical\n• mass movement – sliding, slumping and\nrock falls\n• erosion – hydraulic power, abrasion and\nattrition\n• transportation – longshore drift\n• deposition – why sediment is deposited in\ncoastal areas.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-313-coastal-management-categories",
+      "conceptKey": "aqa-geography-8035-uk-coastal-management-categories",
+      "kind": "comparison",
+      "visualCue": "🌊",
+      "front": "Which coastal-management examples belong to hard engineering, soft engineering and managed retreat?",
+      "back": "Hard: sea walls, rock armour, gabions and groynes; soft: beach nourishment and reprofiling, dune regeneration; managed retreat: coastal realignment.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification separates the examples into hard engineering, soft engineering and managed retreat.",
+      "memoryTip": "Use three buckets: hard lists four names, soft has two groups, and retreat has one realignment.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Hard: sea walls, rock armour, gabions and groynes; soft: beach nourishment and reprofiling, dune regeneration; managed retreat: coastal realignment.",
+          "isCorrect": true,
+          "feedback": "Correct: each example is in its specified category.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Hard: beach nourishment and dune regeneration; soft: sea walls and groynes; managed retreat: coastal realignment.",
+          "isCorrect": false,
+          "feedback": "This reverses hard and soft engineering examples.",
+          "misconception": "reverses-hard-and-soft-coastal-engineering"
+        },
+        {
+          "key": "c",
+          "text": "Hard: dams, reservoirs, embankments and flood-relief channels; soft: flood warnings, flood-plain zoning, tree planting and river restoration.",
+          "isCorrect": false,
+          "feedback": "These are river flood-management examples.",
+          "misconception": "confuses-coastal-management-with-river-management"
+        },
+        {
+          "key": "d",
+          "text": "Hard: sea walls and coastal realignment; soft: rock armour and gabions; managed retreat: dune regeneration.",
+          "isCorrect": false,
+          "feedback": "This places the named examples in the wrong categories.",
+          "misconception": "misclassifies-coastal-management-strategies"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 14-17; 3.1.3.2 Coastal landscapes in the UK",
+          "excerpt": "The costs and benefits of the following\nmanagement strategies:\n• hard engineering – sea walls, rock\narmour, gabions and groynes\n• soft engineering – beach nourishment and\nreprofiling, dune regeneration\n• managed retreat – coastal realignment.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-313-river-flood-risk-factors",
+      "conceptKey": "aqa-geography-8035-uk-river-flood-risk-factors",
+      "kind": "cause-consequence",
+      "visualCue": "🌊",
+      "front": "Which physical and human factors are specified as affecting river flood risk?",
+      "back": "Precipitation, geology, relief and land use.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These are the four named factors in the flood-risk requirement.",
+      "memoryTip": "Use P-G-R-L, with “ground” as the cue for geology.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Precipitation, geology, relief and land use.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified flood-risk factors.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Traction, saltation, suspension and solution.",
+          "isCorrect": false,
+          "feedback": "These are fluvial transportation processes.",
+          "misconception": "confuses-flood-risk-factors-with-river-transportation"
+        },
+        {
+          "key": "c",
+          "text": "Hydraulic action, abrasion, attrition and solution.",
+          "isCorrect": false,
+          "feedback": "These are fluvial erosion processes.",
+          "misconception": "confuses-flood-risk-factors-with-river-erosion"
+        },
+        {
+          "key": "d",
+          "text": "Dams, reservoirs, embankments and flood-relief channels.",
+          "isCorrect": false,
+          "feedback": "These are hard-engineering management examples, not factors affecting risk.",
+          "misconception": "confuses-flood-risk-factors-with-flood-management"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 14-17; 3.1.3.3 River landscapes in the UK",
+          "excerpt": "How physical and human factors affect the\nflood risk – precipitation, geology, relief and\nland use.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3-3",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-313-glacial-process-groups",
+      "conceptKey": "aqa-geography-8035-uk-glacial-process-classification",
+      "kind": "process",
+      "visualCue": "🏔️",
+      "front": "Which processes are named for glacial weathering, erosion, movement and transportation, and deposition?",
+      "back": "Freeze-thaw weathering; abrasion and plucking; rotational slip and bulldozing; deposition of till and outwash.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The answer follows the specification's four glacial-process groups: weathering, erosion, movement and transportation, then deposition.",
+      "memoryTip": "Use the compact route F → A/P → R/B → T/O.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Freeze-thaw weathering; abrasion and plucking; rotational slip and bulldozing; deposition of till and outwash.",
+          "isCorrect": true,
+          "feedback": "Correct: each process matches its glacial-process group.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Mechanical and chemical weathering; hydraulic power and attrition; longshore drift; coastal deposition.",
+          "isCorrect": false,
+          "feedback": "These are coastal-process terms.",
+          "misconception": "confuses-glacial-processes-with-coastal-processes"
+        },
+        {
+          "key": "c",
+          "text": "Hydraulic action and solution; traction and saltation; river deposition.",
+          "isCorrect": false,
+          "feedback": "These belong to fluvial processes.",
+          "misconception": "confuses-glacial-processes-with-fluvial-processes"
+        },
+        {
+          "key": "d",
+          "text": "Corries, arêtes, pyramidal peaks, glacial troughs and hanging valleys.",
+          "isCorrect": false,
+          "feedback": "These are named glacial landforms, not the processes that shape and transport material.",
+          "misconception": "confuses-glacial-processes-with-glacial-landforms"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 14-17; 3.1.3.4 Glacial landscapes in the UK",
+          "excerpt": "Glacial processes:\n• freeze-thaw weathering\n• erosion – abrasion and plucking\n• movement and transportation – rotational\nslip and bulldozing\n• deposition – why glaciers deposit\nsediment (till and outwash).",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3-4",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-321-urbanisation-rate-factors",
+      "conceptKey": "aqa-geography-8035-urbanisation-rate-factors",
+      "kind": "cause-consequence",
+      "visualCue": "🏙️",
+      "front": "Which two factors affect the rate of urbanisation?",
+      "back": "Migration (push–pull theory) and natural increase.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Migration and natural increase are the two factors explicitly linked to the rate of urbanisation.",
+      "memoryTip": "Recall two routes with M + N: movement and natural increase.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Migration (push–pull theory) and natural increase.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two specified factors.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Global urban change and the emergence of megacities.",
+          "isCorrect": false,
+          "feedback": "These are urban patterns and trends, not the two rate factors.",
+          "misconception": "confuses-urbanisation-drivers-with-urban-trends"
+        },
+        {
+          "key": "c",
+          "text": "Health, education and water supply.",
+          "isCorrect": false,
+          "feedback": "These are forms of access considered as urban opportunities.",
+          "misconception": "confuses-urbanisation-drivers-with-urban-opportunities"
+        },
+        {
+          "key": "d",
+          "text": "Slums, squatter settlements and traffic congestion.",
+          "isCorrect": false,
+          "feedback": "These are urban-growth challenges, not rate factors.",
+          "misconception": "confuses-urbanisation-drivers-with-urban-challenges"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 18-18; 3.2.1 Section A: Urban issues and challenges",
+          "excerpt": "Factors affecting the rate of urbanisation –\nmigration (push–pull theory), natural increase.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-321-urban-industry-stimulus",
+      "conceptKey": "aqa-geography-8035-urban-industry-economic-development-stimulus",
+      "kind": "cause-consequence",
+      "visualCue": "🏭",
+      "front": "In a major LIC or NEE city, how can urban industrial areas create an economic opportunity?",
+      "back": "They can be a stimulus for economic development.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The economic opportunity is the capacity of urban industrial areas to stimulate economic development.",
+      "memoryTip": "Keep the three-link phrase I-S-D: industry, stimulus, development.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "They can be a stimulus for economic development.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified economic opportunity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They provide access to health and education.",
+          "isCorrect": false,
+          "feedback": "Health and education are listed as social service opportunities, not the stated role of industrial areas.",
+          "misconception": "confuses-economic-opportunity-with-service-access"
+        },
+        {
+          "key": "c",
+          "text": "They provide access to water supply and energy.",
+          "isCorrect": false,
+          "feedback": "Water and energy are listed as resource-access opportunities.",
+          "misconception": "confuses-industrial-stimulus-with-resource-access"
+        },
+        {
+          "key": "d",
+          "text": "They manage slums and squatter settlements.",
+          "isCorrect": false,
+          "feedback": "Slums and squatter settlements are listed as urban-growth challenges.",
+          "misconception": "confuses-industrial-opportunity-with-growth-management"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 18-18; 3.2.1 Section A: Urban issues and challenges",
+          "excerpt": "• economic: how urban industrial areas\ncan be a stimulus for economic\ndevelopment",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-321-urban-social-opportunities",
+      "conceptKey": "aqa-geography-8035-urban-social-service-resource-opportunities",
+      "kind": "comparison",
+      "visualCue": "🏙️",
+      "front": "Which service and resource access can urban growth create as social opportunities in an LIC or NEE city?",
+      "back": "Services: health and education; resources: water supply and energy.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification separates access to health and education as services from access to water and energy as resources.",
+      "memoryTip": "Use S then R: services H/E, resources W/E.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Services: health and education; resources: water supply and energy.",
+          "isCorrect": true,
+          "feedback": "Correct: both pairs are in their specified categories.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Services: water supply and energy; resources: health and education.",
+          "isCorrect": false,
+          "feedback": "This reverses services and resources.",
+          "misconception": "reverses-urban-services-and-resources"
+        },
+        {
+          "key": "c",
+          "text": "Services: clean water and sanitation; resources: energy.",
+          "isCorrect": false,
+          "feedback": "Providing clean water, sanitation and energy is listed as a challenge rather than this opportunity pairing.",
+          "misconception": "confuses-social-opportunities-with-provision-challenges"
+        },
+        {
+          "key": "d",
+          "text": "Services: health and education; resources: waste disposal and traffic congestion.",
+          "isCorrect": false,
+          "feedback": "Waste disposal and traffic congestion are environmental issues, not the specified resources.",
+          "misconception": "confuses-resources-with-environmental-challenges"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 18-18; 3.2.1 Section A: Urban issues and challenges",
+          "excerpt": "• social: access to services – health and\neducation; access to resources – water\nsupply, energy",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-321-urban-environmental-challenges",
+      "conceptKey": "aqa-geography-8035-urban-growth-environmental-challenges",
+      "kind": "fact",
+      "visualCue": "🏙️",
+      "front": "Which environmental issues must be managed as urban-growth challenges in a major LIC or NEE city?",
+      "back": "Waste disposal, air and water pollution, and traffic congestion.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These are the environmental issues named within the urban-growth challenges.",
+      "memoryTip": "Use W-AW-T: waste, air/water, traffic.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Waste disposal, air and water pollution, and traffic congestion.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified environmental-issues list.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Health, education, water supply and energy.",
+          "isCorrect": false,
+          "feedback": "These concern access to services and resources.",
+          "misconception": "confuses-environmental-challenges-with-access-opportunities"
+        },
+        {
+          "key": "c",
+          "text": "Natural increase and migration.",
+          "isCorrect": false,
+          "feedback": "These are causes of city growth in the case study.",
+          "misconception": "confuses-environmental-challenges-with-growth-causes"
+        },
+        {
+          "key": "d",
+          "text": "Unemployment, crime, slums and squatter settlements.",
+          "isCorrect": false,
+          "feedback": "These are other urban-growth challenges, not the specified environmental group.",
+          "misconception": "confuses-environmental-issues-with-other-urban-challenges"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 18-18; 3.2.1 Section A: Urban issues and challenges",
+          "excerpt": "• managing environmental issues –\nwaste disposal, air and water pollution,\ntraffic congestion.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-322-development-measures",
+      "conceptKey": "aqa-geography-8035-economic-social-development-measures",
+      "kind": "fact",
+      "visualCue": "🌍",
+      "front": "Which economic and social measures of development are named in the specification?",
+      "back": "GNI per head; birth and death rates; infant mortality; life expectancy; people per doctor; literacy rates; access to safe water; HDI.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These are the complete named measures, and the specification also requires consideration of their limitations.",
+      "memoryTip": "Build an eight-part dashboard: income, births/deaths, infants, lifespan, doctors, literacy, water, HDI.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "GNI per head; birth and death rates; infant mortality; life expectancy; people per doctor; literacy rates; access to safe water; HDI.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the named set of economic and social measures.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Physical, economic and historical factors.",
+          "isCorrect": false,
+          "feedback": "These are broad causes of uneven development, not measures.",
+          "misconception": "confuses-development-measures-with-causes"
+        },
+        {
+          "key": "c",
+          "text": "Wealth and health disparities, plus international migration.",
+          "isCorrect": false,
+          "feedback": "These are consequences of uneven development.",
+          "misconception": "confuses-development-measures-with-consequences"
+        },
+        {
+          "key": "d",
+          "text": "Investment, aid, fairtrade, debt relief and microfinance loans.",
+          "isCorrect": false,
+          "feedback": "These belong to strategies for reducing the development gap.",
+          "misconception": "confuses-development-measures-with-gap-strategies"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 19-21; 3.2.2 Section B: The changing economic world",
+          "excerpt": "Different economic and social measures of\ndevelopment: gross national income (GNI) per\nhead, birth and death rates, infant mortality, life\nexpectancy, people per doctor, literacy rates,\naccess to safe water, Human Development\nIndex (HDI).\nLimitations of economic and social measures.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-322-uneven-development-causes",
+      "conceptKey": "aqa-geography-8035-uneven-development-cause-types",
+      "kind": "cause-consequence",
+      "visualCue": "🌍",
+      "front": "What three broad types of cause are specified for uneven development?",
+      "back": "Physical, economic and historical causes.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification groups the causes of uneven development into these three types.",
+      "memoryTip": "Use P-E-H: physical setting, economy, history.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Physical, economic and historical causes.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three broad cause types.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Disparities in wealth and health, and international migration.",
+          "isCorrect": false,
+          "feedback": "These are consequences of uneven development.",
+          "misconception": "confuses-causes-with-consequences"
+        },
+        {
+          "key": "c",
+          "text": "Investment, tourism, aid and debt relief.",
+          "isCorrect": false,
+          "feedback": "These belong to strategies for reducing the development gap.",
+          "misconception": "confuses-causes-with-development-strategies"
+        },
+        {
+          "key": "d",
+          "text": "GNI per head, life expectancy and HDI.",
+          "isCorrect": false,
+          "feedback": "These are measures of development.",
+          "misconception": "confuses-causes-with-development-measures"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 19-21; 3.2.2 Section B: The changing economic world",
+          "excerpt": "Causes of uneven development: physical,\neconomic and historical.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-322-uneven-development-consequences",
+      "conceptKey": "aqa-geography-8035-uneven-development-consequences",
+      "kind": "cause-consequence",
+      "visualCue": "🌍",
+      "front": "What consequences of uneven development are specified?",
+      "back": "Disparities in wealth and health, and international migration.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The named consequences are disparities in two areas—wealth and health—plus international migration.",
+      "memoryTip": "Recall two gaps and one movement: wealth, health, migration.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Disparities in wealth and health, and international migration.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified consequences.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Physical, economic and historical factors.",
+          "isCorrect": false,
+          "feedback": "These are causes of uneven development.",
+          "misconception": "confuses-consequences-with-causes"
+        },
+        {
+          "key": "c",
+          "text": "GNI per head, literacy rates and access to safe water.",
+          "isCorrect": false,
+          "feedback": "These are development measures.",
+          "misconception": "confuses-consequences-with-development-measures"
+        },
+        {
+          "key": "d",
+          "text": "Fairtrade, debt relief and microfinance loans.",
+          "isCorrect": false,
+          "feedback": "These are strategies for reducing the development gap.",
+          "misconception": "confuses-consequences-with-gap-strategies"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 19-21; 3.2.2 Section B: The changing economic world",
+          "excerpt": "Consequences of uneven development:\ndisparities in wealth and health, international\nmigration.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-322-development-gap-strategies",
+      "conceptKey": "aqa-geography-8035-global-development-gap-reduction-strategies",
+      "kind": "method",
+      "visualCue": "♻️",
+      "front": "Which strategies are named for reducing the global development gap?",
+      "back": "Investment; industrial development and tourism; aid; intermediate technology; fairtrade; debt relief; microfinance loans.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The overview specifies these seven strategy groups for reducing the development gap.",
+      "memoryTip": "Use I-I-A-I-F-D-M; the paired opening terms are investment, then industry and tourism.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Investment; industrial development and tourism; aid; intermediate technology; fairtrade; debt relief; microfinance loans.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified strategy overview.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "GNI per head, infant mortality, life expectancy and HDI.",
+          "isCorrect": false,
+          "feedback": "These are measures of development, not reduction strategies.",
+          "misconception": "confuses-gap-strategies-with-development-measures"
+        },
+        {
+          "key": "c",
+          "text": "Physical, economic and historical causes.",
+          "isCorrect": false,
+          "feedback": "These explain uneven development rather than reducing the gap.",
+          "misconception": "confuses-gap-strategies-with-uneven-development-causes"
+        },
+        {
+          "key": "d",
+          "text": "Changing industrial structure, TNCs, trading relationships and environmental impacts.",
+          "isCorrect": false,
+          "feedback": "These are areas studied in an LIC or NEE case study, not the strategy overview.",
+          "misconception": "confuses-gap-strategies-with-case-study-content"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 19-21; 3.2.2 Section B: The changing economic world",
+          "excerpt": "An overview of the strategies used to reduce\nthe development gap: investment, industrial\ndevelopment and tourism, aid, using\nintermediate technology, fairtrade, debt relief,\nmicrofinance loans.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-323-resources-development-wellbeing",
+      "conceptKey": "aqa-geography-8035-fundamental-resources-human-development",
+      "kind": "fact",
+      "visualCue": "♻️",
+      "front": "Which three resources are fundamental to human development, and what two forms of well-being are they linked to?",
+      "back": "Food, water and energy; economic and social well-being.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Food, water and energy are identified as fundamental, with significance for both economic and social well-being.",
+      "memoryTip": "Use two three-letter ladders: F-W-E supports E-S.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Food, water and energy; economic and social well-being.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three resources and two forms of well-being named.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Coal, gas and oil; economic and environmental issues.",
+          "isCorrect": false,
+          "feedback": "Coal, gas and oil are discussed as domestic energy supplies, not the three fundamental resource groups.",
+          "misconception": "confuses-resource-groups-with-fuel-supplies"
+        },
+        {
+          "key": "c",
+          "text": "Food, water and energy; global supply and consumption.",
+          "isCorrect": false,
+          "feedback": "Supply and consumption are dimensions of global inequality, not the two forms of well-being asked for.",
+          "misconception": "confuses-wellbeing-with-resource-distribution"
+        },
+        {
+          "key": "d",
+          "text": "High-value food, seasonal food and organic produce; carbon footprints.",
+          "isCorrect": false,
+          "feedback": "These belong to UK food-demand and food-mile trends.",
+          "misconception": "confuses-fundamental-resources-with-uk-food-trends"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 22-25; 3.2.3.1 Resource management",
+          "excerpt": "Food, water and energy are fundamental to\nhuman development.\nThe significance of food, water and energy to\neconomic and social well-being.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-323-global-food-supply-factors",
+      "conceptKey": "aqa-geography-8035-global-food-supply-factors",
+      "kind": "cause-consequence",
+      "visualCue": "🌍",
+      "front": "Which factors are specified as affecting global food supply?",
+      "back": "Climate, technology, pests and disease, water stress, conflict and poverty.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These six factors are explicitly linked to the security of food supply.",
+      "memoryTip": "Use C-T-P-W-C-P: climate, technology, pests, water, conflict, poverty.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Climate, technology, pests and disease, water stress, conflict and poverty.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specified food-supply factor set.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Economic development and rising population.",
+          "isCorrect": false,
+          "feedback": "These are reasons for increasing food consumption.",
+          "misconception": "confuses-food-supply-factors-with-demand-drivers"
+        },
+        {
+          "key": "c",
+          "text": "Famine, undernutrition, soil erosion, rising prices and social unrest.",
+          "isCorrect": false,
+          "feedback": "These are impacts of food insecurity.",
+          "misconception": "confuses-food-supply-factors-with-insecurity-impacts"
+        },
+        {
+          "key": "d",
+          "text": "Irrigation, aeroponics, hydroponics, biotechnology and appropriate technology.",
+          "isCorrect": false,
+          "feedback": "These are strategies for increasing food supply.",
+          "misconception": "confuses-food-supply-factors-with-supply-strategies"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 22-25; 3.2.3.2 Food",
+          "excerpt": "• factors affecting food supply: climate,\ntechnology, pests and disease, water\nstress, conflict, poverty.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-323-water-supply-strategies",
+      "conceptKey": "aqa-geography-8035-water-supply-increase-strategies",
+      "kind": "method",
+      "visualCue": "🌊",
+      "front": "Which strategies are named for increasing water supply?",
+      "back": "Diverting supplies and increasing storage; dams and reservoirs; water transfers; desalination.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "All four strategy groups belong to the specification's overview of ways to increase water supply.",
+      "memoryTip": "Use D-D-T-D: divert and store, dams, transfers, desalination.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Diverting supplies and increasing storage; dams and reservoirs; water transfers; desalination.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the named supply-increase strategies.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Water conservation, groundwater management, recycling and grey water.",
+          "isCorrect": false,
+          "feedback": "These are listed under movement towards a sustainable resource future.",
+          "misconception": "confuses-supply-increase-with-sustainable-water-management"
+        },
+        {
+          "key": "c",
+          "text": "Irrigation, aeroponics, hydroponics and biotechnology.",
+          "isCorrect": false,
+          "feedback": "These are food-supply strategies.",
+          "misconception": "confuses-water-strategies-with-food-strategies"
+        },
+        {
+          "key": "d",
+          "text": "Changing demand, pollution management, deficit and surplus, and transfers.",
+          "isCorrect": false,
+          "feedback": "These are UK water-resource issues, not the specified global supply-increase list.",
+          "misconception": "confuses-global-water-strategies-with-uk-water-issues"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 22-25; 3.2.3.3 Water",
+          "excerpt": "Overview of strategies to increase water supply:\n• diverting supplies and increasing storage,\ndams and reservoirs, water transfers and\ndesalination",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3-3",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-323-energy-consumption-reasons",
+      "conceptKey": "aqa-geography-8035-increasing-energy-consumption-reasons",
+      "kind": "cause-consequence",
+      "visualCue": "🏭",
+      "front": "Which reasons are specified for increasing global energy consumption?",
+      "back": "Economic development, rising population and technology.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Energy consumption is linked to economic development, population growth and technology.",
+      "memoryTip": "Energy adds T to the E-P pair: economic development, population, technology.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Economic development, rising population and technology.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three specified reasons.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Physical factors, exploitation and production costs, technology and political factors.",
+          "isCorrect": false,
+          "feedback": "These are factors affecting energy supply.",
+          "misconception": "confuses-energy-demand-drivers-with-supply-factors"
+        },
+        {
+          "key": "c",
+          "text": "Economic development and rising population.",
+          "isCorrect": false,
+          "feedback": "This omits technology from the energy-consumption list.",
+          "misconception": "omits-technology-from-energy-demand"
+        },
+        {
+          "key": "d",
+          "text": "Difficult-area exploration, economic and environmental costs, food production and industrial output.",
+          "isCorrect": false,
+          "feedback": "These are impacts associated with energy insecurity.",
+          "misconception": "confuses-energy-demand-drivers-with-insecurity-impacts"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 22-25; 3.2.3.4 Energy",
+          "excerpt": "• reasons for increasing energy\nconsumption: economic development,\nrising population, technology",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3-4",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-331-secondary-sources",
+      "conceptKey": "aqa-geography-8035-issue-evaluation-secondary-sources",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "What type of sources are used to examine the particular issue or issues in Section A issue evaluation?",
+      "back": "Secondary sources.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The issue-evaluation task applies geographical skills and knowledge to an issue using secondary sources.",
+      "memoryTip": "Think S for supplied evidence and S for secondary.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Secondary sources.",
+          "isCorrect": true,
+          "feedback": "Correct: this source type is stated explicitly.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Primary sources.",
+          "isCorrect": false,
+          "feedback": "The excerpt explicitly specifies secondary sources.",
+          "misconception": "confuses-primary-and-secondary-sources"
+        },
+        {
+          "key": "c",
+          "text": "Maps at different scales only.",
+          "isCorrect": false,
+          "feedback": "Maps are one possible format, but the stated source type is broader and is not map-only.",
+          "misconception": "restricts-secondary-sources-to-maps"
+        },
+        {
+          "key": "d",
+          "text": "Quotes from interest groups only.",
+          "isCorrect": false,
+          "feedback": "Quotes are one possible format, but the sources are not restricted to quotes.",
+          "misconception": "restricts-secondary-sources-to-quotes"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 26-26; 3.3.1 Section A: Issue evaluation",
+          "excerpt": "The assessment will provide students with the opportunity to demonstrate geographical\nskills and applied knowledge and understanding by looking at a particular issue(s) derived from the\nspecification using secondary sources.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-331-synoptic-issue-evaluation",
+      "conceptKey": "aqa-geography-8035-synoptic-issue-evaluation-meaning",
+      "kind": "definition",
+      "visualCue": "🌍",
+      "front": "Why is the issue-evaluation section described as synoptic?",
+      "back": "It requires learning from more than one theme in units 3.1 and 3.2.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The section combines learning from multiple physical- and human-geography themes rather than drawing on only one theme.",
+      "memoryTip": "Link synoptic with synthesis: more than one theme across 3.1 and 3.2.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "It requires learning from more than one theme in units 3.1 and 3.2.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the stated reason the section is synoptic.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It uses only physical-geography themes from unit 3.1.",
+          "isCorrect": false,
+          "feedback": "The requirement draws on themes in both units 3.1 and 3.2.",
+          "misconception": "restricts-synoptic-work-to-physical-geography"
+        },
+        {
+          "key": "c",
+          "text": "It uses only human-geography themes from unit 3.2.",
+          "isCorrect": false,
+          "feedback": "The requirement draws on themes in both units 3.1 and 3.2.",
+          "misconception": "restricts-synoptic-work-to-human-geography"
+        },
+        {
+          "key": "d",
+          "text": "It studies one theme at one scale.",
+          "isCorrect": false,
+          "feedback": "Synoptic issue evaluation uses more than one theme and analyses an issue at a range of scales.",
+          "misconception": "confuses-synoptic-with-single-theme-study"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 26-26; 3.3.1 Section A: Issue evaluation",
+          "excerpt": "This section is synoptic and the assessment will require students to\nuse their learning of more than one of the themes in units 3.1 and 3.2 so that they can analyse a\ngeographical issue at a range of scales, consider and select a possible option in relation to the\nissue(s) and justify their decision.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-331-issue-evaluation-decision-method",
+      "conceptKey": "aqa-geography-8035-issue-evaluation-decision-method",
+      "kind": "process",
+      "visualCue": "🗺️",
+      "front": "What three-part issue-evaluation method follows from using multiple themes?",
+      "back": "Analyse the issue at a range of scales; consider and select a possible option; justify the decision.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The method contains scale-based analysis, consideration and selection of a possible option, and justification of the decision.",
+      "memoryTip": "Use A-C/S-J: analyse, consider/select, justify.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Analyse the issue at a range of scales; consider and select a possible option; justify the decision.",
+          "isCorrect": true,
+          "feedback": "Correct: all three required parts are present.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Analyse the issue at one scale; list options without selecting one; give no justification.",
+          "isCorrect": false,
+          "feedback": "This loses the range of scales, option selection and justification.",
+          "misconception": "omits-core-issue-evaluation-actions"
+        },
+        {
+          "key": "c",
+          "text": "Select a possible option without analysing the issue at a range of scales.",
+          "isCorrect": false,
+          "feedback": "Selection must be accompanied by analysis across a range of scales and justification.",
+          "misconception": "selects-option-without-analysis"
+        },
+        {
+          "key": "d",
+          "text": "Analyse the issue at a range of scales and stop before considering an option.",
+          "isCorrect": false,
+          "feedback": "This omits consideration, selection and justification.",
+          "misconception": "stops-before-decision-and-justification"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 26-26; 3.3.1 Section A: Issue evaluation",
+          "excerpt": "This section is synoptic and the assessment will require students to\nuse their learning of more than one of the themes in units 3.1 and 3.2 so that they can analyse a\ngeographical issue at a range of scales, consider and select a possible option in relation to the\nissue(s) and justify their decision.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-331-resource-booklet-formats",
+      "conceptKey": "aqa-geography-8035-issue-evaluation-source-formats",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "Which source formats could appear in the issue-evaluation resource booklet?",
+      "back": "Maps at different scales, diagrams, graphs, statistics, photographs, satellite images, sketches, extracts from published materials and quotes from different interest groups.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The wording is permissive: sources could include this range, rather than every format being guaranteed.",
+      "memoryTip": "Group the nine formats as map/diagram/graph, number, photo/satellite/sketch, and text/voices.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Maps at different scales, diagrams, graphs, statistics, photographs, satellite images, sketches, extracts from published materials and quotes from different interest groups.",
+          "isCorrect": true,
+          "feedback": "Correct: this reproduces the possible source-format range.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Maps, graphs and statistics only.",
+          "isCorrect": false,
+          "feedback": "The possible formats also include images, sketches, published extracts and quotes.",
+          "misconception": "narrows-resource-booklet-to-maps-graphs-statistics"
+        },
+        {
+          "key": "c",
+          "text": "Written extracts and quotes from interest groups only.",
+          "isCorrect": false,
+          "feedback": "The booklet may also use mapped, graphical, numerical and visual formats.",
+          "misconception": "narrows-resource-booklet-to-written-sources"
+        },
+        {
+          "key": "d",
+          "text": "Maps, diagrams and photographs only.",
+          "isCorrect": false,
+          "feedback": "This omits several other formats that could be included.",
+          "misconception": "narrows-resource-booklet-to-visual-sources"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 26-26; 3.3.1 Section A: Issue evaluation",
+          "excerpt": "Sources could include maps at different\nscales, diagrams, graphs, statistics, photographs, satellite images, sketches, extracts from\npublished materials, and quotes from different interest groups.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-332-primary-data-requirement",
+      "conceptKey": "aqa-geography-8035-fieldwork-primary-data-requirement",
+      "kind": "practical",
+      "visualCue": "🗺️",
+      "front": "What is the core primary-data requirement for GCSE Geography fieldwork enquiries?",
+      "back": "Two geographical enquiries, each using primary data collected as part of a fieldwork exercise.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The primary-data requirement applies to each of the two enquiries, not merely one of them.",
+      "memoryTip": "Use two primary-data ticks: 2 × P.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Two geographical enquiries, each using primary data collected as part of a fieldwork exercise.",
+          "isCorrect": true,
+          "feedback": "Correct: both the number and the each-enquiry requirement are retained.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Two enquiries, each based only on secondary sources.",
+          "isCorrect": false,
+          "feedback": "Each enquiry must include primary data collected through fieldwork.",
+          "misconception": "replaces-primary-data-with-secondary-data"
+        },
+        {
+          "key": "c",
+          "text": "One enquiry using primary data and one using only secondary data.",
+          "isCorrect": false,
+          "feedback": "The primary-data requirement applies to both enquiries.",
+          "misconception": "applies-primary-data-to-only-one-enquiry"
+        },
+        {
+          "key": "d",
+          "text": "One geographical enquiry using primary data.",
+          "isCorrect": false,
+          "feedback": "The requirement is for two geographical enquiries.",
+          "misconception": "reduces-two-enquiries-to-one"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 27-28; 3.3.2 Section B: Fieldwork",
+          "excerpt": "Students need to undertake two geographical enquiries, each of which must include the use of\nprimary data, collected as part of a fieldwork exercise.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-332-contrasting-environments-coverage",
+      "conceptKey": "aqa-geography-8035-fieldwork-contrasting-environments-coverage",
+      "kind": "comparison",
+      "visualCue": "🌍",
+      "front": "What contrast and geography coverage are required, and what interaction is expected, across the two fieldwork enquiries?",
+      "back": "They must use contrasting environments and cover physical and human geography; in at least one enquiry, students are expected to show their interaction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Contrasting environments and both branches of geography are required; showing their interaction is expected in at least one enquiry.",
+      "memoryTip": "Use C-PH-1: contrast, physical/human, one interaction.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "They must use contrasting environments and cover physical and human geography; in at least one enquiry, students are expected to show their interaction.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both the requirements and the expected interaction qualifier.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They may use the same environment twice and cover physical geography only.",
+          "isCorrect": false,
+          "feedback": "The enquiries must use contrasting environments and cover both physical and human geography.",
+          "misconception": "omits-environmental-contrast-and-human-geography"
+        },
+        {
+          "key": "c",
+          "text": "They must use contrasting environments but may cover human geography only.",
+          "isCorrect": false,
+          "feedback": "Both physical and human geography must be covered.",
+          "misconception": "omits-physical-geography-coverage"
+        },
+        {
+          "key": "d",
+          "text": "They must cover physical and human geography, but no interaction needs to be shown.",
+          "isCorrect": false,
+          "feedback": "Students are expected to show physical–human interaction in at least one enquiry.",
+          "misconception": "omits-expected-physical-human-interaction"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 27-28; 3.3.2 Section B: Fieldwork",
+          "excerpt": "The two enquiries must be carried out in contrasting environments and show an understanding of\nboth physical and human geography. In at least one of the enquiries students are expected to\nshow an understanding about the interaction between physical and human geography.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-332-fieldwork-data-analysis-actions",
+      "conceptKey": "aqa-geography-8035-fieldwork-data-analysis-actions",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "Which four actions are specified when describing, analysing and explaining fieldwork data?",
+      "back": "Describe, analyse and explain results; establish links between data sets; use appropriate statistical techniques; identify anomalies.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The strand covers results, links between data sets, statistical techniques and anomalies.",
+      "memoryTip": "Use a four-box checklist, not a fixed order: R-L-S-A.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Describe, analyse and explain results; establish links between data sets; use appropriate statistical techniques; identify anomalies.",
+          "isCorrect": true,
+          "feedback": "Correct: all four analysis actions are included.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Select a question; identify theory; choose evidence sources; reduce fieldwork risks.",
+          "isCorrect": false,
+          "feedback": "These belong to planning a suitable geographical enquiry.",
+          "misconception": "confuses-data-analysis-with-enquiry-planning"
+        },
+        {
+          "key": "c",
+          "text": "Distinguish primary and secondary data; select data; use sampling; justify collection methods.",
+          "isCorrect": false,
+          "feedback": "These belong to selecting, measuring and recording data.",
+          "misconception": "confuses-data-analysis-with-data-collection"
+        },
+        {
+          "key": "d",
+          "text": "Identify collection problems; identify data limitations; suggest other data; consider reliability.",
+          "isCorrect": false,
+          "feedback": "These belong to evaluation of the enquiry.",
+          "misconception": "confuses-data-analysis-with-enquiry-evaluation"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 27-28; 3.3.2 Section B: Fieldwork",
+          "excerpt": "4. Describing, analysing and explaining\nfieldwork data\nDescription, analysis and explanation of the\nresults of fieldwork data.\nEstablish links between data sets.\nUse appropriate statistical techniques.\nIdentification of anomalies in fieldwork data.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-332-enquiry-evaluation-criteria",
+      "conceptKey": "aqa-geography-8035-geographical-enquiry-evaluation-criteria",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "What should an evaluation of a geographical enquiry identify or consider?",
+      "back": "Problems with data-collection methods; limitations of the data; useful additional data; how reliable the conclusions were.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Evaluation addresses the methods, the collected data, potentially useful extra data and the reliability of conclusions.",
+      "memoryTip": "Use M-D-M-R: method, data, more data, reliability.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Problems with data-collection methods; limitations of the data; useful additional data; how reliable the conclusions were.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the four specified evaluation areas.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Draw evidenced conclusions in relation to the original aims.",
+          "isCorrect": false,
+          "feedback": "That is the separate conclusions strand.",
+          "misconception": "confuses-evaluation-with-reaching-conclusions"
+        },
+        {
+          "key": "c",
+          "text": "Select and accurately use visual, graphical and cartographic presentation methods.",
+          "isCorrect": false,
+          "feedback": "That belongs to processing and presenting fieldwork data.",
+          "misconception": "confuses-evaluation-with-data-presentation"
+        },
+        {
+          "key": "d",
+          "text": "Select a suitable question, identify its theory and choose evidence sources.",
+          "isCorrect": false,
+          "feedback": "These belong to enquiry planning.",
+          "misconception": "confuses-evaluation-with-enquiry-planning"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 27-28; 3.3.2 Section B: Fieldwork",
+          "excerpt": "6. Evaluation of geographical enquiry Identification of problems of data collection\nmethods.\nIdentification of limitations of data collected.\nSuggestions for other data that might be useful.\nExtent to which conclusions were reliable.",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-34-os-scales-grid-references",
+      "conceptKey": "aqa-geography-8035-os-map-scales-grid-references",
+      "kind": "fact",
+      "visualCue": "🗺️",
+      "front": "Which OS map scales and grid-reference types are explicitly included in the cartographic skills?",
+      "back": "Scales of 1:50 000 and 1:25 000; four-figure and six-figure grid references.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The two scales are included within a wider range of appropriate maps, while both four- and six-figure grid references are specified.",
+      "memoryTip": "Pair scale denominators 50–25 with grid precision 4–6.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Scales of 1:50 000 and 1:25 000; four-figure and six-figure grid references.",
+          "isCorrect": true,
+          "feedback": "Correct: both named scales and both grid-reference types are included.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Global atlas scales; latitude and longitude only.",
+          "isCorrect": false,
+          "feedback": "Latitude and longitude are atlas-map coordinates, not the requested OS grid-reference pairing.",
+          "misconception": "confuses-atlas-coordinates-with-os-grid-references"
+        },
+        {
+          "key": "c",
+          "text": "Straight and curved distances; gradient and contours only.",
+          "isCorrect": false,
+          "feedback": "These are other OS-map skills, not the named scales and grid-reference types.",
+          "misconception": "confuses-os-scales-with-other-map-skills"
+        },
+        {
+          "key": "d",
+          "text": "Ground, aerial and satellite photographs; no grid references.",
+          "isCorrect": false,
+          "feedback": "These are photograph types, while OS skills explicitly include grid references.",
+          "misconception": "confuses-photographic-skills-with-os-coordinates"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 29-32; 3.4.1 Cartographic skills",
+          "excerpt": "• use and interpret OS maps at a range of scales, including 1:50 000 and 1:25 000 and other\nmaps appropriate to the topic\n• use and understand coordinates – four and six-figure grid references",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-1",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-34-graph-chart-types",
+      "conceptKey": "aqa-geography-8035-graph-chart-construction-types",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "Which graph and chart types are explicitly named for selecting and constructing data presentations?",
+      "back": "Line charts, bar charts, pie charts, pictograms, histograms with equal class intervals, divided bar, scattergraphs and population pyramids.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "These are the named construction formats, with equal class intervals explicitly required for the listed histograms.",
+      "memoryTip": "Use L-B-P-P-H-D-S-P, moving from familiar charts to histogram, divided bar, scatter and pyramid.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Line charts, bar charts, pie charts, pictograms, histograms with equal class intervals, divided bar, scattergraphs and population pyramids.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the explicit graph-and-chart list.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Choropleth, isoline, dot maps, desire lines, proportional symbols and flow lines.",
+          "isCorrect": false,
+          "feedback": "These are the named graph-and-map completion formats, not the requested construction list.",
+          "misconception": "confuses-construction-list-with-map-completion-formats"
+        },
+        {
+          "key": "c",
+          "text": "Ground, aerial and satellite photographs, sketch maps and transects.",
+          "isCorrect": false,
+          "feedback": "These belong to photographic and cartographic skills.",
+          "misconception": "confuses-graphical-construction-with-cartographic-skills"
+        },
+        {
+          "key": "d",
+          "text": "Median, mean, range, quartiles, mode and modal class.",
+          "isCorrect": false,
+          "feedback": "These are statistical measures, not presentation formats.",
+          "misconception": "confuses-graph-types-with-statistical-measures"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 29-32; 3.4.2 Graphical skills",
+          "excerpt": "• select and construct appropriate graphs and charts to present data, using appropriate scales\n– line charts, bar charts, pie charts, pictograms, histograms with equal class intervals, divided\nbar, scattergraphs, and population pyramids",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-2",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-34-statistical-measures",
+      "conceptKey": "aqa-geography-8035-statistical-measures-set",
+      "kind": "fact",
+      "visualCue": "🗺️",
+      "front": "Which measures of central tendency, spread and cumulative frequency are explicitly named?",
+      "back": "Median, mean, range, quartiles, inter-quartile range, mode and modal class.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification explicitly names all seven measures within its statistical-skills list.",
+      "memoryTip": "Chunk them 2–3–2: median/mean | range/quartiles/IQR | mode/modal class.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Median, mean, range, quartiles, inter-quartile range, mode and modal class.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the complete named set.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Trend lines, estimated lines of best fit, predictions, interpolation and extrapolation.",
+          "isCorrect": false,
+          "feedback": "These are bivariate-data skills, not the requested measures.",
+          "misconception": "confuses-statistical-measures-with-bivariate-skills"
+        },
+        {
+          "key": "c",
+          "text": "Proportion, ratio, magnitude and frequency.",
+          "isCorrect": false,
+          "feedback": "These belong to numerical skills.",
+          "misconception": "confuses-statistical-measures-with-numerical-skills"
+        },
+        {
+          "key": "d",
+          "text": "Percentage increase, percentage decrease and percentiles.",
+          "isCorrect": false,
+          "feedback": "These are additional statistical skills, not the named central-tendency, spread and cumulative-frequency set.",
+          "misconception": "confuses-measure-set-with-percentage-skills"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 29-32; 3.4.4 Statistical skills",
+          "excerpt": "• use appropriate measures of central tendency, spread and cumulative frequency (median,\nmean, range, quartiles and inter-quartile range, mode and modal class)",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-4",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8035-34-bivariate-relationship-skills",
+      "conceptKey": "aqa-geography-8035-bivariate-data-relationship-skills",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "What skills are specified for describing relationships in bivariate data?",
+      "back": "Sketch trend lines through scatter plots; draw estimated lines of best fit; make predictions; interpolate and extrapolate trends.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specified work covers trend lines, estimated best-fit lines, predictions, interpolation and extrapolation.",
+      "memoryTip": "Use T-F-P-I-E, keeping interpolate before extrapolate.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Sketch trend lines through scatter plots; draw estimated lines of best fit; make predictions; interpolate and extrapolate trends.",
+          "isCorrect": true,
+          "feedback": "Correct: this contains every specified bivariate-data skill.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Calculate median, mean, range, quartiles, mode and modal class.",
+          "isCorrect": false,
+          "feedback": "These are statistical measures rather than relationship-description skills.",
+          "misconception": "confuses-bivariate-skills-with-statistical-measures"
+        },
+        {
+          "key": "c",
+          "text": "Construct pie charts, pictograms, histograms and population pyramids.",
+          "isCorrect": false,
+          "feedback": "These are graphical construction skills.",
+          "misconception": "confuses-bivariate-analysis-with-graph-construction"
+        },
+        {
+          "key": "d",
+          "text": "Use proportion, ratio, magnitude and frequency.",
+          "isCorrect": false,
+          "feedback": "These belong to numerical skills, not the bivariate-data requirement.",
+          "misconception": "confuses-bivariate-analysis-with-numerical-skills"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Geography",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/geography/gcse/geography-8035/specification",
+          "title": "AQA GCSE Geography (8035)",
+          "locator": "Official PDF pages 29-32; 3.4.4 Statistical skills",
+          "excerpt": "• describe relationships in bivariate data: sketch trend lines through scatter plots, draw\nestimated lines of best fit, make predictions, interpolate and extrapolate trends",
+          "sourceHash": "4563d2e6674402b6967055c393ad5d966e705cf8ab20ef7ec023f7bfbbf230b4",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation",
+            "memoryTip"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-4",
+          "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-2-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-3-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    }
+  ]
+}

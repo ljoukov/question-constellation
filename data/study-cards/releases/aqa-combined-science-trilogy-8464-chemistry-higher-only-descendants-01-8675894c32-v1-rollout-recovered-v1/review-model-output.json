@@ -1,0 +1,110 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-cdcf4e788e-aqa-8464-5-3-2-1-mole-mass-relative-formula-mass",
+      "accepted": false,
+      "issues": [
+        "Choice c's arbitrary division by two is not a pedagogically plausible misconception; it functions as contrived filler on a four-choice card."
+      ],
+      "learnerValue": [
+        "Directly tests the numerical relationship between relative formula mass and the mass of one mole in grams."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-d409fabab9-aqa-8464-5-3-2-2-balanced-symbol-equation-masses",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that stoichiometric mass calculations require a balanced symbol equation."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-362c521459-aqa-8464-5-3-2-3-mass-moles-whole-number-ratio",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the complete mass-to-moles-to-whole-number-ratio balancing process."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-b83e318a91-aqa-8464-5-3-2-4-limiting-reactant-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the limiting reactant from an excess reactant or simply the reactant with less mass."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-836e8da193-aqa-8464-5-4-1-4-electron-oxidation-reduction",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Securely tests oxidation and reduction through electron loss and gain."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-961f56ec9d-aqa-8464-5-4-2-5-strong-weak-acid-ionisation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Targets the defining distinction between complete and partial acid ionisation."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-eb6e44ff4c-aqa-8464-5-4-3-5-electrode-electron-transfer",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Integrates ion charge, electrode, electron transfer and redox terminology in one retrieval task."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-73b6169329-aqa-8464-5-5-1-3-bond-energy-overall-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the correct order and operation in the bond-energy calculation."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-5efc50b1f4-aqa-8464-5-6-2-4-equilibrium-counteracts-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the central counteracting response described by Le Chatelier’s Principle."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-397272bc0b-aqa-8464-5-6-2-5-reactant-concentration-product-shift",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the direction of the equilibrium response to increased reactant concentration."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-e65f1fefb8-aqa-8464-5-6-2-6-temperature-equilibrium-endo-exo",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts the opposing effects of increased temperature on endothermic and exothermic equilibria."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-40a94cfe31-aqa-8464-5-6-2-7-pressure-equilibrium-molecule-count",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both pressure-change directions and their relationship to gaseous molecule counts."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-0a045fd529-aqa-8464-5-10-1-4-phytomining-bioleaching-methods",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes the organisms and metal-compound-containing products involved in phytomining and bioleaching."
+      ]
+    }
+  ]
+}

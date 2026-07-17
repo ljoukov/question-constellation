@@ -1,0 +1,1304 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c4b-2a19-7fa2-bd09-f0112112a537"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c50-2200-7030-897b-e8b041a8279e",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:58:13.293Z",
+    "finishedAt": "2026-07-16T19:07:18.206Z",
+    "sourceManifestHash": "94d972e6456029258b85e03ff43ff769ea0b0c0549f859375a73ccf28d3579f3",
+    "artifactPath": "data/study-cards/releases/aqa-physics-8463-physics-shared-descendants-04-4e998fe959-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8463-d6d0e2d29f-aqa-physics-8463-4-5-7-2-closed-system-momentum",
+      "conceptKey": "aqa-8463-d6d0e2d29f-aqa-physics-8463-closed-system-conservation-of-momentum",
+      "kind": "fact",
+      "visualCue": "🎳",
+      "front": "In a closed system, how does the total momentum before an event compare with the total momentum after it?",
+      "back": "The total momentum before the event equals the total momentum after it.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This equality is conservation of momentum: the total momentum of a closed system is the same before and after an event.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The total momentum before the event equals the total momentum after it.",
+          "isCorrect": true,
+          "feedback": "Correct. Total momentum is conserved across the event in a closed system.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The total momentum is always greater after the event.",
+          "isCorrect": false,
+          "feedback": "The momentum is not stated to increase; the totals before and after are equal.",
+          "misconception": "momentum-created-during-event"
+        },
+        {
+          "key": "c",
+          "text": "The total momentum is always smaller after the event.",
+          "isCorrect": false,
+          "feedback": "The momentum is not stated to decrease; the totals before and after are equal.",
+          "misconception": "momentum-lost-during-event"
+        },
+        {
+          "key": "d",
+          "text": "The total momentum must be zero before and after every event.",
+          "isCorrect": false,
+          "feedback": "Conservation means equal before and after totals, not that the total must be zero.",
+          "misconception": "conservation-means-zero-momentum"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 58-58; 4.5.7.2 Conservation of momentum",
+          "excerpt": "In a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-7-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-ba4007ba2c-aqa-physics-8463-4-5-7-3-force-causes-momentum-change",
+      "conceptKey": "aqa-8463-ba4007ba2c-aqa-physics-8463-force-causes-change-in-momentum",
+      "kind": "cause-consequence",
+      "visualCue": "🏃",
+      "front": "What happens to an object's momentum when a force acts on it while it is moving or able to move?",
+      "back": "Its momentum changes.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A force acting on an object that is moving, or able to move, produces a change in momentum.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Its momentum changes.",
+          "isCorrect": true,
+          "feedback": "Correct. Under the stated condition, the force causes a change in momentum.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Its momentum must remain constant.",
+          "isCorrect": false,
+          "feedback": "The specification states that a change in momentum occurs.",
+          "misconception": "force-cannot-change-momentum"
+        },
+        {
+          "key": "c",
+          "text": "Its momentum must become zero.",
+          "isCorrect": false,
+          "feedback": "A change does not necessarily mean the momentum becomes zero.",
+          "misconception": "change-means-zero-momentum"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 58-58; 4.5.7.3 Changes in momentum (physics only)",
+          "excerpt": "When a force acts on an object that is moving, or able to move, a\nchange in momentum occurs.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-7-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-a5ef181398-aqa-physics-8463-4-6-1-longitudinal-wave-regions",
+      "conceptKey": "aqa-8463-a5ef181398-aqa-physics-8463-longitudinal-compressions-and-rarefactions",
+      "kind": "fact",
+      "visualCue": "🌊",
+      "front": "Which two types of region are present in a longitudinal wave?",
+      "back": "Areas of compression and rarefaction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Compression and rarefaction are the regions shown by longitudinal waves; sound travelling through air is given as an example of such a wave.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Areas of compression and rarefaction.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the regions shown by longitudinal waves.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only crests and troughs.",
+          "isCorrect": false,
+          "feedback": "Those are not the stated regions; longitudinal waves show compression and rarefaction.",
+          "misconception": "confused-longitudinal-with-crest-trough-model"
+        },
+        {
+          "key": "c",
+          "text": "One region of constant density throughout.",
+          "isCorrect": false,
+          "feedback": "The wave has areas of compression and rarefaction rather than one unchanging region.",
+          "misconception": "longitudinal-wave-has-no-regions"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.1 Waves in air, fluids and solids",
+          "excerpt": "Longitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-d68a81b022-aqa-physics-8463-4-6-1-3-wave-boundary-outcomes",
+      "conceptKey": "aqa-8463-d68a81b022-aqa-physics-8463-reflection-absorption-transmission-boundary",
+      "kind": "fact",
+      "visualCue": "🌊",
+      "front": "What three things can happen to a wave at the boundary between two different materials?",
+      "back": "It can be reflected, absorbed or transmitted.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "At a boundary between two materials, reflection is one possible outcome; absorption and transmission are the other two listed possibilities.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It can be reflected, absorbed or transmitted.",
+          "isCorrect": true,
+          "feedback": "Correct. All three outcomes are possible at the boundary.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It must always be reflected.",
+          "isCorrect": false,
+          "feedback": "Reflection is only one possibility; the wave can also be absorbed or transmitted.",
+          "misconception": "boundary-always-reflects-wave"
+        },
+        {
+          "key": "c",
+          "text": "It can be absorbed or transmitted, but not reflected.",
+          "isCorrect": false,
+          "feedback": "Reflection is explicitly included as a possible boundary outcome.",
+          "misconception": "reflection-omitted-at-boundary"
+        },
+        {
+          "key": "d",
+          "text": "It must always cross the boundary unchanged.",
+          "isCorrect": false,
+          "feedback": "A wave may instead be reflected or absorbed at the boundary.",
+          "misconception": "boundary-cannot-affect-wave"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.1.3 Reflection of waves (physics only)",
+          "excerpt": "Waves can be reflected at the boundary between two different\nmaterials.\nWaves can be absorbed or transmitted at the boundary between\ntwo different materials.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-07c2eaa568-aqa-physics-8463-4-6-2-electromagnetic-spectrum-order",
+      "conceptKey": "aqa-8463-07c2eaa568-aqa-physics-8463-electromagnetic-spectrum-long-to-short-wavelength",
+      "kind": "structure",
+      "visualCue": "🌈",
+      "front": "What is the order of the electromagnetic spectrum from long to short wavelength, which is also from low to high frequency?",
+      "back": "Radio, microwave, infrared, visible light (red to violet), ultraviolet, X-rays, gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Moving through this sequence, wavelength decreases while frequency increases.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Radio, microwave, infrared, visible light (red to violet), ultraviolet, X-rays, gamma rays.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the stated long-to-short wavelength order.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Gamma rays, X-rays, ultraviolet, visible light (violet to red), infrared, microwave, radio.",
+          "isCorrect": false,
+          "feedback": "This reverses the required long-to-short wavelength order.",
+          "misconception": "electromagnetic-spectrum-order-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Radio, infrared, microwave, visible light (red to violet), ultraviolet, X-rays, gamma rays.",
+          "isCorrect": false,
+          "feedback": "Microwaves come before infrared in the stated order.",
+          "misconception": "microwave-infrared-order-swapped"
+        },
+        {
+          "key": "d",
+          "text": "Radio, microwave, infrared, ultraviolet, visible light (red to violet), X-rays, gamma rays.",
+          "isCorrect": false,
+          "feedback": "Visible light comes before ultraviolet in the stated order.",
+          "misconception": "visible-ultraviolet-order-swapped"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2 Electromagnetic waves",
+          "excerpt": "The waves that form the electromagnetic spectrum are grouped in\nterms of their wavelength and their frequency. Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-ae913ec5db-aqa-physics-8463-4-6-2-2-infrared-surface-practical",
+      "conceptKey": "aqa-8463-ae913ec5db-aqa-physics-8463-infrared-absorption-radiation-surface-nature",
+      "kind": "practical",
+      "visualCue": "🌡️",
+      "front": "What relationship is investigated in required practical activity 10 on infrared radiation?",
+      "back": "How the amount of infrared radiation absorbed or radiated by a surface depends on the nature of that surface.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The practical investigates the relationship between surface nature and how much infrared radiation the surface absorbs or radiates.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "How the amount of infrared radiation absorbed or radiated by a surface depends on the nature of that surface.",
+          "isCorrect": true,
+          "feedback": "Correct. Surface nature is the stated variable linked to infrared absorption or radiation.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "How the amount of infrared radiation absorbed or radiated depends only on distance from the surface.",
+          "isCorrect": false,
+          "feedback": "Distance is not the stated variable; the practical investigates the nature of the surface.",
+          "misconception": "wrong-infrared-practical-variable"
+        },
+        {
+          "key": "c",
+          "text": "How the direction of refracted visible light depends on the nature of a surface.",
+          "isCorrect": false,
+          "feedback": "The stated investigation concerns infrared absorption or radiation by surfaces.",
+          "misconception": "confused-infrared-with-refraction-practical"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2.2 Properties of electromagnetic waves 1",
+          "excerpt": "Required practical activity 10: investigate how the amount of infrared radiation absorbed or\nradiated by a surface depends on the nature of that surface.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-a2c5bed8ed-aqa-physics-8463-4-6-2-3-gamma-ray-origin",
+      "conceptKey": "aqa-8463-a2c5bed8ed-aqa-physics-8463-gamma-rays-originate-from-nuclear-changes",
+      "kind": "fact",
+      "visualCue": "☢️",
+      "front": "What changes within an atom give rise to gamma rays?",
+      "back": "Changes in the nucleus of an atom.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The source specifically identifies changes in an atom's nucleus as the origin of gamma rays.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Changes in the nucleus of an atom.",
+          "isCorrect": true,
+          "feedback": "Correct. Gamma rays originate from changes in the nucleus.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Changes anywhere in an atom, with no specific nuclear origin.",
+          "isCorrect": false,
+          "feedback": "The broad statement concerns electromagnetic waves generally; gamma rays are specifically linked to nuclear changes.",
+          "misconception": "overgeneralised-atomic-origin"
+        },
+        {
+          "key": "c",
+          "text": "Exposure of human body tissue to radiation.",
+          "isCorrect": false,
+          "feedback": "Exposure is not the stated origin; gamma rays originate from changes in the nucleus.",
+          "misconception": "confused-radiation-origin-with-exposure"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2.3 Properties of electromagnetic waves 2",
+          "excerpt": "Changes in atoms and the nuclei of atoms can result in\nelectromagnetic waves being generated or absorbed over a wide\nfrequency range. Gamma rays originate from changes in the\nnucleus of an atom.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-ffa1e27395-aqa-physics-8463-4-6-2-4-microwave-applications",
+      "conceptKey": "aqa-8463-ffa1e27395-aqa-physics-8463-microwave-satellite-communication-cooking",
+      "kind": "fact",
+      "visualCue": "🌈",
+      "front": "Which two practical applications of microwaves are listed in the AQA specification?",
+      "back": "Satellite communications and cooking food.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Satellite communications and cooking food are the two example applications paired with microwaves.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Satellite communications and cooking food.",
+          "isCorrect": true,
+          "feedback": "Correct. Both applications are listed for microwaves.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Television and radio.",
+          "isCorrect": false,
+          "feedback": "Those applications are paired with radio waves, not microwaves.",
+          "misconception": "confused-microwaves-with-radio-waves"
+        },
+        {
+          "key": "c",
+          "text": "Electrical heaters, cooking food and infrared cameras.",
+          "isCorrect": false,
+          "feedback": "That set is paired with infrared rather than microwaves.",
+          "misconception": "confused-microwaves-with-infrared"
+        },
+        {
+          "key": "d",
+          "text": "Fibre optic communications.",
+          "isCorrect": false,
+          "feedback": "That application is paired with visible light rather than microwaves.",
+          "misconception": "confused-microwaves-with-visible-light"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2.4 Uses and applications of electromagnetic waves",
+          "excerpt": "• radio waves – television and radio\n• microwaves – satellite communications, cooking food\n• infrared – electrical heaters, cooking food, infrared cameras\n• visible light – fibre optic communications",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-4",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-4",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-f4013309f4-aqa-physics-8463-4-6-2-5-convex-concave-image-types",
+      "conceptKey": "aqa-8463-f4013309f4-aqa-physics-8463-convex-concave-lens-real-virtual-images",
+      "kind": "comparison",
+      "visualCue": "🌈",
+      "front": "How do the possible image types produced by convex and concave lenses compare?",
+      "back": "A convex lens can produce a real or virtual image; a concave lens always produces a virtual image.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A convex lens has two possible image types, whereas the image produced by a concave lens is always virtual.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A convex lens can produce a real or virtual image; a concave lens always produces a virtual image.",
+          "isCorrect": true,
+          "feedback": "Correct. Convex images may be real or virtual, while concave images are always virtual.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A convex lens always produces a real image; a concave lens always produces a virtual image.",
+          "isCorrect": false,
+          "feedback": "A convex lens is not restricted to real images; it can also produce a virtual image.",
+          "misconception": "convex-lens-always-real"
+        },
+        {
+          "key": "c",
+          "text": "A convex lens always produces a virtual image; a concave lens always produces a real image.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated possibilities and incorrectly makes each lens produce only one type.",
+          "misconception": "convex-concave-image-types-reversed"
+        },
+        {
+          "key": "d",
+          "text": "Both convex and concave lenses can produce either real or virtual images.",
+          "isCorrect": false,
+          "feedback": "Only the convex lens is stated to produce either type; the concave lens image is always virtual.",
+          "misconception": "concave-lens-can-produce-real-image"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2.5 Lenses (physics only)",
+          "excerpt": "The image produced by a convex lens can be either real or virtual.\nThe image produced by a concave lens is always virtual.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-5",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-5",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-b8b8eb007d-aqa-physics-8463-4-6-2-6-colour-filter-wavelength-selection",
+      "conceptKey": "aqa-8463-b8b8eb007d-aqa-physics-8463-colour-filters-absorb-and-transmit-wavelengths",
+      "kind": "process",
+      "visualCue": "🌈",
+      "front": "How do colour filters act on different wavelengths of visible light?",
+      "back": "They absorb certain wavelengths (colours) and transmit others.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A colour filter selects light by absorbing some wavelengths and allowing other wavelengths to pass through.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They absorb certain wavelengths (colours) and transmit others.",
+          "isCorrect": true,
+          "feedback": "Correct. Colour filters absorb selected wavelengths and transmit the others.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They reflect every wavelength and transmit none.",
+          "isCorrect": false,
+          "feedback": "The stated mechanism is selective absorption and transmission, not reflection of every wavelength.",
+          "misconception": "filter-reflects-all-light"
+        },
+        {
+          "key": "c",
+          "text": "They transmit every wavelength equally and absorb none.",
+          "isCorrect": false,
+          "feedback": "A colour filter absorbs certain wavelengths rather than transmitting all wavelengths equally.",
+          "misconception": "filter-transmits-all-light"
+        },
+        {
+          "key": "d",
+          "text": "They change all incoming wavelengths into one new wavelength.",
+          "isCorrect": false,
+          "feedback": "The filter absorbs some wavelengths and transmits others; it is not described as converting them.",
+          "misconception": "filter-converts-wavelengths"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2.6 Visible light (physics only)",
+          "excerpt": "Colour filters work by absorbing certain wavelengths (and colour)\nand transmitting other wavelengths (and colour).",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-6",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-6",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-a26023b39d-aqa-physics-8463-4-6-3-perfect-black-body-definition",
+      "conceptKey": "aqa-8463-a26023b39d-aqa-physics-8463-perfect-black-body-absorption-and-emission",
+      "kind": "definition",
+      "visualCue": "🌡️",
+      "front": "What are the defining absorption, reflection, transmission and emission properties of a perfect black body?",
+      "back": "It absorbs all incident radiation, reflects or transmits none, and is the best possible emitter.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A perfect black body completely absorbs incident radiation. It neither reflects nor transmits radiation and, because a good absorber is also a good emitter, would be the best possible emitter.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It absorbs all incident radiation, reflects or transmits none, and is the best possible emitter.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the stated properties of a perfect black body.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It absorbs all incident radiation but emits none.",
+          "isCorrect": false,
+          "feedback": "A perfect black body would be the best possible emitter, not a non-emitter.",
+          "misconception": "black-body-emits-nothing"
+        },
+        {
+          "key": "c",
+          "text": "It reflects all incident radiation and absorbs none.",
+          "isCorrect": false,
+          "feedback": "A perfect black body absorbs all incident radiation and reflects none.",
+          "misconception": "black-body-is-perfect-reflector"
+        },
+        {
+          "key": "d",
+          "text": "It transmits all incident radiation without absorbing or reflecting it.",
+          "isCorrect": false,
+          "feedback": "A perfect black body absorbs all incident radiation and transmits none.",
+          "misconception": "black-body-is-perfect-transmitter"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.3 Black body radiation (physics only)",
+          "excerpt": "A perfect black body is an object that absorbs all of the radiation\nincident on it. A black body does not reflect or transmit any\nradiation. Since a good absorber is also a good emitter, a perfect\nblack body would be the best possible emitter.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-bdee8d2251-aqa-physics-8463-4-6-3-2-temperature-emission-properties",
+      "conceptKey": "aqa-8463-bdee8d2251-aqa-physics-8463-temperature-controls-emission-intensity-distribution",
+      "kind": "fact",
+      "visualCue": "🌡️",
+      "front": "Which two features of the radiation emitted by a body depend on the body's temperature?",
+      "back": "Its intensity and wavelength distribution.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "All bodies emit radiation; temperature affects the intensity and wavelength distribution of that emission.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Its intensity and wavelength distribution.",
+          "isCorrect": true,
+          "feedback": "Correct. These are the two stated temperature-dependent features.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Whether the body emits radiation at all.",
+          "isCorrect": false,
+          "feedback": "All bodies emit radiation; temperature affects its intensity and wavelength distribution.",
+          "misconception": "only-some-temperatures-emit-radiation"
+        },
+        {
+          "key": "c",
+          "text": "Its direction and speed.",
+          "isCorrect": false,
+          "feedback": "The stated temperature-dependent features are intensity and wavelength distribution.",
+          "misconception": "wrong-temperature-dependent-properties"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.3.2 Perfect black bodies and radiation",
+          "excerpt": "• that all bodies (objects) emit radiation\n• that the intensity and wavelength distribution of any emission\ndepends on the temperature of the body.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-3-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-3-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-98ecd6eaf1-aqa-physics-8463-4-7-1-permanent-induced-magnet-difference",
+      "conceptKey": "aqa-8463-98ecd6eaf1-aqa-physics-8463-permanent-versus-induced-magnets",
+      "kind": "comparison",
+      "visualCue": "🧲",
+      "front": "How do permanent and induced magnets differ in how they become and remain magnetic?",
+      "back": "A permanent magnet produces its own magnetic field; an induced magnet becomes magnetic in a magnetic field and quickly loses most or all of its magnetism when removed from that field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The permanent magnet produces its own field. The induced magnet becomes magnetic in a field, always causes attraction and loses most or all of its magnetism quickly after removal.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A permanent magnet produces its own magnetic field; an induced magnet becomes magnetic in a magnetic field and quickly loses most or all of its magnetism when removed from that field.",
+          "isCorrect": true,
+          "feedback": "Correct. The induced magnet depends on being placed in a magnetic field and loses most or all of its magnetism quickly after removal.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An induced magnet produces its own permanent field; a permanent magnet only becomes magnetic in another field.",
+          "isCorrect": false,
+          "feedback": "This reverses the definitions of permanent and induced magnets.",
+          "misconception": "permanent-induced-definitions-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both types require another magnetic field and both quickly lose their magnetism when removed.",
+          "isCorrect": false,
+          "feedback": "A permanent magnet produces its own field; the rapid loss applies to an induced magnet.",
+          "misconception": "permanent-magnet-treated-as-induced"
+        },
+        {
+          "key": "d",
+          "text": "Both types produce their own persistent magnetic fields without first being placed in another field.",
+          "isCorrect": false,
+          "feedback": "An induced magnet becomes magnetic when placed in a magnetic field and loses most or all of its magnetism quickly after removal.",
+          "misconception": "induced-magnet-treated-as-permanent"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 67-69; 4.7.1 Permanent and induced magnetism, magnetic forces and fields",
+          "excerpt": "A permanent magnet produces its own magnetic field. An induced\nmagnet is a material that becomes a magnet when it is placed in a\nmagnetic field. Induced magnetism always causes a force of\nattraction. When removed from the magnetic field an induced\nmagnet loses most/all of its magnetism quickly.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-0bd717991f-aqa-physics-8463-4-7-2-current-wire-magnetic-field",
+      "conceptKey": "aqa-8463-0bd717991f-aqa-physics-8463-current-wire-magnetic-field-strength-factors",
+      "kind": "cause-consequence",
+      "visualCue": "🔌",
+      "front": "What produces a magnetic field around a conducting wire, and which two factors determine the field's strength?",
+      "back": "A current through the wire produces the field; its strength depends on the current and the distance from the wire.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "When current flows through a conducting wire, it produces a surrounding magnetic field whose strength depends on current and distance from the wire.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A current through the wire produces the field; its strength depends on the current and the distance from the wire.",
+          "isCorrect": true,
+          "feedback": "Correct. Current produces the field, and current and distance determine its strength.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The wire produces the field without a current; its strength depends only on the wire material.",
+          "isCorrect": false,
+          "feedback": "The field is produced when current flows, and its strength depends on current and distance.",
+          "misconception": "wire-magnetic-without-current"
+        },
+        {
+          "key": "c",
+          "text": "A current produces the field; its strength depends on voltage and wire length.",
+          "isCorrect": false,
+          "feedback": "The stated strength factors are current through the wire and distance from it.",
+          "misconception": "wrong-magnetic-field-strength-factors"
+        },
+        {
+          "key": "d",
+          "text": "A current produces the field; its strength is independent of distance from the wire.",
+          "isCorrect": false,
+          "feedback": "Distance from the wire is explicitly one of the factors affecting field strength.",
+          "misconception": "magnetic-field-independent-of-distance"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 67-69; 4.7.2 The motor effect",
+          "excerpt": "When a current flows through a conducting wire a magnetic field is\nproduced around the wire. The strength of the magnetic field\ndepends on the current through the wire and the distance from the\nwire.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-303b9c16e2-aqa-physics-8463-4-8-1-gravity-maintains-circular-orbits",
+      "conceptKey": "aqa-8463-303b9c16e2-aqa-physics-8463-gravity-force-circular-orbits",
+      "kind": "fact",
+      "visualCue": "🌌",
+      "front": "What force allows planets and both natural and artificial satellites to maintain circular orbits?",
+      "back": "Gravity provides the force that maintains their circular orbits.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The gravitational force allows planets and both types of satellite—natural and artificial—to maintain circular orbits.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Gravity provides the force that maintains their circular orbits.",
+          "isCorrect": true,
+          "feedback": "Correct. Gravity is the force identified as maintaining circular orbits.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "No force is needed once an orbit has started.",
+          "isCorrect": false,
+          "feedback": "The specification states that gravity provides the force maintaining the orbit.",
+          "misconception": "orbit-requires-no-force"
+        },
+        {
+          "key": "c",
+          "text": "Continuous engine thrust provides the force that maintains every circular orbit.",
+          "isCorrect": false,
+          "feedback": "Gravity, not continuous engine thrust, is identified as the maintaining force.",
+          "misconception": "orbit-maintained-by-engine-thrust"
+        },
+        {
+          "key": "d",
+          "text": "Magnetic attraction provides the force that maintains every circular orbit.",
+          "isCorrect": false,
+          "feedback": "The stated force maintaining these orbits is gravity.",
+          "misconception": "orbit-maintained-by-magnetism"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 73-75; 4.8.1 Solar system; stability of orbital motions; satellites (physics only)",
+          "excerpt": "Gravity provides the force that allows planets and satellites (both\nnatural and artificial) to maintain their circular orbits.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8463-4581f6edb9-aqa-physics-8463-4-8-2-red-shift-expansion-evidence",
+      "conceptKey": "aqa-8463-4581f6edb9-aqa-physics-8463-red-shift-evidence-expanding-universe",
+      "kind": "interpretation",
+      "visualCue": "🌌",
+      "front": "What does the observed red-shift of light from most distant galaxies provide evidence for?",
+      "back": "That the universe is expanding, supporting the Big Bang theory.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The observed wavelength increase is called red-shift; it provides evidence for an expanding universe and supports the Big Bang theory.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "That the universe is expanding, supporting the Big Bang theory.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the stated interpretation of the observed red-shift.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "That the universe is static, so it does not support the Big Bang theory.",
+          "isCorrect": false,
+          "feedback": "The observed red-shift provides evidence that the universe is expanding.",
+          "misconception": "static-universe-interpretation"
+        },
+        {
+          "key": "c",
+          "text": "That the universe is contracting and distant galaxies are approaching.",
+          "isCorrect": false,
+          "feedback": "The source interprets the observed red-shift as evidence of expansion, not contraction.",
+          "misconception": "reversed-expansion-interpretation"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 73-75; 4.8.2 Red-shift (physics only)",
+          "excerpt": "There is an observed increase in the wavelength of light from most\ndistant galaxies. The further away the galaxies, the faster they are\nmoving and the bigger the observed increase in wavelength. This\neffect is called red-shift.\nThe observed red-shift provides evidence that space itself (the\nuniverse) is expanding and supports the Big Bang theory.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "No card remains in this release after removing Foundation targets beneath the Higher-only Momentum section."
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "status": "ready",
+      "cardCount": 10,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "status": "ready",
+      "cardCount": 10,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

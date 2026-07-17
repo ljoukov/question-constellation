@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, rmSync } from 'node:fs';
+import { chmodSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { assertLearnerVisibleAssetBundleCurrent } from './lib/learner-visible-asset-binding.mjs';
+import {
+	assertBoundJsonInputCurrent,
+	assertExactJsonArtifactsEqual,
+	captureBoundJsonInput
+} from './lib/phase-input-binding.mjs';
 
 const rootDir = process.cwd();
 const inputPath = stringArg('input', '');
@@ -25,12 +31,42 @@ const thinkingLevel = stringArg('thinking-level', '');
 const concurrency = stringArg('concurrency', '');
 const minSolvabilityScore = stringArg('min-solvability-score', '');
 const runId = stringArg('run-id', '');
+const expectedInputSha256 = stringArg('expected-input-sha256', '');
+const expectedInputCanonicalJsonSha256 = stringArg('expected-input-canonical-json-sha256', '');
+const expectedOutputSha256 = stringArg('expected-output-sha256', '');
+const expectedOutputCanonicalJsonSha256 = stringArg('expected-output-canonical-json-sha256', '');
+const assetManifestArg = stringArg('asset-manifest', '');
+if (Boolean(expectedOutputSha256) !== Boolean(expectedOutputCanonicalJsonSha256)) {
+	throw new Error('Pass both expected import-ready output hashes together.');
+}
+if ((expectedInputSha256 || expectedInputCanonicalJsonSha256) && !inputPath) {
+	throw new Error('Exact input hashes require --input=<paper.json>.');
+}
+const inputBinding = inputPath
+	? captureBoundJsonInput(path.resolve(rootDir, inputPath), {
+			rootDir,
+			expectedSha256: expectedInputSha256,
+			expectedCanonicalJsonSha256: expectedInputCanonicalJsonSha256,
+			label: 'Import-ready source input'
+		})
+	: null;
+const assetManifestBinding = assetManifestArg
+	? captureBoundJsonInput(path.resolve(rootDir, assetManifestArg), {
+			rootDir,
+			label: 'Import-ready learner asset manifest'
+		})
+	: null;
+if (assetManifestBinding && !inputBinding) {
+	throw new Error('A learner asset manifest requires --input=<paper.json>.');
+}
+if (assetManifestBinding) assertPaperAssetsCurrent(inputBinding.value);
 
 if (runId) process.env.EXTRACTION_RUN_ID = runId;
 
 clearOutputRoot();
 const buildSummary = buildImportReadySubset();
 auditImportReadySubset();
+const outputBindings = bindImportReadyOutputs(buildSummary);
 const importResults = noImportCheck ? [] : runImportChecks(buildSummary);
 
 console.log(
@@ -50,6 +86,9 @@ console.log(
 			allowSharedChainUpdates,
 			refreshSharedChainDefinitions,
 			allowDroppedQuestions,
+			inputArtifact: inputBinding?.artifact ?? null,
+			assetManifestArtifact: assetManifestBinding?.artifact ?? null,
+			outputArtifacts: outputBindings.map((binding) => binding.artifact),
 			keptQuestions: buildSummary.keptQuestions,
 			droppedQuestions: buildSummary.droppedQuestions,
 			importedPapers: importResults.map((result) => result.sourceDocumentId),
@@ -90,12 +129,14 @@ function clearOutputRoot() {
 }
 
 function runCapture(args, label) {
+	assertBoundInputsCurrent();
 	const result = spawnSync(process.execPath, args, {
 		cwd: rootDir,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'inherit'],
 		maxBuffer: 16 * 1024 * 1024
 	});
+	assertBoundInputsCurrent();
 	if (result.status !== 0) {
 		throw new Error(`${label} failed with exit code ${result.status ?? result.signal}.`);
 	}
@@ -183,17 +224,96 @@ function runImportChecks(summary) {
 			'scripts/import-physics-vision.mjs',
 			`--input-root=${outputRoot}`,
 			'--recursive',
-			`--paper=${sourceDocumentId}`
+			`--paper=${sourceDocumentId}`,
+			`--expected-paper-sha256=${outputArtifactFor(file).sha256}`,
+			`--expected-paper-canonical-json-sha256=${outputArtifactFor(file).canonicalJsonSha256}`
 		];
 		if (!importToD1) args.push('--dry-run');
 		if (checkExisting) args.push('--check-existing');
 		if (allowSharedChainUpdates) args.push('--allow-shared-chain-updates');
 		if (refreshSharedChainDefinitions) args.push('--refresh-shared-chain-definitions');
 		runCapturedLog(args, `${importToD1 ? 'import' : 'import dry-run'} ${sourceDocumentId}`);
+		assertBoundOutputCurrent(file);
 		return {
 			sourceDocumentId,
 			mode: importToD1 ? 'write' : 'dry-run',
 			questions: file.keptQuestions
 		};
 	});
+}
+
+function bindImportReadyOutputs(summary) {
+	const files = (summary.files ?? []).filter((file) => file.keptQuestions > 0);
+	const bindings = files.map((file) => {
+		const binding = captureBoundJsonInput(resolveOutputPath(file), {
+			rootDir,
+			label: `Import-ready output ${file.sourceDocumentId ?? file.output}`
+		});
+		chmodSync(binding.path, 0o444);
+		assertPaperAssetsCurrent(binding.value);
+		return { ...binding, sourceDocumentId: file.sourceDocumentId, output: file.output };
+	});
+	if (expectedOutputSha256 || expectedOutputCanonicalJsonSha256) {
+		if (bindings.length !== 1) {
+			throw new Error(
+				'Exact expected import-ready output hashes require exactly one output paper.'
+			);
+		}
+		const [binding] = bindings;
+		const expected = {
+			sha256: expectedOutputSha256,
+			canonicalJsonSha256: expectedOutputCanonicalJsonSha256
+		};
+		assertExactJsonArtifactsEqual(expected, binding.artifact, 'Import-ready output');
+	}
+	assertBoundInputsCurrent();
+	return bindings;
+}
+
+function outputArtifactFor(file) {
+	const binding = outputBindings.find(
+		(candidate) =>
+			candidate.sourceDocumentId === file.sourceDocumentId && candidate.output === file.output
+	);
+	if (!binding) throw new Error(`No bound output artifact exists for ${file.output}.`);
+	return binding.artifact;
+}
+
+function assertBoundOutputCurrent(file) {
+	const binding = outputBindings.find(
+		(candidate) =>
+			candidate.sourceDocumentId === file.sourceDocumentId && candidate.output === file.output
+	);
+	if (!binding) throw new Error(`No bound output artifact exists for ${file.output}.`);
+	assertBoundJsonInputCurrent(binding, {
+		label: `Import-ready output ${file.sourceDocumentId ?? file.output}`
+	});
+	assertPaperAssetsCurrent(binding.value);
+}
+
+function assertBoundInputsCurrent() {
+	if (inputBinding) {
+		assertBoundJsonInputCurrent(inputBinding, { label: 'Import-ready source input' });
+	}
+	if (assetManifestBinding) {
+		assertBoundJsonInputCurrent(assetManifestBinding, {
+			label: 'Import-ready learner asset manifest'
+		});
+		assertPaperAssetsCurrent(inputBinding.value);
+	}
+}
+
+function assertPaperAssetsCurrent(paper) {
+	if (!assetManifestBinding) return;
+	assertLearnerVisibleAssetBundleCurrent({
+		paper,
+		manifest: assetManifestBinding.value,
+		rootDir
+	});
+}
+
+function resolveOutputPath(file) {
+	const value = String(file?.output ?? '');
+	if (!value) throw new Error('Import-ready subset output record is missing its path.');
+	return path.isAbsolute(value) ? value : path.resolve(rootDir, value);
 }

@@ -1,0 +1,373 @@
+{
+  "matrix": [
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "topicTitle": "Anita and Me",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "topicTitle": "Anita and Me",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "topicTitle": "Never Let Me Go",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "topicTitle": "Never Let Me Go",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "topicTitle": "Animal Farm",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "topicTitle": "Animal Farm",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "No globally reusable licensed primary-text quotation source is available to this pipeline."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "topicTitle": "An Inspector Calls",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "topicTitle": "An Inspector Calls",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "topicTitle": "Leave Taking",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "topicTitle": "Leave Taking",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "topicTitle": "DNA",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "topicTitle": "DNA",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "topicTitle": "Great Expectations",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "topicTitle": "Great Expectations",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "topicTitle": "A Christmas Carol",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "topicTitle": "A Christmas Carol",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "topicTitle": "Pride and Prejudice",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "topicTitle": "Pride and Prejudice",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "topicTitle": "The War of the Worlds",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "topicTitle": "The War of the Worlds",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "topicTitle": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "topicTitle": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "topicTitle": "Jane Eyre",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "topicTitle": "Jane Eyre",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "topicTitle": "Love and Relationships",
+      "mode": "plot",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "Plot recall is not applicable to a thematic poetry cluster."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "topicTitle": "Love and Relationships",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 2,
+      "reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "topicTitle": "Love and Relationships",
+      "mode": "method",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "topicTitle": "Conflict",
+      "mode": "plot",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "Plot recall is not applicable to a thematic poetry cluster."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "topicTitle": "Conflict",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 2,
+      "reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "topicTitle": "Conflict",
+      "mode": "method",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "topicTitle": "Youth and Age",
+      "mode": "plot",
+      "status": "withheld",
+      "cardCount": 0,
+      "reason": "Plot recall is not applicable to a thematic poetry cluster."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "topicTitle": "Youth and Age",
+      "mode": "quotation",
+      "status": "withheld",
+      "cardCount": 2,
+      "reason": "Only two retained public-domain poems have edition-verified quotation evidence; full 15-poem quotation coverage remains unavailable because the current cluster includes in-copyright poems."
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "topicTitle": "Youth and Age",
+      "mode": "method",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "topicTitle": "Romeo and Juliet",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "topicTitle": "Romeo and Juliet",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "topicTitle": "The Merchant of Venice",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "topicTitle": "The Merchant of Venice",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "topicTitle": "Macbeth",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "topicTitle": "Macbeth",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "topicTitle": "Much Ado About Nothing",
+      "mode": "plot",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "topicTitle": "Much Ado About Nothing",
+      "mode": "quotation",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

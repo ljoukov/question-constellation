@@ -24,6 +24,10 @@ import {
 	atomicQuestionPromptForImport,
 	SCOPED_REPAIR_SCHEMA_VERSION
 } from '../../../scripts/lib/scoped-chained-content-repairs.mjs';
+import {
+	chainedImportPhysicsRepairSource,
+	chainedImportQuestionRepairSource
+} from './fixtures/chainedImportRepairSource';
 
 const rootDir = process.cwd();
 const importerSource = readFileSync(
@@ -34,24 +38,8 @@ const materializerSource = readFileSync(
 	path.join(rootDir, 'scripts/materialize-public-route-payloads.mjs'),
 	'utf8'
 );
-const baseline = JSON.parse(
-	readFileSync(
-		path.join(
-			rootDir,
-			'data/extracted-questions/aqa-combined-science-trilogy-higher/baseline/all-papers.json'
-		),
-		'utf8'
-	)
-);
-const physics = JSON.parse(
-	readFileSync(
-		path.join(
-			rootDir,
-			'data/extracted-questions/aqa-combined-science-trilogy-higher/semantic-chains/physics.json'
-		),
-		'utf8'
-	)
-);
+const baseline = structuredClone(chainedImportQuestionRepairSource);
+const physics = structuredClone(chainedImportPhysicsRepairSource);
 const repair = JSON.parse(
 	readFileSync(
 		path.join(rootDir, 'scripts/repairs/illustrated-science-question-fixes.json'),

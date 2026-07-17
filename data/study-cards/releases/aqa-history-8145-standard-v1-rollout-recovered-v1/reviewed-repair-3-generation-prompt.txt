@@ -1,0 +1,109 @@
+You are repairing exactly one card rejected by an independent full-deck review. Do not generate any other card and do not alter its identity.
+
+Preserve id, conceptKey and topicComponentId exactly. Address every supplied reviewer issue. If every reviewer issue concerns memoryTip, reproduce every other field byte-for-byte from the rejected candidate and set memoryTip to null; do not shorten or otherwise alter sourceExcerpt, content, choices, locator, cue, or kind. Otherwise keep already accurate learner-facing content unless a change is needed. Set memoryTip to null when no honest, non-contrived retrieval route exists; never force wordplay, false initials, false ordering, repeat the answer, or invent a gimmick merely to fill the field. Use only the supplied official component text. sourceExcerpt must remain one exact contiguous substring of at most 400 characters with no reflow or control bytes. The card must have exactly three or four unique choices with one correct answer. Output JSON only.
+
+Required identity and rejected candidate:
+{
+  "requiredIdentity": {
+    "id": "aqa-8145-321ab-stresemann-era-dates",
+    "conceptKey": "germany-1890-1945-stresemann-era-1924-1929",
+    "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab"
+  },
+  "reviewer": {
+    "cardId": "aqa-8145-321ab-stresemann-era-dates",
+    "accepted": false,
+    "issues": [
+      "The memory route is unclear: “the two fours and nines” does not cleanly describe or encode the 1924–1929 range and may confuse learners."
+    ],
+    "learnerValue": [
+      "The core question accurately targets the dates of the Stresemann era."
+    ]
+  },
+  "rejectedCandidate": {
+    "id": "aqa-8145-321ab-stresemann-era-dates",
+    "conceptKey": "germany-1890-1945-stresemann-era-1924-1929",
+    "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+    "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+    "kind": "chronology",
+    "visualCue": "⏳",
+    "front": "What years define the Stresemann era in the specified study of Weimar recovery?",
+    "back": "1924–1929",
+    "reverseFront": null,
+    "reverseBack": null,
+    "explanation": "The Stresemann era is specified as 1924–1929.",
+    "memoryTip": "Use the two fours and nines: it begins in ’24 and ends in ’29.",
+    "choices": [
+      {
+        "key": "a",
+        "text": "1919–1923",
+        "isCorrect": false,
+        "feedback": "That is the preceding period of political change and unrest, not the Stresemann era.",
+        "misconception": "confuses-weimar-unrest-with-stresemann-recovery"
+      },
+      {
+        "key": "b",
+        "text": "1924–1929",
+        "isCorrect": true,
+        "feedback": "Correct: these are the specified Stresemann-era years.",
+        "misconception": null
+      },
+      {
+        "key": "c",
+        "text": "1928–1932",
+        "isCorrect": false,
+        "feedback": "That date range belongs to growing extremist support, not the Stresemann era.",
+        "misconception": "confuses-depression-era-support-with-stresemann-era"
+      }
+    ],
+    "sourceExcerpt": "the Stresemann era (1924–\n1929): economic developments",
+    "sourceLocator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy"
+  }
+}
+
+Official topic source:
+{
+  "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+  "code": "3.2.1.AB",
+  "title": "Germany, 1890–1945: Democracy and dictatorship",
+  "paper": "Paper 1: Understanding the modern world",
+  "pageStart": 15,
+  "pageEnd": 16,
+  "components": [
+    {
+      "id": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+      "code": "3.2.1.AB",
+      "title": "Germany, 1890–1945: Democracy and dictatorship",
+      "kind": "option",
+      "tier": [],
+      "locator": "Official PDF pages 15-16; 3.2.1.AB Germany, 1890–1945: Democracy and dictatorship",
+      "text": "Official PDF pages 15-16\nGermany, 1890–1945: Democracy and dictatorship\nThis period study focuses on the development of Germany during a turbulent half century of\nchange. It was a period of democracy and dictatorship – the development and collapse of\ndemocracy and the rise and fall of Nazism.\nAQA GCSE History 8145. GCSE exams June 2018 onwards. Version 1.3 24 September 2019\nVisit for the most up-to-date specification, resources, support and administration 15\nStudents will study the political, economic, social and cultural aspects of these two developments\nand the role ideas played in influencing change. They will also look at the role of key individuals\nand groups in shaping change and the impact the developments had on them.\nPart one: Germany and the growth of democracy\n• Kaiser Wilhelm and the difficulties of ruling Germany: the growth of parliamentary\ngovernment; the influence of Prussian militarism; industrialisation; social reform and the\ngrowth of socialism; the domestic importance of the Navy Laws.\n• Impact of the First World War: war weariness, economic problems; defeat; the end of the\nmonarchy; post-war problems including reparations, the occupation of the Ruhr and\nhyperinflation.\n• Weimar democracy: political change and unrest, 1919–1923, including Spartacists, Kapp\nPutsch and the Munich Putsch; the extent of recovery during the Stresemann era (1924–\n1929): economic developments including the new currency, Dawes Plan and the Young Plan;\nthe impact of international agreements on recovery; Weimar culture.\nPart two: Germany and the Depression\n• The impact of the Depression: growth in support for the Nazis and other extremist parties\n(1928–1932), including the role of the SA; Hitler’s appeal.\n• The failure of Weimar democracy: election results; the role of Papen and Hindenburg and\nHitler’s appointment as Chancellor.\n• The establishment of Hitler’s dictatorship: the Reichstag Fire; the Enabling Act; elimination of\npolitical opposition; trade unions; Rohm and the Night of the Long Knives; Hitler becomes\nFührer.\nPart three: The experiences of Germans under the Nazis\n• Economic changes: benefits and drawbacks; employment; public works programmes;\nrearmament; self-sufficiency; the impact of war on the economy and the German people,\nincluding bombing, rationing, labour shortages, refugees.\n• Social policy and practice: reasons for policies, practices and their impact on women, young\npeople and youth groups; education; control of churches and religion; Aryan ideas, racial\npolicy and persecution; the Final Solution.\n• Control: Goebbels, the use of propaganda and censorship; Nazi culture; repression and the\npolice state and the roles of Himmler, the SS and Gestapo; opposition and resistance,\nincluding White Rose group, Swing Youth, Edelweiss Pirates and July 1944 bomb plot.\nAC Russia, 1894–1945: Tsardom and communism\nThis period study focuses on the development of Russia during a turbulent half century of change.\nIt was a period of autocracy and communism – the fall of the Tsardom and the rise and\nconsolidation of communism.\nStudents will study the political, economic, social and cultural aspects of these two developments\nand the role ideas played in influencing change. They will also look at the role of key individuals\nand groups in shaping change and the impact the developments had on them.\nPart one: The end of Tsardom\n• Russia’s economy and society: industrialisation; living and working conditions in cities and\nvillages.\n• Nicholas II’s autocracy and the court: growth of revolutionary opposition; the 1905 Revolution\nand October Manifesto; the impact of, and reactions to, attempts to reform Russia up to\n16 Visit for the most up-to-date specification, resources, support and administration"
+    },
+    {
+      "id": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-1",
+      "code": "3.2.1.AB.part-1",
+      "title": "Part one: Germany and the growth of democracy",
+      "kind": "topic",
+      "tier": [],
+      "locator": "Official PDF pages 15-16; 3.2.1.AB.part-1 Part one: Germany and the growth of democracy",
+      "text": "Official PDF pages 15-16\nPart one: Germany and the growth of democracy\n• Kaiser Wilhelm and the difficulties of ruling Germany: the growth of parliamentary\ngovernment; the influence of Prussian militarism; industrialisation; social reform and the\ngrowth of socialism; the domestic importance of the Navy Laws.\n• Impact of the First World War: war weariness, economic problems; defeat; the end of the\nmonarchy; post-war problems including reparations, the occupation of the Ruhr and\nhyperinflation.\n• Weimar democracy: political change and unrest, 1919–1923, including Spartacists, Kapp\nPutsch and the Munich Putsch; the extent of recovery during the Stresemann era (1924–\n1929): economic developments including the new currency, Dawes Plan and the Young Plan;\nthe impact of international agreements on recovery; Weimar culture.\nPart two: Germany and the Depression\n• The impact of the Depression: growth in support for the Nazis and other extremist parties\n(1928–1932), including the role of the SA; Hitler’s appeal.\n• The failure of Weimar democracy: election results; the role of Papen and Hindenburg and\nHitler’s appointment as Chancellor.\n• The establishment of Hitler’s dictatorship: the Reichstag Fire; the Enabling Act; elimination of\npolitical opposition; trade unions; Rohm and the Night of the Long Knives; Hitler becomes\nFührer.\nPart three: The experiences of Germans under the Nazis\n• Economic changes: benefits and drawbacks; employment; public works programmes;\nrearmament; self-sufficiency; the impact of war on the economy and the German people,\nincluding bombing, rationing, labour shortages, refugees.\n• Social policy and practice: reasons for policies, practices and their impact on women, young\npeople and youth groups; education; control of churches and religion; Aryan ideas, racial\npolicy and persecution; the Final Solution.\n• Control: Goebbels, the use of propaganda and censorship; Nazi culture; repression and the\npolice state and the roles of Himmler, the SS and Gestapo; opposition and resistance,\nincluding White Rose group, Swing Youth, Edelweiss Pirates and July 1944 bomb plot.\nAC Russia, 1894–1945: Tsardom and communism\nThis period study focuses on the development of Russia during a turbulent half century of change.\nIt was a period of autocracy and communism – the fall of the Tsardom and the rise and\nconsolidation of communism.\nStudents will study the political, economic, social and cultural aspects of these two developments\nand the role ideas played in influencing change. They will also look at the role of key individuals\nand groups in shaping change and the impact the developments had on them.\nPart one: The end of Tsardom\n• Russia’s economy and society: industrialisation; living and working conditions in cities and\nvillages.\n• Nicholas II’s autocracy and the court: growth of revolutionary opposition; the 1905 Revolution\nand October Manifesto; the impact of, and reactions to, attempts to reform Russia up to\n16 Visit for the most up-to-date specification, resources, support and administration"
+    },
+    {
+      "id": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-2",
+      "code": "3.2.1.AB.part-2",
+      "title": "Part two: Germany and the Depression",
+      "kind": "topic",
+      "tier": [],
+      "locator": "Official PDF pages 15-16; 3.2.1.AB.part-2 Part two: Germany and the Depression",
+      "text": "Official PDF pages 15-16\nPart two: Germany and the Depression\n• The impact of the Depression: growth in support for the Nazis and other extremist parties\n(1928–1932), including the role of the SA; Hitler’s appeal.\n• The failure of Weimar democracy: election results; the role of Papen and Hindenburg and\nHitler’s appointment as Chancellor.\n• The establishment of Hitler’s dictatorship: the Reichstag Fire; the Enabling Act; elimination of\npolitical opposition; trade unions; Rohm and the Night of the Long Knives; Hitler becomes\nFührer.\nPart three: The experiences of Germans under the Nazis\n• Economic changes: benefits and drawbacks; employment; public works programmes;\nrearmament; self-sufficiency; the impact of war on the economy and the German people,\nincluding bombing, rationing, labour shortages, refugees.\n• Social policy and practice: reasons for policies, practices and their impact on women, young\npeople and youth groups; education; control of churches and religion; Aryan ideas, racial\npolicy and persecution; the Final Solution.\n• Control: Goebbels, the use of propaganda and censorship; Nazi culture; repression and the\npolice state and the roles of Himmler, the SS and Gestapo; opposition and resistance,\nincluding White Rose group, Swing Youth, Edelweiss Pirates and July 1944 bomb plot.\nAC Russia, 1894–1945: Tsardom and communism\nThis period study focuses on the development of Russia during a turbulent half century of change.\nIt was a period of autocracy and communism – the fall of the Tsardom and the rise and\nconsolidation of communism.\nStudents will study the political, economic, social and cultural aspects of these two developments\nand the role ideas played in influencing change. They will also look at the role of key individuals\nand groups in shaping change and the impact the developments had on them.\nPart one: The end of Tsardom\n• Russia’s economy and society: industrialisation; living and working conditions in cities and\nvillages.\n• Nicholas II’s autocracy and the court: growth of revolutionary opposition; the 1905 Revolution\nand October Manifesto; the impact of, and reactions to, attempts to reform Russia up to\n16 Visit for the most up-to-date specification, resources, support and administration"
+    },
+    {
+      "id": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-3",
+      "code": "3.2.1.AB.part-3",
+      "title": "Part three: The experiences of Germans under the Nazis",
+      "kind": "topic",
+      "tier": [],
+      "locator": "Official PDF pages 15-16; 3.2.1.AB.part-3 Part three: The experiences of Germans under the Nazis",
+      "text": "Official PDF pages 15-16\nPart three: The experiences of Germans under the Nazis\n• Economic changes: benefits and drawbacks; employment; public works programmes;\nrearmament; self-sufficiency; the impact of war on the economy and the German people,\nincluding bombing, rationing, labour shortages, refugees.\n• Social policy and practice: reasons for policies, practices and their impact on women, young\npeople and youth groups; education; control of churches and religion; Aryan ideas, racial\npolicy and persecution; the Final Solution.\n• Control: Goebbels, the use of propaganda and censorship; Nazi culture; repression and the\npolice state and the roles of Himmler, the SS and Gestapo; opposition and resistance,\nincluding White Rose group, Swing Youth, Edelweiss Pirates and July 1944 bomb plot.\nAC Russia, 1894–1945: Tsardom and communism\nThis period study focuses on the development of Russia during a turbulent half century of change.\nIt was a period of autocracy and communism – the fall of the Tsardom and the rise and\nconsolidation of communism.\nStudents will study the political, economic, social and cultural aspects of these two developments\nand the role ideas played in influencing change. They will also look at the role of key individuals\nand groups in shaping change and the impact the developments had on them.\nPart one: The end of Tsardom\n• Russia’s economy and society: industrialisation; living and working conditions in cities and\nvillages.\n• Nicholas II’s autocracy and the court: growth of revolutionary opposition; the 1905 Revolution\nand October Manifesto; the impact of, and reactions to, attempts to reform Russia up to\n16 Visit for the most up-to-date specification, resources, support and administration"
+    }
+  ]
+}

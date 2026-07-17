@@ -37,7 +37,7 @@ describe('versioned recall card bundle', () => {
 
 		expect(rejectedCards).toEqual([]);
 		expect(bundle.schemaVersion).toBe('recall-card-bundle-v2');
-		expect(bundle.promptVersion).toBe('recall-card-compiler-v9');
+		expect(bundle.promptVersion).toBe('recall-card-compiler-v10');
 		expect(bundle.cards[0]).toEqual(
 			expect.objectContaining({
 				id: 'bio-vaccination-antibodies',
@@ -58,6 +58,42 @@ describe('versioned recall card bundle', () => {
 		expect(
 			bundle.cards[0].targets.filter((target: Record<string, unknown>) => target.isPrimary === true)
 		).toHaveLength(1);
+	});
+
+	it('accepts three choices for compiler-v10 while compiler-v9 remains exact-four', () => {
+		const raw = candidateBatch();
+		raw.cards[0].choices.pop();
+		raw.cards[0].evidence.supports = raw.cards[0].evidence.supports.filter(
+			(support: string) => !support.includes('antibiotics')
+		);
+		const candidates = validateRecallCandidateBatch(raw, {
+			subject: 'Biology',
+			pageText,
+			expectedCount: 1
+		});
+		const completeCards = candidates.cards.map((card) => ({ ...card, subject: 'Biology' }));
+		const { bundle } = compileRecallCardBundle({
+			candidates,
+			fullReviews: validateRecallFullReviews(fullReview(true), ['bio-vaccination-antibodies']),
+			cueReviews: validateRecallCueReviews(cueReview(true), completeCards, 'Biology'),
+			evidence: evidenceFixture(),
+			run: runFixture(),
+			companionArtifacts: companionArtifactsFixture()
+		});
+
+		expect(bundle.promptVersion).toBe('recall-card-compiler-v10');
+		expect(validateRecallCardBundle(bundle).cards[0].choices).toHaveLength(3);
+
+		const relabelledAsV9 = structuredClone(bundle);
+		relabelledAsV9.promptVersion = 'recall-card-compiler-v9';
+		relabelledAsV9.run.id = 'recall-test-run-compiler-v9';
+		for (const card of relabelledAsV9.cards) {
+			card.provenance.promptVersion = relabelledAsV9.promptVersion;
+			card.provenance.generationRunId = relabelledAsV9.run.id;
+		}
+		expect(() => validateRecallCardBundle(relabelledAsV9)).toThrow(
+			/exactly four items for recall-card-compiler-v9/
+		);
 	});
 
 	it('rejects answer-control language, non-diagnostic choices and invented quotes', () => {
@@ -87,6 +123,34 @@ describe('versioned recall card bundle', () => {
 				expectedCount: 1
 			})
 		).toThrow(/not an exact quote/);
+	});
+
+	it('rejects current generator output outside the exact three-or-four range', () => {
+		const twoChoices = candidateBatch();
+		twoChoices.cards[0].choices.splice(2);
+		expect(() =>
+			validateRecallCandidateBatch(twoChoices, {
+				subject: 'Biology',
+				pageText,
+				expectedCount: 1
+			})
+		).toThrow(/exactly three or four choices/);
+
+		const fiveChoices = candidateBatch();
+		fiveChoices.cards[0].choices.push({
+			choiceKey: 'extra',
+			text: 'It causes an unrelated extra response.',
+			isCorrect: false,
+			feedback: 'This is not the response stated by the specification.',
+			misconception: 'Adds an unrelated response.'
+		});
+		expect(() =>
+			validateRecallCandidateBatch(fiveChoices, {
+				subject: 'Biology',
+				pageText,
+				expectedCount: 1
+			})
+		).toThrow(/exactly three or four choices/);
 	});
 
 	it('collapses PDF line breaks in an otherwise exact source excerpt', () => {
@@ -180,7 +244,7 @@ describe('versioned recall card bundle', () => {
 		).toThrow(/v1 artifacts predate granular choice evidence/);
 	});
 
-	it('keeps immutable compiler-v5 bundles importable while binding each run id to its version', () => {
+	it('keeps immutable compiler-v5 through compiler-v9 bundles importable and version-bound', () => {
 		const candidates = validateRecallCandidateBatch(candidateBatch(), {
 			subject: 'Biology',
 			pageText,
@@ -195,6 +259,17 @@ describe('versioned recall card bundle', () => {
 			run: runFixture(),
 			companionArtifacts: companionArtifactsFixture()
 		});
+		for (const version of [5, 6, 7, 8, 9]) {
+			const frozen = structuredClone(bundle);
+			frozen.promptVersion = `recall-card-compiler-v${version}`;
+			frozen.run.id = `recall-test-run-compiler-v${version}`;
+			for (const card of frozen.cards) {
+				card.provenance.promptVersion = frozen.promptVersion;
+				card.provenance.generationRunId = frozen.run.id;
+			}
+			expect(validateRecallCardBundle(frozen)).toBe(frozen);
+		}
+
 		const compilerV5 = structuredClone(bundle);
 		compilerV5.promptVersion = 'recall-card-compiler-v5';
 		compilerV5.run.id = 'recall-test-run-compiler-v5';
@@ -202,8 +277,6 @@ describe('versioned recall card bundle', () => {
 			card.provenance.promptVersion = compilerV5.promptVersion;
 			card.provenance.generationRunId = compilerV5.run.id;
 		}
-
-		expect(validateRecallCardBundle(compilerV5)).toBe(compilerV5);
 		expect(() =>
 			validateRecallCardBundle({
 				...compilerV5,
@@ -384,7 +457,7 @@ function evidenceFixture() {
 
 function runFixture() {
 	return {
-		id: 'recall-test-run-compiler-v9',
+		id: 'recall-test-run-compiler-v10',
 		startedAt: '2026-07-15T10:00:00.000Z',
 		finishedAt: '2026-07-15T10:01:00.000Z',
 		generator: { model: 'gpt-5.6-sol', thinkingLevel: 'max' },

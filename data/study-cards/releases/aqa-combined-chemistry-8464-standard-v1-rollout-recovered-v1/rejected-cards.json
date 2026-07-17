@@ -1,0 +1,244 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8464-chem-5-1-group-outer-electrons",
+        "conceptKey": "aqa-8464-chem-periodic-group-outer-electron-link",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1-7",
+        "kind": "cause-consequence",
+        "visualCue": "🔗",
+        "front": "Why do elements in the same periodic-table group have similar chemical properties?",
+        "back": "They have the same number of outer-shell electrons, giving them similar chemical properties.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Elements in one group share the same number of outer-shell electrons, and this gives them similar chemical properties.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "They have the same number of outer-shell electrons, giving them similar chemical properties.",
+            "isCorrect": true,
+            "feedback": "Correct: the shared outer-electron number explains the similar properties.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "They have the same total number of electrons, giving them identical properties.",
+            "isCorrect": false,
+            "feedback": "The stated relationship concerns outer-shell electrons and similar properties.",
+            "misconception": "uses-total-electron-number-for-groups"
+          },
+          {
+            "key": "c",
+            "text": "They have the same number of electron shells, giving them similar chemical properties.",
+            "isCorrect": false,
+            "feedback": "The specification identifies the number of outer-shell electrons, not the number of shells.",
+            "misconception": "confuses-groups-with-shell-count"
+          }
+        ],
+        "sourceExcerpt": "Elements in the same group in the periodic table have the same\nnumber of electrons in their outer shell (outer electrons) and this\ngives them similar chemical properties.",
+        "sourceLocator": "Official PDF pages 67-75; 5.1.1.7 Electronic structure"
+      },
+      "review": {
+        "cardId": "aqa-8464-chem-5-1-group-outer-electrons",
+        "accepted": false,
+        "issues": [
+          "The excerpt is from 5.1.2.1 The periodic table, but the curriculum component and source locator identify 5.1.1.7 Electronic structure. The subsection mapping and locator are therefore incorrect."
+        ],
+        "learnerValue": [
+          "Correctly tests the link between outer-shell electrons and similar group properties."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8464-chem-5-6-catalyst-action",
+        "conceptKey": "aqa-8464-chem-catalyst-lower-activation-pathway",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-1-4",
+        "kind": "cause-consequence",
+        "visualCue": "🧪",
+        "front": "How does a catalyst increase reaction rate, and what happens to the catalyst during the reaction?",
+        "back": "It provides a different pathway with lower activation energy and is not used up.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "A catalyst remains unused up while increasing rate through an alternative reaction pathway with lower activation energy.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "It provides a different pathway with lower activation energy and is not used up.",
+            "isCorrect": true,
+            "feedback": "Correct: this states both catalytic action and persistence.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "It is used up while supplying the activation energy to the reactants.",
+            "isCorrect": false,
+            "feedback": "Catalysts are not used up, and they provide a lower-activation-energy pathway.",
+            "misconception": "treats-catalyst-as-consumed-reactant"
+          },
+          {
+            "key": "c",
+            "text": "It provides a pathway with higher activation energy and slows every reaction.",
+            "isCorrect": false,
+            "feedback": "The catalytic pathway has lower activation energy and increases rate.",
+            "misconception": "reverses-catalyst-activation-effect"
+          }
+        ],
+        "sourceExcerpt": "Catalysts change the rate of chemical reactions but are not used up\nduring the reaction. Different reactions need different catalysts.\nEnzymes act as catalysts in biological systems.\nCatalysts increase the rate of reaction by providing a different\npathway for the reaction that has a lower activation energy.",
+        "sourceLocator": "Official PDF pages 98-104; 5.6.1.4 Catalysts"
+      },
+      "review": {
+        "cardId": "aqa-8464-chem-5-6-catalyst-action",
+        "accepted": false,
+        "issues": [
+          "The explanation contains the malformed phrase \"remains unused up,\" making the key statement about the catalyst not being used up unclear and unsuitable for import."
+        ],
+        "learnerValue": [
+          "The answer and choices otherwise test both catalyst persistence and lower activation energy."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "aqa-8464-chem-5-8-oxygen-carbon-dioxide-tests",
+        "conceptKey": "aqa-8464-chem-oxygen-carbon-dioxide-test-results",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8-2-2",
+        "kind": "comparison",
+        "visualCue": "🫧",
+        "front": "How are oxygen and carbon dioxide distinguished using their specified gas tests?",
+        "back": "Oxygen relights a glowing splint; carbon dioxide turns limewater milky (cloudy).",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "A glowing splint relights in oxygen. Carbon dioxide shaken with or bubbled through limewater makes the limewater milky or cloudy.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "Oxygen relights a glowing splint; carbon dioxide turns limewater milky (cloudy).",
+            "isCorrect": true,
+            "feedback": "Correct: each gas is matched to its specified positive result.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Oxygen turns limewater milky; carbon dioxide relights a glowing splint.",
+            "isCorrect": false,
+            "feedback": "This swaps the two gas-test results.",
+            "misconception": "swaps-oxygen-and-carbon-dioxide-tests"
+          },
+          {
+            "key": "c",
+            "text": "Both gases relight a glowing splint.",
+            "isCorrect": false,
+            "feedback": "Only oxygen has the specified relighting result; carbon dioxide has the limewater result.",
+            "misconception": "uses-one-splint-test-for-both-gases"
+          }
+        ],
+        "sourceExcerpt": "The test for oxygen uses a glowing splint inserted into a test tube of\nthe gas. The splint relights in oxygen.\n5.8.2.3 Test for carbon dioxide\nContent Key opportunities for\nskills development\nThe test for carbon dioxide uses an aqueous solution of calcium\nhydroxide (lime water). When carbon dioxide is shaken with or\nbubbled through limewater the limewater turns milky (cloudy).",
+        "sourceLocator": "Official PDF pages 107-110; 5.8.2.2 Test for oxygen"
+      },
+      "review": {
+        "cardId": "aqa-8464-chem-5-8-oxygen-carbon-dioxide-tests",
+        "accepted": false,
+        "issues": [
+          "The card combines content from 5.8.2.2 Test for oxygen and 5.8.2.3 Test for carbon dioxide, but its curriculum component and locator identify only 5.8.2.2. The component mapping and locator do not support the complete card."
+        ],
+        "learnerValue": [
+          "The comparison otherwise usefully distinguishes two commonly confused gas tests."
+        ]
+      }
+    },
+    {
+      "stage": "deterministic-candidate-excluded",
+      "card": {
+        "id": "aqa-8464-chem-5-5-reaction-profile-information",
+        "conceptKey": "aqa-8464-chem-reaction-profile-energy-features",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5-1-2",
+        "kind": "plot",
+        "visualCue": "📏",
+        "front": "What information can a reaction profile show?",
+        "back": "The relative energies of reactants and products, the activation energy, and the overall energy change.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "A reaction profile displays reactant and product energy levels together with activation energy and the reaction's overall energy change.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "The relative energies of reactants and products, the activation energy, and the overall energy change.",
+            "isCorrect": true,
+            "feedback": "Correct: these are the specified features of a reaction profile.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Only the temperature of the surroundings.",
+            "isCorrect": false,
+            "feedback": "A reaction profile shows relative energies and energy changes, not only temperature.",
+            "misconception": "treats-reaction-profile-as-temperature-reading"
+          },
+          {
+            "key": "c",
+            "text": "The masses of reactants and products and the reaction time.",
+            "isCorrect": false,
+            "feedback": "Those are not the energy features listed for a reaction profile.",
+            "misconception": "confuses-energy-profile-with-mass-time-graph"
+          }
+        ],
+        "sourceExcerpt": "Reaction profiles can be used to show the relative energies of\nreactants and products, the activation energy and the overall\nenergy change of a reaction.",
+        "sourceLocator": "Official PDF pages 95-97; 5.5.1.2 Reaction profiles"
+      }
+    },
+    {
+      "stage": "deterministic-candidate-excluded",
+      "card": {
+        "id": "aqa-8464-chem-5-7-complete-combustion-products",
+        "conceptKey": "aqa-8464-chem-hydrocarbon-complete-combustion-products",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7-1-3",
+        "kind": "fact",
+        "visualCue": "🔥",
+        "front": "What products form during the complete combustion of a hydrocarbon?",
+        "back": "Carbon dioxide and water.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Complete hydrocarbon combustion produces carbon dioxide and water.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "Carbon dioxide and water.",
+            "isCorrect": true,
+            "feedback": "Correct: these are the specified products of complete combustion.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "Carbon monoxide and water.",
+            "isCorrect": false,
+            "feedback": "The stated carbon-containing product of complete combustion is carbon dioxide.",
+            "misconception": "uses-carbon-monoxide-for-complete-combustion"
+          },
+          {
+            "key": "c",
+            "text": "Carbon and hydrogen.",
+            "isCorrect": false,
+            "feedback": "These are not the products specified for complete hydrocarbon combustion.",
+            "misconception": "treats-combustion-as-element-separation"
+          }
+        ],
+        "sourceExcerpt": "The complete combustion of a hydrocarbon produces carbon dioxide\nand water.",
+        "sourceLocator": "Official PDF pages 104-107; 5.7.1.3 Properties of hydrocarbons"
+      }
+    }
+  ]
+}

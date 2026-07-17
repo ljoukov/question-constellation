@@ -13,7 +13,16 @@ const requestSchema = z.object({
 		.int()
 		.min(0)
 		.max(6 * 60 * 60 * 1000)
-		.nullable()
+		.nullable(),
+	assistance: z
+		.object({
+			externalInputDetected: z.boolean().default(false),
+			externalInputSources: z
+				.array(z.enum(['paste', 'drop']))
+				.max(2)
+				.default([])
+		})
+		.default({ externalInputDetected: false, externalInputSources: [] })
 });
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
@@ -39,7 +48,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		gapId: params.gapId,
 		answer: body.answer,
 		guidedAnswers: body.guidedAnswers,
-		submissionId: body.submissionId
+		submissionId: body.submissionId,
+		assistance: body.assistance
 	});
 
 	if (!result) {

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1",
+  "recoveredReleaseId": "aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "historicalArtifactHash": "6bd297e613cc326790e2195048879a8a02e7490a9a4b4c76b5df3308af7e1a96",
+  "generator": {
+    "runId": "019f6c36-b4d8-7bd0-be5f-1c5fa88a689a",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-35-52-019f6c36-b4d8-7bd0-be5f-1c5fa88a689a.jsonl",
+    "jsonlHash": "f2367b68c02c588d3bc8e07a14ab861fe7281e05e3a9c3d531deb9a7a4022feb",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1/generation",
+    "startedAt": "2026-07-16T18:35:52.557Z",
+    "completedAt": "2026-07-16T18:37:28.888Z",
+    "modelOutputHash": "12698432afddb10abefd750fc72fcd0b70b50fc800dfc022bca46770e329d769"
+  },
+  "reviewer": {
+    "runId": "019f6c38-2f6a-7661-9d28-ad9119b8b275",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-37-29-019f6c38-2f6a-7661-9d28-ad9119b8b275.jsonl",
+    "jsonlHash": "39eeb93fb2716d47d876bdd272b28e73a63a95576346035d4f0e70cb19fb8a9b",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-physics-higher-only-descendants-01-178b9f2251-v1/review",
+    "startedAt": "2026-07-16T18:37:29.467Z",
+    "completedAt": "2026-07-16T18:37:55.695Z",
+    "modelOutputHash": "bb8baf7b912e35aedce8c5ab34e3fd64aff243b5e9c88006785ff3ffcbddb765"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "99ff8a312dfadfa40b6edb8c57ed9244dd6347f53117a31cd04cfe751f81d9a1"
+}

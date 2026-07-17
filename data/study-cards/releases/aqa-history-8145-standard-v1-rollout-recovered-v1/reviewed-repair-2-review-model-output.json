@@ -1,0 +1,15 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8145-321ab-stresemann-era-dates",
+      "accepted": false,
+      "issues": [
+        "The source excerpt is truncated after “1924–” and therefore does not support the full canonical answer and explanation, which specify 1924–1929."
+      ],
+      "learnerValue": [
+        "Tests a useful chronological distinction between Weimar unrest, Stresemann-era recovery, and Depression-era extremist growth.",
+        "The three choices are distinct and the feedback accurately diagnoses each date-range confusion."
+      ]
+    }
+  ]
+}

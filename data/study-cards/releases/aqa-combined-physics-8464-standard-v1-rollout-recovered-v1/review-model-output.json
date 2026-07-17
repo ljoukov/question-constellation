@@ -1,0 +1,234 @@
+{
+  "reviews": [
+    {
+      "cardId": "energy-power-rate-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds exact recall of power as a rate and distinguishes it from energy, force and time."
+      ]
+    },
+    {
+      "cardId": "energy-conservation-transfer-store-dissipate",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces conservation while distinguishing transfer, storage and dissipation."
+      ]
+    },
+    {
+      "cardId": "energy-renewable-resource-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the precise replenishment-based definition of a renewable resource."
+      ]
+    },
+    {
+      "cardId": "energy-thermal-conductivity-transfer-rate",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Secures the direction of the relationship between thermal conductivity and conduction rate."
+      ]
+    },
+    {
+      "cardId": "electricity-current-flow-and-rate",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes charge flow from the rate at which charge flows."
+      ]
+    },
+    {
+      "cardId": "electricity-resistance-current-fixed-pd",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the effect of resistance on current under a clearly fixed potential difference."
+      ]
+    },
+    {
+      "cardId": "electricity-series-current-rule",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that current is unchanged throughout a series circuit."
+      ]
+    },
+    {
+      "cardId": "electricity-uk-mains-frequency-voltage",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds accurate recall of both UK mains values and separates them from familiar alternatives."
+      ]
+    },
+    {
+      "cardId": "particle-density-practical-volume-methods",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links object shape to the correct volume-measurement method in the required practical."
+      ]
+    },
+    {
+      "cardId": "particle-state-change-mass-conservation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces mass conservation across the full set of specified state changes."
+      ]
+    },
+    {
+      "cardId": "particle-internal-energy-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Establishes that internal energy includes both kinetic and potential particle energy."
+      ]
+    },
+    {
+      "cardId": "particle-state-change-energy-temperature",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates changes in internal energy from temperature during a change of state."
+      ]
+    },
+    {
+      "cardId": "atomic-basic-atom-structure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests particle locations and charges while contrasting the nuclear model with plausible alternatives."
+      ]
+    },
+    {
+      "cardId": "atomic-isotope-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes isotopes from different elements and from ions."
+      ]
+    },
+    {
+      "cardId": "atomic-radioactive-decay-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines instability, radiation emission, increasing stability and randomness in one accurate definition."
+      ]
+    },
+    {
+      "cardId": "atomic-half-life-definition",
+      "accepted": false,
+      "issues": [
+        "The visual cue 📈 denotes an increasing trend, whereas the cited definition concerns nuclei, count rate or activity falling to half. It is misleading rather than a meaningful cue for this card."
+      ],
+      "learnerValue": [
+        "The definition and distractors are otherwise accurate, concise and source-grounded."
+      ]
+    },
+    {
+      "cardId": "forces-scalar-vector-difference",
+      "accepted": false,
+      "issues": [
+        "Choice b, which says a scalar has direction only, is not a pedagogically plausible misconception: a physical quantity cannot be specified by direction without magnitude, and this is not a genuine reversal of the definitions. The four-choice card therefore lacks three sound distractors."
+      ],
+      "learnerValue": [
+        "The canonical scalar–vector distinction is accurate and important."
+      ]
+    },
+    {
+      "cardId": "forces-work-done-displacement-condition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clarifies that the force in question must cause the displacement for work to be done."
+      ]
+    },
+    {
+      "cardId": "forces-newton-second-law-relationship",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both the direct force relationship and inverse mass relationship in Newton's Second Law."
+      ]
+    },
+    {
+      "cardId": "forces-stopping-distance-components",
+      "accepted": false,
+      "issues": [
+        "The four-choice set uses contrived fillers rather than three genuine misconceptions. “Reaction time plus braking force” adds unlike quantities even though the prompt asks for two distances, while adding the vehicle's length is not a plausible stopping-distance model."
+      ],
+      "learnerValue": [
+        "The canonical thinking-distance-plus-braking-distance relationship is accurate and useful."
+      ]
+    },
+    {
+      "cardId": "waves-longitudinal-compressions-sound",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the defining features of longitudinal waves with the specified sound-wave example."
+      ]
+    },
+    {
+      "cardId": "waves-amplitude-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes amplitude from wavelength, frequency and wave speed."
+      ]
+    },
+    {
+      "cardId": "waves-frequency-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Secures frequency as a count of waves passing a point per second."
+      ]
+    },
+    {
+      "cardId": "waves-electromagnetic-spectrum-order",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds complete long-to-short-wavelength ordering and targets common adjacent-group swaps."
+      ]
+    },
+    {
+      "cardId": "magnetism-like-unlike-poles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both attraction and repulsion rules for magnetic pole pairings."
+      ]
+    },
+    {
+      "cardId": "magnetism-permanent-induced-difference",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes a permanent magnet's own field from magnetism induced by an external field."
+      ]
+    },
+    {
+      "cardId": "magnetism-magnetic-field-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Defines a magnetic field as a region of force rather than material inside a magnet or a single field line."
+      ]
+    },
+    {
+      "cardId": "magnetism-electromagnet-iron-core",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the structure of an electromagnet with the strengthening effect of its iron core."
+      ]
+    }
+  ]
+}

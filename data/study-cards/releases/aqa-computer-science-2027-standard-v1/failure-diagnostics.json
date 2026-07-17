@@ -1,0 +1,15 @@
+{
+  "invalidCards": [],
+  "validCountByTopic": {
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-1": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-2": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-3": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-4": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-5": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-6": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-7": 4,
+    "aqa-gcse-computer-science-8525-v1.3-2027:3-8": 4
+  },
+  "topicsBelowMinimum": [],
+  "repairCardIds": []
+}

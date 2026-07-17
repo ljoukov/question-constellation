@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-geography-8035-geography-all-descendants-01-b5a366b391-v1",
+  "recoveredReleaseId": "aqa-geography-8035-geography-all-descendants-01-b5a366b391-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "generator": {
+    "runId": "019f6c42-01b8-77a3-bb10-6362daf6d155",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-48-13-019f6c42-01b8-77a3-bb10-6362daf6d155.jsonl",
+    "jsonlHash": "d72c7acdd9911a0b29b361f57a6a5027ce8585b7c50d6c867d9204d62a00c74b",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-geography-8035-geography-all-descendants-01-b5a366b391-v1/generation",
+    "startedAt": "2026-07-16T18:48:13.135Z",
+    "completedAt": "2026-07-16T18:52:36.069Z",
+    "modelOutputHash": "3d2c601c207617c51702cf5911609d7b804789287fc5bffe9c795ed20a08d42b"
+  },
+  "reviewer": {
+    "runId": "019f6c46-0782-7dc3-8281-7fda1fed081b",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-52-36-019f6c46-0782-7dc3-8281-7fda1fed081b.jsonl",
+    "jsonlHash": "30d0acbd8d07dcd1972ce21f2182ff68f676bd496f3745b36d344e6767169a37",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-geography-8035-geography-all-descendants-01-b5a366b391-v1/review",
+    "startedAt": "2026-07-16T18:52:36.746Z",
+    "completedAt": "2026-07-16T18:53:07.405Z",
+    "modelOutputHash": "2471056448f52975f1228b9a59bb248a6a48b395261d8cd96dfc77ae30df5a36"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "eba57884ac0d59ddde23836eeeb80041630e1e190470d3e546dc67ae121ead3a"
+}

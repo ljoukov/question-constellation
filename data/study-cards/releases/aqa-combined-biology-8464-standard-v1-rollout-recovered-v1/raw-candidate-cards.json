@@ -1,0 +1,1243 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-biology-cell-eukaryote-prokaryote-nuclear-enclosure",
+      "conceptKey": "aqa-8464-biology-eukaryote-prokaryote-genetic-material",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1-1",
+      "kind": "comparison",
+      "visualCue": "🔬",
+      "front": "How is the location of genetic material different in eukaryotic plant and animal cells and prokaryotic bacterial cells?",
+      "back": "Eukaryotic genetic material is enclosed in a nucleus; bacterial genetic material is not enclosed in a nucleus.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Plant and animal cells are identified as eukaryotic, while bacterial cells are prokaryotic. The key contrast is whether their genetic material is enclosed in a nucleus.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Eukaryotic genetic material is enclosed in a nucleus; bacterial genetic material is not enclosed in a nucleus.",
+          "isCorrect": true,
+          "feedback": "Correct: the excerpt directly contrasts nuclear enclosure.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Both have genetic material enclosed in a nucleus.",
+          "isCorrect": false,
+          "feedback": "Bacterial genetic material is not enclosed in a nucleus.",
+          "misconception": "bacteria-have-nuclei"
+        },
+        {
+          "key": "c",
+          "text": "Neither has genetic material enclosed in a nucleus.",
+          "isCorrect": false,
+          "feedback": "Plant and animal cell genetic material is enclosed in a nucleus.",
+          "misconception": "eukaryotes-lack-nuclei"
+        },
+        {
+          "key": "d",
+          "text": "Bacterial genetic material is enclosed in a nucleus, but eukaryotic genetic material is not.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated difference.",
+          "misconception": "nuclear-enclosure-reversed"
+        }
+      ],
+      "sourceExcerpt": "Plant and animal cells (eukaryotic cells) have a cell membrane,\ncytoplasm and genetic material enclosed in a nucleus.\nBacterial cells (prokaryotic cells) are much smaller in comparison.\nThey have cytoplasm and a cell membrane surrounded by a cell\nwall. The genetic material is not enclosed in a nucleus.",
+      "sourceLocator": "Official PDF pages 20-26; 4.1.1.1 Eukaryotes and prokaryotes"
+    },
+    {
+      "id": "aqa-8464-biology-cell-plant-extra-structures",
+      "conceptKey": "aqa-8464-biology-plant-cell-extra-structures-and-wall",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-1-2",
+      "kind": "comparison",
+      "visualCue": "🌿",
+      "front": "Compared with the parts found in animal cells, which structures do plant cells often have, and what wall strengthens plant and algal cells?",
+      "back": "Plant cells often have chloroplasts and a permanent vacuole filled with cell sap; plant and algal cells also have a cellulose cell wall that strengthens the cell.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The qualifier matters: plant cells often have chloroplasts and a sap-filled permanent vacuole, while plant and algal cells have a strengthening cellulose wall.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Plant cells often have chloroplasts and a permanent vacuole filled with cell sap; plant and algal cells also have a cellulose cell wall that strengthens the cell.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both the structures and the qualifier “often”.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Plant cells often have only a cellulose cell wall; chloroplasts and a permanent vacuole are parts found only in animal cells.",
+          "isCorrect": false,
+          "feedback": "The excerpt lists chloroplasts and a permanent vacuole as additional structures often found in plant cells.",
+          "misconception": "plant-and-animal-parts-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Plant cells often have chloroplasts, but their permanent vacuole is empty and the cell wall is made of cell sap.",
+          "isCorrect": false,
+          "feedback": "The permanent vacuole is filled with cell sap, while the wall is made of cellulose.",
+          "misconception": "vacuole-wall-material-confusion"
+        }
+      ],
+      "sourceExcerpt": "In addition to the parts found in animal cells, plant cells often have:\n• chloroplasts\n• a permanent vacuole filled with cell sap.\nPlant and algal cells also have a cell wall made of cellulose, which\nstrengthens the cell.",
+      "sourceLocator": "Official PDF pages 20-26; 4.1.1.2 Animal and plant cells"
+    },
+    {
+      "id": "aqa-8464-biology-cell-cycle-mitosis-sequence",
+      "conceptKey": "aqa-8464-biology-cell-cycle-overall-sequence",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-2-2",
+      "kind": "process",
+      "visualCue": "🧬",
+      "front": "What is the overall sequence from cell growth to the production of two identical cells in the cell cycle?",
+      "back": "The cell grows and increases sub-cellular structures; DNA replicates; chromosomes move to opposite ends and the nucleus divides; then the cytoplasm and cell membranes divide to form two identical cells.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Growth and DNA replication occur before mitosis. Chromosomes then move to opposite ends, the nucleus divides, and division of the cytoplasm and membranes produces two identical cells.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The cell grows and increases sub-cellular structures; DNA replicates; chromosomes move to opposite ends and the nucleus divides; then the cytoplasm and cell membranes divide to form two identical cells.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the stated order and outcome.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The nucleus divides first, then DNA replicates, and finally one cell forms.",
+          "isCorrect": false,
+          "feedback": "DNA replication occurs before mitosis, and the process forms two identical cells.",
+          "misconception": "dna-replicates-after-mitosis"
+        },
+        {
+          "key": "c",
+          "text": "The cytoplasm divides before the DNA is copied, producing two genetically different cells.",
+          "isCorrect": false,
+          "feedback": "DNA is copied before nuclear and cytoplasmic division, and the resulting cells are identical.",
+          "misconception": "cell-cycle-order-and-outcome-confused"
+        },
+        {
+          "key": "d",
+          "text": "DNA replicates and the cell divides once to form four non-identical cells.",
+          "isCorrect": false,
+          "feedback": "The cited cell cycle ends with two identical cells, not four non-identical cells.",
+          "misconception": "mitosis-confused-with-meiosis"
+        }
+      ],
+      "sourceExcerpt": "Before a cell can divide it needs to grow and increase the number\nof sub-cellular structures such as ribosomes and mitochondria. The\nDNA replicates to form two copies of each chromosome.\nIn mitosis one set of chromosomes is pulled to each end of the cell\nand the nucleus divides.\nFinally the cytoplasm and cell membranes divide to form two\nidentical cells.",
+      "sourceLocator": "Official PDF pages 20-26; 4.1.2.2 Mitosis and the cell cycle"
+    },
+    {
+      "id": "aqa-8464-biology-cell-active-transport-direction-energy",
+      "conceptKey": "aqa-8464-biology-active-transport-gradient-and-energy",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-1-3-3",
+      "kind": "process",
+      "visualCue": "🧫",
+      "front": "In which direction does active transport move substances relative to concentration, and what supplies the required energy?",
+      "back": "It moves substances from a more dilute solution to a more concentrated solution, against the concentration gradient, using energy from respiration.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Active transport moves substances against the concentration gradient, from more dilute to more concentrated conditions, and requires energy from respiration.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It moves substances from a more dilute solution to a more concentrated solution, against the concentration gradient, using energy from respiration.",
+          "isCorrect": true,
+          "feedback": "Correct: both the direction and energy source match the excerpt.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It moves substances from a more concentrated solution to a more dilute solution without energy from respiration.",
+          "isCorrect": false,
+          "feedback": "Active transport is stated to move in the opposite direction and requires energy.",
+          "misconception": "active-transport-confused-with-diffusion"
+        },
+        {
+          "key": "c",
+          "text": "It moves substances from a more dilute solution to a more concentrated solution but requires no energy.",
+          "isCorrect": false,
+          "feedback": "Movement against the concentration gradient requires energy from respiration.",
+          "misconception": "active-transport-energy-omitted"
+        },
+        {
+          "key": "d",
+          "text": "It moves only water from a dilute solution to a concentrated solution through a partially permeable membrane.",
+          "isCorrect": false,
+          "feedback": "That describes osmosis rather than the stated active-transport process.",
+          "misconception": "active-transport-confused-with-osmosis"
+        }
+      ],
+      "sourceExcerpt": "Active transport moves substances from a more dilute solution to a\nmore concentrated solution (against a concentration gradient). This\nrequires energy from respiration.",
+      "sourceLocator": "Official PDF pages 20-26; 4.1.3.3 Active transport"
+    },
+    {
+      "id": "aqa-8464-biology-organisation-levels-order",
+      "conceptKey": "aqa-8464-biology-cells-tissues-organs-systems-order",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2-1",
+      "kind": "structure",
+      "visualCue": "🔬",
+      "front": "What is the order of biological organisation from the smallest listed level to the whole organism?",
+      "back": "Cells → tissues → organs → organ systems → organisms.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Similar cells form tissues, tissues aggregate into organs, and organs are organised into systems that work together to form organisms.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Cells → tissues → organs → organ systems → organisms.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the stated organisational hierarchy.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Cells → organs → tissues → organ systems → organisms.",
+          "isCorrect": false,
+          "feedback": "Tissues come before organs because organs are aggregations of tissues.",
+          "misconception": "tissues-and-organs-swapped"
+        },
+        {
+          "key": "c",
+          "text": "Tissues → cells → organ systems → organs → organisms.",
+          "isCorrect": false,
+          "feedback": "Cells are the basic building blocks, and organs come before organ systems.",
+          "misconception": "organisation-levels-misordered"
+        },
+        {
+          "key": "d",
+          "text": "Organisms → organ systems → organs → tissues → cells.",
+          "isCorrect": false,
+          "feedback": "This gives the hierarchy from largest to smallest, not smallest to largest.",
+          "misconception": "organisation-order-reversed"
+        }
+      ],
+      "sourceExcerpt": "Cells are the basic building blocks of all living organisms.\nA tissue is a group of cells with a similar structure and function.\nOrgans are aggregations of tissues performing specific functions.\nOrgans are organised into organ systems, which work together to\nform organisms.",
+      "sourceLocator": "Official PDF pages 26-33; 4.2.1 Principles of organisation"
+    },
+    {
+      "id": "aqa-8464-biology-digestive-enzyme-substrates-products",
+      "conceptKey": "aqa-8464-biology-amylase-protease-lipase-actions",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2-2-1",
+      "kind": "fact",
+      "visualCue": "🧪",
+      "front": "What do amylase, proteases and lipases break down, and what products are stated?",
+      "back": "Amylase breaks down starch; proteases break down proteins to amino acids; lipases break down lipids to glycerol and fatty acids.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The excerpt gives a distinct substrate-product relationship for each of the three digestive enzymes.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Amylase breaks down starch; proteases break down proteins to amino acids; lipases break down lipids to glycerol and fatty acids.",
+          "isCorrect": true,
+          "feedback": "Correct: all three mappings match the specification.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Amylase breaks down proteins to amino acids; proteases break down starch; lipases break down lipids to glycerol and fatty acids.",
+          "isCorrect": false,
+          "feedback": "Amylase acts on starch, while proteases act on proteins.",
+          "misconception": "amylase-and-protease-swapped"
+        },
+        {
+          "key": "c",
+          "text": "Amylase breaks down starch; proteases break down lipids to glycerol and fatty acids; lipases break down proteins to amino acids.",
+          "isCorrect": false,
+          "feedback": "Proteases act on proteins, while lipases act on lipids.",
+          "misconception": "protease-and-lipase-swapped"
+        },
+        {
+          "key": "d",
+          "text": "Amylase, proteases and lipases all break their substrates down to simple sugars.",
+          "isCorrect": false,
+          "feedback": "Only the stated enzyme-specific products should be used; proteins yield amino acids and lipids yield glycerol and fatty acids.",
+          "misconception": "all-digestion-products-are-sugars"
+        }
+      ],
+      "sourceExcerpt": "Amylase is a carbohydrase which breaks down starch.\nProteases break down proteins to amino acids.\nLipases break down lipids (fats) to glycerol and fatty acids.",
+      "sourceLocator": "Official PDF pages 26-33; 4.2.2.1 The human digestive system"
+    },
+    {
+      "id": "aqa-8464-biology-ventricle-circulation-destinations",
+      "conceptKey": "aqa-8464-biology-right-left-ventricle-destinations",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2-2-2",
+      "kind": "comparison",
+      "visualCue": "🫀",
+      "front": "Where does each ventricle of the human heart pump blood?",
+      "back": "The right ventricle pumps blood to the lungs; the left ventricle pumps blood around the rest of the body.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The two ventricles serve different parts of the double circulatory system: the right supplies the lungs and the left supplies the rest of the body.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The right ventricle pumps blood to the lungs; the left ventricle pumps blood around the rest of the body.",
+          "isCorrect": true,
+          "feedback": "Correct: the destinations match the excerpt.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The right ventricle pumps blood around the rest of the body; the left ventricle pumps blood to the lungs.",
+          "isCorrect": false,
+          "feedback": "This reverses the destinations of the two ventricles.",
+          "misconception": "ventricle-destinations-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both ventricles pump blood to the lungs.",
+          "isCorrect": false,
+          "feedback": "Only the right ventricle pumps to the lungs; the left pumps around the rest of the body.",
+          "misconception": "both-ventricles-supply-lungs"
+        },
+        {
+          "key": "d",
+          "text": "Both ventricles pump blood around the rest of the body.",
+          "isCorrect": false,
+          "feedback": "The right ventricle instead pumps blood to the lungs.",
+          "misconception": "both-ventricles-supply-body"
+        }
+      ],
+      "sourceExcerpt": "The heart is an organ that pumps blood around the body in a\ndouble circulatory system. The right ventricle pumps blood to the\nlungs where gas exchange takes place. The left ventricle pumps\nblood around the rest of the body.",
+      "sourceLocator": "Official PDF pages 26-33; 4.2.2.2 The heart and blood vessels"
+    },
+    {
+      "id": "aqa-8464-biology-coronary-heart-disease-stents",
+      "conceptKey": "aqa-8464-biology-coronary-narrowing-oxygen-stent-chain",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-2-2-4",
+      "kind": "cause-consequence",
+      "visualCue": "🫀",
+      "front": "What causal chain links fatty deposits in coronary heart disease to the heart muscle’s oxygen supply, and what do stents do?",
+      "back": "Fatty material narrows the coronary arteries, reducing blood flow and oxygen supply to the heart muscle; stents keep the coronary arteries open.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Narrowed coronary arteries carry less blood, leaving the heart muscle with less oxygen. Stents are used to hold the coronary arteries open.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Fatty material narrows the coronary arteries, reducing blood flow and oxygen supply to the heart muscle; stents keep the coronary arteries open.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives both the disease mechanism and the stated role of stents.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Fatty material widens the coronary arteries, increasing blood flow; stents narrow them again.",
+          "isCorrect": false,
+          "feedback": "Fatty material narrows the arteries and reduces blood flow; stents keep them open.",
+          "misconception": "coronary-narrowing-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Fatty material narrows the coronary arteries, but stents reduce blood cholesterol rather than keeping the arteries open.",
+          "isCorrect": false,
+          "feedback": "The stated function of a stent is to keep a coronary artery open.",
+          "misconception": "stents-confused-with-cholesterol-drugs"
+        }
+      ],
+      "sourceExcerpt": "In coronary heart disease layers of fatty material build up inside the\ncoronary arteries, narrowing them. This reduces the flow of blood\nthrough the coronary arteries, resulting in a lack of oxygen for the\nheart muscle. Stents are used to keep the coronary arteries open.",
+      "sourceLocator": "Official PDF pages 26-33; 4.2.2.4 Coronary heart disease: a non-communicable disease"
+    },
+    {
+      "id": "aqa-8464-biology-pathogen-definition-types-spread",
+      "conceptKey": "aqa-8464-biology-pathogens-types-and-transmission",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3-1-1",
+      "kind": "definition",
+      "visualCue": "🦠",
+      "front": "What is a pathogen, which groups may be pathogens, and how may they spread?",
+      "back": "Pathogens are microorganisms that cause infectious disease; they may be viruses, bacteria, protists or fungi and may spread by direct contact, water or air.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition is tied to infectious disease. The specification lists four possible pathogen groups and three possible routes of spread.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Pathogens are microorganisms that cause infectious disease; they may be viruses, bacteria, protists or fungi and may spread by direct contact, water or air.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves the listed groups, routes and qualifiers.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Pathogens are only bacteria that cause disease in animals and spread only through air.",
+          "isCorrect": false,
+          "feedback": "Pathogens may also be viruses, protists or fungi, may infect plants, and may spread by contact or water as well as air.",
+          "misconception": "pathogens-limited-to-airborne-bacteria"
+        },
+        {
+          "key": "c",
+          "text": "Pathogens are damaged body cells that cause non-infectious disease and cannot spread between organisms.",
+          "isCorrect": false,
+          "feedback": "A pathogen is a microorganism that causes infectious disease and may spread between hosts.",
+          "misconception": "pathogens-confused-with-damaged-cells"
+        }
+      ],
+      "sourceExcerpt": "Pathogens are microorganisms that cause infectious disease.\nPathogens may be viruses, bacteria, protists or fungi. They may\ninfect plants or animals and can be spread by direct contact, by\nwater or by air.",
+      "sourceLocator": "Official PDF pages 34-38; 4.3.1.1 Communicable (infectious) diseases"
+    },
+    {
+      "id": "aqa-8464-biology-white-blood-cell-defences",
+      "conceptKey": "aqa-8464-biology-white-blood-cell-defence-methods",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3-1-6",
+      "kind": "fact",
+      "visualCue": "🧫",
+      "front": "What three actions of white blood cells help defend the body against pathogens?",
+      "back": "Phagocytosis, antibody production and antitoxin production.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification lists phagocytosis, antibody production and antitoxin production as the three white-blood-cell defences.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Phagocytosis, antibody production and antitoxin production.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the three listed actions.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Skin, the nose and the stomach.",
+          "isCorrect": false,
+          "feedback": "Those are body defence systems, not the three white-blood-cell actions listed here.",
+          "misconception": "barriers-confused-with-white-cell-actions"
+        },
+        {
+          "key": "c",
+          "text": "Antibiotic production, pain relief and blood clotting.",
+          "isCorrect": false,
+          "feedback": "The listed actions are phagocytosis, antibody production and antitoxin production.",
+          "misconception": "medicines-and-clotting-confused-with-immunity"
+        },
+        {
+          "key": "d",
+          "text": "Antibody production, hormone secretion and oxygen transport.",
+          "isCorrect": false,
+          "feedback": "Only antibody production belongs to the stated set of white-blood-cell actions.",
+          "misconception": "blood-cell-functions-mixed"
+        }
+      ],
+      "sourceExcerpt": "If a pathogen enters the body the immune system tries to destroy\nthe pathogen.\nWhite blood cells help to defend against pathogens by:\n• phagocytosis\n• antibody production\n• antitoxin production.",
+      "sourceLocator": "Official PDF pages 34-38; 4.3.1.6 Human defence systems"
+    },
+    {
+      "id": "aqa-8464-biology-vaccination-antibody-response",
+      "conceptKey": "aqa-8464-biology-vaccination-primary-and-rapid-response",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3-1-7",
+      "kind": "process",
+      "visualCue": "💉",
+      "front": "How does vaccination prepare white blood cells to prevent infection by the same pathogen later?",
+      "back": "It introduces small quantities of dead or inactive pathogen to stimulate antibody production, so white blood cells respond quickly with the correct antibodies if the same pathogen re-enters.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Dead or inactive pathogen forms stimulate antibody production. On later entry by the same pathogen, white blood cells rapidly produce the correct antibodies.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It introduces small quantities of dead or inactive pathogen to stimulate antibody production, so white blood cells respond quickly with the correct antibodies if the same pathogen re-enters.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the two-stage response stated in the excerpt.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It introduces a full dose of an active pathogen so illness creates antibodies slowly.",
+          "isCorrect": false,
+          "feedback": "Vaccination uses small quantities of dead or inactive pathogen forms.",
+          "misconception": "vaccine-contains-full-active-dose"
+        },
+        {
+          "key": "c",
+          "text": "It supplies antibiotics that remain in the blood and kill the same pathogen on re-entry.",
+          "isCorrect": false,
+          "feedback": "The stated mechanism involves white blood cells producing antibodies, not stored antibiotics.",
+          "misconception": "vaccination-confused-with-antibiotics"
+        },
+        {
+          "key": "d",
+          "text": "It immediately kills every pathogen in the body without involving white blood cells.",
+          "isCorrect": false,
+          "feedback": "Vaccination stimulates white blood cells and prepares a rapid antibody response to the same pathogen.",
+          "misconception": "vaccine-acts-as-direct-disinfectant"
+        }
+      ],
+      "sourceExcerpt": "Vaccination involves introducing small quantities of dead or inactive\nforms of a pathogen into the body to stimulate the white blood cells\nto produce antibodies. If the same pathogen re-enters the body the\nwhite blood cells respond quickly to produce the correct antibodies,\npreventing infection.",
+      "sourceLocator": "Official PDF pages 34-38; 4.3.1.7 Vaccination"
+    },
+    {
+      "id": "aqa-8464-biology-antibiotics-painkillers-viral-limits",
+      "conceptKey": "aqa-8464-biology-antibiotics-viruses-painkillers-symptoms",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-3-1-8",
+      "kind": "comparison",
+      "visualCue": "💊",
+      "front": "What is the stated limitation of antibiotics against viruses, and what do painkillers do during disease?",
+      "back": "Antibiotics cannot kill viral pathogens; painkillers treat disease symptoms but do not kill pathogens.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Antibiotics do not kill viral pathogens. Painkillers act on symptoms rather than killing the pathogen causing disease.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Antibiotics cannot kill viral pathogens; painkillers treat disease symptoms but do not kill pathogens.",
+          "isCorrect": true,
+          "feedback": "Correct: this distinguishes the two limitations accurately.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Antibiotics kill viral pathogens, while painkillers only reduce symptoms.",
+          "isCorrect": false,
+          "feedback": "The painkiller statement is right, but antibiotics cannot kill viral pathogens.",
+          "misconception": "antibiotics-kill-viruses"
+        },
+        {
+          "key": "c",
+          "text": "Antibiotics cannot kill viral pathogens, but painkillers kill the pathogens causing the symptoms.",
+          "isCorrect": false,
+          "feedback": "Painkillers treat symptoms but do not kill pathogens.",
+          "misconception": "painkillers-kill-pathogens"
+        }
+      ],
+      "sourceExcerpt": "Antibiotics cannot kill viral pathogens.\nPainkillers and other medicines are used to treat the symptoms of\ndisease but do not kill pathogens.",
+      "sourceLocator": "Official PDF pages 34-38; 4.3.1.8 Antibiotics and painkillers"
+    },
+    {
+      "id": "aqa-8464-biology-photosynthesis-endothermic-light-transfer",
+      "conceptKey": "aqa-8464-biology-photosynthesis-energy-transfer",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4-1-1",
+      "kind": "cause-consequence",
+      "visualCue": "🌿",
+      "front": "Why is photosynthesis described as an endothermic reaction?",
+      "back": "It is endothermic because light transfers energy from the environment to the chloroplasts.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The reaction takes in energy: light transfers it from the environment into chloroplasts.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is endothermic because light transfers energy from the environment to the chloroplasts.",
+          "isCorrect": true,
+          "feedback": "Correct: the direction of energy transfer matches the excerpt.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It is exothermic because light transfers energy from chloroplasts to the environment.",
+          "isCorrect": false,
+          "feedback": "The energy transfer is from the environment to chloroplasts, so the reaction is endothermic.",
+          "misconception": "photosynthesis-energy-direction-reversed"
+        },
+        {
+          "key": "c",
+          "text": "It is endothermic because chloroplasts transfer energy to light in the environment.",
+          "isCorrect": false,
+          "feedback": "Light transfers energy into chloroplasts, not from chloroplasts into light.",
+          "misconception": "light-transfer-agent-reversed"
+        },
+        {
+          "key": "d",
+          "text": "It is exothermic because no energy is transferred by light.",
+          "isCorrect": false,
+          "feedback": "The excerpt explicitly states that light transfers energy to chloroplasts.",
+          "misconception": "photosynthesis-light-energy-omitted"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to describe photosynthesis as an\nendothermic reaction in which energy is transferred from the\nenvironment to the chloroplasts by light.",
+      "sourceLocator": "Official PDF pages 39-42; 4.4.1.1 Photosynthetic reaction"
+    },
+    {
+      "id": "aqa-8464-biology-photosynthesis-rate-factors",
+      "conceptKey": "aqa-8464-biology-photosynthesis-rate-four-factors",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4-1-2",
+      "kind": "fact",
+      "visualCue": "🍃",
+      "front": "Which four factors are stated to affect the rate of photosynthesis?",
+      "back": "Temperature, light intensity, carbon dioxide concentration and the amount of chlorophyll.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification names temperature, light intensity, carbon dioxide concentration and chlorophyll amount as factors affecting photosynthesis rate.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Temperature, light intensity, carbon dioxide concentration and the amount of chlorophyll.",
+          "isCorrect": true,
+          "feedback": "Correct: all four stated factors are included.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Temperature, oxygen concentration, water volume and leaf size.",
+          "isCorrect": false,
+          "feedback": "The stated list uses light intensity, carbon dioxide concentration and chlorophyll amount, not those replacements.",
+          "misconception": "photosynthesis-factors-replaced"
+        },
+        {
+          "key": "c",
+          "text": "Light intensity, glucose concentration, soil pH and oxygen concentration.",
+          "isCorrect": false,
+          "feedback": "Only light intensity appears in the stated four-factor list.",
+          "misconception": "photosynthesis-products-confused-with-rate-factors"
+        },
+        {
+          "key": "d",
+          "text": "Only light intensity; the other conditions do not affect the rate.",
+          "isCorrect": false,
+          "feedback": "The excerpt names four factors, not light intensity alone.",
+          "misconception": "single-photosynthesis-factor-only"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to explain the effects of temperature, light\nintensity, carbon dioxide concentration, and the amount of\nchlorophyll on the rate of photosynthesis.",
+      "sourceLocator": "Official PDF pages 39-42; 4.4.1.2 Rate of photosynthesis"
+    },
+    {
+      "id": "aqa-8464-biology-photosynthesis-glucose-uses",
+      "conceptKey": "aqa-8464-biology-five-uses-of-photosynthetic-glucose",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4-1-3",
+      "kind": "process",
+      "visualCue": "🍃",
+      "front": "What five possible uses of glucose produced by photosynthesis are specified?",
+      "back": "It may be used in respiration; stored as insoluble starch; made into fat or oil; made into cellulose; or used to produce amino acids for protein synthesis.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The five listed fates cover respiration, storage as starch or fat/oil, cellulose production and amino-acid production for protein synthesis.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It may be used in respiration; stored as insoluble starch; made into fat or oil; made into cellulose; or used to produce amino acids for protein synthesis.",
+          "isCorrect": true,
+          "feedback": "Correct: all five possible uses are represented.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It is used only for respiration; none is stored or used to make other substances.",
+          "isCorrect": false,
+          "feedback": "The excerpt also lists storage and the production of fats, cellulose and amino acids.",
+          "misconception": "glucose-used-only-in-respiration"
+        },
+        {
+          "key": "c",
+          "text": "It is stored only as soluble glucose and is not converted into starch, oils, cellulose or amino acids.",
+          "isCorrect": false,
+          "feedback": "The specification explicitly lists conversion into insoluble starch and several other substances.",
+          "misconception": "photosynthetic-glucose-never-converted"
+        }
+      ],
+      "sourceExcerpt": "The glucose produced in photosynthesis may be:\n• used for respiration\n• converted into insoluble starch for storage\n• used to produce fat or oil for storage\n• used to produce cellulose, which strengthens the cell wall\n• used to produce amino acids for protein synthesis.",
+      "sourceLocator": "Official PDF pages 39-42; 4.4.1.3 Uses of glucose from photosynthesis"
+    },
+    {
+      "id": "aqa-8464-biology-exercise-anaerobic-lactic-acid",
+      "conceptKey": "aqa-8464-biology-insufficient-oxygen-fatigue-chain",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-4-2-2",
+      "kind": "cause-consequence",
+      "visualCue": "🏃",
+      "front": "What chain of events can occur in muscles when oxygen supply is insufficient during vigorous activity?",
+      "back": "Insufficient oxygen causes anaerobic respiration; incomplete glucose oxidation builds up lactic acid and creates an oxygen debt, and prolonged vigorous activity causes muscle fatigue and inefficient contraction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "With insufficient oxygen, muscles respire anaerobically. Incomplete glucose oxidation leads to lactic acid and oxygen debt; during prolonged vigorous activity, muscles fatigue and contract less efficiently.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Insufficient oxygen causes anaerobic respiration; incomplete glucose oxidation builds up lactic acid and creates an oxygen debt, and prolonged vigorous activity causes muscle fatigue and inefficient contraction.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the stated causal chain.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Insufficient oxygen causes aerobic respiration to speed up, completely oxidising glucose and preventing lactic acid formation.",
+          "isCorrect": false,
+          "feedback": "Insufficient oxygen leads to anaerobic respiration and incomplete glucose oxidation.",
+          "misconception": "low-oxygen-increases-aerobic-respiration"
+        },
+        {
+          "key": "c",
+          "text": "Insufficient oxygen stops respiration entirely, so no lactic acid or oxygen debt is produced.",
+          "isCorrect": false,
+          "feedback": "Anaerobic respiration occurs and is associated with lactic acid build-up and oxygen debt.",
+          "misconception": "anaerobic-respiration-means-no-respiration"
+        },
+        {
+          "key": "d",
+          "text": "Lactic acid build-up makes muscles contract more efficiently during prolonged vigorous activity.",
+          "isCorrect": false,
+          "feedback": "During long vigorous activity, muscles become fatigued and stop contracting efficiently.",
+          "misconception": "fatigue-effect-reversed"
+        }
+      ],
+      "sourceExcerpt": "If insufficient oxygen is supplied anaerobic respiration takes place in\nmuscles. The incomplete oxidation of glucose causes a build up of\nlactic acid and creates an oxygen debt. During long periods of\nvigorous activity muscles become fatigued and stop contracting\nefficiently.",
+      "sourceLocator": "Official PDF pages 39-42; 4.4.2.2 Response to exercise"
+    },
+    {
+      "id": "aqa-8464-biology-homeostasis-definition",
+      "conceptKey": "aqa-8464-biology-homeostasis-internal-regulation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5-1",
+      "kind": "definition",
+      "visualCue": "🫀",
+      "front": "What is homeostasis?",
+      "back": "The regulation of the internal conditions of a cell or organism to maintain optimum conditions for function in response to internal and external changes.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Homeostasis regulates internal conditions so that enzyme action and cell functions have optimal conditions despite internal or external changes.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The regulation of the internal conditions of a cell or organism to maintain optimum conditions for function in response to internal and external changes.",
+          "isCorrect": true,
+          "feedback": "Correct: this matches the specification definition.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The regulation of external environmental conditions so that they never change.",
+          "isCorrect": false,
+          "feedback": "Homeostasis regulates internal conditions in response to change.",
+          "misconception": "homeostasis-controls-external-environment"
+        },
+        {
+          "key": "c",
+          "text": "The permanent fixing of every internal condition at exactly the same value regardless of change.",
+          "isCorrect": false,
+          "feedback": "The definition focuses on maintaining optimum conditions in response to changes.",
+          "misconception": "homeostasis-means-rigid-unchanging-values"
+        },
+        {
+          "key": "d",
+          "text": "The breakdown of food to release energy for every cell function.",
+          "isCorrect": false,
+          "feedback": "That describes an energy-releasing process, not regulation of internal conditions.",
+          "misconception": "homeostasis-confused-with-respiration"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to explain that homeostasis is the\nregulation of the internal conditions of a cell or organism to maintain\noptimum conditions for function in response to internal and external\nchanges.\nHomeostasis maintains optimal conditions for enzyme action and all\ncell functions.",
+      "sourceLocator": "Official PDF pages 42-49; 4.5.1 Homeostasis"
+    },
+    {
+      "id": "aqa-8464-biology-control-system-components",
+      "conceptKey": "aqa-8464-biology-receptor-coordination-centre-effector",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5-1",
+      "kind": "process",
+      "visualCue": "🫀",
+      "front": "What three parts do biological control systems include, and what does each part do?",
+      "back": "Receptors detect stimuli; coordination centres receive and process receptor information; effectors (muscles or glands) produce responses that restore optimum levels.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Control begins with stimulus detection by receptors, continues through information processing in a coordination centre, and ends with an effector response that restores optimum levels.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Receptors detect stimuli; coordination centres receive and process receptor information; effectors (muscles or glands) produce responses that restore optimum levels.",
+          "isCorrect": true,
+          "feedback": "Correct: each component has its stated role.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Receptors produce the response; coordination centres detect stimuli; effectors process information.",
+          "isCorrect": false,
+          "feedback": "This swaps all three roles: receptors detect, centres process and effectors respond.",
+          "misconception": "control-system-roles-swapped"
+        },
+        {
+          "key": "c",
+          "text": "Receptors and effectors both only detect change; no centre processes information.",
+          "isCorrect": false,
+          "feedback": "Coordination centres receive and process information from receptors.",
+          "misconception": "coordination-centre-omitted"
+        },
+        {
+          "key": "d",
+          "text": "Coordination centres restore optimum levels directly; muscles and glands only receive information.",
+          "isCorrect": false,
+          "feedback": "Muscles or glands are effectors that bring about the restoring response.",
+          "misconception": "effectors-treated-as-information-centres"
+        }
+      ],
+      "sourceExcerpt": "All control systems include:\n• cells called receptors, which detect stimuli (changes in the\nenvironment)\n• coordination centres (such as the brain, spinal cord and\npancreas) that receive and process information from\nreceptors\n• effectors, muscles or glands, which bring about responses\nwhich restore optimum levels.",
+      "sourceLocator": "Official PDF pages 42-49; 4.5.1 Homeostasis"
+    },
+    {
+      "id": "aqa-8464-biology-nervous-system-information-pathway",
+      "conceptKey": "aqa-8464-biology-receptor-neurone-cns-effector-pathway",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5-2",
+      "kind": "process",
+      "visualCue": "🏃",
+      "front": "How does information travel from receptors to a coordinated response in the human nervous system?",
+      "back": "Receptors send electrical impulses along neurones to the CNS (brain and spinal cord), which coordinates effectors such as contracting muscles or hormone-secreting glands.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Electrical impulses travel from receptors along neurones to the brain and spinal cord. This central nervous system coordinates the response of effectors.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Receptors send electrical impulses along neurones to the CNS (brain and spinal cord), which coordinates effectors such as contracting muscles or hormone-secreting glands.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the stated information pathway.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Effectors send electrical impulses to receptors, and receptors coordinate the CNS.",
+          "isCorrect": false,
+          "feedback": "Information travels from receptors to the CNS, which then coordinates effectors.",
+          "misconception": "nervous-pathway-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Receptors send hormones along neurones to the CNS, which consists only of the brain.",
+          "isCorrect": false,
+          "feedback": "Neurones carry electrical impulses, and the CNS includes both brain and spinal cord.",
+          "misconception": "nerve-signal-and-cns-confused"
+        },
+        {
+          "key": "d",
+          "text": "The CNS sends information to receptors, while muscles and glands detect the original stimulus.",
+          "isCorrect": false,
+          "feedback": "Receptors detect the change; muscles and glands may act as effectors.",
+          "misconception": "receptor-effector-roles-reversed"
+        }
+      ],
+      "sourceExcerpt": "Information from receptors passes along cells (neurones) as\nelectrical impulses to the central nervous system (CNS). The CNS\nis the brain and spinal cord. The CNS coordinates the response of\neffectors which may be muscles contracting or glands secreting\nhormones.",
+      "sourceLocator": "Official PDF pages 42-49; 4.5.2 The human nervous system"
+    },
+    {
+      "id": "aqa-8464-biology-insulin-high-blood-glucose",
+      "conceptKey": "aqa-8464-biology-insulin-glucose-uptake-glycogen-storage",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5-3-2",
+      "kind": "process",
+      "visualCue": "🫀",
+      "front": "What happens when blood glucose concentration is too high?",
+      "back": "The pancreas produces insulin, causing glucose to move from the blood into cells; excess glucose is converted to glycogen in liver and muscle cells.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "High blood glucose triggers insulin production by the pancreas. Insulin causes glucose uptake by cells, and liver and muscle cells convert excess glucose to glycogen for storage.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The pancreas produces insulin, causing glucose to move from the blood into cells; excess glucose is converted to glycogen in liver and muscle cells.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives the hormone, movement and storage response.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The pancreas produces insulin, causing glucose to move from cells into the blood while stored glycogen is broken down.",
+          "isCorrect": false,
+          "feedback": "Insulin causes glucose to move from the blood into cells, where excess can be stored as glycogen.",
+          "misconception": "insulin-glucose-direction-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Liver and muscle cells produce insulin, and the pancreas stores excess glucose as glycogen.",
+          "isCorrect": false,
+          "feedback": "The pancreas produces insulin; liver and muscle cells convert excess glucose to glycogen.",
+          "misconception": "insulin-production-and-storage-sites-swapped"
+        },
+        {
+          "key": "d",
+          "text": "The pancreas removes glucose directly from the blood without a hormone or uptake by cells.",
+          "isCorrect": false,
+          "feedback": "The response uses insulin to cause glucose movement into cells.",
+          "misconception": "insulin-control-step-omitted"
+        }
+      ],
+      "sourceExcerpt": "If the blood glucose concentration is too high, the pancreas\nproduces the hormone insulin that causes glucose to move from the\nblood into the cells. In liver and muscle cells excess glucose is\nconverted to glycogen for storage.",
+      "sourceLocator": "Official PDF pages 42-49; 4.5.3.2 Control of blood glucose concentration"
+    },
+    {
+      "id": "aqa-8464-biology-sexual-asexual-reproduction",
+      "conceptKey": "aqa-8464-biology-sexual-asexual-genetic-contrast",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6-1-1",
+      "kind": "comparison",
+      "visualCue": "🧬",
+      "front": "How do sexual and asexual reproduction differ in genetic mixing, gametes, cell division and offspring?",
+      "back": "Sexual reproduction mixes genetic information and uses meiosis to form gametes, producing variety; asexual reproduction has one parent, no gamete fusion or genetic mixing, uses only mitosis, and produces genetically identical clones.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Sexual reproduction mixes genetic information and forms gametes by meiosis. Asexual reproduction uses one parent and mitosis without gamete fusion or genetic mixing, so its offspring are clones.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Sexual reproduction mixes genetic information and uses meiosis to form gametes, producing variety; asexual reproduction has one parent, no gamete fusion or genetic mixing, uses only mitosis, and produces genetically identical clones.",
+          "isCorrect": true,
+          "feedback": "Correct: every part of the contrast matches the excerpt.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Sexual reproduction uses one parent and only mitosis to make clones; asexual reproduction fuses gametes and uses meiosis to create variety.",
+          "isCorrect": false,
+          "feedback": "This reverses the features of sexual and asexual reproduction.",
+          "misconception": "sexual-asexual-features-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both sexual and asexual reproduction require fusion of gametes and mixing of genetic information.",
+          "isCorrect": false,
+          "feedback": "Asexual reproduction involves no gamete fusion and no mixing of genetic information.",
+          "misconception": "asexual-reproduction-involves-gamete-fusion"
+        }
+      ],
+      "sourceExcerpt": "In sexual reproduction there is mixing of genetic information which\nleads to variety in the offspring. The formation of gametes involves\nmeiosis.\nAsexual reproduction involves only one parent and no fusion of\ngametes. There is no mixing of genetic information. This leads to\ngenetically identical offspring (clones). Only mitosis is involved.",
+      "sourceLocator": "Official PDF pages 49-58; 4.6.1.1 Sexual and asexual reproduction"
+    },
+    {
+      "id": "aqa-8464-biology-meiosis-gamete-outcomes",
+      "conceptKey": "aqa-8464-biology-meiosis-four-different-single-set-gametes",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6-1-2",
+      "kind": "process",
+      "visualCue": "🧬",
+      "front": "What happens when a cell divides by meiosis to form gametes?",
+      "back": "Genetic information is copied, then the cell divides twice to form four genetically different gametes, each with a single set of chromosomes.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Meiosis includes copying the genetic information followed by two divisions. Its four gametes each have one chromosome set and differ genetically from one another.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Genetic information is copied, then the cell divides twice to form four genetically different gametes, each with a single set of chromosomes.",
+          "isCorrect": true,
+          "feedback": "Correct: this includes the copying, two divisions, number of gametes and their chromosome sets.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The cell divides once to form two genetically identical gametes, each with a full paired set of chromosomes.",
+          "isCorrect": false,
+          "feedback": "The cell divides twice to form four genetically different gametes with single chromosome sets.",
+          "misconception": "meiosis-treated-as-one-identical-division"
+        },
+        {
+          "key": "c",
+          "text": "The cell divides twice to form four genetically identical gametes, each with the full chromosome number.",
+          "isCorrect": false,
+          "feedback": "The four gametes are genetically different and each has a single chromosome set.",
+          "misconception": "meiosis-gametes-identical-and-diploid"
+        },
+        {
+          "key": "d",
+          "text": "Genetic information is not copied; the cell divides once to form four different gametes.",
+          "isCorrect": false,
+          "feedback": "Genetic information is copied and the cell divides twice.",
+          "misconception": "meiosis-copying-and-division-count-wrong"
+        }
+      ],
+      "sourceExcerpt": "When a cell divides to form gametes:\n• copies of the genetic information are made\n• the cell divides twice to form four gametes, each with a single\nset of chromosomes\n• all gametes are genetically different from each other.",
+      "sourceLocator": "Official PDF pages 49-58; 4.6.1.2 Meiosis"
+    },
+    {
+      "id": "aqa-8464-biology-gene-genome-definitions",
+      "conceptKey": "aqa-8464-biology-gene-and-genome-definitions",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6-1-3",
+      "kind": "definition",
+      "visualCue": "🧬",
+      "front": "What is a gene, and what is an organism’s genome?",
+      "back": "A gene is a small section of DNA on a chromosome that codes for a particular amino-acid sequence to make a specific protein; a genome is an organism’s entire genetic material.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A gene is one protein-coding section of chromosomal DNA. The genome is broader: it is all the genetic material of the organism.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A gene is a small section of DNA on a chromosome that codes for a particular amino-acid sequence to make a specific protein; a genome is an organism’s entire genetic material.",
+          "isCorrect": true,
+          "feedback": "Correct: this distinguishes a DNA section from the complete genetic material.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A gene is an organism’s entire genetic material; a genome is one small DNA section that codes for a protein.",
+          "isCorrect": false,
+          "feedback": "This swaps the definitions of gene and genome.",
+          "misconception": "gene-and-genome-swapped"
+        },
+        {
+          "key": "c",
+          "text": "A gene is a whole chromosome; a genome is the amino-acid sequence made by that chromosome.",
+          "isCorrect": false,
+          "feedback": "A gene is a small DNA section, while a genome is the organism’s entire genetic material.",
+          "misconception": "gene-confused-with-chromosome"
+        },
+        {
+          "key": "d",
+          "text": "A gene and a genome are identical terms for a pair of DNA strands.",
+          "isCorrect": false,
+          "feedback": "A gene is a section of DNA; a genome encompasses all of an organism’s genetic material.",
+          "misconception": "gene-and-genome-treated-as-identical"
+        }
+      ],
+      "sourceExcerpt": "A gene is a small section of DNA on a chromosome. Each gene\ncodes for a particular sequence of amino acids, to make a specific\nprotein.\nThe genome of an organism is the entire genetic material of that\norganism.",
+      "sourceLocator": "Official PDF pages 49-58; 4.6.1.3 DNA and the genome"
+    },
+    {
+      "id": "aqa-8464-biology-antibiotic-resistance-selection",
+      "conceptKey": "aqa-8464-biology-resistant-bacteria-survival-reproduction",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-6-3-4",
+      "kind": "cause-consequence",
+      "visualCue": "🦠",
+      "front": "How can mutation and antibiotic exposure increase the population of an antibiotic-resistant bacterial strain?",
+      "back": "Mutations can produce antibiotic-resistant strains; those not killed survive and reproduce, so the resistant strain's population rises.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Mutations produce new strains, some of which might resist an antibiotic. Resistant bacteria are not killed, so their survival and reproduction increase that strain’s population.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Mutations can produce antibiotic-resistant strains; those not killed survive and reproduce, so the resistant strain's population rises.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the mutation-survival-reproduction sequence.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Antibiotics cause every bacterium to become resistant, so all strains increase equally.",
+          "isCorrect": false,
+          "feedback": "Mutations produce new strains; the excerpt does not say every bacterium becomes resistant.",
+          "misconception": "antibiotics-directly-create-resistance-in-all-bacteria"
+        },
+        {
+          "key": "c",
+          "text": "Resistant bacteria are killed first, leaving non-resistant bacteria to reproduce.",
+          "isCorrect": false,
+          "feedback": "Resistant strains are not killed; they survive and reproduce.",
+          "misconception": "resistant-bacteria-selection-reversed"
+        },
+        {
+          "key": "d",
+          "text": "Mutations stop reproduction, so the resistant population falls even when antibiotics do not kill it.",
+          "isCorrect": false,
+          "feedback": "The resistant bacteria survive and reproduce, causing their population to rise.",
+          "misconception": "resistant-strain-population-effect-reversed"
+        }
+      ],
+      "sourceExcerpt": "Mutations of bacterial pathogens produce new strains. Some strains\nmight be resistant to antibiotics, and so are not killed. They survive\nand reproduce, so the population of the resistant strain rises.",
+      "sourceLocator": "Official PDF pages 49-58; 4.6.3.4 Resistant bacteria"
+    },
+    {
+      "id": "aqa-8464-biology-ecosystem-definition",
+      "conceptKey": "aqa-8464-biology-ecosystem-biotic-abiotic-interaction",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-1-1",
+      "kind": "definition",
+      "visualCue": "🌍",
+      "front": "What is an ecosystem?",
+      "back": "The interaction of a community of living organisms with the non-living parts of their environment.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An ecosystem includes both the living community and its interaction with the non-living environment.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The interaction of a community of living organisms with the non-living parts of their environment.",
+          "isCorrect": true,
+          "feedback": "Correct: both biotic and abiotic parts are included.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A single population of one species, with no non-living environment included.",
+          "isCorrect": false,
+          "feedback": "An ecosystem includes a community and the non-living parts of its environment.",
+          "misconception": "ecosystem-confused-with-single-population"
+        },
+        {
+          "key": "c",
+          "text": "Only the non-living conditions of a habitat, without its organisms.",
+          "isCorrect": false,
+          "feedback": "The living community is an essential part of an ecosystem.",
+          "misconception": "ecosystem-treated-as-abiotic-only"
+        },
+        {
+          "key": "d",
+          "text": "All organisms on Earth, regardless of their environment or interactions.",
+          "isCorrect": false,
+          "feedback": "The definition requires interaction between a community and its particular non-living environment.",
+          "misconception": "ecosystem-defined-without-interaction"
+        }
+      ],
+      "sourceExcerpt": "An ecosystem is the interaction of a community of living organisms\n(biotic) with the non-living (abiotic) parts of their environment.",
+      "sourceLocator": "Official PDF pages 59-65; 4.7.1.1 Communities"
+    },
+    {
+      "id": "aqa-8464-biology-plant-animal-competition",
+      "conceptKey": "aqa-8464-biology-plant-versus-animal-competition-resources",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-1-1",
+      "kind": "comparison",
+      "visualCue": "🌍",
+      "front": "For which resources do plants and animals often compete within a community or habitat?",
+      "back": "Plants often compete for light, space, water and mineral ions; animals often compete for food, mates and territory.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification distinguishes the resources commonly contested by plants from those commonly contested by animals, while retaining the qualifier “often”.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Plants often compete for light, space, water and mineral ions; animals often compete for food, mates and territory.",
+          "isCorrect": true,
+          "feedback": "Correct: both lists and the qualifier match the excerpt.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Plants often compete for food, mates and territory; animals often compete for light, water and mineral ions.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated plant and animal resource lists.",
+          "misconception": "plant-animal-competition-lists-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Plants compete only for carbon dioxide, while animals compete only for oxygen.",
+          "isCorrect": false,
+          "feedback": "The stated lists contain several resources for each group, not one gas each.",
+          "misconception": "competition-reduced-to-gases"
+        },
+        {
+          "key": "d",
+          "text": "Neither plants nor animals compete when they share a community.",
+          "isCorrect": false,
+          "feedback": "The excerpt explicitly states that both plants and animals often compete.",
+          "misconception": "community-competition-denied"
+        }
+      ],
+      "sourceExcerpt": "Plants in a community or habitat often compete with each other for\nlight and space, and for water and mineral ions from the soil.\nAnimals often compete with each other for food, mates and territory.",
+      "sourceLocator": "Official PDF pages 59-65; 4.7.1.1 Communities"
+    },
+    {
+      "id": "aqa-8464-biology-food-chain-consumer-order",
+      "conceptKey": "aqa-8464-biology-producer-primary-secondary-tertiary-order",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-2-1",
+      "kind": "structure",
+      "visualCue": "🦋",
+      "front": "What feeding order may follow from a producer through three consumer levels?",
+      "back": "Producer → primary consumer → secondary consumer → tertiary consumer.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A producer is eaten by a primary consumer, which may be eaten by a secondary consumer and then a tertiary consumer.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Producer → primary consumer → secondary consumer → tertiary consumer.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the stated feeding order.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Producer → secondary consumer → primary consumer → tertiary consumer.",
+          "isCorrect": false,
+          "feedback": "The primary consumer comes directly after the producer.",
+          "misconception": "primary-secondary-consumers-swapped"
+        },
+        {
+          "key": "c",
+          "text": "Primary consumer → producer → secondary consumer → tertiary consumer.",
+          "isCorrect": false,
+          "feedback": "The sequence begins with the producer, which is eaten by the primary consumer.",
+          "misconception": "producer-not-first"
+        },
+        {
+          "key": "d",
+          "text": "Producer → tertiary consumer → secondary consumer → primary consumer.",
+          "isCorrect": false,
+          "feedback": "The consumer levels proceed from primary to secondary to tertiary.",
+          "misconception": "consumer-order-reversed"
+        }
+      ],
+      "sourceExcerpt": "Producers are eaten by primary consumers, which in turn may be\neaten by secondary consumers and then tertiary consumers.",
+      "sourceLocator": "Official PDF pages 59-65; 4.7.2.1 Levels of organisation"
+    },
+    {
+      "id": "aqa-8464-biology-biodiversity-definition-stability",
+      "conceptKey": "aqa-8464-biology-biodiversity-and-ecosystem-stability",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-3-1",
+      "kind": "definition",
+      "visualCue": "🌍",
+      "front": "What is biodiversity, and how does great biodiversity affect ecosystem stability?",
+      "back": "Biodiversity is the variety of different species on Earth or within an ecosystem; great biodiversity supports ecosystem stability by reducing one species' dependence on another.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Biodiversity concerns the variety of species. Greater variety stabilises ecosystems by reducing dependence between species for food, shelter and maintenance of the physical environment.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Biodiversity is the variety of different species on Earth or within an ecosystem; great biodiversity supports ecosystem stability by reducing one species' dependence on another.",
+          "isCorrect": true,
+          "feedback": "Correct: this includes both the definition and the stated stability relationship.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Biodiversity is the number of individuals in one species; high biodiversity increases dependence between species.",
+          "isCorrect": false,
+          "feedback": "Biodiversity is variety among species, and great biodiversity reduces dependence between species.",
+          "misconception": "biodiversity-confused-with-population-size"
+        },
+        {
+          "key": "c",
+          "text": "Biodiversity is the variety of non-living conditions only; it does not concern species.",
+          "isCorrect": false,
+          "feedback": "The definition concerns the variety of different species of organisms.",
+          "misconception": "biodiversity-confused-with-abiotic-variety"
+        }
+      ],
+      "sourceExcerpt": "Biodiversity is the variety of all the different species of organisms on\nearth, or within an ecosystem.\nA great biodiversity ensures the stability of ecosystems by reducing\nthe dependence of one species on another for food, shelter and the\nmaintenance of the physical environment.",
+      "sourceLocator": "Official PDF pages 59-65; 4.7.3.1 Biodiversity"
+    }
+  ]
+}

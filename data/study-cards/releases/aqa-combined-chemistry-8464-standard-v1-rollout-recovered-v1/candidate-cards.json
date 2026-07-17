@@ -1,0 +1,1486 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-chem-5-1-atom-definition",
+      "conceptKey": "aqa-8464-chem-atom-smallest-element-part",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1-1",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What is an atom?",
+      "back": "The smallest part of an element that can exist.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "All substances are made of atoms, and an atom is the smallest part of an element that can exist.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The smallest part of an element that can exist.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specification definition of an atom.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The smallest part of a compound that can exist.",
+          "isCorrect": false,
+          "feedback": "An atom is defined as part of an element, not a compound.",
+          "misconception": "confuses-atom-with-compound"
+        },
+        {
+          "key": "c",
+          "text": "A group of particles that are not chemically combined.",
+          "isCorrect": false,
+          "feedback": "This does not describe the smallest part of an element.",
+          "misconception": "treats-atom-as-particle-group"
+        }
+      ],
+      "sourceExcerpt": "All substances are made of atoms. An atom is the smallest part of\nan element that can exist.",
+      "sourceLocator": "Official PDF pages 67-75; 5.1.1.1 Atoms, elements and compounds"
+    },
+    {
+      "id": "aqa-8464-chem-5-1-isotope-definition",
+      "conceptKey": "aqa-8464-chem-isotopes-neutron-difference",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1-5",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What are isotopes of an element?",
+      "back": "Atoms of the same element with different numbers of neutrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Isotopes belong to the same element but have different numbers of neutrons.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Atoms of the same element with different numbers of neutrons.",
+          "isCorrect": true,
+          "feedback": "Correct: the element is the same and the neutron number differs.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Atoms of the same element with different numbers of protons.",
+          "isCorrect": false,
+          "feedback": "The stated difference between isotopes is the number of neutrons, not protons.",
+          "misconception": "changes-protons-in-isotopes"
+        },
+        {
+          "key": "c",
+          "text": "Atoms of different elements with the same number of neutrons.",
+          "isCorrect": false,
+          "feedback": "Isotopes are atoms of the same element.",
+          "misconception": "changes-element-in-isotopes"
+        }
+      ],
+      "sourceExcerpt": "Atoms of the same element can have different numbers of\nneutrons; these atoms are called isotopes of that element.",
+      "sourceLocator": "Official PDF pages 67-75; 5.1.1.5 Size and mass of atoms"
+    },
+    {
+      "id": "aqa-8464-chem-5-1-group-outer-electrons",
+      "conceptKey": "aqa-8464-chem-periodic-group-outer-electron-link",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-1-7",
+      "kind": "cause-consequence",
+      "visualCue": "🔗",
+      "front": "Why do elements in the same periodic-table group have similar chemical properties?",
+      "back": "They have the same number of outer-shell electrons, giving them similar chemical properties.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Elements in one group share the same number of outer-shell electrons, and this gives them similar chemical properties.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They have the same number of outer-shell electrons, giving them similar chemical properties.",
+          "isCorrect": true,
+          "feedback": "Correct: the shared outer-electron number explains the similar properties.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They have the same total number of electrons, giving them identical properties.",
+          "isCorrect": false,
+          "feedback": "The stated relationship concerns outer-shell electrons and similar properties.",
+          "misconception": "uses-total-electron-number-for-groups"
+        },
+        {
+          "key": "c",
+          "text": "They have the same number of electron shells, giving them similar chemical properties.",
+          "isCorrect": false,
+          "feedback": "The specification identifies the number of outer-shell electrons, not the number of shells.",
+          "misconception": "confuses-groups-with-shell-count"
+        }
+      ],
+      "sourceExcerpt": "Elements in the same group in the periodic table have the same\nnumber of electrons in their outer shell (outer electrons) and this\ngives them similar chemical properties.",
+      "sourceLocator": "Official PDF pages 67-75; 5.1.1.7 Electronic structure"
+    },
+    {
+      "id": "aqa-8464-chem-5-1-group-seven-reactivity",
+      "conceptKey": "aqa-8464-chem-group-seven-reactivity-displacement",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-1-2-6",
+      "kind": "process",
+      "visualCue": "🧪",
+      "front": "State the Group 7 reactivity trend and the rule for halogen displacement from an aqueous salt solution.",
+      "back": "Reactivity decreases down Group 7; a more reactive halogen can displace a less reactive one from an aqueous salt solution.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Group 7 becomes less reactive down the group, and a more reactive halogen can displace a less reactive halogen from an aqueous solution of its salt.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Reactivity decreases down Group 7; a more reactive halogen can displace a less reactive one from an aqueous salt solution.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives both the trend and displacement rule.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Reactivity increases down Group 7; a less reactive halogen displaces a more reactive one.",
+          "isCorrect": false,
+          "feedback": "Both the reactivity trend and the displacement direction are reversed.",
+          "misconception": "reverses-group-seven-reactivity"
+        },
+        {
+          "key": "c",
+          "text": "Reactivity is constant down Group 7; halogens cannot displace one another.",
+          "isCorrect": false,
+          "feedback": "Reactivity changes down the group, and a more reactive halogen can cause displacement.",
+          "misconception": "denies-halogen-reactivity-trend"
+        }
+      ],
+      "sourceExcerpt": "In Group 7, the reactivity of the elements decreases going down the\ngroup.\nA more reactive halogen can displace a less reactive halogen from\nan aqueous solution of its salt.",
+      "sourceLocator": "Official PDF pages 67-75; 5.1.2.6 Group 7"
+    },
+    {
+      "id": "aqa-8464-chem-5-2-bonding-particle-models",
+      "conceptKey": "aqa-8464-chem-ionic-covalent-metallic-particles",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2-1-1",
+      "kind": "comparison",
+      "visualCue": "🔗",
+      "front": "What particles or electron arrangements characterise ionic, covalent and metallic bonding?",
+      "back": "Ionic: oppositely charged ions; covalent: atoms sharing electron pairs; metallic: atoms sharing delocalised electrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Ionic bonding involves oppositely charged ions, covalent bonding involves atoms sharing pairs of electrons, and metallic bonding involves atoms sharing delocalised electrons.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Ionic: oppositely charged ions; covalent: atoms sharing electron pairs; metallic: atoms sharing delocalised electrons.",
+          "isCorrect": true,
+          "feedback": "Correct: each bonding type is matched to its specified particles or electrons.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Ionic: atoms sharing electron pairs; covalent: oppositely charged ions; metallic: atoms sharing delocalised electrons.",
+          "isCorrect": false,
+          "feedback": "This swaps the descriptions of ionic and covalent bonding.",
+          "misconception": "swaps-ionic-and-covalent-bonding"
+        },
+        {
+          "key": "c",
+          "text": "Ionic: oppositely charged ions; covalent: atoms sharing delocalised electrons; metallic: atoms sharing electron pairs.",
+          "isCorrect": false,
+          "feedback": "This swaps the descriptions of covalent and metallic bonding.",
+          "misconception": "swaps-covalent-and-metallic-bonding"
+        }
+      ],
+      "sourceExcerpt": "There are three types of strong chemical bonds: ionic, covalent and\nmetallic. For ionic bonding the particles are oppositely charged ions.\nFor covalent bonding the particles are atoms which share pairs of\nelectrons. For metallic bonding the particles are atoms which share\ndelocalised electrons.",
+      "sourceLocator": "Official PDF pages 75-84; 5.2.1.1 Chemical bonds"
+    },
+    {
+      "id": "aqa-8464-chem-5-2-ionic-conduction",
+      "conceptKey": "aqa-8464-chem-ionic-compound-mobile-ion-conduction",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "⚡",
+      "front": "When do ionic compounds conduct electricity, and why?",
+      "back": "When melted or dissolved in water, because their ions are free to move and carry charge.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Melting or dissolving an ionic compound in water allows its ions to move, so charge can flow.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "When melted or dissolved in water, because their ions are free to move and carry charge.",
+          "isCorrect": true,
+          "feedback": "Correct: mobile ions allow charge to flow.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "When solid, because their ions are free to move and carry charge.",
+          "isCorrect": false,
+          "feedback": "The conducting conditions stated are melted or dissolved in water.",
+          "misconception": "assumes-solid-ionic-conduction"
+        },
+        {
+          "key": "c",
+          "text": "When melted or dissolved in water, because neutral molecules carry charge.",
+          "isCorrect": false,
+          "feedback": "The mobile charge carriers identified are ions, not neutral molecules.",
+          "misconception": "uses-neutral-molecules-as-charge-carriers"
+        }
+      ],
+      "sourceExcerpt": "When melted or dissolved in water, ionic compounds conduct\nelectricity because the ions are free to move and so charge can\nflow.",
+      "sourceLocator": "Official PDF pages 75-84; 5.2.2.3 Properties of ionic compounds"
+    },
+    {
+      "id": "aqa-8464-chem-5-2-small-molecule-state-change",
+      "conceptKey": "aqa-8464-chem-small-molecule-intermolecular-force-change",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2-2-4",
+      "kind": "comparison",
+      "visualCue": "🌡️",
+      "front": "What is overcome when a small molecular substance melts or boils?",
+      "back": "Weak intermolecular forces are overcome; the covalent bonds are not.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Small molecular substances have weak forces between molecules. Melting or boiling overcomes these intermolecular forces rather than the covalent bonds.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Weak intermolecular forces are overcome; the covalent bonds are not.",
+          "isCorrect": true,
+          "feedback": "Correct: state changes overcome forces between molecules.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The strong covalent bonds within each molecule are overcome.",
+          "isCorrect": false,
+          "feedback": "The covalent bonds are not the forces overcome during melting or boiling.",
+          "misconception": "breaks-covalent-bonds-during-state-change"
+        },
+        {
+          "key": "c",
+          "text": "Both intermolecular forces and covalent bonds are overcome.",
+          "isCorrect": false,
+          "feedback": "Only the intermolecular forces are identified as being overcome.",
+          "misconception": "breaks-both-force-types-during-state-change"
+        }
+      ],
+      "sourceExcerpt": "These substances have only weak forces between the molecules\n(intermolecular forces). It is these intermolecular forces that are\novercome, not the covalent bonds, when the substance melts or\nboils.",
+      "sourceLocator": "Official PDF pages 75-84; 5.2.2.4 Properties of small molecules"
+    },
+    {
+      "id": "aqa-8464-chem-5-2-graphite-structure",
+      "conceptKey": "aqa-8464-chem-graphite-layers-delocalised-electron",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-2-3-2",
+      "kind": "structure",
+      "visualCue": "⚛️",
+      "front": "Describe the bonding and electron arrangement in graphite.",
+      "back": "Each carbon forms three covalent bonds in hexagonal layers; there are no covalent bonds between layers, and one electron per carbon is delocalised.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Graphite consists of hexagonal layers in which each carbon forms three covalent bonds. There are no covalent bonds between layers, and one electron from each carbon is delocalised.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Each carbon forms three covalent bonds in hexagonal layers; there are no covalent bonds between layers, and one electron per carbon is delocalised.",
+          "isCorrect": true,
+          "feedback": "Correct: this includes graphite's layers, bonds and delocalised electron.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Each carbon forms four covalent bonds in one rigid network, with no delocalised electrons.",
+          "isCorrect": false,
+          "feedback": "Graphite has three covalent bonds per carbon, layers and a delocalised electron.",
+          "misconception": "confuses-graphite-with-four-bond-network"
+        },
+        {
+          "key": "c",
+          "text": "Each carbon forms two covalent bonds in chains, and all electrons are localised.",
+          "isCorrect": false,
+          "feedback": "The specified structure has three bonds per carbon in hexagonal layers and delocalised electrons.",
+          "misconception": "treats-graphite-as-localised-chains"
+        }
+      ],
+      "sourceExcerpt": "In graphite, each carbon atom forms three covalent bonds with\nthree other carbon atoms, forming layers of hexagonal rings which\nhave no covalent bonds between the layers.\nIn graphite, one electron from each carbon atom is delocalised.",
+      "sourceLocator": "Official PDF pages 75-84; 5.2.3.2 Graphite"
+    },
+    {
+      "id": "aqa-8464-chem-5-3-conservation-of-mass",
+      "conceptKey": "aqa-8464-chem-conservation-atoms-and-mass",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-1-1",
+      "kind": "fact",
+      "visualCue": "⚖️",
+      "front": "What does the law of conservation of mass state for a chemical reaction?",
+      "back": "No atoms are lost or made, so the mass of the products equals the mass of the reactants.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Because a chemical reaction neither loses nor makes atoms, the total product mass equals the total reactant mass.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "No atoms are lost or made, so the mass of the products equals the mass of the reactants.",
+          "isCorrect": true,
+          "feedback": "Correct: atom conservation gives equal total masses.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Some atoms are destroyed, so the products always have less mass.",
+          "isCorrect": false,
+          "feedback": "The law states that no atoms are lost.",
+          "misconception": "allows-atoms-to-be-destroyed"
+        },
+        {
+          "key": "c",
+          "text": "New atoms are made, so the products always have more mass.",
+          "isCorrect": false,
+          "feedback": "The law states that no atoms are made.",
+          "misconception": "allows-atoms-to-be-created"
+        }
+      ],
+      "sourceExcerpt": "The law of conservation of mass states that no atoms are lost or\nmade during a chemical reaction so the mass of the products\nequals the mass of the reactants.",
+      "sourceLocator": "Official PDF pages 84-88; 5.3.1.1 Conservation of mass and balanced chemical equations"
+    },
+    {
+      "id": "aqa-8464-chem-5-3-relative-formula-mass",
+      "conceptKey": "aqa-8464-chem-relative-formula-mass-sum",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-1-2",
+      "kind": "formula",
+      "visualCue": "⚖️",
+      "front": "How is the relative formula mass, Mr, of a compound found?",
+      "back": "Add the relative atomic masses of all the atoms in the numbers shown in the formula.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Relative formula mass is the sum of the relative atomic masses, accounting for the numbers of atoms shown in the formula.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Add the relative atomic masses of all the atoms in the numbers shown in the formula.",
+          "isCorrect": true,
+          "feedback": "Correct: Mr is a sum using the atom numbers in the formula.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Find the average of the relative atomic masses shown in the formula.",
+          "isCorrect": false,
+          "feedback": "Relative formula mass is a sum, not an average.",
+          "misconception": "averages-relative-atomic-masses"
+        },
+        {
+          "key": "c",
+          "text": "Use only the relative atomic mass of the heaviest atom.",
+          "isCorrect": false,
+          "feedback": "All atoms in the numbers shown must be included.",
+          "misconception": "uses-only-heaviest-atom"
+        }
+      ],
+      "sourceExcerpt": "The relative formula mass (Mr) of a compound is the sum of the\nrelative atomic masses of the atoms in the numbers shown in the\nformula.",
+      "sourceLocator": "Official PDF pages 84-88; 5.3.1.2 Relative formula mass"
+    },
+    {
+      "id": "aqa-8464-chem-5-3-apparent-mass-change",
+      "conceptKey": "aqa-8464-chem-unaccounted-gas-apparent-mass-change",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-1-3",
+      "kind": "interpretation",
+      "visualCue": "⚖️",
+      "front": "Why may a reaction appear to change mass when a reactant or product is a gas?",
+      "back": "Usually, a gaseous reactant or product has not had its mass taken into account.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An apparent mass change can usually be explained by the mass of a gaseous reactant or product not being included.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Usually, a gaseous reactant or product has not had its mass taken into account.",
+          "isCorrect": true,
+          "feedback": "Correct: the apparent change comes from unaccounted gas mass.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Atoms have been destroyed, so the total mass has fallen.",
+          "isCorrect": false,
+          "feedback": "The stated explanation is unaccounted gas mass, not destroyed atoms.",
+          "misconception": "explains-mass-change-by-destroying-atoms"
+        },
+        {
+          "key": "c",
+          "text": "Atoms have been created, so the total mass has risen.",
+          "isCorrect": false,
+          "feedback": "The stated explanation is unaccounted gas mass, not newly created atoms.",
+          "misconception": "explains-mass-change-by-creating-atoms"
+        }
+      ],
+      "sourceExcerpt": "Some reactions may appear to involve a change in mass but this\ncan usually be explained because a reactant or product is a gas\nand its mass has not been taken into account.",
+      "sourceLocator": "Official PDF pages 84-88; 5.3.1.3 Mass changes when a reactant or product is a gas"
+    },
+    {
+      "id": "aqa-8464-chem-5-3-solution-concentration",
+      "conceptKey": "aqa-8464-chem-solution-concentration-mass-per-volume",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-3-2-5",
+      "kind": "unit",
+      "visualCue": "📏",
+      "front": "How can the concentration of a solution be measured in terms of mass and volume?",
+      "back": "Mass per given volume of solution, for example grams per dm3 (g/dm3).",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A solution's concentration can be expressed as mass per given volume, with g/dm3 given as an example.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Mass per given volume of solution, for example grams per dm3 (g/dm3).",
+          "isCorrect": true,
+          "feedback": "Correct: concentration can be measured as mass per volume.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Volume of solution per given mass, for example dm3/g.",
+          "isCorrect": false,
+          "feedback": "This reverses the specified mass-per-volume relationship.",
+          "misconception": "inverts-mass-per-volume-concentration"
+        },
+        {
+          "key": "c",
+          "text": "Mass of solvent per given volume of solution.",
+          "isCorrect": false,
+          "feedback": "The measure is mass per volume of solution, not specifically the solvent mass.",
+          "misconception": "uses-solvent-mass-for-concentration"
+        }
+      ],
+      "sourceExcerpt": "Many chemical reactions take place in solutions. The concentration\nof a solution can be measured in mass per given volume of\nsolution, eg grams per dm3 (g/dm3).",
+      "sourceLocator": "Official PDF pages 84-88; 5.3.2.5 Concentration of solutions"
+    },
+    {
+      "id": "aqa-8464-chem-5-4-metal-displacement",
+      "conceptKey": "aqa-8464-chem-reactive-metal-displacement-rule",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-1-2",
+      "kind": "process",
+      "visualCue": "⚖️",
+      "front": "What is the reactivity rule for one metal displacing another from a compound?",
+      "back": "A more reactive metal can displace a less reactive metal from a compound.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Metal displacement is possible when the incoming metal is more reactive than the metal in the compound.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A more reactive metal can displace a less reactive metal from a compound.",
+          "isCorrect": true,
+          "feedback": "Correct: displacement proceeds from the more reactive to the less reactive metal.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A less reactive metal can displace a more reactive metal from a compound.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated reactivity rule.",
+          "misconception": "reverses-metal-displacement-rule"
+        },
+        {
+          "key": "c",
+          "text": "Metals can displace one another regardless of their reactivity.",
+          "isCorrect": false,
+          "feedback": "The rule depends on one metal being more reactive.",
+          "misconception": "ignores-reactivity-in-displacement"
+        }
+      ],
+      "sourceExcerpt": "A more reactive metal can displace a less reactive metal from a\ncompound.",
+      "sourceLocator": "Official PDF pages 88-95; 5.4.1.2 The reactivity series"
+    },
+    {
+      "id": "aqa-8464-chem-5-4-carbon-reduction",
+      "conceptKey": "aqa-8464-chem-carbon-reduction-reactivity-threshold",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-1-3",
+      "kind": "method",
+      "visualCue": "🧪",
+      "front": "Which metals can be extracted from their oxides using carbon, and what does reduction involve?",
+      "back": "Metals less reactive than carbon; their oxides can be reduced with carbon, and reduction involves loss of oxygen.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Carbon can reduce the oxides of metals below carbon in reactivity, and reduction is the loss of oxygen.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Metals less reactive than carbon; their oxides can be reduced with carbon, and reduction involves loss of oxygen.",
+          "isCorrect": true,
+          "feedback": "Correct: both the reactivity condition and meaning of reduction are stated.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Metals more reactive than carbon; reduction involves gain of oxygen.",
+          "isCorrect": false,
+          "feedback": "Both the reactivity condition and oxygen change are reversed.",
+          "misconception": "reverses-carbon-reduction-rule"
+        },
+        {
+          "key": "c",
+          "text": "All metals; reduction leaves the amount of oxygen unchanged.",
+          "isCorrect": false,
+          "feedback": "The method is limited to metals less reactive than carbon, and reduction loses oxygen.",
+          "misconception": "treats-carbon-extraction-as-universal"
+        }
+      ],
+      "sourceExcerpt": "Metals less reactive than carbon can be extracted from their oxides\nby reduction with carbon.\nReduction involves the loss of oxygen.",
+      "sourceLocator": "Official PDF pages 88-95; 5.4.1.3 Extraction of metals and reduction"
+    },
+    {
+      "id": "aqa-8464-chem-5-4-ph-classification",
+      "conceptKey": "aqa-8464-chem-ph-acid-neutral-alkali-ranges",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-2-4",
+      "kind": "comparison",
+      "visualCue": "🧪",
+      "front": "How do pH values identify neutral, acidic and alkaline aqueous solutions?",
+      "back": "pH 7 is neutral; acids are below 7; alkalis are above 7.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A neutral solution has pH 7, while aqueous acids have lower values and aqueous alkalis have higher values.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "pH 7 is neutral; acids are below 7; alkalis are above 7.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives the specified pH divisions.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "pH 7 is neutral; acids are above 7; alkalis are below 7.",
+          "isCorrect": false,
+          "feedback": "This swaps the acidic and alkaline sides of pH 7.",
+          "misconception": "reverses-acid-and-alkali-ph"
+        },
+        {
+          "key": "c",
+          "text": "pH 0 is neutral; acids and alkalis are both above 7.",
+          "isCorrect": false,
+          "feedback": "Neutral is pH 7, with acids below and alkalis above it.",
+          "misconception": "places-neutral-at-ph-zero"
+        }
+      ],
+      "sourceExcerpt": "A solution with pH 7 is neutral. Aqueous solutions of acids have pH\nvalues of less than 7 and aqueous solutions of alkalis have pH\nvalues greater than 7.",
+      "sourceLocator": "Official PDF pages 88-95; 5.4.2.4 The pH scale and neutralisation"
+    },
+    {
+      "id": "aqa-8464-chem-5-4-electrolysis-ion-movement",
+      "conceptKey": "aqa-8464-chem-electrolysis-ion-electrode-directions",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-4-3-1",
+      "kind": "process",
+      "visualCue": "⚡",
+      "front": "During electrolysis, where do positive and negative ions move, and what happens at the electrodes?",
+      "back": "Positive ions move to the negative cathode; negative ions move to the positive anode, where ions are discharged to produce elements.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Current moves positive ions to the negative cathode and negative ions to the positive anode. Discharge at the electrodes produces elements.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Positive ions move to the negative cathode; negative ions move to the positive anode, where ions are discharged to produce elements.",
+          "isCorrect": true,
+          "feedback": "Correct: each ion moves to the oppositely charged electrode.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Positive ions move to the positive anode; negative ions move to the negative cathode.",
+          "isCorrect": false,
+          "feedback": "This reverses both ion directions.",
+          "misconception": "reverses-electrolysis-ion-directions"
+        },
+        {
+          "key": "c",
+          "text": "Both positive and negative ions move to the cathode and remain unchanged.",
+          "isCorrect": false,
+          "feedback": "The ion types move to different electrodes and are discharged.",
+          "misconception": "sends-all-ions-to-cathode"
+        }
+      ],
+      "sourceExcerpt": "Passing an electric current through electrolytes causes the ions to\nmove to the electrodes. Positively charged ions move to the\nnegative electrode (the cathode), and negatively charged ions move\nto the positive electrode (the anode). Ions are discharged at the\nelectrodes producing elements. This process is called electrolysis.",
+      "sourceLocator": "Official PDF pages 88-95; 5.4.3.1 The process of electrolysis"
+    },
+    {
+      "id": "aqa-8464-chem-5-5-exothermic-definition",
+      "conceptKey": "aqa-8464-chem-exothermic-energy-temperature",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5-1-1",
+      "kind": "definition",
+      "visualCue": "⚖️",
+      "front": "What defines an exothermic reaction in terms of energy transfer and surrounding temperature?",
+      "back": "It transfers energy to the surroundings, so the surroundings' temperature increases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An exothermic reaction transfers energy outward to the surroundings, causing their temperature to rise.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It transfers energy to the surroundings, so the surroundings' temperature increases.",
+          "isCorrect": true,
+          "feedback": "Correct: outward energy transfer raises the surrounding temperature.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It takes in energy from the surroundings, so the surroundings' temperature decreases.",
+          "isCorrect": false,
+          "feedback": "That is the stated direction and temperature change for an endothermic reaction.",
+          "misconception": "confuses-exothermic-with-endothermic"
+        },
+        {
+          "key": "c",
+          "text": "It transfers no energy, so the surroundings' temperature cannot change.",
+          "isCorrect": false,
+          "feedback": "An exothermic reaction transfers energy to the surroundings.",
+          "misconception": "denies-exothermic-energy-transfer"
+        }
+      ],
+      "sourceExcerpt": "An exothermic reaction is one that transfers energy to the\nsurroundings so the temperature of the surroundings increases.",
+      "sourceLocator": "Official PDF pages 95-97; 5.5.1.1 Energy transfer during exothermic and endothermic reactions"
+    },
+    {
+      "id": "aqa-8464-chem-5-5-endothermic-definition",
+      "conceptKey": "aqa-8464-chem-endothermic-energy-temperature",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5-1-1",
+      "kind": "definition",
+      "visualCue": "⚖️",
+      "front": "What defines an endothermic reaction in terms of energy transfer and surrounding temperature?",
+      "back": "It takes in energy from the surroundings, so the surroundings' temperature decreases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An endothermic reaction takes energy from the surroundings, causing their temperature to fall.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It takes in energy from the surroundings, so the surroundings' temperature decreases.",
+          "isCorrect": true,
+          "feedback": "Correct: inward energy transfer lowers the surrounding temperature.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It transfers energy to the surroundings, so the surroundings' temperature increases.",
+          "isCorrect": false,
+          "feedback": "That is the stated direction and temperature change for an exothermic reaction.",
+          "misconception": "confuses-endothermic-with-exothermic"
+        },
+        {
+          "key": "c",
+          "text": "It takes in matter rather than energy, so temperature is unaffected.",
+          "isCorrect": false,
+          "feedback": "The definition concerns taking in energy and a decrease in surrounding temperature.",
+          "misconception": "replaces-energy-transfer-with-matter-transfer"
+        }
+      ],
+      "sourceExcerpt": "An endothermic reaction is one that takes in energy from the\nsurroundings so the temperature of the surroundings decreases.",
+      "sourceLocator": "Official PDF pages 95-97; 5.5.1.1 Energy transfer during exothermic and endothermic reactions"
+    },
+    {
+      "id": "aqa-8464-chem-5-5-activation-energy",
+      "conceptKey": "aqa-8464-chem-activation-energy-minimum",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-5-1-2",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What is activation energy?",
+      "back": "The minimum amount of energy that particles must have to react.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Activation energy is the minimum energy threshold that reacting particles must meet.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The minimum amount of energy that particles must have to react.",
+          "isCorrect": true,
+          "feedback": "Correct: activation energy is a minimum energy requirement.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The average energy possessed by all particles after a reaction.",
+          "isCorrect": false,
+          "feedback": "The definition is a minimum energy needed to react, not an average afterward.",
+          "misconception": "treats-activation-energy-as-average-energy"
+        },
+        {
+          "key": "c",
+          "text": "The total energy released by the products of every reaction.",
+          "isCorrect": false,
+          "feedback": "Activation energy concerns the energy particles must have before they can react.",
+          "misconception": "confuses-activation-energy-with-energy-released"
+        }
+      ],
+      "sourceExcerpt": "The minimum amount of\nenergy that particles must have to react is called the activation\nenergy.",
+      "sourceLocator": "Official PDF pages 95-97; 5.5.1.2 Reaction profiles"
+    },
+    {
+      "id": "aqa-8464-chem-5-6-rate-measurement",
+      "conceptKey": "aqa-8464-chem-reaction-rate-quantity-over-time",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-1-1",
+      "kind": "method",
+      "visualCue": "🧪",
+      "front": "How can the rate of a chemical reaction be found experimentally?",
+      "back": "Measure the quantity of reactant used or product formed over time.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Reaction rate can be determined by tracking either reactant consumption or product formation over time.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Measure the quantity of reactant used or product formed over time.",
+          "isCorrect": true,
+          "feedback": "Correct: rate links a changing quantity to time.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Measure only the final quantity of product without recording time.",
+          "isCorrect": false,
+          "feedback": "Time must be included when finding a reaction rate.",
+          "misconception": "omits-time-from-rate-measurement"
+        },
+        {
+          "key": "c",
+          "text": "Measure only the reaction temperature.",
+          "isCorrect": false,
+          "feedback": "The stated method measures reactant used or product formed over time.",
+          "misconception": "uses-temperature-alone-for-rate"
+        }
+      ],
+      "sourceExcerpt": "The rate of a chemical reaction can be found by measuring the\nquantity of a reactant used or the quantity of product formed over\ntime",
+      "sourceLocator": "Official PDF pages 98-104; 5.6.1.1 Calculating rates of reactions"
+    },
+    {
+      "id": "aqa-8464-chem-5-6-temperature-rate-effect",
+      "conceptKey": "aqa-8464-chem-temperature-collision-rate-effect",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-1-3",
+      "kind": "cause-consequence",
+      "visualCue": "🌡️",
+      "front": "Using collision theory, why does increasing temperature increase reaction rate?",
+      "back": "Collisions become more frequent and more energetic, so the reaction rate increases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Higher temperature both increases collision frequency and makes collisions more energetic, increasing reaction rate.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Collisions become more frequent and more energetic, so the reaction rate increases.",
+          "isCorrect": true,
+          "feedback": "Correct: temperature affects both collision frequency and energy.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Collisions become less frequent and less energetic, so the reaction rate increases.",
+          "isCorrect": false,
+          "feedback": "Increasing temperature makes collisions more frequent and more energetic.",
+          "misconception": "reverses-temperature-collision-effects"
+        },
+        {
+          "key": "c",
+          "text": "The activation energy is lowered, while collision frequency stays unchanged.",
+          "isCorrect": false,
+          "feedback": "The stated temperature effect is on collision frequency and energy.",
+          "misconception": "confuses-temperature-effect-with-catalyst-pathway"
+        }
+      ],
+      "sourceExcerpt": "Increasing the temperature increases the frequency of collisions\nand makes the collisions more energetic, and so increases the rate\nof reaction.",
+      "sourceLocator": "Official PDF pages 98-104; 5.6.1.3 Collision theory and activation energy"
+    },
+    {
+      "id": "aqa-8464-chem-5-6-catalyst-action",
+      "conceptKey": "aqa-8464-chem-catalyst-lower-activation-pathway",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-1-4",
+      "kind": "cause-consequence",
+      "visualCue": "🧪",
+      "front": "How does a catalyst increase reaction rate, and what happens to the catalyst during the reaction?",
+      "back": "It provides a different pathway with lower activation energy and is not used up.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A catalyst remains unused up while increasing rate through an alternative reaction pathway with lower activation energy.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It provides a different pathway with lower activation energy and is not used up.",
+          "isCorrect": true,
+          "feedback": "Correct: this states both catalytic action and persistence.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It is used up while supplying the activation energy to the reactants.",
+          "isCorrect": false,
+          "feedback": "Catalysts are not used up, and they provide a lower-activation-energy pathway.",
+          "misconception": "treats-catalyst-as-consumed-reactant"
+        },
+        {
+          "key": "c",
+          "text": "It provides a pathway with higher activation energy and slows every reaction.",
+          "isCorrect": false,
+          "feedback": "The catalytic pathway has lower activation energy and increases rate.",
+          "misconception": "reverses-catalyst-activation-effect"
+        }
+      ],
+      "sourceExcerpt": "Catalysts change the rate of chemical reactions but are not used up\nduring the reaction. Different reactions need different catalysts.\nEnzymes act as catalysts in biological systems.\nCatalysts increase the rate of reaction by providing a different\npathway for the reaction that has a lower activation energy.",
+      "sourceLocator": "Official PDF pages 98-104; 5.6.1.4 Catalysts"
+    },
+    {
+      "id": "aqa-8464-chem-5-6-equilibrium-definition",
+      "conceptKey": "aqa-8464-chem-equilibrium-equal-forward-reverse-rates",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-6-2-3",
+      "kind": "definition",
+      "visualCue": "🔗",
+      "front": "When is equilibrium reached in a reversible reaction?",
+      "back": "In apparatus that prevents reactants and products escaping, the forward and reverse reactions occur at exactly the same rate.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Equilibrium requires a system that prevents escape and equal rates for the continuing forward and reverse reactions.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "In apparatus that prevents reactants and products escaping, the forward and reverse reactions occur at exactly the same rate.",
+          "isCorrect": true,
+          "feedback": "Correct: equilibrium is defined by equal forward and reverse rates in this apparatus.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "When equal amounts of reactants and products are present.",
+          "isCorrect": false,
+          "feedback": "The definition requires equal reaction rates, not equal amounts.",
+          "misconception": "confuses-equal-rates-with-equal-amounts"
+        },
+        {
+          "key": "c",
+          "text": "When both the forward and reverse reactions have stopped.",
+          "isCorrect": false,
+          "feedback": "At equilibrium the two reactions occur at the same rate; they have not stopped.",
+          "misconception": "treats-equilibrium-as-stopped-reactions"
+        }
+      ],
+      "sourceExcerpt": "When a reversible reaction occurs in apparatus which prevents the\nescape of reactants and products, equilibrium is reached when the\nforward and reverse reactions occur at exactly the same rate.",
+      "sourceLocator": "Official PDF pages 98-104; 5.6.2.3 Equilibrium"
+    },
+    {
+      "id": "aqa-8464-chem-5-7-alkane-general-formula",
+      "conceptKey": "aqa-8464-chem-alkane-homologous-series-formula",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7-1-1",
+      "kind": "formula",
+      "visualCue": "⛽",
+      "front": "What is the general formula for the homologous series of alkanes?",
+      "back": "CnH2n+2",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification gives CnH2n+2 as the general formula for the alkane homologous series.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "CnH2n+2",
+          "isCorrect": true,
+          "feedback": "Correct: this is the stated general formula for alkanes.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "CnH2n",
+          "isCorrect": false,
+          "feedback": "This is not the general alkane formula given in the specification.",
+          "misconception": "omits-two-hydrogens-from-alkane-formula"
+        },
+        {
+          "key": "c",
+          "text": "CnH2n-2",
+          "isCorrect": false,
+          "feedback": "The alkane formula has plus two, not minus two.",
+          "misconception": "subtracts-two-in-alkane-formula"
+        }
+      ],
+      "sourceExcerpt": "Most of the hydrocarbons in crude oil are hydrocarbons called\nalkanes. The general formula for the homologous series of alkanes\nis CnH2n+2",
+      "sourceLocator": "Official PDF pages 104-107; 5.7.1.1 Crude oil, hydrocarbons and alkanes"
+    },
+    {
+      "id": "aqa-8464-chem-5-7-fractional-distillation",
+      "conceptKey": "aqa-8464-chem-crude-oil-fractional-distillation-fractions",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7-1-2",
+      "kind": "process",
+      "visualCue": "⛽",
+      "front": "What does fractional distillation separate crude oil into?",
+      "back": "Fractions whose molecules have a similar number of carbon atoms.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Fractional distillation separates the many hydrocarbons in crude oil into fractions containing molecules with similar carbon-atom numbers.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Fractions whose molecules have a similar number of carbon atoms.",
+          "isCorrect": true,
+          "feedback": "Correct: similarity in carbon-atom number characterises each fraction.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Pure individual compounds containing identical molecules.",
+          "isCorrect": false,
+          "feedback": "The products are fractions containing molecules with similar carbon-atom numbers.",
+          "misconception": "treats-fractions-as-pure-compounds"
+        },
+        {
+          "key": "c",
+          "text": "Fractions whose molecules all contain the same number of hydrogen atoms.",
+          "isCorrect": false,
+          "feedback": "The stated similarity concerns the number of carbon atoms.",
+          "misconception": "uses-hydrogen-count-for-crude-oil-fractions"
+        }
+      ],
+      "sourceExcerpt": "The many hydrocarbons in crude oil may be separated into\nfractions, each of which contains molecules with a similar number of\ncarbon atoms, by fractional distillation.",
+      "sourceLocator": "Official PDF pages 104-107; 5.7.1.2 Fractional distillation and petrochemicals"
+    },
+    {
+      "id": "aqa-8464-chem-5-7-cracking-products",
+      "conceptKey": "aqa-8464-chem-cracking-alkane-alkene-products",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-7-1-4",
+      "kind": "process",
+      "visualCue": "🔗",
+      "front": "Which two types of hydrocarbon are included among the products of cracking?",
+      "back": "Alkanes and alkenes.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Cracking products include alkanes and the hydrocarbon type called alkenes.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Alkanes and alkenes.",
+          "isCorrect": true,
+          "feedback": "Correct: both types are included among cracking products.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only alkanes.",
+          "isCorrect": false,
+          "feedback": "Alkenes are also included among the products.",
+          "misconception": "omits-alkenes-from-cracking"
+        },
+        {
+          "key": "c",
+          "text": "Alkanes and carbon dioxide.",
+          "isCorrect": false,
+          "feedback": "The second hydrocarbon type stated is alkenes, not carbon dioxide.",
+          "misconception": "confuses-cracking-with-combustion-products"
+        }
+      ],
+      "sourceExcerpt": "The products of cracking include alkanes and another type of\nhydrocarbon called alkenes.",
+      "sourceLocator": "Official PDF pages 104-107; 5.7.1.4 Cracking and alkenes"
+    },
+    {
+      "id": "aqa-8464-chem-5-8-pure-substance-definition",
+      "conceptKey": "aqa-8464-chem-chemical-pure-substance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8-1-1",
+      "kind": "definition",
+      "visualCue": "🧪",
+      "front": "In chemistry, what is a pure substance?",
+      "back": "A single element or compound not mixed with any other substance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Chemical purity means that the material is one element or one compound with no other substance mixed into it.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A single element or compound not mixed with any other substance.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the chemical definition of a pure substance.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A single element only; compounds can never be pure.",
+          "isCorrect": false,
+          "feedback": "A pure substance may be either an element or a compound.",
+          "misconception": "excludes-compounds-from-pure-substances"
+        },
+        {
+          "key": "c",
+          "text": "Any natural substance that contains several unmixed-looking materials.",
+          "isCorrect": false,
+          "feedback": "Chemical purity requires one element or compound with nothing else mixed in.",
+          "misconception": "uses-everyday-purity-in-chemistry"
+        }
+      ],
+      "sourceExcerpt": "In chemistry, a pure substance is a single element or compound,\nnot mixed with any other substance.",
+      "sourceLocator": "Official PDF pages 107-110; 5.8.1.1 Pure substances"
+    },
+    {
+      "id": "aqa-8464-chem-5-8-rf-value",
+      "conceptKey": "aqa-8464-chem-chromatography-rf-distance-ratio",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8-1-3",
+      "kind": "formula",
+      "visualCue": "📏",
+      "front": "How is a compound's Rf value determined from a chromatogram?",
+      "back": "Distance moved by the compound's spot centre from the origin divided by the distance moved by the solvent.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Rf is the ratio of the compound's travel distance, measured from the origin to the spot centre, to the solvent's travel distance.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Distance moved by the compound's spot centre from the origin divided by the distance moved by the solvent.",
+          "isCorrect": true,
+          "feedback": "Correct: substance distance is divided by solvent distance.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Distance moved by the solvent divided by the distance moved by the compound.",
+          "isCorrect": false,
+          "feedback": "This inverts the stated ratio.",
+          "misconception": "inverts-rf-ratio"
+        },
+        {
+          "key": "c",
+          "text": "Distance moved by the solvent minus the distance moved by the compound.",
+          "isCorrect": false,
+          "feedback": "Rf is a ratio, not a difference between distances.",
+          "misconception": "subtracts-distances-for-rf"
+        }
+      ],
+      "sourceExcerpt": "The ratio of the distance moved by a compound (centre of spot from\norigin) to the distance moved by the solvent can be expressed as its\nRf value:",
+      "sourceLocator": "Official PDF pages 107-110; 5.8.1.3 Chromatography"
+    },
+    {
+      "id": "aqa-8464-chem-5-8-oxygen-carbon-dioxide-tests",
+      "conceptKey": "aqa-8464-chem-oxygen-carbon-dioxide-test-results",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8-2-2",
+      "kind": "comparison",
+      "visualCue": "🫧",
+      "front": "How are oxygen and carbon dioxide distinguished using their specified gas tests?",
+      "back": "Oxygen relights a glowing splint; carbon dioxide turns limewater milky (cloudy).",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A glowing splint relights in oxygen. Carbon dioxide shaken with or bubbled through limewater makes the limewater milky or cloudy.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Oxygen relights a glowing splint; carbon dioxide turns limewater milky (cloudy).",
+          "isCorrect": true,
+          "feedback": "Correct: each gas is matched to its specified positive result.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Oxygen turns limewater milky; carbon dioxide relights a glowing splint.",
+          "isCorrect": false,
+          "feedback": "This swaps the two gas-test results.",
+          "misconception": "swaps-oxygen-and-carbon-dioxide-tests"
+        },
+        {
+          "key": "c",
+          "text": "Both gases relight a glowing splint.",
+          "isCorrect": false,
+          "feedback": "Only oxygen has the specified relighting result; carbon dioxide has the limewater result.",
+          "misconception": "uses-one-splint-test-for-both-gases"
+        }
+      ],
+      "sourceExcerpt": "The test for oxygen uses a glowing splint inserted into a test tube of\nthe gas. The splint relights in oxygen.\n5.8.2.3 Test for carbon dioxide\nContent Key opportunities for\nskills development\nThe test for carbon dioxide uses an aqueous solution of calcium\nhydroxide (lime water). When carbon dioxide is shaken with or\nbubbled through limewater the limewater turns milky (cloudy).",
+      "sourceLocator": "Official PDF pages 107-110; 5.8.2.2 Test for oxygen"
+    },
+    {
+      "id": "aqa-8464-chem-5-8-hydrogen-test",
+      "conceptKey": "aqa-8464-chem-hydrogen-burning-splint-pop",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-8-2-1",
+      "kind": "test-result",
+      "visualCue": "🫧",
+      "front": "How is hydrogen tested, and what is the positive result?",
+      "back": "Hold a burning splint at the open end of the test tube; hydrogen burns rapidly with a pop sound.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specified hydrogen test uses a burning splint at the test tube's open end, producing a rapid burn with a pop.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Hold a burning splint at the open end of the test tube; hydrogen burns rapidly with a pop sound.",
+          "isCorrect": true,
+          "feedback": "Correct: a burning splint produces the specified pop result.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Insert a glowing splint into the test tube; the splint relights.",
+          "isCorrect": false,
+          "feedback": "The specified hydrogen test uses a burning splint and gives a pop.",
+          "misconception": "confuses-hydrogen-with-glowing-splint-test"
+        },
+        {
+          "key": "c",
+          "text": "Bubble the gas through limewater; the limewater turns milky.",
+          "isCorrect": false,
+          "feedback": "The specified hydrogen result is a rapid burn with a pop sound.",
+          "misconception": "confuses-hydrogen-with-limewater-test"
+        }
+      ],
+      "sourceExcerpt": "The test for hydrogen uses a burning splint held at the open end of\na test tube of the gas. Hydrogen burns rapidly with a pop sound.",
+      "sourceLocator": "Official PDF pages 107-110; 5.8.2.1 Test for hydrogen"
+    },
+    {
+      "id": "aqa-8464-chem-5-9-atmospheric-composition",
+      "conceptKey": "aqa-8464-chem-modern-atmosphere-gas-proportions",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-1-1",
+      "kind": "fact",
+      "visualCue": "⛽",
+      "front": "What have the approximate proportions of gases in Earth's atmosphere been for the past 200 million years?",
+      "back": "Approximately 80% nitrogen and 20% oxygen, with small proportions of carbon dioxide, water vapour and noble gases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The atmosphere is about four-fifths nitrogen and one-fifth oxygen, with the other named gases present in small proportions.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Approximately 80% nitrogen and 20% oxygen, with small proportions of carbon dioxide, water vapour and noble gases.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the stated approximate proportions.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Approximately 80% oxygen and 20% nitrogen, with no other gases.",
+          "isCorrect": false,
+          "feedback": "This swaps nitrogen and oxygen and omits the small proportions of other gases.",
+          "misconception": "swaps-main-atmospheric-gases"
+        },
+        {
+          "key": "c",
+          "text": "Approximately 50% nitrogen and 50% oxygen.",
+          "isCorrect": false,
+          "feedback": "The stated proportions are about four-fifths nitrogen and one-fifth oxygen.",
+          "misconception": "assumes-equal-atmospheric-proportions"
+        }
+      ],
+      "sourceExcerpt": "For 200 million years, the proportions of different gases in the\natmosphere have been much the same as they are today:\n• about four-fifths (approximately 80%) nitrogen\n• about one-fifth (approximately 20%) oxygen\n• small proportions of various other gases, including carbon\ndioxide, water vapour and noble gases.",
+      "sourceLocator": "Official PDF pages 110-115; 5.9.1.1 The proportions of different gases in the atmosphere"
+    },
+    {
+      "id": "aqa-8464-chem-5-9-early-atmosphere-theory",
+      "conceptKey": "aqa-8464-chem-early-atmosphere-carbon-dioxide-theory",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-1-2",
+      "kind": "context",
+      "visualCue": "⛽",
+      "front": "According to the stated theory, what may Earth's atmosphere have been like at the start of the first billion years?",
+      "back": "It may have been like Mars and Venus today, consisting mainly of carbon dioxide with little or no oxygen gas.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The theory cautiously suggests an early atmosphere resembling those of present-day Mars and Venus, mainly carbon dioxide with little or no oxygen.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It may have been like Mars and Venus today, consisting mainly of carbon dioxide with little or no oxygen gas.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both the proposed composition and its uncertainty.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It definitely consisted mainly of oxygen with little or no carbon dioxide.",
+          "isCorrect": false,
+          "feedback": "This reverses the proposed gases and removes the source's uncertainty.",
+          "misconception": "reverses-and-overstates-early-atmosphere-theory"
+        },
+        {
+          "key": "c",
+          "text": "It may have had exactly today's proportions of nitrogen and oxygen.",
+          "isCorrect": false,
+          "feedback": "The stated theory instead proposes mainly carbon dioxide with little or no oxygen.",
+          "misconception": "projects-modern-atmosphere-onto-early-earth"
+        }
+      ],
+      "sourceExcerpt": "At the start of this period the Earth’s\natmosphere may have been like the atmospheres of Mars and\nVenus today, consisting of mainly carbon dioxide with little or no\noxygen gas.",
+      "sourceLocator": "Official PDF pages 110-115; 5.9.1.2 The Earth's early atmosphere"
+    },
+    {
+      "id": "aqa-8464-chem-5-9-greenhouse-gases",
+      "conceptKey": "aqa-8464-chem-greenhouse-gases-life-supporting-temperature",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-2-1",
+      "kind": "cause-consequence",
+      "visualCue": "⛽",
+      "front": "Which greenhouse gases are named in the specification, and what role do greenhouse gases have?",
+      "back": "Water vapour, carbon dioxide and methane; they maintain temperatures on Earth high enough to support life.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The named greenhouse gases are water vapour, carbon dioxide and methane, and atmospheric greenhouse gases maintain life-supporting temperatures.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Water vapour, carbon dioxide and methane; they maintain temperatures on Earth high enough to support life.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives the named gases and their stated role.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Nitrogen, oxygen and noble gases; they maintain temperatures high enough to support life.",
+          "isCorrect": false,
+          "feedback": "Those are not the three greenhouse gases named in the excerpt.",
+          "misconception": "uses-main-atmospheric-gases-as-greenhouse-gases"
+        },
+        {
+          "key": "c",
+          "text": "Carbon monoxide, sulfur dioxide and nitrogen oxides; they remove all heat from Earth.",
+          "isCorrect": false,
+          "feedback": "The named greenhouse gases and their stated role are different.",
+          "misconception": "confuses-pollutants-with-greenhouse-gases"
+        }
+      ],
+      "sourceExcerpt": "Greenhouse gases in the atmosphere maintain temperatures on\nEarth high enough to support life. Water vapour, carbon dioxide and\nmethane are greenhouse gases.",
+      "sourceLocator": "Official PDF pages 110-115; 5.9.2.1 Greenhouse gases"
+    },
+    {
+      "id": "aqa-8464-chem-5-9-pollutant-effects",
+      "conceptKey": "aqa-8464-chem-atmospheric-pollutant-effects-comparison",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-9-3-2",
+      "kind": "comparison",
+      "visualCue": "⛽",
+      "front": "State the specified properties or effects of carbon monoxide, sulfur dioxide and oxides of nitrogen, and particulates.",
+      "back": "Carbon monoxide is toxic, colourless and odourless; sulfur dioxide and oxides of nitrogen cause respiratory problems and acid rain; particulates cause global dimming and health problems.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Carbon monoxide is difficult to detect because it is colourless and odourless as well as toxic. Sulfur dioxide and oxides of nitrogen cause respiratory problems and acid rain, while particulates cause global dimming and human health problems.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Carbon monoxide is toxic, colourless and odourless; sulfur dioxide and oxides of nitrogen cause respiratory problems and acid rain; particulates cause global dimming and health problems.",
+          "isCorrect": true,
+          "feedback": "Correct: each pollutant group is matched to its stated properties or effects.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Carbon monoxide causes only global dimming; sulfur dioxide and oxides of nitrogen are harmless; particulates cause only acid rain.",
+          "isCorrect": false,
+          "feedback": "This mismatches all three pollutant groups with their stated effects.",
+          "misconception": "swaps-atmospheric-pollutant-effects"
+        },
+        {
+          "key": "c",
+          "text": "All three pollutant groups are harmless because they are easily detected.",
+          "isCorrect": false,
+          "feedback": "The excerpt identifies toxic, respiratory, acid-rain, global-dimming and health effects.",
+          "misconception": "denies-atmospheric-pollutant-harms"
+        }
+      ],
+      "sourceExcerpt": "Carbon monoxide is a toxic gas. It is colourless and odourless and\nso is not easily detected.\nSulfur dioxide and oxides of nitrogen cause respiratory problems in\nhumans and cause acid rain.\nParticulates cause global dimming and health problems for humans.",
+      "sourceLocator": "Official PDF pages 110-115; 5.9.3.2 Properties and effects of atmospheric pollutants"
+    },
+    {
+      "id": "aqa-8464-chem-5-10-sustainable-development",
+      "conceptKey": "aqa-8464-chem-sustainable-development-definition",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-1-1",
+      "kind": "definition",
+      "visualCue": "♻️",
+      "front": "What is sustainable development?",
+      "back": "Development that meets current generations' needs without compromising future generations' ability to meet their own needs.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Sustainable development meets present needs while preserving the ability of future generations to meet theirs.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Development that meets current generations' needs without compromising future generations' ability to meet their own needs.",
+          "isCorrect": true,
+          "feedback": "Correct: the definition balances current and future needs.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Development that meets current needs regardless of its effect on future generations.",
+          "isCorrect": false,
+          "feedback": "The ability of future generations to meet their needs must not be compromised.",
+          "misconception": "ignores-future-generations-in-sustainability"
+        },
+        {
+          "key": "c",
+          "text": "Development that reserves all resources for future generations and meets no current needs.",
+          "isCorrect": false,
+          "feedback": "The definition includes meeting the needs of current generations as well.",
+          "misconception": "ignores-current-generations-in-sustainability"
+        }
+      ],
+      "sourceExcerpt": "Chemistry plays an important role in improving agricultural and\nindustrial processes to provide new products and in sustainable\ndevelopment, which is development that meets the needs of current\ngenerations without compromising the ability of future generations\nto meet their own needs.",
+      "sourceLocator": "Official PDF pages 115-120; 5.10.1.1 Using the Earth's resources and sustainable development"
+    },
+    {
+      "id": "aqa-8464-chem-5-10-potable-water",
+      "conceptKey": "aqa-8464-chem-potable-water-not-chemically-pure",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-1-2",
+      "kind": "comparison",
+      "visualCue": "🫧",
+      "front": "What makes water potable, and why is potable water not chemically pure?",
+      "back": "It is safe to drink with sufficiently low dissolved salts and microbes, but it contains dissolved substances and is therefore not chemically pure.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Potable water is safe for drinking because dissolved salts and microbes are sufficiently low. It still contains dissolved substances, so it is not pure water in the chemical sense.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "It is safe to drink with sufficiently low dissolved salts and microbes, but it contains dissolved substances and is therefore not chemically pure.",
+          "isCorrect": true,
+          "feedback": "Correct: potable describes safety, not chemical purity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "It contains no dissolved substances or microbes and is chemically pure.",
+          "isCorrect": false,
+          "feedback": "Potable water may contain dissolved substances and is not chemically pure.",
+          "misconception": "equates-potable-water-with-pure-water"
+        },
+        {
+          "key": "c",
+          "text": "It is any water that looks clear, regardless of dissolved salts or microbes.",
+          "isCorrect": false,
+          "feedback": "Drinking water must have sufficiently low levels of dissolved salts and microbes.",
+          "misconception": "uses-appearance-alone-for-potability"
+        }
+      ],
+      "sourceExcerpt": "Water of appropriate quality is essential for life. For humans,\ndrinking water should have sufficiently low levels of dissolved salts\nand microbes. Water that is safe to drink is called potable water.\nPotable water is not pure water in the chemical sense because it\ncontains dissolved substances.",
+      "sourceLocator": "Official PDF pages 115-120; 5.10.1.2 Potable water"
+    },
+    {
+      "id": "aqa-8464-chem-5-10-sewage-treatment-sequence",
+      "conceptKey": "aqa-8464-chem-sewage-treatment-ordered-stages",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-1-3",
+      "kind": "process",
+      "visualCue": "♻️",
+      "front": "What is the listed sequence of stages in sewage treatment?",
+      "back": "Screening and grit removal → sedimentation → anaerobic digestion of sewage sludge → aerobic biological treatment of effluent.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The listed process first removes screening material and grit, then separates sludge and effluent by sedimentation, followed by anaerobic treatment of sludge and aerobic treatment of effluent.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Screening and grit removal → sedimentation → anaerobic digestion of sewage sludge → aerobic biological treatment of effluent.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves the listed order and treatment streams.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Screening and grit removal → sedimentation → aerobic digestion of sewage sludge → anaerobic treatment of effluent.",
+          "isCorrect": false,
+          "feedback": "This reverses the anaerobic treatment of sludge and aerobic treatment of effluent.",
+          "misconception": "reverses-sewage-biological-treatments"
+        },
+        {
+          "key": "c",
+          "text": "Anaerobic digestion of effluent → aerobic treatment of sludge → sedimentation → screening and grit removal.",
+          "isCorrect": false,
+          "feedback": "This reverses the order and assigns the biological treatments to the wrong streams.",
+          "misconception": "reverses-sewage-sequence-and-streams"
+        }
+      ],
+      "sourceExcerpt": "Sewage treatment includes:\n• screening and grit removal\n• sedimentation to produce sewage sludge and effluent\n• anaerobic digestion of sewage sludge\n• aerobic biological treatment of effluent.",
+      "sourceLocator": "Official PDF pages 115-120; 5.10.1.3 Waste water treatment"
+    },
+    {
+      "id": "aqa-8464-chem-5-10-life-cycle-assessment-stages",
+      "conceptKey": "aqa-8464-chem-life-cycle-assessment-full-stages",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:5-10-2-1",
+      "kind": "method",
+      "visualCue": "♻️",
+      "front": "Which stages of a product are assessed in a life cycle assessment?",
+      "back": "Raw-material extraction and processing; manufacturing and packaging; use and operation; disposal, including transport and distribution at each stage.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An LCA assesses environmental impact from raw-material extraction through manufacture and use to end-of-life disposal, including transport and distribution throughout.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Raw-material extraction and processing; manufacturing and packaging; use and operation; disposal, including transport and distribution at each stage.",
+          "isCorrect": true,
+          "feedback": "Correct: this covers the full set of listed life-cycle stages.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Manufacturing and packaging; use and disposal only, excluding raw-material extraction.",
+          "isCorrect": false,
+          "feedback": "Raw-material extraction and processing must also be assessed.",
+          "misconception": "omits-raw-material-stage-from-lca"
+        },
+        {
+          "key": "c",
+          "text": "Raw-material extraction and manufacturing only, excluding use, disposal, transport and distribution.",
+          "isCorrect": false,
+          "feedback": "An LCA also covers use, disposal, transport and distribution.",
+          "misconception": "ends-lca-at-manufacturing"
+        }
+      ],
+      "sourceExcerpt": "Life cycle assessments (LCAs) are carried out to assess the\nenvironmental impact of products in each of these stages:\n• extracting and processing raw materials\n• manufacturing and packaging\n• use and operation during its lifetime\n• disposal at the end of its useful life, including transport and\ndistribution at each stage.",
+      "sourceLocator": "Official PDF pages 115-120; 5.10.2.1 Life cycle assessment"
+    }
+  ]
+}

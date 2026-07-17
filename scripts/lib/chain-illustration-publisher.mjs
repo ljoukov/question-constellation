@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { d1Query, d1Rows } from './d1-rest.mjs';
+import { d1Batch, d1Query, d1Rows } from './d1-rest.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -264,6 +264,22 @@ export async function publishChainIllustration(
 		verifyR2 = true
 	} = {}
 ) {
+	const validation = await validateChainIllustrationForPublish(item, { rootDir });
+	if (!skipR2) {
+		await uploadValidatedIllustrationPair(validation, { rootDir, bucketName, verifyR2 });
+	}
+	const replacement = skipD1 ? null : await publishD1Row(item, { rootDir });
+	return publicationResult(item, validation, replacement);
+}
+
+/**
+ * Perform every read-only source, file, pair and provenance check used by publication. Batch
+ * releases run this for all selected items before uploading even the first R2 object.
+ *
+ * @param {IllustrationPublishItem} item
+ * @param {{rootDir?: string}} [options]
+ */
+export async function validateChainIllustrationForPublish(item, { rootDir = process.cwd() } = {}) {
 	await assertPublishedIllustrationSource(item, { rootDir });
 	const pair = illustrationThemePair(item);
 	const light = pair[1];
@@ -298,29 +314,176 @@ export async function publishChainIllustration(
 		dark: darkCheck,
 		light: lightCheck
 	});
+	return { item, pair, darkCheck, lightCheck, provenance };
+}
+
+/**
+ * Publish a complete illustration release without exposing a partially updated D1 set. All items
+ * pass read-only validation first. Content-addressed R2 objects are then uploaded and verified;
+ * only after every object exists does one transactional D1 batch make the complete set visible.
+ * A failed R2 phase can leave only unreferenced content-addressed objects, never partial D1 rows.
+ *
+ * @param {IllustrationPublishItem[]} items
+ * @param {{rootDir?: string, bucketName?: string, skipR2?: boolean, skipD1?: boolean, verifyR2?: boolean, beforeD1?: (() => Promise<void>) | null}} [options]
+ */
+export async function publishChainIllustrationBatch(
+	items,
+	{
+		rootDir = process.cwd(),
+		bucketName = 'question-constellation',
+		skipR2 = false,
+		skipD1 = false,
+		verifyR2 = true,
+		beforeD1 = null
+	} = {}
+) {
+	assertIllustrationBatchIdentities(items);
+	const validations = [];
+	for (const item of items) {
+		validations.push(await validateChainIllustrationForPublish(item, { rootDir }));
+	}
+	const priorById = skipD1 ? new Map() : await preflightIllustrationD1Batch(items, { rootDir });
 	if (!skipR2) {
-		for (const [index, variant] of pair.entries()) {
-			await uploadToR2(variant, { rootDir, bucketName });
-			if (verifyR2) {
-				await verifyR2Object(variant, {
-					rootDir,
-					bucketName,
-					expectedSha256: [darkCheck, lightCheck][index].sha256 ?? fileSha256(variant.localPath)
-				});
-			}
+		for (const validation of validations) {
+			await uploadValidatedIllustrationPair(validation, { rootDir, bucketName, verifyR2 });
 		}
 	}
-	const replacement = skipD1 ? null : await publishD1Row(item, { rootDir });
+	if (!skipD1 && beforeD1) await beforeD1();
+	const replacements = skipD1
+		? new Map()
+		: await publishIllustrationD1Batch(items, priorById, { rootDir });
 	return {
 		status: 'passed',
-		width: darkCheck.width,
-		height: darkCheck.height,
-		provenance,
+		items: validations.map((validation) =>
+			publicationResult(validation.item, validation, replacements.get(validation.item.id) ?? null)
+		)
+	};
+}
+
+/**
+ * @param {ReturnType<typeof validateChainIllustrationForPublish> extends Promise<infer T> ? T : never} validation
+ * @param {{rootDir: string, bucketName: string, verifyR2: boolean}} options
+ */
+async function uploadValidatedIllustrationPair(validation, { rootDir, bucketName, verifyR2 }) {
+	const checks = [validation.darkCheck, validation.lightCheck];
+	for (const [index, variant] of validation.pair.entries()) {
+		await uploadToR2(variant, { rootDir, bucketName });
+		if (verifyR2) {
+			await verifyR2Object(variant, {
+				rootDir,
+				bucketName,
+				expectedSha256: checks[index].sha256 ?? fileSha256(variant.localPath)
+			});
+		}
+	}
+}
+
+/** @param {IllustrationPublishItem[]} items */
+export function assertIllustrationBatchIdentities(items) {
+	if (!Array.isArray(items) || items.length === 0) {
+		throw new Error('Illustration publication batch must contain at least one item.');
+	}
+	const identitySets = /** @type {Array<[string, string[]]>} */ ([
+		['id', items.map((item) => String(item?.id ?? '').trim())],
+		['answerChainId', items.map((item) => String(item?.answerChainId ?? '').trim())]
+	]);
+	for (const [field, values] of identitySets) {
+		if (values.some((value) => !value) || new Set(values).size !== values.length) {
+			throw new Error(`Illustration publication batch has missing or duplicate ${field} values.`);
+		}
+	}
+	const objectKeys = items.flatMap((item) => [item.dark?.r2Key, item.light?.r2Key]);
+	if (
+		objectKeys.some((value) => !String(value ?? '').trim()) ||
+		new Set(objectKeys).size !== objectKeys.length
+	) {
+		throw new Error('Illustration publication batch has missing or duplicate R2 object keys.');
+	}
+}
+
+/**
+ * @param {IllustrationPublishItem[]} items
+ * @param {{rootDir?: string}} [options]
+ */
+async function preflightIllustrationD1Batch(items, { rootDir = process.cwd() } = {}) {
+	const priorById = new Map();
+	for (const item of items) {
+		const identityRows = await d1Rows(
+			`SELECT id, answer_chain_id
+			 FROM answer_chain_illustrations
+			 WHERE id = ?`,
+			[item.id],
+			{ rootDir }
+		);
+		if (identityRows.some((row) => row.answer_chain_id !== item.answerChainId)) {
+			throw new Error(`${item.id} is already owned by a different answer chain.`);
+		}
+		const priorPrimaryRows = await d1Rows(
+			`SELECT id, answer_chain_id, is_primary, status, source_fingerprint
+			 FROM answer_chain_illustrations
+			 WHERE answer_chain_id = ?
+			   AND is_primary = 1
+			   AND status = 'published'`,
+			[item.answerChainId],
+			{ rootDir }
+		);
+		if (priorPrimaryRows.length > 1) {
+			throw new Error(`${item.answerChainId} has more than one published primary illustration.`);
+		}
+		priorById.set(item.id, priorPrimaryRows);
+	}
+	return priorById;
+}
+
+/**
+ * @param {IllustrationPublishItem[]} items
+ * @param {Map<string, any[]>} priorById
+ * @param {{rootDir?: string}} [options]
+ */
+async function publishIllustrationD1Batch(items, priorById, { rootDir = process.cwd() } = {}) {
+	await d1Batch(items.map(illustrationUpsert), { rootDir });
+
+	const replacements = new Map();
+	for (const item of items) {
+		const afterRows = await d1Rows(
+			`SELECT id, answer_chain_id, is_primary, status, source_fingerprint,
+			        generation_metadata_json
+			 FROM answer_chain_illustrations
+			 WHERE answer_chain_id = ?
+			 ORDER BY created_at, id`,
+			[item.answerChainId],
+			{ rootDir }
+		);
+		replacements.set(
+			item.id,
+			validateIllustrationReplacementState(item, priorById.get(item.id) ?? [], afterRows)
+		);
+	}
+	return replacements;
+}
+
+/**
+ * @param {IllustrationPublishItem} item
+ * @param {any} validation
+ * @param {any} replacement
+ */
+function publicationResult(item, validation, replacement) {
+	return {
+		status: 'passed',
+		illustrationId: item.id,
+		answerChainId: item.answerChainId,
+		width: validation.darkCheck.width,
+		height: validation.darkCheck.height,
+		provenance: validation.provenance,
 		replacement,
 		variants: {
-			dark: { ...darkCheck, r2Key: item.dark.r2Key, publicPath: item.dark.publicPath },
+			dark: {
+				...validation.darkCheck,
+				r2Key: item.dark.r2Key,
+				publicPath: item.dark.publicPath
+			},
 			light: {
-				...lightCheck,
+				...validation.lightCheck,
 				r2Key: item.light.r2Key,
 				publicPath: item.light.publicPath
 			}

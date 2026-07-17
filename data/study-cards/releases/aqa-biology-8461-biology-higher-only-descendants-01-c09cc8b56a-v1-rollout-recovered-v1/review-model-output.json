@@ -1,0 +1,49 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8461-af8e944069-aqa-gcse-biology-8461-v1-4-3-2-hybridoma-production",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately rehearses the full hybridoma-production sequence.",
+        "Distractors target distinct errors about cell roles, mixed hybridomas, and single-cell cloning."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-d5a8c364ac-aqa-gcse-biology-8461-v1-4-5-3-6-ivf-treatment-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the supported IVF sequence from hormone treatment through embryo transfer.",
+        "Distractors diagnose errors in hormone timing, fertilisation location, and transfer timing."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-9171955741-aqa-gcse-biology-8461-v1-4-5-3-7-thyroxine-negative-feedback",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines thyroxine's two stated roles with its negative-feedback control.",
+        "Distractors isolate three plausible misconceptions without introducing unsupported content."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-d1a6acaf95-aqa-gcse-biology-8461-v1-4-5-4-2-plant-hormone-uses",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Requires accurate mapping of all specified uses to auxins, ethene, and gibberellins.",
+        "The three distractors represent distinct pairwise hormone-use confusions."
+      ]
+    },
+    {
+      "cardId": "aqa-8461-491cca4469-aqa-gcse-biology-8461-v1-4-7-2-4-environmental-change-distribution",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both the listed environmental variables and the possible forms of change.",
+        "Distractors target overrestriction to human causes and omission of atmospheric gas composition."
+      ]
+    }
+  ]
+}

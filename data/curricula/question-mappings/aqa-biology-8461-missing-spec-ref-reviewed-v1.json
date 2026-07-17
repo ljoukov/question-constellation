@@ -1,0 +1,1458 @@
+{
+	"schemaVersion": "2",
+	"id": "aqa-biology-8461-missing-spec-ref-review-v1",
+	"importOwner": "official_curriculum_importer",
+	"generatedAt": "2026-07-16",
+	"review": {
+		"method": "Reuses the checked-in manual question-and-mark-evidence decisions in scripts/lib/aqa-science-topic-mapping.mjs; no prompt classifier or model call.",
+		"boundary": "These items assess working-scientifically calculations, controls, graphs or study validity without a deterministic single Biology chapter, so they remain explicitly withheld."
+	},
+	"specificationSources": [
+		{
+			"specificationId": "aqa-gcse-biology-8461-v1.0",
+			"version": "1.0",
+			"fileHash": "sha256:effa4236b6250dd1309f6640bb6b1fb5b1acee870c2b4c689b7d7ac2a1af3f48",
+			"localPath": "data/curricula/sources/aqa-gcse-biology-8461-v1.0.pdf",
+			"pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/510eb7c76df13be23292df4392de95eb32b0d30f.pdf"
+		}
+	],
+	"scope": {
+		"board": "AQA",
+		"qualification": "GCSE",
+		"subject": "Biology",
+		"sourceDocumentIds": ["aqa-84611h-qp-nov20"],
+		"questionIds": [
+			"84611h-nov20-01-3",
+			"84611h-nov20-01-4",
+			"84611h-nov20-01-5",
+			"84611h-nov20-01-6",
+			"84611h-nov20-01-7",
+			"84611h-nov20-01-9",
+			"84611h-nov20-04-8",
+			"84611h-nov20-06-1",
+			"84611h-nov20-06-2",
+			"84611h-nov20-06-3",
+			"84611h-nov20-06-4",
+			"84611h-nov20-06-5",
+			"84611h-nov20-06-6"
+		],
+		"questionCount": 13
+	},
+	"mappings": [],
+	"withheldQuestions": [
+		{
+			"questionId": "84611h-nov20-01-3",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically calculation, anomaly, control-variable or graph skill; the photosynthesis setting is not enough to make the chapter the assessed content.",
+			"evidenceHash": "600fdb468231d7ae8a5f26e58f58bcee364fbeff3a20ba3921f0fa55252e701d",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-01-3",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "01.3",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Calculate mean value X.",
+					"selfContainedPromptText": "Students investigated the effect of temperature on the rate of photosynthesis. Table 1 shows the volume of oxygen produced per hour at different temperatures. X is the mean for 20 °C.\n\nCalculate mean value X.",
+					"contextText": "Students investigated the effect of temperature on the rate of photosynthesis. Table 1 shows the volume of oxygen produced per hour at different temperatures. X is the mean for 20 °C.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-reaction-time-mean-add-divide",
+					"title": "Mean",
+					"canonicalChainText": "select repeats -> add/divide -> mean",
+					"fitNotes": "A mean is calculated as the total of the relevant repeat readings divided by the number of readings used."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-01-3-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "(18.5 + 19.3 + 19.5) / 3 or 57.3 / 3.",
+						"marks": 1,
+						"sourceRef": "01.3"
+					},
+					{
+						"id": "84611h-nov20-01-3-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "19.1 cm3/hour; allow an answer correctly calculated using only two correct values.",
+						"marks": 1,
+						"sourceRef": "01.3"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-01-4",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically calculation, anomaly, control-variable or graph skill; the photosynthesis setting is not enough to make the chapter the assessed content.",
+			"evidenceHash": "40d16b61cd9b985d4193691d38ec1b965f98c22bfbbfaa93d9704ad55a61f51e",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-01-4",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "01.4",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Draw a ring around the anomalous result in Table 1.",
+					"selfContainedPromptText": "Students identified one anomalous result in Table 1 from the pondweed photosynthesis investigation.\n\nDraw a ring around the anomalous result in Table 1.",
+					"contextText": "Students identified one anomalous result in Table 1 from the pondweed photosynthesis investigation.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-data-anomalous-result-clear-indication",
+					"title": "Anomalous result",
+					"canonicalChainText": "table pattern -> odd entry -> clear mark",
+					"fitNotes": "One odd value, clearly marked."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-01-4-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "A ring around 14.2; allow clear indication of the correct result.",
+						"marks": 1,
+						"sourceRef": "01.4"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-01-5",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically calculation, anomaly, control-variable or graph skill; the photosynthesis setting is not enough to make the chapter the assessed content.",
+			"evidenceHash": "9ec7183e13949936e8263524ab50e349b498cbed7fccf456d81e238c9dee9167",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-01-5",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "01.5",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Suggest one possible cause of the anomalous result.",
+					"selfContainedPromptText": "The anomalous result is the 14.2 cm3/hour result in Table 1 from the pondweed photosynthesis investigation.\n\nSuggest one possible cause of the anomalous result.",
+					"contextText": "The anomalous result is the 14.2 cm3/hour result in Table 1 from the pondweed photosynthesis investigation.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-anomalous-result-specific-practical-cause",
+					"title": "Practical cause",
+					"canonicalChainText": "anomalous result -> specific cause",
+					"fitNotes": "Concrete cause beats human error."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-01-5-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The scale or value was misread; allow measurement error.",
+						"marks": 1,
+						"sourceRef": "01.5"
+					},
+					{
+						"id": "84611h-nov20-01-5-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "There was air/oxygen in the syringe, measuring cylinder, or apparatus.",
+						"marks": 1,
+						"sourceRef": "01.5"
+					},
+					{
+						"id": "84611h-nov20-01-5-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "The lamp/light was moved; allow light intensity changed.",
+						"marks": 1,
+						"sourceRef": "01.5"
+					},
+					{
+						"id": "84611h-nov20-01-5-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "The temperature changed.",
+						"marks": 1,
+						"sourceRef": "01.5"
+					},
+					{
+						"id": "84611h-nov20-01-5-ms-5",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "A different mass or length of pondweed was used.",
+						"marks": 1,
+						"sourceRef": "01.5"
+					},
+					{
+						"id": "84611h-nov20-01-5-ms-6",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 6,
+						"itemType": "mark",
+						"text": "The pondweed had not acclimatised.",
+						"marks": 1,
+						"sourceRef": "01.5"
+					},
+					{
+						"id": "84611h-nov20-01-5-ms-7",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 7,
+						"itemType": "guidance",
+						"text": "Any one. Ignore human error and references to counting bubbles or time.",
+						"marks": null,
+						"sourceRef": "01.5"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-01-6",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically calculation, anomaly, control-variable or graph skill; the photosynthesis setting is not enough to make the chapter the assessed content.",
+			"evidenceHash": "b73371841e0a4079c438e35a4760381b5240dbd12b1417c4a7180d47b9e40c4f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-01-6",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "01.6",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "How did the students deal with the anomalous result?",
+					"selfContainedPromptText": "The anomalous result is the 14.2 cm3/hour result in Table 1 from the pondweed photosynthesis investigation.\n\nHow did the students deal with the anomalous result?",
+					"contextText": "The anomalous result is the 14.2 cm3/hour result in Table 1 from the pondweed photosynthesis investigation.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-anomalous-result-exclude-mean",
+					"title": "Exclude anomaly",
+					"canonicalChainText": "anomalous value -> exclude from mean",
+					"fitNotes": "Outliers stay out of means."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-01-6-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "They did not use it in the calculation of the mean.",
+						"marks": 1,
+						"sourceRef": "01.6"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-01-7",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically calculation, anomaly, control-variable or graph skill; the photosynthesis setting is not enough to make the chapter the assessed content.",
+			"evidenceHash": "d51e5f66cd7e958ef6c49eca650e511316a382dc3d18a1fb573b6c8d7200f983",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-01-7",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "01.7",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Give one factor the students should have kept constant in this investigation.",
+					"selfContainedPromptText": "Students investigated the effect of temperature on the rate of photosynthesis in pondweed by measuring oxygen produced per hour.\n\nGive one factor the students should have kept constant in this investigation.",
+					"contextText": "Students investigated the effect of temperature on the rate of photosynthesis in pondweed by measuring oxygen produced per hour.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-control-variable-kept-constant-valid-investigation",
+					"title": "Control variable",
+					"canonicalChainText": "relevant factor -> kept constant -> fair comparison",
+					"fitNotes": "Fair-test factor, not outcome."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-01-7-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Light intensity; allow distance/power/colour of lamp/light.",
+						"marks": 1,
+						"sourceRef": "01.7"
+					},
+					{
+						"id": "84611h-nov20-01-7-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Carbon dioxide concentration.",
+						"marks": 1,
+						"sourceRef": "01.7"
+					},
+					{
+						"id": "84611h-nov20-01-7-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Pondweed size or amount.",
+						"marks": 1,
+						"sourceRef": "01.7"
+					},
+					{
+						"id": "84611h-nov20-01-7-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Pondweed species; allow same piece of pondweed.",
+						"marks": 1,
+						"sourceRef": "01.7"
+					},
+					{
+						"id": "84611h-nov20-01-7-ms-5",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Any one. Do not accept temperature; ignore time.",
+						"marks": null,
+						"sourceRef": "01.7"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-01-9",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically calculation, anomaly, control-variable or graph skill; the photosynthesis setting is not enough to make the chapter the assessed content.",
+			"evidenceHash": "d34c949895b0c09f14e655c2683cc019a880db4441721cc14061deeaf797371e",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-01-9",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "01.9",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Complete Figure 1 using data from Table 1.",
+					"selfContainedPromptText": "Table 1 gives the mean rate of photosynthesis at temperatures from 20 °C to 45 °C. Figure 1 is a blank graph with temperature in °C on the x-axis.\n\nComplete Figure 1 using data from Table 1.",
+					"contextText": "Table 1 gives the mean rate of photosynthesis at temperatures from 20 °C to 45 °C. Figure 1 is a blank graph with temperature in °C on the x-axis.",
+					"marks": 5
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-graph-scale-plot-line-best-fit",
+					"title": "Graph Plotting",
+					"canonicalChainText": "axis label -> scale -> plots -> best-fit curve",
+					"fitNotes": "Complete the graph by labelling the y-axis with the measured quantity and unit, using a suitable scale, plotting the table values accurately, and adding the correct best-fit line."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-01-9-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Y-axis labelled '(rate of) photosynthesis in cm3/hour'.",
+						"marks": 1,
+						"sourceRef": "01.9"
+					},
+					{
+						"id": "84611h-nov20-01-9-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Suitable scale on y-axis; must take up half or more of the grid provided.",
+						"marks": 1,
+						"sourceRef": "01.9"
+					},
+					{
+						"id": "84611h-nov20-01-9-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "All mean points plotted to within ± half a small square earns 2 marks; allow 3 or 4 correct plots for 1 mark. Ignore any attempt to plot a point at 20 °C.",
+						"marks": 2,
+						"sourceRef": "01.9"
+					},
+					{
+						"id": "84611h-nov20-01-9-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Correct curved line of best fit; ignore straight lines joining point to point and ignore extrapolation.",
+						"marks": 1,
+						"sourceRef": "01.9"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-04-8",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Open investigation-extension task spans food-test method and plant production context; no single top-level chapter is sufficiently clear.",
+			"evidenceHash": "5b807c8fae8bf04341c4fd0f6b38551968b95e972a24cab41dcb1a9a1caee51b",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-04-8",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "04.8",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Suggest one way the students could develop the investigation to find out more about glucose and starch production in plants.",
+					"selfContainedPromptText": "Students tested glucose and starch in leaves from geranium plants kept in light and in darkness.\n\nSuggest one way the students could develop the investigation to find out more about glucose and starch production in plants.",
+					"contextText": "Students tested glucose and starch in leaves from geranium plants kept in light and in darkness.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-practical-extension-specific-extra-test",
+					"title": "Practical extension",
+					"canonicalChainText": "target outcome -> one extra test -> specific detail",
+					"fitNotes": "Specific extensions earn the mark."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-04-8-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Test roots/stems or other parts of plants in the light and dark.",
+						"marks": 1,
+						"sourceRef": "04.8"
+					},
+					{
+						"id": "84611h-nov20-04-8-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Test other species/types of plant.",
+						"marks": 1,
+						"sourceRef": "04.8"
+					},
+					{
+						"id": "84611h-nov20-04-8-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Measure the concentrations of glucose and starch.",
+						"marks": 1,
+						"sourceRef": "04.8"
+					},
+					{
+						"id": "84611h-nov20-04-8-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Vary the time in the dark/light.",
+						"marks": 1,
+						"sourceRef": "04.8"
+					},
+					{
+						"id": "84611h-nov20-04-8-ms-5",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Test variegated leaves.",
+						"marks": 1,
+						"sourceRef": "04.8"
+					},
+					{
+						"id": "84611h-nov20-04-8-ms-6",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 6,
+						"itemType": "guidance",
+						"text": "Any one. Do not accept changing the independent variable; ignore repeats.",
+						"marks": null,
+						"sourceRef": "04.8"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-06-1",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically controls, calculation, graph interpretation and study-validity items; liver context alone is not a reliable chapter classification.",
+			"evidenceHash": "8c95fa7f8fb20b27de915bf18e02f36e102eedb76be1f3b6bf2509694314c204",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-06-1",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "06.1",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Suggest two other factors which the scientists would have controlled.",
+					"selfContainedPromptText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled.\n\nSuggest two other factors which the scientists would have controlled.",
+					"contextText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-controlled-confounders-valid-analysis",
+					"title": "Extra controls",
+					"canonicalChainText": "named controls -> other confounders -> two distinct",
+					"fitNotes": "Extra, distinct controls score."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-06-1-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "BMI/morphology/obesity level; allow mass/weight and height.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Smoking habits.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Diet; allow previous drinking habits.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Medication; allow medical conditions or drug use.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-5",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Family history of liver disease.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-6",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 6,
+						"itemType": "mark",
+						"text": "Fitness levels; allow level of exercise.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-7",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 7,
+						"itemType": "mark",
+						"text": "Ethnicity; allow race.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-8",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 8,
+						"itemType": "mark",
+						"text": "Area of UK they live in.",
+						"marks": 1,
+						"sourceRef": "06.1"
+					},
+					{
+						"id": "84611h-nov20-06-1-ms-9",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 9,
+						"itemType": "guidance",
+						"text": "Any two. Ignore genetic factors.",
+						"marks": null,
+						"sourceRef": "06.1"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-06-2",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically controls, calculation, graph interpretation and study-validity items; liver context alone is not a reliable chapter classification.",
+			"evidenceHash": "eb27bcd7adb189de382eeab3dba8e621519b0ee236fefdaa31019c119671d79a",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-06-2",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "06.2",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Calculate the percentage decrease in relative risk of developing cirrhosis of the liver for this woman.",
+					"selfContainedPromptText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled. The data was analysed for women who drank alcohol with meals, women who drank alcohol not with meals, and women who did not drink alcohol. During the survey approximately 1500 women developed a liver disease called cirrhosis of the liver. Scientists calculated the relative risk of developing cirrhosis of the liver for each group who consumed alcohol. A relative risk of 1.0 means there was no statistical difference between the groups who did consume alcohol and the group who did not consume alcohol. Figure 10 shows a summary of the results. A woman drinks 150 g of alcohol per week not with meals. The woman decides to change to drinking 150 g of alcohol per week with meals.\n\nCalculate the percentage decrease in relative risk of developing cirrhosis of the liver for this woman.",
+					"contextText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled. The data was analysed for women who drank alcohol with meals, women who drank alcohol not with meals, and women who did not drink alcohol. During the survey approximately 1500 women developed a liver disease called cirrhosis of the liver. Scientists calculated the relative risk of developing cirrhosis of the liver for each group who consumed alcohol. A relative risk of 1.0 means there was no statistical difference between the groups who did consume alcohol and the group who did not consume alcohol. Figure 10 shows a summary of the results. A woman drinks 150 g of alcohol per week not with meals. The woman decides to change to drinking 150 g of alcohol per week with meals.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-percentage-decrease-from-two-graph-values",
+					"title": "Percentage Decrease",
+					"canonicalChainText": "two readings -> change -> original -> times 100",
+					"fitNotes": "Change over original, as percent."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-06-2-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "2.55 - 1.60 = 0.95; allow 1.60 - 2.55 = -0.95 and graph readings in accepted ranges.",
+						"marks": 1,
+						"sourceRef": "06.2"
+					},
+					{
+						"id": "84611h-nov20-06-2-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "0.95 / 2.55 × 100 = 37(.2549019608...)%; allow answer correctly calculated from accepted graph readings, including -37%.",
+						"marks": 1,
+						"sourceRef": "06.2"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-06-3",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically controls, calculation, graph interpretation and study-validity items; liver context alone is not a reliable chapter classification.",
+			"evidenceHash": "1aeef9e884fdd9489c2e3edbc64e429ffc283aa79a37d047b71cd79c3c2b6f2f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-06-3",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "06.3",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Calculate the relative risk of developing cirrhosis of the liver for this woman.",
+					"selfContainedPromptText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled. The data was analysed for women who drank alcohol with meals, women who drank alcohol not with meals, and women who did not drink alcohol. During the survey approximately 1500 women developed a liver disease called cirrhosis of the liver. Scientists calculated the relative risk of developing cirrhosis of the liver for each group who consumed alcohol. A relative risk of 1.0 means there was no statistical difference between the groups who did consume alcohol and the group who did not consume alcohol. Figure 10 shows a summary of the results. One glass of wine contains 12 g of alcohol. A different woman drinks two glasses of wine each day with her meals.\n\nCalculate the relative risk of developing cirrhosis of the liver for this woman.",
+					"contextText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled. The data was analysed for women who drank alcohol with meals, women who drank alcohol not with meals, and women who did not drink alcohol. During the survey approximately 1500 women developed a liver disease called cirrhosis of the liver. Scientists calculated the relative risk of developing cirrhosis of the liver for each group who consumed alcohol. A relative risk of 1.0 means there was no statistical difference between the groups who did consume alcohol and the group who did not consume alcohol. Figure 10 shows a summary of the results. One glass of wine contains 12 g of alcohol. A different woman drinks two glasses of wine each day with her meals.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-calculate-exposure-then-read-risk-graph",
+					"title": "Graph input",
+					"canonicalChainText": "scenario values -> input total -> correct series -> graph read",
+					"fitNotes": "Calculate input before graph reading."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-06-3-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "12 × 2 × 7 = 168 g/week.",
+						"marks": 1,
+						"sourceRef": "06.3"
+					},
+					{
+						"id": "84611h-nov20-06-3-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Relative risk is 1.8; allow range 1.8-1.9 and correct reading from a calculation that omits the 2 or the 7. Do not accept if a unit is given.",
+						"marks": 1,
+						"sourceRef": "06.3"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-06-4",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically controls, calculation, graph interpretation and study-validity items; liver context alone is not a reliable chapter classification.",
+			"evidenceHash": "dc6389e0da836da92d9600264335975f886f134bc6ac3e0ef6cc9b9de058e2ca",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-06-4",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "06.4",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Give two other conclusions about the relative risk of developing cirrhosis of the liver related to alcohol consumption. Use data from Figure 10 in your answer.",
+					"selfContainedPromptText": "Figure 10 is repeated below. Consuming alcohol with meals instead of not with meals decreases the relative risk of developing cirrhosis of the liver.\n\nGive two other conclusions about the relative risk of developing cirrhosis of the liver related to alcohol consumption. Use data from Figure 10 in your answer.",
+					"contextText": "Figure 10 is repeated below. Consuming alcohol with meals instead of not with meals decreases the relative risk of developing cirrhosis of the liver.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-graph-data-supported-conclusions",
+					"title": "Graph conclusions",
+					"canonicalChainText": "graph feature -> data evidence -> distinct conclusions",
+					"fitNotes": "Graph claims need evidence."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-06-4-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Consuming alcohol increases the relative risk with or without meals, with supporting data; allow increasing alcohol consumption increases RR at an increasing rate.",
+						"marks": 1,
+						"sourceRef": "06.4"
+					},
+					{
+						"id": "84611h-nov20-06-4-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Consuming less than 50 g/week of alcohol with meals does not increase relative risk; allow any value between 35 and 60 g/week.",
+						"marks": 1,
+						"sourceRef": "06.4"
+					},
+					{
+						"id": "84611h-nov20-06-4-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Even small amounts of alcohol at 25 g/week increase relative risk if not with meals.",
+						"marks": 1,
+						"sourceRef": "06.4"
+					},
+					{
+						"id": "84611h-nov20-06-4-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Any two. Allow risk for RR throughout and data in terms of number of glasses of wine.",
+						"marks": null,
+						"sourceRef": "06.4"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-06-5",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically controls, calculation, graph interpretation and study-validity items; liver context alone is not a reliable chapter classification.",
+			"evidenceHash": "64e60e6fe9aaf2186d3d6bf0ce233385701bad3571fd9f171e82991dbf5a7a3c",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-06-5",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "06.5",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Suggest two reasons why the data is considered to be valid.",
+					"selfContainedPromptText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled.\n\nSuggest two reasons why the data is considered to be valid.",
+					"contextText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-study-validity-sample-duration-controls",
+					"title": "Study validity",
+					"canonicalChainText": "design feature -> any two -> validity",
+					"fitNotes": "Two design features justify trust."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-06-5-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Large number in survey; allow 800 000 in survey.",
+						"marks": 1,
+						"sourceRef": "06.5"
+					},
+					{
+						"id": "84611h-nov20-06-5-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Long-term / 15-year survey.",
+						"marks": 1,
+						"sourceRef": "06.5"
+					},
+					{
+						"id": "84611h-nov20-06-5-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Well controlled; allow many controls.",
+						"marks": 1,
+						"sourceRef": "06.5"
+					},
+					{
+						"id": "84611h-nov20-06-5-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Any two. If neither first two marks awarded, allow large study.",
+						"marks": null,
+						"sourceRef": "06.5"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84611h-nov20-06-6",
+			"sourceClassification": "aqa-gcse-biology-8461-working-scientifically-withheld",
+			"reason": "Working-scientifically controls, calculation, graph interpretation and study-validity items; liver context alone is not a reliable chapter classification.",
+			"evidenceHash": "e8168834f2a4d8ecaabf3d70bb4e2ee8680f1f8cb2adf1a71485fe839d341cb6",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84611h-qp-nov20",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Biology",
+					"subjectArea": "Biology",
+					"tier": "Higher",
+					"paper": "Paper 1",
+					"componentCode": "8461/1H",
+					"series": "November 2020",
+					"year": 2020,
+					"title": "AQA GCSE Biology 8461/1H Question Paper November 2020",
+					"sourceUrl": "",
+					"fileHash": "sha256:e84faa240c22338f77fa3567de12d1df4993752afd7b0c37b902adaa5c08de8f",
+					"pageCount": 36
+				},
+				"question": {
+					"id": "84611h-nov20-06-6",
+					"sourceDocumentId": "aqa-84611h-qp-nov20",
+					"sourceQuestionRef": "06.6",
+					"componentCode": "8461/1H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2020,
+					"promptText": "Suggest one aspect of the survey which might reduce validity.",
+					"selfContainedPromptText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled.\n\nSuggest one aspect of the survey which might reduce validity.",
+					"contextText": "Data from The Million Women survey in the UK was collected for over 15 years. Scientists analysed the data to study the effect of consuming alcohol on liver disease. The scientists included 400 000 women who regularly consumed alcohol, included 400 000 women who did not consume alcohol, and excluded women who already had a liver disease. Age and gender were two factors controlled in this analysis, and many other factors were also controlled.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "bio-chain-survey-self-report-habit-pattern-validity",
+					"title": "Survey validity",
+					"canonicalChainText": "survey aspect -> one limitation -> lower validity",
+					"fitNotes": "One method flaw weakens survey data."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84611h-nov20-06-6-ms-1",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "People may underestimate or overestimate alcohol consumption; allow people lie about alcohol consumption or other named control variables.",
+						"marks": 1,
+						"sourceRef": "06.6"
+					},
+					{
+						"id": "84611h-nov20-06-6-ms-2",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "People may change lifestyle/drinking habits over time.",
+						"marks": 1,
+						"sourceRef": "06.6"
+					},
+					{
+						"id": "84611h-nov20-06-6-ms-3",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Some people may drink all their weekly alcohol at once.",
+						"marks": 1,
+						"sourceRef": "06.6"
+					},
+					{
+						"id": "84611h-nov20-06-6-ms-4",
+						"sourceDocumentId": "aqa-84611h-ms-nov20",
+						"sourceDocument": {
+							"id": "aqa-84611h-ms-nov20",
+							"docType": "mark_scheme",
+							"title": "AQA GCSE Biology 8461/1H Mark Scheme November 2020",
+							"sourceUrl": "",
+							"fileHash": "sha256:b084ecf26771f9916352b6a003ec5276af7ccaaf13d7df03e8a03605dfe54149"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Any one. Ignore survey only tested women.",
+						"marks": null,
+						"sourceRef": "06.6"
+					}
+				]
+			}
+		}
+	]
+}

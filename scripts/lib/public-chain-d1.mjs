@@ -1,17 +1,24 @@
 import { d1Rows } from './d1-rest.mjs';
 
-const PUBLIC_CHAIN_WHERE = `
+const PUBLIC_CHAIN_BASE_WHERE = `
 	ac.status = 'published'
 	AND ac.needs_human_review = 0
 	AND qac.needs_human_review = 0
 	AND q.status = 'published'
 	AND q.needs_human_review = 0
+	`;
+
+const RENDERING_OVERLAY_WHERE = `
 	AND EXISTS (
 		SELECT 1
 		FROM question_rendering_overlays qro
 		WHERE qro.question_id = q.id
 	)
 `;
+
+export function publicChainWhere({ requireRenderingOverlay = true } = {}) {
+	return `${PUBLIC_CHAIN_BASE_WHERE}${requireRenderingOverlay ? RENDERING_OVERLAY_WHERE : ''}`;
+}
 
 const POSITIVE_MARK_TYPES = new Set([
 	'mark',
@@ -38,7 +45,8 @@ export async function fetchPublicChains({
 	chainIds = [],
 	includeExamples = false,
 	maxExamplesPerChain = 3,
-	maxMarkItemsPerExample = 8
+	maxMarkItemsPerExample = 8,
+	requireRenderingOverlay = true
 } = {}) {
 	if (chainIds.length > 80) {
 		const results = await Promise.all(
@@ -49,7 +57,8 @@ export async function fetchPublicChains({
 					chainIds: ids,
 					includeExamples,
 					maxExamplesPerChain,
-					maxMarkItemsPerExample
+					maxMarkItemsPerExample,
+					requireRenderingOverlay
 				})
 			)
 		);
@@ -66,6 +75,7 @@ export async function fetchPublicChains({
 		...(subjectFilter && subject !== 'English' ? [subject, subject] : []),
 		...(chainIds.length ? chainIds : [])
 	];
+	const publicChainWhereSql = publicChainWhere({ requireRenderingOverlay });
 	const chains = await d1Rows(
 		`SELECT ac.id, ac.slug, ac.title, ac.canonical_chain_text AS canonicalChainText,
 		        ac.summary,
@@ -80,7 +90,7 @@ export async function fetchPublicChains({
 		 FROM answer_chains ac
 		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
 		 JOIN questions q ON q.id = qac.question_id
-		 WHERE ${PUBLIC_CHAIN_WHERE}
+		 WHERE ${publicChainWhereSql}
 		   ${subjectFilter}
 		   ${chainFilter}
 		 GROUP BY ac.id
@@ -116,7 +126,8 @@ export async function fetchPublicChains({
 			rootDir,
 			chainIds: publicChainIds,
 			maxExamplesPerChain,
-			maxMarkItemsPerExample
+			maxMarkItemsPerExample,
+			requireRenderingOverlay
 		});
 	}
 
@@ -127,7 +138,14 @@ export async function fetchPublicChains({
 	}));
 }
 
-async function fetchExamples({ rootDir, chainIds, maxExamplesPerChain, maxMarkItemsPerExample }) {
+async function fetchExamples({
+	rootDir,
+	chainIds,
+	maxExamplesPerChain,
+	maxMarkItemsPerExample,
+	requireRenderingOverlay
+}) {
+	const publicChainWhereSql = publicChainWhere({ requireRenderingOverlay });
 	const questions = (
 		await Promise.all(
 			chunk(chainIds, 80).map((ids) =>
@@ -144,7 +162,7 @@ async function fetchExamples({ rootDir, chainIds, maxExamplesPerChain, maxMarkIt
 					 FROM question_answer_chains qac
 					 JOIN answer_chains ac ON ac.id = qac.answer_chain_id
 					 JOIN questions q ON q.id = qac.question_id
-					 WHERE ${PUBLIC_CHAIN_WHERE}
+					 WHERE ${publicChainWhereSql}
 					   AND ac.id IN (${ids.map(() => '?').join(', ')})
 					 ORDER BY qac.answer_chain_id,
 					          CASE qac.transfer_distance

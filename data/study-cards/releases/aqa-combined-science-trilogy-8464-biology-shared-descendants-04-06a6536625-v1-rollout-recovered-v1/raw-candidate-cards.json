@@ -1,0 +1,50 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8464-4-7-3-6-field-margins-hedgerows",
+      "conceptKey": "aqa-8464-maintaining-biodiversity-field-margins-hedgerows",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-3-6",
+      "kind": "method",
+      "visualCue": "🌍",
+      "front": "When maintaining biodiversity, what action is specifically associated with agricultural areas where farmers grow only one type of crop?",
+      "back": "Reintroduce field margins and hedgerows.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification pairs reintroduction of field margins and hedgerows with agricultural areas where farmers grow only one type of crop.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Reintroduce field margins and hedgerows.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the action linked to agricultural areas where farmers grow only one type of crop.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Breed endangered species.",
+          "isCorrect": false,
+          "feedback": "This is listed for endangered species, not as the action linked to single-crop agricultural areas.",
+          "misconception": "confuses-species-breeding-with-the-agricultural-measure"
+        },
+        {
+          "key": "c",
+          "text": "Protect and regenerate rare habitats.",
+          "isCorrect": false,
+          "feedback": "This is the broader action listed for rare habitats, not the specified action for single-crop agricultural areas.",
+          "misconception": "confuses-rare-habitat-protection-with-the-agricultural-measure"
+        },
+        {
+          "key": "d",
+          "text": "Reduce deforestation and carbon dioxide emissions.",
+          "isCorrect": false,
+          "feedback": "This is a separate listed action, not the one linked to single-crop agricultural areas.",
+          "misconception": "confuses-deforestation-and-emissions-reduction-with-the-agricultural-measure"
+        }
+      ],
+      "sourceExcerpt": "These include:\n• breeding programmes for endangered species\n• protection and regeneration of rare habitats\n• reintroduction of field margins and hedgerows in agricultural\nareas where farmers grow only one type of crop\n• reduction of deforestation and carbon dioxide emissions by\nsome governments\n• recycling resources rather than dumping waste in landfill.",
+      "sourceLocator": "Official PDF pages 65-65; 4.7.3.6 Maintaining biodiversity"
+    }
+  ]
+}

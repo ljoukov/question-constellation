@@ -67,6 +67,7 @@ const PRODUCTION_EXTRACTION_CONTRACT = [
 	'- When a prompt refers to an existing hypothesis (for example "their hypothesis"), carry the exact hypothesis into learner-visible stem/lead blocks. selfContainedPromptText or mark-scheme evidence alone is not learner-visible context.',
 	'- A reaction-specific pressure/equilibrium/yield/position task must show the exact reversible equation, including coefficients or other molecule-count evidence, in a learner-visible equation block.',
 	'- A task that completes, balances, or fills gaps in an equation must use response.kind "equation-blanks" with faithful visible segments and keyed blanks. Multiple separately named written fields such as Test and Result must use response.kind "labeled-lines" with one field per printed label.',
+	'- response.unit is only for a unit that is already printed beside the learner answer field. Never infer or reveal a unit there. When the source asks the learner to give the unit or prints a separate blank Unit field, keep response.unit null and make the written final-answer field accept both the value and learner-supplied unit.',
 	'- Exclude exam-booklet furniture from every question field: Additional page, margin instructions, copyright/footer text, turn-over text, end-of-paper text, and neighboring questions are not learner content.',
 	'- Carry context or assets from an adjacent page only when the atomic question actually depends on them. Bind every carried asset to a learner-visible block/response, visually verify the exact crop and relevance, and leave needsHumanReview=true if that verification is incomplete.',
 	'- If response.kind is asset-canvas or image-label-zones, the referenced asset must exist in assets with a usable local file path, public path, or R2 key. Label-only assets are not enough for learner-facing rendering.',
@@ -174,6 +175,22 @@ const RenderSchema = z.object({
 	notes: z.string().nullable()
 });
 
+const SelfContainmentSchema = z
+	.object({
+		status: z.string().nullable().optional(),
+		requiresContext: z.boolean().nullable().optional(),
+		requires_context: z.boolean().nullable().optional(),
+		requiresAssets: z.boolean().nullable().optional(),
+		requires_assets: z.boolean().nullable().optional(),
+		requiredAssetLabels: z.array(z.string()).nullable().optional(),
+		required_asset_labels: z.array(z.string()).nullable().optional(),
+		requiredSourceCount: z.number().int().min(0).nullable().optional(),
+		required_source_count: z.number().int().min(0).nullable().optional(),
+		completeSourceBundle: z.boolean().nullable().optional(),
+		complete_source_bundle: z.boolean().nullable().optional()
+	})
+	.passthrough();
+
 const CoreQuestionSchema = z.object({
 	sourceQuestionRef: z.string(),
 	cardTitle: z.string().optional(),
@@ -218,6 +235,7 @@ export const ExtractionCandidateSchema = z.object({
 			promptText: z.string(),
 			selfContainedPromptText: z.string().nullable().optional(),
 			contextText: z.string().nullable().optional(),
+			selfContainment: SelfContainmentSchema.nullable().optional(),
 			marks: z.number().nullable(),
 			commandWord: z.string().nullable(),
 			topicPath: z.array(z.string()).optional(),
@@ -956,6 +974,7 @@ export const FullPaperExtractionSchema = z.object({
 			promptText: z.string(),
 			selfContainedPromptText: z.string().nullable(),
 			contextText: z.string().nullable(),
+			selfContainment: SelfContainmentSchema.nullable().optional(),
 			commandWord: z.string().nullable(),
 			marks: z.number().nullable(),
 			pageStart: z.number(),
@@ -1058,6 +1077,7 @@ export const LlmFullPaperExtractionSchema = z.object({
 			promptText: z.string(),
 			selfContainedPromptText: z.string().nullable(),
 			contextText: z.string().nullable(),
+			selfContainment: SelfContainmentSchema.nullable().optional(),
 			commandWord: z.string().nullable(),
 			marks: z.number().nullable(),
 			pageStart: z.number(),
@@ -1250,6 +1270,7 @@ const CompactQuestionSchema = z.preprocess(
 		selfContainedPromptText: z.string().nullable().optional(),
 		contextText: z.string().nullable().optional(),
 		contextBlocks: z.array(CompactRenderBlockSchema).nullable().optional(),
+		selfContainment: SelfContainmentSchema.nullable().optional(),
 		commandWord: z.string().nullable().optional(),
 		marks: z.number().nullable().optional(),
 		pageStart: z.number().nullable().optional(),
@@ -2186,6 +2207,7 @@ export function buildExtractionPrompt({
 		'The answerChain is a reusable reasoning or method pattern across questions. It is not a worked solution to this one question.',
 		'For calculation questions, keep prompt-specific numbers, substitutions, intermediate values, final numeric answers, and one-question units in written-response modelAnswer, response.correctAnswers, markChecklist, and markSchemeItems only. Do not put them in answerChain title, canonicalChainText, summary, stepText, explanation, or commonOmission.',
 		'For markChecklist.required, true means every full-credit response must satisfy that criterion. Accepted alternatives from any-one/any-two/max-two lists must be required=false under a required umbrella criterion; level-response indicative content must also be required=false.',
+		'For level-of-response questions, retain the official indicative-content row in markSchemeItems with itemType "indicative_content" and its exact sourceRef. It is positive optional evidence even though its checklist examples are required=false; never mislabel an indicative-content row as guidance.',
 		'Formula constants and symbolic formulae are allowed in answerChain text when they are part of the reusable method.',
 		extraInstructions,
 		'',
@@ -3076,6 +3098,7 @@ function compactQuestionToFull(question, index, chunk) {
 		promptText,
 		selfContainedPromptText: question.selfContainedPromptText || promptText,
 		contextText: question.contextText ?? null,
+		selfContainment: question.selfContainment ?? null,
 		commandWord: question.commandWord ?? null,
 		marks: compactNumber(question.marks, null),
 		pageStart,
@@ -3152,7 +3175,8 @@ function extractionSpecPrompt(extractionSpec) {
 		'Do not return specification references, assessment objectives, or topic taxonomy; the script sets topicPath to [] and specRef to null in this phase.',
 		'Keep exact values, table entries, answer keys, and worked values in response.correctAnswers, markSchemeItems, markChecklist, or modelAnswer.',
 		'For fixed-response alternatives, keep one canonical correctAnswer and put other accepted values in aliases. Do not encode alternatives as one literal string such as "119 or 77".',
-		'Checklist required=true means every full-credit response needs that criterion; alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.'
+		'Checklist required=true means every full-credit response needs that criterion; alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.',
+		'For level-of-response questions, retain the official indicative-content row in markSchemeItems with itemType "indicative_content" and its exact sourceRef. It is positive optional evidence even though its checklist examples are required=false; never mislabel an indicative-content row as guidance.'
 	].join('\n');
 }
 
@@ -3209,6 +3233,7 @@ export function buildFullPaperPrompt({
 		'For response.kind "matching", include the learner-visible prompts/descriptions in response.left and the selectable letters/items in response.right. Do not use prompts/options alone as the final app-rendered shape.',
 		'For equation-blanks, always include response.segments with text/math/blank segments in visible order, and make each correctAnswers targetId match a blank segment id.',
 		'When the printed task says to complete, finish, balance, or fill in an equation, use response.kind "equation-blanks". Do not turn the equation into generic lines or a textarea. When the paper prints multiple named written fields such as Test and Result, use response.kind "labeled-lines" with one faithful field/label for each; do not merge them into one generic response.',
+		'response.unit is only a learner-visible suffix already printed on the source paper. Never populate it from the mark scheme. If the prompt says to give the unit, or the source prints a separate blank labelled Unit, leave response.unit null and label the written final-answer entry so the learner supplies both the value and unit.',
 		'When two or more equation blanks accept a set of answers in any order, add response.unorderedGroups with targetIds and answers so the grader does not accept duplicate entries as correct.',
 		'For calculation questions with visible working lines and a final answer blank, use response.kind "labeled-lines" with labels for the working space and final answer line. Keep the exact calculation and final value in modelAnswer and markChecklist.',
 		'For source tables needed by a core question, include a contextBlocks item with kind "structured-table", label such as "Table 1", columns, and rows. Include the full table when the learner must inspect, calculate from, compare, or mark a value in it.',
@@ -3218,6 +3243,7 @@ export function buildFullPaperPrompt({
 		'Use context or an asset from a prior/lookahead/adjacent page only when this atomic question needs it to answer. Bind the dependency to a learner-visible block or response using the exact source label, inspect the crop for relevance and contamination, and keep the question/asset needsHumanReview=true until verified.',
 		'For markChecklist.required, true means every full-credit response must satisfy that criterion. If the mark scheme says any one, any two, max two, or gives alternative accepted routes, do not mark every alternative required=true. Add one required umbrella criterion such as "Give two distinct credited reasons" and mark the individual accepted alternatives required=false.',
 		'For level-of-response questions, preserve the level descriptor mark ranges such as Level 2 (3-4 marks) or Level 1 (1-2 marks). Treat indicative-content examples as optional checklist evidence with required=false; do not require every possible indicative point.',
+		'Retain the official indicative-content row in markSchemeItems with itemType "indicative_content" and its exact sourceRef. It is positive optional evidence for later answer-chain grounding even though its checklist examples are required=false; never mislabel an indicative-content row as guidance.',
 		'If promptText is non-empty, promptBlocks must contain the learner-visible printed question instruction as renderable paragraph blocks. Do not leave promptBlocks empty for a marked question.',
 		'Preserve exact answer strings, worked values, table entries, and one-question facts in response.correctAnswers, markChecklist, and modelAnswer. Text-only chain repair depends on this evidence to create reusable answer chains later.',
 		'For markSchemeItems, include the positive credit/marking rows only. Do not create separate markSchemeItems for ignore, reject, do-not-accept, guidance, or allowance text unless the row is itself a positive alternative answer route. Fold essential allowances into the checklist text if needed.',
@@ -3510,7 +3536,9 @@ function buildAgenticExtractionPrompt({
 		'Do not generate answerChain fields; the script creates placeholders and a later text-only chain reconciliation phase assigns reusable chains.',
 		'For markChecklist.required, true means every full-credit response must satisfy that criterion. Alternatives from any-one/any-two/max-two lists and level-response indicative content must be required=false under a required umbrella criterion.',
 		'For level-of-response questions, preserve level descriptor mark ranges and make indicative-content examples optional checklist evidence.',
+		'Retain the official indicative-content row in markSchemeItems with itemType "indicative_content" and its exact sourceRef. It is positive optional evidence for later answer-chain grounding even though its checklist examples are required=false; never mislabel an indicative-content row as guidance.',
 		'Use response.kind values only from: none, lines, labeled-lines, number-line, choice, choice-table, matching, equation-blanks, asset-canvas, image-label-zones, drawing-box. For blank printed grids that the learner must complete or draw on, use drawing-box with response.grid { rows, columns } and rowLabels/columnLabels when visible; verify the grid visually instead of inferring it from code or OCR.',
+		'response.unit is only for a unit visibly preprinted beside the answer field. Never infer it from the mark scheme or use it when the learner must supply the unit; in that case leave response.unit null and require the learner to enter the unit in the written answer.',
 		'For response.kind "matching", include the learner-visible prompts/descriptions in response.left and the selectable letters/items in response.right. Do not use prompts/options alone as the final app-rendered shape.',
 		'Render formulae, equations, chemical equations, units, symbols, powers of ten, algebraic expressions, and substitutions as LaTeX strings where appropriate.',
 		'For source tables needed by a target question, use contextBlocks with kind "structured-table" when possible instead of requiring an image asset.',
@@ -4258,6 +4286,7 @@ export function normalizeExtractedQuestionForImport(question) {
 	const chainResolution = normalizeQuestionChainResolution(question.chainResolution);
 	const answerChain = normalizeQuestionAnswerChainForImport(question.answerChain);
 	const commonWeakAnswers = normalizeCommonWeakAnswers(question.commonWeakAnswers);
+	const specRef = normalizeSpecRefForImport(question.specRef);
 	const cardTitle = deriveQuestionCardTitle({
 		cardTitle: question.cardTitle,
 		promptText: question.promptText,
@@ -4270,13 +4299,32 @@ export function normalizeExtractedQuestionForImport(question) {
 		chainResolution === question.chainResolution &&
 		answerChain === question.answerChain &&
 		commonWeakAnswers === question.commonWeakAnswers &&
+		specRef === question.specRef &&
 		cardTitle === question.cardTitle
 			? question
-			: { ...question, cardTitle, response, chainResolution, answerChain, commonWeakAnswers };
+			: {
+					...question,
+					cardTitle,
+					response,
+					chainResolution,
+					answerChain,
+					commonWeakAnswers,
+					specRef
+				};
 	const withoutDuplicateFixedModelAnswer = shouldDropFixedResponseModelAnswer(normalizedQuestion)
 		? { ...normalizedQuestion, modelAnswer: null }
 		: normalizedQuestion;
 	return normalizeQuestionRenderBlocks(withoutDuplicateFixedModelAnswer);
+}
+
+function normalizeSpecRefForImport(value) {
+	if (!Array.isArray(value)) return value;
+	// The production extraction contract does not permit the model to infer
+	// specification taxonomy during PDF extraction. An array here is therefore
+	// out-of-contract rather than a trustworthy compound official reference.
+	// Withhold it so downstream curriculum mapping cannot treat a joined string
+	// as reviewed source evidence.
+	return null;
 }
 
 function normalizeCommonWeakAnswers(value) {
@@ -5146,24 +5194,33 @@ function normalizedCoreFixedAnswerText(value) {
 
 function writtenResponseModelAnswerIssues(question) {
 	const kind = question.response?.kind;
-	if (
-		question.marks === null ||
-		question.marks === undefined ||
-		!['lines', 'labeled-lines'].includes(kind) ||
-		String(question.modelAnswer?.answerText ?? '').trim()
-	) {
-		return [];
+	if (question.marks === null || question.marks === undefined) return [];
+	if (!['lines', 'labeled-lines'].includes(kind)) return [];
+	if (!String(question.modelAnswer?.answerText ?? '').trim()) {
+		return [
+			{
+				severity: 'error',
+				code: 'written_response_missing_model_answer',
+				field: 'modelAnswer.answerText',
+				evidence: kind,
+				message:
+					'Written-response questions need a source-grounded modelAnswer. Fixed-response questions should keep exact answers in response.correctAnswers instead.'
+			}
+		];
 	}
-	return [
-		{
-			severity: 'error',
-			code: 'written_response_missing_model_answer',
-			field: 'modelAnswer.answerText',
-			evidence: kind,
-			message:
-				'Written-response questions need a source-grounded modelAnswer. Fixed-response questions should keep exact answers in response.correctAnswers instead.'
-		}
-	];
+	if (question.modelAnswer?.confidence === null || question.modelAnswer?.confidence === undefined) {
+		return [
+			{
+				severity: 'error',
+				code: 'written_response_model_answer_missing_confidence',
+				field: 'modelAnswer.confidence',
+				evidence: null,
+				message:
+					'Written-response model answers need an explicit source-alignment confidence. Question-level extraction confidence is not a substitute.'
+			}
+		];
+	}
+	return [];
 }
 
 function supportedResponseKinds() {
@@ -5293,8 +5350,13 @@ function drawingBoxGridMetadataIssues(question) {
 	const issues = [];
 	const grid = response.grid;
 	const visibleText = learnerFacingQuestionText(question);
+	// A named diagram can contain the word "square" without the official answer
+	// surface containing a printed grid. In particular, learners are often asked
+	// to construct a Punnett square in an otherwise blank drawing box. Only infer
+	// printed-grid metadata from explicit grid/cell wording; the extractor must
+	// verify the actual response surface visually before adding row/column counts.
 	const asksForGrid =
-		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cell|square)\b/i.test(
+		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cells?)\b/i.test(
 			visibleText
 		) || /\b(?:following|the|this)\s+grid\b/i.test(visibleText);
 	if (!grid) {
@@ -5369,6 +5431,12 @@ function responseDiagramSurfaceIssues(question) {
 
 function questionRequiresDiagramResponse(question) {
 	const text = learnerFacingQuestionText(question);
+	const directPlotInstruction =
+		/\bplot\b/i.test(String(question.commandWord ?? '')) ||
+		/(?:^|[.!?]\s+)(?:using\b[^.!?\n]{0,100}[, ]+|(?:on|in)\b[^.!?\n]{0,80}[, ]+)?plot\b/i.test(
+			text
+		) ||
+		/(?:^|[.!?]\s+)use\b[^.!?\n]{0,120}\bto\s+plot\b/i.test(text);
 	const gradingText = [
 		...(question.markSchemeItems ?? []).map((item) => item?.text),
 		...(question.markChecklist ?? []).map((item) => item?.text),
@@ -5382,8 +5450,9 @@ function questionRequiresDiagramResponse(question) {
 		/\bdraw\s+(?:a|an|one\s+or\s+more)?\s*diagrams?\b/i.test(text) ||
 		/\bsketch\s+(?:a|an|one\s+or\s+more)?\s*diagrams?\b/i.test(text) ||
 		/\bcomplete\s+(?:the\s+)?(?:graph|diagram|drawing)\b/i.test(text) ||
-		/\bplot\b[^.\n]{0,120}\b(?:graph|grid|axis|axes)\b/i.test(text) ||
-		/\b(?:graph|grid|axis|axes)\b[^.\n]{0,120}\bplot\b/i.test(text) ||
+		(directPlotInstruction &&
+			(/\bplot\b[^.\n]{0,120}\b(?:graph|grid|axis|axes)\b/i.test(text) ||
+				/\b(?:graph|grid|axis|axes)\b[^.\n]{0,120}\bplot\b/i.test(text))) ||
 		/\bmax(?:imum)?\s+(?:lower\s+)?level\s+\d+\s+if\s+diagram\s+is\s+not\s+used\b/i.test(
 			gradingText
 		)
@@ -5462,7 +5531,7 @@ function renderBlockDuplicateTextIssues(question) {
 	for (const block of priorBlocks) {
 		const normalized = normalizedForExactMatch(block.text);
 		if (normalized.length < 32) continue;
-		if (!promptText.includes(normalized)) continue;
+		if (promptText !== normalized && !promptText.startsWith(`${normalized} `)) continue;
 		issues.push({
 			severity: 'error',
 			code: 'render_block_duplicate_text',
@@ -6888,19 +6957,44 @@ function collectResponseAssetLabels(response) {
 	return labels;
 }
 
-function questionLearnerSection(question, targetRef) {
-	const stemBlocks =
+function stableLearnerBlockIdentity(value) {
+	if (value == null || typeof value !== 'object') return JSON.stringify(value);
+	if (Array.isArray(value)) {
+		return `[${value.map((entry) => stableLearnerBlockIdentity(entry)).join(',')}]`;
+	}
+	return `{${Object.keys(value)
+		.sort()
+		.map((key) => `${JSON.stringify(key)}:${stableLearnerBlockIdentity(value[key])}`)
+		.join(',')}}`;
+}
+
+function uniqueLearnerSupportBlocks(blocks, seenBlockIdentities) {
+	if (!seenBlockIdentities) return blocks;
+	return blocks.filter((block) => {
+		const identity = stableLearnerBlockIdentity(block);
+		if (seenBlockIdentities.has(identity)) return false;
+		seenBlockIdentities.add(identity);
+		return true;
+	});
+}
+
+function questionLearnerSection(question, targetRef, seenSupportBlockIdentities = null) {
+	const rawStemBlocks =
 		question.stemBlocks ?? question.render?.stemBlocks ?? question.render?.blocks ?? [];
+	const stemBlocks = uniqueLearnerSupportBlocks(rawStemBlocks, seenSupportBlockIdentities);
 	const leadBlocks = question.leadBlocks ?? question.render?.leadBlocks ?? [];
 	const promptBlocks = question.promptBlocks ?? question.render?.promptBlocks ?? [];
 	const afterResponseBlocks =
 		question.afterResponseBlocks ?? question.render?.afterResponseBlocks ?? [];
 	const response = question.response ?? question.render?.response ?? null;
 	const allBlocks = [...stemBlocks, ...leadBlocks, ...promptBlocks, ...afterResponseBlocks];
+	const hasRenderingOverlay = allBlocks.length > 0;
 	const referencedAssets = new Set([
 		...collectBlockAssetLabels(allBlocks),
 		...collectResponseAssetLabels(response),
-		...(question.assets ?? []).map(assetLabel).filter(Boolean).map(String)
+		...(hasRenderingOverlay
+			? []
+			: (question.assets ?? []).map(assetLabel).filter(Boolean).map(String))
 	]);
 	return {
 		sourceQuestionRef: question.sourceQuestionRef,
@@ -6910,6 +7004,8 @@ function questionLearnerSection(question, targetRef) {
 		promptText: question.promptText ?? '',
 		selfContainedPromptText: question.selfContainedPromptText ?? null,
 		contextText: question.contextText ?? null,
+		selfContainment: question.selfContainment ?? null,
+		hasRenderingOverlay,
 		blocks: {
 			stem: stemBlocks.map(blockToLearnerText).filter(Boolean),
 			lead: leadBlocks.map(blockToLearnerText).filter(Boolean),
@@ -6951,6 +7047,21 @@ function assetMatchesLabel(asset, label) {
 			(normalized === wanted || normalized.includes(wanted) || wanted.includes(normalized))
 		);
 	});
+}
+
+function assetExactlyMatchesLabel(asset, label) {
+	const wanted = normalizeAssetKey(label);
+	if (!wanted) return false;
+	return [
+		asset?.sourceLabel,
+		asset?.label,
+		asset?.assetLabel,
+		asset?.altText,
+		asset?.id,
+		asset?.assetId,
+		asset?.filePath,
+		asset?.publicPath
+	].some((value) => normalizeAssetKey(value) === wanted);
 }
 
 function assetHasUsableReference(asset) {
@@ -7064,20 +7175,26 @@ export function buildLearnerVisibleQuestionContext(candidate, sourceQuestionRef,
 		(question) => question.sourceQuestionRef === sourceQuestionRef
 	);
 	const visibleQuestions = includePriorContext ? grouped.slice(0, targetIndex + 1) : [target];
+	const seenSupportBlockIdentities = includePriorContext ? new Set() : null;
 	const sections = visibleQuestions.map((question) =>
-		questionLearnerSection(question, sourceQuestionRef)
+		questionLearnerSection(question, sourceQuestionRef, seenSupportBlockIdentities)
 	);
 	const assets = visibleQuestions.flatMap((question) => question.assets ?? []);
 	const requiredAssetLabels = [...new Set(sections.flatMap((section) => section.referencedAssets))];
 	const media = [];
 	const inlineImages = [];
 	for (const label of requiredAssetLabels) {
-		const usableMatches = assets.filter(
-			(asset) => assetMatchesLabel(asset, label) && assetHasUsableReference(asset)
-		);
+		const allMatches = assets.filter((asset) => assetMatchesLabel(asset, label));
+		const exactMatches = allMatches.filter((asset) => assetExactlyMatchesLabel(asset, label));
+		const usableExactMatches = exactMatches.filter(assetHasUsableReference);
+		const usableMatches = usableExactMatches.length
+			? usableExactMatches
+			: allMatches.filter(assetHasUsableReference);
 		const matchingAssets = usableMatches.length
 			? usableMatches
-			: assets.filter((asset) => assetMatchesLabel(asset, label));
+			: exactMatches.length
+				? exactMatches
+				: allMatches;
 		if (matchingAssets.length === 0) {
 			media.push({
 				label,
@@ -7120,6 +7237,7 @@ export function buildLearnerVisibleQuestionContext(candidate, sourceQuestionRef,
 			promptText: target.promptText ?? '',
 			selfContainedPromptText: target.selfContainedPromptText ?? null,
 			contextText: target.contextText ?? null,
+			selfContainment: target.selfContainment ?? null,
 			marks: target.marks ?? null,
 			commandWord: target.commandWord ?? null,
 			pageStart: target.pageStart ?? null,

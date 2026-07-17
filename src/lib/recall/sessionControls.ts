@@ -1,6 +1,11 @@
-export type RecallPresentation = 'flashcard' | 'mcq';
+export type RecallPresentation = 'flashcard' | 'mcq' | 'truefalse';
 export type RecallMcqFeedback = 'correct' | 'incorrect' | null;
 export type RecallReviewIntent = 'repeat' | 'next';
+export type RecallDragIntent = 'pending' | 'horizontal' | 'vertical';
+
+const RECALL_DRAG_INTENT_SLOP_PX = 8;
+const RECALL_DRAG_HORIZONTAL_BIAS = 0.8;
+const RECALL_DRAG_VERTICAL_BIAS = 1.2;
 
 export type RecallControlModel =
 	| {
@@ -14,6 +19,11 @@ export type RecallControlModel =
 			layout: 'single';
 			label: 'Skip card';
 			action: 'skip';
+	  }
+	| {
+			phase: 'prompt';
+			layout: 'none';
+			action: 'choose';
 	  }
 	| {
 			phase: 'result';
@@ -32,6 +42,27 @@ export type RecallReviewDecision = {
 	direction: 'left' | 'right';
 };
 
+export function recallDragIntent(
+	deltaX: number,
+	deltaY: number,
+	currentIntent: RecallDragIntent = 'pending'
+): RecallDragIntent {
+	if (currentIntent !== 'pending') return currentIntent;
+
+	const horizontalDistance = Math.abs(deltaX);
+	const verticalDistance = Math.abs(deltaY);
+	if (Math.max(horizontalDistance, verticalDistance) < RECALL_DRAG_INTENT_SLOP_PX) {
+		return 'pending';
+	}
+	if (horizontalDistance >= verticalDistance * RECALL_DRAG_HORIZONTAL_BIAS) {
+		return 'horizontal';
+	}
+	if (verticalDistance >= horizontalDistance * RECALL_DRAG_VERTICAL_BIAS) {
+		return 'vertical';
+	}
+	return 'pending';
+}
+
 export function mixedRecallPresentation(
 	cardPosition: number,
 	hasMultipleChoiceOptions: boolean
@@ -49,19 +80,25 @@ export function recallControlModel({
 	isLastCard: boolean;
 }): RecallControlModel {
 	if (!revealed) {
-		return presentation === 'mcq'
+		return presentation === 'truefalse'
 			? {
 					phase: 'prompt',
-					layout: 'single',
-					label: 'Skip card',
-					action: 'skip'
+					layout: 'none',
+					action: 'choose'
 				}
-			: {
-					phase: 'prompt',
-					layout: 'single',
-					label: 'Show answer',
-					action: 'reveal'
-				};
+			: presentation === 'mcq'
+				? {
+						phase: 'prompt',
+						layout: 'single',
+						label: 'Skip card',
+						action: 'skip'
+					}
+				: {
+						phase: 'prompt',
+						layout: 'single',
+						label: 'Show answer',
+						action: 'reveal'
+					};
 	}
 
 	return {
@@ -74,6 +111,20 @@ export function recallControlModel({
 
 export function requeueRecallContentKey(keys: string[], contentKey: string): string[] {
 	return [...keys, contentKey];
+}
+
+export function shouldRecordRecallWrongChoice({
+	chosenAnswer,
+	correctAnswer,
+	choiceKeys
+}: {
+	chosenAnswer?: string;
+	correctAnswer: string;
+	choiceKeys: Record<string, string>;
+}): boolean {
+	return Boolean(
+		chosenAnswer && chosenAnswer !== correctAnswer && Object.hasOwn(choiceKeys, chosenAnswer)
+	);
 }
 
 export function explicitReversePair(
@@ -124,9 +175,9 @@ export function recallReviewDecision({
 	intent: RecallReviewIntent;
 }): RecallReviewDecision | null {
 	if (intent === 'repeat') return { grade: 'again', direction: 'left' };
-	if (presentation === 'mcq' && !mcqFeedback) return null;
+	if (presentation !== 'flashcard' && !mcqFeedback) return null;
 	return {
-		grade: presentation === 'mcq' && mcqFeedback === 'incorrect' ? 'again' : 'good',
+		grade: presentation !== 'flashcard' && mcqFeedback === 'incorrect' ? 'again' : 'good',
 		direction: 'right'
 	};
 }

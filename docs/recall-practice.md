@@ -1,14 +1,16 @@
 # Recall Practice
 
 Question Constellation's answer-chain flow helps students close reasoning gaps in multi-mark answers.
-The recall flow is a separate support surface for low-mark GCSE Science questions where the main
-barrier is remembering a small required fact, test result, formula, unit, definition, or required-practical
-detail.
+The recall flow is a separate support surface for compact, source-grounded GCSE knowledge where the
+main barrier is retrieval: a fact, method, quotation, chronology, case study, technique, formula,
+definition, or required-practical detail.
 
 ## Product Role
 
 - Keep answer chains as the main public exam-question atlas.
-- Use `/recall` as a lightweight retrieval-practice surface for AQA GCSE Science recall knowledge.
+- Use `/recall` as a lightweight retrieval-practice surface for the eight supported learner subjects:
+  AQA Biology, Chemistry, Physics, Computer Science, Geography and History, plus OCR English
+  Language and English Literature.
 - Do not turn recall cards into answer chains unless the item genuinely has reusable mark-scoring
   reasoning.
 - Keep signed-in progress and evidence private while the reviewed card catalog remains shared.
@@ -33,6 +35,21 @@ run is not a complete subject deck and must not atomically replace a previously 
 Custom stacks are saved manifests over published card IDs, with reviewed tailored cards mixed in only
 after offline acceptance.
 
+The generic `study_card_*` runtime catalog is the source for imported cross-subject releases. A card
+is visible only when its release is imported, a deterministic target inside the exact requested
+offering/topic is reviewed, and that release/offering/topic coverage row is reviewed and `ready`.
+The global primary target is preferred when it belongs to that offering, but a reviewed secondary
+target keeps the same card available in another valid offering. Signed-in reads derive the exact
+enabled offering from the learner's board, qualification, course and tier; topic filtering then stays
+inside the learner's selected curriculum scope. OCR English Literature is additionally limited to the
+four texts or poetry cluster choices stored in the learner profile.
+
+The hand-authored catalog in `src/lib/recall/aqaScienceRecall.ts` is a narrower availability fallback,
+not the generic catalog: it is served only for the exact AQA Separate Science Higher Biology,
+Chemistry and Physics offerings. It must never leak into Foundation or Combined Science. Foundation,
+Combined Science and every non-science subject therefore show only imported, reviewed standard cards;
+an empty deck remains an honest empty state and never starts a model job.
+
 ## Card Types
 
 Recall cards should be compact and source-grounded:
@@ -45,16 +62,27 @@ Recall cards should be compact and source-grounded:
 - `practical`: required-practical method hooks.
 - `fact`: standalone recall facts.
 - `comparison`: paired terms such as scalar/vector or genotype/phenotype.
+- Humanities and English releases also use reviewed kinds such as `case-study`, `chronology`,
+  `cause-consequence`, `interpretation`, `technique`, `structure`, `method`, `plot`, `quotation`,
+  `character`, `theme`, and `context`.
 
 ## Practice Modes
 
 - `Recall`: show the prompt, reveal the expected answer, then self-grade.
 - `Recognise`: show answer choices for a lower-friction recognition pass.
+- `True or false`: show one canonical answer or reviewed distractor as a proposed answer, then ask the
+  learner to judge it.
 - `Reverse`: show the answer side and recall the term, process, or formula name.
 
 The recognition mode is deliberately not the only mode because visible choices reduce retrieval
 strength. Signed-in progress records the exact course/tier scope plus card content revision and hash,
 so revised material is not silently treated as previously mastered.
+
+Recognition evidence stores the server-owned selected choice key. True-or-false evidence separately
+stores the proposed statement's server-owned choice key and the learner's Boolean judgement. The
+server resolves that key against the immutable card, determines whether the statement itself was
+correct, and rejects inconsistent grades; the browser never defines which answer is true. Cards keep
+their reviewed three- or four-choice artifact exactly—no synthetic fourth distractor is introduced.
 
 ## Sources
 
@@ -67,8 +95,8 @@ still be regenerated with:
 npm run download:aqa-science-specifications
 ```
 
-The curated Separate Science route data in `src/lib/recall/aqaScienceRecall.ts` remains the complete
-fallback catalog. Its v2 release gives every card a concise, source-safe second encoding in
+The curated Separate Science route data in `src/lib/recall/aqaScienceRecall.ts` remains the exact
+Separate Science Higher fallback catalog. Its v2 release gives every card a concise, source-safe second encoding in
 `memoryTip`, while stable card IDs and curriculum mappings are unchanged. The release version is part
 of each static content hash, so a learner is never shown stale mastery for materially enriched card
 content. Generated cards retain exact PDF page evidence, the specification file hash, and reviewed
@@ -83,9 +111,10 @@ it rejects reconstructed, corrected or otherwise edited quotes before review.
 ## Visual Cue Contract
 
 Every card has one familiar native emoji that acts as a quick visual landmark. It identifies the broad
-scientific context without encoding the answer, formula, result, trend, unit, or a clue that eliminates a
-distractor. The visible card uses the emoji; the card-kind label remains available to assistive technology
-and to the setup filters.
+subject context without encoding the answer, formula, quotation, result, trend, unit, or a clue that
+eliminates a distractor. The visible card uses the emoji; the card-kind label remains available to
+assistive technology and to the setup filters. Subject-specific allowlists cover all eight runtime
+subjects, while the older science compiler remains explicitly limited to Biology, Chemistry and Physics.
 
 The compiler uses separate Codex turns for generation, full-card review and cue review. Persist a card
 only when the deterministic validator, the independent content reviewer and the independent cue
@@ -94,16 +123,19 @@ turn; no fallback is automatically safe. The original deck and compiler share th
 `src/lib/recall/visualCues.js`.
 
 The current artifact contract is `recall-card-bundle-v2` with prompt
-`recall-card-compiler-v9`. It requires evidence support paths for every choice's feedback and every
+`recall-card-compiler-v10`. It allows three or four choices: use four only when the card has three
+genuinely distinct plausible misconceptions, and use three rather than inventing a filler
+distractor. It requires evidence support paths for every choice's feedback and every
 distractor misconception, tells the generator every deterministic text and source-excerpt limit, and
 hash-binds the exact source snapshot, prompts, raw structured outputs and normalized independent
 reviews into the accepted bundle. If the first cue review proposes a replacement, the durable run must
 also contain the replacement prompt, raw output, normalized review and final merged cue review; those
 files are part of the accepted hash identity and cannot be omitted or changed before import.
-Immutable `recall-card-compiler-v5`, `recall-card-compiler-v6`, `recall-card-compiler-v7` and
-`recall-card-compiler-v8` bundles remain importable and visible; their run IDs must end in the matching
-compiler version, while every new additive run must end in `-compiler-v9`. This keeps exact historic
-prompts and outputs auditable without letting a pre-additive v8 artifact masquerade as a v9 run.
+Immutable `recall-card-compiler-v5` through `recall-card-compiler-v9` bundles remain importable and
+visible; their run IDs must end in the matching compiler version, while every new additive run must
+end in `-compiler-v10`. This keeps exact historic prompts and outputs auditable without letting a v9
+artifact masquerade as a v10 run. Compiler-v5 through compiler-v9 bundles retain their exact
+four-choice validation; only prospective compiler-v10 bundles may contain three choices.
 Older v1/v3 canary artifacts used coarser support tags; the importer rejects them explicitly rather
 than silently interpreting them under the stronger contract. Regenerate those older artifacts before
 importing them.
@@ -171,7 +203,7 @@ also require `--allow-update`; the update is guarded by the exact old status, re
 during preflight. An identical published card is a no-op only when its source fingerprint, generation
 run and canonical provenance also match. Rebinding identical content to a new reviewed run therefore
 requires explicit `--allow-update` and uses the same exact preflight guards. Each transaction writes a
-draft, all four choices, evidence and reviewed targets, then publishes through D1 completeness
+draft, all three or four choices, evidence and reviewed targets, then publishes through D1 completeness
 triggers. Post-write verification compares every stored child row plus the parent run, source
 fingerprint and canonical provenance with the accepted artifact.
 

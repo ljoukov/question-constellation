@@ -8,6 +8,7 @@ import {
 	buildCurriculumImportSnapshot,
 	buildCurriculumUpsertStatements,
 	buildTrustedQuestionCurriculumMappings,
+	parseStrictOfficialSpecReferences,
 	validateCurriculumCatalog
 } from '../../../scripts/lib/curriculum-catalog.mjs';
 
@@ -284,6 +285,18 @@ describe('official curriculum catalog import', () => {
 					prompt_text: 'Describe cell structure.'
 				},
 				{
+					id: 'q-exact-without-year',
+					status: 'published',
+					needs_human_review: 0,
+					board: 'AQA',
+					qualification: 'GCSE',
+					subject: 'Biology',
+					subject_area: 'Biology',
+					component_code: '8461/2H',
+					spec_ref: '4.1',
+					year: null
+				},
+				{
 					id: 'q-review',
 					status: 'published',
 					needs_human_review: 1,
@@ -318,6 +331,11 @@ describe('official curriculum catalog import', () => {
 				mappingSource: `${CURRICULUM_IMPORT_OWNER}:spec_ref`,
 				confidence: 1,
 				reviewed: true
+			}),
+			expect.objectContaining({
+				questionId: 'q-exact-without-year',
+				curriculumComponentId: 'aqa-8461-cell-structure',
+				mappingSource: `${CURRICULUM_IMPORT_OWNER}:spec_ref`
 			})
 		]);
 		expect(result.unmapped).toEqual([
@@ -333,6 +351,49 @@ describe('official curriculum catalog import', () => {
 				reason: 'component_code repeats across multiple curriculum components'
 			}
 		]);
+	});
+
+	it('maps every exact compound science ref while treating RPA and WS labels as annotations', () => {
+		const snapshot = buildCurriculumImportSnapshot(validate(fixture()));
+		const result = buildTrustedQuestionCurriculumMappings(
+			[
+				{
+					id: 'q-compound',
+					status: 'published',
+					needs_human_review: 0,
+					board: 'AQA',
+					qualification: 'GCSE',
+					subject: 'Biology',
+					subject_area: 'Biology',
+					component_code: '8461/1H',
+					spec_ref: '4.1.1; 4.1.3; RPA2; WS 2.2',
+					year: 2024
+				}
+			],
+			snapshot
+		);
+
+		expect(parseStrictOfficialSpecReferences('6.3.1.1 RPA17')).toEqual({
+			references: ['6.3.1.1'],
+			annotations: ['RPA17']
+		});
+		expect(parseStrictOfficialSpecReferences('4.1.1 plus an inferred topic')).toBeNull();
+		expect(result.mappings).toEqual([
+			expect.objectContaining({
+				questionId: 'q-compound',
+				curriculumComponentId: 'aqa-8461-cell-structure',
+				isPrimary: true,
+				mappingSource: `${CURRICULUM_IMPORT_OWNER}:compound_spec_ref`
+			}),
+			expect.objectContaining({
+				questionId: 'q-compound',
+				curriculumComponentId: 'aqa-8461-cell-transport',
+				isPrimary: false,
+				mappingSource: `${CURRICULUM_IMPORT_OWNER}:compound_spec_ref`
+			})
+		]);
+		expect(result.unmapped).toEqual([]);
+		expect(result.ambiguous).toEqual([]);
 	});
 
 	it('makes every upsert owner-guarded and keeps mapping ownership explicit', () => {

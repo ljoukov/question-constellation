@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "promptVersion": "ocr-j352-literature-study-deck-compiler-v2",
+  "releaseId": "ocr-j352-literature-standard-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "topicCount": 19,
+  "expectedCardCount": 67,
+  "coverage": {
+    "readyTopicRows": 19,
+    "fullyWithheldTopicRows": 0,
+    "readyModeRows": 29,
+    "withheldModeRows": 12
+  },
+  "recovery": "reconstructed from the exact generator prompt and accepted source plan"
+}

@@ -199,6 +199,11 @@ For each question or subquestion, extract:
   `card_title_contract` and provenance alongside it.
 - Self-containment metadata: whether the printed atomic prompt is already self-contained, requires
   prior context, requires assets, or requires both.
+- For English Literature tasks with a printed extract, poem, or source pair, use
+  `selfContainment.status: "source_complete"` only when every required official source is complete
+  and learner-visible before the marked prompt. Persist the exact required asset labels and source
+  count; a partial, hidden, placeholder, copyright-flagged, or review-flagged source must not carry
+  `source_complete` and remains blocked from guided practice.
 - Command word, such as `explain`, `describe`, `calculate`, `evaluate`, or `state`.
 - Mark value.
 - Answer lines or expected response format when visible.
@@ -237,6 +242,9 @@ For each question or subquestion, extract:
 - `allow`, `accept`, `ignore`, `reject`, and `do not accept` guidance.
 - Additional guidance or examiner notes.
 - Level descriptors and bands.
+- Official indicative-content rows, stored as positive optional evidence with
+  `itemType: "indicative_content"` rather than generic `guidance`; their checklist examples remain
+  `required: false` because no learner must reproduce every listed example.
 - Required units, rounding, significant figures, formulae, or workings.
 - Answer variants for higher/foundation tiers if shown.
 - Assessment objective or specification references if present.
@@ -330,6 +338,10 @@ For calculation questions, keep prompt-specific arithmetic in the model answer, 
 mark-scheme evidence. Do not put given values, substitutions, intermediate values, final numeric
 answers, or one-question units inside `canonical_chain_text`, `summary`, `step_text`,
 `explanation`, or `common_omission`.
+
+The stable `answerChain.id` is machine metadata rather than learner-visible chain text. A newly
+created ID may include the source-document slug and source question reference for collision safety;
+numeric-specificity validation must not mistake those identity segments for worked-answer content.
 
 Bad chain step text:
 
@@ -531,11 +543,50 @@ evidence can produce a learner-safe substitute. This flag is deliberately narrow
 `known_unresolved_copyright_source`, records the dropped refs in
 `extractionRun.droppedUnpublishableSourceQuestionRefs`, and then revalidates the cleaned extraction.
 Unexpected review flags, asset errors, answer-key defects, or chain/import warnings must still fail.
+The extraction summary records the pre-drop and retained artifact hashes, question/mark totals,
+each dropped ref/mark/reason, and explicit count/mark/reason conservation invariants. A later
+import-ready pass must still report zero additional dropped questions; this extraction-level contract
+is the only permitted omission.
+For OCR J351 June 2024 specifically, the public inserts remove some complete reading passages. Only
+the exact J351/01 and J351/02 source ids may use the corresponding hold-out rule, and only when the
+row is source-dependent, explicitly `source_missing` or `source_incomplete`, explicitly documents
+the blocked/removed source, and remains `needsHumanReview=true`; an ordinary review is not droppable.
+Before any such hold-out, `scripts/lib/ocr-j351-june-2024-inventory.mjs` locks the original normalized
+bank inventory exactly. J351/01 must contain `01.1a=1`, `01.1b=1`, `01.1c=2`, `02.0=6`, `03.0=12`,
+`04.0=18`, `05.0=40`, and `06.0=40` (8 rows, 120 marks); J351/02 must contain `01.1a=3`,
+`01.1b=1`, `02.1=6`, `03.1=12`, `04.1=18`, `05.1=40`, and `06.1=40` (7 rows, 120 marks).
+The lock runs against the original artifact before subsetting, so a missing ordinary row, changed mark,
+duplicate, unexpected ref, or order mutation fails. Generic original question/mark expectations are not
+reapplied to the retained subset after the explicitly evidenced copyright rows are removed.
+OCR J352/01 June 2024 has one equally narrow official-source hold-out. Public question-paper page 21
+prints Q17 but explicitly says the Pearson A Christmas Carol extract was removed for third-party
+copyright. Only exact ref `17.1` may be held out, and only when it remains a 40-mark source-dependent
+row with `source_incomplete` or `source_missing`, one required A Christmas Carol source, no substitute
+asset, explicit page-21 copyright-removal evidence, and both question/model-answer review flags. The
+pre-subset inventory is locked to 24 rows / 720 marks in exact order: `01.1a` through `06.1b` at 20
+marks each, then `07.1` through `18.1` at 40 marks each. The only permitted J352/01 subset is therefore
+23 rows / 680 marks after dropping `17.1` (1 row / 40 marks); ordinary whole-text Q18 and every other
+route remain mandatory. Fixed J352/01 topology independently requires complete source assets for the
+six Section A part-(a) comparisons and odd Section B extract questions 7, 9, 11, 13, 15, and 17, so
+deleting extractor source metadata cannot turn another source task into a whole-text question.
 If Codex extraction already completed but the wrapper/importer logic changed, use
 `--reuse-existing-extraction` against the same work root to reprocess the existing
 `question-fragments/`, `normalized-extraction.json`, and `validation.json` without spending another
-Codex extraction turn; downstream extraction judge, chain reconciliation, solvability, and D1 gates
-still run normally.
+Codex extraction turn. Reuse refreshes the deterministic helper bundle before reprocessing, while
+preserving the model observations and fragments. Downstream extraction judge, chain reconciliation,
+solvability, and D1 gates still run normally.
+
+When an independent extraction judge fails on a small, source-verifiable defect, preserve the failed
+candidate, complete judge report, and judge summary before replacing the judge work directory. A
+deterministic repair may then be supplied during reuse with `--reviewed-repair-evidence` for bounded
+JSON-field changes, or `--reviewed-asset-repair-evidence` for a bounded official-PDF asset crop. The
+evidence must bind the exact failed candidate/report and official PDFs, enumerate every changed path
+or crop dimension, record a passing deterministic validation, and bind the exact repaired output.
+Asset-repair evidence additionally binds the live repaired asset bytes in extraction phase outputs,
+so a later resume fails closed if the image changes. A second repair stage must preserve and reference
+the first evidence artifact rather than rewriting the earlier failed audit. These flags require
+`--reuse-existing-extraction`; neither one is permission for an unbounded manual edit or a substitute
+for a fresh independent judge pass.
 
 For writes, the D1 update is incremental per paper. The pipeline does not stream in-progress data
 into D1. A paper is written only after official-PDF source identity preflight, Codex PDF extraction,
@@ -543,6 +594,14 @@ independent extraction judge, Codex answer-chain reconciliation, R2 asset upload
 referenced, strict import-ready audit, Codex solvability judge, D1 replacement/conflict check, and
 the final `--import` gate all pass. Failed or in-progress papers remain under `tmp/` artifacts and
 should not be visible in the app.
+
+Source-component compatibility is fail-closed. Normalize punctuation and accept exact component
+codes or a trailing alphabetic qualifier, but do not treat arbitrary numeric prefixes as the same
+paper. The only family-level exception is AQA Combined Science `8464`: visible `8464/B`, `8464/C`,
+or `8464/P` may match a manifest code for the same subject family with an explicit paper/tier suffix
+such as `8464B1H`. The subject letter must agree, and one full paper/tier code must never match a
+different paper/tier code. Record the applied compatibility rule in source-identity evidence; do
+not use `--allow-visible-source-mismatch` for this case.
 
 The downloaded manifest currently covers 100 whole-paper entries: 6 Computer Science, 15 Geography,
 and 79 History papers, with 70 AQA examiner-report PDFs. Examiner reports are secondary evidence
@@ -832,6 +891,19 @@ and `pnpm run codex:production-import` call
 4. Codex SDK learner-facing solvability review with `scripts/run-codex-solvability-judge.mjs`,
    then final strict import-ready preparation with D1 conflict check and D1 import dry-run or
    explicit write.
+
+Passed-phase reuse is content-addressed, not ref-addressed. Each extraction, independent-judge,
+answer-chain, and solvability summary records canonical JSON hashes for its exact JSON inputs and
+outputs, plus byte hashes for official PDF inputs. `--resume-passed-phases` must reject reuse when a
+required hash is absent or when any current artifact differs, even if its source-document id,
+question count, and source-question refs are unchanged. A prompt, mark-evidence, response-control,
+model-answer, asset, or chain mutation invalidates that phase and every dependent phase. Historical
+passes may be attested only from preserved exact phase snapshots; a ref-only or status-only summary
+is never sufficient.
+
+On an explicit resume, a phase command is reached only after that phase fails the exact reuse gate.
+The orchestrator force-replaces that rejected phase's stale work directory so a legitimate rerun does
+not fail on directory existence; exact reusable phases remain untouched and are never rerun.
 
 The production pipeline passes `--skip-chain-style-judge` to the answer-chain runner unless
 `--run-legacy-chain-style-judge` is explicitly supplied, and it only runs the older solvability
@@ -1699,6 +1771,28 @@ ground missing-prompt or missing-figure claims in that supplied source evidence,
 instructions from the numeric answer or mark scheme. Use `--skip-judge` only for local debugging when
 you explicitly want deterministic checks without another LLM call.
 
+A failed judge must never be relabelled as a model pass. In the exceptional case where one or more
+complete independent audits checked the exact paper and each returned a closed, source-unambiguous
+finding set, a reviewed-source closure may avoid another costly whole-paper rerun. A repair closure
+must preserve every failed report and thread, say `modelJudgePass: false`, hash the before/after
+artifact and every changed field, cite the exact official question-paper or mark-scheme anchor for
+every repaired ref, and rerun deterministic validation across the full ref and mark inventory with
+zero blockers.
+
+A source-reviewed false-positive closure is narrower. It is allowed only when exact official source
+evidence directly disproves every failed finding and no candidate repair is warranted. It must archive
+the original failed report, thread, events, prompt, candidate, and judge snapshot; bind the exact
+official source hashes and page-level anchors; record each finding as
+`false_positive_no_candidate_change`; prove the before/after candidate hashes and canonical hashes are
+identical with an empty changed-path set; and pass the same full-inventory deterministic validation.
+It must not invent a field repair or erase the failed model audit.
+
+For either form, the closure status is `passed_after_reviewed_source_closure`, not `passed`, and
+release evidence must keep that distinction. Timed-paper approval may accept it only through the
+strict closure validator for the relevant closure type; an ordinary manual override, missing hash,
+missing source anchor, partial audit, unresolved repair, or unproven false-positive claim still fails
+closed.
+
 Automatic repair attempts must include unresolved `needsHumanReview` rows, not only failed reusable-chain
 checks. The CLI first runs a question-quality repair pass for flagged refs, then a text-only answer-chain
 repair pass. A repair model may clear `needsHumanReview` only when it has returned concrete repaired
@@ -1764,6 +1858,12 @@ Label-only media is not a valid published extraction for interactive media. When
 `{"sourceLabel":"Figure 1"}` is only a note that the asset exists in the source PDF; it is not enough
 for the learner-facing renderer or the solvability judge.
 
+`response.unit` is learner-visible and means that the unit was already printed beside the answer
+field. It must never be inferred from the mark scheme. If the paper asks the learner to give the unit,
+or prints a separate blank labelled `Unit`, leave `response.unit` empty and make the written final
+answer require the learner-supplied value and unit. Otherwise the extraction reveals a mark-scoring
+answer and is not source-faithful.
+
 Repair scripts must use the same media-reference contract. A local `filePath` is ideal for mechanical
 inspection and upload, but `publicPath` or `r2Key` is still a concrete learner-visible reference; do not
 generate a duplicate full-page fallback only because a pre-uploaded asset lacks `filePath`.
@@ -1795,6 +1895,14 @@ instruction alone: clear it only after the source asset/render control has been 
 mechanical audit plus learner-facing solvability judge pass. A reviewed asset must also point to the
 correct numbered source PDF page; for example, an asset labelled `Figure 4` with `pageNumber: 19` is
 invalid if the source page text does not contain `Figure 4`.
+
+Physical ruler tasks need a web-safe measurement surface. Do not rely on responsive image CSS or a
+device's physical CSS-pixel size. When the official mark scheme requires measuring a printed image,
+attach source-verified `paperMeasurement` metadata to the exact official crop: horizontal axis,
+source pixel width, pixels per millimetre derived from the embedded PDF/image density, and a concise
+learner instruction. The public renderer provides two movable guides and a live original-paper-mm
+readout. The solvability judge must verify the calibration against the local asset; invented,
+unverified, or inconsistent density remains import-blocking.
 
 Before importing existing exported artifacts, run the aggregate extracted-data audit:
 

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1",
+  "recoveredReleaseId": "aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "historicalArtifactHash": "1d237d9c32d15b9d60af3fbc73492fe61890a67a30370d8f735e3311d1be4968",
+  "generator": {
+    "runId": "019f6c36-878d-7f23-a100-a120505499a3",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-35-41-019f6c36-878d-7f23-a100-a120505499a3.jsonl",
+    "jsonlHash": "bafa4c9904d7c9c690f89eebadd9c1fbb912c5062d6da28d2b147eb5cc822b95",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1/generation",
+    "startedAt": "2026-07-16T18:35:41.023Z",
+    "completedAt": "2026-07-16T18:38:38.790Z",
+    "modelOutputHash": "9438f726a7608d3a2e7c6d48b3da9d85da13847003bb5be85ba19925ff78382e"
+  },
+  "reviewer": {
+    "runId": "019f6c39-4094-7391-bd67-41419ac7557e",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-38-39-019f6c39-4094-7391-bd67-41419ac7557e.jsonl",
+    "jsonlHash": "7f1e7f9d6677f78a41b4a0935c24c86262895e9325c4e279f84d90b75e22b5a0",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1/review",
+    "startedAt": "2026-07-16T18:38:39.388Z",
+    "completedAt": "2026-07-16T18:38:54.824Z",
+    "modelOutputHash": "25118b12233ca50e69fb9a09fd5dc28eb940ba35cd19edc5929d29f2a34f6167"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "1dffd173fdbeec0015fcd11756d4b073fa7745761d56804f3690f90e5d070321"
+}

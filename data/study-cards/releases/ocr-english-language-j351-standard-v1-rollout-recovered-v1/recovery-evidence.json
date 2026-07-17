@@ -1,0 +1,35 @@
+{
+	"schemaVersion": "english-language-rollout-recovery-v1",
+	"status": "reviewed_content_recovered_under_new_identity",
+	"historicalReleaseId": "ocr-english-language-j351-standard-v1",
+	"historicalArtifactHash": "04daae417aabeb65fd487d2f5fea95dc2173c7ee35455278a8909d645db2c420",
+	"reconstructedHistoricalIdArtifactHash": "fd6922d75398a64c87102921db15eddc28189bdc0ca54506cf42349d7e6ed242",
+	"hashMismatchConfirmed": true,
+	"recoveredReleaseId": "ocr-english-language-j351-standard-v1-rollout-recovered-v1",
+	"recoveredArtifactHash": "f469c3e2286c242bcc1535312eea79762e3d7cee7002dde4e34ad8493c2a15fc",
+	"identityPolicy": "The missing historical wrapper is not substituted. The exact recovered generator/reviewer content is bound to an explicit new release id.",
+	"generatorRunId": "019f6b86-f09e-7ab0-a320-bc0b04215f77",
+	"reviewerRunId": "019f6b8a-cf6f-7133-bc3d-ce052b242740",
+	"runs": {
+		"generation": {
+			"runId": "019f6b86-f09e-7ab0-a320-bc0b04215f77",
+			"jsonlFileName": "generation-rollout-source.jsonl",
+			"eventStreamSha256": "19d1ed8b7fca635a7584fc953430707aefef2aeef62308c22d713b7f0b7fe9ce",
+			"sanitizedEventCount": 34,
+			"promptSha256": "0e06e7b731b5132249f46e3eca268699eab407f640573862d792c5946a2e08d1",
+			"modelOutputSha256": "c25a780f5c6885989f6f155cde17f1b09a8915ad6e5e8bc6322d9ac0c4ec33ba",
+			"summarySha256": "aba76f657aa3b6e61c10a08ad6c6a265b59b7983473511bdfb09cdcdd0394637"
+		},
+		"review": {
+			"runId": "019f6b8a-cf6f-7133-bc3d-ce052b242740",
+			"jsonlFileName": "review-rollout-source.jsonl",
+			"eventStreamSha256": "861a187f58701403a5a434c57bd99e65685cc923e5f227c2a9d56036250653e1",
+			"sanitizedEventCount": 16,
+			"promptSha256": "ec01196b6c111ee27f989676adbdcb241d413b6972dd80b911eae23a966def41",
+			"modelOutputSha256": "f0c5521def1f1be7b42d0963ed24608cd0ee536009180e1d45cbee901246983a",
+			"summarySha256": "580c2d611d0e7e996feca9d87be86761fc7200a0bdc902ebbd60012711368eb3"
+		}
+	},
+	"acceptedArtifactSha256": "a570044e2ecfab6d96b53ba8ce4abd545721119359d7cce3e995fd86b98928be",
+	"modelCallsDuringRecovery": 0
+}

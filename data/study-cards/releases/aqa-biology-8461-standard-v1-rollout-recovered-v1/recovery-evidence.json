@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "study-card-base-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered_under_new_identity",
+  "historicalReleaseId": "aqa-biology-8461-standard-v1",
+  "recoveredReleaseId": "aqa-biology-8461-standard-v1-rollout-recovered-v1",
+  "identityPolicy": "The explicit recovery id preserves reviewed content and provenance without claiming byte identity with the absent historical artifact wrapper.",
+  "generator": {
+    "runId": "019f6bcf-35e8-7c63-b8ba-e189fea5788d",
+    "rolloutFileName": "rollout-2026-07-16T09-42-49-019f6bcf-35e8-7c63-b8ba-e189fea5788d.jsonl",
+    "rolloutHash": "9925c31440693b4ad38bcac20fb579f9a615a2299585031f23dc5374b8a055cc",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-biology-8461-standard-v1/generation",
+    "startedAt": "2026-07-16T16:42:49.918Z",
+    "completedAt": "2026-07-16T16:53:41.673Z",
+    "promptHash": "d5c501791bfd1714cc993b5a56ef71c20f7ad85be732a6f270f73bff26f8d507",
+    "modelOutputHash": "eea9f939369ffed6f5a22107e05e3dafaa13d693853c0fc1d61e4964eac66881"
+  },
+  "reviewer": {
+    "runId": "019f6bf1-00cd-77b1-8d56-7299e68d3874",
+    "rolloutFileName": "rollout-2026-07-16T10-19-44-019f6bf1-00cd-77b1-8d56-7299e68d3874.jsonl",
+    "rolloutHash": "01f39976a0de47a692fdfe6ab6791e032e3e6a6d5e647b7abf1bdf4c588ef28c",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-biology-8461-standard-v1/review",
+    "startedAt": "2026-07-16T17:19:44.467Z",
+    "completedAt": "2026-07-16T17:22:31.959Z",
+    "promptHash": "729879a5af1e95cf093347a2bae6ad5c1f4f43f50e418e3fd4bfdddacf3aa5ab",
+    "modelOutputHash": "d5e639d53446e031dee050d70fcab2ea22457539d7dca8263de8f703f38a7006"
+  },
+  "deterministicRepair": {
+    "runId": "019f6be5-19f0-74b2-9348-4aa52b65f826",
+    "rolloutFileName": "rollout-2026-07-16T10-06-44-019f6be5-19f0-74b2-9348-4aa52b65f826.jsonl",
+    "rolloutHash": "fd595c75ccd3abac615f6b08dbf5c5463fe5b0d42b25d3af9c5226783447bf0e",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-biology-8461-standard-v1/repair-generation",
+    "startedAt": "2026-07-16T17:06:44.520Z",
+    "completedAt": "2026-07-16T17:08:37.967Z",
+    "promptHash": "994d8f5b0c41e0c6b004a8d6c5eeab465917dab72ba42171199fbf29e085dc5e",
+    "modelOutputHash": "91a181b65e6f8f50d468403c7c3947bbaabcc396786ee9d8c1e61ed444997fb6",
+    "acceptedCardIds": [],
+    "unacceptedCardIds": [
+      "aqa-biology-8461-card-photosynthesis-word-equation",
+      "aqa-biology-8461-card-evolution-natural-selection-speciation"
+    ]
+  },
+  "reviewedRepairAttempts": [],
+  "counts": {
+    "generated": 28,
+    "reviewCandidates": 27,
+    "accepted": 26,
+    "distinctTargetComponents": 26,
+    "plannerEligibleTargetComponents": 26,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 14,
+    "readyCoverageRows": 14,
+    "withheldCoverageRows": 0,
+    "sessions": 3
+  },
+  "nonPlannerEligibleAcceptedComponentIds": [],
+  "offeringCoverage": [
+    {
+      "offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+      "ready": 7,
+      "withheld": 0,
+      "coverageRows": 7,
+      "cardCount": 26
+    },
+    {
+      "offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+      "ready": 7,
+      "withheld": 0,
+      "coverageRows": 7,
+      "cardCount": 26
+    }
+  ],
+  "modelCallsDuringRecovery": 0,
+  "artifactHash": "2ad49f74c04907c9fe942451fd57b46138e526cc55dd31649b4edf24db3faa68"
+}

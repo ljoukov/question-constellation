@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "promptVersion": "standard-study-card-compiler-v1",
+  "batchId": "ocr-english-language-j351-standard-v1",
+  "specificationId": "ocr-gcse-english-language-j351-v2.0",
+  "board": "OCR",
+  "qualification": "GCSE",
+  "subject": "English Language",
+  "offeringIds": [
+    "ocr-gcse-english-language-j351-v2.0:higher"
+  ],
+  "topicComponentIds": [
+    "ocr-gcse-english-language-j351-v2.0:01",
+    "ocr-gcse-english-language-j351-v2.0:02"
+  ],
+  "countPerTopic": 4,
+  "minimumAcceptedPerTopic": 3,
+  "expectedCardCount": 8,
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "sourcePdf": {
+    "path": "data/curricula/sources/ocr-gcse-english-language-j351-v2.0.pdf",
+    "sha256": "a0c16e5335898ea42258b21f95654b0c1d2ed866c7c5acb7782d7ec5fe8298e8"
+  }
+}

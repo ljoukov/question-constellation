@@ -1,0 +1,60 @@
+{
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-2",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-5",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+      "topicComponentId": "aqa-gcse-computer-science-8525-v1.3-2027:3-8",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    }
+  ]
+}

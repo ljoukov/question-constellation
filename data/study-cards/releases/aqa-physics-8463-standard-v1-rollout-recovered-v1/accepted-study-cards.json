@@ -1,0 +1,2401 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-physics-8463-standard-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-compiler-v2",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c04-d167-7a00-9fe9-a8640c321f5a"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c0c-170c-7ec2-8834-878572263196",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T17:41:23.124Z",
+    "finishedAt": "2026-07-16T17:54:21.188Z",
+    "sourceManifestHash": "ffe1a5150c94103f18391ce9e42d18d4b84ca841f39e5a0ab72fa887713bfa48",
+    "artifactPath": "data/study-cards/releases/aqa-physics-8463-standard-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-physics-8463-v1-1-energy-specific-heat-capacity",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-specific-heat-capacity",
+      "kind": "definition",
+      "visualCue": "🌡️",
+      "front": "What is the specific heat capacity of a substance?",
+      "back": "The energy required to raise the temperature of one kilogram of the substance by one degree Celsius.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition fixes both the reference mass at one kilogram and the temperature rise at one degree Celsius.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The energy required to raise the temperature of one kilogram of the substance by one degree Celsius.",
+          "isCorrect": true,
+          "feedback": "Correct: both the one-kilogram mass and one-degree temperature rise are required.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The energy required to change the state of one kilogram of the substance without changing its temperature.",
+          "isCorrect": false,
+          "feedback": "This confuses specific heat capacity with specific latent heat.",
+          "misconception": "confuses-specific-heat-capacity-with-latent-heat"
+        },
+        {
+          "key": "c",
+          "text": "The energy required to raise the temperature of the whole substance by one degree Celsius, whatever its mass.",
+          "isCorrect": false,
+          "feedback": "This omits the definition's one-kilogram condition.",
+          "misconception": "omits-specific-heat-capacity-reference-mass"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 17-23; 4.1.1.3 Energy changes in systems",
+          "excerpt": "The specific heat capacity of a substance is the amount of energy\nrequired to raise the temperature of one kilogram of the substance\nby one degree Celsius.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-energy-power-definition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-power-definition",
+      "kind": "definition",
+      "visualCue": "⚙️",
+      "front": "What is power in terms of energy transfer or work done?",
+      "back": "The rate at which energy is transferred or work is done.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Power is a rate, and its definition can be stated using either energy transferred or work done.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The total amount of energy transferred or work done.",
+          "isCorrect": false,
+          "feedback": "This omits that power is a rate.",
+          "misconception": "treats-power-as-total-energy"
+        },
+        {
+          "key": "b",
+          "text": "The rate at which energy is transferred or work is done.",
+          "isCorrect": true,
+          "feedback": "Correct: power describes how quickly energy is transferred or work is done.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The time taken for any energy transfer or work to begin.",
+          "isCorrect": false,
+          "feedback": "Power is the rate of transfer or work, not the elapsed time.",
+          "misconception": "treats-power-as-time"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 17-23; 4.1.1.4 Power",
+          "excerpt": "Power is defined as the rate at which energy is transferred or the\nrate at which work is done.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-1-4",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-1-4",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-energy-conservation",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-energy-conservation",
+      "kind": "fact",
+      "visualCue": "🔀",
+      "front": "What can happen to energy, and what cannot happen to it?",
+      "back": "Energy can be transferred usefully, stored or dissipated, but it cannot be created or destroyed.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Useful transfer, storage and dissipation are possible, while creation and destruction are excluded.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Energy can be created for useful transfers but cannot be dissipated.",
+          "isCorrect": false,
+          "feedback": "Energy may be dissipated, but it cannot be created.",
+          "misconception": "allows-energy-creation"
+        },
+        {
+          "key": "b",
+          "text": "Energy is destroyed whenever it is dissipated.",
+          "isCorrect": false,
+          "feedback": "Dissipation does not mean that energy is destroyed.",
+          "misconception": "equates-dissipation-with-destruction"
+        },
+        {
+          "key": "c",
+          "text": "Energy can be transferred usefully, stored or dissipated, but it cannot be created or destroyed.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the permitted outcomes and the conservation limit.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 17-23; 4.1.2.1 Energy transfers in a system",
+          "excerpt": "Energy can be transferred usefully, stored or dissipated, but cannot\nbe created or destroyed.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-energy-renewable-resource",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-renewable-energy-resource",
+      "kind": "definition",
+      "visualCue": "⚡",
+      "front": "What makes an energy resource renewable?",
+      "back": "One that is being, or can be, replenished as it is used.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The defining condition is that replenishment occurs, or can occur, as the resource is used.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "One that is being, or can be, replenished as it is used.",
+          "isCorrect": true,
+          "feedback": "Correct: renewability is defined by replenishment during use.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "One that is replenished only after its use has completely stopped.",
+          "isCorrect": false,
+          "feedback": "The definition links replenishment to the resource being used.",
+          "misconception": "misplaces-renewable-replenishment"
+        },
+        {
+          "key": "c",
+          "text": "One whose energy is never transferred, stored or dissipated.",
+          "isCorrect": false,
+          "feedback": "Renewability concerns replenishment, not the absence of energy transfers.",
+          "misconception": "confuses-renewability-with-energy-conservation"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 17-23; 4.1.3 National and global energy resources",
+          "excerpt": "A renewable energy resource is one that is being (or can be)\nreplenished as it is used.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-electricity-current-definition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-electric-current",
+      "kind": "definition",
+      "visualCue": "🔌",
+      "front": "What is electric current, and what determines its size?",
+      "back": "A flow of electrical charge; its size is the rate of flow of charge.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Current is charge flow, and the rate of that charge flow determines the current's size.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A flow of energy; its size is the energy transferred each second.",
+          "isCorrect": false,
+          "feedback": "This describes a power-related idea rather than electric current.",
+          "misconception": "confuses-current-with-power"
+        },
+        {
+          "key": "b",
+          "text": "A flow of electrical charge; its size is the rate of flow of charge.",
+          "isCorrect": true,
+          "feedback": "Correct: current is defined through electrical charge flow.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The total electrical charge in a circuit, regardless of time.",
+          "isCorrect": false,
+          "feedback": "Current depends on the rate of charge flow, not charge alone.",
+          "misconception": "confuses-current-with-charge"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 23-32; 4.2.1.2 Electrical charge and current",
+          "excerpt": "Electric current is a flow of electrical charge. The size of the electric\ncurrent is the rate of flow of electrical charge.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-electricity-resistance-current-effect",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-resistance-current-at-fixed-pd",
+      "kind": "cause-consequence",
+      "visualCue": "⚡",
+      "front": "For a fixed potential difference across a component, how does greater resistance affect the current?",
+      "back": "For a given potential difference, greater resistance gives a smaller current.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "With potential difference held fixed, increasing the component's resistance reduces the current.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "For a given potential difference, greater resistance gives a greater current.",
+          "isCorrect": false,
+          "feedback": "This reverses the specified resistance–current relationship.",
+          "misconception": "reverses-resistance-current-relationship"
+        },
+        {
+          "key": "b",
+          "text": "For a given potential difference, resistance has no effect on current.",
+          "isCorrect": false,
+          "feedback": "The current becomes smaller as resistance becomes greater.",
+          "misconception": "treats-current-as-independent-of-resistance"
+        },
+        {
+          "key": "c",
+          "text": "For a given potential difference, greater resistance gives a smaller current.",
+          "isCorrect": true,
+          "feedback": "Correct: current falls as resistance rises when potential difference is fixed.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 23-32; 4.2.1.3 Current, resistance and potential difference",
+          "excerpt": "The greater the resistance of the component\nthe smaller the current for a given potential difference (pd) across\nthe component.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-electricity-series-circuit-rules",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-series-circuit-rules",
+      "kind": "fact",
+      "visualCue": "🔗",
+      "front": "What are the rules for current, potential difference and resistance in a series circuit?",
+      "back": "The current is the same through each component; the supply potential difference is shared; resistances add.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Series components carry the same current, share the supply potential difference and contribute additively to total resistance.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The current is the same through each component; the supply potential difference is shared; resistances add.",
+          "isCorrect": true,
+          "feedback": "Correct: all three statements are series-circuit rules.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The potential difference is the same across each component; currents split; total resistance is below the smallest resistance.",
+          "isCorrect": false,
+          "feedback": "These are parallel-circuit properties, not series-circuit properties.",
+          "misconception": "uses-parallel-rules-for-series"
+        },
+        {
+          "key": "c",
+          "text": "Current is shared between components; potential difference is unchanged across each; resistances do not affect the total.",
+          "isCorrect": false,
+          "feedback": "This mixes circuit rules and misses that series resistances add.",
+          "misconception": "mixes-series-and-parallel-rules"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 23-32; 4.2.2 Series and parallel circuits",
+          "excerpt": "For components connected in series:\n• there is the same current through each component\n• the total potential difference of the power supply is shared\nbetween the components\n• the total resistance of two components is the sum of the\nresistance of each component.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-electricity-mains-wire-roles",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-mains-wire-roles",
+      "kind": "fact",
+      "visualCue": "🔌",
+      "front": "What are the roles of the live, neutral and earth wires in a mains cable?",
+      "back": "Live carries the alternating potential difference; neutral completes the circuit; earth is a safety wire.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The three wires have distinct roles: supply potential difference, circuit completion and safety.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Live completes the circuit; neutral is the safety wire; earth carries the alternating potential difference.",
+          "isCorrect": false,
+          "feedback": "This swaps all three wire roles.",
+          "misconception": "swaps-mains-wire-roles"
+        },
+        {
+          "key": "b",
+          "text": "Live carries the alternating potential difference; neutral completes the circuit; earth is a safety wire.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the specified functions of the three wires.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Live and neutral are both safety wires; earth completes the normal circuit.",
+          "isCorrect": false,
+          "feedback": "Neutral completes the circuit, while earth is the safety wire.",
+          "misconception": "confuses-neutral-and-earth-functions"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 23-32; 4.2.3 Domestic uses and safety",
+          "excerpt": "The live wire carries the alternating potential difference from the\nsupply. The neutral wire completes the circuit. The earth wire is a\nsafety wire to stop the appliance becoming live.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-particles-density-volume-method",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-density-volume-measurement",
+      "kind": "practical",
+      "visualCue": "⚖️",
+      "front": "How should volume be determined for regularly and irregularly shaped solid objects in the density practical?",
+      "back": "Use dimensions for a regularly shaped object and displacement for an irregularly shaped object.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Regular shapes allow volume to be found from dimensions, whereas irregular shapes require a displacement technique.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Use displacement for a regularly shaped object and dimensions for an irregularly shaped object.",
+          "isCorrect": false,
+          "feedback": "This reverses the two specified methods.",
+          "misconception": "reverses-density-volume-methods"
+        },
+        {
+          "key": "b",
+          "text": "Use dimensions for both regularly and irregularly shaped objects.",
+          "isCorrect": false,
+          "feedback": "Irregular objects require a displacement technique.",
+          "misconception": "uses-dimensions-for-irregular-volume"
+        },
+        {
+          "key": "c",
+          "text": "Use dimensions for a regularly shaped object and displacement for an irregularly shaped object.",
+          "isCorrect": true,
+          "feedback": "Correct: the volume method depends on whether the shape is regular.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 32-36; 4.3.1.1 Density of materials",
+          "excerpt": "Volume should\nbe determined from the dimensions of regularly shaped objects, and by a displacement technique\nfor irregularly shaped objects.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-particles-internal-energy",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-internal-energy",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What is the internal energy of a system?",
+      "back": "The total kinetic energy and potential energy of all the particles in a system.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Internal energy includes both forms of particle energy and is totalled over all atoms and molecules in the system.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The total kinetic energy and potential energy of all the particles in a system.",
+          "isCorrect": true,
+          "feedback": "Correct: internal energy includes both kinetic and potential particle energy.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only the total kinetic energy of the particles in a system.",
+          "isCorrect": false,
+          "feedback": "This omits the particles' potential energy.",
+          "misconception": "omits-potential-energy-from-internal-energy"
+        },
+        {
+          "key": "c",
+          "text": "Only the energy transferred into the system during heating.",
+          "isCorrect": false,
+          "feedback": "Internal energy is the particles' total kinetic and potential energy, not only an input.",
+          "misconception": "confuses-internal-energy-with-heating-input"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 32-36; 4.3.2.1 Internal energy",
+          "excerpt": "Internal energy is the total kinetic energy and potential energy of all\nthe particles (atoms and molecules) that make up a system.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-particles-specific-latent-heat",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-specific-latent-heat",
+      "kind": "definition",
+      "visualCue": "🔀",
+      "front": "What is the specific latent heat of a substance?",
+      "back": "The energy required to change the state of one kilogram of the substance with no change in temperature.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The definition specifies a state change of one kilogram while its temperature does not change.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The energy required to raise one kilogram of the substance by one degree Celsius.",
+          "isCorrect": false,
+          "feedback": "This is the temperature-rise definition of specific heat capacity.",
+          "misconception": "confuses-latent-heat-with-specific-heat-capacity"
+        },
+        {
+          "key": "b",
+          "text": "The energy required to change the state of one kilogram of the substance with no change in temperature.",
+          "isCorrect": true,
+          "feedback": "Correct: mass, state change and unchanged temperature are all part of the definition.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The energy required to change any mass of the substance while its temperature rises.",
+          "isCorrect": false,
+          "feedback": "Specific latent heat refers to one kilogram and no temperature change.",
+          "misconception": "omits-latent-heat-mass-and-temperature-conditions"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 32-36; 4.3.2.3 Changes of state and specific latent heat",
+          "excerpt": "The specific latent heat of a substance is the amount of energy\nrequired to change the state of one kilogram of the substance with\nno change in temperature.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-particles-gas-volume-pressure",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-gas-volume-pressure",
+      "kind": "cause-consequence",
+      "visualCue": "⚙️",
+      "front": "For a contained gas at constant temperature, what can increasing its volume do to its pressure?",
+      "back": "At constant temperature, increasing a gas's volume can lead to a decrease in pressure.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The relationship is qualified: with temperature constant, a volume increase can lead to lower pressure.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "At constant temperature, increasing a gas's volume must increase its pressure.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated volume–pressure relationship.",
+          "misconception": "reverses-gas-volume-pressure-relationship"
+        },
+        {
+          "key": "b",
+          "text": "At constant temperature, changing a gas's volume cannot affect its pressure.",
+          "isCorrect": false,
+          "feedback": "The particle model links increased volume with a possible pressure decrease.",
+          "misconception": "treats-gas-pressure-as-volume-independent"
+        },
+        {
+          "key": "c",
+          "text": "At constant temperature, increasing a gas's volume can lead to a decrease in pressure.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both the constant-temperature condition and the qualifier.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 32-36; 4.3.3.2 Pressure in gases (physics only)",
+          "excerpt": "increasing the volume in which a gas is contained, at constant\ntemperature, can lead to a decrease in pressure.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-3-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3-3-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-atomic-atom-structure",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-basic-atom-structure",
+      "kind": "structure",
+      "visualCue": "⚛️",
+      "front": "What is the basic structure of an atom?",
+      "back": "A positively charged nucleus of protons and neutrons, surrounded by negatively charged electrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The nucleus is positive and contains both protons and neutrons; negative electrons surround it.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A positively charged nucleus of protons and neutrons, surrounded by negatively charged electrons.",
+          "isCorrect": true,
+          "feedback": "Correct: this gives the specified charges, particles and arrangement.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A negatively charged nucleus of protons and neutrons, surrounded by positively charged electrons.",
+          "isCorrect": false,
+          "feedback": "This reverses the charges of the nucleus and electrons.",
+          "misconception": "reverses-atomic-charges"
+        },
+        {
+          "key": "c",
+          "text": "A positive nucleus containing only protons, surrounded by neutral neutrons.",
+          "isCorrect": false,
+          "feedback": "The nucleus contains protons and neutrons, while electrons surround it.",
+          "misconception": "misplaces-neutrons-and-electrons"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 36-43; 4.4.1.1 The structure of an atom",
+          "excerpt": "The basic structure of an atom is a positively charged nucleus\ncomposed of both protons and neutrons surrounded by negatively\ncharged electrons.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-atomic-isotope-definition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-isotope-definition",
+      "kind": "definition",
+      "visualCue": "⚛️",
+      "front": "What are isotopes of an element?",
+      "back": "Atoms of the same element with different numbers of neutrons.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Isotopes remain atoms of the same element but differ in their neutron numbers.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Atoms with the same number of neutrons but different numbers of protons.",
+          "isCorrect": false,
+          "feedback": "The differing particle is the neutron, not the proton.",
+          "misconception": "swaps-protons-and-neutrons-in-isotopes"
+        },
+        {
+          "key": "b",
+          "text": "Atoms of the same element with different numbers of neutrons.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the defining difference between isotopes.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Atoms of different elements with the same number of protons.",
+          "isCorrect": false,
+          "feedback": "Atoms with the same proton identity belong to the same element.",
+          "misconception": "treats-isotopes-as-different-elements"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 36-43; 4.4.1.2 Mass number, atomic number and isotopes",
+          "excerpt": "Atoms of the same element can have different numbers of\nneutrons; these atoms are called isotopes of that element.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-atomic-radioactive-decay",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-radioactive-decay",
+      "kind": "process",
+      "visualCue": "☢️",
+      "front": "What happens during radioactive decay, and what is its nature?",
+      "back": "An unstable nucleus gives out radiation as it changes to become more stable; the process is random.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Radioactive decay is the random emission of radiation while an unstable nucleus becomes more stable.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A stable nucleus absorbs radiation and becomes unstable in a predictable process.",
+          "isCorrect": false,
+          "feedback": "This reverses both the direction of stability change and the random nature of decay.",
+          "misconception": "reverses-radioactive-decay-process"
+        },
+        {
+          "key": "b",
+          "text": "An unstable nucleus gives out radiation at a fixed scheduled time.",
+          "isCorrect": false,
+          "feedback": "The emission is described as random, not scheduled.",
+          "misconception": "treats-radioactive-decay-as-predictable"
+        },
+        {
+          "key": "c",
+          "text": "An unstable nucleus gives out radiation as it changes to become more stable; the process is random.",
+          "isCorrect": true,
+          "feedback": "Correct: instability, radiation emission, increasing stability and randomness are all included.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 36-43; 4.4.2.1 Radioactive decay and nuclear radiation",
+          "excerpt": "Some atomic nuclei are unstable. The nucleus gives out radiation\nas it changes to become more stable. This is a random process\ncalled radioactive decay.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-atomic-half-life",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-radioactive-half-life",
+      "kind": "definition",
+      "visualCue": "☢️",
+      "front": "What is the half-life of a radioactive isotope?",
+      "back": "The time for the number of isotope nuclei to halve, or for count rate or activity to fall to half its initial level.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Half-life can be defined using either the number of isotope nuclei or the sample's count rate or activity.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The time for the number of isotope nuclei to halve, or for count rate or activity to fall to half its initial level.",
+          "isCorrect": true,
+          "feedback": "Correct: both equivalent forms of the definition are included.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The time for every radioactive nucleus to decay and activity to reach zero.",
+          "isCorrect": false,
+          "feedback": "Half-life refers to falling to half, not reaching zero.",
+          "misconception": "treats-half-life-as-complete-decay"
+        },
+        {
+          "key": "c",
+          "text": "The time for the mass number of each nucleus to halve.",
+          "isCorrect": false,
+          "feedback": "The definition concerns the number of nuclei or measured count rate or activity.",
+          "misconception": "confuses-half-life-with-mass-number"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 36-43; 4.4.2.3 Half-lives and the random nature of radioactive decay",
+          "excerpt": "The half-life of a radioactive isotope is the time it takes for the\nnumber of nuclei of the isotope in a sample to halve, or the time it\ntakes for the count rate (or activity) from a sample containing the\nisotope to fall to half its initial level.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4-2-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-forces-scalar-vector",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-scalar-vector-distinction",
+      "kind": "comparison",
+      "visualCue": "🏃",
+      "front": "What is the difference between a scalar quantity and a vector quantity?",
+      "back": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Direction distinguishes a vector from a scalar; both descriptions include magnitude.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A scalar has magnitude and direction; a vector has magnitude only.",
+          "isCorrect": false,
+          "feedback": "This reverses the scalar and vector definitions.",
+          "misconception": "reverses-scalar-vector-definitions"
+        },
+        {
+          "key": "b",
+          "text": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+          "isCorrect": true,
+          "feedback": "Correct: a vector includes direction, whereas a scalar does not.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Both scalars and vectors have magnitude only.",
+          "isCorrect": false,
+          "feedback": "A vector also has an associated direction.",
+          "misconception": "omits-vector-direction"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 43-58; 4.5.1.1 Scalar and vector quantities",
+          "excerpt": "Scalar quantities have magnitude only.\nVector quantities have magnitude and an associated direction.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-forces-work-done-condition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-work-done-by-force",
+      "kind": "process",
+      "visualCue": "🏋️",
+      "front": "When does a force do work on an object?",
+      "back": "Work is done on an object when a force causes its displacement.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The force must cause the object's movement through a distance, described as displacement.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Whenever a force acts, even if the object has no displacement.",
+          "isCorrect": false,
+          "feedback": "The stated condition requires the force to cause displacement.",
+          "misconception": "assumes-force-alone-means-work"
+        },
+        {
+          "key": "b",
+          "text": "Whenever an object moves, even if no force causes the movement.",
+          "isCorrect": false,
+          "feedback": "For a force to do work, that force must cause the displacement.",
+          "misconception": "ignores-force-causing-displacement"
+        },
+        {
+          "key": "c",
+          "text": "Work is done on an object when a force causes its displacement.",
+          "isCorrect": true,
+          "feedback": "Correct: work links a force to the displacement it causes.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 43-58; 4.5.2 Work done and energy transfer",
+          "excerpt": "When a force causes an object to move through a distance work is\ndone on the object. So a force does work on an object when the\nforce causes a displacement of the object.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-forces-newton-second-law",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-newton-second-law-relationships",
+      "kind": "cause-consequence",
+      "visualCue": "🏎️",
+      "front": "According to Newton's Second Law, how does acceleration depend on resultant force and mass?",
+      "back": "Acceleration is proportional to resultant force and inversely proportional to mass.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Acceleration increases with resultant force but has the inverse relationship with the object's mass.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Acceleration is proportional to resultant force and inversely proportional to mass.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two relationships stated by Newton's Second Law.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Acceleration is inversely proportional to resultant force and proportional to mass.",
+          "isCorrect": false,
+          "feedback": "This reverses both proportional relationships.",
+          "misconception": "reverses-newton-second-law-relationships"
+        },
+        {
+          "key": "c",
+          "text": "Acceleration is proportional to both resultant force and mass.",
+          "isCorrect": false,
+          "feedback": "Acceleration is inversely, not directly, proportional to mass.",
+          "misconception": "treats-acceleration-as-proportional-to-mass"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 43-58; 4.5.6.2.2 Newton's Second Law",
+          "excerpt": "The acceleration of an object is proportional to the resultant force\nacting on the object, and inversely proportional to the mass of the\nobject.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-6-2-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-6-2-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-forces-stopping-distance",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-stopping-distance-components",
+      "kind": "definition",
+      "visualCue": "🚗",
+      "front": "What two distances make up a vehicle's stopping distance?",
+      "back": "Thinking distance plus braking distance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Thinking distance is travelled during the driver's reaction time, and braking distance is travelled under the braking force.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Thinking distance only.",
+          "isCorrect": false,
+          "feedback": "This omits the distance travelled while braking.",
+          "misconception": "omits-braking-distance"
+        },
+        {
+          "key": "b",
+          "text": "Thinking distance plus braking distance.",
+          "isCorrect": true,
+          "feedback": "Correct: stopping distance is the sum of these two distances.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Braking distance only.",
+          "isCorrect": false,
+          "feedback": "This omits the distance travelled during the driver's reaction time.",
+          "misconception": "omits-thinking-distance"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 43-58; 4.5.6.3.1 Stopping distance",
+          "excerpt": "The stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance).",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-6-3-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-5-6-3-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-waves-transverse-longitudinal-examples",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-transverse-longitudinal-examples",
+      "kind": "comparison",
+      "visualCue": "🌊",
+      "front": "How are water-surface ripples and sound waves in air classified?",
+      "back": "Water-surface ripples are transverse; sound waves in air are longitudinal.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Sound in air is longitudinal, and longitudinal waves show regions of compression and rarefaction; water-surface ripples are transverse.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Water-surface ripples are longitudinal; sound waves in air are transverse.",
+          "isCorrect": false,
+          "feedback": "This swaps the two wave classifications.",
+          "misconception": "swaps-transverse-longitudinal-examples"
+        },
+        {
+          "key": "b",
+          "text": "Both water-surface ripples and sound waves in air are longitudinal.",
+          "isCorrect": false,
+          "feedback": "Water-surface ripples are given as a transverse example.",
+          "misconception": "classifies-water-ripples-as-longitudinal"
+        },
+        {
+          "key": "c",
+          "text": "Water-surface ripples are transverse; sound waves in air are longitudinal.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two classifications specified.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.1.1 Transverse and longitudinal waves",
+          "excerpt": "The ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-waves-frequency-definition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-wave-frequency",
+      "kind": "definition",
+      "visualCue": "🌊",
+      "front": "What is the frequency of a wave?",
+      "back": "The number of waves passing a point each second.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Frequency counts how many waves pass a specified point in each second.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The number of waves passing a point each second.",
+          "isCorrect": true,
+          "feedback": "Correct: frequency is a wave count per second at a point.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The maximum displacement of a point from its undisturbed position.",
+          "isCorrect": false,
+          "feedback": "This describes amplitude rather than frequency.",
+          "misconception": "confuses-frequency-with-amplitude"
+        },
+        {
+          "key": "c",
+          "text": "The distance between equivalent points on adjacent waves.",
+          "isCorrect": false,
+          "feedback": "This describes wavelength rather than frequency.",
+          "misconception": "confuses-frequency-with-wavelength"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.1.2 Properties of waves",
+          "excerpt": "The frequency of a wave is the number of waves passing a point\neach second.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-waves-electromagnetic-spectrum-order",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-electromagnetic-spectrum-order",
+      "kind": "structure",
+      "visualCue": "🌈",
+      "front": "What is the electromagnetic spectrum order from long to short wavelength?",
+      "back": "Radio → microwave → infrared → visible light (red to violet) → ultraviolet → X-rays → gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This sequence is also the order from low to high frequency.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Gamma rays → X-rays → ultraviolet → visible light → infrared → microwave → radio.",
+          "isCorrect": false,
+          "feedback": "This is the reverse, short-to-long wavelength order.",
+          "misconception": "reverses-electromagnetic-spectrum-order"
+        },
+        {
+          "key": "b",
+          "text": "Radio → microwave → infrared → visible light (red to violet) → ultraviolet → X-rays → gamma rays.",
+          "isCorrect": true,
+          "feedback": "Correct: this runs from long wavelength and low frequency to short wavelength and high frequency.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Radio → infrared → microwave → visible light → X-rays → ultraviolet → gamma rays.",
+          "isCorrect": false,
+          "feedback": "This swaps microwave with infrared and ultraviolet with X-rays.",
+          "misconception": "misorders-neighbouring-electromagnetic-groups"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.2.1 Types of electromagnetic waves",
+          "excerpt": "The waves that form the electromagnetic spectrum are grouped in\nterms of their wavelength and their frequency. Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-waves-perfect-black-body",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-perfect-black-body",
+      "kind": "definition",
+      "visualCue": "🌡️",
+      "front": "What is a perfect black body?",
+      "back": "An object that absorbs all incident radiation and reflects or transmits none.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Because the passage identifies a good absorber as a good emitter, it also describes a perfect black body as the best possible emitter.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "An object that reflects all incident radiation and absorbs none.",
+          "isCorrect": false,
+          "feedback": "This reverses the defining absorption and reflection properties.",
+          "misconception": "reverses-black-body-absorption"
+        },
+        {
+          "key": "b",
+          "text": "An object that absorbs and transmits all incident radiation.",
+          "isCorrect": false,
+          "feedback": "A perfect black body does not transmit radiation.",
+          "misconception": "assumes-black-body-transmission"
+        },
+        {
+          "key": "c",
+          "text": "An object that absorbs all incident radiation and reflects or transmits none.",
+          "isCorrect": true,
+          "feedback": "Correct: complete absorption and no reflection or transmission define it.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 59-67; 4.6.3.1 Emission and absorption of infrared radiation",
+          "excerpt": "A perfect black body is an object that absorbs all of the radiation\nincident on it. A black body does not reflect or transmit any\nradiation. Since a good absorber is also a good emitter, a perfect\nblack body would be the best possible emitter.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-3-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-6-3-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-magnetism-pole-interactions",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-magnetic-pole-interactions",
+      "kind": "fact",
+      "visualCue": "🧲",
+      "front": "How do like and unlike magnetic poles interact?",
+      "back": "Like poles repel; unlike poles attract.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The interaction depends on whether the two poles are like or unlike.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Like poles repel; unlike poles attract.",
+          "isCorrect": true,
+          "feedback": "Correct: like poles repel and unlike poles attract.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Like poles attract; unlike poles repel.",
+          "isCorrect": false,
+          "feedback": "This reverses both magnetic-pole interactions.",
+          "misconception": "reverses-magnetic-pole-interactions"
+        },
+        {
+          "key": "c",
+          "text": "Both like and unlike poles attract.",
+          "isCorrect": false,
+          "feedback": "Like poles repel rather than attract.",
+          "misconception": "assumes-all-magnetic-poles-attract"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 67-72; 4.7.1.1 Poles of a magnet",
+          "excerpt": "Two like poles repel each other. Two\nunlike poles attract each other.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-magnetism-permanent-induced",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-permanent-induced-magnets",
+      "kind": "comparison",
+      "visualCue": "🧲",
+      "front": "What is the difference between a permanent magnet and an induced magnet?",
+      "back": "A permanent magnet produces its own field; an induced magnet becomes magnetic when placed in a magnetic field.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "A permanent magnet supplies its own magnetic field, whereas an induced magnet becomes a magnet because it is placed in a field.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A permanent magnet becomes magnetic only in an external field; an induced magnet produces its own field permanently.",
+          "isCorrect": false,
+          "feedback": "This reverses the two descriptions.",
+          "misconception": "reverses-permanent-induced-magnets"
+        },
+        {
+          "key": "b",
+          "text": "A permanent magnet produces its own field; an induced magnet becomes magnetic when placed in a magnetic field.",
+          "isCorrect": true,
+          "feedback": "Correct: the source of the magnetism distinguishes them.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Both permanent and induced magnets become magnetic only when placed in another magnetic field.",
+          "isCorrect": false,
+          "feedback": "A permanent magnet produces its own magnetic field.",
+          "misconception": "treats-permanent-magnet-as-induced"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 67-72; 4.7.1.1 Poles of a magnet",
+          "excerpt": "A permanent magnet produces its own magnetic field. An induced\nmagnet is a material that becomes a magnet when it is placed in a\nmagnetic field.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-magnetism-magnetic-field-definition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-magnetic-field",
+      "kind": "definition",
+      "visualCue": "🧲",
+      "front": "What is the magnetic field around a magnet?",
+      "back": "The region around a magnet where a force acts on another magnet or magnetic material.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The field is defined as a region of force around the magnet and applies to another magnet or a magnetic material.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Only the material inside a magnet where its poles are located.",
+          "isCorrect": false,
+          "feedback": "The magnetic field is a region around the magnet.",
+          "misconception": "places-magnetic-field-only-inside-magnet"
+        },
+        {
+          "key": "b",
+          "text": "The path along which a magnet must physically move.",
+          "isCorrect": false,
+          "feedback": "A magnetic field is defined by where a force acts, not by a travel path.",
+          "misconception": "confuses-field-with-motion-path"
+        },
+        {
+          "key": "c",
+          "text": "The region around a magnet where a force acts on another magnet or magnetic material.",
+          "isCorrect": true,
+          "feedback": "Correct: this states both the region and what can experience the force.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 67-72; 4.7.1.2 Magnetic fields",
+          "excerpt": "The region around a magnet where a force acts on another magnet\nor on a magnetic material (iron, steel, cobalt and nickel) is called\nthe magnetic field.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-magnetism-electromagnet-definition",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-electromagnet",
+      "kind": "definition",
+      "visualCue": "🔌",
+      "front": "What is an electromagnet?",
+      "back": "A solenoid with an iron core.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Adding an iron core strengthens a solenoid's magnetic field, and the resulting arrangement is an electromagnet.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A solenoid with an iron core.",
+          "isCorrect": true,
+          "feedback": "Correct: this is the specification's definition of an electromagnet.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A straight conducting wire with an iron core.",
+          "isCorrect": false,
+          "feedback": "The required wire arrangement is a solenoid.",
+          "misconception": "omits-solenoid-from-electromagnet"
+        },
+        {
+          "key": "c",
+          "text": "A solenoid with no core.",
+          "isCorrect": false,
+          "feedback": "An electromagnet includes an iron core.",
+          "misconception": "omits-iron-core-from-electromagnet"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 67-72; 4.7.2.1 Electromagnetism",
+          "excerpt": "The magnetic field around a solenoid has a similar shape to that of\na bar magnet. Adding an iron core increases the strength of the\nmagnetic field of a solenoid. An electromagnet is a solenoid with an\niron core.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-7-2-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-space-solar-system-components",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-solar-system-components",
+      "kind": "structure",
+      "visualCue": "🌌",
+      "front": "Which bodies does the specification identify as parts of our solar system?",
+      "back": "The Sun, eight planets, dwarf planets, and natural satellites (moons).",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The Sun is the solar system's one star; planets and dwarf planets orbit it, while natural satellites orbit planets.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The Sun and eight planets only.",
+          "isCorrect": false,
+          "feedback": "This omits dwarf planets and natural satellites.",
+          "misconception": "omits-dwarf-planets-and-moons"
+        },
+        {
+          "key": "b",
+          "text": "The Sun, eight planets, dwarf planets, and natural satellites (moons).",
+          "isCorrect": true,
+          "feedback": "Correct: all four groups are identified as parts of the solar system.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The Milky Way, the Sun and eight planets, but no dwarf planets or moons.",
+          "isCorrect": false,
+          "feedback": "This confuses the containing galaxy with the bodies listed in the solar system and omits two groups.",
+          "misconception": "confuses-solar-system-with-milky-way"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 72-75; 4.8.1.1 Our solar system",
+          "excerpt": "Within our solar system there is one star, the Sun, plus the eight\nplanets and the dwarf planets that orbit around the Sun. Natural\nsatellites, the moons that orbit planets, are also part of the solar\nsystem.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1-1",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-space-supernova-elements",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-supernova-elements",
+      "kind": "process",
+      "visualCue": "⚛️",
+      "front": "What role does a supernova have in producing and distributing elements?",
+      "back": "A supernova produces elements heavier than iron and distributes elements throughout the universe.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Elements heavier than iron are produced in a supernova, and the massive star's explosion spreads elements through the universe.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A supernova produces only elements lighter than iron and keeps them within the star.",
+          "isCorrect": false,
+          "feedback": "This reverses both the stated production and distribution facts.",
+          "misconception": "reverses-supernova-element-role"
+        },
+        {
+          "key": "b",
+          "text": "A supernova distributes elements but does not produce elements heavier than iron.",
+          "isCorrect": false,
+          "feedback": "The specification explicitly identifies supernovae as producing elements heavier than iron.",
+          "misconception": "omits-heavy-element-production"
+        },
+        {
+          "key": "c",
+          "text": "A supernova produces elements heavier than iron and distributes elements throughout the universe.",
+          "isCorrect": true,
+          "feedback": "Correct: it includes both production and distribution.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 72-75; 4.8.1.2 The life cycle of a star",
+          "excerpt": "Elements heavier than iron are produced in a supernova.\nThe explosion of a massive star (supernova) distributes the\nelements throughout the universe.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1-2",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-physics-8463-v1-1-space-orbital-force",
+      "conceptKey": "aqa-physics-8463-v1-1-concept-gravity-maintains-orbits",
+      "kind": "fact",
+      "visualCue": "🌌",
+      "front": "What force allows planets and both natural and artificial satellites to maintain circular orbits?",
+      "back": "Gravity.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Gravity supplies the force required for the circular orbits of planets and both types of satellite.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Gravity.",
+          "isCorrect": true,
+          "feedback": "Correct: gravity provides the orbit-maintaining force.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Magnetic force.",
+          "isCorrect": false,
+          "feedback": "The specified force maintaining these circular orbits is gravity.",
+          "misconception": "attributes-orbits-to-magnetism"
+        },
+        {
+          "key": "c",
+          "text": "Electrostatic force.",
+          "isCorrect": false,
+          "feedback": "The specified force maintaining these circular orbits is gravity.",
+          "misconception": "attributes-orbits-to-electrostatic-force"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Physics",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification",
+          "title": "AQA GCSE Physics (8463)",
+          "locator": "Official PDF pages 72-75; 4.8.1.3 Orbital motion, natural and artificial satellites",
+          "excerpt": "Gravity provides the force that allows planets and satellites (both\nnatural and artificial) to maintain their circular orbits.",
+          "sourceHash": "b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-8-1-3",
+          "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-5",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-6",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 4,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+      "topicComponentId": "aqa-gcse-physics-8463-v1.1:4-8",
+      "status": "ready",
+      "cardCount": 3,
+      "reason": null
+    }
+  ]
+}

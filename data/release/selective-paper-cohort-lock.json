@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "selective-paper-cohort-lock-v1",
+  "cohortId": "current-model-representative-20-july-2026",
+  "description": "Exact selective stronger-model cohort: all June 2024 Combined and Separate Science Higher papers, four OCR English components, two AQA Computer Science papers, AQA Geography Paper 3, and the AQA History Germany option section.",
+  "papers": [
+    { "position": 1, "sourceDocumentId": "aqa-8464b1h-qp-jun24", "board": "AQA", "subject": "Biology", "component": "8464B1H", "series": "June 2024", "questionPaperSha256": "0801ba9c17b927a5cd3eec3bbbea800f32f859226cd00d328f43369f9e73b235", "markSchemeSha256": "04f94ffba837b9b479ff9bdfbd9fb00631599beaa2982442d86e2a5e42e33c2a" },
+    { "position": 2, "sourceDocumentId": "aqa-8464b2h-qp-jun24", "board": "AQA", "subject": "Biology", "component": "8464B2H", "series": "June 2024", "questionPaperSha256": "d06fec52ab6e788ac75e73582e42df9b0d48bbfb190b580a2038c307cf962568", "markSchemeSha256": "4a3c5613ce34a243a2666259a9913decd431f5fa7a2cc0daf6303ef671b54533" },
+    { "position": 3, "sourceDocumentId": "aqa-8464c1h-qp-jun24", "board": "AQA", "subject": "Chemistry", "component": "8464C1H", "series": "June 2024", "questionPaperSha256": "6045f14461d41011de4c3cca7589763891d27c0fd2db6a33f1e3e618f5838933", "markSchemeSha256": "bc7231a1d1f605cb8fadd83224453040a0546b0dd1e6d7faebb4e38a8a612889" },
+    { "position": 4, "sourceDocumentId": "aqa-8464c2h-qp-jun24", "board": "AQA", "subject": "Chemistry", "component": "8464C2H", "series": "June 2024", "questionPaperSha256": "d2431afa6b0172c9c81566438a8b333c764560cca76416af7ad460f2b00c672b", "markSchemeSha256": "ce7764f3723c9ca27e4889d45c69c47931289e11b485b79ab6b3e571d8528cca" },
+    { "position": 5, "sourceDocumentId": "aqa-8464p1h-qp-jun24", "board": "AQA", "subject": "Physics", "component": "8464P1H", "series": "June 2024", "questionPaperSha256": "c65408b3ed54fff98af23b5cdc31fb3159014898b4268869c0b4400a3a1537cc", "markSchemeSha256": "c7cd31267bdca05e044148d242d092cadece8bd99bdd65d3a65a05d27fe39e33" },
+    { "position": 6, "sourceDocumentId": "aqa-8464p2h-qp-jun24", "board": "AQA", "subject": "Physics", "component": "8464P2H", "series": "June 2024", "questionPaperSha256": "4bced9632cb989e4df0092edce090e1301e2aa88d9966f9e176a4988f937adda", "markSchemeSha256": "ebafe40c26bd4bcc241c80f94ae57c303b351a61f148b28b9ac29d0615aa528f" },
+    { "position": 7, "sourceDocumentId": "aqa-84611h-qp-jun24", "board": "AQA", "subject": "Biology", "component": "84611H", "series": "June 2024", "questionPaperSha256": "8079a0094b0c7141b3b9b8e54a1e7ec843f2fa250b5962e77559283629f2e0dc", "markSchemeSha256": "e2f076584ecbfaef17aedf5dd6340bffa31771e4f7d7a3908fa962f18a74e5e1" },
+    { "position": 8, "sourceDocumentId": "aqa-84612h-qp-jun24", "board": "AQA", "subject": "Biology", "component": "84612H", "series": "June 2024", "questionPaperSha256": "c8679ad7306fe91814730c58235a0e14ccb56e002e0f658a3231ba8f016d056b", "markSchemeSha256": "e2af0cd2d0363d4dfeb323ab0511ee4ceac489e761d41c9d757df347e8580e6f" },
+    { "position": 9, "sourceDocumentId": "aqa-84621h-qp-jun24", "board": "AQA", "subject": "Chemistry", "component": "84621H", "series": "June 2024", "questionPaperSha256": "21a8bba63807685c97f0671a07ccaafb1d40e7756154189afa9c354a0e06cf52", "markSchemeSha256": "63bb64877b73ffd3d3071cd858ebcd25d70f0196adb83682cb1329db456771fa" },
+    { "position": 10, "sourceDocumentId": "aqa-84622h-qp-jun24", "board": "AQA", "subject": "Chemistry", "component": "84622H", "series": "June 2024", "questionPaperSha256": "072b3bdd5f28d095dc00b1885b140fc09173b599ee7d5312edf253b944c9d2f9", "markSchemeSha256": "abf88b3cca9c7aa0b613712095f10946248ac9b9db614e550e721e3fbd69d606" },
+    { "position": 11, "sourceDocumentId": "aqa-84631h-qp-jun24", "board": "AQA", "subject": "Physics", "component": "84631H", "series": "June 2024", "questionPaperSha256": "3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4", "markSchemeSha256": "99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce" },
+    { "position": 12, "sourceDocumentId": "aqa-84632h-qp-jun24", "board": "AQA", "subject": "Physics", "component": "84632H", "series": "June 2024", "questionPaperSha256": "c069a90f4c85a4e620150468fe732508b3fbcd2a8bcf0c7e86044a47797be1f5", "markSchemeSha256": "f038257d668141e763b63bbd7a0d802988227b69591f0264ca987aea63105268" },
+    { "position": 13, "sourceDocumentId": "ocr-j351-01-qp-jun24", "board": "OCR", "subject": "English Language", "component": "J35101", "series": "2024 - June series", "questionPaperSha256": "4d0cf680859afb7e7cbe9bef46448f38bef81dcadda1835bdac30051f3f3c31c", "markSchemeSha256": "d9ed33a9cb8c8184f4782302b3b916561c5f28af1d6d1bd29c0db04d2c85322c" },
+    { "position": 14, "sourceDocumentId": "ocr-j351-02-qp-jun24", "board": "OCR", "subject": "English Language", "component": "J35102", "series": "2024 - June series", "questionPaperSha256": "9160256044462eb2057540a8dba48e2f6a608022f3a9d991e9b87cdc023a650c", "markSchemeSha256": "383ee4e0cd4bac26e0bcf1bbfbb933a284df05e4610d426c4f5144755164cd6c" },
+    { "position": 15, "sourceDocumentId": "ocr-j352-01-qp-jun24", "board": "OCR", "subject": "English Literature", "component": "J35201", "series": "2024 - June series", "questionPaperSha256": "c3d6821647f4a752624a67416fb62571f5bda72479f663bd40ce21e83ba2c160", "markSchemeSha256": "8ec499a8b6a0665fd3bb8ac5619b501d5f67071f27b75afd4cbeacd030e96a7d" },
+    { "position": 16, "sourceDocumentId": "ocr-j352-02-qp-jun24", "board": "OCR", "subject": "English Literature", "component": "J35202", "series": "2024 - June series", "questionPaperSha256": "c0f3be806bddf97e106ac6a1c3ff57e676871c83a68a086eaad97cf0f2017574", "markSchemeSha256": "c0981d3849667c48d0a9ca553ca312688766058b0c55df66a3a115e3c86be04b" },
+    { "position": 17, "sourceDocumentId": "aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp", "board": "AQA", "subject": "Computer Science", "component": "85251A", "series": "June 2024", "questionPaperSha256": "25001d450f1157a4db9bace0e68f1ed53d8044ef3c64d96dfc78fc9e07e7db96", "markSchemeSha256": "94c7191fdd9a9c802ab20ccdc05811fe411ffe59152aeb8a3c1bfef2244843ce" },
+    { "position": 18, "sourceDocumentId": "aqa-computer-science-2024-june-paper-2-computing-concepts-qp", "board": "AQA", "subject": "Computer Science", "component": "85252", "series": "June 2024", "questionPaperSha256": "37d39dcb9064d0d2ccef7005b6cd339b1539712881b9085b1006622a7295abbb", "markSchemeSha256": "11e3132d58bcbb0d205c4c6fb04d1f8a5e802fee3cfc82d7e800bd76731ec7c6" },
+    { "position": 19, "sourceDocumentId": "aqa-geography-2024-june-paper-3-geographical-applications-qp", "board": "AQA", "subject": "Geography", "component": "80353", "series": "June 2024", "questionPaperSha256": "8d23077d12b26f56b46f86c641a24ac16981a66f10aa62c20c74c713ca9f1ed3", "markSchemeSha256": "b0c3b3d570c0e7410d84895c3ba91c9d0e2d9059b56f1f0eda77521cb5875afd" },
+    { "position": 20, "sourceDocumentId": "aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp", "board": "AQA", "subject": "History", "component": "81451AB", "series": "June 2024", "questionPaperSha256": "fb26311cfb279dc0bc5481b54361851d2773754d4f052a76adb9baf9dc9420ce", "markSchemeSha256": "c137ffc0c58b9f68aff07ae9e6e70bdc18a6d621cc69367b255c150f3c3605ee" }
+  ],
+  "supportingDocumentsBySourceId": {
+    "aqa-8464b1h-qp-jun24": [],
+    "aqa-8464b2h-qp-jun24": [],
+    "aqa-8464c1h-qp-jun24": [],
+    "aqa-8464c2h-qp-jun24": [],
+    "aqa-8464p1h-qp-jun24": [],
+    "aqa-8464p2h-qp-jun24": [],
+    "aqa-84611h-qp-jun24": [],
+    "aqa-84612h-qp-jun24": [],
+    "aqa-84621h-qp-jun24": [
+      { "documentType": "insert", "filename": "AQA-84621H-INS-JUN24.PDF", "localPath": "data/aqa-separate-science-higher/supporting-documents/AQA-84621H-INS-JUN24.PDF", "sha256": "6b9d6cd0a34643d5ae05a6da93f32895411b135b18332ff777e21a367540fc0e" }
+    ],
+    "aqa-84622h-qp-jun24": [
+      { "documentType": "insert", "filename": "AQA-84622H-INS-JUN24.PDF", "localPath": "data/aqa-separate-science-higher/supporting-documents/AQA-84622H-INS-JUN24.PDF", "sha256": "d44ee5f98449e419cd336a142135619d6e308fc00c1f553ba24b6491879e438a" }
+    ],
+    "aqa-84631h-qp-jun24": [
+      { "documentType": "insert", "filename": "AQA-84631H-INS-JUN24.PDF", "localPath": "data/aqa-separate-science-higher/supporting-documents/AQA-84631H-INS-JUN24.PDF", "sha256": "cb6c1a58b319e45daf59fb6e5dd1b2c8444606d17b6ff8a8851dffd17390b719" }
+    ],
+    "aqa-84632h-qp-jun24": [
+      { "documentType": "insert", "filename": "AQA-84632H-INS-JUN24.PDF", "localPath": "data/aqa-separate-science-higher/supporting-documents/AQA-84632H-INS-JUN24.PDF", "sha256": "919a8070f48c9c8c735c2fc1c006711c02928cef9d38a6bbdf6a62e8749f7023" }
+    ],
+    "ocr-j351-01-qp-jun24": [
+      { "documentType": "examiner_report", "filename": "OCR-J351-01-ER-JUN24.PDF", "localPath": "data/ocr-gcse-english-language/examiner-reports/OCR-J351-01-ER-JUN24.PDF", "sha256": "fe268d580a3dc840c7bce9c0a0143279f1f387b0866f523b7a56733e3402244c" },
+      { "documentType": "insert", "filename": "OCR-J351-01-INSERT-JUN24.PDF", "localPath": "data/ocr-gcse-english-language/supporting-documents/OCR-J351-01-INSERT-JUN24.PDF", "sha256": "4ad3ebe2b28edef8bc6c5b5a9e2ed92659f28085585cd97fb9f6dd6d3d886b5a" }
+    ],
+    "ocr-j351-02-qp-jun24": [
+      { "documentType": "examiner_report", "filename": "OCR-J351-02-ER-JUN24.PDF", "localPath": "data/ocr-gcse-english-language/examiner-reports/OCR-J351-02-ER-JUN24.PDF", "sha256": "92960bd107d9181689a56a435aa5ce724dc149e251f101cf51f51d09d7e13237" },
+      { "documentType": "insert", "filename": "OCR-J351-02-INSERT-JUN24.PDF", "localPath": "data/ocr-gcse-english-language/supporting-documents/OCR-J351-02-INSERT-JUN24.PDF", "sha256": "f46f89846070215f525071b2628f6e5ff6af58f85b619d5dcd361dc60e591d6b" }
+    ],
+    "ocr-j352-01-qp-jun24": [
+      { "documentType": "examiner_report", "filename": "OCR-J352-01-ER-JUN24.PDF", "localPath": "data/ocr-gcse-english-literature/examiner-reports/OCR-J352-01-ER-JUN24.PDF", "sha256": "b5fd54e37d0da9459610560a0c8d26d64bbe96097d471941e7745899fad3e6e6" }
+    ],
+    "ocr-j352-02-qp-jun24": [
+      { "documentType": "examiner_report", "filename": "OCR-J352-02-ER-JUN24.PDF", "localPath": "data/ocr-gcse-english-literature/examiner-reports/OCR-J352-02-ER-JUN24.PDF", "sha256": "fb244b7a84f8d2a05d62cc3b3098661821579d61597408b87099ce3514259cc2" }
+    ],
+    "aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp": [
+      { "documentType": "examiner_report", "filename": "AQA-85251ABC-WRE-JUN24.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/examiner-reports/AQA-85251ABC-WRE-JUN24.PDF", "sha256": "20788b6baa7daf234f8a13b9d3f7ac80e63df23f1528ce69d092c14041b1520f" }
+    ],
+    "aqa-computer-science-2024-june-paper-2-computing-concepts-qp": [
+      { "documentType": "examiner_report", "filename": "AQA-85252-WRE-JUN24.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/examiner-reports/AQA-85252-WRE-JUN24.PDF", "sha256": "1e90530fe0bf246cbd196dd3c1434f8f4638b46fea1740d4a234cedcb830e527" }
+    ],
+    "aqa-geography-2024-june-paper-3-geographical-applications-qp": [
+      { "documentType": "examiner_report", "filename": "AQA-80353-WRE-JUN24.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/examiner-reports/AQA-80353-WRE-JUN24.PDF", "sha256": "3430da0e1eea1b7c6f25989c20064a56cb6e91e852a682e0658726e15a60c370" },
+      { "documentType": "insert", "filename": "GEOGRAPHY-2024-JUNE-INSERT-PAPER-3-GEOGRAPHICAL-APPLICATIONS-SUPPORT-SUPPORT.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/supporting-documents/GEOGRAPHY-2024-JUNE-INSERT-PAPER-3-GEOGRAPHICAL-APPLICATIONS-SUPPORT-SUPPORT.PDF", "sha256": "20e3486b3aebd7a5b7e0b5098df73c7bee8504a247c7799fa59de16f6c8efb4d" },
+      { "documentType": "pre_release", "filename": "GEOGRAPHY-2024-JUNE-PAPER-3-PRE-RELEASE-RESOURCES-BOOKLET-PM.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/supporting-documents/GEOGRAPHY-2024-JUNE-PAPER-3-PRE-RELEASE-RESOURCES-BOOKLET-PM.PDF", "sha256": "0c821cfbc2fae5cc22d229a17f0126d840773ab4f8559337aa206f2434114ad8" }
+    ],
+    "aqa-history-2024-june-paper-1-section-a-option-b-germany-1890-1945-democracy-and-dictatorship-qp": [
+      { "documentType": "examiner_report", "filename": "AQA-81451A-WRE-JUN24.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/examiner-reports/AQA-81451A-WRE-JUN24.PDF", "sha256": "307a1621c41943b989dbd05ae5c52299859158eb025fc3e48e00ced13797602f" },
+      { "documentType": "insert", "filename": "HISTORY-2024-JUNE-PAPER-1-SECTION-A-OPTION-B-GERMANY-1890-1945-DEMOCRACY-AND-DICTATORSHIP-INSERT-INS.PDF", "localPath": "data/aqa-gcse-history-geography-computer-science/supporting-documents/HISTORY-2024-JUNE-PAPER-1-SECTION-A-OPTION-B-GERMANY-1890-1945-DEMOCRACY-AND-DICTATORSHIP-INSERT-INS.PDF", "sha256": "7270514a5f04e22a68080a0bffbcc27847746eb88a19ecfb7a128b7330303951" }
+    ]
+  }
+}

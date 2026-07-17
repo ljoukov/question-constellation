@@ -1,0 +1,177 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c36-878d-7f23-a100-a120505499a3"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c39-4094-7391-bd67-41419ac7557e",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:35:41.023Z",
+    "finishedAt": "2026-07-16T18:38:54.824Z",
+    "sourceManifestHash": "a938b56b9abba439b26a2d4d7a528fead08051f9a188541f36d647c3c1158255",
+    "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-biology-higher-only-descendants-01-bea8bc64c7-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8464-5c8f37af6e-aqa-8464-biology-4-5-3-5-ivf-treatment-sequence",
+      "conceptKey": "aqa-8464-5c8f37af6e-aqa-8464-biology-ivf-treatment-sequence",
+      "kind": "process",
+      "visualCue": "🧬",
+      "front": "What sequence of steps does AQA specify for in vitro fertilisation (IVF), from hormone treatment to embryo transfer?",
+      "back": "Give the mother FSH and LH to stimulate several eggs to mature; collect the eggs and fertilise them with the father’s sperm in the laboratory; let them develop into embryos; then insert one or two at the tiny-ball-of-cells stage into the mother’s uterus.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Hormone treatment stimulates the maturation of several eggs. The eggs are then collected and fertilised in the laboratory, develop into embryos, and one or two are inserted into the uterus when they are tiny balls of cells.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Give the mother FSH and LH to stimulate several eggs to mature; collect the eggs and fertilise them with the father’s sperm in the laboratory; let them develop into embryos; then insert one or two at the tiny-ball-of-cells stage into the mother’s uterus.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the specified sequence from hormone treatment through laboratory fertilisation to embryo transfer.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Give the mother FSH and LH to stimulate several eggs to mature; collect the eggs; then place the unfertilised eggs and sperm in the uterus for fertilisation.",
+          "isCorrect": false,
+          "feedback": "The collected eggs are fertilised by sperm in the laboratory before developing into embryos.",
+          "misconception": "ivf-fertilisation-in-uterus"
+        },
+        {
+          "key": "c",
+          "text": "Collect the eggs before giving FSH and LH; fertilise them in the laboratory; let them develop into embryos; then insert one or two into the uterus.",
+          "isCorrect": false,
+          "feedback": "FSH and LH are given to stimulate egg maturation before the eggs are collected.",
+          "misconception": "ivf-hormones-after-egg-collection"
+        },
+        {
+          "key": "d",
+          "text": "Give the mother FSH and LH; collect and fertilise the eggs in the laboratory; then immediately insert every fertilised egg into the uterus.",
+          "isCorrect": false,
+          "feedback": "The fertilised eggs first develop into embryos; one or two are inserted when they are tiny balls of cells.",
+          "misconception": "ivf-transfer-all-eggs-immediately"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 48-49; 4.5.3.5 The use of hormones to treat infertility (HT only)",
+          "excerpt": "• IVF involves giving a mother FSH and LH to stimulate the\nmaturation of several eggs.\n• The eggs are collected from the mother and fertilised by\nsperm from the father in the laboratory.\n• The fertilised eggs develop into embryos.\n• At the stage when they are tiny balls of cells, one or two\nembryos are inserted into the mother's uterus (womb).",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5-3-5",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8464-38aec6e8ab-aqa-8464-biology-4-5-3-6-adrenaline-thyroxine-comparison",
+      "conceptKey": "aqa-8464-38aec6e8ab-aqa-8464-biology-adrenaline-thyroxine-roles-control",
+      "kind": "comparison",
+      "visualCue": "🧪",
+      "front": "Compare adrenaline and thyroxine: where does each come from, what does each do, and how are thyroxine levels controlled?",
+      "back": "Adrenaline is produced by the adrenal glands during fear or stress; it increases heart rate and boosts oxygen and glucose delivery to the brain and muscles for ‘flight or fight’. Thyroxine comes from the thyroid gland; it stimulates basal metabolic rate, supports growth and development, and its levels are controlled by negative feedback.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Adrenaline is linked to the adrenal glands and the ‘flight or fight’ response. Thyroxine is linked to the thyroid gland, basal metabolic rate, growth and development, and negative-feedback control.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Adrenaline is produced by the adrenal glands during fear or stress; it increases heart rate and boosts oxygen and glucose delivery to the brain and muscles for ‘flight or fight’. Thyroxine comes from the thyroid gland; it stimulates basal metabolic rate, supports growth and development, and its levels are controlled by negative feedback.",
+          "isCorrect": true,
+          "feedback": "Correct: the glands, effects and negative-feedback control match the specification.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Adrenaline is produced by the thyroid gland during fear or stress; it increases heart rate and boosts oxygen and glucose delivery to the brain and muscles. Thyroxine comes from the adrenal glands; it stimulates basal metabolic rate, supports growth and development, and its levels are controlled by negative feedback.",
+          "isCorrect": false,
+          "feedback": "The glands are reversed: adrenaline comes from the adrenal glands, while thyroxine comes from the thyroid gland.",
+          "misconception": "swapped-adrenaline-thyroxine-glands"
+        },
+        {
+          "key": "c",
+          "text": "Adrenaline is produced by the adrenal glands and stimulates basal metabolic rate and growth and development. Thyroxine comes from the thyroid gland and increases heart rate and boosts oxygen and glucose delivery to the brain and muscles; its levels are controlled by negative feedback.",
+          "isCorrect": false,
+          "feedback": "The roles are reversed: adrenaline prepares the body for ‘flight or fight’, while thyroxine affects basal metabolic rate, growth and development.",
+          "misconception": "swapped-adrenaline-thyroxine-roles"
+        },
+        {
+          "key": "d",
+          "text": "Adrenaline is produced by the adrenal glands during fear or stress and prepares the body for ‘flight or fight’. Thyroxine comes from the thyroid gland, stimulates basal metabolic rate and supports growth and development, but its levels are controlled by positive feedback.",
+          "isCorrect": false,
+          "feedback": "Thyroxine levels are controlled by negative feedback, not positive feedback.",
+          "misconception": "thyroxine-positive-feedback"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 48-49; 4.5.3.6 Feedback systems (HT only)",
+          "excerpt": "Adrenaline is produced by the adrenal glands in times of fear or\nstress. It increases the heart rate and boosts the delivery of oxygen\nand glucose to the brain and muscles, preparing the body for ‘flight\nor fight’.\nThyroxine from the thyroid gland stimulates the basal metabolic\nrate. It plays an important role in growth and development.\nThyroxine levels are controlled by negative feedback.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5-3-6",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-5",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

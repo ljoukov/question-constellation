@@ -1,0 +1,82 @@
+{
+  "cards": [
+    {
+      "id": "aqa-biology-8461-card-photosynthesis-word-equation",
+      "conceptKey": "aqa-biology-8461-photosynthesis-word-equation",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-4",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-4-1-1",
+      "kind": "formula",
+      "visualCue": "🌿",
+      "front": "Which word-equation sequence does the specification give for photosynthesis?",
+      "back": "carbon dioxide + water\nlight\n\u0000a0\u0000a0glucose + oxygen",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "It lists carbon dioxide + water first, then light, then glucose + oxygen.",
+      "memoryTip": "Remember the displayed order: carbon dioxide + water; light; glucose + oxygen.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "carbon dioxide + water\nlight\n\u0000a0\u0000a0glucose + oxygen",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves all three lines in the stated order.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "glucose + oxygen\nlight\n\u0000a0\u0000a0carbon dioxide + water",
+          "isCorrect": false,
+          "feedback": "This reverses the sequence; the excerpt begins with carbon dioxide + water and ends with glucose + oxygen.",
+          "misconception": "reverses-photosynthesis-sequence"
+        },
+        {
+          "key": "c",
+          "text": "carbon dioxide + oxygen\nlight\n\u0000a0\u0000a0glucose + water",
+          "isCorrect": false,
+          "feedback": "This puts oxygen in the first pair and water in the last; the excerpt lists water first and oxygen last.",
+          "misconception": "swaps-water-and-oxygen"
+        }
+      ],
+      "sourceExcerpt": "Photosynthesis is represented by the equation:\ncarbon dioxide + water\nlight\n\u0000a0\u0000a0glucose + oxygen",
+      "sourceLocator": "Official PDF pages 36-39; 4.4.1.1 Photosynthetic reaction"
+    },
+    {
+      "id": "aqa-biology-8461-card-evolution-natural-selection-speciation",
+      "conceptKey": "aqa-biology-8461-evolution-natural-selection-speciation",
+      "topicComponentId": "aqa-gcse-biology-8461-v1.0:4-6",
+      "curriculumComponentId": "aqa-gcse-biology-8461-v1.0:4-6-3-2",
+      "kind": "cause-consequence",
+      "visualCue": "🦋",
+      "front": "How does evolution occur through natural selection, and when have two populations formed two new species?",
+      "back": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two populations have formed two new species if they become so different in phenotype that they can no longer interbreed to produce fertile offspring.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The excerpt links evolution to natural selection of best-suited phenotypes and identifies inability to interbreed to produce fertile offspring as the condition for two new species.",
+      "memoryTip": "Best-suited variants → evolution; no fertile interbreeding → two new species.",
+      "choices": [
+        {
+          "key": "a",
+          "text": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two populations have formed two new species if they become so different in phenotype that they can no longer interbreed to produce fertile offspring.",
+          "isCorrect": true,
+          "feedback": "Correct: this matches both the best-suited-phenotype mechanism and the fertile-offspring condition.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Evolution occurs through natural selection of variants that give rise to phenotypes best suited to their environment. Two new species form even while the populations can still interbreed to produce fertile offspring.",
+          "isCorrect": false,
+          "feedback": "The evolution part matches, but the excerpt says two new species have formed when the populations can no longer interbreed to produce fertile offspring.",
+          "misconception": "fertile-interbreeding-still-forms-new-species"
+        },
+        {
+          "key": "c",
+          "text": "Evolution occurs through natural selection of variants that give rise to phenotypes least suited to their environment. Two populations form new species when they can no longer interbreed to produce fertile offspring.",
+          "isCorrect": false,
+          "feedback": "The speciation part matches, but the excerpt says natural selection involves variants giving rise to phenotypes best suited to the environment.",
+          "misconception": "natural-selection-favours-least-suited"
+        }
+      ],
+      "sourceExcerpt": "Students should be able to explain how evolution occurs through natural\nselection of variants that give rise to phenotypes best suited to their\nenvironment.\nIf two populations of one species become so different in phenotype\nthat they can no longer interbreed to produce fertile offspring they have\nformed two new species.",
+      "sourceLocator": "Official PDF pages 50-64; 4.6.3.2 Speciation (biology only)"
+    }
+  ]
+}

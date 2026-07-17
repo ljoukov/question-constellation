@@ -1,8 +1,16 @@
 import { isApprovedRecallVisualCueForSubject, recallVisualCueFor } from './visualCues.js';
+import { supportedLearnerSubjects, type SupportedLearnerSubject } from '$lib/learning/subjects';
 
 export const recallSubjects = ['All subjects', 'Biology', 'Chemistry', 'Physics'] as const;
 
 export type RecallSubject = Exclude<(typeof recallSubjects)[number], 'All subjects'>;
+
+/**
+ * The hand-authored fallback below remains science-only. Imported study cards
+ * use this wider learner-facing subject set at runtime.
+ */
+export const runtimeRecallSubjects = ['All subjects', ...supportedLearnerSubjects] as const;
+export type RecallRuntimeSubject = SupportedLearnerSubject;
 
 export type RecallCardKind =
 	| 'definition'
@@ -12,21 +20,33 @@ export type RecallCardKind =
 	| 'unit'
 	| 'practical'
 	| 'fact'
-	| 'comparison';
+	| 'comparison'
+	| 'case-study'
+	| 'chronology'
+	| 'cause-consequence'
+	| 'interpretation'
+	| 'technique'
+	| 'structure'
+	| 'method'
+	| 'plot'
+	| 'quotation'
+	| 'character'
+	| 'theme'
+	| 'context';
 
 export type RecallTopic = {
 	id: string;
-	subject: RecallSubject;
+	subject: RecallRuntimeSubject;
 	specRef: string;
 	title: string;
-	paper: 'Paper 1' | 'Paper 2' | 'Both papers';
+	paper: string;
 };
 
 export type RecallCardDefinition = {
 	id: string;
-	board: 'AQA';
+	board: 'AQA' | 'OCR';
 	qualification: 'GCSE';
-	subject: RecallSubject;
+	subject: RecallRuntimeSubject;
 	topicId: string;
 	specRef: string;
 	kind: RecallCardKind;
@@ -40,6 +60,14 @@ export type RecallCardDefinition = {
 	memoryTip?: string;
 	choiceFeedback?: Record<string, string>;
 	choiceMisconceptions?: Record<string, string>;
+	sourceKind?:
+		| 'official_specification'
+		| 'official_exam_material'
+		| 'primary_text'
+		| 'licensed_summary'
+		| 'original_synthesis';
+	sourceLocator?: string;
+	rightsBasis?: string;
 	sourceUrl: string;
 	sourceTitle: string;
 };
@@ -51,6 +79,8 @@ export type RecallCardDefinition = {
  * a signed-in session or produce learner evidence.
  */
 export type RecallCard = RecallCardDefinition & {
+	topicTitle?: string;
+	topicPaper?: string;
 	offeringId: string;
 	curriculumComponentId: string;
 	topicComponentId: string;
@@ -72,7 +102,19 @@ export const recallKindLabels: Record<RecallCardKind, string> = {
 	unit: 'Units',
 	practical: 'Required practicals',
 	fact: 'Facts',
-	comparison: 'Comparisons'
+	comparison: 'Comparisons',
+	'case-study': 'Case studies',
+	chronology: 'Chronology',
+	'cause-consequence': 'Cause and consequence',
+	interpretation: 'Interpretations',
+	technique: 'Techniques',
+	structure: 'Structure',
+	method: 'Methods',
+	plot: 'Plot',
+	quotation: 'Quotations',
+	character: 'Characters',
+	theme: 'Themes',
+	context: 'Context'
 };
 
 const sourceBySubject: Record<RecallSubject, { url: string; title: string }> = {
@@ -407,8 +449,9 @@ export const recallMemoryTipById: Readonly<Record<string, string>> = Object.free
 function recallCard(
 	card: Omit<
 		RecallCardDefinition,
-		'board' | 'qualification' | 'sourceUrl' | 'sourceTitle' | 'visualCue'
+		'board' | 'qualification' | 'sourceUrl' | 'sourceTitle' | 'visualCue' | 'subject'
 	> & {
+		subject: RecallSubject;
 		visualCue?: string;
 	}
 ) {

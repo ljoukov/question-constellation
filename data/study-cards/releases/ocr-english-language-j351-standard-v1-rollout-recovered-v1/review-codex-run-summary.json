@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f6b8a-cf6f-7133-bc3d-ce052b242740",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "/tmp/qc-release-a35ab11/tmp/study-card-generation/ocr-english-language-j351-standard-v1/review",
+  "startedAt": "2026-07-16T15:28:07.784Z",
+  "finishedAt": "2026-07-16T15:28:39.851Z",
+  "durationSeconds": 32.067,
+  "events": 16,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 2,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 23285,
+    "cached_input_tokens": 0,
+    "output_tokens": 1446,
+    "reasoning_output_tokens": 1034,
+    "total_tokens": 24731
+  },
+  "failedCommands": [],
+  "recovery": "summary reconstructed from preserved rollout JSONL boundaries and token counts"
+}

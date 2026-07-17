@@ -1,0 +1,83 @@
+{
+	"schemaVersion": "english-literature-base-trace-recovery-v1",
+	"status": "content_addressed_trace_recovered",
+	"releaseId": "ocr-j352-literature-standard-v1",
+	"artifactHash": "f315f85ca91f288668a3ff54404bc4d52646cd9a7afb647b95df9c08e0fbdb84",
+	"acceptedArtifactSha256": "ea335315a7b8a2b3c384534b322bdd1623398cbf9e8b478a8dcc838e2a7282be",
+	"artifactIdentityVerified": true,
+	"acceptedCards": 67,
+	"baseAcceptedCards": 66,
+	"baseRejectedCards": 1,
+	"rejectedRepairAttempts": 1,
+	"acceptedRepairAttempts": 1,
+	"modelCallsDuringRecovery": 0,
+	"sourceManifestHash": "018339914752ba82509107df2bc8c16f645846f172ad3154207dff12841d5915",
+	"sessions": {
+		"base-generation": {
+			"runId": "019f6baa-297d-74c0-8469-8323535348c2",
+			"jsonlFileName": "rollout-2026-07-16T09-02-21-019f6baa-297d-74c0-8469-8323535348c2.jsonl",
+			"eventStreamSha256": "f8a0aef9fc6e38338f2138ab4808dd740f1ad9bb1df24eb67648530011460330",
+			"sanitizedEventCount": 43,
+			"startedAt": "2026-07-16T16:02:22.436Z",
+			"finishedAt": "2026-07-16T16:16:12.855Z",
+			"promptSha256": "9e3e3120652f783697243648927b9a3841c155d977d5a520378205119be26dbe",
+			"modelOutputSha256": "3dff4fe91bb3cad917b0d81e804cf708bb4d90b0478a0d8e6aa850e203ba5a6d",
+			"summarySha256": "e485d919f54233d34d4e15f7cd5f04ccf4d5a957fdafdd995f766874f8845c45"
+		},
+		"base-review": {
+			"runId": "019f6bb6-db0a-76a3-bccb-e95bd910a0d8",
+			"jsonlFileName": "rollout-2026-07-16T09-16-13-019f6bb6-db0a-76a3-bccb-e95bd910a0d8.jsonl",
+			"eventStreamSha256": "63e9d83cebd40db9c64bcd05bdcc58bad94c6ed6231a974a309ceb7b15ff394b",
+			"sanitizedEventCount": 44,
+			"startedAt": "2026-07-16T16:16:14.497Z",
+			"finishedAt": "2026-07-16T16:23:44.787Z",
+			"promptSha256": "1aaac91200cbcb17425cf150f3903d2afeeda53216015803328eab25b8b995de",
+			"modelOutputSha256": "effc26932400856a3f58ac640eb7d6b6be400712953a4a2e520aa1104cc4a558",
+			"summarySha256": "ece6e358dc00d862f3c75d3e0f821d1a415c139bf582ac20da02211bf57fa170"
+		},
+		"rejected-repair-attempt-1-generation": {
+			"runId": "019f6bc7-dc4d-7a82-8940-990aeb6a23b4",
+			"jsonlFileName": "rollout-2026-07-16T09-34-48-019f6bc7-dc4d-7a82-8940-990aeb6a23b4.jsonl",
+			"eventStreamSha256": "cc94b3bef6cf18a4806f4ac0c1ad669e6ecb16e6834130bac91e0ab2dac4523a",
+			"sanitizedEventCount": 15,
+			"startedAt": "2026-07-16T16:34:48.792Z",
+			"finishedAt": "2026-07-16T16:35:01.903Z",
+			"promptSha256": "e627a9176551f9ba764b68878a58a6a9010e47b53d5cb8f294407c3075b36f33",
+			"modelOutputSha256": "993f09389314a1539402b82eaf558005f0f151cebc04364d7cea9702c318d1dc",
+			"summarySha256": "d010e87444f69900c6c96bb0fb8b241b0a8bbbfc01c3ff37a5f0e0d0d04973e5"
+		},
+		"rejected-repair-attempt-1-review": {
+			"runId": "019f6bc8-14e7-73a3-9966-0184c9d1ff8a",
+			"jsonlFileName": "rollout-2026-07-16T09-35-02-019f6bc8-14e7-73a3-9966-0184c9d1ff8a.jsonl",
+			"eventStreamSha256": "bce8efc70e8ded7948322d8d7588b3cbd842729373109a2b5b18c69d793a3979",
+			"sanitizedEventCount": 17,
+			"startedAt": "2026-07-16T16:35:03.239Z",
+			"finishedAt": "2026-07-16T16:35:47.050Z",
+			"promptSha256": "d6ce858c8a2c182589d4e26807c22f45800cd82d39a6e414398efdab9944d92f",
+			"modelOutputSha256": "cd480e187b91e99c18267ce4b467489d02441564e4884f6acf1e52ebed5c4c62",
+			"summarySha256": "51ce2558a96bf7f243f33ec8d71b66f5977d8a893f619fda8e5e8ca6c4ea686b"
+		},
+		"repair-generation": {
+			"runId": "019f6bcb-adfe-7291-ba02-8558a717aacc",
+			"jsonlFileName": "rollout-2026-07-16T09-38-58-019f6bcb-adfe-7291-ba02-8558a717aacc.jsonl",
+			"eventStreamSha256": "1987b7a4cab2947aa1dc428923d670447ea45e54c380d3fab6c36078bf15df7b",
+			"sanitizedEventCount": 17,
+			"startedAt": "2026-07-16T16:38:59.098Z",
+			"finishedAt": "2026-07-16T16:39:41.835Z",
+			"promptSha256": "426b75d61a1047025ebab486867309a483bb2c9b2e29002519e8f4e78be72738",
+			"modelOutputSha256": "58ac3f98ec7db7ecc756c0f8151c1cb9694f9481e12ddd2f51bd3e1d53fc63f9",
+			"summarySha256": "c9d3788219afbaeef03f7fec015f0049e97b0879175d1b9fdf1cfc6876234510"
+		},
+		"repair-review": {
+			"runId": "019f6bcc-5a18-76f3-9867-b6f7c0f814a5",
+			"jsonlFileName": "rollout-2026-07-16T09-39-42-019f6bcc-5a18-76f3-9867-b6f7c0f814a5.jsonl",
+			"eventStreamSha256": "60fa3a0a1d8b1d7159af6043b1da2a4ad15ac7c4db11b6fe90009af5b39e4e34",
+			"sanitizedEventCount": 15,
+			"startedAt": "2026-07-16T16:39:43.024Z",
+			"finishedAt": "2026-07-16T16:39:53.845Z",
+			"promptSha256": "bd9222da59c990a4f48d28603c1a7944dab1f5a27113d766b2c9d797b669dfa3",
+			"modelOutputSha256": "af9127d3c821f3e7f5962ca8a7273b2586f6ee21ebc60d6cacc802b2e193d116",
+			"summarySha256": "dff5861b7b8e13a88e3ae14b43e6c4311253d26424ac152985404840e646a418"
+		}
+	}
+}

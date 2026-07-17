@@ -1,0 +1,3362 @@
+{
+	"schemaVersion": "2",
+	"id": "aqa-combined-physics-missing-spec-ref-review-v1",
+	"importOwner": "official_curriculum_importer",
+	"generatedAt": "2026-07-16",
+	"review": {
+		"method": "Item-by-item review of stored official question wording, primary answer chain and imported mark-scheme rows against the local official AQA curriculum; no prompt classifier or model call.",
+		"boundary": "Only a deterministic learner-selectable Physics chapter is mapped. Pure graph, scale, percentage, uncertainty or proportionality work with incidental science context is explicitly withheld."
+	},
+	"specificationSources": [
+		{
+			"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"version": "1.1",
+			"fileHash": "sha256:d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+			"localPath": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+			"pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf"
+		}
+	],
+	"scope": {
+		"board": "AQA",
+		"qualification": "GCSE",
+		"subject": "Combined Science",
+		"sourceDocumentIds": ["aqa-8464p1h-qp-jun18", "aqa-8464p1h-qp-jun19"],
+		"questionIds": [
+			"8464p1h-jun18-01-2",
+			"8464p1h-jun18-01-3",
+			"8464p1h-jun18-01-4",
+			"8464p1h-jun18-02-1",
+			"8464p1h-jun18-02-2",
+			"8464p1h-jun18-02-3",
+			"8464p1h-jun18-03-1",
+			"8464p1h-jun18-03-2",
+			"8464p1h-jun18-03-3",
+			"8464p1h-jun18-03-4",
+			"8464p1h-jun18-03-5",
+			"8464p1h-jun18-03-6",
+			"8464p1h-jun18-04-1",
+			"8464p1h-jun18-04-2",
+			"8464p1h-jun18-04-3",
+			"8464p1h-jun18-04-4",
+			"8464p1h-jun18-04-5",
+			"8464p1h-jun18-05-1",
+			"8464p1h-jun18-05-2",
+			"8464p1h-jun18-05-3",
+			"8464p1h-jun18-05-4",
+			"8464p1h-jun18-06-1",
+			"8464p1h-jun18-06-2",
+			"8464p1h-jun18-06-3",
+			"8464p1h-jun18-06-4",
+			"8464p1h-jun19-05-3",
+			"8464p1h-jun19-05-4",
+			"8464p1h-jun19-05-5",
+			"8464p1h-jun19-06-1",
+			"8464p1h-jun19-06-2",
+			"8464p1h-jun19-06-3",
+			"8464p1h-jun19-06-4",
+			"8464p1h-jun19-06-5",
+			"8464p1h-jun19-06-6"
+		],
+		"questionCount": 34
+	},
+	"mappings": [
+		{
+			"questionId": "8464p1h-jun18-01-2",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "24854a44f4a6ef0b4010875ef51dd9981f9e2c2dbf975d7e646ecce95655ad0f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-01-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "01.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Atoms and isotopes"],
+					"year": 2018,
+					"promptText": "Explain why the total positive charge in every atom of an element is always the same.",
+					"selfContainedPromptText": "Explain why the total positive charge in every atom of an element is always the same.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-positive-charge-same-proton-number",
+					"title": "Proton charge",
+					"canonicalChainText": "positive charge -> protons -> same element -> same protons -> same charge",
+					"fitNotes": "Element identity fixes protons."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-01-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Positive charge is provided by protons.",
+						"marks": 1,
+						"sourceRef": "MS 01.2"
+					},
+					{
+						"id": "8464p1h-jun18-01-2-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Every atom of the same element contains the same number of protons.",
+						"marks": 1,
+						"sourceRef": "MS 01.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-02-1",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "8f7298d50ceb49a5898c0ca3847ef37ff0705243b2a62da7a16f7f2f371a5e09",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-02-1",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "02.1",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Matter", "Density practical"],
+					"year": 2018,
+					"promptText": "Plan an experiment that would allow the student to determine the density of the object.",
+					"selfContainedPromptText": "A student wanted to determine the density of the irregular shaped object shown in Figure 3. Plan an experiment that would allow the student to determine the density of the object.",
+					"contextText": "A student wanted to determine the density of the irregular shaped object shown in Figure 3.",
+					"marks": 6
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-density-irregular-object-displacement-method",
+					"title": "Displacement Density",
+					"canonicalChainText": "balance mass -> water displacement -> volume difference -> mass ÷ volume",
+					"fitNotes": "Irregular solids: displace, then divide."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-02-1-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "level",
+						"text": "Level 3: The method would lead to the production of a valid outcome. All key steps are identified and logically sequenced.",
+						"marks": 6,
+						"sourceRef": "MS 02.1"
+					},
+					{
+						"id": "8464p1h-jun18-02-1-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "level",
+						"text": "Level 2: The method would not necessarily lead to a valid outcome. Most steps are identified, but the method is not fully logically sequenced.",
+						"marks": 4,
+						"sourceRef": "MS 02.1"
+					},
+					{
+						"id": "8464p1h-jun18-02-1-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "level",
+						"text": "Level 1: The method would not lead to a valid outcome. Some relevant steps are identified, but links are not made clear.",
+						"marks": 2,
+						"sourceRef": "MS 02.1"
+					},
+					{
+						"id": "8464p1h-jun18-02-1-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 4,
+						"itemType": "indicative",
+						"text": "Measure mass using a top pan balance or scales.",
+						"marks": null,
+						"sourceRef": "MS 02.1 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-02-1-ms-5",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 5,
+						"itemType": "indicative",
+						"text": "Find volume by water displacement in a measuring cylinder: record initial volume, place object in water, record final volume, and calculate final volume minus initial volume.",
+						"marks": null,
+						"sourceRef": "MS 02.1 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-02-1-ms-6",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 6,
+						"itemType": "indicative",
+						"text": "Alternatively, use a displacement/eureka can: fill to the spout, place object in water, collect displaced water, and measure its volume with a measuring cylinder.",
+						"marks": null,
+						"sourceRef": "MS 02.1 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-02-1-ms-7",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 7,
+						"itemType": "indicative",
+						"text": "Calculate density using $\\text{density}=\\frac{\\text{mass}}{\\text{volume}}$.",
+						"marks": null,
+						"sourceRef": "MS 02.1 indicative content"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+					"curriculumCode": "6.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-03-1",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "df62389a4577879bd1c19bcad3f3512e5d45148b4f5ecb955015f499f25fdf0e",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-03-1",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "03.1",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Particle model of matter", "Gases"],
+					"year": 2018,
+					"promptText": "Which **two** sentences describe the movement of the air particles in the canister?\n\nTick **two** boxes.",
+					"selfContainedPromptText": "Figure 5 shows a diver using a canister of compressed air so that he can breathe underwater. Which two sentences describe the movement of the air particles in the canister? Tick two boxes.",
+					"contextText": "Figure 5 shows a diver. The diver is using a canister of compressed air so that he can breathe underwater.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gas-particle-random-range-speeds",
+					"title": "Gas Motion",
+					"canonicalChainText": "gas particles -> random directions -> range of speeds",
+					"fitNotes": "Random paths; varied speeds."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-03-1-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "They move in random directions.",
+						"marks": 1,
+						"sourceRef": "MS 03.1"
+					},
+					{
+						"id": "8464p1h-jun18-03-1-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "They move with a range of different speeds.",
+						"marks": 1,
+						"sourceRef": "MS 03.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+					"curriculumCode": "6.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-03-2",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "684541f29293d54ef0f195284cf824ed59292d32a79f5a5142c212d2833c8f23",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-03-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "03.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Particle model of matter", "Gases"],
+					"year": 2018,
+					"promptText": "The temperature of the air inside the canister increases.\n\nWhat happens to the movement of the air particles?",
+					"selfContainedPromptText": "The temperature of the air inside the canister increases. What happens to the movement of the air particles?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gas-temperature-collisions-pressure",
+					"title": "Gas Pressure",
+					"canonicalChainText": "temperature/density -> particle motion -> wall collisions -> pressure change",
+					"fitNotes": "Temperature increase means gas particles move faster."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-03-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The mean speed of the particles would increase.",
+						"marks": 1,
+						"sourceRef": "MS 03.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+					"curriculumCode": "6.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-03-3",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "b07d90fc76370d29f62ed2f4c167cb4359f4ef33b92a15aea198da426870854c",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-03-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "03.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Particle model of matter", "Gas pressure"],
+					"year": 2018,
+					"promptText": "It could be dangerous if the temperature of the air inside the canister increased by a large amount.\n\nExplain why.",
+					"selfContainedPromptText": "It could be dangerous if the temperature of the air inside the canister increased by a large amount. Explain why.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gas-temperature-collisions-pressure",
+					"title": "Gas Pressure",
+					"canonicalChainText": "temperature/density -> particle motion -> wall collisions -> pressure change",
+					"fitNotes": "Temperature increase causes pressure increase, which can make the canister explode."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-03-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "If the temperature increases, the pressure increases.",
+						"marks": 1,
+						"sourceRef": "MS 03.3"
+					},
+					{
+						"id": "8464p1h-jun18-03-3-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "The canister could explode.",
+						"marks": 1,
+						"sourceRef": "MS 03.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+					"curriculumCode": "6.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-03-6",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "18638ebb284d8dd270fe7d52b24655e85c28c3e34b06808bc24a1c00d53ce511",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-03-6",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "03.6",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Particle model of matter", "Gases"],
+					"year": 2018,
+					"promptText": "What happens to the volume of the air when it is released from the canister?",
+					"selfContainedPromptText": "What happens to the volume of the air when it is released from the canister?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-compressed-gas-release-volume-increases",
+					"title": "Gas expands",
+					"canonicalChainText": "compressed air -> released -> volume increases",
+					"fitNotes": "Released compressed air expands."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-03-6-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The volume of the air increases.",
+						"marks": 1,
+						"sourceRef": "MS 03.6"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+					"curriculumCode": "6.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-04-1",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "b2210f97655bd8ca59104eaa66fa0d3d03f00d0e69525f7d447649adace902e4",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-04-1",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "04.1",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Nuclear radiation"],
+					"year": 2018,
+					"promptText": "What is an alpha particle?\n\nTick **one** box.",
+					"selfContainedPromptText": "The Chernobyl disaster released radioactive isotopes that emitted alpha, beta and gamma radiation. What is an alpha particle? Tick one box.",
+					"contextText": "The Chernobyl disaster was a nuclear accident that happened in 1986. Radioactive isotopes were released into the environment. The radioactive isotopes emitted alpha, beta and gamma radiation.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-alpha-particle-composition-recall",
+					"title": "Alpha Makeup",
+					"canonicalChainText": "alpha particle -> helium nucleus -> 2 protons -> 2 neutrons",
+					"fitNotes": "Alpha particle = 2 protons and 2 neutrons."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-04-1-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "An alpha particle contains 2 charged particles and 2 neutral particles.",
+						"marks": 1,
+						"sourceRef": "MS 04.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-04-2",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "73fdf03c1af253c2750eb865c7e494b3b5455d71287cdbaa427c02daac005ad8",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-04-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "04.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Nuclear radiation"],
+					"year": 2018,
+					"promptText": "Which statement about beta radiation is true?\n\nTick **one** box.",
+					"selfContainedPromptText": "Which statement about beta radiation is true? Tick one box.",
+					"contextText": "The radioactive isotopes emitted alpha, beta and gamma radiation.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-beta-radiation-negative-charge",
+					"title": "Beta Charge",
+					"canonicalChainText": "beta radiation -> negative charge",
+					"fitNotes": "Beta is negatively charged."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-04-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Beta radiation is the type of radiation with a negative charge.",
+						"marks": 1,
+						"sourceRef": "MS 04.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-04-3",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "dc3251787fc4a9c8053a762a25dfdd1e03830b08731450ef92c7e5939c87befc",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-04-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "04.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Nuclear radiation"],
+					"year": 2018,
+					"promptText": "Which statement about gamma radiation is true?\n\nTick **one** box.",
+					"selfContainedPromptText": "Which statement about gamma radiation is true? Tick one box.",
+					"contextText": "The radioactive isotopes emitted alpha, beta and gamma radiation.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gamma-radiation-long-range-air",
+					"title": "Gamma Range",
+					"canonicalChainText": "gamma radiation -> long air range",
+					"fitNotes": "Gamma travels far in air."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-04-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Gamma radiation has a very long range in air.",
+						"marks": 1,
+						"sourceRef": "MS 04.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-04-4",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "e1343f8e76a5bcfad465dd5628b542e5005dace7bacdc4cee2ef2256a1b903ef",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-04-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "04.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Half-life and risk"],
+					"year": 2018,
+					"promptText": "A soil sample was taken from the area around Chernobyl in 1986\n\nThe soil sample was contaminated with equal amounts of caesium–137 and iodine–131\n\nExplain how the risk linked to each isotope has changed between 1986 and 2018\n\nBoth isotopes emit the same type of radiation.",
+					"selfContainedPromptText": "Table 3 shows half-lives: caesium–137 has a half-life of 30 years and iodine–131 has a half-life of 8 days. A soil sample was taken from the area around Chernobyl in 1986. The soil sample was contaminated with equal amounts of caesium–137 and iodine–131. Explain how the risk linked to each isotope has changed between 1986 and 2018. Both isotopes emit the same type of radiation.",
+					"contextText": "Table 3 shows the half-lives of two of the radioactive isotopes that contaminated the environment.",
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-radiation-dose-reduction-risk",
+					"title": "Radiation risk",
+					"canonicalChainText": "radiation type -> dose/activity -> shield/decay -> risk change",
+					"fitNotes": "Compare elapsed time with each half-life to explain how risk changes."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-04-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The risk or activity associated with iodine-131 has decreased by a large amount.",
+						"marks": 1,
+						"sourceRef": "MS 04.4"
+					},
+					{
+						"id": "8464p1h-jun18-04-4-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "This is because iodine-131 has a short half-life.",
+						"marks": 1,
+						"sourceRef": "MS 04.4"
+					},
+					{
+						"id": "8464p1h-jun18-04-4-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "The risk or activity associated with caesium-137 will not have decreased by much.",
+						"marks": 1,
+						"sourceRef": "MS 04.4"
+					},
+					{
+						"id": "8464p1h-jun18-04-4-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "This is because caesium-137 has a long half-life.",
+						"marks": 1,
+						"sourceRef": "MS 04.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-04-5",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "37278ab3351f7af43099ef7f30311f1f2eb480cc593384df9c89542d3b52f994",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-04-5",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "04.5",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Half-life calculations"],
+					"year": 2018,
+					"promptText": "Determine the year when the activity of the caesium–137 in the soil sample will be 1/32 of its original value.",
+					"selfContainedPromptText": "Caesium–137 has a half-life of 30 years. The soil sample was taken in 1986. Determine the year when the activity of the caesium–137 in the soil sample will be $\\frac{1}{32}$ of its original value.",
+					"contextText": "Table 3 shows caesium–137 has a half-life of 30 years.",
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-04-5-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Recognise that $\\frac{1}{32}$ is reached after 5 half-lives.",
+						"marks": 1,
+						"sourceRef": "MS 04.5"
+					},
+					{
+						"id": "8464p1h-jun18-04-5-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Calculate elapsed time: $5\\times30=150$ years.",
+						"marks": 1,
+						"sourceRef": "MS 04.5"
+					},
+					{
+						"id": "8464p1h-jun18-04-5-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Calculate the year: $1986+150=2136$.",
+						"marks": 1,
+						"sourceRef": "MS 04.5"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-05-1",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "233b24bd346214a1af2f25b1c99e79f62f7c94ed79dc1ec777f630169b13adfb",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-05-1",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "05.1",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Reducing energy transfers"],
+					"year": 2018,
+					"promptText": "Explain how the wall reduces unwanted energy transfers.",
+					"selfContainedPromptText": "Figure 7 shows cavity wall insulation being installed in the wall of a house. Explain how the wall reduces unwanted energy transfers.",
+					"contextText": "Figure 7 shows cavity wall insulation being installed in the wall of a house.",
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-high-thermal-conductivity-faster-transfer",
+					"title": "Conductivity rate",
+					"canonicalChainText": "conductivity level -> transfer rate -> energy direction -> design purpose",
+					"fitNotes": "Low thermal conductivity and multiple layers reduce conduction through the wall."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-05-1-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The wall has two or three layers, or is thick.",
+						"marks": 1,
+						"sourceRef": "MS 05.1"
+					},
+					{
+						"id": "8464p1h-jun18-05-1-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "The cavity wall insulation, brick or block has a low thermal conductivity.",
+						"marks": 1,
+						"sourceRef": "MS 05.1"
+					},
+					{
+						"id": "8464p1h-jun18-05-1-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Less energy is transferred by conduction, or the rate of energy transfer is lower.",
+						"marks": 1,
+						"sourceRef": "MS 05.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+					"curriculumCode": "6.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-05-3",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "d098de9f53715d2bcc4a1a2547954505c2648c4613180283c72e936b10b22d5f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-05-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "05.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Energy stores and transfers"],
+					"year": 2018,
+					"promptText": "**Figure 8** shows the gas boiler used to heat the house.\n\nDescribe how different energy stores are changed by the boiler.",
+					"selfContainedPromptText": "Figure 8 shows the gas boiler used to heat the house. Describe how different energy stores are changed by the boiler.",
+					"contextText": null,
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-fuel-heating-energy-store-changes",
+					"title": "Heating Stores",
+					"canonicalChainText": "fuel chemical down -> receiver thermal up -> each receiver",
+					"fitNotes": "Chemical store of fuel decreases; thermal stores of water and air increase."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-05-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The chemical energy store of the fuel decreases.",
+						"marks": 1,
+						"sourceRef": "MS 05.3"
+					},
+					{
+						"id": "8464p1h-jun18-05-3-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "The thermal energy store of the water increases.",
+						"marks": 1,
+						"sourceRef": "MS 05.3"
+					},
+					{
+						"id": "8464p1h-jun18-05-3-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "The thermal energy store of the air or atmosphere increases.",
+						"marks": 1,
+						"sourceRef": "MS 05.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+					"curriculumCode": "6.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-05-4",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "e402017e7b6a7ba62ebcae79a8788c13de0b9953ed013098acce1cd34ed65367",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-05-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "05.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Power"],
+					"year": 2018,
+					"promptText": "To heat the house, the boiler transfers 15 MJ of energy in 10 minutes.\n\nCalculate the power of the boiler.\n\nWrite any equation that you use.",
+					"selfContainedPromptText": "To heat the house, the boiler transfers 15 MJ of energy in 10 minutes. Calculate the power of the boiler. Write any equation that you use.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-05-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Convert energy: $E=15\\,000\\,000\\ \\mathrm{J}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.4"
+					},
+					{
+						"id": "8464p1h-jun18-05-4-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Convert time: $t=600\\ \\mathrm{s}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.4"
+					},
+					{
+						"id": "8464p1h-jun18-05-4-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Use $P=\\frac{E}{t}$ with the substituted values, e.g. $P=\\frac{15\\,000\\,000}{600}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.4"
+					},
+					{
+						"id": "8464p1h-jun18-05-4-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Power is $25\\,000\\ \\mathrm{W}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+					"curriculumCode": "6.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-06-1",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "1762b4d95a1cfd959ddc71a96c18abf8b16840ad3031e2e0c5082b330a16b148",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-06-1",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "06.1",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Electricity", "Current-potential difference characteristics"],
+					"year": 2018,
+					"promptText": "Sketch a current potential difference graph for a filament lamp on **Figure 9**",
+					"selfContainedPromptText": "A student built a circuit using filament lamps. Sketch a current-potential difference graph for a filament lamp on Figure 9.",
+					"contextText": "A student built a circuit using filament lamps.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-filament-lamp-iv-curve-shape",
+					"title": "Lamp I-V",
+					"canonicalChainText": "origin curve -> first and third -> decreasing gradient",
+					"fitNotes": "Symmetric curve that flattens out."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-06-1-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "A curve in the first and third quadrants only, passing through the origin.",
+						"marks": 1,
+						"sourceRef": "MS 06.1"
+					},
+					{
+						"id": "8464p1h-jun18-06-1-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "The curve has decreasing gradient as potential difference increases in magnitude.",
+						"marks": 1,
+						"sourceRef": "MS 06.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+					"curriculumCode": "6.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-06-2",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "16ebfdf4e915caede9a4415d626a85b0a7319869ed8e1fe95bcdc77648e8d4af",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-06-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "06.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Electricity", "Parallel circuits"],
+					"year": 2018,
+					"promptText": "Compare the currents I$_1$, I$_2$ and I$_3$",
+					"selfContainedPromptText": "Figure 10 shows a circuit with two identical filament lamps in parallel. Compare the currents $I_1$, $I_2$ and $I_3$.",
+					"contextText": "Figure 10 shows the circuit with two identical filament lamps.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-parallel-current-sharing-addition",
+					"title": "Parallel Currents",
+					"canonicalChainText": "parallel branches -> same p.d. -> equal branches -> currents add",
+					"fitNotes": "Identical branches mean equal branch currents; total current is their sum."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-06-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Any two correct comparisons: $I_1=I_2+I_3$; $I_2=I_3$; $I_1=2I_2$; $I_1=2I_3$.",
+						"marks": 2,
+						"sourceRef": "MS 06.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+					"curriculumCode": "6.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-06-3",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "fb6e6e89312dceb7a7d054f060b705e65eccd44163dcdd6c553ece534508397d",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-06-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "06.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Electricity", "Power, current and charge"],
+					"year": 2018,
+					"promptText": "Calculate the charge that flows through the cell in 1 minute.\n\nEach filament lamp has a power of 3 W and a resistance of 12 Ω\n\nWrite any equations that you use.\n\nGive the unit.",
+					"selfContainedPromptText": "In the circuit with two identical filament lamps in parallel, calculate the charge that flows through the cell in 1 minute. Each filament lamp has a power of 3 W and a resistance of 12 Ω. Write any equations that you use. Give the unit.",
+					"contextText": "Use the circuit from Figure 10: two identical filament lamps in parallel connected to a cell.",
+					"marks": 6
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-06-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Use $P=I^2R$ for one lamp: $3=I^2\\times12$.",
+						"marks": 1,
+						"sourceRef": "MS 06.3"
+					},
+					{
+						"id": "8464p1h-jun18-06-3-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Rearrange to $I=\\sqrt{\\frac{3}{12}}$.",
+						"marks": 1,
+						"sourceRef": "MS 06.3"
+					},
+					{
+						"id": "8464p1h-jun18-06-3-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Current in one lamp is $0.5\\ \\mathrm{A}$.",
+						"marks": 1,
+						"sourceRef": "MS 06.3"
+					},
+					{
+						"id": "8464p1h-jun18-06-3-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Use total current through the cell as $1.0\\ \\mathrm{A}$, or calculate charge for one branch $Q=0.5\\times60=30\\ \\mathrm{C}$.",
+						"marks": 1,
+						"sourceRef": "MS 06.3"
+					},
+					{
+						"id": "8464p1h-jun18-06-3-ms-5",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Total charge through the cell is $60$.",
+						"marks": 1,
+						"sourceRef": "MS 06.3"
+					},
+					{
+						"id": "8464p1h-jun18-06-3-ms-6",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 6,
+						"itemType": "mark",
+						"text": "Unit is coulombs or C.",
+						"marks": 1,
+						"sourceRef": "MS 06.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+					"curriculumCode": "6.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun18-06-4",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "5078a1a4d3dcbd9925ca4067ebc95eb5b8708d90c9b24b8ac771719e09fb842a",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-06-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "06.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Electricity", "LDR potential divider"],
+					"year": 2018,
+					"promptText": "The student builds a different circuit.\n\n**Figure 11** shows the circuit.\n\nExplain how the readings on both meters change when the environmental conditions change.",
+					"selfContainedPromptText": "The student builds a different circuit. Figure 11 shows a circuit with a fixed resistor in series with an LDR, an ammeter in series and a voltmeter across the LDR. Explain how the readings on both meters change when the environmental conditions change.",
+					"contextText": null,
+					"marks": 6
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-ldr-potential-divider-pd-change",
+					"title": "LDR divider",
+					"canonicalChainText": "light level -> LDR resistance -> circuit current -> voltage share",
+					"fitNotes": "More light lowers LDR resistance, raises current, and lowers the LDR voltage share."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-06-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "level",
+						"text": "Level 3: Relevant points are identified, given in detail and logically linked to form a clear account.",
+						"marks": 6,
+						"sourceRef": "MS 06.4"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "level",
+						"text": "Level 2: Relevant points are identified, and there are attempts at logically linking. The resulting account is not fully clear.",
+						"marks": 4,
+						"sourceRef": "MS 06.4"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "level",
+						"text": "Level 1: Points are identified and stated simply, but their relevance is not clear and there is no attempt at logical linking.",
+						"marks": 2,
+						"sourceRef": "MS 06.4"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 4,
+						"itemType": "indicative",
+						"text": "The resistance of the LDR changes when light intensity changes.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-5",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 5,
+						"itemType": "indicative",
+						"text": "When light intensity increases, the resistance of the LDR decreases.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-6",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 6,
+						"itemType": "indicative",
+						"text": "The overall resistance of the circuit decreases.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-7",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 7,
+						"itemType": "indicative",
+						"text": "The potential difference across the total resistance remains unchanged.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-8",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 8,
+						"itemType": "indicative",
+						"text": "The current in the ammeter increases.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-9",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 9,
+						"itemType": "indicative",
+						"text": "The potential difference across the fixed resistor increases.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-10",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 10,
+						"itemType": "indicative",
+						"text": "The potential difference across the LDR decreases.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-11",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 11,
+						"itemType": "indicative",
+						"text": "The reading on the voltmeter decreases.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					},
+					{
+						"id": "8464p1h-jun18-06-4-ms-12",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 12,
+						"itemType": "indicative",
+						"text": "Potential difference is shared between the components in series; the lower the resistance of the LDR, the smaller its share of the potential difference.",
+						"marks": null,
+						"sourceRef": "MS 06.4 indicative content"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+					"curriculumCode": "6.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-05-3",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "0ba92e9a5f6f75f9d995ac70896d8db923dce9025729ba59a0c2306bd6001402",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-05-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "05.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Heating and energy transfer"],
+					"year": 2019,
+					"promptText": "Suggest why the line on **Figure 5** does not go through the origin.",
+					"selfContainedPromptText": "Figure 5 shows how the mass of water in the kettle affected the time taken for the kettle to switch off. Suggest why the line on Figure 5 does not go through the origin.",
+					"contextText": "Figure 5 shows how the mass of water in the kettle affected the time taken for the kettle to switch off.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-heating-appliance-intercept-thermal-mass",
+					"title": "Thermal Intercept",
+					"canonicalChainText": "apparatus thermal mass -> heats first -> positive intercept",
+					"fitNotes": "The heater warms too."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-05-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The heating element, or the kettle, took time to heat up.",
+						"marks": 1,
+						"sourceRef": "MS 05.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+					"curriculumCode": "6.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-05-4",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "741cfdbb4cc1d96d68fc122b624a24585f84d42139acefc9f209f4f26b9fd328",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-05-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "05.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Heating and energy transfer"],
+					"year": 2019,
+					"promptText": "Suggest why the results give a non-linear pattern.",
+					"selfContainedPromptText": "Figure 5 shows how the mass of water in the kettle affected the time taken for the kettle to switch off. Suggest why the results give a non-linear pattern.",
+					"contextText": "Figure 5 shows how the mass of water in the kettle affected the time taken for the kettle to switch off.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-kettle-efficiency-increases-with-water-mass",
+					"title": "Kettle efficiency",
+					"canonicalChainText": "larger water mass -> lower loss per kg -> higher efficiency -> non-linear heating",
+					"fitNotes": "Bigger loads waste less per kilogram."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-05-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The rate of energy transfer per kg of water to the surroundings decreases as the mass of water increases; or the efficiency of the kettle increases as the mass of water increases.",
+						"marks": 1,
+						"sourceRef": "MS 05.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+					"curriculumCode": "6.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-05-5",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "6c0815338d1b77117b2482ec3698be296a5300f61c97f69a9eefbd6c451e095c",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-05-5",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "05.5",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Specific heat capacity"],
+					"year": 2019,
+					"promptText": "The power of the kettle was 2.6 kW\n\nThe kettle took 120 seconds to heat 0.80 kg of water from 18 °C to 100 °C\n\nCalculate the specific heat capacity of water using this information.\n\nGive your answer to 2 significant figures.",
+					"selfContainedPromptText": "The power of the kettle was 2.6 kW. The kettle took 120 seconds to heat 0.80 kg of water from 18 °C to 100 °C. Calculate the specific heat capacity of water using this information. Give your answer to 2 significant figures.",
+					"contextText": null,
+					"marks": 6
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-05-5-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Use energy transferred from power and time: $E = 2600 \\times 120$.",
+						"marks": 1,
+						"sourceRef": "MS 05.5 step 1"
+					},
+					{
+						"id": "8464p1h-jun19-05-5-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Calculate $E = 312\\,000\\ \\mathrm{J}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.5 step 2"
+					},
+					{
+						"id": "8464p1h-jun19-05-5-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Use the specific heat capacity equation with the temperature change: $312\\,000 = 0.80 \\times c \\times (100-18)$, or $312\\,000 = 0.80 \\times c \\times 82$.",
+						"marks": 1,
+						"sourceRef": "MS 05.5 step 3"
+					},
+					{
+						"id": "8464p1h-jun19-05-5-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Rearrange to $c = \\frac{312\\,000}{0.80 \\times 82}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.5 step 4"
+					},
+					{
+						"id": "8464p1h-jun19-05-5-ms-5",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Calculate $c = 4756\\ \\mathrm{J/kg\\ ^\\circ C}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.5 step 5"
+					},
+					{
+						"id": "8464p1h-jun19-05-5-ms-6",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 6,
+						"itemType": "mark",
+						"text": "Round correctly to 2 significant figures: $c = 4800\\ \\mathrm{J/kg\\ ^\\circ C}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.5 step 6"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+					"curriculumCode": "6.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-06-1",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "310308ba1f108be5d134402dc7a0b7f20c48bea604de86637f4eddfdbbc5c88f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-06-1",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "06.1",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Radioactive decay"],
+					"year": 2019,
+					"promptText": "A nucleus of lanthanum-140 emits gamma radiation.\n\nWhat happens to the mass number and the charge of the nucleus when gamma radiation is emitted?\n\nTick (✓) **one** box.",
+					"selfContainedPromptText": "Lanthanum-140 is a radioactive isotope. A nucleus of lanthanum-140 emits gamma radiation. What happens to the mass number and the charge of the nucleus when gamma radiation is emitted? Tick (✓) one box.",
+					"contextText": "Lanthanum-140 is a radioactive isotope.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gamma-emission-mass-charge-unchanged",
+					"title": "Gamma Unchanged",
+					"canonicalChainText": "gamma emission -> no nucleons lost -> mass unchanged -> charge unchanged",
+					"fitNotes": "Gamma changes energy, not numbers."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-06-1-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Mass number stays the same, charge stays the same.",
+						"marks": 1,
+						"sourceRef": "MS 06.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-06-2",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "7abb0b77b267a6c655ef41ade981f85390077af6edfb42805686bbc3735591b5",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-06-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "06.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Radioactive radiation"],
+					"year": 2019,
+					"promptText": "Why is it difficult to detect gamma radiation?",
+					"selfContainedPromptText": "Lanthanum-140 is a radioactive isotope. Why is it difficult to detect gamma radiation?",
+					"contextText": "Lanthanum-140 is a radioactive isotope.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gamma-weak-ionisation-detection",
+					"title": "Gamma Detection",
+					"canonicalChainText": "gamma radiation -> weak ionisation -> passes detector",
+					"fitNotes": "Weak interaction means poor detection."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-06-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Gamma radiation is only weakly ionising; or most gamma radiation will pass through any detector.",
+						"marks": 1,
+						"sourceRef": "MS 06.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-06-3",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "2eea27b9c22cea48faa7cc2d245d12c8b0272aeecdb96655befe655337d3812e",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-06-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "06.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Activity and count rate"],
+					"year": 2019,
+					"promptText": "Activity is the rate at which a radioactive source decays.\n\nA teacher measured the count-rate from a sample of lanthanum-140 using a Geiger-Muller (G-M) tube.\n\nExplain why the count rate was less than the activity of the sample of lanthanum-140.",
+					"selfContainedPromptText": "Lanthanum-140 is a radioactive isotope. Activity is the rate at which a radioactive source decays. A teacher measured the count-rate from a sample of lanthanum-140 using a Geiger-Muller (G-M) tube. Explain why the count rate was less than the activity of the sample of lanthanum-140.",
+					"contextText": "Lanthanum-140 is a radioactive isotope. Activity is the rate at which a radioactive source decays.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-count-rate-less-than-activity",
+					"title": "Detected Fraction",
+					"canonicalChainText": "total decays -> emitted radiation -> missed radiation -> lower count-rate",
+					"fitNotes": "Activity is total decays; count rate is only the detected fraction."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-06-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The radiation spreads out in all directions.",
+						"marks": 1,
+						"sourceRef": "MS 06.3 any two bullet 1"
+					},
+					{
+						"id": "8464p1h-jun19-06-3-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Only some of the radiation goes into the G-M tube.",
+						"marks": 1,
+						"sourceRef": "MS 06.3 any two bullet 2"
+					},
+					{
+						"id": "8464p1h-jun19-06-3-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Only some of the radiation passing into the G-M tube is detected.",
+						"marks": 1,
+						"sourceRef": "MS 06.3 any two bullet 3"
+					},
+					{
+						"id": "8464p1h-jun19-06-3-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Alternative full-credit linked idea: only some radiation passing into the G-M tube is detected because gamma is weakly ionising.",
+						"marks": 2,
+						"sourceRef": "MS 06.3 extra information"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-06-4",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "0a25b56c9fa546863f5da0c7fc34c6a926a5f4eeae55e10edcb8bbe50dd579f6",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-06-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "06.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Radiation safety"],
+					"year": 2019,
+					"promptText": "Explain why the teacher stood as far away from the apparatus as possible.",
+					"selfContainedPromptText": "A teacher investigated how the thickness of lead affected the amount of gamma radiation that could pass through it. Figure 6 shows a sample of lanthanum-140, lead, and a G-M tube connected to a counting machine. Explain why the teacher stood as far away from the apparatus as possible.",
+					"contextText": "The teacher investigated how the thickness of lead affected the amount of gamma radiation that could pass through it. Figure 6 shows the apparatus.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-radiation-dose-reduction-risk",
+					"title": "Radiation risk",
+					"canonicalChainText": "radiation type -> dose/activity -> shield/decay -> risk change",
+					"fitNotes": "More distance means less radiation received and therefore lower health risk."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-06-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "To reduce the amount of radiation received.",
+						"marks": 1,
+						"sourceRef": "MS 06.4 row 1"
+					},
+					{
+						"id": "8464p1h-jun19-06-4-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Because radiation increases the risk of cancer or genetic mutation.",
+						"marks": 1,
+						"sourceRef": "MS 06.4 row 2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "8464p1h-jun19-06-6",
+			"sourceClassification": "aqa-gcse-combined-science-trilogy-8464-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+			"evidenceHash": "ada5cc383fe1413ba5f42abd7ccee5f9ae9e2e027cc6b8059fadd73f15b06877",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-06-6",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "06.6",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Beta decay"],
+					"year": 2019,
+					"promptText": "Lanthanum-140 can also emit beta radiation and change into cerium.\n\nComplete the equation showing the decay of lanthanum (La) 140 into cerium (Ce).",
+					"selfContainedPromptText": "Lanthanum-140 can also emit beta radiation and change into cerium. Complete the equation showing the decay of lanthanum (La) 140 into cerium (Ce): $_{57}^{140}\\mathrm{La}\\rightarrow\\ _{\\square}^{\\square}\\mathrm{e}+\\ _{\\square}^{\\square}\\mathrm{Ce}$.",
+					"contextText": "Lanthanum-140 can also emit beta radiation and change into cerium.",
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-06-6-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Correct numbers on the electron: mass number 0 and atomic number -1.",
+						"marks": 1,
+						"sourceRef": "MS 06.6 electron"
+					},
+					{
+						"id": "8464p1h-jun19-06-6-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Correct numbers on cerium: mass number 140 and atomic number 58.",
+						"marks": 1,
+						"sourceRef": "MS 06.6 cerium"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+					"curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+					"curriculumCode": "6.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 6.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		}
+	],
+	"withheldQuestions": [
+		{
+			"questionId": "8464p1h-jun18-01-3",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "6600bfd382c4d025bc8746c631a5873cadc83ddd89f09903691401e2eeeab4d7",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-01-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "01.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Alpha scattering"],
+					"year": 2018,
+					"promptText": "The results from the alpha particle scattering experiment led to the nuclear model.\n\nAlpha particles were fired at a thin film of gold at a speed of 7% of the speed of light.\n\nDetermine the speed of the alpha particles.\n\nSpeed of light = 300 000 000 m/s",
+					"selfContainedPromptText": "The results from the alpha particle scattering experiment led to the nuclear model. Alpha particles were fired at a thin film of gold at a speed of 7% of the speed of light. Determine the speed of the alpha particles. Speed of light = 300 000 000 m/s.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-01-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Calculate 7% of the speed of light: $300\\,000\\,000 \\times \\frac{7}{100}$.",
+						"marks": 1,
+						"sourceRef": "MS 01.3"
+					},
+					{
+						"id": "8464p1h-jun18-01-3-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Speed is $21\\,000\\,000\\ \\mathrm{m/s}$, or $2.1\\times10^7\\ \\mathrm{m/s}$.",
+						"marks": 1,
+						"sourceRef": "MS 01.3"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun18-01-4",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "4b082d1c254d90318cb2a14736b402de17d7092e8a20a4a8dc09e2ed6b7094bf",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-01-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "01.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Scale and size of atoms"],
+					"year": 2018,
+					"promptText": "**Figure 2** shows two atoms represented as solid spheres.\n\nA hydrogen atom has a radius of $2.5\\times10^{-11}$ m\n\nDetermine the radius of a magnesium atom.\n\nUse measurements from **Figure 2**",
+					"selfContainedPromptText": "Figure 2 shows two atoms represented as solid spheres. A hydrogen atom has a radius of $2.5\\times10^{-11}$ m. Determine the radius of a magnesium atom. Use measurements from Figure 2.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-01-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Use a radius ratio of about 6 from the measurements and substitute: $r=6\\times2.5\\times10^{-11}$.",
+						"marks": 1,
+						"sourceRef": "MS 01.4"
+					},
+					{
+						"id": "8464p1h-jun18-01-4-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Radius is in the range $1.4\\times10^{-10}$ m to $1.6\\times10^{-10}$ m, typically $1.5\\times10^{-10}$ m.",
+						"marks": 1,
+						"sourceRef": "MS 01.4"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun18-02-2",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "a4cbdbf28701f82df85b9b6cbace265c6a044c4c0e866286e555dd1ca85392aa",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-02-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "02.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Matter", "Density", "Presenting data"],
+					"year": 2018,
+					"promptText": "Another student did a similar experiment.\n\nHe determined the density of five common plastic materials.\n\n**Table 1** shows the results.\n\n**Figure 4** shows the results plotted in a bar chart.\n\nComplete **Figure 4**\n\nYou should:\n\n- Write the correct scale on the y-axis.\n- Draw the bars for polyester, polystyrene and PVC.",
+					"selfContainedPromptText": "Another student determined the density of five common plastic materials. Table 1 shows the results and Figure 4 shows the results plotted in a bar chart. Complete Figure 4. You should write the correct scale on the y-axis and draw the bars for polyester, polystyrene and PVC.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-plot-data-bar-chart-scale-and-bars",
+					"title": "Bar Chart",
+					"canonicalChainText": "axis values -> even scale -> bar heights",
+					"fitNotes": "Scale first; bars match table."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-02-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "All y-axis values correct, with a minimum of 3 values.",
+						"marks": 2,
+						"sourceRef": "MS 02.2"
+					},
+					{
+						"id": "8464p1h-jun18-02-2-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "All bars drawn to the correct height.",
+						"marks": 2,
+						"sourceRef": "MS 02.2"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun18-02-3",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "98639c2c024aece760419d8c12d5d1077d45080ea4fe4c6dc0e41afa60df6b1f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-02-3",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "02.3",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Practical skills", "Uncertainty"],
+					"year": 2018,
+					"promptText": "The student is given a piece of a different plastic material.\n\nThe student determined the density of the material three times.\n\n**Table 2** shows the results.\n\nDetermine the uncertainty in the student’s results.",
+					"selfContainedPromptText": "The student determined the density of a different plastic material three times. Table 2 shows densities of 960, 1120 and 1040 $\\mathrm{kg/m^3}$. Determine the uncertainty in the student’s results.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-half-range-uncertainty-calculation",
+					"title": "Half Range",
+					"canonicalChainText": "highest-lowest -> range -> halve -> ± unit",
+					"fitNotes": "Uncertainty from repeated results is half the range."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-02-3-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Use half the range: $\\frac{1120-960}{2}$.",
+						"marks": 1,
+						"sourceRef": "MS 02.3"
+					},
+					{
+						"id": "8464p1h-jun18-02-3-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Uncertainty is $80\\ \\mathrm{kg/m^3}$.",
+						"marks": 1,
+						"sourceRef": "MS 02.3"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun18-03-4",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "4104f047d2fdb8639808296ca036a14e0e3943638e8a04df7781f60cc6f0a0a0",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-03-4",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "03.4",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Particle model of matter", "Gas pressure graphs"],
+					"year": 2018,
+					"promptText": "Estimate the atmospheric pressure.\n\nUse **Figure 6**",
+					"selfContainedPromptText": "A canister of air was tested to find out how the pressure changed when air escaped from the canister. Figure 6 shows pressure in MPa against time in minutes. Estimate the atmospheric pressure. Use Figure 6.",
+					"contextText": "A canister of air was tested to find out how the pressure changed when it was used by a diver. Air was allowed to escape from the canister. The pressure of the air in the canister was recorded every 5 minutes for 80 minutes. Figure 6 shows the results.",
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-graph-levelled-off-pressure-reading",
+					"title": "Pressure Plateau",
+					"canonicalChainText": "pressure graph -> final plateau -> atmospheric pressure",
+					"fitNotes": "Final flat value is atmosphere."
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-03-4-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Atmospheric pressure is $0.1\\ \\mathrm{MPa}$.",
+						"marks": 1,
+						"sourceRef": "MS 03.4"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun18-03-5",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "b3440a2426bcdba8ae723e3c5a9d12461220b1e4b95baf0249e95d9b316a5c13",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-03-5",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "03.5",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Particle model of matter", "Using graphs"],
+					"year": 2018,
+					"promptText": "Divers can safely stay underwater until the pressure of the air in the canister has reduced to 25% of its original value.\n\nDetermine the maximum time the diver can safely stay underwater.\n\nUse **Figure 6**",
+					"selfContainedPromptText": "Divers can safely stay underwater until the pressure of the air in the canister has reduced to 25% of its original value. Figure 6 shows pressure in the canister against time. Determine the maximum time the diver can safely stay underwater. Use Figure 6.",
+					"contextText": "Use Figure 6: the initial pressure is about 2.25 MPa and the pressure falls with time.",
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-03-5-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Calculate 25% of the original pressure: $2.25\\times\\frac{25}{100}$.",
+						"marks": 1,
+						"sourceRef": "MS 03.5"
+					},
+					{
+						"id": "8464p1h-jun18-03-5-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Pressure threshold is about $0.56\\ \\mathrm{MPa}$, accepted range $0.55$ to $0.575\\ \\mathrm{MPa}$.",
+						"marks": 1,
+						"sourceRef": "MS 03.5"
+					},
+					{
+						"id": "8464p1h-jun18-03-5-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Read the corresponding time from the graph as about 27 minutes, accepted range 26–28 minutes.",
+						"marks": 1,
+						"sourceRef": "MS 03.5"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun18-05-2",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "830f5c8989e82fb9d7cdd6041643076475a58372cc6c3f4e56b74dba29a69642",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun18",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2018",
+					"year": 2018,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2018",
+					"sourceUrl": null,
+					"fileHash": "sha256:bdb4beab364675c84b8c045bd9cbcfebe49950809937e7de2faa62dbabe91cd4",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun18-05-2",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun18",
+					"sourceQuestionRef": "05.2",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Energy", "Interpreting data"],
+					"year": 2018,
+					"promptText": "The cavity insulation was tested.\n\n- The heating inside the house was switched off.\n- The temperature inside the house was measured every 20 minutes for 2 hours.\n\n**Table 4** shows the results.\n\nDetermine the temperature inside the house after 30 minutes.",
+					"selfContainedPromptText": "The cavity insulation was tested. The heating inside the house was switched off and the temperature inside the house was measured every 20 minutes for 2 hours. Table 4 shows the results. Determine the temperature inside the house after 30 minutes.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun18-05-2-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Interpolate halfway between 20.8 °C at 20 minutes and 17.4 °C at 40 minutes, for example $17.4+\\frac{20.8-17.4}{2}$.",
+						"marks": 1,
+						"sourceRef": "MS 05.2"
+					},
+					{
+						"id": "8464p1h-jun18-05-2-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun18",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun18",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2018",
+							"sourceUrl": null,
+							"fileHash": "sha256:66db81bfecf2638d819486d5f056448ff7b16de41a62c493f52ca49d84f9b4c4"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Temperature is 19.1 °C, accepted range 18.5–19.1 °C.",
+						"marks": 1,
+						"sourceRef": "MS 05.2"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "8464p1h-jun19-06-5",
+			"sourceClassification": "aqa-combined-physics-working-scientifically-withheld",
+			"reason": "Official prompt and mark evidence assess a generic mathematical or working-scientifically operation; the surrounding context alone is not enough to assign one Physics curriculum chapter.",
+			"evidenceHash": "33b516769680393caa2509934aea121eb098ce393cf7a6f2476f153d15c2ca4c",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-8464p1h-qp-jun19",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Combined Science",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "8464P1H",
+					"series": "June 2019",
+					"year": 2019,
+					"title": "Question paper (Higher): Physics Paper 1 - June 2019",
+					"sourceUrl": null,
+					"fileHash": "sha256:86a3b2c41117edea50df18aa73c51fc4659dc9dd9675646349c5088e749020fa",
+					"pageCount": 20
+				},
+				"question": {
+					"id": "8464p1h-jun19-06-5",
+					"sourceDocumentId": "aqa-8464p1h-qp-jun19",
+					"sourceQuestionRef": "06.5",
+					"componentCode": "8464P1H",
+					"specRef": null,
+					"topicPath": ["Physics", "Atomic structure", "Gamma radiation absorption"],
+					"year": 2019,
+					"promptText": "The teacher concluded that the count rate was **not** inversely proportional to the thickness of lead.\n\nExplain why the teacher was correct.\n\nUse the data in **Table 1**.",
+					"selfContainedPromptText": "A teacher investigated how the thickness of lead affected the amount of gamma radiation that could pass through it. Table 1 shows that as the thickness of lead increases from 0.5 cm to 2.5 cm, the count rate decreases from 110 counts per second to 10 counts per second. The teacher concluded that the count rate was not inversely proportional to the thickness of lead. Explain why the teacher was correct. Use the data in Table 1.",
+					"contextText": "The teacher investigated how the thickness of lead affected the amount of gamma radiation that could pass through it. Table 1 shows the results.",
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": null,
+					"title": null,
+					"canonicalChainText": null,
+					"fitNotes": null
+				},
+				"markSchemeItems": [
+					{
+						"id": "8464p1h-jun19-06-5-ms-1",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Calculate a product of thickness and count rate.",
+						"marks": 1,
+						"sourceRef": "MS 06.5 method 1 step 1"
+					},
+					{
+						"id": "8464p1h-jun19-06-5-ms-2",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Calculate a second product of thickness and count rate.",
+						"marks": 1,
+						"sourceRef": "MS 06.5 method 1 step 2"
+					},
+					{
+						"id": "8464p1h-jun19-06-5-ms-3",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Compare the calculated products and recognise that they are different.",
+						"marks": 1,
+						"sourceRef": "MS 06.5 method 1 step 3"
+					},
+					{
+						"id": "8464p1h-jun19-06-5-ms-4",
+						"sourceDocumentId": "aqa-8464p1h-ms-jun19",
+						"sourceDocument": {
+							"id": "aqa-8464p1h-ms-jun19",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Physics Paper 1 - June 2019",
+							"sourceUrl": null,
+							"fileHash": "sha256:a1d69157741a4a8a37b5dc2dd381a27beeead90af27597d357c4f92bbeaf6622"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Alternative method: calculate half the count rate, compare with the count rate for double that thickness, and recognise that the values are different.",
+						"marks": 3,
+						"sourceRef": "MS 06.5 alternative method"
+					}
+				]
+			}
+		}
+	]
+}

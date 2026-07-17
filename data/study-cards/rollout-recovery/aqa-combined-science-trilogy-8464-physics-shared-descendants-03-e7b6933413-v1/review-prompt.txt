@@ -1,0 +1,914 @@
+You are the independent reviewer in an offline, import-grade GCSE standard-deck pipeline. You did not generate these cards. Review each complete card against the supplied official source and deterministic course scope. Do not rewrite or silently repair anything.
+
+Accept only when ALL are true: exact source excerpt and locator support the back/explanation; board, subject, tier and topic mapping are correct; the prompt is unambiguous; the canonical answer is accurate and concise; the card has three or four choices with exactly one correct; every distractor is unique and pedagogically plausible; a four-choice card has three genuinely distinct misconceptions rather than a contrived filler; feedback diagnoses the actual error; any present memoryTip adds honest retrieval value without merely repeating the answer; the emoji is meaningful but does not leak the answer; and no card is mere curriculum-title trivia. memoryTip may be null and its absence is never grounds for rejection.
+
+Reject Higher-only material if any target is Foundation. Reject an unsupported inference even if it is generally true. Return exactly one review for every card id, in the same order. Output JSON only.
+
+Scope:
+{
+  "specification": {
+    "id": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+    "board": "AQA",
+    "qualification": "GCSE",
+    "subject": "Combined Science: Trilogy",
+    "specificationCode": "8464",
+    "version": "1.1",
+    "title": "AQA GCSE Combined Science: Trilogy (8464)",
+    "landingUrl": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+    "pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/0d8783204c71dd54f340ece220707095e49b6dea.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  },
+  "offerings": [
+    {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+      "profileSubject": "Physics",
+      "course": "Combined Science",
+      "tier": "Foundation",
+      "label": "AQA Combined Science: Trilogy · Physics · Foundation",
+      "selectableComponentIds": [
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+      ]
+    },
+    {
+      "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+      "profileSubject": "Physics",
+      "course": "Combined Science",
+      "tier": "Higher",
+      "label": "AQA Combined Science: Trilogy · Physics · Higher",
+      "selectableComponentIds": [
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-1",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-2",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-3",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+        "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "code": "6.5",
+      "title": "Forces",
+      "paper": "Physics Paper 2",
+      "pageStart": 152,
+      "pageEnd": 155,
+      "components": [
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-3",
+          "code": "6.5.4.2.3",
+          "title": "Newton's Third Law",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.2.3 Newton's Third Law",
+          "text": "Official PDF pages 152-155\nNewton's Third Law\nContent Key opportunities for\nskills development\nNewton’s Third Law:\nWhenever two objects interact, the forces they exert on each other\nare equal and opposite.\nStudents should be able to apply Newton’s Third Law to examples\nof equilibrium situations.\nWS 1.2\n6.5.4.3 Forces and braking\n152 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.4.3.1 Stopping distance\nContent Key opportunities for\nskills development\nThe stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance). For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.\n6.5.4.3.2 Reaction time\nContent Key opportunities for\nskills development\nReaction times vary from person to person. Typical values range\nfrom 0.2 s to 0.9 s.\nA driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.\nStudents should be able to:\n• explain methods used to measure human reaction times and\nrecall typical results\n• interpret and evaluate measurements from simple methods to\nmeasure the different reaction times of students\nWS 3.5, 3.7\n• evaluate the effect of various factors on thinking distance\nbased on given data.\nWS 1.5, 2.2\nMS 1a, c\nAT 1\nMeasure the effect of\ndistractions on reaction\ntime.\n6.5.4.3.3 Factors affecting braking distance 1\nContent Key opportunities for\nskills development\nThe braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.\nStudents should be able to:\n• explain the factors which affect the distance required for road\ntransport vehicles to come to rest in emergencies, and the\nimplications for safety\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 153\nContent Key opportunities for\nskills development\n• estimate how the distance required for road vehicles to stop in\nan emergency varies over a range of typical speeds.\nMS 1c, 1d, 2c, 2d, 2f, 2h,\n3b, 3c\n6.5.4.3.4 Factors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3",
+          "code": "6.5.4.3",
+          "title": "Forces and braking",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.3 Forces and braking",
+          "text": "Official PDF pages 152-155\nForces and braking\n152 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.4.3.1 Stopping distance\nContent Key opportunities for\nskills development\nThe stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance). For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.\n6.5.4.3.2 Reaction time\nContent Key opportunities for\nskills development\nReaction times vary from person to person. Typical values range\nfrom 0.2 s to 0.9 s.\nA driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.\nStudents should be able to:\n• explain methods used to measure human reaction times and\nrecall typical results\n• interpret and evaluate measurements from simple methods to\nmeasure the different reaction times of students\nWS 3.5, 3.7\n• evaluate the effect of various factors on thinking distance\nbased on given data.\nWS 1.5, 2.2\nMS 1a, c\nAT 1\nMeasure the effect of\ndistractions on reaction\ntime.\n6.5.4.3.3 Factors affecting braking distance 1\nContent Key opportunities for\nskills development\nThe braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.\nStudents should be able to:\n• explain the factors which affect the distance required for road\ntransport vehicles to come to rest in emergencies, and the\nimplications for safety\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 153\nContent Key opportunities for\nskills development\n• estimate how the distance required for road vehicles to stop in\nan emergency varies over a range of typical speeds.\nMS 1c, 1d, 2c, 2d, 2f, 2h,\n3b, 3c\n6.5.4.3.4 Factors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-1",
+          "code": "6.5.4.3.1",
+          "title": "Stopping distance",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.3.1 Stopping distance",
+          "text": "Official PDF pages 152-155\nStopping distance\nContent Key opportunities for\nskills development\nThe stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance). For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.\n6.5.4.3.2 Reaction time\nContent Key opportunities for\nskills development\nReaction times vary from person to person. Typical values range\nfrom 0.2 s to 0.9 s.\nA driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.\nStudents should be able to:\n• explain methods used to measure human reaction times and\nrecall typical results\n• interpret and evaluate measurements from simple methods to\nmeasure the different reaction times of students\nWS 3.5, 3.7\n• evaluate the effect of various factors on thinking distance\nbased on given data.\nWS 1.5, 2.2\nMS 1a, c\nAT 1\nMeasure the effect of\ndistractions on reaction\ntime.\n6.5.4.3.3 Factors affecting braking distance 1\nContent Key opportunities for\nskills development\nThe braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.\nStudents should be able to:\n• explain the factors which affect the distance required for road\ntransport vehicles to come to rest in emergencies, and the\nimplications for safety\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 153\nContent Key opportunities for\nskills development\n• estimate how the distance required for road vehicles to stop in\nan emergency varies over a range of typical speeds.\nMS 1c, 1d, 2c, 2d, 2f, 2h,\n3b, 3c\n6.5.4.3.4 Factors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-2",
+          "code": "6.5.4.3.2",
+          "title": "Reaction time",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.3.2 Reaction time",
+          "text": "Official PDF pages 152-155\nreaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance). For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.\n6.5.4.3.2 Reaction time\nContent Key opportunities for\nskills development\nReaction times vary from person to person. Typical values range\nfrom 0.2 s to 0.9 s.\nA driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.\nStudents should be able to:\n• explain methods used to measure human reaction times and\nrecall typical results\n• interpret and evaluate measurements from simple methods to\nmeasure the different reaction times of students\nWS 3.5, 3.7\n• evaluate the effect of various factors on thinking distance\nbased on given data.\nWS 1.5, 2.2\nMS 1a, c\nAT 1\nMeasure the effect of\ndistractions on reaction\ntime.\n6.5.4.3.3 Factors affecting braking distance 1\nContent Key opportunities for\nskills development\nThe braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.\nStudents should be able to:\n• explain the factors which affect the distance required for road\ntransport vehicles to come to rest in emergencies, and the\nimplications for safety\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 153\nContent Key opportunities for\nskills development\n• estimate how the distance required for road vehicles to stop in\nan emergency varies over a range of typical speeds.\nMS 1c, 1d, 2c, 2d, 2f, 2h,\n3b, 3c\n6.5.4.3.4 Factors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-3",
+          "code": "6.5.4.3.3",
+          "title": "Factors affecting braking distance 1",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.3.3 Factors affecting braking distance 1",
+          "text": "Official PDF pages 152-155\nFactors affecting braking distance 1\nContent Key opportunities for\nskills development\nThe braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.\nStudents should be able to:\n• explain the factors which affect the distance required for road\ntransport vehicles to come to rest in emergencies, and the\nimplications for safety\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 153\nContent Key opportunities for\nskills development\n• estimate how the distance required for road vehicles to stop in\nan emergency varies over a range of typical speeds.\nMS 1c, 1d, 2c, 2d, 2f, 2h,\n3b, 3c\n6.5.4.3.4 Factors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-4",
+          "code": "6.5.4.3.4",
+          "title": "Factors affecting braking distance 2",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.4.3.4 Factors affecting braking distance 2",
+          "text": "Official PDF pages 152-155\nFactors affecting braking distance 2\nContent Key opportunities for\nskills development\nWhen a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.\nThe greater the speed of a vehicle the greater the braking force\nneeded to stop the vehicle in a certain distance.\nThe greater the braking force the greater the deceleration of the\nvehicle. Large decelerations may lead to brakes overheating and/or\nloss of control.\nStudents should be able to:\n• explain the dangers caused by large decelerations WS 1.5\n• (HT only) estimate the forces involved in the deceleration of\nroad vehicles in typical situations on a public road.\n(HT only) MS 1d\n6.5.5 Momentum (HT only)\n6.5.5.1 Momentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1",
+          "code": "6.5.5.1",
+          "title": "Momentum is a property of moving objects",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.5.1 Momentum is a property of moving objects",
+          "text": "Official PDF pages 152-155\nMomentum is a property of moving objects\nContent Key opportunities for\nskills development\nMomentum is defined by the equation:\nmomentum = mass × velocity\np = m v\nmomentum, p, in kilograms metre per second, kg m/s\nmass, m, in kilograms, kg\nvelocity, v, in metres per second, m/s\nWS 1.2\nMS 3b, c\nStudents should be able to\nrecall and apply this\nequation.\n154 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.5.5.2 Conservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2",
+          "code": "6.5.5.2",
+          "title": "Conservation of momentum",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 152-155; 6.5.5.2 Conservation of momentum",
+          "text": "Official PDF pages 152-155\nConservation of momentum\nContent Key opportunities for\nskills development\nIn a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.\nStudents should be able to use the concept of momentum as a\nmodel to describe and explain examples of momentum in an event,\nsuch as a collision.\nAT 1, 2, 3\nInvestigate collisions\nbetween laboratory trollies\nusing light gates, data\nloggers or ticker timers to\nmeasure and record data.\n6.6 Waves\nWave behaviour is common in both natural and man-made systems. Waves carry energy from one\nplace to another and can also carry information. Designing comfortable and safe structures such\nas bridges, houses and music performance halls requires an understanding of mechanical waves.\nModern technologies such as imaging and communication systems show how we can make the\nmost of electromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "code": "6.6",
+      "title": "Waves",
+      "paper": "Physics Paper 2",
+      "pageStart": 155,
+      "pageEnd": 158,
+      "components": [
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1",
+          "code": "6.6.1",
+          "title": "Waves in air, fluids and solids",
+          "kind": "section",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 155-158; 6.6.1 Waves in air, fluids and solids",
+          "text": "Official PDF pages 155-158\nWaves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155\n6.6.1.2 Properties of waves\nContent Key opportunities for\nskills development\nStudents should be able to describe wave motion in terms of their\namplitude, wavelength, frequency and period.\nThe amplitude of a wave is the maximum displacement of a point\non a wave away from its undisturbed position.\nThe wavelength of a wave is the distance from a point on one wave\nto the equivalent point on the adjacent wave.\nThe frequency of a wave is the number of waves passing a point\neach second.\nMS 1c, 3b, c\nperiod = 1\nf requency\nT = 1\nf\nperiod, T, in seconds, s\nfrequency, f, in hertz, Hz\nThe wave speed is the speed at which the energy is transferred (or\nthe wave moves) through the medium.\nAll waves obey the wave equation:\nMS 1c, 3b, c\nStudents should be able to\napply this equation which is\ngiven on the Physics\nequation sheet.\nwave speed = f requency × wavelength\nv = f λ\nwave speed, v, in metres per second, m/s\nfrequency, f, in hertz, Hz\nwavelength, λ, in metres, m\nStudents should be able to:\n• identify amplitude and wavelength from given diagrams\nMS 1c, 3b, 3c\nStudents should be able to\nrecall and apply this\nequation.\n• describe a method to measure the speed of sound waves in\nair\nAT 1\nWS 2.3, 2.4, 2.6, 2.7, 3.1,\n3.5\n• describe a method to measure the speed of ripples on a water\nsurface.\nAT 1, AT 4\nWS 2.3, 2.4, 2.6, 2.7, 3.1,\n3.5\nRequired practical activity 20: make observations to identify the suitability of apparatus to\nmeasure the frequency, wavelength and speed of waves in a ripple tank and waves in a solid and\ntake appropriate measurements.\nAT skills covered by this practical activity: physics AT 4.\n156 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 191).\n6.6.2 Electromagnetic waves\n6.6.2.1 Types of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves are transverse waves that transfer energy\nfrom the source of the waves to an absorber.\nElectromagnetic waves form a continuous spectrum and all types of\nelectromagnetic wave travel at the same velocity through a vacuum\n(space) or air.\nThe waves that form the electromagnetic spectrum are grouped in\nterms of their wavelength and their frequency. Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.\nOur eyes only detect visible light and so detect a limited range of\nelectromagnetic waves.\nStudents should be able to give examples that illustrate the transfer\nof energy by electromagnetic waves.\n6.6.2.2 Properties of electromagnetic waves 1\nContent Key opportunities for\nskills development\n(HT only) Different substances may absorb, transmit, refract or\nreflect electromagnetic waves in ways that vary with wavelength.\n(HT only) Some effects, for example refraction, are due to the\ndifference in velocity of the waves in different substances.\nStudents should be able to construct ray diagrams to illustrate the\nrefraction of a wave at the boundary between two different media.\n(HT only) Students should be able to use wave front diagrams to\nexplain refraction in terms of the change of speed that happens\nwhen a wave travels from one medium to a different medium.\nWS 1.2\nRequired practical activity 21: investigate how the amount of infrared radiation absorbed or\nradiated by a surface depends on the nature of that surface.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 157\nAT skills covered by this practical activity: physics AT 1 and 4.\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 191).\n6.6.2.3 Properties of electromagnetic waves 2\nContent Key opportunities for\nskills development\n(HT only) Radio waves can be produced by oscillations in electrical\ncircuits.\n(HT only) When radio waves are absorbed they may create an\nalternating current with the same frequency as the radio wave itself,\nso radio waves can themselves induce oscillations in an electrical\ncircuit.\nChanges in atoms and the nuclei of atoms can result in\nelectromagnetic waves being generated or absorbed over a wide\nfrequency range. Gamma rays originate from changes in the\nnucleus of an atom.\nUltraviolet waves, X-rays and gamma rays can have hazardous\neffects on human body tissue. The effects depend on the type of\nradiation and the size of the dose. Radiation dose (in sieverts) is a\nmeasure of the risk of harm resulting from an exposure of the body\nto the radiation.\nWS 1.5\n1000 millisieverts (mSv) = 1 sievert (Sv)\nStudents will not be required to recall the unit of radiation dose.\nStudents should be able to draw conclusions from given data about\nthe risks and consequences of exposure to radiation.\nUltraviolet waves can cause skin to age prematurely and increase\nthe risk of skin cancer. X-rays and gamma rays are ionising\nradiation that can cause the mutation of genes and cancer.\nWS 1.5\n6.6.2.4 Uses and applications of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves have many practical applications. For\nexample:\n• radio waves – television and radio\n• microwaves – satellite communications, cooking food\n• infrared – electrical heaters, cooking food, infrared cameras\n• visible light – fibre optic communications\n• ultraviolet – energy efficient lamps, sun tanning\n• X-rays and gamma rays – medical imaging and treatments.\n158 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2",
+          "code": "6.6.2",
+          "title": "Electromagnetic waves",
+          "kind": "section",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 155-158; 6.6.2 Electromagnetic waves",
+          "text": "Official PDF pages 155-158\nelectromagnetic waves.\n6.6.1 Waves in air, fluids and solids\n6.6.1.1 Transverse and longitudinal waves\nContent Key opportunities for\nskills development\nWaves may be either transverse or longitudinal.\nThe ripples on a water surface are an example of a transverse\nwave.\nLongitudinal waves show areas of compression and rarefaction.\nSound waves travelling through air are longitudinal.\nStudents should be able to describe the difference between\nlongitudinal and transverse waves.\nWS 1.2\nStudents should be able to describe evidence that, for both ripples\non a water surface and sound waves in air, it is the wave and not\nthe water or air itself that travels.\nWS 1.2, 2.2\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 155\n6.6.1.2 Properties of waves\nContent Key opportunities for\nskills development\nStudents should be able to describe wave motion in terms of their\namplitude, wavelength, frequency and period.\nThe amplitude of a wave is the maximum displacement of a point\non a wave away from its undisturbed position.\nThe wavelength of a wave is the distance from a point on one wave\nto the equivalent point on the adjacent wave.\nThe frequency of a wave is the number of waves passing a point\neach second.\nMS 1c, 3b, c\nperiod = 1\nf requency\nT = 1\nf\nperiod, T, in seconds, s\nfrequency, f, in hertz, Hz\nThe wave speed is the speed at which the energy is transferred (or\nthe wave moves) through the medium.\nAll waves obey the wave equation:\nMS 1c, 3b, c\nStudents should be able to\napply this equation which is\ngiven on the Physics\nequation sheet.\nwave speed = f requency × wavelength\nv = f λ\nwave speed, v, in metres per second, m/s\nfrequency, f, in hertz, Hz\nwavelength, λ, in metres, m\nStudents should be able to:\n• identify amplitude and wavelength from given diagrams\nMS 1c, 3b, 3c\nStudents should be able to\nrecall and apply this\nequation.\n• describe a method to measure the speed of sound waves in\nair\nAT 1\nWS 2.3, 2.4, 2.6, 2.7, 3.1,\n3.5\n• describe a method to measure the speed of ripples on a water\nsurface.\nAT 1, AT 4\nWS 2.3, 2.4, 2.6, 2.7, 3.1,\n3.5\nRequired practical activity 20: make observations to identify the suitability of apparatus to\nmeasure the frequency, wavelength and speed of waves in a ripple tank and waves in a solid and\ntake appropriate measurements.\nAT skills covered by this practical activity: physics AT 4.\n156 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 191).\n6.6.2 Electromagnetic waves\n6.6.2.1 Types of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves are transverse waves that transfer energy\nfrom the source of the waves to an absorber.\nElectromagnetic waves form a continuous spectrum and all types of\nelectromagnetic wave travel at the same velocity through a vacuum\n(space) or air.\nThe waves that form the electromagnetic spectrum are grouped in\nterms of their wavelength and their frequency. Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.\nOur eyes only detect visible light and so detect a limited range of\nelectromagnetic waves.\nStudents should be able to give examples that illustrate the transfer\nof energy by electromagnetic waves.\n6.6.2.2 Properties of electromagnetic waves 1\nContent Key opportunities for\nskills development\n(HT only) Different substances may absorb, transmit, refract or\nreflect electromagnetic waves in ways that vary with wavelength.\n(HT only) Some effects, for example refraction, are due to the\ndifference in velocity of the waves in different substances.\nStudents should be able to construct ray diagrams to illustrate the\nrefraction of a wave at the boundary between two different media.\n(HT only) Students should be able to use wave front diagrams to\nexplain refraction in terms of the change of speed that happens\nwhen a wave travels from one medium to a different medium.\nWS 1.2\nRequired practical activity 21: investigate how the amount of infrared radiation absorbed or\nradiated by a surface depends on the nature of that surface.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 157\nAT skills covered by this practical activity: physics AT 1 and 4.\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 191).\n6.6.2.3 Properties of electromagnetic waves 2\nContent Key opportunities for\nskills development\n(HT only) Radio waves can be produced by oscillations in electrical\ncircuits.\n(HT only) When radio waves are absorbed they may create an\nalternating current with the same frequency as the radio wave itself,\nso radio waves can themselves induce oscillations in an electrical\ncircuit.\nChanges in atoms and the nuclei of atoms can result in\nelectromagnetic waves being generated or absorbed over a wide\nfrequency range. Gamma rays originate from changes in the\nnucleus of an atom.\nUltraviolet waves, X-rays and gamma rays can have hazardous\neffects on human body tissue. The effects depend on the type of\nradiation and the size of the dose. Radiation dose (in sieverts) is a\nmeasure of the risk of harm resulting from an exposure of the body\nto the radiation.\nWS 1.5\n1000 millisieverts (mSv) = 1 sievert (Sv)\nStudents will not be required to recall the unit of radiation dose.\nStudents should be able to draw conclusions from given data about\nthe risks and consequences of exposure to radiation.\nUltraviolet waves can cause skin to age prematurely and increase\nthe risk of skin cancer. X-rays and gamma rays are ionising\nradiation that can cause the mutation of genes and cancer.\nWS 1.5\n6.6.2.4 Uses and applications of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves have many practical applications. For\nexample:\n• radio waves – television and radio\n• microwaves – satellite communications, cooking food\n• infrared – electrical heaters, cooking food, infrared cameras\n• visible light – fibre optic communications\n• ultraviolet – energy efficient lamps, sun tanning\n• X-rays and gamma rays – medical imaging and treatments.\n158 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-2",
+          "code": "6.6.2.2",
+          "title": "Properties of electromagnetic waves 1",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 155-158; 6.6.2.2 Properties of electromagnetic waves 1",
+          "text": "Official PDF pages 155-158\nProperties of electromagnetic waves 1\nContent Key opportunities for\nskills development\n(HT only) Different substances may absorb, transmit, refract or\nreflect electromagnetic waves in ways that vary with wavelength.\n(HT only) Some effects, for example refraction, are due to the\ndifference in velocity of the waves in different substances.\nStudents should be able to construct ray diagrams to illustrate the\nrefraction of a wave at the boundary between two different media.\n(HT only) Students should be able to use wave front diagrams to\nexplain refraction in terms of the change of speed that happens\nwhen a wave travels from one medium to a different medium.\nWS 1.2\nRequired practical activity 21: investigate how the amount of infrared radiation absorbed or\nradiated by a surface depends on the nature of that surface.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 157\nAT skills covered by this practical activity: physics AT 1 and 4.\nThis practical activity also provides opportunities to develop WS and MS. Details of all skills are\ngiven in Key opportunities for skills development (page 191).\n6.6.2.3 Properties of electromagnetic waves 2\nContent Key opportunities for\nskills development\n(HT only) Radio waves can be produced by oscillations in electrical\ncircuits.\n(HT only) When radio waves are absorbed they may create an\nalternating current with the same frequency as the radio wave itself,\nso radio waves can themselves induce oscillations in an electrical\ncircuit.\nChanges in atoms and the nuclei of atoms can result in\nelectromagnetic waves being generated or absorbed over a wide\nfrequency range. Gamma rays originate from changes in the\nnucleus of an atom.\nUltraviolet waves, X-rays and gamma rays can have hazardous\neffects on human body tissue. The effects depend on the type of\nradiation and the size of the dose. Radiation dose (in sieverts) is a\nmeasure of the risk of harm resulting from an exposure of the body\nto the radiation.\nWS 1.5\n1000 millisieverts (mSv) = 1 sievert (Sv)\nStudents will not be required to recall the unit of radiation dose.\nStudents should be able to draw conclusions from given data about\nthe risks and consequences of exposure to radiation.\nUltraviolet waves can cause skin to age prematurely and increase\nthe risk of skin cancer. X-rays and gamma rays are ionising\nradiation that can cause the mutation of genes and cancer.\nWS 1.5\n6.6.2.4 Uses and applications of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves have many practical applications. For\nexample:\n• radio waves – television and radio\n• microwaves – satellite communications, cooking food\n• infrared – electrical heaters, cooking food, infrared cameras\n• visible light – fibre optic communications\n• ultraviolet – energy efficient lamps, sun tanning\n• X-rays and gamma rays – medical imaging and treatments.\n158 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-3",
+          "code": "6.6.2.3",
+          "title": "Properties of electromagnetic waves 2",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 155-158; 6.6.2.3 Properties of electromagnetic waves 2",
+          "text": "Official PDF pages 155-158\nProperties of electromagnetic waves 2\nContent Key opportunities for\nskills development\n(HT only) Radio waves can be produced by oscillations in electrical\ncircuits.\n(HT only) When radio waves are absorbed they may create an\nalternating current with the same frequency as the radio wave itself,\nso radio waves can themselves induce oscillations in an electrical\ncircuit.\nChanges in atoms and the nuclei of atoms can result in\nelectromagnetic waves being generated or absorbed over a wide\nfrequency range. Gamma rays originate from changes in the\nnucleus of an atom.\nUltraviolet waves, X-rays and gamma rays can have hazardous\neffects on human body tissue. The effects depend on the type of\nradiation and the size of the dose. Radiation dose (in sieverts) is a\nmeasure of the risk of harm resulting from an exposure of the body\nto the radiation.\nWS 1.5\n1000 millisieverts (mSv) = 1 sievert (Sv)\nStudents will not be required to recall the unit of radiation dose.\nStudents should be able to draw conclusions from given data about\nthe risks and consequences of exposure to radiation.\nUltraviolet waves can cause skin to age prematurely and increase\nthe risk of skin cancer. X-rays and gamma rays are ionising\nradiation that can cause the mutation of genes and cancer.\nWS 1.5\n6.6.2.4 Uses and applications of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves have many practical applications. For\nexample:\n• radio waves – television and radio\n• microwaves – satellite communications, cooking food\n• infrared – electrical heaters, cooking food, infrared cameras\n• visible light – fibre optic communications\n• ultraviolet – energy efficient lamps, sun tanning\n• X-rays and gamma rays – medical imaging and treatments.\n158 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-4",
+          "code": "6.6.2.4",
+          "title": "Uses and applications of electromagnetic waves",
+          "kind": "topic",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 155-158; 6.6.2.4 Uses and applications of electromagnetic waves",
+          "text": "Official PDF pages 155-158\nUses and applications of electromagnetic waves\nContent Key opportunities for\nskills development\nElectromagnetic waves have many practical applications. For\nexample:\n• radio waves – television and radio\n• microwaves – satellite communications, cooking food\n• infrared – electrical heaters, cooking food, infrared cameras\n• visible light – fibre optic communications\n• ultraviolet – energy efficient lamps, sun tanning\n• X-rays and gamma rays – medical imaging and treatments.\n158 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "code": "6.7",
+      "title": "Magnetism and electromagnetism",
+      "paper": "Physics Paper 2",
+      "pageStart": 159,
+      "pageEnd": 161,
+      "components": [
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1",
+          "code": "6.7.1",
+          "title": "Permanent and induced magnetism, magnetic forces and fields",
+          "kind": "section",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 159-161; 6.7.1 Permanent and induced magnetism, magnetic forces and fields",
+          "text": "Official PDF pages 159-161\nPermanent and induced magnetism, magnetic forces and fields\n6.7.1.1 Poles of a magnet\nContent Key opportunities for\nskills development\nThe poles of a magnet are the places where the magnetic forces\nare strongest. When two magnets are brought close together they\nexert a force on each other. Two like poles repel each other. Two\nunlike poles attract each other. Attraction and repulsion between\ntwo magnetic poles are examples of non-contact force.\nA permanent magnet produces its own magnetic field. An induced\nmagnet is a material that becomes a magnet when it is placed in a\nmagnetic field. Induced magnetism always causes a force of\nattraction. When removed from the magnetic field an induced\nmagnet loses most/all of its magnetism quickly.\nStudents should be able to describe:\n• the attraction and repulsion between unlike and like poles for\npermanent magnets\n• the difference between permanent and induced magnets.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 159\n6.7.1.2 Magnetic fields\nContent Key opportunities for\nskills development\nThe region around a magnet where a force acts on another magnet\nor on a magnetic material (iron, steel, cobalt and nickel) is called\nthe magnetic field.\nThe force between a magnet and a magnetic material is always one\nof attraction.\nThe strength of the magnetic field depends on the distance from the\nmagnet. The field is strongest at the poles of the magnet.\nThe direction of the magnetic field at any point is given by the\ndirection of the force that would act on another north pole placed at\nthat point. The direction of a magnetic field line is from the north\n(seeking) pole of a magnet to the south(seeking) pole of the\nmagnet.\nA magnetic compass contains a small bar magnet. The Earth has a\nmagnetic field. The compass needle points in the direction of the\nEarth’s magnetic field.\nStudents should be able to:\n• describe how to plot the magnetic field pattern of a magnet\nusing a compass\n• draw the magnetic field pattern of a bar magnet showing how\nstrength and direction change from one point to another\n• explain how the behaviour of a magnetic compass is related\nto evidence that the core of the Earth must be magnetic.\nWS 2.2\n6.7.2 The motor effect\n160 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.7.2.1 Electromagnetism\nContent Key opportunities for\nskills development\nWhen a current flows through a conducting wire a magnetic field is\nproduced around the wire. The strength of the magnetic field\ndepends on the current through the wire and the distance from the\nwire.\nShaping a wire to form a solenoid increases the strength of the\nmagnetic field created by a current through the wire. The magnetic\nfield inside a solenoid is strong and uniform.\nThe magnetic field around a solenoid has a similar shape to that of\na bar magnet. Adding an iron core increases the strength of the\nmagnetic field of a solenoid. An electromagnet is a solenoid with an\niron core.\nStudents should be able to:\n• describe how the magnetic effect of a current can be\ndemonstrated\n• draw the magnetic field pattern for a straight wire carrying a\ncurrent and for a solenoid (showing the direction of the field)\n• explain how a solenoid arrangement can increase the\nmagnetic effect of the current.\nWS 2.2\n6.7.2.2 Fleming's left-hand rule (HT only)\nContent Key opportunities for\nskills development\nWhen a conductor carrying a current is placed in a magnetic field\nthe magnet producing the field and the conductor exert a force on\neach other. This is called the motor effect.\nStudents should be able to show that Fleming's left-hand rule\nrepresents the relative orientation of the force, the current in the\nconductor and the magnetic field.\nStudents should be able to recall the factors that affect the size of\nthe force on the conductor.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 161"
+        },
+        {
+          "id": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2",
+          "code": "6.7.2",
+          "title": "The motor effect",
+          "kind": "section",
+          "tier": [
+            "Foundation",
+            "Higher"
+          ],
+          "locator": "Official PDF pages 159-161; 6.7.2 The motor effect",
+          "text": "Official PDF pages 159-161\nThe motor effect\n160 Visit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration\n6.7.2.1 Electromagnetism\nContent Key opportunities for\nskills development\nWhen a current flows through a conducting wire a magnetic field is\nproduced around the wire. The strength of the magnetic field\ndepends on the current through the wire and the distance from the\nwire.\nShaping a wire to form a solenoid increases the strength of the\nmagnetic field created by a current through the wire. The magnetic\nfield inside a solenoid is strong and uniform.\nThe magnetic field around a solenoid has a similar shape to that of\na bar magnet. Adding an iron core increases the strength of the\nmagnetic field of a solenoid. An electromagnet is a solenoid with an\niron core.\nStudents should be able to:\n• describe how the magnetic effect of a current can be\ndemonstrated\n• draw the magnetic field pattern for a straight wire carrying a\ncurrent and for a solenoid (showing the direction of the field)\n• explain how a solenoid arrangement can increase the\nmagnetic effect of the current.\nWS 2.2\n6.7.2.2 Fleming's left-hand rule (HT only)\nContent Key opportunities for\nskills development\nWhen a conductor carrying a current is placed in a magnetic field\nthe magnet producing the field and the conductor exert a force on\neach other. This is called the motor effect.\nStudents should be able to show that Fleming's left-hand rule\nrepresents the relative orientation of the force, the current in the\nconductor and the magnetic field.\nStudents should be able to recall the factors that affect the size of\nthe force on the conductor.\nAQA GCSE Combined Science: Trilogy 8464. GCSE exams June 2018 onwards. Version 1.1 04 October 2019\nVisit aqa.org.uk/8464 for the most up-to-date specification, resources, support and administration 161"
+        }
+      ]
+    }
+  ]
+}
+
+Candidates:
+{
+  "cards": [
+    {
+      "id": "aqa-8464-955b11dcf2-aqa-8464-physics-6-5-4-2-3-newtons-third-law-force-pair",
+      "conceptKey": "aqa-8464-955b11dcf2-aqa-8464-physics-newtons-third-law-equal-opposite-forces",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-3",
+      "kind": "fact",
+      "visualCue": "🔗",
+      "front": "When two objects interact, how are the forces they exert on each other related?",
+      "back": "They are equal in magnitude and opposite in direction.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Newton’s Third Law states that interacting objects exert forces on each other that are equal and opposite.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They are equal in magnitude and opposite in direction.",
+          "isCorrect": true,
+          "feedback": "The interaction forces are equal and opposite.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They are equal in magnitude and act in the same direction.",
+          "isCorrect": false,
+          "feedback": "Their directions are opposite, not the same.",
+          "misconception": "same-direction-force-pair"
+        },
+        {
+          "key": "c",
+          "text": "They are unequal in magnitude and act in opposite directions.",
+          "isCorrect": false,
+          "feedback": "The law states equality as well as opposition.",
+          "misconception": "unequal-force-pair"
+        },
+        {
+          "key": "d",
+          "text": "Only one object exerts a force.",
+          "isCorrect": false,
+          "feedback": "The two objects exert forces on each other.",
+          "misconception": "one-sided-interaction-force"
+        }
+      ],
+      "sourceExcerpt": "Whenever two objects interact, the forces they exert on each other\nare equal and opposite.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.2.3 Newton's Third Law"
+    },
+    {
+      "id": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-6-5-4-3-speed-stopping-distance",
+      "conceptKey": "aqa-8464-ccaa2e6e5b-aqa-8464-physics-given-braking-force-speed-stopping-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3",
+      "kind": "cause-consequence",
+      "visualCue": "🏎️",
+      "front": "For a vehicle with a given braking force, how does increasing its speed affect its stopping distance?",
+      "back": "The greater the speed, the greater the stopping distance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "With braking force held at the given value, a greater speed corresponds to a greater stopping distance.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The greater the speed, the greater the stopping distance.",
+          "isCorrect": true,
+          "feedback": "At a given braking force, stopping distance increases with speed.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The greater the speed, the shorter the stopping distance.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated relationship.",
+          "misconception": "inverse-speed-stopping-distance"
+        },
+        {
+          "key": "c",
+          "text": "Speed has no effect on stopping distance.",
+          "isCorrect": false,
+          "feedback": "The passage explicitly links greater speed to greater stopping distance.",
+          "misconception": "speed-independent-stopping-distance"
+        },
+        {
+          "key": "d",
+          "text": "Stopping distance changes only if braking force changes.",
+          "isCorrect": false,
+          "feedback": "The stated relationship applies while braking force is fixed.",
+          "misconception": "braking-force-only"
+        }
+      ],
+      "sourceExcerpt": "For a given braking force the greater the speed of the\nvehicle, the greater the stopping distance.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3 Forces and braking"
+    },
+    {
+      "id": "aqa-8464-7c9085df32-aqa-8464-physics-6-5-4-3-1-stopping-distance-components",
+      "conceptKey": "aqa-8464-7c9085df32-aqa-8464-physics-stopping-distance-thinking-plus-braking-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-1",
+      "kind": "formula",
+      "visualCue": "🚗",
+      "front": "Which two distances make up a vehicle’s stopping distance?",
+      "back": "Thinking distance + braking distance.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Thinking distance is travelled during the driver’s reaction time; braking distance is travelled under the braking force.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Thinking distance + braking distance.",
+          "isCorrect": true,
+          "feedback": "Stopping distance is the sum of these two distances.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Thinking distance + braking time.",
+          "isCorrect": false,
+          "feedback": "The definition names braking distance, not braking time.",
+          "misconception": "time-distance-mixing"
+        },
+        {
+          "key": "c",
+          "text": "Braking distance only.",
+          "isCorrect": false,
+          "feedback": "This omits the thinking distance travelled during reaction time.",
+          "misconception": "omits-thinking-distance"
+        }
+      ],
+      "sourceExcerpt": "The stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance).",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.1 Stopping distance"
+    },
+    {
+      "id": "aqa-8464-befd51184a-aqa-8464-physics-6-5-4-3-2-driver-reaction-factors",
+      "conceptKey": "aqa-8464-befd51184a-aqa-8464-physics-driver-reaction-time-affecting-factors",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-2",
+      "kind": "fact",
+      "visualCue": "🏃",
+      "front": "According to AQA, which factors can affect a driver’s reaction time or ability to react?",
+      "back": "Tiredness, drugs and alcohol; distractions may also affect the driver’s ability to react.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Tiredness, drugs and alcohol can affect reaction time, while distractions may affect the driver’s ability to react.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Tiredness, drugs and alcohol; distractions may also affect the driver’s ability to react.",
+          "isCorrect": true,
+          "feedback": "These are the reaction factors identified in the passage.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Wet or icy roads, and poor brakes or tyres.",
+          "isCorrect": false,
+          "feedback": "These are not among the reaction factors in the cited statement.",
+          "misconception": "braking-factors-for-reaction-time"
+        },
+        {
+          "key": "c",
+          "text": "Vehicle speed and braking force only.",
+          "isCorrect": false,
+          "feedback": "These are not the reaction-time factors listed here.",
+          "misconception": "vehicle-factors-for-reaction-time"
+        }
+      ],
+      "sourceExcerpt": "A driver’s reaction time can be affected by tiredness, drugs and\nalcohol. Distractions may also affect a driver’s ability to react.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.2 Reaction time"
+    },
+    {
+      "id": "aqa-8464-33cbec4d1f-aqa-8464-physics-6-5-4-3-3-braking-distance-conditions",
+      "conceptKey": "aqa-8464-33cbec4d1f-aqa-8464-physics-road-weather-vehicle-condition-braking-distance",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-3",
+      "kind": "cause-consequence",
+      "visualCue": "🚗",
+      "front": "Which specified conditions can affect a vehicle’s braking distance?",
+      "back": "Adverse road and weather conditions, plus poor brakes or tyres.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Wet or icy conditions are examples of adverse road conditions; poor vehicle condition is limited to its brakes or tyres.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Adverse road and weather conditions, plus poor brakes or tyres.",
+          "isCorrect": true,
+          "feedback": "These are the specified environmental and vehicle-condition factors.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Tiredness, drugs, alcohol and distractions.",
+          "isCorrect": false,
+          "feedback": "Those are not the road, weather or vehicle-condition factors named here.",
+          "misconception": "reaction-factors-for-braking-distance"
+        },
+        {
+          "key": "c",
+          "text": "Dry roads and well-maintained brakes and tyres.",
+          "isCorrect": false,
+          "feedback": "This reverses the stated adverse-road and poor-vehicle conditions.",
+          "misconception": "favourable-conditions-lengthen-braking"
+        }
+      ],
+      "sourceExcerpt": "The braking distance of a vehicle can be affected by adverse road\nand weather conditions and poor condition of the vehicle.\nAdverse road conditions include wet or icy conditions. Poor\ncondition of the vehicle is limited to the vehicle's brakes or tyres.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.3 Factors affecting braking distance 1"
+    },
+    {
+      "id": "aqa-8464-d86a40e656-aqa-8464-physics-6-5-4-3-4-braking-energy-change",
+      "conceptKey": "aqa-8464-d86a40e656-aqa-8464-physics-braking-kinetic-energy-temperature-change",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-4",
+      "kind": "cause-consequence",
+      "visualCue": "⚙️",
+      "front": "When a vehicle’s brakes are applied, what happens to the vehicle’s kinetic energy and the brakes’ temperature?",
+      "back": "The vehicle’s kinetic energy decreases and the brakes’ temperature increases.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Friction between the brakes and wheel does work that reduces the vehicle’s kinetic energy, while the brakes’ temperature increases.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The vehicle’s kinetic energy decreases and the brakes’ temperature increases.",
+          "isCorrect": true,
+          "feedback": "This is the energy and temperature change described during braking.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Both the vehicle’s kinetic energy and the brakes’ temperature decrease.",
+          "isCorrect": false,
+          "feedback": "Kinetic energy decreases, but brake temperature increases.",
+          "misconception": "brake-temperature-decreases"
+        },
+        {
+          "key": "c",
+          "text": "The vehicle’s kinetic energy increases and the brakes’ temperature decreases.",
+          "isCorrect": false,
+          "feedback": "Both changes are reversed.",
+          "misconception": "reversed-braking-energy-changes"
+        },
+        {
+          "key": "d",
+          "text": "The vehicle’s kinetic energy stays constant and the brakes’ temperature increases.",
+          "isCorrect": false,
+          "feedback": "The friction force reduces the vehicle’s kinetic energy.",
+          "misconception": "constant-kinetic-energy-during-braking"
+        }
+      ],
+      "sourceExcerpt": "When a force is applied to the brakes of a vehicle, work done by the\nfriction force between the brakes and the wheel reduces the kinetic\nenergy of the vehicle and the temperature of the brakes increases.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.4.3.4 Factors affecting braking distance 2"
+    },
+    {
+      "id": "aqa-8464-653a60fc98-aqa-8464-physics-6-5-5-1-momentum-equation",
+      "conceptKey": "aqa-8464-653a60fc98-aqa-8464-physics-momentum-mass-times-velocity",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1",
+      "kind": "formula",
+      "visualCue": "🎳",
+      "front": "What equation defines the momentum of a moving object?",
+      "back": "momentum = mass × velocity",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The equation defines momentum as the product of mass and velocity.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "momentum = mass × velocity",
+          "isCorrect": true,
+          "feedback": "Momentum is mass multiplied by velocity.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "momentum = mass × speed",
+          "isCorrect": false,
+          "feedback": "The stated equation uses velocity, not speed.",
+          "misconception": "speed-substituted-for-velocity"
+        },
+        {
+          "key": "c",
+          "text": "momentum = mass ÷ velocity",
+          "isCorrect": false,
+          "feedback": "The stated relationship uses multiplication, not division.",
+          "misconception": "divides-mass-by-velocity"
+        }
+      ],
+      "sourceExcerpt": "Momentum is defined by the equation:\nmomentum = mass × velocity",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.5.1 Momentum is a property of moving objects"
+    },
+    {
+      "id": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-6-5-5-2-conservation-of-momentum",
+      "conceptKey": "aqa-8464-e9e7b7d7f8-aqa-8464-physics-closed-system-total-momentum-conservation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2",
+      "kind": "fact",
+      "visualCue": "🔀",
+      "front": "What does conservation of momentum state for an event in a closed system?",
+      "back": "In a closed system, total momentum before an event equals total momentum after it.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Conservation of momentum equates the system’s total momentum before and after the event.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "In a closed system, total momentum before an event equals total momentum after it.",
+          "isCorrect": true,
+          "feedback": "This is the stated conservation rule.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "In a closed system, each object keeps the same momentum throughout the event.",
+          "isCorrect": false,
+          "feedback": "The statement concerns total momentum; it does not say each object’s momentum is unchanged.",
+          "misconception": "individual-momentum-must-stay-constant"
+        },
+        {
+          "key": "c",
+          "text": "In a closed system, total momentum after the event is always zero.",
+          "isCorrect": false,
+          "feedback": "The before and after totals are equal; they are not stated to be zero.",
+          "misconception": "conserved-momentum-must-be-zero"
+        },
+        {
+          "key": "d",
+          "text": "In a closed system, total kinetic energy before an event equals total kinetic energy after it.",
+          "isCorrect": false,
+          "feedback": "The cited conservation rule concerns total momentum, not kinetic energy.",
+          "misconception": "kinetic-energy-for-momentum-conservation"
+        }
+      ],
+      "sourceExcerpt": "In a closed system, the total momentum before an event is equal to\nthe total momentum after the event.\nThis is called conservation of momentum.",
+      "sourceLocator": "Official PDF pages 152-155; 6.5.5.2 Conservation of momentum"
+    },
+    {
+      "id": "aqa-8464-9b68727484-aqa-8464-physics-6-6-1-wave-frequency-definition",
+      "conceptKey": "aqa-8464-9b68727484-aqa-8464-physics-wave-frequency-waves-per-second",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1",
+      "kind": "definition",
+      "visualCue": "🌊",
+      "front": "What is the frequency of a wave?",
+      "back": "The number of waves passing a point each second.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Frequency counts how many waves pass a particular point each second.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The number of waves passing a point each second.",
+          "isCorrect": true,
+          "feedback": "This is the definition of wave frequency.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "The maximum displacement from the undisturbed position.",
+          "isCorrect": false,
+          "feedback": "That describes amplitude, not frequency.",
+          "misconception": "amplitude-for-frequency"
+        },
+        {
+          "key": "c",
+          "text": "The distance between equivalent points on adjacent waves.",
+          "isCorrect": false,
+          "feedback": "That describes wavelength, not frequency.",
+          "misconception": "wavelength-for-frequency"
+        },
+        {
+          "key": "d",
+          "text": "The time taken for one wave to pass a point.",
+          "isCorrect": false,
+          "feedback": "Frequency is a number of waves per second, not a time.",
+          "misconception": "period-for-frequency"
+        }
+      ],
+      "sourceExcerpt": "The amplitude of a wave is the maximum displacement of a point\non a wave away from its undisturbed position.\nThe wavelength of a wave is the distance from a point on one wave\nto the equivalent point on the adjacent wave.\nThe frequency of a wave is the number of waves passing a point\neach second.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.1 Waves in air, fluids and solids"
+    },
+    {
+      "id": "aqa-8464-f4686243a5-aqa-8464-physics-6-6-2-electromagnetic-spectrum-order",
+      "conceptKey": "aqa-8464-f4686243a5-aqa-8464-physics-electromagnetic-spectrum-long-to-short-wavelength",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2",
+      "kind": "structure",
+      "visualCue": "🌈",
+      "front": "What is the order of the electromagnetic spectrum from long to short wavelength, equivalently low to high frequency?",
+      "back": "Radio, microwave, infrared, visible light (red to violet), ultraviolet, X-rays and gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "This sequence runs from long to short wavelength, which is also the direction from low to high frequency.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Radio, microwave, infrared, visible light (red to violet), ultraviolet, X-rays and gamma rays.",
+          "isCorrect": true,
+          "feedback": "This is the stated long-to-short-wavelength order.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Gamma rays, X-rays, ultraviolet, visible light (violet to red), infrared, microwave and radio.",
+          "isCorrect": false,
+          "feedback": "This is the reverse, running from short to long wavelength.",
+          "misconception": "electromagnetic-spectrum-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Microwave, radio, infrared, visible light (red to violet), ultraviolet, X-rays and gamma rays.",
+          "isCorrect": false,
+          "feedback": "Radio comes before microwave in the stated order.",
+          "misconception": "radio-microwave-order-swapped"
+        },
+        {
+          "key": "d",
+          "text": "Radio, microwave, infrared, ultraviolet, visible light (red to violet), X-rays and gamma rays.",
+          "isCorrect": false,
+          "feedback": "Visible light comes before ultraviolet in the stated order.",
+          "misconception": "visible-ultraviolet-order-swapped"
+        }
+      ],
+      "sourceExcerpt": "The waves that form the electromagnetic spectrum are grouped in\nterms of their wavelength and their frequency. Going from long to\nshort wavelength (or from low to high frequency) the groups are:\nradio, microwave, infrared, visible light (red to violet), ultraviolet, X-\nrays and gamma rays.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2 Electromagnetic waves"
+    },
+    {
+      "id": "aqa-8464-db52375d36-aqa-8464-physics-6-6-2-2-infrared-surface-practical",
+      "conceptKey": "aqa-8464-db52375d36-aqa-8464-physics-infrared-absorption-radiation-surface-nature",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-2",
+      "kind": "practical",
+      "visualCue": "🌡️",
+      "front": "What relationship is investigated in AQA required practical activity 21?",
+      "back": "How infrared absorption or radiation by a surface depends on the nature of that surface.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The practical investigates whether the amount of infrared radiation absorbed or radiated depends on the nature of the surface.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "How infrared absorption or radiation by a surface depends on the nature of that surface.",
+          "isCorrect": true,
+          "feedback": "Surface nature is linked to the amount absorbed or radiated.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "How infrared wavelength depends on the distance between the source and surface.",
+          "isCorrect": false,
+          "feedback": "Distance is not the stated surface variable in this practical.",
+          "misconception": "distance-as-infrared-practical-variable"
+        },
+        {
+          "key": "c",
+          "text": "How the speed of infrared radiation depends on surface temperature.",
+          "isCorrect": false,
+          "feedback": "The practical concerns the amount absorbed or radiated, not infrared speed.",
+          "misconception": "infrared-speed-instead-of-radiation-amount"
+        }
+      ],
+      "sourceExcerpt": "Required practical activity 21: investigate how the amount of infrared radiation absorbed or\nradiated by a surface depends on the nature of that surface.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2.2 Properties of electromagnetic waves 1"
+    },
+    {
+      "id": "aqa-8464-5830312136-aqa-8464-physics-6-6-2-3-ionising-wave-hazards",
+      "conceptKey": "aqa-8464-5830312136-aqa-8464-physics-x-rays-gamma-ionising-gene-mutation-cancer",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "☢️",
+      "front": "Which electromagnetic waves are identified as ionising radiation that can cause gene mutations and cancer?",
+      "back": "X-rays and gamma rays.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "X-rays and gamma rays are identified as ionising radiation that can cause mutation of genes and cancer.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "X-rays and gamma rays.",
+          "isCorrect": true,
+          "feedback": "These are the ionising waves identified in the passage.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Ultraviolet waves and X-rays.",
+          "isCorrect": false,
+          "feedback": "Ultraviolet is linked to premature skin ageing and skin-cancer risk, but the cited ionising pair is X-rays and gamma rays.",
+          "misconception": "ultraviolet-substituted-for-gamma"
+        },
+        {
+          "key": "c",
+          "text": "Microwaves and infrared waves.",
+          "isCorrect": false,
+          "feedback": "These are not the pair named in the ionising statement.",
+          "misconception": "lower-frequency-waves-labelled-ionising"
+        },
+        {
+          "key": "d",
+          "text": "All electromagnetic waves.",
+          "isCorrect": false,
+          "feedback": "The passage identifies a specific pair rather than making this claim about every electromagnetic wave.",
+          "misconception": "all-electromagnetic-waves-labelled-ionising"
+        }
+      ],
+      "sourceExcerpt": "Ultraviolet waves can cause skin to age prematurely and increase\nthe risk of skin cancer. X-rays and gamma rays are ionising\nradiation that can cause the mutation of genes and cancer.",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2.3 Properties of electromagnetic waves 2"
+    },
+    {
+      "id": "aqa-8464-c27f96ba5f-aqa-8464-physics-6-6-2-4-microwave-applications",
+      "conceptKey": "aqa-8464-c27f96ba5f-aqa-8464-physics-microwaves-satellite-communications-cooking",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-4",
+      "kind": "fact",
+      "visualCue": "🌌",
+      "front": "Which type of electromagnetic wave is listed for both satellite communications and cooking food?",
+      "back": "Microwaves.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification lists satellite communications and cooking food as microwave applications.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Microwaves.",
+          "isCorrect": true,
+          "feedback": "Both applications are assigned to microwaves.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Radio waves.",
+          "isCorrect": false,
+          "feedback": "The cited applications are assigned to microwaves, not radio waves.",
+          "misconception": "radio-for-microwave-applications"
+        },
+        {
+          "key": "c",
+          "text": "Infrared.",
+          "isCorrect": false,
+          "feedback": "The cited applications are assigned to microwaves, not infrared.",
+          "misconception": "infrared-for-microwave-applications"
+        },
+        {
+          "key": "d",
+          "text": "Visible light.",
+          "isCorrect": false,
+          "feedback": "The cited applications are assigned to microwaves, not visible light.",
+          "misconception": "visible-light-for-microwave-applications"
+        }
+      ],
+      "sourceExcerpt": "• microwaves – satellite communications, cooking food",
+      "sourceLocator": "Official PDF pages 155-158; 6.6.2.4 Uses and applications of electromagnetic waves"
+    },
+    {
+      "id": "aqa-8464-aef6715b9e-aqa-8464-physics-6-7-1-permanent-induced-magnets",
+      "conceptKey": "aqa-8464-aef6715b9e-aqa-8464-physics-permanent-versus-induced-magnetism",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1",
+      "kind": "comparison",
+      "visualCue": "🧲",
+      "front": "What is the difference between a permanent magnet and an induced magnet, including what happens when an induced magnet is removed from the field?",
+      "back": "A permanent magnet produces its own magnetic field. An induced magnet becomes magnetic in a magnetic field and quickly loses most or all of its magnetism when removed.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "An induced material becomes a magnet when placed in a magnetic field; after removal, it loses most or all of its magnetism quickly.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A permanent magnet produces its own magnetic field. An induced magnet becomes magnetic in a magnetic field and quickly loses most or all of its magnetism when removed.",
+          "isCorrect": true,
+          "feedback": "This correctly distinguishes permanent and induced magnetism.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "An induced magnet produces its own field permanently; a permanent magnet is magnetic only while in an external field.",
+          "isCorrect": false,
+          "feedback": "This reverses the two descriptions.",
+          "misconception": "permanent-induced-magnets-reversed"
+        },
+        {
+          "key": "c",
+          "text": "Both types become magnetic only in an external field and lose their magnetism quickly when removed.",
+          "isCorrect": false,
+          "feedback": "That field-dependent behaviour is stated for an induced magnet, while a permanent magnet produces its own field.",
+          "misconception": "all-magnets-treated-as-induced"
+        }
+      ],
+      "sourceExcerpt": "A permanent magnet produces its own magnetic field. An induced\nmagnet is a material that becomes a magnet when it is placed in a\nmagnetic field. Induced magnetism always causes a force of\nattraction. When removed from the magnetic field an induced\nmagnet loses most/all of its magnetism quickly.",
+      "sourceLocator": "Official PDF pages 159-161; 6.7.1 Permanent and induced magnetism, magnetic forces and fields"
+    },
+    {
+      "id": "aqa-8464-5eff9fe3d3-aqa-8464-physics-6-7-2-electromagnet-definition",
+      "conceptKey": "aqa-8464-5eff9fe3d3-aqa-8464-physics-electromagnet-solenoid-iron-core",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7",
+      "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2",
+      "kind": "definition",
+      "visualCue": "🔌",
+      "front": "What arrangement does AQA define as an electromagnet?",
+      "back": "A solenoid with an iron core.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Adding an iron core increases a solenoid’s magnetic-field strength; a solenoid with an iron core is an electromagnet.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "A solenoid with an iron core.",
+          "isCorrect": true,
+          "feedback": "This is the stated definition of an electromagnet.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "A solenoid without an iron core.",
+          "isCorrect": false,
+          "feedback": "The definition includes an iron core.",
+          "misconception": "coreless-solenoid-as-electromagnet"
+        },
+        {
+          "key": "c",
+          "text": "An iron core without a solenoid.",
+          "isCorrect": false,
+          "feedback": "An iron core alone does not match the stated solenoid-with-core definition.",
+          "misconception": "iron-core-alone-as-electromagnet"
+        }
+      ],
+      "sourceExcerpt": "Adding an iron core increases the strength of the\nmagnetic field of a solenoid. An electromagnet is a solenoid with an\niron core.",
+      "sourceLocator": "Official PDF pages 159-161; 6.7.2 The motor effect"
+    }
+  ]
+}

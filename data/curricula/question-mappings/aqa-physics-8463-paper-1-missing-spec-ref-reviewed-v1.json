@@ -1,0 +1,4539 @@
+{
+	"schemaVersion": "2",
+	"id": "aqa-physics-8463-paper-1-missing-spec-ref-review-v1",
+	"importOwner": "official_curriculum_importer",
+	"generatedAt": "2026-07-16",
+	"review": {
+		"method": "Item-by-item review of the official AQA 8463/1H June 2024 question paper and mark scheme, the stored D1 prompt/chain/mark rows, and the hashed local AQA Physics specification; no keyword classifier or model call.",
+		"boundary": "Questions map only where the official prompt and positive mark evidence fix one learner-selectable Physics chapter. A context-only percentage calculation and three standalone working-scientifically measurement-error operations are explicitly withheld."
+	},
+	"specificationSources": [
+		{
+			"specificationId": "aqa-gcse-physics-8463-v1.1",
+			"version": "1.1",
+			"fileHash": "sha256:b0ece1dba5a0f5d5aa1d72dda48ec8846773fee4e00f8cebde98fbc554e36bb1",
+			"localPath": "data/curricula/sources/aqa-gcse-physics-8463-v1.1.pdf",
+			"pdfUrl": "https://cdn.sanity.io/files/p28bar15/green/e96b2cef624c0970b0f90d9678a438580aed0f65.pdf"
+		}
+	],
+	"scope": {
+		"board": "AQA",
+		"qualification": "GCSE",
+		"subject": "Physics",
+		"sourceDocumentIds": ["aqa-84631h-qp-jun24"],
+		"questionIds": [
+			"84631h-jun24-01-1",
+			"84631h-jun24-01-2",
+			"84631h-jun24-01-3",
+			"84631h-jun24-01-4",
+			"84631h-jun24-02-1",
+			"84631h-jun24-02-2",
+			"84631h-jun24-02-3",
+			"84631h-jun24-02-4",
+			"84631h-jun24-02-5",
+			"84631h-jun24-03-1",
+			"84631h-jun24-03-2",
+			"84631h-jun24-03-3",
+			"84631h-jun24-04-1",
+			"84631h-jun24-04-2",
+			"84631h-jun24-04-3",
+			"84631h-jun24-04-4",
+			"84631h-jun24-04-5",
+			"84631h-jun24-05-1",
+			"84631h-jun24-05-2",
+			"84631h-jun24-05-3",
+			"84631h-jun24-05-4",
+			"84631h-jun24-05-5",
+			"84631h-jun24-06-1",
+			"84631h-jun24-06-2",
+			"84631h-jun24-06-3",
+			"84631h-jun24-07-1",
+			"84631h-jun24-07-2",
+			"84631h-jun24-07-3",
+			"84631h-jun24-07-4",
+			"84631h-jun24-07-5",
+			"84631h-jun24-08-1",
+			"84631h-jun24-08-2",
+			"84631h-jun24-08-3",
+			"84631h-jun24-09-1",
+			"84631h-jun24-09-2",
+			"84631h-jun24-09-3",
+			"84631h-jun24-09-4",
+			"84631h-jun24-09-5",
+			"84631h-jun24-10-1",
+			"84631h-jun24-10-2",
+			"84631h-jun24-10-3",
+			"84631h-jun24-10-4",
+			"84631h-jun24-10-5"
+		],
+		"questionCount": 43
+	},
+	"mappings": [
+		{
+			"questionId": "84631h-jun24-01-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "f390d92f65fdaf7edb0aee365966d3dea98994d0532efef41b8156fe43861fc1",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-01-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "01.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Which energy store increases when water is heated?",
+					"selfContainedPromptText": "Which energy store increases when water is heated?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-01-1-thermal-store-recall",
+					"title": "Thermal Store",
+					"canonicalChainText": "heating -> particle energy -> thermal store",
+					"fitNotes": "Heating raises the water store."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-01-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Thermal energy store or internal energy store; alternatively, kinetic energy of the water particles.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p7, 01.1"
+					},
+					{
+						"id": "84631h-jun24-01-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow Ek. Ignore 'heat'.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p7, 01.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-01-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "48d5f39f81ec492279380642090a8ab8ff666cdb252c00177b2e85750756e833",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-01-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "01.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Which energy store increases when water is pumped uphill into a reservoir?",
+					"selfContainedPromptText": "Which energy store increases when water is pumped uphill into a reservoir?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-01-2-raised-water-store",
+					"title": "Raised Water",
+					"canonicalChainText": "water raised -> greater height -> GPE store",
+					"fitNotes": "Height cues the gravitational store."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-01-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Gravitational potential energy store.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p7, 01.2"
+					},
+					{
+						"id": "84631h-jun24-01-2-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow Ep or GPE; the mark scheme also allows kinetic energy or Ek.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p7, 01.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-01-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "0282e87c90b5284de70f6e32e9dabc496d5f7667e881e9ffd68838ffb50d7d4c",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-01-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "01.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Compare the advantages and disadvantages of the two methods of storing energy. Include calculations in your answer.",
+					"selfContainedPromptText": "Table 1 gives two energy-storage methods. Method A increases the temperature of 100 kg of water by 80 °C, stores 33 600 kJ, wastes 40% of the stored energy, and can be installed anywhere. Method B pumps 100 kg of water uphill to a height of 500 m, stores 490 kJ, wastes 25% of the stored energy, and requires high mountains. Compare the advantages and disadvantages of the two methods of storing energy. Include calculations in your answer.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-01-3-energy-storage-comparison",
+					"title": "Storage Comparison",
+					"canonicalChainText": "both methods -> relevant calculation -> compare trade-offs -> supported comparison",
+					"fitNotes": "Calculations make trade-offs explicit."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-01-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Identifies scientifically relevant advantages or disadvantages of Method A, such as installation anywhere, much greater stored energy, or the need for insulation.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p7, 01.3 level-of-response and indicative content"
+					},
+					{
+						"id": "84631h-jun24-01-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Identifies scientifically relevant advantages or disadvantages of Method B, such as higher efficiency or the need for a suitable high-mountain location.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p7, 01.3 level-of-response and indicative content"
+					},
+					{
+						"id": "84631h-jun24-01-3-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Uses the data in a relevant calculation: for example A has 60% efficiency, 20 160 kJ useful energy or 13 440 kJ wasted; B has 75% efficiency, 367.5 kJ useful energy or 122.5 kJ wasted.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p7, 01.3 indicative content"
+					},
+					{
+						"id": "84631h-jun24-01-3-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Makes the similarities or differences clear and, where appropriate, notes their magnitude; a top-level comparison uses a relevant calculation to compare the methods.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p7, 01.3 level 2 descriptor"
+					},
+					{
+						"id": "84631h-jun24-01-3-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Apply the official holistic level-of-response judgement: Level 2 is 3–4 marks, Level 1 is 1–2 marks, and no relevant content is 0 marks.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p7, 01.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-01-4",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "a8239f11011c1d01e8e044810cf1079386ac5aa5126dae164d73677e50610a7f",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-01-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "01.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Explain one change that would reduce the amount of carbon dioxide released by each activity.",
+					"selfContainedPromptText": "Decreasing the amount of carbon dioxide released by different activities will help slow down climate change. Transport and generating electricity are the two activities that released the largest amounts of carbon dioxide in the UK in 2018. Explain one change that would reduce the amount of carbon dioxide released by each activity.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-01-4-paired-carbon-reductions",
+					"title": "Carbon Cuts",
+					"canonicalChainText": "fossil fuel use -> reduce activity -> low-carbon alternative -> lower emissions",
+					"fitNotes": "Replace each carbon-emitting route."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-01-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "For transport, states stopping or reducing the use/burning of petrol- or diesel-powered transport (or another valid carbon-emitting transport method).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p8, 01.4"
+					},
+					{
+						"id": "84631h-jun24-01-4-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "For transport, gives a lower-carbon alternative such as electric or hydrogen-fuelled cars, cycling, public transport, or walking.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p8, 01.4"
+					},
+					{
+						"id": "84631h-jun24-01-4-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "For generating electricity, states stopping or reducing the use of coal, oil, or gas (fossil fuels), or reducing unnecessary electrical-appliance use.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p8, 01.4"
+					},
+					{
+						"id": "84631h-jun24-01-4-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "For generating electricity, gives a lower-carbon alternative such as a renewable energy resource or nuclear power, or links lower demand to less fossil-fuel generation.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p8, 01.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-02-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "983436224f788956c45eb02809e70ed23685743941d871c902c69e96e77d9a46",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-02-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "02.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Complete the sentences. Choose answers from the box.",
+					"selfContainedPromptText": "The process of nuclear fission is used in nuclear power stations. Figure 2 shows a black particle entering a circle labelled Uranium; two unlabelled parts and three black particles leave. Complete the three printed sentences by choosing from: electrons, gamma rays, neutrons, nuclei, protons. In nuclear power stations, energy is released from uranium [blank]. The uranium in Figure 2 splits into two parts and releases three [blank]. The process of nuclear fission releases electromagnetic radiation in the form of [blank].",
+					"contextText": null,
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-02-1-fission-blank-structure",
+					"title": "Fission Pattern",
+					"canonicalChainText": "fission core -> chain particle -> EM radiation",
+					"fitNotes": "Source, particle, then radiation."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-02-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "First blank: nuclei.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.1"
+					},
+					{
+						"id": "84631h-jun24-02-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Second blank: neutrons.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.1"
+					},
+					{
+						"id": "84631h-jun24-02-1-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Third blank: gamma rays.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.1"
+					},
+					{
+						"id": "84631h-jun24-02-1-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Answers must be in this order.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p9, 02.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-02-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "bb4bc86c536f30104a7bdda80db777342a09e41117455b3123cea962241b32d8",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-02-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "02.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Write down the equation which links energy (E), power (P) and time (t).",
+					"selfContainedPromptText": "The supplied Physics Equations Sheet gives: energy transferred = power × time. Write down the equation which links energy (E), power (P) and time (t).",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-energy-power-time-equation-recall",
+					"title": "Power equation",
+					"canonicalChainText": "energy/work -> divide by time -> power",
+					"fitNotes": "Power is rate of transfer."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-02-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "energy = power × time, or E = P × t.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-02-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "de005dde6dca46edf79a60bc259125e5532ce169f025a1ab3a46d6387f6c2474",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-02-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "02.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "A nuclear power station has a power output of 500 MW. Calculate the energy output in 3600 s. Give your answer in J.",
+					"selfContainedPromptText": "Use the Physics Equations Sheet relation energy transferred = power × time (E = Pt). A nuclear power station has a power output of 500 MW. Calculate the energy output in 3600 s. Give your answer in J.",
+					"contextText": null,
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-02-3-energy-output-calculation",
+					"title": "Energy Output",
+					"canonicalChainText": "convert power -> E=Pt -> multiply -> energy unit",
+					"fitNotes": "Convert power before multiplying."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-02-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts the power: P = 500 000 000 W.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.3"
+					},
+					{
+						"id": "84631h-jun24-02-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes E = 500 000 000 × 3600.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.3"
+					},
+					{
+						"id": "84631h-jun24-02-3-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Calculates E = 1 800 000 000 000 J or 1.8 × 10^12 J.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.3"
+					},
+					{
+						"id": "84631h-jun24-02-3-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Allow correct substitution and a final answer consistent with an incorrectly or unconverted value of P.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p9, 02.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-02-4",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "c341fa11facb80676e9cdd210d6c64af52b6e46325c1a4ac5ad217639468216b",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-02-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "02.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Radioactive waste produced by nuclear power stations has a long half-life. Suggest one precaution taken to reduce the hazard caused by radioactive waste from power stations.",
+					"selfContainedPromptText": "Radioactive waste produced by nuclear power stations has a long half-life. Suggest one precaution taken to reduce the hazard caused by radioactive waste from power stations.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-02-4-radioactive-waste-precaution",
+					"title": "Waste Safety",
+					"canonicalChainText": "long-lived waste -> contain/shield/isolate -> reduced exposure",
+					"fitNotes": "Physical control reduces the hazard."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-02-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Any one valid precaution: bury the waste; put it in cooling ponds; transport it in secure vessels; store it in metal containers; or cover it in concrete.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p9, 02.4"
+					},
+					{
+						"id": "84631h-jun24-02-4-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow storing it for at least one half-life. Ignore references to waste level and merely labelling it hazardous.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p9, 02.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-03-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "a687f2f055fffe1ddb8184225d5ba9d86c365d435968b71f677ec2b05653c8f8",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-03-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "03.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The student plotted a graph of resistance against the length of wire. Describe a method the student could have used to collect the data needed to plot the graph.",
+					"selfContainedPromptText": "A student investigated how the length of a wire affects the resistance of the wire at constant temperature. Figure 3 shows a circuit containing a cell, switch, ammeter and resistor in series with a wire held along a ruler between crocodile clips; a voltmeter is connected across the measured length of wire. The student plotted a graph of resistance against the length of wire. Describe a method the student could have used to collect the data needed to plot the graph.",
+					"contextText": null,
+					"marks": 6
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-03-1-wire-resistance-method",
+					"title": "Wire Method",
+					"canonicalChainText": "vary measured length -> current + voltage -> R=V/I -> repeat + mean -> control heating",
+					"fitNotes": "Measure both meters at each length."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-03-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Measures the length of wire between the crocodile clips using the ruler and varies the length by moving a crocodile clip.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.1 indicative content"
+					},
+					{
+						"id": "84631h-jun24-03-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Measures current with the ammeter for each chosen length.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.1 indicative content"
+					},
+					{
+						"id": "84631h-jun24-03-1-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Measures potential difference with the voltmeter for each chosen length.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.1 indicative content"
+					},
+					{
+						"id": "84631h-jun24-03-1-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates resistance for each length using V = IR, equivalently R = V/I, and records resistance against length.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.1 indicative content"
+					},
+					{
+						"id": "84631h-jun24-03-1-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Improves reliability by repeating current and potential-difference readings for each length, calculating means, and dealing with anomalous readings.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.1 indicative content"
+					},
+					{
+						"id": "84631h-jun24-03-1-ms-6",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 6,
+						"itemType": "mark",
+						"text": "Maintains constant temperature by keeping current low and/or disconnecting the circuit between readings, with the key steps logically sequenced to produce a valid outcome.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.1 level 3 and indicative content"
+					},
+					{
+						"id": "84631h-jun24-03-1-ms-7",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 7,
+						"itemType": "guidance",
+						"text": "Apply the official holistic rubric: Level 3 = 5–6, Level 2 = 3–4, Level 1 = 1–2, no relevant content = 0. Level 2 requires varying wire length plus the measurements/equipment needed for potential difference and current.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p11, 03.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-03-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "fe3ac6a7f79bff459284298df2f56c5628e5ca813bac166f719465032d27af7e",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-03-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "03.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Which graph shows the relationship between the resistance of a wire at constant temperature and its length? Tick one box.",
+					"selfContainedPromptText": "Which of the three displayed graphs shows the relationship between the resistance of a wire at constant temperature and its length? Tick one box. The options are: a straight line decreasing with length, a curve rising from the origin and levelling off, and a straight line rising from the origin.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-wire-length-resistance-direct-proportion",
+					"title": "Direct Proportion",
+					"canonicalChainText": "length-resistance graph -> straight line -> through origin -> direct proportion",
+					"fitNotes": "Origin line means direct."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-03-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Selects the bottom (third) graph: a straight line with positive gradient through the origin.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p11, 03.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-03-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "bffc2ae339fcf27f1fdb43c1561bc8ea8e9594e783387be77555d85704247d5b",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-03-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "03.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The student used a cell that had a potential difference of 1.50 V. Explain why the cell was not an electrical hazard to the student in the investigation.",
+					"selfContainedPromptText": "In an investigation of how wire length affects resistance, the student used a cell that had a potential difference of 1.50 V. Explain why the cell was not an electrical hazard to the student in the investigation.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-03-3-low-potential-difference-safety",
+					"title": "Low-voltage Safety",
+					"canonicalChainText": "very low p.d. -> low shock risk",
+					"fitNotes": "Small potential difference limits hazard."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-03-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The potential difference is very low.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p12, 03.3"
+					},
+					{
+						"id": "84631h-jun24-03-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Therefore there is no risk, or less risk, of electric shock/electrocution; alternatively, the wire will not melt or get hot.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p12, 03.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-04-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "803b30ddf6d2a77acc2937c83692411235f6579d27fd89b32ed593fbbf62a26b",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-04-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "04.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Explain why the student’s hair stands up on end.",
+					"selfContainedPromptText": "Figure 5 shows a student touching the metal dome of a static electricity generator. The dome is negatively charged. Explain why the student’s hair stands up on end.",
+					"contextText": null,
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-04-1-static-hair-repulsion",
+					"title": "Static Hair",
+					"canonicalChainText": "electrons transfer -> same negative charge -> like charges repel -> hairs separate",
+					"fitNotes": "Matching charges push hairs apart."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-04-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Electrons are transferred to the student.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.1"
+					},
+					{
+						"id": "84631h-jun24-04-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Her hair becomes negatively charged, or each hair has the same negative charge.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.1"
+					},
+					{
+						"id": "84631h-jun24-04-1-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Like charges repel, so the hairs repel one another.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.1"
+					},
+					{
+						"id": "84631h-jun24-04-1-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Do not accept the student being positively charged for the first two marking points.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p13, 04.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-04-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "40826edc26c2824c3aff13a719f4fc8f1914596437bc92a07078735a209636d6",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-04-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "04.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "What is an electric field?",
+					"selfContainedPromptText": "A charged metal dome creates an electric field. What is an electric field?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-04-2-electric-field-definition",
+					"title": "Electric Field",
+					"canonicalChainText": "charged object -> surrounding region -> force on charge",
+					"fitNotes": "A field is a force region."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-04-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The region around a charged object where another charged object experiences a force.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.2"
+					},
+					{
+						"id": "84631h-jun24-04-2-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow space or area for region, and particle for object.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p13, 04.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-04-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "bccf696484e4d5fb30c9749e36b134e6f8d7b917739d9fde50a7073d515b2fee",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-04-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "04.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "How does the electric field strength vary as the distance from the charged metal dome increases?",
+					"selfContainedPromptText": "A charged metal dome creates an electric field. How does the electric field strength vary as the distance from the charged metal dome increases?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-04-3-electric-field-distance",
+					"title": "Field Distance",
+					"canonicalChainText": "distance increases -> field strength decreases",
+					"fitNotes": "Farther means a weaker field."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-04-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The electric field strength decreases.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-04-4",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "b3a56609c0907e7e5837113550804781561bd4f3584c698b891b3d5ff5d5e3c4",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-04-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "04.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The spark transfers 0.60 J of energy, and 2.0 μC of charge is transferred from the dome to the earthed conductor. Calculate the potential difference between the metal dome and the earthed conductor. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "Figure 6 shows a negatively charged metal dome and an earthed conductor. When the earthed conductor is moved towards the metal dome, there is a spark between them. The spark transfers 0.60 J of energy, and 2.0 μC of charge is transferred from the dome to the earthed conductor. Use energy transferred = charge flow × potential difference (E = QV) to calculate the potential difference between the metal dome and the earthed conductor.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-04-4-potential-difference-calculation",
+					"title": "Potential Difference",
+					"canonicalChainText": "convert charge -> E=QV -> rearrange V -> calculate",
+					"fitNotes": "Charge must be in coulombs."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-04-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts charge: Q = 2 × 10^-6 C.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.4"
+					},
+					{
+						"id": "84631h-jun24-04-4-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes 0.6 = 2 × 10^-6 × V.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.4"
+					},
+					{
+						"id": "84631h-jun24-04-4-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Rearranges to V = 0.6/(2 × 10^-6).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.4"
+					},
+					{
+						"id": "84631h-jun24-04-4-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates V = 300 000 V.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p13, 04.4"
+					},
+					{
+						"id": "84631h-jun24-04-4-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Allow correct substitution, rearrangement and a final answer consistent with an incorrectly or unconverted Q.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p13, 04.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-04-5",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "0ada8f5605c5133acfb820b1463a4d51d74e06330e418012fde57dce99e263d3",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-04-5",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "04.5",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Which of the following changes would increase the distance a spark can jump between the dome and the earthed conductor? Tick one box.",
+					"selfContainedPromptText": "A spark can jump between a charged metal dome and an earthed conductor. Which of the following changes would increase the distance the spark can jump? Tick one box: Decreased charge on the metal dome; Decreased electric field strength; Decreased electrical resistance of air; Decreased potential difference.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-04-5-spark-gap-conduction",
+					"title": "Spark Gap",
+					"canonicalChainText": "easier air conduction -> breakdown farther away -> longer spark gap",
+					"fitNotes": "Easier breakdown extends the spark."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-04-5-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Decreased electrical resistance of air.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p14, 04.5"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-05-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "ebeb2920c3fb243daac995e3a5471cb1e8d9d593f1ee55cec9859afd8ae0576d",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-05-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "05.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The vending machine is connected to the mains electricity supply. What is the frequency and the potential difference of the mains electricity supply in the UK?",
+					"selfContainedPromptText": "A vending machine is connected to the mains electricity supply. What is the frequency and the potential difference of the mains electricity supply in the UK?",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-uk-mains-pd-frequency-recall",
+					"title": "UK mains",
+					"canonicalChainText": "UK supply -> potential difference -> frequency",
+					"fitNotes": "Paired standard mains values."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-05-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Frequency = 50 Hz.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.1"
+					},
+					{
+						"id": "84631h-jun24-05-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Potential difference = 230 V.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.1"
+					},
+					{
+						"id": "84631h-jun24-05-1-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "guidance",
+						"text": "Answers are marked in this printed order.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p15, 05.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-05-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "f3641d499f63c279faba7a13ffb7f1712943e0c52e3898a7478b58fc0103ac57",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-05-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "05.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The power dissipated by the coin is 340 mW when the current in the coin is 0.75 A. Calculate the resistance of the coin. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "A vending machine identifies the value of a coin by measuring the resistance of the coin. The power dissipated by the coin is 340 mW when the current in the coin is 0.75 A. Use the Physics Equations Sheet relation power = (current)^2 × resistance (P = I^2R) to calculate the resistance of the coin.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-05-2-resistance-from-power",
+					"title": "Resistance from Power",
+					"canonicalChainText": "convert power -> P=I²R -> rearrange R -> calculate",
+					"fitNotes": "Convert power, then divide by current squared."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-05-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts 340 mW to 0.34 W.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.2"
+					},
+					{
+						"id": "84631h-jun24-05-2-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes 0.34 = 0.75^2 × R.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.2"
+					},
+					{
+						"id": "84631h-jun24-05-2-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Rearranges to R = 0.34 / 0.75^2.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.2"
+					},
+					{
+						"id": "84631h-jun24-05-2-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates R = 0.60 Ω; a correct value to more than 2 significant figures is also allowed.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.2"
+					},
+					{
+						"id": "84631h-jun24-05-2-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Allow correct substitution, rearrangement and an answer consistent with an incorrectly or unconverted value of P.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p15, 05.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-05-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "79d0f74d17d87756668fab08daec48e35c5a00263c25dd49f71e9d9e89a57fce",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-05-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "05.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Coins that are dirty are not recognised by the vending machine. Suggest one reason why.",
+					"selfContainedPromptText": "The vending machine identifies the value of a coin by measuring the resistance of the coin. Coins that are dirty are not recognised by the vending machine. Suggest one reason why.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-05-3-coin-resistance-recognition",
+					"title": "Coin Recognition",
+					"canonicalChainText": "dirt layer -> resistance changes -> expected value mismatch -> coin rejected",
+					"fitNotes": "Recognition depends on the measured resistance."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-05-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The dirt changes the measured resistance of the coin, so it differs from the expected resistance or no longer matches a known coin.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p15, 05.3"
+					},
+					{
+						"id": "84631h-jun24-05-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow that dirt stops charge flow or stops the current through the coin.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p15, 05.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-05-4",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "0b25628398a034e1e7cbb4463df7b0025e503d56e8fc392f5432f10f5b88f3e9",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-05-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "05.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The circuit symbol for a thermistor has not been included. Draw the circuit symbol for a thermistor in the box below.",
+					"selfContainedPromptText": "Figure 8 shows part of a circuit used to monitor the temperature inside a vending machine. It has a 12 V supply, a 400 Ω resistor in series with a missing thermistor symbol, and a voltmeter connected across the thermistor position. Draw the circuit symbol for a thermistor in the box provided.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-thermistor-component-recall",
+					"title": "Thermistor recall",
+					"canonicalChainText": "temperature sensing -> changing resistance -> thermistor -> diagonal symbol",
+					"fitNotes": "Temperature-dependent resistor."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-05-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Draws the standard thermistor circuit symbol: a resistor rectangle crossed diagonally by a line with a short angled section.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p16, 05.4 answer graphic"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-05-5",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "f2ddbdf4dc68ed81bcdaa4712a0766739f34e13c0dc1762c15f30733739b1053",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-05-5",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "05.5",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The cooling system inside the vending machine turns on when the temperature of the thermistor is above 20 °C. Determine the potential difference across the thermistor when the temperature is 20 °C. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "Figure 8 shows a 12 V series circuit containing a 400 Ω resistor and a thermistor, with a voltmeter across the thermistor. Figure 9 is a graph of thermistor resistance in Ω against temperature in °C. The cooling system turns on when the thermistor temperature is above 20 °C. Use the graph and the relation potential difference = current × resistance (V = IR) to determine the potential difference across the thermistor when the temperature is 20 °C.",
+					"contextText": null,
+					"marks": 5
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-05-5-potential-divider-calculation",
+					"title": "Potential Divider",
+					"canonicalChainText": "read component resistance -> total resistance -> current/ratio -> component p.d.",
+					"fitNotes": "Find the component share of the supply."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-05-5-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Finds total resistance: R_total = 400 + 80 = 480 Ω (allow a thermistor reading of 70–90 Ω, giving total 470–490 Ω).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p17, 05.5"
+					},
+					{
+						"id": "84631h-jun24-05-5-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Uses 12 = I × 480, or a correct substitution/rearrangement with the allowed total-resistance range.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p17, 05.5"
+					},
+					{
+						"id": "84631h-jun24-05-5-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Calculates the circuit current as 0.025 A (or a correct value using an allowed total resistance).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p17, 05.5"
+					},
+					{
+						"id": "84631h-jun24-05-5-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Uses V_thermistor = I × R_thermistor with the calculated current and a graph reading of 70–90 Ω.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p17, 05.5"
+					},
+					{
+						"id": "84631h-jun24-05-5-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Calculates 2.0 V; allow an answer from 1.8 V to 2.2 V.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p17, 05.5"
+					},
+					{
+						"id": "84631h-jun24-05-5-ms-6",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 6,
+						"itemType": "guidance",
+						"text": "The official alternative ratio method may also receive full credit: thermistor:total resistance = 80:480 = 1:6, then V = (1/6) × 12 = 2.0 V, with the same graph-reading range.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p17, 05.5"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-06-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "112d4d9d326a919d34af5cd36f3e0c4cb7aa0cb616dc65bae76bd814b747ea55",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-06-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "06.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Which energy store increases as the bungee cords are stretched?",
+					"selfContainedPromptText": "On a theme-park ride, a pod is attached to two bungee cords that behave like springs. Which energy store increases as the bungee cords are stretched?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-06-1-elastic-store-recall",
+					"title": "Elastic Store",
+					"canonicalChainText": "stretch cord -> elastic store rises",
+					"fitNotes": "Deformation raises the elastic store."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-06-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Elastic potential energy store.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.1"
+					},
+					{
+						"id": "84631h-jun24-06-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow Ee or EPE.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p18, 06.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-06-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "9be4f991dfa5320dc7719e9c419320400c570cc8aedf0e7e3c550faf9b190929",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-06-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "06.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "When the pod is released, the pod accelerates upwards. Before the pod is released the extension of each of the two bungee cords is 8.0 m. The spring constant of each bungee cord is 735 N/m. The mass of the pod is 240 kg. Gravitational field strength = 9.8 N/kg. Calculate the maximum height reached by the pod. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "A theme-park pod is attached to two bungee cords that behave like springs. When released, the pod accelerates upwards. Before release, the extension of each cord is 8.0 m, the spring constant of each cord is 735 N/m, the pod mass is 240 kg, and gravitational field strength is 9.8 N/kg. Use elastic potential energy = 0.5 × spring constant × extension² and gravitational potential energy = mass × gravitational field strength × height to calculate the maximum height reached by the pod.",
+					"contextText": null,
+					"marks": 6
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-06-2-elastic-energy-to-height-calculation",
+					"title": "Elastic to Height",
+					"canonicalChainText": "elastic energy each -> account for all -> equate to mgh -> rearrange height -> calculate",
+					"fitNotes": "Use the total elastic store."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-06-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "For one cord, uses Ee = 0.5 × 735 × 8.0².",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.2"
+					},
+					{
+						"id": "84631h-jun24-06-2-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Calculates the elastic potential energy of one cord as 23 520 J.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.2"
+					},
+					{
+						"id": "84631h-jun24-06-2-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Calculates total elastic potential energy for the two cords as 47 040 J.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.2"
+					},
+					{
+						"id": "84631h-jun24-06-2-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Equates energy to gravitational potential energy: 47 040 = 240 × 9.8 × h.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.2"
+					},
+					{
+						"id": "84631h-jun24-06-2-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "mark",
+						"text": "Rearranges to h = 47 040/(240 × 9.8).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.2"
+					},
+					{
+						"id": "84631h-jun24-06-2-ms-6",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 6,
+						"itemType": "mark",
+						"text": "Calculates h = 20 m.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.2"
+					},
+					{
+						"id": "84631h-jun24-06-2-ms-7",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 7,
+						"itemType": "guidance",
+						"text": "The mark scheme gives specific allowances for certain substitutions using combined spring constants/extensions and applies error-carried-forward from a student's Ee value for later stages.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p18, 06.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-06-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "5c7580361532cf95db43a8894c5f33245e65a3cf1b9620eb2a5571b9fa260400",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-06-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "06.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The actual maximum height reached by the pod will be lower than the correct answer to Question 06.2. Explain why.",
+					"selfContainedPromptText": "A theme-park pod is launched upward by two stretched bungee cords. An ideal calculation assumes that all of the cords’ elastic potential energy becomes the pod’s gravitational potential energy. The actual maximum height will be lower than the ideal calculated value. Explain why.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-06-3-real-launch-energy-loss",
+					"title": "Real Launch Height",
+					"canonicalChainText": "air resistance -> energy dissipated -> less GPE -> lower height",
+					"fitNotes": "Dissipation lowers the real rise."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-06-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Air resistance opposes the upward motion of the pod.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.3"
+					},
+					{
+						"id": "84631h-jun24-06-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Not all elastic potential energy is transferred to gravitational potential energy; the transfer is not 100% efficient, or some energy is dissipated/transferred to the surroundings.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p18, 06.3"
+					},
+					{
+						"id": "84631h-jun24-06-3-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "guidance",
+						"text": "Ignore merely saying energy is wasted, and ignore reference to the mass of the person in the pod.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p18, 06.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-1",
+					"curriculumCode": "4.1",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.1 Energy."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-07-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "041f974e3d0585916b4bd41ebf77a45fea9b963fc80ab04a0415f5ec6dd0181d",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-07-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "07.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The student tied a piece of thick string to the metal ring and lowered the ring into the water. Suggest one reason why the student should have used thin string instead of thick string.",
+					"selfContainedPromptText": "A student measured the volume of a metal ring by lowering it into water in a measuring cylinder. The student tied a piece of thick string to the ring and lowered the ring into the water. Suggest one reason why the student should have used thin string instead of thick string.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-07-2-string-water-displacement",
+					"title": "String Displacement",
+					"canonicalChainText": "thinner string -> less water displaced -> smaller volume error",
+					"fitNotes": "Minimise the string’s displacement."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-07-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Thin string would affect the volume measurement less than thick string, or would displace less water.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p19, 07.2"
+					},
+					{
+						"id": "84631h-jun24-07-2-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Ignore absorption of water by the string.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p19, 07.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-07-5",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "da13600d306ef5666257e5ac4b28b210f73e119847ec45378e83d74901385cf1",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-07-5",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "07.5",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The student determined that the density of the ring was 21 500 kg/m³. The volume of the ring was 0.44 cm³. Calculate the mass of the ring. Use the Physics Equations Sheet. Give your answer in kg.",
+					"selfContainedPromptText": "A metal ring has density 21 500 kg/m³ and volume 0.44 cm³. Use the Physics Equations Sheet relation density = mass/volume to calculate the ring's mass. Give your answer in kg.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-07-5-mass-from-density",
+					"title": "Mass from Density",
+					"canonicalChainText": "convert volume -> ρ=m/V -> rearrange m -> calculate",
+					"fitNotes": "Match volume units before multiplying."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-07-5-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts 0.44 cm³ to 4.4 × 10^-7 m³.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p20, 07.5"
+					},
+					{
+						"id": "84631h-jun24-07-5-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes 21 500 = m/(4.4 × 10^-7).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p20, 07.5"
+					},
+					{
+						"id": "84631h-jun24-07-5-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Rearranges to m = 21 500 × 4.4 × 10^-7.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p20, 07.5"
+					},
+					{
+						"id": "84631h-jun24-07-5-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates m = 0.00946 kg or 9.46 × 10^-3 kg.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p20, 07.5"
+					},
+					{
+						"id": "84631h-jun24-07-5-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Allow correct substitution, rearrangement and a final answer consistent with an incorrectly or unconverted volume.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p20, 07.5"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-08-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "b954a4b6dc453e250f431ee91930c52e613c3b6758c862fdf6e2bbd3102e2b52",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-08-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "08.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "When the plunger was pushed slowly into the syringe, the pressure in the syringe increased. The temperature of the air remained constant. Explain why the pressure increased.",
+					"selfContainedPromptText": "A student investigated how pressure varies with volume for a fixed mass of air in a sealed syringe connected to a pressure gauge. When the plunger was pushed slowly into the syringe, the pressure increased while the air temperature remained constant. Explain why the pressure increased.",
+					"contextText": null,
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-gas-temperature-collisions-pressure",
+					"title": "Gas Pressure",
+					"canonicalChainText": "temperature/density -> particle motion -> wall collisions -> pressure change",
+					"fitNotes": "Pressure comes from wall collisions."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-08-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The air particles are closer together.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.1"
+					},
+					{
+						"id": "84631h-jun24-08-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "The frequency of collisions between the air particles and the syringe walls increases.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.1"
+					},
+					{
+						"id": "84631h-jun24-08-1-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "There is a larger total force on a smaller surface area, or a larger force per unit area.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.1"
+					},
+					{
+						"id": "84631h-jun24-08-1-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "guidance",
+						"text": "Ignore references to increased kinetic energy or concentration. Do not credit the collision-frequency point if it is linked to increased kinetic energy. If no other marks are scored, allow 1 mark for pressure increasing because volume decreases and pV is constant.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p21, 08.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-08-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "88dbf4b101e0cbbd5154fb1ed672a8955f2fe5cc1b3b254837804fbc9310d1eb",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-08-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "08.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "How does an increase in temperature affect the air particles inside the piston? Tick one box.",
+					"selfContainedPromptText": "A fire piston is a special syringe. Its plunger is pushed quickly downwards, compressing the air and increasing its temperature. How does an increase in temperature affect the air particles inside the piston? Tick one box: The mean kinetic energy of the particles increases; The mean potential energy of the particles increases; The mean separation of the particles increases.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-08-2-temperature-particle-kinetic-energy",
+					"title": "Heating Particles",
+					"canonicalChainText": "temperature rises -> particles speed up -> particle KE rises",
+					"fitNotes": "Hotter particles move faster."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-08-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The mean kinetic energy of the particles increases.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-08-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "5b9fa2ecbc8541936c437bf1383cefd3738d12d86f74e09dcc074ce9477b08a4",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-08-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "08.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "When the air is hot enough, a small piece of cotton wool in the piston catches fire. The energy transferred to the air in the piston is 0.0130 J. The mass of air in the piston is 2.60 × 10⁻⁸ kg. Specific heat capacity of air = 1.01 kJ/kg °C. Calculate the temperature change of the air. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "In a fire piston, rapid compression heats the air until a small piece of cotton wool catches fire. The energy transferred to the air is 0.0130 J, the mass of air is 2.60 × 10^-8 kg, and the specific heat capacity of air is 1.01 kJ/kg °C. Use change in thermal energy = mass × specific heat capacity × temperature change to calculate the temperature change of the air.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-08-3-specific-heat-temperature-change",
+					"title": "Temperature Change",
+					"canonicalChainText": "consistent units -> ΔE=mcΔθ -> rearrange Δθ -> calculate",
+					"fitNotes": "Match energy units before rearranging."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-08-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts the specific heat capacity: c = 1010 J/kg °C.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.3"
+					},
+					{
+						"id": "84631h-jun24-08-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes 0.0130 = 2.60 × 10^-8 × 1010 × Δθ.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.3"
+					},
+					{
+						"id": "84631h-jun24-08-3-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Rearranges to Δθ = 0.0130/(2.60 × 10^-8 × 1010).",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.3"
+					},
+					{
+						"id": "84631h-jun24-08-3-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates Δθ = 495 °C; a correct answer to more than 3 significant figures is allowed.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p21, 08.3"
+					},
+					{
+						"id": "84631h-jun24-08-3-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Allow full credit for a correct method using energy = 0.0000130 kJ, and apply error-carried-forward from an incorrectly or unconverted c value.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p21, 08.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-09-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "cc0f57b47c0621392a5e654f2c29b4795f20cb39290f77db896494f3d51317ba",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-09-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "09.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Explain how Figure 15 shows that Source A only emits alpha radiation.",
+					"selfContainedPromptText": "A teacher measured the count rate from radioactive Sources A and B at different source–detector distances. Figure 15 plots count rate in counts per minute against distance in centimetres, with Source A shown by a dashed line and Source B by a solid line. Explain how Figure 15 shows that Source A only emits alpha radiation.",
+					"contextText": null,
+					"marks": 3
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-09-1-radiation-identification",
+					"title": "Radiation ID",
+					"canonicalChainText": "barrier/range -> count response -> penetration match -> radiation type",
+					"fitNotes": "Stopping evidence identifies radiation."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-09-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Radiation from Source A travels approximately 3 cm in air.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p22, 09.1"
+					},
+					{
+						"id": "84631h-jun24-09-1-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "After approximately 3 cm, its count rate decreases to background radiation.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p22, 09.1"
+					},
+					{
+						"id": "84631h-jun24-09-1-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Alpha radiation has a very short range in air or very low penetrating ability; alternatively, beta and gamma have a much longer range in air.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p22, 09.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-09-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "46f45e095e7859be5a9654d21415c7d1d454401f2750264b3b3d41367b411531",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-09-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "09.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Figure 15 can not be used to determine if Source B emits beta radiation or gamma radiation. Explain how an absorbing material could be used to show which type of radiation is emitted by Source B.",
+					"selfContainedPromptText": "A teacher measured count rate at different source–detector distances for radioactive Sources A and B, as shown in Figure 15. Figure 15 cannot determine whether Source B emits beta or gamma radiation. Explain how an absorbing material could be used to show which type Source B emits.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-09-1-radiation-identification",
+					"title": "Radiation ID",
+					"canonicalChainText": "barrier/range -> count response -> penetration match -> radiation type",
+					"fitNotes": "Stopping evidence identifies radiation."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-09-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Places an aluminium sheet, or another suitably specified material that stops beta, between Source B and the detector.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p22, 09.2"
+					},
+					{
+						"id": "84631h-jun24-09-2-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Beta will not penetrate the absorber but gamma will; equivalently, only gamma will penetrate it.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p22, 09.2"
+					},
+					{
+						"id": "84631h-jun24-09-2-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "guidance",
+						"text": "Allow other materials that beta would be stopped by, such as brick or sheets of iron/lead. Ignore unspecified sheet(s) of metal foil unless thickness is given. The second mark depends on the first.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p22, 09.2"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-09-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "99e3d959a930da3260fdec56c669d1541391578293c42e3d04cac7e660914e41",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-09-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "09.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Suggest one safety precaution the teacher would have taken to reduce the radiation dose the teacher received.",
+					"selfContainedPromptText": "A teacher investigated radiation from radioactive sources and took safety precautions. Suggest one precaution that would reduce the radiation dose the teacher received.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-09-3-radiation-dose-precaution",
+					"title": "Dose Reduction",
+					"canonicalChainText": "distance/time/shield -> less exposure -> lower dose",
+					"fitNotes": "Control one route to reduce dose."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-09-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Any one valid dose-reducing precaution: increase distance; limit exposure time; use tongs/forceps; wear a lead apron; keep the source boxed unless in use; stand behind a safety screen; or point the source away from the teacher.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p22, 09.3"
+					},
+					{
+						"id": "84631h-jun24-09-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Allow any reasonable precaution that increases distance or limits exposure time. Ignore unqualified PPE or examples of additional clothing.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p22, 09.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-09-4",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "5d08e0664a1ab1832670fc68d908a5387719251bb5225ab4d21792761f330232",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-09-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "09.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Suggest one safety precaution that the teacher would have taken to avoid becoming contaminated.",
+					"selfContainedPromptText": "A teacher investigated radiation from radioactive sources and took safety precautions. Suggest one precaution the teacher would have taken to avoid becoming contaminated.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-09-4-contamination-prevention",
+					"title": "Contamination Control",
+					"canonicalChainText": "barrier/handling -> block material transfer -> avoid contamination",
+					"fitNotes": "Stop radioactive material reaching the body."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-09-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Wears gloves, an apron or a lab coat; handles the source with tongs/forceps; does not eat or drink while the source is in the lab; or does not touch the source with bare hands.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p23, 09.4"
+					},
+					{
+						"id": "84631h-jun24-09-4-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Ignore a mask, safety glasses, a hazmat suit, unqualified protective clothing or unqualified PPE.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p23, 09.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-09-5",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "84afc99c788a9452100cfe63b8009b9820edc9a2845806e67d7163b24366c993",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-09-5",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "09.5",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Figure 16 shows how the number of atoms of a radioactive element in a sample varied with time. Activity is the rate at which a source of unstable nuclei decays. Determine the activity of the radioactive sample at 300 seconds. Give the unit.",
+					"selfContainedPromptText": "Figure 16 plots the number of atoms in a radioactive sample (in units of ×10^23 atoms) against time in seconds. Activity is the rate at which a source of unstable nuclei decays. Determine the activity of the sample at 300 seconds and give the unit.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-graph-gradient-represents-rate",
+					"title": "Graph Gradient",
+					"canonicalChainText": "graph section -> gradient -> rate/motion -> value/unit",
+					"fitNotes": "Steeper means greater rate."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-09-5-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Draws a tangent to the curve at 300 s; the tangent must not cross the graph line.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p23, 09.5"
+					},
+					{
+						"id": "84631h-jun24-09-5-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Attempts to calculate the magnitude of the gradient of the tangent.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p23, 09.5"
+					},
+					{
+						"id": "84631h-jun24-09-5-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Determines activity = 7.1 × 10^20, allowing 6.5 × 10^20 to 7.6 × 10^20.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p23, 09.5"
+					},
+					{
+						"id": "84631h-jun24-09-5-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Gives the unit becquerel or Bq.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p23, 09.5"
+					},
+					{
+						"id": "84631h-jun24-09-5-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "For the gradient attempt, allow a missing power on Δy. Ignore 'decays/second' as the unit answer.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p23, 09.5"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-4",
+					"curriculumCode": "4.4",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.4 Atomic structure."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-10-1",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "3c2b986bc50ddc0b2b3355f893e943b0bff7394fee52d2e2d0cb0057d8afc0ab",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-10-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "10.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "What colour is the insulation covering the live wire in a three-core cable?",
+					"selfContainedPromptText": "What colour is the insulation covering the live wire in a three-core cable?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-10-1-live-wire-colour-code",
+					"title": "Live Wire",
+					"canonicalChainText": "three-core cable -> live conductor -> standard colour",
+					"fitNotes": "Use the UK live-wire colour code."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-10-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Brown.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p24, 10.1"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-10-2",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "910c6654a103452c9a655d9c14d56cfb4d4f44771608be6aef1d8a1039082662",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-10-2",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "10.2",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Draw the circuit symbol for a fuse in the box below.",
+					"selfContainedPromptText": "A fuse contains a wire designed to melt when the current becomes too great. Draw the circuit symbol for a fuse in the box provided.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-fuse-circuit-symbol-recall",
+					"title": "Fuse Symbol",
+					"canonicalChainText": "straight line -> through rectangle",
+					"fitNotes": "Line through a small box."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-10-2-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Draws the standard fuse circuit symbol: a horizontal conductor passing through a rectangular box.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p24, 10.2 answer graphic"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-10-3",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "0480ef44604738aaa341bd8de11aad552dbb482ca0990c3425af4dbf211f2d28",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-10-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "10.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The fuse wire melts when there is a charge flow of 2.0 C for 400 ms. Calculate the current in the fuse wire. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "A fuse wire melts when there is a charge flow of 2.0 C for 400 ms. Use the relation charge flow = current × time (Q = It) to calculate the current in the fuse wire.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-10-3-current-from-charge-time",
+					"title": "Current from Charge",
+					"canonicalChainText": "convert time -> Q=It -> rearrange I -> calculate",
+					"fitNotes": "Time must be in seconds."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-10-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts time: t = 0.400 s.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p24, 10.3"
+					},
+					{
+						"id": "84631h-jun24-10-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes 2.0 = I × 0.400.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p24, 10.3"
+					},
+					{
+						"id": "84631h-jun24-10-3-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Rearranges to I = 2.0/0.400.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p24, 10.3"
+					},
+					{
+						"id": "84631h-jun24-10-3-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates I = 5.0 A.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p24, 10.3"
+					},
+					{
+						"id": "84631h-jun24-10-3-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Allow correct substitution, rearrangement and a final answer consistent with an incorrectly or unconverted time.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p24, 10.3"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-2",
+					"curriculumCode": "4.2",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.2 Electricity."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-10-4",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "d0c8ebf3569d55b7a16fe144880dab41a239e759be312969ee43d0530ff58755",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-10-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "10.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "When the fuse wire is at its melting point, the additional energy needed to melt the wire is 1.02 J. Specific latent heat of fuse wire = 60 kJ/kg. Calculate the mass of the fuse wire. Use the Physics Equations Sheet.",
+					"selfContainedPromptText": "A fuse wire at its melting point needs an additional 1.02 J to melt. Its specific latent heat is 60 kJ/kg. Use thermal energy for a change of state = mass × specific latent heat (E = mL) to calculate the mass of the fuse wire.",
+					"contextText": null,
+					"marks": 4
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-latent-heat-change-state-calculation",
+					"title": "Latent heat mass",
+					"canonicalChainText": "$E=mL$ -> consistent units -> $m=E/L$ -> mass",
+					"fitNotes": "Change-state energy divided by latent heat."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-10-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Converts specific latent heat: L = 60 000 J/kg.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p25, 10.4"
+					},
+					{
+						"id": "84631h-jun24-10-4-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Substitutes 1.02 = m × 60 000.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p25, 10.4"
+					},
+					{
+						"id": "84631h-jun24-10-4-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "mark",
+						"text": "Rearranges to m = 1.02/60 000.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p25, 10.4"
+					},
+					{
+						"id": "84631h-jun24-10-4-ms-4",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 4,
+						"itemType": "mark",
+						"text": "Calculates m = 1.7 × 10^-5 kg.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p25, 10.4"
+					},
+					{
+						"id": "84631h-jun24-10-4-ms-5",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 5,
+						"itemType": "guidance",
+						"text": "Allow full credit for a correct method using E = 0.00102 kJ, and apply error-carried-forward from an incorrectly or unconverted L value.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p25, 10.4"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		},
+		{
+			"questionId": "84631h-jun24-10-5",
+			"sourceClassification": "aqa-gcse-physics-8463-v1.1:missing-imported-spec-ref",
+			"sourceSpecificationId": "aqa-gcse-physics-8463-v1.1",
+			"evidenceHash": "d730aaa3af0438f015c5721c7ff0062492dd46b9aeb680e59d91d28d39a50f84",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-10-5",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "10.5",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The calculation in Question 10.4 assumes there is no energy transferred to the surroundings. How would the time taken for the wire to melt be affected if some energy was transferred to the surroundings? Give a reason for your answer. Tick one box.",
+					"selfContainedPromptText": "A fuse wire at its melting point needs energy to melt. An ideal calculation assumes no energy is transferred to the surroundings. If some energy were transferred to the surroundings, how would the time taken for the wire to melt be affected? Choose one: Time taken would decrease; Time taken would stay the same; Time taken would increase. Give a reason.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-10-5-energy-loss-melting-time",
+					"title": "Energy-loss Timing",
+					"canonicalChainText": "energy to surroundings -> more input needed -> longer heating time",
+					"fitNotes": "Losses increase the required input."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-10-5-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Selects 'Time taken would increase'.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p25, 10.5"
+					},
+					{
+						"id": "84631h-jun24-10-5-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "More energy would need to be transferred in total.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p25, 10.5"
+					},
+					{
+						"id": "84631h-jun24-10-5-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "guidance",
+						"text": "The reason mark depends on selecting that the time increases.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p25, 10.5"
+					}
+				]
+			},
+			"targets": [
+				{
+					"specificationId": "aqa-gcse-physics-8463-v1.1",
+					"curriculumComponentId": "aqa-gcse-physics-8463-v1.1:4-3",
+					"curriculumCode": "4.3",
+					"confidence": 1,
+					"reviewNote": "Exact stored paper/question identity and official mark evidence were reviewed against learner-selectable 4.3 Particle model of matter."
+				}
+			],
+			"withheldTargets": []
+		}
+	],
+	"withheldQuestions": [
+		{
+			"questionId": "84631h-jun24-02-5",
+			"sourceClassification": "aqa-physics-generic-mathematics-withheld",
+			"reason": "The official item awards both marks for calculating 92% of 365 days. Nuclear generation supplies the setting but no Physics chapter knowledge earns a mark.",
+			"evidenceHash": "2d4c8afd8419219e4f3bed370d50f153649b84bc714d15c72ad7cfeff3ab51d8",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-02-5",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "02.5",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "Nuclear power stations do not generate electricity every day of the year. One nuclear power station generated electricity for 92% of a year. One year = 365 days. Calculate the number of days during the year that the nuclear power station generated electricity.",
+					"selfContainedPromptText": "Nuclear power stations do not generate electricity every day of the year. One nuclear power station generated electricity for 92% of a year. One year = 365 days. Calculate the number of days during the year that the nuclear power station generated electricity.",
+					"contextText": null,
+					"marks": 2
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-02-5-percentage-of-whole",
+					"title": "Percentage Amount",
+					"canonicalChainText": "percentage -> divide by 100 -> multiply whole -> quantity",
+					"fitNotes": "Turn the percentage into a multiplier."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-02-5-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Uses number of days = (92/100) × 365.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p10, 02.5"
+					},
+					{
+						"id": "84631h-jun24-02-5-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "mark",
+						"text": "Calculates 335.8 days; allow 335 or 336 days.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p10, 02.5"
+					},
+					{
+						"id": "84631h-jun24-02-5-ms-3",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 3,
+						"itemType": "guidance",
+						"text": "Allow an answer of 29.2 days for 1 mark.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p10, 02.5"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84631h-jun24-07-1",
+			"sourceClassification": "aqa-physics-working-scientifically-withheld",
+			"reason": "The official item awards its mark only for identifying random error from a misaligned eye. This is a generic working-scientifically error classification, not density content.",
+			"evidenceHash": "106aadbdeeb4f9ef25ada471268c2ef6296ef0b7c4d2c7a03796662aaece927c",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-07-1",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "07.1",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "When measuring the volume, the student’s eye was in line with the level of the water. Which type of error would have been caused if the student’s eye was not in line with the level of the water? Tick one box.",
+					"selfContainedPromptText": "A student used a measuring cylinder containing water to measure the volume of a metal ring. When measuring the volume, the student’s eye was in line with the water level. Which type of error would have been caused if the student’s eye was not in line with the water level? Tick one box: Random error; Systematic error; Zero error.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-07-1-parallax-error-pattern",
+					"title": "Parallax Pattern",
+					"canonicalChainText": "misaligned eye -> variable parallax -> unpredictable scatter",
+					"fitNotes": "Changing viewing angle causes scatter."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-07-1-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Random error.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p19, 07.1"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84631h-jun24-07-3",
+			"sourceClassification": "aqa-physics-working-scientifically-withheld",
+			"reason": "The official item awards its mark only for recognising inadequate measuring-cylinder resolution. The metal-ring setting does not make the generic measurement-resolution operation a Particle model chapter question.",
+			"evidenceHash": "15f7aa136fcd68e3ee241f8ca2ca083c8f7afa46cbbfd26321d27d711a4c8fd9",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-07-3",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "07.3",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The true volume of the ring was 0.44 cm³. Even without using the string, the measuring cylinder could not give an accurate value for the volume of the ring. Give one reason why.",
+					"selfContainedPromptText": "A student used the measuring cylinder in Figure 11 to find a metal ring's volume by water displacement. Table 2 records 5.0 cm³ of water, 5.4 cm³ for water plus ring, and a measured ring volume of 0.4 cm³. The true ring volume was 0.44 cm³. Even without the string, the cylinder could not give an accurate ring volume. Give one reason why.",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-07-3-resolution-limits-accuracy",
+					"title": "Resolution Limit",
+					"canonicalChainText": "required precision -> smallest division -> scale too coarse -> inaccurate value",
+					"fitNotes": "The scale cannot show the needed detail."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-07-3-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "The measuring cylinder cannot measure to two decimal places, or its resolution is 0.2 cm³; allow a stated resolution of 0.1 cm³.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p19, 07.3"
+					},
+					{
+						"id": "84631h-jun24-07-3-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Do not credit the unqualified statement that the resolution is too low.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p19, 07.3"
+					}
+				]
+			}
+		},
+		{
+			"questionId": "84631h-jun24-07-4",
+			"sourceClassification": "aqa-physics-working-scientifically-withheld",
+			"reason": "The official item awards its mark only for subtracting a residual balance reading. Correcting a zero offset is a generic working-scientifically operation; no Physics chapter content is assessed.",
+			"evidenceHash": "327e3af4b4213015b90ee514d843495b1ec21fee4076d6788a2532a3b7889e07",
+			"evidence": {
+				"sourceDocument": {
+					"id": "aqa-84631h-qp-jun24",
+					"docType": "question_paper",
+					"board": "AQA",
+					"qualification": "GCSE",
+					"subject": "Physics",
+					"subjectArea": "Physics",
+					"tier": "Higher",
+					"paper": "Physics Paper 1",
+					"componentCode": "84631H",
+					"series": "June 2024",
+					"year": 2024,
+					"title": "Question paper (Higher): Paper 1 - June 2024",
+					"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf",
+					"fileHash": "sha256:3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4",
+					"pageCount": 40
+				},
+				"question": {
+					"id": "84631h-jun24-07-4",
+					"sourceDocumentId": "aqa-84631h-qp-jun24",
+					"sourceQuestionRef": "07.4",
+					"componentCode": "84631H",
+					"specRef": null,
+					"topicPath": [],
+					"year": 2024,
+					"promptText": "The student used a balance to measure the mass of the ring. After the ring was removed from the balance, the reading on the balance was 0.02 g. How could the student use the readings from the balance to determine the correct mass of the ring?",
+					"selfContainedPromptText": "A student used a balance to measure the mass of a metal ring. After the ring was removed, the balance reading was 0.02 g. How could the student use the readings from the balance to determine the correct mass of the ring?",
+					"contextText": null,
+					"marks": 1
+				},
+				"primaryAnswerChain": {
+					"id": "physics-chain-aqa-84631h-qp-jun24-07-4-balance-offset-subtraction",
+					"title": "Offset Correction",
+					"canonicalChainText": "residual reading -> fixed offset -> subtract offset -> corrected mass",
+					"fitNotes": "Use the after-reading as correction."
+				},
+				"markSchemeItems": [
+					{
+						"id": "84631h-jun24-07-4-ms-1",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 1,
+						"itemType": "mark",
+						"text": "Subtract 0.02 g from the measured value with the ring on the balance.",
+						"marks": 1,
+						"sourceRef": "Mark scheme p19, 07.4"
+					},
+					{
+						"id": "84631h-jun24-07-4-ms-2",
+						"sourceDocumentId": "aqa-84631h-ms-jun24",
+						"sourceDocument": {
+							"id": "aqa-84631h-ms-jun24",
+							"docType": "mark_scheme",
+							"title": "Mark scheme (Higher): Paper 1 - June 2024",
+							"sourceUrl": "https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf",
+							"fileHash": "sha256:99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+						},
+						"displayOrder": 2,
+						"itemType": "guidance",
+						"text": "Ignore 'zero the balance'.",
+						"marks": 0,
+						"sourceRef": "Mark scheme p19, 07.4"
+					}
+				]
+			}
+		}
+	]
+}

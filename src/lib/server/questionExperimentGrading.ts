@@ -11,6 +11,8 @@ import type {
 	ExperimentGradeVerdict,
 	ExperimentQuestionGradeResult
 } from '$lib/experiments/questions/gradingTypes';
+import { assetCanvasAnswerForGrading } from '$lib/experiments/questions/assetCanvasAnswer';
+import { estimateOfficialGradeableMarks } from '$lib/experiments/questions/paperSittingGradeabilityPolicy.js';
 import type { LlmTextModelId, LlmThinkingLevel } from '@ljoukov/llm';
 import { startModelAnalytics } from '$lib/server/analytics';
 
@@ -129,6 +131,14 @@ type ParsedAnswerKey = {
 
 type FixedResponse =
 	| {
+			kind: 'asset-canvas';
+			instructions: string | null;
+			lineCount: number | null;
+			answerLabel: string | null;
+			unit: string | null;
+			answerKeys: ParsedAnswerKey[];
+	  }
+	| {
 			kind: 'image-label-zones';
 			zones: Array<{ id: string; label: string }>;
 			correctAnswers: Record<string, string>;
@@ -178,6 +188,8 @@ type FixedResponse =
 	  };
 
 type ExperimentThinkingLevel = LlmThinkingLevel | 'none';
+
+type DeterministicFixedResponse = Exclude<FixedResponse, { kind: 'asset-canvas' }>;
 
 type ModelGradePayload = {
 	results?: Array<{
@@ -528,6 +540,17 @@ function responseFromRenderJson(raw: string | null): FixedResponse | null {
 		};
 	}
 
+	if (value.kind === 'asset-canvas') {
+		return {
+			kind: 'asset-canvas',
+			instructions: typeof value.instructions === 'string' ? value.instructions : null,
+			lineCount: typeof value.lineCount === 'number' ? value.lineCount : null,
+			answerLabel: typeof value.answerLabel === 'string' ? value.answerLabel : null,
+			unit: typeof value.unit === 'string' ? value.unit : null,
+			answerKeys
+		};
+	}
+
 	if (value.kind === 'choice' && Array.isArray(value.options)) {
 		const options = value.options.filter((option): option is string => typeof option === 'string');
 		return {
@@ -644,15 +667,17 @@ function imageLabelResponseNeedsAnswerKey(response: FixedResponse | null) {
 	);
 }
 
-function canGradeDeterministically(response: FixedResponse | null): response is FixedResponse {
-	if (!response) return false;
+function canGradeDeterministically(
+	response: FixedResponse | null
+): response is DeterministicFixedResponse {
+	if (!response || response.kind === 'asset-canvas') return false;
 	if (response.kind === 'image-label-zones') return !imageLabelResponseNeedsAnswerKey(response);
 	return response.answerKeys.length > 0;
 }
 
 function responseNeedsDeterministicAnswerKey(response: FixedResponse | null) {
 	if (!response) return false;
-	if (response.kind === 'labeled-lines') return false;
+	if (response.kind === 'labeled-lines' || response.kind === 'asset-canvas') return false;
 	if (response.kind === 'image-label-zones') return imageLabelResponseNeedsAnswerKey(response);
 	return response.answerKeys.length === 0;
 }
@@ -660,7 +685,8 @@ function responseNeedsDeterministicAnswerKey(response: FixedResponse | null) {
 function shouldUseLlmGrading(context: GradeableQuestionContext) {
 	return (
 		context.response === null ||
-		(context.response.kind === 'labeled-lines' && context.response.answerKeys.length === 0)
+		((context.response.kind === 'labeled-lines' || context.response.kind === 'asset-canvas') &&
+			context.response.answerKeys.length === 0)
 	);
 }
 
@@ -716,6 +742,18 @@ function responsePromptDetails(response: FixedResponse | null) {
 			...response.labels.map((label) => `- ${label}`)
 		].join('\n');
 	}
+	if (response.kind === 'asset-canvas') {
+		return [
+			'The learner draws directly over a supplied source figure and may also provide written working and a final answer.',
+			response.instructions ? `Instructions: ${response.instructions}` : null,
+			response.lineCount ? `Written-working lines: ${response.lineCount}` : null,
+			response.answerLabel ? `Final-answer label: ${response.answerLabel}` : null,
+			response.unit ? `Unit: ${response.unit}` : null,
+			'Drawing strokes are stored as vectors, but their visual relationship to the source figure is not supplied to this text-only grader. Never award a mark that requires judging the drawing merely because strokes were recorded.'
+		]
+			.filter(Boolean)
+			.join('\n');
+	}
 	return [
 		'The learner places labels on image targets.',
 		'Targets:',
@@ -732,12 +770,10 @@ function evidenceSummary(raw: string) {
 	return summaries.join(' ');
 }
 
-function estimateGradeableMarks({
+export function estimateGradeableMarks({
 	maxMarks,
 	markScheme,
 	checklist,
-	modelAnswer,
-	chain,
 	answerKeys
 }: {
 	maxMarks: number;
@@ -747,29 +783,7 @@ function estimateGradeableMarks({
 	chain: GradeableQuestionContext['chain'];
 	answerKeys: ResponseAnswerKeyRow[];
 }) {
-	if (maxMarks <= 0) return 0;
-
-	let evidenceMarks = 0;
-
-	if (chain?.steps.length || (modelAnswer && markScheme.length === 0 && checklist.length === 0)) {
-		evidenceMarks = maxMarks;
-	}
-
-	if (checklist.length > 0) {
-		const checklistMarks = checklist.reduce((sum, item) => sum + (item.required ? 1 : 0), 0);
-		evidenceMarks = Math.max(evidenceMarks, checklistMarks || checklist.length);
-	}
-
-	if (markScheme.length > 0) {
-		const explicitMarkTotal = markScheme.reduce((sum, item) => sum + (item.marks ?? 0), 0);
-		evidenceMarks = Math.max(evidenceMarks, explicitMarkTotal || markScheme.length);
-	}
-
-	if (answerKeys.length > 0) {
-		evidenceMarks = Math.max(evidenceMarks, maxMarks);
-	}
-
-	return Math.min(maxMarks, evidenceMarks);
+	return estimateOfficialGradeableMarks({ maxMarks, markScheme, checklist, answerKeys });
 }
 
 async function getTargetQuestions(sourceDocumentId: string, ref: string) {
@@ -781,8 +795,18 @@ async function getTargetQuestions(sourceDocumentId: string, ref: string) {
 		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper, q.series, q.year,
 		        q.topic_path_json, qro.render_json
 		 FROM questions q
-		 LEFT JOIN question_rendering_overlays qro ON qro.question_id = q.id
+		 JOIN question_rendering_overlays qro
+		   ON qro.id = (
+		     SELECT candidate.id
+		       FROM question_rendering_overlays candidate
+		      WHERE candidate.question_id = q.id
+		        AND candidate.needs_human_review = 0
+		      ORDER BY candidate.updated_at DESC, candidate.overlay_version DESC
+		      LIMIT 1
+		   )
 		 WHERE q.source_document_id = ?
+		   AND q.status = 'published'
+		   AND q.needs_human_review = 0
 		   AND ${
 					hasSubpart
 						? 'q.source_question_ref = ?'
@@ -806,16 +830,18 @@ async function getQuestionEvidence(questionId: string) {
 			),
 			queryRows<ChecklistRow>(
 				`SELECT id, display_order, text, required, mark_scheme_item_ids_json
-			 FROM mark_checklist_items
-			 WHERE question_id = ?
-			 ORDER BY display_order`,
+				 FROM mark_checklist_items
+				 WHERE question_id = ?
+				   AND needs_human_review = 0
+				 ORDER BY display_order`,
 				[questionId]
 			),
 			queryRows<ModelAnswerRow>(
 				`SELECT answer_text, confidence
-			 FROM model_answers
-			 WHERE question_id = ?
-			 ORDER BY COALESCE(confidence, 0) DESC
+				 FROM model_answers
+				 WHERE question_id = ?
+				   AND needs_human_review = 0
+				 ORDER BY COALESCE(confidence, 0) DESC
 			 LIMIT 1`,
 				[questionId]
 			),
@@ -912,6 +938,11 @@ async function getGradeContexts(
 			if (!evidence.chain) {
 				warnings.push('No answer chain is linked to this subpart in D1 yet.');
 			}
+			if (response?.kind === 'asset-canvas') {
+				warnings.push(
+					'The written working and final answer can be checked, but this text-only check cannot verify the geometry drawn over the figure.'
+				);
+			}
 			if (imageLabelResponseNeedsAnswerKey(response)) {
 				warnings.push(
 					'This label question is missing a complete imported answer key, so it cannot be checked automatically yet.'
@@ -927,21 +958,16 @@ async function getGradeContexts(
 				evidence.checklist.length > 0 ||
 				Boolean(evidence.modelAnswer) ||
 				Boolean(evidence.chain?.steps.length);
-			const gradeable =
-				hasEvidence ||
-				canGradeDeterministically(response) ||
-				(Boolean(response) && evidence.responseAnswerKeys.length > 0);
 			const maxMarks = question.marks ?? 0;
-			const gradeableMarks = gradeable
-				? canGradeDeterministically(response)
-					? Math.min(
-							maxMarks,
-							response.kind === 'image-label-zones'
-								? response.zones.length
-								: Math.max(1, response.answerKeys.length)
-						)
-					: maxMarks ||
-						estimateGradeableMarks({
+			const gradeableMarks = canGradeDeterministically(response)
+				? Math.min(
+						maxMarks,
+						response.kind === 'image-label-zones'
+							? response.zones.length
+							: Math.max(1, response.answerKeys.length)
+					)
+				: hasEvidence || (Boolean(response) && evidence.responseAnswerKeys.length > 0)
+					? estimateGradeableMarks({
 							maxMarks,
 							markScheme: evidence.markScheme,
 							checklist: evidence.checklist,
@@ -949,7 +975,8 @@ async function getGradeContexts(
 							chain: evidence.chain,
 							answerKeys: evidence.responseAnswerKeys
 						})
-				: 0;
+					: 0;
+			const gradeable = gradeableMarks > 0;
 
 			if (gradeableMarks > 0 && maxMarks > gradeableMarks) {
 				warnings.push(
@@ -972,6 +999,32 @@ async function getGradeContexts(
 			};
 		})
 	);
+}
+
+export type ExperimentPaperGradeability = {
+	refs: string[];
+	maxMarks: number;
+	gradeableMarks: number;
+	fullyGradeable: boolean;
+};
+
+export async function getExperimentPaperGradeability(
+	paperSlug: string,
+	questionRefs: string[]
+): Promise<ExperimentPaperGradeability> {
+	const groups = await Promise.all(questionRefs.map((ref) => getGradeContexts(paperSlug, ref)));
+	const contexts = [
+		...new Map(groups.flat().map((context) => [context.question.id, context])).values()
+	];
+	return {
+		refs: contexts.map((context) => context.question.source_question_ref),
+		maxMarks: contexts.reduce((sum, context) => sum + (context.question.marks ?? 0), 0),
+		gradeableMarks: contexts.reduce((sum, context) => sum + context.gradeableMarks, 0),
+		fullyGradeable: contexts.every((context) => {
+			const maxMarks = context.question.marks ?? 0;
+			return maxMarks <= 0 || (context.gradeable && context.gradeableMarks >= maxMarks);
+		})
+	};
 }
 
 function structuredAnswerKeyPromptDetails(rows: ResponseAnswerKeyRow[]) {
@@ -1069,6 +1122,7 @@ function buildPrompt(contexts: GradeableQuestionContext[], answers: Record<strin
 		'Checklist explanations should be short plain-English reasons, at most one sentence.',
 		'For selected-response questions, use RESPONSE_FORMAT to understand what the submitted answer means.',
 		'For fixed-response questions, STRUCTURED_ANSWER_KEYS are source-grounded correct answers. Use aliases and notes when supplied.',
+		'For an asset-canvas response, assess written working and the final answer normally, but never infer that a visual drawing mark was earned from the mere presence or count of recorded strokes.',
 		'If the number of structured answer keys differs from the marks, return one readable row per answer key when that is clearer, but awardedMarks must follow the mark scheme.',
 		'If a mark-scheme item is only a letter such as A, B, C, or D, grade by the selected option exactly. Do not invent a scientific explanation for a letter-only key; a checklist row such as "Correct option: B" is enough.',
 		'',
@@ -1084,7 +1138,12 @@ function buildPrompt(contexts: GradeableQuestionContext[], answers: Record<strin
 		'STUDENT_ANSWERS:',
 		...contexts.map((context) => {
 			const ref = context.question.source_question_ref;
-			return `REF: ${ref}\nQUESTION_ID: ${context.question.id}\nANSWER:\n${answers[ref]?.trim() ?? ''}`;
+			const rawAnswer = answers[ref]?.trim() ?? '';
+			const learnerAnswer =
+				context.response?.kind === 'asset-canvas'
+					? assetCanvasAnswerForGrading(rawAnswer)
+					: rawAnswer;
+			return `REF: ${ref}\nQUESTION_ID: ${context.question.id}\nANSWER:\n${learnerAnswer}`;
 		})
 	].join('\n');
 }
@@ -1807,7 +1866,7 @@ function mergeModelResult(
 	modelResult: NonNullable<ModelGradePayload['results']>[number] | undefined
 ): ExperimentQuestionGradeResult {
 	const maxMarks = context.question.marks ?? 0;
-	const gradeableMarks = context.gradeableMarks || maxMarks;
+	const gradeableMarks = context.gradeableMarks;
 	const awardedMarks = clampMarks(modelResult?.awardedMarks, gradeableMarks);
 	const checklistById = new Map((modelResult?.checklist ?? []).map((item) => [item.id, item]));
 	const chainById = new Map((modelResult?.chainSteps ?? []).map((item) => [item.id, item]));

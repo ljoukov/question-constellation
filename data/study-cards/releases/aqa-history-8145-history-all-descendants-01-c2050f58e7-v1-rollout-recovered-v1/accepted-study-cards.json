@@ -1,0 +1,393 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-history-8145-history-all-descendants-01-c2050f58e7-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c39-8150-7552-8da1-765f5fe1f2c4"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c3d-e91d-7703-93a9-6fa32a490f32",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:38:55.962Z",
+    "finishedAt": "2026-07-16T18:44:45.877Z",
+    "sourceManifestHash": "a3a171c18cc86e9c414605dda72593911b1ca82795b661e66c6ed79308d003ed",
+    "artifactPath": "data/study-cards/releases/aqa-history-8145-history-all-descendants-01-c2050f58e7-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8145-d60a34fd65-aqa-8145-germany-hitler-dictatorship-establishment",
+      "conceptKey": "aqa-8145-d60a34fd65-germany-hitler-dictatorship-establishment-sequence",
+      "kind": "chronology",
+      "visualCue": "⏳",
+      "front": "In Germany, which listed developments established Hitler’s dictatorship after his appointment as Chancellor?",
+      "back": "The Reichstag Fire; the Enabling Act; elimination of political opposition; trade unions; Rohm and the Night of the Long Knives; Hitler becoming Führer.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The source distinguishes Hitler’s appointment as Chancellor from the establishment of dictatorship. It then lists the Reichstag Fire, Enabling Act, elimination of political opposition, trade unions, Rohm and the Night of the Long Knives, and becoming Führer.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Election results; the role of Papen and Hindenburg; Hitler’s appointment as Chancellor.",
+          "isCorrect": false,
+          "feedback": "These are listed under the failure of Weimar democracy, not as the full dictatorship-establishment sequence.",
+          "misconception": "confuses-appointment-with-dictatorship-establishment"
+        },
+        {
+          "key": "b",
+          "text": "The Reichstag Fire; the Enabling Act; elimination of political opposition; trade unions; Rohm and the Night of the Long Knives; Hitler becoming Führer.",
+          "isCorrect": true,
+          "feedback": "Correct: this follows the listed establishment sequence through to Hitler becoming Führer.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "The Reichstag Fire and the Enabling Act only.",
+          "isCorrect": false,
+          "feedback": "This stops too early and omits the remaining listed developments.",
+          "misconception": "truncates-dictatorship-establishment-sequence"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "History",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification",
+          "title": "AQA GCSE History (8145)",
+          "locator": "Official PDF pages 16-16; 3.2.1.AB.part-2 Part two: Germany and the Depression",
+          "excerpt": "• The failure of Weimar democracy: election results; the role of Papen and Hindenburg and\nHitler’s appointment as Chancellor.\n• The establishment of Hitler’s dictatorship: the Reichstag Fire; the Enabling Act; elimination of\npolitical opposition; trade unions; Rohm and the Night of the Long Knives; Hitler becomes\nFührer.",
+          "sourceHash": "7d1c1ff834a74aea6d2ce6ca30aad88c1811a0d23afd51593056d1039e9de0da",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+          "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab-part-2",
+          "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8145-dbccb9700c-aqa-8145-norman-site-earlier-period-change",
+      "conceptKey": "aqa-8145-dbccb9700c-norman-site-representativeness-earlier-period-change",
+      "kind": "comparison",
+      "visualCue": "🏛️",
+      "front": "To judge how a Norman historic site represents its period, what additional awareness is needed?",
+      "back": "Awareness of how the site’s key features and other aspects changed from earlier periods.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The passage links representativeness to awareness of how the site’s key features and other aspects changed from earlier periods.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Awareness of how the site’s key features and other aspects changed from earlier periods.",
+          "isCorrect": true,
+          "feedback": "Correct: an earlier-period comparison supports understanding of how the site represents its period.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Awareness of the site’s key features within the period only, with no earlier-period comparison.",
+          "isCorrect": false,
+          "feedback": "The passage requires awareness of change from earlier periods.",
+          "misconception": "omits-earlier-period-comparison"
+        },
+        {
+          "key": "c",
+          "text": "Awareness only of how the site may change in later periods.",
+          "isCorrect": false,
+          "feedback": "The specified comparison points back to earlier periods, not forward to later ones.",
+          "misconception": "reverses-period-comparison-direction"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "History",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification",
+          "title": "AQA GCSE History (8145)",
+          "locator": "Official PDF pages 28-28; 3.3.2.BA.part-4 Part four: The historic environment of Norman England",
+          "excerpt": "Students will be expected to understand the ways in which key features and other aspects of the\nsite are representative of the period studied. In order to do this, students will also need to be aware\nof how the key features and other aspects of the site have changed from earlier periods.",
+          "sourceHash": "7d1c1ff834a74aea6d2ce6ca30aad88c1811a0d23afd51593056d1039e9de0da",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+          "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-ba-part-4",
+          "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-ba",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8145-87f078e001-aqa-8145-edward-i-site-place-history-relationship",
+      "conceptKey": "aqa-8145-87f078e001-edward-i-historic-site-place-event-relationship",
+      "kind": "method",
+      "visualCue": "👑",
+      "front": "What is the required focus when studying a historic-environment site in the Edward I depth study?",
+      "back": "The relationship between the specific place and its associated historic events and developments.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The site is studied in its historical context by connecting a specific place with associated historic events and developments.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "The site’s physical features alone, separated from historical context.",
+          "isCorrect": false,
+          "feedback": "The site must be placed in historical context and related to associated events and developments.",
+          "misconception": "isolates-site-from-historical-context"
+        },
+        {
+          "key": "b",
+          "text": "The relationship between the specific place and its associated historic events and developments.",
+          "isCorrect": true,
+          "feedback": "Correct: the required focus connects the specific place to its associated history.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "Wider historic events alone, without connecting them to the specific place.",
+          "isCorrect": false,
+          "feedback": "Events must be connected to the specific place; events alone miss the required relationship.",
+          "misconception": "detaches-events-from-specific-place"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "History",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification",
+          "title": "AQA GCSE History (8145)",
+          "locator": "Official PDF pages 29-29; 3.3.2.BB.part-4 Part four: The historic environment of Medieval England",
+          "excerpt": "The study of the historic environment will focus on a particular site in its historical context and\nshould examine the relationship between a specific place and associated historic events and\ndevelopments.",
+          "sourceHash": "7d1c1ff834a74aea6d2ce6ca30aad88c1811a0d23afd51593056d1039e9de0da",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+          "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bb-part-4",
+          "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bb",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8145-9ec181170e-aqa-8145-elizabethan-site-design-period-culture",
+      "conceptKey": "aqa-8145-9ec181170e-elizabethan-site-design-culture-values-fashions",
+      "kind": "method",
+      "visualCue": "👑",
+      "front": "When analysing an Elizabethan historic site, what should its design be related to?",
+      "back": "The culture, values and fashions of the people at the time.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The design should be examined for how it reflects the people’s culture, values and fashions at the time; location, function, structure, connected people and event links are listed separately.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Only the site’s location, function and structure.",
+          "isCorrect": false,
+          "feedback": "Location, function and structure are separate aspects; the stated design link concerns culture, values and fashions.",
+          "misconception": "conflates-design-with-physical-site-aspects"
+        },
+        {
+          "key": "b",
+          "text": "Only the identities of the designer, originator and occupants.",
+          "isCorrect": false,
+          "feedback": "Connected people are a separate aspect from what the design reflects.",
+          "misconception": "conflates-design-with-connected-people"
+        },
+        {
+          "key": "c",
+          "text": "Only important events and developments connected to the site.",
+          "isCorrect": false,
+          "feedback": "Connections to events and developments are listed separately from the design relationship.",
+          "misconception": "conflates-design-with-event-connections"
+        },
+        {
+          "key": "d",
+          "text": "The culture, values and fashions of the people at the time.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the aspects of the period that the site’s design should reflect.",
+          "misconception": null
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "History",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification",
+          "title": "AQA GCSE History (8145)",
+          "locator": "Official PDF pages 31-31; 3.3.2.BC.part-4 Part four: The historic environment of Elizabethan England",
+          "excerpt": "The following aspects of the site should be considered:\n• location\n• function\n• the structure\n• people connected with the site eg the designer, originator and occupants\n• design\n• how the design reflects the culture, values, fashions of the people at the time\n• how important events/developments from the depth study are connected to the site.",
+          "sourceHash": "7d1c1ff834a74aea6d2ce6ca30aad88c1811a0d23afd51593056d1039e9de0da",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+          "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bc-part-4",
+          "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bc",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8145-514f2a6fa2-aqa-8145-restoration-historic-environment-course-share",
+      "conceptKey": "aqa-8145-514f2a6fa2-restoration-historic-environment-course-allocation",
+      "kind": "fact",
+      "visualCue": "🏛️",
+      "front": "In the Restoration England depth study, what share of the course is the historic environment, and approximately how many guided learning hours does it represent?",
+      "back": "10% of the course, equating to approximately 12 hours out of 120 guided learning hours.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification gives both the course share and its approximate guided-learning-time equivalent: 10% and approximately 12 hours out of 120.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "5% of the course, equating to approximately 6 hours out of 120 guided learning hours.",
+          "isCorrect": false,
+          "feedback": "This halves both figures; the stated allocation is 10% and approximately 12 hours.",
+          "misconception": "halves-historic-environment-allocation"
+        },
+        {
+          "key": "b",
+          "text": "10% of the course, equating to approximately 12 hours out of 120 guided learning hours.",
+          "isCorrect": true,
+          "feedback": "Correct: this preserves both the percentage and the approximate-hours qualifier.",
+          "misconception": null
+        },
+        {
+          "key": "c",
+          "text": "20% of the course, equating to approximately 24 hours out of 120 guided learning hours.",
+          "isCorrect": false,
+          "feedback": "This doubles both figures; the stated allocation is 10% and approximately 12 hours.",
+          "misconception": "doubles-historic-environment-allocation"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "History",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/history/gcse/history-8145/specification",
+          "title": "AQA GCSE History (8145)",
+          "locator": "Official PDF pages 32-32; 3.3.2.BD.part-4 Part four: The historic environment of Restoration England",
+          "excerpt": "The historic environment is 10% of the overall course, which equates to approximately 12 hours\nout of 120 guided learning hours.",
+          "sourceHash": "7d1c1ff834a74aea6d2ce6ca30aad88c1811a0d23afd51593056d1039e9de0da",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+          "curriculumComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bd-part-4",
+          "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bd",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-2-1-ab",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-ba",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bb",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bc",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-history-8145-v1.3:higher",
+      "topicComponentId": "aqa-gcse-history-8145-v1.3:3-3-2-bd",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    }
+  ]
+}

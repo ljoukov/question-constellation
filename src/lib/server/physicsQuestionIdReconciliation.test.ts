@@ -232,12 +232,58 @@ describe('Physics question-id reconciliation', () => {
 			'members[0].modelAnswers[0].supportingMarkSchemeItemIds[0]'
 		]);
 		expect(transition.canonicalInput).toEqual(normalizedSourceFingerprintInput(canonicalCandidate));
+		expect(transition.legacyOldFingerprint).not.toBe(transition.oldFingerprint);
+		expect(transition.legacyCanonicalFingerprint).not.toBe(transition.canonicalFingerprint);
+		expect(transition.legacyChangedPaths.map((change) => change.path)).toEqual(
+			transition.changedPaths.map((change) => change.path)
+		);
 
 		const invalidInput = structuredClone(normalizedSourceFingerprintInput(oldCandidate));
 		invalidInput.chain.title = `Unexpected ${oldId}`;
 		expect(() => projectPhysicsFingerprintIdentity(invalidInput)).toThrow(
 			'non-allowlisted fingerprint path chain.title'
 		);
+	});
+
+	it('accepts only a reconstructed legacy primary hash and rebases it to the expanded hash', () => {
+		const canonicalCandidate = fixtureCandidate(canonicalId);
+		const transition = buildPhysicsFingerprintTransition(canonicalCandidate, 'canonical');
+		canonicalCandidate.existingSourceFingerprint = transition.legacyCanonicalFingerprint;
+		const legacyPrimary = {
+			id: 'chain-illustration-grid',
+			answer_chain_id: 'physics-chain-grid-transformer-efficiency',
+			source_question_id: canonicalId,
+			source_fingerprint: transition.legacyCanonicalFingerprint,
+			generation_metadata_json: JSON.stringify({
+				sourceFingerprint: transition.legacyCanonicalFingerprint
+			}),
+			status: 'published',
+			is_primary: 1,
+			needs_human_review: 0
+		};
+
+		const state = validatePhysicsIllustrationFingerprintState(canonicalCandidate, transition, [
+			legacyPrimary
+		]);
+		expect(state).toMatchObject({ status: 'passed', phase: 'fingerprint-rebase-pending' });
+		const rebase = buildPublishedPrimaryFingerprintRebasePlan({
+			illustrationRows: [legacyPrimary],
+			primaryId: legacyPrimary.id,
+			oldFingerprint: transition.legacyCanonicalFingerprint,
+			canonicalFingerprint: transition.canonicalFingerprint
+		});
+		expect(rebase.expectedPrimary).toMatchObject({
+			source_fingerprint: transition.canonicalFingerprint
+		});
+		expect(JSON.parse(rebase.generationMetadataJson).sourceFingerprint).toBe(
+			transition.canonicalFingerprint
+		);
+
+		const unproved = { ...legacyPrimary, source_fingerprint: 'f'.repeat(64) };
+		canonicalCandidate.existingSourceFingerprint = unproved.source_fingerprint;
+		expect(
+			validatePhysicsIllustrationFingerprintState(canonicalCandidate, transition, [unproved])
+		).toMatchObject({ status: 'failed' });
 	});
 
 	it('rebases only the exact published primary fingerprint after the identity transaction', async () => {

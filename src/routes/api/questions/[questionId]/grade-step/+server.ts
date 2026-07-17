@@ -2,6 +2,7 @@ import {
 	gradeEnglishPracticeStepStreaming,
 	type EnglishStepGradeDelta
 } from '$lib/server/englishStepGrading';
+import { normalizeConstructedAnswerAssistance } from '$lib/learning/answerAssistance';
 import { recordEnglishStepAttemptEvidence } from '$lib/server/subjectLearning';
 import { createSseStream, sseResponse } from '$lib/server/sse';
 import { json, type RequestHandler } from '@sveltejs/kit';
@@ -18,6 +19,12 @@ const requestSchema = z.object({
 	sourceSessionId: z.string().trim().min(1).max(128).regex(/^[a-zA-Z0-9_-]+$/).nullish(),
 	responseDurationMs: z.number().int().min(0).max(6 * 60 * 60 * 1000).nullish(),
 	hintOpened: z.boolean().default(false),
+	assistance: z
+		.object({
+			externalInputDetected: z.boolean().default(false),
+			externalInputSources: z.array(z.enum(['paste', 'drop'])).max(2).default([])
+		})
+		.default({ externalInputDetected: false, externalInputSources: [] }),
 	stepAnswers: z.record(z.string(), z.string().max(5000)).default({}),
 	attemptHistory: z
 		.array(
@@ -69,6 +76,10 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 
 	void (async () => {
 		try {
+			const assistance = normalizeConstructedAnswerAssistance({
+				hintOpened: body.hintOpened,
+				...body.assistance
+			});
 			const result = await gradeEnglishPracticeStepStreaming({
 				questionId,
 				stepId: body.stepId,
@@ -87,6 +98,7 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 					stepId: body.stepId,
 					result,
 					hintOpened: body.hintOpened,
+					assistance,
 					sourceSessionId: body.sourceSessionId,
 					responseDurationMs: body.responseDurationMs
 				});
@@ -98,7 +110,17 @@ export const POST: RequestHandler = async ({ locals, params, request, platform }
 					userId: locals.user?.uid
 				});
 			}
-			send({ event: 'done', data: JSON.stringify(result) });
+			send({
+				event: 'done',
+				data: JSON.stringify({
+					...result,
+					evidence: {
+						independent: false,
+						externalInputDetected: assistance.externalInputDetected,
+						externalInputSources: assistance.externalInputSources
+					}
+				})
+			});
 		} catch (error) {
 			console.error('[english-step-grade] failed to grade step', {
 				error,

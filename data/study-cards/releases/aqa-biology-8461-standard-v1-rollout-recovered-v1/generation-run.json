@@ -1,0 +1,41 @@
+{
+  "status": "accepted_rollout_recovery",
+  "plan": {
+    "historicalReleaseId": "aqa-biology-8461-standard-v1",
+    "recoveredReleaseId": "aqa-biology-8461-standard-v1-rollout-recovered-v1",
+    "specificationId": "aqa-gcse-biology-8461-v1.0",
+    "subject": "Biology",
+    "offeringIds": [
+      "aqa-gcse-biology-8461-v1.0:foundation",
+      "aqa-gcse-biology-8461-v1.0:higher"
+    ],
+    "topicComponentIds": [
+      "aqa-gcse-biology-8461-v1.0:4-1",
+      "aqa-gcse-biology-8461-v1.0:4-2",
+      "aqa-gcse-biology-8461-v1.0:4-3",
+      "aqa-gcse-biology-8461-v1.0:4-4",
+      "aqa-gcse-biology-8461-v1.0:4-5",
+      "aqa-gcse-biology-8461-v1.0:4-6",
+      "aqa-gcse-biology-8461-v1.0:4-7"
+    ],
+    "countPerTopic": 4,
+    "minimumAcceptedPerTopic": 3,
+    "model": "gpt-5.6-sol",
+    "thinkingLevel": "max"
+  },
+  "counts": {
+    "generated": 28,
+    "reviewCandidates": 27,
+    "accepted": 26,
+    "distinctTargetComponents": 26,
+    "plannerEligibleTargetComponents": 26,
+    "nonPlannerEligibleTargetComponents": 0,
+    "coverageRows": 14,
+    "readyCoverageRows": 14,
+    "withheldCoverageRows": 0,
+    "sessions": 3
+  },
+  "artifactPath": "data/study-cards/releases/aqa-biology-8461-standard-v1-rollout-recovered-v1/accepted-study-cards.json",
+  "artifactHash": "2ad49f74c04907c9fe942451fd57b46138e526cc55dd31649b4edf24db3faa68",
+  "modelCallsDuringRecovery": 0
+}

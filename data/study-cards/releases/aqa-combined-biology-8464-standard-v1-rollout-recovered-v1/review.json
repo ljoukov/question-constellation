@@ -1,0 +1,225 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-biology-cell-eukaryote-prokaryote-nuclear-enclosure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes nuclear enclosure of genetic material in eukaryotic and bacterial cells."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-cell-plant-extra-structures",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately reinforces plant-cell structures, vacuole contents and cellulose cell walls."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-cell-cycle-mitosis-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Practises the correct cell-cycle sequence and the production of two identical cells."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-cell-active-transport-direction-energy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes active transport from diffusion and osmosis by direction and energy requirement."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-organisation-levels-order",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the hierarchy from cells to organisms."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-digestive-enzyme-substrates-products",
+      "accepted": false,
+      "issues": [
+        "The front asks about substrates and products across all three enzymes, but the canonical answer gives no product for amylase; the supplied excerpt gives none either, leaving the question-answer pair incomplete or ambiguous.",
+        "The explanation incorrectly claims that the excerpt gives a substrate-product relationship for each enzyme, although the amylase sentence identifies only its substrate."
+      ],
+      "learnerValue": [
+        "The protease and lipase mappings are accurate, and the choices target common enzyme swaps."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-ventricle-circulation-destinations",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly contrasts the pulmonary and systemic destinations of the two ventricles."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-coronary-heart-disease-stents",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects coronary narrowing to reduced oxygen delivery and the function of stents."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-pathogen-definition-types-spread",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the pathogen definition with the specified groups and transmission routes."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-white-blood-cell-defences",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the three specified white-blood-cell defence mechanisms."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-vaccination-antibody-response",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately rehearses both the initial vaccine stimulus and the rapid later antibody response."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-antibiotics-painkillers-viral-limits",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes antibiotics' viral limitation from the symptom-relieving role of painkillers."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-photosynthesis-endothermic-light-transfer",
+      "accepted": false,
+      "issues": [
+        "Distractors b and c both encode essentially the same reversed energy-transfer misconception, while c's claim that chloroplasts transfer energy to environmental light is contrived and pedagogically implausible. The four-choice card therefore lacks three genuinely distinct misconceptions."
+      ],
+      "learnerValue": [
+        "The source-aligned core correctly links endothermic photosynthesis to energy transfer into chloroplasts by light."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-photosynthesis-rate-factors",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately tests the four specified factors affecting photosynthesis rate."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-photosynthesis-glucose-uses",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Consolidates all five specified uses of photosynthetic glucose."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-exercise-anaerobic-lactic-acid",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the Foundation-accessible causal chain from insufficient oxygen to muscle fatigue."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-homeostasis-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides an accurate, source-aligned definition of homeostasis."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-control-system-components",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clarifies the distinct roles of receptors, coordination centres and effectors."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-nervous-system-information-pathway",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Practises the receptor-to-CNS-to-effector information pathway and signal type."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-insulin-high-blood-glucose",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately links high blood glucose, pancreatic insulin, cellular uptake and glycogen storage."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-sexual-asexual-reproduction",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Compares genetic mixing, gametes, division type and offspring in sexual and asexual reproduction."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-meiosis-gamete-outcomes",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces copying, two divisions, four gametes, chromosome reduction and genetic difference."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-gene-genome-definitions",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly distinguishes a protein-coding gene from an organism's complete genome."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-antibiotic-resistance-selection",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately presents mutation, survival and reproduction in antibiotic-resistant strains."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-ecosystem-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes an ecosystem from a population, abiotic conditions alone and the biosphere."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-plant-animal-competition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately contrasts the specified resources for which plants and animals often compete."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-biology-food-chain-consumer-order",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the correct feeding order from producer to tertiary consumer."
+      ]
+    }
+  ]
+}

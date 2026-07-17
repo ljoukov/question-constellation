@@ -1,0 +1,262 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8525-3-1-algorithm-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Directly retrieves the official definition and distinguishes algorithms from programs and representations."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-1-decomposition-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the full definition, including identifiable tasks and possible further subdivision."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-1-abstraction-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Emphasises that unnecessary, rather than all, detail is removed."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-1-algorithm-program-relationship",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces both implementation and non-identity in the algorithm–program relationship."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-2-required-data-types",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides efficient retrieval of AQA's five examinable general data-type names."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-2-imperative-combining-principles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates the three control principles from statement types, data types and IPO analysis."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-2-div-mod-eleven-two",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects DIV and MOD to quotient and remainder through a reconstructable equation."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-2-subroutine-definition",
+      "accepted": false,
+      "issues": [
+        "The excerpt is from 3.2.10 Structured programming and subroutines, not 3.2.2 Programming concepts, so both the curriculum component mapping and source locator are incorrect."
+      ],
+      "learnerValue": [
+        "The named detached-block mnemonic usefully distinguishes a subroutine from local variables, input and iteration."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-3-equivalent-255-representations",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds fluent association between the three specified representations of 255."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-3-bit-byte-units-symbols",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the eight-bit relationship with the case-sensitive b/B distinction."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-3-bitmap-file-size-formulas",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves both formulas while making the bits-to-bytes conversion explicit."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-3-sound-file-size-formula",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links each formula variable to its physical quantity and guards against omitted factors."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-4-system-application-software-roles",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly contrasts resource/platform management with end-user task performance."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-4-translator-machine-code-output",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately groups compilers and assemblers against interpreters by direct machine-code generation."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-4-fetch-decode-execute-cycle",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests both the cycle order and the purpose of each stage."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-4-main-memory-secondary-storage",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Preserves AQA's specific CPU-access definition, exclusions and secondary-storage non-volatility."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-5-lan-wan-scope-ownership",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Teaches the qualified scope and ownership contrasts without turning typical features into absolutes."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-5-tcp-ip-layer-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Supports ordered retrieval of the four substantive TCP/IP layers."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-5-protocol-layer-mapping",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Consolidates six protocols into three accurate layer mappings."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-5-firewall-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines traffic monitoring, both directions and rule-based allow/block decisions."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-6-cyber-security-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Retrieves the protected assets and the three specified harms in one precise definition."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-6-penetration-testing-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately distinguishes penetration testing from pharming, social engineering and malware."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-6-phishing-shouldering-comparison",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts message-based fraudulent acquisition with direct visual observation."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-6-malware-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Uses the umbrella metaphor to connect malware with the three listed examples."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-7-relational-database-consistency-benefit",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Preserves the important distinction between facilitating elimination and guaranteeing it."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-7-sql-retrieval-command-set",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Separates retrieval clauses from insertion, update and deletion commands."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-7-sql-insert-structure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Rehearses the exact ordering of the destination, column list and values list."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-7-sql-update-delete-structures",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Contrasts the complete conditional edit and delete structures using compact retrieval cues."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-8-hacking-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Focuses recall on the defining absence of authorisation."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-8-citizen-privacy-position",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Preserves the source's normally, may and too-much-access qualifications."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-8-state-private-data-argument",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Accurately retrieves the reported safety argument while retaining often and unless."
+      ]
+    },
+    {
+      "cardId": "aqa-8525-3-8-societal-impact-analysis-framework",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Provides a usable ethical–legal–environmental framework with privacy added conditionally."
+      ]
+    }
+  ]
+}

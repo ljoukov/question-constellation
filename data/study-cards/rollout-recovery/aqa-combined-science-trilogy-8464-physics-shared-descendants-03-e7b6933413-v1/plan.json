@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "promptVersion": "standard-study-card-descendant-coverage-v1",
+  "batchId": "aqa-combined-science-trilogy-8464-physics-shared-descendants-03-e7b6933413-v1",
+  "specificationId": "aqa-gcse-combined-science-trilogy-8464-v1.1",
+  "board": "AQA",
+  "qualification": "GCSE",
+  "subject": "Physics",
+  "offeringIds": [
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher"
+  ],
+  "topicComponentIds": [
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7"
+  ],
+  "generationMode": "required-descendants",
+  "requiredComponentIds": [
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-2-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-4",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-5-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-2",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-3",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-6-2-4",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-1",
+    "aqa-gcse-combined-science-trilogy-8464-v1.1:6-7-2"
+  ],
+  "expectedCardCount": 15,
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "sourcePdf": {
+    "path": "data/curricula/sources/aqa-gcse-combined-science-trilogy-8464-v1.1.pdf",
+    "sha256": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894"
+  }
+}

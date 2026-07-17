@@ -18,6 +18,7 @@ beforeEach(() => {
 	`);
 	db.exec(readFileSync(path.resolve('migrations/0018_recall_catalog.sql'), 'utf8'));
 	db.exec(readFileSync(path.resolve('migrations/0019_recall_draft_first.sql'), 'utf8'));
+	db.exec(readFileSync(path.resolve('migrations/0023_recall_three_or_four_choices.sql'), 'utf8'));
 	db.exec(`
 		INSERT INTO curriculum_specifications (id) VALUES ('spec');
 		INSERT INTO curriculum_components (id, specification_id) VALUES ('component', 'spec');
@@ -31,7 +32,7 @@ beforeEach(() => {
 			source_fingerprint, artifact_hash, artifact_path, run_json,
 			started_at, finished_at, status, import_owner
 		) VALUES (
-			'run', 'recall-card-bundle-v2', 'recall-card-compiler-v5',
+			'run', 'recall-card-bundle-v2', 'recall-card-compiler-v10',
 			'gpt-5.6-sol', 'max', 'gpt-5.6-sol', 'max', 'gpt-5.6-sol', 'max',
 			'${'a'.repeat(64)}', '${'b'.repeat(64)}', 'data/recall/generated/run/accepted-cards.json', '{}',
 			'2026-07-15T10:00:00.000Z', '2026-07-15T10:01:00.000Z', 'accepted', 'recall-card-import/v1'
@@ -79,6 +80,23 @@ describe('recall catalog draft-first guards', () => {
 			db.exec(`UPDATE recall_cards SET explanation = 'Changed' WHERE id = 'card'`)
 		).toThrow(/must be retired before revision/);
 	});
+
+	it('publishes a complete three-choice draft after migration 0023', () => {
+		insertCompletePublishedCard(3);
+		expect(db.prepare(`SELECT status FROM recall_cards WHERE id = 'card'`).get()).toEqual({
+			status: 'published'
+		});
+		expect(db.prepare(`SELECT COUNT(*) AS count FROM recall_card_choices`).get()).toEqual({
+			count: 3
+		});
+	});
+
+	it('rejects publication with fewer than three choices after migration 0023', () => {
+		expect(() => insertCompletePublishedCard(2)).toThrow(/three or four choices/);
+		expect(db.prepare(`SELECT status FROM recall_cards WHERE id = 'card'`).get()).toEqual({
+			status: 'draft'
+		});
+	});
 });
 
 function insertCard(id: string, status: 'draft' | 'published') {
@@ -100,9 +118,9 @@ function insertCard(id: string, status: 'draft' | 'published') {
 	);
 }
 
-function insertCompletePublishedCard() {
+function insertCompletePublishedCard(choiceCount = 4) {
 	insertCard('card', 'draft');
-	for (let index = 0; index < 4; index += 1) {
+	for (let index = 0; index < choiceCount; index += 1) {
 		db.prepare(
 			`INSERT INTO recall_card_choices
 			 (id, card_id, display_order, choice_key, text, is_correct, feedback, misconception, import_owner)

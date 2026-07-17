@@ -1,10 +1,9 @@
 import {
-	recallCurriculumTopics,
 	recallKindLabels,
-	recallSubjects,
-	type RecallSubject
+	runtimeRecallSubjects,
+	type RecallRuntimeSubject
 } from '$lib/recall/aqaScienceRecall';
-import { recallActivityHref } from '$lib/recall/routes';
+import { recallActivityHref, recallTopicsForCards, type RecallActivity } from '$lib/recall/routes';
 import { learnerSubjectHref } from '$lib/learning/subjects';
 import {
 	getRecallCatalogScopeForLearner,
@@ -26,12 +25,22 @@ function serverTimestamp(value: string): number {
 	return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function requestedRecallSubject(value: string | null): RecallSubject | undefined {
-	return value === 'Biology' || value === 'Chemistry' || value === 'Physics' ? value : undefined;
+function requestedRecallSubject(value: string | null): RecallRuntimeSubject | undefined {
+	return value &&
+		value !== 'All subjects' &&
+		runtimeRecallSubjects.includes(value as RecallRuntimeSubject)
+		? (value as RecallRuntimeSubject)
+		: undefined;
+}
+
+function requestedRecallActivity(value: string | null): RecallActivity {
+	if (value === 'mcq') return 'mcq';
+	if (value === 'true-false' || value === 'true_false') return 'true-false';
+	return 'flashcards';
 }
 
 export const load: PageServerLoad = async ({ locals, url, platform }) => {
-	const initialActivity = url.searchParams.get('activity') === 'mcq' ? 'mcq' : 'flashcards';
+	const initialActivity = requestedRecallActivity(url.searchParams.get('activity'));
 	if (url.searchParams.get('start') !== '1') {
 		const subject = requestedRecallSubject(url.searchParams.get('subject')) ?? 'Biology';
 		throw redirect(307, recallActivityHref(subject, initialActivity));
@@ -116,19 +125,27 @@ export const load: PageServerLoad = async ({ locals, url, platform }) => {
 		else await shadowWrite;
 	}
 	const cardIds = new Set(orderedCards.map((card) => card.id));
-	const topics = reviewSubject
-		? recallCurriculumTopics.filter((topic) => topic.subject === reviewSubject)
-		: recallCurriculumTopics;
+	const topics = recallTopicsForCards(
+		reviewSubject ? allCards.filter((card) => card.subject === reviewSubject) : allCards
+	);
 	return {
 		cards: orderedCards,
 		kindLabels: recallKindLabels,
-		subjects: recallSubjects,
+		// A session is hydrated for one exact learner offering. The selector may
+		// navigate to another subject, but it must not imply that this payload
+		// contains a synthetic cross-subject deck.
+		subjects: runtimeRecallSubjects.filter((subject) => subject !== 'All subjects'),
 		topics,
 		initialSubject: url.searchParams.get('subject') ?? 'All subjects',
 		initialTopic: url.searchParams.get('topic') ?? 'all',
 		initialKind: url.searchParams.get('kind') ?? 'all',
 		initialMode:
-			url.searchParams.get('mode') ?? (initialActivity === 'mcq' ? 'recognise' : 'recall'),
+			url.searchParams.get('mode') ??
+			(initialActivity === 'mcq'
+				? 'recognise'
+				: initialActivity === 'true-false'
+					? 'truefalse'
+					: 'recall'),
 		initialActivity,
 		initialSearch: url.searchParams.get('q') ?? '',
 		initialSize: url.searchParams.get('size') ?? '10',

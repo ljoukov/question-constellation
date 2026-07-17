@@ -1,0 +1,181 @@
+{
+  "cards": [
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "atomic-half-life-definition",
+        "conceptKey": "atomic-half-life-sample-halving",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-4-2-3",
+        "kind": "definition",
+        "visualCue": "📈",
+        "front": "What is the half-life of a radioactive isotope?",
+        "back": "The time for the number of nuclei in a sample, or its count rate or activity, to fall to half its initial value.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Half-life can be identified using either the number of isotope nuclei or the sample's count rate or activity.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "The time for every radioactive nucleus in a sample to decay.",
+            "isCorrect": false,
+            "feedback": "Half-life is the time for the number of nuclei to halve, not for every nucleus to decay.",
+            "misconception": "atomic-half-life-all-nuclei-decay"
+          },
+          {
+            "key": "b",
+            "text": "The time for a sample's count rate to fall to zero.",
+            "isCorrect": false,
+            "feedback": "The count rate falls to half its initial level, not to zero.",
+            "misconception": "atomic-half-life-count-rate-zero"
+          },
+          {
+            "key": "c",
+            "text": "The fixed time between two individual nuclear decays.",
+            "isCorrect": false,
+            "feedback": "Half-life concerns halving across a sample, not the interval between two individual decays.",
+            "misconception": "atomic-half-life-between-decays"
+          },
+          {
+            "key": "d",
+            "text": "The time for the number of nuclei in a sample, or its count rate or activity, to fall to half its initial value.",
+            "isCorrect": true,
+            "feedback": "Correct: either nuclei or count rate/activity may be used.",
+            "misconception": null
+          }
+        ],
+        "sourceExcerpt": "The half-life of a radioactive isotope is the time it takes for the\nnumber of nuclei of the isotope in a sample to halve, or the time it\ntakes for the count rate (or activity) from a sample containing the\nisotope to fall to half its initial level.",
+        "sourceLocator": "Official PDF pages 138-143; 6.4.2.3 Half-lives and the random nature of radioactive decay"
+      },
+      "review": {
+        "cardId": "atomic-half-life-definition",
+        "accepted": false,
+        "issues": [
+          "The visual cue 📈 denotes an increasing trend, whereas the cited definition concerns nuclei, count rate or activity falling to half. It is misleading rather than a meaningful cue for this card."
+        ],
+        "learnerValue": [
+          "The definition and distractors are otherwise accurate, concise and source-grounded."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "forces-scalar-vector-difference",
+        "conceptKey": "forces-scalar-versus-vector",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-1-1",
+        "kind": "comparison",
+        "visualCue": "🏎️",
+        "front": "How do scalar and vector quantities differ?",
+        "back": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Magnitude is sufficient for a scalar, whereas a vector also requires an associated direction.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "A scalar has magnitude only; a vector has magnitude and an associated direction.",
+            "isCorrect": true,
+            "feedback": "Correct: direction distinguishes the vector from the scalar.",
+            "misconception": null
+          },
+          {
+            "key": "b",
+            "text": "A scalar has direction only; a vector has magnitude only.",
+            "isCorrect": false,
+            "feedback": "A scalar has magnitude only, while a vector has both magnitude and direction.",
+            "misconception": "forces-scalar-vector-properties-reversed"
+          },
+          {
+            "key": "c",
+            "text": "Both scalars and vectors have magnitude only.",
+            "isCorrect": false,
+            "feedback": "A vector also has an associated direction.",
+            "misconception": "forces-vectors-have-no-direction"
+          },
+          {
+            "key": "d",
+            "text": "Both scalars and vectors have magnitude and direction.",
+            "isCorrect": false,
+            "feedback": "A scalar has magnitude only and does not include an associated direction.",
+            "misconception": "forces-scalars-have-direction"
+          }
+        ],
+        "sourceExcerpt": "Scalar quantities have magnitude only.\nVector quantities have magnitude and an associated direction.",
+        "sourceLocator": "Official PDF pages 143-155; 6.5.1.1 Scalar and vector quantities"
+      },
+      "review": {
+        "cardId": "forces-scalar-vector-difference",
+        "accepted": false,
+        "issues": [
+          "Choice b, which says a scalar has direction only, is not a pedagogically plausible misconception: a physical quantity cannot be specified by direction without magnitude, and this is not a genuine reversal of the definitions. The four-choice card therefore lacks three sound distractors."
+        ],
+        "learnerValue": [
+          "The canonical scalar–vector distinction is accurate and important."
+        ]
+      }
+    },
+    {
+      "stage": "independent-review",
+      "card": {
+        "id": "forces-stopping-distance-components",
+        "conceptKey": "forces-stopping-thinking-plus-braking",
+        "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5",
+        "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:6-5-4-3-1",
+        "kind": "formula",
+        "visualCue": "🚗",
+        "front": "What two distances make up a vehicle's stopping distance?",
+        "back": "Thinking distance plus braking distance.",
+        "reverseFront": null,
+        "reverseBack": null,
+        "explanation": "Thinking distance is travelled during the driver's reaction time; braking distance is travelled under the braking force.",
+        "memoryTip": null,
+        "choices": [
+          {
+            "key": "a",
+            "text": "Reaction time plus braking force.",
+            "isCorrect": false,
+            "feedback": "Stopping distance is the sum of two distances, not a time and a force.",
+            "misconception": "forces-stopping-distance-mixed-quantities"
+          },
+          {
+            "key": "b",
+            "text": "Braking distance only.",
+            "isCorrect": false,
+            "feedback": "Stopping distance also includes the distance travelled during the driver's reaction time.",
+            "misconception": "forces-stopping-distance-omits-thinking"
+          },
+          {
+            "key": "c",
+            "text": "Thinking distance plus the vehicle's length.",
+            "isCorrect": false,
+            "feedback": "The second component is braking distance, not vehicle length.",
+            "misconception": "forces-stopping-distance-adds-vehicle-length"
+          },
+          {
+            "key": "d",
+            "text": "Thinking distance plus braking distance.",
+            "isCorrect": true,
+            "feedback": "Correct: these are the two components of stopping distance.",
+            "misconception": null
+          }
+        ],
+        "sourceExcerpt": "The stopping distance of a vehicle is the sum of the distance the\nvehicle travels during the driver’s reaction time (thinking distance)\nand the distance it travels under the braking force (braking\ndistance).",
+        "sourceLocator": "Official PDF pages 143-155; 6.5.4.3.1 Stopping distance"
+      },
+      "review": {
+        "cardId": "forces-stopping-distance-components",
+        "accepted": false,
+        "issues": [
+          "The four-choice set uses contrived fillers rather than three genuine misconceptions. “Reaction time plus braking force” adds unlike quantities even though the prompt asks for two distances, while adding the vehicle's length is not a plausible stopping-distance model."
+        ],
+        "learnerValue": [
+          "The canonical thinking-distance-plus-braking-distance relationship is accurate and useful."
+        ]
+      }
+    }
+  ]
+}

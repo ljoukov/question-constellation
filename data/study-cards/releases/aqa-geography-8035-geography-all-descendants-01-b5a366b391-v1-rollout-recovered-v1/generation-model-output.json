@@ -1,0 +1,316 @@
+{
+  "cards": [
+    {
+      "id": "aqa-8035-v1-1-natural-hazard-risk-targets",
+      "conceptKey": "aqa-8035-natural-hazard-risk-targets",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-1-1",
+      "kind": "fact",
+      "visualCue": "🌪️",
+      "front": "What two things do natural hazards pose major risks to?",
+      "back": "People and property.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification states that natural hazards pose major risks to both people and property.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "People and property.",
+          "isCorrect": true,
+          "feedback": "Correct: both are named as facing major risks.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "People only.",
+          "isCorrect": false,
+          "feedback": "Property is also named, so this is incomplete.",
+          "misconception": "natural-hazard-risk-people-only"
+        },
+        {
+          "key": "c",
+          "text": "Property only.",
+          "isCorrect": false,
+          "feedback": "People are also named, so this is incomplete.",
+          "misconception": "natural-hazard-risk-property-only"
+        }
+      ],
+      "sourceExcerpt": "Natural hazards pose major risks to people and\nproperty.",
+      "sourceLocator": "Official PDF pages 9-9; 3.1.1.1 Natural hazards"
+    },
+    {
+      "id": "aqa-8035-v1-1-hot-desert-desertification-causes",
+      "conceptKey": "aqa-8035-hot-desert-desertification-causes",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2-3",
+      "kind": "cause-consequence",
+      "visualCue": "🌍",
+      "front": "Which six causes of desertification on the fringes of hot deserts does AQA name?",
+      "back": "Climate change, population growth, removal of fuel wood, overgrazing, over-cultivation and soil erosion.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification lists these six causes after stating that areas on hot-desert fringes are at risk. Water and soil management, tree planting and appropriate technology are listed separately as risk-reduction strategies.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Climate change, population growth, removal of fuel wood, overgrazing, over-cultivation and soil erosion.",
+          "isCorrect": true,
+          "feedback": "Correct: all six listed causes are included.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Water and soil management, tree planting and use of appropriate technology.",
+          "isCorrect": false,
+          "feedback": "These are strategies used to reduce the risk, not the listed causes.",
+          "misconception": "desertification-strategies-confused-with-causes"
+        },
+        {
+          "key": "c",
+          "text": "Climate change, population growth, water and soil management, tree planting and appropriate technology.",
+          "isCorrect": false,
+          "feedback": "This mixes two listed causes with risk-reduction strategies and omits four causes.",
+          "misconception": "desertification-causes-and-strategies-mixed"
+        }
+      ],
+      "sourceExcerpt": "Areas on the fringe of hot deserts are at risk of\ndesertification.\nCauses of desertification – climate change,\npopulation growth, removal of fuel wood,\novergrazing, over-cultivation and soil erosion.\nStrategies used to reduce the risk of\ndesertification – water and soil management,\ntree planting and use of appropriate technology.",
+      "sourceLocator": "Official PDF pages 13-14; 3.1.2.3 Hot deserts"
+    },
+    {
+      "id": "aqa-8035-v1-1-cold-environment-development-conservation-balance",
+      "conceptKey": "aqa-8035-cold-environment-development-conservation-balance",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-2-4",
+      "kind": "method",
+      "visualCue": "🏔️",
+      "front": "Which two needs are strategies in cold environments used to balance?",
+      "back": "Economic development and conservation.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "AQA frames the task as balancing economic development with conservation in cold environments and names technology, governments, international agreements and conservation groups as approaches.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Economic development and conservation.",
+          "isCorrect": true,
+          "feedback": "Correct: both needs must be balanced.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Economic development only.",
+          "isCorrect": false,
+          "feedback": "This drops conservation, one of the two needs to be balanced.",
+          "misconception": "cold-environment-conservation-omitted"
+        },
+        {
+          "key": "c",
+          "text": "Conservation only.",
+          "isCorrect": false,
+          "feedback": "This drops economic development, one of the two needs to be balanced.",
+          "misconception": "cold-environment-development-omitted"
+        }
+      ],
+      "sourceExcerpt": "Strategies used to balance the needs of\neconomic development and conservation in\ncold environments – use of technology, role of\ngovernments, international agreements and\nconservation groups.",
+      "sourceLocator": "Official PDF pages 13-14; 3.1.2.4 Cold environments"
+    },
+    {
+      "id": "aqa-8035-v1-1-uk-landscape-overview-locations",
+      "conceptKey": "aqa-8035-uk-landscape-overview-locations",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-1-3-1",
+      "kind": "fact",
+      "visualCue": "🗺️",
+      "front": "What must an overview of UK physical landscapes locate?",
+      "back": "Major upland and lowland areas, and river systems.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The required overview concerns the locations of major upland and lowland areas and river systems.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Major upland and lowland areas, and river systems.",
+          "isCorrect": true,
+          "feedback": "Correct: the overview includes all three.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Major upland and lowland areas only.",
+          "isCorrect": false,
+          "feedback": "This omits river systems from the required overview.",
+          "misconception": "uk-landscape-overview-rivers-omitted"
+        },
+        {
+          "key": "c",
+          "text": "River systems only.",
+          "isCorrect": false,
+          "feedback": "This omits the major upland and lowland areas.",
+          "misconception": "uk-landscape-overview-relief-omitted"
+        }
+      ],
+      "sourceExcerpt": "The UK has a range of diverse landscapes. An overview of the location of major upland/\nlowland areas and river systems.",
+      "sourceLocator": "Official PDF pages 14-14; 3.1.3.1 UK physical landscapes"
+    },
+    {
+      "id": "aqa-8035-v1-1-fieldwork-data-collection-considerations",
+      "conceptKey": "aqa-8035-fieldwork-data-collection-considerations",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-3",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "When designing fieldwork data collection sheets and collecting data, which considerations does AQA require students to understand?",
+      "back": "Accuracy, sample size and procedures, control groups and reliability.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The design-and-collection requirement explicitly links fieldwork to understanding accuracy, sample size and procedures, control groups and reliability.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Accuracy, sample size and procedures, control groups and reliability.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the considerations attached to fieldwork design and data collection.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Proportion and ratio, magnitude and frequency.",
+          "isCorrect": false,
+          "feedback": "These are separate numerical relationships to use, not the considerations tied to fieldwork design and collection.",
+          "misconception": "fieldwork-design-confused-with-number-relationships"
+        },
+        {
+          "key": "c",
+          "text": "Drawing informed conclusions from numerical data.",
+          "isCorrect": false,
+          "feedback": "Drawing conclusions is a separate numerical skill; it does not replace the listed design-and-collection considerations.",
+          "misconception": "fieldwork-design-confused-with-data-conclusions"
+        }
+      ],
+      "sourceExcerpt": "• design fieldwork data collection sheets and collect data with an understanding of accuracy,\nsample size and procedures, control groups and reliability\n• understand and correctly use proportion and ratio, magnitude and frequency\n• draw informed conclusions from numerical data.",
+      "sourceLocator": "Official PDF pages 30-32; 3.4.3 Numerical skills"
+    },
+    {
+      "id": "aqa-8035-v1-1-geographical-data-source-categories",
+      "conceptKey": "aqa-8035-geographical-data-primary-secondary-sources",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-5",
+      "kind": "fact",
+      "visualCue": "🌍",
+      "front": "According to AQA, qualitative and quantitative geographical data should come from which source categories?",
+      "back": "Both primary and secondary sources.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification pairs qualitative and quantitative data with both primary and secondary sources.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Both primary and secondary sources.",
+          "isCorrect": true,
+          "feedback": "Correct: the requirement includes both source categories.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Primary sources only.",
+          "isCorrect": false,
+          "feedback": "Secondary sources are also included in the requirement.",
+          "misconception": "geographical-data-secondary-sources-omitted"
+        },
+        {
+          "key": "c",
+          "text": "Secondary sources only.",
+          "isCorrect": false,
+          "feedback": "Primary sources are also included in the requirement.",
+          "misconception": "geographical-data-primary-sources-omitted"
+        }
+      ],
+      "sourceExcerpt": "Use of qualitative and quantitative data from both primary and secondary sources to obtain,\nillustrate, communicate, interpret, analyse and evaluate geographical information.",
+      "sourceLocator": "Official PDF pages 30-32; 3.4.5 Use of qualitative and quantitative data"
+    },
+    {
+      "id": "aqa-8035-v1-1-enquiry-conclusion-qualities",
+      "conceptKey": "aqa-8035-geographical-enquiry-conclusion-qualities",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-6",
+      "kind": "method",
+      "visualCue": "🌍",
+      "front": "In AQA Geography, what two qualities should conclusions about geographical questions and issues have?",
+      "back": "They should be well-evidenced and informed.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification explicitly requires well-evidenced and informed conclusions about geographical questions and issues.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "They should be well-evidenced and informed.",
+          "isCorrect": true,
+          "feedback": "Correct: these are the two stated qualities of conclusions.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "They should be descriptive and analytical.",
+          "isCorrect": false,
+          "feedback": "These are writing modes from another requirement, not the two qualities named for conclusions.",
+          "misconception": "conclusion-qualities-confused-with-writing-modes"
+        },
+        {
+          "key": "c",
+          "text": "They should be extended and effectively communicated.",
+          "isCorrect": false,
+          "feedback": "This combines requirements for arguments and communicating ideas, not the qualities specified for conclusions.",
+          "misconception": "conclusion-qualities-confused-with-argument-skills"
+        }
+      ],
+      "sourceExcerpt": "Students should demonstrate the ability to:\n• identify questions and sequences of enquiry\n• write descriptively, analytically and critically\n• communicate their ideas effectively\n• develop an extended written argument\n• draw well-evidenced and informed conclusions about geographical questions and issues.",
+      "sourceLocator": "Official PDF pages 30-32; 3.4.6 Formulate enquiry and argument"
+    },
+    {
+      "id": "aqa-8035-v1-1-literacy-target-audiences",
+      "conceptKey": "aqa-8035-geography-literacy-target-audiences",
+      "topicComponentId": "aqa-gcse-geography-8035-v1.1:3-4",
+      "curriculumComponentId": "aqa-gcse-geography-8035-v1.1:3-4-7",
+      "kind": "method",
+      "visualCue": "🗺️",
+      "front": "According to AQA's Geography literacy requirement, how should students communicate information?",
+      "back": "In ways suitable for a range of target audiences.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "Most communication is through the written word, but the requirement is broader: information should be communicated in ways suitable for a range of target audiences.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "In ways suitable for a range of target audiences.",
+          "isCorrect": true,
+          "feedback": "Correct: communication must be suitable for a range of target audiences.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Only through the written word.",
+          "isCorrect": false,
+          "feedback": "The source says most communication is written, not that all communication must be.",
+          "misconception": "geography-literacy-most-means-only"
+        },
+        {
+          "key": "c",
+          "text": "In ways suitable for one fixed target audience.",
+          "isCorrect": false,
+          "feedback": "The requirement specifies a range of target audiences, not just one.",
+          "misconception": "geography-literacy-range-reduced-to-one-audience"
+        }
+      ],
+      "sourceExcerpt": "Most communication is through the written word, raising the importance of good literacy skills.\nStudents should be able to communicate information in ways suitable for a range of target\naudiences.",
+      "sourceLocator": "Official PDF pages 30-32; 3.4.7 Literacy"
+    }
+  ]
+}

@@ -1,0 +1,314 @@
+{
+  "reviews": [
+    {
+      "cardId": "aqa-8464-chem-5-1-atom-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds precise recall of the specification definition of an atom."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-1-isotope-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes neutron-number variation from changes that would alter the element."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-1-group-outer-electrons",
+      "accepted": false,
+      "issues": [
+        "The excerpt is from 5.1.2.1 The periodic table, but the curriculum component and source locator identify 5.1.1.7 Electronic structure. The subsection mapping and locator are therefore incorrect."
+      ],
+      "learnerValue": [
+        "Correctly tests the link between outer-shell electrons and similar group properties."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-1-group-seven-reactivity",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects the Group 7 reactivity trend with the halogen displacement rule."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-2-bonding-particle-models",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clearly differentiates ionic, covalent and metallic bonding models."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-2-ionic-conduction",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links ionic conduction to the mobility of charged ions."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-2-small-molecule-state-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Targets the important distinction between intermolecular forces and covalent bonds."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-2-graphite-structure",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Integrates graphite's bonding, layered structure and delocalised electrons."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-3-conservation-of-mass",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects conservation of atoms directly to conservation of total mass."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-3-relative-formula-mass",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces the correct operation and use of formula subscripts when finding Mr."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-3-apparent-mass-change",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Corrects the misconception that apparent mass changes require atoms to be created or destroyed."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-3-solution-concentration",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds recall of concentration expressed as mass per solution volume."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-4-metal-displacement",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the core reactivity condition governing metal displacement."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-4-carbon-reduction",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines the carbon-extraction threshold with the oxygen definition of reduction."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-4-ph-classification",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Securely distinguishes acidic, neutral and alkaline pH values."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-4-electrolysis-ion-movement",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Links ion charge, electrode polarity and discharge during electrolysis."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-5-exothermic-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects exothermic energy transfer with the observed surroundings temperature change."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-5-endothermic-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Connects endothermic energy transfer with the observed surroundings temperature change."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-5-activation-energy",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds precise recall of activation energy as a minimum threshold."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-6-rate-measurement",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that reaction rate requires a measured quantity and elapsed time."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-6-temperature-rate-effect",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Uses collision theory to explain rather than merely recall the temperature effect."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-6-catalyst-action",
+      "accepted": false,
+      "issues": [
+        "The explanation contains the malformed phrase \"remains unused up,\" making the key statement about the catalyst not being used up unclear and unsuitable for import."
+      ],
+      "learnerValue": [
+        "The answer and choices otherwise test both catalyst persistence and lower activation energy."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-6-equilibrium-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes dynamic equilibrium from equal amounts or stopped reactions."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-7-alkane-general-formula",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds direct recall of the alkane homologous-series formula."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-7-fractional-distillation",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Clarifies that crude-oil fractions remain mixtures of similarly sized hydrocarbons."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-7-cracking-products",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces that cracking produces both alkanes and alkenes."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-8-pure-substance-definition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Distinguishes the chemical meaning of purity from everyday usage."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-8-rf-value",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Tests the correct order and measurement points in the Rf ratio."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-8-oxygen-carbon-dioxide-tests",
+      "accepted": false,
+      "issues": [
+        "The card combines content from 5.8.2.2 Test for oxygen and 5.8.2.3 Test for carbon dioxide, but its curriculum component and locator identify only 5.8.2.2. The component mapping and locator do not support the complete card."
+      ],
+      "learnerValue": [
+        "The comparison otherwise usefully distinguishes two commonly confused gas tests."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-8-hydrogen-test",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Pairs the correct hydrogen-test procedure with its positive result."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-9-atmospheric-composition",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds accurate approximate recall of modern atmospheric composition."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-9-early-atmosphere-theory",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Preserves the evidential uncertainty while recalling the stated early-atmosphere theory."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-9-greenhouse-gases",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Combines identification of the specified greenhouse gases with their temperature-maintaining role."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-9-pollutant-effects",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Differentiates the specified properties and effects of major atmospheric pollutants."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-10-sustainable-development",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds precise recall of the balance between present and future needs."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-10-potable-water",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Correctly separates drinking-water safety from chemical purity."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-10-sewage-treatment-sequence",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Reinforces both the treatment order and the different biological treatment streams."
+      ]
+    },
+    {
+      "cardId": "aqa-8464-chem-5-10-life-cycle-assessment-stages",
+      "accepted": true,
+      "issues": [],
+      "learnerValue": [
+        "Builds complete recall of the stages and transport coverage included in an LCA."
+      ]
+    }
+  ]
+}

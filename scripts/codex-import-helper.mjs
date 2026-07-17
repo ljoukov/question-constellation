@@ -744,6 +744,9 @@ function normalizeQuestion(question, index, sourceDocument) {
 		promptText,
 		selfContainedPromptText: question.selfContainedPromptText ?? promptText,
 		contextText,
+		selfContainment: normalizeSelfContainment(
+			question.selfContainment ?? question.self_containment ?? question.sourceRequirements
+		),
 		commandWord: question.commandWord ?? null,
 		marks: numberOrNull(question.marks),
 		pageStart: question.pageStart ?? null,
@@ -780,6 +783,28 @@ function normalizeQuestion(question, index, sourceDocument) {
 		),
 		needsHumanReview,
 		reviewNotes: question.reviewNotes ?? []
+	};
+}
+
+function normalizeSelfContainment(value) {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+	const requiredAssetLabels = value.requiredAssetLabels ?? value.required_asset_labels ?? [];
+	const requiredSourceCount = numberOrNull(
+		value.requiredSourceCount ?? value.required_source_count
+	);
+	return {
+		...value,
+		status: value.status ?? null,
+		requiresContext: value.requiresContext ?? value.requires_context ?? null,
+		requiresAssets: value.requiresAssets ?? value.requires_assets ?? null,
+		requiredAssetLabels: Array.isArray(requiredAssetLabels)
+			? requiredAssetLabels.map((label) => String(label).trim()).filter(Boolean)
+			: [],
+		requiredSourceCount:
+			Number.isInteger(requiredSourceCount) && requiredSourceCount >= 0
+				? requiredSourceCount
+				: null,
+		completeSourceBundle: value.completeSourceBundle ?? value.complete_source_bundle ?? null
 	};
 }
 
@@ -902,6 +927,7 @@ function normalizeBlocks(blocks) {
 					text: null,
 					label: block.label ?? null,
 					assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
+					assetId: block.assetId ?? block.targetAssetId ?? null,
 					columns: null,
 					rows: normalizeStructuredTableRows(block.rows),
 					items: null,
@@ -915,6 +941,7 @@ function normalizeBlocks(blocks) {
 				text: block.text ?? null,
 				label: block.label ?? null,
 				assetLabel: block.assetLabel ?? block.sourceLabel ?? null,
+				assetId: block.assetId ?? block.targetAssetId ?? null,
 				columns: block.columns ?? null,
 				rows:
 					kind === 'structured-table'
@@ -1233,7 +1260,7 @@ function normalizeModelAnswer(value) {
 		return { answerText: value, confidence: null, needsHumanReview: false };
 	return {
 		answerText: value.answerText ?? '',
-		confidence: value.confidence ?? 0.5,
+		confidence: value.confidence ?? null,
 		needsHumanReview: value.needsHumanReview === true
 	};
 }
@@ -1394,6 +1421,237 @@ function expectsOcrEnglishAlphabeticPartRef(sourceDocumentId, ref) {
 	return parentNumber >= 1 && parentNumber <= lastAlphabeticParent;
 }
 
+function ocrEnglishLiteratureJune2024TaskTopology(sourceDocumentId, sourceQuestionRef) {
+	const componentMatch = String(sourceDocumentId ?? '').match(/^ocr-j352-(01|02)-qp-jun24$/);
+	if (!componentMatch) return null;
+	const component = componentMatch[1];
+	const ref = String(sourceQuestionRef ?? '').trim();
+
+	if (component === '01') {
+		const sectionA = ref.match(/^(0[1-6])\.1([ab])$/);
+		if (sectionA) {
+			return sectionA[2] === 'a'
+				? {
+						sourceDependent: true,
+						requiredSourceCount: 2,
+						taskKind: 'two-extract-comparison'
+					}
+				: {
+						sourceDependent: false,
+						requiredSourceCount: 0,
+						taskKind: 'whole-text-recall'
+					};
+		}
+		const sectionB = ref.match(/^(0[7-9]|1[0-8])\.1$/);
+		if (sectionB) {
+			return Number(sectionB[1]) % 2 === 1
+				? {
+						sourceDependent: true,
+						requiredSourceCount: 1,
+						taskKind: 'extract-plus-wider-text'
+					}
+				: {
+						sourceDependent: false,
+						requiredSourceCount: 0,
+						taskKind: 'whole-text-analysis'
+					};
+		}
+		return null;
+	}
+
+	const poetry = ref.match(/^(0[1-3])\.1([ab])$/);
+	if (poetry) {
+		return poetry[2] === 'a'
+			? {
+					sourceDependent: true,
+					requiredSourceCount: 2,
+					taskKind: 'poetry-comparison'
+				}
+			: {
+					sourceDependent: false,
+					requiredSourceCount: 0,
+					taskKind: 'whole-text-anthology-recall'
+				};
+	}
+	const shakespeare = ref.match(/^(0[4-9]|1[01])\.1$/);
+	if (shakespeare) {
+		const parentNumber = Number(shakespeare[1]);
+		return parentNumber % 2 === 0
+			? {
+					sourceDependent: true,
+					requiredSourceCount: 1,
+					taskKind: 'extract-plus-wider-text'
+				}
+			: {
+					sourceDependent: false,
+					requiredSourceCount: 0,
+					taskKind: 'whole-text-analysis'
+				};
+	}
+	return null;
+}
+
+function ocrEnglishLiteratureSourceCompletenessIssues(question, sourceDocumentId) {
+	if (!/^ocr-j352-(01|02)-qp-/.test(String(sourceDocumentId ?? ''))) return [];
+	const ref = question?.sourceQuestionRef ?? 'unknown';
+	const fixedTopology = ocrEnglishLiteratureJune2024TaskTopology(sourceDocumentId, ref);
+	const selfContainment = question?.selfContainment ?? {};
+	const requiredSourceCount = Number(
+		selfContainment.requiredSourceCount ?? selfContainment.required_source_count
+	);
+	const declaredAssetLabels =
+		selfContainment.requiredAssetLabels ?? selfContainment.required_asset_labels ?? [];
+	const requiredAssetLabels = [
+		...new Set(
+			(Array.isArray(declaredAssetLabels) ? declaredAssetLabels : [declaredAssetLabels])
+				.map((label) => String(label ?? '').trim())
+				.filter(Boolean)
+		)
+	];
+	const sourceRolePattern = /^(?:source[-_ ]?(?:page|text)|printed[-_ ]?extract)$/i;
+	const sourceAssets = (question?.assets ?? []).filter((asset) =>
+		sourceRolePattern.test(String(asset?.role ?? asset?.assetType ?? asset?.type ?? '').trim())
+	);
+	const sourceDependent =
+		fixedTopology?.sourceDependent === true ||
+		(Number.isInteger(requiredSourceCount) && requiredSourceCount > 0) ||
+		requiredAssetLabels.length > 0 ||
+		sourceAssets.length > 0;
+	if (!sourceDependent) return [];
+
+	const issues = [];
+	if (String(selfContainment.status ?? '').trim() !== 'source_complete') {
+		issues.push({
+			code: 'english_literature_source_status_incomplete',
+			field: 'selfContainment.status',
+			severity: 'error',
+			evidence: `${ref}: source-dependent Literature tasks require status="source_complete".`
+		});
+	}
+	if (!Number.isInteger(requiredSourceCount) || requiredSourceCount <= 0) {
+		issues.push({
+			code: 'english_literature_required_source_count_missing',
+			field: 'selfContainment.requiredSourceCount',
+			severity: 'error',
+			evidence: `${ref}: requiredSourceCount must be a positive integer.`
+		});
+	}
+	if (
+		fixedTopology?.sourceDependent === true &&
+		Number.isInteger(requiredSourceCount) &&
+		requiredSourceCount > 0 &&
+		requiredSourceCount !== fixedTopology.requiredSourceCount
+	) {
+		issues.push({
+			code: 'english_literature_topology_source_count_mismatch',
+			field: 'selfContainment.requiredSourceCount',
+			severity: 'error',
+			evidence: `${ref}: ${fixedTopology.taskKind} requires exactly ${fixedTopology.requiredSourceCount} printed source(s), not ${requiredSourceCount}.`
+		});
+	}
+	if (selfContainment.requiresAssets !== true && selfContainment.requires_assets !== true) {
+		issues.push({
+			code: 'english_literature_source_assets_not_required',
+			field: 'selfContainment.requiresAssets',
+			severity: 'error',
+			evidence: `${ref}: printed sources must be declared as required learner-visible assets.`
+		});
+	}
+	if (requiredAssetLabels.length === 0) {
+		issues.push({
+			code: 'english_literature_required_source_labels_missing',
+			field: 'selfContainment.requiredAssetLabels',
+			severity: 'error',
+			evidence: `${ref}: exact required source asset labels are required.`
+		});
+	}
+
+	const assetsByExactLabel = new Map();
+	for (const asset of question?.assets ?? []) {
+		for (const value of [asset?.sourceLabel, asset?.assetLabel, asset?.label]) {
+			const label = String(value ?? '').trim();
+			if (label && !assetsByExactLabel.has(label)) assetsByExactLabel.set(label, asset);
+		}
+	}
+	const resolvedAssets = requiredAssetLabels
+		.map((label) => assetsByExactLabel.get(label))
+		.filter(Boolean);
+	for (const label of requiredAssetLabels) {
+		if (assetsByExactLabel.has(label)) continue;
+		issues.push({
+			code: 'english_literature_required_source_asset_missing',
+			field: 'assets',
+			severity: 'error',
+			evidence: `${ref}: missing exact required source asset label ${label}.`
+		});
+	}
+	const topologySourceCount =
+		fixedTopology?.sourceDependent === true ? fixedTopology.requiredSourceCount : null;
+	const effectiveRequiredSourceCount = topologySourceCount ?? requiredSourceCount;
+	if (Number.isInteger(effectiveRequiredSourceCount) && effectiveRequiredSourceCount > 0) {
+		const expectedAssetCount =
+			selfContainment.completeSourceBundle === true ||
+			selfContainment.complete_source_bundle === true
+				? 1
+				: effectiveRequiredSourceCount;
+		if (resolvedAssets.length < expectedAssetCount) {
+			issues.push({
+				code: 'english_literature_source_asset_count_incomplete',
+				field: 'assets',
+				severity: 'error',
+				evidence: `${ref}: ${resolvedAssets.length}/${expectedAssetCount} required source assets resolved.`
+			});
+		}
+		if (sourceAssets.length < expectedAssetCount) {
+			issues.push({
+				code: 'english_literature_topology_source_assets_missing',
+				field: 'assets',
+				severity: 'error',
+				evidence: `${ref}: fixed ${fixedTopology?.taskKind ?? 'source-dependent'} topology requires ${expectedAssetCount} concrete source-role asset(s); found ${sourceAssets.length}.`
+			});
+		}
+	}
+
+	const visibleAssetIds = new Set(
+		[
+			...(question?.stemBlocks ?? []),
+			...(question?.leadBlocks ?? []),
+			...(question?.promptBlocks ?? [])
+		]
+			.filter((block) => block?.kind === 'figure')
+			.map((block) => String(block?.assetId ?? '').trim())
+			.filter(Boolean)
+	);
+	for (const asset of resolvedAssets) {
+		const assetId = String(asset?.id ?? asset?.assetId ?? '').trim();
+		const concretePath = String(asset?.filePath ?? asset?.publicPath ?? asset?.r2Key ?? '').trim();
+		if (
+			asset?.required !== true ||
+			asset?.needsHumanReview === true ||
+			!sourceRolePattern.test(
+				String(asset?.role ?? asset?.assetType ?? asset?.type ?? '').trim()
+			) ||
+			!concretePath
+		) {
+			issues.push({
+				code: 'english_literature_source_asset_unreviewed',
+				field: 'assets',
+				severity: 'error',
+				evidence: `${ref}: ${asset?.sourceLabel ?? assetId ?? 'source asset'} must be required, concrete, source-role, and review-clean.`
+			});
+		}
+		if (!assetId || !visibleAssetIds.has(assetId)) {
+			issues.push({
+				code: 'english_literature_source_asset_hidden',
+				field: 'stemBlocks',
+				severity: 'error',
+				evidence: `${ref}: ${asset?.sourceLabel ?? assetId ?? 'source asset'} needs an exact pre-prompt figure.assetId reference.`
+			});
+		}
+	}
+	return issues;
+}
+
 function deterministicIssuesFor(candidate, options = {}) {
 	const findings = [];
 	const sourceDocumentId = candidate?.sourceDocument?.id ?? candidate?.sourceDocumentId ?? null;
@@ -1538,6 +1796,9 @@ function deterministicIssuesFor(candidate, options = {}) {
 				evidence: ref
 			});
 		}
+		for (const issue of ocrEnglishLiteratureSourceCompletenessIssues(question, sourceDocumentId)) {
+			issues.push(issue);
+		}
 		for (const issue of unresolvedExtractionReviewIssues(question)) issues.push(issue);
 		const overrequiredChecklist = overrequiredAlternativeChecklist(question);
 		if (overrequiredChecklist) {
@@ -1654,6 +1915,9 @@ function deterministicIssuesFor(candidate, options = {}) {
 		if (
 			[
 				'aqa-84611h-qp-nov20',
+				'ocr-j351-01-qp-jun24',
+				'ocr-j351-02-qp-jun24',
+				'ocr-j352-01-qp-jun24',
 				'aqa-computer-science-2023-june-paper-2-computing-concepts-qp',
 				'aqa-computer-science-2024-june-paper-2-computing-concepts-qp',
 				'aqa-computer-science-2024-june-paper-1a-computational-thinking-and-programming-skills-c-qp',
@@ -2671,6 +2935,7 @@ function expectedResponseLineCountsForSource(sourceDocumentId) {
 			Object.entries({
 				'02.1': 2,
 				'02.2': 5,
+				'04.2': 2,
 				'05.3': 7,
 				'06.0': 7,
 				'07.3': 2,
@@ -2880,8 +3145,13 @@ function drawingBoxGridMetadataIssues(question) {
 	const issues = [];
 	const grid = response.grid;
 	const visibleText = learnerVisibleQuestionText(question);
+	// A named diagram can contain the word "square" without the official answer
+	// surface containing a printed grid. In particular, learners are often asked
+	// to construct a Punnett square in an otherwise blank drawing box. Only infer
+	// printed-grid metadata from explicit grid/cell wording; the extractor must
+	// verify the actual response surface visually before adding row/column counts.
 	const asksForGrid =
-		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cell|square)\b/i.test(
+		/\b(?:complete|draw|shade|fill|mark|plot)\b[^.\n]{0,120}\b(?:grid|cells?)\b/i.test(
 			visibleText
 		) || /\b(?:following|the|this)\s+grid\b/i.test(visibleText);
 	if (!grid) {
@@ -3008,6 +3278,12 @@ function choiceTableDuplicatesRenderedTableIssues(question) {
 
 function questionRequiresDiagramResponse(question) {
 	const text = learnerVisibleQuestionText(question);
+	const directPlotInstruction =
+		/\bplot\b/i.test(String(question.commandWord ?? '')) ||
+		/(?:^|[.!?]\s+)(?:using\b[^.!?\n]{0,100}[, ]+|(?:on|in)\b[^.!?\n]{0,80}[, ]+)?plot\b/i.test(
+			text
+		) ||
+		/(?:^|[.!?]\s+)use\b[^.!?\n]{0,120}\bto\s+plot\b/i.test(text);
 	const gradingText = [
 		...(question.markSchemeItems ?? []).map((item) => item?.text),
 		...(question.markChecklist ?? []).map((item) => item?.text),
@@ -3021,8 +3297,9 @@ function questionRequiresDiagramResponse(question) {
 		/\bdraw\s+(?:a|an|one\s+or\s+more)?\s*diagrams?\b/i.test(text) ||
 		/\bsketch\s+(?:a|an|one\s+or\s+more)?\s*diagrams?\b/i.test(text) ||
 		/\bcomplete\s+(?:the\s+)?(?:graph|diagram|drawing)\b/i.test(text) ||
-		/\bplot\b[^.\n]{0,120}\b(?:graph|grid|axis|axes)\b/i.test(text) ||
-		/\b(?:graph|grid|axis|axes)\b[^.\n]{0,120}\bplot\b/i.test(text) ||
+		(directPlotInstruction &&
+			(/\bplot\b[^.\n]{0,120}\b(?:graph|grid|axis|axes)\b/i.test(text) ||
+				/\b(?:graph|grid|axis|axes)\b[^.\n]{0,120}\bplot\b/i.test(text))) ||
 		/\bmax(?:imum)?\s+(?:lower\s+)?level\s+\d+\s+if\s+diagram\s+is\s+not\s+used\b/i.test(
 			gradingText
 		)
@@ -3105,6 +3382,18 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 		.join('\n')
 		.toLowerCase();
 	const modelAnswerText = String(question.modelAnswer?.answerText ?? '').toLowerCase();
+	if (sourceDocumentId === 'ocr-j352-01-qp-jun24') {
+		for (const issue of knownOcrEnglishLiteratureJune2024CopyrightIssues(question)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
+	if (/^ocr-j351-(?:01|02)-qp-jun24$/.test(String(sourceDocumentId ?? ''))) {
+		for (const issue of knownOcrEnglishLanguageJune2024SourceIssues(question, sourceDocumentId)) {
+			issues.push(issue);
+		}
+		return issues;
+	}
 	if (
 		sourceDocumentId === 'aqa-geography-2022-june-paper-1-living-with-the-physical-environment-qp'
 	) {
@@ -3292,6 +3581,24 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 			});
 		}
 		if (ref === '07.1') {
+			const options = Array.isArray(question.response?.options) ? question.response.options : [];
+			const keyedAnswers = Array.isArray(question.response?.correctAnswers)
+				? question.response.correctAnswers
+				: [];
+			const keyedValue = String(keyedAnswers[0]?.correctAnswer ?? '');
+			if (
+				keyedAnswers.length !== 1 ||
+				!options.includes(keyedValue) ||
+				!/^\s*C\s*\n/.test(keyedValue)
+			) {
+				issues.push({
+					code: 'known_fixed_response_key_not_exact_option',
+					field: 'response.correctAnswers',
+					severity: 'error',
+					evidence:
+						'07.1 must key exactly one complete learner-visible option C value. Fragmented table text, aliases, and a bare letter do not match the submitted option.'
+				});
+			}
 			const optionText = responseLabels(question.response).join('\n');
 			const normalizedOptions = optionText
 				.replace(/[|,:;=<>-]+/g, ' ')
@@ -3311,8 +3618,15 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 			}
 		}
 		if (ref === '07.2') {
-			const labels = new Set(
+			const visibleResponseLabels = new Set(
 				(responseLabels(question.response) ?? []).map((label) => label.trim().toUpperCase())
+			);
+			const fieldLabels = new Set(
+				(question.response?.fields ?? []).map((field) =>
+					String(field?.label ?? '')
+						.trim()
+						.toUpperCase()
+				)
 			);
 			const answerLabels = new Set(
 				(question.response?.correctAnswers ?? []).map((answer) =>
@@ -3321,24 +3635,37 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 						.toUpperCase()
 				)
 			);
-			for (const requiredLabel of ['AND', 'XOR', 'NOT']) {
-				if (labels.has(requiredLabel) && answerLabels.has(requiredLabel)) continue;
+			if (
+				question.response?.kind !== 'labeled-lines' ||
+				!['X', 'Y', 'Z'].every((label) => fieldLabels.has(label))
+			) {
 				issues.push({
-					code: 'known_logic_gate_label_bank_mismatch',
-					field: 'response.labels',
+					code: 'known_logic_gate_free_response_missing',
+					field: 'response.kind/fields',
 					severity: 'error',
 					evidence:
-						'07.2 learner-facing label bank and answer key must both include AND, XOR, and NOT.'
+						'07.2 must use unrestricted labeled free-text fields X, Y, and Z while rendering the official circuit; a selectable answer bank reveals the three gate names.'
 				});
-				break;
 			}
-			if (labels.has('OR') || answerLabels.has('OR')) {
+			if (['AND', 'XOR', 'NOT', 'OR'].some((label) => visibleResponseLabels.has(label))) {
 				issues.push({
-					code: 'known_logic_gate_label_bank_mismatch',
+					code: 'known_logic_gate_answer_bank_leak',
+					field: 'response.labels/options/labelBank',
+					severity: 'error',
+					evidence:
+						'07.2 official response boxes are unrestricted recall. Learner-visible controls must not disclose candidate gate names.'
+				});
+			}
+			if (
+				!['AND', 'XOR', 'NOT'].every((label) => answerLabels.has(label)) ||
+				answerLabels.has('OR')
+			) {
+				issues.push({
+					code: 'known_logic_gate_hidden_key_mismatch',
 					field: 'response.correctAnswers',
 					severity: 'error',
 					evidence:
-						'07.2 official mark scheme uses XOR for box Y. OR must not appear as a keyed response option or answer.'
+						'07.2 hidden grading key must be X = AND, Y = XOR, and Z = NOT, with no OR answer.'
 				});
 			}
 			if (question.needsHumanReview) {
@@ -3438,6 +3765,23 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 				severity: 'error',
 				evidence:
 					'18.7 must preserve the learner-visible SQL skeleton with official A/B/C label positions; a flattened INSERT INTO ( ) sentence is insufficient.'
+			});
+		}
+		if (
+			ref === '18.6' &&
+			/\bwhere\s+filmid\s*=\s*['"]?101\b/i.test(modelAnswerText) &&
+			!(question.assets ?? []).some((asset) =>
+				[asset.sourceLabel, asset.assetLabel, asset.label, asset.assetId]
+					.filter(Boolean)
+					.some((label) => mediaLabelMatches(label, 'figure 8'))
+			)
+		) {
+			issues.push({
+				code: 'known_model_answer_context_missing',
+				field: 'modelAnswer.answerText',
+				severity: 'error',
+				evidence:
+					"18.6 cannot use FilmID 101 unless Figure 8 is learner-visible. Use the equally official self-contained WHERE Title = 'Toy Story 3' condition."
 			});
 		}
 		for (const issue of knownComputerScience2024Paper2SqlAssetIssues(question)) issues.push(issue);
@@ -3543,6 +3887,102 @@ function knownSourceSpecificIssues(question, sourceDocumentId = null) {
 	}
 	for (const issue of knownFigureCropIssues(question)) issues.push(issue);
 	return issues;
+}
+
+function knownOcrEnglishLiteratureJune2024CopyrightIssues(question) {
+	if (question?.sourceQuestionRef !== '17.1' || Number(question?.marks) !== 40) return [];
+	const selfContainment = question?.selfContainment ?? {};
+	const sourceStatus = String(selfContainment.status ?? '')
+		.trim()
+		.toLowerCase();
+	const requiredSourceCount = Number(
+		selfContainment.requiredSourceCount ?? selfContainment.required_source_count
+	);
+	const requiredAssetLabels =
+		selfContainment.requiredAssetLabels ?? selfContainment.required_asset_labels ?? [];
+	const labels = (
+		Array.isArray(requiredAssetLabels) ? requiredAssetLabels : [requiredAssetLabels]
+	).map((label) => normalizedRenderText(label));
+	const reviewText = normalizedRenderText((question?.reviewNotes ?? []).join('\n'));
+	const promptText = normalizedRenderText(
+		[question?.promptText, question?.selfContainedPromptText].filter(Boolean).join('\n')
+	);
+	const exactOfficialRemovalEvidence =
+		/(?:page 21|question paper pdf page 21)/.test(reviewText) &&
+		/(?:third party copyright|copyright restrictions|item removed)/.test(reviewText) &&
+		/(?:complete extract|entire learner passage|source body)/.test(reviewText) &&
+		/(?:removed|absent|black source area|no recoverable)/.test(reviewText);
+	const exactTask =
+		/a christmas carol/.test(promptText) &&
+		/care for the poor/.test(promptText) &&
+		/in this extract/.test(promptText);
+	const exactSourceContract =
+		['source_missing', 'source_incomplete'].includes(sourceStatus) &&
+		selfContainment.requiresContext === true &&
+		selfContainment.requiresAssets === true &&
+		requiredSourceCount === 1 &&
+		labels.length === 1 &&
+		labels[0].includes('a christmas carol') &&
+		(question?.assets ?? []).length === 0;
+	if (
+		question?.needsHumanReview !== true ||
+		question?.modelAnswer?.needsHumanReview !== true ||
+		!exactOfficialRemovalEvidence ||
+		!exactTask ||
+		!exactSourceContract
+	) {
+		return [];
+	}
+	return [
+		{
+			code: 'known_unresolved_copyright_source',
+			field: 'stemBlocks/assets/needsHumanReview',
+			severity: 'error',
+			evidence:
+				'ocr-j352-01-qp-jun24 17.1 requires the complete A Christmas Carol extract that OCR page 21 explicitly removes for third-party copyright. Only this exact 40-mark row may be held out; mark-scheme or examiner-report fragments are not a learner-safe replacement.'
+		}
+	];
+}
+
+function knownOcrEnglishLanguageJune2024SourceIssues(question, sourceDocumentId) {
+	const selfContainment = question?.selfContainment ?? {};
+	const sourceStatus = String(selfContainment.status ?? '')
+		.trim()
+		.toLowerCase();
+	const requiredSourceCount = Number(
+		selfContainment.requiredSourceCount ?? selfContainment.required_source_count
+	);
+	const requiredAssetLabels =
+		selfContainment.requiredAssetLabels ?? selfContainment.required_asset_labels ?? [];
+	const sourceDependent =
+		selfContainment.requiresContext === true ||
+		selfContainment.requires_context === true ||
+		(Number.isInteger(requiredSourceCount) && requiredSourceCount > 0) ||
+		(Array.isArray(requiredAssetLabels) && requiredAssetLabels.length > 0);
+	const reviewText = normalizedRenderText((question?.reviewNotes ?? []).join('\n'));
+	const explicitlyBlocked =
+		/(?:blocked source|source defect|source body|source area|complete extract|learner passage)/.test(
+			reviewText
+		) &&
+		/(?:copyright|third party|rights removal|withheld|removed|absent|black|no recoverable|not contain|not (?:a |the )?complete|incomplete)/.test(
+			reviewText
+		);
+	if (
+		question?.needsHumanReview !== true ||
+		!sourceDependent ||
+		!['source_missing', 'source_incomplete'].includes(sourceStatus) ||
+		!explicitlyBlocked
+	) {
+		return [];
+	}
+	return [
+		{
+			code: 'known_unresolved_copyright_source',
+			field: 'stemBlocks/assets/needsHumanReview',
+			severity: 'error',
+			evidence: `${sourceDocumentId} ${question?.sourceQuestionRef ?? 'unknown'} depends on a complete reading source removed from OCR's public June 2024 insert. The row must remain blocked or be held out; mark-scheme fragments are not a learner-safe replacement.`
+		}
+	];
 }
 
 function knownHistory2022MedievalIssues(question) {

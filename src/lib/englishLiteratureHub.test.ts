@@ -29,6 +29,8 @@ function question(overrides: Partial<OcrLiteratureQuestionSource>): OcrLiteratur
 		topicPath: [],
 		sourceRef: '03.1a',
 		marks: 20,
+		practiceAvailable: true,
+		practiceUnavailableReason: null,
 		...overrides
 	};
 }
@@ -69,6 +71,31 @@ describe('OCR English Literature course hub', () => {
 			['macbeth']
 		]);
 		expect(hub.questionCount).toBe(4);
+		expect(hub.availableQuestionCount).toBe(4);
+	});
+
+	it('keeps quarantined rows viewable but never prioritises them as a practice choice', () => {
+		const hub = buildOcrEnglishLiteratureHub(selections, [
+			question({
+				id: 'missing-extract',
+				year: 2024,
+				topicPath: ['Modern prose', 'Animal Farm'],
+				practiceAvailable: false,
+				practiceUnavailableReason: 'Official extracts are still being reviewed.'
+			}),
+			question({
+				id: 'reviewed-whole-text',
+				year: 2023,
+				topicPath: ['Modern prose', 'Animal Farm']
+			})
+		]);
+
+		expect(hub.sections[0].questions.map((item) => item.id)).toEqual([
+			'reviewed-whole-text',
+			'missing-extract'
+		]);
+		expect(hub.availableQuestionCount).toBe(1);
+		expect(hub.unavailableQuestionCount).toBe(1);
 	});
 
 	it('labels essay formats and older assessment material honestly', () => {

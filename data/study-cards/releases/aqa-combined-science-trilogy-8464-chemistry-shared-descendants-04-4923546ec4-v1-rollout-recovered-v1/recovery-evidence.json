@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "study-card-rollout-jsonl-recovery-v1",
+  "status": "accepted_transcript_recovered",
+  "historicalBatchId": "aqa-combined-science-trilogy-8464-chemistry-shared-descendants-04-4923546ec4-v1",
+  "recoveredReleaseId": "aqa-combined-science-trilogy-8464-chemistry-shared-descendants-04-4923546ec4-v1-rollout-recovered-v1",
+  "identityPolicy": "This explicit recovery id preserves accepted card/review evidence without claiming byte identity with the missing historical artifact wrapper.",
+  "queueStatus": "accepted",
+  "generator": {
+    "runId": "019f6c3e-dbfe-7b51-9e4a-70d4335b95c5",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-44-46-019f6c3e-dbfe-7b51-9e4a-70d4335b95c5.jsonl",
+    "jsonlHash": "bc738f5f2515a5594358cf141535321f77c6df88f1e4c652c9780cfd1817d4ad",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-chemistry-shared-descendants-04-4923546ec4-v1/generation",
+    "startedAt": "2026-07-16T18:44:46.847Z",
+    "completedAt": "2026-07-16T18:47:49.237Z",
+    "modelOutputHash": "c42b1c3e5be638d79e74711e1e86369bae63348b416d232827a5b81fd4418b30"
+  },
+  "reviewer": {
+    "runId": "019f6c41-a6f7-70f0-a275-16ed2928915f",
+    "jsonlPath": "/home/yaroslav_volovich/.codex/sessions/2026/07/16/rollout-2026-07-16T11-47-49-019f6c41-a6f7-70f0-a275-16ed2928915f.jsonl",
+    "jsonlHash": "a47f88453a7fb8f2fc4c1c712ed941f4677609b906989d8ff2d29146c8297c4a",
+    "cwd": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-combined-science-trilogy-8464-chemistry-shared-descendants-04-4923546ec4-v1/review",
+    "startedAt": "2026-07-16T18:47:49.908Z",
+    "completedAt": "2026-07-16T18:48:25.825Z",
+    "modelOutputHash": "1ef7cdb53e6bfaf85ba6f199d0581d7bdc3c7133ea0d09f4a47cf009fba78d15"
+  },
+  "modelCallsDuringRecovery": 0,
+  "scopeCorrectionApplied": false,
+  "artifactHash": "4d410a029e12f9d2ca741d1d8450679f416034ef9318f8701d573f5ff04dc45f"
+}

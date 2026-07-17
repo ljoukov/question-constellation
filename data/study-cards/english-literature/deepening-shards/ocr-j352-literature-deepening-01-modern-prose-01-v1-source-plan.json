@@ -1,0 +1,502 @@
+{
+  "schemaVersion": "ocr-j352-literature-source-plan-v1",
+  "specificationId": "ocr-gcse-english-literature-j352-v3.0",
+  "offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+  "topics": [
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-anita-and-me",
+      "title": "Anita and Me",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "ocr-anita-and-me-delivery-guide",
+          "kind": "supporting-document",
+          "retrievalType": "official-resource-pdf",
+          "url": "https://www.ocr.org.uk/Images/358302-anita-and-me-delivery-guide.pdf",
+          "title": "OCR J352 Anita and Me Delivery Guide",
+          "rightsBasis": "Official OCR teaching resource; OCR permits free copying and distribution with attribution; only short attributed factual excerpts are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "anita-and-me-deep-plot-outsider",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Meena wants to fit in",
+          "approvedExcerpt": "Feeling like an outsider and desperate to fit in with the other youngsters in the community"
+        },
+        {
+          "id": "anita-and-me-deep-plot-racial-prejudice",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Sam and his gang",
+          "approvedExcerpt": "Meena encounters racial prejudice by many characters, most notably from tearaway Sam Lowbridge and his gang"
+        },
+        {
+          "id": "anita-and-me-deep-plot-nanima",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Nanima visits",
+          "approvedExcerpt": "Nanima, who helps Meena understand her heritage and the reasons her parents came to England"
+        },
+        {
+          "id": "anita-and-me-deep-plot-eleven-plus",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; Meena at school",
+          "approvedExcerpt": "At school, Meena must pass the Eleven Plus so that she can attend grammar school."
+        },
+        {
+          "id": "anita-and-me-deep-plot-news-camera",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; motorway tensions",
+          "approvedExcerpt": "Sam shouts a racist slogan into a local news camera."
+        },
+        {
+          "id": "anita-and-me-deep-plot-attack",
+          "mode": "plot",
+          "sourceId": "ocr-anita-and-me-delivery-guide",
+          "locator": "OCR Delivery Guide, printed page 5; attack after the broadcast",
+          "approvedExcerpt": "The next day, the Indian man is attacked and robbed."
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-never-let-me-go",
+      "title": "Never Let Me Go",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "wikipedia-never-let-me-go-plot",
+          "kind": "secondary-source",
+          "retrievalType": "licensed-web-synopsis",
+          "url": "https://en.wikipedia.org/wiki/Never_Let_Me_Go_(novel)",
+          "title": "Wikipedia: Never Let Me Go (novel)",
+          "rightsBasis": "Wikipedia text is licensed under CC BY-SA 4.0; short attributed secondary-source plot excerpts are retained with source attribution and share-alike notice."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "never-let-me-go-deep-plot-gallery",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Madame’s gallery",
+          "approvedExcerpt": "The students' best pieces are collected by Madame for a mysterious gallery."
+        },
+        {
+          "id": "never-let-me-go-deep-plot-ruth-tommy",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Ruth and Tommy",
+          "approvedExcerpt": "As the students grow older, Tommy and Ruth start dating."
+        },
+        {
+          "id": "never-let-me-go-deep-plot-purpose",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Miss Lucy reveals their purpose",
+          "approvedExcerpt": "they have been created to donate their vital organs to others upon reaching adulthood"
+        },
+        {
+          "id": "never-let-me-go-deep-plot-cottages",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; the students leave Hailsham",
+          "approvedExcerpt": "When the students are 16, they move to the Cottages, a halfway house"
+        },
+        {
+          "id": "never-let-me-go-deep-plot-couple",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; after Ruth completes",
+          "approvedExcerpt": "After Ruth completes, Kathy becomes Tommy's carer and they finally become a couple."
+        },
+        {
+          "id": "never-let-me-go-deep-plot-deferral",
+          "mode": "plot",
+          "sourceId": "wikipedia-never-let-me-go-plot",
+          "locator": "Wikipedia plot synopsis; Miss Emily rejects the deferral rumour",
+          "approvedExcerpt": "Miss Emily says that rumours of deferral were false"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-animal-farm",
+      "title": "Animal Farm",
+      "coverage": {
+        "plot": {
+          "status": "ready",
+          "expectedCardCount": 6
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "The set text remains in copyright and no licensed primary-text quotation source is available to this pipeline."
+        }
+      },
+      "sources": [
+        {
+          "id": "wikipedia-animal-farm-plot",
+          "kind": "secondary-source",
+          "retrievalType": "licensed-web-synopsis",
+          "url": "https://en.wikipedia.org/wiki/Animal_Farm",
+          "title": "Wikipedia: Animal Farm",
+          "rightsBasis": "Wikipedia text is licensed under CC BY-SA 4.0; short attributed secondary-source plot excerpts are retained with source attribution and share-alike notice."
+        }
+      ],
+      "evidence": [
+        {
+          "id": "animal-farm-deep-plot-old-major",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Old Major’s meeting",
+          "approvedExcerpt": "Old Major holds a conference, at which he calls for the overthrow of humans"
+        },
+        {
+          "id": "animal-farm-deep-plot-commandments",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Animalism after the revolt",
+          "approvedExcerpt": "The animals adopt the Seven Commandments of Animalism"
+        },
+        {
+          "id": "animal-farm-deep-plot-snowball-exile",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Napoleon removes Snowball",
+          "approvedExcerpt": "Napoleon's dogs chasing Snowball away"
+        },
+        {
+          "id": "animal-farm-deep-plot-purge",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Napoleon’s purge",
+          "approvedExcerpt": "many animals who are alleged to be helping Snowball in plots are executed"
+        },
+        {
+          "id": "animal-farm-deep-plot-boxer",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; Boxer’s fate",
+          "approvedExcerpt": "Napoleon had engineered the sale of Boxer to the knacker"
+        },
+        {
+          "id": "animal-farm-deep-plot-final-image",
+          "mode": "plot",
+          "sourceId": "wikipedia-animal-farm-plot",
+          "locator": "Wikipedia plot synopsis; final dinner",
+          "approvedExcerpt": "they find they have become indistinguishable from one another"
+        }
+      ]
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-an-inspector-calls",
+      "title": "An Inspector Calls",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-leave-taking",
+      "title": "Leave Taking",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-modern-dna",
+      "title": "DNA",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-great-expectations",
+      "title": "Great Expectations",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-a-christmas-carol",
+      "title": "A Christmas Carol",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:01-nineteenth-century-jane-eyre",
+      "title": "Jane Eyre",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-love-and-relationships",
+      "title": "Love and Relationships",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-conflict",
+      "title": "Conflict",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-poetry-youth-and-age",
+      "title": "Youth and Age",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-the-merchant-of-venice",
+      "title": "The Merchant of Venice",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-macbeth",
+      "title": "Macbeth",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    },
+    {
+      "topicComponentId": "ocr-gcse-english-literature-j352-v3.0:02-shakespeare-much-ado-about-nothing",
+      "title": "Much Ado About Nothing",
+      "coverage": {
+        "plot": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        },
+        "quotation": {
+          "status": "withheld",
+          "expectedCardCount": 0,
+          "reason": "This immutable additive shard targets other OCR J352 options."
+        }
+      },
+      "sources": [],
+      "evidence": []
+    }
+  ]
+}

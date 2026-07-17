@@ -1,0 +1,2460 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "startedAt": "2026-07-16T23:44:13.034Z",
+  "finishedAt": "2026-07-16T23:45:34.544Z",
+  "baseUrl": "http://127.0.0.1:5173/",
+  "chrome": {
+    "binary": "/usr/bin/google-chrome",
+    "version": "Chrome/149.0.7827.155",
+    "headless": true
+  },
+  "configuration": {
+    "routes": [
+      {
+        "name": "home",
+        "pathname": "/"
+      },
+      {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      }
+    ],
+    "viewports": [
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      }
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "screenshot": "viewport",
+    "englishInteraction": null,
+    "requireSignedIn": true
+  },
+  "summary": {
+    "caseCount": 24,
+    "passedCaseCount": 24,
+    "failedCaseCount": 0,
+    "pageErrorCount": 0,
+    "documentOverflowCaseCount": 0,
+    "viewportProtrusionCount": 0,
+    "clippedContentCount": 0,
+    "horizontalScrollRegionCount": 4
+  },
+  "fatalError": null,
+  "cases": [
+    {
+      "status": "passed",
+      "name": "mobile/light/home",
+      "route": {
+        "name": "home",
+        "pathname": "/"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/",
+      "finalUrl": "http://127.0.0.1:5173/",
+      "httpStatus": 200,
+      "durationMs": 5078,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/",
+        "title": "Your GCSE practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Hello, UX."
+        ],
+        "h2": [
+          "Your subjects"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 6,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Biology AQA · Combined · Higher Practised 2 of 7 chapters Predicted grade not ready Next · 8 min Cell biology recall Open",
+            "Chemistry AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "Physics AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "English Literature OCR · GCSE Practised 3 of 4 course texts Predicted grade not ready Resume Continue your English Literature answer Resume",
+            "Subjects and exam boards"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 599
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 1207
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        },
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/home--mobile--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/light/english-literature",
+      "route": {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/english-literature",
+      "finalUrl": "http://127.0.0.1:5173/english-literature",
+      "httpStatus": 200,
+      "durationMs": 2939,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/english-literature",
+        "title": "Your OCR English Literature Questions | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Your English Literature questions."
+        ],
+        "h2": [
+          "Choose an essay task."
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 24,
+          "buttons": 5,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Plot and quotations Review study cards",
+            "01 An Inspector Calls Modern prose or drama · 6 ready",
+            "01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1 ready",
+            "02 Love and Relationships Poetry cluster · 4 ready",
+            "02 Macbeth Shakespeare play · 2 ready",
+            "Change course texts",
+            "2024 - June series · J352/01 · 20 marks · 04.1b Tensions in the Birling family Explore another moment in An Inspector Calls where tensions in the Birling family are revealed. Set-text response",
+            "2023 - June series · J352/01 · 20 marks · 04.1b A dramatic entrance or exit Explore another moment in An Inspector Calls where there is a dramatic entrance or exit. Set-text response",
+            "2022 - June series · J352/11 · 20 marks · 04.1b Prejudice influences the way a person is treated Explore another moment in An Inspector Calls where prejudice influences the way a person is treated. Set-text response · 2021–22 split paper",
+            "2020 - November series · J352/01 · 20 marks · 04.1b Someone is blamed for something Explore another moment in An Inspector Calls where someone is blamed for something. Set-text response",
+            "Show older An Inspector Calls questions (8 remaining)",
+            "2022 - June series · J352/12 · 40 marks · 08.0 It is difficult to have sympathy for Dr Jekyll ‘It is difficult to have sympathy for Dr Jekyll.’ How far do you agree with this view? Explore at least two moments from the... Whole-novel essay · 2021–22 split paper",
+            "2024 - June series · J352/01 · 40 marks · 13.1 Secrecy and deception How does Stevenson present secrecy and deception, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/01 · 40 marks · 13.1 The importance of reputation How does Stevenson present the importance of reputation, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2022 - June series · J352/12 · 40 marks · 07.0 An incident that is shocking Explore how Stevenson presents an incident that is shocking, in this extract and elsewhere in the novel. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older The Strange Case of Dr Jekyll and Mr Hyde questions (3 remaining)",
+            "2024 - June series · J352/02 · 20 marks · 01.1b A satisfying relationship Explore in detail one other poem from your anthology which presents a satisfying relationship. Anthology poem response",
+            "2023 - June series · J352/02 · 20 marks · 01.1a Someone desperate for love Compare how these poems present someone desperate for love. Studied and unseen comparison · Earlier anthology",
+            "2023 - June series · J352/02 · 20 marks · 01.1b A difficult relationship Explore in detail one other poem from your anthology which presents a difficult relationship. Anthology poem response · Earlier anthology",
+            "2022 - June series · J352/21 · 20 marks · 01.2 A memorable relationship Explore in detail one other poem from your anthology which presents a memorable relationship. Anthology poem response · Earlier anthology",
+            "Show older Love and Relationships questions (5 remaining)",
+            "2024 - June series · J352/02 · 40 marks · 09.0 Pity for Lady Macbeth To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments from the play... Whole-play essay",
+            "2023 - June series · J352/02 · 40 marks · 09.1 Pity through Macbeth's soliloquies To what extent do Macbeth's soliloquies encourage the audience to pity him? Explore at least two moments from the play to... Whole-play essay",
+            "2024 - June series · J352/02 · 40 marks · 08.0 Horror in Macbeth Explore how horror is presented in the play. Refer to this extract from Act 2 Scene 3 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/02 · 40 marks · 08.1 The supernatural in Macbeth How does Shakespeare present the supernatural in Macbeth? Refer to this extract from Act 4 Scene 1 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older Macbeth questions (1 remaining)"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 5493
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 4365
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": [
+          {
+            "kind": "horizontal-scroll-region",
+            "selector": "nav.qc-real-chain-list",
+            "left": 14.4,
+            "right": 375.6,
+            "width": 361.2,
+            "clientWidth": 361,
+            "scrollWidth": 1114,
+            "overflowX": "auto",
+            "textSample": "01 An Inspector Calls Modern prose or drama · 6 ready01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1"
+          }
+        ]
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/english-literature"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-literature--mobile--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/light/english-practice",
+      "route": {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice",
+      "finalUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+      "httpStatus": 200,
+      "durationMs": 2598,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+        "title": "Tensions in the Birling family step-by-step practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Question Q04.1b"
+        ],
+        "h2": [
+          "Build the argument"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 2,
+          "buttons": 9,
+          "inputs": 1,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back to English Literature",
+            "Open Task",
+            "Evidence, locked",
+            "Method, locked",
+            "Develop, locked",
+            "Essay, locked",
+            "Show hint",
+            "5 line answer",
+            "Check step",
+            "Reset practice"
+          ]
+        },
+        "activeStep": "1 Task",
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 677
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 1341
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": [
+          {
+            "kind": "horizontal-scroll-region",
+            "selector": "nav.qc-stepper.svelte-1jhswhl",
+            "left": 16,
+            "right": 374,
+            "width": 358,
+            "clientWidth": 356,
+            "scrollWidth": 381,
+            "overflowX": "auto",
+            "textSample": "1 Task Evidence Method Develop Essay"
+          }
+        ]
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-practice--mobile--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/light/physics",
+      "route": {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/subjects/physics",
+      "finalUrl": "http://127.0.0.1:5173/subjects/physics",
+      "httpStatus": 200,
+      "durationMs": 2005,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/subjects/physics",
+        "title": "Physics Practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Physics"
+        ],
+        "h2": [
+          "Choose your Physics chapters"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 0,
+          "aside": 1
+        },
+        "controls": {
+          "links": 3,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Choose chapters: Choose your Physics chapters"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 183
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 844
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/subjects/physics"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/physics--mobile--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/dark/home",
+      "route": {
+        "name": "home",
+        "pathname": "/"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/",
+      "finalUrl": "http://127.0.0.1:5173/",
+      "httpStatus": 200,
+      "durationMs": 2679,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/",
+        "title": "Your GCSE practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Hello, UX."
+        ],
+        "h2": [
+          "Your subjects"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 6,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Biology AQA · Combined · Higher Practised 2 of 7 chapters Predicted grade not ready Next · 8 min Cell biology recall Open",
+            "Chemistry AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "Physics AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "English Literature OCR · GCSE Practised 3 of 4 course texts Predicted grade not ready Resume Continue your English Literature answer Resume",
+            "Subjects and exam boards"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 599
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 1207
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/home--mobile--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/dark/english-literature",
+      "route": {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/english-literature",
+      "finalUrl": "http://127.0.0.1:5173/english-literature",
+      "httpStatus": 200,
+      "durationMs": 2784,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/english-literature",
+        "title": "Your OCR English Literature Questions | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Your English Literature questions."
+        ],
+        "h2": [
+          "Choose an essay task."
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 24,
+          "buttons": 5,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Plot and quotations Review study cards",
+            "01 An Inspector Calls Modern prose or drama · 6 ready",
+            "01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1 ready",
+            "02 Love and Relationships Poetry cluster · 4 ready",
+            "02 Macbeth Shakespeare play · 2 ready",
+            "Change course texts",
+            "2024 - June series · J352/01 · 20 marks · 04.1b Tensions in the Birling family Explore another moment in An Inspector Calls where tensions in the Birling family are revealed. Set-text response",
+            "2023 - June series · J352/01 · 20 marks · 04.1b A dramatic entrance or exit Explore another moment in An Inspector Calls where there is a dramatic entrance or exit. Set-text response",
+            "2022 - June series · J352/11 · 20 marks · 04.1b Prejudice influences the way a person is treated Explore another moment in An Inspector Calls where prejudice influences the way a person is treated. Set-text response · 2021–22 split paper",
+            "2020 - November series · J352/01 · 20 marks · 04.1b Someone is blamed for something Explore another moment in An Inspector Calls where someone is blamed for something. Set-text response",
+            "Show older An Inspector Calls questions (8 remaining)",
+            "2022 - June series · J352/12 · 40 marks · 08.0 It is difficult to have sympathy for Dr Jekyll ‘It is difficult to have sympathy for Dr Jekyll.’ How far do you agree with this view? Explore at least two moments from the... Whole-novel essay · 2021–22 split paper",
+            "2024 - June series · J352/01 · 40 marks · 13.1 Secrecy and deception How does Stevenson present secrecy and deception, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/01 · 40 marks · 13.1 The importance of reputation How does Stevenson present the importance of reputation, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2022 - June series · J352/12 · 40 marks · 07.0 An incident that is shocking Explore how Stevenson presents an incident that is shocking, in this extract and elsewhere in the novel. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older The Strange Case of Dr Jekyll and Mr Hyde questions (3 remaining)",
+            "2024 - June series · J352/02 · 20 marks · 01.1b A satisfying relationship Explore in detail one other poem from your anthology which presents a satisfying relationship. Anthology poem response",
+            "2023 - June series · J352/02 · 20 marks · 01.1a Someone desperate for love Compare how these poems present someone desperate for love. Studied and unseen comparison · Earlier anthology",
+            "2023 - June series · J352/02 · 20 marks · 01.1b A difficult relationship Explore in detail one other poem from your anthology which presents a difficult relationship. Anthology poem response · Earlier anthology",
+            "2022 - June series · J352/21 · 20 marks · 01.2 A memorable relationship Explore in detail one other poem from your anthology which presents a memorable relationship. Anthology poem response · Earlier anthology",
+            "Show older Love and Relationships questions (5 remaining)",
+            "2024 - June series · J352/02 · 40 marks · 09.0 Pity for Lady Macbeth To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments from the play... Whole-play essay",
+            "2023 - June series · J352/02 · 40 marks · 09.1 Pity through Macbeth's soliloquies To what extent do Macbeth's soliloquies encourage the audience to pity him? Explore at least two moments from the play to... Whole-play essay",
+            "2024 - June series · J352/02 · 40 marks · 08.0 Horror in Macbeth Explore how horror is presented in the play. Refer to this extract from Act 2 Scene 3 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/02 · 40 marks · 08.1 The supernatural in Macbeth How does Shakespeare present the supernatural in Macbeth? Refer to this extract from Act 4 Scene 1 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older Macbeth questions (1 remaining)"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 5493
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 4365
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": [
+          {
+            "kind": "horizontal-scroll-region",
+            "selector": "nav.qc-real-chain-list",
+            "left": 14.4,
+            "right": 375.6,
+            "width": 361.2,
+            "clientWidth": 361,
+            "scrollWidth": 1114,
+            "overflowX": "auto",
+            "textSample": "01 An Inspector Calls Modern prose or drama · 6 ready01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1"
+          }
+        ]
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/english-literature"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-literature--mobile--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/dark/english-practice",
+      "route": {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice",
+      "finalUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+      "httpStatus": 200,
+      "durationMs": 2375,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+        "title": "Tensions in the Birling family step-by-step practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Question Q04.1b"
+        ],
+        "h2": [
+          "Build the argument"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 2,
+          "buttons": 9,
+          "inputs": 1,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back to English Literature",
+            "Open Task",
+            "Evidence, locked",
+            "Method, locked",
+            "Develop, locked",
+            "Essay, locked",
+            "Show hint",
+            "5 line answer",
+            "Check step",
+            "Reset practice"
+          ]
+        },
+        "activeStep": "1 Task",
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 677
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 1341
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": [
+          {
+            "kind": "horizontal-scroll-region",
+            "selector": "nav.qc-stepper.svelte-1jhswhl",
+            "left": 16,
+            "right": 374,
+            "width": 358,
+            "clientWidth": 356,
+            "scrollWidth": 381,
+            "overflowX": "auto",
+            "textSample": "1 Task Evidence Method Develop Essay"
+          }
+        ]
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-practice--mobile--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "mobile/dark/physics",
+      "route": {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/subjects/physics",
+      "finalUrl": "http://127.0.0.1:5173/subjects/physics",
+      "httpStatus": 200,
+      "durationMs": 1894,
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/subjects/physics",
+        "title": "Physics Practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Physics"
+        ],
+        "h2": [
+          "Choose your Physics chapters"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 0,
+          "aside": 1
+        },
+        "controls": {
+          "links": 3,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Choose chapters: Choose your Physics chapters"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 183
+      },
+      "layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 844,
+          "scrollHeight": 844
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/subjects/physics"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/physics--mobile--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/light/home",
+      "route": {
+        "name": "home",
+        "pathname": "/"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/",
+      "finalUrl": "http://127.0.0.1:5173/",
+      "httpStatus": 200,
+      "durationMs": 2710,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/",
+        "title": "Your GCSE practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Hello, UX."
+        ],
+        "h2": [
+          "Your subjects"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 6,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Biology AQA · Combined · Higher Practised 2 of 7 chapters Predicted grade not ready Next · 8 min Cell biology recall Open",
+            "Chemistry AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "Physics AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "English Literature OCR · GCSE Practised 3 of 4 course texts Predicted grade not ready Resume Continue your English Literature answer Resume",
+            "Subjects and exam boards"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 599
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 1180
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/home--ipad--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/light/english-literature",
+      "route": {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/english-literature",
+      "finalUrl": "http://127.0.0.1:5173/english-literature",
+      "httpStatus": 200,
+      "durationMs": 5047,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/english-literature",
+        "title": "Your OCR English Literature Questions | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Your English Literature questions."
+        ],
+        "h2": [
+          "Choose an essay task."
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 24,
+          "buttons": 5,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Plot and quotations Review study cards",
+            "01 An Inspector Calls Modern prose or drama · 6 ready",
+            "01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1 ready",
+            "02 Love and Relationships Poetry cluster · 4 ready",
+            "02 Macbeth Shakespeare play · 2 ready",
+            "Change course texts",
+            "2024 - June series · J352/01 · 20 marks · 04.1b Tensions in the Birling family Explore another moment in An Inspector Calls where tensions in the Birling family are revealed. Set-text response",
+            "2023 - June series · J352/01 · 20 marks · 04.1b A dramatic entrance or exit Explore another moment in An Inspector Calls where there is a dramatic entrance or exit. Set-text response",
+            "2022 - June series · J352/11 · 20 marks · 04.1b Prejudice influences the way a person is treated Explore another moment in An Inspector Calls where prejudice influences the way a person is treated. Set-text response · 2021–22 split paper",
+            "2020 - November series · J352/01 · 20 marks · 04.1b Someone is blamed for something Explore another moment in An Inspector Calls where someone is blamed for something. Set-text response",
+            "Show older An Inspector Calls questions (8 remaining)",
+            "2022 - June series · J352/12 · 40 marks · 08.0 It is difficult to have sympathy for Dr Jekyll ‘It is difficult to have sympathy for Dr Jekyll.’ How far do you agree with this view? Explore at least two moments from the... Whole-novel essay · 2021–22 split paper",
+            "2024 - June series · J352/01 · 40 marks · 13.1 Secrecy and deception How does Stevenson present secrecy and deception, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/01 · 40 marks · 13.1 The importance of reputation How does Stevenson present the importance of reputation, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2022 - June series · J352/12 · 40 marks · 07.0 An incident that is shocking Explore how Stevenson presents an incident that is shocking, in this extract and elsewhere in the novel. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older The Strange Case of Dr Jekyll and Mr Hyde questions (3 remaining)",
+            "2024 - June series · J352/02 · 20 marks · 01.1b A satisfying relationship Explore in detail one other poem from your anthology which presents a satisfying relationship. Anthology poem response",
+            "2023 - June series · J352/02 · 20 marks · 01.1a Someone desperate for love Compare how these poems present someone desperate for love. Studied and unseen comparison · Earlier anthology",
+            "2023 - June series · J352/02 · 20 marks · 01.1b A difficult relationship Explore in detail one other poem from your anthology which presents a difficult relationship. Anthology poem response · Earlier anthology",
+            "2022 - June series · J352/21 · 20 marks · 01.2 A memorable relationship Explore in detail one other poem from your anthology which presents a memorable relationship. Anthology poem response · Earlier anthology",
+            "Show older Love and Relationships questions (5 remaining)",
+            "2024 - June series · J352/02 · 40 marks · 09.0 Pity for Lady Macbeth To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments from the play... Whole-play essay",
+            "2023 - June series · J352/02 · 40 marks · 09.1 Pity through Macbeth's soliloquies To what extent do Macbeth's soliloquies encourage the audience to pity him? Explore at least two moments from the play to... Whole-play essay",
+            "2024 - June series · J352/02 · 40 marks · 08.0 Horror in Macbeth Explore how horror is presented in the play. Refer to this extract from Act 2 Scene 3 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/02 · 40 marks · 08.1 The supernatural in Macbeth How does Shakespeare present the supernatural in Macbeth? Refer to this extract from Act 4 Scene 1 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older Macbeth questions (1 remaining)"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 5493
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 2881
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/english-literature"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-literature--ipad--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/light/english-practice",
+      "route": {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice",
+      "finalUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+      "httpStatus": 200,
+      "durationMs": 4022,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+        "title": "Tensions in the Birling family step-by-step practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Question Q04.1b"
+        ],
+        "h2": [
+          "Build the argument"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 2,
+          "buttons": 9,
+          "inputs": 1,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back to English Literature",
+            "Open Task",
+            "Evidence, locked",
+            "Method, locked",
+            "Develop, locked",
+            "Essay, locked",
+            "Show hint",
+            "5 line answer",
+            "Check step",
+            "Reset practice"
+          ]
+        },
+        "activeStep": "1 Task",
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 677
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 1181
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-practice--ipad--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/light/physics",
+      "route": {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/subjects/physics",
+      "finalUrl": "http://127.0.0.1:5173/subjects/physics",
+      "httpStatus": 200,
+      "durationMs": 3762,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/subjects/physics",
+        "title": "Physics Practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Physics"
+        ],
+        "h2": [
+          "Choose your Physics chapters"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 0,
+          "aside": 1
+        },
+        "controls": {
+          "links": 3,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Choose chapters: Choose your Physics chapters"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 183
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 1180
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/subjects/physics"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/physics--ipad--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/dark/home",
+      "route": {
+        "name": "home",
+        "pathname": "/"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/",
+      "finalUrl": "http://127.0.0.1:5173/",
+      "httpStatus": 200,
+      "durationMs": 5552,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/",
+        "title": "Your GCSE practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Hello, UX."
+        ],
+        "h2": [
+          "Your subjects"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 6,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Biology AQA · Combined · Higher Practised 2 of 7 chapters Predicted grade not ready Next · 8 min Cell biology recall Open",
+            "Chemistry AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "Physics AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "English Literature OCR · GCSE Practised 3 of 4 course texts Predicted grade not ready Resume Continue your English Literature answer Resume",
+            "Subjects and exam boards"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 599
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 1180
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/home--ipad--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/dark/english-literature",
+      "route": {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/english-literature",
+      "finalUrl": "http://127.0.0.1:5173/english-literature",
+      "httpStatus": 200,
+      "durationMs": 7477,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/english-literature",
+        "title": "Your OCR English Literature Questions | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Your English Literature questions."
+        ],
+        "h2": [
+          "Choose an essay task."
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 24,
+          "buttons": 5,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Plot and quotations Review study cards",
+            "01 An Inspector Calls Modern prose or drama · 6 ready",
+            "01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1 ready",
+            "02 Love and Relationships Poetry cluster · 4 ready",
+            "02 Macbeth Shakespeare play · 2 ready",
+            "Change course texts",
+            "2024 - June series · J352/01 · 20 marks · 04.1b Tensions in the Birling family Explore another moment in An Inspector Calls where tensions in the Birling family are revealed. Set-text response",
+            "2023 - June series · J352/01 · 20 marks · 04.1b A dramatic entrance or exit Explore another moment in An Inspector Calls where there is a dramatic entrance or exit. Set-text response",
+            "2022 - June series · J352/11 · 20 marks · 04.1b Prejudice influences the way a person is treated Explore another moment in An Inspector Calls where prejudice influences the way a person is treated. Set-text response · 2021–22 split paper",
+            "2020 - November series · J352/01 · 20 marks · 04.1b Someone is blamed for something Explore another moment in An Inspector Calls where someone is blamed for something. Set-text response",
+            "Show older An Inspector Calls questions (8 remaining)",
+            "2022 - June series · J352/12 · 40 marks · 08.0 It is difficult to have sympathy for Dr Jekyll ‘It is difficult to have sympathy for Dr Jekyll.’ How far do you agree with this view? Explore at least two moments from the... Whole-novel essay · 2021–22 split paper",
+            "2024 - June series · J352/01 · 40 marks · 13.1 Secrecy and deception How does Stevenson present secrecy and deception, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/01 · 40 marks · 13.1 The importance of reputation How does Stevenson present the importance of reputation, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2022 - June series · J352/12 · 40 marks · 07.0 An incident that is shocking Explore how Stevenson presents an incident that is shocking, in this extract and elsewhere in the novel. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older The Strange Case of Dr Jekyll and Mr Hyde questions (3 remaining)",
+            "2024 - June series · J352/02 · 20 marks · 01.1b A satisfying relationship Explore in detail one other poem from your anthology which presents a satisfying relationship. Anthology poem response",
+            "2023 - June series · J352/02 · 20 marks · 01.1a Someone desperate for love Compare how these poems present someone desperate for love. Studied and unseen comparison · Earlier anthology",
+            "2023 - June series · J352/02 · 20 marks · 01.1b A difficult relationship Explore in detail one other poem from your anthology which presents a difficult relationship. Anthology poem response · Earlier anthology",
+            "2022 - June series · J352/21 · 20 marks · 01.2 A memorable relationship Explore in detail one other poem from your anthology which presents a memorable relationship. Anthology poem response · Earlier anthology",
+            "Show older Love and Relationships questions (5 remaining)",
+            "2024 - June series · J352/02 · 40 marks · 09.0 Pity for Lady Macbeth To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments from the play... Whole-play essay",
+            "2023 - June series · J352/02 · 40 marks · 09.1 Pity through Macbeth's soliloquies To what extent do Macbeth's soliloquies encourage the audience to pity him? Explore at least two moments from the play to... Whole-play essay",
+            "2024 - June series · J352/02 · 40 marks · 08.0 Horror in Macbeth Explore how horror is presented in the play. Refer to this extract from Act 2 Scene 3 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/02 · 40 marks · 08.1 The supernatural in Macbeth How does Shakespeare present the supernatural in Macbeth? Refer to this extract from Act 4 Scene 1 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older Macbeth questions (1 remaining)"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 5493
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 2881
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/english-literature"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-literature--ipad--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/dark/english-practice",
+      "route": {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice",
+      "finalUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+      "httpStatus": 200,
+      "durationMs": 2714,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+        "title": "Tensions in the Birling family step-by-step practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Question Q04.1b"
+        ],
+        "h2": [
+          "Build the argument"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 2,
+          "buttons": 9,
+          "inputs": 1,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back to English Literature",
+            "Open Task",
+            "Evidence, locked",
+            "Method, locked",
+            "Develop, locked",
+            "Essay, locked",
+            "Show hint",
+            "5 line answer",
+            "Check step",
+            "Reset practice"
+          ]
+        },
+        "activeStep": "1 Task",
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 677
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 1181
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-practice--ipad--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "ipad/dark/physics",
+      "route": {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/subjects/physics",
+      "finalUrl": "http://127.0.0.1:5173/subjects/physics",
+      "httpStatus": 200,
+      "durationMs": 2042,
+      "viewport": {
+        "name": "ipad",
+        "width": 820,
+        "height": 1180,
+        "deviceScaleFactor": 1,
+        "mobile": true,
+        "touch": true
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/subjects/physics",
+        "title": "Physics Practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Physics"
+        ],
+        "h2": [
+          "Choose your Physics chapters"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 0,
+          "aside": 1
+        },
+        "controls": {
+          "links": 3,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Choose chapters: Choose your Physics chapters"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 183
+      },
+      "layout": {
+        "viewport": {
+          "width": 820,
+          "height": 1180,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 820,
+          "scrollWidth": 820,
+          "clientHeight": 1180,
+          "scrollHeight": 1180
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/subjects/physics"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/physics--ipad--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/light/home",
+      "route": {
+        "name": "home",
+        "pathname": "/"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/",
+      "finalUrl": "http://127.0.0.1:5173/",
+      "httpStatus": 200,
+      "durationMs": 3011,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/",
+        "title": "Your GCSE practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Hello, UX."
+        ],
+        "h2": [
+          "Your subjects"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 6,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Biology AQA · Combined · Higher Practised 2 of 7 chapters Predicted grade not ready Next · 8 min Cell biology recall Open",
+            "Chemistry AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "Physics AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "English Literature OCR · GCSE Practised 3 of 4 course texts Predicted grade not ready Resume Continue your English Literature answer Resume",
+            "Subjects and exam boards"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 599
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1440,
+          "scrollWidth": 1440,
+          "clientHeight": 900,
+          "scrollHeight": 900
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/home--laptop--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/light/english-literature",
+      "route": {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/english-literature",
+      "finalUrl": "http://127.0.0.1:5173/english-literature",
+      "httpStatus": 200,
+      "durationMs": 3087,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/english-literature",
+        "title": "Your OCR English Literature Questions | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Your English Literature questions."
+        ],
+        "h2": [
+          "Choose an essay task."
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 24,
+          "buttons": 5,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Plot and quotations Review study cards",
+            "01 An Inspector Calls Modern prose or drama · 6 ready",
+            "01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1 ready",
+            "02 Love and Relationships Poetry cluster · 4 ready",
+            "02 Macbeth Shakespeare play · 2 ready",
+            "Change course texts",
+            "2024 - June series · J352/01 · 20 marks · 04.1b Tensions in the Birling family Explore another moment in An Inspector Calls where tensions in the Birling family are revealed. Set-text response",
+            "2023 - June series · J352/01 · 20 marks · 04.1b A dramatic entrance or exit Explore another moment in An Inspector Calls where there is a dramatic entrance or exit. Set-text response",
+            "2022 - June series · J352/11 · 20 marks · 04.1b Prejudice influences the way a person is treated Explore another moment in An Inspector Calls where prejudice influences the way a person is treated. Set-text response · 2021–22 split paper",
+            "2020 - November series · J352/01 · 20 marks · 04.1b Someone is blamed for something Explore another moment in An Inspector Calls where someone is blamed for something. Set-text response",
+            "Show older An Inspector Calls questions (8 remaining)",
+            "2022 - June series · J352/12 · 40 marks · 08.0 It is difficult to have sympathy for Dr Jekyll ‘It is difficult to have sympathy for Dr Jekyll.’ How far do you agree with this view? Explore at least two moments from the... Whole-novel essay · 2021–22 split paper",
+            "2024 - June series · J352/01 · 40 marks · 13.1 Secrecy and deception How does Stevenson present secrecy and deception, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/01 · 40 marks · 13.1 The importance of reputation How does Stevenson present the importance of reputation, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2022 - June series · J352/12 · 40 marks · 07.0 An incident that is shocking Explore how Stevenson presents an incident that is shocking, in this extract and elsewhere in the novel. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older The Strange Case of Dr Jekyll and Mr Hyde questions (3 remaining)",
+            "2024 - June series · J352/02 · 20 marks · 01.1b A satisfying relationship Explore in detail one other poem from your anthology which presents a satisfying relationship. Anthology poem response",
+            "2023 - June series · J352/02 · 20 marks · 01.1a Someone desperate for love Compare how these poems present someone desperate for love. Studied and unseen comparison · Earlier anthology",
+            "2023 - June series · J352/02 · 20 marks · 01.1b A difficult relationship Explore in detail one other poem from your anthology which presents a difficult relationship. Anthology poem response · Earlier anthology",
+            "2022 - June series · J352/21 · 20 marks · 01.2 A memorable relationship Explore in detail one other poem from your anthology which presents a memorable relationship. Anthology poem response · Earlier anthology",
+            "Show older Love and Relationships questions (5 remaining)",
+            "2024 - June series · J352/02 · 40 marks · 09.0 Pity for Lady Macbeth To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments from the play... Whole-play essay",
+            "2023 - June series · J352/02 · 40 marks · 09.1 Pity through Macbeth's soliloquies To what extent do Macbeth's soliloquies encourage the audience to pity him? Explore at least two moments from the play to... Whole-play essay",
+            "2024 - June series · J352/02 · 40 marks · 08.0 Horror in Macbeth Explore how horror is presented in the play. Refer to this extract from Act 2 Scene 3 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/02 · 40 marks · 08.1 The supernatural in Macbeth How does Shakespeare present the supernatural in Macbeth? Refer to this extract from Act 4 Scene 1 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older Macbeth questions (1 remaining)"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 5493
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1425,
+          "scrollWidth": 1425,
+          "clientHeight": 900,
+          "scrollHeight": 2187
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/english-literature"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-literature--laptop--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/light/english-practice",
+      "route": {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice",
+      "finalUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+      "httpStatus": 200,
+      "durationMs": 2658,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+        "title": "Tensions in the Birling family step-by-step practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Question Q04.1b"
+        ],
+        "h2": [
+          "Build the argument"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 2,
+          "buttons": 9,
+          "inputs": 1,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back to English Literature",
+            "Open Task",
+            "Evidence, locked",
+            "Method, locked",
+            "Develop, locked",
+            "Essay, locked",
+            "Show hint",
+            "5 line answer",
+            "Check step",
+            "Reset practice"
+          ]
+        },
+        "activeStep": "1 Task",
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 677
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1425,
+          "scrollWidth": 1425,
+          "clientHeight": 900,
+          "scrollHeight": 901
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-practice--laptop--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/light/physics",
+      "route": {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/subjects/physics",
+      "finalUrl": "http://127.0.0.1:5173/subjects/physics",
+      "httpStatus": 200,
+      "durationMs": 2457,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "light",
+        "active": "light"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/subjects/physics",
+        "title": "Physics Practice | Question Constellation",
+        "theme": "light",
+        "language": "en",
+        "h1": [
+          "Physics"
+        ],
+        "h2": [
+          "Choose your Physics chapters"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 0,
+          "aside": 1
+        },
+        "controls": {
+          "links": 3,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Choose chapters: Choose your Physics chapters"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 183
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1440,
+          "scrollWidth": 1440,
+          "clientHeight": 900,
+          "scrollHeight": 900
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/subjects/physics"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/physics--laptop--light.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/dark/home",
+      "route": {
+        "name": "home",
+        "pathname": "/"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/",
+      "finalUrl": "http://127.0.0.1:5173/",
+      "httpStatus": 200,
+      "durationMs": 3089,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/",
+        "title": "Your GCSE practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Hello, UX."
+        ],
+        "h2": [
+          "Your subjects"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 6,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Biology AQA · Combined · Higher Practised 2 of 7 chapters Predicted grade not ready Next · 8 min Cell biology recall Open",
+            "Chemistry AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "Physics AQA · Combined · Higher Next Tell us what your class has covered Set up",
+            "English Literature OCR · GCSE Practised 3 of 4 course texts Predicted grade not ready Resume Continue your English Literature answer Resume",
+            "Subjects and exam boards"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 599
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1440,
+          "scrollWidth": 1440,
+          "clientHeight": 900,
+          "scrollHeight": 900
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/home--laptop--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/dark/english-literature",
+      "route": {
+        "name": "english-literature",
+        "pathname": "/english-literature"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/english-literature",
+      "finalUrl": "http://127.0.0.1:5173/english-literature",
+      "httpStatus": 200,
+      "durationMs": 3289,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/english-literature",
+        "title": "Your OCR English Literature Questions | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Your English Literature questions."
+        ],
+        "h2": [
+          "Choose an essay task."
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 24,
+          "buttons": 5,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Plot and quotations Review study cards",
+            "01 An Inspector Calls Modern prose or drama · 6 ready",
+            "01 The Strange Case of Dr Jekyll and Mr Hyde 19th-century novel · 1 ready",
+            "02 Love and Relationships Poetry cluster · 4 ready",
+            "02 Macbeth Shakespeare play · 2 ready",
+            "Change course texts",
+            "2024 - June series · J352/01 · 20 marks · 04.1b Tensions in the Birling family Explore another moment in An Inspector Calls where tensions in the Birling family are revealed. Set-text response",
+            "2023 - June series · J352/01 · 20 marks · 04.1b A dramatic entrance or exit Explore another moment in An Inspector Calls where there is a dramatic entrance or exit. Set-text response",
+            "2022 - June series · J352/11 · 20 marks · 04.1b Prejudice influences the way a person is treated Explore another moment in An Inspector Calls where prejudice influences the way a person is treated. Set-text response · 2021–22 split paper",
+            "2020 - November series · J352/01 · 20 marks · 04.1b Someone is blamed for something Explore another moment in An Inspector Calls where someone is blamed for something. Set-text response",
+            "Show older An Inspector Calls questions (8 remaining)",
+            "2022 - June series · J352/12 · 40 marks · 08.0 It is difficult to have sympathy for Dr Jekyll ‘It is difficult to have sympathy for Dr Jekyll.’ How far do you agree with this view? Explore at least two moments from the... Whole-novel essay · 2021–22 split paper",
+            "2024 - June series · J352/01 · 40 marks · 13.1 Secrecy and deception How does Stevenson present secrecy and deception, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/01 · 40 marks · 13.1 The importance of reputation How does Stevenson present the importance of reputation, in this extract and elsewhere in the novel? View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2022 - June series · J352/12 · 40 marks · 07.0 An incident that is shocking Explore how Stevenson presents an incident that is shocking, in this extract and elsewhere in the novel. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older The Strange Case of Dr Jekyll and Mr Hyde questions (3 remaining)",
+            "2024 - June series · J352/02 · 20 marks · 01.1b A satisfying relationship Explore in detail one other poem from your anthology which presents a satisfying relationship. Anthology poem response",
+            "2023 - June series · J352/02 · 20 marks · 01.1a Someone desperate for love Compare how these poems present someone desperate for love. Studied and unseen comparison · Earlier anthology",
+            "2023 - June series · J352/02 · 20 marks · 01.1b A difficult relationship Explore in detail one other poem from your anthology which presents a difficult relationship. Anthology poem response · Earlier anthology",
+            "2022 - June series · J352/21 · 20 marks · 01.2 A memorable relationship Explore in detail one other poem from your anthology which presents a memorable relationship. Anthology poem response · Earlier anthology",
+            "Show older Love and Relationships questions (5 remaining)",
+            "2024 - June series · J352/02 · 40 marks · 09.0 Pity for Lady Macbeth To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments from the play... Whole-play essay",
+            "2023 - June series · J352/02 · 40 marks · 09.1 Pity through Macbeth's soliloquies To what extent do Macbeth's soliloquies encourage the audience to pity him? Explore at least two moments from the play to... Whole-play essay",
+            "2024 - June series · J352/02 · 40 marks · 08.0 Horror in Macbeth Explore how horror is presented in the play. Refer to this extract from Act 2 Scene 3 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "2023 - June series · J352/02 · 40 marks · 08.1 The supernatural in Macbeth How does Shakespeare present the supernatural in Macbeth? Refer to this extract from Act 4 Scene 1 and elsewhere in the play. View only · practice unavailable This practice task is unavailable because the official extract or source text has not been imported and reviewed yet.",
+            "Show older Macbeth questions (1 remaining)"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 5493
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1425,
+          "scrollWidth": 1425,
+          "clientHeight": 900,
+          "scrollHeight": 2187
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/english-literature"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-literature--laptop--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/dark/english-practice",
+      "route": {
+        "name": "english-practice",
+        "pathname": "/questions/ocr-j352-01-jun24-04-1b/practice"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice",
+      "finalUrl": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+      "httpStatus": 200,
+      "durationMs": 2666,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task",
+        "title": "Tensions in the Birling family step-by-step practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Question Q04.1b"
+        ],
+        "h2": [
+          "Build the argument"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 1,
+          "aside": 1
+        },
+        "controls": {
+          "links": 2,
+          "buttons": 9,
+          "inputs": 1,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back to English Literature",
+            "Open Task",
+            "Evidence, locked",
+            "Method, locked",
+            "Develop, locked",
+            "Essay, locked",
+            "Show hint",
+            "5 line answer",
+            "Check step",
+            "Reset practice"
+          ]
+        },
+        "activeStep": "1 Task",
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 677
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1425,
+          "scrollWidth": 1425,
+          "clientHeight": 900,
+          "scrollHeight": 901
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/questions/ocr-j352-01-jun24-04-1b/practice/step-by-step/task"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/english-practice--laptop--dark.jpg"
+    },
+    {
+      "status": "passed",
+      "name": "laptop/dark/physics",
+      "route": {
+        "name": "physics",
+        "pathname": "/subjects/physics"
+      },
+      "requestedUrl": "http://127.0.0.1:5173/subjects/physics",
+      "finalUrl": "http://127.0.0.1:5173/subjects/physics",
+      "httpStatus": 200,
+      "durationMs": 2041,
+      "viewport": {
+        "name": "laptop",
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "mobile": false,
+        "touch": false
+      },
+      "theme": {
+        "requested": "dark",
+        "active": "dark"
+      },
+      "dom": {
+        "url": "http://127.0.0.1:5173/subjects/physics",
+        "title": "Physics Practice | Question Constellation",
+        "theme": "dark",
+        "language": "en",
+        "h1": [
+          "Physics"
+        ],
+        "h2": [
+          "Choose your Physics chapters"
+        ],
+        "landmarks": {
+          "main": 1,
+          "nav": 0,
+          "aside": 1
+        },
+        "controls": {
+          "links": 3,
+          "buttons": 1,
+          "inputs": 0,
+          "labels": [
+            "Question Constellation home",
+            "Account menu",
+            "Back home",
+            "Choose chapters: Choose your Physics chapters"
+          ]
+        },
+        "activeStep": null,
+        "feedbackVisible": false,
+        "signedIn": true,
+        "bodyTextLength": 183
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "document": {
+          "clientWidth": 1440,
+          "scrollWidth": 1440,
+          "clientHeight": 900,
+          "scrollHeight": 900
+        },
+        "documentHorizontalOverflow": false,
+        "viewportProtrusions": [],
+        "clippedContent": [],
+        "horizontalScrollRegions": []
+      },
+      "interaction": null,
+      "errors": [],
+      "console": [],
+      "pageExceptions": [],
+      "logEntries": [
+        {
+          "level": "warning",
+          "source": "other",
+          "text": "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">",
+          "url": "http://127.0.0.1:5173/subjects/physics"
+        }
+      ],
+      "failedRequests": [],
+      "errorResponses": [],
+      "screenshot": "screenshots/physics--laptop--dark.jpg"
+    }
+  ]
+}

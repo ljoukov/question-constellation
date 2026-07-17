@@ -1,0 +1,186 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-chemistry-8462-chemistry-shared-descendants-06-1e5bffa877-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c35-25b4-71d1-a502-94f49cc64a1e"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c36-8014-7d23-a350-ef755bba5f67",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:34:10.453Z",
+    "finishedAt": "2026-07-16T18:35:51.636Z",
+    "sourceManifestHash": "ee57ff764afbac69376e7e2e30b328726bb16caebb67dcfeb4cc37500337d140",
+    "artifactPath": "data/study-cards/releases/aqa-chemistry-8462-chemistry-shared-descendants-06-1e5bffa877-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8462-51ef1403c8-aqa-8462-haber-process-raw-materials",
+      "conceptKey": "aqa-8462-51ef1403c8-haber-process-raw-materials-nitrogen-hydrogen",
+      "kind": "fact",
+      "visualCue": "🧪",
+      "front": "Which two raw materials are used in the Haber process?",
+      "back": "Nitrogen and hydrogen.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The Haber process uses nitrogen and hydrogen as its raw materials to manufacture ammonia, which can be used to produce nitrogen-based fertilisers.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Nitrogen and hydrogen.",
+          "isCorrect": true,
+          "feedback": "Correct: nitrogen and hydrogen are the raw materials for the Haber process.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Nitrogen and oxygen.",
+          "isCorrect": false,
+          "feedback": "Oxygen is not listed; hydrogen is the second raw material.",
+          "misconception": "haber-hydrogen-oxygen-substitution"
+        },
+        {
+          "key": "c",
+          "text": "Nitrogen and ammonia.",
+          "isCorrect": false,
+          "feedback": "Ammonia is manufactured by the process; it is not listed as a raw material.",
+          "misconception": "haber-product-as-raw-material"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/chemistry/gcse/chemistry-8462/specification",
+          "title": "AQA GCSE Chemistry (8462)",
+          "locator": "Official PDF pages 88-89; 4.10.4 The Haber process and the use of NPK fertilisers (chemistry only)",
+          "excerpt": "The Haber process is used to manufacture ammonia, which can be\nused to produce nitrogen-based fertilisers.\nThe raw materials for the Haber process are nitrogen and\nhydrogen.",
+          "sourceHash": "ecd869d1874091a0a52abaeb8fce238a9c1cc207698713dfb66788eb0d448d43",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-chemistry-8462-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4",
+          "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-chemistry-8462-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4",
+          "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "id": "aqa-8462-ef5a2661e3-aqa-8462-npk-fertiliser-elements",
+      "conceptKey": "aqa-8462-ef5a2661e3-npk-fertiliser-elements-nitrogen-phosphorus-potassium",
+      "kind": "fact",
+      "visualCue": "⚛️",
+      "front": "Compounds of which three elements do NPK fertilisers contain?",
+      "back": "Nitrogen, phosphorus and potassium.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "NPK fertilisers contain compounds of nitrogen, phosphorus and potassium, which are used as fertilisers to improve agricultural productivity.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Nitrogen, phosphorus and potassium.",
+          "isCorrect": true,
+          "feedback": "Correct: NPK fertilisers contain compounds of all three elements.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Nitrogen, phosphorus and calcium.",
+          "isCorrect": false,
+          "feedback": "Calcium replaces potassium, which is one of the three named elements.",
+          "misconception": "npk-potassium-calcium-substitution"
+        },
+        {
+          "key": "c",
+          "text": "Nitrogen, sulfur and potassium.",
+          "isCorrect": false,
+          "feedback": "Sulfur replaces phosphorus, which is one of the three named elements.",
+          "misconception": "npk-phosphorus-sulfur-substitution"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Chemistry",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/chemistry/gcse/chemistry-8462/specification",
+          "title": "AQA GCSE Chemistry (8462)",
+          "locator": "Official PDF pages 88-89; 4.10.4.2 Production and uses of NPK fertilisers",
+          "excerpt": "Compounds of nitrogen, phosphorus and potassium are used as\nfertilisers to improve agricultural productivity. NPK fertilisers contain\ncompounds of all three elements.",
+          "sourceHash": "ecd869d1874091a0a52abaeb8fce238a9c1cc207698713dfb66788eb0d448d43",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-chemistry-8462-v1.1:foundation",
+          "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4-2",
+          "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-chemistry-8462-v1.1:higher",
+          "curriculumComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10-4-2",
+          "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-chemistry-8462-v1.1:foundation",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-chemistry-8462-v1.1:higher",
+      "topicComponentId": "aqa-gcse-chemistry-8462-v1.1:4-10",
+      "status": "ready",
+      "cardCount": 2,
+      "reason": null
+    }
+  ]
+}

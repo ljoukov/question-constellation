@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f6bcc-5a18-76f3-9867-b6f7c0f814a5",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "/tmp/qc-release-a35ab11/tmp/study-card-generation/ocr-j352-literature-standard-v1-targeted-repair-macbeth/repair-review",
+  "startedAt": "2026-07-16T16:39:43.024Z",
+  "finishedAt": "2026-07-16T16:39:53.845Z",
+  "durationSeconds": 10.821,
+  "events": 15,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 1,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 13684,
+    "cached_input_tokens": 0,
+    "output_tokens": 370,
+    "reasoning_output_tokens": 283,
+    "total_tokens": 14054
+  },
+  "failedCommands": [],
+  "recovery": "summary reconstructed from preserved rollout JSONL boundaries and token counts"
+}

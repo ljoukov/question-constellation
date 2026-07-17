@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "error": null,
+  "threadId": "019f6b9d-9a14-71c1-b821-25d0d50bc751",
+  "model": "gpt-5.6-sol",
+  "thinkingLevel": "max",
+  "workDir": "/tmp/qc-release-a35ab11/tmp/study-card-generation/aqa-computer-science-2027-standard-v1/generation",
+  "startedAt": "2026-07-16T15:48:39.739Z",
+  "finishedAt": "2026-07-16T15:58:30.881Z",
+  "durationSeconds": 591.142,
+  "events": 46,
+  "commandActions": 0,
+  "failedCommandActions": 0,
+  "agentMessages": 1,
+  "reasoningSummaries": 32,
+  "webSearches": 0,
+  "fileChanges": 0,
+  "usage": {
+    "input_tokens": 59120,
+    "cached_input_tokens": 0,
+    "output_tokens": 31113,
+    "reasoning_output_tokens": 16574,
+    "total_tokens": 90233
+  },
+  "failedCommands": [],
+  "recovery": "summary reconstructed from preserved rollout JSONL boundaries and token counts"
+}

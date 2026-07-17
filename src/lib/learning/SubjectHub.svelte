@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import type { SignedInSubjectView } from '$lib/learning/viewTypes';
 	import {
@@ -17,6 +18,7 @@
 	import { slide } from 'svelte/transition';
 
 	let { subject }: { subject: SignedInSubjectView } = $props();
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 	let curriculumProgressOpen = $state(false);
 	let recommendationReasonOpen = $state(false);
 	const recommendationReasonId = $derived(
@@ -59,6 +61,7 @@
 				? `Change ${subject.scope.unitPlural}`
 				: `Choose ${subject.scope.unitPlural}`;
 		}
+		if (action.kind === 'resume') return 'Resume answer';
 		if (action.id.startsWith('quick:')) return 'Answer question';
 		if (action.kind === 'recall') return 'Start recall';
 		if (action.kind === 'close_gap') return 'Close this gap';
@@ -97,7 +100,7 @@
 				<RecommendedIcon size={22} aria-hidden="true" strokeWidth={2.2} />
 			</header>
 			<p>{subject.nextAction.detail}</p>
-			{#if subject.nextAction.available && subject.nextAction.reason && subject.nextAction.kind !== 'scope'}
+			{#if subject.nextAction.available && subject.nextAction.reason && subject.nextAction.kind !== 'scope' && subject.nextAction.kind !== 'resume'}
 				<div
 					class="qc-inline-disclosure qc-recommendation-reason"
 					class:is-open={recommendationReasonOpen}
@@ -126,7 +129,7 @@
 			<div class="qc-subject-actions">
 				<a
 					class={subject.nextAction.available ? 'qc-dashboard-action' : 'qc-action-button compact'}
-					href={subject.nextAction.href}
+					href={resolveInternalPath(subject.nextAction.href)}
 					aria-label={`${actionLabel(subject.nextAction)}: ${subject.nextAction.title}`}
 				>
 					{actionLabel(subject.nextAction)}
@@ -160,7 +163,7 @@
 							<p>{action.detail}</p>
 							<a
 								class="qc-action-button compact"
-								href={action.href}
+								href={resolveInternalPath(action.href)}
 								aria-label={`${actionLabel(action)}: ${action.title}`}
 								data-analytics-label={`${subject.subject} ${action.kind}`}
 							>
@@ -188,12 +191,19 @@
 				{#if !hasSubjectEvidence}
 					<p>Nothing checked yet. Start the suggested activity to see your progress here.</p>
 				{:else}
+					<div class="qc-subject-checked-answer-performance">
+						<span class="qc-panel-label">{subject.progress.checkedAnswerPerformance.label}</span>
+						{#if subject.progress.checkedAnswerPerformance.value}
+							<strong>{subject.progress.checkedAnswerPerformance.value}</strong>
+						{/if}
+						<p>{subject.progress.checkedAnswerPerformance.detail}</p>
+					</div>
 					<div class="qc-subject-stats" class:single={subject.topics.length === 0}>
 						{#if subject.topics.length > 0}
 							<div>
 								<strong>{subject.progress.coverageCount} of {subject.progress.coverageTotal}</strong
 								>
-								<span>Practised</span>
+								<span>Observed {subject.scope.unitPlural}</span>
 							</div>
 							<div>
 								<strong>{subject.progress.secureCount}</strong>
@@ -254,7 +264,7 @@
 
 	{#if subject.scope.href && scopeReady && subject.nextAction.kind !== 'scope'}
 		<nav class="qc-learning-resources" aria-label="Course settings">
-			<a class="qc-dashboard-profile-link" href={subject.scope.href}>
+			<a class="qc-dashboard-profile-link" href={resolveInternalPath(subject.scope.href)}>
 				<span>Included course content</span>
 				<strong>{subject.scope.label}</strong>
 				<ChevronRight size={18} aria-hidden="true" />

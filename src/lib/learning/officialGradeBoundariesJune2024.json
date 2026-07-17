@@ -1,0 +1,263 @@
+{
+	"schemaVersion": 1,
+	"series": "June 2024",
+	"sources": {
+		"aqa-june-2024-gcse": {
+			"board": "AQA",
+			"documentId": "AQA-GCSE-GDE-BDY-JUN-2024",
+			"title": "Grade boundaries – June 2024 exams: GCSE",
+			"url": "https://media.aqa.org.uk/over/stat_pdf/AQA-GCSE-GDE-BDY-JUN-2024.PDF",
+			"sha256": "a8db6256bf7b47812538e7d00a7b390a8dd0ded3232459109fc88426f4d1ec8f"
+		},
+		"ocr-june-2024-gcse": {
+			"board": "OCR",
+			"documentId": "714692",
+			"title": "GCSE (9-1) qualification and notional component raw mark grade boundaries June 2024 series",
+			"url": "https://www.ocr.org.uk/Images/714692-gcse-grade-boundaries-june-2024.pdf",
+			"sha256": "7d9db4d9c3c578a168fce759832ce03944b8b77d44d641cacfa88d7e25248d47"
+		}
+	},
+	"boundarySets": {
+		"aqa-8461f": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8461F",
+			"awardType": "single",
+			"maximumMark": 200,
+			"highestPublishedAward": "5",
+			"lowestPublishedAward": "1",
+			"thresholds": { "5": 132, "4": 113, "3": 82, "2": 52, "1": 22 }
+		},
+		"aqa-8461h": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8461H",
+			"awardType": "single",
+			"maximumMark": 200,
+			"highestPublishedAward": "9",
+			"lowestPublishedAward": "3",
+			"thresholds": { "9": 141, "8": 126, "7": 112, "6": 90, "5": 69, "4": 48, "3": 37 }
+		},
+		"aqa-8462f": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8462F",
+			"awardType": "single",
+			"maximumMark": 200,
+			"highestPublishedAward": "5",
+			"lowestPublishedAward": "1",
+			"thresholds": { "5": 133, "4": 112, "3": 82, "2": 53, "1": 24 }
+		},
+		"aqa-8462h": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8462H",
+			"awardType": "single",
+			"maximumMark": 200,
+			"highestPublishedAward": "9",
+			"lowestPublishedAward": "3",
+			"thresholds": { "9": 149, "8": 130, "7": 112, "6": 90, "5": 68, "4": 46, "3": 35 }
+		},
+		"aqa-8463f": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8463F",
+			"awardType": "single",
+			"maximumMark": 200,
+			"highestPublishedAward": "5",
+			"lowestPublishedAward": "1",
+			"thresholds": { "5": 136, "4": 122, "3": 89, "2": 56, "1": 24 }
+		},
+		"aqa-8463h": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8463H",
+			"awardType": "single",
+			"maximumMark": 200,
+			"highestPublishedAward": "9",
+			"lowestPublishedAward": "3",
+			"thresholds": { "9": 151, "8": 136, "7": 122, "6": 103, "5": 85, "4": 67, "3": 58 }
+		},
+		"aqa-8464f": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8464F",
+			"awardType": "double",
+			"maximumMark": 420,
+			"highestPublishedAward": "5-5",
+			"lowestPublishedAward": "1-1",
+			"thresholds": {
+				"5-5": 266,
+				"5-4": 245,
+				"4-4": 225,
+				"4-3": 198,
+				"3-3": 171,
+				"3-2": 144,
+				"2-2": 117,
+				"2-1": 90,
+				"1-1": 63
+			}
+		},
+		"aqa-8464h": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8464H",
+			"awardType": "double",
+			"maximumMark": 420,
+			"highestPublishedAward": "9-9",
+			"lowestPublishedAward": "4-3",
+			"thresholds": {
+				"9-9": 289,
+				"9-8": 270,
+				"8-8": 251,
+				"8-7": 233,
+				"7-7": 215,
+				"7-6": 194,
+				"6-6": 173,
+				"6-5": 153,
+				"5-5": 133,
+				"5-4": 113,
+				"4-4": 93,
+				"4-3": 83
+			}
+		},
+		"aqa-8035": {
+			"sourceId": "aqa-june-2024-gcse",
+			"qualificationCode": "8035",
+			"awardType": "single",
+			"maximumMark": 252,
+			"highestPublishedAward": "9",
+			"lowestPublishedAward": "1",
+			"thresholds": {
+				"9": 202,
+				"8": 182,
+				"7": 162,
+				"6": 142,
+				"5": 123,
+				"4": 104,
+				"3": 76,
+				"2": 48,
+				"1": 20
+			}
+		},
+		"ocr-j351": {
+			"sourceId": "ocr-june-2024-gcse",
+			"qualificationCode": "J351",
+			"awardType": "single",
+			"maximumMark": 160,
+			"highestPublishedAward": "9",
+			"lowestPublishedAward": "1",
+			"thresholds": {
+				"9": 130,
+				"8": 119,
+				"7": 109,
+				"6": 97,
+				"5": 85,
+				"4": 73,
+				"3": 57,
+				"2": 41,
+				"1": 26
+			}
+		},
+		"ocr-j352": {
+			"sourceId": "ocr-june-2024-gcse",
+			"qualificationCode": "J352",
+			"awardType": "single",
+			"maximumMark": 160,
+			"highestPublishedAward": "9",
+			"lowestPublishedAward": "1",
+			"thresholds": {
+				"9": 133,
+				"8": 118,
+				"7": 103,
+				"6": 84,
+				"5": 66,
+				"4": 48,
+				"3": 36,
+				"2": 24,
+				"1": 13
+			}
+		}
+	},
+	"offeringContexts": [
+		{
+			"offeringId": "aqa-gcse-biology-8461-v1.0:foundation",
+			"boundarySetId": "aqa-8461f",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-biology-8461-v1.0:higher",
+			"boundarySetId": "aqa-8461h",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-chemistry-8462-v1.1:foundation",
+			"boundarySetId": "aqa-8462f",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-chemistry-8462-v1.1:higher",
+			"boundarySetId": "aqa-8462h",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-physics-8463-v1.1:foundation",
+			"boundarySetId": "aqa-8463f",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-physics-8463-v1.1:higher",
+			"boundarySetId": "aqa-8463h",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+			"boundarySetId": "aqa-8464f",
+			"applicability": "combined_subject_slice"
+		},
+		{
+			"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+			"boundarySetId": "aqa-8464h",
+			"applicability": "combined_subject_slice"
+		},
+		{
+			"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:foundation",
+			"boundarySetId": "aqa-8464f",
+			"applicability": "combined_subject_slice"
+		},
+		{
+			"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:chemistry:higher",
+			"boundarySetId": "aqa-8464h",
+			"applicability": "combined_subject_slice"
+		},
+		{
+			"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:foundation",
+			"boundarySetId": "aqa-8464f",
+			"applicability": "combined_subject_slice"
+		},
+		{
+			"offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:physics:higher",
+			"boundarySetId": "aqa-8464h",
+			"applicability": "combined_subject_slice"
+		},
+		{
+			"offeringId": "aqa-gcse-computer-science-8525-v1.3-2027:higher",
+			"sourceId": "aqa-june-2024-gcse",
+			"boundarySetId": null,
+			"applicability": "future_specification"
+		},
+		{
+			"offeringId": "aqa-gcse-geography-8035-v1.1:higher",
+			"boundarySetId": "aqa-8035",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "aqa-gcse-history-8145-v1.3:higher",
+			"sourceId": "aqa-june-2024-gcse",
+			"boundarySetId": null,
+			"applicability": "history_option_route"
+		},
+		{
+			"offeringId": "ocr-gcse-english-language-j351-v2.0:higher",
+			"boundarySetId": "ocr-j351",
+			"applicability": "qualification_total_only"
+		},
+		{
+			"offeringId": "ocr-gcse-english-literature-j352-v3.0:higher",
+			"boundarySetId": "ocr-j352",
+			"applicability": "qualification_total_only"
+		}
+	]
+}

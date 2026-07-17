@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "standard-study-deck-v1",
+  "release": {
+    "id": "aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1-rollout-recovered-v1",
+    "promptVersion": "standard-study-card-descendant-coverage-v1",
+    "generator": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c35-25b3-7801-8e63-33fd77882660"
+    },
+    "reviewer": {
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "max",
+      "runId": "019f6c36-600a-7e23-b45f-5fae8e844bc0",
+      "independentTurn": true
+    },
+    "startedAt": "2026-07-16T18:34:10.453Z",
+    "finishedAt": "2026-07-16T18:35:39.424Z",
+    "sourceManifestHash": "de034b4c0554ae6c78a71e20fd1ab3a1f7a575da0b207b73dbcb57f6c5d28372",
+    "artifactPath": "data/study-cards/releases/aqa-combined-science-trilogy-8464-biology-shared-descendants-04-06a6536625-v1-rollout-recovered-v1/accepted-study-cards.json"
+  },
+  "cards": [
+    {
+      "id": "aqa-8464-06a6536625-aqa-8464-4-7-3-6-field-margins-hedgerows",
+      "conceptKey": "aqa-8464-06a6536625-aqa-8464-maintaining-biodiversity-field-margins-hedgerows",
+      "kind": "method",
+      "visualCue": "🌍",
+      "front": "When maintaining biodiversity, what action is specifically associated with agricultural areas where farmers grow only one type of crop?",
+      "back": "Reintroduce field margins and hedgerows.",
+      "reverseFront": null,
+      "reverseBack": null,
+      "explanation": "The specification pairs reintroduction of field margins and hedgerows with agricultural areas where farmers grow only one type of crop.",
+      "memoryTip": null,
+      "choices": [
+        {
+          "key": "a",
+          "text": "Reintroduce field margins and hedgerows.",
+          "isCorrect": true,
+          "feedback": "Correct. This is the action linked to agricultural areas where farmers grow only one type of crop.",
+          "misconception": null
+        },
+        {
+          "key": "b",
+          "text": "Breed endangered species.",
+          "isCorrect": false,
+          "feedback": "This is listed for endangered species, not as the action linked to single-crop agricultural areas.",
+          "misconception": "confuses-species-breeding-with-the-agricultural-measure"
+        },
+        {
+          "key": "c",
+          "text": "Protect and regenerate rare habitats.",
+          "isCorrect": false,
+          "feedback": "This is the broader action listed for rare habitats, not the specified action for single-crop agricultural areas.",
+          "misconception": "confuses-rare-habitat-protection-with-the-agricultural-measure"
+        },
+        {
+          "key": "d",
+          "text": "Reduce deforestation and carbon dioxide emissions.",
+          "isCorrect": false,
+          "feedback": "This is a separate listed action, not the one linked to single-crop agricultural areas.",
+          "misconception": "confuses-deforestation-and-emissions-reduction-with-the-agricultural-measure"
+        }
+      ],
+      "board": "AQA",
+      "qualification": "GCSE",
+      "subject": "Biology",
+      "contentRevision": 1,
+      "sources": [
+        {
+          "kind": "curriculum-specification",
+          "url": "https://www.aqa.org.uk/subjects/combined-science/gcse/combined-science-trilogy-8464/specification",
+          "title": "AQA GCSE Combined Science: Trilogy (8464)",
+          "locator": "Official PDF pages 65-65; 4.7.3.6 Maintaining biodiversity",
+          "excerpt": "These include:\n• breeding programmes for endangered species\n• protection and regeneration of rare habitats\n• reintroduction of field margins and hedgerows in agricultural\nareas where farmers grow only one type of crop\n• reduction of deforestation and carbon dioxide emissions by\nsome governments\n• recycling resources rather than dumping waste in landfill.",
+          "sourceHash": "d9de6e1889d675861a814c21eb5509fe1b7941452dc0c4794dfc9927e9b6c894",
+          "rightsBasis": "official_exam_board_specification",
+          "supports": [
+            "front",
+            "back",
+            "explanation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-3-6",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+          "isPrimary": true,
+          "confidence": 1,
+          "reviewed": true
+        },
+        {
+          "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+          "curriculumComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7-3-6",
+          "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+          "isPrimary": false,
+          "confidence": 1,
+          "reviewed": true
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:foundation",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    },
+    {
+      "offeringId": "aqa-gcse-combined-science-trilogy-8464-v1.1:biology:higher",
+      "topicComponentId": "aqa-gcse-combined-science-trilogy-8464-v1.1:4-7",
+      "status": "ready",
+      "cardCount": 1,
+      "reason": null
+    }
+  ]
+}

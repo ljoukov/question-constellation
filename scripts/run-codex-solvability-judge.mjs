@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import {
 	buildLearnerVisibleQuestionContext,
@@ -8,6 +8,19 @@ import {
 	writeJson
 } from './lib/llm-extraction-pipeline.mjs';
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
+import { phaseArtifacts } from './lib/codex-phase-artifacts.mjs';
+import {
+	assertLearnerVisibleAssetBundleCurrent,
+	assertVerifiedLearnerAssetCopiesCurrent,
+	remapPaperToVerifiedLearnerAssets,
+	stageVerifiedLearnerAssetCopies
+} from './lib/learner-visible-asset-binding.mjs';
+import {
+	assertBoundJsonInputCurrent,
+	assertExactJsonArtifactsEqual,
+	captureBoundJsonInput,
+	stageBoundJsonSnapshot
+} from './lib/phase-input-binding.mjs';
 
 const rootDir = process.cwd();
 loadDefaultEnv(rootDir);
@@ -26,6 +39,9 @@ Optional:
   --min-score=0.8
   --model=gpt-5.6-sol
   --thinking-level=max
+  --expected-input-sha256=<exact-byte-sha256>
+  --expected-input-canonical-json-sha256=<exact-canonical-json-sha256>
+  --asset-manifest=<exact-learner-visible-asset-manifest.json>
   --timeout-ms=7200000
   --target-only
   --force
@@ -56,18 +72,45 @@ const minScore = numberArg('min-score', 0.8);
 const model = stringArg('model', 'gpt-5.6-sol');
 const thinkingLevel = stringArg('thinking-level', 'max');
 const timeoutMs = integerArg('timeout-ms', 7_200_000, 1);
+const expectedInputSha256 = stringArg('expected-input-sha256', '');
+const expectedInputCanonicalJsonSha256 = stringArg('expected-input-canonical-json-sha256', '');
+const assetManifestArg = stringArg('asset-manifest', '');
 const includePriorContext = !hasArg('target-only');
 const dryRun = hasArg('dry-run');
 const force = hasArg('force');
 const assetCopyPairs = [];
+let sourceCandidateSnapshotBinding = null;
+let modelCandidateBinding = null;
+let contextsBinding = null;
+let assetManifestBinding = null;
+let verifiedLearnerAssetCopies = null;
 
 if (!existsSync(inputPath)) throw new Error(`Input file does not exist: ${relative(inputPath)}`);
 
-const rawCandidate = readJson(inputPath);
-const candidate = candidateWithLocalAssets(rawCandidate);
-const plannedRefs = selectedQuestionRefs(candidate);
+const inputBinding = captureBoundJsonInput(inputPath, {
+	rootDir,
+	expectedSha256: expectedInputSha256,
+	expectedCanonicalJsonSha256: expectedInputCanonicalJsonSha256,
+	label: 'Solvability candidate input'
+});
+const rawCandidate = inputBinding.value;
+assetManifestBinding = assetManifestArg
+	? captureBoundJsonInput(path.resolve(rootDir, assetManifestArg), {
+			rootDir,
+			label: 'Solvability learner asset manifest'
+		})
+	: null;
+if (assetManifestBinding) {
+	assertLearnerVisibleAssetBundleCurrent({
+		paper: rawCandidate,
+		manifest: assetManifestBinding.value,
+		rootDir
+	});
+}
+let candidate;
+let contexts;
+const plannedRefs = selectedQuestionRefs(rawCandidate);
 if (plannedRefs.length === 0) throw new Error('No questions matched the solvability selection.');
-const contexts = buildContexts(candidate, plannedRefs);
 
 const plan = {
 	sourceDocumentId,
@@ -81,6 +124,9 @@ const plan = {
 	includePriorContext,
 	question: questionArg || null,
 	maxQuestions,
+	expectedInputSha256: expectedInputSha256 || null,
+	expectedInputCanonicalJsonSha256: expectedInputCanonicalJsonSha256 || null,
+	assetManifestPath: assetManifestBinding ? relative(assetManifestBinding.path) : null,
 	questionCount: plannedRefs.length,
 	plannedRefs
 };
@@ -91,7 +137,36 @@ if (dryRun) {
 }
 
 prepareWorkDir();
+if (assetManifestBinding) {
+	verifiedLearnerAssetCopies = stageVerifiedLearnerAssetCopies({
+		manifest: assetManifestBinding.value,
+		rootDir,
+		destinationRoot: path.join(workDir, 'assets')
+	});
+	candidate = remapPaperToVerifiedLearnerAssets({
+		paper: rawCandidate,
+		manifest: assetManifestBinding.value,
+		attestation: verifiedLearnerAssetCopies,
+		rootDir
+	});
+} else {
+	candidate = candidateWithLocalAssets(rawCandidate);
+}
+contexts = buildContexts(candidate, plannedRefs);
+sourceCandidateSnapshotBinding = stageBoundJsonSnapshot(
+	inputBinding,
+	path.join(workDir, 'source-candidate.json'),
+	{
+		rootDir,
+		label: 'Solvability candidate input'
+	}
+);
 writeJson(path.join(workDir, 'candidate.json'), candidate);
+modelCandidateBinding = captureBoundJsonInput(path.join(workDir, 'candidate.json'), {
+	rootDir,
+	label: 'Solvability model candidate'
+});
+chmodSync(modelCandidateBinding.path, 0o444);
 writeJson(path.join(workDir, 'solvability-contexts.json'), {
 	sourceDocumentId,
 	minScore,
@@ -99,6 +174,11 @@ writeJson(path.join(workDir, 'solvability-contexts.json'), {
 	questionCount: contexts.length,
 	contexts
 });
+contextsBinding = captureBoundJsonInput(path.join(workDir, 'solvability-contexts.json'), {
+	rootDir,
+	label: 'Solvability contexts'
+});
+chmodSync(contextsBinding.path, 0o444);
 writeJson(path.join(workDir, 'plan.json'), plan);
 
 const prompt = buildPrompt();
@@ -107,7 +187,7 @@ writeJson(path.join(workDir, 'prompt.json'), { prompt });
 const startedAt = new Date().toISOString();
 let codexSummary = null;
 try {
-	codexSummary = await runCodexSdkTurn({
+	codexSummary = await runBoundCodexTurn({
 		prompt,
 		workDir,
 		eventsPath: path.join(workDir, 'events.jsonl'),
@@ -123,6 +203,11 @@ try {
 	const report = normalizeAndValidateReport(rawReport);
 	mkdirSync(path.dirname(outputPath), { recursive: true });
 	writeJson(outputPath, report);
+	const outputBinding = captureBoundJsonInput(outputPath, {
+		rootDir,
+		label: 'Solvability report output'
+	});
+	assertBoundPhaseInputsCurrent();
 	const summary = {
 		status: report.status,
 		startedAt,
@@ -130,6 +215,28 @@ try {
 		plan,
 		codex: codexSummary,
 		report,
+		phaseArtifacts: phaseArtifacts({
+			inputs: {
+				candidate: inputBinding.artifact,
+				verifiedInputSnapshot: sourceCandidateSnapshotBinding.artifact,
+				inputSnapshotDerivation: {
+					schemaVersion: 'generated-phase-input-snapshot-v1',
+					source: inputBinding.artifact,
+					snapshot: sourceCandidateSnapshotBinding.artifact
+				},
+				modelCandidate: modelCandidateBinding.artifact,
+				contexts: contextsBinding.artifact,
+				...(assetManifestBinding
+					? {
+							learnerAssetManifest: assetManifestBinding.artifact,
+							verifiedLearnerAssetCopies
+						}
+					: {})
+			},
+			outputs: {
+				report: outputBinding.artifact
+			}
+		}),
 		artifacts: artifacts()
 	};
 	writeJson(summaryPath, summary);
@@ -157,6 +264,52 @@ function prepareWorkDir() {
 	}
 	mkdirSync(workDir, { recursive: true });
 	mkdirSync(path.join(workDir, 'assets'), { recursive: true });
+}
+
+async function runBoundCodexTurn(options) {
+	assertBoundPhaseInputsCurrent();
+	try {
+		return await runCodexSdkTurn(options);
+	} finally {
+		assertBoundPhaseInputsCurrent();
+	}
+}
+
+function assertBoundPhaseInputsCurrent() {
+	assertBoundJsonInputCurrent(inputBinding, { label: 'Solvability candidate input' });
+	if (!sourceCandidateSnapshotBinding || !modelCandidateBinding || !contextsBinding) {
+		throw new Error('Solvability model inputs were not fully staged.');
+	}
+	assertBoundJsonInputCurrent(sourceCandidateSnapshotBinding, {
+		label: 'Solvability candidate input snapshot'
+	});
+	assertExactJsonArtifactsEqual(
+		inputBinding.artifact,
+		sourceCandidateSnapshotBinding.artifact,
+		'Solvability candidate input snapshot'
+	);
+	assertBoundJsonInputCurrent(modelCandidateBinding, {
+		label: 'Solvability model candidate'
+	});
+	assertBoundJsonInputCurrent(contextsBinding, { label: 'Solvability contexts' });
+	if (assetManifestBinding) {
+		assertBoundJsonInputCurrent(assetManifestBinding, {
+			label: 'Solvability learner asset manifest'
+		});
+		assertLearnerVisibleAssetBundleCurrent({
+			paper: rawCandidate,
+			manifest: assetManifestBinding.value,
+			rootDir
+		});
+		if (!verifiedLearnerAssetCopies) {
+			throw new Error('Solvability learner assets were not staged.');
+		}
+		assertVerifiedLearnerAssetCopiesCurrent({
+			manifest: assetManifestBinding.value,
+			attestation: verifiedLearnerAssetCopies,
+			rootDir
+		});
+	}
 }
 
 function candidateWithLocalAssets(candidate) {
@@ -246,12 +399,14 @@ Task:
 2. Treat previous subparts listed in the context as visible context, but do not use targetAnswerKey to decide whether the prompt is understandable.
 3. The learner-visible evidence is not only targetQuestion/contextText. Read studentVisibleContext.sections[*].blocks.stem, .lead, .prompt, and .afterResponse carefully. A structured table rendered there is visible evidence. Do not report source data as missing if those blocks already contain the required values.
 4. If a context includes studentVisibleContext.media[] with present=true and asset.filePath, inspect the local image file under assets/ before reporting that a figure, map, graph, photograph, or diagram is missing. If the image contains the required source information, the question is visible/solvable even when the same values are not also transcribed as text.
-5. Use targetAnswerKey only after deciding visibility, to verify that grading evidence and the extracted response controls fit the visible question.
-6. Fail real learner-facing defects: missing source table/figure/diagram data, missing response-surface asset, impossible fixed-response control, wrong or absent answer key, missing model answer for written responses, duplicated or contradictory prompt context, or mark-scheme evidence that cannot grade the visible question.
-7. Do not judge answer-chain quality except where the chain text has contaminated the visible question or grading fields.
-8. For structured source tables or source strings represented in context sections, an image asset is not required unless the target response itself is diagram/image based.
-9. Geography Paper 3 may include official fieldwork questions that explicitly ask the learner to use their own human or physical geography enquiry. Do not fail those merely because the app does not provide a concrete fieldwork scenario. Pass them when the learner-visible prompt clearly states the own-fieldwork dependency, the response surface is renderable, and the mark scheme/checklist/model answer can grade generic valid fieldwork evidence.
-10. Use score >= ${minScore} for passed questions. Any blocking missingContext/renderFinding or non-empty requiredRepairs means the question fails.
+5. A media asset may include paperMeasurement with sourceVerified=true, axis="horizontal", a positive pixelWidth, and positive pixelsPerMillimetre. The public renderer turns that metadata into two learner-controlled guides and a live millimetre readout at the original paper scale, even when the image is responsively resized. Treat that as a calibrated digital ruler. Verify its density against the local image metadata before relying on it; fail missing, unverified, inconsistent, or fabricated calibration.
+6. Use targetAnswerKey only after deciding visibility, to verify that grading evidence and the extracted response controls fit the visible question.
+7. Fail real learner-facing defects: missing source table/figure/diagram data, missing response-surface asset, impossible fixed-response control, wrong or absent answer key, missing model answer for written responses, duplicated or contradictory prompt context, or mark-scheme evidence that cannot grade the visible question.
+8. Do not judge answer-chain quality except where the chain text has contaminated the visible question or grading fields.
+9. For structured source tables or source strings represented in context sections, an image asset is not required unless the target response itself is diagram/image based.
+10. Geography Paper 3 may include official fieldwork questions that explicitly ask the learner to use their own human or physical geography enquiry. Do not fail those merely because the app does not provide a concrete fieldwork scenario. Pass them when the learner-visible prompt clearly states the own-fieldwork dependency, the response surface is renderable, and the mark scheme/checklist/model answer can grade generic valid fieldwork evidence.
+11. For English Literature, classify each target as whole-text, extract-plus-wider-text, single-source analysis, two-extract comparison, or poetry comparison. If the printed task supplies an extract, poem, or sources, the exact learner-visible bundle must contain each complete source before the marked prompt, with real line/stanza breaks and intact identity/title/speaker labels. Complete source-verbatim blocks or complete readable official source-page/printed-extract media are valid; selfContainedPromptText, a synopsis, model answer, or mark-scheme indicative content is not. Verify targetQuestion.selfContainment declares status="source_complete", accurate requiredSourceCount, and exact requiredAssetLabels: use 1 for one printed source plus recalled wider-work/anthology knowledge and 2 for two printed sources. Never accept status="source_complete" for a partial, hidden, placeholder, copyright-flagged, or review-flagged source. Require two source media for two printed extracts/poems unless one visually verified asset contains the complete ordered pair and completeSourceBundle=true. Inspect every media file and require exact overlay-to-asset references so no declared source is hidden. Whole-text questions need no unprinted work text. Fail any source-dependent target with missing/ambiguous source-count metadata or a missing, partial, unreadable, unordered, hidden, placeholder, copyright-flagged, or review-flagged source.
+12. Use score >= ${minScore} for passed questions. Any blocking missingContext/renderFinding or non-empty requiredRepairs means the question fails.
 
 Write exactly one JSON file named solvability-report.json with this shape:
 {

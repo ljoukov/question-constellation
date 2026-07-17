@@ -1,0 +1,505 @@
+{
+  "schemaVersion": "codex-recovered-extraction-input-recovery-v1",
+  "status": "passed",
+  "basis": "Exact production pipeline commands were recovered from archived parent-operator rollout JSONL without rerunning a model phase. Current local QP, mark-scheme, and deduplicated supporting-PDF bytes are content-addressed below.",
+  "config": {
+    "path": "tmp/current-model-paper-cohort/recovered-eight-config.json",
+    "sha256": "1028d0da8dd54ceae5d2e189308108c80222879357c1de15b87bafef533017cd"
+  },
+  "counts": {
+    "papers": 8,
+    "questionPapers": 8,
+    "markSchemes": 8,
+    "supportingDocuments": 4
+  },
+  "papers": [
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-8464b2h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6c35-58b3-7680-8a5d-4b4e075a6bc2",
+        "fileName": "rollout-2026-07-16T11-34-23-019f6c35-58b3-7680-8a5d-4b4e075a6bc2.jsonl",
+        "sha256": "ed291262110fcac4c32bd280da4293f72a959d0259ca41fcb815dc6207eccb6e"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 3841,
+          "timestamp": "2026-07-16T18:34:38.771Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 3
+        },
+        "observedCommand": "975292  974186 Sl+        00:18 /usr/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-combined-science-trilogy-higher/question-papers/AQA-8464B2H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-combined-science-trilogy-higher/mark-schemes/AQA-8464B2H-MS-JUN24.PDF --source-document-id=aqa-8464b2h-qp-jun24 --mark-scheme-document-id=aqa-8464b2h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-8464b2h-qp-jun24 --board=AQA --qualification=GCSE --subject=Biology --subject-area=Biology --tier=Higher --paper-label=Paper 2 Higher --component-code=8464B2H --series=June 2024 --question-paper-title=Question paper (Higher): Paper 2 Biology - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 2 Biology - June 2024 --question-paper-url=https://www.aqa.org.uk/files/sample-papers-and-mark-schemes.2024.June.AQA-8464B2H-QP-JUN24_PDF/1265e09106910a480ff4c882b8a5888cbe2ac518.pdf --mark-scheme-url=https://www.aqa.org.uk/files/sample-papers-and-mark-schemes.2024.June.AQA-8464B2H-MS-JUN24_PDF/ccae730cf19f9be6d897b41b9fb085ee2545b333.pdf --run-id=codex-production-batch-aqa-8464b2h-qp-jun24 --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts-science/biology.json --concurrency=3 --force --resume-passed-phases --import --skip-chain-illustrations",
+        "observedCommandSha256": "7c66938859ef523e9be8e5c67e7faf9fe757e938c65bb71a66f4e796894131a2",
+        "matchingObservationCount": 6,
+        "maximalObservationCount": 6,
+        "maximumSupportDocumentCount": 0,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-8464b2h-qp-jun24",
+          "--question-paper=data/aqa-combined-science-trilogy-higher/question-papers/AQA-8464B2H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-combined-science-trilogy-higher/mark-schemes/AQA-8464B2H-MS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "218b5560f8501ea42e5aefd142f0ea7cc1d6f4f7aa1f3a02755d0076f40cc4ec"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-combined-science-trilogy-higher/question-papers/AQA-8464B2H-QP-JUN24.PDF",
+          "sha256": "d06fec52ab6e788ac75e73582e42df9b0d48bbfb190b580a2038c307cf962568"
+        },
+        "markScheme": {
+          "path": "data/aqa-combined-science-trilogy-higher/mark-schemes/AQA-8464B2H-MS-JUN24.PDF",
+          "sha256": "4a3c5613ce34a243a2666259a9913decd431f5fa7a2cc0daf6303ef671b54533"
+        },
+        "supportingDocuments": []
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-8464c1h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6c40-c655-7cc3-baa5-b5eac18a6ec7",
+        "fileName": "rollout-2026-07-16T11-46-52-019f6c40-c655-7cc3-baa5-b5eac18a6ec7.jsonl",
+        "sha256": "c7aad5feb42624e821850c96184254419dbbb0cc46d7b6af21c358afed0ef501"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 4890,
+          "timestamp": "2026-07-16T19:22:48.440Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 2
+        },
+        "observedCommand": "1004962  974186 Sl+        35:56 /usr/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-combined-science-trilogy-higher/question-papers/AQA-8464C1H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-combined-science-trilogy-higher/mark-schemes/AQA-8464C1H-MS-JUN24.PDF --source-document-id=aqa-8464c1h-qp-jun24 --mark-scheme-document-id=aqa-8464c1h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-8464c1h-qp-jun24 --board=AQA --qualification=GCSE --subject=Chemistry --subject-area=Chemistry --tier=Higher --paper-label=Paper 1 Higher --component-code=8464C1H --series=June 2024 --question-paper-title=Question paper (Higher): Paper 1 Chemistry - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 1 Chemistry - June 2024 --question-paper-url=https://www.aqa.org.uk/files/sample-papers-and-mark-schemes.2024.June.AQA-8464C1H-QP-JUN24_PDF/34a8dd618ffda76af96f306062f05253719fc8a4.pdf --mark-scheme-url=https://www.aqa.org.uk/files/sample-papers-and-mark-schemes.2024.June.AQA-8464C1H-MS-JUN24_PDF/e3dcb4e72a6c8a2f6cfc37281cc757bf056f2b07.pdf --run-id=codex-production-batch-aqa-8464c1h-qp-jun24 --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts-science/chemistry.json --concurrency=3 --force --resume-passed-phases --import --skip-chain-illustrations",
+        "observedCommandSha256": "939eb9b9eea7314e866b09b478bf179b5317a5db411f40d59f1464c6ae1f1fdf",
+        "matchingObservationCount": 6,
+        "maximalObservationCount": 6,
+        "maximumSupportDocumentCount": 0,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-8464c1h-qp-jun24",
+          "--question-paper=data/aqa-combined-science-trilogy-higher/question-papers/AQA-8464C1H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-combined-science-trilogy-higher/mark-schemes/AQA-8464C1H-MS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "4b85e857c4873965544fdff5093419eefbdc7320c9f8366a5b6a5551520c6f37"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-combined-science-trilogy-higher/question-papers/AQA-8464C1H-QP-JUN24.PDF",
+          "sha256": "6045f14461d41011de4c3cca7589763891d27c0fd2db6a33f1e3e618f5838933"
+        },
+        "markScheme": {
+          "path": "data/aqa-combined-science-trilogy-higher/mark-schemes/AQA-8464C1H-MS-JUN24.PDF",
+          "sha256": "bc7231a1d1f605cb8fadd83224453040a0546b0dd1e6d7faebb4e38a8a612889"
+        },
+        "supportingDocuments": []
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-84611h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6b7c-d333-7071-91f9-7e62f058317d",
+        "fileName": "rollout-2026-07-16T08-12-50-019f6b7c-d333-7071-91f9-7e62f058317d.jsonl",
+        "sha256": "d205bcaa2b2cd8cddd1d65ca70c745acd3527dc2021288da7821dd0e759ef017"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 1784,
+          "timestamp": "2026-07-16T16:59:55.744Z",
+          "payloadType": "custom_tool_call",
+          "jsonPath": "$.input",
+          "segmentIndex": 0
+        },
+        "observedCommand": "const r = await tools.exec_command({\"cmd\":\"set -a; source /home/yaroslav_volovich/projects/question-constellation/.env.local; set +a; export PATH=/home/yaroslav_volovich/.nvm/versions/node/v22.18.0/bin:$PATH; node scripts/run-codex-production-import-pipeline.mjs --question-paper=data/aqa-separate-science-higher/question-papers/AQA-84611H-QP-JUN24-CR.PDF --mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84611H-MS-JUN24.PDF --source-document-id=aqa-84611h-qp-jun24 --mark-scheme-document-id=aqa-84611h-ms-jun24 --work-root=tmp/current-model-paper-cohort/runs/aqa-84611h-qp-jun24 --board=AQA --qualification=GCSE --subject=Biology --subject-area=Biology --tier=Higher --paper-label='Biology Paper 1' --component-code=84611H --series='June 2024' --year=2024 --question-paper-title='Question paper (Higher): Paper 1 - June 2024' --mark-scheme-title='Mark scheme (Higher): Paper 1 - June 2024' --question-paper-url=https://cdn.sanity.io/files/p28bar15/green/45bce632101224bd077beea4b962c027353a7abc.pdf --mark-scheme-url=https://cdn.sanity.io/files/p28bar15/green/8d711ebd0128dce40f21490bfc3ab7305e492fda.pdf --run-id=codex-production-batch-aqa-84611h-qp-jun24 --existing-chains=tmp/current-model-paper-cohort/runs/existing-chain-contexts/biology.json --concurrency=3 --force --resume-passed-phases --import --skip-chain-illustrations --skip-r2-upload > tmp/current-model-paper-cohort/runs/aqa-84611h-qp-jun24/provenance-reimport.log 2>&1\",\"workdir\":\"/tmp/qc-release-a35ab11\",\"yield_time_ms\":1000,\"max_output_tokens\":2000});",
+        "observedCommandSha256": "7b1f4176fcf4409bd47fbe85941523200f87b0e5f51d228295cc4442311a749e",
+        "matchingObservationCount": 1,
+        "maximalObservationCount": 1,
+        "maximumSupportDocumentCount": 0,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-84611h-qp-jun24",
+          "--question-paper=data/aqa-separate-science-higher/question-papers/AQA-84611H-QP-JUN24-CR.PDF",
+          "--mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84611H-MS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "594b26d93f5f5444e778f0e1787744226e7295930c02e3640ec10e333dacd599"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-separate-science-higher/question-papers/AQA-84611H-QP-JUN24-CR.PDF",
+          "sha256": "8079a0094b0c7141b3b9b8e54a1e7ec843f2fa250b5962e77559283629f2e0dc"
+        },
+        "markScheme": {
+          "path": "data/aqa-separate-science-higher/mark-schemes/AQA-84611H-MS-JUN24.PDF",
+          "sha256": "e2f076584ecbfaef17aedf5dd6340bffa31771e4f7d7a3908fa962f18a74e5e1"
+        },
+        "supportingDocuments": []
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-84612h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6bbb-021d-7303-b13b-c1dc4f9cf7f1",
+        "fileName": "rollout-2026-07-16T09-20-45-019f6bbb-021d-7303-b13b-c1dc4f9cf7f1.jsonl",
+        "sha256": "c7b9710165b2f9e71471b235dc14096ea5805461e195938475a089ba1770c295"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 1447,
+          "timestamp": "2026-07-16T16:47:26.784Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 2
+        },
+        "observedCommand": "760362 /home/yaroslav_volovich/.nvm/versions/node/v22.18.0/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/question-papers/AQA-84612H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/mark-schemes/AQA-84612H-MS-JUN24.PDF --source-document-id=aqa-84612h-qp-jun24 --mark-scheme-document-id=aqa-84612h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-84612h-qp-jun24 --board=AQA --qualification=GCSE --subject=Biology --subject-area=Biology --tier=Higher --paper-label=Biology Paper 2 --component-code=84612H --series=June 2024 --year=2024 --question-paper-title=Question paper (Higher): Paper 2 - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 2 - June 2024 --question-paper-url=https://cdn.sanity.io/files/p28bar15/green/dfafe238a1ff1ec7e60abaa5bed6107cecc4e382.pdf --mark-scheme-url=https://cdn.sanity.io/files/p28bar15/green/923aa377ee5618115b99b54d437b51c0ac99453b.pdf --run-id=codex-production-batch-aqa-84612h-qp-jun24 --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts/biology.json --concurrency=3 --force --import --skip-chain-illustrations",
+        "observedCommandSha256": "6540c78a6bd9f2dc280040803131fb65c9b0df884ff04565475acaba673a4b49",
+        "matchingObservationCount": 12,
+        "maximalObservationCount": 12,
+        "maximumSupportDocumentCount": 0,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-84612h-qp-jun24",
+          "--question-paper=data/aqa-separate-science-higher/question-papers/AQA-84612H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84612H-MS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "03c3ec26298717397f2aaf4277ccd869611e75d89dbd817996c80e35d2d85f90"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-separate-science-higher/question-papers/AQA-84612H-QP-JUN24.PDF",
+          "sha256": "c8679ad7306fe91814730c58235a0e14ccb56e002e0f658a3231ba8f016d056b"
+        },
+        "markScheme": {
+          "path": "data/aqa-separate-science-higher/mark-schemes/AQA-84612H-MS-JUN24.PDF",
+          "sha256": "e2af0cd2d0363d4dfeb323ab0511ee4ceac489e761d41c9d757df347e8580e6f"
+        },
+        "supportingDocuments": []
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-84621h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6b7c-d46b-7bb0-a2f7-a125aec4e690",
+        "fileName": "rollout-2026-07-16T08-12-50-019f6b7c-d46b-7bb0-a2f7-a125aec4e690.jsonl",
+        "sha256": "e9fe747886ae13d6d9b4366fe8f10a5a84e935c3056a7238ff4a9934215e720b"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 1447,
+          "timestamp": "2026-07-16T16:47:26.784Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 4
+        },
+        "observedCommand": "788352 /home/yaroslav_volovich/.nvm/versions/node/v22.18.0/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/question-papers/AQA-84621H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/mark-schemes/AQA-84621H-MS-JUN24.PDF --source-document-id=aqa-84621h-qp-jun24 --mark-scheme-document-id=aqa-84621h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-84621h-qp-jun24 --board=AQA --qualification=GCSE --subject=Chemistry --subject-area=Chemistry --tier=Higher --paper-label=Chemistry Paper 1 --component-code=84621H --series=June 2024 --year=2024 --question-paper-title=Question paper (Higher): Paper 1 - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 1 - June 2024 --question-paper-url=https://cdn.sanity.io/files/p28bar15/green/eb7cb6b60d9dc2a5a58f7411da7a2d1dc5986518.pdf --mark-scheme-url=https://cdn.sanity.io/files/p28bar15/green/dee152884c4ad5237f2ffc14c54e317ba3bb6ade.pdf --run-id=codex-production-batch-aqa-84621h-qp-jun24 --supporting-document=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/supporting-documents/AQA-84621H-INS-JUN24.PDF --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts/chemistry.json --concurrency=3 --force --import --skip-chain-illustrations",
+        "observedCommandSha256": "2046731195d319b97e400540d330e99aa8365c8f7f59a4e1f3c4946260dff901",
+        "matchingObservationCount": 6,
+        "maximalObservationCount": 6,
+        "maximumSupportDocumentCount": 1,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-84621h-qp-jun24",
+          "--question-paper=data/aqa-separate-science-higher/question-papers/AQA-84621H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84621H-MS-JUN24.PDF",
+          "--supporting-document=data/aqa-separate-science-higher/supporting-documents/AQA-84621H-INS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "b50c72f5f9b0887a05844b6b40139693ef1a4bb73f0fb85b1e0e630bc61f6813"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-separate-science-higher/question-papers/AQA-84621H-QP-JUN24.PDF",
+          "sha256": "21a8bba63807685c97f0671a07ccaafb1d40e7756154189afa9c354a0e06cf52"
+        },
+        "markScheme": {
+          "path": "data/aqa-separate-science-higher/mark-schemes/AQA-84621H-MS-JUN24.PDF",
+          "sha256": "63bb64877b73ffd3d3071cd858ebcd25d70f0196adb83682cb1329db456771fa"
+        },
+        "supportingDocuments": [
+          {
+            "path": "data/aqa-separate-science-higher/supporting-documents/AQA-84621H-INS-JUN24.PDF",
+            "sha256": "6b9d6cd0a34643d5ae05a6da93f32895411b135b18332ff777e21a367540fc0e"
+          }
+        ]
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-84622h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6bbe-3cd5-7a93-955b-4502f0c2c6c2",
+        "fileName": "rollout-2026-07-16T09-24-17-019f6bbe-3cd5-7a93-955b-4502f0c2c6c2.jsonl",
+        "sha256": "b5e4491b371dd7316f514e2486982baeb46e97f295a6824dfb82bec25f565f5f"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 1447,
+          "timestamp": "2026-07-16T16:47:26.784Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 3
+        },
+        "observedCommand": "763952 /home/yaroslav_volovich/.nvm/versions/node/v22.18.0/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/question-papers/AQA-84622H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/mark-schemes/AQA-84622H-MS-JUN24.PDF --source-document-id=aqa-84622h-qp-jun24 --mark-scheme-document-id=aqa-84622h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-84622h-qp-jun24 --board=AQA --qualification=GCSE --subject=Chemistry --subject-area=Chemistry --tier=Higher --paper-label=Chemistry Paper 2 --component-code=84622H --series=June 2024 --year=2024 --question-paper-title=Question paper (Higher): Paper 2 - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 2 - June 2024 --question-paper-url=https://cdn.sanity.io/files/p28bar15/green/326d5b564a9b293b1219eb8296148ee29e0c88f6.pdf --mark-scheme-url=https://cdn.sanity.io/files/p28bar15/green/12eb166b0abb29cbf238c467838ce510a66a36b3.pdf --run-id=codex-production-batch-aqa-84622h-qp-jun24 --supporting-document=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/supporting-documents/AQA-84622H-INS-JUN24.PDF --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts/chemistry.json --concurrency=3 --force --import --skip-chain-illustrations",
+        "observedCommandSha256": "2ea91ce38a0f19010183723ee18ff2958997ca590e0a3059135737a1ae055d7e",
+        "matchingObservationCount": 11,
+        "maximalObservationCount": 11,
+        "maximumSupportDocumentCount": 1,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-84622h-qp-jun24",
+          "--question-paper=data/aqa-separate-science-higher/question-papers/AQA-84622H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84622H-MS-JUN24.PDF",
+          "--supporting-document=data/aqa-separate-science-higher/supporting-documents/AQA-84622H-INS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "dac22b6eba2ab6f20d3e8000c994252550a28d24ffa6da48951650a3604d8143"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-separate-science-higher/question-papers/AQA-84622H-QP-JUN24.PDF",
+          "sha256": "072b3bdd5f28d095dc00b1885b140fc09173b599ee7d5312edf253b944c9d2f9"
+        },
+        "markScheme": {
+          "path": "data/aqa-separate-science-higher/mark-schemes/AQA-84622H-MS-JUN24.PDF",
+          "sha256": "abf88b3cca9c7aa0b613712095f10946248ac9b9db614e550e721e3fbd69d606"
+        },
+        "supportingDocuments": [
+          {
+            "path": "data/aqa-separate-science-higher/supporting-documents/AQA-84622H-INS-JUN24.PDF",
+            "sha256": "d44ee5f98449e419cd336a142135619d6e308fc00c1f553ba24b6491879e438a"
+          }
+        ]
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-84631h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6bd8-8b60-7cf2-b512-4f5f8c0162ed",
+        "fileName": "rollout-2026-07-16T09-53-01-019f6bd8-8b60-7cf2-b512-4f5f8c0162ed.jsonl",
+        "sha256": "bc589592a1d75c19f21631e77c5b0e2a703237cd944fe05252556ac34a96b809"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 1605,
+          "timestamp": "2026-07-16T16:53:11.014Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 12
+        },
+        "observedCommand": "802213 /home/yaroslav_volovich/.nvm/versions/node/v22.18.0/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/question-papers/AQA-84631H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/mark-schemes/AQA-84631H-MS-JUN24.PDF --source-document-id=aqa-84631h-qp-jun24 --mark-scheme-document-id=aqa-84631h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-84631h-qp-jun24 --board=AQA --qualification=GCSE --subject=Physics --subject-area=Physics --tier=Higher --paper-label=Physics Paper 1 --component-code=84631H --series=June 2024 --year=2024 --question-paper-title=Question paper (Higher): Paper 1 - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 1 - June 2024 --question-paper-url=https://cdn.sanity.io/files/p28bar15/green/0b50579b41d427ef5709ce85971d363c4f3802d1.pdf --mark-scheme-url=https://cdn.sanity.io/files/p28bar15/green/7188b187220753525bbb59e8104e2959f5069738.pdf --run-id=codex-production-batch-aqa-84631h-qp-jun24 --supporting-document=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/supporting-documents/AQA-84631H-INS-JUN24.PDF --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts/physics.json --concurrency=3 --force --import --skip-chain-illustrations",
+        "observedCommandSha256": "9c4d8df240395a42048d90efdfc371df462a6d51643c462a26710655ad79fe32",
+        "matchingObservationCount": 20,
+        "maximalObservationCount": 18,
+        "maximumSupportDocumentCount": 1,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-84631h-qp-jun24",
+          "--question-paper=data/aqa-separate-science-higher/question-papers/AQA-84631H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84631H-MS-JUN24.PDF",
+          "--supporting-document=data/aqa-separate-science-higher/supporting-documents/AQA-84631H-INS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "ce87d7df0ac4f41e2d8833d4c443ead4231e51b40adcbe8deb559ee42d6c5556"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-separate-science-higher/question-papers/AQA-84631H-QP-JUN24.PDF",
+          "sha256": "3a70321ccb87d6c76316bcf23aeae9f7d31287e8628bed6e501d729ed0b407b4"
+        },
+        "markScheme": {
+          "path": "data/aqa-separate-science-higher/mark-schemes/AQA-84631H-MS-JUN24.PDF",
+          "sha256": "99d43e098c017c74dd4d1e630532ef4f06f65aa4c322e47c55eba688c71e84ce"
+        },
+        "supportingDocuments": [
+          {
+            "path": "data/aqa-separate-science-higher/supporting-documents/AQA-84631H-INS-JUN24.PDF",
+            "sha256": "cb6c1a58b319e45daf59fb6e5dd1b2c8444606d17b6ff8a8851dffd17390b719"
+          }
+        ]
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    },
+    {
+      "schemaVersion": "codex-recovered-extraction-input-row-v1",
+      "status": "passed",
+      "sourceDocumentId": "aqa-84632h-qp-jun24",
+      "extractionRollout": {
+        "sessionId": "019f6be2-9b0b-7543-b736-7faaeed5db9a",
+        "fileName": "rollout-2026-07-16T10-04-00-019f6be2-9b0b-7543-b736-7faaeed5db9a.jsonl",
+        "sha256": "b30a68e9a0a8171a0a19ec0a3dd801078edf7cc4f2b6e46f312d6f5ea09594fb"
+      },
+      "parentOperatorRollout": {
+        "sessionId": "019f6bd3-4103-7421-8a16-4caede3b6cfe",
+        "fileName": "rollout-2026-07-16T09-47-14-019f6bd3-4103-7421-8a16-4caede3b6cfe.jsonl",
+        "sha256": "5b541aae9c522085caa9f5c6aae37842f5bb6e7d80d45f656bbe23c26f568b14"
+      },
+      "commandEvidence": {
+        "observation": {
+          "lineNumber": 1911,
+          "timestamp": "2026-07-16T17:04:14.360Z",
+          "payloadType": "custom_tool_call_output",
+          "jsonPath": "$.output[1].text",
+          "segmentIndex": 3
+        },
+        "observedCommand": "818815 /home/yaroslav_volovich/.nvm/versions/node/v22.18.0/bin/node scripts/run-codex-production-import-pipeline.mjs --question-paper=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/question-papers/AQA-84632H-QP-JUN24.PDF --mark-scheme=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/mark-schemes/AQA-84632H-MS-JUN24.PDF --source-document-id=aqa-84632h-qp-jun24 --mark-scheme-document-id=aqa-84632h-ms-jun24 --work-root=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/aqa-84632h-qp-jun24 --board=AQA --qualification=GCSE --subject=Physics --subject-area=Physics --tier=Higher --paper-label=Physics Paper 2 --component-code=84632H --series=June 2024 --year=2024 --question-paper-title=Question paper (Higher): Paper 2 - June 2024 --mark-scheme-title=Mark scheme (Higher): Paper 2 - June 2024 --question-paper-url=https://cdn.sanity.io/files/p28bar15/green/88dead88a2f67d2ef4e871edeec476e011774e40.pdf --mark-scheme-url=https://cdn.sanity.io/files/p28bar15/green/2609e931025b6c3fbb82b127bc95de301de739b7.pdf --run-id=codex-production-batch-aqa-84632h-qp-jun24 --supporting-document=/tmp/qc-release-a35ab11/data/aqa-separate-science-higher/supporting-documents/AQA-84632H-INS-JUN24.PDF --existing-chains=/tmp/qc-release-a35ab11/tmp/current-model-paper-cohort/runs/existing-chain-contexts/physics.json --concurrency=3 --force --import --skip-chain-illustrations",
+        "observedCommandSha256": "5f21eec59c1db0c04f7ea2d02e5b784143082a1145a74a3491f9853475175911",
+        "matchingObservationCount": 19,
+        "maximalObservationCount": 19,
+        "maximumSupportDocumentCount": 1,
+        "canonicalInputFlags": [
+          "--source-document-id=aqa-84632h-qp-jun24",
+          "--question-paper=data/aqa-separate-science-higher/question-papers/AQA-84632H-QP-JUN24.PDF",
+          "--mark-scheme=data/aqa-separate-science-higher/mark-schemes/AQA-84632H-MS-JUN24.PDF",
+          "--supporting-document=data/aqa-separate-science-higher/supporting-documents/AQA-84632H-INS-JUN24.PDF"
+        ],
+        "canonicalInputFlagsSha256": "2a29500322f83ab19e8ecaebbefee1f9c2be06bf113c39b430578306dc0c2150"
+      },
+      "inputs": {
+        "questionPaper": {
+          "path": "data/aqa-separate-science-higher/question-papers/AQA-84632H-QP-JUN24.PDF",
+          "sha256": "c069a90f4c85a4e620150468fe732508b3fbcd2a8bcf0c7e86044a47797be1f5"
+        },
+        "markScheme": {
+          "path": "data/aqa-separate-science-higher/mark-schemes/AQA-84632H-MS-JUN24.PDF",
+          "sha256": "f038257d668141e763b63bbd7a0d802988227b69591f0264ca987aea63105268"
+        },
+        "supportingDocuments": [
+          {
+            "path": "data/aqa-separate-science-higher/supporting-documents/AQA-84632H-INS-JUN24.PDF",
+            "sha256": "919a8070f48c9c8c735c2fc1c006711c02928cef9d38a6bbdf6a62e8749f7023"
+          }
+        ]
+      },
+      "invariants": {
+        "uniquePaperRow": true,
+        "sourceDocumentIdExact": true,
+        "questionPaperCountExact": true,
+        "markSchemeCountExact": true,
+        "supportingDocumentsDeduplicated": true,
+        "maximalInputSignaturesAgree": true,
+        "allInputFilesExist": true,
+        "allInputHashesPresent": true,
+        "extractionRolloutLinked": true,
+        "parentOperatorRolloutLinked": true
+      }
+    }
+  ]
+}

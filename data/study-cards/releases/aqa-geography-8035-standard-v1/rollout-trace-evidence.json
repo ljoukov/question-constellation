@@ -1,0 +1,26 @@
+{
+	"schemaVersion": "study-card-rollout-content-addressed-evidence-v1",
+	"status": "passed",
+	"releaseId": "aqa-geography-8035-standard-v1",
+	"acceptedArtifactSha256": "c8dd55e2845b7cffa7bda1fd1f1d818c4b9da6cec6236d134ef7d6b85ac62e88",
+	"runs": {
+		"generation": {
+			"runId": "019f6b90-ee9c-7383-aeba-84d0484f2b06",
+			"jsonlFileName": "generation-rollout-source.jsonl",
+			"eventStreamSha256": "1ca42c80f4e66d74dc7a6a24cfa2dc1aa907d680b154e5b1051a6b374246814e",
+			"sanitizedEventCount": 46,
+			"promptSha256": "aecd4c9e785544aac5c84bfe38f13fc9fe5f637be0953e586271a42e044ceb36",
+			"modelOutputSha256": "e7f74159404685a71ebee6abf023eb68ec4a55ac198fb9dee92586fc61d092bc",
+			"summarySha256": "322ea1410e110e21eb038aa6c97c91fc0f8792db80dd5a94506216464754a2c7"
+		},
+		"review": {
+			"runId": "019f6b99-ed96-7413-909e-38deaee413e3",
+			"jsonlFileName": "review-rollout-source.jsonl",
+			"eventStreamSha256": "553ecb3aa67fb08e03e8e9a4348be42c2fd91b6a31c30d08b1dc870c95723b80",
+			"sanitizedEventCount": 34,
+			"promptSha256": "89cc911775f4f400982cd665a8be987f0de09b77ff54012ad66b2f1d2e6b61bd",
+			"modelOutputSha256": "86b98355cd4462ffaae98f40d633073af1d0963f3eb6b8d970f6008e3780faf3",
+			"summarySha256": "e9750ca4661b3b3098ddf1a9f464a0dd17f4f707a9daa7423b7b02fb62a6a2ba"
+		}
+	}
+}
