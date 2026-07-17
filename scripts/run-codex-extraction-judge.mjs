@@ -219,6 +219,7 @@ try {
 					markSchemePath,
 					expectedMarkSchemeSha256
 				),
+				supportingDocuments: [],
 				...(expectedQuestionPaperSha256
 					? { verifiedModelInputSnapshots: verifiedModelInputSnapshotAttestation() }
 					: {}),

@@ -145,6 +145,18 @@ describe('production import integrity policy', () => {
 		).toBe(false);
 	});
 
+	it('records the extraction judge’s explicit empty supporting-document input set', () => {
+		const source = readFileSync(
+			path.resolve(process.cwd(), 'scripts/run-codex-extraction-judge.mjs'),
+			'utf8'
+		);
+		const phaseStart = source.indexOf('phaseArtifacts: phaseArtifacts({');
+		const outputStart = source.indexOf('outputs:', phaseStart);
+		expect(phaseStart).toBeGreaterThanOrEqual(0);
+		expect(outputStart).toBeGreaterThan(phaseStart);
+		expect(source.slice(phaseStart, outputStart)).toContain('supportingDocuments: []');
+	});
+
 	it('rejects omitted or mutated existing-chain model snapshot evidence', () => {
 		const source = {
 			path: 'tmp/run/codex-chains/existing-chain-context-source.json',
