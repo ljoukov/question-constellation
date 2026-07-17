@@ -164,6 +164,13 @@ export type QuestionChainPageData = AnswerChainPageData & {
 	practiceQuestion: Question;
 };
 
+export type ChallengeQuestionPairData = {
+	question: Question;
+	transferQuestion: Question;
+	chain: AnswerChain;
+	questionStandaloneAvailable: boolean;
+};
+
 export type ConstellationPageData = AnswerChainPageData & {
 	practiceQuestion: Question;
 };
@@ -2846,6 +2853,71 @@ export async function getQuestionChainPageData(questionId: string): Promise<Ques
 		constellation: context.constellation,
 		question: context.question,
 		practiceQuestion: nextPracticeQuestionAfter(context.questions, context.question.id)
+	};
+}
+
+/**
+ * Loads a reviewed source question and a specifically curated transfer question
+ * from the same published chain.
+ *
+ * Public question collections omit rows whose generated card title is not safe
+ * to show as a heading. Challenge transfer cards deliberately hide that title
+ * and show only the reviewed question body, so this loader validates the
+ * published same-chain membership while allowing that narrower presentation.
+ */
+export async function getChallengeQuestionPairData(
+	questionId: string,
+	transferQuestionId: string
+): Promise<ChallengeQuestionPairData> {
+	const seed = await getQuestionChainSeed(questionId);
+	if (seed.row.id === transferQuestionId) {
+		throw new Error('Challenge source and transfer questions must be different.');
+	}
+
+	const [steps, illustration, transferRow] = await Promise.all([
+		getChainSteps(seed.chainRow.id),
+		getPublishedChainIllustration(seed.chainRow.id),
+		queryFirst<QuestionRow & MembershipRow>(
+			`SELECT q.id, q.source_question_ref, q.prompt_text, q.self_contained_prompt_text,
+		        q.context_text, q.command_word, q.marks, q.answer_format,
+		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
+		        q.topic_path_json, q.self_containment_json, q.metadata_json,
+		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
+		        qac.fit_notes, qac.needs_human_review
+		 FROM question_answer_chains qac
+		 JOIN questions q ON q.id = qac.question_id
+		 WHERE q.id = ?
+		   AND qac.answer_chain_id = ?
+		   AND qac.needs_human_review = 0
+		   AND q.needs_human_review = 0
+		   AND q.status = 'published'
+		 LIMIT 1`,
+			[transferQuestionId, seed.chainRow.id]
+		)
+	]);
+	if (!transferRow) {
+		throw new Error('Challenge transfer question is not in the source question chain.');
+	}
+
+	const chain = buildAnswerChain(seed.chainRow, steps, illustration);
+	const supplements = await getQuestionSupplements([seed.row.id, transferRow.id]);
+	const question = hydrateQuestionFromSupplement(
+		seed.row,
+		chain,
+		seed.membership,
+		supplements.get(seed.row.id) ?? emptyQuestionSupplement()
+	);
+
+	return {
+		question,
+		transferQuestion: hydrateQuestionFromSupplement(
+			transferRow,
+			chain,
+			transferRow,
+			supplements.get(transferRow.id) ?? emptyQuestionSupplement()
+		),
+		chain,
+		questionStandaloneAvailable: hasSafeQuestionCardTitle(question)
 	};
 }
 

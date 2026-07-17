@@ -40,5 +40,11 @@ describe('route loading copy', () => {
 		expect(routeLoadingMessageFor(routeLoadingContentTypeForRoute('/recall'))).toBe(
 			'Loading recall practice...'
 		);
+		expect(
+			routeLoadingMessageFor(routeLoadingContentTypeForRoute('/challenges/[subject]/[slug]'))
+		).toBe('Loading challenge...');
+		expect(routeLoadingContentTypeForRoute(null, '/challenges/biology/cell-differences')).toBe(
+			'challenge'
+		);
 	});
 });

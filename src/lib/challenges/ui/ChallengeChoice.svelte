@@ -1,0 +1,225 @@
+<script lang="ts">
+	import MathText from '$lib/experiments/questions/components/MathText.svelte';
+	import { CheckCircle2, CircleX } from '@lucide/svelte';
+	import HapticSurface from './HapticSurface.svelte';
+
+	let {
+		text,
+		label,
+		marker,
+		feedback,
+		selected = false,
+		status = 'idle',
+		disabled = false,
+		prominent = false,
+		onclick,
+		analyticsLabel
+	}: {
+		text: string;
+		label?: string;
+		marker?: string;
+		feedback?: string | null;
+		selected?: boolean;
+		status?: 'idle' | 'correct' | 'incorrect';
+		disabled?: boolean;
+		prominent?: boolean;
+		onclick: () => void;
+		analyticsLabel?: string;
+	} = $props();
+</script>
+
+<HapticSurface block>
+	<button
+		type="button"
+		class:selected
+		class:correct={status === 'correct'}
+		class:incorrect={status === 'incorrect'}
+		class:prominent
+		{disabled}
+		{onclick}
+		aria-pressed={selected}
+		data-analytics-label={analyticsLabel}
+		data-haptic-control
+	>
+		{#if marker}<span class="choice-marker" aria-hidden="true">{marker}</span>{/if}
+		<span class="choice-copy">
+			{#if label}<span class="choice-label">{label}</span>{/if}
+			<span class="choice-text"><MathText {text} /></span>
+			{#if selected && feedback}<small>{feedback}</small>{/if}
+		</span>
+		{#if selected && status !== 'idle'}
+			<span class="choice-status" aria-hidden="true">
+				{#if status === 'correct'}
+					<CheckCircle2 size={20} strokeWidth={2.3} />
+				{:else}
+					<CircleX size={20} strokeWidth={2.3} />
+				{/if}
+			</span>
+		{/if}
+	</button>
+</HapticSurface>
+
+<style>
+	button {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: 0.7rem;
+		min-width: 0;
+		min-height: 3.7rem;
+		align-items: start;
+		padding: 0.8rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		border-radius: 0;
+		background: var(--qc-ui-surface-raised);
+		color: var(--qc-ui-text);
+		font: inherit;
+		font-size: clamp(1rem, 2vw, 1.08rem);
+		font-weight: 500;
+		line-height: 1.45;
+		text-align: left;
+		cursor: pointer;
+		overflow-wrap: anywhere;
+		transition:
+			border-color 160ms ease,
+			background 160ms ease,
+			color 160ms ease,
+			box-shadow 160ms ease,
+			transform 160ms ease;
+	}
+
+	button.prominent {
+		min-height: 7.2rem;
+		align-content: start;
+	}
+
+	button:disabled {
+		cursor: default;
+	}
+
+	button:focus-visible {
+		outline: 3px solid var(--qc-ui-accent-text);
+		outline-offset: 3px;
+	}
+
+	button:hover:not(:disabled) {
+		border-color: var(--qc-ui-border-strong);
+		background: var(--qc-ui-surface-muted);
+	}
+
+	button.correct {
+		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
+		color: var(--qc-ui-accent-text);
+	}
+
+	button.incorrect {
+		border-color: var(--qc-ui-danger);
+		background: color-mix(in srgb, var(--qc-ui-danger) 9%, var(--qc-ui-surface));
+		color: var(--qc-ui-danger);
+	}
+
+	button.selected.correct {
+		animation: challenge-choice-correct var(--challenge-motion-duration, 560ms)
+			cubic-bezier(0.2, 0.76, 0.2, 1) both;
+	}
+
+	button.selected.incorrect {
+		animation: challenge-choice-incorrect var(--challenge-motion-duration, 560ms)
+			cubic-bezier(0.25, 0.75, 0.25, 1) both;
+	}
+
+	.choice-marker {
+		display: inline-grid;
+		width: 1.65rem;
+		height: 1.65rem;
+		place-items: center;
+		border: 1px solid var(--qc-ui-border-subtle);
+		color: var(--qc-ui-text-muted);
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
+
+	.choice-copy {
+		display: grid;
+		gap: 0.35rem;
+		min-width: 0;
+	}
+
+	.choice-label {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.76rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.choice-text {
+		color: inherit;
+	}
+
+	.choice-copy small {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.84rem;
+		font-weight: 450;
+		line-height: 1.45;
+	}
+
+	.choice-status {
+		display: inline-grid;
+		place-items: center;
+		color: currentColor;
+	}
+
+	@keyframes challenge-choice-correct {
+		0%,
+		100% {
+			transform: scale(1);
+			box-shadow: 0 0 0 color-mix(in srgb, var(--qc-ui-accent) 0%, transparent);
+		}
+
+		35% {
+			transform: scale(1.018);
+			box-shadow: 0 0 0 0.32rem color-mix(in srgb, var(--qc-ui-accent) 14%, transparent);
+		}
+	}
+
+	@keyframes challenge-choice-incorrect {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+
+		16% {
+			transform: translateX(-0.52rem);
+		}
+
+		33% {
+			transform: translateX(0.44rem);
+		}
+
+		50% {
+			transform: translateX(-0.34rem);
+		}
+
+		68% {
+			transform: translateX(0.22rem);
+		}
+
+		84% {
+			transform: translateX(-0.1rem);
+		}
+	}
+
+	@media (max-width: 520px) {
+		button.prominent {
+			min-height: 5.6rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		button {
+			animation: none !important;
+			transition: none;
+		}
+	}
+</style>

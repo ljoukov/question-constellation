@@ -1,6 +1,7 @@
 export type RouteLoadingContentType =
 	| 'default'
 	| 'answer-chain'
+	| 'challenge'
 	| 'constellation'
 	| 'english-questions'
 	| 'exam-paper'
@@ -14,6 +15,7 @@ export type RouteLoadingContentType =
 const routeLoadingMessages = {
 	default: 'Loading...',
 	'answer-chain': 'Loading answer chain...',
+	challenge: 'Loading challenge...',
 	constellation: 'Loading constellation...',
 	'english-questions': 'Loading English questions...',
 	'exam-paper': 'Loading exam paper...',
@@ -40,6 +42,7 @@ export function routeLoadingContentTypeForRoute(
 	if (routeId === '/') return 'question-bank';
 	if (routeId === '/english') return 'english-questions';
 	if (routeId === '/recall') return 'recall-practice';
+	if (routeId.startsWith('/challenges')) return 'challenge';
 	if (routeId.startsWith('/past-papers/gcse')) return 'past-papers';
 
 	if (routeId === '/questions/[questionId]') return 'question';
@@ -67,6 +70,7 @@ function pathContentType(pathname: string): RouteLoadingContentType {
 	if (pathname === '/') return 'question-bank';
 	if (pathname === '/english') return 'english-questions';
 	if (pathname === '/recall') return 'recall-practice';
+	if (pathname.startsWith('/challenges')) return 'challenge';
 	if (pathname.startsWith('/past-papers/gcse')) return 'past-papers';
 	if (pathname.startsWith('/constellations/')) return 'constellation';
 	if (pathname.startsWith('/chains/')) return 'answer-chain';

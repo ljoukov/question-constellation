@@ -3,6 +3,7 @@ import {
 	gcsePastPaperEntryIndex,
 	gcsePastPaperSubjectIndex
 } from '$lib/pastPapers/gcsePastPapers';
+import { challengeCatalog, challengePath, challengeSubjects } from '$lib/challenges/catalog';
 import { blogArticles } from '$lib/blog/articles';
 import {
 	getPublicChainSitemapEntries,
@@ -21,6 +22,24 @@ const staticEntries: SitemapEntry[] = [
 	{ path: '/english', priority: '0.7', changefreq: 'monthly' },
 	{ path: '/recall', priority: '0.6', changefreq: 'monthly' }
 ];
+
+function challengeEntries(): SitemapEntry[] {
+	return [
+		{ path: '/challenges', priority: '0.92', changefreq: 'weekly', lastmod: '2026-07-17' },
+		...challengeSubjects.map((subject) => ({
+			path: `/challenges/${subject.subject}`,
+			priority: '0.88',
+			changefreq: 'weekly' as const,
+			lastmod: '2026-07-17'
+		})),
+		...challengeCatalog.map((challenge) => ({
+			path: challengePath(challenge),
+			priority: '0.82',
+			changefreq: 'monthly' as const,
+			lastmod: challenge.lastReviewed
+		}))
+	];
+}
 
 function pastPaperEntries(): SitemapEntry[] {
 	const boardEntries: SitemapEntry[] = gcsePastPaperBoards
@@ -67,6 +86,7 @@ function uniqueEntries(entries: SitemapEntry[]) {
 
 async function entriesForSection(section: string): Promise<SitemapEntry[] | null> {
 	if (section === 'static') return uniqueEntries(staticEntries);
+	if (section === 'challenges') return uniqueEntries(challengeEntries());
 	if (section === 'blog') return uniqueEntries(blogEntries());
 	if (section === 'past-papers') return uniqueEntries(pastPaperEntries());
 	if (section === 'questions') return uniqueEntries(await getPublicQuestionSitemapEntries());

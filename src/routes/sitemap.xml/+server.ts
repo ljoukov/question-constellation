@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 
 const _SITEMAP_SECTION_PATHS = [
 	'/sitemaps/static.xml',
+	'/sitemaps/challenges.xml',
 	'/sitemaps/blog.xml',
 	'/sitemaps/past-papers.xml',
 	'/sitemaps/questions.xml',

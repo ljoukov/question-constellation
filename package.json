@@ -130,7 +130,7 @@
 		"@ljoukov/llm": "7.0.25",
 		"@lucide/svelte": "^1.16.0",
 		"@openai/codex-sdk": "0.144.1",
-		"ios-haptics": "^0.1.5",
+		"ios-haptics": "^3.1.1",
 		"jose": "^6.2.3",
 		"katex": "^0.16.27",
 		"marked": "^17.0.1",

@@ -85,7 +85,6 @@
 html {
 	min-width: 320px;
 	background: var(--qc-app-surface);
-	touch-action: pan-x pan-y;
 }
 
 body {
@@ -94,7 +93,6 @@ body {
 	min-height: 100vh;
 	background: var(--qc-app-surface);
 	overflow-x: hidden;
-	touch-action: pan-x pan-y;
 }
 
 button,
@@ -112,7 +110,7 @@ a {
 }
 
 :focus-visible {
-	outline: 3px solid rgba(0, 74, 223, 0.25);
+	outline: 3px solid var(--qc-ui-accent-text);
 	outline-offset: 3px;
 }
 
@@ -6580,7 +6578,9 @@ textarea::placeholder {
 	width: 100%;
 	min-width: 0;
 	min-height: var(--qc-topbar-height);
-	padding: 0.62rem clamp(0.9rem, 2.4vw, 2rem);
+	padding: max(0.62rem, env(safe-area-inset-top))
+		max(clamp(0.9rem, 2.4vw, 2rem), env(safe-area-inset-right)) 0.62rem
+		max(clamp(0.9rem, 2.4vw, 2rem), env(safe-area-inset-left));
 	border-bottom: 1px solid var(--qc-ui-border-subtle);
 	background: color-mix(in srgb, var(--qc-ui-surface) 78%, transparent);
 	backdrop-filter: blur(18px);
@@ -6758,7 +6758,7 @@ textarea::placeholder {
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		min-height: 2rem;
+		min-height: 2.75rem;
 		padding: 0.24rem 0.12rem;
 		border: 0;
 		background: transparent;
@@ -6786,6 +6786,16 @@ textarea::placeholder {
 }
 
 @media (max-width: 620px) {
+	.qc-topbar.has-navigation .qc-topbar-brand,
+	.qc-topbar.has-primary-action .qc-topbar-brand {
+		width: 44px;
+		height: 44px;
+		min-width: 44px;
+		min-height: 44px;
+		flex: 0 0 44px;
+		justify-content: center;
+	}
+
 	.qc-topbar.has-navigation .qc-topbar-brand span,
 	.qc-topbar.has-primary-action .qc-topbar-brand span {
 		display: none;
@@ -8401,7 +8411,8 @@ textarea::placeholder {
 	.qc-topbar {
 		min-height: var(--qc-topbar-height, 4rem);
 		gap: 0.48rem;
-		padding: 0.48rem 0.68rem;
+		padding: max(0.48rem, env(safe-area-inset-top)) max(0.68rem, env(safe-area-inset-right)) 0.48rem
+			max(0.68rem, env(safe-area-inset-left));
 	}
 
 	.qc-topbar-brand {
@@ -8410,8 +8421,8 @@ textarea::placeholder {
 	}
 
 	.qc-topbar-brand img {
-		width: 1.85rem;
-		height: 1.85rem;
+		width: 32px;
+		height: 32px;
 	}
 
 	.qc-topbar-search {
@@ -8438,8 +8449,14 @@ textarea::placeholder {
 	}
 
 	.qc-avatar-trigger {
-		width: 2.75rem;
-		height: 2.75rem;
+		width: 44px;
+		height: 44px;
+	}
+
+	.qc-avatar-pixel,
+	.qc-avatar-pixel img {
+		width: 32px;
+		height: 32px;
 	}
 
 	.qc-account-toast {

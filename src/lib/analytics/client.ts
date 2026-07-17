@@ -15,7 +15,7 @@ type InputElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement |
 
 let anonymousId = '';
 let sessionId = '';
-let queue: AnalyticsEventPayload[] = [];
+const queue: AnalyticsEventPayload[] = [];
 let sequence = 0;
 let flushTimer: number | undefined;
 let currentPageViewId = '';
@@ -53,7 +53,7 @@ function identities() {
 	anonymousId = storageGet(localStorage, ANONYMOUS_KEY) || id();
 	storageSet(localStorage, ANONYMOUS_KEY, anonymousId);
 
-	let stored: StoredSession | null = null;
+	let stored: StoredSession | null;
 	try {
 		stored = JSON.parse(storageGet(sessionStorage, SESSION_KEY) || 'null') as StoredSession | null;
 	} catch {
@@ -213,6 +213,11 @@ export function analyticsPageView() {
 	enqueue({ type: 'page_view', pageViewId: currentPageViewId, ...currentPageLocation });
 }
 
+export function analyticsEvent(type: string, properties?: Record<string, unknown>) {
+	if (!installed) return;
+	enqueue({ type, properties });
+}
+
 function elementText(element: InputElement | SVGElement): string | undefined {
 	const explicit = element.getAttribute('data-analytics-label');
 	const raw = explicit || element.getAttribute('aria-label') || element.textContent || '';
@@ -248,7 +253,8 @@ function elementDetails(element: InputElement | SVGElement) {
 	return {
 		tag: element.tagName.toLowerCase(),
 		id: element.id || undefined,
-		classes: element instanceof SVGElement ? element.className.baseVal : element.className || undefined,
+		classes:
+			element instanceof SVGElement ? element.className.baseVal : element.className || undefined,
 		text: elementText(element),
 		role: element.getAttribute('role') || undefined,
 		name: element.getAttribute('name') || element.getAttribute('aria-label') || undefined,
@@ -259,6 +265,8 @@ function elementDetails(element: InputElement | SVGElement) {
 
 function click(event: MouseEvent) {
 	const target = event.target instanceof Element ? event.target : null;
+	const hapticProxy = target?.closest('[data-haptic-proxy]');
+	if (hapticProxy) return;
 	const element = target?.closest(
 		'a, button, [role="button"], input, select, textarea, summary, [data-analytics-click]'
 	);
@@ -327,6 +335,7 @@ function input(event: Event) {
 		!(element instanceof HTMLElement && element.isContentEditable)
 	)
 		return;
+	if (element.hasAttribute('data-haptic-proxy')) return;
 	if (element.closest('[data-analytics-ignore]')) return;
 	if (!inputValues.has(element)) inputValues.set(element, '');
 	const existing = inputTimers.get(element);
@@ -348,6 +357,7 @@ function change(event: Event) {
 		!(element instanceof HTMLSelectElement)
 	)
 		return;
+	if (element.hasAttribute('data-haptic-proxy')) return;
 	const pending = inputTimers.get(element);
 	if (!pending && inputValues.get(element) === inputValue(element)) return;
 	if (pending) window.clearTimeout(pending);
@@ -357,6 +367,7 @@ function change(event: Event) {
 
 function focusIn(event: FocusEvent) {
 	const element = event.target;
+	if (element instanceof HTMLElement && element.hasAttribute('data-haptic-proxy')) return;
 	if (
 		element instanceof HTMLInputElement ||
 		element instanceof HTMLTextAreaElement ||
