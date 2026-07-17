@@ -19,7 +19,6 @@
 		Filter,
 		Gauge,
 		Globe2,
-		Images,
 		Laptop2,
 		LogOut,
 		MousePointerClick,
@@ -186,7 +185,6 @@
 					>{data.modelRunCount}</Badge
 				></button
 			>
-			<a class="nav-item" href="/experiments/gallery"><Images />Flow gallery</a>
 		</nav>
 		<div class="mt-auto space-y-3 border-t p-4 text-xs text-muted-foreground">
 			<div class="flex items-center gap-2">
@@ -213,13 +211,6 @@
 				</div>
 			</div>
 			<div class="flex items-center gap-2">
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					href="/experiments/gallery"
-					aria-label="Open flow gallery"
-					class="lg:hidden"><Images /></Button
-				>
 				<Badge variant={data.filters.environment === 'production' ? 'default' : 'secondary'}
 					>{environmentLabel(data.filters.environment)}</Badge
 				><Badge variant="outline">Last {data.filters.days} days</Badge><Button

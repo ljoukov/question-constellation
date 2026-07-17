@@ -17,12 +17,6 @@
 			"database_id": "d989edc1-26d8-4bd6-83f1-97b09c4d50a2"
 		}
 	],
-	"r2_buckets": [
-		{
-			"binding": "QUESTION_R2",
-			"bucket_name": "question-constellation"
-		}
-	],
 	"workflows": [
 		{
 			"name": "constellation-admin-summary",

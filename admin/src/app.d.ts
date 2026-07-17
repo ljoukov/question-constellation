@@ -25,7 +25,6 @@ declare global {
 			env: {
 				ANALYTICS_DB?: AnalyticsD1Database;
 				ANALYTICS_SUMMARY_WORKFLOW?: AnalyticsSummaryWorkflowBinding;
-				QUESTION_R2?: R2Bucket;
 				GOOGLE_SERVICE_ACCOUNT_JSON?: string;
 				GOOGLE_API_KEY?: string;
 				AUTH_COOKIE_SECRET?: string;
