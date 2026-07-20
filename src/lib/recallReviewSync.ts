@@ -4,6 +4,7 @@ import {
 	requestErrorFromResponse,
 	type RequestFailure
 } from '$lib/requestFailure';
+import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 
 export type RecallReviewSave = {
 	id: string;
@@ -76,9 +77,11 @@ export function pendingRecallReviewCount(userId: string) {
 
 export async function flushRecallReviewQueue(userId: string): Promise<RecallReviewFlushResult> {
 	let discardedCount = 0;
+	let savedCount = 0;
 	while (true) {
 		const review = readQueue(userId)[0];
 		if (!review) {
+			if (savedCount > 0) markHomeSnapshotDirty();
 			return { ok: true, failure: null, pendingCount: 0, discardedCount };
 		}
 		try {
@@ -101,6 +104,9 @@ export async function flushRecallReviewQueue(userId: string): Promise<RecallRevi
 				})
 			});
 			if (isTerminalReviewResponse(response)) {
+				// Evidence/component state may already have committed before a
+				// later terminal response. A deferred refresh is safe on no-ops.
+				markHomeSnapshotDirty();
 				writeQueue(
 					userId,
 					readQueue(userId).filter((queuedReview) => queuedReview.id !== review.id)
@@ -115,8 +121,10 @@ export async function flushRecallReviewQueue(userId: string): Promise<RecallRevi
 				userId,
 				readQueue(userId).filter((queuedReview) => queuedReview.id !== review.id)
 			);
+			savedCount += 1;
 		} catch (error) {
 			const pendingCount = readQueue(userId).length;
+			markHomeSnapshotDirty();
 			return {
 				ok: false,
 				failure: classifyRequestFailure(error, {

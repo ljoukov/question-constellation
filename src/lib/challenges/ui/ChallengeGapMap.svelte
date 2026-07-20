@@ -39,15 +39,15 @@
 						aria-hidden="true"
 					>
 						<i></i>
-						<ArrowRight size={compact ? 13 : 16} strokeWidth={2.2} />
+						<ArrowRight size={compact ? 12 : 15} strokeWidth={1.7} />
 					</span>
 				{/if}
 			{/each}
 		</ol>
 		{#if showLabel}
 			<p>
-				<Sparkles size={16} strokeWidth={2.2} aria-hidden="true" />
-				<span><strong>The scoring link</strong> {visual.decisiveLabel}</span>
+				<Sparkles size={15} strokeWidth={1.8} aria-hidden="true" />
+				<span><strong>Why it earns the mark</strong> {visual.decisiveLabel}</span>
 			</p>
 		{/if}
 	</div>
@@ -56,17 +56,11 @@
 <style>
 	.challenge-gap-map {
 		display: grid;
-		gap: 0.65rem;
+		gap: 0.7rem;
 		min-width: 0;
-		padding: 0.9rem;
-		border: 1px solid var(--qc-ui-accent-border);
-		background:
-			linear-gradient(
-				135deg,
-				color-mix(in srgb, var(--qc-ui-accent-muted) 76%, transparent),
-				transparent
-			),
-			var(--qc-ui-surface-raised);
+		padding: 0.8rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
 		overflow: hidden;
 	}
 
@@ -84,11 +78,11 @@
 		display: grid;
 		min-width: 0;
 		flex: 1 1 0;
-		gap: 0.28rem;
+		gap: 0.24rem;
 		align-content: center;
-		padding: 0.65rem 0.55rem;
+		padding: 0.62rem 0.55rem;
 		border: 1px solid var(--qc-ui-border-subtle);
-		background: var(--qc-ui-surface);
+		background: color-mix(in srgb, var(--qc-ui-surface) 76%, var(--qc-ui-surface-raised));
 		animation: gap-node-in var(--challenge-motion-duration, 480ms) cubic-bezier(0.2, 0.78, 0.2, 1)
 			both;
 		animation-delay: var(--gap-step-delay);
@@ -103,22 +97,23 @@
 	li strong {
 		color: var(--qc-ui-text-secondary);
 		font-size: clamp(0.72rem, 1.5vw, 0.86rem);
-		font-weight: 620;
+		font-weight: 600;
 		line-height: 1.22;
 	}
 
 	li.decisive {
 		z-index: 1;
-		border-color: var(--qc-ui-accent-text);
-		background: var(--qc-ui-accent-muted);
-		box-shadow:
-			0 0 0 0.18rem color-mix(in srgb, var(--qc-ui-accent) 12%, transparent),
-			0 0.6rem 1.5rem color-mix(in srgb, var(--qc-ui-accent) 14%, transparent);
+		border-color: color-mix(in srgb, var(--qc-ui-accent) 45%, var(--qc-ui-border-subtle));
+		background: var(--qc-ui-surface);
+		box-shadow: inset 0 3px 0 var(--qc-ui-accent);
 	}
 
-	li.decisive > span,
-	li.decisive strong {
+	li.decisive > span {
 		color: var(--qc-ui-accent-text);
+	}
+
+	li.decisive strong {
+		color: var(--qc-ui-text);
 	}
 
 	.gap-connector {
@@ -128,7 +123,7 @@
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		color: var(--qc-ui-text-muted);
+		color: color-mix(in srgb, var(--qc-ui-text-muted) 62%, var(--qc-ui-border-subtle));
 	}
 
 	.gap-connector i {
@@ -147,7 +142,7 @@
 	}
 
 	.gap-connector.broken {
-		color: var(--qc-ui-warning);
+		color: color-mix(in srgb, var(--qc-ui-warning) 70%, var(--qc-ui-border-subtle));
 		animation: gap-link-pulse var(--challenge-motion-duration, 480ms) ease-out both;
 	}
 
@@ -160,25 +155,27 @@
 		gap: 0.48rem;
 		align-items: flex-start;
 		margin: 0;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.86rem;
+		padding-top: 0.65rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+		color: var(--qc-ui-text-muted);
+		font-size: 0.84rem;
 		line-height: 1.4;
 	}
 
 	p :global(svg) {
 		flex: 0 0 auto;
 		margin-top: 0.1rem;
-		color: var(--qc-ui-accent-text);
+		color: var(--qc-ui-text-muted);
 	}
 
 	p strong {
 		margin-right: 0.25rem;
-		color: var(--qc-ui-accent-text);
+		color: var(--qc-ui-text);
 	}
 
 	.challenge-gap-map.compact {
-		gap: 0.5rem;
-		padding: 0.7rem;
+		gap: 0.55rem;
+		padding: 0.65rem;
 	}
 
 	.challenge-gap-map.compact li {
@@ -196,7 +193,7 @@
 	@keyframes gap-node-in {
 		from {
 			opacity: 0;
-			transform: translateY(0.55rem) scale(0.98);
+			transform: translateY(0.25rem);
 		}
 		to {
 			opacity: 1;

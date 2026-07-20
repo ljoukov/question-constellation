@@ -92,6 +92,7 @@ describe('POST /api/recall/review', () => {
 
 		expect(response.status).toBe(200);
 		expect(mocks.getRecallCardForLearner).toHaveBeenCalledWith(user, currentCard.id);
+		expect(mocks.isRecallCardWithinLearnerScope).toHaveBeenCalledWith(user, currentCard);
 		expect(mocks.getRecallReviewEvidenceReceipt).toHaveBeenCalledWith(user.uid, 'review-1');
 		expect(mocks.recordRecallReviewEvidence).toHaveBeenCalledWith(
 			expect.objectContaining({ user })

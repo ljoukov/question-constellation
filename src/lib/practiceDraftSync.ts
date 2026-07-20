@@ -10,6 +10,7 @@ import {
 	fetchWithResponseTimeout,
 	requestErrorFromResponse
 } from '$lib/requestFailure';
+import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 
 const queueKeyPrefix = 'question-constellation:practice-draft-queue:v1:';
 const flushDelayMs = 20_000;
@@ -204,6 +205,7 @@ export async function flushPracticeDraftQueue(
 	if (drafts.length === 0) return oversizedDrafts.length === 0;
 
 	const { batches } = practiceDraftSyncBatches(drafts, options);
+	let savedBatchCount = 0;
 	for (const batch of batches) {
 		let response: Response;
 		try {
@@ -215,6 +217,9 @@ export async function flushPracticeDraftQueue(
 			});
 		} catch (error) {
 			if (!options.keepalive) reportDraftSyncFailure(userId, error);
+			// The server saves a batch row-by-row. A timeout/error can follow a
+			// partial commit, so conservatively latch one later snapshot refresh.
+			markHomeSnapshotDirty();
 			scheduleFlush(userId);
 			return false;
 		}
@@ -226,11 +231,13 @@ export async function flushPracticeDraftQueue(
 					await requestErrorFromResponse(response, 'Answer draft sync failed.')
 				);
 			}
+			markHomeSnapshotDirty();
 			scheduleFlush(userId);
 			return false;
 		}
 
 		removeSentDrafts(userId, batch);
+		savedBatchCount += 1;
 	}
 
 	if (Object.keys(readQueue(userId)).length > 0) {
@@ -238,6 +245,7 @@ export async function flushPracticeDraftQueue(
 	} else if (oversizedDrafts.length === 0) {
 		clearBackgroundSyncIssue(syncIssueId(userId));
 	}
+	if (savedBatchCount > 0) markHomeSnapshotDirty();
 	return oversizedDrafts.length === 0;
 }
 

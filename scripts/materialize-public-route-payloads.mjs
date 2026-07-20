@@ -989,11 +989,30 @@ async function fetchAppPublicPayloads({ rootDir }) {
 
 	try {
 		const learningChainData = await vite.ssrLoadModule('/src/lib/server/learningChainData.ts');
-		const [browseData, homeData] = await Promise.all([
+		const subjectLearning = await vite.ssrLoadModule('/src/lib/server/subjectLearning.ts');
+		const [browseData, homeData, subjectLearningCatalog] = await Promise.all([
 			learningChainData.getFreshQuestionBankBrowseData(),
-			learningChainData.getFreshHomePagePublicData()
+			learningChainData.getFreshHomePagePublicData(),
+			subjectLearning.getFreshSubjectLearningPublicCatalog()
 		]);
-		return { browseData, homeData };
+		return { browseData, homeData, subjectLearningCatalog };
+	} finally {
+		await vite.close();
+	}
+}
+
+async function fetchSubjectLearningPublicCatalog({ rootDir }) {
+	const { createServer } = await import('vite');
+	const vite = await createServer({
+		root: rootDir,
+		logLevel: 'error',
+		appType: 'custom',
+		server: { middlewareMode: true }
+	});
+
+	try {
+		const subjectLearning = await vite.ssrLoadModule('/src/lib/server/subjectLearning.ts');
+		return await subjectLearning.getFreshSubjectLearningPublicCatalog();
 	} finally {
 		await vite.close();
 	}
@@ -1220,7 +1239,9 @@ export async function materializePublicRoutePayloads({
 	const materializedChains = ownedChainIdSet
 		? chains.filter((chain) => ownedChainIdSet.has(chain.id))
 		: chains;
-	const { browseData, homeData } = await fetchAppPublicPayloads({ rootDir });
+	const { browseData, homeData, subjectLearningCatalog } = await fetchAppPublicPayloads({
+		rootDir
+	});
 	const sourceDocumentIds = [
 		...new Set(
 			[...questionRowsById.values()].map((question) => question.source_document_id).filter(Boolean)
@@ -1241,6 +1262,13 @@ export async function materializePublicRoutePayloads({
 			routeKind: 'home',
 			routePath: '/',
 			payload: homeData,
+			sourceVersion
+		}),
+		upsertPayloadStatement({
+			id: 'subject-learning:catalog',
+			routeKind: 'subject-learning-catalog',
+			routePath: '/_materialized/subject-learning-catalog',
+			payload: subjectLearningCatalog,
 			sourceVersion
 		})
 	];
@@ -1336,6 +1364,23 @@ export async function materializePublicRoutePayloads({
 		chains_browse_payload_compressed: encodePayloadForStorage(browseData).compressed,
 		home_payload_raw_kb: Math.round(encodePayloadForStorage(homeData).rawBytes / 1024),
 		home_payload_stored_kb: Math.round(encodePayloadForStorage(homeData).storedBytes / 1024),
+		subject_learning_payload_raw_kb: Math.round(
+			encodePayloadForStorage(subjectLearningCatalog).rawBytes / 1024
+		),
+		subject_learning_payload_stored_kb: Math.round(
+			encodePayloadForStorage(subjectLearningCatalog).storedBytes / 1024
+		),
+		subject_learning_offerings: subjectLearningCatalog.offerings.length,
+		subject_learning_questions: subjectLearningCatalog.offerings.reduce(
+			(total, offering) => total + offering.questions.length,
+			0
+		),
+		subject_learning_recall_cards: subjectLearningCatalog.offerings.reduce(
+			(total, offering) => total + offering.recallCards.length,
+			0
+		),
+		subject_learning_resume_questions: subjectLearningCatalog.resumeQuestions.length,
+		subject_learning_profile_subjects: subjectLearningCatalog.boardAvailability.length,
 		chains: materializedChains.length,
 		browse_questions: browseData.questions.length,
 		browse_topics: browseData.topics.length,
@@ -1348,12 +1393,55 @@ export async function materializePublicRoutePayloads({
 	return summary;
 }
 
+export async function materializeSubjectLearningPublicCatalog({
+	rootDir = process.cwd(),
+	dryRun = false
+} = {}) {
+	const sourceVersion = new Date().toISOString();
+	const payload = await fetchSubjectLearningPublicCatalog({ rootDir });
+	const statement = upsertPayloadStatement({
+		id: 'subject-learning:catalog',
+		routeKind: 'subject-learning-catalog',
+		routePath: '/_materialized/subject-learning-catalog',
+		payload,
+		sourceVersion
+	});
+	await executeBatch([statement], 'materialize subject-learning catalog', {
+		rootDir,
+		dryRun,
+		batchSize: 1
+	});
+	const encoded = encodePayloadForStorage(payload);
+	const summary = {
+		subject_learning_payload_raw_kb: Math.round(encoded.rawBytes / 1024),
+		subject_learning_payload_stored_kb: Math.round(encoded.storedBytes / 1024),
+		subject_learning_payload_compressed: encoded.compressed,
+		subject_learning_offerings: payload.offerings.length,
+		subject_learning_questions: payload.offerings.reduce(
+			(total, offering) => total + offering.questions.length,
+			0
+		),
+		subject_learning_recall_cards: payload.offerings.reduce(
+			(total, offering) => total + offering.recallCards.length,
+			0
+		),
+		subject_learning_resume_questions: payload.resumeQuestions.length,
+		subject_learning_profile_subjects: payload.boardAvailability.length,
+		dry_run: dryRun
+	};
+	console.log(JSON.stringify(summary, null, 2));
+	return summary;
+}
+
 const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
 	const rootDir = process.cwd();
 	const dryRun = process.argv.includes('--dry-run');
 	const batchSize = integerArg('batch-size', DEFAULT_BATCH_SIZE, 1);
-	materializePublicRoutePayloads({ rootDir, dryRun, batchSize }).catch((error) => {
+	const run = process.argv.includes('--subject-learning-only')
+		? materializeSubjectLearningPublicCatalog({ rootDir, dryRun })
+		: materializePublicRoutePayloads({ rootDir, dryRun, batchSize });
+	run.catch((error) => {
 		console.error(error);
 		process.exitCode = 1;
 	});

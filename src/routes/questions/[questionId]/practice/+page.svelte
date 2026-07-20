@@ -30,6 +30,7 @@
 	} from '$lib/learning/practiceResult';
 	import { practiceStateRestoreMode } from '$lib/learning/practiceStateRestore';
 	import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
+	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
 	import {
@@ -57,6 +58,7 @@
 	} from '$lib/requestFailure';
 	import { ArrowRight, CheckCircle2, ChevronDown, CircleAlert } from '@lucide/svelte';
 	import { onMount } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -142,7 +144,7 @@
 	let activeGradeController: AbortController | null = null;
 
 	function withPracticeContext(href: string) {
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		const entry = page.url.searchParams.get('entry');
 		if (entry) params.set('entry', entry);
 		const returnTo = safeInternalReturnPath(page.url.searchParams.get('returnTo'));
@@ -313,7 +315,6 @@
 	const requestedPracticeView = $derived<PracticeRouteView>(
 		page.url.searchParams.get('view') === 'result' ? 'result' : 'attempt'
 	);
-	const hasCheckedResult = $derived(Boolean(gradeResult && gradedAnswerText === answerText));
 	const showCheckedResult = $derived(
 		requestedPracticeView === 'result' && Boolean(gradeResult || checkingRewrite)
 	);
@@ -933,6 +934,7 @@
 		reference: string | null,
 		request: GradeRequestContext
 	) {
+		if (message.event === 'done') markHomeSnapshotDirty();
 		if (!gradeRequestIsCurrent(request)) return;
 		if (message.event === 'status') {
 			const status = JSON.parse(message.data) as { phase?: GradePhase };

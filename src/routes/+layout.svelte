@@ -9,19 +9,45 @@
 		themePreference,
 		type ThemePreference
 	} from '$lib/themePreference';
+	import {
+		applyDocumentVisualEffects,
+		setVisualEffectsPreference,
+		visualEffectsPreference
+	} from '$lib/visualEffectsPreference';
 	import RouteLoadingToast from '$lib/components/RouteLoadingToast.svelte';
 	import AnalyticsTracker from '$lib/analytics/AnalyticsTracker.svelte';
 	import BackgroundSyncStatus from '$lib/components/BackgroundSyncStatus.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
+	import ChallengeProgressSync from '$lib/components/ChallengeProgressSync.svelte';
+	import HomeSnapshotRefresh from '$lib/components/HomeSnapshotRefresh.svelte';
 	import LocalLearnerStateSync from '$lib/components/LocalLearnerStateSync.svelte';
+	import {
+		createHomeSnapshotBootstrapState,
+		homeSnapshotBootstrapReady,
+		resetHomeSnapshotBootstrapForUser,
+		settleHomeSnapshotInitialSync,
+		type HomeSnapshotInitialSync
+	} from '$lib/components/homeSnapshotRefresh';
 	import { routeLoadingContentTypeForRoute, type RouteLoadingContentType } from '$lib/routeLoading';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
 	let showRouteLoading = $state(false);
 	let routeLoadingContentType = $state<RouteLoadingContentType>('default');
+	let homeSnapshotBootstrap = $state(createHomeSnapshotBootstrapState(null));
 
 	const serverThemePreference = $derived(validThemePreference(data.themePreference));
+	const serverVisualEffectsEnabled = $derived(data.visualEffectsEnabled !== false);
+	const homeSnapshotUserId = $derived(data.user?.uid ?? null);
+	const canRefreshHomeSnapshot = $derived(
+		homeSnapshotBootstrapReady(homeSnapshotBootstrap, homeSnapshotUserId)
+	);
+
+	function settleHomeSnapshotBootstrap(userId: string, sync: HomeSnapshotInitialSync) {
+		if (userId !== homeSnapshotUserId) return;
+		const current = resetHomeSnapshotBootstrapForUser(homeSnapshotBootstrap, userId);
+		homeSnapshotBootstrap = settleHomeSnapshotInitialSync(current, userId, sync);
+	}
 
 	function validThemePreference(value: unknown): ThemePreference | null {
 		return value === 'auto' || value === 'light' || value === 'dark' ? value : null;
@@ -52,6 +78,7 @@
 		if (serverThemePreference) {
 			setThemePreference(serverThemePreference);
 		}
+		setVisualEffectsPreference(serverVisualEffectsEnabled);
 		window.addEventListener('resize', syncAppViewportHeight);
 		window.visualViewport?.addEventListener('resize', syncAppViewportHeight);
 		window.visualViewport?.addEventListener('scroll', syncAppViewportHeight);
@@ -64,9 +91,11 @@
 				stopAutomaticThemeSync = () => {};
 			}
 		});
+		const unsubscribeVisualEffects = visualEffectsPreference.subscribe(applyDocumentVisualEffects);
 
 		return () => {
 			unsubscribe();
+			unsubscribeVisualEffects();
 			stopAutomaticThemeSync();
 			window.removeEventListener('resize', syncAppViewportHeight);
 			window.visualViewport?.removeEventListener('resize', syncAppViewportHeight);
@@ -97,12 +126,25 @@
 
 		return () => window.clearTimeout(timeout);
 	});
+
+	$effect(() => {
+		homeSnapshotBootstrap = resetHomeSnapshotBootstrapForUser(
+			homeSnapshotBootstrap,
+			homeSnapshotUserId
+		);
+	});
 </script>
 
 <svelte:head>
 	<meta name="qc-theme-preference" content={serverThemePreference ?? ''} />
+	<meta name="qc-visual-effects-enabled" content={serverVisualEffectsEnabled ? 'true' : 'false'} />
 	<script>
 		(() => {
+			const visualEffectsEnabled = document
+				.querySelector('meta[name="qc-visual-effects-enabled"]')
+				?.getAttribute('content');
+			document.documentElement.dataset.visualEffects =
+				visualEffectsEnabled === 'false' ? 'off' : 'on';
 			try {
 				const serverPreference = document
 					.querySelector('meta[name="qc-theme-preference"]')
@@ -144,7 +186,22 @@
 	<AnalyticsTracker />
 	<BackgroundSyncStatus />
 	<ConnectionStatus />
-	<LocalLearnerStateSync user={data.user} />
+	{#key homeSnapshotUserId ?? 'signed-out'}
+		<HomeSnapshotRefresh
+			shouldRefresh={data.homeSnapshotShouldRefresh}
+			snapshot={data.homeSnapshot}
+			bootstrapReady={canRefreshHomeSnapshot}
+		/>
+		<LocalLearnerStateSync
+			user={data.user}
+			onInitialSettled={(userId) => settleHomeSnapshotBootstrap(userId, 'profile')}
+		/>
+		<ChallengeProgressSync
+			user={data.user}
+			initialProgress={data.homeSnapshot?.challengeProgress}
+			onInitialSettled={(userId) => settleHomeSnapshotBootstrap(userId, 'challenge')}
+		/>
+	{/key}
 	{#if showRouteLoading}
 		<RouteLoadingToast contentType={routeLoadingContentType} />
 	{/if}

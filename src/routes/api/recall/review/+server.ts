@@ -57,7 +57,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	) {
 		return json({ error: 'stale_recall_card' }, { status: 409 });
 	}
-	if (!(await isRecallCardWithinLearnerScope(locals.user.uid, card))) {
+	if (!(await isRecallCardWithinLearnerScope(locals.user, card))) {
 		return json({ error: 'outside_curriculum_scope' }, { status: 409 });
 	}
 	const selectedChoice = body.selectedChoiceKey

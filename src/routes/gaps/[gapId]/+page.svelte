@@ -16,9 +16,11 @@
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
 	import { restorableGapFieldResults } from '$lib/learning/gapPracticeState';
 	import { learnerSubjectHref } from '$lib/learning/subjects';
+	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import { ArrowRight, CheckCircle2, ChevronDown, CircleAlert, RotateCcw } from '@lucide/svelte';
 	import { slide } from 'svelte/transition';
 	import { onDestroy } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types';
 	import {
 		classifyRequestFailure,
@@ -70,7 +72,7 @@
 	let pendingSubmissionId = '';
 	let pendingSubmissionSignature = '';
 	let pendingResponseDurationMs: number | null = null;
-	const fieldRequestControllers = new Map<string, AbortController>();
+	const fieldRequestControllers = new SvelteMap<string, AbortController>();
 	let finalRequestSequence = 0;
 	let finalRequestController: AbortController | null = null;
 	let buildGeneration = 0;
@@ -440,6 +442,7 @@
 			gapId: data.gapData.gap.id,
 			answer
 		};
+		let responseReceived = false;
 		modelAnswerOpen = false;
 		finalFailure = null;
 		finalResult = null;
@@ -467,6 +470,8 @@
 					signal: controller.signal
 				}
 			);
+			responseReceived = true;
+			if (response.ok || response.status >= 500) markHomeSnapshotDirty();
 			if (!finalRequestIsCurrent(request)) return;
 			if (!response.ok) {
 				throw await requestErrorFromResponse(response, 'Final answer check failed.');
@@ -476,6 +481,7 @@
 			finalResult = result;
 			phase = 'feedback';
 		} catch (error) {
+			if (!responseReceived) markHomeSnapshotDirty();
 			if (controller.signal.aborted || !finalRequestIsCurrent(request)) return;
 			console.error('Gap final check failed.', error);
 			finalFailure = classifyRequestFailure(error, {

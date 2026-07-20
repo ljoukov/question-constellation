@@ -47,9 +47,12 @@ function okResponse() {
 describe('practice draft sync queue', () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
-		vi.stubGlobal('window', {
-			localStorage: new MemoryStorage()
-		});
+		vi.stubGlobal(
+			'window',
+			Object.assign(new EventTarget(), {
+				localStorage: new MemoryStorage()
+			})
+		);
 	});
 
 	afterEach(() => {
@@ -60,6 +63,8 @@ describe('practice draft sync queue', () => {
 
 	it('flushes every pending draft, not only the current question', async () => {
 		const fetchMock = vi.fn(() => okResponse());
+		const snapshotDirty = vi.fn();
+		window.addEventListener('qc:home-snapshot-dirty', snapshotDirty);
 		vi.stubGlobal('fetch', fetchMock);
 
 		queuePracticeDraft('user-1', draft('q1', 100));
@@ -75,9 +80,12 @@ describe('practice draft sync queue', () => {
 		expect(body.drafts.map((item) => item.questionId)).toEqual(['q1', 'q2']);
 		expect(queuedPracticeDraftForQuestion('user-1', 'q1')).toBeNull();
 		expect(queuedPracticeDraftForQuestion('user-1', 'q2')).toBeNull();
+		expect(snapshotDirty).toHaveBeenCalledOnce();
 	});
 
 	it('keeps failed drafts and sends them with the next successful flush', async () => {
+		const snapshotDirty = vi.fn();
+		window.addEventListener('qc:home-snapshot-dirty', snapshotDirty);
 		const fetchMock = vi
 			.fn()
 			.mockResolvedValueOnce({ ok: false } as Response)
@@ -95,6 +103,27 @@ describe('practice draft sync queue', () => {
 			drafts: PracticeDraftSave[];
 		};
 		expect(retryBody.drafts.map((item) => item.questionId)).toEqual(['q1', 'q2']);
+		expect(snapshotDirty).toHaveBeenCalledTimes(2);
+	});
+
+	it('marks successful batches dirty before returning a later batch failure', async () => {
+		const snapshotDirty = vi.fn();
+		window.addEventListener('qc:home-snapshot-dirty', snapshotDirty);
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({ ok: true } as Response)
+			.mockResolvedValueOnce({ ok: false } as Response);
+		vi.stubGlobal('fetch', fetchMock);
+
+		for (let index = 0; index < 51; index += 1) {
+			queuePracticeDraft('user-1', draft(`q-${index}`, 100 + index));
+		}
+
+		await expect(flushPracticeDraftQueue('user-1')).resolves.toBe(false);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(snapshotDirty).toHaveBeenCalledOnce();
+		expect(queuedPracticeDraftForQuestion('user-1', 'q-0')).toBeNull();
+		expect(queuedPracticeDraftForQuestion('user-1', 'q-50')).not.toBeNull();
 	});
 
 	it('does not drop a newer local edit while an older flush is in flight', async () => {

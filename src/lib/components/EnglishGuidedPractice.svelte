@@ -24,6 +24,7 @@
 	} from '$lib/learning/answerAssistance';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
 	import { learnerSubjectHref } from '$lib/learning/subjects';
+	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import { markLabel } from '$lib/marks';
 	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
 	import {
@@ -864,6 +865,7 @@
 		reference: string | null,
 		request: EnglishGradeRequest
 	) {
+		if (message.event === 'done') markHomeSnapshotDirty();
 		if (!gradeRequestIsCurrent(request)) return null;
 		if (message.event === 'status') {
 			const status = JSON.parse(message.data) as {
@@ -878,7 +880,9 @@
 			}
 			return null;
 		}
-		if (message.event === 'done') return JSON.parse(message.data) as EnglishStepGradeResult;
+		if (message.event === 'done') {
+			return JSON.parse(message.data) as EnglishStepGradeResult;
+		}
 		if (message.event === 'error') {
 			const payload = JSON.parse(message.data) as { error?: string; message?: string };
 			throw new ServerRequestError(payload.message ?? 'The step checker returned an error.', {
@@ -1083,7 +1087,7 @@
 	});
 
 	$effect(() => {
-		activeStageIndex;
+		void activeStageIndex;
 		if (!hydrated || !stepperElement) return;
 		void tick().then(() => {
 			const activeButton = stepperElement?.querySelector<HTMLElement>('[aria-current="step"]');

@@ -1,4 +1,4 @@
-import { aqaStemCurriculum, getAqaStemSubject, subjectTopicMatches } from '$lib/curriculum/aqaStem';
+import { aqaStemCurriculum } from '$lib/curriculum/aqaStem';
 import { getCurriculumProfileSnapshot } from '$lib/server/curriculumCatalog';
 import {
 	recallCards,
@@ -32,13 +32,7 @@ import {
 	type EnglishLiteratureSelectionInput,
 	type EnglishLiteratureSelections
 } from '$lib/englishLiteratureProfile';
-import {
-	executePersonalQuery,
-	queryFirst,
-	queryPersonalFirst,
-	queryPersonalRows,
-	queryRows
-} from './db';
+import { executePersonalQuery, queryPersonalFirst, queryPersonalRows, queryRows } from './db';
 
 type UserProfileRow = {
 	uid: string;
@@ -50,6 +44,7 @@ type UserProfileRow = {
 	selected_subject: string;
 	selected_tier: string;
 	theme_preference: string | null;
+	local_profile_import_pending: number;
 	created_at: string;
 	updated_at: string;
 	last_seen_at: string;
@@ -616,10 +611,6 @@ function canonicalLearnerSubjectOrNull(value: string | null | undefined): string
 	return canonicalLearnerSubject(normalized);
 }
 
-function subjectSupportsRecall(subject: string): boolean {
-	return recallSubject(subject) !== null;
-}
-
 function isStemProfileSubject(subject: string): boolean {
 	return stemSubjectSet.has(subject);
 }
@@ -687,11 +678,11 @@ function defaultLearnerSubject(
 	};
 }
 
-async function listLearnerSubjects(
+async function readLearnerSubjects(
 	userId: string,
 	profile: UserProfile,
 	boardAvailability: QuestionBoardAvailability
-): Promise<LearnerSubject[]> {
+): Promise<{ subjects: LearnerSubject[]; persistedSubjectNames: string[] }> {
 	const rows = await queryPersonalRows<UserProfileSubjectRow>(
 		`SELECT user_id, subject, board, qualification, course, tier, enabled,
 		        current_grade, target_grade, created_at, updated_at
@@ -705,10 +696,21 @@ async function listLearnerSubjects(
 			return [subject.subject, subject] as const;
 		})
 	);
-	return profileSubjects().map(
-		(subject) =>
-			bySubject.get(subject) ?? defaultLearnerSubject(profile, subject, boardAvailability)
-	);
+	return {
+		subjects: profileSubjects().map(
+			(subject) =>
+				bySubject.get(subject) ?? defaultLearnerSubject(profile, subject, boardAvailability)
+		),
+		persistedSubjectNames: [...bySubject.keys()]
+	};
+}
+
+async function listLearnerSubjects(
+	userId: string,
+	profile: UserProfile,
+	boardAvailability: QuestionBoardAvailability
+): Promise<LearnerSubject[]> {
+	return (await readLearnerSubjects(userId, profile, boardAvailability)).subjects;
 }
 
 function questionTitle(
@@ -753,7 +755,8 @@ function gapBandLabel(value: string): string {
 async function readUserProfile(userId: string): Promise<UserProfile> {
 	const row = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, theme_preference, created_at, updated_at, last_seen_at
+		        selected_subject, selected_tier, theme_preference, local_profile_import_pending,
+		        created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
 		[userId]
@@ -777,23 +780,56 @@ export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
 	return await readUserProfile(user.uid);
 }
 
-async function getOrCreateUserProfile(user: AdminUser): Promise<UserProfile> {
+async function getOrCreateUserProfileState(
+	user: AdminUser
+): Promise<{ profile: UserProfile; localProfileImportPending: boolean }> {
 	const existing = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, theme_preference, created_at, updated_at, last_seen_at
+		        selected_subject, selected_tier, theme_preference, local_profile_import_pending,
+		        created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
 		[user.uid]
 	);
-	if (existing) return toProfile(existing);
+	if (existing) {
+		return {
+			profile: toProfile(existing),
+			localProfileImportPending: existing.local_profile_import_pending === 1
+		};
+	}
 
-	await executePersonalQuery(
+	const inserted = await queryPersonalFirst<UserProfileRow>(
 		`INSERT INTO user_profiles (uid, email, name, photo_url, selected_board, selected_subject)
 		 VALUES (?, ?, ?, ?, 'AQA', 'Biology')
-		 ON CONFLICT(uid) DO NOTHING`,
+		 ON CONFLICT(uid) DO NOTHING
+		 RETURNING uid, email, name, photo_url, selected_board, selected_qualification,
+		           selected_subject, selected_tier, theme_preference,
+		           local_profile_import_pending, created_at, updated_at, last_seen_at`,
 		[user.uid, user.email, user.name, user.photoUrl]
 	);
-	return await readUserProfile(user.uid);
+	if (inserted) {
+		return {
+			profile: toProfile(inserted),
+			localProfileImportPending: inserted.local_profile_import_pending === 1
+		};
+	}
+	const concurrent = await queryPersonalFirst<UserProfileRow>(
+		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
+		        selected_subject, selected_tier, theme_preference, local_profile_import_pending,
+		        created_at, updated_at, last_seen_at
+		 FROM user_profiles
+		 WHERE uid = ?`,
+		[user.uid]
+	);
+	if (!concurrent) throw new Error(`User profile was not created for ${user.uid}`);
+	return {
+		profile: toProfile(concurrent),
+		localProfileImportPending: concurrent.local_profile_import_pending === 1
+	};
+}
+
+async function getOrCreateUserProfile(user: AdminUser): Promise<UserProfile> {
+	return (await getOrCreateUserProfileState(user)).profile;
 }
 
 export async function getUserThemePreference(user: AdminUser): Promise<ThemePreference> {
@@ -838,7 +874,8 @@ export async function updateUserPreferences({
 	await executePersonalQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
-		     selected_tier = ?, updated_at = CURRENT_TIMESTAMP
+		     selected_tier = ?, local_profile_import_pending = 0,
+		     updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?`,
 		[normalizedBoard, safeSubject, normalizedTier, userId]
 	);
@@ -860,10 +897,22 @@ export async function updateUserPreferences({
 
 export async function updateLearnerSubjects({
 	userId,
-	subjects
+	subjects,
+	updatePrimaryProfile = true,
+	updatePrimaryProfileBeforeSubjects = false,
+	expectedPrimaryProfile = null,
+	preserveExistingRows = false
 }: {
 	userId: string;
 	subjects: LearnerSubjectInput[];
+	updatePrimaryProfile?: boolean;
+	updatePrimaryProfileBeforeSubjects?: boolean;
+	expectedPrimaryProfile?: {
+		board: string;
+		subject: string;
+		tier: string;
+	} | null;
+	preserveExistingRows?: boolean;
 }): Promise<void> {
 	const boardAvailability = await getImportedQuestionBoardAvailability();
 	const normalized = profileSubjects().map((subject) => {
@@ -883,6 +932,56 @@ export async function updateLearnerSubjects({
 		} satisfies LearnerSubject;
 	});
 
+	const primary = normalized.find((entry) => entry.enabled) ?? normalized[0];
+	const updatePrimary = async () => {
+		const expectedWhere = expectedPrimaryProfile
+			? ` AND selected_board = ?
+			   AND selected_subject = ?
+			   AND selected_tier = ?
+			   AND local_profile_import_pending = 1`
+			: '';
+		const expectedParams = expectedPrimaryProfile
+			? [expectedPrimaryProfile.board, expectedPrimaryProfile.subject, expectedPrimaryProfile.tier]
+			: [];
+		await executePersonalQuery(
+			`UPDATE user_profiles
+			 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
+			     selected_tier = ?, local_profile_import_pending = 0,
+			     updated_at = CURRENT_TIMESTAMP
+			 WHERE uid = ?${expectedWhere}`,
+			[primary.board, primary.subject, primary.tier, userId, ...expectedParams]
+		);
+	};
+
+	if (updatePrimaryProfile && updatePrimaryProfileBeforeSubjects) await updatePrimary();
+
+	const conflictUpdate = preserveExistingRows
+		? `board = user_profile_subjects.board,
+		   qualification = user_profile_subjects.qualification,
+		   course = user_profile_subjects.course,
+		   tier = user_profile_subjects.tier,
+		   enabled = CASE
+		     WHEN user_profile_subjects.enabled = 1 OR excluded.enabled = 1 THEN 1
+		     ELSE 0
+		   END,
+		   current_grade = COALESCE(
+		     NULLIF(TRIM(user_profile_subjects.current_grade), ''),
+		     excluded.current_grade
+		   ),
+		   target_grade = COALESCE(
+		     NULLIF(TRIM(user_profile_subjects.target_grade), ''),
+		     excluded.target_grade
+		   ),
+		   updated_at = CURRENT_TIMESTAMP`
+		: `board = excluded.board,
+		   qualification = excluded.qualification,
+		   course = excluded.course,
+		   tier = excluded.tier,
+		   enabled = excluded.enabled,
+		   current_grade = excluded.current_grade,
+		   target_grade = excluded.target_grade,
+		   updated_at = CURRENT_TIMESTAMP`;
+
 	for (const subject of normalized) {
 		await executePersonalQuery(
 			`INSERT INTO user_profile_subjects (
@@ -890,14 +989,7 @@ export async function updateLearnerSubjects({
 			 )
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 			 ON CONFLICT(user_id, subject) DO UPDATE SET
-			   board = excluded.board,
-			   qualification = excluded.qualification,
-			   course = excluded.course,
-			   tier = excluded.tier,
-			   enabled = excluded.enabled,
-			   current_grade = excluded.current_grade,
-			   target_grade = excluded.target_grade,
-			   updated_at = CURRENT_TIMESTAMP`,
+			   ${conflictUpdate}`,
 			[
 				userId,
 				subject.subject,
@@ -912,23 +1004,74 @@ export async function updateLearnerSubjects({
 		);
 	}
 
-	const primary = normalized.find((entry) => entry.enabled) ?? normalized[0];
+	if (updatePrimaryProfile && !updatePrimaryProfileBeforeSubjects) await updatePrimary();
+}
+
+export async function consumeLocalProfileImportPending({
+	userId,
+	expectedPrimaryProfile
+}: {
+	userId: string;
+	expectedPrimaryProfile: {
+		board: string;
+		subject: string;
+		tier: string;
+	};
+}): Promise<void> {
 	await executePersonalQuery(
 		`UPDATE user_profiles
-		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
-		     selected_tier = ?, updated_at = CURRENT_TIMESTAMP
-		 WHERE uid = ?`,
-		[primary.board, primary.subject, primary.tier, userId]
+		 SET local_profile_import_pending = 0,
+		     updated_at = CURRENT_TIMESTAMP
+		 WHERE uid = ?
+		   AND selected_board = ?
+		   AND selected_subject = ?
+		   AND selected_tier = ?
+		   AND local_profile_import_pending = 1`,
+		[
+			userId,
+			expectedPrimaryProfile.board,
+			expectedPrimaryProfile.subject,
+			expectedPrimaryProfile.tier
+		]
 	);
 }
 
 export async function updateEnglishLiteratureSelections({
 	userId,
-	selections
+	selections,
+	preserveExistingSelections = false
 }: {
 	userId: string;
 	selections: EnglishLiteratureSelectionInput;
+	preserveExistingSelections?: boolean;
 }): Promise<void> {
+	const conflictUpdate = preserveExistingSelections
+		? `board = user_english_literature_selections.board,
+		   specification_code = user_english_literature_selections.specification_code,
+		   modern_text = COALESCE(
+		     NULLIF(TRIM(user_english_literature_selections.modern_text), ''),
+		     excluded.modern_text
+		   ),
+		   nineteenth_century_novel = COALESCE(
+		     NULLIF(TRIM(user_english_literature_selections.nineteenth_century_novel), ''),
+		     excluded.nineteenth_century_novel
+		   ),
+		   poetry_cluster = COALESCE(
+		     NULLIF(TRIM(user_english_literature_selections.poetry_cluster), ''),
+		     excluded.poetry_cluster
+		   ),
+		   shakespeare_play = COALESCE(
+		     NULLIF(TRIM(user_english_literature_selections.shakespeare_play), ''),
+		     excluded.shakespeare_play
+		   ),
+		   updated_at = CURRENT_TIMESTAMP`
+		: `board = excluded.board,
+		   specification_code = excluded.specification_code,
+		   modern_text = excluded.modern_text,
+		   nineteenth_century_novel = excluded.nineteenth_century_novel,
+		   poetry_cluster = excluded.poetry_cluster,
+		   shakespeare_play = excluded.shakespeare_play,
+		   updated_at = CURRENT_TIMESTAMP`;
 	await executePersonalQuery(
 		`INSERT INTO user_english_literature_selections (
 		   user_id, board, specification_code, modern_text, nineteenth_century_novel,
@@ -936,13 +1079,7 @@ export async function updateEnglishLiteratureSelections({
 		 )
 		 VALUES (?, 'OCR', 'J352', ?, ?, ?, ?)
 		 ON CONFLICT(user_id) DO UPDATE SET
-		   board = excluded.board,
-		   specification_code = excluded.specification_code,
-		   modern_text = excluded.modern_text,
-		   nineteenth_century_novel = excluded.nineteenth_century_novel,
-		   poetry_cluster = excluded.poetry_cluster,
-		   shakespeare_play = excluded.shakespeare_play,
-		   updated_at = CURRENT_TIMESTAMP`,
+		   ${conflictUpdate}`,
 		[
 			userId,
 			selections.modernText,
@@ -976,29 +1113,62 @@ async function getEnglishLiteratureSelections(
 	};
 }
 
-export async function getLearnerProfileSettings(user: AdminUser): Promise<LearnerProfileSettings> {
-	const [profile, boardAvailability] = await Promise.all([
-		getOrCreateUserProfile(user),
-		getImportedQuestionBoardAvailability()
+async function readLearnerProfileSettings(
+	user: AdminUser,
+	boardAvailabilityOverride?: QuestionBoardAvailability
+): Promise<{
+	settings: LearnerProfileSettings;
+	persistedSubjectNames: string[];
+	localProfileImportPending: boolean;
+}> {
+	const [profileState, boardAvailability] = await Promise.all([
+		getOrCreateUserProfileState(user),
+		boardAvailabilityOverride
+			? Promise.resolve(cloneQuestionBoardAvailability(boardAvailabilityOverride))
+			: getImportedQuestionBoardAvailability()
 	]);
-	const [subjects, englishLiteratureSelections] = await Promise.all([
-		listLearnerSubjects(user.uid, profile, boardAvailability),
+	const profile = profileState.profile;
+	const [subjectState, englishLiteratureSelections] = await Promise.all([
+		readLearnerSubjects(user.uid, profile, boardAvailability),
 		getEnglishLiteratureSelections(user.uid)
 	]);
 
 	return {
-		profile: {
-			...profile,
-			selectedBoard: safeBoardForSubject(
-				profile.selectedSubject,
-				profile.selectedBoard,
-				boardAvailability
-			)
+		settings: {
+			profile: {
+				...profile,
+				selectedBoard: safeBoardForSubject(
+					profile.selectedSubject,
+					profile.selectedBoard,
+					boardAvailability
+				)
+			},
+			subjects: subjectState.subjects,
+			subjectOptions: profileSubjects(),
+			englishLiteratureSelections
 		},
-		subjects,
-		subjectOptions: profileSubjects(),
-		englishLiteratureSelections
+		persistedSubjectNames: subjectState.persistedSubjectNames,
+		localProfileImportPending: profileState.localProfileImportPending
 	};
+}
+
+export async function getLearnerProfileSettings(
+	user: AdminUser,
+	{
+		boardAvailability
+	}: {
+		boardAvailability?: QuestionBoardAvailability;
+	} = {}
+): Promise<LearnerProfileSettings> {
+	return (await readLearnerProfileSettings(user, boardAvailability)).settings;
+}
+
+export async function getLearnerProfileSettingsForLocalImport(user: AdminUser): Promise<{
+	settings: LearnerProfileSettings;
+	persistedSubjectNames: string[];
+	localProfileImportPending: boolean;
+}> {
+	return readLearnerProfileSettings(user);
 }
 
 export async function getDefaultLearnerProfileSettings(): Promise<LearnerProfileSettings> {
@@ -1487,55 +1657,6 @@ async function getNextQuestion(
 			)
 		)[0];
 	return row ? nextQuestionFromRow(row) : null;
-}
-
-async function questionCountForTopic(subject: string, topicTitle: string): Promise<number> {
-	const row = await queryFirst<{ count: number }>(
-		`SELECT COUNT(*) AS count
-		 FROM questions
-		 WHERE status = 'published'
-		   AND needs_human_review = 0
-		   AND LOWER(COALESCE(subject_area, subject, '')) LIKE ?
-		   AND LOWER(topic_path_json) LIKE ?`,
-		[`%${subject.toLowerCase()}%`, `%${topicTitle.toLowerCase()}%`]
-	);
-	return row?.count ?? 0;
-}
-
-async function buildCurriculumTopics(
-	profile: UserProfile,
-	activeGaps: DashboardGap[]
-): Promise<PersonalDashboard['curriculum']> {
-	if (!isStemProfileSubject(profile.selectedSubject)) {
-		return {
-			subject: profile.selectedSubject,
-			specificationCode: '',
-			specificationUrl: '',
-			localSpecificationPath: '',
-			topics: []
-		};
-	}
-	const subject = getAqaStemSubject(profile.selectedSubject);
-	const topics: DashboardCurriculumTopic[] = [];
-	for (const topic of subject.topics) {
-		const activeGapCount = activeGaps.filter((gap) => {
-			const matched = subjectTopicMatches(subject.subject, gap.topic);
-			return matched?.id === topic.id;
-		}).length;
-		topics.push({
-			...topic,
-			questionCount: await questionCountForTopic(subject.subject, topic.title),
-			activeGapCount
-		});
-	}
-
-	return {
-		subject: subject.subject,
-		specificationCode: subject.specificationCode,
-		specificationUrl: subject.specificationUrl,
-		localSpecificationPath: subject.localSpecificationPath,
-		topics
-	};
 }
 
 function confidenceForSubject(stats: SubjectLearningStats): {
@@ -2630,7 +2751,6 @@ function dueAtForInterval(intervalDays: number, fromTime = Date.now()): string {
 export async function recordRecallCardReview({
 	user,
 	card,
-	grade,
 	mode
 }: {
 	user: AdminUser;

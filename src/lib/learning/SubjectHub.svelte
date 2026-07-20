@@ -2,7 +2,13 @@
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import type { ResolvedPathname } from '$app/types';
-	import IconBackLink from '$lib/components/IconBackLink.svelte';
+	import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
+	import type { ChallengeProgress } from '$lib/challenges/progress';
+	import {
+		CHALLENGE_PROGRESS_UPDATED_EVENT,
+		type ChallengeProgressUpdatedDetail
+	} from '$lib/challenges/progressSync';
+	import { challengePath } from '$lib/challenges/routing';
 	import type { SignedInSubjectView } from '$lib/learning/viewTypes';
 	import {
 		ArrowRight,
@@ -12,15 +18,38 @@
 		ChevronRight,
 		Clock3,
 		Compass,
+		Gamepad2,
 		Layers3,
 		Target
 	} from '@lucide/svelte';
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import SubjectBreadcrumbs from './SubjectBreadcrumbs.svelte';
+	import {
+		hydrateSignedInChallengeProgress,
+		mergeSubjectChallengeProgressUpdate,
+		subjectChallengePromotion
+	} from './subjectChallengePromotion';
 
-	let { subject }: { subject: SignedInSubjectView } = $props();
+	let {
+		subject,
+		challengeCatalog,
+		challengeProgress,
+		challengeUserId
+	}: {
+		subject: SignedInSubjectView;
+		challengeCatalog: PublicChallengePreviewDefinition[];
+		challengeProgress: ChallengeProgress;
+		challengeUserId: string;
+	} = $props();
 	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 	let curriculumProgressOpen = $state(false);
 	let recommendationReasonOpen = $state(false);
+	let liveChallengeProgress = $derived(challengeProgress);
+	const challengePromotion = $derived(
+		subjectChallengePromotion(challengeCatalog, liveChallengeProgress)
+	);
+	const challengeRecommendation = $derived(challengePromotion.challenge);
 	const recommendationReasonId = $derived(
 		`recommendation-reason-${subject.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 	);
@@ -74,12 +103,37 @@
 	}
 
 	const RecommendedIcon = $derived(actionIcon(subject.nextAction.kind));
+	const challengeHref = $derived(
+		challengeRecommendation
+			? resolveInternalPath(challengePath(challengeRecommendation))
+			: resolve('/challenges')
+	);
+
+	onMount(() => {
+		liveChallengeProgress = hydrateSignedInChallengeProgress(
+			liveChallengeProgress,
+			challengeUserId,
+			window.localStorage
+		);
+		const handleProgressUpdated = (event: Event) => {
+			const detail = (event as CustomEvent<ChallengeProgressUpdatedDetail>).detail;
+			liveChallengeProgress = mergeSubjectChallengeProgressUpdate(
+				liveChallengeProgress,
+				challengeUserId,
+				detail
+			);
+		};
+		window.addEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
+		return () => {
+			window.removeEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
+		};
+	});
 </script>
 
-<div class="qc-learning-layout qc-subject-hub-layout">
-	<aside class="qc-learning-sidebar">
-		<IconBackLink href={resolve('/')} label="Back home" />
+<div class="qc-learning-layout qc-subject-hub-layout has-breadcrumbs">
+	<SubjectBreadcrumbs subject={subject.subject} subjectHref={subject.href} />
 
+	<aside class="qc-learning-sidebar">
 		<header class="qc-learning-heading" aria-labelledby="subject-title">
 			<p class="qc-real-kicker">{subject.courseLabel}</p>
 			<h1 id="subject-title">{subject.subject}</h1>
@@ -130,6 +184,7 @@
 				<a
 					class={subject.nextAction.available ? 'qc-dashboard-action' : 'qc-action-button compact'}
 					href={resolveInternalPath(subject.nextAction.href)}
+					data-sveltekit-reload={subject.nextAction.kind === 'recall' ? true : undefined}
 					aria-label={`${actionLabel(subject.nextAction)}: ${subject.nextAction.title}`}
 				>
 					{actionLabel(subject.nextAction)}
@@ -143,6 +198,39 @@
 				{/if}
 			</div>
 		</section>
+
+		{#if challengeRecommendation}
+			<section
+				class="qc-dashboard-panel qc-subject-challenge-card"
+				aria-labelledby="subject-challenge-heading"
+			>
+				<header class="qc-dashboard-panel-head">
+					<div>
+						<p class="qc-panel-label">{subject.subject} challenge</p>
+						<h2 id="subject-challenge-heading">{challengeRecommendation.title}</h2>
+					</div>
+					<Gamepad2 size={22} aria-hidden="true" strokeWidth={2.2} />
+				</header>
+				<p>{challengeRecommendation.hook}</p>
+				<p class="qc-subject-challenge-stats" aria-label={`${subject.subject} challenge progress`}>
+					<span><strong>{challengePromotion.completedCount}</strong> complete</span>
+					<span
+						><strong>{challengePromotion.totalBestScore.toLocaleString('en-GB')}</strong>
+						points</span
+					>
+				</p>
+				<div class="qc-subject-actions">
+					<a
+						class="qc-dashboard-action"
+						href={challengeHref}
+						data-analytics-label={`Play ${challengeRecommendation.title}`}
+					>
+						{challengePromotion.challengeCompleted ? 'Play again' : 'Play now'}
+						<ArrowRight size={17} aria-hidden="true" />
+					</a>
+				</div>
+			</section>
+		{/if}
 
 		{#if scopeReady && otherActions.length > 0}
 			<section aria-labelledby="activity-heading">
@@ -164,6 +252,7 @@
 							<a
 								class="qc-action-button compact"
 								href={resolveInternalPath(action.href)}
+								data-sveltekit-reload={action.kind === 'recall' ? true : undefined}
 								aria-label={`${actionLabel(action)}: ${action.title}`}
 								data-analytics-label={`${subject.subject} ${action.kind}`}
 							>
@@ -272,3 +361,34 @@
 		</nav>
 	{/if}
 </div>
+
+<style>
+	.qc-subject-challenge-card {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.qc-subject-challenge-card > p {
+		margin: 0;
+	}
+
+	.qc-subject-challenge-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem 0.9rem;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.84rem;
+	}
+
+	.qc-subject-challenge-stats span {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.22rem;
+	}
+
+	.qc-subject-challenge-stats strong {
+		color: var(--qc-ui-text);
+		font-size: 0.98rem;
+		font-variant-numeric: tabular-nums;
+	}
+</style>

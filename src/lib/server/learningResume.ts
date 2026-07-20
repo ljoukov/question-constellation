@@ -158,23 +158,12 @@ export function latestResumeActionsBySubject(
 	return result;
 }
 
-export async function getLatestResumeActionsBySubject(
-	userId: string,
-	subjects: LearnerSubject[],
-	topicScopes: ResumeTopicScopes
-): Promise<Map<string, LearningActionView>> {
-	const rows = await queryPersonalRows<QuestionDraftRow>(
-		`SELECT question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
-		 FROM user_question_drafts
-		 WHERE user_id = ?
-		 ORDER BY client_updated_at DESC, updated_at DESC
-		 LIMIT 50`,
-		[userId]
-	);
-	const drafts = rows.map(savedDraftFromRow).filter(isResumableQuestionDraft);
-	if (drafts.length === 0) return new Map();
-
-	const questionIds = [...new Set(drafts.map((draft) => draft.questionId))];
+async function readResumeQuestions(questionIds?: string[]): Promise<ResumeQuestionRow[]> {
+	if (questionIds?.length === 0) return [];
+	const questionFilter = questionIds
+		? `q.id IN (SELECT value FROM json_each(?))
+		     AND`
+		: '';
 	const storedQuestions = await queryRows<StoredResumeQuestionRow>(
 		`WITH RECURSIVE eligible_questions AS MATERIALIZED (
 		   SELECT q.id, q.board, q.qualification, q.subject, q.subject_area,
@@ -187,8 +176,7 @@ export async function getLatestResumeActionsBySubject(
 		              AND direct_mapping.reviewed = 1
 		          ) AS reviewed_primary_mapping_count
 		   FROM questions q
-		   WHERE q.id IN (SELECT value FROM json_each(?))
-		     AND q.status = 'published'
+		   WHERE ${questionFilter} q.status = 'published'
 		     AND q.needs_human_review = 0
 		     AND (
 		       SELECT COUNT(*)
@@ -234,9 +222,9 @@ export async function getLatestResumeActionsBySubject(
 		          ) mapping
 		        ), '[]') AS reviewed_curriculum_mappings_json
 		 FROM eligible_questions question`,
-		[JSON.stringify(questionIds)]
+		questionIds ? [JSON.stringify(questionIds)] : []
 	);
-	const questions = storedQuestions.map<ResumeQuestionRow>((storedQuestion) => {
+	return storedQuestions.map<ResumeQuestionRow>((storedQuestion) => {
 		const { reviewed_primary_mapping_count, reviewed_curriculum_mappings_json, ...question } =
 			storedQuestion;
 		return {
@@ -245,6 +233,43 @@ export async function getLatestResumeActionsBySubject(
 			reviewedCurriculumMappings: parseCurriculumMappings(reviewed_curriculum_mappings_json)
 		};
 	});
+}
+
+/**
+ * Build the reviewed resume-question index for the versioned public subject
+ * catalog. This is intentionally an offline materialization query; request
+ * handlers must consume the one-row catalog instead of running this scan.
+ */
+export async function getFreshResumeQuestionCatalog(): Promise<ResumeQuestionRow[]> {
+	return await readResumeQuestions();
+}
+
+export async function getLatestResumeActionsBySubject(
+	userId: string,
+	subjects: LearnerSubject[],
+	topicScopes: ResumeTopicScopes,
+	{
+		publicQuestions
+	}: {
+		publicQuestions?: ResumeQuestionRow[];
+	} = {}
+): Promise<Map<string, LearningActionView>> {
+	const rows = await queryPersonalRows<QuestionDraftRow>(
+		`SELECT question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
+		 FROM user_question_drafts
+		 WHERE user_id = ?
+		 ORDER BY client_updated_at DESC, updated_at DESC
+		 LIMIT 50`,
+		[userId]
+	);
+	const drafts = rows.map(savedDraftFromRow).filter(isResumableQuestionDraft);
+	if (drafts.length === 0) return new Map();
+
+	const questionIds = [...new Set(drafts.map((draft) => draft.questionId))];
+	const questions =
+		publicQuestions === undefined
+			? await readResumeQuestions(questionIds)
+			: publicQuestions.filter((question) => questionIds.includes(question.id));
 
 	return latestResumeActionsBySubject(subjects, drafts, questions, topicScopes);
 }

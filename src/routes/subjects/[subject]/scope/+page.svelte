@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
-	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import ControlSection from '$lib/components/ui/ControlSection.svelte';
+	import SubjectBreadcrumbs from '$lib/learning/SubjectBreadcrumbs.svelte';
 	import { AlertTriangle, ExternalLink } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import type { PageProps } from './$types';
@@ -47,12 +46,6 @@
 	);
 
 	const specificationLabel = $derived(data.curriculum.label);
-	const backHref = $derived(
-		data.subject.scope.status === 'not_set' ? resolve('/') : data.subject.href
-	);
-	const backLabel = $derived(
-		data.subject.scope.status === 'not_set' ? 'Back home' : `Back to ${data.subject.subject}`
-	);
 	const selectionChanged = $derived(
 		scopeMode !== savedMode ||
 			selectedIds.length !== savedIds.length ||
@@ -135,10 +128,14 @@
 <main class="qc-real-app qc-profile-page">
 	<AppTopbar user={data.user} showSearch={false} showSubject={false} showNavigation />
 
-	<div class="qc-learning-layout">
-		<aside class="qc-learning-sidebar">
-			<IconBackLink href={backHref} label={backLabel} />
+	<div class="qc-learning-layout has-breadcrumbs">
+		<SubjectBreadcrumbs
+			subject={data.subject.subject}
+			subjectHref={data.subject.href}
+			currentLabel={choosesCourseOptions ? 'Course options' : 'Course coverage'}
+		/>
 
+		<aside class="qc-learning-sidebar">
 			<header class="qc-learning-heading" aria-labelledby="scope-title">
 				<p class="qc-real-kicker">{specificationLabel}</p>
 				<h1 id="scope-title">
@@ -286,6 +283,7 @@
 		</form>
 
 		<nav class="qc-subject-actions qc-learning-resources" aria-label="Curriculum source">
+			<!-- eslint-disable svelte/no-navigation-without-resolve -->
 			<a
 				class="qc-action-button compact"
 				href={data.curriculum.specificationUrl}
@@ -295,6 +293,7 @@
 				View the official {data.curriculum.board} specification
 				<ExternalLink size={14} aria-hidden="true" />
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</nav>
 	</div>
 </main>

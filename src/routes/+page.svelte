@@ -129,7 +129,16 @@
 	<AppTopbar user={data.user} showSearch={false} showNavigation />
 
 	{#if data.user && data.dashboard}
-		<SignedInHome dashboard={data.dashboard} />
+		<SignedInHome
+			dashboard={data.dashboard}
+			userId={data.user.uid}
+			challengeProgress={data.challengeProgress}
+			challengeRecommendation={data.challengeRecommendation}
+			challengeCompletedCount={data.challengeCompletedCount}
+			challengeTotalBestScore={data.challengeTotalBestScore}
+			snapshotInitialising={data.snapshotInitialising}
+			pendingLocalSubjects={data.pendingLocalSubjects}
+		/>
 	{:else}
 		<section class="qc-home-hero qc-home-hero-simple" aria-labelledby="home-title">
 			<div class="qc-home-hero-content">

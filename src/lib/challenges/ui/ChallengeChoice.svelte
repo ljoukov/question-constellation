@@ -1,6 +1,6 @@
 <script lang="ts">
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import { CheckCircle2, CircleHelp } from '@lucide/svelte';
+	import { CheckCircle2, XCircle } from '@lucide/svelte';
 	import HapticSurface from './HapticSurface.svelte';
 
 	let {
@@ -41,18 +41,21 @@
 		data-analytics-label={analyticsLabel}
 		data-haptic-control
 	>
+		{#if status !== 'idle'}
+			<span class="visually-hidden">{status === 'correct' ? 'Correct.' : 'Incorrect.'}</span>
+		{/if}
 		{#if marker}<span class="choice-marker" aria-hidden="true">{marker}</span>{/if}
 		<span class="choice-copy">
 			{#if label}<span class="choice-label">{label}</span>{/if}
 			<span class="choice-text"><MathText {text} /></span>
-			{#if selected && feedback}<small>{feedback}</small>{/if}
+			{#if feedback}<small><MathText text={feedback} /></small>{/if}
 		</span>
-		{#if selected && status !== 'idle'}
+		{#if status !== 'idle'}
 			<span class="choice-status" aria-hidden="true">
 				{#if status === 'correct'}
 					<CheckCircle2 size={20} strokeWidth={2.3} />
 				{:else}
-					<CircleHelp size={20} strokeWidth={2.3} />
+					<XCircle size={20} strokeWidth={2.3} />
 				{/if}
 			</span>
 		{/if}
@@ -60,6 +63,18 @@
 </HapticSurface>
 
 <style>
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
 	button {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) auto;
@@ -101,7 +116,7 @@
 		outline-offset: 3px;
 	}
 
-	button:hover:not(:disabled) {
+	button:hover:not(:disabled):not(.correct):not(.incorrect) {
 		border-color: var(--qc-ui-border-strong);
 		background: var(--qc-ui-surface-muted);
 	}
@@ -113,9 +128,13 @@
 	}
 
 	button.incorrect {
-		border-color: var(--qc-ui-warning);
-		background: color-mix(in srgb, var(--qc-ui-warning) 10%, var(--qc-ui-surface));
-		color: var(--qc-ui-warning-text);
+		border-color: var(--qc-ui-danger);
+		background: color-mix(in srgb, var(--qc-ui-danger) 12%, var(--qc-ui-surface));
+		color: var(--qc-ui-danger);
+	}
+
+	button.incorrect:focus-visible {
+		outline-color: var(--qc-ui-danger);
 	}
 
 	button.selected.correct {
@@ -187,12 +206,12 @@
 		0%,
 		100% {
 			transform: scale(1);
-			box-shadow: 0 0 0 color-mix(in srgb, var(--qc-ui-warning) 0%, transparent);
+			box-shadow: 0 0 0 color-mix(in srgb, var(--qc-ui-danger) 0%, transparent);
 		}
 
 		42% {
 			transform: scale(1.012);
-			box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--qc-ui-warning) 12%, transparent);
+			box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--qc-ui-danger) 12%, transparent);
 		}
 	}
 

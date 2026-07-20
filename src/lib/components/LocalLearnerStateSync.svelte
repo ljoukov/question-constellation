@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
 	import { authStartHref } from '$lib/authReturn';
 	import {
 		markAnonymousLearnerProfileSynced,
@@ -7,6 +6,7 @@
 		type AnonymousLearnerProfile
 	} from '$lib/anonymousLearnerProfile';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
+	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import {
 		classifyRequestFailure,
 		fetchWithResponseTimeout,
@@ -16,18 +16,39 @@
 	import type { AdminUser } from '$lib/server/auth/session';
 	import { onMount } from 'svelte';
 
-	let { user }: { user: AdminUser | null } = $props();
+	let {
+		user,
+		onInitialSettled
+	}: {
+		user: AdminUser | null;
+		onInitialSettled?: (userId: string) => void;
+	} = $props();
 	let pendingProfile = $state<AnonymousLearnerProfile | null>(null);
 	let syncFailure = $state<RequestFailure | null>(null);
 	let syncing = $state(false);
+	let initialAttemptSettled = false;
 
-	async function syncProfile() {
-		if (!user || !pendingProfile || syncing) return;
+	function settleInitialAttempt(userId: string) {
+		if (initialAttemptSettled) return;
+		initialAttemptSettled = true;
+		onInitialSettled?.(userId);
+	}
+
+	async function syncProfile(initialAttemptUserId: string | null = null) {
+		if (!user || !pendingProfile || syncing) {
+			if (initialAttemptUserId) settleInitialAttempt(initialAttemptUserId);
+			return;
+		}
 		const profile = pendingProfile;
 		let syncLatestAfterward = false;
+		let serverMayHavePartiallyCommitted = false;
 		syncing = true;
 		syncFailure = null;
 		try {
+			// Once the request is sent, a timeout or dropped response cannot prove
+			// the Worker did not commit. Conservatively republish the projection;
+			// retries remain idempotent and the coordinator coalesces this signal.
+			serverMayHavePartiallyCommitted = true;
 			const response = await fetchWithResponseTimeout('/api/profile/import-local', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -35,8 +56,10 @@
 				keepalive: true
 			});
 			if (!response.ok) {
+				serverMayHavePartiallyCommitted = response.status >= 500;
 				throw await requestErrorFromResponse(response, 'Saved profile sync failed.');
 			}
+			const result = (await response.json()) as { snapshotChanged?: unknown };
 			const currentProfile = readAnonymousLearnerProfile();
 			if (currentProfile?.updatedAt === profile.updatedAt) {
 				markAnonymousLearnerProfileSynced(profile);
@@ -45,10 +68,9 @@
 				pendingProfile = currentProfile?.pendingSync ? currentProfile : null;
 				syncLatestAfterward = Boolean(pendingProfile);
 			}
-			await invalidateAll().catch((error) => {
-				console.warn('[local-profile-sync] page refresh deferred after successful import', error);
-			});
+			if (result.snapshotChanged === true) markHomeSnapshotDirty({ immediate: true });
 		} catch (error) {
+			if (serverMayHavePartiallyCommitted) markHomeSnapshotDirty({ immediate: true });
 			console.warn('[local-profile-sync] import deferred', error);
 			syncFailure = classifyRequestFailure(error, {
 				action: 'sync your saved profile',
@@ -56,6 +78,7 @@
 			});
 		} finally {
 			syncing = false;
+			if (initialAttemptUserId) settleInitialAttempt(initialAttemptUserId);
 			if (syncLatestAfterward) void syncProfile();
 		}
 	}
@@ -72,12 +95,19 @@
 
 	onMount(() => {
 		if (!user) return;
+		const initialUserId = user.uid;
 		const tryPendingProfile = () => {
 			const storedProfile = readAnonymousLearnerProfile();
 			pendingProfile = storedProfile?.pendingSync ? storedProfile : null;
 			if (pendingProfile) void syncProfile();
 		};
-		tryPendingProfile();
+		const storedProfile = readAnonymousLearnerProfile();
+		pendingProfile = storedProfile?.pendingSync ? storedProfile : null;
+		if (pendingProfile) {
+			void syncProfile(initialUserId);
+		} else {
+			settleInitialAttempt(initialUserId);
+		}
 		window.addEventListener('online', tryPendingProfile);
 		window.addEventListener('focus', tryPendingProfile);
 		window.addEventListener('pageshow', tryPendingProfile);

@@ -185,11 +185,9 @@ describe('signed-in recall page load', () => {
 		);
 
 		expect(mocks.getRecallCatalogScopeForLearner).toHaveBeenCalledWith(user, 'English Literature');
-		expect(mocks.recallCardsWithinLearnerScope).toHaveBeenCalledWith(
-			user.uid,
-			'English Literature',
-			[literatureCard]
-		);
+		expect(mocks.recallCardsWithinLearnerScope).toHaveBeenCalledWith(user, 'English Literature', [
+			literatureCard
+		]);
 		expect(result.initialActivity).toBe('true-false');
 		expect(result.initialMode).toBe('truefalse');
 		expect(result.subjects).toContain('English Literature');
@@ -204,7 +202,7 @@ describe('signed-in recall page load', () => {
 		);
 
 		expect(mocks.recallCardsWithinLearnerScope).toHaveBeenCalledWith(
-			user.uid,
+			user,
 			'Biology',
 			expect.arrayContaining([
 				expect.objectContaining({ id: 'a' }),

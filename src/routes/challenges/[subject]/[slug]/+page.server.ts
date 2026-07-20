@@ -1,38 +1,30 @@
-import { challengeByRoute, challengesForSubject } from '$lib/challenges/catalog';
-import { getChallengeQuestionPairData } from '$lib/server/questionData';
+import { challengeByRoute, challengeCatalog } from '$lib/challenges/catalog';
+import {
+	buildAuthoredChallengeChain,
+	publicChallengeDefinition,
+	publicNextChallengeDefinition
+} from '$lib/challenges/authoredData';
+import { emptyChallengeProgress } from '$lib/challenges/progress';
+import { publicChallengeCurriculumLink } from '$lib/server/challengeCurriculum';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, parent }) => {
 	const challenge = challengeByRoute(params.subject, params.slug);
 	if (!challenge) throw error(404, 'Challenge not found.');
 
-	try {
-		const questionData = await getChallengeQuestionPairData(
-			challenge.sourceQuestionId,
-			challenge.transferQuestionId
-		);
+	const challengeProgress = locals.user
+		? ((await parent()).homeSnapshot?.challengeProgress ?? emptyChallengeProgress())
+		: emptyChallengeProgress();
 
-		const subjectChallenges = challengesForSubject(challenge.subject);
-		const challengeIndex = subjectChallenges.findIndex(
-			(candidate) => candidate.id === challenge.id
-		);
-		const nextChallenge =
-			challengeIndex >= 0 && challengeIndex < subjectChallenges.length - 1
-				? subjectChallenges[challengeIndex + 1]
-				: null;
-
-		return {
-			challenge,
-			question: questionData.question,
-			transferQuestion: questionData.transferQuestion,
-			chain: questionData.chain,
-			questionStandaloneAvailable: questionData.questionStandaloneAvailable,
-			nextChallenge,
-			user: locals.user
-		};
-	} catch (loadError) {
-		if (loadError && typeof loadError === 'object' && 'status' in loadError) throw loadError;
-		throw error(404, 'Challenge question data could not be loaded.');
-	}
+	return {
+		challenge: publicChallengeDefinition(challenge),
+		chain: buildAuthoredChallengeChain(challenge),
+		nextChallenges: challengeCatalog
+			.filter((candidate) => candidate.id !== challenge.id)
+			.map(publicNextChallengeDefinition),
+		initialProgress: challengeProgress,
+		curriculumCitation: publicChallengeCurriculumLink(challenge.id, challenge.subject),
+		user: locals.user
+	};
 };

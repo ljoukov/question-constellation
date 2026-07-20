@@ -1,4 +1,8 @@
-import { updateUserThemePreference, type ThemePreference } from '$lib/server/userTheme';
+import {
+	updateUserThemePreference,
+	updateUserVisualEffectsPreference,
+	type ThemePreference
+} from '$lib/server/userTheme';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 function parseThemePreference(value: unknown): ThemePreference | null {
@@ -10,16 +14,46 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		return json({ error: 'unauthorized' }, { status: 401 });
 	}
 
-	const body = (await request.json().catch(() => null)) as { themePreference?: unknown } | null;
-	const themePreference = parseThemePreference(body?.themePreference);
-	if (!themePreference) {
-		return json({ error: 'invalid_theme_preference' }, { status: 400 });
+	const body = await request.json().catch(() => null);
+	if (!body || typeof body !== 'object' || Array.isArray(body)) {
+		return json({ error: 'invalid_appearance_preference' }, { status: 400 });
 	}
 
-	const savedThemePreference = await updateUserThemePreference({
-		user: locals.user,
-		themePreference
-	});
+	const record = body as Record<string, unknown>;
+	const keys = Object.keys(record);
+	const allowedKeys = new Set(['themePreference', 'visualEffectsEnabled']);
+	if (keys.length === 0 || keys.some((key) => !allowedKeys.has(key))) {
+		return json({ error: 'invalid_appearance_preference' }, { status: 400 });
+	}
 
-	return json({ themePreference: savedThemePreference });
+	const hasThemePreference = Object.hasOwn(record, 'themePreference');
+	const hasVisualEffectsEnabled = Object.hasOwn(record, 'visualEffectsEnabled');
+	const themePreference = hasThemePreference ? parseThemePreference(record.themePreference) : null;
+
+	if (hasThemePreference && !themePreference) {
+		return json({ error: 'invalid_theme_preference' }, { status: 400 });
+	}
+	if (hasVisualEffectsEnabled && typeof record.visualEffectsEnabled !== 'boolean') {
+		return json({ error: 'invalid_visual_effects_preference' }, { status: 400 });
+	}
+
+	const response: {
+		themePreference?: ThemePreference;
+		visualEffectsEnabled?: boolean;
+	} = {};
+
+	if (themePreference) {
+		response.themePreference = await updateUserThemePreference({
+			user: locals.user,
+			themePreference
+		});
+	}
+	if (hasVisualEffectsEnabled) {
+		response.visualEffectsEnabled = await updateUserVisualEffectsPreference({
+			user: locals.user,
+			visualEffectsEnabled: record.visualEffectsEnabled as boolean
+		});
+	}
+
+	return json(response);
 };

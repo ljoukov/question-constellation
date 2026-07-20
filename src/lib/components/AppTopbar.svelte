@@ -1,10 +1,11 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-unused-props -- Keep the legacy topbar prop contract for existing callers while this compact header intentionally omits search and subject controls. */
 	import { resolve } from '$app/paths';
 	import { page as pageState } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
 	import { authStartHref } from '$lib/authReturn';
 	import { Check, ChevronRight } from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
-	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { primaryNavigationLinks, type AppTopbarLink } from '$lib/navigation';
 	import {
@@ -13,6 +14,10 @@
 		type RequestFailure
 	} from '$lib/requestFailure';
 	import { setThemePreference, themePreference, type ThemePreference } from '$lib/themePreference';
+	import {
+		setVisualEffectsPreference,
+		visualEffectsPreference
+	} from '$lib/visualEffectsPreference';
 	import type { AdminUser } from '$lib/server/auth/session';
 
 	type AppTopbarAction = {
@@ -29,19 +34,11 @@
 	};
 
 	let {
-		subject: _subject = 'Physics',
-		subjects: _subjects = [...BROWSE_SUBJECTS],
-		searchValue: _searchValue = '',
-		searchPlaceholder: _searchPlaceholder = 'Search questions',
-		showSearch: _showSearch = true,
-		showSubject: _showSubject = true,
 		showNavigation = false,
+		showPrimaryAction = true,
 		navLinks = primaryNavigationLinks,
 		primaryAction,
 		sticky = true,
-		onSearchChange: _onSearchChange,
-		onSearchSubmit: _onSearchSubmit,
-		onSubjectChange: _onSubjectChange,
 		user: currentUserOverride = undefined
 	}: {
 		subject?: string;
@@ -51,6 +48,7 @@
 		showSearch?: boolean;
 		showSubject?: boolean;
 		showNavigation?: boolean;
+		showPrimaryAction?: boolean;
 		navLinks?: AppTopbarLink[];
 		primaryAction?: AppTopbarAction;
 		sticky?: boolean;
@@ -69,17 +67,28 @@
 	let accountToastTone = $state<'success' | 'error'>('success');
 	let themeFailure = $state<RequestFailure | null>(null);
 	let pendingTheme = $state<ThemePreference | null>(null);
+	let visualEffectsEnabled = $state(true);
+	let confirmedVisualEffectsEnabled = $state(true);
+	let pendingVisualEffectsEnabled = $state<boolean | null>(null);
+	let visualEffectsFailure = $state<RequestFailure | null>(null);
 	let accountMenuRoot = $state<HTMLDivElement | null>(null);
 	let themeSaveController = $state<AbortController | null>(null);
+	let visualEffectsSaveController = $state<AbortController | null>(null);
 	let appearanceCloseTimer: ReturnType<typeof setTimeout> | null = null;
 	let accountToastTimer: ReturnType<typeof setTimeout> | null = null;
 	const unsubscribe = themePreference.subscribe((value) => {
 		theme = value;
 		if (!themeSaveController) confirmedTheme = value;
 	});
+	const unsubscribeVisualEffects = visualEffectsPreference.subscribe((value) => {
+		visualEffectsEnabled = value;
+		if (!visualEffectsSaveController) confirmedVisualEffectsEnabled = value;
+	});
 	onDestroy(() => {
 		unsubscribe();
+		unsubscribeVisualEffects();
 		themeSaveController?.abort();
+		visualEffectsSaveController?.abort();
 		clearAppearanceCloseTimer();
 		clearAccountToastTimer();
 	});
@@ -89,6 +98,7 @@
 		{ value: 'light', label: 'Light' },
 		{ value: 'dark', label: 'Dark' }
 	];
+	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 	const currentUser = $derived(
 		currentUserOverride === undefined
 			? ((pageState.data.user ?? null) as AdminUser | null)
@@ -102,12 +112,17 @@
 	});
 	const effectiveShowNavigation = $derived(showNavigation);
 	const effectivePrimaryAction = $derived(
-		primaryAction ?? (!currentUser ? defaultSignInAction : undefined)
+		showPrimaryAction
+			? (primaryAction ?? (!currentUser ? defaultSignInAction : undefined))
+			: undefined
 	);
 	const visibleNavLinks = $derived.by(() => {
 		if (!effectiveShowNavigation) return [];
 		if (!currentUser) return navLinks;
-		return navLinks.filter((link) => !isSignedOutAcquisitionLink(link.href));
+		return navLinks.filter(
+			(link) =>
+				!isSignedOutAcquisitionLink(link.href) && normalizeNavPath(link.href) !== '/challenges'
+		);
 	});
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
@@ -140,6 +155,10 @@
 		]
 			.filter(Boolean)
 			.join(' ')
+	);
+	const appearanceFailure = $derived(visualEffectsFailure ?? themeFailure);
+	const appearanceSaveInProgress = $derived(
+		Boolean(themeSaveController || visualEffectsSaveController)
 	);
 
 	function clearAccountToastTimer() {
@@ -238,11 +257,76 @@
 		}
 	}
 
-	function retryThemeSave() {
-		if (themeFailure?.kind === 'auth') {
+	async function chooseVisualEffects(value: boolean) {
+		if (value === visualEffectsEnabled) {
+			closeAccountMenu();
+			return;
+		}
+
+		if (!currentUser) {
+			setVisualEffectsPreference(value);
+			confirmedVisualEffectsEnabled = value;
+			closeAccountMenu();
+			return;
+		}
+
+		visualEffectsSaveController?.abort();
+		pendingVisualEffectsEnabled = value;
+		visualEffectsFailure = null;
+		const rollbackPreference = confirmedVisualEffectsEnabled;
+		const controller = new AbortController();
+		visualEffectsSaveController = controller;
+		let timedOut = false;
+		const timeout = setTimeout(() => {
+			timedOut = true;
+			controller.abort();
+		}, 8000);
+		setVisualEffectsPreference(value);
+		closeAccountMenu();
+
+		try {
+			const response = await fetch(resolve('/api/theme-preference'), {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ visualEffectsEnabled: value }),
+				signal: controller.signal
+			});
+
+			if (!response.ok) {
+				throw await requestErrorFromResponse(response, 'Visual effects save request failed.');
+			}
+			confirmedVisualEffectsEnabled = value;
+			pendingVisualEffectsEnabled = null;
+			visualEffectsFailure = null;
+			showAccountToast(`Visual effects ${value ? 'on' : 'off'}.`);
+		} catch (error) {
+			if (visualEffectsSaveController !== controller) return;
+			console.warn('Visual effects preference could not be saved.', error);
+			setVisualEffectsPreference(rollbackPreference);
+			visualEffectsFailure = classifyRequestFailure(error, {
+				action: 'save this visual effects setting',
+				serverLabel: 'Appearance sync',
+				timedOut
+			});
+			showAccountToast(
+				`${visualEffectsFailure.title}. Restored the previous visual effects setting.`,
+				'error'
+			);
+		} finally {
+			clearTimeout(timeout);
+			if (visualEffectsSaveController === controller) visualEffectsSaveController = null;
+		}
+	}
+
+	function retryAppearanceSave() {
+		if (appearanceFailure?.kind === 'auth') {
 			window.location.assign(
 				authStartHref(`${pageState.url.pathname}${pageState.url.search}${pageState.url.hash}`)
 			);
+			return;
+		}
+		if (visualEffectsFailure && pendingVisualEffectsEnabled !== null) {
+			void chooseVisualEffects(pendingVisualEffectsEnabled);
 			return;
 		}
 		if (!pendingTheme) return;
@@ -303,8 +387,8 @@
 
 	function normalizeNavPath(href: string) {
 		const path = href.split('?')[0].replace(/\/$/, '') || '/';
-		if (path.startsWith('./')) return `/${path.slice(2)}` || '/';
-		if (!path.startsWith('/')) return `/${path}` || '/';
+		if (path.startsWith('./')) return `/${path.slice(2)}`;
+		if (!path.startsWith('/')) return `/${path}`;
 		return path;
 	}
 
@@ -338,7 +422,10 @@
 	{#if visibleNavLinks.length > 0}
 		<nav class="qc-topbar-nav" aria-label="Primary navigation">
 			{#each visibleNavLinks as link (link.href)}
-				<a href={link.href} aria-current={isNavLinkActive(link.href) ? 'page' : undefined}>
+				<a
+					href={resolveInternalPath(link.href)}
+					aria-current={isNavLinkActive(link.href) ? 'page' : undefined}
+				>
 					{link.label}
 				</a>
 			{/each}
@@ -348,7 +435,7 @@
 	{#if effectivePrimaryAction}
 		<a
 			class="qc-topbar-action"
-			href={effectivePrimaryAction.href}
+			href={resolveInternalPath(effectivePrimaryAction.href)}
 			aria-label={effectivePrimaryAction.ariaLabel ?? effectivePrimaryAction.label}
 		>
 			{effectivePrimaryAction.label}
@@ -359,7 +446,7 @@
 		<nav class="qc-topbar-mobile-links" aria-label="Essential navigation">
 			{#each mobileTopbarLinks as link (link.href)}
 				<a
-					href={link.href}
+					href={resolveInternalPath(link.href)}
 					aria-label={link.ariaLabel}
 					aria-current={isNavLinkActive(link.href) ? 'page' : undefined}
 					class:primary={link.variant === 'primary'}
@@ -394,20 +481,29 @@
 					<a
 						class="qc-menu-item"
 						role="menuitem"
-						href={resolve('/profile')}
-						onclick={closeAccountMenu}
-						onpointerenter={closeAppearanceFromOtherItem}
-					>
-						Profile
-					</a>
-					<a
-						class="qc-menu-item"
-						role="menuitem"
 						href={resolve('/')}
 						onclick={closeAccountMenu}
 						onpointerenter={closeAppearanceFromOtherItem}
 					>
 						Home
+					</a>
+					<a
+						class="qc-menu-item"
+						role="menuitem"
+						href={resolve('/challenges')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Challenges
+					</a>
+					<a
+						class="qc-menu-item"
+						role="menuitem"
+						href={resolve('/profile')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Profile
 					</a>
 					<div class="qc-menu-separator" role="separator"></div>
 					<div
@@ -447,6 +543,26 @@
 										<span>{option.label}</span>
 									</button>
 								{/each}
+								<div class="qc-menu-separator qc-appearance-separator" role="separator"></div>
+								<button
+									type="button"
+									class="qc-menu-item qc-appearance-item"
+									class:active={visualEffectsEnabled}
+									role="menuitemcheckbox"
+									aria-checked={visualEffectsEnabled}
+									onclick={() => chooseVisualEffects(!visualEffectsEnabled)}
+								>
+									<Check
+										size={15}
+										aria-hidden="true"
+										strokeWidth={2.3}
+										class={visualEffectsEnabled ? 'visible' : undefined}
+									/>
+									<span>Visual effects</span>
+									<span class="qc-appearance-state" aria-hidden="true">
+										{visualEffectsEnabled ? 'On' : 'Off'}
+									</span>
+								</button>
 							</div>
 						{/if}
 					</div>
@@ -474,13 +590,13 @@
 			{accountToastMessage}
 		</div>
 	{/if}
-	{#if currentUser && themeFailure}
+	{#if currentUser && appearanceFailure}
 		<div class="qc-topbar-request-failure">
 			<RequestFailureNotice
-				failure={themeFailure}
-				onRetry={retryThemeSave}
-				retrying={Boolean(themeSaveController)}
-				retryLabel={themeFailure.kind === 'auth' ? 'Sign in again' : 'Retry save'}
+				failure={appearanceFailure}
+				onRetry={retryAppearanceSave}
+				retrying={appearanceSaveInProgress}
+				retryLabel={appearanceFailure.kind === 'auth' ? 'Sign in again' : 'Retry save'}
 				compact
 			/>
 		</div>
@@ -488,6 +604,17 @@
 </header>
 
 <style>
+	.qc-appearance-separator {
+		margin: 0.28rem 0.35rem;
+	}
+
+	.qc-appearance-state {
+		margin-left: auto;
+		color: var(--qc-spark-muted-foreground);
+		font-size: 0.72rem;
+		font-weight: 650;
+	}
+
 	.qc-topbar-request-failure {
 		position: fixed;
 		z-index: 90;

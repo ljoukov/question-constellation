@@ -124,7 +124,7 @@ a {
 }
 
 .app-shell.has-persistent-topbar {
-	--qc-topbar-height: 4rem;
+	--qc-topbar-height: 3.5rem;
 	justify-content: flex-start;
 }
 
@@ -1884,6 +1884,14 @@ textarea::placeholder {
 	width: min(100%, 76rem);
 	margin: 0 auto;
 	padding: 1rem clamp(0.9rem, 2.4vw, 2rem) 3rem;
+}
+
+.qc-learning-layout.has-breadcrumbs {
+	grid-template-areas:
+		'breadcrumbs'
+		'sidebar'
+		'main'
+		'resources';
 }
 
 .qc-learning-sidebar,
@@ -6567,7 +6575,7 @@ textarea::placeholder {
 
 /* Question Constellation production pass */
 .qc-topbar {
-	--qc-topbar-height: 4rem;
+	--qc-topbar-height: 3.5rem;
 	position: sticky;
 	top: 0;
 	z-index: 30;
@@ -6578,9 +6586,8 @@ textarea::placeholder {
 	width: 100%;
 	min-width: 0;
 	min-height: var(--qc-topbar-height);
-	padding: max(0.62rem, env(safe-area-inset-top))
-		max(clamp(0.9rem, 2.4vw, 2rem), env(safe-area-inset-right)) 0.62rem
-		max(clamp(0.9rem, 2.4vw, 2rem), env(safe-area-inset-left));
+	padding: max(0.42rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) 0.42rem
+		max(0.75rem, env(safe-area-inset-left));
 	border-bottom: 1px solid var(--qc-ui-border-subtle);
 	background: color-mix(in srgb, var(--qc-ui-surface) 78%, transparent);
 	backdrop-filter: blur(18px);
@@ -6596,7 +6603,7 @@ textarea::placeholder {
 	flex: 1 1 auto;
 	align-items: center;
 	gap: 0.58rem;
-	min-height: 2.75rem;
+	min-height: 2.5rem;
 	min-width: 0;
 	margin-right: auto;
 	color: var(--qc-ui-text);
@@ -6808,16 +6815,23 @@ textarea::placeholder {
 }
 
 .qc-avatar-trigger {
+	position: relative;
 	display: inline-grid;
-	width: 2.75rem;
-	height: 2.75rem;
+	width: 2rem;
+	height: 2rem;
 	padding: 0;
 	place-items: center;
-	border: 1px solid transparent;
+	border: 0;
 	border-radius: 50%;
 	background: transparent;
 	color: var(--qc-ui-text);
 	cursor: pointer;
+}
+
+.qc-avatar-trigger::before {
+	position: absolute;
+	inset: -0.375rem;
+	content: '';
 }
 
 .qc-avatar-pixel,
@@ -8269,6 +8283,14 @@ textarea::placeholder {
 		gap: 1.5rem;
 	}
 
+	.qc-learning-layout.has-breadcrumbs {
+		grid-template-areas:
+			'breadcrumbs breadcrumbs'
+			'sidebar main'
+			'resources main';
+		grid-template-rows: auto auto minmax(0, 1fr);
+	}
+
 	.qc-learning-sidebar {
 		position: sticky;
 		top: calc(var(--qc-topbar-height, 4rem) + 1rem);
@@ -8283,6 +8305,14 @@ textarea::placeholder {
 		grid-template-columns: minmax(15rem, 0.34fr) minmax(0, 0.66fr);
 		grid-template-rows: auto minmax(0, 1fr);
 		gap: clamp(1.5rem, 3vw, 2.5rem);
+	}
+
+	.qc-learning-layout.has-breadcrumbs {
+		grid-template-areas:
+			'breadcrumbs breadcrumbs'
+			'sidebar main'
+			'resources main';
+		grid-template-rows: auto auto minmax(0, 1fr);
 	}
 
 	.qc-learning-sidebar {
@@ -8411,8 +8441,8 @@ textarea::placeholder {
 	.qc-topbar {
 		min-height: var(--qc-topbar-height, 4rem);
 		gap: 0.48rem;
-		padding: max(0.48rem, env(safe-area-inset-top)) max(0.68rem, env(safe-area-inset-right)) 0.48rem
-			max(0.68rem, env(safe-area-inset-left));
+		padding: max(0.48rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) 0.48rem
+			max(0.75rem, env(safe-area-inset-left));
 	}
 
 	.qc-topbar-brand {
@@ -8449,8 +8479,8 @@ textarea::placeholder {
 	}
 
 	.qc-avatar-trigger {
-		width: 44px;
-		height: 44px;
+		width: 32px;
+		height: 32px;
 	}
 
 	.qc-avatar-pixel,

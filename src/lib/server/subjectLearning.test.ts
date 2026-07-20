@@ -44,6 +44,7 @@ import {
 	supportsTextPracticeRecommendation,
 	validatedCurriculumScopeSelection
 } from './subjectLearning';
+import type { SubjectLearningPublicCatalog } from './subjectLearning';
 
 beforeEach(() => {
 	for (const mock of Object.values(mocks)) mock.mockReset();
@@ -612,6 +613,48 @@ describe('signed-in home resume action', () => {
 		>;
 		expect(resumeScopes.get('English Literature')).toEqual(new Set());
 	});
+
+	it('keeps an unsupported legacy offering in the snapshot without public-table fallback scans', async () => {
+		const settings = learnerSettings(
+			'Biology',
+			'AQA',
+			emptyEnglishLiteratureSelections,
+			'Combined Science'
+		);
+		settings.profile.selectedTier = 'Foundation';
+		settings.subjects[0].tier = 'Foundation';
+		mocks.getLearnerProfileSettings.mockResolvedValue(settings);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string) =>
+			sql.includes("datetime('now', '-7 days')")
+				? { attempt_count: 0, recall_count: 0, closed_gap_count: 0 }
+				: null
+		);
+		mocks.queryPersonalRows.mockResolvedValue([]);
+		const publicCatalog: SubjectLearningPublicCatalog = {
+			version: 2,
+			boardAvailability: [{ subject: 'Biology', boards: ['AQA'] }],
+			resumeQuestions: [],
+			offerings: []
+		};
+
+		const home = await getSignedInLearningHome(testUser, {
+			persistRecommendations: false,
+			publicCatalog
+		});
+
+		expect(home.subjects).toHaveLength(1);
+		expect(home.subjects[0]).toMatchObject({
+			subject: 'Biology',
+			tier: 'Foundation',
+			scope: { status: 'not_available' },
+			nextAction: {
+				id: 'foundation-not-ready',
+				available: false
+			}
+		});
+		expect(mocks.getCurriculumOffering).not.toHaveBeenCalled();
+		expect(mocks.queryRows).not.toHaveBeenCalled();
+	});
 });
 
 describe('signed-in subject action integrity', () => {
@@ -790,6 +833,8 @@ describe('signed-in subject action integrity', () => {
 			title: 'Cell biology recall',
 			available: true
 		});
+		expect(view?.nextAction.href).toContain('topic=biology-cell-biology');
+		expect(view?.nextAction.href).not.toContain('topic=biology-topic-4-1');
 		expect(view?.nextAction.title).not.toBe('Recall Cell biology');
 	});
 
@@ -982,6 +1027,14 @@ describe('signed-in subject action integrity', () => {
 			expect.stringContaining('WHERE user_id = ? AND subject = ?'),
 			[testUser.uid, 'Biology']
 		);
+
+		mocks.executePersonalQuery.mockClear();
+		const snapshotView = await getSignedInLearningHome(testUser, {
+			persistRecommendations: false
+		});
+
+		expect(snapshotView.subjects[0]?.nextAction.reason).not.toBe('Based on old evidence.');
+		expect(mocks.executePersonalQuery).not.toHaveBeenCalled();
 	});
 
 	it('recommends a confirmed in-scope gap and encodes its direct practice route', async () => {
@@ -1370,25 +1423,16 @@ describe('signed-in subject action integrity', () => {
 			groups
 		});
 		mocks.getCurriculumOffering.mockResolvedValue(offering);
-		mocks.queryPersonalFirst.mockImplementation(async (sql: string) => {
-			if (sql.includes('FROM user_profile_subjects')) {
-				return {
-					board: 'OCR',
-					qualification: 'GCSE',
-					course: 'GCSE Subject',
-					tier: 'Higher'
-				};
-			}
-			if (sql.includes('FROM user_english_literature_selections')) {
-				return {
-					modern_text: selectedTitles[0],
-					nineteenth_century_novel: selectedTitles[1],
-					poetry_cluster: selectedTitles[2],
-					shakespeare_play: selectedTitles[3]
-				};
-			}
-			return null;
-		});
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('English Literature', 'OCR', {
+				board: 'OCR',
+				specificationCode: 'J352',
+				modernText: selectedTitles[0],
+				nineteenthCenturyNovel: selectedTitles[1],
+				poetryCluster: selectedTitles[2],
+				shakespearePlay: selectedTitles[3]
+			})
+		);
 		const cards = allTitles.map(
 			(title, index) =>
 				({
@@ -1419,10 +1463,80 @@ describe('signed-in subject action integrity', () => {
 				}) satisfies RecallCard
 		);
 
-		const scoped = await recallCardsWithinLearnerScope(testUser.uid, 'English Literature', cards);
+		const scoped = await recallCardsWithinLearnerScope(testUser, 'English Literature', cards);
 
 		expect(scoped.map((card) => card.topicTitle)).toEqual(selectedTitles);
 		expect(scoped).toHaveLength(4);
+	});
+
+	it('uses an effective default science subject when no explicit subject profile row exists', async () => {
+		const offering = curriculumOffering({
+			subject: 'Biology',
+			course: 'Combined Science',
+			specificationCode: '8464',
+			groups: [
+				{
+					id: 'biology-chapters',
+					title: 'Chapters',
+					kind: 'group',
+					displayOrder: 0,
+					components: [curriculumComponent('biology-topic-4-1', '4.1', 'Cell biology', 0)]
+				}
+			]
+		});
+		mocks.getLearnerProfileSettings.mockResolvedValue(
+			learnerSettings('Biology', 'AQA', emptyEnglishLiteratureSelections, 'Combined Science')
+		);
+		mocks.getCurriculumOffering.mockResolvedValue(offering);
+		mocks.queryPersonalFirst.mockImplementation(async (sql: string) => {
+			if (sql.includes('FROM user_subject_curriculum_scopes')) {
+				return {
+					user_id: testUser.uid,
+					subject: 'Biology',
+					board: 'AQA',
+					qualification: 'GCSE',
+					course: 'Combined Science',
+					tier: 'Higher',
+					specification_code: '8464',
+					specification_version: '1.0',
+					official_source_url: 'https://example.test/specification',
+					scope_mode: 'all',
+					selected_component_ids_json: '[]',
+					updated_at: '2026-07-14 00:00:00'
+				};
+			}
+			return null;
+		});
+		const recallCard = {
+			id: 'cell-card',
+			board: 'AQA',
+			qualification: 'GCSE',
+			subject: 'Biology',
+			topicId: 'biology-cell-biology',
+			specRef: '4.1.1',
+			kind: 'fact',
+			visualCue: '🔬',
+			front: 'What does the nucleus contain?',
+			back: 'Genetic material.',
+			distractors: ['Cell sap'],
+			choiceKeys: { 'Genetic material.': 'correct', 'Cell sap': 'wrong' },
+			sourceUrl: 'https://example.test/specification',
+			sourceTitle: 'AQA GCSE Biology',
+			offeringId: offering.id,
+			curriculumComponentId: 'biology-topic-4-1-leaf',
+			topicComponentId: 'biology-topic-4-1',
+			contentRevision: 1,
+			contentHash: 'c'.repeat(64)
+		} satisfies RecallCard;
+
+		await expect(recallCardsWithinLearnerScope(testUser, 'Biology', [recallCard])).resolves.toEqual(
+			[recallCard]
+		);
+		expect(
+			mocks.queryPersonalFirst.mock.calls.some(([sql]) =>
+				String(sql).includes('FROM user_profile_subjects')
+			)
+		).toBe(false);
 	});
 });
 

@@ -26,6 +26,10 @@
 		ResponseRequestError,
 		type RequestFailure
 	} from '$lib/requestFailure';
+	import {
+		createLatestProfileSaveQueue,
+		handleProfileSaveSnapshotResult
+	} from './profileSaveClient';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -73,6 +77,9 @@
 	let saveToastTone = $state<ToastTone>('success');
 	let saveFailure = $state<RequestFailure | null>(null);
 	let pendingLocalProfile = $state<AnonymousLearnerProfile | null>(null);
+	const profileSaveQueue = createLatestProfileSaveQueue((revision) => {
+		queueMicrotask(() => startProfileSaveRequest(revision));
+	});
 
 	const enabledCount = $derived(subjects.filter((subject) => subject.enabled).length);
 	const englishLiteratureSelectionCount = $derived(
@@ -96,21 +103,31 @@
 			saveLocalProfile();
 			return;
 		}
-		activeSaveController?.abort();
+		const submittedRevision = profileSaveQueue.activeRevision;
+		if (submittedRevision === null) {
+			cancel();
+			profileSaveQueue.request(changeRevision);
+			return;
+		}
+		if (activeSaveController) {
+			cancel();
+			profileSaveQueue.request(changeRevision);
+			return;
+		}
 		activeSaveController = controller;
 		saveStatus = 'saving';
-		const submittedRevision = changeRevision;
 		saveTimeoutTimer = setTimeout(() => {
 			if (activeSaveController !== controller) return;
-			controller.abort();
+			saveTimeoutTimer = null;
 			handleAutosaveFailure(
-				submittedRevision,
+				changeRevision,
 				new DOMException('Profile save timed out.', 'AbortError'),
 				true
 			);
 		}, autosaveTimeoutMs);
 
 		return async ({ result }) => {
+			const snapshotSaveConfirmed = handleProfileSaveSnapshotResult(result);
 			if (activeSaveController !== controller) return;
 			if (saveTimeoutTimer) {
 				clearTimeout(saveTimeoutTimer);
@@ -118,13 +135,14 @@
 			}
 			if (activeSaveController === controller) activeSaveController = null;
 
-			if (result.type === 'success') {
+			if (snapshotSaveConfirmed) {
 				if (changeRevision === submittedRevision) {
 					saveStatus = 'saved';
 					saveFailure = null;
 					if (pendingLocalProfile) markAnonymousLearnerProfileSynced(pendingLocalProfile);
 					showSaveToast('Profile saved', 'success');
 				}
+				profileSaveQueue.settle(submittedRevision);
 				return;
 			}
 
@@ -134,7 +152,10 @@
 					: new ResponseRequestError('Profile save request failed.', {
 							status: result.status || 500
 						});
-			handleAutosaveFailure(submittedRevision, resultError);
+			if (changeRevision === submittedRevision) {
+				handleAutosaveFailure(submittedRevision, resultError);
+			}
+			profileSaveQueue.settle(submittedRevision);
 		};
 	};
 
@@ -142,6 +163,13 @@
 		if (!browser) return;
 		const handleOffline = () => {
 			if (autosaveTimer || activeSaveController || saveStatus === 'saving') {
+				if (autosaveTimer) {
+					clearTimeout(autosaveTimer);
+					autosaveTimer = null;
+				}
+				if (profileSaveQueue.activeRevision !== null) {
+					profileSaveQueue.request(changeRevision);
+				}
 				handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 			}
 		};
@@ -152,6 +180,7 @@
 			if (toastTimer) clearTimeout(toastTimer);
 			if (saveTimeoutTimer) clearTimeout(saveTimeoutTimer);
 			activeSaveController?.abort();
+			profileSaveQueue.reset();
 		};
 	});
 
@@ -175,20 +204,43 @@
 			}, autosaveDelayMs);
 			return;
 		}
+		if (autosaveTimer) {
+			clearTimeout(autosaveTimer);
+			autosaveTimer = null;
+		}
 		if (browser && !navigator.onLine) {
+			if (profileSaveQueue.activeRevision !== null) {
+				profileSaveQueue.request(changeRevision);
+			}
 			handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 			return;
 		}
 		saveStatus = 'saving';
-		if (autosaveTimer) clearTimeout(autosaveTimer);
 		autosaveTimer = setTimeout(() => {
 			autosaveTimer = null;
 			if (browser && !navigator.onLine) {
+				if (profileSaveQueue.activeRevision !== null) {
+					profileSaveQueue.request(changeRevision);
+				}
 				handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 				return;
 			}
-			profileForm?.requestSubmit();
+			profileSaveQueue.request(changeRevision);
 		}, autosaveDelayMs);
+	}
+
+	function startProfileSaveRequest(revision: number) {
+		if (profileSaveQueue.activeRevision !== revision) return;
+		if (!profileForm) {
+			profileSaveQueue.reset();
+			return;
+		}
+		if (browser && !navigator.onLine) {
+			profileSaveQueue.reset();
+			handleAutosaveFailure(revision, new TypeError('Browser is offline.'));
+			return;
+		}
+		profileForm.requestSubmit();
 	}
 
 	function saveLocalProfile() {
@@ -211,17 +263,6 @@
 	}
 
 	function handleAutosaveFailure(revision: number, error: unknown, timedOut = false) {
-		if (autosaveTimer) {
-			clearTimeout(autosaveTimer);
-			autosaveTimer = null;
-		}
-		if (saveTimeoutTimer) {
-			clearTimeout(saveTimeoutTimer);
-			saveTimeoutTimer = null;
-		}
-		const controller = activeSaveController;
-		activeSaveController = null;
-		controller?.abort();
 		if (changeRevision !== revision) return;
 		saveStatus = 'error';
 		saveFailure = classifyRequestFailure(error, {
@@ -244,12 +285,15 @@
 			return;
 		}
 		if (browser && !navigator.onLine) {
+			if (profileSaveQueue.activeRevision !== null) {
+				profileSaveQueue.request(changeRevision);
+			}
 			handleAutosaveFailure(changeRevision, new TypeError('Browser is offline.'));
 			return;
 		}
 		saveFailure = null;
 		saveStatus = 'saving';
-		profileForm?.requestSubmit();
+		profileSaveQueue.request(changeRevision);
 	}
 
 	function showSaveToast(message: string, tone: ToastTone) {
@@ -521,7 +565,7 @@
 														<p>
 															{notice.body}
 															{#if source?.sourceUrl}
-																{' '}
+																<!-- eslint-disable svelte/no-navigation-without-resolve -->
 																<a
 																	class="qc-real-quiet-link"
 																	href={source.sourceUrl}
@@ -531,6 +575,7 @@
 																	{source.label ?? 'Official source'}
 																	<ExternalLink size={11} strokeWidth={2.2} aria-hidden="true" />
 																</a>
+																<!-- eslint-enable svelte/no-navigation-without-resolve -->
 															{/if}
 														</p>
 													</details>

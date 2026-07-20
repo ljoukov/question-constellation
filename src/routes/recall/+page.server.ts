@@ -59,7 +59,7 @@ export const load: PageServerLoad = async ({ locals, url, platform }) => {
 	const catalogCards = await getRecallCards(catalogScope ?? undefined);
 	const allCards =
 		locals.user && reviewSubject
-			? await recallCardsWithinLearnerScope(locals.user.uid, reviewSubject, catalogCards)
+			? await recallCardsWithinLearnerScope(locals.user, reviewSubject, catalogCards)
 			: catalogCards;
 	const requestedTopic = url.searchParams.get('topic');
 	const aggregateTopicRequested = !requestedTopic || requestedTopic === 'all';
@@ -73,7 +73,7 @@ export const load: PageServerLoad = async ({ locals, url, platform }) => {
 	if (locals.user && !aggregateTopicRequested && reviewSubject && requestedTopic) {
 		requestedTopicAllowed =
 			hasRequestedTopic &&
-			(await isRecallTopicWithinLearnerScope(locals.user.uid, reviewSubject, requestedTopic));
+			(await isRecallTopicWithinLearnerScope(locals.user, reviewSubject, requestedTopic));
 	}
 	if (locals.user) {
 		if (allCards.length === 0 || !requestedTopicAllowed) {

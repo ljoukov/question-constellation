@@ -164,13 +164,6 @@ export type QuestionChainPageData = AnswerChainPageData & {
 	practiceQuestion: Question;
 };
 
-export type ChallengeQuestionPairData = {
-	question: Question;
-	transferQuestion: Question;
-	chain: AnswerChain;
-	questionStandaloneAvailable: boolean;
-};
-
 export type ConstellationPageData = AnswerChainPageData & {
 	practiceQuestion: Question;
 };
@@ -827,19 +820,6 @@ function questionAssetFromRow(row: AssetRow): QuestionAsset | null {
 	};
 }
 
-async function getQuestionAssets(questionId: string): Promise<QuestionAsset[]> {
-	const rows = await queryRows<AssetRow>(
-		`SELECT id, asset_type, source_label, public_path, r2_key, alt_text, required, role, metadata_json
-		 FROM question_assets
-		 WHERE question_id = ?
-		   AND needs_human_review = 0
-		 ORDER BY required DESC, source_label, id`,
-		[questionId]
-	);
-
-	return rows.map(questionAssetFromRow).filter((asset): asset is QuestionAsset => Boolean(asset));
-}
-
 function renderingOverlayFromRow(row: RenderingOverlayRow): QuestionRenderingOverlay {
 	const renderObject = parseJson<Record<string, unknown>>(row.render_json, {});
 
@@ -979,10 +959,6 @@ function checklistFromRows(
 	};
 }
 
-async function getChecklist(questionId: string, chain: AnswerChain): Promise<MarkChecklistItem[]> {
-	return checklistFromRows(await getStoredChecklist(questionId), chain).items;
-}
-
 function weakAnswerFromRow(
 	row: WeakAnswerRow | null,
 	chain: AnswerChain
@@ -1017,37 +993,6 @@ function weakAnswerFromRow(
 		explanation: '',
 		missingStepIds
 	};
-}
-
-async function getWeakAnswer(
-	questionId: string,
-	chain: AnswerChain
-): Promise<{
-	text: string;
-	explanation: string;
-	missingStepIds: string[];
-}> {
-	const row = await queryFirst<WeakAnswerRow>(
-		`SELECT weak_answer_text, explanation, missing_chain_step_ids_json
-		 FROM common_weak_answers
-		 WHERE question_id = ?
-		   AND needs_human_review = 0
-		 ORDER BY CASE
-		            WHEN explanation IS NOT NULL AND TRIM(explanation) <> '' THEN 0
-		            ELSE 1
-		          END,
-		          CASE
-		            WHEN missing_chain_step_ids_json IS NOT NULL
-		              AND missing_chain_step_ids_json <> '[]' THEN 0
-		            ELSE 1
-		          END,
-		          COALESCE(confidence, 0) DESC,
-		          LENGTH(COALESCE(explanation, '')) DESC,
-		          id
-		 LIMIT 1`,
-		[questionId]
-	);
-	return weakAnswerFromRow(row, chain);
 }
 
 async function getQuestionSupplements(
@@ -2853,71 +2798,6 @@ export async function getQuestionChainPageData(questionId: string): Promise<Ques
 		constellation: context.constellation,
 		question: context.question,
 		practiceQuestion: nextPracticeQuestionAfter(context.questions, context.question.id)
-	};
-}
-
-/**
- * Loads a reviewed source question and a specifically curated transfer question
- * from the same published chain.
- *
- * Public question collections omit rows whose generated card title is not safe
- * to show as a heading. Challenge transfer cards deliberately hide that title
- * and show only the reviewed question body, so this loader validates the
- * published same-chain membership while allowing that narrower presentation.
- */
-export async function getChallengeQuestionPairData(
-	questionId: string,
-	transferQuestionId: string
-): Promise<ChallengeQuestionPairData> {
-	const seed = await getQuestionChainSeed(questionId);
-	if (seed.row.id === transferQuestionId) {
-		throw new Error('Challenge source and transfer questions must be different.');
-	}
-
-	const [steps, illustration, transferRow] = await Promise.all([
-		getChainSteps(seed.chainRow.id),
-		getPublishedChainIllustration(seed.chainRow.id),
-		queryFirst<QuestionRow & MembershipRow>(
-			`SELECT q.id, q.source_question_ref, q.prompt_text, q.self_contained_prompt_text,
-		        q.context_text, q.command_word, q.marks, q.answer_format,
-		        q.board, q.qualification, q.subject, q.subject_area, q.tier, q.paper,
-		        q.topic_path_json, q.self_containment_json, q.metadata_json,
-		        qac.answer_chain_id, qac.transfer_distance, qac.display_order, qac.fit_confidence,
-		        qac.fit_notes, qac.needs_human_review
-		 FROM question_answer_chains qac
-		 JOIN questions q ON q.id = qac.question_id
-		 WHERE q.id = ?
-		   AND qac.answer_chain_id = ?
-		   AND qac.needs_human_review = 0
-		   AND q.needs_human_review = 0
-		   AND q.status = 'published'
-		 LIMIT 1`,
-			[transferQuestionId, seed.chainRow.id]
-		)
-	]);
-	if (!transferRow) {
-		throw new Error('Challenge transfer question is not in the source question chain.');
-	}
-
-	const chain = buildAnswerChain(seed.chainRow, steps, illustration);
-	const supplements = await getQuestionSupplements([seed.row.id, transferRow.id]);
-	const question = hydrateQuestionFromSupplement(
-		seed.row,
-		chain,
-		seed.membership,
-		supplements.get(seed.row.id) ?? emptyQuestionSupplement()
-	);
-
-	return {
-		question,
-		transferQuestion: hydrateQuestionFromSupplement(
-			transferRow,
-			chain,
-			transferRow,
-			supplements.get(transferRow.id) ?? emptyQuestionSupplement()
-		),
-		chain,
-		questionStandaloneAvailable: hasSafeQuestionCardTitle(question)
 	};
 }
 

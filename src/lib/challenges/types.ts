@@ -1,8 +1,36 @@
-export type ChallengeSubject = 'biology' | 'physics';
+export type ChallengeSubject = 'biology' | 'chemistry' | 'physics';
 
 export type ChallengeMechanic = 'missing-link' | 'first-wrong-step';
 
 export type ChallengeDifficulty = 'starter' | 'standard' | 'stretch';
+
+export type BiologySubjectArtTheme =
+	| 'cells-practical'
+	| 'biochemistry'
+	| 'inheritance-reproduction'
+	| 'regulation-immunity';
+
+export type ChemistrySubjectArtTheme =
+	| 'particles-bonding'
+	| 'reactions-energy'
+	| 'practical-analysis'
+	| 'materials-industry';
+
+export type PhysicsSubjectArtTheme =
+	| 'forces-motion'
+	| 'electricity-magnetism'
+	| 'thermal-particles'
+	| 'radiation-measurement';
+
+export type ChallengeSubjectArtTheme =
+	| BiologySubjectArtTheme
+	| ChemistrySubjectArtTheme
+	| PhysicsSubjectArtTheme;
+
+export type ChallengeSubjectArtAssignment =
+	| { subject: 'biology'; subjectArtTheme: BiologySubjectArtTheme }
+	| { subject: 'chemistry'; subjectArtTheme: ChemistrySubjectArtTheme }
+	| { subject: 'physics'; subjectArtTheme: PhysicsSubjectArtTheme };
 
 export type ChallengeArc =
 	| 'read-the-evidence'
@@ -26,21 +54,34 @@ export type ChallengeChoice = {
 	correct: boolean;
 };
 
-export type ChallengeDefinition = {
+export type ChallengeQuestionPresentation = {
+	lead: string;
+	task: string;
+	table?: {
+		caption: string;
+		columns: [string, string];
+		rows: Array<[string, string]>;
+	};
+};
+
+type ChallengeDefinitionCore = {
 	id: string;
 	slug: string;
-	subject: ChallengeSubject;
 	title: string;
 	topic: string;
 	hook: string;
 	arc: ChallengeArc;
 	mechanic: ChallengeMechanic;
 	difficulty: ChallengeDifficulty;
+	marks: number;
 	estimatedMinutes: number;
 	previewQuestion: string;
+	questionPresentation?: ChallengeQuestionPresentation;
 	metaDescription: string;
-	sourceQuestionId: string;
-	transferQuestionId: string;
+	/** Optional internal provenance. Never required to launch an authored challenge. */
+	sourceQuestionId?: string;
+	/** Optional internal provenance. Never required to launch an authored challenge. */
+	transferQuestionId?: string;
 	lastReviewed: string;
 	version: number;
 	staticAnswers: Record<ChallengeAnswerId, string>;
@@ -60,6 +101,8 @@ export type ChallengeDefinition = {
 	transferExplanation: string;
 	memoryHandle: string;
 };
+
+export type ChallengeDefinition = ChallengeDefinitionCore & ChallengeSubjectArtAssignment;
 
 export type ChallengeSubjectDefinition = {
 	subject: ChallengeSubject;

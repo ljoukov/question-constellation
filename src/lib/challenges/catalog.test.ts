@@ -7,30 +7,8 @@ import {
 	challengeSubjects,
 	challengesForSubject
 } from './catalog';
+import { challengeIds, challengeRouteIdentities } from './catalogIdentity';
 import type { ChallengeChoice } from './types';
-
-const expectedChallengeIds = [
-	'biology-data-conclusions',
-	'biology-cell-differences',
-	'biology-extra-controls',
-	'biology-enzyme-denature',
-	'biology-reagent-colour',
-	'biology-heated-food-test',
-	'biology-ivf-sequence',
-	'biology-vaccine-immunity',
-	'physics-gas-pressure',
-	'physics-half-range',
-	'physics-weight-equation',
-	'physics-momentum-sharing',
-	'physics-conductivity-rate',
-	'physics-motor-force',
-	'physics-parallel-currents',
-	'physics-resultant-acceleration',
-	'physics-radiation-risk',
-	'physics-drag-balance',
-	'physics-thinking-distance',
-	'physics-zero-resultant'
-] as const;
 
 const expectedWeakAnswerKinds = {
 	'biology-data-conclusions': 'incorrect-claim',
@@ -41,6 +19,18 @@ const expectedWeakAnswerKinds = {
 	'biology-heated-food-test': 'incomplete',
 	'biology-ivf-sequence': 'incorrect-claim',
 	'biology-vaccine-immunity': 'incorrect-claim',
+	'biology-homeostasis-control': 'incorrect-claim',
+	'biology-recessive-inheritance': 'wrong-value',
+	'chemistry-alloy-hardness': 'incorrect-claim',
+	'chemistry-collision-rate': 'incorrect-claim',
+	'chemistry-stoichiometric-mass': 'wrong-value',
+	'chemistry-constant-mass': 'incorrect-claim',
+	'chemistry-ionic-bonding': 'incorrect-claim',
+	'chemistry-molten-electrolysis': 'incorrect-claim',
+	'chemistry-exothermic-energy': 'incorrect-claim',
+	'chemistry-flame-tests': 'incomplete',
+	'chemistry-equilibrium-pressure': 'incorrect-claim',
+	'chemistry-life-cycle': 'incorrect-claim',
 	'physics-gas-pressure': 'incorrect-claim',
 	'physics-half-range': 'wrong-value',
 	'physics-weight-equation': 'incorrect-claim',
@@ -64,6 +54,10 @@ const reviewedWeakAnswerSourceIds = new Set([
 	'8464b1h-jun24-01-2',
 	'8464b2h-jun24-03-5',
 	'8464b1h-jun24-03-3',
+	'8464c1h-jun24-01-2',
+	'84622h-jun24-09-5',
+	'8464c1h-jun24-05-2',
+	'84622h-jun24-01-3',
 	'84631h-jun24-08-1',
 	'84632h-jun24-05-4',
 	'8464p2h-jun24-06-2',
@@ -95,6 +89,14 @@ const questionChainById = new Map<string, string>([
 	['8464b2h-jun22-05-5', 'biology-ivf-sequence'],
 	['8464b1h-jun24-03-3', 'biology-vaccine-immunity'],
 	['8464b1h-nov20-04-2', 'biology-vaccine-immunity'],
+	['8464c1h-jun24-01-2', 'chemistry-alloy-hardness'],
+	['8464c1h-jun22-05-3', 'chemistry-alloy-hardness'],
+	['84622h-jun24-09-5', 'chemistry-collision-rate'],
+	['8464c2h-jun24-02-2', 'chemistry-collision-rate'],
+	['8464c1h-jun24-05-2', 'chemistry-stoichiometric-mass'],
+	['8464c1h-nov20-06-3', 'chemistry-stoichiometric-mass'],
+	['84622h-jun24-01-3', 'chemistry-constant-mass'],
+	['8464c2h-jun24-06-3', 'chemistry-constant-mass'],
 	['84631h-jun24-08-1', 'physics-gas-pressure'],
 	['aqa-8464p1h-qp-jun22-04-4', 'physics-gas-pressure'],
 	['84632h-jun24-05-4', 'physics-half-range'],
@@ -148,11 +150,21 @@ function expectThreeChoicesWithOneCorrect(choices: ChallengeChoice[]): void {
 }
 
 describe('challenge launch catalog', () => {
-	it('contains exactly the 8 Biology and 12 Physics reviewed launch definitions', () => {
-		expect(challengeCatalog).toHaveLength(20);
-		expect(challengeCatalog.map((challenge) => challenge.id)).toEqual(expectedChallengeIds);
-		expect(challengesForSubject('biology')).toHaveLength(8);
+	it('contains exactly 10 Biology, 10 Chemistry and 12 Physics definitions', () => {
+		expect(challengeCatalog).toHaveLength(32);
+		expect(challengeCatalog.map((challenge) => challenge.id)).toEqual(challengeIds);
+		expect(challengeCatalog.map(({ id, slug, subject }) => ({ id, slug, subject }))).toEqual(
+			challengeRouteIdentities
+		);
+		expect(challengesForSubject('biology')).toHaveLength(10);
+		expect(challengesForSubject('chemistry')).toHaveLength(10);
 		expect(challengesForSubject('physics')).toHaveLength(12);
+	});
+
+	it('provides two question contexts per challenge for 20, 20 and 24 subject contexts', () => {
+		expect(challengesForSubject('biology').length * 2).toBe(20);
+		expect(challengesForSubject('chemistry').length * 2).toBe(20);
+		expect(challengesForSubject('physics').length * 2).toBe(24);
 	});
 
 	it('uses unique ids, slugs and public paths', () => {
@@ -177,18 +189,179 @@ describe('challenge launch catalog', () => {
 			'biology-data-conclusions'
 		);
 		expect(challengeByRoute('biology', 'does-not-exist')).toBeUndefined();
+		expect(challengeByRoute('chemistry', 'temperature-collision-rate')?.id).toBe(
+			'chemistry-collision-rate'
+		);
+		expect(challengeByRoute(' CHEMISTRY ', ' TEMPERATURE-COLLISION-RATE ')?.id).toBe(
+			'chemistry-collision-rate'
+		);
 		expect(challengeByRoute('chemistry', 'smoking-risk-data-conclusions')).toBeUndefined();
-		expect(challengesForSubject('chemistry')).toEqual([]);
 	});
 
-	it('keeps source and transfer questions distinct but within the same reviewed chain', () => {
+	it('keeps the four original authored Chemistry cases stable', () => {
+		const originalChemistryIds = new Set([
+			'chemistry-alloy-hardness',
+			'chemistry-collision-rate',
+			'chemistry-stoichiometric-mass',
+			'chemistry-constant-mass'
+		]);
+		expect(
+			challengesForSubject('chemistry')
+				.filter(({ id }) => originalChemistryIds.has(id))
+				.map(({ id, slug, marks }) => ({
+					id,
+					slug,
+					marks
+				}))
+		).toEqual([
+			{
+				id: 'chemistry-alloy-hardness',
+				slug: 'alloy-hardness',
+				marks: 3
+			},
+			{
+				id: 'chemistry-collision-rate',
+				slug: 'temperature-collision-rate',
+				marks: 3
+			},
+			{
+				id: 'chemistry-stoichiometric-mass',
+				slug: 'ammonia-to-hydrogen-mass',
+				marks: 4
+			},
+			{
+				id: 'chemistry-constant-mass',
+				slug: 'heat-to-constant-mass',
+				marks: 1
+			}
+		]);
+	});
+
+	it('keeps reviewed Biology feedback consistent with the visible prompt and command', () => {
+		const dataConclusions = challengeCatalog.find(({ id }) => id === 'biology-data-conclusions');
+		const controls = challengeCatalog.find(({ id }) => id === 'biology-extra-controls');
+		const ivf = challengeCatalog.find(({ id }) => id === 'biology-ivf-sequence');
+		const vaccine = challengeCatalog.find(({ id }) => id === 'biology-vaccine-immunity');
+
+		expect(dataConclusions).toBeDefined();
+		expect(controls).toBeDefined();
+		expect(ivf).toBeDefined();
+		expect(vaccine).toBeDefined();
+
+		expect(dataConclusions?.repairChoices.map(({ text }) => text).join(' ')).not.toMatch(
+			/\bdisease H\b/i
+		);
+		expect(dataConclusions?.repairChoices.map(({ text }) => text).join(' ')).toMatch(
+			/\bdisease Z\b/i
+		);
+
+		expect(controls?.freeTextKeywordGroups).toHaveLength(2);
+		expect(controls?.staticAnswers.b).toMatch(/\bsame hand\b/i);
+		expect(controls?.staticAnswers.b).toMatch(/\bsame amount of sleep\b/i);
+		expect(
+			controls?.transferChoices.find(({ id }) => id === 'liver-disease-gender')?.feedback
+		).not.toMatch(/\bexcluded\b/i);
+
+		expect(ivf?.transferChoices.find(({ id }) => id === 'fertilise-inside')?.feedback).toMatch(
+			/laboratory rather than the uterus/i
+		);
+		expect(ivf?.transferChoices.find(({ id }) => id === 'collect-insert-eggs')?.feedback).toMatch(
+			/transferred to the uterus/i
+		);
+
+		expect(vaccine?.diagnosisChoices.find(({ id }) => id === 'must-be-live')?.feedback).toBe(
+			'Lymphocytes make specific antibodies; phagocytes do not.'
+		);
+	});
+
+	it('requires the activation-energy link in the collision-theory challenge', () => {
+		const collisionRate = challengeCatalog.find(({ id }) => id === 'chemistry-collision-rate');
+		expect(collisionRate).toBeDefined();
+
+		expect(collisionRate?.freeTextKeywordGroups.flat()).not.toContain('successful collisions');
+		expect(collisionRate?.repairChoices.find(({ correct }) => correct)?.text).toMatch(
+			/enough energy to react/i
+		);
+		expect(collisionRate?.transferChoices.find(({ correct }) => correct)?.text).toMatch(
+			/enough energy to react/i
+		);
+		expect(collisionRate?.memoryHandle).toMatch(/activation energy/i);
+	});
+
+	it('uses distinct, source-matched Chemistry transfer contexts', () => {
+		const stoichiometry = challengeCatalog.find(({ id }) => id === 'chemistry-stoichiometric-mass');
+		const constantMass = challengeCatalog.find(({ id }) => id === 'chemistry-constant-mass');
+
+		expect(stoichiometry).toBeDefined();
+		expect(constantMass).toBeDefined();
+
+		expect(stoichiometry?.transferQuestionId).toBe('8464c1h-nov20-06-3');
+		expect(stoichiometry?.transferPromptLead).toMatch(/gold reacts with chlorine/i);
+		expect(stoichiometry?.transferPromptLead).not.toMatch(/\bammonia\b/i);
+		expect(stoichiometry?.transferChoices.find(({ correct }) => correct)?.text).toMatch(
+			/94\.6.*mg/i
+		);
+
+		expect(constantMass?.transferQuestionId).toBe('8464c2h-jun24-06-3');
+		expect(constantMass?.transferPromptLead).toMatch(/seawater sample/i);
+		expect(constantMass?.transferExplanation).toMatch(/dissolved-solid mass/i);
+		expect(
+			[
+				constantMass?.transferPromptLead,
+				constantMass?.transferExplanation,
+				...constantMass!.transferChoices.map(({ text, feedback }) => [text, feedback ?? '']).flat()
+			].join(' ')
+		).not.toMatch(/\bprecipitate\b/i);
+	});
+
+	it('keeps internal source lineage and product jargon out of Chemistry learner copy', () => {
+		for (const challenge of challengesForSubject('chemistry')) {
+			const learnerCopy = [
+				challenge.title,
+				challenge.topic,
+				challenge.hook,
+				challenge.previewQuestion,
+				challenge.staticAnswers.a,
+				challenge.staticAnswers.b,
+				challenge.showdownExplanation,
+				challenge.commandWordLesson,
+				challenge.diagnosisPrompt,
+				...challenge.diagnosisChoices.flatMap(({ text, feedback }) => [text, feedback ?? '']),
+				challenge.repairPrompt,
+				...challenge.repairChoices.flatMap(({ text, feedback }) => [text, feedback ?? '']),
+				challenge.repairSuccess,
+				challenge.transferPromptLead,
+				...challenge.transferChoices.flatMap(({ text, feedback }) => [text, feedback ?? '']),
+				challenge.transferExplanation,
+				challenge.memoryHandle
+			].join(' ');
+
+			expect(learnerCopy).not.toMatch(
+				/\b(?:past paper|source reconstruction|mark scheme|question chain|repair|difficulty)\b/i
+			);
+			if (challenge.sourceQuestionId) {
+				expect(learnerCopy).not.toContain(challenge.sourceQuestionId);
+			}
+			if (challenge.transferQuestionId) {
+				expect(learnerCopy).not.toContain(challenge.transferQuestionId);
+			}
+		}
+	});
+
+	it('validates optional internal provenance without making it a launch requirement', () => {
 		for (const challenge of challengeCatalog) {
-			expect(reviewedWeakAnswerSourceIds.has(challenge.sourceQuestionId)).toBe(true);
-			expect(challenge.sourceQuestionId).not.toBe(challenge.transferQuestionId);
-			expect(questionChainById.has(challenge.sourceQuestionId)).toBe(true);
-			expect(questionChainById.has(challenge.transferQuestionId)).toBe(true);
-			expect(questionChainById.get(challenge.sourceQuestionId)).toBe(
-				questionChainById.get(challenge.transferQuestionId)
+			const { sourceQuestionId, transferQuestionId } = challenge;
+			if (!sourceQuestionId && !transferQuestionId) continue;
+
+			expect(sourceQuestionId).toBeDefined();
+			expect(transferQuestionId).toBeDefined();
+			if (!sourceQuestionId || !transferQuestionId) continue;
+			expect(reviewedWeakAnswerSourceIds.has(sourceQuestionId)).toBe(true);
+			expect(sourceQuestionId).not.toBe(transferQuestionId);
+			expect(questionChainById.has(sourceQuestionId)).toBe(true);
+			expect(questionChainById.has(transferQuestionId)).toBe(true);
+			expect(questionChainById.get(sourceQuestionId)).toBe(
+				questionChainById.get(transferQuestionId)
 			);
 		}
 	});
@@ -202,8 +375,6 @@ describe('challenge launch catalog', () => {
 			'hook',
 			'previewQuestion',
 			'metaDescription',
-			'sourceQuestionId',
-			'transferQuestionId',
 			'lastReviewed',
 			'showdownExplanation',
 			'commandWordLesson',
@@ -356,12 +527,16 @@ describe('challenge launch catalog', () => {
 		for (const challenge of challengeCatalog) {
 			expect(challenge.metaDescription.length, challenge.id).toBeGreaterThanOrEqual(90);
 			expect(challenge.metaDescription.length, challenge.id).toBeLessThan(170);
-			expect(challenge.metaDescription).toMatch(/GCSE (Biology|Physics)/);
+			expect(challenge.metaDescription).toMatch(/GCSE (Biology|Chemistry|Physics)/);
 		}
 	});
 
 	it('exposes ordered subject and arc metadata with valid hero routes', () => {
-		expect(challengeSubjects.map((subject) => subject.subject)).toEqual(['biology', 'physics']);
+		expect(challengeSubjects.map((subject) => subject.subject)).toEqual([
+			'biology',
+			'chemistry',
+			'physics'
+		]);
 		for (const subject of challengeSubjects) {
 			expect(subject.label.trim().length).toBeGreaterThan(0);
 			expect(subject.description.trim().length).toBeGreaterThan(0);

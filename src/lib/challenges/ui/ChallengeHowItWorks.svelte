@@ -14,19 +14,19 @@
 	const steps = [
 		{
 			label: 'Compare',
-			description: 'Compare two plausible answers against the exact command word.'
+			description: 'Choose which of two plausible answers would score higher.'
 		},
 		{
-			label: 'Find the gap',
-			description: 'Identify the one omission, wrong claim or wrong value that matters.'
+			label: 'Find the problem',
+			description: 'Spot the one missing idea, wrong claim or wrong value that matters.'
 		},
 		{
-			label: 'Fix it',
-			description: 'Add the smallest link that makes the answer complete.'
+			label: 'Fix the answer',
+			description: 'Choose the smallest change that makes the answer stronger.'
 		},
 		{
-			label: 'New case',
-			description: 'Recognise the same Question Chain in a different exam context.'
+			label: 'Apply the method',
+			description: 'Use the same method in a different exam context.'
 		}
 	] as const;
 </script>

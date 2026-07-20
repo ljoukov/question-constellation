@@ -409,6 +409,25 @@ describe('paper sitting persistence and results', () => {
 });
 
 describe('full-paper browser integrity wiring', () => {
+	it('marks the home snapshot after any confirmed grading mutation, including partial runs', () => {
+		const source = readFileSync(
+			new URL('./components/FullPaperSitting.svelte', import.meta.url),
+			'utf8'
+		);
+		const gradingStart = source.indexOf('async function runGrading');
+		const gradingEnd = source.indexOf('async function finishOrContinue', gradingStart);
+		const grading = source.slice(gradingStart, gradingEnd);
+
+		expect(gradingStart).toBeGreaterThan(-1);
+		expect(grading).toContain('let snapshotWasMutated = false');
+		expect(grading.indexOf('const response = await gradeQuestion')).toBeLessThan(
+			grading.indexOf('snapshotWasMutated = true')
+		);
+		expect(grading).toContain('if (streamStarted) snapshotWasMutated = true');
+		expect(grading).toContain('finally {');
+		expect(grading).toContain('if (snapshotWasMutated) markHomeSnapshotDirty()');
+	});
+
 	it('flushes the newest server draft before submit and on browser suspension', () => {
 		const source = readFileSync(
 			new URL('./components/FullPaperSitting.svelte', import.meta.url),

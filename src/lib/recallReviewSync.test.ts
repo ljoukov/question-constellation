@@ -33,12 +33,17 @@ const review = (cardId: string, contentRevision = 3, contentHash = `${cardId}-ha
 
 describe('recall review sync queue', () => {
 	beforeEach(() => {
-		vi.stubGlobal('window', { localStorage: new MemoryStorage() });
+		vi.stubGlobal(
+			'window',
+			Object.assign(new EventTarget(), { localStorage: new MemoryStorage() })
+		);
 	});
 
 	afterEach(() => vi.unstubAllGlobals());
 
 	it('does not lose a content-versioned review queued while a flush is in flight', async () => {
+		const snapshotDirty = vi.fn();
+		window.addEventListener('qc:home-snapshot-dirty', snapshotDirty);
 		let resolveFirst: (response: Response) => void = () => {};
 		const fetchMock = vi
 			.fn()
@@ -75,6 +80,7 @@ describe('recall review sync queue', () => {
 			contentHash: 'new-content-hash'
 		});
 		expect(pendingRecallReviewCount('user-1')).toBe(0);
+		expect(snapshotDirty).toHaveBeenCalledOnce();
 	});
 
 	it('discards an explicitly stale review and continues with current queued content', async () => {
@@ -125,6 +131,8 @@ describe('recall review sync queue', () => {
 	});
 
 	it('retains retryable server and authentication failures', async () => {
+		const snapshotDirty = vi.fn();
+		window.addEventListener('qc:home-snapshot-dirty', snapshotDirty);
 		const fetchMock = vi
 			.fn()
 			.mockResolvedValueOnce(new Response('{}', { status: 500 }))
@@ -140,6 +148,27 @@ describe('recall review sync queue', () => {
 			});
 		}
 		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(pendingRecallReviewCount('user-1')).toBe(1);
+		expect(snapshotDirty).toHaveBeenCalledTimes(2);
+	});
+
+	it('marks a confirmed review dirty before returning a later retryable failure', async () => {
+		const snapshotDirty = vi.fn();
+		window.addEventListener('qc:home-snapshot-dirty', snapshotDirty);
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(new Response('{}', { status: 200 }))
+			.mockResolvedValueOnce(new Response('{}', { status: 500 }));
+		vi.stubGlobal('fetch', fetchMock);
+
+		queueRecallReview('user-1', review('card-saved'));
+		queueRecallReview('user-1', review('card-pending'));
+
+		await expect(flushRecallReviewQueue('user-1')).resolves.toMatchObject({
+			ok: false,
+			pendingCount: 1
+		});
+		expect(snapshotDirty).toHaveBeenCalledOnce();
 		expect(pendingRecallReviewCount('user-1')).toBe(1);
 	});
 

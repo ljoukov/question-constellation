@@ -35,6 +35,13 @@ const anonymousLearnerProfileSchema = z.object({
 
 export type AnonymousLearnerProfile = z.infer<typeof anonymousLearnerProfileSchema>;
 
+export type AnonymousProfileAccountMerge = {
+	subjects: LearnerSubject[];
+	englishLiteratureSelections: EnglishLiteratureSelections;
+	subjectsChanged: boolean;
+	englishLiteratureSelectionsChanged: boolean;
+};
+
 export function parseAnonymousLearnerProfile(value: unknown): AnonymousLearnerProfile | null {
 	const parsed = anonymousLearnerProfileSchema.safeParse(value);
 	return parsed.success ? parsed.data : null;
@@ -59,6 +66,128 @@ export function anonymousProfileSettings(
 		...defaults,
 		subjects: defaults.subjects.map((subject) => bySubject.get(subject.subject) ?? subject),
 		englishLiteratureSelections: profile.englishLiteratureSelections
+	};
+}
+
+function subjectKey(subject: string): string {
+	return subject.trim().toLowerCase();
+}
+
+function optionalText(value: string | null | undefined): string | null {
+	return value?.trim() || null;
+}
+
+function sameLearnerSubjects(left: LearnerSubject[], right: LearnerSubject[]): boolean {
+	return (
+		left.length === right.length &&
+		left.every((subject, index) => {
+			const other = right[index];
+			return (
+				other !== undefined &&
+				subject.subject === other.subject &&
+				subject.board === other.board &&
+				subject.qualification === other.qualification &&
+				subject.course === other.course &&
+				subject.tier === other.tier &&
+				subject.enabled === other.enabled &&
+				subject.currentGrade === other.currentGrade &&
+				subject.targetGrade === other.targetGrade
+			);
+		})
+	);
+}
+
+function sameEnglishLiteratureSelections(
+	left: EnglishLiteratureSelections,
+	right: EnglishLiteratureSelections
+): boolean {
+	return (
+		left.board === right.board &&
+		left.specificationCode === right.specificationCode &&
+		left.modernText === right.modernText &&
+		left.nineteenthCenturyNovel === right.nineteenthCenturyNovel &&
+		left.poetryCluster === right.poetryCluster &&
+		left.shakespearePlay === right.shakespearePlay
+	);
+}
+
+/**
+ * Imports useful anonymous choices without treating the anonymous profile as an
+ * authoritative replacement for an established account.
+ *
+ * Persisted account configuration wins for that subject, while a subject that
+ * has never been persisted can take the complete guest choice instead of the
+ * account's synthetic default. On persisted rows an enabled guest subject is
+ * additive, but guest nulls and disabled defaults never erase an account
+ * choice. Literature selections follow the same fill-only rule.
+ */
+export function mergeAnonymousProfileIntoAccount(
+	account: LearnerProfileSettings,
+	guest: AnonymousLearnerProfile,
+	establishedSubjectNames: Iterable<string>
+): AnonymousProfileAccountMerge {
+	const establishedSubjects = new Set(
+		Array.from(establishedSubjectNames, (subject) => subjectKey(subject))
+	);
+	const guestSubjects = new Map(
+		guest.subjects.map((subject) => [subjectKey(subject.subject), subject] as const)
+	);
+
+	const subjects = account.subjects.map((accountSubject) => {
+		const key = subjectKey(accountSubject.subject);
+		const guestSubject = guestSubjects.get(key);
+		if (!guestSubject) return { ...accountSubject };
+
+		const preserveAccountConfiguration = establishedSubjects.has(key);
+		if (!preserveAccountConfiguration) {
+			return {
+				...accountSubject,
+				board: guestSubject.board,
+				qualification: guestSubject.qualification,
+				course: guestSubject.course,
+				tier: guestSubject.tier,
+				enabled: guestSubject.enabled,
+				currentGrade: optionalText(guestSubject.currentGrade),
+				targetGrade: optionalText(guestSubject.targetGrade)
+			};
+		}
+		if (!guestSubject.enabled) return { ...accountSubject };
+
+		return {
+			...accountSubject,
+			enabled: true,
+			currentGrade:
+				optionalText(accountSubject.currentGrade) ?? optionalText(guestSubject.currentGrade),
+			targetGrade:
+				optionalText(accountSubject.targetGrade) ?? optionalText(guestSubject.targetGrade)
+		};
+	});
+
+	const englishLiteratureSelections: EnglishLiteratureSelections = {
+		board: account.englishLiteratureSelections.board,
+		specificationCode: account.englishLiteratureSelections.specificationCode,
+		modernText:
+			optionalText(account.englishLiteratureSelections.modernText) ??
+			optionalText(guest.englishLiteratureSelections.modernText),
+		nineteenthCenturyNovel:
+			optionalText(account.englishLiteratureSelections.nineteenthCenturyNovel) ??
+			optionalText(guest.englishLiteratureSelections.nineteenthCenturyNovel),
+		poetryCluster:
+			optionalText(account.englishLiteratureSelections.poetryCluster) ??
+			optionalText(guest.englishLiteratureSelections.poetryCluster),
+		shakespearePlay:
+			optionalText(account.englishLiteratureSelections.shakespearePlay) ??
+			optionalText(guest.englishLiteratureSelections.shakespearePlay)
+	};
+
+	return {
+		subjects,
+		englishLiteratureSelections,
+		subjectsChanged: !sameLearnerSubjects(account.subjects, subjects),
+		englishLiteratureSelectionsChanged: !sameEnglishLiteratureSelections(
+			account.englishLiteratureSelections,
+			englishLiteratureSelections
+		)
 	};
 }
 

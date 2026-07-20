@@ -26,9 +26,12 @@ export const PERSONAL_CLEANUP_TABLES = Object.freeze([
 	['user_subject_curriculum_scopes', 'user_id'],
 	['user_english_literature_selections', 'user_id'],
 	['user_profile_subjects', 'user_id'],
+	['user_challenge_progress', 'user_id'],
+	['user_home_snapshots', 'user_id'],
 	['user_profiles', 'uid']
 ]);
 export const ANALYTICS_CLEANUP_TABLES = Object.freeze([
+	'analytics_actor_labels',
 	'analytics_admin_audit',
 	'analytics_ai_summaries',
 	'analytics_events',
@@ -205,11 +208,14 @@ async function personalInventory(userId) {
 
 async function analyticsInventory(userId) {
 	const targetCte = targetSessionsCte();
+	const actorKey = userActorKey(userId);
 	const summaryParams = Array(5).fill(userId);
 	const adminParams = Array(2).fill(userId);
 	const [counts = {}] = await d1Rows(
 		`${targetCte}
 		 SELECT
+		  (SELECT COUNT(*) FROM analytics_actor_labels
+		    WHERE actor_key = ?) AS analytics_actor_labels,
 		  (SELECT COUNT(*) FROM target_sessions) AS analytics_sessions,
 		  (SELECT COUNT(*) FROM analytics_requests
 		    WHERE session_id IN (SELECT session_id FROM target_sessions)) AS analytics_requests,
@@ -219,7 +225,7 @@ async function analyticsInventory(userId) {
 		    WHERE user_id = ? OR session_id IN (SELECT session_id FROM target_sessions)) AS analytics_model_runs,
 		  (SELECT COUNT(*) FROM analytics_ai_summaries WHERE ${SUMMARY_PREDICATE}) AS analytics_ai_summaries,
 		  (SELECT COUNT(*) FROM analytics_admin_audit WHERE ${ADMIN_PREDICATE}) AS analytics_admin_audit`,
-		[userId, userId, userId, userId, userId, ...summaryParams, ...adminParams],
+		[userId, userId, userId, actorKey, userId, userId, ...summaryParams, ...adminParams],
 		{ binding: ANALYTICS_BINDING }
 	);
 	const [risks = {}] = await d1Rows(
@@ -262,6 +268,7 @@ async function deleteAnalyticsData(userId) {
 }
 
 export function analyticsCleanupStatements(userId = USER_ID) {
+	const actorKey = userActorKey(userId);
 	const summaryParams = Array(5).fill(userId);
 	const adminParams = Array(2).fill(userId);
 	return [
@@ -332,17 +339,22 @@ export function analyticsCleanupStatements(userId = USER_ID) {
 			sql: `DELETE FROM analytics_admin_audit WHERE ${ADMIN_PREDICATE}`,
 			params: adminParams
 		},
+		{
+			sql: 'DELETE FROM analytics_actor_labels WHERE actor_key = ?',
+			params: [actorKey]
+		},
 		{ sql: 'DELETE FROM _ux_cleanup_release_guard' },
 		{
 			sql: `INSERT INTO _ux_cleanup_release_guard (singleton)
 				      SELECT CASE WHEN
-				       NOT EXISTS (SELECT 1 FROM analytics_sessions WHERE user_id = ?)
+				       NOT EXISTS (SELECT 1 FROM analytics_actor_labels WHERE actor_key = ?)
+				       AND NOT EXISTS (SELECT 1 FROM analytics_sessions WHERE user_id = ?)
 				       AND NOT EXISTS (SELECT 1 FROM analytics_events WHERE user_id = ?)
 				       AND NOT EXISTS (SELECT 1 FROM analytics_model_runs WHERE user_id = ?)
 				       AND NOT EXISTS (SELECT 1 FROM analytics_ai_summaries WHERE ${SUMMARY_PREDICATE})
 				       AND NOT EXISTS (SELECT 1 FROM analytics_admin_audit WHERE ${ADMIN_PREDICATE})
 				      THEN 1 ELSE 0 END`,
-			params: [userId, userId, userId, ...summaryParams, ...adminParams]
+			params: [actorKey, userId, userId, userId, ...summaryParams, ...adminParams]
 		},
 		{ sql: 'DROP TABLE _ux_cleanup_target_sessions' },
 		{ sql: 'DROP TABLE _ux_cleanup_release_guard' }
@@ -397,6 +409,10 @@ function targetSessionsCte() {
 	 UNION
 	 SELECT session_id FROM analytics_model_runs WHERE user_id = ? AND session_id IS NOT NULL
 	)`;
+}
+
+function userActorKey(userId) {
+	return `user:${userId}`;
 }
 
 function sameStrings(left, right) {

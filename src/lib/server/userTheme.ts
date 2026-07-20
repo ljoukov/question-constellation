@@ -2,13 +2,22 @@ import type { AdminUser } from '$lib/server/auth/session';
 import { executePersonalQuery, queryPersonalFirst } from './db';
 
 export type ThemePreference = 'auto' | 'light' | 'dark';
+export type UserAppearancePreferences = {
+	themePreference: ThemePreference;
+	visualEffectsEnabled: boolean;
+};
 
 type UserThemeRow = {
 	theme_preference: string | null;
+	visual_effects_enabled: unknown;
 };
 
 export function safeThemePreference(value: unknown): ThemePreference {
 	return value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
+}
+
+export function safeVisualEffectsEnabled(value: unknown): boolean {
+	return value === 0 || value === false ? false : true;
 }
 
 async function upsertThemeProfile(user: AdminUser): Promise<void> {
@@ -26,17 +35,31 @@ async function upsertThemeProfile(user: AdminUser): Promise<void> {
 }
 
 export async function getUserThemePreference(user: AdminUser): Promise<ThemePreference> {
+	return (await getUserAppearancePreferences(user)).themePreference;
+}
+
+export async function getUserAppearancePreferences(
+	user: AdminUser
+): Promise<UserAppearancePreferences> {
 	const row = await queryPersonalFirst<UserThemeRow>(
-		`SELECT theme_preference
+		`SELECT theme_preference, visual_effects_enabled
 		 FROM user_profiles
 		 WHERE uid = ?`,
 		[user.uid]
 	);
 
-	if (row) return safeThemePreference(row.theme_preference);
+	if (row) {
+		return {
+			themePreference: safeThemePreference(row.theme_preference),
+			visualEffectsEnabled: safeVisualEffectsEnabled(row.visual_effects_enabled)
+		};
+	}
 
 	await upsertThemeProfile(user);
-	return 'auto';
+	return {
+		themePreference: 'auto',
+		visualEffectsEnabled: true
+	};
 }
 
 export async function updateUserThemePreference({
@@ -53,6 +76,24 @@ export async function updateUserThemePreference({
 		 SET theme_preference = ?, updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?`,
 		[safePreference, user.uid]
+	);
+	return safePreference;
+}
+
+export async function updateUserVisualEffectsPreference({
+	user,
+	visualEffectsEnabled
+}: {
+	user: AdminUser;
+	visualEffectsEnabled: boolean;
+}): Promise<boolean> {
+	const safePreference = safeVisualEffectsEnabled(visualEffectsEnabled);
+	await upsertThemeProfile(user);
+	await executePersonalQuery(
+		`UPDATE user_profiles
+		 SET visual_effects_enabled = ?, updated_at = CURRENT_TIMESTAMP
+		 WHERE uid = ?`,
+		[safePreference ? 1 : 0, user.uid]
 	);
 	return safePreference;
 }

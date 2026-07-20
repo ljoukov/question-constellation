@@ -5,14 +5,12 @@ import {
 	type ConstructedAnswerAssistance
 } from '$lib/learning/answerAssistance';
 import { curriculumOfferingTopics } from '$lib/curriculum/catalog';
-import type { CurriculumSelectionGroup } from '$lib/curriculum/catalog';
 import type { StemCurriculumTopic } from '$lib/curriculum/aqaStem';
 import {
 	computeLearnerState,
 	rankCandidateActions,
 	type EvidenceKind,
 	type EvidenceOutcome,
-	type LearnerEvidence,
 	type LearnerState,
 	type LearnerUncertainty,
 	type LearningActionCandidate
@@ -68,10 +66,16 @@ import type { GapFinalJudgeResult } from '$lib/server/personalLearning';
 import {
 	getLearnerProfileSettings,
 	type LearnerProfileSettings,
-	type LearnerSubject
+	type LearnerSubject,
+	type QuestionBoardAvailability
 } from '$lib/server/personalLearning';
-import { getCurriculumOffering } from '$lib/server/curriculumCatalog';
-import { getLatestResumeActionsBySubject } from '$lib/server/learningResume';
+import { getCurriculumOffering, getCurriculumProfileSnapshot } from '$lib/server/curriculumCatalog';
+import {
+	getFreshResumeQuestionCatalog,
+	getLatestResumeActionsBySubject,
+	type ResumeQuestionRow
+} from '$lib/server/learningResume';
+import { getPublicRoutePayload } from '$lib/server/publicRoutePayloads';
 import {
 	executePersonalQuery,
 	queryPersonalFirst,
@@ -209,7 +213,15 @@ type SubjectEvidenceBundle = {
 	reviews: RecallReviewBaseRow[];
 	attempts: AttemptRow[];
 	gaps: GapRow[];
-	recallCards: RecallCard[];
+	recallCards: SubjectLearningRecallCardProjection[];
+};
+
+type SubjectLearningCurriculumGroup = {
+	title: string;
+	kind: string;
+	selectionMin: number | null;
+	selectionMax: number | null;
+	components: { id: string }[];
 };
 
 type LearnerCurriculum = {
@@ -224,8 +236,40 @@ type LearnerCurriculum = {
 	specificationVersion: string;
 	specificationUrl: string;
 	label: string;
-	groups: CurriculumSelectionGroup[];
+	groups: SubjectLearningCurriculumGroup[];
 	topics: StemCurriculumTopic[];
+};
+
+export const SUBJECT_LEARNING_PUBLIC_CATALOG_ID = 'subject-learning:catalog';
+export const SUBJECT_LEARNING_PUBLIC_CATALOG_VERSION = 2 as const;
+export const SUBJECT_LEARNING_PUBLIC_CATALOG_MAX_JSON_CHARACTERS = 1_000_000;
+
+export type SubjectLearningRecallCardProjection = Pick<
+	RecallCard,
+	'id' | 'topicId' | 'topicComponentId' | 'contentRevision' | 'contentHash'
+>;
+
+export type SubjectLearningQuestionProjection = {
+	id: string;
+	title: string;
+	marks: number;
+	curriculumComponentId: string | null;
+	answerChainId: string;
+	mappingKind: 'exact_topic' | 'course_only';
+	contentOrder: number;
+};
+
+export type SubjectLearningCatalogOffering = {
+	curriculum: LearnerCurriculum;
+	recallCards: SubjectLearningRecallCardProjection[];
+	questions: SubjectLearningQuestionProjection[];
+};
+
+export type SubjectLearningPublicCatalog = {
+	version: typeof SUBJECT_LEARNING_PUBLIC_CATALOG_VERSION;
+	boardAvailability: Array<{ subject: string; boards: string[] }>;
+	resumeQuestions: ResumeQuestionRow[];
+	offerings: SubjectLearningCatalogOffering[];
 };
 
 type ProfileCourseConfiguration = {
@@ -384,17 +428,9 @@ export async function getRecallCardForLearner(
 	return null;
 }
 
-async function curriculumForLearnerSubject(
-	subject: Pick<LearnerSubject, 'subject' | 'board' | 'qualification' | 'course' | 'tier'>
-): Promise<LearnerCurriculum | null> {
-	const offering = await getCurriculumOffering({
-		board: subject.board,
-		qualification: subject.qualification,
-		profileSubject: subject.subject,
-		course: subject.course,
-		tier: subject.tier
-	});
-	if (!offering) return null;
+function learnerCurriculumFromOffering(
+	offering: NonNullable<Awaited<ReturnType<typeof getCurriculumOffering>>>
+): LearnerCurriculum {
 	return {
 		id: offering.id,
 		specificationId: offering.specification.id,
@@ -407,7 +443,13 @@ async function curriculumForLearnerSubject(
 		specificationVersion: offering.specification.version,
 		specificationUrl: offering.specification.officialSourceUrl,
 		label: offering.label,
-		groups: offering.selectionTree.groups,
+		groups: offering.selectionTree.groups.map((group) => ({
+			title: group.title,
+			kind: group.kind,
+			selectionMin: group.selectionMin ?? null,
+			selectionMax: group.selectionMax ?? null,
+			components: group.components.map((component) => ({ id: component.id }))
+		})),
 		topics: curriculumOfferingTopics(offering).map((component) => ({
 			id: component.id,
 			code: component.code,
@@ -416,6 +458,51 @@ async function curriculumForLearnerSubject(
 			specUrl: offering.specification.officialSourceUrl
 		}))
 	};
+}
+
+function catalogOfferingForLearnerSubject(
+	catalog: SubjectLearningPublicCatalog,
+	subject: Pick<LearnerSubject, 'subject' | 'board' | 'qualification' | 'course' | 'tier'>
+): SubjectLearningCatalogOffering | null {
+	return (
+		catalog.offerings.find(
+			(offering) =>
+				offering.curriculum.board === subject.board &&
+				offering.curriculum.qualification === subject.qualification &&
+				offering.curriculum.profileSubject === subject.subject &&
+				offering.curriculum.course === subject.course &&
+				offering.curriculum.tier === subject.tier
+		) ?? null
+	);
+}
+
+function boardAvailabilityFromCatalog(
+	catalog: SubjectLearningPublicCatalog
+): QuestionBoardAvailability {
+	return new Map(catalog.boardAvailability.map(({ subject, boards }) => [subject, [...boards]]));
+}
+
+async function curriculumForLearnerSubject(
+	subject: Pick<LearnerSubject, 'subject' | 'board' | 'qualification' | 'course' | 'tier'>,
+	publicCatalog?: SubjectLearningPublicCatalog
+): Promise<LearnerCurriculum | null> {
+	if (publicCatalog) {
+		const catalogOffering = catalogOfferingForLearnerSubject(publicCatalog, subject);
+		if (!catalogOffering) {
+			throw new Error(
+				`Subject learning catalog has no offering for ${subject.board} ${subject.subject} ${subject.course} ${subject.tier}.`
+			);
+		}
+		return catalogOffering.curriculum;
+	}
+	const offering = await getCurriculumOffering({
+		board: subject.board,
+		qualification: subject.qualification,
+		profileSubject: subject.subject,
+		course: subject.course,
+		tier: subject.tier
+	});
+	return offering ? learnerCurriculumFromOffering(offering) : null;
 }
 
 export function officialTopicForQuestion(
@@ -526,7 +613,7 @@ function validSelectedTopicIds(
 
 function curriculumScopeUnits(
 	subject: string,
-	groups: CurriculumSelectionGroup[]
+	groups: SubjectLearningCurriculumGroup[]
 ): {
 	unitSingular: string;
 	unitPlural: string;
@@ -551,7 +638,7 @@ function scopeView(
 	subject: string,
 	row: CurriculumScopeRow | null,
 	topics: StemCurriculumTopic[],
-	groups: CurriculumSelectionGroup[]
+	groups: SubjectLearningCurriculumGroup[]
 ): CurriculumScopeView {
 	const units = curriculumScopeUnits(subject, groups);
 	if (topics.length === 0) {
@@ -665,24 +752,29 @@ function ocrEnglishLiteratureScope(
 
 async function readSubjectEvidence(
 	userId: string,
-	subject: LearnerSubject
+	subject: LearnerSubject,
+	projectedRecallCards?: SubjectLearningRecallCardProjection[]
 ): Promise<SubjectEvidenceBundle> {
 	const runtimeSubject = supportedLearnerSubjects.includes(subject.subject as RecallRuntimeSubject)
 		? (subject.subject as RecallRuntimeSubject)
 		: null;
-	const catalogCardsPromise = runtimeSubject
-		? getCurriculumOffering({
-				board: subject.board,
-				qualification: subject.qualification,
-				profileSubject: subject.subject,
-				course: subject.course,
-				tier: subject.tier
-			}).then((offering) =>
-				offering ? getRecallCards({ subject: runtimeSubject, offeringId: offering.id }) : []
-			)
-		: Promise.resolve([]);
+	const catalogCardsPromise = projectedRecallCards
+		? Promise.resolve(projectedRecallCards)
+		: runtimeSubject
+			? getCurriculumOffering({
+					board: subject.board,
+					qualification: subject.qualification,
+					profileSubject: subject.subject,
+					course: subject.course,
+					tier: subject.tier
+				}).then((offering) =>
+					offering ? getRecallCards({ subject: runtimeSubject, offeringId: offering.id }) : []
+				)
+			: Promise.resolve([]);
 	const catalogCards = await catalogCardsPromise;
-	const activeRecallComponentIds = new Set(catalogCards.map(recallEvidenceComponentId));
+	const activeRecallComponentIds = new Set(
+		catalogCards.map((card) => `${card.id}@${card.contentRevision}:${card.contentHash}`)
+	);
 	const activeRecallComponentIdsJson = JSON.stringify([...activeRecallComponentIds]);
 	const [states, topicEvidence, reviews, attempts, gaps] = await Promise.all([
 		queryPersonalRows<ComponentStateRow>(
@@ -773,7 +865,9 @@ async function readSubjectEvidence(
 	const cardsById = new Map(catalogCards.map((card) => [card.id, card]));
 	const currentReviews = reviews.filter((review) => {
 		const card = cardsById.get(review.card_id);
-		return card ? recallReviewMatchesCard(card, review) : false;
+		return card
+			? review.content_hash === card.contentHash && review.content_revision === card.contentRevision
+			: false;
 	});
 	return {
 		states: currentStates,
@@ -788,7 +882,8 @@ async function readSubjectEvidence(
 async function readQuestionCandidates(
 	subject: LearnerSubject,
 	specificationId: string | null,
-	scope: CurriculumScopeView
+	scope: CurriculumScopeView,
+	{ materializingCatalog = false }: { materializingCatalog?: boolean } = {}
 ): Promise<QuestionCandidateRow[]> {
 	return await queryRows<QuestionCandidateRow>(
 		`WITH RECURSIVE candidate_questions AS MATERIALIZED (
@@ -933,11 +1028,11 @@ async function readQuestionCandidates(
 			subject.course,
 			subject.course,
 			subject.tier,
-			scope.status === 'selected' ? -1 : 160,
+			materializingCatalog ? -1 : scope.status === 'selected' ? -1 : 160,
 			specificationId ?? '',
 			scope.status,
 			JSON.stringify(scope.includedTopicIds),
-			scope.status === 'selected' ? 600 : 160
+			materializingCatalog ? -1 : scope.status === 'selected' ? 600 : 160
 		]
 	);
 }
@@ -1057,20 +1152,21 @@ function recommendedPracticeHref(subject: string, questionId: string): string {
 function directRecallAction(
 	subject: RecallRuntimeSubject,
 	topic: StemCurriculumTopic,
-	cards: RecallCard[],
+	cards: SubjectLearningRecallCardProjection[],
 	curriculumOrder: number,
 	dueCount: number,
 	state: LearnerState,
 	uncertainty: LearnerUncertainty
 ): CandidateDetail | null {
 	const staticRecallTopic = recallTopicForOfficialTopic(subject, topic);
-	const topicId = cards.some((card) => card.topicComponentId === topic.id)
-		? topic.id
-		: staticRecallTopic?.id;
+	const matchingCards = cards.filter(
+		(card) =>
+			card.topicComponentId === topic.id ||
+			(Boolean(staticRecallTopic) && card.topicId === staticRecallTopic?.id)
+	);
+	const topicId = matchingCards[0]?.topicId;
 	if (!topicId) return null;
-	const cardCount = cards.filter(
-		(card) => card.topicComponentId === topic.id || card.topicId === topicId
-	).length;
+	const cardCount = matchingCards.filter((card) => card.topicId === topicId).length;
 	if (cardCount === 0) return null;
 	const size = Math.min(8, cardCount);
 	const baseHref = recallSessionHref({
@@ -1151,8 +1247,7 @@ function gapCandidate(
 
 function questionCandidate(
 	subject: string,
-	row: QuestionCandidateRow,
-	title: string,
+	row: SubjectLearningQuestionProjection,
 	topic: StemCurriculumTopic | null,
 	hasUsedChain: boolean,
 	pendingIndependentCheck: boolean,
@@ -1166,11 +1261,11 @@ function questionCandidate(
 			subject,
 			kind: 'apply_chain',
 			curriculumComponentId: topic?.id ?? `${subject.toLowerCase()}-course`,
-			componentId: row.answer_chain_id,
+			componentId: row.answerChainId,
 			state,
 			uncertainty,
-			estimatedMinutes: row.marks && row.marks >= 6 ? 10 : 7,
-			available: (row.marks ?? 0) >= 4 && row.step_count >= 3,
+			estimatedMinutes: row.marks >= 6 ? 10 : 7,
+			available: true,
 			activeGap: pendingIndependentCheck,
 			lastPractisedAt: null,
 			curriculumOrder: contentOrder
@@ -1179,37 +1274,36 @@ function questionCandidate(
 			id: `apply:${row.id}`,
 			kind: 'apply_chain',
 			eyebrow: 'Practise exam reasoning',
-			title,
-			detail: `${row.marks ?? 4}-mark question · build the links, then check them.`,
+			title: row.title,
+			detail: `${row.marks}-mark question · build the links, then check them.`,
 			reason: pendingIndependentCheck
 				? 'Try the same missing link in a fresh question, without the guided steps.'
 				: hasUsedChain
 					? 'Use a method you have seen before in a different context.'
 					: 'This question has a reusable answer method worth practising.',
-			durationMinutes: row.marks && row.marks >= 6 ? 10 : 7,
+			durationMinutes: row.marks >= 6 ? 10 : 7,
 			href: recommendedPracticeHref(subject, row.id),
-			available: (row.marks ?? 0) >= 4 && row.step_count >= 3
+			available: true
 		}
 	};
 }
 
 function quickQuestionCandidate(
 	subject: string,
-	row: QuestionCandidateRow,
-	title: string,
+	row: SubjectLearningQuestionProjection,
 	topic: StemCurriculumTopic | null,
 	contentOrder: number,
 	state: LearnerState,
 	uncertainty: LearnerUncertainty
 ): CandidateDetail {
-	const marks = Math.max(1, row.marks ?? 1);
+	const marks = row.marks;
 	return {
 		candidate: {
 			id: `quick:${row.id}`,
 			subject,
 			kind: 'recall',
 			curriculumComponentId: topic?.id ?? `${subject.toLowerCase()}-course`,
-			componentId: row.answer_chain_id,
+			componentId: row.answerChainId,
 			state,
 			uncertainty,
 			estimatedMinutes: Math.min(5, marks + 2),
@@ -1220,7 +1314,7 @@ function quickQuestionCandidate(
 			id: `quick:${row.id}`,
 			kind: 'recall',
 			eyebrow: 'Quick exam check',
-			title,
+			title: row.title,
 			detail: `${marks}-mark question · answer from memory, then check it.`,
 			reason:
 				state === 'due'
@@ -1266,6 +1360,46 @@ export function supportsTextPracticeRecommendation(
 	});
 }
 
+function projectQuestionCandidates(
+	rows: QuestionCandidateRow[],
+	topics: StemCurriculumTopic[]
+): SubjectLearningQuestionProjection[] {
+	return rows.flatMap((row, contentOrder) => {
+		const title = questionTitle(row);
+		const marks = row.marks ?? 0;
+		if (
+			marks < 1 ||
+			(marks >= 4 && row.step_count < 3) ||
+			!supportsTextPracticeRecommendation(row) ||
+			storedQuestionTitleIssues({
+				title,
+				subject: row.subject,
+				promptText: row.prompt_text,
+				selfContainedPromptText: row.self_contained_prompt_text,
+				answerText: row.reviewed_answer_text
+			}).length > 0
+		) {
+			return [];
+		}
+		const reviewedComponentId = row.curriculum_component_id?.trim() ?? '';
+		const exactTopic =
+			reviewedComponentId.length > 0
+				? (topics.find((topic) => topic.id === reviewedComponentId) ?? null)
+				: null;
+		return [
+			{
+				id: row.id,
+				title,
+				marks,
+				curriculumComponentId: exactTopic?.id ?? null,
+				answerChainId: row.answer_chain_id,
+				mappingKind: exactTopic ? 'exact_topic' : 'course_only',
+				contentOrder
+			}
+		];
+	});
+}
+
 function emptyAlternative(
 	kind: LearningActionView['kind'],
 	title: string,
@@ -1292,7 +1426,7 @@ function chooseCandidateDetails(
 	topics: StemCurriculumTopic[],
 	topicViews: CurriculumTopicProgressView[],
 	bundle: SubjectEvidenceBundle,
-	questions: QuestionCandidateRow[]
+	questions: SubjectLearningQuestionProjection[]
 ): {
 	selected: LearningActionView | null;
 	alternatives: LearningActionView[];
@@ -1351,60 +1485,45 @@ function chooseCandidateDetails(
 	const chainsAwaitingIndependentCheck = new Set(
 		bundle.gaps.filter((gap) => gap.status === 'awaiting_check').map((gap) => gap.answer_chain_id)
 	);
-	for (const [contentOrder, question] of questions.entries()) {
+	for (const question of questions) {
 		if (attemptedIds.has(question.id)) continue;
-		const title = questionTitle(question);
+		const topic =
+			topics.find((candidate) => candidate.id === question.curriculumComponentId) ?? null;
 		if (
-			storedQuestionTitleIssues({
-				title,
-				subject: question.subject,
-				promptText: question.prompt_text,
-				selfContainedPromptText: question.self_contained_prompt_text,
-				answerText: question.reviewed_answer_text
-			}).length > 0
-		) {
-			continue;
-		}
-		const topic = topics.length > 0 ? officialTopicForQuestion(topics, question) : null;
-		if (
-			topics.length > 0 &&
-			((topic && !includedIds.has(topic.id)) || (!topic && scope.status !== 'all'))
+			question.mappingKind === 'course_only'
+				? scope.status !== 'all'
+				: !topic || !includedIds.has(topic.id)
 		) {
 			continue;
 		}
 		const stateRow =
 			bundle.states.find(
 				(row) =>
-					row.component_kind === 'answer_chain' && row.component_id === question.answer_chain_id
+					row.component_kind === 'answer_chain' && row.component_id === question.answerChainId
 			) ?? (topic ? stateForTopic(topic, bundle.states) : null);
 		const state = stateRow?.state ?? 'no_evidence';
 		const uncertainty = stateRow?.uncertainty ?? 'high';
-		if ((question.marks ?? 0) >= 1 && (question.marks ?? 0) <= 3) {
-			if (supportsTextPracticeRecommendation(question)) {
-				details.push(
-					quickQuestionCandidate(
-						subject.subject,
-						question,
-						title,
-						topic,
-						contentOrder,
-						state,
-						uncertainty
-					)
-				);
-			}
+		if (question.marks <= 3) {
+			details.push(
+				quickQuestionCandidate(
+					subject.subject,
+					question,
+					topic,
+					question.contentOrder,
+					state,
+					uncertainty
+				)
+			);
 			continue;
 		}
-		if (!supportsTextPracticeRecommendation(question)) continue;
 		details.push(
 			questionCandidate(
 				subject.subject,
 				question,
-				title,
 				topic,
-				attemptedChains.has(question.answer_chain_id),
-				chainsAwaitingIndependentCheck.has(question.answer_chain_id),
-				contentOrder,
+				attemptedChains.has(question.answerChainId),
+				chainsAwaitingIndependentCheck.has(question.answerChainId),
+				question.contentOrder,
 				state,
 				uncertainty
 			)
@@ -1693,16 +1812,36 @@ function unavailableFoundationAction(): LearningActionView {
 async function buildSubjectView(
 	userId: string,
 	subject: LearnerSubject,
-	englishLiteratureSelections?: EnglishLiteratureSelections
+	englishLiteratureSelections?: EnglishLiteratureSelections,
+	{
+		persistRecommendations = true,
+		publicCatalog
+	}: {
+		persistRecommendations?: boolean;
+		publicCatalog?: SubjectLearningPublicCatalog;
+	} = {}
 ): Promise<SignedInSubjectView> {
-	const curriculum = await curriculumForLearnerSubject(subject);
+	const catalogOffering = publicCatalog
+		? catalogOfferingForLearnerSubject(publicCatalog, subject)
+		: null;
+	// A legacy profile can name an offering that is no longer in the materialized
+	// catalog (Foundation science is the current example). The snapshot builder
+	// must degrade that one subject to "not available" without poisoning every
+	// subject or falling back to expensive public-table scans.
+	const curriculum = publicCatalog
+		? (catalogOffering?.curriculum ?? null)
+		: await curriculumForLearnerSubject(subject);
 	const topics = curriculum?.topics ?? [];
 	const usesProfileCourseConfiguration = isOcrEnglishLiterature(subject);
 	const [scopeRow, bundle] = await Promise.all([
 		usesProfileCourseConfiguration
 			? Promise.resolve(null)
 			: readCurriculumScope(userId, subject.subject),
-		readSubjectEvidence(userId, subject)
+		readSubjectEvidence(
+			userId,
+			subject,
+			publicCatalog ? (catalogOffering?.recallCards ?? []) : undefined
+		)
 	]);
 	const currentScopeRow =
 		scopeRow &&
@@ -1730,7 +1869,12 @@ async function buildSubjectView(
 		scope.status !== 'not_available' &&
 		!usesProfileCourseConfiguration &&
 		!foundationQuestionsUnavailable
-			? await readQuestionCandidates(subject, curriculum.specificationId, scope)
+			? catalogOffering
+				? catalogOffering.questions
+				: projectQuestionCandidates(
+						await readQuestionCandidates(subject, curriculum.specificationId, scope),
+						topics
+					)
 			: [];
 	const topicViews = topicProgress(
 		topics,
@@ -1759,7 +1903,7 @@ async function buildSubjectView(
 		);
 		const cachedDetail = cached ? detailById.get(cached.selected_action_id) : null;
 		const cachedIsCurrent = cached ? recommendationMatchesCurrentState(cached, snapshots) : false;
-		if (cached && (!cachedDetail || !cachedIsCurrent)) {
+		if (persistRecommendations && cached && (!cachedDetail || !cachedIsCurrent)) {
 			await executePersonalQuery(
 				`UPDATE user_recommendation_decisions
 				 SET dismissed_at = CURRENT_TIMESTAMP
@@ -1770,7 +1914,7 @@ async function buildSubjectView(
 		}
 		if (cached && cachedDetail && cachedIsCurrent) {
 			recommendedAction = { ...cachedDetail.action, reason: cached.reason_text };
-		} else {
+		} else if (persistRecommendations) {
 			const selectedDetail = detailById.get(recommendedAction.id);
 			if (selectedDetail) {
 				await storeRecommendationDecision({
@@ -1892,13 +2036,484 @@ async function buildSubjectView(
 	};
 }
 
-export async function getSignedInLearningHome(user: AdminUser): Promise<SignedInLearningHome> {
-	const settings = await getLearnerProfileSettings(user);
+function catalogRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function catalogText(value: unknown, maxLength: number): string | null {
+	return typeof value === 'string' && value.length > 0 && value.length <= maxLength ? value : null;
+}
+
+function catalogNullableCount(value: unknown): number | null | undefined {
+	return value === null
+		? null
+		: typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 10_000
+			? value
+			: undefined;
+}
+
+function catalogNullableText(value: unknown, maxLength: number): string | null | undefined {
+	return value === null ? null : (catalogText(value, maxLength) ?? undefined);
+}
+
+function parseCatalogCurriculum(value: unknown): LearnerCurriculum | null {
+	if (
+		!catalogRecord(value) ||
+		!Array.isArray(value.groups) ||
+		!Array.isArray(value.topics) ||
+		value.groups.length > 100 ||
+		value.topics.length > 1_000
+	) {
+		return null;
+	}
+	const id = catalogText(value.id, 500);
+	const specificationId = catalogText(value.specificationId, 500);
+	const board = catalogText(value.board, 120);
+	const qualification = catalogText(value.qualification, 120);
+	const profileSubject = catalogText(value.profileSubject, 120);
+	const course = catalogText(value.course, 300);
+	const tier = catalogText(value.tier, 120);
+	const specificationCode = catalogText(value.specificationCode, 200);
+	const specificationVersion = catalogText(value.specificationVersion, 200);
+	const specificationUrl = catalogText(value.specificationUrl, 2_000);
+	const label = catalogText(value.label, 500);
+	const groups = value.groups.map((candidate): SubjectLearningCurriculumGroup | null => {
+		if (
+			!catalogRecord(candidate) ||
+			!Array.isArray(candidate.components) ||
+			candidate.components.length > 1_000
+		) {
+			return null;
+		}
+		const title = catalogText(candidate.title, 500);
+		const kind = catalogText(candidate.kind, 200);
+		const selectionMin = catalogNullableCount(candidate.selectionMin);
+		const selectionMax = catalogNullableCount(candidate.selectionMax);
+		const components = candidate.components.map((component) =>
+			catalogRecord(component) ? catalogText(component.id, 500) : null
+		);
+		return title &&
+			kind &&
+			selectionMin !== undefined &&
+			selectionMax !== undefined &&
+			components.every((component) => component !== null) &&
+			new Set(components).size === components.length
+			? {
+					title,
+					kind,
+					selectionMin,
+					selectionMax,
+					components: components.map((component) => ({ id: component as string }))
+				}
+			: null;
+	});
+	const topics = value.topics.map((candidate): StemCurriculumTopic | null => {
+		if (!catalogRecord(candidate)) return null;
+		const topicId = catalogText(candidate.id, 500);
+		const code = catalogText(candidate.code, 200);
+		const title = catalogText(candidate.title, 1_000);
+		const paper = catalogText(candidate.paper, 500);
+		const specUrl = catalogText(candidate.specUrl, 2_000);
+		return topicId && code && title && paper && specUrl
+			? { id: topicId, code, title, paper, specUrl }
+			: null;
+	});
+	if (
+		!id ||
+		!specificationId ||
+		!board ||
+		!qualification ||
+		!profileSubject ||
+		!course ||
+		!tier ||
+		!specificationCode ||
+		!specificationVersion ||
+		!specificationUrl ||
+		!label ||
+		groups.some((group) => !group) ||
+		topics.some((topic) => !topic) ||
+		new Set(topics.map((topic) => topic?.id)).size !== topics.length
+	) {
+		return null;
+	}
+	return {
+		id,
+		specificationId,
+		board,
+		qualification,
+		profileSubject,
+		course,
+		tier,
+		specificationCode,
+		specificationVersion,
+		specificationUrl,
+		label,
+		groups: groups as SubjectLearningCurriculumGroup[],
+		topics: topics as StemCurriculumTopic[]
+	};
+}
+
+export function parseSubjectLearningPublicCatalog(
+	value: unknown
+): SubjectLearningPublicCatalog | null {
+	if (
+		!catalogRecord(value) ||
+		value.version !== SUBJECT_LEARNING_PUBLIC_CATALOG_VERSION ||
+		!Array.isArray(value.boardAvailability) ||
+		!Array.isArray(value.resumeQuestions) ||
+		!Array.isArray(value.offerings) ||
+		value.boardAvailability.length === 0 ||
+		value.boardAvailability.length > 64 ||
+		value.resumeQuestions.length > 5_000 ||
+		value.offerings.length === 0 ||
+		value.offerings.length > 64 ||
+		JSON.stringify(value).length > SUBJECT_LEARNING_PUBLIC_CATALOG_MAX_JSON_CHARACTERS
+	) {
+		return null;
+	}
+	const boardAvailability = value.boardAvailability.map(
+		(candidate): SubjectLearningPublicCatalog['boardAvailability'][number] | null => {
+			if (
+				!catalogRecord(candidate) ||
+				!Array.isArray(candidate.boards) ||
+				candidate.boards.length === 0 ||
+				candidate.boards.length > 16
+			) {
+				return null;
+			}
+			const subject = catalogText(candidate.subject, 120);
+			const boards = candidate.boards.map((board) => catalogText(board, 120));
+			return subject &&
+				boards.every((board) => board !== null) &&
+				new Set(boards).size === boards.length
+				? { subject, boards: boards as string[] }
+				: null;
+		}
+	);
+	const resumeQuestions = value.resumeQuestions.map((candidate): ResumeQuestionRow | null => {
+		if (
+			!catalogRecord(candidate) ||
+			!Array.isArray(candidate.reviewedCurriculumMappings) ||
+			candidate.reviewedCurriculumMappings.length === 0 ||
+			candidate.reviewedCurriculumMappings.length > 100
+		) {
+			return null;
+		}
+		const id = catalogText(candidate.id, 500);
+		const board = catalogNullableText(candidate.board, 120);
+		const qualification = catalogNullableText(candidate.qualification, 120);
+		const subject = catalogNullableText(candidate.subject, 300);
+		const subjectArea = catalogNullableText(candidate.subject_area, 300);
+		const componentCode = catalogNullableText(candidate.component_code, 300);
+		const tier = catalogNullableText(candidate.tier, 120);
+		const reviewedPrimaryMappingCount = candidate.reviewedPrimaryMappingCount === 1 ? 1 : null;
+		const mappings = candidate.reviewedCurriculumMappings.map((mapping) => {
+			if (!catalogRecord(mapping)) return null;
+			const componentId = catalogText(mapping.componentId, 500);
+			const depth =
+				typeof mapping.depth === 'number' &&
+				Number.isInteger(mapping.depth) &&
+				mapping.depth >= 0 &&
+				mapping.depth <= 100
+					? mapping.depth
+					: null;
+			return componentId && depth !== null ? { componentId, depth } : null;
+		});
+		return id &&
+			board !== undefined &&
+			qualification !== undefined &&
+			subject !== undefined &&
+			subjectArea !== undefined &&
+			componentCode !== undefined &&
+			tier !== undefined &&
+			reviewedPrimaryMappingCount !== null &&
+			mappings.every((mapping) => mapping !== null)
+			? {
+					id,
+					board,
+					qualification,
+					subject,
+					subject_area: subjectArea,
+					component_code: componentCode,
+					tier,
+					reviewedPrimaryMappingCount,
+					reviewedCurriculumMappings: mappings as Array<{
+						componentId: string;
+						depth: number;
+					}>
+				}
+			: null;
+	});
+	const offerings = value.offerings.map((candidate): SubjectLearningCatalogOffering | null => {
+		if (
+			!catalogRecord(candidate) ||
+			!Array.isArray(candidate.recallCards) ||
+			!Array.isArray(candidate.questions) ||
+			candidate.recallCards.length > 20_000 ||
+			candidate.questions.length > 5_000
+		) {
+			return null;
+		}
+		const curriculum = parseCatalogCurriculum(candidate.curriculum);
+		const recallCards = candidate.recallCards.map(
+			(card): SubjectLearningRecallCardProjection | null => {
+				if (!catalogRecord(card)) return null;
+				const id = catalogText(card.id, 500);
+				const topicId = catalogText(card.topicId, 500);
+				const topicComponentId = catalogText(card.topicComponentId, 500);
+				const contentRevision =
+					typeof card.contentRevision === 'number' &&
+					Number.isInteger(card.contentRevision) &&
+					card.contentRevision >= 1 &&
+					card.contentRevision <= 1_000_000
+						? card.contentRevision
+						: null;
+				const contentHash = catalogText(card.contentHash, 500);
+				return id && topicId && topicComponentId && contentRevision && contentHash
+					? { id, topicId, topicComponentId, contentRevision, contentHash }
+					: null;
+			}
+		);
+		const questions = candidate.questions.map(
+			(question): SubjectLearningQuestionProjection | null => {
+				if (!catalogRecord(question)) return null;
+				const id = catalogText(question.id, 500);
+				const title = catalogText(question.title, 1_000);
+				const marks =
+					typeof question.marks === 'number' &&
+					Number.isInteger(question.marks) &&
+					question.marks >= 1 &&
+					question.marks <= 100
+						? question.marks
+						: null;
+				const curriculumComponentId =
+					question.curriculumComponentId === null
+						? null
+						: catalogText(question.curriculumComponentId, 500);
+				const answerChainId = catalogText(question.answerChainId, 500);
+				const mappingKind =
+					question.mappingKind === 'exact_topic' || question.mappingKind === 'course_only'
+						? question.mappingKind
+						: null;
+				const contentOrder =
+					typeof question.contentOrder === 'number' &&
+					Number.isInteger(question.contentOrder) &&
+					question.contentOrder >= 0 &&
+					question.contentOrder <= 100_000
+						? question.contentOrder
+						: null;
+				const mappingIsConsistent =
+					mappingKind === 'exact_topic'
+						? curriculumComponentId !== null
+						: mappingKind === 'course_only' && question.curriculumComponentId === null;
+				return id &&
+					title &&
+					marks &&
+					answerChainId &&
+					mappingKind &&
+					contentOrder !== null &&
+					mappingIsConsistent
+					? {
+							id,
+							title,
+							marks,
+							curriculumComponentId,
+							answerChainId,
+							mappingKind,
+							contentOrder
+						}
+					: null;
+			}
+		);
+		if (
+			!curriculum ||
+			recallCards.some((card) => !card) ||
+			questions.some((question) => !question) ||
+			new Set(recallCards.map((card) => card?.id)).size !== recallCards.length ||
+			new Set(questions.map((question) => question?.id)).size !== questions.length ||
+			questions.some(
+				(question) =>
+					question?.mappingKind === 'exact_topic' &&
+					!curriculum.topics.some((topic) => topic.id === question.curriculumComponentId)
+			)
+		) {
+			return null;
+		}
+		return {
+			curriculum,
+			recallCards: recallCards as SubjectLearningRecallCardProjection[],
+			questions: questions as SubjectLearningQuestionProjection[]
+		};
+	});
+	if (
+		boardAvailability.some((entry) => !entry) ||
+		new Set(boardAvailability.map((entry) => entry?.subject)).size !== boardAvailability.length ||
+		resumeQuestions.some((question) => !question) ||
+		new Set(resumeQuestions.map((question) => question?.id)).size !== resumeQuestions.length ||
+		offerings.some((offering) => !offering) ||
+		new Set(offerings.map((offering) => offering?.curriculum.id)).size !== offerings.length
+	) {
+		return null;
+	}
+	return {
+		version: SUBJECT_LEARNING_PUBLIC_CATALOG_VERSION,
+		boardAvailability: boardAvailability as SubjectLearningPublicCatalog['boardAvailability'],
+		resumeQuestions: resumeQuestions as ResumeQuestionRow[],
+		offerings: offerings as SubjectLearningCatalogOffering[]
+	};
+}
+
+export async function getSubjectLearningPublicCatalog(): Promise<SubjectLearningPublicCatalog> {
+	const parsed = parseSubjectLearningPublicCatalog(
+		await getPublicRoutePayload<unknown>(SUBJECT_LEARNING_PUBLIC_CATALOG_ID)
+	);
+	if (!parsed) {
+		throw new Error('The current subject-learning public catalog is missing or invalid.');
+	}
+	return parsed;
+}
+
+export async function getFreshSubjectLearningPublicCatalog(): Promise<SubjectLearningPublicCatalog> {
+	const [profile, resumeQuestions] = await Promise.all([
+		getCurriculumProfileSnapshot(),
+		getFreshResumeQuestionCatalog()
+	]);
+	const offerings: SubjectLearningCatalogOffering[] = [];
+	const seenOfferingIds = new Set<string>();
+	for (const profileSubject of profile.subjects) {
+		for (const board of profileSubject.boards) {
+			for (const course of board.courses) {
+				for (const tier of course.tiers) {
+					if (seenOfferingIds.has(tier.offeringId)) continue;
+					if (
+						(course.name !== 'Separate Science' &&
+							course.name !== 'Combined Science' &&
+							course.name !== 'GCSE Subject') ||
+						(tier.name !== 'Higher' && tier.name !== 'Foundation')
+					) {
+						throw new Error(
+							`Unsupported learner offering shape: ${profileSubject.subject} ${course.name} ${tier.name}.`
+						);
+					}
+					const offering = await getCurriculumOffering({
+						board: board.name,
+						qualification: profile.qualification,
+						profileSubject: profileSubject.subject,
+						course: course.name,
+						tier: tier.name
+					});
+					if (!offering || offering.id !== tier.offeringId) {
+						throw new Error(`Curriculum offering ${tier.offeringId} is missing or inconsistent.`);
+					}
+					const curriculum = learnerCurriculumFromOffering(offering);
+					const learnerSubject: LearnerSubject = {
+						subject: profileSubject.subject,
+						board: board.name,
+						qualification: profile.qualification,
+						course: course.name,
+						tier: tier.name,
+						enabled: true,
+						currentGrade: null,
+						targetGrade: null
+					};
+					const recallSubject = supportedLearnerSubjects.includes(
+						profileSubject.subject as RecallRuntimeSubject
+					)
+						? (profileSubject.subject as RecallRuntimeSubject)
+						: null;
+					const recallCards = recallSubject
+						? await getRecallCards({ subject: recallSubject, offeringId: offering.id })
+						: [];
+					const allScope: CurriculumScopeView = {
+						status: 'all',
+						label: 'Whole course',
+						...curriculumScopeUnits(profileSubject.subject, curriculum.groups),
+						href: null,
+						includedTopicIds: curriculum.topics.map((topic) => topic.id),
+						includedCount: curriculum.topics.length,
+						totalCount: curriculum.topics.length
+					};
+					const questions =
+						isOcrEnglishLiterature(learnerSubject) || tier.name === 'Foundation'
+							? []
+							: projectQuestionCandidates(
+									await readQuestionCandidates(
+										learnerSubject,
+										curriculum.specificationId,
+										allScope,
+										{ materializingCatalog: true }
+									),
+									curriculum.topics
+								);
+					offerings.push({
+						curriculum,
+						recallCards: recallCards.map((card) => ({
+							id: card.id,
+							topicId: card.topicId,
+							topicComponentId: card.topicComponentId,
+							contentRevision: card.contentRevision,
+							contentHash: card.contentHash
+						})),
+						questions
+					});
+					seenOfferingIds.add(offering.id);
+				}
+			}
+		}
+	}
+	const catalog: SubjectLearningPublicCatalog = {
+		version: SUBJECT_LEARNING_PUBLIC_CATALOG_VERSION,
+		boardAvailability: profile.subjects
+			.map((subject) => ({
+				subject: subject.subject,
+				boards: subject.boards
+					.map((board) => board.name)
+					.sort((left, right) => left.localeCompare(right))
+			}))
+			.sort((left, right) => left.subject.localeCompare(right.subject)),
+		resumeQuestions: resumeQuestions
+			.filter((question) => question.reviewedCurriculumMappings.length > 0)
+			.map((question) => ({
+				...question,
+				board: question.board?.trim() || null,
+				qualification: question.qualification?.trim() || null,
+				subject: question.subject?.trim() || null,
+				subject_area: question.subject_area?.trim() || null,
+				component_code: question.component_code?.trim() || null,
+				tier: question.tier?.trim() || null
+			}))
+			.sort((left, right) => left.id.localeCompare(right.id)),
+		offerings: offerings.sort((left, right) =>
+			left.curriculum.id.localeCompare(right.curriculum.id)
+		)
+	};
+	if (!parseSubjectLearningPublicCatalog(catalog)) {
+		throw new Error('Generated subject-learning public catalog failed validation.');
+	}
+	return catalog;
+}
+
+export async function getSignedInLearningHome(
+	user: AdminUser,
+	{
+		persistRecommendations = true,
+		publicCatalog
+	}: {
+		persistRecommendations?: boolean;
+		publicCatalog?: SubjectLearningPublicCatalog;
+	} = {}
+): Promise<SignedInLearningHome> {
+	const settings = await getLearnerProfileSettings(user, {
+		boardAvailability: publicCatalog ? boardAvailabilityFromCatalog(publicCatalog) : undefined
+	});
 	const enabledSubjects = settings.subjects.filter((subject) => subject.enabled);
 	const [builtSubjects, weekly] = await Promise.all([
 		Promise.all(
 			enabledSubjects.map((subject) =>
-				buildSubjectView(user.uid, subject, settings.englishLiteratureSelections)
+				buildSubjectView(user.uid, subject, settings.englishLiteratureSelections, {
+					persistRecommendations,
+					publicCatalog
+				})
 			)
 		),
 		queryPersonalFirst<{
@@ -1918,20 +2533,21 @@ export async function getSignedInLearningHome(user: AdminUser): Promise<SignedIn
 			[user.uid, user.uid, user.uid]
 		)
 	]);
-	const resumeActions = await getLatestResumeActionsBySubject(
-		user.uid,
-		enabledSubjects,
-		new Map(
-			builtSubjects.map((subject) => [
-				subject.subject,
-				new Set(
-					subject.scope.status === 'all' || subject.scope.status === 'selected'
-						? subject.scope.includedTopicIds
-						: []
-				)
-			])
-		)
+	const resumeScopes = new Map(
+		builtSubjects.map((subject) => [
+			subject.subject,
+			new Set(
+				subject.scope.status === 'all' || subject.scope.status === 'selected'
+					? subject.scope.includedTopicIds
+					: []
+			)
+		])
 	);
+	const resumeActions = publicCatalog
+		? await getLatestResumeActionsBySubject(user.uid, enabledSubjects, resumeScopes, {
+				publicQuestions: publicCatalog.resumeQuestions
+			})
+		: await getLatestResumeActionsBySubject(user.uid, enabledSubjects, resumeScopes);
 	const subjects = builtSubjects.map((subject) => {
 		const resumeAction = resumeActions.get(subject.subject);
 		if (!resumeAction) return subject;
@@ -1959,12 +2575,17 @@ export async function getSignedInLearningHome(user: AdminUser): Promise<SignedIn
 
 export async function getSignedInSubjectView(
 	user: AdminUser,
-	subjectName: SupportedLearnerSubject
+	subjectName: SupportedLearnerSubject,
+	{ publicCatalog }: { publicCatalog?: SubjectLearningPublicCatalog } = {}
 ): Promise<SignedInSubjectView | null> {
-	const settings = await getLearnerProfileSettings(user);
+	const settings = await getLearnerProfileSettings(user, {
+		boardAvailability: publicCatalog ? boardAvailabilityFromCatalog(publicCatalog) : undefined
+	});
 	const subject = settings.subjects.find((entry) => entry.enabled && entry.subject === subjectName);
 	return subject
-		? await buildSubjectView(user.uid, subject, settings.englishLiteratureSelections)
+		? await buildSubjectView(user.uid, subject, settings.englishLiteratureSelections, {
+				publicCatalog
+			})
 		: null;
 }
 
@@ -2345,11 +2966,11 @@ export async function recordLearnerEvidence(input: EvidenceWriteInput): Promise<
 }
 
 export async function isRecallTopicWithinLearnerScope(
-	userId: string,
+	user: AdminUser,
 	subject: RecallRuntimeSubject,
 	recallTopicId: string
 ): Promise<boolean> {
-	const context = await recallScopeContext(userId, subject);
+	const context = await recallScopeContext(user, subject);
 	if (!context) return false;
 	const { selectedTopicIds, curriculum } = context;
 	const officialTopic = officialTopicForRecallTopic(subject, recallTopicId, curriculum.topics);
@@ -2358,18 +2979,18 @@ export async function isRecallTopicWithinLearnerScope(
 }
 
 export async function isRecallCardWithinLearnerScope(
-	userId: string,
+	user: AdminUser,
 	card: RecallCard
 ): Promise<boolean> {
-	return (await recallCardsWithinLearnerScope(userId, card.subject, [card])).length === 1;
+	return (await recallCardsWithinLearnerScope(user, card.subject, [card])).length === 1;
 }
 
 export async function recallCardsWithinLearnerScope(
-	userId: string,
+	user: AdminUser,
 	subject: RecallRuntimeSubject,
 	cards: RecallCard[]
 ): Promise<RecallCard[]> {
-	const context = await recallScopeContext(userId, subject);
+	const context = await recallScopeContext(user, subject);
 	if (!context) return [];
 	const { selectedTopicIds, curriculum } = context;
 	const topicIds = new Set(curriculum.topics.map((topic) => topic.id));
@@ -2383,23 +3004,14 @@ export async function recallCardsWithinLearnerScope(
 }
 
 async function recallScopeContext(
-	userId: string,
+	user: AdminUser,
 	subject: RecallRuntimeSubject
 ): Promise<{
 	curriculum: LearnerCurriculum;
 	selectedTopicIds: Set<string> | null;
 } | null> {
-	const profile = await queryPersonalFirst<{
-		board: string;
-		qualification: string;
-		course: string;
-		tier: string;
-	}>(
-		`SELECT board, qualification, course, tier
-		 FROM user_profile_subjects
-		 WHERE user_id = ? AND subject = ? AND enabled = 1`,
-		[userId, subject]
-	);
+	const settings = await getLearnerProfileSettings(user);
+	const profile = settings.subjects.find((entry) => entry.enabled && entry.subject === subject);
 	if (!profile) return null;
 	const curriculum = await curriculumForLearnerSubject({
 		subject,
@@ -2411,25 +3023,13 @@ async function recallScopeContext(
 	if (!curriculum) return null;
 
 	if (subject === 'English Literature') {
-		const selections = await queryPersonalFirst<{
-			modern_text: string | null;
-			nineteenth_century_novel: string | null;
-			poetry_cluster: string | null;
-			shakespeare_play: string | null;
-		}>(
-			`SELECT modern_text, nineteenth_century_novel, poetry_cluster, shakespeare_play
-			 FROM user_english_literature_selections
-			 WHERE user_id = ?`,
-			[userId]
-		);
-		const titles = selections
-			? [
-					selections.modern_text,
-					selections.nineteenth_century_novel,
-					selections.poetry_cluster,
-					selections.shakespeare_play
-				].filter((title): title is string => Boolean(title?.trim()))
-			: [];
+		const selections = settings.englishLiteratureSelections;
+		const titles = [
+			selections.modernText,
+			selections.nineteenthCenturyNovel,
+			selections.poetryCluster,
+			selections.shakespearePlay
+		].filter((title): title is string => Boolean(title?.trim()));
 		if (titles.length !== 4) return { curriculum, selectedTopicIds: new Set() };
 		const selectedTopicIds = new Set(
 			titles.flatMap((title) => {
@@ -2445,7 +3045,7 @@ async function recallScopeContext(
 		};
 	}
 
-	const scope = await readCurriculumScope(userId, subject);
+	const scope = await readCurriculumScope(user.uid, subject);
 	if (
 		!scope ||
 		scope.board !== profile.board ||

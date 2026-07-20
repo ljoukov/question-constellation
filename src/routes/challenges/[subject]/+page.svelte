@@ -2,8 +2,25 @@
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import ChallengePreview from '$lib/challenges/ChallengePreview.svelte';
-	import { challengeByRoute, challengePath } from '$lib/challenges/catalog';
-	import { readChallengeProgress } from '$lib/challenges/progress';
+	import { challengePath } from '$lib/challenges/routing';
+	import {
+		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
+		CHALLENGE_PROGRESS_STORAGE_KEY,
+		LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY,
+		challengeProgressStorageKey,
+		emptyChallengeProgress,
+		mergeChallengeProgress,
+		readChallengeProgress,
+		type ChallengeProgress
+	} from '$lib/challenges/progress';
+	import {
+		CHALLENGE_PROGRESS_UPDATED_EVENT,
+		type ChallengeProgressUpdatedDetail
+	} from '$lib/challenges/progressSync';
+	import {
+		mostRecentlyCompletedChallenge,
+		recommendedUnfinishedChallenge
+	} from '$lib/challenges/recommendations';
 	import {
 		challengeSocialImage,
 		challengeSocialImageAlt,
@@ -12,45 +29,66 @@
 	} from '$lib/challenges/seo';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
-	import IconBackLink from '$lib/components/IconBackLink.svelte';
-	import { Check, ChevronDown, Clock3, LockKeyholeOpen } from '@lucide/svelte';
+	import CurriculumDisclosure from '$lib/challenges/ui/CurriculumDisclosure.svelte';
+	import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
+	import type { ChallengeSubject } from '$lib/challenges/types';
+	import { ExternalLink, House, Trophy } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
+
+	const subjectPageCopy: Record<
+		ChallengeSubject,
+		{
+			pageTitle: string;
+		}
+	> = {
+		biology: {
+			pageTitle: 'GCSE Biology Exam Questions & Answer Quiz'
+		},
+		chemistry: {
+			pageTitle: 'GCSE Chemistry Exam Questions & Answer Quiz'
+		},
+		physics: {
+			pageTitle: 'GCSE Physics Exam Questions & Working Quiz'
+		}
+	};
 
 	let { data }: PageProps = $props();
 
 	const subjectLabel = $derived(`GCSE ${data.subject.label}`);
+	const subjectCopy = $derived(subjectPageCopy[data.subject.subject]);
 	const canonicalUrl = $derived(
 		`https://constellation.eviworld.com/challenges/${data.subject.subject}`
 	);
-	const pageTitle = $derived(
-		data.subject.subject === 'biology'
-			? 'GCSE Biology Exam Questions & Answer Quiz'
-			: 'GCSE Physics Exam Questions & Working Quiz'
-	);
+	const pageTitle = $derived(subjectCopy.pageTitle);
 	const pageDescription = $derived(
-		`Try ${data.challenges.length} free ${subjectLabel} exam-question challenges. Compare plausible answers, find the scoring gap, improve it and apply the reasoning again.`
+		`Try free ${subjectLabel} exam-question challenges. Compare two answers, find the missing idea, improve the answer and apply the same method again.`
 	);
+	const challenges = $derived(data.challenges);
+	const serverProgress = $derived(data.challengeProgress as ChallengeProgress);
+	const userId = $derived(data.user?.uid ?? null);
+	let browserProgress = $state<ChallengeProgress | null>(null);
+	const progress = $derived(browserProgress ?? serverProgress);
+
 	const heroChallenge = $derived(
-		challengeByRoute(data.subject.subject, data.subject.heroSlug) ?? data.challenges[0]
+		recommendedUnfinishedChallenge(challenges, progress, {
+			preferredSubject: data.subject.subject
+		}) ??
+			mostRecentlyCompletedChallenge(challenges, progress) ??
+			challenges.find((challenge) => challenge.id === data.defaultHeroId) ??
+			challenges[0]
 	);
-	const heroHeadline = $derived(
-		data.subject.subject === 'biology'
-			? 'Both answers say the enzyme stops. Only one explains why.'
-			: 'The range is right. Why does the uncertainty still lose the mark?'
+	const otherChallenges = $derived(
+		challenges.filter((challenge) => challenge.id !== heroChallenge.id)
 	);
-	const recommended = $derived.by(() => {
-		const pool = data.challenges.filter((challenge) => challenge.id !== heroChallenge?.id);
-		const varied = (['starter', 'standard', 'stretch'] as const)
-			.map((difficulty) => pool.find((challenge) => challenge.difficulty === difficulty))
-			.filter((challenge) => challenge !== undefined);
-		return [
-			...new Map([...varied, ...pool].map((challenge) => [challenge.id, challenge])).values()
-		].slice(0, 3);
-	});
-	let completedIds = $state<string[]>([]);
 	const completedCount = $derived(
-		data.challenges.filter((challenge) => completedIds.includes(challenge.id)).length
+		challenges.filter((challenge) => Boolean(progress.challenges[challenge.id]?.completedAt)).length
+	);
+	const totalBestScore = $derived(
+		challenges.reduce(
+			(total, challenge) => total + (progress.challenges[challenge.id]?.bestScore ?? 0),
+			0
+		)
 	);
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
@@ -87,8 +125,7 @@
 				isAccessibleForFree: true,
 				mainEntity: {
 					'@type': 'ItemList',
-					numberOfItems: data.challenges.length,
-					itemListElement: data.challenges.map((challenge, index) => ({
+					itemListElement: challenges.map((challenge, index) => ({
 						'@type': 'ListItem',
 						position: index + 1,
 						name: challenge.title,
@@ -102,11 +139,59 @@
 
 	onMount(() => {
 		if (!browser) return;
-		const progress = readChallengeProgress(window.localStorage);
-		completedIds = Object.entries(progress.challenges)
-			.filter(([, entry]) => Boolean(entry.completedAt))
-			.map(([id]) => id);
+		const refreshProgress = () => (browserProgress = mergedBrowserProgress());
+		const handleStorage = (event: StorageEvent) => {
+			if (isRelevantProgressKey(event.key)) refreshProgress();
+		};
+		const handleProgressUpdated = (event: Event) => {
+			const detail = (event as CustomEvent<ChallengeProgressUpdatedDetail>).detail;
+			if (!detail?.progress) return;
+			const eventUserId = detail.userId || null;
+			if (userId ? eventUserId !== userId : Boolean(eventUserId)) return;
+			browserProgress = mergeChallengeProgress(progress, detail.progress);
+		};
+
+		refreshProgress();
+		window.addEventListener('pageshow', refreshProgress);
+		window.addEventListener('storage', handleStorage);
+		window.addEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
+
+		return () => {
+			window.removeEventListener('pageshow', refreshProgress);
+			window.removeEventListener('storage', handleStorage);
+			window.removeEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
+		};
 	});
+
+	function mergedBrowserProgress(): ChallengeProgress {
+		if (!browser) return serverProgress ?? emptyChallengeProgress();
+		const accountOrGuest = readChallengeProgress(window.localStorage, userId);
+		const guest = userId ? readChallengeProgress(window.localStorage) : emptyChallengeProgress();
+		return mergeChallengeProgress(
+			serverProgress ?? emptyChallengeProgress(),
+			mergeChallengeProgress(accountOrGuest, guest)
+		);
+	}
+
+	function isRelevantProgressKey(key: string | null): boolean {
+		return (
+			key === null ||
+			key === CHALLENGE_PROGRESS_STORAGE_KEY ||
+			key === CHALLENGE_PROGRESS_GUEST_STORAGE_KEY ||
+			key === LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY ||
+			key === challengeProgressStorageKey(userId)
+		);
+	}
+
+	function challengeEyebrow(challenge: PublicChallengePreviewDefinition): string | undefined {
+		const entry = progress.challenges[challenge.id];
+		if (entry?.bestScore !== null && entry?.bestScore !== undefined) {
+			return `Personal best · ${entry.bestScore} points`;
+		}
+		if (entry?.completedAt) return 'Complete';
+		if (entry) return 'In progress';
+		return undefined;
+	}
 </script>
 
 <svelte:head>
@@ -133,86 +218,85 @@
 
 <ChallengeRouteShell user={data.user} wide>
 	<div class="challenge-subject-shell">
-		<div class="subject-toolbar">
-			<IconBackLink href={resolve('/challenges')} label="Back to all challenges" />
-			<span class="progress-chip">
-				{#if completedCount > 0}<Check size={15} aria-hidden="true" />{/if}
-				{completedCount}/{data.challenges.length} solved
+		<nav class="subject-nav" aria-label="Breadcrumb">
+			<a href={resolve('/')} data-analytics-label={`${data.subject.label} challenges: home`}>
+				<House size={16} strokeWidth={2.2} aria-hidden="true" />
+				<span>Home</span>
+			</a>
+			<span aria-hidden="true">/</span>
+			<a href={resolve('/challenges')} data-analytics-label="Back to all challenges"
+				>All challenges</a
+			>
+			<span aria-hidden="true">/</span>
+			<strong aria-current="page">{data.subject.label}</strong>
+		</nav>
+
+		<section class="subject-hero" aria-label={`Recommended ${subjectLabel} challenge`}>
+			<ChallengePreview
+				challenge={heroChallenge}
+				headingLevel="h1"
+				headline={heroChallenge.hook}
+				stacked
+				completed={Boolean(progress.challenges[heroChallenge.id]?.completedAt)}
+			/>
+		</section>
+
+		<section class="activity-strip" aria-labelledby="activity-title" aria-live="polite">
+			<span class="activity-mark" aria-hidden="true">
+				<Trophy size={18} strokeWidth={2.25} />
 			</span>
-		</div>
-
-		{#if heroChallenge}
-			<section class="subject-hero" aria-label={`Play a ${subjectLabel} question`}>
-				<ChallengePreview
-					challenge={heroChallenge}
-					headingLevel="h1"
-					headline={heroHeadline}
-					stacked
-				/>
-			</section>
-		{/if}
-
-		<p class="subject-facts">
-			<span><Clock3 size={15} aria-hidden="true" /> 4–6 minutes a question</span>
-			<span><LockKeyholeOpen size={15} aria-hidden="true" /> No account needed</span>
-		</p>
+			<div>
+				<h2 id="activity-title">{data.subject.label} challenge score</h2>
+				<p>
+					<strong>{totalBestScore.toLocaleString('en-GB')} points</strong>
+					<span>· {completedCount} complete</span>
+				</p>
+			</div>
+		</section>
 
 		<section class="recommended-cases" aria-labelledby="recommended-cases-title">
 			<header>
-				<p>Three ways in</p>
-				<h2 id="recommended-cases-title">Choose another {data.subject.label} question</h2>
+				<h2 id="recommended-cases-title">More {data.subject.label} challenges</h2>
+				<p>Each game compares two exam answers, then applies the method to a second question.</p>
 			</header>
 			<div>
-				{#each recommended as challenge (challenge.id)}
+				{#each otherChallenges as challenge (challenge.id)}
 					<ChallengeCardLink
 						href={challengePath(challenge)}
-						eyebrow={`${completedIds.includes(challenge.id) ? 'Solved' : challenge.difficulty} · ${challenge.estimatedMinutes} min`}
+						eyebrow={challengeEyebrow(challenge)}
+						markLabel={`${challenge.marks} ${challenge.marks === 1 ? 'mark' : 'marks'}`}
 						title={challenge.title}
 						description={challenge.hook}
 						meta={challenge.topic}
 						visualChallenge={challenge}
-						complete={completedIds.includes(challenge.id)}
+						complete={Boolean(progress.challenges[challenge.id]?.completedAt)}
+						balanced
 						analyticsLabel={`Open ${challenge.title} challenge`}
 					/>
 				{/each}
 			</div>
 		</section>
 
-		<details class="all-cases">
-			<summary>
-				<span>
-					<strong>View all {data.challenges.length} {data.subject.label} questions</strong>
-					<small>Grouped by the reasoning move they practise</small>
-				</span>
-				<ChevronDown size={19} aria-hidden="true" />
-			</summary>
-
-			<div class="arc-list">
-				{#each data.arcs as arc (arc.id)}
-					{@const arcChallenges = data.challenges.filter((challenge) => challenge.arc === arc.id)}
-					{#if arcChallenges.length > 0}
-						<section aria-labelledby={`arc-${arc.id}`}>
-							<header>
-								<h2 id={`arc-${arc.id}`}>{arc.label}</h2>
-								<p>{arc.description}</p>
-							</header>
-							<div>
-								{#each arcChallenges as challenge (challenge.id)}
-									<ChallengeCardLink
-										href={challengePath(challenge)}
-										eyebrow={`${completedIds.includes(challenge.id) ? 'Solved' : challenge.difficulty} · ${challenge.estimatedMinutes} min`}
-										title={challenge.title}
-										description={challenge.hook}
-										meta={challenge.topic}
-										complete={completedIds.includes(challenge.id)}
-									/>
-								{/each}
-							</div>
-						</section>
-					{/if}
+		<CurriculumDisclosure>
+			<ul class="curriculum-links" aria-label={`Official ${data.subject.label} curriculum links`}>
+				{#each data.curriculumLinks as link (link.officialUrl)}
+					<li>
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+						<a href={link.officialUrl} target="_blank" rel="noreferrer">
+							AQA · {link.topicLabel}
+							<ExternalLink size={14} aria-hidden="true" />
+						</a>
+					</li>
 				{/each}
-			</div>
-		</details>
+				<li>
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+					<a href={data.ks4ScienceUrl} target="_blank" rel="noreferrer">
+						GOV.UK KS4 science
+						<ExternalLink size={14} aria-hidden="true" />
+					</a>
+				</li>
+			</ul>
+		</CurriculumDisclosure>
 	</div>
 </ChallengeRouteShell>
 
@@ -224,39 +308,94 @@
 		margin: 0 auto;
 	}
 
-	.subject-toolbar,
-	.subject-facts {
+	.subject-nav {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.55rem 1rem;
-	}
-
-	.progress-chip,
-	.subject-facts span {
-		display: inline-flex;
-		gap: 0.35rem;
-		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.75rem;
+		margin-bottom: calc(clamp(1.35rem, 3vw, 2.3rem) * -0.55);
 		color: var(--qc-ui-text-muted);
-		font-size: 0.78rem;
-		font-weight: 620;
+		font-size: 0.82rem;
+		font-weight: 650;
 	}
 
-	.progress-chip {
-		min-height: 2rem;
-		padding: 0.32rem 0.48rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		background: var(--qc-ui-surface-raised);
+	.subject-nav a {
+		display: inline-flex;
+		min-height: 2.25rem;
+		align-items: center;
+		gap: 0.38rem;
+		color: var(--qc-ui-text-secondary);
+		text-decoration: none;
+		transition: color 150ms ease;
 	}
 
-	.progress-chip :global(svg) {
+	.subject-nav a:hover {
 		color: var(--qc-ui-accent-text);
 	}
 
-	.subject-facts {
-		justify-content: flex-start;
-		margin: -0.6rem 0 0;
+	.subject-nav a:focus-visible {
+		outline: 3px solid var(--qc-ui-accent-text);
+		outline-offset: 2px;
+	}
+
+	.subject-nav strong {
+		color: var(--qc-ui-text);
+		font-weight: 700;
+	}
+
+	.activity-strip {
+		display: flex;
+		width: min(100%, 38rem);
+		align-items: center;
+		gap: 0.7rem;
+		margin: -0.4rem 0 0;
+		padding: 0.58rem 0.68rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: color-mix(in srgb, var(--qc-ui-surface-raised) 72%, transparent);
+	}
+
+	.activity-mark {
+		display: grid;
+		width: 2.4rem;
+		aspect-ratio: 1;
+		flex: 0 0 auto;
+		place-items: center;
+		border: 1px solid var(--qc-ui-border);
+		background: var(--qc-ui-surface-muted);
+		color: var(--qc-ui-accent-text);
+	}
+
+	.activity-strip > div {
+		display: grid;
+		gap: 0.08rem;
+		min-width: 0;
+	}
+
+	.activity-strip h2,
+	.activity-strip p {
+		margin: 0;
+	}
+
+	.activity-strip h2 {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		line-height: 1.2;
+		text-transform: uppercase;
+	}
+
+	.activity-strip p {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.86rem;
+		line-height: 1.4;
+	}
+
+	.activity-strip strong {
+		color: var(--qc-ui-text);
+		font-size: 1rem;
+		font-weight: 720;
 	}
 
 	.recommended-cases {
@@ -266,32 +405,29 @@
 		border-top: 1px solid var(--qc-ui-border-subtle);
 	}
 
-	.recommended-cases > header,
-	.arc-list section > header {
-		display: grid;
-		gap: 0.22rem;
-	}
-
-	.recommended-cases p,
 	.recommended-cases h2,
-	.arc-list h2,
-	.arc-list p {
+	.recommended-cases p {
 		margin: 0;
 	}
 
-	.recommended-cases > header p {
-		color: var(--qc-ui-accent-text);
-		font-size: 0.72rem;
-		font-weight: 650;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+	.recommended-cases h2 {
+		font-size: clamp(1.4rem, 2.6vw, 1.75rem);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.018em;
+		text-wrap: balance;
 	}
 
-	.recommended-cases h2 {
-		font-size: clamp(1.35rem, 3vw, 1.85rem);
-		font-weight: 540;
-		line-height: 1.1;
-		letter-spacing: -0.025em;
+	.recommended-cases header {
+		display: grid;
+		gap: 0.3rem;
+	}
+
+	.recommended-cases header p {
+		max-width: 48rem;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.5;
 	}
 
 	.recommended-cases > div {
@@ -300,81 +436,34 @@
 		gap: 0.65rem;
 	}
 
-	.all-cases {
-		border-block: 1px solid var(--qc-ui-border-subtle);
-		background: color-mix(in srgb, var(--qc-ui-surface-raised) 78%, transparent);
-	}
-
-	.all-cases > summary {
+	.curriculum-links {
 		display: flex;
-		min-height: 4rem;
+		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding: 0.75rem 0.9rem;
-		cursor: pointer;
+		gap: 0.65rem 1.35rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	.all-cases > summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.all-cases > summary span {
-		display: grid;
-		gap: 0.15rem;
-	}
-
-	.all-cases > summary strong {
-		font-size: 0.95rem;
-		font-weight: 620;
-	}
-
-	.all-cases > summary small {
-		color: var(--qc-ui-text-muted);
-		font-size: 0.78rem;
-	}
-
-	.all-cases[open] > summary :global(svg) {
-		transform: rotate(180deg);
-	}
-
-	.arc-list {
-		display: grid;
-		gap: 1.4rem;
-		padding: 0.25rem 0.9rem 1rem;
-	}
-
-	.arc-list section {
-		display: grid;
-		gap: 0.65rem;
-	}
-
-	.arc-list section > header {
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--qc-ui-border-subtle);
-	}
-
-	.arc-list h2 {
-		font-size: 1.12rem;
-		font-weight: 620;
-	}
-
-	.arc-list p {
-		color: var(--qc-ui-text-muted);
+	.curriculum-links a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.32rem;
+		color: var(--qc-ui-accent-text);
 		font-size: 0.82rem;
-		line-height: 1.4;
-	}
-
-	.arc-list section > div {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.6rem;
+		font-weight: 650;
 	}
 
 	@media (max-width: 760px) {
-		.recommended-cases > div,
-		.arc-list section > div {
+		.recommended-cases > div {
 			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.subject-nav a {
+			transition: none;
 		}
 	}
 </style>

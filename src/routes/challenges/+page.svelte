@@ -1,13 +1,26 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import ChallengePreview from '$lib/challenges/ChallengePreview.svelte';
 	import {
-		challengeByRoute,
-		challengeCatalog,
-		challengeSubjects,
-		challengesForSubject
-	} from '$lib/challenges/catalog';
-	import { readChallengeProgress } from '$lib/challenges/progress';
+		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
+		CHALLENGE_PROGRESS_STORAGE_KEY,
+		LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY,
+		challengeProgressStorageKey,
+		emptyChallengeProgress,
+		mergeChallengeProgress,
+		readChallengeProgress,
+		type ChallengeProgress
+	} from '$lib/challenges/progress';
+	import {
+		CHALLENGE_PROGRESS_UPDATED_EVENT,
+		type ChallengeProgressUpdatedDetail
+	} from '$lib/challenges/progressSync';
+	import {
+		mostRecentlyCompletedChallenge,
+		recommendedUnfinishedChallenge
+	} from '$lib/challenges/recommendations';
+	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
 	import {
 		challengeSocialImage,
 		challengeSocialImageAlt,
@@ -16,31 +29,55 @@
 	} from '$lib/challenges/seo';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
+	import CurriculumDisclosure from '$lib/challenges/ui/CurriculumDisclosure.svelte';
 	import type { ChallengeSubject } from '$lib/challenges/types';
-	import { Check, ChevronDown } from '@lucide/svelte';
+	import { ExternalLink, House, Trophy } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	const canonicalUrl = 'https://constellation.eviworld.com/challenges';
-	const pageTitle = 'GCSE Science Exam Question Games | Biology & Physics';
+	const pageTitle = 'GCSE Science Exam Question Games | Biology, Chemistry & Physics';
 	const pageDescription =
-		'Try free GCSE Biology and Physics exam-question games. Compare two answers, find the missing mark, improve it and use the same reasoning on a new question.';
-	const featuredChallenge = challengeByRoute('biology', 'measles-vaccine-immunity');
-	let completedIds = $state<string[]>([]);
+		'Try free GCSE Biology, Chemistry and Physics exam-question games. Compare two answers, find the missing mark, improve it and use the same reasoning again.';
+	const catalogue = $derived(data.challenges);
+	const serverProgress = $derived(data.challengeProgress as ChallengeProgress);
+	const userId = $derived(data.user?.uid ?? null);
+	let browserProgress = $state<ChallengeProgress | null>(null);
+	const progress = $derived(browserProgress ?? serverProgress);
+
 	const totalCompleted = $derived(
-		challengeCatalog.filter((challenge) => completedIds.includes(challenge.id)).length
+		catalogue.filter((challenge) => Boolean(progress.challenges[challenge.id]?.completedAt)).length
+	);
+	const totalBestScore = $derived(
+		catalogue.reduce(
+			(total, challenge) => total + (progress.challenges[challenge.id]?.bestScore ?? 0),
+			0
+		)
 	);
 	const subjectGroups = $derived(
-		challengeSubjects.map((subject) => {
-			const challenges = challengesForSubject(subject.subject);
+		data.subjects.map((subject) => {
+			const subjectChallenges = catalogue.filter((challenge) =>
+				subject.challengeIds.includes(challenge.id)
+			);
+			const entries = subject.challengeIds.map((id) => progress.challenges[id]);
+			const nextChallenge =
+				recommendedUnfinishedChallenge(subjectChallenges, progress, {
+					preferredSubject: subject.subject
+				}) ?? mostRecentlyCompletedChallenge(subjectChallenges, progress);
 			return {
 				...subject,
-				challenges,
-				completed: challenges.filter((challenge) => completedIds.includes(challenge.id)).length
+				completed: entries.filter((entry) => Boolean(entry?.completedAt)).length,
+				totalBestScore: entries.reduce((total, entry) => total + (entry?.bestScore ?? 0), 0),
+				art: nextChallenge ? subjectArtForChallenge(nextChallenge) : undefined
 			};
 		})
+	);
+	const featuredChallenge = $derived(
+		recommendedUnfinishedChallenge(catalogue, progress) ??
+			mostRecentlyCompletedChallenge(catalogue, progress) ??
+			data.featuredChallenge
 	);
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
@@ -71,8 +108,8 @@
 				isAccessibleForFree: true,
 				mainEntity: {
 					'@type': 'ItemList',
-					numberOfItems: challengeSubjects.length,
-					itemListElement: challengeSubjects.map((subject, index) => ({
+					numberOfItems: data.subjects.length,
+					itemListElement: data.subjects.map((subject, index) => ({
 						'@type': 'ListItem',
 						position: index + 1,
 						name: `GCSE ${subject.label} exam questions`,
@@ -86,11 +123,49 @@
 
 	onMount(() => {
 		if (!browser) return;
-		const progress = readChallengeProgress(window.localStorage);
-		completedIds = Object.entries(progress.challenges)
-			.filter(([, entry]) => Boolean(entry.completedAt))
-			.map(([id]) => id);
+		const refreshProgress = () => (browserProgress = mergedBrowserProgress());
+		const handleStorage = (event: StorageEvent) => {
+			if (isRelevantProgressKey(event.key)) refreshProgress();
+		};
+		const handleProgressUpdated = (event: Event) => {
+			const detail = (event as CustomEvent<ChallengeProgressUpdatedDetail>).detail;
+			if (!detail?.progress) return;
+			const eventUserId = detail.userId || null;
+			if (userId ? eventUserId !== userId : Boolean(eventUserId)) return;
+			browserProgress = mergeChallengeProgress(progress, detail.progress);
+		};
+
+		refreshProgress();
+		window.addEventListener('pageshow', refreshProgress);
+		window.addEventListener('storage', handleStorage);
+		window.addEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
+
+		return () => {
+			window.removeEventListener('pageshow', refreshProgress);
+			window.removeEventListener('storage', handleStorage);
+			window.removeEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
+		};
 	});
+
+	function mergedBrowserProgress(): ChallengeProgress {
+		if (!browser) return serverProgress ?? emptyChallengeProgress();
+		const accountOrGuest = readChallengeProgress(window.localStorage, userId);
+		const guest = userId ? readChallengeProgress(window.localStorage) : emptyChallengeProgress();
+		return mergeChallengeProgress(
+			serverProgress ?? emptyChallengeProgress(),
+			mergeChallengeProgress(accountOrGuest, guest)
+		);
+	}
+
+	function isRelevantProgressKey(key: string | null): boolean {
+		return (
+			key === null ||
+			key === CHALLENGE_PROGRESS_STORAGE_KEY ||
+			key === CHALLENGE_PROGRESS_GUEST_STORAGE_KEY ||
+			key === LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY ||
+			key === challengeProgressStorageKey(userId)
+		);
+	}
 
 	function subjectHref(subject: ChallengeSubject) {
 		return `/challenges/${subject}` as const;
@@ -121,56 +196,72 @@
 
 <ChallengeRouteShell user={data.user} wide>
 	<div class="challenge-home-shell">
-		{#if featuredChallenge}
-			<section class="play-first" aria-label="Play a GCSE Biology question">
-				<ChallengePreview
-					challenge={featuredChallenge}
-					stacked
-					headingLevel="h1"
-					headline="Both answers mention antibodies. Only one explains lasting immunity."
-				/>
-			</section>
-		{/if}
+		<nav class="challenge-breadcrumbs" aria-label="Breadcrumb">
+			<a href={resolve('/')} data-analytics-label="Challenges: home">
+				<House size={16} strokeWidth={2.2} aria-hidden="true" />
+				<span>Home</span>
+			</a>
+			<span aria-hidden="true">/</span>
+			<strong aria-current="page">Challenges</strong>
+		</nav>
 
-		{#if totalCompleted > 0}
-			<p class="device-progress" aria-live="polite">
-				<Check size={16} aria-hidden="true" />
-				{totalCompleted} of {challengeCatalog.length} challenges solved on this device
-			</p>
-		{/if}
+		<section class="play-first" aria-label="Recommended GCSE Science challenge">
+			<ChallengePreview
+				challenge={featuredChallenge}
+				stacked
+				headingLevel="h1"
+				headline={featuredChallenge.hook}
+				completed={Boolean(progress.challenges[featuredChallenge.id]?.completedAt)}
+			/>
+		</section>
 
-		<section class="subject-paths" aria-labelledby="subject-paths-title">
-			<header>
-				<p>Choose what comes next</p>
-				<h2 id="subject-paths-title">More exam questions, same missing-link idea</h2>
-			</header>
+		<section class="activity-strip" aria-labelledby="activity-title" aria-live="polite">
+			<span class="activity-mark" aria-hidden="true">
+				<Trophy size={18} strokeWidth={2.25} />
+			</span>
+			<div>
+				<h2 id="activity-title">Your challenge score</h2>
+				<p>
+					<strong>{totalBestScore.toLocaleString('en-GB')} points</strong>
+					<span>· {totalCompleted} complete</span>
+				</p>
+			</div>
+		</section>
+
+		<section class="subject-paths" aria-label="Choose a subject">
 			<div>
 				{#each subjectGroups as subject (subject.subject)}
 					<ChallengeCardLink
 						href={subjectHref(subject.subject)}
-						eyebrow={`${subject.challenges.length} questions · ${subject.completed} solved`}
+						eyebrow={`${subject.completed} complete`}
 						title={`GCSE ${subject.label}`}
-						description={subject.subject === 'biology'
-							? 'Explain cells, practicals, data and biological cause-and-effect.'
-							: 'Check calculations, particles, circuits, forces and motion.'}
-						meta={`Browse ${subject.label}`}
-						complete={subject.completed === subject.challenges.length}
+						meta={`${subject.totalBestScore.toLocaleString('en-GB')} points`}
+						art={subject.art}
 					/>
 				{/each}
 			</div>
 		</section>
 
-		<details class="method-note">
-			<summary>
-				<span>How these GCSE exam-question games work</span>
-				<ChevronDown size={17} aria-hidden="true" />
-			</summary>
-			<p>
-				Compare two plausible answers, expose the exact scoring gap, fix the smallest part that
-				matters, then use the same Question Chain in a different exam context. No account is
-				required.
-			</p>
-		</details>
+		<CurriculumDisclosure>
+			<ul class="curriculum-links" aria-label="Official GCSE science curriculum links">
+				{#each data.curriculumLinks as link (link.officialUrl)}
+					<li>
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+						<a href={link.officialUrl} target="_blank" rel="noreferrer">
+							AQA · {link.topicLabel}
+							<ExternalLink size={14} aria-hidden="true" />
+						</a>
+					</li>
+				{/each}
+				<li>
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+					<a href={data.ks4ScienceUrl} target="_blank" rel="noreferrer">
+						GOV.UK KS4 science
+						<ExternalLink size={14} aria-hidden="true" />
+					</a>
+				</li>
+			</ul>
+		</CurriculumDisclosure>
 	</div>
 </ChallengeRouteShell>
 
@@ -182,19 +273,95 @@
 		margin: 0 auto;
 	}
 
+	.challenge-breadcrumbs {
+		display: flex;
+		min-height: 2.25rem;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: calc(clamp(1.4rem, 4vw, 2.8rem) * -0.55);
+		color: var(--qc-ui-text-muted);
+		font-size: 0.82rem;
+		font-weight: 650;
+	}
+
+	.challenge-breadcrumbs a {
+		display: inline-flex;
+		min-height: 2.25rem;
+		align-items: center;
+		gap: 0.38rem;
+		color: var(--qc-ui-text-secondary);
+		text-decoration: none;
+	}
+
+	.challenge-breadcrumbs a:hover {
+		color: var(--qc-ui-accent-text);
+	}
+
+	.challenge-breadcrumbs a:focus-visible {
+		outline: 3px solid var(--qc-ui-accent-text);
+		outline-offset: 2px;
+	}
+
+	.challenge-breadcrumbs strong {
+		color: var(--qc-ui-text);
+		font-weight: 700;
+	}
+
 	.play-first {
 		min-width: 0;
 	}
 
-	.device-progress {
-		display: inline-flex;
-		width: fit-content;
-		gap: 0.4rem;
+	.activity-strip {
+		display: flex;
+		width: min(100%, 25rem);
 		align-items: center;
-		margin: -0.4rem 0 0;
+		gap: 0.7rem;
+		margin: -0.45rem 0 0;
+		padding: 0.55rem 0.65rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: color-mix(in srgb, var(--qc-ui-surface-raised) 72%, transparent);
+	}
+
+	.activity-mark {
+		display: grid;
+		width: 2.4rem;
+		aspect-ratio: 1;
+		flex: 0 0 auto;
+		place-items: center;
+		border: 1px solid var(--qc-ui-border);
+		background: var(--qc-ui-surface-muted);
 		color: var(--qc-ui-accent-text);
-		font-size: 0.82rem;
-		font-weight: 620;
+	}
+
+	.activity-strip > div {
+		display: grid;
+		gap: 0.08rem;
+	}
+
+	.activity-strip h2,
+	.activity-strip p {
+		margin: 0;
+	}
+
+	.activity-strip h2 {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.055em;
+		line-height: 1.2;
+		text-transform: uppercase;
+	}
+
+	.activity-strip p {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.88rem;
+		line-height: 1.35;
+	}
+
+	.activity-strip strong {
+		color: var(--qc-ui-text);
+		font-size: 1rem;
+		font-weight: 720;
 	}
 
 	.subject-paths {
@@ -204,70 +371,29 @@
 		border-top: 1px solid var(--qc-ui-border-subtle);
 	}
 
-	.subject-paths > header {
-		display: grid;
-		gap: 0.22rem;
-	}
-
-	.subject-paths p,
-	.subject-paths h2,
-	.method-note p {
-		margin: 0;
-	}
-
-	.subject-paths header p {
-		color: var(--qc-ui-accent-text);
-		font-size: 0.72rem;
-		font-weight: 650;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-	}
-
-	.subject-paths h2 {
-		font-size: clamp(1.35rem, 3vw, 1.85rem);
-		font-weight: 540;
-		line-height: 1.1;
-		letter-spacing: -0.025em;
-	}
-
 	.subject-paths > div {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 0.7rem;
 	}
 
-	.method-note {
-		border-block: 1px solid var(--qc-ui-border-subtle);
-		background: color-mix(in srgb, var(--qc-ui-surface-raised) 72%, transparent);
-	}
-
-	.method-note summary {
+	.curriculum-links {
 		display: flex;
-		min-height: 3rem;
+		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding: 0.7rem 0.85rem;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.86rem;
-		font-weight: 620;
-		cursor: pointer;
+		gap: 0.65rem 1.35rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	.method-note summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.method-note[open] summary :global(svg) {
-		transform: rotate(180deg);
-	}
-
-	.method-note p {
-		max-width: 54rem;
-		padding: 0 0.85rem 0.9rem;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.9rem;
-		line-height: 1.55;
+	.curriculum-links a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.32rem;
+		color: var(--qc-ui-accent-text);
+		font-size: 0.82rem;
+		font-weight: 650;
 	}
 
 	@media (max-width: 640px) {

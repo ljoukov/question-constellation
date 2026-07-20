@@ -23,6 +23,7 @@
 		type StoredPaperSitting
 	} from '../paperSitting';
 	import { externalInputSourceFromBeforeInput } from '$lib/learning/answerAssistance';
+	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import {
 		classifyRequestFailure,
 		fetchWithResponseTimeout,
@@ -449,6 +450,7 @@
 		streamPhase = 'submitting';
 		submitFailure = null;
 		let streamStarted = false;
+		let snapshotWasMutated = false;
 		let working = session;
 		try {
 			for (const question of paper.questions) {
@@ -457,6 +459,7 @@
 				streamPhase = 'calling';
 				streamStarted = true;
 				const response = await gradeQuestion(question, working);
+				snapshotWasMutated = true;
 				working = mergePaperGradeResponse(working, response);
 				session = working;
 				persist(working);
@@ -466,12 +469,16 @@
 			persist(working);
 		} catch (error) {
 			console.error('[full-paper-sitting] grading failed', error);
+			// A streamed question can persist some part results before reporting
+			// a later part failure. Conservatively latch one snapshot refresh.
+			if (streamStarted) snapshotWasMutated = true;
 			submitFailure = classifyRequestFailure(error, {
 				action: 'finish checking this paper',
 				serverLabel: 'The answer checker',
 				streamStarted
 			});
 		} finally {
+			if (snapshotWasMutated) markHomeSnapshotDirty();
 			streamPhase = 'idle';
 			currentGradingRef = '';
 		}

@@ -17,5 +17,10 @@
 
 <main class="qc-real-app qc-dashboard-page">
 	<AppTopbar user={data.user} showSearch={false} showNavigation />
-	<SubjectHub subject={data.subject} />
+	<SubjectHub
+		subject={data.subject}
+		challengeCatalog={data.challengeCatalog}
+		challengeProgress={data.challengeProgress}
+		challengeUserId={data.user.uid}
+	/>
 </main>

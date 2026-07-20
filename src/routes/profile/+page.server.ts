@@ -84,7 +84,8 @@ export const actions: Actions = {
 		await Promise.all([
 			updateLearnerSubjects({
 				userId: locals.user.uid,
-				subjects
+				subjects,
+				updatePrimaryProfileBeforeSubjects: true
 			}),
 			updateEnglishLiteratureSelections({
 				userId: locals.user.uid,

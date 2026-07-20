@@ -75,6 +75,11 @@ describe('disposable development-auth cleanup', () => {
 		]);
 		expect(ids(db, 'analytics_ai_summaries', 'summary_id')).toEqual(['prod-keep-summary']);
 		expect(ids(db, 'analytics_admin_audit', 'audit_id')).toEqual(['other-audit']);
+		expect(ids(db, 'analytics_actor_labels', 'actor_key')).toEqual([
+			'anonymous:ux-cleanup-test-user',
+			'user:other-user',
+			'user:ux-cleanup-test-user-suffix'
+		]);
 		expect(cleanupGuardCount(db)).toBe(0);
 	});
 
@@ -89,6 +94,7 @@ describe('disposable development-auth cleanup', () => {
 		);
 		expect(ids(db, 'analytics_sessions', 'session_id')).toContain('dev-target');
 		expect(ids(db, 'analytics_sessions', 'session_id')).toContain('prod-keep');
+		expect(ids(db, 'analytics_actor_labels', 'actor_key')).toContain('user:ux-cleanup-test-user');
 		expect(cleanupGuardCount(db)).toBe(0);
 	});
 });
@@ -108,7 +114,9 @@ function personalFixture() {
 		'user_recall_card_reviews',
 		'user_subject_curriculum_scopes',
 		'user_english_literature_selections',
-		'user_profile_subjects'
+		'user_profile_subjects',
+		'user_challenge_progress',
+		'user_home_snapshots'
 	];
 	db.exec('CREATE TABLE user_profiles (uid TEXT PRIMARY KEY)');
 	for (const table of tables) db.exec(`CREATE TABLE ${table} (user_id TEXT)`);
@@ -126,7 +134,10 @@ function analyticsFixture() {
 		'0001_analytics.sql',
 		'0002_environment_and_model_runs.sql',
 		'0003_ai_summaries.sql',
-		'0004_admin_audit.sql'
+		'0004_admin_audit.sql',
+		'0005_traffic_classification.sql',
+		'0006_classifier_v2.sql',
+		'0007_backfill_unclassified_traffic.sql'
 	]) {
 		db.exec(readFileSync(path.resolve('migrations/analytics', migration), 'utf8'));
 	}
@@ -169,6 +180,17 @@ function analyticsFixture() {
 		INSERT INTO analytics_admin_audit (
 		  audit_id, action, scope, requested_by, created_at
 		) VALUES ('other-audit', 'view', 'analytics', 'other-user', '2026-07-16T00:00:00Z');
+		INSERT INTO analytics_actor_labels (
+		  actor_key, classification, note, created_by, created_at, updated_at
+		) VALUES
+		  ('user:ux-cleanup-test-user', 'internal_test', 'cleanup target', 'test',
+		   '2026-07-16T00:00:00Z', '2026-07-16T00:00:00Z'),
+		  ('user:other-user', 'human', 'unrelated user', 'test',
+		   '2026-07-16T00:00:00Z', '2026-07-16T00:00:00Z'),
+		  ('anonymous:ux-cleanup-test-user', 'internal_test', 'similar anonymous key', 'test',
+		   '2026-07-16T00:00:00Z', '2026-07-16T00:00:00Z'),
+		  ('user:ux-cleanup-test-user-suffix', 'internal_test', 'similar user key', 'test',
+		   '2026-07-16T00:00:00Z', '2026-07-16T00:00:00Z');
 	`);
 	return db;
 }
