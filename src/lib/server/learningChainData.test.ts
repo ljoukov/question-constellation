@@ -58,6 +58,50 @@ describe('question-bank atlas coverage', () => {
 		});
 	});
 
+	it('excludes a catalogue title that the live question page rejects as copied prompt text', async () => {
+		queryRows.mockResolvedValue([
+			{
+				id: 'copied-command-remainder',
+				slug: null,
+				source_document_id: 'aqa-biology-paper',
+				source_question_ref: '03.4',
+				display_order: 4,
+				prompt_text: 'Explain how viruses cause illness.',
+				self_contained_prompt_text:
+					'Viruses reproduce inside living cells and damage them when new virus particles are released.',
+				context_text: null,
+				self_containment_json: null,
+				command_word: 'Explain',
+				answer_format: 'lines',
+				marks: 3,
+				board: 'AQA',
+				qualification: 'GCSE',
+				subject: 'Biology',
+				subject_area: 'Biology',
+				tier: 'Higher',
+				paper: 'Biology Paper 1',
+				component_code: '8464/B/1H',
+				series: 'June',
+				year: 2024,
+				topic_path_json: JSON.stringify(['Infection and response']),
+				metadata_json: JSON.stringify({ card_title: 'Viruses cause illness' }),
+				source_board: 'AQA',
+				source_qualification: 'GCSE',
+				source_subject: 'Biology',
+				source_tier: 'Higher',
+				source_paper: 'Biology Paper 1',
+				source_component_code: '8464/B/1H',
+				source_series: 'June',
+				source_year: 2024,
+				answer_chain_id: 'virus-mechanism',
+				chain_title: 'Virus replication damages cells',
+				reviewed_answer_text: 'Viruses reproduce inside cells and damage or destroy the cells.'
+			}
+		]);
+
+		await expect(getQuestionBankQuestions()).resolves.toEqual([]);
+	});
+
 	it('marks source-dependent signed-in English questions unavailable without reviewed source text', async () => {
 		queryRows.mockResolvedValue([
 			{

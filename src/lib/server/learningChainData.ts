@@ -891,8 +891,7 @@ function dedupeQuestionBankRows(rows: QuestionBankQuestionRow[]): QuestionBankQu
 			storedQuestionTitleIssues({
 				title: question.title,
 				subject: question.subject,
-				promptText: row.prompt_text,
-				selfContainedPromptText: row.self_contained_prompt_text,
+				promptText: cleanPromptText(row.prompt_text),
 				answerText: row.reviewed_answer_text
 			}).length > 0
 		) {

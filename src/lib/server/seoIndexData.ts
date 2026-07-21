@@ -1,5 +1,5 @@
-import { learningChains } from '$lib/learningChains';
 import { queryRows } from './db';
+import { getQuestionBankBrowseData } from './learningChainData';
 import type { SitemapEntry } from './sitemap';
 
 type QuestionSeoRow = {
@@ -16,14 +16,6 @@ type QuestionSeoRow = {
 	series: string | null;
 	year: number | null;
 	topic_path_json: string | null;
-};
-
-type ChainSeoRow = {
-	id: string;
-	title: string | null;
-	subject: string | null;
-	broad_topic: string | null;
-	question_count: number;
 };
 
 export type SeoTopicQuestion = {
@@ -165,53 +157,34 @@ async function fetchPublicQuestionSeoRows() {
 }
 
 export async function getPublicQuestionSitemapEntries(): Promise<SitemapEntry[]> {
-	const rows = await fetchPublicQuestionSeoRows();
-	const seen = new Set<string>();
-	return rows
-		.filter((row) => {
-			if (seen.has(row.id)) return false;
-			seen.add(row.id);
-			return true;
-		})
-		.map((row) => ({
-			path: `/questions/${encodePathSegment(row.id)}`,
-			changefreq: 'monthly',
-			priority: '0.78'
-		}));
+	const browseData = await getQuestionBankBrowseData();
+	return browseData.questions.map((question) => ({
+		path: `/questions/${encodePathSegment(question.id)}`,
+		changefreq: 'monthly',
+		priority: '0.78'
+	}));
 }
 
 export async function getPublicChainSitemapEntries(): Promise<SitemapEntry[]> {
-	try {
-		const rows = await queryRows<ChainSeoRow>(
-			`SELECT ac.id, ac.title, ac.subject, ac.broad_topic,
-			        COUNT(DISTINCT q.id) AS question_count
-			 FROM answer_chains ac
-			 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
-			 JOIN questions q ON q.id = qac.question_id
-			 WHERE ac.needs_human_review = 0
-			   AND ac.status = 'published'
-			   AND qac.needs_human_review = 0
-			   AND ${PUBLIC_QUESTION_WHERE}
-			 GROUP BY ac.id
-			 HAVING question_count > 0
-			 ORDER BY CASE WHEN question_count > 1 THEN 0 ELSE 1 END,
-			          question_count DESC,
-			          ac.subject,
-			          ac.title`
+	const browseData = await getQuestionBankBrowseData();
+	const questionCountByChain = new Map<string, number>();
+	for (const question of browseData.questions) {
+		if (!question.chainId) continue;
+		questionCountByChain.set(
+			question.chainId,
+			(questionCountByChain.get(question.chainId) ?? 0) + 1
 		);
-
-		return rows.map((row) => ({
-			path: `/constellations/${encodePathSegment(row.id)}`,
-			changefreq: 'monthly',
-			priority: row.question_count > 1 ? '0.76' : '0.68'
-		}));
-	} catch {
-		return learningChains.map((chain) => ({
-			path: `/constellations/${encodePathSegment(chain.id)}`,
-			changefreq: 'monthly',
-			priority: chain.questions.length > 1 ? '0.72' : '0.62'
-		}));
 	}
+	return [...questionCountByChain]
+		.sort(
+			([leftId, leftCount], [rightId, rightCount]) =>
+				rightCount - leftCount || leftId.localeCompare(rightId)
+		)
+		.map(([chainId, questionCount]) => ({
+			path: `/constellations/${encodePathSegment(chainId)}`,
+			changefreq: 'monthly',
+			priority: questionCount > 1 ? '0.76' : '0.68'
+		}));
 }
 
 function topicPageId(boardSlug: string, subjectSlug: string, topicSlug: string) {
@@ -286,7 +259,12 @@ function buildTopicPages(rows: QuestionSeoRow[]) {
 }
 
 export async function getSeoTopicPages(): Promise<SeoTopicPage[]> {
-	return buildTopicPages(await fetchPublicQuestionSeoRows());
+	const [rows, browseData] = await Promise.all([
+		fetchPublicQuestionSeoRows(),
+		getQuestionBankBrowseData()
+	]);
+	const visibleQuestionIds = new Set(browseData.questions.map((question) => question.id));
+	return buildTopicPages(rows.filter((row) => visibleQuestionIds.has(row.id)));
 }
 
 export async function getSeoTopicSitemapEntries(): Promise<SitemapEntry[]> {
