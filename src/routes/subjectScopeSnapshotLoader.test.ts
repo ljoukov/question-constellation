@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
 	getSubjectLearningPublicCatalog: vi.fn(),
-	saveSubjectCurriculumScope: vi.fn()
+	saveSubjectCurriculumScope: vi.fn(),
+	getLearnerProfileSettings: vi.fn(),
+	updateEnglishLiteratureSelections: vi.fn()
 }));
 
 vi.mock('$lib/server/subjectLearning', () => ({
@@ -11,7 +13,12 @@ vi.mock('$lib/server/subjectLearning', () => ({
 	saveSubjectCurriculumScope: mocks.saveSubjectCurriculumScope
 }));
 
-import { load } from './subjects/[subject]/scope/+page.server';
+vi.mock('$lib/server/personalLearning', () => ({
+	getLearnerProfileSettings: mocks.getLearnerProfileSettings,
+	updateEnglishLiteratureSelections: mocks.updateEnglishLiteratureSelections
+}));
+
+import { actions, load } from './subjects/[subject]/content/+page.server';
 
 const user = {
 	uid: 'learner-1',
@@ -54,7 +61,7 @@ const catalog = {
 				label: 'AQA GCSE Biology',
 				groups: [
 					{
-						title: 'Course topics',
+						title: 'Subject topics',
 						kind: 'coverage',
 						selectionMin: null,
 						selectionMax: null,
@@ -77,9 +84,70 @@ const catalog = {
 	]
 };
 
+const literatureTopicDefinitions = [
+	['modern', 'An Inspector Calls', 'Modern prose or drama'],
+	['novel', 'A Christmas Carol', '19th century prose'],
+	['poetry', 'Conflict', 'OCR Poetry Anthology thematic cluster'],
+	['shakespeare', 'Macbeth', 'Shakespeare play']
+] as const;
+const literatureTopics = literatureTopicDefinitions.map(([id, title]) => ({
+	id: `literature-${id}`,
+	code: id,
+	title,
+	paper: id === 'modern' || id === 'novel' ? 'Paper 1' : 'Paper 2',
+	specUrl: 'https://www.ocr.org.uk/qualifications/gcse/english-literature-j352-from-2015/'
+}));
+const literature = {
+	subject: 'English Literature',
+	board: 'OCR',
+	qualification: 'GCSE',
+	course: 'GCSE Subject',
+	tier: 'Higher',
+	href: '/subjects/english-literature',
+	scope: {
+		status: 'selected',
+		unitPlural: 'set texts',
+		includedTopicIds: literatureTopics.map((topic) => topic.id)
+	}
+};
+const literatureCatalog = {
+	version: 2,
+	boardAvailability: [{ subject: 'English Literature', boards: ['OCR'] }],
+	resumeQuestions: [],
+	offerings: [
+		{
+			curriculum: {
+				id: 'ocr-j352-higher',
+				specificationId: 'ocr-j352',
+				board: 'OCR',
+				qualification: 'GCSE',
+				profileSubject: 'English Literature',
+				course: 'GCSE Subject',
+				tier: 'Higher',
+				specificationCode: 'J352',
+				specificationVersion: '3.0',
+				specificationUrl:
+					'https://www.ocr.org.uk/qualifications/gcse/english-literature-j352-from-2015/',
+				label: 'OCR GCSE English Literature',
+				groups: literatureTopicDefinitions.map(([id, , title]) => ({
+					title,
+					kind: 'option_group',
+					selectionMin: 1,
+					selectionMax: 1,
+					components: [{ id: `literature-${id}` }]
+				})),
+				topics: literatureTopics
+			},
+			recallCards: [],
+			questions: []
+		}
+	]
+};
+
 beforeEach(() => {
 	vi.clearAllMocks();
 	mocks.getSubjectLearningPublicCatalog.mockResolvedValue(catalog);
+	mocks.getLearnerProfileSettings.mockResolvedValue({ subjects: [] });
 });
 
 describe('subject scope loader', () => {
@@ -92,7 +160,7 @@ describe('subject scope loader', () => {
 		const result = await load({
 			locals: { user },
 			params: { subject: 'biology' },
-			url: new URL('http://localhost/subjects/biology/scope'),
+			url: new URL('http://localhost/subjects/biology/content'),
 			parent
 		} as never);
 
@@ -121,12 +189,73 @@ describe('subject scope loader', () => {
 			load({
 				locals: { user },
 				params: { subject: 'biology' },
-				url: new URL('http://localhost/subjects/biology/scope'),
+				url: new URL('http://localhost/subjects/biology/content'),
 				parent
 			} as never)
 		).rejects.toMatchObject({ status: 503 });
 
 		expect(parent).toHaveBeenCalledOnce();
 		expect(mocks.getSubjectLearningPublicCatalog).not.toHaveBeenCalled();
+	});
+
+	it('hosts OCR English Literature set-text choices on the canonical subject-content route', async () => {
+		mocks.getSubjectLearningPublicCatalog.mockResolvedValue(literatureCatalog);
+		const parent = vi.fn().mockResolvedValue({
+			homeSnapshot: { subjectViews: [literature] },
+			homeSnapshotShouldRefresh: false
+		});
+
+		const result = await load({
+			locals: { user },
+			params: { subject: 'english-literature' },
+			url: new URL('http://localhost/subjects/english-literature/content'),
+			parent
+		} as never);
+		if (!result) throw new Error('Expected the English Literature subject-content page data.');
+
+		expect(result).toMatchObject({
+			subject: literature,
+			curriculum: {
+				label: 'OCR GCSE English Literature'
+			}
+		});
+		expect(result.curriculum.groups).toHaveLength(4);
+		expect(result.curriculum.groups).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ kind: 'option_group', selectionMin: 1, selectionMax: 1 })
+			])
+		);
+	});
+
+	it('saves OCR set texts through the canonical subject-content action', async () => {
+		mocks.getSubjectLearningPublicCatalog.mockResolvedValue(literatureCatalog);
+		mocks.getLearnerProfileSettings.mockResolvedValue({
+			subjects: [{ ...literature, enabled: true }]
+		});
+		const form = new FormData();
+		form.set('scopeMode', 'selected');
+		for (const topic of literatureTopics) form.append('topicId', topic.id);
+
+		await expect(
+			actions.default?.({
+				locals: { user },
+				params: { subject: 'english-literature' },
+				request: new Request('http://localhost/subjects/english-literature/content', {
+					method: 'POST',
+					body: form
+				})
+			} as never)
+		).rejects.toMatchObject({ status: 303, location: '/subjects/english-literature' });
+
+		expect(mocks.updateEnglishLiteratureSelections).toHaveBeenCalledWith({
+			userId: user.uid,
+			selections: {
+				modernText: 'An Inspector Calls',
+				nineteenthCenturyNovel: 'A Christmas Carol',
+				poetryCluster: 'Conflict',
+				shakespearePlay: 'Macbeth'
+			}
+		});
+		expect(mocks.saveSubjectCurriculumScope).not.toHaveBeenCalled();
 	});
 });

@@ -29,7 +29,7 @@
 		resolvePracticeResultPresentation
 	} from '$lib/learning/practiceResult';
 	import { practiceStateRestoreMode } from '$lib/learning/practiceStateRestore';
-	import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
+	import { learnerSubjectForQuestion } from '$lib/learning/subjects';
 	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
 	import type { ExamPaperAsset, ExamResponse } from '$lib/experiments/questions/types';
@@ -250,38 +250,31 @@
 			? englishSubjectOrDefault(data.question.meta.subject)
 			: (learnerSubject ?? data.question.meta.subjectArea ?? data.question.meta.subject)
 	);
-	const subjectHubHref = $derived(learnerSubjectHref(topbarSubject));
-	const practiceBackHref = $derived(
-		data.user ? (requestedReturnTo ?? subjectHubHref) : questionHref
-	);
+	const practiceBackHref = $derived(requestedReturnTo ?? questionHref);
 	const practiceBackLabel = $derived(
 		data.user && requestedReturnTo?.startsWith('/constellations/')
 			? 'Back to related questions'
-			: data.user && requestedReturnTo?.includes('/chain')
+			: data.user && requestedReturnTo?.includes('/answer-chain')
 				? 'Back to answer'
 				: data.user && requestedReturnTo?.startsWith('/questions/')
 					? 'Back to question'
-					: data.user
-						? `Back to ${topbarSubject}`
-						: 'Back to question'
+				: requestedReturnTo
+					? `Back to ${topbarSubject}`
+					: 'Back to question'
 	);
 	const completionHref = $derived(
-		data.user
-			? resolveInternalPath(requestedReturnTo ?? subjectHubHref)
-			: requestedReturnTo
-				? resolveInternalPath(requestedReturnTo)
-				: constellationHref
+		requestedReturnTo ? resolveInternalPath(requestedReturnTo) : constellationHref
 	);
 	const completionLabel = $derived(
 		requestedReturnTo?.startsWith('/constellations/')
 			? 'Back to related questions'
-			: requestedReturnTo?.includes('/chain')
+			: requestedReturnTo?.includes('/answer-chain')
 				? 'Back to answer'
 				: requestedReturnTo?.startsWith('/questions/')
 					? 'Back to question'
-					: data.user
-						? `Continue in ${topbarSubject}`
-						: 'See related questions'
+				: requestedReturnTo
+					? `Continue in ${topbarSubject}`
+					: 'See related questions'
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const answerRows = $derived(

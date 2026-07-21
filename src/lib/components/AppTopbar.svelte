@@ -117,12 +117,8 @@
 			: undefined
 	);
 	const visibleNavLinks = $derived.by(() => {
-		if (!effectiveShowNavigation) return [];
-		if (!currentUser) return navLinks;
-		return navLinks.filter(
-			(link) =>
-				!isSignedOutAcquisitionLink(link.href) && normalizeNavPath(link.href) !== '/challenges'
-		);
+		if (!effectiveShowNavigation || currentUser) return [];
+		return navLinks;
 	});
 	const mobileTopbarLinks = $derived.by((): MobileTopbarLink[] => {
 		const links: MobileTopbarLink[] = [];
@@ -379,12 +375,6 @@
 		return currentPath === hrefPath || currentPath.startsWith(`${hrefPath}/`);
 	}
 
-	function isSignedOutAcquisitionLink(href: string) {
-		const hrefPath = normalizeNavPath(href);
-		const acquisitionPaths = ['/past-papers', '/blog'];
-		return acquisitionPaths.some((path) => hrefPath === path || hrefPath.startsWith(`${path}/`));
-	}
-
 	function normalizeNavPath(href: string) {
 		const path = href.split('?')[0].replace(/\/$/, '') || '/';
 		if (path.startsWith('./')) return `/${path.slice(2)}`;
@@ -486,6 +476,15 @@
 						onpointerenter={closeAppearanceFromOtherItem}
 					>
 						Home
+					</a>
+					<a
+						class="qc-menu-item"
+						role="menuitem"
+						href={resolve('/questions')}
+						onclick={closeAccountMenu}
+						onpointerenter={closeAppearanceFromOtherItem}
+					>
+						Questions
 					</a>
 					<a
 						class="qc-menu-item"

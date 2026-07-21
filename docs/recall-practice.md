@@ -8,7 +8,7 @@ definition, or required-practical detail.
 ## Product Role
 
 - Keep answer chains as the main public exam-question atlas.
-- Use `/recall` as a lightweight retrieval-practice surface for the eight supported learner subjects:
+- Use `/recall/:subject/:activity` as the lightweight retrieval-practice surface for the eight supported learner subjects:
   AQA Biology, Chemistry, Physics, Computer Science, Geography and History, plus OCR English
   Language and English Literature.
 - Do not turn recall cards into answer chains unless the item genuinely has reusable mark-scoring
@@ -41,7 +41,7 @@ offering/topic is reviewed, and that release/offering/topic coverage row is revi
 The global primary target is preferred when it belongs to that offering, but a reviewed secondary
 target keeps the same card available in another valid offering. Signed-in reads derive the exact
 enabled offering from the learner's board, qualification, course and tier; topic filtering then stays
-inside the learner's selected curriculum scope. OCR English Literature is additionally limited to the
+inside the learner's selected subject content. OCR English Literature is additionally limited to the
 four texts or poetry cluster choices stored in the learner profile.
 
 The hand-authored catalog in `src/lib/recall/aqaScienceRecall.ts` is a narrower availability fallback,

@@ -23,7 +23,9 @@ describe('generic recall routes', () => {
 		expect(Object.entries(recallSubjectSlugs)).toEqual(expected);
 		for (const [subject, slug] of expected) {
 			expect(recallSubjectFromSlug(slug)).toBe(subject);
-			expect(recallActivityHref(subject, 'true-false')).toBe(`/recall/${slug}/true-false`);
+			expect(recallActivityHref(subject, 'true-false')).toBe(
+				`/recall/${slug}/true-or-false`
+			);
 		}
 	});
 
@@ -35,9 +37,7 @@ describe('generic recall routes', () => {
 				topic: 'ocr-j352-macbeth',
 				size: 8
 			})
-		).toBe(
-			'/recall?subject=English+Literature&activity=true-false&size=8&start=1&mode=truefalse&topic=ocr-j352-macbeth'
-		);
+		).toBe('/recall/english-literature/true-or-false?topic=ocr-j352-macbeth&size=8');
 	});
 
 	it('creates a course-hub return path for Literature study cards', () => {
@@ -46,11 +46,23 @@ describe('generic recall routes', () => {
 				subject: 'English Literature',
 				activity: 'flashcards',
 				size: 10,
-				returnTo: '/english-literature'
+				returnTo: '/subjects/english-literature'
 			})
 		).toBe(
-			'/recall?subject=English+Literature&activity=flashcards&size=10&start=1&returnTo=%2Fenglish-literature'
+			'/recall/english-literature/flashcards?back=%2Fsubjects%2Fenglish-literature'
 		);
+	});
+
+	it('puts quick recall in the path and keeps only stack filters in the query', () => {
+		expect(
+			recallSessionHref({
+				subject: 'Biology',
+				activity: 'flashcards',
+				mode: 'mixed',
+				topic: 'biology-cell-biology',
+				size: 5
+			})
+		).toBe('/recall/biology/quick?topic=biology-cell-biology&size=5');
 	});
 
 	it('derives exact imported topic labels instead of the static science taxonomy', () => {

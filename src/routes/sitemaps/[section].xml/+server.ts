@@ -16,7 +16,7 @@ import type { RequestHandler } from './$types';
 
 const staticEntries: SitemapEntry[] = [
 	{ path: '/', priority: '1.0', changefreq: 'weekly' },
-	{ path: '/chains', priority: '0.95', changefreq: 'weekly' },
+	{ path: '/questions', priority: '0.95', changefreq: 'weekly' },
 	{ path: '/past-papers/gcse', priority: '0.9', changefreq: 'weekly' }
 ];
 

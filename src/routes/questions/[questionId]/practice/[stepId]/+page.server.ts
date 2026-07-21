@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (!englishPractice.stages.some((stage) => stage.id === params.stepId)) {
 		const firstStepId = englishPractice.stages[0]?.id;
 		if (!firstStepId) throw error(404, 'Practice step not found.');
-		const stepPath = `/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`;
+		const stepPath = `/questions/${encodeURIComponent(params.questionId)}/practice/${encodeURIComponent(firstStepId)}`;
 		throw redirect(
 			307,
 			withEnglishPracticeContext(stepPath, url.searchParams)

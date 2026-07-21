@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import type { ResolvedPathname } from '$app/types';
 	import { House } from '@lucide/svelte';
+	import SubjectIcon from './SubjectIcon.svelte';
 
 	let {
 		subject,
@@ -22,18 +23,18 @@
 		<span>Home</span>
 	</a>
 	<span aria-hidden="true">/</span>
-	<a href={resolve('/challenges')} data-analytics-label={`${subject} subject: all challenges`}>
-		All challenges
-	</a>
-	<span aria-hidden="true">/</span>
 	{#if currentLabel}
 		<a href={resolveInternalPath(subjectHref)} data-analytics-label={`Back to ${subject} subject`}>
+			<SubjectIcon {subject} />
 			{subject}
 		</a>
 		<span aria-hidden="true">/</span>
 		<strong aria-current="page">{currentLabel}</strong>
 	{:else}
-		<strong aria-current="page">{subject}</strong>
+		<strong aria-current="page">
+			<SubjectIcon {subject} />
+			{subject}
+		</strong>
 	{/if}
 </nav>
 
@@ -71,6 +72,9 @@
 	}
 
 	.qc-learning-breadcrumbs strong {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
 		min-width: 0;
 		color: var(--qc-ui-text);
 		font-weight: 760;

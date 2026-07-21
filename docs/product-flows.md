@@ -1,6 +1,6 @@
 # Product Flows
 
-Question Constellation is a lightweight GCSE question bank organized by the hidden answer chains that examiners reward. It should feel fast, public, browseable, and exam-specific. It should not feel like a generic chatbot, a heavy revision dashboard, or a broad "AI tutor" workspace.
+Question Constellation is a lightweight GCSE exam-question atlas organized by the hidden answer chains that examiners reward. It should feel fast, public, browseable, and exam-specific. It should not feel like a generic chatbot, a heavy revision dashboard, or a broad "AI tutor" workspace.
 
 The core promise:
 
@@ -199,24 +199,58 @@ Any retained-chain surface should grow after practice, not before it.
 
 The signed-in home is a return surface, not an acquisition landing page. It should stay subordinate to the public question-first product loop.
 
-1. The student arrives at home and sees a compact weekly summary plus their subjects.
-2. Every subject card is one obvious target with a visible action: `Open` for its activity hub, `Set up` for an unconfigured course, or `Adjust` for a scope change.
+1. The student arrives at home and sees a compact weekly summary, a visual challenge recommendation, and their subjects.
+2. Every subject card is one obvious target with a visible action: `Open` for its activity hub, `Set up` for unconfigured subject content, or `Adjust` for a scope change.
 3. The card shows one current next step chosen from the learner evidence already stored for that subject.
-4. Opening a subject shows the recommended action first, then a small number of genuine alternatives:
+4. The challenge recommendation links to one playable challenge and has a separate `Explore all` route into the full challenge catalog. Challenges are a sibling product area, never a parent of a subject.
+5. Opening a subject shows the recommended action first, then a small number of genuine alternatives:
    - recall a specific included topic;
    - close a confirmed knowledge gap;
    - answer a question that applies a useful answer chain.
-5. If course coverage is not configured, the card says `Set up` and opens the official-curriculum selection directly.
-6. English Literature uses its selected OCR course texts to open `Choose an essay question`; it does not pass through the science-oriented recommendation pipeline.
+6. If subject content is not configured, the card says `Set up` and opens the official-curriculum selection directly.
+7. English Literature uses its selected OCR set texts to open `Choose an essay question`; it does not pass through the science-oriented recommendation pipeline.
 
 Design requirements:
 
 - Do not hide the action behind an apparently inert card.
 - Do not place duplicate configuration buttons inside and beside the same card.
-- Keep course settings after the subjects on mobile and in the quieter sidebar position on larger screens.
+- Keep subject-content settings after the subjects on mobile and in the quieter sidebar position on larger screens.
 - Past-paper links belong to public acquisition and SEO surfaces, not the signed-in next-action flow.
 - If no question matches a narrow curriculum selection, offer a concrete scope adjustment instead of a dead `being prepared` state.
 - Preserve official specification identifiers in data, but show learner-facing topic names rather than raw codes such as `4.1` as if they were chapter numbers.
+
+### Navigation hierarchy and canonical routes
+
+The app has three stable top-level destinations for a signed-in learner:
+
+- `/` is the personal home: recommendations, progress context, a challenge suggestion, and every configured subject.
+- `/questions` is the global public questions catalogue.
+- `/challenges` is the global challenge catalog.
+
+These destinations live in the signed-in account menu and reappear as contextual breadcrumbs
+or chips on non-leaf pages. Do not repeat `Home`, `Questions`, and `Challenges` as a permanent
+signed-in topbar row. The public topbar may keep its acquisition navigation for logged-out
+visitors.
+
+Subjects are another branch from home, not children of challenges. A subject hub lives at
+`/subjects/:subject`; its curriculum selection lives at `/subjects/:subject/content`. Subject
+breadcrumbs therefore read `Home / Subject` or `Home / Subject / Subject content`, with a
+quiet monochrome subject icon. Challenge catalog breadcrumbs read
+`Home / Challenges / Subject`.
+
+Learning endpoints describe the durable learning object in the path:
+
+- question: `/questions/:questionId`
+- answer chain for that question: `/questions/:questionId/answer-chain`
+- question practice: `/questions/:questionId/practice`
+- a named English practice stage: `/questions/:questionId/practice/:stepId`
+- a recall session: `/recall/:subject/:activity`
+
+Recall paths carry the subject and activity (`quick`, `flashcards`, `multiple-choice`,
+`true-or-false`, or `reverse`). Query parameters are reserved for optional session filters such
+as topic, card kind, stack size, search text, and a safe return destination. Challenge play,
+recall, and active question practice remain immersive: they use a clear back or close action
+instead of fitting the global navigation into the task.
 
 ### Flow A: Public Question To Constellation
 

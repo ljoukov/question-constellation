@@ -90,7 +90,7 @@ const biologySubject: SignedInSubjectView = {
 		label: 'All topics',
 		unitSingular: 'topic',
 		unitPlural: 'topics',
-		href: '/subjects/biology/scope',
+		href: '/subjects/biology/content',
 		includedTopicIds: [],
 		includedCount: 0,
 		totalCount: 1
@@ -117,7 +117,7 @@ const biologySubject: SignedInSubjectView = {
 		detail: 'Build a secure base before answering another question.',
 		reason: 'This supports your next answer.',
 		durationMinutes: 5,
-		href: '/recall?subject=Biology',
+		href: '/recall/biology/quick',
 		available: true
 	},
 	alternatives: [],
@@ -213,6 +213,24 @@ describe('user home snapshot reads', () => {
 			shouldRefresh: false
 		});
 		expect(mocks.queryPersonalFirst).toHaveBeenCalledTimes(1);
+	});
+
+	it('rejects version 2 rows so cached links are rebuilt for the canonical navigation', async () => {
+		const currentSnapshot = fallbackUserHomeSnapshot(user);
+		mocks.queryPersonalFirst.mockResolvedValue({
+			schema_version: 2,
+			payload_json: JSON.stringify({ ...currentSnapshot, version: 2 }),
+			dirty: 0,
+			source_revision: 7,
+			snapshot_revision: 7,
+			refreshed_at: new Date().toISOString()
+		});
+
+		const result = await getUserHomeSnapshot(user);
+
+		expect(result.status).toBe('fallback');
+		expect(result.shouldRefresh).toBe(true);
+		expect(result.snapshot.version).toBe(USER_HOME_SNAPSHOT_VERSION);
 	});
 
 	it('round-trips a production-shaped snapshot with a non-empty subject view', () => {

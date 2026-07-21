@@ -2,14 +2,18 @@
 	import { resolve } from '$app/paths';
 	import type { ResolvedPathname } from '$app/types';
 	import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
-	import { challengeRouteIdentities } from '$lib/challenges/catalogIdentity';
 	import { challengeProgressTotals, type ChallengeProgress } from '$lib/challenges/progress';
 	import {
 		CHALLENGE_PROGRESS_UPDATED_EVENT,
 		type ChallengeProgressUpdatedDetail
 	} from '$lib/challenges/progressSync';
-	import { recommendedUnfinishedChallenge } from '$lib/challenges/recommendations';
+	import {
+		mostRecentlyCompletedChallenge,
+		recommendedUnfinishedChallenge
+	} from '$lib/challenges/recommendations';
 	import { challengePath, challengeSubjectLabel } from '$lib/challenges/routing';
+	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
+	import ThemeAwareChallengeArt from '$lib/challenges/ui/ThemeAwareChallengeArt.svelte';
 	import type { UserHomeSnapshot } from '$lib/learning/homeSnapshotTypes';
 	import { ArrowRight, Gamepad2, Settings2, Sparkles } from '@lucide/svelte';
 	import { onMount } from 'svelte';
@@ -26,6 +30,7 @@
 		dashboard,
 		userId,
 		challengeProgress,
+		challengeCatalog,
 		challengeRecommendation,
 		challengeCompletedCount,
 		challengeTotalBestScore,
@@ -35,6 +40,7 @@
 		dashboard: HomeDashboard;
 		userId: string;
 		challengeProgress: ChallengeProgress;
+		challengeCatalog: PublicChallengePreviewDefinition[];
 		challengeRecommendation: PublicChallengePreviewDefinition | null;
 		challengeCompletedCount: number;
 		challengeTotalBestScore: number;
@@ -42,32 +48,25 @@
 		pendingLocalSubjects?: PendingLocalSubject[];
 	} = $props();
 	let liveChallengeRecommendation = $derived(challengeRecommendation);
-	let liveChallengeRoute = $derived(
-		challengeRecommendation
-			? (challengeRouteIdentities.find(
-					(challenge) => challenge.id === challengeRecommendation?.id
-				) ?? null)
-			: null
-	);
 	let liveChallengeCompletedCount = $derived(challengeCompletedCount);
 	let liveChallengeTotalBestScore = $derived(challengeTotalBestScore);
 	let progressHydrated = $state(false);
 	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
-	const activeChallengeRoute = $derived(liveChallengeRecommendation ?? liveChallengeRoute);
 	const challengeHref = $derived(
-		activeChallengeRoute
-			? resolveInternalPath(challengePath(activeChallengeRoute))
+		liveChallengeRecommendation
+			? resolveInternalPath(challengePath(liveChallengeRecommendation))
 			: resolve('/challenges')
+	);
+	const challengeArt = $derived(
+		liveChallengeRecommendation ? subjectArtForChallenge(liveChallengeRecommendation) : null
 	);
 
 	onMount(() => {
 		const applyProgress = (progress: ChallengeProgress) => {
 			const totals = challengeProgressTotals(progress);
-			const recommendation = recommendedUnfinishedChallenge(challengeRouteIdentities, progress);
-			liveChallengeRoute = recommendation;
-			if (liveChallengeRecommendation?.id !== recommendation?.id) {
-				liveChallengeRecommendation = null;
-			}
+			liveChallengeRecommendation =
+				recommendedUnfinishedChallenge(challengeCatalog, progress) ??
+				mostRecentlyCompletedChallenge(challengeCatalog, progress);
 			liveChallengeCompletedCount = totals.completedCount;
 			liveChallengeTotalBestScore = totals.totalBestScore;
 		};
@@ -139,10 +138,10 @@
 	}
 
 	function setupPrompt(subject: HomeSubject) {
-		if (subject.scope.unitPlural === 'course options') {
+		if (subject.scope.unitPlural === 'content choices') {
 			return 'Confirm what your class is studying';
 		}
-		if (subject.scope.unitPlural === 'course texts') {
+		if (subject.scope.unitPlural === 'set texts') {
 			return 'Choose the texts your class is studying';
 		}
 		return 'Tell us what your class has covered';
@@ -173,9 +172,24 @@
 			aria-labelledby="home-challenge-title"
 		>
 			<header class="qc-dashboard-panel-head">
-				<p class="qc-panel-label">Science challenge</p>
+				<div>
+					<p class="qc-panel-label">Challenges</p>
+					<a href={resolve('/challenges')}>Explore all</a>
+				</div>
 				<Gamepad2 size={18} aria-hidden="true" />
 			</header>
+
+			{#if challengeArt}
+				<div class="qc-home-challenge-art">
+					<ThemeAwareChallengeArt
+						src={challengeArt.src}
+						darkSrc={challengeArt.darkSrc}
+						alt={challengeArt.alt}
+						width={challengeArt.width}
+						height={challengeArt.height}
+					/>
+				</div>
+			{/if}
 
 			<div class="qc-home-challenge-copy">
 				{#if liveChallengeRecommendation}
@@ -184,14 +198,6 @@
 					</p>
 					<h2 id="home-challenge-title">{liveChallengeRecommendation.title}</h2>
 					<p>{liveChallengeRecommendation.hook}</p>
-				{:else if liveChallengeRoute}
-					<p class="qc-home-challenge-subject">
-						{challengeSubjectLabel(liveChallengeRoute.subject)}
-					</p>
-					<h2 id="home-challenge-title">
-						Your next {challengeSubjectLabel(liveChallengeRoute.subject)} challenge
-					</h2>
-					<p>Keep going with another unfinished science challenge.</p>
 				{:else}
 					<h2 id="home-challenge-title">Your science challenges</h2>
 					<p>Replay a challenge to improve your personal best.</p>
@@ -214,11 +220,9 @@
 				href={challengeHref}
 				data-analytics-label={liveChallengeRecommendation
 					? `Play ${liveChallengeRecommendation.title}`
-					: liveChallengeRoute
-						? `Play next ${challengeSubjectLabel(liveChallengeRoute.subject)} challenge`
-						: 'Play a science challenge'}
+					: 'Explore science challenges'}
 			>
-				{activeChallengeRoute ? 'Play now' : 'Play'}
+				{liveChallengeRecommendation ? 'Play now' : 'Explore challenges'}
 				<ArrowRight size={16} aria-hidden="true" />
 			</a>
 		</section>
@@ -280,10 +284,10 @@
 						<p>{pendingLocalSubjects.map((subject) => subject.subject).join(' · ')}</p>
 					{:else if snapshotInitialising}
 						<h2>Loading your subjects…</h2>
-						<p>Your course choices will appear here in a moment.</p>
+						<p>Your subject choices will appear here in a moment.</p>
 					{:else}
 						<h2>Add your subjects</h2>
-						<p>Choose the courses and exam boards your school uses.</p>
+						<p>Choose the subjects and exam boards your school uses.</p>
 						<a class="qc-dashboard-action" href={resolve('/profile')}>Set up subjects</a>
 					{/if}
 				</article>
@@ -292,7 +296,7 @@
 	</section>
 
 	{#if dashboard.subjects.length > 0}
-		<nav class="qc-subject-actions qc-learning-resources" aria-label="Course settings">
+		<nav class="qc-subject-actions qc-learning-resources" aria-label="Subject settings">
 			<a class="qc-action-button compact" href={resolve('/profile')}>
 				<Settings2 size={18} aria-hidden="true" />
 				Subjects and exam boards
@@ -305,6 +309,31 @@
 	.qc-home-challenge-card {
 		gap: 0.68rem;
 		border-color: rgba(22, 132, 88, 0.28);
+	}
+
+	.qc-home-challenge-card .qc-dashboard-panel-head > div {
+		display: grid;
+		gap: 0.2rem;
+	}
+
+	.qc-home-challenge-card .qc-dashboard-panel-head a {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.8rem;
+		font-weight: 720;
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+	}
+
+	.qc-home-challenge-art {
+		overflow: hidden;
+		aspect-ratio: 16 / 9;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
+	}
+
+	.qc-home-challenge-art :global(.theme-aware-challenge-art) {
+		width: 100%;
+		height: 100%;
 	}
 
 	.qc-home-challenge-copy {

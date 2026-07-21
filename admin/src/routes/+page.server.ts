@@ -328,7 +328,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 							SUM(CASE WHEN EXISTS (
 								SELECT 1 FROM analytics_events e
 								WHERE e.session_id = s.session_id AND e.event_type = 'page_view'
-									AND (e.path LIKE '%/chain%' OR e.path LIKE '/chains/%')
+									AND e.path LIKE '/questions/%/answer-chain'
 							) THEN 1 ELSE 0 END) AS answer_chain,
 							SUM(CASE WHEN EXISTS (
 								SELECT 1 FROM analytics_events e

@@ -375,7 +375,7 @@ export async function fetchEnglishLiteraturePracticeContract({
 	request = fetch
 }) {
 	const url = new URL(
-		`/questions/${encodeURIComponent(questionId)}/practice/step-by-step/task/__data.json`,
+		`/questions/${encodeURIComponent(questionId)}/practice/task/__data.json`,
 		`${baseUrl}/`
 	);
 	const controller = new AbortController();

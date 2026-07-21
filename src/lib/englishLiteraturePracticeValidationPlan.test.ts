@@ -125,7 +125,7 @@ function makeCandidate(
 			checked: true,
 			available: true,
 			status: 307,
-			location: `/questions/${questionId}/practice/step-by-step/task`,
+			location: `/questions/${questionId}/practice/task`,
 			stepStatus: 200
 		},
 		...overrides

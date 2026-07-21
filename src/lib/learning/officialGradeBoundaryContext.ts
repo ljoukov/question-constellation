@@ -82,7 +82,7 @@ function caveatForContext(
 			}
 			return `The ${boundaryData.series} ${source.board} ${boundarySet.qualificationCode} boundary awards a double grade from all six papers (${boundarySet.maximumMark} marks); this subject-only sample cannot be converted to that award.`;
 		case 'future_specification':
-			return `The supported AQA 8525 course has first exams in 2027, so its assessment has no applicable ${boundaryData.series} grade boundary.`;
+			return `The supported AQA 8525 specification has first exams in 2027, so its assessment has no applicable ${boundaryData.series} grade boundary.`;
 		case 'history_option_route':
 			return `The ${boundaryData.series} AQA 8145 boundaries vary by the learner's exact History option route; this profile does not identify one complete entry code, and a question sample is not a qualification total.`;
 	}

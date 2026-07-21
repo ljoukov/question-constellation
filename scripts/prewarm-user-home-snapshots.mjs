@@ -82,14 +82,14 @@ export async function prewarmUserHomeSnapshots({
 		   COUNT(*) AS total_rows,
 		   SUM(
 		     CASE
-		       WHEN schema_version = 2
+		       WHEN schema_version = 3
 		        AND dirty = 0
 		        AND source_revision = snapshot_revision
-		        AND json_extract(payload_json, '$.version') = 2
+		        AND json_extract(payload_json, '$.version') = 3
 		        AND json_type(payload_json, '$.subjectViews') = 'array'
 		       THEN 1 ELSE 0
 		     END
-		   ) AS current_v2_rows,
+		   ) AS current_v3_rows,
 		   MAX(length(payload_json)) AS max_payload_characters
 		 FROM user_home_snapshots
 		 WHERE user_id IN (${selectedUserIds.map(() => '?').join(', ')})`,
@@ -98,7 +98,7 @@ export async function prewarmUserHomeSnapshots({
 	);
 	const maxPayloadCharacters = Number(verification?.max_payload_characters ?? 0);
 	if (
-		Number(verification?.current_v2_rows ?? 0) !== Number(verification?.total_rows ?? 0) ||
+		Number(verification?.current_v3_rows ?? 0) !== Number(verification?.total_rows ?? 0) ||
 		maxPayloadCharacters > MAX_SNAPSHOT_CHARACTERS
 	) {
 		throw new Error('Snapshot prewarm verification failed.');
@@ -107,7 +107,7 @@ export async function prewarmUserHomeSnapshots({
 		selected_users: users.length,
 		refreshed: statusCounts.get('refreshed') ?? 0,
 		already_current: statusCounts.get('current') ?? 0,
-		current_v2_rows: Number(verification?.current_v2_rows ?? 0),
+		current_v3_rows: Number(verification?.current_v3_rows ?? 0),
 		total_snapshot_rows: Number(verification?.total_rows ?? 0),
 		max_payload_characters: maxPayloadCharacters,
 		payload_limit_characters: MAX_SNAPSHOT_CHARACTERS,

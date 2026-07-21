@@ -64,11 +64,14 @@ function card(id: string, overrides: Partial<RecallCard> = {}): RecallCard {
 async function loadRecall(
 	platform?: { ctx: { waitUntil: (promise: Promise<unknown>) => void } },
 	activeUser: typeof user | null = user,
-	url = 'https://constellation.eviworld.com/recall?start=1&subject=Biology&topic=biology-cell-biology&activity=mcq'
+	url = 'https://constellation.eviworld.com/recall/biology/multiple-choice?topic=biology-cell-biology'
 ) {
+	const parsedUrl = new URL(url);
+	const [, , subject, activity] = parsedUrl.pathname.split('/');
 	const result = await load({
 		locals: { user: activeUser },
-		url: new URL(url),
+		params: { subject, activity },
+		url: parsedUrl,
 		platform
 	} as unknown as Parameters<typeof load>[0]);
 	if (!result) throw new Error('Expected recall page data.');
@@ -94,19 +97,6 @@ beforeEach(() => {
 });
 
 describe('anonymous recall page load', () => {
-	it('does not treat the aggregate filter label as a concrete catalog subject', async () => {
-		mocks.getRecallCards.mockResolvedValueOnce([]);
-		const result = await loadRecall(
-			undefined,
-			null,
-			'https://constellation.eviworld.com/recall?start=1&subject=All%20subjects'
-		);
-
-		expect(mocks.defaultRecallCatalogScope).not.toHaveBeenCalled();
-		expect(mocks.getRecallCards).toHaveBeenCalledWith(undefined);
-		expect(result.cards).toEqual([]);
-	});
-
 	it('opens the same public catalog advertised by the activity page', async () => {
 		const result = await loadRecall(undefined, null);
 
@@ -140,7 +130,7 @@ describe('anonymous recall page load', () => {
 		const result = await loadRecall(
 			undefined,
 			null,
-			'https://constellation.eviworld.com/recall?start=1&subject=History&topic=aqa-history-germany&activity=true_false'
+			'https://constellation.eviworld.com/recall/history/true-or-false?topic=aqa-history-germany'
 		);
 
 		expect(mocks.defaultRecallCatalogScope).toHaveBeenCalledWith('History');
@@ -181,7 +171,7 @@ describe('signed-in recall page load', () => {
 		const result = await loadRecall(
 			undefined,
 			user,
-			'https://constellation.eviworld.com/recall?start=1&subject=English%20Literature&topic=ocr-j352-macbeth&activity=true-false'
+			'https://constellation.eviworld.com/recall/english-literature/true-or-false?topic=ocr-j352-macbeth'
 		);
 
 		expect(mocks.getRecallCatalogScopeForLearner).toHaveBeenCalledWith(user, 'English Literature');
@@ -198,7 +188,7 @@ describe('signed-in recall page load', () => {
 		const result = await loadRecall(
 			undefined,
 			user,
-			'https://constellation.eviworld.com/recall?start=1&subject=Biology&topic=all&mode=mixed'
+			'https://constellation.eviworld.com/recall/biology/quick'
 		);
 
 		expect(mocks.recallCardsWithinLearnerScope).toHaveBeenCalledWith(

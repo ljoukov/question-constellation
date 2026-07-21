@@ -572,7 +572,7 @@ async function auditQuestionInChrome({ chrome, contract, selected, options, repo
 			finalPath: new URL(directDom.url).pathname,
 			redirectsToTask:
 				new URL(directDom.url).pathname ===
-				`/questions/${contract.questionId}/practice/step-by-step/task`
+				`/questions/${contract.questionId}/practice/task`
 		};
 		questionAudit.blankInput = {
 			checkControlDisabled: directDom.primaryDisabled === true,
@@ -589,7 +589,7 @@ async function auditQuestionInChrome({ chrome, contract, selected, options, repo
 		const page = await openPracticePage({
 			chrome,
 			contract,
-			pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/step-by-step/${encodeURIComponent(stage.id)}`,
+			pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/${encodeURIComponent(stage.id)}`,
 			viewport: ENGLISH_LITERATURE_BROWSER_VIEWPORTS.desktop,
 			theme: 'light',
 			state,
@@ -647,7 +647,7 @@ async function auditNavigation({ chrome, contract, options, report }) {
 	const page = await openPracticePage({
 		chrome,
 		contract,
-		pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/step-by-step/${encodeURIComponent(thirdStage.id)}`,
+		pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/${encodeURIComponent(thirdStage.id)}`,
 		viewport: ENGLISH_LITERATURE_BROWSER_VIEWPORTS.desktop,
 		theme: 'light',
 		state,
@@ -707,7 +707,7 @@ async function runLayoutCase({ chrome, contract, layoutCase, options, report }) 
 	const page = await openPracticePage({
 		chrome,
 		contract,
-		pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/step-by-step/task`,
+		pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/task`,
 		viewport: ENGLISH_LITERATURE_BROWSER_VIEWPORTS[layoutCase.viewport],
 		theme: layoutCase.theme,
 		state,
@@ -825,7 +825,7 @@ async function runModelCase({ chrome, contract, definition, priorResult, options
 	const page = await openPracticePage({
 		chrome,
 		contract,
-		pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/step-by-step/${encodeURIComponent(definition.stageId)}`,
+		pathname: `/questions/${encodeURIComponent(contract.questionId)}/practice/${encodeURIComponent(definition.stageId)}`,
 		viewport: ENGLISH_LITERATURE_BROWSER_VIEWPORTS.desktop,
 		theme: 'light',
 		state,

@@ -22,7 +22,7 @@
     [
       {
         'question': 'Is Question Constellation a course platform?',
-        'answer': 'No. It is a public question bank and answer-chain atlas.'
+        'answer': 'No. It is a public GCSE exam-question and answer-chain atlas.'
       },
       {
         'question': 'Which one helps with exam technique?',

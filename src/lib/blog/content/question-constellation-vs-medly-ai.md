@@ -29,7 +29,7 @@
     [
       {
         'question': 'Is Question Constellation an AI tutor like Medly AI?',
-        'answer': 'No. Question Constellation is a public question bank organized by answer chains. Runtime AI can support checking in some flows, but the main value is the curated exam-question structure.'
+        'answer': 'No. Question Constellation is a public collection of GCSE questions organized by answer chains. Runtime AI can support checking in some flows, but the main value is the curated exam-question structure.'
       },
       {
         'question': 'Which tool is better for a student who keeps losing marks?',

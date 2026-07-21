@@ -46,7 +46,7 @@ const subjectView = {
 	board: 'AQA',
 	href: '/subjects/biology',
 	scope: { status: 'all' },
-	nextAction: { href: '/recall' },
+	nextAction: { href: '/recall/biology/quick' },
 	alternatives: []
 };
 

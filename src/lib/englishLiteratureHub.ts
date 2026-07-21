@@ -132,7 +132,7 @@ export function buildOcrEnglishLiteratureHub(
 export function ocrLiteratureSelectionSummary(selections: EnglishLiteratureSelectionInput): string {
 	const values = selectionValues(selections).filter((value): value is string => Boolean(value));
 	if (values.length === 0) return 'Choose the four options your school teaches.';
-	if (values.length < 4) return `${values.length} of 4 course choices set · finish your profile`;
+	if (values.length < 4) return `${values.length} of 4 set texts chosen · finish your profile`;
 	return values.join(' · ');
 }
 

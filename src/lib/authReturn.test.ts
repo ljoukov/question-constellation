@@ -3,7 +3,7 @@ import { authStartHref, safeAuthReturnPath } from './authReturn';
 
 describe('auth return paths', () => {
 	it('preserves a local practice route including its query', () => {
-		const path = '/questions/example/practice/step-by-step/task?resume=check';
+		const path = '/questions/example/practice/task?resume=check';
 		expect(safeAuthReturnPath(path)).toBe(path);
 		expect(authStartHref(path)).toBe(`/auth/start?next=${encodeURIComponent(path)}`);
 	});

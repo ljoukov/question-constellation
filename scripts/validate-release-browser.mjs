@@ -77,25 +77,34 @@ import { pathToFileURL } from 'node:url';
 /** @type {Route[]} */
 const DEFAULT_ROUTES = [
 	{ name: 'home', pathname: '/' },
+	{ name: 'questions', pathname: '/questions' },
+	{ name: 'challenges', pathname: '/challenges' },
+	{ name: 'physics-challenges', pathname: '/challenges/physics' },
+	{
+		name: 'physics-challenge-game',
+		pathname: '/challenges/physics/half-range-uncertainty'
+	},
 	{ name: 'biology-subject', pathname: '/subjects/biology' },
-	{ name: 'english-literature', pathname: '/english-literature' },
+	{ name: 'physics-content', pathname: '/subjects/physics/content' },
+	{ name: 'english-literature', pathname: '/subjects/english-literature' },
+	{
+		name: 'english-literature-content',
+		pathname: '/subjects/english-literature/content'
+	},
 	{
 		name: 'english-practice',
 		pathname: '/questions/ocr-j352-01-jun24-04-1b/practice'
 	},
-	{
-		name: 'english-literature-flashcards',
-		pathname: '/recall/english-literature/flashcards'
-	},
-	{ name: 'biology-mcq', pathname: '/recall/biology/mcq' },
-	{ name: 'biology-true-false', pathname: '/recall/biology/true-false' },
+	{ name: 'biology-flashcards', pathname: '/recall/biology/flashcards' },
+	{ name: 'biology-mcq', pathname: '/recall/biology/multiple-choice' },
+	{ name: 'biology-true-false', pathname: '/recall/biology/true-or-false' },
 	{
 		name: 'public-question',
 		pathname: '/questions/ocr-j352-01-jun24-04-1b'
 	},
 	{
 		name: 'answer-chain',
-		pathname: '/questions/ocr-j352-01-jun24-04-1b/chain'
+		pathname: '/questions/ocr-j352-01-jun24-04-1b/answer-chain'
 	},
 	{ name: 'physics-subject', pathname: '/subjects/physics' }
 ];
@@ -367,7 +376,7 @@ async function validateCase({
 		await cdp.send('Page.navigate', { url: requestedUrl });
 		await loadPromise;
 		await waitForDocumentReady(cdp, runOptions.timeoutMs);
-		await waitForNetworkIdle(requestIds, runOptions.timeoutMs, runOptions.settleMs);
+		await waitForNetworkIdle(requestIds, requestUrls, runOptions.timeoutMs, runOptions.settleMs);
 		await settlePageAssets(cdp, runOptions.timeoutMs);
 		await forceTheme(cdp, theme);
 
@@ -375,19 +384,26 @@ async function validateCase({
 		if (route.name === runOptions.englishRoute && runOptions.englishAnswer) {
 			interaction = await interactWithEnglishPractice(cdp, runOptions);
 			await waitForDocumentReady(cdp, runOptions.timeoutMs);
-			await waitForNetworkIdle(requestIds, runOptions.timeoutMs, runOptions.settleMs);
+			await waitForNetworkIdle(requestIds, requestUrls, runOptions.timeoutMs, runOptions.settleMs);
 			await forceTheme(cdp, theme);
-		} else if (/^\/recall\/[^/]+\/(flashcards|mcq|true-false)$/.test(route.pathname)) {
+		} else if (
+			/^\/recall\/[^/]+\/(quick|flashcards|multiple-choice|true-or-false|reverse)$/.test(
+				route.pathname
+			)
+		) {
 			interaction = await interactWithRecallActivity(cdp, runOptions, route);
 			await waitForDocumentReady(cdp, runOptions.timeoutMs);
-			await waitForNetworkIdle(requestIds, runOptions.timeoutMs, runOptions.settleMs);
+			await waitForNetworkIdle(requestIds, requestUrls, runOptions.timeoutMs, runOptions.settleMs);
 			await forceTheme(cdp, theme);
 		}
 
 		const dom = await collectDomSummary(cdp);
 		const layout = await collectLayoutEvidence(cdp);
 		const activeTheme = dom.theme;
-		const signedIn = dom.signedIn || interactionProvesSignedIn(interaction);
+		const signedIn =
+			dom.signedIn ||
+			interactionProvesSignedIn(interaction) ||
+			usesImmersiveChallengeShell(route.pathname);
 		const errors = buildErrors({
 			documentResponse,
 			runtimeEvents,
@@ -469,6 +485,13 @@ function interactionProvesSignedIn(interaction) {
 		typeof interaction === 'object' &&
 		interaction.start?.status === 'already-started'
 	);
+}
+
+/** Challenge play deliberately removes the account control with the rest of the global shell. */
+/** @param {string} pathname */
+function usesImmersiveChallengeShell(pathname) {
+	const path = new URL(pathname, 'http://navigation.local').pathname;
+	return /^\/challenges\/[^/]+\/[^/]+\/?$/.test(path);
 }
 
 /** @param {CdpClient} cdp @param {RunOptions} runOptions @param {Route} route */
@@ -821,6 +844,7 @@ async function collectLayoutEvidence(cdp) {
 			.filter((element) => {
 				const style = getComputedStyle(element);
 				return (
+					!element.matches('.theme-aware-challenge-art') &&
 					element.scrollWidth > element.clientWidth + tolerance &&
 					['hidden', 'clip'].includes(style.overflowX) &&
 					((element.textContent ?? '').trim().length > 0 ||
@@ -998,8 +1022,8 @@ async function waitForDocumentReady(cdp, timeoutMs) {
 	);
 }
 
-/** @param {Set<string>} requestIds @param {number} timeoutMs @param {number} settleMs */
-async function waitForNetworkIdle(requestIds, timeoutMs, settleMs) {
+/** @param {Set<string>} requestIds @param {Map<string, string>} requestUrls @param {number} timeoutMs @param {number} settleMs */
+async function waitForNetworkIdle(requestIds, requestUrls, timeoutMs, settleMs) {
 	const started = Date.now();
 	let idleSince = null;
 	while (Date.now() - started < timeoutMs) {
@@ -1011,7 +1035,13 @@ async function waitForNetworkIdle(requestIds, timeoutMs, settleMs) {
 		}
 		await delay(50);
 	}
-	throw new Error(`Timed out waiting for network idle (${requestIds.size} request(s) active).`);
+	const activeUrls = [...requestIds]
+		.map((requestId) => safeUrl(requestUrls.get(requestId) ?? ''))
+		.filter(Boolean)
+		.slice(0, 8);
+	throw new Error(
+		`Timed out waiting for network idle (${requestIds.size} request(s) active): ${activeUrls.join(', ')}`
+	);
 }
 
 /**
@@ -1383,6 +1413,11 @@ async function assertReachable(baseUrl) {
 
 /** @param {string} type @param {string} [url] */
 function tracksForIdle(type, url = '') {
+	try {
+		if (new URL(url).pathname === '/api/home-snapshot/refresh') return false;
+	} catch {
+		// Non-URL requests fall through to the ordinary resource-type check.
+	}
 	return (
 		!url.startsWith('data:') &&
 		['Document', 'Stylesheet', 'Image', 'Media', 'Font', 'Script', 'XHR', 'Fetch'].includes(type)

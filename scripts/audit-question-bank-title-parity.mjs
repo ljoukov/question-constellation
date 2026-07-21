@@ -12,7 +12,7 @@ const [payloadRow] = await d1Rows(
 	[],
 	{ rootDir }
 );
-if (!payloadRow) throw new Error('The materialized chains:browse payload is missing.');
+if (!payloadRow) throw new Error('The materialized question-bank payload is missing.');
 const payload = decodePublicRoutePayload(String(payloadRow.payload_json)).value;
 const questions = Array.isArray(payload?.questions) ? payload.questions : [];
 if (questions.length === 0) throw new Error('The materialized question bank is empty.');

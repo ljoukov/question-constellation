@@ -8,8 +8,8 @@ describe('English guided-practice navigation context', () => {
 			returnTo: '/questions/ocr-1?view=result'
 		});
 
-		expect(withEnglishPracticeContext('/questions/ocr-1/practice/step-by-step/task', search)).toBe(
-			'/questions/ocr-1/practice/step-by-step/task?entry=question&returnTo=%2Fquestions%2Focr-1%3Fview%3Dresult'
+		expect(withEnglishPracticeContext('/questions/ocr-1/practice/task', search)).toBe(
+			'/questions/ocr-1/practice/task?entry=question&returnTo=%2Fquestions%2Focr-1%3Fview%3Dresult'
 		);
 	});
 
@@ -23,8 +23,8 @@ describe('English guided-practice navigation context', () => {
 	});
 
 	it('leaves a context-free public URL unchanged', () => {
-		expect(withEnglishPracticeContext('/questions/ocr-1/practice/step-by-step/task', new URLSearchParams())).toBe(
-			'/questions/ocr-1/practice/step-by-step/task'
+		expect(withEnglishPracticeContext('/questions/ocr-1/practice/task', new URLSearchParams())).toBe(
+			'/questions/ocr-1/practice/task'
 		);
 	});
 });

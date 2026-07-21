@@ -20,7 +20,7 @@
 	} from '$lib/recall/aqaScienceRecall';
 	import { recallCardContentKey } from '$lib/recall/contentIdentity';
 	import { rankCanonicalRecallCards } from '$lib/recall/personalization';
-	import { recallActivityHref } from '$lib/recall/routes';
+	import { recallActivityForMode, recallModeFromPath, recallSessionHref } from '$lib/recall/routes';
 	import {
 		readRecallSession,
 		recallSessionStorageKey,
@@ -329,7 +329,9 @@
 				? 'Multiple choice'
 				: mode === 'truefalse'
 					? 'True or false'
-					: 'Flashcards'
+					: mode === 'reverse'
+						? 'Reverse recall'
+						: 'Flashcards'
 	);
 	const selectedBoard = $derived(
 		(selectedSubject === 'All subjects'
@@ -408,38 +410,19 @@
 
 	$effect(() => {
 		const params = page.url.searchParams;
-		const nextSubject = validSubject(params.get('subject') ?? 'All subjects');
 		const nextTopic = params.get('topic') ?? 'all';
 		const nextKind = validKind(params.get('kind') ?? 'all');
-		const activityParam = params.get('activity');
-		const nextActivity =
-			activityParam === 'mcq'
-				? 'mcq'
-				: activityParam === 'true-false' || activityParam === 'true_false'
-					? 'true-false'
-					: 'flashcards';
-		const nextMode = validMode(
-			params.get('mode') ??
-				(nextActivity === 'mcq'
-					? 'recognise'
-					: nextActivity === 'true-false'
-						? 'truefalse'
-						: 'recall')
-		);
 		const nextSearch = params.get('q') ?? '';
 		const nextStackSize = validStackSize(params.get('size') ?? '10');
 		const nextSessionActive =
-			params.get('start') === '1' &&
 			cardsEligibleForRecallMode(
-				filterCards(nextSubject, nextTopic, nextKind, nextSearch),
-				nextMode
+				filterCards(selectedSubject, nextTopic, nextKind, nextSearch),
+				mode
 			).length > 0;
 
 		untrack(() => {
-			if (selectedSubject !== nextSubject) selectedSubject = nextSubject;
 			if (selectedTopic !== nextTopic) selectedTopic = nextTopic;
 			if (selectedKind !== nextKind) selectedKind = nextKind;
-			if (mode !== nextMode) mode = nextMode;
 			if (stackSize !== nextStackSize) stackSize = nextStackSize;
 			if (searchQuery !== nextSearch) searchQuery = nextSearch;
 			if (sessionActive !== nextSessionActive) {
@@ -449,6 +432,15 @@
 					quitSessionState();
 				}
 			}
+		});
+	});
+
+	$effect(() => {
+		const pathMode = recallModeFromPath(page.url.pathname.split('/').filter(Boolean).at(-1));
+		if (!pathMode || pathMode === mode) return;
+		untrack(() => {
+			mode = pathMode;
+			startSessionState();
 		});
 	});
 
@@ -1213,24 +1205,22 @@
 
 	function syncRecallUrl(
 		historyMode: 'push' | 'replace' = 'replace',
-		nextSessionActive = sessionActive
+		_nextSessionActive = sessionActive
 	) {
 		if (!browser) return;
-		const params = new URLSearchParams();
-		if (searchQuery.trim()) params.set('q', searchQuery.trim());
-		if (selectedSubject !== 'All subjects') params.set('subject', selectedSubject);
-		if (selectedTopic !== 'all') params.set('topic', selectedTopic);
-		if (selectedKind !== 'all') params.set('kind', selectedKind);
-		params.set(
-			'activity',
-			mode === 'recognise' ? 'mcq' : mode === 'truefalse' ? 'true-false' : 'flashcards'
+		if (selectedSubject === 'All subjects') return;
+		const nextUrl = resolveInternalPath(
+			recallSessionHref({
+				subject: selectedSubject,
+				activity: recallActivityForMode(mode),
+				mode,
+				topic: selectedTopic,
+				kind: selectedKind,
+				size: stackSize,
+				search: searchQuery,
+				returnTo: returnToHref === '/' ? undefined : returnToHref
+			})
 		);
-		params.set('size', String(stackSize));
-		if (mode !== 'recall') params.set('mode', mode);
-		if (nextSessionActive) params.set('start', '1');
-		if (returnToHref !== '/') params.set('returnTo', returnToHref);
-		const suffix = params.toString();
-		const nextUrl = suffix ? resolve(`/recall?${suffix}`) : resolve('/recall');
 		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
 		if (nextUrl === currentUrl) return;
 		if (historyMode === 'push') {
@@ -1245,12 +1235,18 @@
 		syncRecallUrl('replace');
 	}
 
-	async function updateSubject(value: string) {
+	function updateSubject(value: string) {
 		const nextSubject = validSubject(value);
 		if (nextSubject === 'All subjects' || nextSubject === selectedSubject) return;
-		const activity =
-			mode === 'recognise' ? 'mcq' : mode === 'truefalse' ? 'true-false' : 'flashcards';
-		await goto(resolveInternalPath(recallActivityHref(nextSubject, activity)));
+		const nextUrl = resolveInternalPath(
+			recallSessionHref({
+				subject: nextSubject,
+				activity: recallActivityForMode(mode),
+				mode,
+				size: stackSize
+			})
+		);
+		if (browser) window.location.assign(nextUrl);
 	}
 
 	function updateMode(value: Mode) {
@@ -1286,23 +1282,15 @@
 		name="description"
 		content="Practise concise, curriculum-grounded GCSE cards with flashcards, multiple choice and true-or-false checks."
 	/>
-	<link rel="canonical" href="https://constellation.eviworld.com/recall" />
+	<link
+		rel="canonical"
+		href={`https://constellation.eviworld.com${recallSessionHref({ subject: selectedSubject === 'All subjects' ? 'Biology' : selectedSubject, activity: recallActivityForMode(mode), mode })}`}
+	/>
 </svelte:head>
 
 {#if sessionActive}
 	<main class="recall-session" class:slow-motion={slowMotion} aria-label="Recall card session">
 		<header class="session-header" class:complete={sessionComplete}>
-			{#if !sessionComplete}
-				<button
-					type="button"
-					class="session-icon-button"
-					aria-label="Quit recall session"
-					disabled={leavingSession}
-					onclick={exitSession}
-				>
-					<X size={23} aria-hidden="true" strokeWidth={2.2} />
-				</button>
-			{/if}
 			<div class="session-progress">
 				<div class="session-progress-text">
 					<strong>
@@ -1318,6 +1306,17 @@
 					</div>
 				{/if}
 			</div>
+			{#if !sessionComplete}
+				<button
+					type="button"
+					class="session-icon-button"
+					aria-label="Quit recall session"
+					disabled={leavingSession}
+					onclick={exitSession}
+				>
+					<X size={23} aria-hidden="true" strokeWidth={2.2} />
+				</button>
+			{/if}
 		</header>
 		<p class="sr-only" aria-live="polite" aria-atomic="true">{sessionAnnouncement}</p>
 
@@ -1640,7 +1639,7 @@
 			<div class="setup-copy">
 				<p class="recall-kicker">{setupKicker}</p>
 				<h1>Recall cards</h1>
-				<p>Practise concise, reviewed knowledge from the exact course and topics in this deck.</p>
+				<p>Practise concise, reviewed knowledge from the exact subject content in this deck.</p>
 				<div class="setup-stats" aria-label="Current recall stack">
 					<div>
 						<strong>{totalCards}</strong>
@@ -2030,7 +2029,7 @@
 
 	.session-header {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 0.8rem;
 		align-items: center;
 		padding: max(0.75rem, env(safe-area-inset-top)) 1rem 0.75rem;
@@ -2048,7 +2047,7 @@
 		height: 2.65rem;
 		place-items: center;
 		border: 1px solid #d9e0ea;
-		border-radius: 0;
+		border-radius: 50%;
 		background: #ffffff;
 		color: #0b1020;
 		cursor: pointer;

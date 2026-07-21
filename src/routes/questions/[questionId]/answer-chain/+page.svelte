@@ -26,7 +26,7 @@
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
 	);
-	const chainPageHref = $derived(`/questions/${encodeURIComponent(data.question.id)}/chain`);
+	const chainPageHref = $derived(`/questions/${encodeURIComponent(data.question.id)}/answer-chain`);
 	function practiceWithReturn(questionId: string) {
 		const base = resolve('/questions/[questionId]/practice', { questionId });
 		const params = new URLSearchParams({ entry: 'chain', returnTo: chainPageHref });

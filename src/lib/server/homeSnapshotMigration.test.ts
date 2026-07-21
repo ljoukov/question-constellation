@@ -59,7 +59,7 @@ type FallbackPayload = {
 };
 
 describe('user home snapshot migration', () => {
-	it('upgrades legacy rows and future profile seeds to a parseable v2 fallback', () => {
+	it('upgrades legacy rows and future profile seeds to a parseable v3 fallback', () => {
 		const db = new DatabaseSync(':memory:');
 		applyThrough(db, '0011_relax_challenge_completion_time.sql');
 		db.prepare(
@@ -106,7 +106,24 @@ describe('user home snapshot migration', () => {
 			source_revision: 1,
 			snapshot_revision: 0
 		});
-		const upgradedPayload = parseUserHomeSnapshot(JSON.parse(upgraded.payload_json));
+		// Migration 0015 remains immutable history. The v3 runtime deliberately
+		// rejects its cached links until migration 0017 clears and rebuilds them.
+		expect(parseUserHomeSnapshot(JSON.parse(upgraded.payload_json))).toBeNull();
+
+		for (const migration of [
+			'0016_user_learning_evidence_supersedes_index.sql',
+			'0017_user_home_snapshot_v3.sql'
+		]) {
+			db.exec(readFileSync(new URL(migration, personalMigrationDirectory), 'utf8'));
+		}
+		const upgradedV3 = snapshotRow(db, 'legacy-user');
+		expect(upgradedV3).toMatchObject({
+			schema_version: 3,
+			dirty: 1,
+			source_revision: 2,
+			snapshot_revision: 0
+		});
+		const upgradedPayload = parseUserHomeSnapshot(JSON.parse(upgradedV3.payload_json));
 		expect(upgradedPayload).not.toBeNull();
 		expect(upgradedPayload?.subjectViews).toEqual([]);
 		expect(upgradedPayload?.challengeProgress).toEqual(inProgress);
@@ -116,9 +133,9 @@ describe('user home snapshot migration', () => {
 			 VALUES (?, ?, ?, ?)`
 		).run('new-user', 'new@example.test', 'Grace Hopper', 'light');
 		const seeded = snapshotRow(db, 'new-user');
-		expect(seeded.schema_version).toBe(2);
+		expect(seeded.schema_version).toBe(3);
 		expect(parseUserHomeSnapshot(JSON.parse(seeded.payload_json))).toMatchObject({
-			version: 2,
+			version: 3,
 			dashboard: { studentName: 'Grace', subjects: [] },
 			subjectViews: [],
 			appearance: { themePreference: 'light' }

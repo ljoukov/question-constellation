@@ -544,8 +544,8 @@ function fixtureDatabase({
 		)
 		.run(
 			'chains:browse',
-			'chains',
-			'/chains',
+			'questions',
+			'/questions',
 			JSON.stringify({
 				__qcPayloadEncoding: 'gzip-base64',
 				data: gzipSync(Buffer.from(compressedValue)).toString('base64')

@@ -23,7 +23,7 @@
 	const canonicalUrl = 'https://constellation.eviworld.com/blog';
 	const pageTitle = 'Question Constellation Blog | GCSE Revision Comparisons and Exam Technique';
 	const pageDescription =
-		'Comparisons, GCSE revision guides and revision-research notes from Question Constellation, a public question bank organized around real questions and mark-scoring methods.';
+		'Comparisons, GCSE revision guides and revision-research notes from Question Constellation, a public collection of real questions and mark-scoring methods.';
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{

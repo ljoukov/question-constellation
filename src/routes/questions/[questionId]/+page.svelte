@@ -6,7 +6,7 @@
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import { BROWSE_SUBJECTS } from '$lib/englishSubjects';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
-	import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
+	import { learnerSubjectForQuestion } from '$lib/learning/subjects';
 	import { ArrowRight, CircleAlert, Eye } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -20,15 +20,11 @@
 		}) ?? data.question.meta.subject
 	);
 	const browseHref = $derived(
-		data.user
-			? learnerSubjectHref(learnerSubject)
-			: `${resolve('/chains')}?subject=${encodeURIComponent(data.question.meta.subject)}`
+		`${resolve('/questions')}?subject=${encodeURIComponent(learnerSubject)}`
 	);
-	const browseLabel = $derived(
-		data.user ? `Back to ${learnerSubject}` : `Back to ${data.question.meta.subject} questions`
-	);
+	const browseLabel = $derived(`Back to ${learnerSubject} questions`);
 	const chainHref = $derived(
-		resolve('/questions/[questionId]/chain', { questionId: data.question.id })
+		resolve('/questions/[questionId]/answer-chain', { questionId: data.question.id })
 	);
 	const practiceHref = $derived(
 		`${resolve('/questions/[questionId]/practice', { questionId: data.question.id })}?entry=question&returnTo=${encodeURIComponent(`/questions/${encodeURIComponent(data.question.id)}`)}` as ResolvedPathname

@@ -8,6 +8,7 @@ import {
 import type { ChallengeDefinition } from '$lib/challenges/types';
 import { learnerSubjectFromSlug } from '$lib/learning/subjects';
 import { isScienceLearnerSubject } from '$lib/learning/subjects';
+import { getEnglishLiteratureSubjectHub } from '$lib/server/englishLiteratureSubjectHub';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -27,10 +28,18 @@ export const load: PageServerLoad = async ({ locals, params, url, parent }) => {
 	const subject = projectedSubject;
 	if (!subject) throw error(404, 'This subject is not enabled in your profile.');
 	if (subject.subject === 'English Literature' && subject.board === 'OCR') {
-		throw redirect(
-			303,
-			subject.scope.status === 'not_set' ? subject.nextAction.href : subject.href
-		);
+		if (subject.scope.status === 'not_set') throw redirect(303, subject.nextAction.href);
+		return {
+			subject,
+			user: locals.user,
+			literatureHub: await getEnglishLiteratureSubjectHub(locals.user),
+			challengeCatalog: [],
+			challengeProgress: emptyChallengeProgress(),
+			challengeRecommendation: null,
+			challengeRecommendationCompleted: false,
+			challengeCompletedCount: 0,
+			challengeTotalBestScore: 0
+		};
 	}
 	const subjectChallenges: ChallengeDefinition[] = isScienceLearnerSubject(subject.subject)
 		? challengesForSubject(subject.subject.toLowerCase())
@@ -48,6 +57,7 @@ export const load: PageServerLoad = async ({ locals, params, url, parent }) => {
 	return {
 		subject,
 		user: locals.user,
+		literatureHub: null,
 		challengeCatalog,
 		challengeProgress,
 		challengeRecommendation: challengeRecommendation

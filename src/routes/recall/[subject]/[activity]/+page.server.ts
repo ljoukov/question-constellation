@@ -1,9 +1,13 @@
 import {
 	recallKindLabels,
-	runtimeRecallSubjects,
-	type RecallRuntimeSubject
+	runtimeRecallSubjects
 } from '$lib/recall/aqaScienceRecall';
-import { recallActivityHref, recallTopicsForCards, type RecallActivity } from '$lib/recall/routes';
+import {
+	recallActivityForMode,
+	recallModeFromPath,
+	recallSubjectFromSlug,
+	recallTopicsForCards
+} from '$lib/recall/routes';
 import { learnerSubjectHref } from '$lib/learning/subjects';
 import {
 	getRecallCatalogScopeForLearner,
@@ -14,7 +18,7 @@ import {
 import { defaultRecallCatalogScope, getRecallCards } from '$lib/server/recallCatalog';
 import { rankCanonicalRecallCards } from '$lib/recall/personalization';
 import { recordRecallCoverageMisses } from '$lib/server/recallCoverageShadow';
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 function serverTimestamp(value: string): number {
@@ -25,28 +29,11 @@ function serverTimestamp(value: string): number {
 	return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function requestedRecallSubject(value: string | null): RecallRuntimeSubject | undefined {
-	return value &&
-		value !== 'All subjects' &&
-		runtimeRecallSubjects.includes(value as RecallRuntimeSubject)
-		? (value as RecallRuntimeSubject)
-		: undefined;
-}
-
-function requestedRecallActivity(value: string | null): RecallActivity {
-	if (value === 'mcq') return 'mcq';
-	if (value === 'true-false' || value === 'true_false') return 'true-false';
-	return 'flashcards';
-}
-
-export const load: PageServerLoad = async ({ locals, url, platform }) => {
-	const initialActivity = requestedRecallActivity(url.searchParams.get('activity'));
-	if (url.searchParams.get('start') !== '1') {
-		const subject = requestedRecallSubject(url.searchParams.get('subject')) ?? 'Biology';
-		throw redirect(307, recallActivityHref(subject, initialActivity));
-	}
-	const requestedSubject = url.searchParams.get('subject');
-	const reviewSubject = requestedRecallSubject(requestedSubject);
+export const load: PageServerLoad = async ({ locals, params, url, platform }) => {
+	const reviewSubject = recallSubjectFromSlug(params.subject);
+	const initialMode = recallModeFromPath(params.activity);
+	if (!reviewSubject || !initialMode) throw error(404, 'Recall session not found.');
+	const initialActivity = recallActivityForMode(initialMode);
 	const catalogScope =
 		locals.user && reviewSubject
 			? await getRecallCatalogScopeForLearner(locals.user, reviewSubject)
@@ -136,21 +123,19 @@ export const load: PageServerLoad = async ({ locals, url, platform }) => {
 		// contains a synthetic cross-subject deck.
 		subjects: runtimeRecallSubjects.filter((subject) => subject !== 'All subjects'),
 		topics,
-		initialSubject: url.searchParams.get('subject') ?? 'All subjects',
+		initialSubject: reviewSubject,
 		initialTopic: url.searchParams.get('topic') ?? 'all',
 		initialKind: url.searchParams.get('kind') ?? 'all',
-		initialMode:
-			url.searchParams.get('mode') ??
-			(initialActivity === 'mcq'
-				? 'recognise'
-				: initialActivity === 'true-false'
-					? 'truefalse'
-					: 'recall'),
+		initialMode,
 		initialActivity,
 		initialSearch: url.searchParams.get('q') ?? '',
 		initialSize: url.searchParams.get('size') ?? '10',
-		initialStart: url.searchParams.get('start') === '1',
-		initialReturnTo: url.searchParams.get('returnTo') ?? '/',
+		initialStart: true,
+		initialReturnTo:
+			url.searchParams.get('back') ??
+			(locals.user
+				? learnerSubjectHref(reviewSubject)
+				: `/questions?subject=${encodeURIComponent(reviewSubject)}`),
 		serverProgress: serverProgress
 			.filter((row) => cardIds.has(row.card_id))
 			.map((row) => ({

@@ -194,6 +194,8 @@ export type QuestionBankBrowsePageData = {
 	pageCount: number;
 };
 
+// The durable payload key predates the public route name. Keep it stable so a URL-only
+// navigation release can read the currently materialized production snapshot.
 const questionBankBrowsePayloadId = 'chains:browse';
 const homePublicSummaryPayloadId = 'home:public-summary';
 

@@ -21,12 +21,12 @@
 
 	function safeChainReturn(value: string | null): string | null {
 		const safe = safeInternalReturnPath(value);
-		return safe?.startsWith('/questions/') && safe.includes('/chain') ? safe : null;
+		return safe?.startsWith('/questions/') && safe.includes('/answer-chain') ? safe : null;
 	}
 	const requestedChainReturn = $derived(safeChainReturn(page.url.searchParams.get('returnTo')));
 	const chainHref = $derived(
 		requestedChainReturn ??
-			resolve('/questions/[questionId]/chain', { questionId: data.startQuestion.id })
+			resolve('/questions/[questionId]/answer-chain', { questionId: data.startQuestion.id })
 	);
 	const canonicalUrl = $derived(
 		`https://constellation.eviworld.com/constellations/${encodeURIComponent(data.chain.id)}`

@@ -103,6 +103,7 @@ describe('home page server load', () => {
 			challengeTotalBestScore: 450
 		});
 		expect(result.challengeRecommendation?.id).not.toBe(completedChallenge.id);
+		expect(result.challengeCatalog).toHaveLength(challengeCatalog.length);
 		expect(mocks.getHomePagePublicData).not.toHaveBeenCalled();
 		expect(mocks.getSignedInLearningHome).not.toHaveBeenCalled();
 		expect(mocks.getUserChallengeProgress).not.toHaveBeenCalled();
@@ -131,6 +132,7 @@ describe('home page server load', () => {
 			snapshotInitialising: true
 		});
 		expect(result.challengeRecommendation).not.toBeNull();
+		expect(result.challengeCatalog).toHaveLength(challengeCatalog.length);
 		expect(mocks.getHomePagePublicData).not.toHaveBeenCalled();
 		expect(mocks.getSignedInLearningHome).not.toHaveBeenCalled();
 		expect(mocks.getUserChallengeProgress).not.toHaveBeenCalled();

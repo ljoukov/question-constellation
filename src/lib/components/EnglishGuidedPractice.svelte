@@ -23,7 +23,6 @@
 		type ExternalInputSource
 	} from '$lib/learning/answerAssistance';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
-	import { learnerSubjectHref } from '$lib/learning/subjects';
 	import { markHomeSnapshotDirty } from '$lib/homeSnapshotClient';
 	import { markLabel } from '$lib/marks';
 	import { safeInternalReturnPath } from '$lib/navigation/returnPath';
@@ -226,33 +225,22 @@
 
 	const question = $derived(practice.question);
 	const topbarSubject = $derived(englishSubjectOrDefault(question.meta.subject));
-	const finderHref = $derived(resolve(`/english?course=${encodeURIComponent(topbarSubject)}`));
 	const requestedReturnTo = $derived(safeInternalReturnPath(page.url.searchParams.get('returnTo')));
-	const signedSubjectHref = $derived(
-		topbarSubject === 'English Literature' && question.meta.board === 'OCR'
-			? resolve('/english-literature')
-			: resolveInternalPath(learnerSubjectHref(topbarSubject))
+	const questionHref = $derived(
+		resolve('/questions/[questionId]', { questionId: practice.questionId })
 	);
 	const completionHref = $derived(
-		user
-			? requestedReturnTo
-				? resolveInternalPath(requestedReturnTo)
-				: signedSubjectHref
-			: finderHref
+		requestedReturnTo ? resolveInternalPath(requestedReturnTo) : questionHref
 	);
 	const backHref = $derived(
-		user
-			? requestedReturnTo
-				? resolveInternalPath(requestedReturnTo)
-				: signedSubjectHref
-			: finderHref
+		requestedReturnTo ? resolveInternalPath(requestedReturnTo) : questionHref
 	);
 	const backLabel = $derived(
-		user && requestedReturnTo?.startsWith('/questions/')
+		requestedReturnTo?.startsWith('/questions/')
 			? 'Back to question'
-			: user
+			: requestedReturnTo
 				? `Back to ${topbarSubject}`
-				: 'Back to question finder'
+				: 'Back to question'
 	);
 	const showSourcePaperLink = $derived(
 		shouldShowEnglishSourcePaper({
@@ -317,7 +305,7 @@
 	}
 
 	function stepHref(stage: Stage): ResolvedPathname {
-		const path = resolve('/questions/[questionId]/practice/step-by-step/[stepId]', {
+		const path = resolve('/questions/[questionId]/practice/[stepId]', {
 			questionId: practice.questionId,
 			stepId: stage.id
 		});
@@ -1131,7 +1119,6 @@
 		subject={topbarSubject}
 		{subjects}
 		searchPlaceholder="Search English questions"
-		showNavigation
 	/>
 
 	<div class="qc-step-practice-layout">

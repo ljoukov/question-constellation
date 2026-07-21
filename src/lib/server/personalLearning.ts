@@ -10,7 +10,11 @@ import {
 	type RecallSubject
 } from '$lib/recall/aqaScienceRecall';
 import { recallEvidenceComponentId } from '$lib/server/recallCatalog';
-import { recallActivityHref, recallCoverageHref } from '$lib/recall/routes';
+import {
+	recallActivityHref,
+	recallCoverageHref,
+	recallSessionHref
+} from '$lib/recall/routes';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
 import {
 	constructedAnswerIsIndependent,
@@ -1726,10 +1730,10 @@ function buildSubjectLane(
 	const supportsRecall = recallSubjectValue !== null;
 	const recallHref = recallSubjectValue
 		? recallActivityHref(recallSubjectValue, 'flashcards')
-		: '/recall';
-	const mcqHref = recallSubjectValue ? recallActivityHref(recallSubjectValue, 'mcq') : '/recall';
-	const coverageHref = recallSubjectValue ? recallCoverageHref(recallSubjectValue) : '/recall';
-	const browseHref = `/chains?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
+		: '/';
+	const mcqHref = recallSubjectValue ? recallActivityHref(recallSubjectValue, 'mcq') : '/';
+	const coverageHref = recallSubjectValue ? recallCoverageHref(recallSubjectValue) : '/';
+	const browseHref = `/questions?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
 	if (openGap) {
 		primaryAction = { label: 'Close the gap', href: openGap.href, kind: 'gap' };
@@ -1866,14 +1870,13 @@ function recallPromptForQuestion(data: PracticePageData): SavedAttemptSummary['r
 		) ?? recallCurriculumTopics.find((entry) => entry.subject === subject);
 	if (!topic) return null;
 	const cardCount = recallCards.filter((card) => card.topicId === topic.id).length;
-	const params = new URLSearchParams({
-		subject,
-		topic: topic.id,
-		start: '1',
-		returnTo: `/questions/${encodeURIComponent(data.question.id)}/practice`
-	});
 	return {
-		href: `/recall?${params.toString()}`,
+		href: recallSessionHref({
+			subject,
+			activity: 'flashcards',
+			topic: topic.id,
+			returnTo: `/questions/${encodeURIComponent(data.question.id)}/practice`
+		}),
 		label: `${subject} flashcards: ${topic.title}`,
 		cardCount
 	};
@@ -2552,7 +2555,7 @@ export async function getGapLearningData(
 			id: row.answer_chain_id,
 			title: row.chain_title,
 			href: row.source_question_id
-				? `/questions/${encodeURIComponent(row.source_question_id)}/chain`
+				? `/questions/${encodeURIComponent(row.source_question_id)}/answer-chain`
 				: `/constellations/${encodeURIComponent(row.answer_chain_id)}`,
 			steps: chainSteps
 		},

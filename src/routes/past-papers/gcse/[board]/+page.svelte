@@ -102,12 +102,12 @@
 				<h2 id="subject-directory-title">Subjects</h2>
 			</div>
 
-			<nav class="course-filter" aria-label="Filter courses">
-				{#each data.courseFilters as filter (filter.id)}
+			<nav class="subject-filter" aria-label="Filter subjects">
+				{#each data.subjectFilters as filter (filter.id)}
 					<a
-						class:active-filter={data.selectedCourseId === filter.id}
-						aria-current={data.selectedCourseId === filter.id ? 'page' : undefined}
-						href={filter.id === 'all' ? boardPath : `${boardPath}?course=${filter.id}`}
+						class:active-filter={data.selectedGroupId === filter.id}
+						aria-current={data.selectedGroupId === filter.id ? 'page' : undefined}
+						href={filter.id === 'all' ? boardPath : `${boardPath}?group=${filter.id}`}
 					>
 						{filter.label}
 					</a>
@@ -116,11 +116,11 @@
 
 			<div class="category-grid">
 				{#each data.categories as category (category.name)}
-					<section class="category-section" aria-labelledby={`course-${category.id}`}>
+					<section class="category-section" aria-labelledby={`group-${category.id}`}>
 						{#if data.categories.length > 1}
-							<h3 id={`course-${category.id}`}>{category.name}</h3>
+							<h3 id={`group-${category.id}`}>{category.name}</h3>
 						{:else}
-							<span class="sr-only" id={`course-${category.id}`}>{category.name}</span>
+							<span class="sr-only" id={`group-${category.id}`}>{category.name}</span>
 						{/if}
 						<div class="subject-grid">
 							{#each category.subjects as subject (subject.id)}
@@ -225,14 +225,14 @@
 		font-weight: 620;
 	}
 
-	.course-filter {
+	.subject-filter {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.45rem;
 		margin: 0 0 0.9rem;
 	}
 
-	.course-filter a {
+	.subject-filter a {
 		display: inline-flex;
 		align-items: center;
 		min-height: 2.25rem;
@@ -244,8 +244,8 @@
 		font-weight: 560;
 	}
 
-	.course-filter a:hover,
-	.course-filter a:focus-visible,
+	.subject-filter a:hover,
+	.subject-filter a:focus-visible,
 	.subject-tier-links a:hover,
 	.subject-tier-links a:focus-visible {
 		color: #0f6b3d;
@@ -253,7 +253,7 @@
 		text-underline-offset: 0.18em;
 	}
 
-	.course-filter a.active-filter {
+	.subject-filter a.active-filter {
 		border-color: #0f6b3d;
 		background: rgba(15, 107, 61, 0.07);
 		color: #0f6b3d;
@@ -334,9 +334,9 @@
 	}
 
 	:global(:root[data-theme='dark']) .breadcrumb a,
-	:global(:root[data-theme='dark']) .course-filter a:hover,
-	:global(:root[data-theme='dark']) .course-filter a:focus-visible,
-	:global(:root[data-theme='dark']) .course-filter a.active-filter,
+	:global(:root[data-theme='dark']) .subject-filter a:hover,
+	:global(:root[data-theme='dark']) .subject-filter a:focus-visible,
+	:global(:root[data-theme='dark']) .subject-filter a.active-filter,
 	:global(:root[data-theme='dark']) .subject-tier-links a:hover,
 	:global(:root[data-theme='dark']) .subject-tier-links a:focus-visible {
 		color: #7dd3a1;
@@ -348,7 +348,7 @@
 		color: #9fb0c5;
 	}
 
-	:global(:root[data-theme='dark']) .course-filter a,
+	:global(:root[data-theme='dark']) .subject-filter a,
 	:global(:root[data-theme='dark']) .subject-tier-links a,
 	:global(:root[data-theme='dark']) .category-section,
 	:global(:root[data-theme='dark']) .subject-card {
@@ -356,7 +356,7 @@
 		background: rgba(15, 23, 42, 0.78);
 	}
 
-	:global(:root[data-theme='dark']) .course-filter a {
+	:global(:root[data-theme='dark']) .subject-filter a {
 		color: #cbd5e1;
 	}
 
@@ -365,7 +365,7 @@
 		color: #cbd5e1;
 	}
 
-	:global(:root[data-theme='dark']) .course-filter a.active-filter {
+	:global(:root[data-theme='dark']) .subject-filter a.active-filter {
 		border-color: #2f9f72;
 		background: rgba(47, 159, 114, 0.12);
 	}

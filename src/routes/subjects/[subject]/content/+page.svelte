@@ -71,6 +71,7 @@
 		if (!choosesCourseOptions && curriculumGroups.length === 1) {
 			return `Select covered ${scopeNoun}`;
 		}
+		if (group.title.trim().toLowerCase() === 'course content') return 'Subject content';
 		return group.title;
 	}
 
@@ -121,7 +122,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.subject.subject} Scope | Question Constellation</title>
+	<title>{data.subject.subject} Subject Content | Question Constellation</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -132,18 +133,16 @@
 		<SubjectBreadcrumbs
 			subject={data.subject.subject}
 			subjectHref={data.subject.href}
-			currentLabel={choosesCourseOptions ? 'Course options' : 'Course coverage'}
+			currentLabel="Subject content"
 		/>
 
 		<aside class="qc-learning-sidebar">
 			<header class="qc-learning-heading" aria-labelledby="scope-title">
 				<p class="qc-real-kicker">{specificationLabel}</p>
-				<h1 id="scope-title">
-					{choosesCourseOptions ? 'Course options' : 'Course coverage'}
-				</h1>
+				<h1 id="scope-title">Subject content</h1>
 				<p>
 					{choosesCourseOptions
-						? 'Choose what your school teaches. Practice will stay within those choices.'
+						? 'Choose the texts or topics your school teaches. Practice will stay within those choices.'
 						: `Include only the ${scopeNoun} your class has covered. Untaught material stays out of practice and progress.`}
 				</p>
 			</header>
@@ -159,12 +158,12 @@
 					<input type="hidden" name="scopeMode" value="selected" />
 				{:else}
 					<ControlSection label="Practice range">
-						<ul class="qc-checklist" role="radiogroup" aria-label="Curriculum scope mode">
+						<ul class="qc-checklist" role="radiogroup" aria-label="Subject content range">
 							<li class="qc-scope-option-row">
 								<label class="qc-scope-option">
 									<input type="radio" name="scopeMode" value="all" bind:group={scopeMode} />
 									<div>
-										<strong>Whole course</strong>
+										<strong>Full specification</strong>
 										<p>Use the full official specification.</p>
 									</div>
 								</label>
@@ -189,7 +188,7 @@
 							{choosesCourseOptions
 								? `${selectedIds.length} of ${requiredOptionCount} required ${scopeNoun} selected`
 								: scopeMode === 'all'
-									? `Whole course included`
+									? `Full specification included`
 									: `${selectedIds.length} ${selectedIds.length === 1 ? scopeNoun.replace(/s$/, '') : scopeNoun} included`}
 						</p>
 						<button type="submit" class="qc-profile-save" disabled={!selectionComplete}>
@@ -200,8 +199,8 @@
 										: 'Review your selections'
 									: `Choose at least one ${scopeNoun.replace(/s$/, '')}`
 								: choosesCourseOptions
-									? 'Save course options'
-									: 'Save coverage'}
+									? 'Save choices'
+									: 'Save content'}
 						</button>
 					</footer>
 				{/if}
@@ -275,7 +274,7 @@
 				<div class="qc-warning-panel" role="alert">
 					<AlertTriangle size={19} aria-hidden="true" />
 					<div>
-						<p class="qc-panel-label">Could not save this scope</p>
+						<p class="qc-panel-label">Could not save subject content</p>
 						<p>{form.message}</p>
 					</div>
 				</div>

@@ -9,14 +9,19 @@ export type AppTopbarLink = {
 
 export const primaryNavigationLinks: AppTopbarLink[] = [
 	{
+		href: resolve('/questions'),
+		label: 'Questions',
+		mobileLabel: 'Questions',
+		mobilePriority: true
+	},
+	{
 		href: resolve('/challenges'),
 		label: 'Challenges',
 		mobilePriority: true
 	},
 	{
 		href: resolve('/past-papers/gcse'),
-		label: 'Past papers',
-		mobilePriority: true
+		label: 'Past papers'
 	},
 	{ href: resolve('/blog'), label: 'Blog' }
 ];

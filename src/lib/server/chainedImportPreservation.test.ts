@@ -13,9 +13,8 @@ import {
 	upsertStatement
 } from '../../../scripts/lib/chained-import-preservation.mjs';
 import {
-	deleteAllStalePracticePayloadsStatement,
+	deleteLegacyPracticePayloadsStatement,
 	deleteStaleQuestionPracticePayloadVersionsStatement,
-	deleteStalePracticePayloadsStatement,
 	invalidateQuestionPracticePayloadsStatement
 } from '../../../scripts/lib/public-route-materialization-scope.mjs';
 import {
@@ -684,12 +683,10 @@ describe('additive chained imports', () => {
 		database.close();
 	});
 
-	it('refresh cleanup is limited to owned practice routes and changed question-page caches', () => {
-		expect(materializerSource.indexOf("'materialize owned practice routes'")).toBeLessThan(
-			materializerSource.indexOf("'materialize browse and home routes'")
-		);
+	it('refresh retires legacy practice routes and only invalidates changed question-page caches', () => {
+		expect(materializerSource).not.toContain("routeKind: 'practice'");
 		expect(materializerSource.indexOf("'materialize browse and home routes'")).toBeLessThan(
-			materializerSource.indexOf("'prune stale owned practice routes'")
+			materializerSource.indexOf("'retire legacy practice routes'")
 		);
 		const database = new DatabaseSync(':memory:');
 		database.exec(`
@@ -703,25 +700,20 @@ describe('additive chained imports', () => {
 			  ('question-practice-page:question-practice-page-v5:changed-question', 'question-practice-page', '/questions/changed-question/practice'),
 			  ('question-practice-page:future-cache-version:changed-question', 'question-practice-page', '/questions/changed-question/practice'),
 			  ('question-practice-page:question-practice-page-v3:other-question', 'question-practice-page', '/questions/other-question/practice'),
-			  ('chains:browse', 'chains', '/chains'),
+			  ('chains:browse', 'questions', '/questions'),
 			  ('home:public-summary', 'home', '/');
 		`);
-		runStatement(
-			database,
-			deleteStalePracticePayloadsStatement(['owned-chain'], ['practice:owned-chain:keep'])
-		);
+		runStatement(database, deleteLegacyPracticePayloadsStatement());
 		runStatement(database, invalidateQuestionPracticePayloadsStatement(['changed-question']));
 		expect(database.prepare('SELECT id FROM public_route_payloads ORDER BY id').all()).toEqual([
 			{ id: 'chains:browse' },
 			{ id: 'home:public-summary' },
-			{ id: 'practice:foreign-chain:keep' },
-			{ id: 'practice:owned-chain:keep' },
 			{ id: 'question-practice-page:question-practice-page-v3:other-question' }
 		]);
 		database.close();
 	});
 
-	it('full refresh cleanup removes stale routes from the complete practice namespace', () => {
+	it('legacy route cleanup leaves canonical question-practice payloads intact', () => {
 		const database = new DatabaseSync(':memory:');
 		database.exec(`
 			CREATE TABLE public_route_payloads (
@@ -730,15 +722,13 @@ describe('additive chained imports', () => {
 			INSERT INTO public_route_payloads VALUES
 			  ('practice:kept-chain:kept-question', 'practice', '/practice/kept-chain/kept-question'),
 			  ('practice:ineligible-chain:stale-question', 'practice', '/practice/ineligible-chain/stale-question'),
-			  ('chains:browse', 'chains', '/chains');
+			  ('canonical-practice', 'question-practice-page', '/questions/kept-question/practice'),
+			  ('chains:browse', 'questions', '/questions');
 		`);
-		runStatement(
-			database,
-			deleteAllStalePracticePayloadsStatement(['practice:kept-chain:kept-question'])
-		);
+		runStatement(database, deleteLegacyPracticePayloadsStatement());
 		expect(database.prepare('SELECT id FROM public_route_payloads ORDER BY id').all()).toEqual([
-			{ id: 'chains:browse' },
-			{ id: 'practice:kept-chain:kept-question' }
+			{ id: 'canonical-practice' },
+			{ id: 'chains:browse' }
 		]);
 		database.close();
 	});
@@ -755,7 +745,7 @@ describe('additive chained imports', () => {
 			INSERT INTO public_route_payloads VALUES
 			  ('old', 'question-practice-page', '/questions/old/practice', 'question-practice-page-v11'),
 			  ('current', 'question-practice-page', '/questions/current/practice', 'question-practice-page-v13'),
-			  ('browse', 'chains', '/chains', 'anything');
+			  ('browse', 'questions', '/questions', 'anything');
 		`);
 		runStatement(
 			database,

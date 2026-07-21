@@ -64,7 +64,7 @@ export function deriveCheckedAnswerPerformance({
 	if (includedTopics === 0) {
 		return {
 			label: 'Checked-answer summary not ready',
-			detail: 'Choose the course content you have covered before we summarise checked work.',
+			detail: 'Choose the subject content you have covered before we summarise checked work.',
 			value: null
 		};
 	}

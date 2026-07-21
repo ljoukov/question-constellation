@@ -41,7 +41,7 @@ const subject: SignedInSubjectView = {
 		label: 'All topics',
 		unitSingular: 'topic',
 		unitPlural: 'topics',
-		href: '/subjects/biology/scope',
+		href: '/subjects/biology/content',
 		includedTopicIds: [],
 		includedCount: 0,
 		totalCount: 0
@@ -68,7 +68,7 @@ const subject: SignedInSubjectView = {
 		detail: 'Build a secure base before answering another question.',
 		reason: 'This supports your next answer.',
 		durationMinutes: 5,
-		href: '/recall?subject=Biology',
+		href: '/recall/biology/quick',
 		available: true
 	},
 	alternatives: [],

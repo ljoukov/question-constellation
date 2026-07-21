@@ -132,6 +132,6 @@ describe('OCR English Literature course hub', () => {
 				poetryCluster: null,
 				shakespearePlay: null
 			})
-		).toBe('1 of 4 course choices set · finish your profile');
+		).toBe('1 of 4 set texts chosen · finish your profile');
 	});
 });

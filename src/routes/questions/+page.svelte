@@ -9,7 +9,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const browseHref = resolve('/chains');
+	const browseHref = resolve('/questions');
 	const marksFilterOptions = [
 		{ value: 'all', label: 'All marks' },
 		{ value: '1-2', label: '1–2 marks' },
@@ -20,7 +20,7 @@
 
 	const subjectLabel = $derived(
 		data.filters.subject === 'All subjects'
-			? 'GCSE question bank'
+			? 'GCSE questions'
 			: data.filters.subject === 'Science'
 				? 'GCSE Science'
 				: `GCSE ${data.filters.subject}`
@@ -105,12 +105,12 @@
 </script>
 
 <svelte:head>
-	<title>Question Bank | Question Constellation</title>
+	<title>Questions | Question Constellation</title>
 	<meta
 		name="description"
 		content="Browse real GCSE questions by specification topic, then try one before seeing its answer chain."
 	/>
-	<link rel="canonical" href="https://constellation.eviworld.com/chains" />
+	<link rel="canonical" href="https://constellation.eviworld.com/questions" />
 </svelte:head>
 
 <main class="qc-real-app qc-question-bank-page">
@@ -140,7 +140,7 @@
 			/>
 		</aside>
 
-		<section class="qc-learning-main" aria-label="Question bank">
+		<section class="qc-learning-main" aria-label="Questions">
 			{#each data.sections as section (section.topic.id)}
 				<section class="qc-dashboard-panel qc-topic-card">
 					<header class="qc-topic-card-head">
@@ -181,7 +181,7 @@
 			{/if}
 
 			{#if data.pageCount > 1}
-				<nav class="qc-bank-pagination" aria-label="Question bank pages">
+				<nav class="qc-bank-pagination" aria-label="Question pages">
 					{#if data.page > 1}
 						<a class="qc-action-button" href={pageHref(data.page - 1)}>Previous</a>
 					{/if}

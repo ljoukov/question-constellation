@@ -4,7 +4,7 @@ import {
 	learnerSubjectForQuestion,
 	learnerSubjectFromSlug,
 	learnerSubjectHref,
-	learnerSubjectScopeHref,
+	learnerSubjectContentHref,
 	learnerSubjectSlug,
 	officialScienceCurriculum
 } from './subjects';
@@ -14,7 +14,7 @@ describe('learner subject routes', () => {
 		expect(learnerSubjectSlug('English Literature')).toBe('english-literature');
 		expect(learnerSubjectFromSlug('computer-science')).toBe('Computer Science');
 		expect(learnerSubjectHref('Biology')).toBe('/subjects/biology');
-		expect(learnerSubjectScopeHref('Physics')).toBe('/subjects/physics/scope');
+		expect(learnerSubjectContentHref('Physics')).toBe('/subjects/physics/content');
 	});
 
 	it('only exposes the current official science curriculum where it is available', () => {

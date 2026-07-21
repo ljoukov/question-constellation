@@ -182,8 +182,8 @@
 						same logic.
 					</p>
 				</div>
-				<a href={resolve('/chains')}>
-					Open question bank
+				<a href={resolve('/questions')}>
+					Browse questions
 					<ArrowRight size={17} aria-hidden="true" strokeWidth={2.2} />
 				</a>
 			</section>

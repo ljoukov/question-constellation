@@ -6,7 +6,7 @@ import {
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-type CourseFilter = {
+type SubjectFilter = {
 	id: string;
 	label: string;
 };
@@ -24,7 +24,7 @@ type SubjectGroup = {
 	variants: SubjectVariant[];
 };
 
-const courseFilters: CourseFilter[] = [
+const subjectFilters: SubjectFilter[] = [
 	{ id: 'all', label: 'All subjects' },
 	{ id: 'separate-science', label: 'Triple / Separate Science' },
 	{ id: 'combined-science', label: 'Combined Science / Trilogy / Double Award' },
@@ -41,28 +41,28 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	}
 
 	const pages = gcsePastPaperSubjectIndex.filter((page) => page.boardId === board.id);
-	const filters = courseFilters
+	const filters = subjectFilters
 		.map((filter) => ({
 			...filter,
 			count:
 				filter.id === 'all'
 					? pages.length
-					: pages.filter((page) => courseFilterIdsForPage(page).has(filter.id)).length
+					: pages.filter((page) => groupFilterIdsForPage(page).has(filter.id)).length
 		}))
 		.filter((filter) => filter.id === 'all' || filter.count > 0);
-	const courseParam = url.searchParams.get('course');
-	const selectedCourseId =
-		courseParam && filters.some((filter) => filter.id === courseParam) ? courseParam : 'all';
+	const groupParam = url.searchParams.get('group');
+	const selectedGroupId =
+		groupParam && filters.some((filter) => filter.id === groupParam) ? groupParam : 'all';
 	const filteredPages =
-		selectedCourseId === 'all'
+		selectedGroupId === 'all'
 			? pages
-			: pages.filter((page) => courseFilterIdsForPage(page).has(selectedCourseId));
-	const selectedCourseLabel =
-		filters.find((filter) => filter.id === selectedCourseId)?.label ?? 'All subjects';
+			: pages.filter((page) => groupFilterIdsForPage(page).has(selectedGroupId));
+	const selectedGroupLabel =
+		filters.find((filter) => filter.id === selectedGroupId)?.label ?? 'All subjects';
 	const categories = Array.from(
 		new Set(
 			filteredPages.map((page) =>
-				selectedCourseId === 'all' ? displayCategoryForPage(page) : selectedCourseLabel
+				selectedGroupId === 'all' ? displayCategoryForPage(page) : selectedGroupLabel
 			)
 		)
 	).map((category) => ({
@@ -71,13 +71,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		subjects: subjectGroupsForPages(
 			filteredPages.filter((page) => {
 				const pageCategory =
-					selectedCourseId === 'all' ? displayCategoryForPage(page) : selectedCourseLabel;
+					selectedGroupId === 'all' ? displayCategoryForPage(page) : selectedGroupLabel;
 				return pageCategory === category;
 			})
 		),
 		pages: filteredPages.filter((page) => {
 			const pageCategory =
-				selectedCourseId === 'all' ? displayCategoryForPage(page) : selectedCourseLabel;
+				selectedGroupId === 'all' ? displayCategoryForPage(page) : selectedGroupLabel;
 			return pageCategory === category;
 		})
 	}));
@@ -87,8 +87,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			...board,
 			localPath: `/past-papers/gcse/${board.id}`
 		},
-		courseFilters: filters,
-		selectedCourseId,
+		subjectFilters: filters,
+		selectedGroupId,
 		categories,
 		user: locals.user
 	};
@@ -158,7 +158,7 @@ function gcseScienceSubject(page: PastPaperSubjectIndex) {
 	return /\b(biology|chemistry|physics)\b/.test(subject) || /science-double-award/.test(slug);
 }
 
-function courseFilterIdsForPage(page: PastPaperSubjectIndex) {
+function groupFilterIdsForPage(page: PastPaperSubjectIndex) {
 	const ids = new Set<string>();
 	const subject = page.subject.toLowerCase();
 	const slug = page.subjectSlug.toLowerCase();

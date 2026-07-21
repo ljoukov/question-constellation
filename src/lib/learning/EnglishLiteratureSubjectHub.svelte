@@ -2,15 +2,20 @@
 	import { resolve } from '$app/paths';
 	import type { ResolvedPathname } from '$app/types';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
-	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import QuestionBankQuestionCard from '$lib/components/QuestionBankQuestionCard.svelte';
-	import type { OcrLiteratureArea } from '$lib/englishLiteratureHub';
-	import { ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR } from '$lib/profileNavigation';
+	import type { OcrLiteratureArea, OcrLiteratureHub } from '$lib/englishLiteratureHub';
+	import SubjectBreadcrumbs from '$lib/learning/SubjectBreadcrumbs.svelte';
 	import { recallSessionHref } from '$lib/recall/routes';
 	import { BookOpenCheck, ChevronRight } from '@lucide/svelte';
-	import type { PageProps } from './$types';
+	import type { AdminUser } from '$lib/server/auth/session';
 
-	let { data }: PageProps = $props();
+	let {
+		hub,
+		user
+	}: {
+		hub: OcrLiteratureHub;
+		user: AdminUser | null;
+	} = $props();
 	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
 	const initialVisibleCount = 4;
@@ -21,17 +26,17 @@
 		shakespeare: initialVisibleCount
 	});
 
-	const courseTextsProfileHref = resolve(`/profile#${ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR}`);
+	const subjectContentHref = resolve('/subjects/english-literature/content');
 	const literatureCardsHref = resolveInternalPath(
 		recallSessionHref({
 			subject: 'English Literature',
 			activity: 'flashcards',
 			size: 10,
-			returnTo: '/english-literature'
+			returnTo: '/subjects/english-literature'
 		})
 	);
 
-	function questionHref(question: (typeof data.hub.sections)[number]['questions'][number]) {
+	function questionHref(question: (typeof hub.sections)[number]['questions'][number]) {
 		return resolve('/questions/[questionId]', { questionId: question.slug || question.id });
 	}
 
@@ -51,14 +56,14 @@
 		visibleCounts[sectionId] = Math.min(total, visibleCounts[sectionId] + 6);
 	}
 
-	function promptHeading(question: (typeof data.hub.sections)[number]['questions'][number]) {
+	function promptHeading(question: (typeof hub.sections)[number]['questions'][number]) {
 		const title = question.title.trim();
 		const preview = question.preview.trim();
 		if (!title || /^[a-z]/.test(title) || title.endsWith('...')) return preview || title;
 		return title;
 	}
 
-	function promptDetail(question: (typeof data.hub.sections)[number]['questions'][number]) {
+	function promptDetail(question: (typeof hub.sections)[number]['questions'][number]) {
 		const heading = promptHeading(question);
 		const preview = question.preview.trim();
 		return preview && preview !== heading ? preview : null;
@@ -76,7 +81,7 @@
 
 <main class="qc-real-app qc-browse-app">
 	<AppTopbar
-		user={data.user}
+		{user}
 		subject="English Literature"
 		showSearch={false}
 		showSubject={false}
@@ -85,20 +90,20 @@
 
 	<div class="qc-browse-layout">
 		<aside class="qc-context-rail qc-browse-intro">
-			<IconBackLink href={resolve('/')} label="Back home" />
-			<p class="qc-real-kicker">OCR J352 · your course</p>
+			<SubjectBreadcrumbs subject="English Literature" subjectHref="/subjects/english-literature" />
+			<p class="qc-real-kicker">OCR J352 · your set texts</p>
 			<h1>Your English Literature questions.</h1>
 			<p>
 				Only questions for the texts your school teaches, grouped by the task format you will meet
 				in each paper.
 			</p>
 
-			<div class="qc-topic-card-meta" aria-label="Course question count">
-				<span>{data.hub.availableQuestionCount} ready to practise</span>
+			<div class="qc-topic-card-meta" aria-label="Question count">
+				<span>{hub.availableQuestionCount} ready to practise</span>
 				<span>Paper 1 and Paper 2</span>
 			</div>
 
-			{#if data.user}
+			{#if user}
 				<a
 					class="qc-dashboard-profile-link"
 					href={literatureCardsHref}
@@ -110,8 +115,8 @@
 				</a>
 			{/if}
 
-			<nav class="qc-real-chain-list" aria-label="Jump to your course section">
-				{#each data.hub.sections as section (section.id)}
+			<nav class="qc-real-chain-list" aria-label="Jump to a set-text section">
+				{#each hub.sections as section (section.id)}
 					<a href={`#${section.id}`}>
 						<span>{section.paperNumber}</span>
 						<span>{section.selection ?? section.category}</span>
@@ -124,10 +129,10 @@
 				{/each}
 			</nav>
 
-			<a class="qc-action-button compact" href={courseTextsProfileHref}>Change course texts</a>
+			<a class="qc-action-button compact" href={subjectContentHref}>Change set texts</a>
 		</aside>
 
-		<section class="qc-browse-feed" aria-label="Your English Literature question bank">
+		<section class="qc-browse-feed" aria-label="Your English Literature questions">
 			<div class="qc-browse-heading qc-bank-heading">
 				<div>
 					<h2>Choose an essay task.</h2>
@@ -136,12 +141,12 @@
 				<BookOpenCheck size={22} aria-hidden="true" strokeWidth={2.1} />
 			</div>
 
-			{#each data.hub.sections as section (section.id)}
+			{#each hub.sections as section (section.id)}
 				<article id={section.id} class="qc-dashboard-panel qc-topic-card">
 					<header class="qc-topic-card-head">
 						<div>
 							<p class="qc-real-kicker">{section.paperLabel} · {section.category}</p>
-							<h3>{section.selection ?? 'Choose this course option'}</h3>
+							<h3>{section.selection ?? 'Choose this set text'}</h3>
 							<p>{section.taskSummary}</p>
 							<div class="qc-topic-card-meta" aria-label={`${section.category} metadata`}>
 								<span>{section.markShape}</span>

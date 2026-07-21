@@ -344,7 +344,7 @@ async function probePracticeRoutes(candidates, baseUrl) {
 		try {
 			const response = await fetch(url, { redirect: 'manual' });
 			const location = response.headers.get('location');
-			const expectedPath = `/questions/${candidate.questionId}/practice/step-by-step/task`;
+			const expectedPath = `/questions/${candidate.questionId}/practice/task`;
 			const available = response.status === 307 && Boolean(location?.includes(expectedPath));
 			let stepStatus = null;
 			if (available && location) {

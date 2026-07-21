@@ -11942,7 +11942,7 @@ html[data-theme='dark'] .app-shell {
 	}
 }
 
-/* Homepage Spark surface sync: use the same non-uniform app background as /chains. */
+/* Homepage Spark surface sync: use the same non-uniform app background as the question bank. */
 .qc-home-app {
 	--home-bg: var(--qc-app-surface);
 	--home-surface: rgba(255, 255, 255, 0.62);

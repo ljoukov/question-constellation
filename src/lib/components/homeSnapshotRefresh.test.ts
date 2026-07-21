@@ -140,7 +140,7 @@ describe('home snapshot refresh decision', () => {
 				shouldRefresh: false,
 				hasPendingMutation: true,
 				hasImmediateMutation: false,
-				pathname: '/recall'
+				pathname: '/recall/biology/quick'
 			})
 		).toBe(false);
 		expect(
@@ -179,7 +179,7 @@ describe('home snapshot refresh decision', () => {
 				shouldRefresh: true,
 				hasPendingMutation: false,
 				hasImmediateMutation: false,
-				pathname: '/recall'
+				pathname: '/recall/biology/quick'
 			})
 		).toBe(false);
 		expect(
@@ -199,7 +199,7 @@ describe('home snapshot refresh decision', () => {
 		expect(isHomeSnapshotConsumerPath('/challenges')).toBe(true);
 		expect(isHomeSnapshotConsumerPath('/challenges/physics')).toBe(true);
 		expect(isHomeSnapshotConsumerPath('/challenges/physics/half-range')).toBe(false);
-		expect(isHomeSnapshotConsumerPath('/recall')).toBe(false);
+		expect(isHomeSnapshotConsumerPath('/recall/biology/quick')).toBe(false);
 		expect(isHomeSnapshotConsumerPath('/questions/q-1/practice')).toBe(false);
 		expect(isHomeSnapshotConsumerPath('/gaps/gap-1')).toBe(false);
 	});

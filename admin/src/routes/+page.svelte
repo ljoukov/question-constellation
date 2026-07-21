@@ -271,17 +271,16 @@
 	function routeStage(pathValue: unknown): string {
 		const path = String(pathValue || '/');
 		if (path === '/') return 'Home';
-		if (/\/practice\/step-by-step\/feedback(?:\/|$)/.test(path)) return 'Step feedback';
-		if (/\/practice\/step-by-step(?:\/|$)/.test(path)) return 'Guided practice';
+		if (/\/questions\/[^/]+\/practice\/[^/]+(?:\/|$)/.test(path)) return 'Guided practice';
 		if (/\/questions\/[^/]+\/practice(?:\/|$)/.test(path)) return 'Practice';
-		if (/\/questions\/[^/]+\/chain(?:\/|$)/.test(path)) return 'Answer chain';
+		if (/\/questions\/[^/]+\/answer-chain(?:\/|$)/.test(path)) return 'Answer chain';
 		if (path.startsWith('/constellations/')) return 'Constellation';
-		if (path === '/chains' || path.startsWith('/chains/')) return 'Answer chains';
+		if (path === '/questions') return 'Questions';
+		if (path === '/challenges' || path.startsWith('/challenges/')) return 'Challenges';
 		if (path.startsWith('/subjects/')) return 'Subject';
 		if (path.startsWith('/recall')) return 'Recall';
 		if (path.startsWith('/past-papers')) return 'Past papers';
 		if (path.startsWith('/questions/')) return 'Question';
-		if (path.startsWith('/english-literature')) return 'English Literature';
 		if (path.startsWith('/blog')) return 'Blog';
 		if (path.startsWith('/profile')) return 'Profile';
 		if (path.startsWith('/auth/')) return 'Sign in';

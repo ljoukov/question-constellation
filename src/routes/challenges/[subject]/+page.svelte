@@ -32,6 +32,7 @@
 	import CurriculumDisclosure from '$lib/challenges/ui/CurriculumDisclosure.svelte';
 	import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 	import type { ChallengeSubject } from '$lib/challenges/types';
+	import SubjectIcon from '$lib/learning/SubjectIcon.svelte';
 	import { ExternalLink, House, Trophy } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
@@ -224,11 +225,12 @@
 				<span>Home</span>
 			</a>
 			<span aria-hidden="true">/</span>
-			<a href={resolve('/challenges')} data-analytics-label="Back to all challenges"
-				>All challenges</a
-			>
+			<a href={resolve('/challenges')} data-analytics-label="Back to challenges">Challenges</a>
 			<span aria-hidden="true">/</span>
-			<strong aria-current="page">{data.subject.label}</strong>
+			<strong aria-current="page">
+				<SubjectIcon subject={data.subject.label} size={16} />
+				{data.subject.label}
+			</strong>
 		</nav>
 
 		<section class="subject-hero" aria-label={`Recommended ${subjectLabel} challenge`}>
@@ -340,6 +342,9 @@
 	}
 
 	.subject-nav strong {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.38rem;
 		color: var(--qc-ui-text);
 		font-weight: 700;
 	}

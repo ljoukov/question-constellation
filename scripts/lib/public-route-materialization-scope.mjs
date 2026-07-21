@@ -1,36 +1,9 @@
-/**
- * @param {string[]} chainIds
- * @param {string[]} retainedPayloadIds
- */
-export function deleteStalePracticePayloadsStatement(chainIds, retainedPayloadIds) {
+/** Retire payloads for the removed `/practice/:chain/:ref` route family. */
+export function deleteLegacyPracticePayloadsStatement() {
 	return {
 		sql: `DELETE FROM public_route_payloads
-		      WHERE route_kind = 'practice'
-		        AND EXISTS (
-		          SELECT 1 FROM json_each(?) AS owned_chain
-		          WHERE instr(
-		            public_route_payloads.id,
-		            'practice:' || CAST(owned_chain.value AS TEXT) || ':'
-		          ) = 1
-		        )
-		        AND id NOT IN (SELECT CAST(value AS TEXT) FROM json_each(?))`,
-		params: [JSON.stringify(chainIds), JSON.stringify(retainedPayloadIds)]
-	};
-}
-
-/**
- * A full materialization owns the complete legacy `/practice/:chain/:ref`
- * namespace. Remove anything the current reviewed data did not reproduce,
- * including payloads for chains that are no longer publication-eligible.
- *
- * @param {string[]} retainedPayloadIds
- */
-export function deleteAllStalePracticePayloadsStatement(retainedPayloadIds) {
-	return {
-		sql: `DELETE FROM public_route_payloads
-		      WHERE route_kind = 'practice'
-		        AND id NOT IN (SELECT CAST(value AS TEXT) FROM json_each(?))`,
-		params: [JSON.stringify(retainedPayloadIds)]
+		      WHERE route_kind = 'practice'`,
+		params: []
 	};
 }
 

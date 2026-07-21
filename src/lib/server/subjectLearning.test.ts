@@ -1181,8 +1181,9 @@ describe('signed-in subject action integrity', () => {
 			available: true,
 			title: 'Cell biology recall'
 		});
-		expect(recallAction?.href).toContain('activity=flashcards');
-		expect(recallAction?.href).toContain('mode=mixed');
+		expect(recallAction?.href).toContain('/recall/biology/quick');
+		expect(recallAction?.href).not.toContain('activity=');
+		expect(recallAction?.href).not.toContain('mode=');
 	});
 
 	it('keeps a 1–3-mark written check visible alongside standard study cards', async () => {
@@ -1287,7 +1288,7 @@ describe('signed-in subject action integrity', () => {
 			kind: 'scope',
 			title: 'Review your sections',
 			available: true,
-			href: '/subjects/geography/scope'
+			href: '/subjects/geography/content'
 		});
 		expect(view?.nextAction.detail).toContain('Add more only if your class has covered it');
 		expect(JSON.stringify(view)).not.toContain('/chains');
@@ -1330,16 +1331,16 @@ describe('signed-in subject action integrity', () => {
 
 		expect(view?.scope).toMatchObject({
 			status: 'not_set',
-			label: '3 of 4 course texts selected',
+			label: '3 of 4 set texts selected',
 			includedCount: 3,
 			totalCount: 4,
-			href: '/profile#profile-english-literature-course-texts'
+			href: '/subjects/english-literature/content'
 		});
 		expect(view?.nextAction).toMatchObject({
 			kind: 'scope',
-			title: 'Finish your English Literature course texts',
+			title: 'Finish choosing your English Literature set texts',
 			detail: '3 of 4 selected. Practice will only use those choices.',
-			href: '/profile#profile-english-literature-course-texts',
+			href: '/subjects/english-literature/content',
 			available: true
 		});
 		expect(mocks.queryPersonalFirst).not.toHaveBeenCalled();
@@ -1385,20 +1386,20 @@ describe('signed-in subject action integrity', () => {
 
 		expect(view?.scope).toMatchObject({
 			status: 'selected',
-			label: '4 course texts selected',
+			label: '4 set texts selected',
 			includedCount: 4,
 			totalCount: 4,
-			href: '/profile#profile-english-literature-course-texts'
+			href: '/subjects/english-literature/content'
 		});
 		expect(view?.nextAction).toMatchObject({
 			id: 'english-literature:choose-question',
 			kind: 'subject',
 			title: 'Choose an essay question',
 			available: true,
-			href: '/english-literature'
+			href: '/subjects/english-literature'
 		});
-		expect(view?.href).toBe('/english-literature');
-		expect(view?.nextAction.detail).toContain('four course texts');
+		expect(view?.href).toBe('/subjects/english-literature');
+		expect(view?.nextAction.detail).toContain('four set texts');
 		expect(JSON.stringify(view)).not.toContain('/chains');
 		expect(mocks.queryPersonalFirst).not.toHaveBeenCalled();
 		expect(mocks.queryRows).toHaveBeenCalled();

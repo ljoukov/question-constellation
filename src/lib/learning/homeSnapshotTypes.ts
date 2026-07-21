@@ -7,7 +7,9 @@ import type {
 } from '$lib/learning/viewTypes';
 import type { ThemePreference } from '$lib/server/userTheme';
 
-export const USER_HOME_SNAPSHOT_VERSION = 2 as const;
+// Version 3 invalidates cached navigation projections created before the
+// canonical /questions, /subjects/:subject/content, and path-led recall routes.
+export const USER_HOME_SNAPSHOT_VERSION = 3 as const;
 
 export type UserHomeLearningAction = Pick<
 	LearningActionView,

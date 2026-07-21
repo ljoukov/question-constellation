@@ -18,7 +18,7 @@ import {
 import {
 	isScienceLearnerSubject,
 	learnerSubjectHref,
-	learnerSubjectScopeHref,
+	learnerSubjectContentHref,
 	supportedLearnerSubjects,
 	type SupportedLearnerSubject
 } from '$lib/learning/subjects';
@@ -38,11 +38,7 @@ import type {
 	SignedInLearningHome,
 	SignedInSubjectView
 } from '$lib/learning/viewTypes';
-import {
-	ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR,
-	profileAnchorHref,
-	profileSubjectAnchor
-} from '$lib/profileNavigation';
+import { profileAnchorHref, profileSubjectAnchor } from '$lib/profileNavigation';
 import {
 	recallCurriculumTopics,
 	type RecallCard,
@@ -619,17 +615,19 @@ function curriculumScopeUnits(
 	unitPlural: string;
 } {
 	if (groups.some((group) => group.kind === 'option_group')) {
-		return { unitSingular: 'course option', unitPlural: 'course options' };
+		return subject === 'English Literature'
+			? { unitSingular: 'set text', unitPlural: 'set texts' }
+			: { unitSingular: 'content choice', unitPlural: 'content choices' };
 	}
 	if (subject === 'Geography') return { unitSingular: 'section', unitPlural: 'sections' };
 	if (subject === 'Computer Science') return { unitSingular: 'topic', unitPlural: 'topics' };
 	if (subject === 'English Language') {
-		return { unitSingular: 'course area', unitPlural: 'course areas' };
+		return { unitSingular: 'content area', unitPlural: 'content areas' };
 	}
 	const groupTitle = normalized(groups[0]?.title);
 	if (groupTitle === 'topics') return { unitSingular: 'topic', unitPlural: 'topics' };
 	if (groupTitle === 'course content') {
-		return { unitSingular: 'course area', unitPlural: 'course areas' };
+		return { unitSingular: 'content area', unitPlural: 'content areas' };
 	}
 	return { unitSingular: 'chapter', unitPlural: 'chapters' };
 }
@@ -644,7 +642,7 @@ function scopeView(
 	if (topics.length === 0) {
 		return {
 			status: 'not_available',
-			label: 'Whole course',
+			label: 'Full specification',
 			...units,
 			href: null,
 			includedTopicIds: [],
@@ -657,7 +655,7 @@ function scopeView(
 			status: 'not_set',
 			label: `Choose ${units.unitPlural}`,
 			...units,
-			href: learnerSubjectScopeHref(subject),
+			href: learnerSubjectContentHref(subject),
 			includedTopicIds: [],
 			includedCount: 0,
 			totalCount: topics.length
@@ -682,7 +680,7 @@ function scopeView(
 			status: 'not_set',
 			label: `Choose ${units.unitPlural}`,
 			...units,
-			href: learnerSubjectScopeHref(subject),
+			href: learnerSubjectContentHref(subject),
 			includedTopicIds: selected,
 			includedCount: selected.length,
 			totalCount: topics.length
@@ -699,7 +697,7 @@ function scopeView(
 						`1 ${units.unitSingular}`)
 					: `${includedTopicIds.length} of ${topics.length} ${units.unitPlural}`,
 		...units,
-		href: learnerSubjectScopeHref(subject),
+		href: learnerSubjectContentHref(subject),
 		includedTopicIds,
 		includedCount: includedTopicIds.length,
 		totalCount: topics.length
@@ -731,17 +729,17 @@ function ocrEnglishLiteratureScope(
 	const totalCount = 4;
 	const profileComplete = selectedCount === totalCount;
 	const curriculumMatched = selectedTopicIds.length === totalCount;
-	const href = profileAnchorHref('/profile', ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR);
+	const href = learnerSubjectContentHref(subject.subject);
 
 	return {
 		configuration: { selectedCount, totalCount },
 		scope: {
 			status: profileComplete ? (curriculumMatched ? 'selected' : 'not_available') : 'not_set',
 			label: profileComplete
-				? '4 course texts selected'
-				: `${selectedCount} of ${totalCount} course texts selected`,
-			unitSingular: 'course text',
-			unitPlural: 'course texts',
+				? '4 set texts selected'
+				: `${selectedCount} of ${totalCount} set texts selected`,
+			unitSingular: 'set text',
+			unitPlural: 'set texts',
 			href,
 			includedTopicIds: selectedTopicIds,
 			includedCount: selectedTopicIds.length,
@@ -1169,14 +1167,14 @@ function directRecallAction(
 	const cardCount = matchingCards.filter((card) => card.topicId === topicId).length;
 	if (cardCount === 0) return null;
 	const size = Math.min(8, cardCount);
-	const baseHref = recallSessionHref({
+	const href = recallSessionHref({
 		subject,
 		activity: 'flashcards',
+		mode: 'mixed',
 		topic: topicId,
 		size,
 		returnTo: learnerSubjectHref(subject)
 	});
-	const href = `${baseHref}&mode=mixed`;
 	return {
 		candidate: {
 			id: `recall:${topic.id}`,
@@ -1567,7 +1565,7 @@ function chooseCandidateDetails(
 				'Flashcards, multiple choice, and true or false from the standard deck.',
 				recallSubject
 					? `No recall items match the selected ${scope.unitPlural} yet.`
-					: 'Recall sets are not available for this course yet.',
+					: 'Recall sets are not available for this subject selection yet.',
 				learnerSubjectHref(subject.subject)
 			),
 		directQuickAlternative ??
@@ -1575,7 +1573,7 @@ function chooseCandidateDetails(
 				'recall',
 				'1–3 mark questions',
 				'Write a short exam answer from memory, then check it.',
-				'No suitable reviewed short question matches this course scope yet.',
+				'No suitable reviewed short question matches this subject content yet.',
 				scope.href ?? learnerSubjectHref(subject.subject)
 			),
 		firstByKind.get('close_gap') ??
@@ -1739,12 +1737,12 @@ function scopeSetupAction(
 			eyebrow: 'Set what your class studies',
 			title:
 				selectedCount > 0
-					? 'Finish your English Literature course texts'
-					: 'Choose your English Literature course texts',
+					? 'Finish choosing your English Literature set texts'
+					: 'Choose your English Literature set texts',
 			detail: `${selectedCount} of ${totalCount} selected. Practice will only use those choices.`,
 			reason: 'Only questions for the options your class studies will appear.',
 			durationMinutes: null,
-			href: scope.href ?? profileAnchorHref('/profile', ENGLISH_LITERATURE_COURSE_TEXTS_ANCHOR),
+			href: scope.href ?? learnerSubjectContentHref(subject.subject),
 			available: true
 		};
 	}
@@ -1756,7 +1754,7 @@ function scopeSetupAction(
 		detail: 'Practice will only use official topics you include.',
 		reason: 'This prevents untaught material from appearing as a weakness.',
 		durationMinutes: null,
-		href: learnerSubjectScopeHref(subject.subject),
+		href: learnerSubjectContentHref(subject.subject),
 		available: true
 	};
 }
@@ -1769,12 +1767,12 @@ function fallbackSubjectAction(
 	return {
 		id: `scope-adjust:${subject.subject}`,
 		kind: 'scope',
-		eyebrow: 'Course coverage',
+		eyebrow: 'Subject content',
 		title: `Review your ${scope.unitPlural}`,
 		detail: canExpandSelection
 			? `No reviewed question matches this selection. Add more only if your class has covered it.`
 			: `No reviewed question currently matches these ${scope.unitPlural}. Check that the selection is accurate.`,
-		reason: 'Suggested questions always stay inside the official course content you include.',
+		reason: 'Suggested questions always stay inside the official subject content you include.',
 		durationMinutes: null,
 		href: scope.href ?? profileAnchorHref('/profile', profileSubjectAnchor(subject.subject)),
 		available: true
@@ -1787,10 +1785,10 @@ function ocrEnglishLiteraturePracticeAction(): LearningActionView {
 		kind: 'subject',
 		eyebrow: 'Next',
 		title: 'Choose an essay question',
-		detail: 'Questions for your four course texts, grouped by the task format in each paper.',
+		detail: 'Questions for your four set texts, grouped by the task format in each paper.',
 		reason: 'Only questions for the texts and poetry cluster selected in your profile are shown.',
 		durationMinutes: null,
-		href: '/english-literature',
+		href: learnerSubjectHref('English Literature'),
 		available: true
 	};
 }
@@ -1799,7 +1797,7 @@ function unavailableFoundationAction(): LearningActionView {
 	return {
 		id: 'foundation-not-ready',
 		kind: 'subject',
-		eyebrow: 'Course availability',
+		eyebrow: 'Question availability',
 		title: 'Foundation questions are not available yet',
 		detail: 'The current reviewed science question and recall bank is Higher tier only.',
 		reason: 'We will not show Higher-only material to a Foundation learner.',
@@ -2007,9 +2005,7 @@ async function buildSubjectView(
 	return {
 		subject: subject.subject,
 		slug: learnerSubjectHref(subject.subject).split('/').at(-1) ?? '',
-		href: usesProfileCourseConfiguration
-			? '/english-literature'
-			: learnerSubjectHref(subject.subject),
+		href: learnerSubjectHref(subject.subject),
 		board: subject.board,
 		qualification: subject.qualification,
 		course: subject.course,
@@ -2426,7 +2422,7 @@ export async function getFreshSubjectLearningPublicCatalog(): Promise<SubjectLea
 						: [];
 					const allScope: CurriculumScopeView = {
 						status: 'all',
-						label: 'Whole course',
+						label: 'Full specification',
 						...curriculumScopeUnits(profileSubject.subject, curriculum.groups),
 						href: null,
 						includedTopicIds: curriculum.topics.map((topic) => topic.id),
@@ -2601,7 +2597,7 @@ export async function saveSubjectCurriculumScope(
 	if (!learnerSubject) throw new Error('This subject is not enabled in the learner profile.');
 	const curriculum = await curriculumForLearnerSubject(learnerSubject);
 	if (!curriculum) {
-		throw new Error('No imported official specification matches this board and course.');
+		throw new Error('No imported official specification matches these subject settings.');
 	}
 	const scopeUnit = curriculumScopeUnits(learnerSubject.subject, curriculum.groups).unitSingular;
 	const selected = validatedCurriculumScopeSelection(
@@ -2663,7 +2659,7 @@ export function validatedCurriculumScopeSelection(
 ): string[] {
 	if (input.mode === 'all') {
 		if (groups.some((group) => group.kind === 'option_group')) {
-			throw new CurriculumScopeValidationError('Choose the course options taught by your school.');
+			throw new CurriculumScopeValidationError('Choose the content taught by your school.');
 		}
 		return [];
 	}
@@ -3174,7 +3170,7 @@ export async function recordRecallReviewEvidence({
 		(entry) => entry.enabled && entry.subject === card.subject
 	);
 	const curriculum = learnerSubject ? await curriculumForLearnerSubject(learnerSubject) : null;
-	if (!curriculum) throw new Error('Recall is not available for this board and course.');
+	if (!curriculum) throw new Error('Recall is not available for these subject settings.');
 	if (card.offeringId !== curriculum.id) {
 		throw new Error('Recall card is not mapped to this exact curriculum offering.');
 	}
@@ -3508,7 +3504,7 @@ export async function recordEnglishStepAttemptEvidence({
 			id: curriculum.specificationId,
 			code: curriculum.specificationCode,
 			title: curriculum.label,
-			paper: 'Whole course',
+			paper: 'Full specification',
 			specUrl: curriculum.specificationUrl
 		} satisfies StemCurriculumTopic);
 	const metCount = result.checks.filter((check) => check.status === 'met').length;

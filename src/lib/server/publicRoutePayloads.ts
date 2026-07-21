@@ -10,10 +10,6 @@ type EncodedPublicRoutePayload = {
 	rawBytes?: number;
 };
 
-export function practiceRoutePayloadId(chainId: string, ref: string) {
-	return `practice:${chainId}:${ref}`;
-}
-
 function isEncodedPayload(value: unknown): value is EncodedPublicRoutePayload {
 	return (
 		Boolean(value) &&

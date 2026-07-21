@@ -70,8 +70,8 @@ export function learnerSubjectForQuestion({
 	);
 }
 
-export function learnerSubjectScopeHref(subject: string): string {
-	return `${learnerSubjectHref(subject)}/scope`;
+export function learnerSubjectContentHref(subject: string): string {
+	return `${learnerSubjectHref(subject)}/content`;
 }
 
 export function isScienceLearnerSubject(

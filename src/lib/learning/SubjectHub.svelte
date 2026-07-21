@@ -9,6 +9,8 @@
 		type ChallengeProgressUpdatedDetail
 	} from '$lib/challenges/progressSync';
 	import { challengePath } from '$lib/challenges/routing';
+	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
+	import ThemeAwareChallengeArt from '$lib/challenges/ui/ThemeAwareChallengeArt.svelte';
 	import type { SignedInSubjectView } from '$lib/learning/viewTypes';
 	import {
 		ArrowRight,
@@ -107,6 +109,12 @@
 		challengeRecommendation
 			? resolveInternalPath(challengePath(challengeRecommendation))
 			: resolve('/challenges')
+	);
+	const challengeCollectionHref = $derived(
+		challengeRecommendation ? `/challenges/${challengeRecommendation.subject}` : '/challenges'
+	);
+	const challengeArt = $derived(
+		challengeRecommendation ? subjectArtForChallenge(challengeRecommendation) : null
 	);
 
 	onMount(() => {
@@ -211,6 +219,17 @@
 					</div>
 					<Gamepad2 size={22} aria-hidden="true" strokeWidth={2.2} />
 				</header>
+				{#if challengeArt}
+					<div class="qc-subject-challenge-art">
+						<ThemeAwareChallengeArt
+							src={challengeArt.src}
+							darkSrc={challengeArt.darkSrc}
+							alt={challengeArt.alt}
+							width={challengeArt.width}
+							height={challengeArt.height}
+						/>
+					</div>
+				{/if}
 				<p>{challengeRecommendation.hook}</p>
 				<p class="qc-subject-challenge-stats" aria-label={`${subject.subject} challenge progress`}>
 					<span><strong>{challengePromotion.completedCount}</strong> complete</span>
@@ -227,6 +246,9 @@
 					>
 						{challengePromotion.challengeCompleted ? 'Play again' : 'Play now'}
 						<ArrowRight size={17} aria-hidden="true" />
+					</a>
+					<a class="qc-action-button compact" href={resolveInternalPath(challengeCollectionHref)}>
+						All {subject.subject} challenges
 					</a>
 				</div>
 			</section>
@@ -352,9 +374,9 @@
 	</div>
 
 	{#if subject.scope.href && scopeReady && subject.nextAction.kind !== 'scope'}
-		<nav class="qc-learning-resources" aria-label="Course settings">
+		<nav class="qc-learning-resources" aria-label="Subject content settings">
 			<a class="qc-dashboard-profile-link" href={resolveInternalPath(subject.scope.href)}>
-				<span>Included course content</span>
+				<span>Included subject content</span>
 				<strong>{subject.scope.label}</strong>
 				<ChevronRight size={18} aria-hidden="true" />
 			</a>
@@ -370,6 +392,18 @@
 
 	.qc-subject-challenge-card > p {
 		margin: 0;
+	}
+
+	.qc-subject-challenge-art {
+		overflow: hidden;
+		aspect-ratio: 16 / 7;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-muted);
+	}
+
+	.qc-subject-challenge-art :global(.theme-aware-challenge-art) {
+		width: 100%;
+		height: 100%;
 	}
 
 	.qc-subject-challenge-stats {

@@ -9,7 +9,7 @@
 
 	let { data }: PageProps = $props();
 
-	const chainsHref = resolve('/chains');
+	const questionBankHref = resolve('/questions');
 	const pastPapersHref = resolve('/past-papers/gcse');
 	const featuredChain = $derived(data.featuredChains[0] ?? null);
 	const featuredQuestion = $derived(featuredChain?.questions[0] ?? null);
@@ -22,65 +22,51 @@
 	}).replace(/</g, '\\u003c');
 	const websiteJsonLdScript = `<script type="application/ld+json">${websiteJsonLd}</` + 'script>';
 	const startQuestionHref = $derived(
-		featuredChain && featuredQuestion ? questionHref(featuredChain, featuredQuestion) : chainsHref
+		featuredChain && featuredQuestion
+			? questionHref(featuredChain, featuredQuestion)
+			: questionBankHref
 	);
 
 	const subjectEntryPoints = [
 		{
 			label: 'Biology',
 			meta: 'AQA GCSE Science',
-			href: `${chainsHref}?subject=Biology`,
-			flashcardsHref: resolve('/recall/biology/flashcards'),
-			mcqHref: resolve('/recall/biology/mcq')
+			href: `${questionBankHref}?subject=Biology`
 		},
 		{
 			label: 'Chemistry',
 			meta: 'AQA GCSE Science',
-			href: `${chainsHref}?subject=Chemistry`,
-			flashcardsHref: resolve('/recall/chemistry/flashcards'),
-			mcqHref: resolve('/recall/chemistry/mcq')
+			href: `${questionBankHref}?subject=Chemistry`
 		},
 		{
 			label: 'Physics',
 			meta: 'AQA GCSE Science',
-			href: `${chainsHref}?subject=Physics`,
-			flashcardsHref: resolve('/recall/physics/flashcards'),
-			mcqHref: resolve('/recall/physics/mcq')
+			href: `${questionBankHref}?subject=Physics`
 		},
 		{
 			label: 'English Language',
 			meta: 'GCSE English',
-			href: `${chainsHref}?subject=English%20Language`,
-			flashcardsHref: null,
-			mcqHref: null
+			href: `${questionBankHref}?subject=English%20Language`
 		},
 		{
 			label: 'English Literature',
 			meta: 'GCSE English',
-			href: `${chainsHref}?subject=English%20Literature`,
-			flashcardsHref: null,
-			mcqHref: null
+			href: `${questionBankHref}?subject=English%20Literature`
 		},
 		{
 			label: 'Computer Science',
 			meta: 'GCSE Computer Science',
-			href: `${chainsHref}?subject=Computer%20Science`,
-			flashcardsHref: null,
-			mcqHref: null
+			href: `${questionBankHref}?subject=Computer%20Science`
 		},
 		{
 			label: 'Geography',
 			meta: 'GCSE Geography',
-			href: `${chainsHref}?subject=Geography`,
-			flashcardsHref: null,
-			mcqHref: null
+			href: `${questionBankHref}?subject=Geography`
 		},
 		{
 			label: 'History',
 			meta: 'GCSE History',
-			href: `${chainsHref}?subject=History`,
-			flashcardsHref: null,
-			mcqHref: null
+			href: `${questionBankHref}?subject=History`
 		}
 	];
 
@@ -96,7 +82,7 @@
 	<title
 		>{data.user && data.dashboard
 			? 'Your GCSE practice | Question Constellation'
-			: 'Free GCSE Question Bank And Past Papers | Question Constellation'}</title
+			: 'Free GCSE Questions And Past Papers | Question Constellation'}</title
 	>
 	<meta
 		name="description"
@@ -105,7 +91,7 @@
 			: 'Free GCSE exam questions: try a real question, see the answer chain behind the marks, then practise similar questions.'}
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/" />
-	<meta property="og:title" content="Free GCSE Question Bank And Past Papers" />
+	<meta property="og:title" content="Free GCSE Questions And Past Papers" />
 	<meta property="og:site_name" content="Question Constellation" />
 	<meta
 		property="og:description"
@@ -133,6 +119,7 @@
 			dashboard={data.dashboard}
 			userId={data.user.uid}
 			challengeProgress={data.challengeProgress}
+			challengeCatalog={data.challengeCatalog}
 			challengeRecommendation={data.challengeRecommendation}
 			challengeCompletedCount={data.challengeCompletedCount}
 			challengeTotalBestScore={data.challengeTotalBestScore}
@@ -143,7 +130,7 @@
 		<section class="qc-home-hero qc-home-hero-simple" aria-labelledby="home-title">
 			<div class="qc-home-hero-content">
 				<div class="qc-home-hero-copy-block">
-					<p class="qc-home-eyebrow">Free GCSE question bank</p>
+					<p class="qc-home-eyebrow">Free GCSE exam questions</p>
 					<h1 id="home-title">See how the marks are won.</h1>
 					<p class="qc-home-hero-copy">
 						Start with a real exam question. Reveal the answer chain behind it, then try the same
@@ -154,7 +141,7 @@
 							Try a question
 							<ArrowRight size={18} aria-hidden="true" />
 						</a>
-						<a class="qc-home-button secondary" href={chainsHref}>Choose a subject</a>
+						<a class="qc-home-button secondary" href={questionBankHref}>Choose a subject</a>
 					</div>
 					<a class="qc-home-quiet-link" href={pastPapersHref}>Looking for a full past paper?</a>
 				</div>
@@ -182,7 +169,7 @@
 		>
 			<div class="qc-home-section-head">
 				<p class="qc-home-eyebrow">Choose a subject</p>
-				<h2 id="subject-title">Find questions from your course.</h2>
+				<h2 id="subject-title">Find questions for your subject.</h2>
 			</div>
 			<div class="qc-home-subject-grid qc-home-subject-grid-simple">
 				{#each subjectEntryPoints as subject (subject.label)}

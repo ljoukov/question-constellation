@@ -1179,11 +1179,9 @@ async function runOfferingBrowser({ plan, deck, chrome, options, outputDir, scre
 			source: `try { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('question-constellation-theme', 'light'); } catch {}`
 		});
 
-		const url = new URL('/recall', `${options.baseUrl}/`);
-		url.searchParams.set('subject', plan.profileSubject);
-		url.searchParams.set('activity', 'flashcards');
+		const subjectSlug = plan.profileSubject.toLowerCase().replace(/\s+/g, '-');
+		const url = new URL(`/recall/${subjectSlug}/flashcards`, `${options.baseUrl}/`);
 		url.searchParams.set('size', '5');
-		url.searchParams.set('start', '1');
 		const load = cdp.waitFor('Page.loadEventFired', options.timeoutMs);
 		await cdp.send('Page.navigate', { url: url.toString() });
 		await load;

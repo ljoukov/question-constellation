@@ -51,7 +51,7 @@ if (rows.length === 0) {
 
 const questionRoutes = rows.flatMap((row) => [
 	route('question', `/questions/${encodeURIComponent(row.question_id)}`, row),
-	route('question-chain', `/questions/${encodeURIComponent(row.question_id)}/chain`, row),
+	route('question-chain', `/questions/${encodeURIComponent(row.question_id)}/answer-chain`, row),
 	route('practice', `/questions/${encodeURIComponent(row.question_id)}/practice`, row)
 ]);
 const chainIds = [...new Set(rows.map((row) => row.answer_chain_id).filter(Boolean))].sort();
@@ -62,10 +62,7 @@ const chainRoutes = chainIds.flatMap((chainId) => {
 		answer_chain_id: chainId,
 		public_visibility: visibilityByChainId.get(chainId) ?? null
 	};
-	return [
-		route('chain', `/chains/${encodeURIComponent(chainId)}`, metadata),
-		route('constellation', `/constellations/${encodeURIComponent(chainId)}`, metadata)
-	];
+	return [route('constellation', `/constellations/${encodeURIComponent(chainId)}`, metadata)];
 });
 const assetRoutes = includeAssets
 	? [

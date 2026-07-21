@@ -1,6 +1,5 @@
 import { getPracticePageData, getQuestionChainPageData } from '$lib/server/questionData';
 import { getQuestionDraft } from '$lib/server/questionDrafts';
-import { learnerSubjectForQuestion, learnerSubjectHref } from '$lib/learning/subjects';
 import { withEnglishPracticeContext } from '$lib/englishPracticeNavigation';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -20,21 +19,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (practiceData.englishPractice) {
 		const firstStepId = practiceData.englishPractice.stages[0]?.id;
 		if (firstStepId) {
-			const stepPath = `/questions/${encodeURIComponent(params.questionId)}/practice/step-by-step/${encodeURIComponent(firstStepId)}`;
+			const stepPath = `/questions/${encodeURIComponent(params.questionId)}/practice/${encodeURIComponent(firstStepId)}`;
 			throw redirect(307, withEnglishPracticeContext(stepPath, url.searchParams));
 		}
 	}
 
 	if (!practiceData.question.practiceAvailable) {
-		if (!locals.user) {
-			throw redirect(303, `/questions/${encodeURIComponent(practiceData.question.id)}`);
-		}
-		const subject = learnerSubjectForQuestion({
-			subject: practiceData.question.meta.subject,
-			subjectArea: practiceData.question.meta.subjectArea,
-			paper: practiceData.question.meta.paper
-		});
-		throw redirect(303, subject ? learnerSubjectHref(subject) : '/');
+		throw redirect(303, `/questions/${encodeURIComponent(practiceData.question.id)}`);
 	}
 
 	const savedDraft = locals.user

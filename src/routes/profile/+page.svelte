@@ -355,7 +355,7 @@
 	<title>Profile | Question Constellation</title>
 	<meta
 		name="description"
-		content="Choose the GCSE subjects and course details used for personalised practice."
+		content="Choose the GCSE subjects, exam boards and pathways used for personalised practice."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/profile" />
 </svelte:head>
@@ -469,7 +469,7 @@
 										<header class="qc-dashboard-panel-head">
 											<div>
 												<p class="qc-panel-label">OCR J352</p>
-												<h2 id="ocr-literature-title">Course texts</h2>
+												<h2 id="ocr-literature-title">Set texts</h2>
 											</div>
 											<span class="qc-subject-confidence">
 												<strong>{englishLiteratureSelectionCount}</strong>/4 selected

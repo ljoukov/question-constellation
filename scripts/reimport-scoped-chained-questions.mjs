@@ -2,13 +2,13 @@
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { gunzipSync, gzipSync } from 'node:zlib';
 import {
 	deriveQuestionCardTitle,
 	questionCardTitleIssues,
 	QUESTION_CARD_TITLE_CONTRACT
 } from '../src/lib/questionCardTitle.js';
 import { d1Batch, d1Query, d1Rows } from './lib/d1-rest.mjs';
+import { invalidateQuestionPracticePayloadsStatement } from './lib/public-route-materialization-scope.mjs';
 
 const rootDir = process.cwd();
 const repairPath = path.join(rootDir, 'scripts/repairs/illustrated-science-question-fixes.json');
@@ -21,7 +21,6 @@ const chainIds = process.argv
 	.map((argument) => argument.slice('--chain-id='.length).trim())
 	.filter(Boolean);
 const dryRun = process.argv.includes('--dry-run');
-const skipPayloads = process.argv.includes('--skip-payloads');
 const personalBinding = 'PERSONAL_DB';
 
 if (!questionIds.length && !chainIds.length) {
@@ -64,9 +63,14 @@ if (dryRun) {
 
 for (const question of selected) await replaceQuestionContent(question);
 for (const chain of selectedChains) await replaceChainContent(chain);
-const payloadsUpdated = skipPayloads
-	? 0
-	: await patchScopedPracticePayloads(selected, selectedChains);
+if (selected.length > 0) {
+	await d1Batch(
+		[invalidateQuestionPracticePayloadsStatement(selected.map((question) => question.id))],
+		{
+			rootDir
+		}
+	);
+}
 const personalGapSnapshotsUpdated = await patchScopedPersonalGapSnapshots(selected);
 
 const stored = selected.length
@@ -95,7 +99,7 @@ console.log(
 		{
 			status: 'updated',
 			dryRun: false,
-			practicePayloadsUpdated: payloadsUpdated,
+			questionPracticeCacheQuestionsInvalidated: selected.length,
 			personalGapSnapshotsUpdated,
 			questions: stored.map((row) => ({
 				id: row.id,
@@ -349,66 +353,6 @@ async function replaceChainContent(chain) {
 	}
 }
 
-async function patchScopedPracticePayloads(questions, chains) {
-	const questionById = new Map(questions.map((question) => [question.id, question]));
-	const chainById = new Map(chains.map((chain) => [chain.id, chain]));
-	const rows = await d1Rows(
-		`SELECT id, payload_json FROM public_route_payloads WHERE route_kind = 'practice'`,
-		[],
-		{ rootDir }
-	);
-	let updated = 0;
-	for (const row of rows) {
-		const decoded = decodePayload(row.payload_json);
-		const chainQuestions = decoded.value?.chain?.questions;
-		if (!Array.isArray(chainQuestions)) continue;
-		const chainSource = chainById.get(decoded.value?.chain?.id);
-		const affected =
-			Boolean(chainSource) || chainQuestions.some((question) => questionById.has(question.id));
-		if (!affected) continue;
-		if (chainSource) {
-			decoded.value.chain.summary = chainSource.summary;
-			decoded.value.chain.steps = chainSource.steps.map((step) => step.step_text);
-		}
-
-		for (const question of chainQuestions) {
-			const source = questionById.get(question.id);
-			if (!source) continue;
-			question.title = source.cardTitle;
-			question.teaser = truncate(cleanPromptText(source.promptText), 132);
-		}
-		for (const paperQuestion of decoded.value?.paper?.questions ?? []) {
-			const parentText = new Set(
-				(paperQuestion.blocks ?? []).map((block) => normalizedBlockText(block)).filter(Boolean)
-			);
-			for (const part of paperQuestion.parts ?? []) {
-				const source = questionById.get(part.questionId);
-				if (!source) continue;
-				part.stemBlocks = (part.stemBlocks ?? []).filter(
-					(block) => !parentText.has(normalizedBlockText(block))
-				);
-				part.leadBlocks = removeDuplicateBlocks(part.leadBlocks ?? [], part.stemBlocks);
-				part.blocks = [{ kind: 'paragraph', text: cleanPromptText(source.promptText) }];
-				part.afterResponseBlocks = removeDuplicateBlocks(part.afterResponseBlocks ?? [], [
-					...(part.stemBlocks ?? []),
-					...(part.leadBlocks ?? []),
-					...part.blocks
-				]);
-			}
-		}
-
-		await d1Query(
-			`UPDATE public_route_payloads
-			 SET payload_json = ?, source_version = ?, updated_at = CURRENT_TIMESTAMP
-			 WHERE id = ?`,
-			[encodePayload(decoded.value, decoded.compressed), new Date().toISOString(), row.id],
-			{ rootDir }
-		);
-		updated += 1;
-	}
-	return updated;
-}
-
 async function patchScopedPersonalGapSnapshots(questions) {
 	if (!questions.length) return 0;
 	const questionIds = questions.map((question) => question.id);
@@ -457,26 +401,6 @@ async function patchScopedPersonalGapSnapshots(questions) {
 	return statements.length;
 }
 
-function decodePayload(raw) {
-	const parsed = JSON.parse(raw);
-	if (parsed?.__qcPayloadEncoding === 'gzip-base64' && typeof parsed.data === 'string') {
-		return {
-			value: JSON.parse(gunzipSync(Buffer.from(parsed.data, 'base64')).toString('utf8')),
-			compressed: true
-		};
-	}
-	return { value: parsed, compressed: false };
-}
-
-function encodePayload(value, compressed) {
-	const raw = JSON.stringify(value);
-	if (!compressed) return raw;
-	return JSON.stringify({
-		__qcPayloadEncoding: 'gzip-base64',
-		data: gzipSync(Buffer.from(raw)).toString('base64')
-	});
-}
-
 function cleanPromptText(value) {
 	return String(value ?? '')
 		.replace(/^\s*\[\s*\d+(?:\.\d+)?\s*marks?\s*\]\s*$/gim, '')
@@ -485,32 +409,6 @@ function cleanPromptText(value) {
 		.filter(Boolean)
 		.join(' ')
 		.trim();
-}
-
-function normalizedBlockText(block) {
-	return String(block?.text ?? '')
-		.replace(/\s+/g, ' ')
-		.trim()
-		.toLowerCase();
-}
-
-function removeDuplicateBlocks(blocks, previousBlocks) {
-	const seen = new Set((previousBlocks ?? []).map(normalizedBlockText).filter(Boolean));
-	return blocks.filter((block) => {
-		const text = normalizedBlockText(block);
-		if (!text || seen.has(text)) return false;
-		seen.add(text);
-		return true;
-	});
-}
-
-function truncate(value, maxLength) {
-	if (value.length <= maxLength) return value;
-	const cut = value
-		.slice(0, maxLength - 3)
-		.replace(/\s+\S*$/, '')
-		.trimEnd();
-	return `${cut || value.slice(0, maxLength - 3)}...`;
 }
 
 function firstText(...values) {

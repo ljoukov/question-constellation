@@ -125,7 +125,7 @@ const metadata = {
 	instructions,
 	extract,
 	sourceQuestionRef,
-	seededForRoute: '/english',
+	seededForRoute: '/questions?subject=English%20Literature',
 	officialOcrQuestion: true,
 	sourceQuestionPaperUrl: questionPaperUrl,
 	sourceMarkSchemeUrl: markSchemeUrl,
@@ -269,7 +269,12 @@ async function insertSeedRows() {
 			1,
 			1,
 			1,
-			JSON.stringify({ route: '/english', sourceDocumentId, questionId, chainId })
+			JSON.stringify({
+				route: '/questions?subject=English%20Literature',
+				sourceDocumentId,
+				questionId,
+				chainId
+			})
 		]
 	);
 
@@ -379,7 +384,7 @@ async function insertSeedRows() {
 				item.marks,
 				'guided-rubric',
 				0.8,
-				JSON.stringify({ seededForRoute: '/english' })
+				JSON.stringify({ seededForRoute: '/questions?subject=English%20Literature' })
 			]
 		);
 		await exec(
@@ -436,7 +441,7 @@ async function insertSeedRows() {
 			0,
 			JSON.stringify([]),
 			'published',
-			JSON.stringify({ route: '/english', sourceDocumentId })
+			JSON.stringify({ route: '/questions?subject=English%20Literature', sourceDocumentId })
 		]
 	);
 
@@ -476,12 +481,12 @@ async function insertSeedRows() {
 			chainId,
 			1,
 			0.82,
-			'This guided question uses the same answer-building chain that the /english experience teaches.',
+			'This guided question uses the same answer-building chain as the canonical question practice experience.',
 			'start',
 			1,
 			0,
 			JSON.stringify([]),
-			JSON.stringify({ route: '/english' })
+			JSON.stringify({ route: '/questions?subject=English%20Literature' })
 		]
 	);
 
@@ -508,7 +513,7 @@ async function insertSeedRows() {
 			0,
 			JSON.stringify([]),
 			'published',
-			JSON.stringify({ route: '/english' })
+			JSON.stringify({ route: '/questions?subject=English%20Literature' })
 		]
 	);
 
@@ -527,7 +532,7 @@ async function insertSeedRows() {
 			'Seed question for the first English guided-answer experience.',
 			0.82,
 			0,
-			JSON.stringify({ route: '/english' })
+			JSON.stringify({ route: '/questions?subject=English%20Literature' })
 		]
 	);
 

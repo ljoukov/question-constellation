@@ -2,7 +2,10 @@ import { getHomePagePublicData } from '$lib/server/learningChainData';
 import { challengeCatalog } from '$lib/challenges/catalog';
 import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import { challengeProgressTotals, emptyChallengeProgress } from '$lib/challenges/progress';
-import { recommendedUnfinishedChallenge } from '$lib/challenges/recommendations';
+import {
+	mostRecentlyCompletedChallenge,
+	recommendedUnfinishedChallenge
+} from '$lib/challenges/recommendations';
 import {
 	ANONYMOUS_PROFILE_COOKIE_NAME,
 	parseAnonymousLearnerProfileCookie
@@ -19,6 +22,7 @@ function toBlogMeta(article: BlogArticle): BlogArticleMeta {
 }
 
 const latestArticles = blogArticles.slice(0, 3).map(toBlogMeta);
+const publicChallengeCatalog = challengeCatalog.map(publicChallengePreviewDefinition);
 
 function fallbackDashboard(user: NonNullable<App.Locals['user']>): UserHomeSnapshot['dashboard'] {
 	return {
@@ -53,10 +57,9 @@ export const load: PageServerLoad = async ({ locals, parent, cookies }) => {
 					}))
 			: [];
 		const challengeProgress = snapshot?.challengeProgress ?? emptyChallengeProgress();
-		const recommendedChallenge = recommendedUnfinishedChallenge(
-			challengeCatalog,
-			challengeProgress
-		);
+		const recommendedChallenge =
+			recommendedUnfinishedChallenge(challengeCatalog, challengeProgress) ??
+			mostRecentlyCompletedChallenge(challengeCatalog, challengeProgress);
 		const challengeTotals = challengeProgressTotals(challengeProgress);
 
 		return {
@@ -66,6 +69,7 @@ export const load: PageServerLoad = async ({ locals, parent, cookies }) => {
 			learnerSettings: null,
 			dashboard: snapshot?.dashboard ?? fallbackDashboard(locals.user),
 			challengeProgress,
+			challengeCatalog: publicChallengeCatalog,
 			challengeRecommendation: recommendedChallenge
 				? publicChallengePreviewDefinition(recommendedChallenge)
 				: null,
@@ -86,6 +90,7 @@ export const load: PageServerLoad = async ({ locals, parent, cookies }) => {
 		latestArticles,
 		dashboard: null,
 		challengeProgress: emptyChallengeProgress(),
+		challengeCatalog: [],
 		challengeRecommendation: null,
 		challengeCompletedCount: 0,
 		challengeTotalBestScore: 0,
