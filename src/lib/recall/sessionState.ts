@@ -32,6 +32,15 @@ export function recallSessionStorageKey(identity: string): string {
 	return `${storagePrefix}:${encodeURIComponent(identity || 'anonymous')}`;
 }
 
+export function baseRecallDeckContentKeys(cardContentKeys: readonly string[]): string[] {
+	const seen = new Set<string>();
+	return cardContentKeys.filter((key) => {
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
 export function readRecallSession(
 	raw: string | null,
 	expectedScope: RecallSessionScope,

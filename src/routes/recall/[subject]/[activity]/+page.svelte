@@ -20,8 +20,10 @@
 	} from '$lib/recall/aqaScienceRecall';
 	import { recallCardContentKey } from '$lib/recall/contentIdentity';
 	import { rankCanonicalRecallCards } from '$lib/recall/personalization';
+	import RecallExitDialog from '$lib/recall/RecallExitDialog.svelte';
 	import { recallActivityForMode, recallModeFromPath, recallSessionHref } from '$lib/recall/routes';
 	import {
+		baseRecallDeckContentKeys,
 		readRecallSession,
 		recallSessionStorageKey,
 		type RecallSessionScope,
@@ -62,7 +64,7 @@
 		Target,
 		X
 	} from '@lucide/svelte';
-	import { onMount, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 
 	type Mode = 'mixed' | 'recall' | 'recognise' | 'truefalse' | 'reverse';
 	type Grade = 'again' | 'hard' | 'good' | 'easy';
@@ -215,6 +217,9 @@
 	let mcqFeedback = $state<RecallMcqFeedback>(null);
 	let progressById = $state<Record<string, RecallProgress>>(initialProgress);
 	let sessionCardContentKeys = $state<string[]>(initialSessionCardContentKeys);
+	let baseSessionCardContentKeys = $state<string[]>(
+		baseRecallDeckContentKeys(initialSessionCardContentKeys)
+	);
 	let dragX = $state(0);
 	let dragY = $state(0);
 	let dragStartX = $state(0);
@@ -235,6 +240,8 @@
 	let flashcardResultHeading = $state<HTMLElement | null>(null);
 	let currentPromptHeading = $state<HTMLHeadingElement | null>(null);
 	let leavingSession = $state(false);
+	let exitDialogOpen = $state(false);
+	let exitButton = $state<HTMLButtonElement | null>(null);
 	let recallSyncPromise: Promise<void> | null = null;
 	let sessionHydrated = $state(false);
 	let recallSessionId = $state(
@@ -295,6 +302,7 @@
 	);
 	const filteredCardCount = $derived(filteredCards.length);
 	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
+	const cardsRemaining = $derived(Math.max(0, totalCards - cardPositionInSession));
 	const seenCount = $derived(
 		filteredCards.filter((card) => progressById[recallCardContentKey(card)]?.seen).length
 	);
@@ -560,6 +568,7 @@
 		}
 		if (restoredSession) {
 			sessionCardContentKeys = restoredSession.cardContentKeys;
+			baseSessionCardContentKeys = baseRecallDeckContentKeys(restoredSession.cardContentKeys);
 			cardIndex = restoredSession.cardIndex;
 			cardPositionInSession = restoredSession.cardPositionInSession;
 			reviewedInSession = restoredSession.reviewedInSession;
@@ -575,6 +584,7 @@
 			sessionCardContentKeys = rankCards(eligibleCards, merged)
 				.slice(0, Math.min(stackSize, eligibleCards.length))
 				.map(recallCardContentKey);
+			baseSessionCardContentKeys = [...sessionCardContentKeys];
 			clearPersistedSession();
 		}
 		sessionHydrated = true;
@@ -847,8 +857,10 @@
 		sessionCardContentKeys = rankedCards
 			.slice(0, Math.min(stackSize, rankedCards.length))
 			.map(recallCardContentKey);
+		baseSessionCardContentKeys = [...sessionCardContentKeys];
 		sessionActive = true;
 		sessionComplete = false;
+		exitDialogOpen = false;
 		cardIndex = 0;
 		cardPositionInSession = 0;
 		reviewedInSession = 0;
@@ -861,7 +873,9 @@
 		clearPersistedSession();
 		sessionActive = false;
 		sessionCardContentKeys = [];
+		baseSessionCardContentKeys = [];
 		sessionComplete = false;
+		exitDialogOpen = false;
 		cardIndex = 0;
 		cardPositionInSession = 0;
 		reviewedInSession = 0;
@@ -881,6 +895,45 @@
 
 	function focusCurrentPrompt() {
 		requestAnimationFrame(() => currentPromptHeading?.focus({ preventScroll: true }));
+	}
+
+	function openExitDialog() {
+		if (exitDialogOpen || leavingSession || cardBusy) return;
+		haptics.selection();
+		exitDialogOpen = true;
+	}
+
+	async function closeExitDialog() {
+		if (leavingSession) return;
+		haptics.selection();
+		exitDialogOpen = false;
+		await tick();
+		exitButton?.focus();
+	}
+
+	async function restartDeck() {
+		if (leavingSession) return;
+		const originalDeck =
+			baseSessionCardContentKeys.length > 0
+				? [...baseSessionCardContentKeys]
+				: baseRecallDeckContentKeys(sessionCardContentKeys);
+		if (originalDeck.length === 0) return;
+
+		haptics.selection();
+		exitDialogOpen = false;
+		clearPersistedSession();
+		recallSessionId = createActivityId('recall-session');
+		sessionCardContentKeys = originalDeck;
+		baseSessionCardContentKeys = [...originalDeck];
+		sessionComplete = false;
+		cardIndex = 0;
+		cardPositionInSession = 0;
+		reviewedInSession = 0;
+		rememberedInSession = 0;
+		returningSoonerInSession = 0;
+		resetCardState();
+		await tick();
+		focusCurrentPrompt();
 	}
 
 	async function exitSession() {
@@ -1289,7 +1342,12 @@
 </svelte:head>
 
 {#if sessionActive}
-	<main class="recall-session" class:slow-motion={slowMotion} aria-label="Recall card session">
+	<main
+		class="recall-session"
+		class:slow-motion={slowMotion}
+		aria-label="Recall card session"
+		inert={exitDialogOpen}
+	>
 		<header class="session-header" class:complete={sessionComplete}>
 			<div class="session-progress">
 				<div class="session-progress-text">
@@ -1310,9 +1368,13 @@
 				<button
 					type="button"
 					class="session-icon-button"
-					aria-label="Quit recall session"
-					disabled={leavingSession}
-					onclick={exitSession}
+					aria-label="Leave recall deck"
+					aria-haspopup="dialog"
+					aria-controls={exitDialogOpen ? 'recall-exit-dialog' : undefined}
+					title="Leave recall deck"
+					disabled={leavingSession || cardBusy}
+					bind:this={exitButton}
+					onclick={openExitDialog}
 				>
 					<X size={23} aria-hidden="true" strokeWidth={2.2} />
 				</button>
@@ -1778,6 +1840,16 @@
 			</div>
 		</section>
 	</main>
+{/if}
+
+{#if sessionActive && !sessionComplete && exitDialogOpen}
+	<RecallExitDialog
+		{cardsRemaining}
+		busy={leavingSession}
+		onStay={closeExitDialog}
+		onRestart={restartDeck}
+		onLeave={exitSession}
+	/>
 {/if}
 
 {#if recallSyncFailure && !sessionActive}

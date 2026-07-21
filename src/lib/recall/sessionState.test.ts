@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	RECALL_SESSION_MAX_AGE_MS,
+	baseRecallDeckContentKeys,
 	readRecallSession,
 	recallSessionStorageKey,
 	type RecallSessionScope,
@@ -39,6 +40,17 @@ function snapshot(overrides: Partial<StoredRecallSession> = {}): StoredRecallSes
 }
 
 describe('recall session persistence', () => {
+	it('reconstructs the original deck without repeat-later duplicates', () => {
+		expect(
+			baseRecallDeckContentKeys([
+				cardContentKeys[0],
+				cardContentKeys[1],
+				cardContentKeys[0],
+				cardContentKeys[1]
+			])
+		).toEqual(cardContentKeys);
+	});
+
 	it('restores the exact active content identities and position', () => {
 		const stored = snapshot({ revealed: true });
 		expect(
