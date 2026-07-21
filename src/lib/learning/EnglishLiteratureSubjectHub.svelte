@@ -5,16 +5,24 @@
 	import QuestionBankQuestionCard from '$lib/components/QuestionBankQuestionCard.svelte';
 	import type { OcrLiteratureArea, OcrLiteratureHub } from '$lib/englishLiteratureHub';
 	import SubjectBreadcrumbs from '$lib/learning/SubjectBreadcrumbs.svelte';
+	import type { RecallRuntimeSubject } from '$lib/recall/aqaScienceRecall';
+	import RecallDeckCustomizer from '$lib/recall/RecallDeckCustomizer.svelte';
 	import { recallSessionHref } from '$lib/recall/routes';
 	import { BookOpenCheck, ChevronRight } from '@lucide/svelte';
 	import type { AdminUser } from '$lib/server/auth/session';
 
 	let {
 		hub,
-		user
+		user,
+		recallDeck
 	}: {
 		hub: OcrLiteratureHub;
 		user: AdminUser | null;
+		recallDeck: {
+			subject: RecallRuntimeSubject;
+			totalCardCount: number;
+			topics: Array<{ id: string; title: string; cardCount: number }>;
+		} | null;
 	} = $props();
 	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 
@@ -104,15 +112,28 @@
 			</div>
 
 			{#if user}
-				<a
-					class="qc-dashboard-profile-link"
-					href={literatureCardsHref}
-					data-analytics-label="English Literature plot and quotation cards"
-				>
-					<span>Plot and quotations</span>
-					<strong>Review study cards</strong>
-					<ChevronRight size={18} aria-hidden="true" />
-				</a>
+				{#if recallDeck}
+					<section class="literature-recall" aria-labelledby="literature-recall-title">
+						<p>Plot and quotations</p>
+						<h2 id="literature-recall-title">Recall cards</h2>
+						<RecallDeckCustomizer
+							subject={recallDeck.subject}
+							totalCardCount={recallDeck.totalCardCount}
+							topics={recallDeck.topics}
+							initialHref={literatureCardsHref}
+						/>
+					</section>
+				{:else}
+					<a
+						class="qc-dashboard-profile-link"
+						href={literatureCardsHref}
+						data-analytics-label="English Literature plot and quotation cards"
+					>
+						<span>Plot and quotations</span>
+						<strong>Review study cards</strong>
+						<ChevronRight size={18} aria-hidden="true" />
+					</a>
+				{/if}
 			{/if}
 
 			<nav class="qc-real-chain-list" aria-label="Jump to a set-text section">
@@ -191,3 +212,31 @@
 		</section>
 	</div>
 </main>
+
+<style>
+	.literature-recall {
+		display: grid;
+		gap: 0.45rem;
+		padding: 0.85rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
+	}
+
+	.literature-recall > p,
+	.literature-recall > h2 {
+		margin: 0;
+	}
+
+	.literature-recall > p {
+		color: var(--qc-ui-text-muted);
+		font-size: 0.76rem;
+		font-weight: 760;
+		text-transform: uppercase;
+	}
+
+	.literature-recall > h2 {
+		color: var(--qc-ui-text);
+		font-size: 1rem;
+		line-height: 1.2;
+	}
+</style>

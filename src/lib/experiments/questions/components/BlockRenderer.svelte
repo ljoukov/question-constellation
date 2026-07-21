@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { ExamPaperAsset, ExamQuestionBlock } from '../types';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
-	import CalibratedPaperImage from '$lib/components/CalibratedPaperImage.svelte';
+	import QuestionImageViewer from '$lib/components/QuestionImageViewer.svelte';
 	import { diagnoseResourceLoadFailure, type RequestFailure } from '$lib/requestFailure';
+	import { equationBlockUsesDisplayMath } from '../equationRendering';
 	import MathText from './MathText.svelte';
 
 	let {
@@ -49,20 +50,15 @@
 	{#if asset && !failedAssetIds.has(block.assetId)}
 		<figure class="exam-figure" style={`--figure-width: ${block.width ?? asset.width ?? 360}px`}>
 			<figcaption>{block.label ?? asset.label}</figcaption>
-			{#if asset.paperMeasurement}
-				<CalibratedPaperImage
-					src={retrySrc(asset.src, block.assetId)}
-					alt={asset.alt}
-					measurement={asset.paperMeasurement}
-					onerror={() => markImageFailed(block.assetId, asset.src)}
-				/>
-			{:else}
-				<img
-					src={retrySrc(asset.src, block.assetId)}
-					alt={asset.alt}
-					onerror={() => void markImageFailed(block.assetId, asset.src)}
-				/>
-			{/if}
+			<QuestionImageViewer
+				src={retrySrc(asset.src, block.assetId)}
+				alt={asset.alt}
+				label={block.label ?? asset.label}
+				measurement={asset.paperMeasurement}
+				intrinsicWidth={asset.width}
+				intrinsicHeight={asset.height}
+				onerror={() => markImageFailed(block.assetId, asset.src)}
+			/>
 		</figure>
 	{:else if asset && assetFailures[block.assetId]}
 		<RequestFailureNotice
@@ -151,7 +147,9 @@
 		{/each}
 	</ul>
 {:else if block.kind === 'equation'}
-	<div class="exam-equation"><MathText text={block.text} display /></div>
+	<div class="exam-equation">
+		<MathText text={block.text} display={equationBlockUsesDisplayMath(block.text)} />
+	</div>
 {/if}
 
 <style>
@@ -173,13 +171,6 @@
 		color: #000000;
 		font-weight: 700;
 		text-align: center;
-	}
-
-	.exam-figure img {
-		display: block;
-		width: 100%;
-		height: auto;
-		margin: 0 auto;
 	}
 
 	.exam-table-wrap {

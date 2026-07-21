@@ -271,7 +271,7 @@ describe('rankCandidateActions', () => {
 				maxMinutes: 10
 			}
 		);
-		expect(result.map((item) => item.candidate.id)).toEqual(['in-scope']);
+		expect(result.map((item) => item.id)).toEqual(['in-scope']);
 	});
 
 	it('puts an active conflicting gap before due recall and secure transfer', () => {
@@ -289,12 +289,11 @@ describe('rankCandidateActions', () => {
 			],
 			{ subject: 'Biology' }
 		);
-		expect(result.map((item) => item.candidate.id)).toEqual([
+		expect(result.map((item) => item.id)).toEqual([
 			'conflicting-gap',
 			'due-recall',
 			'secure-transfer'
 		]);
-		expect(result[0].reasonCode).toBe('resolve_conflicting_evidence');
 	});
 
 	it('uses stable ids as the final tie-breaker', () => {
@@ -302,6 +301,6 @@ describe('rankCandidateActions', () => {
 			[candidate({ id: 'action-z' }), candidate({ id: 'action-a' })],
 			{ subject: 'Biology' }
 		);
-		expect(result.map((item) => item.candidate.id)).toEqual(['action-a', 'action-z']);
+		expect(result.map((item) => item.id)).toEqual(['action-a', 'action-z']);
 	});
 });

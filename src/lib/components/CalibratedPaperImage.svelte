@@ -6,12 +6,18 @@
 		alt,
 		measurement,
 		loading = 'lazy',
+		imageHref,
+		imageLabel,
+		onImageOpen,
 		onerror
 	}: {
 		src: string;
 		alt: string;
 		measurement: PaperMeasurement;
 		loading?: 'eager' | 'lazy';
+		imageHref?: string;
+		imageLabel?: string;
+		onImageOpen?: (event: MouseEvent) => void;
 		onerror?: () => void | Promise<void>;
 	} = $props();
 
@@ -34,14 +40,37 @@
 
 <div class="calibrated-paper-image">
 	<div class="image-stage">
-		<img {src} {alt} {loading} onerror={() => void onerror?.()} />
-		<span
-			class="measurement-guide start"
-			style={`left: ${guidePosition(startPx)}`}
-			aria-hidden="true"
-		></span>
-		<span class="measurement-guide end" style={`left: ${guidePosition(endPx)}`} aria-hidden="true"
-		></span>
+		{#if imageHref}
+			<a
+				class="image-open-link"
+				href={imageHref}
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label={imageLabel}
+				onclick={onImageOpen}
+			>
+				<img {src} {alt} {loading} onerror={() => void onerror?.()} />
+				<span
+					class="measurement-guide start"
+					style={`left: ${guidePosition(startPx)}`}
+					aria-hidden="true"
+				></span>
+				<span
+					class="measurement-guide end"
+					style={`left: ${guidePosition(endPx)}`}
+					aria-hidden="true"
+				></span>
+			</a>
+		{:else}
+			<img {src} {alt} {loading} onerror={() => void onerror?.()} />
+			<span
+				class="measurement-guide start"
+				style={`left: ${guidePosition(startPx)}`}
+				aria-hidden="true"
+			></span>
+			<span class="measurement-guide end" style={`left: ${guidePosition(endPx)}`} aria-hidden="true"
+			></span>
+		{/if}
 	</div>
 	<div class="paper-ruler" aria-label="Digital paper ruler">
 		<p>
@@ -71,6 +100,18 @@
 	.image-stage {
 		position: relative;
 		background: #ffffff;
+	}
+
+	.image-open-link {
+		position: relative;
+		display: block;
+		color: inherit;
+		cursor: zoom-in;
+	}
+
+	.image-open-link:focus-visible {
+		outline: 3px solid #38bdf8;
+		outline-offset: 3px;
 	}
 
 	.image-stage img {

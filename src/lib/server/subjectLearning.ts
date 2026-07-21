@@ -195,7 +195,6 @@ type CandidateDetail = {
 type RecommendationDecisionRow = {
 	id: string;
 	selected_action_id: string;
-	reason_text: string;
 	decision_source: 'rules' | 'llm';
 	valid_until: string | null;
 	curriculum_scope_snapshot_json: string;
@@ -1195,12 +1194,6 @@ function directRecallAction(
 			eyebrow: dueCount > 0 ? 'Recall due' : 'Quick recall',
 			title: `${topic.title} recall`,
 			detail: `${size} short prompts, mixed automatically.`,
-			reason:
-				dueCount > 0
-					? `${dueCount} ${dueCount === 1 ? 'item is' : 'items are'} ready for another check.`
-					: state === 'no_evidence'
-						? 'You haven’t practised this chapter here yet.'
-						: 'A short mixed set keeps the key facts easy to retrieve.',
 			durationMinutes: Math.max(4, Math.min(8, size)),
 			href,
 			available: true
@@ -1235,7 +1228,6 @@ function gapCandidate(
 			eyebrow: 'Close a knowledge gap',
 			title: `Make “${gap.step_text}” explicit`,
 			detail: `Rebuild the missing link, then use it in a fresh answer.`,
-			reason: `This link was missing in ${gap.distinct_item_count} different checked questions.`,
 			durationMinutes: 7,
 			href: `/gaps/${encodeURIComponent(gap.id)}`,
 			available: gap.distinct_item_count >= 2
@@ -1247,7 +1239,6 @@ function questionCandidate(
 	subject: string,
 	row: SubjectLearningQuestionProjection,
 	topic: StemCurriculumTopic | null,
-	hasUsedChain: boolean,
 	pendingIndependentCheck: boolean,
 	contentOrder: number,
 	state: LearnerState,
@@ -1274,11 +1265,6 @@ function questionCandidate(
 			eyebrow: 'Practise exam reasoning',
 			title: row.title,
 			detail: `${row.marks}-mark question · build the links, then check them.`,
-			reason: pendingIndependentCheck
-				? 'Try the same missing link in a fresh question, without the guided steps.'
-				: hasUsedChain
-					? 'Use a method you have seen before in a different context.'
-					: 'This question has a reusable answer method worth practising.',
 			durationMinutes: row.marks >= 6 ? 10 : 7,
 			href: recommendedPracticeHref(subject, row.id),
 			available: true
@@ -1314,10 +1300,6 @@ function quickQuestionCandidate(
 			eyebrow: 'Quick exam check',
 			title: row.title,
 			detail: `${marks}-mark question · answer from memory, then check it.`,
-			reason:
-				state === 'due'
-					? 'A short written answer will check whether this still comes back without prompts.'
-					: 'Writing a short answer checks more than recognising an option.',
 			durationMinutes: Math.min(5, marks + 2),
 			href: recommendedPracticeHref(subject, row.id),
 			available: marks <= 3
@@ -1402,7 +1384,6 @@ function emptyAlternative(
 	kind: LearningActionView['kind'],
 	title: string,
 	detail: string,
-	reason: string,
 	href: string
 ): LearningActionView {
 	return {
@@ -1411,7 +1392,6 @@ function emptyAlternative(
 		eyebrow: '',
 		title,
 		detail,
-		reason,
 		durationMinutes: null,
 		href,
 		available: false
@@ -1477,9 +1457,6 @@ function chooseCandidateDetails(
 	}
 
 	const attemptedIds = new Set(bundle.attempts.map((attempt) => attempt.question_id));
-	const attemptedChains = new Set(
-		bundle.attempts.map((attempt) => attempt.answer_chain_id).filter(Boolean)
-	);
 	const chainsAwaitingIndependentCheck = new Set(
 		bundle.gaps.filter((gap) => gap.status === 'awaiting_check').map((gap) => gap.answer_chain_id)
 	);
@@ -1519,7 +1496,6 @@ function chooseCandidateDetails(
 				subject.subject,
 				question,
 				topic,
-				attemptedChains.has(question.answerChainId),
 				chainsAwaitingIndependentCheck.has(question.answerChainId),
 				question.contentOrder,
 				state,
@@ -1538,22 +1514,21 @@ function chooseCandidateDetails(
 		}
 	);
 	const detailById = new Map(details.map((detail) => [detail.candidate.id, detail]));
-	const selected =
-		ranked.length > 0 ? (detailById.get(ranked[0].candidate.id)?.action ?? null) : null;
+	const selected = ranked.length > 0 ? (detailById.get(ranked[0].id)?.action ?? null) : null;
 
 	const firstByKind = new Map<LearningActionCandidate['kind'], LearningActionView>();
 	let directRecallAlternative: LearningActionView | null = null;
 	let directQuickAlternative: LearningActionView | null = null;
 	for (const rankedAction of ranked) {
-		const action = detailById.get(rankedAction.candidate.id)?.action;
-		if (!directRecallAlternative && rankedAction.candidate.id.startsWith('recall:') && action) {
+		const action = detailById.get(rankedAction.id)?.action;
+		if (!directRecallAlternative && rankedAction.id.startsWith('recall:') && action) {
 			directRecallAlternative = action;
 		}
-		if (!directQuickAlternative && rankedAction.candidate.id.startsWith('quick:') && action) {
+		if (!directQuickAlternative && rankedAction.id.startsWith('quick:') && action) {
 			directQuickAlternative = action;
 		}
-		if (action && !firstByKind.has(rankedAction.candidate.kind)) {
-			firstByKind.set(rankedAction.candidate.kind, action);
+		if (action && !firstByKind.has(rankedAction.kind)) {
+			firstByKind.set(rankedAction.kind, action);
 		}
 	}
 
@@ -1563,9 +1538,6 @@ function chooseCandidateDetails(
 				'recall',
 				'Study cards',
 				'Flashcards, multiple choice, and true or false from the standard deck.',
-				recallSubject
-					? `No recall items match the selected ${scope.unitPlural} yet.`
-					: 'Recall sets are not available for this subject selection yet.',
 				learnerSubjectHref(subject.subject)
 			),
 		directQuickAlternative ??
@@ -1573,7 +1545,6 @@ function chooseCandidateDetails(
 				'recall',
 				'1–3 mark questions',
 				'Write a short exam answer from memory, then check it.',
-				'No suitable reviewed short question matches this subject content yet.',
 				scope.href ?? learnerSubjectHref(subject.subject)
 			),
 		firstByKind.get('close_gap') ??
@@ -1581,7 +1552,6 @@ function chooseCandidateDetails(
 				'close_gap',
 				'Close a gap',
 				'Rebuild one missing idea and check it in a fresh answer.',
-				'No repeated knowledge gap is confirmed yet.',
 				learnerSubjectHref(subject.subject)
 			),
 		firstByKind.get('apply_chain') ??
@@ -1589,7 +1559,6 @@ function chooseCandidateDetails(
 				'apply_chain',
 				'Longer questions',
 				'Practise a 4–6 mark answer method in a new context.',
-				'No suitable reviewed question matches this scope yet.',
 				scope.href ?? learnerSubjectHref(subject.subject)
 			)
 	];
@@ -1598,7 +1567,7 @@ function chooseCandidateDetails(
 		selected,
 		alternatives,
 		details,
-		rankedIds: ranked.map((entry) => entry.candidate.id)
+		rankedIds: ranked.map((entry) => entry.id)
 	};
 }
 
@@ -1607,7 +1576,7 @@ async function readCurrentRecommendation(
 	subject: string
 ): Promise<RecommendationDecisionRow | null> {
 	return await queryPersonalFirst<RecommendationDecisionRow>(
-		`SELECT id, selected_action_id, reason_text, decision_source, valid_until,
+		`SELECT id, selected_action_id, decision_source, valid_until,
 		        curriculum_scope_snapshot_json, learner_state_snapshot_json,
 		        candidate_actions_json
 		 FROM user_recommendation_decisions
@@ -1670,7 +1639,6 @@ async function storeRecommendationDecision({
 	topicViews,
 	candidateResult,
 	selected,
-	reason,
 	source,
 	modelRunId
 }: {
@@ -1680,7 +1648,6 @@ async function storeRecommendationDecision({
 	topicViews: CurriculumTopicProgressView[];
 	candidateResult: ReturnType<typeof chooseCandidateDetails>;
 	selected: CandidateDetail;
-	reason: string;
 	source: 'rules' | 'llm';
 	modelRunId?: string | null;
 }): Promise<void> {
@@ -1696,9 +1663,9 @@ async function storeRecommendationDecision({
 		   candidate_actions_json, selected_action_id, selected_action_kind,
 		   selected_component_kind, selected_component_id,
 		   selected_curriculum_component_id, selected_route,
-		   reason_code, reason_text, decision_source, algorithm_version,
+		   decision_source, algorithm_version,
 		   model_run_id, valid_until
-		 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		[
 			`recommendation_${crypto.randomUUID().replace(/-/g, '')}`,
 			userId,
@@ -1714,8 +1681,6 @@ async function storeRecommendationDecision({
 			selected.candidate.componentId,
 			selected.candidate.curriculumComponentId,
 			selected.action.href,
-			source === 'llm' ? 'llm_ranked_eligible_candidates' : 'deterministic_ranked_candidate',
-			reason,
 			source,
 			'next-action-v1',
 			modelRunId ?? null,
@@ -1740,7 +1705,6 @@ function scopeSetupAction(
 					? 'Finish choosing your English Literature set texts'
 					: 'Choose your English Literature set texts',
 			detail: `${selectedCount} of ${totalCount} selected. Practice will only use those choices.`,
-			reason: 'Only questions for the options your class studies will appear.',
 			durationMinutes: null,
 			href: scope.href ?? learnerSubjectContentHref(subject.subject),
 			available: true
@@ -1752,7 +1716,6 @@ function scopeSetupAction(
 		eyebrow: 'Set what you have covered',
 		title: `Choose your ${subject.subject} ${scope.unitPlural}`,
 		detail: 'Practice will only use official topics you include.',
-		reason: 'This prevents untaught material from appearing as a weakness.',
 		durationMinutes: null,
 		href: learnerSubjectContentHref(subject.subject),
 		available: true
@@ -1772,7 +1735,6 @@ function fallbackSubjectAction(
 		detail: canExpandSelection
 			? `No reviewed question matches this selection. Add more only if your class has covered it.`
 			: `No reviewed question currently matches these ${scope.unitPlural}. Check that the selection is accurate.`,
-		reason: 'Suggested questions always stay inside the official subject content you include.',
 		durationMinutes: null,
 		href: scope.href ?? profileAnchorHref('/profile', profileSubjectAnchor(subject.subject)),
 		available: true
@@ -1786,7 +1748,6 @@ function ocrEnglishLiteraturePracticeAction(): LearningActionView {
 		eyebrow: 'Next',
 		title: 'Choose an essay question',
 		detail: 'Questions for your four set texts, grouped by the task format in each paper.',
-		reason: 'Only questions for the texts and poetry cluster selected in your profile are shown.',
 		durationMinutes: null,
 		href: learnerSubjectHref('English Literature'),
 		available: true
@@ -1800,7 +1761,6 @@ function unavailableFoundationAction(): LearningActionView {
 		eyebrow: 'Question availability',
 		title: 'Foundation questions are not available yet',
 		detail: 'The current reviewed science question and recall bank is Higher tier only.',
-		reason: 'We will not show Higher-only material to a Foundation learner.',
 		durationMinutes: null,
 		href: '/profile',
 		available: false
@@ -1911,7 +1871,7 @@ async function buildSubjectView(
 			);
 		}
 		if (cached && cachedDetail && cachedIsCurrent) {
-			recommendedAction = { ...cachedDetail.action, reason: cached.reason_text };
+			recommendedAction = cachedDetail.action;
 		} else if (persistRecommendations) {
 			const selectedDetail = detailById.get(recommendedAction.id);
 			if (selectedDetail) {
@@ -1922,7 +1882,6 @@ async function buildSubjectView(
 					topicViews,
 					candidateResult,
 					selected: selectedDetail,
-					reason: selectedDetail.action.reason,
 					source: 'rules'
 				});
 			}

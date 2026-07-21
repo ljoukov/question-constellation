@@ -17,7 +17,11 @@
 </svelte:head>
 
 {#if data.literatureHub}
-	<EnglishLiteratureSubjectHub hub={data.literatureHub} user={data.user} />
+	<EnglishLiteratureSubjectHub
+		hub={data.literatureHub}
+		user={data.user}
+		recallDeck={data.recallDeck}
+	/>
 {:else}
 	<main class="qc-real-app qc-dashboard-page">
 		<AppTopbar user={data.user} showSearch={false} showNavigation />
@@ -26,6 +30,7 @@
 			challengeCatalog={data.challengeCatalog}
 			challengeProgress={data.challengeProgress}
 			challengeUserId={data.user.uid}
+			recallDeck={data.recallDeck}
 		/>
 	</main>
 {/if}

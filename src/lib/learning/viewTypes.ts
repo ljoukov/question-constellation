@@ -17,7 +17,6 @@ export type LearningActionView = {
 	eyebrow: string;
 	title: string;
 	detail: string;
-	reason: string;
 	durationMinutes: number | null;
 	href: string;
 	available: boolean;

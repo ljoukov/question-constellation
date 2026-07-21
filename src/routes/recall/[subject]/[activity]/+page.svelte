@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { goto, pushState, replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
 	import { authStartHref } from '$lib/authReturn';
-	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
-	import ControlSection from '$lib/components/ui/ControlSection.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { haptics } from '$lib/haptics';
 	import { createActivityId, responseDurationMs } from '$lib/learning/activityTiming';
@@ -51,19 +49,7 @@
 		type RecallReviewFlushResult
 	} from '$lib/recallReviewSync';
 	import type { RequestFailure } from '$lib/requestFailure';
-	import {
-		ArrowRight,
-		Brain,
-		CheckCircle2,
-		CircleX,
-		CircleHelp,
-		Eye,
-		Layers3,
-		RotateCcw,
-		Shuffle,
-		Target,
-		X
-	} from '@lucide/svelte';
+	import { ArrowRight, CheckCircle2, CircleX, Eye, RotateCcw, X } from '@lucide/svelte';
 	import { onMount, tick, untrack } from 'svelte';
 
 	type Mode = 'mixed' | 'recall' | 'recognise' | 'truefalse' | 'reverse';
@@ -140,13 +126,7 @@
 		() => Object.entries(data.kindLabels) as Array<[RecallCardKind, string]>
 	);
 	const returnToHref = untrack(() => safeInternalReturnPath(data.initialReturnTo) ?? '/');
-	const modeOptions: Array<{ value: Mode; label: string; icon: typeof Brain }> = [
-		{ value: 'mixed', label: 'Quick recall', icon: Layers3 },
-		{ value: 'recall', label: 'Flashcards', icon: Brain },
-		{ value: 'recognise', label: 'Multiple choice', icon: Target },
-		{ value: 'truefalse', label: 'True or false', icon: CircleHelp },
-		{ value: 'reverse', label: 'Reverse', icon: Shuffle }
-	];
+	const validModes: readonly Mode[] = ['mixed', 'recall', 'recognise', 'truefalse', 'reverse'];
 	const stackSizeOptions = [5, 8, 10, 15] as const;
 
 	function validSubject(value: string): SubjectFilter {
@@ -161,7 +141,7 @@
 	}
 
 	function validMode(value: string): Mode {
-		return modeOptions.some((option) => option.value === value) ? (value as Mode) : 'recall';
+		return validModes.includes(value as Mode) ? (value as Mode) : 'recall';
 	}
 
 	function validStackSize(value: string | number): number {
@@ -250,17 +230,8 @@
 	let cardStartedAt = $state(untrack(() => (data.initialStart ? Date.now() : 0)));
 
 	const normalizedSearch = $derived(searchQuery.trim().toLowerCase());
-	const availableTopics = $derived(
-		data.topics.filter(
-			(topic) => selectedSubject === 'All subjects' || topic.subject === selectedSubject
-		)
-	);
 	const matchingCards = $derived(
 		filterCards(selectedSubject, selectedTopic, selectedKind, searchQuery)
-	);
-	const reverseCardCount = $derived(cardsEligibleForRecallMode(matchingCards, 'reverse').length);
-	const visibleModeOptions = $derived(
-		modeOptions.filter((option) => option.value !== 'reverse' || reverseCardCount > 0)
 	);
 	const filteredCards = $derived(cardsEligibleForRecallMode(matchingCards, mode));
 	const rankedCards = $derived(rankCards(filteredCards, progressById));
@@ -300,26 +271,8 @@
 				: (currentCard.choiceFeedback?.[selectedChoice]?.trim() ?? null)
 			: null
 	);
-	const filteredCardCount = $derived(filteredCards.length);
-	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCardCount);
+	const totalCards = $derived(sessionActive ? sessionCards.length : filteredCards.length);
 	const cardsRemaining = $derived(Math.max(0, totalCards - cardPositionInSession));
-	const seenCount = $derived(
-		filteredCards.filter((card) => progressById[recallCardContentKey(card)]?.seen).length
-	);
-	const dueCount = $derived(
-		filteredCards.filter((card) => {
-			const progress = progressById[recallCardContentKey(card)];
-			return !progress || progress.dueAt <= Date.now();
-		}).length
-	);
-	const steadyCount = $derived(
-		filteredCards.filter((card) => {
-			const progress = progressById[recallCardContentKey(card)];
-			return (
-				progress && ['good', 'easy'].includes(progress.lastGrade) && progress.intervalDays >= 1
-			);
-		}).length
-	);
 	const sessionProgress = $derived(
 		totalCards === 0 ? '0%' : `${Math.min(100, (cardPositionInSession / totalCards) * 100)}%`
 	);
@@ -341,20 +294,13 @@
 						? 'Reverse recall'
 						: 'Flashcards'
 	);
-	const selectedBoard = $derived(
-		(selectedSubject === 'All subjects'
-			? data.cards[0]?.board
-			: data.cards.find((card) => card.subject === selectedSubject)?.board) ?? null
-	);
-	const setupKicker = $derived(
-		selectedSubject === 'All subjects'
-			? 'GCSE study cards'
-			: `${selectedBoard ? `${selectedBoard} ` : ''}GCSE ${selectedSubject}`
-	);
 	const completionReturnLabel = $derived.by(() => {
 		if (returnToHref.startsWith('/questions/')) return 'Back to question';
 		if (returnToHref.startsWith('/gaps/')) return 'Back to gap';
 		if (returnToHref.startsWith('/recall/')) return 'Choose another stack';
+		if (/^\/subjects\/[^/]+\/recall(?:[/?#]|$)/.test(returnToHref)) {
+			return 'Choose another deck';
+		}
 		if (returnToHref.startsWith('/subjects/')) {
 			return selectedSubject === 'All subjects'
 				? 'Back to subject'
@@ -392,28 +338,6 @@
 		if (!revealed) return `Card ${cardPositionInSession + 1} of ${totalCards}.`;
 		if (currentPresentation !== 'flashcard') return '';
 		return 'Answer shown.';
-	});
-
-	$effect(() => {
-		if (selectedTopic === 'all') return;
-		if (availableTopics.some((topic) => topic.id === selectedTopic)) return;
-		selectedTopic = 'all';
-		syncRecallUrl('replace', sessionActive);
-	});
-
-	$effect(() => {
-		selectedSubject;
-		selectedTopic;
-		selectedKind;
-		searchQuery;
-		mode;
-		if (!sessionActive) cardIndex = 0;
-	});
-
-	$effect(() => {
-		if (mode !== 'reverse' || reverseCardCount > 0) return;
-		mode = 'recall';
-		syncRecallUrl('replace', false);
 	});
 
 	$effect(() => {
@@ -825,10 +749,6 @@
 		return tip || null;
 	}
 
-	function topicCardCount(topicId: string) {
-		return data.cards.filter((card) => card.topicId === topicId).length;
-	}
-
 	function answerChoices(card: RecallCard) {
 		if (mode === 'truefalse') {
 			return shuffledRecallChoices(
@@ -883,14 +803,6 @@
 		returningSoonerInSession = 0;
 		recallSessionId = '';
 		resetCardState();
-	}
-
-	function startSession() {
-		if (filteredCards.length === 0) return;
-		haptics.selection();
-		startSessionState();
-		syncRecallUrl('push', true);
-		requestAnimationFrame(() => focusCurrentPrompt());
 	}
 
 	function focusCurrentPrompt() {
@@ -1255,76 +1167,6 @@
 		dragY = 0;
 		cardMotion = 'idle';
 	}
-
-	function syncRecallUrl(
-		historyMode: 'push' | 'replace' = 'replace',
-		_nextSessionActive = sessionActive
-	) {
-		if (!browser) return;
-		if (selectedSubject === 'All subjects') return;
-		const nextUrl = resolveInternalPath(
-			recallSessionHref({
-				subject: selectedSubject,
-				activity: recallActivityForMode(mode),
-				mode,
-				topic: selectedTopic,
-				kind: selectedKind,
-				size: stackSize,
-				search: searchQuery,
-				returnTo: returnToHref === '/' ? undefined : returnToHref
-			})
-		);
-		const currentUrl = `${page.url.pathname}${page.url.search}${page.url.hash}`;
-		if (nextUrl === currentUrl) return;
-		if (historyMode === 'push') {
-			pushState(nextUrl, page.state);
-			return;
-		}
-		replaceState(nextUrl, page.state);
-	}
-
-	function updateSearch(value: string) {
-		searchQuery = value;
-		syncRecallUrl('replace');
-	}
-
-	function updateSubject(value: string) {
-		const nextSubject = validSubject(value);
-		if (nextSubject === 'All subjects' || nextSubject === selectedSubject) return;
-		const nextUrl = resolveInternalPath(
-			recallSessionHref({
-				subject: nextSubject,
-				activity: recallActivityForMode(mode),
-				mode,
-				size: stackSize
-			})
-		);
-		if (browser) window.location.assign(nextUrl);
-	}
-
-	function updateMode(value: Mode) {
-		mode = value;
-		syncRecallUrl('push');
-	}
-
-	function updateStackSize(value: number) {
-		stackSize = validStackSize(value);
-		syncRecallUrl('push');
-	}
-
-	function updateKind(value: KindFilter) {
-		selectedKind = value;
-		syncRecallUrl('push');
-	}
-
-	function updateTopic(value: string) {
-		selectedTopic = value;
-		syncRecallUrl('push');
-	}
-
-	function clearProgress() {
-		saveProgress({});
-	}
 </script>
 
 <svelte:head>
@@ -1410,9 +1252,9 @@
 						type="button"
 						class="session-secondary"
 						disabled={leavingSession}
-						onclick={startSession}
+						onclick={restartDeck}
 					>
-						Another set
+						Repeat this deck
 					</button>
 				</div>
 				{#if recallSyncFailure}
@@ -1689,155 +1531,11 @@
 		{/if}
 	</main>
 {:else}
-	<main class="recall-setup">
-		<AppTopbar
-			user={data.user}
-			searchValue={searchQuery}
-			searchPlaceholder="Search recall cards"
-			onSearchChange={updateSearch}
-		/>
-
-		<section class="setup-shell" aria-label="Recall setup">
-			<div class="setup-copy">
-				<p class="recall-kicker">{setupKicker}</p>
-				<h1>Recall cards</h1>
-				<p>Practise concise, reviewed knowledge from the exact subject content in this deck.</p>
-				<div class="setup-stats" aria-label="Current recall stack">
-					<div>
-						<strong>{totalCards}</strong>
-						<span>cards</span>
-					</div>
-					<div>
-						<strong>{seenCount}</strong>
-						<span>seen</span>
-					</div>
-					<div>
-						<strong>{steadyCount}</strong>
-						<span>steady</span>
-					</div>
-					<div>
-						<strong>{dueCount}</strong>
-						<span>due</span>
-					</div>
-				</div>
-				<div class="setup-actions">
-					<button
-						type="button"
-						class="setup-primary"
-						disabled={totalCards === 0}
-						onclick={startSession}
-					>
-						{totalCards === 0
-							? 'No cards in this filter'
-							: `Start ${Math.min(stackSize, totalCards)} cards`}
-					</button>
-					<button type="button" class="setup-secondary" onclick={clearProgress}
-						>Clear progress</button
-					>
-				</div>
-			</div>
-
-			<div class="setup-panel">
-				<ControlSection label="Subject">
-					{#snippet icon()}
-						<Brain size={17} aria-hidden="true" strokeWidth={2.2} />
-					{/snippet}
-					<select
-						class="setup-select"
-						value={selectedSubject}
-						aria-label="Recall subject"
-						onchange={(event) => updateSubject(event.currentTarget.value)}
-					>
-						{#each subjectOptions as option (option)}
-							<option value={option}>{option}</option>
-						{/each}
-					</select>
-				</ControlSection>
-
-				<ControlSection label="Mode">
-					{#snippet icon()}
-						<Brain size={17} aria-hidden="true" strokeWidth={2.2} />
-					{/snippet}
-					<div class="setup-segment">
-						{#each visibleModeOptions as option (option.value)}
-							{@const ModeIcon = option.icon}
-							<button
-								type="button"
-								class:active={mode === option.value}
-								aria-pressed={mode === option.value}
-								onclick={() => updateMode(option.value)}
-							>
-								<ModeIcon size={17} aria-hidden="true" strokeWidth={2.2} />
-								{option.label}
-							</button>
-						{/each}
-					</div>
-				</ControlSection>
-
-				<ControlSection label="Stack size">
-					{#snippet icon()}
-						<Target size={17} aria-hidden="true" strokeWidth={2.2} />
-					{/snippet}
-					<div class="setup-segment">
-						{#each stackSizeOptions as size (size)}
-							<button
-								type="button"
-								class:active={stackSize === size}
-								aria-pressed={stackSize === size}
-								onclick={() => updateStackSize(size)}
-							>
-								{size}
-							</button>
-						{/each}
-					</div>
-				</ControlSection>
-
-				<ControlSection label="Type">
-					{#snippet icon()}
-						<Layers3 size={17} aria-hidden="true" strokeWidth={2.2} />
-					{/snippet}
-					<div class="setup-chip-grid">
-						<button
-							type="button"
-							class:active={selectedKind === 'all'}
-							aria-pressed={selectedKind === 'all'}
-							onclick={() => updateKind('all')}
-						>
-							All
-						</button>
-						{#each kindOptions as [kind, label] (kind)}
-							<button
-								type="button"
-								class:active={selectedKind === kind}
-								aria-pressed={selectedKind === kind}
-								onclick={() => updateKind(kind)}
-							>
-								{label}
-							</button>
-						{/each}
-					</div>
-				</ControlSection>
-
-				<ControlSection label="Specification">
-					{#snippet icon()}
-						<Target size={17} aria-hidden="true" strokeWidth={2.2} />
-					{/snippet}
-					<select
-						class="setup-select"
-						value={selectedTopic}
-						aria-label="Specification topic"
-						onchange={(event) => updateTopic(event.currentTarget.value)}
-					>
-						<option value="all">All topics</option>
-						{#each availableTopics as topic (topic.id)}
-							<option value={topic.id}>
-								{topic.specRef}
-								{topic.title} ({topicCardCount(topic.id)})
-							</option>
-						{/each}
-					</select>
-				</ControlSection>
-			</div>
+	<main class="recall-session unavailable" aria-label="Recall card session unavailable">
+		<section class="session-complete">
+			<h1>No cards available</h1>
+			<p>This recall deck has no cards for the requested options.</p>
+			<a class="session-primary" href={resolveInternalPath(returnToHref)}>Go back</a>
 		</section>
 	</main>
 {/if}
@@ -1889,7 +1587,6 @@
 		}
 	}
 
-	.recall-setup,
 	.recall-session {
 		width: 100%;
 		min-width: 0;
@@ -1898,92 +1595,12 @@
 		color: #0b1020;
 	}
 
-	.recall-kicker {
-		margin: 0 0 0.55rem;
-		color: #08602c;
-		font-size: 0.82rem;
-		font-weight: 860;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-	}
-
-	.setup-shell {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(20rem, 29rem);
-		gap: 1rem;
-		width: min(100%, 1160px);
-		margin: 0 auto;
-		padding: clamp(1rem, 3vw, 2rem);
-	}
-
-	.setup-copy,
-	.setup-panel,
 	.session-complete {
 		border: 1px solid #d9e0ea;
 		background: #ffffff;
 		box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
 	}
 
-	.setup-copy {
-		display: grid;
-		align-content: start;
-		gap: 0.85rem;
-		min-height: 0;
-		padding: clamp(1rem, 2.4vw, 1.45rem);
-	}
-
-	.setup-copy h1 {
-		max-width: 16ch;
-		margin: 0;
-		color: #050811;
-		font-size: clamp(2rem, 4.2vw, 3.25rem);
-		font-weight: 880;
-		line-height: 1.02;
-		letter-spacing: 0;
-	}
-
-	.setup-copy p:not(.recall-kicker) {
-		max-width: 46rem;
-		margin: 0;
-		color: #465568;
-		font-size: 1.02rem;
-		line-height: 1.48;
-	}
-
-	.setup-stats {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 0;
-		border: 1px solid #d9e0ea;
-	}
-
-	.setup-stats div {
-		display: grid;
-		gap: 0.2rem;
-		min-height: 4.4rem;
-		padding: 0.75rem;
-		border-right: 1px solid #d9e0ea;
-		background: #ffffff;
-	}
-
-	.setup-stats div:last-child {
-		border-right: 0;
-	}
-
-	.setup-stats strong {
-		color: #050811;
-		font-size: 1.55rem;
-		line-height: 1;
-	}
-
-	.setup-stats span {
-		color: #647085;
-		font-size: 0.75rem;
-		font-weight: 820;
-		text-transform: uppercase;
-	}
-
-	.setup-actions,
 	.session-complete-actions {
 		display: flex;
 		flex-wrap: wrap;
@@ -1991,8 +1608,6 @@
 		align-items: center;
 	}
 
-	.setup-primary,
-	.setup-secondary,
 	.session-primary,
 	.session-secondary {
 		display: inline-flex;
@@ -2004,10 +1619,10 @@
 		border-radius: 0;
 		font-size: 1rem;
 		font-weight: 860;
+		text-decoration: none;
 		cursor: pointer;
 	}
 
-	.setup-primary,
 	.session-primary {
 		border: 0;
 		background: linear-gradient(180deg, #08773b, #05642f);
@@ -2015,62 +1630,15 @@
 		box-shadow: 0 10px 18px rgba(5, 100, 47, 0.14);
 	}
 
-	.setup-primary:disabled {
+	.session-primary:disabled {
 		cursor: not-allowed;
 		opacity: 0.55;
 	}
 
-	.setup-secondary,
 	.session-secondary {
 		border: 1.5px solid #0b57eb;
 		background: #ffffff;
 		color: #0b45d9;
-	}
-
-	.setup-panel {
-		display: grid;
-		gap: 0;
-		align-content: start;
-	}
-
-	.setup-segment,
-	.setup-chip-grid {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.45rem;
-	}
-
-	.setup-segment button,
-	.setup-chip-grid button,
-	.setup-select {
-		min-height: 2.45rem;
-		border: 1px solid #cfd7e2;
-		border-radius: 0;
-		background: #ffffff;
-		color: #172033;
-		font: inherit;
-		font-weight: 780;
-	}
-
-	.setup-segment button,
-	.setup-chip-grid button {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.45rem;
-		padding: 0.48rem 0.64rem;
-		cursor: pointer;
-	}
-
-	.setup-segment button.active,
-	.setup-chip-grid button.active {
-		border-color: #08602c;
-		background: #f4fbf5;
-		color: #075323;
-	}
-
-	.setup-select {
-		width: 100%;
-		padding: 0 0.65rem;
 	}
 
 	.recall-session {
@@ -2097,6 +1665,10 @@
 		--recall-card-return-duration: 880ms;
 		--recall-flip-duration: 2240ms;
 		--recall-answer-duration: 2240ms;
+	}
+
+	.recall-session.unavailable {
+		grid-template-rows: minmax(0, 1fr);
 	}
 
 	.session-header {
@@ -2923,7 +2495,7 @@
 		line-height: 1;
 	}
 
-	.session-complete p:not(.recall-kicker) {
+	.session-complete p {
 		margin: 0;
 		color: #465568;
 	}
@@ -2940,25 +2512,17 @@
 		margin-top: 0.35rem;
 	}
 
-	:global(:root[data-theme='dark']) .recall-setup,
 	:global(:root[data-theme='dark']) .recall-session {
 		background: #020617;
 		color: #f8fafc;
 	}
 
-	:global(:root[data-theme='dark']) .setup-copy,
-	:global(:root[data-theme='dark']) .setup-panel,
 	:global(:root[data-theme='dark']) .session-header,
 	:global(:root[data-theme='dark']) .session-actions,
 	:global(:root[data-theme='dark']) .session-complete,
 	:global(:root[data-theme='dark']) .stack-card.active,
 	:global(:root[data-theme='dark']) .card-face,
 	:global(:root[data-theme='dark']) .session-icon-button,
-	:global(:root[data-theme='dark']) .setup-stats,
-	:global(:root[data-theme='dark']) .setup-stats div,
-	:global(:root[data-theme='dark']) .setup-segment button,
-	:global(:root[data-theme='dark']) .setup-chip-grid button,
-	:global(:root[data-theme='dark']) .setup-select,
 	:global(:root[data-theme='dark']) .choice-grid button,
 	:global(:root[data-theme='dark']) .card-meta .card-visual-cue {
 		border-color: #334155;
@@ -2966,23 +2530,16 @@
 		color: #e5e7eb;
 	}
 
-	:global(:root[data-theme='dark']) .setup-copy h1,
-	:global(:root[data-theme='dark']) .setup-stats strong,
 	:global(:root[data-theme='dark']) .session-progress-text strong,
 	:global(:root[data-theme='dark']) .card-prompt h1,
 	:global(:root[data-theme='dark']) .session-complete h1 {
 		color: #f8fafc;
 	}
 
-	:global(:root[data-theme='dark']) .recall-kicker {
-		color: var(--qc-ui-accent-text);
-	}
-
-	:global(:root[data-theme='dark']) .setup-copy p:not(.recall-kicker),
 	:global(:root[data-theme='dark']) .session-progress-text,
 	:global(:root[data-theme='dark']) .card-prompt p,
 	:global(:root[data-theme='dark']) .card-answer p,
-	:global(:root[data-theme='dark']) .session-complete p:not(.recall-kicker) {
+	:global(:root[data-theme='dark']) .session-complete p {
 		color: #a7b4c5;
 	}
 
@@ -3022,13 +2579,6 @@
 
 	:global(:root[data-theme='dark']) .stack-card.preview.two {
 		background: #0a1421;
-	}
-
-	:global(:root[data-theme='dark']) .setup-segment button.active,
-	:global(:root[data-theme='dark']) .setup-chip-grid button.active {
-		border-color: #22c55e;
-		background: #0f2b1d;
-		color: #bbf7d0;
 	}
 
 	:global(:root[data-theme='dark']) .card-answer {
@@ -3096,40 +2646,10 @@
 		}
 	}
 
-	@media (max-width: 860px) {
-		.setup-shell {
-			grid-template-columns: 1fr;
-		}
-
-		.setup-copy {
-			min-height: auto;
-		}
-	}
-
 	@media (max-width: 620px) {
-		.setup-shell {
-			padding: 0.85rem;
-		}
-
 		.session-complete-actions {
 			grid-template-columns: minmax(0, 1fr);
 			width: 100%;
-		}
-
-		.setup-copy h1 {
-			font-size: clamp(1.85rem, 10vw, 2.75rem);
-		}
-
-		.setup-stats {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-
-		.setup-stats div:nth-child(2n) {
-			border-right: 0;
-		}
-
-		.setup-stats div:nth-child(-n + 2) {
-			border-bottom: 1px solid #d9e0ea;
 		}
 
 		.stack-card {
@@ -3351,8 +2871,6 @@
 			padding: 0.48rem 0.64rem max(0.55rem, env(safe-area-inset-bottom));
 		}
 
-		.setup-primary,
-		.setup-secondary,
 		.session-primary,
 		.session-secondary {
 			min-height: 2.75rem;

@@ -79,6 +79,7 @@
 					src: asset.publicPath,
 					alt: asset.altText,
 					width: asset.paperWidthPx ?? undefined,
+					height: asset.paperHeightPx ?? undefined,
 					paperMeasurement: asset.paperMeasurement ?? null
 				}
 			])

@@ -211,7 +211,6 @@ function parseLearningAction(value: unknown): LearningActionView | null {
 	const eyebrow = safeText(value.eyebrow, 500);
 	const title = safeText(value.title, 1_000);
 	const detail = safeText(value.detail, 2_000);
-	const reason = safeText(value.reason, 2_000);
 	const durationMinutes = parseDurationMinutes(value.durationMinutes);
 	const href = safeText(value.href, 2_000);
 	const available = typeof value.available === 'boolean' ? value.available : null;
@@ -220,11 +219,10 @@ function parseLearningAction(value: unknown): LearningActionView | null {
 		eyebrow !== null &&
 		title !== null &&
 		detail !== null &&
-		reason !== null &&
 		durationMinutes !== undefined &&
 		href !== null &&
 		available !== null
-		? { id, kind, eyebrow, title, detail, reason, durationMinutes, href, available }
+		? { id, kind, eyebrow, title, detail, durationMinutes, href, available }
 		: null;
 }
 

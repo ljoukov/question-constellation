@@ -11,6 +11,8 @@
 	import { challengePath } from '$lib/challenges/routing';
 	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
 	import ThemeAwareChallengeArt from '$lib/challenges/ui/ThemeAwareChallengeArt.svelte';
+	import type { RecallRuntimeSubject } from '$lib/recall/aqaScienceRecall';
+	import RecallDeckCustomizer from '$lib/recall/RecallDeckCustomizer.svelte';
 	import type { SignedInSubjectView } from '$lib/learning/viewTypes';
 	import {
 		ArrowRight,
@@ -37,24 +39,26 @@
 		subject,
 		challengeCatalog,
 		challengeProgress,
-		challengeUserId
+		challengeUserId,
+		recallDeck
 	}: {
 		subject: SignedInSubjectView;
 		challengeCatalog: PublicChallengePreviewDefinition[];
 		challengeProgress: ChallengeProgress;
 		challengeUserId: string;
+		recallDeck: {
+			subject: RecallRuntimeSubject;
+			totalCardCount: number;
+			topics: Array<{ id: string; title: string; cardCount: number }>;
+		} | null;
 	} = $props();
 	const resolveInternalPath = resolve as (path: string) => ResolvedPathname;
 	let curriculumProgressOpen = $state(false);
-	let recommendationReasonOpen = $state(false);
 	let liveChallengeProgress = $derived(challengeProgress);
 	const challengePromotion = $derived(
 		subjectChallengePromotion(challengeCatalog, liveChallengeProgress)
 	);
 	const challengeRecommendation = $derived(challengePromotion.challenge);
-	const recommendationReasonId = $derived(
-		`recommendation-reason-${subject.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
-	);
 	const disclosureDurationMs =
 		browser && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
 
@@ -102,6 +106,12 @@
 
 	function actionTitle(action: SignedInSubjectView['nextAction']) {
 		return action.kind === 'recall' ? action.title.replace(/\s+recall$/i, '') : action.title;
+	}
+
+	function canCustomiseRecall(action: SignedInSubjectView['nextAction']) {
+		return Boolean(
+			recallDeck && action.available && action.kind === 'recall' && action.id.startsWith('recall:')
+		);
 	}
 
 	const RecommendedIcon = $derived(actionIcon(subject.nextAction.kind));
@@ -156,55 +166,45 @@
 		>
 			<header class="qc-dashboard-panel-head">
 				<div>
-					<p class="qc-panel-label">{subject.nextAction.eyebrow}</p>
+					<p class="qc-panel-label">
+						{canCustomiseRecall(subject.nextAction)
+							? `Recommended · ${subject.nextAction.eyebrow}`
+							: subject.nextAction.eyebrow}
+					</p>
 					<h2 id="recommended-heading">{actionTitle(subject.nextAction)}</h2>
 				</div>
 				<RecommendedIcon size={22} aria-hidden="true" strokeWidth={2.2} />
 			</header>
 			<p>{subject.nextAction.detail}</p>
-			{#if subject.nextAction.available && subject.nextAction.reason && subject.nextAction.kind !== 'scope' && subject.nextAction.kind !== 'resume'}
-				<div
-					class="qc-inline-disclosure qc-recommendation-reason"
-					class:is-open={recommendationReasonOpen}
-				>
-					<button
-						type="button"
-						class="qc-inline-disclosure-toggle"
-						aria-expanded={recommendationReasonOpen}
-						aria-controls={recommendationReasonId}
-						onclick={() => (recommendationReasonOpen = !recommendationReasonOpen)}
+			{#if canCustomiseRecall(subject.nextAction) && recallDeck}
+				<RecallDeckCustomizer
+					subject={recallDeck.subject}
+					totalCardCount={recallDeck.totalCardCount}
+					topics={recallDeck.topics}
+					initialHref={subject.nextAction.href}
+					primary
+				/>
+			{:else}
+				<div class="qc-subject-actions">
+					<a
+						class={subject.nextAction.available
+							? 'qc-dashboard-action'
+							: 'qc-action-button compact'}
+						href={resolveInternalPath(subject.nextAction.href)}
+						data-sveltekit-reload={subject.nextAction.kind === 'recall' ? true : undefined}
+						aria-label={`${actionLabel(subject.nextAction)}: ${subject.nextAction.title}`}
 					>
-						<span>Why this?</span>
-						<ChevronDown size={17} aria-hidden="true" />
-					</button>
-					{#if recommendationReasonOpen}
-						<div
-							id={recommendationReasonId}
-							class="qc-inline-disclosure-content"
-							transition:slide={{ duration: disclosureDurationMs }}
-						>
-							<p>{subject.nextAction.reason}</p>
-						</div>
+						{actionLabel(subject.nextAction)}
+						<ArrowRight size={17} aria-hidden="true" />
+					</a>
+					{#if subject.nextAction.durationMinutes}
+						<span class="qc-activity-meta">
+							<Clock3 size={14} aria-hidden="true" />
+							About {subject.nextAction.durationMinutes} min
+						</span>
 					{/if}
 				</div>
 			{/if}
-			<div class="qc-subject-actions">
-				<a
-					class={subject.nextAction.available ? 'qc-dashboard-action' : 'qc-action-button compact'}
-					href={resolveInternalPath(subject.nextAction.href)}
-					data-sveltekit-reload={subject.nextAction.kind === 'recall' ? true : undefined}
-					aria-label={`${actionLabel(subject.nextAction)}: ${subject.nextAction.title}`}
-				>
-					{actionLabel(subject.nextAction)}
-					<ArrowRight size={17} aria-hidden="true" />
-				</a>
-				{#if subject.nextAction.durationMinutes}
-					<span class="qc-activity-meta">
-						<Clock3 size={14} aria-hidden="true" />
-						About {subject.nextAction.durationMinutes} min
-					</span>
-				{/if}
-			</div>
 		</section>
 
 		{#if challengeRecommendation}
@@ -271,16 +271,25 @@
 								<ActionIcon size={20} aria-hidden="true" strokeWidth={2.2} />
 							</header>
 							<p>{action.detail}</p>
-							<a
-								class="qc-action-button compact"
-								href={resolveInternalPath(action.href)}
-								data-sveltekit-reload={action.kind === 'recall' ? true : undefined}
-								aria-label={`${actionLabel(action)}: ${action.title}`}
-								data-analytics-label={`${subject.subject} ${action.kind}`}
-							>
-								{actionLabel(action)}
-								<ChevronRight size={15} aria-hidden="true" />
-							</a>
+							{#if canCustomiseRecall(action) && recallDeck}
+								<RecallDeckCustomizer
+									subject={recallDeck.subject}
+									totalCardCount={recallDeck.totalCardCount}
+									topics={recallDeck.topics}
+									initialHref={action.href}
+								/>
+							{:else}
+								<a
+									class="qc-action-button compact"
+									href={resolveInternalPath(action.href)}
+									data-sveltekit-reload={action.kind === 'recall' ? true : undefined}
+									aria-label={`${actionLabel(action)}: ${action.title}`}
+									data-analytics-label={`${subject.subject} ${action.kind}`}
+								>
+									{actionLabel(action)}
+									<ChevronRight size={15} aria-hidden="true" />
+								</a>
+							{/if}
 						</article>
 					{/each}
 				</div>

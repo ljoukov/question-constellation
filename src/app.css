@@ -7669,21 +7669,6 @@ textarea::placeholder {
 	line-height: 1.45;
 }
 
-.qc-recommendation-reason summary,
-.qc-recommendation-reason .qc-inline-disclosure-toggle {
-	justify-content: space-between;
-}
-
-.qc-recommendation-reason summary svg,
-.qc-recommendation-reason .qc-inline-disclosure-toggle svg {
-	transition: transform 160ms ease;
-}
-
-.qc-recommendation-reason[open] summary svg,
-.qc-recommendation-reason.is-open .qc-inline-disclosure-toggle svg {
-	transform: rotate(180deg);
-}
-
 .qc-mark-details-content {
 	margin-top: 0.72rem;
 	padding-top: 0.72rem;
@@ -7717,7 +7702,6 @@ textarea::placeholder {
 
 @media (prefers-reduced-motion: reduce) {
 	.qc-mark-details-action svg,
-	.qc-recommendation-reason .qc-inline-disclosure-toggle svg,
 	.qc-profile-toggle span::after {
 		transition: none;
 	}

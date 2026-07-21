@@ -213,6 +213,8 @@ The signed-in home is a return surface, not an acquisition landing page. It shou
 Design requirements:
 
 - Do not hide the action behind an apparently inert card.
+- Keep the recommendation rationale in its one visible detail sentence. Do not add a separate
+  `Why this?` disclosure or persist duplicate recommendation-explanation prose.
 - Do not place duplicate configuration buttons inside and beside the same card.
 - Keep subject-content settings after the subjects on mobile and in the quieter sidebar position on larger screens.
 - Past-paper links belong to public acquisition and SEO surfaces, not the signed-in next-action flow.
@@ -248,9 +250,16 @@ Learning endpoints describe the durable learning object in the path:
 
 Recall paths carry the subject and activity (`quick`, `flashcards`, `multiple-choice`,
 `true-or-false`, or `reverse`). Query parameters are reserved for optional session filters such
-as topic, card kind, stack size, search text, and a safe return destination. Challenge play,
-recall, and active question practice remain immersive: they use a clear back or close action
+as topic and stack size, plus a safe return destination. Challenge play, recall, and active
+question practice remain immersive: they use a clear back or close action
 instead of fitting the global navigation into the task.
+
+Recall configuration belongs on the subject hub beside the recall action, not inside the
+immersive session. `Customise deck` expands in place and offers only learner-meaningful choices:
+topic, practice style, and card count. The recommended deck remains one-click when the disclosure
+is closed. Card-kind taxonomy, search, progress reset, and subject selection do not belong in this
+launcher. Leaving or completing a deck returns directly to its explicit context; it must never
+render the configuration controls as an intermediate frame.
 
 ### Flow A: Public Question To Constellation
 

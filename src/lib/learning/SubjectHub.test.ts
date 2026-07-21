@@ -66,7 +66,6 @@ const subject: SignedInSubjectView = {
 		eyebrow: 'Recommended next',
 		title: 'Cell biology recall',
 		detail: 'Build a secure base before answering another question.',
-		reason: 'This supports your next answer.',
 		durationMinutes: 5,
 		href: '/recall/biology/quick',
 		available: true
@@ -86,7 +85,12 @@ describe('SubjectHub challenge promotion', () => {
 				subject,
 				challengeCatalog,
 				challengeProgress,
-				challengeUserId: 'learner-1'
+				challengeUserId: 'learner-1',
+				recallDeck: {
+					subject: 'Biology',
+					totalCardCount: 18,
+					topics: [{ id: 'cells', title: 'Cell biology', cardCount: 8 }]
+				}
 			}
 		});
 
@@ -94,6 +98,8 @@ describe('SubjectHub challenge promotion', () => {
 		expect(body).toMatch(/<strong[^>]*>1<\/strong> complete/);
 		expect(body).toMatch(/<strong[^>]*>475<\/strong> points/);
 		expect(body).toContain('Play now');
+		expect(body).toContain('Customise deck');
+		expect(body).toContain('Start recall');
 		expect(body).not.toContain('of 2 complete');
 	});
 });

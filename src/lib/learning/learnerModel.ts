@@ -82,33 +82,8 @@ export interface ActionRankingConstraints {
 	maxMinutes?: number;
 }
 
-export type RecommendationReasonCode =
-	| 'resolve_conflicting_evidence'
-	| 'close_known_gap'
-	| 'review_due'
-	| 'establish_first_evidence'
-	| 'strengthen_developing'
-	| 'practise_transfer'
-	| 'next_available';
-
-export interface RankedLearningAction {
-	candidate: LearningActionCandidate;
-	reasonCode: RecommendationReasonCode;
-	reason: string;
-}
-
 const DAY_MS = 24 * 60 * 60 * 1_000;
 const CONFLICT_WINDOW_MS = 45 * DAY_MS;
-
-const recommendationReasonText: Record<RecommendationReasonCode, string> = {
-	resolve_conflicting_evidence: 'Recent answers disagree, so check this with a focused task.',
-	close_known_gap: 'This is the clearest active gap in the selected curriculum.',
-	review_due: 'This was going well and is now due for a quick check.',
-	establish_first_evidence: 'You have not practised this part of the curriculum here yet.',
-	strengthen_developing: 'One more focused attempt will make your progress clearer.',
-	practise_transfer: 'Use the same method in a less familiar exam question.',
-	next_available: 'This is the strongest available next step in the selected curriculum.'
-};
 
 interface TimedEvidence {
 	evidence: LearnerEvidence;
@@ -338,16 +313,6 @@ export function computeLearnerState(
 	};
 }
 
-function recommendationReason(candidate: LearningActionCandidate): RecommendationReasonCode {
-	if (candidate.state === 'conflicting') return 'resolve_conflicting_evidence';
-	if (candidate.activeGap && candidate.kind === 'close_gap') return 'close_known_gap';
-	if (candidate.state === 'due') return 'review_due';
-	if (candidate.state === 'no_evidence') return 'establish_first_evidence';
-	if (candidate.state === 'secure' && candidate.kind === 'apply_chain') return 'practise_transfer';
-	if (candidate.state === 'developing') return 'strengthen_developing';
-	return 'next_available';
-}
-
 function statePriority(candidate: LearningActionCandidate): number {
 	if (candidate.state === 'conflicting') return 0;
 	if (candidate.state === 'developing' && candidate.activeGap) return 1;
@@ -392,7 +357,7 @@ function compareCandidates(left: LearningActionCandidate, right: LearningActionC
 export function rankCandidateActions(
 	candidates: readonly LearningActionCandidate[],
 	constraints: ActionRankingConstraints
-): RankedLearningAction[] {
+): LearningActionCandidate[] {
 	const scope =
 		constraints.scopeComponentIds === undefined ? null : new Set(constraints.scopeComponentIds);
 	const allowedKinds = constraints.allowedKinds ? new Set(constraints.allowedKinds) : null;
@@ -407,9 +372,5 @@ export function rankCandidateActions(
 				constraints.maxMinutes === undefined || candidate.estimatedMinutes <= constraints.maxMinutes
 		)
 		.slice()
-		.sort(compareCandidates)
-		.map((candidate) => {
-			const reasonCode = recommendationReason(candidate);
-			return { candidate, reasonCode, reason: recommendationReasonText[reasonCode] };
-		});
+		.sort(compareCandidates);
 }

@@ -33,7 +33,6 @@ type StoredCandidate = {
 
 export type RecommendationModelChoice = {
 	candidateId: string;
-	reason: string;
 };
 
 function parseJson<T>(value: string, fallback: T): T {
@@ -52,20 +51,11 @@ export function parseRecommendationResponse(
 	const object = (fenced ?? raw).match(/\{[\s\S]*\}/)?.[0];
 	if (!object) return null;
 	try {
-		const parsed = JSON.parse(object) as { candidateId?: unknown; reason?: unknown };
+		const parsed = JSON.parse(object) as { candidateId?: unknown };
 		if (typeof parsed.candidateId !== 'string' || !allowedCandidateIds.has(parsed.candidateId)) {
 			return null;
 		}
-		if (typeof parsed.reason !== 'string') return null;
-		const reason = parsed.reason
-			.replace(/\s+/g, ' ')
-			.trim()
-			.split(' ')
-			.slice(0, 24)
-			.join(' ')
-			.slice(0, 220);
-		if (!reason) return null;
-		return { candidateId: parsed.candidateId, reason };
+		return { candidateId: parsed.candidateId };
 	} catch {
 		return null;
 	}
@@ -87,7 +77,6 @@ function buildPrompt({
 		'The candidate list is already constrained to the official board curriculum scope and available reviewed content.',
 		'Choose exactly one supplied candidate. Never invent a topic, action, route, grade, or mastery value.',
 		'Prefer due retrieval, a repeatedly supported gap, or useful independent transfer according to the evidence. Recognition-only evidence is weak. Do not overreact to one mistake.',
-		'Write one short student-facing reason grounded only in the supplied evidence. Maximum 24 words. Do not mention an algorithm or AI.',
 		'',
 		`Subject: ${subject}`,
 		`Curriculum scope: ${JSON.stringify(scope)}`,
@@ -95,7 +84,7 @@ function buildPrompt({
 		`Eligible candidates: ${JSON.stringify(candidates)}`,
 		'',
 		'Output JSON only:',
-		'{"candidateId":"exact supplied id","reason":"brief evidence-backed reason"}'
+		'{"candidateId":"exact supplied id"}'
 	].join('\n');
 }
 
@@ -192,10 +181,10 @@ export async function refreshSubjectRecommendationWithModel({
 			   candidate_actions_json, selected_action_id, selected_action_kind,
 			   selected_component_kind, selected_component_id,
 			   selected_curriculum_component_id, selected_route,
-			   reason_code, reason_text, decision_source, algorithm_version,
+			   decision_source, algorithm_version,
 			   model_run_id, valid_until
 			 )
-			 SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'llm', ?, ?, ?
+			 SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'llm', ?, ?, ?
 			 WHERE EXISTS (
 			   SELECT 1
 			   FROM user_recommendation_decisions source
@@ -219,8 +208,6 @@ export async function refreshSubjectRecommendationWithModel({
 				selected.componentId,
 				selected.curriculumComponentId,
 				selected.route,
-				'llm_ranked_eligible_candidates',
-				choice.reason,
 				'next-action-v1',
 				analytics.runId,
 				validUntil,

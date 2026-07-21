@@ -115,7 +115,6 @@ const biologySubject: SignedInSubjectView = {
 		eyebrow: 'Recommended next',
 		title: 'Cell biology recall',
 		detail: 'Build a secure base before answering another question.',
-		reason: 'This supports your next answer.',
 		durationMinutes: 5,
 		href: '/recall/biology/quick',
 		available: true

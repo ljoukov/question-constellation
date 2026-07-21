@@ -2,6 +2,8 @@ import {
 	buildGradePrompt,
 	configureLlmProcessEnv,
 	deterministicChoiceGrade,
+	deterministicExactOneMarkGrade,
+	observePromiseResult,
 	parseGradeResponse
 } from './answerGrading';
 import { env as privateEnv } from '$env/dynamic/private';
@@ -241,6 +243,31 @@ const choicePracticeData: PracticePageData = {
 	}
 };
 
+const exactOneMarkPracticeData: PracticePageData = {
+	...practiceData,
+	question: {
+		...practiceData.question,
+		id: '84632h-jun24-02-2',
+		modelAnswer: 'W = F × s',
+		meta: { ...practiceData.question.meta, marks: 1 },
+		checklistSource: 'official',
+		renderingOverlay: {
+			id: 'work-equation-overlay',
+			version: 'v1',
+			provenance: 'manual',
+			confidence: 1,
+			needsHumanReview: false,
+			stemBlocks: [],
+			promptBlocks: [],
+			responseInteraction: { kind: 'lines', count: 1 },
+			afterResponseBlocks: [],
+			assets: [],
+			layout: {},
+			metadata: {}
+		}
+	}
+};
+
 describe('answer grading prompt and parser', () => {
 	it('grades an exact fixed choice deterministically without model output', () => {
 		const correct = deterministicChoiceGrade(choicePracticeData, 'Meristem');
@@ -291,6 +318,53 @@ describe('answer grading prompt and parser', () => {
 			result: 'partial',
 			awardedMarks: 1,
 			maxMarks: 2
+		});
+	});
+
+	it('grades an exact official one-mark equation without a model call', () => {
+		expect(deterministicExactOneMarkGrade(exactOneMarkPracticeData, 'W=F*s')).toMatchObject({
+			result: 'correct',
+			awardedMarks: 1,
+			maxMarks: 1,
+			model: 'deterministic',
+			modelVersion: 'exact-one-mark-v1'
+		});
+		expect(deterministicExactOneMarkGrade(exactOneMarkPracticeData, 'W = F · s')).toMatchObject({
+			result: 'correct',
+			awardedMarks: 1
+		});
+	});
+
+	it('does not guess when an official one-mark response is not an exact match', () => {
+		expect(deterministicExactOneMarkGrade(exactOneMarkPracticeData, 'W = F / s')).toBeNull();
+		expect(
+			deterministicExactOneMarkGrade(
+				{
+					...exactOneMarkPracticeData,
+					question: { ...exactOneMarkPracticeData.question, modelAnswer: '23' }
+				},
+				'2*3'
+			)
+		).toBeNull();
+		expect(
+			deterministicExactOneMarkGrade(
+				{
+					...exactOneMarkPracticeData,
+					question: {
+						...exactOneMarkPracticeData.question,
+						meta: { ...exactOneMarkPracticeData.question.meta, marks: 2 }
+					}
+				},
+				'W=F*s'
+			)
+		).toBeNull();
+	});
+
+	it('observes a rejected stream result without converting it to success', async () => {
+		const error = new Error('usage limit reached');
+		await expect(observePromiseResult(Promise.reject(error))).resolves.toEqual({
+			ok: false,
+			error
 		});
 	});
 

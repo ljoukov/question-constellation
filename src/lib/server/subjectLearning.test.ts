@@ -520,8 +520,6 @@ describe('signed-in home resume action', () => {
 						eyebrow: 'Unfinished answer',
 						title: 'Continue your Biology answer',
 						detail: 'Your latest unfinished response is saved on this question.',
-						reason:
-							'Carry on from the exact point you reached instead of starting another activity.',
 						durationMinutes: null,
 						href: '/questions/question-1/practice',
 						available: true
@@ -999,7 +997,6 @@ describe('signed-in subject action integrity', () => {
 		currentRecommendation = {
 			id: 'current-recommendation',
 			selected_action_id: 'recall:biology-topic-4-1',
-			reason_text: 'This exact recommendation is still current.',
 			decision_source: 'llm',
 			valid_until: '2099-01-01 00:00:00',
 			curriculum_scope_snapshot_json: storedParams[5],
@@ -1010,19 +1007,18 @@ describe('signed-in subject action integrity', () => {
 
 		const unchangedView = await getSignedInSubjectView(testUser, 'Biology');
 
-		expect(unchangedView?.nextAction.reason).toBe('This exact recommendation is still current.');
+		expect(unchangedView?.nextAction.id).toBe('recall:biology-topic-4-1');
 		expect(mocks.executePersonalQuery).not.toHaveBeenCalled();
 
 		currentRecommendation = {
 			...currentRecommendation,
 			id: 'stale-recommendation',
-			reason_text: 'Based on old evidence.',
 			learner_state_snapshot_json: '[{"evidenceCount":99}]'
 		};
 
 		const refreshedView = await getSignedInSubjectView(testUser, 'Biology');
 
-		expect(refreshedView?.nextAction.reason).not.toBe('Based on old evidence.');
+		expect(refreshedView?.nextAction.id).toBe('recall:biology-topic-4-1');
 		expect(mocks.executePersonalQuery).toHaveBeenCalledWith(
 			expect.stringContaining('WHERE user_id = ? AND subject = ?'),
 			[testUser.uid, 'Biology']
@@ -1033,7 +1029,7 @@ describe('signed-in subject action integrity', () => {
 			persistRecommendations: false
 		});
 
-		expect(snapshotView.subjects[0]?.nextAction.reason).not.toBe('Based on old evidence.');
+		expect(snapshotView.subjects[0]?.nextAction.id).toBe('recall:biology-topic-4-1');
 		expect(mocks.executePersonalQuery).not.toHaveBeenCalled();
 	});
 
@@ -1077,7 +1073,6 @@ describe('signed-in subject action integrity', () => {
 			href: '/gaps/confirmed%20gap%2F1',
 			available: true
 		});
-		expect(view?.nextAction.reason).toContain('2 different checked questions');
 	});
 
 	it('does not offer gap practice after evidence from only one distinct item', async () => {
@@ -1118,8 +1113,7 @@ describe('signed-in subject action integrity', () => {
 		expect(view?.nextAction.id).not.toBe('gap:unconfirmed-gap');
 		expect(gapAlternative).toMatchObject({
 			id: 'unavailable:close_gap',
-			available: false,
-			reason: 'No repeated knowledge gap is confirmed yet.'
+			available: false
 		});
 		expect(JSON.stringify(view)).not.toContain('/gaps/unconfirmed-gap');
 	});

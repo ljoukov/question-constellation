@@ -59,6 +59,19 @@ export type QuestionGradeResult = {
 	modelVersion: string;
 };
 
+export type ObservedPromiseResult<T> = { ok: true; value: T } | { ok: false; error: unknown };
+
+/**
+ * Observe both outcomes immediately so a provider stream cannot leave its companion
+ * result promise rejected and unhandled when the event iterator fails first.
+ */
+export function observePromiseResult<T>(promise: Promise<T>): Promise<ObservedPromiseResult<T>> {
+	return promise.then(
+		(value) => ({ ok: true, value }),
+		(error) => ({ ok: false, error })
+	);
+}
+
 function getPlatformEnvValue(platformEnv: unknown, key: string): string | undefined {
 	if (!platformEnv || typeof platformEnv !== 'object') return undefined;
 	const value = (platformEnv as Record<string, unknown>)[key];
@@ -452,6 +465,55 @@ export function deterministicChoiceGrade(
 	};
 }
 
+function normalizeExactOneMarkAnswer(value: string): string {
+	return value
+		.normalize('NFKC')
+		.toLowerCase()
+		.replace(/\\(?:times|cdot)\b/g, '*')
+		.replace(/[×⋅·*]/g, '*')
+		.replace(/[−–—]/g, '-')
+		.replace(/[$`\s]/g, '')
+		.trim();
+}
+
+/**
+ * A verbatim-equivalent response to an official one-mark, single-line answer is
+ * already conclusive. Only positive exact matches are handled here; every other
+ * constructed response still goes through examiner-style model grading.
+ */
+export function deterministicExactOneMarkGrade(
+	data: PracticePageData,
+	studentAnswer: string
+): QuestionGradeResult | null {
+	const response = data.question.renderingOverlay?.responseInteraction;
+	if (
+		data.question.meta.marks !== 1 ||
+		data.question.checklistSource !== 'official' ||
+		!response ||
+		response.kind !== 'lines' ||
+		response.count !== 1
+	) {
+		return null;
+	}
+
+	const expected = normalizeExactOneMarkAnswer(data.question.modelAnswer);
+	const submitted = normalizeExactOneMarkAnswer(studentAnswer);
+	if (!expected || !submitted || submitted !== expected) return null;
+
+	return {
+		status: 'ok',
+		result: 'correct',
+		awardedMarks: 1,
+		maxMarks: 1,
+		presentStepIds: [],
+		missingStepIds: [],
+		feedbackMarkdown: '- **1/1** Correct.\n- Your answer matches the expected one-mark response.',
+		thinkingMarkdown: null,
+		model: 'deterministic',
+		modelVersion: 'exact-one-mark-v1'
+	};
+}
+
 export async function loadQuestionForGrading(questionId: string): Promise<PracticePageData> {
 	return await getPracticePageData(questionId);
 }
@@ -473,7 +535,9 @@ export async function gradeQuestionAnswerStreaming({
 	let modelAnalytics: ReturnType<typeof startModelAnalytics> | null = null;
 	try {
 		const data = await loadQuestionForGrading(questionId);
-		const deterministicResult = deterministicChoiceGrade(data, studentAnswer);
+		const deterministicResult =
+			deterministicChoiceGrade(data, studentAnswer) ??
+			deterministicExactOneMarkGrade(data, studentAnswer);
 		if (deterministicResult) {
 			onDelta?.({ type: 'status', phase: 'grading' });
 			return deterministicResult;
@@ -501,6 +565,7 @@ export async function gradeQuestionAnswerStreaming({
 			signal,
 			telemetry: false
 		});
+		const observedResult = observePromiseResult(call.result);
 
 		let rawText = '';
 		let thoughtText = '';
@@ -530,7 +595,9 @@ export async function gradeQuestionAnswerStreaming({
 		}
 
 		stage = 'collect_result';
-		const llmResult = await call.result;
+		const resultOutcome = await observedResult;
+		if (!resultOutcome.ok) throw resultOutcome.error;
+		const llmResult = resultOutcome.value;
 		const finalText = rawText.trim() ? rawText : llmResult.text;
 		const finalThoughts = thoughtText.trim() ? thoughtText : llmResult.thoughts;
 		modelAnalytics.complete({

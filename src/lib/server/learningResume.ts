@@ -87,7 +87,6 @@ function resumeAction(subject: LearnerSubject, questionId: string): LearningActi
 		eyebrow: 'Unfinished answer',
 		title: `Continue your ${subject.subject} answer`,
 		detail: 'Your latest unfinished response is saved on this question.',
-		reason: 'Carry on from the exact point you reached instead of starting another activity.',
 		durationMinutes: null,
 		href: `/questions/${encodeURIComponent(questionId)}/practice`,
 		available: true

@@ -4,6 +4,7 @@ export type ExamPaperAsset = {
 	src: string;
 	alt: string;
 	width?: number;
+	height?: number;
 	paperMeasurement?: PaperMeasurement | null;
 };
 
