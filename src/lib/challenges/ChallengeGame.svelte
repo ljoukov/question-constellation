@@ -49,13 +49,19 @@
 		chain,
 		nextChallenges,
 		initialProgress = null,
-		userId = null
+		userId = null,
+		curriculum
 	}: {
 		challenge: ChallengeDefinition;
 		chain: AnswerChain;
 		nextChallenges: Array<Pick<ChallengeDefinition, 'id' | 'slug' | 'subject'>>;
 		initialProgress?: ChallengeProgress | null;
 		userId?: string | null;
+		curriculum?: {
+			topicLabel: string;
+			officialUrl: string;
+			contextUrl: string;
+		};
 	} = $props();
 
 	const stageOrder: Array<{ id: Stage; short: string; label: string }> = [
@@ -87,8 +93,6 @@
 	let canNativeShare = $state(false);
 	let challengeGame = $state<HTMLElement | null>(null);
 	let stageHeading = $state<HTMLElement | null>(null);
-	let showdownReveal = $state<HTMLElement | null>(null);
-	let earnedChain = $state<HTMLElement | null>(null);
 	let stageStartedAt = $state(0);
 	let completedStageElapsedMs = $state(0);
 	let stageElapsedDisplaySeconds = $state(0);
@@ -361,12 +365,7 @@
 			})
 		);
 		analyticsEvent('challenge_reveal_complete', eventContext({ correct }));
-		void revealShowdownResult();
-	}
-
-	async function revealShowdownResult() {
-		await tick();
-		scrollIntoViewIfNeeded(showdownReveal, 'center');
+		void revealStageAction();
 	}
 
 	function chooseDiagnosis(choice: ChallengeChoice) {
@@ -409,7 +408,7 @@
 			haptics.success();
 			void playChallengeSound('correct');
 			announcement = 'Answer improved. The full method is now visible.';
-			void revealEarnedChain();
+			void revealStageAction();
 		} else {
 			if (!repairWrongChoices.includes(choice.id)) {
 				repairWrongChoices = [...repairWrongChoices, choice.id];
@@ -429,15 +428,10 @@
 		);
 	}
 
-	async function revealEarnedChain() {
-		await tick();
-		scrollIntoViewIfNeeded(earnedChain, 'start');
-	}
-
 	async function revealStageAction() {
 		await tick();
-		const actionFooter = challengeGame?.querySelector<HTMLElement>('.session-actions');
-		scrollIntoViewIfNeeded(actionFooter ?? null, 'end');
+		const stageAction = challengeGame?.querySelector<HTMLElement>('.session-action-slot');
+		scrollIntoViewIfNeeded(stageAction ?? null, 'end');
 	}
 
 	function scrollIntoViewIfNeeded(element: HTMLElement | null, block: ScrollLogicalPosition) {
@@ -678,6 +672,7 @@
 		complete={stage === 'complete'}
 		{slowMotion}
 		actionsVisible={sessionActionsVisible}
+		{curriculum}
 	>
 		{#key visibleStage}
 			<div
@@ -875,7 +870,6 @@
 										class:correct={selectedShowdownCorrect}
 										class:incorrect={!selectedShowdownCorrect}
 										class="showdown-reveal"
-										bind:this={showdownReveal}
 									>
 										<div class="reveal-icon" aria-hidden="true">
 											{#if selectedShowdownCorrect}
@@ -975,7 +969,7 @@
 										</div>
 									{/if}
 									{#if repairPassed}
-										<div class="chain-earned" bind:this={earnedChain}>
+										<div class="chain-earned">
 											<header>
 												<div>
 													<span><Sparkles size={17} aria-hidden="true" /> Method</span>

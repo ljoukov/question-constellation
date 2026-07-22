@@ -4,6 +4,7 @@
 	import { tick } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import ChallengeProgress from './ChallengeProgress.svelte';
+	import ChallengeCurriculumControl from './ChallengeCurriculumControl.svelte';
 	import ChallengeSoundToggle from './ChallengeSoundToggle.svelte';
 
 	let {
@@ -20,6 +21,7 @@
 		complete = false,
 		slowMotion = false,
 		actionsVisible = true,
+		curriculum,
 		onPauseChange,
 		children,
 		actions
@@ -37,6 +39,11 @@
 		complete?: boolean;
 		slowMotion?: boolean;
 		actionsVisible?: boolean;
+		curriculum?: {
+			topicLabel: string;
+			officialUrl: string;
+			contextUrl: string;
+		};
 		onPauseChange?: (paused: boolean) => void;
 		children: Snippet;
 		actions?: Snippet;
@@ -156,7 +163,16 @@
 
 	{#if !complete}
 		<footer class="session-actions">
-			<span class="session-footer-balance" aria-hidden="true"></span>
+			<div class="session-footer-curriculum">
+				{#if curriculum}
+					<ChallengeCurriculumControl
+						topicLabel={curriculum.topicLabel}
+						officialUrl={curriculum.officialUrl}
+						contextUrl={curriculum.contextUrl}
+						onOpenChange={onPauseChange}
+					/>
+				{/if}
+			</div>
 			{#if actionsVisible && actions}
 				<div class="session-action-slot">{@render actions()}</div>
 			{:else}
@@ -401,8 +417,9 @@
 		background: var(--qc-ui-surface-raised);
 	}
 
-	.session-footer-balance {
+	.session-footer-curriculum {
 		grid-column: 1;
+		justify-self: start;
 	}
 
 	.session-action-slot {
@@ -539,19 +556,19 @@
 
 	@media (max-width: 620px) {
 		.session-actions {
-			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-columns: auto minmax(0, 1fr) auto;
 		}
 
-		.session-footer-balance {
-			display: none;
-		}
-
-		.session-action-slot {
+		.session-footer-curriculum {
 			grid-column: 1;
 		}
 
-		.session-actions .session-timer-status {
+		.session-action-slot {
 			grid-column: 2;
+		}
+
+		.session-actions .session-timer-status {
+			grid-column: 3;
 		}
 
 		.session-timer-status {

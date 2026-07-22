@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { ResolvedPathname } from '$app/types';
+	import ComboBox from '$lib/components/ui/ComboBox.svelte';
 	import type { RecallRuntimeSubject } from '$lib/recall/aqaScienceRecall';
 	import {
 		recallActivityForMode,
@@ -127,39 +128,30 @@
 			<div class="recall-option-grid">
 				<label class="recall-option">
 					<span class="recall-option-label">Topic</span>
-					<span class="recall-select">
-						<select bind:value={selectedTopic}>
-							<option value="all">All included topics</option>
-							{#each topics as topic (topic.id)}
-								<option value={topic.id}>{topic.title}</option>
-							{/each}
-						</select>
-						<ChevronDown size={17} aria-hidden="true" strokeWidth={2.2} />
-					</span>
+					<ComboBox bind:value={selectedTopic}>
+						<option value="all">All included topics</option>
+						{#each topics as topic (topic.id)}
+							<option value={topic.id}>{topic.title}</option>
+						{/each}
+					</ComboBox>
 				</label>
 
 				<label class="recall-option">
 					<span class="recall-option-label">Practice style</span>
-					<span class="recall-select">
-						<select bind:value={selectedMode}>
-							{#each supportedModes as option (option.value)}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
-						<ChevronDown size={17} aria-hidden="true" strokeWidth={2.2} />
-					</span>
+					<ComboBox bind:value={selectedMode}>
+						{#each supportedModes as option (option.value)}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</ComboBox>
 				</label>
 
 				<label class="recall-option">
 					<span class="recall-option-label">Cards</span>
-					<span class="recall-select">
-						<select bind:value={selectedSize}>
-							{#each recallStackSizeOptions as size (size)}
-								<option value={size}>{size} cards</option>
-							{/each}
-						</select>
-						<ChevronDown size={17} aria-hidden="true" strokeWidth={2.2} />
-					</span>
+					<ComboBox bind:value={selectedSize}>
+						{#each recallStackSizeOptions as size (size)}
+							<option value={size}>{size} cards</option>
+						{/each}
+					</ComboBox>
 				</label>
 			</div>
 			<p class="recall-deck-summary" aria-live="polite">
@@ -277,57 +269,6 @@
 		transition: color 140ms ease;
 	}
 
-	.recall-select {
-		position: relative;
-		display: grid;
-		min-width: 0;
-		transition: background-color 140ms ease;
-	}
-
-	.recall-select select {
-		width: 100%;
-		min-width: 0;
-		min-height: 2.75rem;
-		padding: 0.3rem 2rem 0.3rem 0.12rem;
-		border: 0;
-		border-radius: 0;
-		outline: 0;
-		appearance: none;
-		-webkit-appearance: none;
-		background: transparent;
-		color: var(--qc-ui-text);
-		font: inherit;
-		font-size: 1rem;
-		font-weight: 450;
-		line-height: 1.2;
-		cursor: pointer;
-	}
-
-	.recall-select :global(svg) {
-		position: absolute;
-		top: 50%;
-		right: 0.18rem;
-		transform: translateY(-50%);
-		color: var(--qc-ui-text-secondary);
-		pointer-events: none;
-	}
-
-	.recall-select:hover {
-		background: color-mix(in srgb, var(--qc-ui-accent) 5%, transparent);
-	}
-
-	.recall-select:focus-within {
-		background: color-mix(in srgb, var(--qc-ui-accent) 10%, transparent);
-	}
-
-	.recall-select:has(select:focus-visible) {
-		box-shadow: inset 0 0 0 2px var(--qc-ui-accent);
-	}
-
-	.recall-select:focus-within :global(svg) {
-		color: var(--qc-ui-accent-text);
-	}
-
 	.recall-option:focus-within .recall-option-label {
 		color: var(--qc-ui-accent-text);
 	}
@@ -379,22 +320,9 @@
 		}
 	}
 
-	@media (forced-colors: active) {
-		.recall-select select {
-			padding-right: 0.4rem;
-			appearance: auto;
-			-webkit-appearance: auto;
-		}
-
-		.recall-select :global(svg) {
-			display: none;
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		.recall-customise-toggle :global(svg),
-		.recall-option-label,
-		.recall-select {
+		.recall-option-label {
 			transition: none;
 		}
 	}

@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import { authStartHref } from '$lib/authReturn';
-	import { CheckCircle2, ExternalLink, Info } from '@lucide/svelte';
+	import { CheckCircle2, ExternalLink, House, Info } from '@lucide/svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
-	import IconBackLink from '$lib/components/IconBackLink.svelte';
+	import ComboBox from '$lib/components/ui/ComboBox.svelte';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import {
 		markAnonymousLearnerProfileSynced,
@@ -364,7 +365,14 @@
 	<AppTopbar user={data.user} showSearch={false} showSubject={false} showNavigation />
 
 	<div class="qc-profile-layout">
-		<IconBackLink href="/" label="Back home" />
+		<nav class="qc-profile-breadcrumbs" aria-label="Breadcrumb">
+			<a href={resolve('/')} data-analytics-label="Profile: home">
+				<House size={16} strokeWidth={2.2} aria-hidden="true" />
+				<span>Home</span>
+			</a>
+			<span aria-hidden="true">/</span>
+			<strong aria-current="page">Profile</strong>
+		</nav>
 
 		<section class="qc-profile-hero" aria-labelledby="profile-title">
 			<div>
@@ -426,33 +434,33 @@
 							>
 								<label class="qc-profile-field">
 									<span>Exam board</span>
-									<select name={`board-${index}`} bind:value={subject.board}>
+									<ComboBox name={`board-${index}`} bind:value={subject.board}>
 										{#each boardOptionsFor(subject) as board (board.id)}
 											<option value={board.name}>{board.name}</option>
 										{/each}
-									</select>
+									</ComboBox>
 								</label>
 
 								{#if scienceSubjects.has(subject.subject)}
 									<label class="qc-profile-field">
 										<span>Science route</span>
-										<select name={`course-${index}`} bind:value={subject.course}>
+										<ComboBox name={`course-${index}`} bind:value={subject.course}>
 											{#each courseOptionsFor(subject) as course (course.name)}
 												<option value={course.name}>{course.name}</option>
 											{/each}
-										</select>
+										</ComboBox>
 									</label>
 
 									<label class="qc-profile-field">
 										<span>Tier</span>
-										<select name={`tier-${index}`} bind:value={subject.tier}>
+										<ComboBox name={`tier-${index}`} bind:value={subject.tier}>
 											{#each tierOptionsFor(subject) as tier (tier.name)}
 												<option value={tier.name}>{tier.name}</option>
 											{/each}
 											{#if !tierOptionsFor(subject).some((tier) => tier.name === 'Foundation')}
 												<option value="Foundation" disabled>Foundation — not available yet</option>
 											{/if}
-										</select>
+										</ComboBox>
 									</label>
 								{:else}
 									<input type="hidden" name={`course-${index}`} value="GCSE Subject" />
@@ -491,7 +499,7 @@
 													class="qc-profile-field"
 												>
 													<span>Modern prose or drama</span>
-													<select
+													<ComboBox
 														name="ocrEnglishLiteratureModernText"
 														bind:value={englishLiteratureSelections.modernText}
 													>
@@ -499,12 +507,12 @@
 														{#each ocrEnglishLiteratureOptions.modernTexts as text (text)}
 															<option value={text}>{text}</option>
 														{/each}
-													</select>
+													</ComboBox>
 												</label>
 
 												<label id={englishLiteratureChoiceAnchor('novel')} class="qc-profile-field">
 													<span>19th-century novel</span>
-													<select
+													<ComboBox
 														name="ocrEnglishLiteratureNineteenthCenturyNovel"
 														bind:value={englishLiteratureSelections.nineteenthCenturyNovel}
 													>
@@ -512,7 +520,7 @@
 														{#each ocrEnglishLiteratureOptions.nineteenthCenturyNovels as novel (novel)}
 															<option value={novel}>{novel}</option>
 														{/each}
-													</select>
+													</ComboBox>
 												</label>
 											</section>
 
@@ -527,7 +535,7 @@
 													class="qc-profile-field"
 												>
 													<span>Poetry cluster</span>
-													<select
+													<ComboBox
 														name="ocrEnglishLiteraturePoetryCluster"
 														bind:value={englishLiteratureSelections.poetryCluster}
 													>
@@ -535,7 +543,7 @@
 														{#each ocrEnglishLiteratureOptions.poetryClusters as cluster (cluster)}
 															<option value={cluster}>{cluster}</option>
 														{/each}
-													</select>
+													</ComboBox>
 													<small>All 15 poems in the selected cluster.</small>
 												</label>
 
@@ -544,7 +552,7 @@
 													class="qc-profile-field"
 												>
 													<span>Shakespeare play</span>
-													<select
+													<ComboBox
 														name="ocrEnglishLiteratureShakespearePlay"
 														bind:value={englishLiteratureSelections.shakespearePlay}
 													>
@@ -552,7 +560,7 @@
 														{#each ocrEnglishLiteratureOptions.shakespearePlays as play (play)}
 															<option value={play}>{play}</option>
 														{/each}
-													</select>
+													</ComboBox>
 												</label>
 
 												{#each ocrPoetryNotices as notice (notice.id)}

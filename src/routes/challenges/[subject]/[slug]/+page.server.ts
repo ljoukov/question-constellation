@@ -5,7 +5,10 @@ import {
 	publicNextChallengeDefinition
 } from '$lib/challenges/authoredData';
 import { emptyChallengeProgress } from '$lib/challenges/progress';
-import { publicChallengeCurriculumLink } from '$lib/server/challengeCurriculum';
+import {
+	ENGLAND_KS4_SCIENCE_CONTEXT_URL,
+	publicChallengeCurriculumLink
+} from '$lib/server/challengeCurriculum';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -25,6 +28,7 @@ export const load: PageServerLoad = async ({ locals, params, parent }) => {
 			.map(publicNextChallengeDefinition),
 		initialProgress: challengeProgress,
 		curriculumCitation: publicChallengeCurriculumLink(challenge.id, challenge.subject),
+		ks4ScienceUrl: ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 		user: locals.user
 	};
 };

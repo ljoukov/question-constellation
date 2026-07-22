@@ -42,6 +42,11 @@
 	const serverProgress = $derived(data.initialProgress as ChallengeProgress);
 	let browserProgress = $state<ChallengeProgress | null>(null);
 	const initialProgress = $derived(browserProgress ?? serverProgress);
+	const curriculum = $derived(
+		data.curriculumCitation
+			? { ...data.curriculumCitation, contextUrl: data.ks4ScienceUrl }
+			: undefined
+	);
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -176,6 +181,7 @@
 				{nextChallenges}
 				{initialProgress}
 				{userId}
+				{curriculum}
 			/>
 		{/key}
 	</div>

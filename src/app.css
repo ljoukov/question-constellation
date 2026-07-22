@@ -2493,6 +2493,39 @@ textarea::placeholder {
 	padding: 1rem clamp(0.9rem, 2.4vw, 2rem) 3rem;
 }
 
+.qc-profile-breadcrumbs {
+	display: flex;
+	min-height: 2.25rem;
+	align-items: center;
+	gap: 0.55rem;
+	color: #66788b;
+	font-size: 0.82rem;
+	font-weight: 650;
+}
+
+.qc-profile-breadcrumbs a {
+	display: inline-flex;
+	min-height: 2.25rem;
+	align-items: center;
+	gap: 0.38rem;
+	color: #405465;
+	text-decoration: none;
+}
+
+.qc-profile-breadcrumbs a:hover {
+	color: #0f7650;
+}
+
+.qc-profile-breadcrumbs a:focus-visible {
+	outline: 3px solid #0f7650;
+	outline-offset: 2px;
+}
+
+.qc-profile-breadcrumbs strong {
+	color: #102033;
+	font-weight: 700;
+}
+
 .qc-profile-back {
 	display: inline-flex;
 	align-items: center;
