@@ -21,13 +21,23 @@ const staticEntries: SitemapEntry[] = [
 ];
 
 function challengeEntries(): SitemapEntry[] {
+	const latestChallengeReview = challengeCatalog
+		.map(({ lastReviewed }) => lastReviewed)
+		.sort()
+		.at(-1);
+
 	return [
-		{ path: '/challenges', priority: '0.92', changefreq: 'weekly', lastmod: '2026-07-17' },
+		{
+			path: '/challenges',
+			priority: '0.92',
+			changefreq: 'weekly',
+			lastmod: latestChallengeReview
+		},
 		...challengeSubjects.map((subject) => ({
 			path: `/challenges/${subject.subject}`,
 			priority: '0.88',
 			changefreq: 'weekly' as const,
-			lastmod: '2026-07-17'
+			lastmod: latestChallengeReview
 		})),
 		...challengeCatalog.map((challenge) => ({
 			path: challengePath(challenge),

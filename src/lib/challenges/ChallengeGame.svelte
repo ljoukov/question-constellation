@@ -85,6 +85,7 @@
 	let announcement = $state('');
 	let reduceMotion = $state(false);
 	let canNativeShare = $state(false);
+	let challengeGame = $state<HTMLElement | null>(null);
 	let stageHeading = $state<HTMLElement | null>(null);
 	let showdownReveal = $state<HTMLElement | null>(null);
 	let earnedChain = $state<HTMLElement | null>(null);
@@ -382,6 +383,7 @@
 			haptics.success();
 			void playChallengeSound('correct');
 			announcement = 'You found the problem.';
+			void revealStageAction();
 		} else {
 			if (!diagnosisWrongChoices.includes(choice.id)) {
 				diagnosisWrongChoices = [...diagnosisWrongChoices, choice.id];
@@ -432,6 +434,12 @@
 		scrollIntoViewIfNeeded(earnedChain, 'start');
 	}
 
+	async function revealStageAction() {
+		await tick();
+		const actionFooter = challengeGame?.querySelector<HTMLElement>('.session-actions');
+		scrollIntoViewIfNeeded(actionFooter ?? null, 'end');
+	}
+
 	function scrollIntoViewIfNeeded(element: HTMLElement | null, block: ScrollLogicalPosition) {
 		if (!element) return;
 		const rect = element.getBoundingClientRect();
@@ -467,6 +475,7 @@
 				transferAttempts === 1
 					? 'You recognised the link in a new context first time.'
 					: 'You recognised the link in a new context with feedback.';
+			void revealStageAction();
 		} else {
 			if (!transferWrongChoices.includes(choice.id)) {
 				transferWrongChoices = [...transferWrongChoices, choice.id];
@@ -652,7 +661,7 @@
 	}
 </script>
 
-<div class="challenge-game">
+<div class="challenge-game" bind:this={challengeGame}>
 	<p class="challenge-announcement" aria-live="polite" aria-atomic="true">{announcement}</p>
 	<ChallengeSessionShell
 		exitHref={`/challenges/${challenge.subject}`}

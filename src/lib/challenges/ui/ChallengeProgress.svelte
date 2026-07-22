@@ -184,6 +184,19 @@
 		font: inherit;
 	}
 
+	.step-control::before {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		z-index: 0;
+		width: 2.1rem;
+		height: 2.1rem;
+		content: '';
+		background: var(--qc-ui-surface);
+		pointer-events: none;
+		transform: translateX(-50%);
+	}
+
 	button.step-control {
 		cursor: pointer;
 	}
@@ -321,6 +334,11 @@
 			min-height: 2.75rem;
 			grid-template-rows: 1.9rem auto;
 			gap: 0.18rem;
+		}
+
+		.step-control::before {
+			width: 1.9rem;
+			height: 1.9rem;
 		}
 
 		.step-marker {

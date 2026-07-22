@@ -22,3 +22,10 @@ Supporting audit data:
 
 - [Dated query dataset](./data/gcse-biology-query-audit-2026-07-17.csv)
 - [First-party aggregate SQL and metric definitions](./data/first-party-search-baseline-2026-07-17.sql)
+
+Authoring and publication:
+
+- [Challenge authoring and solvability](./authoring.md) — curriculum grounding, transfer-task rules,
+  illustration gates, deterministic checks, and browser review.
+- [Science challenge expansion, 21 July 2026](./science-expansion-2026-07-21.md) — the reviewed
+  20-per-subject cohort, curriculum coverage, transfer-solvability audit, and release evidence.

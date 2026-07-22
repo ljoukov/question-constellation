@@ -2,6 +2,10 @@
  * The small, client-safe route index for durable progress and next-challenge
  * selection. Authored challenge content remains in catalog.ts.
  */
+import { biologyExpansionIdentities } from './expansions/biologyIdentity';
+import { chemistryExpansionIdentities } from './expansions/chemistryIdentity';
+import { physicsExpansionIdentities } from './expansions/physicsIdentity';
+
 export const challengeRouteIdentities = [
 	{
 		id: 'biology-data-conclusions',
@@ -49,6 +53,7 @@ export const challengeRouteIdentities = [
 		slug: 'recessive-allele-probability',
 		subject: 'biology'
 	},
+	...biologyExpansionIdentities,
 	{ id: 'chemistry-alloy-hardness', slug: 'alloy-hardness', subject: 'chemistry' },
 	{
 		id: 'chemistry-collision-rate',
@@ -91,6 +96,7 @@ export const challengeRouteIdentities = [
 		slug: 'life-cycle-comparison',
 		subject: 'chemistry'
 	},
+	...chemistryExpansionIdentities,
 	{ id: 'physics-gas-pressure', slug: 'gas-pressure-in-a-syringe', subject: 'physics' },
 	{ id: 'physics-half-range', slug: 'half-range-uncertainty', subject: 'physics' },
 	{
@@ -142,7 +148,8 @@ export const challengeRouteIdentities = [
 		id: 'physics-zero-resultant',
 		slug: 'zero-resultant-balanced-forces',
 		subject: 'physics'
-	}
+	},
+	...physicsExpansionIdentities
 ] as const;
 
 export const challengeIds = challengeRouteIdentities.map((challenge) => challenge.id);

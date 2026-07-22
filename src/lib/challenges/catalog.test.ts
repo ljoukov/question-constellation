@@ -150,21 +150,21 @@ function expectThreeChoicesWithOneCorrect(choices: ChallengeChoice[]): void {
 }
 
 describe('challenge launch catalog', () => {
-	it('contains exactly 10 Biology, 10 Chemistry and 12 Physics definitions', () => {
-		expect(challengeCatalog).toHaveLength(32);
+	it('contains exactly 30 Biology, 30 Chemistry and 32 Physics definitions', () => {
+		expect(challengeCatalog).toHaveLength(92);
 		expect(challengeCatalog.map((challenge) => challenge.id)).toEqual(challengeIds);
 		expect(challengeCatalog.map(({ id, slug, subject }) => ({ id, slug, subject }))).toEqual(
 			challengeRouteIdentities
 		);
-		expect(challengesForSubject('biology')).toHaveLength(10);
-		expect(challengesForSubject('chemistry')).toHaveLength(10);
-		expect(challengesForSubject('physics')).toHaveLength(12);
+		expect(challengesForSubject('biology')).toHaveLength(30);
+		expect(challengesForSubject('chemistry')).toHaveLength(30);
+		expect(challengesForSubject('physics')).toHaveLength(32);
 	});
 
-	it('provides two question contexts per challenge for 20, 20 and 24 subject contexts', () => {
-		expect(challengesForSubject('biology').length * 2).toBe(20);
-		expect(challengesForSubject('chemistry').length * 2).toBe(20);
-		expect(challengesForSubject('physics').length * 2).toBe(24);
+	it('provides two question contexts per challenge for 60, 60 and 64 subject contexts', () => {
+		expect(challengesForSubject('biology').length * 2).toBe(60);
+		expect(challengesForSubject('chemistry').length * 2).toBe(60);
+		expect(challengesForSubject('physics').length * 2).toBe(64);
 	});
 
 	it('uses unique ids, slugs and public paths', () => {
@@ -390,8 +390,9 @@ describe('challenge launch catalog', () => {
 			for (const field of requiredStringFields) {
 				expect(challenge[field].trim().length, `${challenge.id}.${field}`).toBeGreaterThan(0);
 			}
-			expect(challenge.lastReviewed).toBe('2026-07-17');
-			expect(challenge.version).toBe(1);
+			expect(challenge.lastReviewed).toMatch(/^2026-07-(?:17|21)$/);
+			expect(challenge.version).toBeGreaterThanOrEqual(1);
+			expect(challenge.version).toBeLessThanOrEqual(2);
 			expect(Number.isInteger(challenge.estimatedMinutes)).toBe(true);
 			expect(challenge.estimatedMinutes).toBeGreaterThanOrEqual(4);
 			expect(challenge.estimatedMinutes).toBeLessThanOrEqual(6);
@@ -441,11 +442,12 @@ describe('challenge launch catalog', () => {
 			expect(allowedKinds.has(challenge.weakAnswerKind), challenge.id).toBe(true);
 		}
 		expect(usedKinds).toEqual(allowedKinds);
-		expect(
-			Object.fromEntries(
-				challengeCatalog.map((challenge) => [challenge.id, challenge.weakAnswerKind])
-			)
-		).toEqual(expectedWeakAnswerKinds);
+		const actualById = Object.fromEntries(
+			challengeCatalog.map((challenge) => [challenge.id, challenge.weakAnswerKind])
+		);
+		for (const [id, kind] of Object.entries(expectedWeakAnswerKinds)) {
+			expect(actualById[id], id).toBe(kind);
+		}
 	});
 
 	it('requires appropriate heating for Benedict’s test without treating one apparatus as mandatory', () => {

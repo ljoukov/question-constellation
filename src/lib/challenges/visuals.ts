@@ -1,5 +1,9 @@
 import { base } from '$app/paths';
 import type { ChainIllustration } from '$lib/chains/chainIllustration';
+import { biologyExpansion } from './expansions/biology';
+import { chemistryExpansion } from './expansions/chemistry';
+import { physicsExpansion } from './expansions/physics';
+import { subjectArtForChallenge } from './subjectVisuals';
 import type { ChallengeDefinition } from './types';
 
 export type ChallengeCardArt = {
@@ -79,6 +83,31 @@ const earnedIllustrations = {
 		'Combine forces first; use the resultant to predict acceleration and motion.'
 	)
 } satisfies Record<string, ChainIllustration>;
+
+function expansionVisual(challenge: ChallengeDefinition): ChallengeVisualDefinition {
+	const handleSegments = challenge.memoryHandle
+		.split(/\s*(?:→|⟶)\s*/u)
+		.map((segment) => segment.trim())
+		.filter(Boolean);
+	const segments =
+		handleSegments.length >= 3
+			? handleSegments
+			: [challenge.topic, ...handleSegments, 'Apply the same idea'].slice(0, 3);
+
+	return {
+		segments,
+		decisiveIndex: Math.max(0, segments.length - 2),
+		decisiveLabel: challenge.memoryHandle,
+		cardArt: subjectArtForChallenge(challenge)
+	};
+}
+
+const expansionChallengeVisuals = Object.fromEntries(
+	[...biologyExpansion, ...chemistryExpansion, ...physicsExpansion].map((challenge) => [
+		challenge.id,
+		expansionVisual(challenge)
+	])
+) satisfies Record<string, ChallengeVisualDefinition>;
 
 const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 	'biology-data-conclusions': {
@@ -487,7 +516,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 			'physics-zero-resultant-transfer',
 			'An air-track glider continuing after its hanging mass has landed, leaving the connecting string slack.'
 		)
-	}
+	},
+	...expansionChallengeVisuals
 };
 
 export function challengeVisual(challenge: Pick<ChallengeDefinition, 'id'>) {

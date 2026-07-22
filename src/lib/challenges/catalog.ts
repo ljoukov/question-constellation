@@ -3,6 +3,9 @@ import type {
 	ChallengeDefinition,
 	ChallengeSubjectDefinition
 } from './types';
+import { biologyExpansion } from './expansions/biology';
+import { chemistryExpansion } from './expansions/chemistry';
+import { physicsExpansion } from './expansions/physics';
 
 const reviewStamp = {
 	lastReviewed: '2026-07-17',
@@ -193,6 +196,8 @@ const biologyChallenges = [
 	},
 	{
 		...reviewStamp,
+		lastReviewed: '2026-07-21',
+		version: 2,
 		id: 'biology-cell-differences',
 		slug: 'prokaryotic-cell-differences',
 		subject: 'biology',
@@ -208,18 +213,18 @@ const biologyChallenges = [
 		previewQuestion:
 			'Bacterial cells are prokaryotic cells. Give three ways that a prokaryotic cell is different from a eukaryotic cell.',
 		metaDescription:
-			'Test GCSE Biology cell structure by comparing two student answers, identifying missing differences and transferring the method to a cell diagram.',
+			'Test GCSE Biology cell structure by comparing two student answers, identifying missing differences and applying them in a new cell comparison.',
 		sourceQuestionId: '8464b1h-jun24-05-2',
 		transferQuestionId: '84611h-nov20-03-2',
 		staticAnswers: {
-			a: 'A prokaryotic cell has no nucleus, has no mitochondria and may contain plasmids.',
+			a: 'A prokaryotic cell is smaller, has no nucleus and has no mitochondria.',
 			b: 'A prokaryotic cell has no nucleus, so its genetic information is in the cytoplasm.'
 		},
 		strongerAnswer: 'a',
 		weakAnswer: 'b',
 		weakAnswerKind: 'incomplete',
 		showdownExplanation:
-			'Answer B gives one valid directional difference. Answer A supplies three distinct feature categories: nucleus, mitochondria and plasmids. Each clearly distinguishes a prokaryotic cell from a eukaryotic one.',
+			'Answer B gives one valid directional difference. Answer A supplies three distinct feature categories: size, nucleus and mitochondria. Each clearly distinguishes a prokaryotic cell from a eukaryotic one.',
 		commandWordLesson:
 			'“Give three ways” sets both the number and the direction. Supply three different features and state how the prokaryotic cell differs; do not split one idea into repeated wording.',
 		diagnosisPrompt: 'Why is Answer B incomplete?',
@@ -254,8 +259,8 @@ const biologyChallenges = [
 				correct: false
 			},
 			{
-				id: 'add-mitochondria-plasmids',
-				text: 'Add: “It has no mitochondria and it may contain plasmids.”',
+				id: 'add-size-mitochondria',
+				text: 'Add: “It is smaller and it has no mitochondria.”',
 				feedback: 'These are two new, distinct feature differences.',
 				correct: true
 			},
@@ -267,13 +272,13 @@ const biologyChallenges = [
 			}
 		],
 		freeTextKeywordGroups: [
-			['no mitochondria', 'lacks mitochondria', 'without mitochondria'],
-			['plasmid', 'plasmids', 'rings of dna', 'circular dna']
+			['smaller', 'much smaller'],
+			['no mitochondria', 'lacks mitochondria', 'without mitochondria']
 		],
 		repairSuccess:
 			'You preserved the correct DNA point and added two different feature categories instead of rephrasing it.',
 		transferPromptLead:
-			'A diagram shows a bacterial cell beside liver and mesophyll cells. Which set gives three clear differences for the bacterial cell?',
+			'Which set gives three clear differences between a typical bacterial cell and typical liver or mesophyll cells?',
 		transferChoices: [
 			{
 				id: 'smaller-no-nucleus-no-mitochondria',
@@ -296,7 +301,7 @@ const biologyChallenges = [
 			}
 		],
 		transferExplanation:
-			'Whether the prompt is text-only or diagram-based, count distinct feature categories and make the comparison direction explicit.',
+			'Count distinct feature categories and make the comparison direction explicit; three versions of one DNA point still earn only one idea.',
 		memoryHandle: 'Different feature, clear direction, requested count'
 	},
 	{
@@ -3311,6 +3316,8 @@ const physicsChallenges = [
 	},
 	{
 		...reviewStamp,
+		lastReviewed: '2026-07-21',
+		version: 2,
 		id: 'physics-thinking-distance',
 		slug: 'extra-thinking-distance',
 		subject: 'physics',
@@ -3326,7 +3333,7 @@ const physicsChallenges = [
 		previewQuestion:
 			'A driver at 15 m/s becomes tired, increasing reaction time from 0.50 s to 0.82 s. Determine the extra distance travelled before braking.',
 		metaDescription:
-			'Mark a GCSE Physics thinking-distance calculation, fix the reaction-time change and apply the equation to graph data.',
+			'Mark a GCSE Physics thinking-distance calculation, fix the reaction-time change and apply the equation to a second driving case.',
 		sourceQuestionId: 'aqa-8464p2h-qp-jun18-06-1',
 		transferQuestionId: '8464p2h-jun22-06-1',
 		staticAnswers: {
@@ -3391,7 +3398,7 @@ const physicsChallenges = [
 		repairSuccess:
 			'You kept the correct distance equation and fixed the earlier interpretation of “extra”.',
 		transferPromptLead:
-			'A graph shows thinking distance about 21 m at 30 m/s. Using distance = speed × time, what is the driver’s reaction time?',
+			'A car travelling at 30 m/s has a thinking distance of 21 m. Using distance = speed × time, what is the driver’s reaction time?',
 		transferChoices: [
 			{
 				id: '143-seconds',
@@ -3531,8 +3538,11 @@ const physicsChallenges = [
 
 export const challengeCatalog: readonly ChallengeDefinition[] = [
 	...biologyChallenges,
+	...biologyExpansion,
 	...chemistryChallenges,
-	...physicsChallenges
+	...chemistryExpansion,
+	...physicsChallenges,
+	...physicsExpansion
 ];
 
 export function challengeByRoute(subject: string, slug: string): ChallengeDefinition | undefined {

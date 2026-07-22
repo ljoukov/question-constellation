@@ -1,4 +1,7 @@
 import type { ChallengeSubject } from '$lib/challenges/types';
+import { biologyCurriculumAliases } from '$lib/challenges/expansions/biology';
+import { chemistryCurriculumAliases } from '$lib/challenges/expansions/chemistry';
+import { physicsCurriculumAliases } from '$lib/challenges/expansions/physics';
 
 export const ENGLAND_KS4_SCIENCE_CONTEXT_URL =
 	'https://www.gov.uk/government/publications/national-curriculum-in-england-science-programmes-of-study/national-curriculum-in-england-science-programmes-of-study#key-stage-4';
@@ -28,7 +31,7 @@ const AQA_CHEMISTRY_PRACTICAL_ASSESSMENT_URL =
 const AQA_CHEMISTRY_CHEMICAL_ANALYSIS_URL =
 	'https://www.aqa.org.uk/subjects/chemistry/gcse/chemistry-8462/specification/subject-content/chemical-analysis';
 
-const VERIFIED_AT = '2026-07-17' as const;
+const VERIFIED_AT = '2026-07-21' as const;
 
 export type ChallengeCurriculumReference = {
 	subject: ChallengeSubject;
@@ -104,11 +107,11 @@ function reviewedReference(
  *
  * Combined Science questions deliberately stay within the 8464 specification
  * rather than swapping in a similar-looking 8461, 8462 or 8463 page. URLs
- * retain the exact live HTML fragments reviewed on 2026-07-17;
+ * retain the exact live HTML fragments reviewed on 2026-07-21;
  * `expectedHeading` and `expectedContent` make later source-drift checks
  * possible without guessing.
  */
-export const challengeCurriculumReferences = {
+const baseChallengeCurriculumReferences = {
 	'biology-data-conclusions': reviewedReference(biology8461, {
 		specRef: '4.2.2.6',
 		topicLabel: 'The effect of lifestyle on some non-communicable diseases',
@@ -455,12 +458,87 @@ export const challengeCurriculumReferences = {
 	})
 } as const satisfies Readonly<Record<string, ChallengeCurriculumReference>>;
 
+/**
+ * Exact reviewed topics used only by expansion challenges. Keeping these
+ * separate avoids publishing synthetic topic ids as if they were routes while
+ * still preventing a broad subject-level fallback.
+ */
+const expansionCurriculumTopicReferences = {
+	'biology-working-scientifically-data-conclusions': reviewedReference(combinedBiology8464, {
+		specRef: 'WS 3.5',
+		topicLabel: 'Interpreting observations and drawing conclusions',
+		officialUrl: `${AQA_COMBINED_WORKING_SCIENTIFICALLY_URL}#3_Analysis_and_evaluation`,
+		expectedHeading: '3 Analysis and evaluation',
+		expectedContent: [
+			'WS 3.5 Interpreting observations and other data (presented in verbal, diagrammatic, graphical, symbolic or numerical form), including identifying patterns and trends, making inferences and drawing conclusions.',
+			'Use data to make predictions.',
+			'Draw conclusions from given observations.'
+		]
+	}),
+	'biology-enzyme-action': reviewedReference(combinedBiology8464, {
+		specRef: '4.2.2.1',
+		topicLabel: 'The human digestive system: enzyme action',
+		officialUrl: `${AQA_COMBINED_BIOLOGY_URL}#The_human_digestive_system`,
+		expectedHeading: '4.2.2.1 The human digestive system',
+		expectedContent: [
+			'Students should be able to describe the nature of enzyme molecules and relate their activity to temperature and pH changes.',
+			'Enzymes catalyse specific reactions in living organisms due to the shape of their active site.',
+			'Students should be able to use the ‘lock and key theory’ as a simplified model to explain enzyme action.'
+		]
+	}),
+	'biology-blood-glucose-control': reviewedReference(combinedBiology8464, {
+		specRef: '4.5.3.2',
+		topicLabel: 'Control of blood glucose concentration',
+		officialUrl: `${AQA_COMBINED_BIOLOGY_URL}#Control_of_blood_glucose_concentration`,
+		expectedHeading: '4.5.3.2 Control of blood glucose concentration',
+		expectedContent: [
+			'Blood glucose concentration is monitored and controlled by the pancreas.',
+			'If the blood glucose concentration is too high, the pancreas produces the hormone insulin that causes glucose to move from the blood into the cells.',
+			'In liver and muscle cells excess glucose is converted to glycogen for storage.'
+		]
+	})
+} as const satisfies Readonly<Record<string, ChallengeCurriculumReference>>;
+
+const reviewedCurriculumReferences = {
+	...baseChallengeCurriculumReferences,
+	...expansionCurriculumTopicReferences
+} as const;
+
+const expansionCurriculumAliases = {
+	...biologyCurriculumAliases,
+	...chemistryCurriculumAliases,
+	...physicsCurriculumAliases
+} as const satisfies Readonly<Record<string, keyof typeof reviewedCurriculumReferences>>;
+
+const aliasedChallengeCurriculumReferences = Object.fromEntries(
+	Object.entries(expansionCurriculumAliases).map(([challengeId, sourceId]) => {
+		const reference = reviewedCurriculumReferences[sourceId];
+		if (!reference) {
+			throw new Error(`${challengeId} has unknown challenge curriculum alias ${sourceId}.`);
+		}
+		if (Object.prototype.hasOwnProperty.call(baseChallengeCurriculumReferences, challengeId)) {
+			throw new Error(`${challengeId} duplicates a base challenge curriculum reference.`);
+		}
+		return [challengeId, reference];
+	})
+) satisfies Readonly<Record<string, ChallengeCurriculumReference>>;
+
+/**
+ * Every alias is an explicit challenge-to-topic review decision. This expands
+ * exact reviewed references without introducing a subject-wide fallback.
+ */
+export const challengeCurriculumReferences: Readonly<Record<string, ChallengeCurriculumReference>> =
+	Object.freeze({
+		...baseChallengeCurriculumReferences,
+		...aliasedChallengeCurriculumReferences
+	});
+
 export type ReviewedChallengeCurriculumId = keyof typeof challengeCurriculumReferences;
 
 /**
  * Resolve only an exact reviewed challenge and reject subject mismatches.
  *
- * The launch cohort is complete, so an unknown id intentionally has no broad
+ * The published cohort is complete, so an unknown id intentionally has no broad
  * subject fallback: choosing one could silently turn an 8464 question into an
  * 8461, 8462 or 8463 citation.
  */

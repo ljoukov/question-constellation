@@ -113,7 +113,7 @@ describe('challenge visual definitions', () => {
 	it('ships every challenge with an opaque 16:9 light/dark card-art pair', () => {
 		const mappedPairs: Array<{
 			id: string;
-			kind: 'card' | 'hero';
+			kind: 'card' | 'hero' | 'transfer';
 			lightSource: string;
 			darkSource: string;
 			declaredWidth: number;
@@ -133,6 +133,22 @@ describe('challenge visual definitions', () => {
 				declaredWidth: visual!.cardArt!.width,
 				declaredHeight: visual!.cardArt!.height
 			});
+
+			if (visual?.transferArt) {
+				expect(visual.transferArt.alt.trim(), `${challenge.id} transfer art alt`).not.toBe('');
+				expect(
+					visual.transferArt.darkSrc,
+					`${challenge.id} transfer art dark source`
+				).toBeDefined();
+				mappedPairs.push({
+					id: challenge.id,
+					kind: 'transfer',
+					lightSource: visual.transferArt.src,
+					darkSource: visual.transferArt.darkSrc!,
+					declaredWidth: visual.transferArt.width,
+					declaredHeight: visual.transferArt.height
+				});
+			}
 
 			if (visual?.earnedIllustration) {
 				mappedPairs.push({

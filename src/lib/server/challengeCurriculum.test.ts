@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { challengeCatalog } from '$lib/challenges/catalog';
+import { biologyCurriculumAliases } from '$lib/challenges/expansions/biology';
+import { chemistryCurriculumAliases } from '$lib/challenges/expansions/chemistry';
+import { physicsCurriculumAliases } from '$lib/challenges/expansions/physics';
 import {
 	ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 	challengeCurriculumReferences,
@@ -22,21 +25,58 @@ const chemistryReferenceIds = [
 ] as const;
 
 describe('challenge curriculum references', () => {
-	it('covers all 10 Biology, 10 Chemistry and 12 Physics definitions', () => {
-		expect(Object.keys(challengeCurriculumReferences)).toHaveLength(32);
+	it('covers all 30 Biology, 30 Chemistry and 32 Physics definitions', () => {
+		expect(Object.keys(challengeCurriculumReferences)).toHaveLength(92);
 		expect(
 			Object.keys(challengeCurriculumReferences).filter((id) => id.startsWith('biology-'))
-		).toHaveLength(10);
+		).toHaveLength(30);
 		expect(
 			Object.keys(challengeCurriculumReferences).filter((id) => id.startsWith('physics-'))
-		).toHaveLength(12);
+		).toHaveLength(32);
 		expect(
 			Object.keys(challengeCurriculumReferences).filter((id) => id.startsWith('chemistry-'))
-		).toEqual(chemistryReferenceIds);
+		).toEqual(expect.arrayContaining([...chemistryReferenceIds]));
+		expect(
+			Object.keys(challengeCurriculumReferences).filter((id) => id.startsWith('chemistry-'))
+		).toHaveLength(30);
+	});
+
+	it('grounds each expansion id in one explicit reviewed topic reference', () => {
+		const aliases = {
+			...biologyCurriculumAliases,
+			...chemistryCurriculumAliases,
+			...physicsCurriculumAliases
+		};
+
+		expect(Object.keys(aliases)).toHaveLength(60);
+		for (const [id, sourceId] of Object.entries(aliases)) {
+			const reference = challengeCurriculumReferences[id];
+			expect(reference, `${id} via ${sourceId}`).toBeDefined();
+			expect(reference?.officialUrl, id).toMatch(/^https:\/\/www\.aqa\.org\.uk\//u);
+			expect(reference?.expectedContent.length, id).toBeGreaterThanOrEqual(2);
+		}
 	});
 
 	it('uses exact official specification references for every expanded subject area', () => {
 		const expected = {
+			'biology-disinfectant-data-conclusions': {
+				specificationCode: '8464',
+				specRef: 'WS 3.5',
+				topicLabel: 'Interpreting observations and drawing conclusions',
+				urlFragment: '#3_Analysis_and_evaluation'
+			},
+			'biology-catalase-denaturation': {
+				specificationCode: '8464',
+				specRef: '4.2.2.1',
+				topicLabel: 'The human digestive system: enzyme action',
+				urlFragment: '#The_human_digestive_system'
+			},
+			'biology-blood-glucose-control-loop': {
+				specificationCode: '8464',
+				specRef: '4.5.3.2',
+				topicLabel: 'Control of blood glucose concentration',
+				urlFragment: '#Control_of_blood_glucose_concentration'
+			},
 			'biology-homeostasis-control': {
 				specificationCode: '8464',
 				specRef: '4.5.1',
@@ -95,7 +135,11 @@ describe('challenge curriculum references', () => {
 				topicLabel: exact.topicLabel
 			});
 			expect(reference.officialUrl).toContain(exact.urlFragment);
-			expect(reference.expectedHeading).toContain(exact.specRef);
+			if (exact.specRef.startsWith('WS ')) {
+				expect(reference.expectedContent.some((line) => line.includes(exact.specRef))).toBe(true);
+			} else {
+				expect(reference.expectedHeading).toContain(exact.specRef);
+			}
 			expect(reference.expectedContent.length).toBeGreaterThanOrEqual(3);
 		}
 	});
@@ -210,9 +254,11 @@ describe('challenge curriculum references', () => {
 	});
 
 	it('keeps the checked date and KS4 context on every Chemistry reference', () => {
-		for (const id of chemistryReferenceIds) {
+		for (const id of challengeCatalog
+			.filter(({ subject }) => subject === 'chemistry')
+			.map(({ id }) => id)) {
 			const reference = resolveChallengeCurriculumReference(id, 'chemistry');
-			expect(reference?.verifiedAt).toBe('2026-07-17');
+			expect(reference?.verifiedAt).toBe('2026-07-21');
 			expect(reference?.contextUrl).toBe(ENGLAND_KS4_SCIENCE_CONTEXT_URL);
 		}
 	});
