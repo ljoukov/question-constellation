@@ -129,8 +129,9 @@
 
 	button.incorrect {
 		border-color: var(--qc-ui-danger);
-		background: color-mix(in srgb, var(--qc-ui-danger) 12%, var(--qc-ui-surface));
+		background: color-mix(in srgb, var(--qc-ui-danger) 16%, var(--qc-ui-surface));
 		color: var(--qc-ui-danger);
+		box-shadow: inset 3px 0 0 var(--qc-ui-danger);
 	}
 
 	button.incorrect:focus-visible {
@@ -205,13 +206,25 @@
 	@keyframes challenge-choice-incorrect {
 		0%,
 		100% {
-			transform: scale(1);
-			box-shadow: 0 0 0 color-mix(in srgb, var(--qc-ui-danger) 0%, transparent);
+			transform: translateX(0);
+			box-shadow:
+				inset 3px 0 0 var(--qc-ui-danger),
+				0 0 0 color-mix(in srgb, var(--qc-ui-danger) 0%, transparent);
 		}
 
-		42% {
-			transform: scale(1.012);
-			box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--qc-ui-danger) 12%, transparent);
+		25% {
+			transform: translateX(-3px);
+			box-shadow:
+				inset 3px 0 0 var(--qc-ui-danger),
+				0 0 0 0.28rem color-mix(in srgb, var(--qc-ui-danger) 12%, transparent);
+		}
+
+		50% {
+			transform: translateX(2px);
+		}
+
+		75% {
+			transform: translateX(-1px);
 		}
 	}
 

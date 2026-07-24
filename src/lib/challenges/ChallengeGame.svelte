@@ -660,14 +660,18 @@
 					nextDifficulty: recommendedNextChallenge.difficulty,
 					nextArc: recommendedNextChallenge.arc,
 					nextMechanic: recommendedNextChallenge.mechanic,
+					currentMarks: challenge.marks,
+					nextMarks: recommendedNextChallenge.marks,
 					reason:
-						nextEntry && !nextEntry.completedAt
-							? 'resume-started'
-							: pathScope === 'mixed'
-								? 'subject-rotation'
-								: score <= 425
-									? 'recovery'
-									: 'subject-path'
+						challenge.marks >= 4 && recommendedNextChallenge.marks < 4
+							? 'post-four-mark-pacing'
+							: nextEntry && !nextEntry.completedAt
+								? 'resume-started'
+								: pathScope === 'mixed'
+									? 'subject-rotation'
+									: score <= 425
+										? 'recovery'
+										: 'subject-path'
 				})
 			);
 		}

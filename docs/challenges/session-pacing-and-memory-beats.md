@@ -173,7 +173,7 @@ New events:
 - `challenge_leaderboard_view`
 
 Every challenge and memory-beat event carries `sessionPacing: mixed-orbit-v1`, the path scope, and
-`science-path-v1`; memory-beat events also carry the session start, orbit position, and automatic
+`science-path-v2`; memory-beat events also carry the session start, orbit position, and automatic
 assignment mode. The browser stores a two-hour, versioned run in session storage containing unique
 challenge completions and their completed memory beats. The scope is also carried in each generated
 challenge URL so reload and back navigation preserve the one-time choice. Replaying a challenge or
@@ -218,8 +218,10 @@ moment, distinguish attempt score from durable atlas score, and avoid calling ca
 
 - **Reviewed path graph:** an offline model may propose explicit question-family IDs, prerequisite
   edges, and useful cross-subject contrasts. Those suggestions need independent curriculum review and
-  a versioned static artifact before runtime use. `science-path-v1` uses existing reviewed metadata and
-  remains deterministic.
+  a versioned static artifact before runtime use. `science-path-v2` uses existing reviewed metadata,
+  remains deterministic, and prefers a shorter starter after a four-mark question when one remains in
+  the applicable subject rotation. It falls back to the remaining catalogue when no shorter separator
+  is available.
 - **Arbitrary subject combinations:** Mixed science and the three single-subject paths cover the
   clearest needs without a checkbox matrix. The internal scope type can expand later if evidence shows
   that two-subject paths are valuable.

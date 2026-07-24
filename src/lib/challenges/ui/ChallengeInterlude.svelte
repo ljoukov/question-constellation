@@ -11,6 +11,7 @@
 		Link2,
 		ListOrdered,
 		ScanSearch,
+		XCircle,
 		Waypoints
 	} from '@lucide/svelte';
 	import { onMount, tick } from 'svelte';
@@ -67,6 +68,7 @@
 	let echoCorrect = $state(false);
 	let echoRevealed = $state(false);
 	let echoFeedback = $state('');
+	let echoIncorrect = $state(false);
 	let sweepIndex = $state(0);
 	let sweepSelection = $state<boolean | null>(null);
 	let sweepCorrectDecisions = $state(0);
@@ -226,12 +228,14 @@
 		const correct = match.correct;
 		if (correct) {
 			echoCorrect = true;
+			echoIncorrect = false;
 			echoFeedback = 'That is the short answer this link needs.';
 			haptics.success();
 			void playChallengeSound('correct');
 			announcement = 'The missing link is back in the chain.';
 			void focusResult();
 		} else {
+			echoIncorrect = true;
 			echoFeedback = 'Not that link yet. Try one or two words, or reveal it.';
 			haptics.error();
 			void playChallengeSound('incorrect');
@@ -252,6 +256,7 @@
 	function revealEchoLink() {
 		if (echoResolved) return;
 		echoRevealed = true;
+		echoIncorrect = false;
 		echoFeedback = 'Read the completed statement once.';
 		haptics.selection();
 		void playChallengeSound('reveal');
@@ -568,7 +573,16 @@
 					spellcheck="true"
 					maxlength="64"
 					value={echoResponse}
-					oninput={(event) => (echoResponse = event.currentTarget.value)}
+					class:incorrect={echoIncorrect}
+					aria-invalid={echoIncorrect}
+					aria-describedby={echoFeedback ? 'chain-echo-feedback' : undefined}
+					oninput={(event) => {
+						echoResponse = event.currentTarget.value;
+						if (echoIncorrect) {
+							echoIncorrect = false;
+							echoFeedback = '';
+						}
+					}}
 					data-analytics-label={`Challenge ${challenge.id}: chain echo recall`}
 					data-analytics-redact
 				/>
@@ -580,7 +594,12 @@
 						Show answer
 					</ChallengeButton>
 				</div>
-				{#if echoFeedback}<p role="status">{echoFeedback}</p>{/if}
+				{#if echoFeedback}
+					<p id="chain-echo-feedback" class:incorrect={echoIncorrect}>
+						{#if echoIncorrect}<XCircle size={18} strokeWidth={2.4} aria-hidden="true" />{/if}
+						<span>{echoFeedback}</span>
+					</p>
+				{/if}
 			</form>
 		{:else}
 			<div class="interlude-explanation" tabindex="-1" bind:this={resultFocus}>
@@ -1085,6 +1104,21 @@
 		outline-offset: 1px;
 	}
 
+	.echo-recall input.incorrect {
+		border-color: var(--qc-ui-danger);
+		background: color-mix(in srgb, var(--qc-ui-danger) 11%, var(--qc-ui-surface-raised));
+		box-shadow: inset 3px 0 0 var(--qc-ui-danger);
+	}
+
+	.echo-recall input.incorrect:focus-visible {
+		border-color: var(--qc-ui-danger);
+		outline-color: color-mix(in srgb, var(--qc-ui-danger) 72%, transparent);
+	}
+
+	:global(html[data-visual-effects='on']) .echo-recall input.incorrect {
+		animation: echo-incorrect-shake 260ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	}
+
 	.interlude-actions {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1092,10 +1126,18 @@
 	}
 
 	.echo-recall > p {
+		display: flex;
+		align-items: center;
+		gap: 0.38rem;
 		margin: 0;
 		color: var(--qc-ui-text-secondary);
 		font-size: 0.82rem;
 		line-height: 1.45;
+	}
+
+	.echo-recall > p.incorrect {
+		color: var(--qc-ui-danger);
+		font-weight: 680;
 	}
 
 	.sweep-choices {
@@ -1285,6 +1327,25 @@
 		}
 	}
 
+	@keyframes echo-incorrect-shake {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+
+		28% {
+			transform: translateX(-3px);
+		}
+
+		55% {
+			transform: translateX(2px);
+		}
+
+		78% {
+			transform: translateX(-1px);
+		}
+	}
+
 	@media (max-width: 620px) {
 		.challenge-interlude {
 			gap: 0.65rem;
@@ -1326,6 +1387,10 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.echo-recall input {
+			animation: none !important;
+		}
+
 		.echo-chain > span,
 		.sweep-progress span,
 		.link-order-list li {

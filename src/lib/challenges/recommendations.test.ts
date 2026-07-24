@@ -7,9 +7,9 @@ import {
 } from './recommendations';
 
 const challenges = [
-	{ id: 'biology-one', subject: 'biology', slug: 'one' },
-	{ id: 'biology-two', subject: 'biology', slug: 'two' },
-	{ id: 'chemistry-one', subject: 'chemistry', slug: 'one' }
+	{ id: 'biology-one', subject: 'biology', slug: 'one', marks: 4 },
+	{ id: 'biology-two', subject: 'biology', slug: 'two', marks: 4 },
+	{ id: 'chemistry-one', subject: 'chemistry', slug: 'one', marks: 2 }
 ] as const;
 
 function progress(entries: ChallengeProgress['challenges'] = {}): ChallengeProgress {
@@ -69,6 +69,69 @@ describe('challenge recommendations', () => {
 		expect(result?.id).toBe('biology-two');
 	});
 
+	it('avoids another four-marker when resuming after a completed four-mark question', () => {
+		const pacedChallenges = [
+			{ id: 'biology-long-one', subject: 'biology', slug: 'long-one', marks: 4 },
+			{ id: 'biology-long-two', subject: 'biology', slug: 'long-two', marks: 4 },
+			{ id: 'biology-short', subject: 'biology', slug: 'short', marks: 2 }
+		] as const;
+
+		expect(
+			recommendedUnfinishedChallenge(pacedChallenges, progress({ 'biology-long-one': entry() }), {
+				preferredSubject: 'biology'
+			})?.id
+		).toBe('biology-short');
+	});
+
+	it('paces from a four-marker that was just replayed', () => {
+		const pacedChallenges = [
+			{ id: 'biology-long', subject: 'biology', slug: 'long', marks: 4 },
+			{ id: 'biology-long-next', subject: 'biology', slug: 'long-next', marks: 4 },
+			{ id: 'biology-short', subject: 'biology', slug: 'short', marks: 2 },
+			{ id: 'biology-standard', subject: 'biology', slug: 'standard', marks: 3 }
+		] as const;
+
+		expect(
+			recommendedUnfinishedChallenge(
+				pacedChallenges,
+				progress({
+					'biology-long': entry({
+						completedAt: '2026-07-19T10:02:00.000Z',
+						updatedAt: '2026-07-19T10:12:00.000Z'
+					}),
+					'biology-standard': entry({
+						completedAt: '2026-07-19T10:08:00.000Z',
+						updatedAt: '2026-07-19T10:08:00.000Z'
+					})
+				}),
+				{ preferredSubject: 'biology' }
+			)?.id
+		).toBe('biology-short');
+	});
+
+	it('still resumes genuinely started work ahead of four-mark pacing', () => {
+		const pacedChallenges = [
+			{ id: 'biology-long-one', subject: 'biology', slug: 'long-one', marks: 4 },
+			{ id: 'biology-long-two', subject: 'biology', slug: 'long-two', marks: 4 },
+			{ id: 'biology-short', subject: 'biology', slug: 'short', marks: 2 }
+		] as const;
+
+		expect(
+			recommendedUnfinishedChallenge(
+				pacedChallenges,
+				progress({
+					'biology-long-one': entry(),
+					'biology-long-two': entry({
+						stage: 'repair',
+						completedAt: null,
+						updatedAt: '2026-07-19T10:08:00.000Z'
+					})
+				}),
+				{ preferredSubject: 'biology' }
+			)?.id
+		).toBe('biology-long-two');
+	});
+
 	it('falls back across subjects and returns null only when everything is solved', () => {
 		const partlySolved = progress({
 			'biology-one': entry(),
@@ -117,28 +180,40 @@ describe('automatic challenge paths', () => {
 			subject: 'biology',
 			slug: 'biology-standard',
 			difficulty: 'standard',
-			arc: 'read-the-evidence'
+			arc: 'read-the-evidence',
+			marks: 2
 		},
 		{
 			id: 'chemistry-standard',
 			subject: 'chemistry',
 			slug: 'chemistry-standard',
 			difficulty: 'standard',
-			arc: 'read-the-evidence'
+			arc: 'read-the-evidence',
+			marks: 3
 		},
 		{
 			id: 'chemistry-starter',
 			subject: 'chemistry',
 			slug: 'chemistry-starter',
 			difficulty: 'starter',
-			arc: 'complete-the-method'
+			arc: 'complete-the-method',
+			marks: 2
 		},
 		{
 			id: 'physics-starter',
 			subject: 'physics',
 			slug: 'physics-starter',
 			difficulty: 'starter',
-			arc: 'connect-cause-to-effect'
+			arc: 'connect-cause-to-effect',
+			marks: 2
+		},
+		{
+			id: 'biology-four-mark',
+			subject: 'biology',
+			slug: 'biology-four-mark',
+			difficulty: 'standard',
+			arc: 'connect-cause-to-effect',
+			marks: 4
 		}
 	] as const;
 
@@ -157,6 +232,32 @@ describe('automatic challenge paths', () => {
 			recommendedChallengePathStep(pathChallenges, progress(), {
 				currentChallenge: pathChallenges[2],
 				scope: 'chemistry',
+				roundScore: 500
+			})?.id
+		).toBe('chemistry-standard');
+	});
+
+	it('places an easier short challenge after a four-mark question', () => {
+		expect(
+			recommendedChallengePathStep(pathChallenges, progress(), {
+				currentChallenge: pathChallenges[4],
+				scope: 'mixed',
+				roundScore: 500
+			})?.id
+		).toBe('chemistry-starter');
+	});
+
+	it('keeps mixed-subject rotation ahead of the four-mark recovery preference', () => {
+		const mixedPacingChallenges = [
+			pathChallenges[4],
+			pathChallenges[1],
+			pathChallenges[3]
+		] as const;
+
+		expect(
+			recommendedChallengePathStep(mixedPacingChallenges, progress(), {
+				currentChallenge: pathChallenges[4],
+				scope: 'mixed',
 				roundScore: 500
 			})?.id
 		).toBe('chemistry-standard');

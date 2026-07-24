@@ -19,6 +19,7 @@
 		type ChallengeProgressUpdatedDetail
 	} from '$lib/challenges/progressSync';
 	import {
+		CHALLENGE_PATH_PLANNER_VERSION,
 		mostRecentlyCompletedChallenge,
 		recommendedUnfinishedChallenge
 	} from '$lib/challenges/recommendations';
@@ -179,7 +180,7 @@
 		analyticsEvent('challenge_scope_selected', {
 			scope,
 			source,
-			plannerVersion: 'science-path-v1'
+			plannerVersion: CHALLENGE_PATH_PLANNER_VERSION
 		});
 	}
 </script>
