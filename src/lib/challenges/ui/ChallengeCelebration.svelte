@@ -1,112 +1,111 @@
 <script lang="ts">
 	let { variant }: { variant: 'record' | 'orbit' } = $props();
 
-	const shards = [
-		{ x: -220, y: 96, r: -150, delay: 0 },
-		{ x: -176, y: 154, r: 115, delay: 70 },
-		{ x: -126, y: 72, r: -80, delay: 25 },
-		{ x: -74, y: 174, r: 190, delay: 110 },
-		{ x: -28, y: 104, r: -120, delay: 45 },
-		{ x: 32, y: 164, r: 135, delay: 85 },
-		{ x: 82, y: 82, r: -190, delay: 10 },
-		{ x: 132, y: 168, r: 95, delay: 105 },
-		{ x: 182, y: 112, r: -115, delay: 55 },
-		{ x: 224, y: 150, r: 165, delay: 90 }
-	] as const;
+	const nodes = [0, 1, 2, 3] as const;
 </script>
 
 <div class:orbit={variant === 'orbit'} class="challenge-celebration" aria-hidden="true">
-	<span class="burst"></span>
-	{#each shards as shard, index (`${shard.x}-${shard.y}`)}
-		<i
-			class:secondary={index % 3 === 1}
-			class:quiet={index % 3 === 2}
-			style={`--x:${shard.x}px;--y:${shard.y}px;--r:${shard.r}deg;--delay:${shard.delay}ms`}
-		></i>
+	<span class="trace-line"></span>
+	{#each nodes as node (node)}
+		<i style={`--trace-position:${node / (nodes.length - 1)};--trace-delay:${node * 85}ms`}></i>
 	{/each}
+	<span class="registration-mark"></span>
 </div>
 
 <style>
 	.challenge-celebration {
 		position: absolute;
 		z-index: 0;
-		inset: 0;
-		overflow: hidden;
+		top: 0;
+		right: 0;
+		left: 0;
+		height: 0.75rem;
 		pointer-events: none;
+	}
+
+	.trace-line {
+		position: absolute;
+		top: 0.2rem;
+		right: 0;
+		left: 0;
+		height: 2px;
+		background: var(--qc-ui-accent);
+		transform: scaleX(0);
+		transform-origin: left;
+		animation: chain-trace 620ms cubic-bezier(0.2, 0.78, 0.2, 1) 80ms both;
 	}
 
 	.challenge-celebration i {
 		position: absolute;
-		top: 2.8rem;
-		left: 50%;
-		width: 0.46rem;
-		height: 0.9rem;
-		border: 1px solid color-mix(in srgb, var(--qc-ui-accent) 76%, white);
-		background: var(--qc-ui-accent);
+		top: -0.03rem;
+		left: calc(var(--trace-position) * 100%);
+		width: 0.48rem;
+		height: 0.48rem;
+		border: 1px solid var(--qc-ui-accent);
+		background: var(--qc-ui-surface-raised);
 		opacity: 0;
-		animation: score-shard 980ms cubic-bezier(0.16, 0.72, 0.28, 1) var(--delay) both;
-	}
-
-	.challenge-celebration i.secondary {
-		width: 0.72rem;
-		height: 0.38rem;
-		background: var(--qc-ui-text);
-	}
-
-	.challenge-celebration i.quiet {
-		width: 0.32rem;
-		height: 0.72rem;
-		background: transparent;
+		transform: translateX(-50%) scale(0.45);
+		animation: chain-node-set 260ms ease-out calc(170ms + var(--trace-delay)) both;
 	}
 
 	.challenge-celebration.orbit i {
-		top: 3.6rem;
-		animation-duration: 1180ms;
+		background: var(--qc-ui-accent);
+		box-shadow: inset 0 0 0 2px var(--qc-ui-surface-raised);
 	}
 
-	.burst {
+	.registration-mark {
 		position: absolute;
-		top: 3rem;
-		left: 50%;
-		width: 5rem;
-		height: 5rem;
+		top: -0.22rem;
+		right: -0.34rem;
+		width: 0.9rem;
+		height: 0.9rem;
 		border: 1px solid var(--qc-ui-accent-border);
+		border-radius: 50%;
 		opacity: 0;
-		transform: translate(-50%, -50%) rotate(45deg);
-		animation: score-burst 900ms ease-out both;
+		animation: registration-set 320ms ease-out 600ms both;
 	}
 
-	.orbit .burst {
-		width: 7rem;
-		height: 7rem;
-		animation-duration: 1100ms;
+	.registration-mark::before,
+	.registration-mark::after {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		content: '';
+		background: var(--qc-ui-accent);
+		transform: translate(-50%, -50%);
 	}
 
-	@keyframes score-shard {
-		0% {
-			opacity: 0;
-			transform: translate(-50%, 0) rotate(0deg) scale(0.45);
+	.registration-mark::before {
+		width: 1.15rem;
+		height: 1px;
+	}
+
+	.registration-mark::after {
+		width: 1px;
+		height: 1.15rem;
+	}
+
+	@keyframes chain-trace {
+		to {
+			transform: scaleX(1);
 		}
-		14% {
+	}
+
+	@keyframes chain-node-set {
+		to {
 			opacity: 1;
-		}
-		100% {
-			opacity: 0;
-			transform: translate(calc(-50% + var(--x)), var(--y)) rotate(var(--r)) scale(1);
+			transform: translateX(-50%) scale(1);
 		}
 	}
 
-	@keyframes score-burst {
-		0% {
+	@keyframes registration-set {
+		from {
 			opacity: 0;
-			transform: translate(-50%, -50%) rotate(45deg) scale(0.35);
+			transform: rotate(-22deg) scale(0.72);
 		}
-		28% {
-			opacity: 0.82;
-		}
-		100% {
-			opacity: 0;
-			transform: translate(-50%, -50%) rotate(45deg) scale(1.55);
+		to {
+			opacity: 0.9;
+			transform: none;
 		}
 	}
 

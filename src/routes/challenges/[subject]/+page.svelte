@@ -30,13 +30,12 @@
 	} from '$lib/challenges/seo';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
-	import ChallengeRhythmStrip from '$lib/challenges/ui/ChallengeRhythmStrip.svelte';
 	import ChallengeLeaderboard from '$lib/challenges/ui/ChallengeLeaderboard.svelte';
 	import CurriculumDisclosure from '$lib/challenges/ui/CurriculumDisclosure.svelte';
 	import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 	import type { ChallengeSubject } from '$lib/challenges/types';
 	import SubjectIcon from '$lib/learning/SubjectIcon.svelte';
-	import { ExternalLink, House, Trophy } from '@lucide/svelte';
+	import { ExternalLink, House } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
@@ -246,9 +245,9 @@
 
 		<section class="subject-hero" aria-label={`Recommended ${subjectLabel} challenge`}>
 			<header class="path-intro">
-				<span>{data.subject.label} only</span>
-				<strong>One click starts an automatic subject path.</strong>
-				<p>We choose the memory beat and queue the next {data.subject.label} challenge.</p>
+				<p>
+					<strong>{data.subject.label}</strong> · {challenges.length} short exam-question games.
+				</p>
 			</header>
 			<ChallengePreview
 				challenge={heroChallenge}
@@ -262,33 +261,9 @@
 			/>
 		</section>
 
-		<section class="activity-strip" aria-labelledby="activity-title" aria-live="polite">
-			<span class="activity-mark" aria-hidden="true">
-				<Trophy size={18} strokeWidth={2.25} />
-			</span>
-			<div>
-				<h2 id="activity-title">{data.subject.label} challenge score</h2>
-				<p>
-					<strong>{totalBestScore.toLocaleString('en-GB')} points</strong>
-					<span>· {completedCount} complete</span>
-				</p>
-			</div>
-		</section>
-
-		<ChallengeRhythmStrip />
-
-		<ChallengeLeaderboard
-			snapshot={data.leaderboard}
-			scopeLabel={data.subject.label}
-			personalScore={totalBestScore}
-			personalCompleted={completedCount}
-			signedIn={Boolean(data.user)}
-		/>
-
 		<section class="recommended-cases" aria-labelledby="recommended-cases-title">
 			<header>
 				<h2 id="recommended-cases-title">More {data.subject.label} challenges</h2>
-				<p>Each game compares two exam answers, then applies the method to a second question.</p>
 			</header>
 			<div>
 				{#each otherChallenges as challenge (challenge.id)}
@@ -307,6 +282,14 @@
 				{/each}
 			</div>
 		</section>
+
+		<ChallengeLeaderboard
+			snapshot={data.leaderboard}
+			scopeLabel={data.subject.label}
+			personalScore={totalBestScore}
+			personalCompleted={completedCount}
+			signedIn={Boolean(data.user)}
+		/>
 
 		<CurriculumDisclosure>
 			<ul class="curriculum-links" aria-label={`Official ${data.subject.label} curriculum links`}>
@@ -334,7 +317,7 @@
 <style>
 	.challenge-subject-shell {
 		display: grid;
-		gap: clamp(1.35rem, 3vw, 2.3rem);
+		gap: clamp(1.25rem, 3vw, 2.2rem);
 		width: min(100%, 66rem);
 		margin: 0 auto;
 	}
@@ -345,7 +328,6 @@
 		align-items: center;
 		gap: 0.5rem;
 		min-height: 2.75rem;
-		margin-bottom: calc(clamp(1.35rem, 3vw, 2.3rem) * -0.55);
 		color: var(--qc-ui-text-muted);
 		font-size: 0.82rem;
 		font-weight: 650;
@@ -385,83 +367,20 @@
 	}
 
 	.path-intro {
-		display: grid;
-		gap: 0.12rem;
 		padding-left: 0.72rem;
 		border-left: 3px solid var(--qc-ui-accent);
-	}
-
-	.path-intro span {
-		color: var(--qc-ui-accent-text);
-		font-size: 0.68rem;
-		font-weight: 800;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-	}
-
-	.path-intro strong {
-		font-size: 1rem;
 	}
 
 	.path-intro p {
 		margin: 0;
 		color: var(--qc-ui-text-secondary);
-		font-size: 0.82rem;
-		line-height: 1.4;
+		font-size: 0.88rem;
+		line-height: 1.45;
 	}
 
-	.activity-strip {
-		display: flex;
-		width: min(100%, 38rem);
-		align-items: center;
-		gap: 0.7rem;
-		margin: -0.4rem 0 0;
-		padding: 0.58rem 0.68rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		background: color-mix(in srgb, var(--qc-ui-surface-raised) 72%, transparent);
-	}
-
-	.activity-mark {
-		display: grid;
-		width: 2.4rem;
-		aspect-ratio: 1;
-		flex: 0 0 auto;
-		place-items: center;
-		border: 1px solid var(--qc-ui-border);
-		background: var(--qc-ui-surface-muted);
+	.path-intro strong {
 		color: var(--qc-ui-accent-text);
-	}
-
-	.activity-strip > div {
-		display: grid;
-		gap: 0.08rem;
-		min-width: 0;
-	}
-
-	.activity-strip h2,
-	.activity-strip p {
-		margin: 0;
-	}
-
-	.activity-strip h2 {
-		color: var(--qc-ui-text-muted);
-		font-size: 0.68rem;
-		font-weight: 700;
-		letter-spacing: 0.055em;
-		line-height: 1.2;
-		text-transform: uppercase;
-	}
-
-	.activity-strip p {
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.86rem;
-		line-height: 1.4;
-	}
-
-	.activity-strip strong {
-		color: var(--qc-ui-text);
-		font-size: 1rem;
-		font-weight: 720;
+		font-weight: 750;
 	}
 
 	.recommended-cases {
@@ -471,8 +390,7 @@
 		border-top: 1px solid var(--qc-ui-border-subtle);
 	}
 
-	.recommended-cases h2,
-	.recommended-cases p {
+	.recommended-cases h2 {
 		margin: 0;
 	}
 
@@ -482,18 +400,6 @@
 		line-height: 1.15;
 		letter-spacing: -0.018em;
 		text-wrap: balance;
-	}
-
-	.recommended-cases header {
-		display: grid;
-		gap: 0.3rem;
-	}
-
-	.recommended-cases header p {
-		max-width: 48rem;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.9rem;
-		line-height: 1.5;
 	}
 
 	.recommended-cases > div {

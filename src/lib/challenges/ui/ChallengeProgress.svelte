@@ -146,7 +146,7 @@
 	.progress-step {
 		position: relative;
 		min-width: 0;
-		color: var(--qc-ui-text-subtle);
+		color: var(--qc-ui-text-muted);
 	}
 
 	.progress-step:not(:last-child)::after {
@@ -206,8 +206,12 @@
 		background: var(--qc-ui-surface-muted);
 	}
 
+	button.step-control .step-marker {
+		border-color: var(--qc-ui-border-control);
+	}
+
 	button.step-control:focus-visible {
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 28%, transparent);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 2px;
 	}
 
@@ -237,7 +241,7 @@
 		overflow: hidden;
 		max-width: 100%;
 		color: inherit;
-		font-size: clamp(0.7rem, 1vw, 0.8rem);
+		font-size: clamp(0.75rem, 1vw, 0.82rem);
 		font-weight: 650;
 		line-height: 1.15;
 		text-overflow: ellipsis;
@@ -249,10 +253,14 @@
 	}
 
 	.progress-step.completed .step-marker {
-		border-color: var(--qc-ui-accent-border);
+		border-color: var(--qc-ui-accent-text);
 		background: var(--qc-ui-accent-muted);
 		color: var(--qc-ui-accent-text);
 		font-weight: 720;
+	}
+
+	.progress-step.completed button.step-control .step-marker {
+		border-color: var(--qc-ui-accent-text);
 	}
 
 	.progress-step.current {
@@ -283,15 +291,23 @@
 		font-weight: 680;
 	}
 
+	.progress-step.reviewing button.step-control .step-marker {
+		border-color: var(--qc-ui-border-strong);
+	}
+
 	.progress-step.returning {
 		color: var(--qc-ui-text-secondary);
 	}
 
 	.progress-step.returning .step-marker {
-		border: 2px solid var(--qc-ui-accent-border);
+		border: 2px solid var(--qc-ui-accent-text);
 		background: color-mix(in srgb, var(--qc-ui-accent-muted) 58%, var(--qc-ui-surface-raised));
 		color: var(--qc-ui-accent-text);
 		font-weight: 820;
+	}
+
+	.progress-step.returning button.step-control .step-marker {
+		border-color: var(--qc-ui-accent-text);
 	}
 
 	.progress-step.returning .step-control > strong {
@@ -323,6 +339,11 @@
 		}
 	}
 
+	:global(html[data-visual-effects='off']) .progress-step:not(:last-child)::after,
+	:global(html[data-visual-effects='off']) .step-marker {
+		transition: none;
+	}
+
 	@media (max-width: 420px) {
 		.progress-step:not(:last-child)::after {
 			top: 0.95rem;
@@ -344,15 +365,15 @@
 		.step-marker {
 			width: 1.9rem;
 			height: 1.9rem;
-			font-size: 0.68rem;
-		}
-
-		.progress-step.current .step-marker {
 			font-size: 0.72rem;
 		}
 
+		.progress-step.current .step-marker {
+			font-size: 0.76rem;
+		}
+
 		.step-control > strong {
-			font-size: 0.66rem;
+			font-size: 0.72rem;
 		}
 	}
 </style>

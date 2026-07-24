@@ -83,7 +83,7 @@
 		min-height: 3.7rem;
 		align-items: start;
 		padding: 0.8rem;
-		border: 1px solid var(--qc-ui-border-subtle);
+		border: 1px solid var(--qc-ui-border-control);
 		border-radius: 0;
 		background: var(--qc-ui-surface-raised);
 		color: var(--qc-ui-text);
@@ -112,7 +112,7 @@
 	}
 
 	button:focus-visible {
-		outline: 3px solid var(--qc-ui-accent-text);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 3px;
 	}
 
@@ -122,7 +122,7 @@
 	}
 
 	button.correct {
-		border-color: var(--qc-ui-accent-border);
+		border-color: var(--qc-ui-accent-text);
 		background: var(--qc-ui-accent-muted);
 		color: var(--qc-ui-accent-text);
 	}
@@ -152,7 +152,7 @@
 		width: 1.65rem;
 		height: 1.65rem;
 		place-items: center;
-		border: 1px solid var(--qc-ui-border-subtle);
+		border: 1px solid var(--qc-ui-border-control);
 		color: var(--qc-ui-text-muted);
 		font-size: 0.78rem;
 		font-weight: 700;
@@ -226,5 +226,10 @@
 			animation: none !important;
 			transition: none;
 		}
+	}
+
+	:global(html[data-visual-effects='off']) button {
+		animation: none !important;
+		transition: none;
 	}
 </style>

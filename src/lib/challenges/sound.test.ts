@@ -78,6 +78,15 @@ describe('challenge sound controller', () => {
 		expect(harness.created[0]?.volume).toBeLessThanOrEqual(0.2);
 	});
 
+	it('uses a distinct quiet cue when a short review is banked', async () => {
+		const harness = createHarness('on');
+
+		expect(await harness.controller.play('bank')).toBe(true);
+		expect(harness.sources[0]?.oggUrl).toMatch(/qc_bank_001\.ogg$/);
+		expect(harness.sources[0]?.mp3Url).toMatch(/qc_bank_001\.mp3$/);
+		expect(harness.created[0]?.volume).toBeLessThanOrEqual(0.16);
+	});
+
 	it('suppresses rapid duplicate requests but allows a later replay', async () => {
 		const harness = createHarness('on');
 

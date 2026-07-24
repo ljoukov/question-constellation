@@ -166,17 +166,6 @@
 		box-shadow: 0 1rem 2.8rem var(--qc-ui-shadow);
 	}
 
-	.challenge-board::after {
-		position: absolute;
-		inset: 0 auto 0 -30%;
-		width: 18%;
-		background: linear-gradient(90deg, transparent, color-mix(in srgb, white 5%, transparent));
-		content: '';
-		opacity: 0;
-		pointer-events: none;
-		transform: skewX(-14deg);
-	}
-
 	.challenge-board > * {
 		position: relative;
 		z-index: 1;
@@ -362,37 +351,14 @@
 		line-height: 1.4;
 	}
 
-	:global(html[data-visual-effects='on']) .challenge-board::after {
-		animation: board-scan 7s ease-in-out 700ms infinite;
-	}
-
 	:global(html[data-visual-effects='on']) li.you,
 	:global(html[data-visual-effects='on']) .your-position > div {
-		animation: personal-rank-pulse 900ms ease-out both;
+		animation: personal-rank-settle 680ms ease-out 1 both;
 	}
 
-	@keyframes board-scan {
-		0%,
-		72% {
-			left: -30%;
-			opacity: 0;
-		}
-		78% {
-			opacity: 0.7;
-		}
-		92% {
-			left: 112%;
-			opacity: 0;
-		}
-		100% {
-			left: 112%;
-			opacity: 0;
-		}
-	}
-
-	@keyframes personal-rank-pulse {
+	@keyframes personal-rank-settle {
 		0% {
-			box-shadow: inset 0 0 0 1px var(--qc-ui-accent);
+			box-shadow: inset 3px 0 0 var(--qc-ui-accent);
 		}
 		100% {
 			box-shadow: inset 0 0 0 0 transparent;
@@ -420,12 +386,6 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.challenge-board::after,
-		:global(html[data-visual-effects='on']) .challenge-board::after {
-			display: none;
-			animation: none;
-		}
-
 		li.you,
 		.your-position > div,
 		:global(html[data-visual-effects='on']) li.you,

@@ -89,6 +89,7 @@
 	let echoInput = $state<HTMLInputElement | null>(null);
 	let resultFocus = $state<HTMLElement | null>(null);
 	let sweepStatementFocus = $state<HTMLElement | null>(null);
+	let reasonStatementFocus = $state<HTMLElement | null>(null);
 
 	const definition = $derived(
 		challengeInterludeDefinitions.find((candidate) => candidate.id === mechanic) ??
@@ -177,6 +178,11 @@
 	async function focusSweepStatement() {
 		await tick();
 		sweepStatementFocus?.focus({ preventScroll: true });
+	}
+
+	async function focusReasonStatement() {
+		await tick();
+		reasonStatementFocus?.focus({ preventScroll: true });
 	}
 
 	function revealAnswer() {
@@ -287,6 +293,7 @@
 				attempt: attempts
 			})
 		);
+		void focusResult();
 	}
 
 	function advanceSweep() {
@@ -302,7 +309,6 @@
 		sweepIndex += 1;
 		sweepSelection = null;
 		haptics.selection();
-		void playChallengeSound('select');
 		void focusSweepStatement();
 	}
 
@@ -345,7 +351,6 @@
 		linkOrder = reordered;
 		linkOrderFeedback = '';
 		haptics.selection();
-		void playChallengeSound('select');
 		announcement = `${current.label} moved to position ${nextIndex + 1}.`;
 	}
 
@@ -396,11 +401,11 @@
 			reasonCorrectDecisions += 1;
 			haptics.success();
 			void playChallengeSound('correct');
-			announcement = 'That diagnosis and reason match.';
+			announcement = `Diagnosis ${reasonIndex + 1} of ${reasonItems.length}. That diagnosis and reason match.`;
 		} else {
 			haptics.selection();
 			void playChallengeSound('reveal');
-			announcement = 'The reviewed reason is now highlighted.';
+			announcement = `Diagnosis ${reasonIndex + 1} of ${reasonItems.length}. The reviewed reason is now highlighted.`;
 		}
 		analyticsEvent(
 			'challenge_interlude_decision',
@@ -413,6 +418,7 @@
 				attempt: attempts
 			})
 		);
+		void focusResult();
 	}
 
 	function advanceReason() {
@@ -421,14 +427,15 @@
 			reasonFinished = true;
 			haptics.selection();
 			void playChallengeSound('reveal');
-			announcement = 'Reason match complete.';
+			announcement = `Reason match complete. ${reasonCorrectDecisions} of ${reasonItems.length} first choices matched.`;
 			void focusResult();
 			return;
 		}
 		reasonIndex += 1;
 		reasonSelection = null;
 		haptics.selection();
-		void playChallengeSound('select');
+		announcement = `Diagnosis ${reasonIndex + 1} of ${reasonItems.length}. Choose the matching reason.`;
+		void focusReasonStatement();
 	}
 
 	function finishInterlude() {
@@ -444,7 +451,7 @@
 			totalDecisions
 		};
 		haptics.success();
-		void playChallengeSound('complete');
+		void playChallengeSound('bank');
 		analyticsEvent('challenge_interlude_complete', context(result));
 		oncomplete(result);
 	}
@@ -490,7 +497,7 @@
 			{/if}
 		</span>
 		<div>
-			<p>Assigned pace · {definition.action} · {definition.intensity} · no timer</p>
+			<p>Quick review</p>
 			<h2 id="interlude-title">{definition.label}</h2>
 			<span>{definition.description}</span>
 		</div>
@@ -515,14 +522,9 @@
 		</div>
 
 		{#if answerRevealed}
-			<div class="upgrade-focus" tabindex="-1" bind:this={resultFocus}>
-				<span>The decisive edit</span>
+			<div class="interlude-explanation" tabindex="-1" bind:this={resultFocus}>
+				<span>What earned the mark</span>
 				<strong><MathText text={correctRepairChoice?.text ?? challenge.memoryHandle} /></strong>
-			</div>
-			<div class="interlude-explanation">
-				<span>The scoring move</span>
-				<strong><MathText text={challenge.memoryHandle} /></strong>
-				<p>{challenge.showdownExplanation}</p>
 			</div>
 		{:else}
 			<ChallengeButton onclick={revealAnswer} fullWidth>
@@ -541,7 +543,6 @@
 		</div>
 
 		{#if !echoFaded}
-			<p class="observe-note">Look once at the whole chain. Fade a link when you are ready.</p>
 			<ChallengeButton onclick={fadeEchoLink} fullWidth>
 				Fade one link
 				<ArrowRight size={18} aria-hidden="true" />
@@ -591,10 +592,15 @@
 	{:else if mechanic === 'evidence-sweep' && currentSweepItem}
 		<div
 			class="sweep-progress"
+			role="progressbar"
 			aria-label={`Statement ${Math.min(sweepIndex + 1, sweepItems.length)} of ${sweepItems.length}`}
+			aria-valuemin="0"
+			aria-valuemax={sweepItems.length}
+			aria-valuenow={Math.min(sweepIndex + 1, sweepItems.length)}
+			aria-valuetext={`Statement ${Math.min(sweepIndex + 1, sweepItems.length)} of ${sweepItems.length}`}
 		>
 			<span
-				style={`--sweep-progress: ${((sweepIndex + Number(sweepFinished)) / sweepItems.length) * 100}%`}
+				style={`--sweep-progress: ${(Math.min(sweepIndex + 1, sweepItems.length) / sweepItems.length) * 100}%`}
 			></span>
 		</div>
 
@@ -634,7 +640,12 @@
 			</div>
 
 			{#if sweepSelection !== null}
-				<div class:correct={sweepAnswerCorrect} class="sweep-feedback">
+				<div
+					class:correct={sweepAnswerCorrect}
+					class="sweep-feedback"
+					tabindex="-1"
+					bind:this={resultFocus}
+				>
 					<strong>{sweepAnswerCorrect ? 'Good call.' : 'Examiner check.'}</strong>
 					<p>{currentSweepItem.feedback}</p>
 				</div>
@@ -676,17 +687,24 @@
 
 		{#if weaknessSelection !== null}
 			<div class="interlude-explanation" tabindex="-1" bind:this={resultFocus}>
-				<span>{weaknessCorrect ? 'You spotted it' : 'Reviewed weakness'}</span>
-				<strong>
-					{weaknessLensOptions.find((option) => option.id === challenge.weakAnswerKind)?.label}
-				</strong>
+				<span>{weaknessCorrect ? 'Why it fits' : 'Reviewed weakness'}</span>
+				{#if !weaknessCorrect}
+					<strong>
+						{weaknessLensOptions.find((option) => option.id === challenge.weakAnswerKind)?.label}
+					</strong>
+				{/if}
 				<p>{challenge.showdownExplanation}</p>
 			</div>
 		{/if}
 	{:else if mechanic === 'link-order'}
-		<ol class:resolved={linkOrderResolved} class="link-order-list" aria-label="Answer-chain links">
+		<ol
+			class:resolved={linkOrderResolved}
+			class:correct={linkOrderCorrect}
+			class="link-order-list"
+			aria-label="Answer-chain links"
+		>
 			{#each shownLinkOrder as item, index (item.id)}
-				<li>
+				<li style={`--link-order-delay: ${index * 90}ms`}>
 					<span>{index + 1}</span>
 					<strong><MathText text={item.label} /></strong>
 					<div aria-label={`Move ${item.label}`}>
@@ -723,25 +741,28 @@
 			<div class="interlude-explanation" tabindex="-1" bind:this={resultFocus}>
 				<span>{linkOrderCorrect ? 'Chain restored' : 'Reviewed order'}</span>
 				<strong>{visual?.decisiveLabel ?? challenge.memoryHandle}</strong>
-				<p>{linkOrderFeedback}</p>
 			</div>
 		{/if}
 	{:else if mechanic === 'reason-match' && currentReasonItem}
 		<div
 			class="sweep-progress"
+			role="progressbar"
 			aria-label={`Diagnosis ${Math.min(reasonIndex + 1, reasonItems.length)} of ${reasonItems.length}`}
+			aria-valuemin="0"
+			aria-valuemax={reasonItems.length}
+			aria-valuenow={Math.min(reasonIndex + 1, reasonItems.length)}
+			aria-valuetext={`Diagnosis ${Math.min(reasonIndex + 1, reasonItems.length)} of ${reasonItems.length}`}
 		>
 			<span
-				style={`--sweep-progress: ${((reasonIndex + Number(reasonFinished)) / reasonItems.length) * 100}%`}
+				style={`--sweep-progress: ${(Math.min(reasonIndex + 1, reasonItems.length) / reasonItems.length) * 100}%`}
 			></span>
 		</div>
 
 		{#if !reasonFinished}
-			<article class="reason-statement">
+			<article class="reason-statement" tabindex="-1" bind:this={reasonStatementFocus}>
 				<span>Diagnosis {reasonIndex + 1} of {reasonItems.length}</span>
 				<p><MathText text={currentReasonItem.statement} /></p>
 			</article>
-			<p class="reason-instruction">Which reviewed reason belongs with this diagnosis?</p>
 
 			<div class="reason-options" role="group" aria-label="Choose the matching reason">
 				{#each reasonOptions as option, index (option.id)}
@@ -762,7 +783,12 @@
 			</div>
 
 			{#if reasonSelection !== null}
-				<div class:correct={reasonSelectionCorrect} class="sweep-feedback">
+				<div
+					class:correct={reasonSelectionCorrect}
+					class="sweep-feedback"
+					tabindex="-1"
+					bind:this={resultFocus}
+				>
 					<strong>{reasonSelectionCorrect ? 'Matched.' : 'Reviewed match.'}</strong>
 					<p>{currentReasonItem.reason}</p>
 				</div>
@@ -786,10 +812,10 @@
 		<div class="interlude-finish">
 			<div>
 				<Check size={18} strokeWidth={2.4} aria-hidden="true" />
-				<span>Memory beat complete · +{challengeInterludeScore(mechanic)} session points</span>
+				<span>+{challengeInterludeScore(mechanic)} points</span>
 			</div>
 			<ChallengeButton onclick={finishInterlude} fullWidth>
-				Add to this run
+				Continue
 				<ArrowRight size={18} aria-hidden="true" />
 			</ChallengeButton>
 		</div>
@@ -941,27 +967,7 @@
 		padding: 0.8rem 0.85rem;
 		border-left: 3px solid var(--qc-ui-accent);
 		background: var(--qc-ui-accent-muted);
-	}
-
-	.upgrade-focus {
-		display: grid;
-		gap: 0.25rem;
-		padding: 0.72rem 0.82rem;
-		border: 1px solid var(--qc-ui-accent-border);
-		background: var(--qc-ui-surface-raised);
-	}
-
-	.upgrade-focus span {
-		color: var(--qc-ui-accent-text);
-		font-size: 0.68rem;
-		font-weight: 760;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-	}
-
-	.upgrade-focus strong {
-		font-size: 0.95rem;
-		line-height: 1.4;
+		outline: none;
 	}
 
 	.interlude-explanation strong {
@@ -1011,14 +1017,6 @@
 		background: var(--qc-ui-accent-muted);
 		color: var(--qc-ui-accent-text);
 		font-size: 1.2rem;
-	}
-
-	.observe-note {
-		margin: 0;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.86rem;
-		line-height: 1.45;
-		text-align: center;
 	}
 
 	.sweep-choices {
@@ -1073,7 +1071,7 @@
 		width: 100%;
 		min-height: 3rem;
 		padding: 0.65rem 0.72rem;
-		border: 1px solid var(--qc-ui-border-strong);
+		border: 1px solid var(--qc-ui-border-control);
 		border-radius: 0;
 		background: var(--qc-ui-surface-raised);
 		color: var(--qc-ui-text);
@@ -1082,8 +1080,8 @@
 	}
 
 	.echo-recall input:focus-visible {
-		border-color: var(--qc-ui-accent-border);
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 35%, transparent);
+		border-color: var(--qc-ui-focus-ring);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 1px;
 	}
 
@@ -1114,7 +1112,6 @@
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.reason-instruction,
 	.inline-feedback {
 		margin: 0;
 		color: var(--qc-ui-text-secondary);
@@ -1132,13 +1129,29 @@
 	}
 
 	.link-order-list li {
+		position: relative;
 		display: grid;
 		min-width: 0;
 		gap: 0.42rem;
 		align-content: space-between;
+		overflow: hidden;
 		padding: 0.72rem;
 		border: 1px solid var(--qc-ui-border-strong);
 		background: var(--qc-ui-surface-raised);
+	}
+
+	.link-order-list li::after {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		height: 2px;
+		background: var(--qc-ui-accent);
+		content: '';
+		opacity: 0;
+		pointer-events: none;
+		transform: scaleX(0);
+		transform-origin: left center;
 	}
 
 	.link-order-list li > span {
@@ -1160,9 +1173,9 @@
 
 	.link-order-list button {
 		display: inline-grid;
-		min-height: 2.25rem;
+		min-height: 2.75rem;
 		place-items: center;
-		border: 1px solid var(--qc-ui-border-subtle);
+		border: 1px solid var(--qc-ui-border-control);
 		border-radius: 0;
 		background: var(--qc-ui-surface-muted);
 		color: var(--qc-ui-text);
@@ -1175,7 +1188,7 @@
 	}
 
 	.link-order-list button:focus-visible {
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 35%, transparent);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 1px;
 	}
 
@@ -1187,6 +1200,10 @@
 	.link-order-list.resolved li {
 		border-color: var(--qc-ui-accent-border);
 		background: var(--qc-ui-accent-muted);
+	}
+
+	:global(html[data-visual-effects='on']) .link-order-list.resolved.correct li::after {
+		animation: link-order-trace 540ms cubic-bezier(0.22, 0.8, 0.3, 1) var(--link-order-delay) both;
 	}
 
 	.sweep-progress {
@@ -1219,6 +1236,7 @@
 		padding: 0.7rem 0.8rem;
 		border-left: 3px solid var(--qc-ui-warning);
 		background: color-mix(in srgb, var(--qc-ui-warning) 8%, var(--qc-ui-surface));
+		outline: none;
 	}
 
 	.sweep-feedback.correct {
@@ -1253,6 +1271,20 @@
 		font-weight: 680;
 	}
 
+	@keyframes link-order-trace {
+		0% {
+			opacity: 0;
+			transform: scaleX(0);
+		}
+		28% {
+			opacity: 0.9;
+		}
+		100% {
+			opacity: 0.62;
+			transform: scaleX(1);
+		}
+	}
+
 	@media (max-width: 620px) {
 		.challenge-interlude {
 			gap: 0.65rem;
@@ -1279,7 +1311,7 @@
 		}
 
 		.link-order-list li > div {
-			width: 5rem;
+			width: 6rem;
 		}
 
 		.answer-replay article,
@@ -1299,5 +1331,15 @@
 		.link-order-list li {
 			transition: none;
 		}
+
+		:global(html[data-visual-effects='on']) .link-order-list.resolved.correct li::after {
+			animation: none;
+		}
+	}
+
+	:global(html[data-visual-effects='off']) .echo-chain > span,
+	:global(html[data-visual-effects='off']) .sweep-progress span,
+	:global(html[data-visual-effects='off']) .link-order-list li {
+		transition: none;
 	}
 </style>

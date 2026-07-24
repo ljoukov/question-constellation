@@ -225,7 +225,10 @@
 		display: grid;
 		grid-template-rows: auto minmax(0, 1fr) auto;
 		width: min(100%, 66rem);
-		min-height: min(44rem, calc(var(--app-viewport-height, 100dvh) - clamp(0.5rem, 2vw, 1.25rem)));
+		min-height: calc(
+			var(--app-viewport-height, 100dvh) - max(0.25rem, env(safe-area-inset-top)) -
+				max(0.25rem, env(safe-area-inset-bottom))
+		);
 		margin: 0 auto;
 		border: 1px solid var(--qc-ui-border-subtle);
 		background: var(--qc-ui-surface-raised);
@@ -280,13 +283,13 @@
 		height: var(--session-control-size);
 		min-width: var(--session-control-size);
 		min-height: var(--session-control-size);
-		border-color: var(--qc-ui-border-subtle);
+		border-color: var(--qc-ui-border-control);
 		border-radius: 999px;
 		box-shadow: none;
 	}
 
 	.session-audio :global(.sound-control button.enabled) {
-		border-color: var(--qc-ui-accent-border);
+		border-color: var(--qc-ui-accent-text);
 	}
 
 	.session-exit {
@@ -297,7 +300,7 @@
 		min-height: 2.75rem;
 		padding: 0;
 		place-items: center;
-		border: 1px solid var(--qc-ui-border-subtle);
+		border: 1px solid var(--qc-ui-border-control);
 		border-radius: 999px;
 		background: var(--qc-ui-surface-raised);
 		color: var(--qc-ui-text);
@@ -310,7 +313,7 @@
 	}
 
 	.session-exit:focus-visible {
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 30%, transparent);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 2px;
 	}
 
@@ -418,6 +421,10 @@
 	.session-footer-curriculum {
 		grid-column: 1;
 		justify-self: start;
+	}
+
+	.session-footer-curriculum :global(.curriculum-trigger) {
+		border-color: var(--qc-ui-border-control);
 	}
 
 	.session-action-slot {
@@ -531,7 +538,7 @@
 
 	.exit-dialog button:focus-visible,
 	.exit-dialog a:focus-visible {
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 32%, transparent);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 2px;
 	}
 
@@ -554,26 +561,68 @@
 
 	@media (max-width: 620px) {
 		.session-actions {
-			grid-template-columns: auto minmax(0, 1fr) auto;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 0.38rem 0.65rem;
 		}
 
 		.session-footer-curriculum {
 			grid-column: 1;
+			grid-row: 1;
 		}
 
 		.session-action-slot {
-			grid-column: 2;
+			grid-column: 1 / -1;
+			grid-row: 1;
 		}
 
 		.session-actions .session-timer-status {
-			grid-column: 3;
+			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.challenge-session.has-actions .session-actions {
+			padding-top: 0.55rem;
+		}
+
+		.challenge-session.has-actions .session-action-slot {
+			grid-column: 1 / -1;
+			grid-row: 1;
+		}
+
+		.challenge-session.has-actions .session-footer-curriculum {
+			grid-column: 1;
+			grid-row: 2;
+		}
+
+		.challenge-session.has-actions .session-actions .session-timer-status {
+			grid-column: 2;
+			grid-row: 2;
+		}
+
+		.challenge-session:not(.has-actions) .session-action-slot-empty {
+			display: none;
 		}
 
 		.session-timer-status {
 			min-width: 3.6rem;
+			min-height: 2.35rem;
 			gap: 0;
 			padding-right: 0.38rem;
 			padding-left: 0.38rem;
+			border-color: transparent;
+			background: transparent;
+		}
+
+		.session-footer-curriculum :global(.curriculum-trigger) {
+			height: 2.35rem;
+			border-color: transparent;
+			background: transparent;
+			color: var(--qc-ui-text-muted);
+		}
+
+		.session-footer-curriculum :global(.curriculum-trigger-icon) {
+			width: 2.35rem;
+			background: transparent;
 		}
 
 		.session-timer-status > span,

@@ -16,3 +16,10 @@ The challenge experience uses these original OGG files:
 - `confirmation_002.ogg` — challenge completion
 
 The matching MP3 files are local compatibility fallbacks, transcoded from the original OGG files with FFmpeg 5.1.9 and `libmp3lame -q:a 5`. The app prefers OGG when the browser reports Vorbis support and otherwise selects MP3.
+
+## Question Constellation cue
+
+`qc_bank_001.ogg` and `qc_bank_001.mp3` are original Question Constellation assets,
+synthesized locally as a quiet two-note settling cue. They are used only when a short
+review is complete so the longer Kenney completion cue remains reserved for the full
+challenge.

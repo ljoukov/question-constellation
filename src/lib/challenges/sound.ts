@@ -2,7 +2,13 @@ import { browser } from '$app/environment';
 import { base } from '$app/paths';
 import { writable, type Readable } from 'svelte/store';
 
-export type ChallengeSoundEvent = 'select' | 'correct' | 'incorrect' | 'reveal' | 'complete';
+export type ChallengeSoundEvent =
+	| 'select'
+	| 'correct'
+	| 'incorrect'
+	| 'reveal'
+	| 'bank'
+	| 'complete';
 
 type ChallengeSoundSource = {
 	oggUrl: string;
@@ -41,6 +47,7 @@ const SOUND_SOURCES: Record<ChallengeSoundEvent, ChallengeSoundSource> = {
 	correct: soundSource('confirmation_001', 0.2),
 	incorrect: soundSource('error_004', 0.15),
 	reveal: soundSource('open_001', 0.17),
+	bank: soundSource('qc_bank_001', 0.16),
 	complete: soundSource('confirmation_002', 0.2)
 };
 

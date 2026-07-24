@@ -8,7 +8,8 @@
 		width,
 		height,
 		loading = 'lazy',
-		fetchpriority = 'auto'
+		fetchpriority = 'auto',
+		decorative = false
 	}: {
 		src: string;
 		darkSrc?: string;
@@ -17,6 +18,7 @@
 		height: number;
 		loading?: 'eager' | 'lazy';
 		fetchpriority?: 'high' | 'low' | 'auto';
+		decorative?: boolean;
 	} = $props();
 
 	type ResolvedTheme = 'light' | 'dark';
@@ -58,8 +60,9 @@
 
 <span
 	class="theme-aware-challenge-art"
-	role="img"
-	aria-label={alt}
+	role={decorative ? undefined : 'img'}
+	aria-label={decorative ? undefined : alt}
+	aria-hidden={decorative ? 'true' : undefined}
 	style:aspect-ratio={`${width} / ${height}`}
 >
 	<img
@@ -85,28 +88,6 @@
 		background: var(--qc-ui-surface-muted);
 	}
 
-	:global(html[data-visual-effects='on']) .theme-aware-challenge-art::after {
-		position: absolute;
-		z-index: 2;
-		top: -38%;
-		bottom: -38%;
-		left: -42%;
-		width: 24%;
-		pointer-events: none;
-		content: '';
-		background: linear-gradient(
-			90deg,
-			transparent 0%,
-			color-mix(in srgb, white 18%, transparent) 26%,
-			color-mix(in srgb, var(--qc-ui-accent) 34%, white 28%) 50%,
-			color-mix(in srgb, white 15%, transparent) 72%,
-			transparent 100%
-		);
-		mix-blend-mode: screen;
-		transform: translate3d(0, 0, 0) rotate(16deg);
-		animation: challenge-art-light-ray 2.35s cubic-bezier(0.2, 0.76, 0.2, 1) 240ms 1 both;
-	}
-
 	img {
 		position: absolute;
 		z-index: 1;
@@ -115,21 +96,5 @@
 		width: 100%;
 		height: 100%;
 		object-fit: contain;
-	}
-
-	@keyframes challenge-art-light-ray {
-		from {
-			transform: translate3d(0, 0, 0) rotate(16deg);
-		}
-		to {
-			transform: translate3d(720%, 0, 0) rotate(16deg);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		:global(html[data-visual-effects='on']) .theme-aware-challenge-art::after {
-			display: none;
-			animation: none;
-		}
 	}
 </style>

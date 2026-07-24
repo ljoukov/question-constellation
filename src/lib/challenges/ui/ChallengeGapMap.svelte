@@ -217,24 +217,47 @@
 			padding: 0.65rem;
 		}
 
+		ol {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+		}
+
 		li {
-			padding: 0.48rem 0.28rem;
+			min-height: 3.25rem;
+			padding: 0.65rem 0.72rem;
 		}
 
 		li > span {
-			font-size: 0.59rem;
+			font-size: 0.72rem;
 		}
 
 		li strong {
-			font-size: 0.65rem;
+			font-size: 0.86rem;
+			line-height: 1.3;
 		}
 
 		.gap-connector {
-			width: 0.72rem;
+			width: 100%;
+			height: 1.45rem;
+		}
+
+		.gap-connector i {
+			top: 0;
+			right: auto;
+			bottom: 0;
+			left: 50%;
+			width: 1px;
+			height: auto;
+		}
+
+		.gap-connector.broken i {
+			background: repeating-linear-gradient(180deg, currentColor 0 3px, transparent 3px 6px);
 		}
 
 		.gap-connector :global(svg) {
-			display: none;
+			margin-top: auto;
+			margin-left: 0;
+			transform: rotate(90deg);
 		}
 	}
 
@@ -243,5 +266,10 @@
 		.gap-connector.broken {
 			animation: none;
 		}
+	}
+
+	:global(html[data-visual-effects='off']) li,
+	:global(html[data-visual-effects='off']) .gap-connector.broken {
+		animation: none;
 	}
 </style>

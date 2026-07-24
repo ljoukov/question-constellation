@@ -55,6 +55,7 @@
 					alt={shownArt.alt}
 					width={shownArt.width}
 					height={shownArt.height}
+					decorative
 				/>
 			{/if}
 		</div>
@@ -64,13 +65,18 @@
 			{#if markLabel}<span class="card-format">{markLabel}</span>{/if}
 			{#if eyebrow}<span class="card-eyebrow">{eyebrow}</span>{/if}
 		</div>
-		<strong>{title}</strong>
+		<h3>{title}</h3>
 	</div>
 	<div class="card-footer">
 		{#if meta}<small>{meta}</small>{/if}
-		<span class="card-action" aria-hidden="true">
+		<span class="card-action">
+			{#if complete}<span class="sr-only">Completed. </span>{/if}
 			<span>{complete ? 'Play again' : 'Play'}</span>
-			{#if complete}<Check size={18} strokeWidth={2.4} />{:else}<ArrowRight size={18} />{/if}
+			{#if complete}
+				<Check size={18} strokeWidth={2.4} aria-hidden="true" />
+			{:else}
+				<ArrowRight size={18} aria-hidden="true" />
+			{/if}
 		</span>
 	</div>
 </a>
@@ -83,7 +89,7 @@
 		align-items: stretch;
 		min-width: 0;
 		padding: 1rem;
-		border: 1px solid var(--qc-ui-border-subtle);
+		border: 1px solid var(--qc-ui-border-control);
 		border-radius: 0;
 		background: var(--qc-ui-surface-raised);
 		color: var(--qc-ui-text);
@@ -96,6 +102,11 @@
 	a:hover {
 		border-color: var(--qc-ui-border-strong);
 		background: var(--qc-ui-surface-muted);
+	}
+
+	a:focus-visible {
+		outline: 2px solid var(--qc-ui-focus-ring);
+		outline-offset: 3px;
 	}
 
 	a.complete {
@@ -164,20 +175,21 @@
 		white-space: nowrap;
 	}
 
-	.card-copy strong {
+	.card-copy h3 {
+		margin: 0;
 		font-size: 1.04rem;
 		font-weight: 650;
 		line-height: 1.3;
 	}
 
-	a.balanced .card-copy strong,
+	a.balanced .card-copy h3,
 	a.balanced .card-footer small {
 		display: -webkit-box;
 		overflow: hidden;
 		-webkit-box-orient: vertical;
 	}
 
-	a.balanced .card-copy strong {
+	a.balanced .card-copy h3 {
 		line-clamp: 3;
 		-webkit-line-clamp: 3;
 	}
@@ -212,7 +224,7 @@
 		align-items: center;
 		justify-content: center;
 		padding: 0 0.7rem;
-		border: 1px solid var(--qc-ui-border-subtle);
+		border: 1px solid var(--qc-ui-border-control);
 		color: var(--qc-ui-accent-text);
 		font-size: 0.78rem;
 		font-weight: 700;
@@ -222,6 +234,18 @@
 	a.complete .card-action {
 		border-color: var(--qc-ui-accent-border);
 		background: var(--qc-ui-accent-muted);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -240,7 +264,7 @@
 			grid-template-rows: none;
 		}
 
-		a.balanced .card-copy strong,
+		a.balanced .card-copy h3,
 		a.balanced .card-footer small {
 			display: block;
 			overflow: visible;

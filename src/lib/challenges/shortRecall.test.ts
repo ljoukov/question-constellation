@@ -62,6 +62,26 @@ describe('short recall matching', () => {
 		expect(keyboardNeighbors('n')).toContain('m');
 	});
 
+	it('pre-generates unambiguous slips for three-letter answers', () => {
+		const addPrompt = {
+			canonicalAnswer: 'add',
+			acceptedAliases: ['combine'],
+			spellingVariants: generateSpellingVariants(['add', 'combine'])
+		};
+		expect(matchShortRecall('addd', addPrompt)).toMatchObject({
+			correct: true,
+			kind: 'spelling'
+		});
+		expect(matchShortRecall('sdd', addPrompt)).toMatchObject({
+			correct: true,
+			kind: 'spelling'
+		});
+		expect(matchShortRecall('ad', addPrompt)).toMatchObject({
+			correct: false,
+			kind: 'none'
+		});
+	});
+
 	it('rejects multiple slips, short-word guesses and semantic near misses', () => {
 		expect(matchShortRecall('activtion enery', prompt)).toMatchObject({
 			correct: false,

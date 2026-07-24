@@ -88,7 +88,7 @@ export function generateSpellingVariants(answers: readonly string[]): string[] {
 		const tokens = answer.split(' ');
 		for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex += 1) {
 			const token = tokens[tokenIndex] ?? '';
-			if (token.length <= 3) continue;
+			if (token.length <= 2) continue;
 
 			const tokenVariants = new Set<string>();
 			for (let index = 0; index < token.length - 1; index += 1) {
@@ -98,10 +98,13 @@ export function generateSpellingVariants(answers: readonly string[]): string[] {
 				);
 			}
 
+			for (let index = 0; index < token.length; index += 1) {
+				tokenVariants.add(`${token.slice(0, index + 1)}${token[index]}${token.slice(index + 1)}`);
+			}
+
 			if (token.length >= 5) {
 				for (let index = 0; index < token.length; index += 1) {
 					tokenVariants.add(`${token.slice(0, index)}${token.slice(index + 1)}`);
-					tokenVariants.add(`${token.slice(0, index + 1)}${token[index]}${token.slice(index + 1)}`);
 				}
 			}
 

@@ -49,6 +49,7 @@
 	--qc-ui-border-strong: #7f9092;
 	--qc-ui-border: #9ba9aa;
 	--qc-ui-border-subtle: #c9d1d0;
+	--qc-ui-border-control: #768789;
 	--qc-ui-accent: #087a55;
 	--qc-ui-accent-hover: #066848;
 	--qc-ui-accent-strong: #075c42;
@@ -56,6 +57,7 @@
 	--qc-ui-accent-soft: #eef6f1;
 	--qc-ui-accent-muted: #eaf7f0;
 	--qc-ui-accent-border: #75a991;
+	--qc-ui-focus-ring: #07583f;
 	--qc-ui-on-accent: #ffffff;
 	--qc-ui-disabled-border: #b2bcbc;
 	--qc-ui-disabled-surface: #dce1df;
@@ -8805,6 +8807,7 @@ textarea::placeholder {
 	--qc-ui-border-strong: rgba(226, 232, 240, 0.72);
 	--qc-ui-border: rgba(226, 232, 240, 0.42);
 	--qc-ui-border-subtle: rgba(148, 163, 184, 0.24);
+	--qc-ui-border-control: rgba(226, 232, 240, 0.52);
 	--qc-ui-accent: #56d894;
 	--qc-ui-accent-hover: #79e3aa;
 	--qc-ui-accent-strong: #56d894;
@@ -8812,6 +8815,7 @@ textarea::placeholder {
 	--qc-ui-accent-soft: #061c16;
 	--qc-ui-accent-muted: rgba(86, 216, 148, 0.12);
 	--qc-ui-accent-border: rgba(86, 216, 148, 0.7);
+	--qc-ui-focus-ring: #b8f7d5;
 	--qc-ui-on-accent: #052d1c;
 	--qc-ui-disabled-border: #334155;
 	--qc-ui-disabled-surface: #172033;

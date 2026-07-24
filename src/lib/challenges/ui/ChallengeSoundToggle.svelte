@@ -54,7 +54,7 @@
 		min-height: 2.75rem;
 		place-items: center;
 		padding: 0;
-		border: 1px solid var(--qc-ui-border);
+		border: 1px solid var(--qc-ui-border-control);
 		border-radius: 999px;
 		background: var(--qc-ui-surface-raised);
 		box-shadow: 0 4px 14px var(--qc-ui-shadow);
@@ -69,7 +69,7 @@
 	}
 
 	button.enabled {
-		border-color: var(--qc-ui-accent-border);
+		border-color: var(--qc-ui-accent-text);
 		background: var(--qc-ui-accent-muted);
 		color: var(--qc-ui-accent-text);
 	}
@@ -85,7 +85,7 @@
 	}
 
 	button:focus-visible {
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 32%, transparent);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 2px;
 	}
 

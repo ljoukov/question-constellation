@@ -3,7 +3,6 @@
 	import { resolve } from '$app/paths';
 	import { analyticsEvent } from '$lib/analytics/client';
 	import ChallengePreview from '$lib/challenges/ChallengePreview.svelte';
-	import ChallengeRhythmStrip from '$lib/challenges/ui/ChallengeRhythmStrip.svelte';
 	import ChallengeLeaderboard from '$lib/challenges/ui/ChallengeLeaderboard.svelte';
 	import {
 		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
@@ -35,7 +34,7 @@
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
 	import CurriculumDisclosure from '$lib/challenges/ui/CurriculumDisclosure.svelte';
 	import type { ChallengeSubject } from '$lib/challenges/types';
-	import { ExternalLink, House, Trophy } from '@lucide/svelte';
+	import { ExternalLink, House } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
@@ -220,9 +219,7 @@
 
 		<section class="play-first" aria-label="Recommended mixed science path">
 			<header class="path-intro">
-				<span>Recommended path</span>
-				<strong>Mixed science</strong>
-				<p>Choose once. We rotate Biology, Chemistry and Physics and queue every next step.</p>
+				<p><strong>Mixed science</strong> · Biology, Chemistry and Physics in rotation.</p>
 			</header>
 			<ChallengePreview
 				challenge={featuredChallenge}
@@ -236,33 +233,9 @@
 			/>
 		</section>
 
-		<section class="activity-strip" aria-labelledby="activity-title" aria-live="polite">
-			<span class="activity-mark" aria-hidden="true">
-				<Trophy size={18} strokeWidth={2.25} />
-			</span>
-			<div>
-				<h2 id="activity-title">Your challenge score</h2>
-				<p>
-					<strong>{totalBestScore.toLocaleString('en-GB')} points</strong>
-					<span>· {totalCompleted} complete</span>
-				</p>
-			</div>
-		</section>
-
-		<ChallengeRhythmStrip />
-
-		<ChallengeLeaderboard
-			snapshot={data.leaderboard}
-			scopeLabel="All science"
-			personalScore={totalBestScore}
-			personalCompleted={totalCompleted}
-			signedIn={Boolean(data.user)}
-		/>
-
 		<section class="subject-paths" aria-labelledby="subject-paths-title">
 			<header>
-				<span>Prefer one subject?</span>
-				<h2 id="subject-paths-title">Pick once. The path stays automatic.</h2>
+				<h2 id="subject-paths-title">Choose a subject</h2>
 			</header>
 			<div>
 				{#each subjectGroups as subject (subject.subject)}
@@ -277,12 +250,20 @@
 							: 'All challenges complete'}
 						art={subject.art}
 						complete={!subject.nextChallenge}
-						analyticsLabel={`Start automatic ${subject.subject} challenge path`}
+						analyticsLabel={`Start ${subject.subject} challenge path`}
 						onclick={() => recordScopeSelection(subject.subject, 'challenge_hub_subject_path')}
 					/>
 				{/each}
 			</div>
 		</section>
+
+		<ChallengeLeaderboard
+			snapshot={data.leaderboard}
+			scopeLabel="All science"
+			personalScore={totalBestScore}
+			personalCompleted={totalCompleted}
+			signedIn={Boolean(data.user)}
+		/>
 
 		<CurriculumDisclosure>
 			<ul class="curriculum-links" aria-label="Official GCSE science curriculum links">
@@ -310,7 +291,7 @@
 <style>
 	.challenge-home-shell {
 		display: grid;
-		gap: clamp(1.4rem, 4vw, 2.8rem);
+		gap: clamp(1.25rem, 3vw, 2.2rem);
 		width: min(100%, 66rem);
 		margin: 0 auto;
 	}
@@ -320,7 +301,6 @@
 		min-height: 2.25rem;
 		align-items: center;
 		gap: 0.55rem;
-		margin-bottom: calc(clamp(1.4rem, 4vw, 2.8rem) * -0.55);
 		color: var(--qc-ui-text-muted);
 		font-size: 0.82rem;
 		font-weight: 650;
@@ -355,89 +335,21 @@
 		min-width: 0;
 	}
 
-	.path-intro,
-	.subject-paths > header {
-		display: grid;
-		gap: 0.12rem;
+	.path-intro {
 		padding-left: 0.72rem;
 		border-left: 3px solid var(--qc-ui-accent);
 	}
 
-	.path-intro span,
-	.subject-paths > header span {
-		color: var(--qc-ui-accent-text);
-		font-size: 0.68rem;
-		font-weight: 800;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-	}
-
-	.path-intro strong {
-		font-size: 1.08rem;
-	}
-
-	.path-intro p,
-	.subject-paths h2 {
-		margin: 0;
-	}
-
 	.path-intro p {
+		margin: 0;
 		color: var(--qc-ui-text-secondary);
-		font-size: 0.84rem;
+		font-size: 0.88rem;
 		line-height: 1.45;
 	}
 
-	.activity-strip {
-		display: flex;
-		width: min(100%, 25rem);
-		align-items: center;
-		gap: 0.7rem;
-		margin: -0.45rem 0 0;
-		padding: 0.55rem 0.65rem;
-		border: 1px solid var(--qc-ui-border-subtle);
-		background: color-mix(in srgb, var(--qc-ui-surface-raised) 72%, transparent);
-	}
-
-	.activity-mark {
-		display: grid;
-		width: 2.4rem;
-		aspect-ratio: 1;
-		flex: 0 0 auto;
-		place-items: center;
-		border: 1px solid var(--qc-ui-border);
-		background: var(--qc-ui-surface-muted);
+	.path-intro strong {
 		color: var(--qc-ui-accent-text);
-	}
-
-	.activity-strip > div {
-		display: grid;
-		gap: 0.08rem;
-	}
-
-	.activity-strip h2,
-	.activity-strip p {
-		margin: 0;
-	}
-
-	.activity-strip h2 {
-		color: var(--qc-ui-text-muted);
-		font-size: 0.68rem;
-		font-weight: 700;
-		letter-spacing: 0.055em;
-		line-height: 1.2;
-		text-transform: uppercase;
-	}
-
-	.activity-strip p {
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.88rem;
-		line-height: 1.35;
-	}
-
-	.activity-strip strong {
-		color: var(--qc-ui-text);
-		font-size: 1rem;
-		font-weight: 720;
+		font-weight: 750;
 	}
 
 	.subject-paths {
@@ -454,6 +366,7 @@
 	}
 
 	.subject-paths h2 {
+		margin: 0;
 		font-size: clamp(1.08rem, 2vw, 1.3rem);
 		font-weight: 650;
 	}
@@ -479,7 +392,7 @@
 
 	@media (max-width: 640px) {
 		.challenge-home-shell {
-			gap: 1.4rem;
+			gap: 1.25rem;
 		}
 
 		.subject-paths > div {

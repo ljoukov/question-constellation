@@ -6,6 +6,7 @@
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { haptics } from '$lib/haptics';
 	import type { AnswerChain } from '$lib/server/questionData';
+	import { visualEffectsPreference } from '$lib/visualEffectsPreference';
 	import {
 		ArrowRight,
 		Check,
@@ -61,7 +62,7 @@
 		syncChallengeProgress
 	} from './progressSync';
 	import { CHALLENGE_PATH_PLANNER_VERSION, recommendedChallengePathStep } from './recommendations';
-	import { playChallengeSound } from './sound';
+	import { playChallengeSound, stopChallengeSounds } from './sound';
 	import type { ShortRecallPrompt } from './shortRecall';
 	import ChallengeButton from './ui/ChallengeButton.svelte';
 	import ChallengeCelebration from './ui/ChallengeCelebration.svelte';
@@ -127,6 +128,7 @@
 	let shareMessage = $state('');
 	let announcement = $state('');
 	let reduceMotion = $state(false);
+	let visualEffectsEnabled = $state(true);
 	let canNativeShare = $state(false);
 	let challengeGame = $state<HTMLElement | null>(null);
 	let stageHeading = $state<HTMLElement | null>(null);
@@ -183,7 +185,9 @@
 			(stage === 'transfer' && transferPassed)
 	);
 	const slowMotion = $derived(page.url.searchParams.get('debugMotion') === 'slow');
-	const motionDuration = $derived(reduceMotion ? 0 : slowMotion ? 1280 : 320);
+	const motionDuration = $derived(
+		reduceMotion || !visualEffectsEnabled ? 0 : slowMotion ? 1280 : 320
+	);
 	const weakAnswerText = $derived(challenge.staticAnswers[challenge.weakAnswer]);
 	const weakAnswerLabel = $derived(
 		{
@@ -210,7 +214,7 @@
 			? 'You used balanced forces to explain a stationary parcel and a moving glider.'
 			: challenge.id === 'physics-half-range'
 				? 'You calculated uncertainty from repeated readings and used the same steps with new values.'
-				: 'You found the problem, fixed the answer and used the method on a new question.'
+				: 'You repaired the answer and applied the same method.'
 	);
 	const sessionTotals = $derived(challengeSessionTotals(challengeSession));
 	const currentPersonalBest = $derived(
@@ -244,23 +248,21 @@
 	);
 	const automaticInterludeReason = $derived.by(() => {
 		if (automaticInterlude === 'faded-examiner') {
-			return repairSupportUsed || transferHintOpen || (roundScore ?? 400) <= 425
-				? 'A calm worked example follows a round where support or another look will help.'
-				: 'This orbit opens with a calm worked example before recall rises.';
+			return 'Compare the weak answer with the version that earns the mark.';
 		}
 		if (automaticInterlude === 'weakness-lens') {
-			return 'A calm classification beat revisits the exact weakness from this answer.';
+			return 'Name the weakness in the answer you just reviewed.';
 		}
 		if (automaticInterlude === 'chain-echo') {
-			return 'A one-or-two-word recall beat follows this fluent round.';
+			return 'Recall one short missing link from the answer chain.';
 		}
 		if (automaticInterlude === 'link-order') {
-			return 'A short ordering beat rebuilds the answer chain without extra typing.';
+			return 'Put the answer-chain links back in order.';
 		}
 		if (automaticInterlude === 'reason-match') {
-			return 'A quick reason match reconnects each diagnosis with its reviewed evidence.';
+			return 'Match each problem with the reason it matters.';
 		}
-		return 'A quick examiner judgement beat varies the recall pattern.';
+		return 'Decide which statements earn the missing mark.';
 	});
 	const nextChallengeHref = $derived(
 		recommendedNextChallenge
@@ -293,6 +295,9 @@
 			reduceMotion = motionPreference.matches;
 		};
 		syncMotionPreference();
+		const unsubscribeVisualEffects = visualEffectsPreference.subscribe((enabled) => {
+			visualEffectsEnabled = enabled;
+		});
 		canNativeShare = typeof navigator.share === 'function';
 		motionPreference.addEventListener('change', syncMotionPreference);
 		stageStartedAt = performance.now();
@@ -324,9 +329,11 @@
 		analyticsEvent('challenge_round_start', eventContext());
 
 		return () => {
+			unsubscribeVisualEffects();
 			motionPreference.removeEventListener('change', syncMotionPreference);
 			window.removeEventListener(CHALLENGE_PROGRESS_UPDATED_EVENT, handleProgressUpdated);
 			window.clearInterval(timer);
+			stopChallengeSounds();
 		};
 	});
 
@@ -428,7 +435,6 @@
 		);
 		completedStageElapsedMs += completedStageDurationMs;
 		haptics.selection();
-		void playChallengeSound('reveal');
 		reviewStage = null;
 		stage = nextStage;
 		resetStageTimer();
@@ -493,7 +499,7 @@
 		);
 	}
 
-	function chooseRepair(choice: ChallengeChoice) {
+	function chooseRepair(choice: ChallengeChoice, revealNextAction = true) {
 		if (repairPassed) return;
 		if (repairWrongChoices.includes(choice.id)) return;
 		repairAttempts += 1;
@@ -504,7 +510,7 @@
 			haptics.success();
 			void playChallengeSound('correct');
 			announcement = 'Answer improved. The full method is now visible.';
-			void revealStageAction();
+			if (revealNextAction) void revealStageAction();
 		} else {
 			if (!repairWrongChoices.includes(choice.id)) {
 				repairWrongChoices = [...repairWrongChoices, choice.id];
@@ -512,6 +518,7 @@
 			haptics.error();
 			void playChallengeSound('incorrect');
 			announcement = `${choice.feedback ?? 'That edit is still incomplete.'} Try again. Attempt ${repairAttempts}.`;
+			if (repairAttempts >= 2) void revealRepairSupport();
 		}
 		analyticsEvent(
 			'challenge_repair_result',
@@ -526,8 +533,29 @@
 
 	async function revealStageAction() {
 		await tick();
-		const stageAction = challengeGame?.querySelector<HTMLElement>('.session-action-slot');
-		scrollIntoViewIfNeeded(stageAction ?? null, 'end');
+		await waitForLayout();
+		const stageActionSlot = challengeGame?.querySelector<HTMLElement>('.session-action-slot');
+		const stageAction =
+			stageActionSlot?.querySelector<HTMLElement>('button:not([disabled]), a[href]') ?? null;
+		scrollIntoViewIfNeeded(stageActionSlot ?? null, 'end');
+		stageAction?.focus({ preventScroll: true });
+		await waitForLayout();
+		scrollIntoViewIfNeeded(stageActionSlot ?? null, 'end');
+	}
+
+	async function revealRepairSupport() {
+		await tick();
+		await waitForLayout();
+		const supportButton =
+			challengeGame?.querySelector<HTMLElement>('.support-callout button:not([disabled])') ?? null;
+		scrollIntoViewIfNeeded(supportButton, 'center');
+		supportButton?.focus({ preventScroll: true });
+		await waitForLayout();
+		scrollIntoViewIfNeeded(supportButton, 'center');
+	}
+
+	function waitForLayout() {
+		return new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 	}
 
 	function scrollIntoViewIfNeeded(element: HTMLElement | null, block: ScrollLogicalPosition) {
@@ -539,7 +567,7 @@
 		const requiredVisibleHeight = Math.min(rect.height, window.innerHeight * 0.8);
 		if (visibleHeight >= requiredVisibleHeight) return;
 		element.scrollIntoView({
-			behavior: reduceMotion ? 'auto' : 'smooth',
+			behavior: 'auto',
 			block
 		});
 	}
@@ -548,7 +576,7 @@
 		if (repairPassed) return;
 		repairSupportUsed = true;
 		analyticsEvent('challenge_repair_support_used', eventContext({ attempt: repairAttempts }));
-		chooseRepair(correctRepairChoice);
+		chooseRepair(correctRepairChoice, false);
 	}
 
 	function chooseTransfer(choice: ChallengeChoice) {
@@ -747,7 +775,7 @@
 	function startAutomaticInterlude() {
 		selectedInterlude = automaticInterlude;
 		completionView = 'interlude';
-		announcement = `${automaticInterludeDefinition.label} is ready. There is no timer.`;
+		announcement = `${automaticInterludeDefinition.label} is ready.`;
 		haptics.selection();
 		void playChallengeSound('select');
 		void focusStage(true);
@@ -765,7 +793,7 @@
 			writeChallengeSession(challengeSession, window.sessionStorage);
 		}
 		completionView = 'checkpoint';
-		announcement = `Memory beat complete. Run score ${challengeSessionTotals(challengeSession).totalScore} points.`;
+		announcement = `Quick review complete. Current set score ${challengeSessionTotals(challengeSession).totalScore} points.`;
 		const totals = challengeSessionTotals(challengeSession);
 		analyticsEvent(
 			'challenge_session_checkpoint',
@@ -902,7 +930,7 @@
 			<div
 				class="challenge-stage"
 				class:complete={visibleStage === 'complete'}
-				in:fly={{ y: reduceMotion ? 0 : 18, duration: motionDuration }}
+				in:fly={{ y: reduceMotion || !visualEffectsEnabled ? 0 : 18, duration: motionDuration }}
 			>
 				{#if visibleStage === 'complete'}
 					{#if completionView === 'interlude' && selectedInterlude}
@@ -925,8 +953,6 @@
 						<div
 							class:orbit-celebration={sessionTotals.orbitComplete}
 							class="completion-card checkpoint-card"
-							tabindex="-1"
-							bind:this={stageHeading}
 						>
 							{#if sessionTotals.orbitComplete}
 								<ChallengeCelebration variant="orbit" />
@@ -936,58 +962,41 @@
 							</div>
 							<p class="completion-kicker">
 								{sessionTotals.orbitComplete
-									? `Orbit ${sessionTotals.currentOrbitNumber} complete`
-									: `Round ${sessionTotals.currentOrbitPosition} of 3 banked`}
+									? 'Three rounds complete'
+									: `Round ${sessionTotals.currentOrbitPosition} of 3 complete`}
 							</p>
-							<h2>
+							<h2 tabindex="-1" bind:this={stageHeading}>
 								{sessionTotals.orbitComplete
-									? 'Three challenge peaks. Three lighter memory beats.'
-									: 'Memory beat banked. Return to a focused challenge when you’re ready.'}
+									? 'You completed the full three-round set.'
+									: `+50 points from ${automaticInterludeDefinition.label}.`}
 							</h2>
 							<p>
 								{sessionTotals.orbitComplete
-									? 'That is a complete run. Continue only if you still have useful attention.'
-									: 'The change of pace is deliberate: solve, notice what mattered, then return fresh.'}
+									? 'Pause here, or start another set while the method is fresh.'
+									: 'Your next question is ready.'}
 							</p>
 
 							<div
 								class="orbit-progress"
-								aria-label={`Orbit progress: ${sessionTotals.currentOrbitPosition} of 3 rounds`}
+								role="progressbar"
+								aria-label="Round progress"
+								aria-valuemin="0"
+								aria-valuemax="3"
+								aria-valuenow={sessionTotals.currentOrbitPosition}
+								aria-valuetext={`${sessionTotals.currentOrbitPosition} of 3 rounds complete`}
 							>
 								{#each [1, 2, 3] as position (position)}
 									<div class:complete={position <= sessionTotals.currentOrbitPosition}>
 										<span>{position}</span>
-										<small
-											>{position <= sessionTotals.currentOrbitPosition ? 'Banked' : 'Next'}</small
+										<small>{position <= sessionTotals.currentOrbitPosition ? 'Done' : 'Next'}</small
 										>
 									</div>
 								{/each}
 							</div>
 
-							<div class="completion-score" aria-label="Session result">
-								<div>
-									<span>Memory beat</span>
-									<strong>+50</strong>
-									<small>Consolidation banked</small>
-								</div>
-								<div>
-									<span>This run</span>
-									<strong>{sessionTotals.totalScore} pts</strong>
-									<small>
-										{sessionTotals.interludeCount}
-										{sessionTotals.interludeCount === 1 ? 'memory beat' : 'memory beats'}
-									</small>
-								</div>
-								<div>
-									<span>Run streak</span>
-									<strong>{sessionTotals.interludeCount}</strong>
-									<small>Challenge + beat pairs</small>
-								</div>
-							</div>
-
 							{#if recommendedNextChallenge}
 								<div class="next-assignment">
-									<span>Automatically queued · {pathLabel} path</span>
+									<span>Next question · {pathLabel}</span>
 									<strong>{recommendedNextChallenge.title}</strong>
 									<small>
 										GCSE {challengeSubjectLabel(recommendedNextChallenge.subject)} ·
@@ -1022,7 +1031,7 @@
 											analyticsLabel={`Challenge ${challenge.id}: start next ${pathScope} orbit with ${recommendedNextChallenge.id}`}
 											fullWidth
 										>
-											Next orbit: {challengeSubjectLabel(recommendedNextChallenge.subject)}
+											Start another round
 											<ArrowRight size={18} aria-hidden="true" />
 										</ChallengeButton>
 									{/if}
@@ -1051,12 +1060,7 @@
 							</div>
 						</div>
 					{:else}
-						<div
-							class:record-celebration={earnedPersonalBest}
-							class="completion-card"
-							tabindex="-1"
-							bind:this={stageHeading}
-						>
+						<div class:record-celebration={earnedPersonalBest} class="completion-card">
 							{#if earnedPersonalBest}
 								<ChallengeCelebration variant="record" />
 							{/if}
@@ -1066,72 +1070,18 @@
 							<p class="completion-kicker">
 								{completedWithoutFeedback ? 'Solved without hints' : 'Challenge complete'}
 							</p>
-							<h2>{completionTitle}</h2>
-							<p>You found the problem, chose the fix and used it on another question.</p>
+							<h2 tabindex="-1" bind:this={stageHeading}>{completionTitle}</h2>
 
-							<div class="completion-score" aria-label="Challenge result">
-								<div>
-									<span>Round score</span>
-									<strong>{roundScore ?? 400} pts</strong>
-									<small>
-										{earnedPersonalBest
-											? 'New personal best'
-											: roundScore === currentPersonalBest
-												? 'Matched your best'
-												: `Personal best ${currentPersonalBest}`}
-									</small>
-								</div>
-								<div>
-									<span>Atlas score</span>
-									<strong>{atlasBestScore.toLocaleString('en-GB')}</strong>
-									<small>{atlasCompletedCount} unique complete</small>
-								</div>
-								<div>
-									<span>This run</span>
-									<strong>{sessionTotals.totalScore} pts</strong>
-									<small>Round {sessionTotals.currentOrbitPosition} of 3</small>
-								</div>
-							</div>
-
-							{#if userId && earnedPersonalBest && leaderboardProjection.rankImproved && leaderboardProjection.previousRank !== null && leaderboardProjection.projectedRank !== null}
-								<a
-									class="rank-move"
-									href={resolve('/challenges')}
-									data-analytics-label={`Challenge ${challenge.id}: view rank move`}
-								>
-									<span>Atlas rank move</span>
-									<strong>
-										#{leaderboardProjection.previousRank} → #{leaderboardProjection.projectedRank}
-									</strong>
-									<small>Open the challenge board</small>
-								</a>
-							{:else if userId && leaderboardProjection.projectedRank === 1}
-								<a
-									class="rank-move"
-									href={resolve('/challenges')}
-									data-analytics-label={`Challenge ${challenge.id}: view atlas lead`}
-								>
-									<span>Atlas board</span>
-									<strong>Rank #1</strong>
-									<small>Your best score from each unique challenge</small>
-								</a>
-							{:else if userId && leaderboardProjection.nextRival && leaderboardProjection.pointsToNextRank !== null}
-								<a
-									class="rank-move next-rank"
-									href={resolve('/challenges')}
-									data-analytics-label={`Challenge ${challenge.id}: view next leaderboard rank`}
-								>
-									<span>Next atlas rank</span>
-									<strong>
-										{leaderboardProjection.pointsToNextRank.toLocaleString('en-GB')} pts
-									</strong>
-									<small>to rank {leaderboardProjection.nextRival.rank}</small>
-								</a>
-							{/if}
-
-							<div class="completion-chain">
-								<span>Method you just used</span>
-								<strong>{challenge.memoryHandle}</strong>
+							<div class="result-score" aria-label="Challenge result">
+								<span>Round score</span>
+								<strong>{roundScore ?? 400} pts</strong>
+								<small>
+									{earnedPersonalBest
+										? 'New personal best'
+										: roundScore === currentPersonalBest
+											? 'Matched your best'
+											: `Personal best ${currentPersonalBest}`}
+								</small>
 							</div>
 
 							<section class="automatic-beat" aria-labelledby="automatic-beat-title">
@@ -1139,13 +1089,9 @@
 									<Sparkles size={21} strokeWidth={2.2} />
 								</div>
 								<div>
-									<span>Up next · automatically paced</span>
+									<span>Quick review</span>
 									<h3 id="automatic-beat-title">{automaticInterludeDefinition.label}</h3>
 									<p>{automaticInterludeReason}</p>
-									<small>
-										{automaticInterludeDefinition.action} ·
-										{automaticInterludeDefinition.intensity} · no timer
-									</small>
 								</div>
 							</section>
 
@@ -1155,7 +1101,7 @@
 									analyticsLabel={`Challenge ${challenge.id}: start assigned ${automaticInterlude}`}
 									fullWidth
 								>
-									Continue to {automaticInterludeDefinition.label}
+									Start {automaticInterludeDefinition.label}
 									<ArrowRight size={18} aria-hidden="true" />
 								</ChallengeButton>
 								<ChallengeButton
@@ -1168,6 +1114,66 @@
 									Finish for now
 								</ChallengeButton>
 							</div>
+
+							<details class="completion-details">
+								<summary>
+									<span>Round details</span>
+									<ChevronDown size={18} strokeWidth={2.2} aria-hidden="true" />
+								</summary>
+								<div class="completion-details-body">
+									<div class="completion-meta" aria-label="Progress totals">
+										<span>
+											<strong>{atlasBestScore.toLocaleString('en-GB')}</strong>
+											atlas points · {atlasCompletedCount} complete
+										</span>
+										<span>
+											<strong>{sessionTotals.totalScore}</strong>
+											points in this set
+										</span>
+									</div>
+
+									<div class="completion-chain">
+										<span>Method you used</span>
+										<strong>{challenge.memoryHandle}</strong>
+									</div>
+
+									{#if userId && earnedPersonalBest && leaderboardProjection.rankImproved && leaderboardProjection.previousRank !== null && leaderboardProjection.projectedRank !== null}
+										<a
+											class="rank-move"
+											href={resolve('/challenges')}
+											data-analytics-label={`Challenge ${challenge.id}: view rank move`}
+										>
+											<span>Atlas rank</span>
+											<strong>
+												#{leaderboardProjection.previousRank} → #{leaderboardProjection.projectedRank}
+											</strong>
+											<small>Open the challenge board</small>
+										</a>
+									{:else if userId && leaderboardProjection.projectedRank === 1}
+										<a
+											class="rank-move"
+											href={resolve('/challenges')}
+											data-analytics-label={`Challenge ${challenge.id}: view atlas lead`}
+										>
+											<span>Atlas rank</span>
+											<strong>#1</strong>
+											<small>Open the challenge board</small>
+										</a>
+									{:else if userId && leaderboardProjection.nextRival && leaderboardProjection.pointsToNextRank !== null}
+										<a
+											class="rank-move next-rank"
+											href={resolve('/challenges')}
+											data-analytics-label={`Challenge ${challenge.id}: view next leaderboard rank`}
+										>
+											<span>Next rank</span>
+											<strong>
+												{leaderboardProjection.pointsToNextRank.toLocaleString('en-GB')} pts
+											</strong>
+											<small>to rank {leaderboardProjection.nextRival.rank}</small>
+										</a>
+									{/if}
+								</div>
+							</details>
 
 							<div class="completion-actions">
 								<ChallengeButton variant="secondary" onclick={replay} fullWidth>
@@ -1271,9 +1277,7 @@
 
 							{#if visibleStage === 'showdown'}
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
-									<span>Compare</span>
 									<h2>Which answer would score higher?</h2>
-									<p>Choose the answer that responds more fully and accurately.</p>
 								</div>
 
 								<div
@@ -1328,15 +1332,8 @@
 								{/if}
 							{:else if visibleStage === 'diagnose'}
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
-									<span>Find the problem</span>
 									<h2>{challenge.diagnosisPrompt}</h2>
 								</div>
-
-								<p class="diagnosis-instruction">
-									{challenge.mechanic === 'first-wrong-step'
-										? 'Choose the first incorrect step.'
-										: 'Choose the statement that identifies the problem.'}
-								</p>
 
 								<article class="weak-answer-focus">
 									<span>Answer {challenge.weakAnswer.toUpperCase()}</span>
@@ -1366,9 +1363,7 @@
 								</div>
 							{:else if visibleStage === 'repair'}
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
-									<span>Fix Answer {challenge.weakAnswer.toUpperCase()}</span>
 									<h2>{challenge.repairPrompt}</h2>
-									<p>Choose the single best replacement.</p>
 								</div>
 
 								<article class="weak-answer-focus">
@@ -1461,9 +1456,7 @@
 								</div>
 							{:else}
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
-									<span>Apply</span>
 									<h2>Use the same method on this question.</h2>
-									<p>Choose one answer.</p>
 								</div>
 
 								<div class="transfer-options" role="group" aria-label="New-question choices">
@@ -1570,19 +1563,9 @@
 		color: var(--qc-ui-text);
 	}
 
-	.challenge-stage-heading > span,
 	.challenge-stage-heading h2,
-	.challenge-stage-heading p,
 	.challenge-announcement {
 		margin: 0;
-	}
-
-	.challenge-stage-heading > span {
-		color: var(--challenge-accent);
-		font-size: 0.76rem;
-		font-weight: 650;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
 	}
 
 	.challenge-announcement {
@@ -1597,19 +1580,6 @@
 		border: 0;
 	}
 
-	.challenge-stage {
-		display: grid;
-		gap: clamp(1rem, 2.4vw, 1.35rem);
-		min-width: 0;
-		padding: clamp(1rem, 2.8vw, 1.65rem);
-		scroll-margin-top: calc(var(--qc-topbar-height, 4rem) + 0.75rem);
-		border: 1px solid var(--qc-ui-border);
-		border-radius: 1.6rem;
-		background: var(--qc-ui-surface-translucent);
-		box-shadow: 0 1.3rem 3.2rem var(--qc-ui-shadow);
-		backdrop-filter: blur(18px);
-	}
-
 	.challenge-stage-heading {
 		display: grid;
 		gap: 0.3rem;
@@ -1620,12 +1590,6 @@
 	.challenge-stage-heading h2 {
 		font-size: clamp(1.55rem, 3.5vw, 2.5rem);
 		line-height: 1.05;
-	}
-
-	.challenge-stage-heading p {
-		color: var(--qc-ui-text-secondary);
-		font-size: clamp(0.95rem, 1.5vw, 1.05rem);
-		line-height: 1.45;
 	}
 
 	.answer-showdown {
@@ -1770,13 +1734,6 @@
 	.transfer-options {
 		display: grid;
 		gap: 0.6rem;
-	}
-
-	.diagnosis-instruction {
-		margin: 0 0 -0.25rem;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.98rem;
-		line-height: 1.45;
 	}
 
 	.repair-workspace {
@@ -1960,12 +1917,6 @@
 		isolation: isolate;
 	}
 
-	.completion-card.record-celebration .completion-icon,
-	.completion-card.orbit-celebration .completion-icon {
-		border-color: var(--qc-ui-accent);
-		box-shadow: 0 0 1.8rem color-mix(in srgb, var(--qc-ui-accent) 22%, transparent);
-	}
-
 	.completion-icon {
 		display: inline-grid;
 		width: 4.5rem;
@@ -1975,8 +1926,6 @@
 		border-radius: 999px;
 		background: var(--qc-ui-accent-muted);
 		color: var(--qc-ui-accent-text);
-		animation: completion-pop var(--challenge-motion-duration, 560ms)
-			cubic-bezier(0.2, 0.9, 0.2, 1.2) both;
 	}
 
 	.completion-kicker {
@@ -1999,6 +1948,7 @@
 		font-size: clamp(1.4rem, 3vw, 1.9rem);
 		font-weight: 600;
 		line-height: 1.22;
+		outline: none;
 	}
 
 	.completion-card > p:not(.completion-kicker) {
@@ -2011,7 +1961,6 @@
 		display: grid;
 		gap: 0.45rem;
 		width: 100%;
-		margin-top: 0.5rem;
 		padding: 1rem;
 		border: 1px solid var(--qc-ui-accent-border);
 		border-radius: 1rem;
@@ -2036,7 +1985,6 @@
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.55rem;
 		width: min(100%, 42rem);
-		margin-top: 0.45rem;
 	}
 
 	.share-message {
@@ -2059,13 +2007,6 @@
 		}
 	}
 
-	@keyframes completion-pop {
-		from {
-			opacity: 0;
-			transform: scale(0.72) rotate(-8deg);
-		}
-	}
-
 	@media (max-width: 760px) {
 		.answer-showdown {
 			grid-template-columns: minmax(0, 1fr);
@@ -2079,10 +2020,15 @@
 	@media (prefers-reduced-motion: reduce) {
 		.showdown-reveal,
 		.transfer-result,
-		.method-steps li,
-		.completion-icon {
+		.method-steps li {
 			animation: none;
 		}
+	}
+
+	:global(html[data-visual-effects='off']) .showdown-reveal,
+	:global(html[data-visual-effects='off']) .transfer-result,
+	:global(html[data-visual-effects='off']) .method-steps li {
+		animation: none;
 	}
 
 	/* Stage-specific composition only. Shared geometry, controls, choices and progress
@@ -2201,14 +2147,6 @@
 	.question-data tbody td {
 		font-size: 0.82rem;
 		font-weight: 560;
-	}
-
-	.challenge-stage-heading > span {
-		color: var(--qc-ui-accent-text);
-		font-size: 0.76rem;
-		font-weight: 650;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
 	}
 
 	.challenge-stage-heading h2 {
@@ -2413,12 +2351,6 @@
 		}
 	}
 
-	@media (min-width: 761px) and (max-height: 800px) {
-		.challenge-stage {
-			padding: 0.7rem;
-		}
-	}
-
 	@media (max-width: 360px) {
 		.challenge-stage {
 			gap: 0.42rem;
@@ -2541,20 +2473,10 @@
 		gap: 0.25rem;
 	}
 
-	.active-task .challenge-stage-heading > span {
-		font-size: 0.7rem;
-	}
-
 	.active-task .challenge-stage-heading h2 {
 		font-size: clamp(1.16rem, 2vw, 1.48rem);
 		font-weight: 630;
 		line-height: 1.2;
-	}
-
-	.active-task .challenge-stage-heading p,
-	.diagnosis-instruction {
-		font-size: 0.9rem;
-		line-height: 1.4;
 	}
 
 	.review-note {
@@ -2641,7 +2563,6 @@
 
 	.completion-chain {
 		gap: 0.25rem;
-		margin-top: 0.25rem;
 		padding: 0.72rem 0.82rem;
 		border-color: var(--qc-ui-border-subtle);
 		border-radius: 0;
@@ -2705,18 +2626,10 @@
 	}
 
 	.automatic-beat p,
-	.automatic-beat small,
 	.next-assignment small {
 		color: var(--qc-ui-text-secondary);
 		font-size: 0.76rem;
 		line-height: 1.4;
-	}
-
-	.automatic-beat small {
-		color: var(--qc-ui-text-muted);
-		font-weight: 720;
-		letter-spacing: 0.035em;
-		text-transform: uppercase;
 	}
 
 	.automatic-beat-actions {
@@ -2746,23 +2659,22 @@
 		border-left-color: var(--qc-ui-border-strong);
 	}
 
-	.completion-score {
+	.result-score {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.55rem;
+		grid-template-areas:
+			'label score'
+			'note score';
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 0.16rem 1rem;
+		align-items: center;
 		width: 100%;
-	}
-
-	.completion-score > div {
-		display: grid;
-		gap: 0.18rem;
-		min-width: 0;
-		padding: 0.72rem 0.78rem;
-		border: 1px solid var(--qc-ui-border-subtle);
+		padding: 0.72rem 0.82rem;
+		border: 1px solid var(--qc-ui-border-control);
 		background: var(--qc-ui-surface-raised);
 	}
 
-	.completion-score span {
+	.result-score > span {
+		grid-area: label;
 		color: var(--qc-ui-text-muted);
 		font-size: 0.68rem;
 		font-weight: 760;
@@ -2770,16 +2682,75 @@
 		text-transform: uppercase;
 	}
 
-	.completion-score strong {
+	.result-score > strong {
+		grid-area: score;
 		color: var(--qc-ui-text);
-		font-size: clamp(1rem, 2vw, 1.2rem);
+		font-size: clamp(1.35rem, 3vw, 1.7rem);
 		font-variant-numeric: tabular-nums;
 		line-height: 1.2;
 	}
 
-	.completion-score small {
+	.result-score > small {
+		grid-area: note;
 		color: var(--qc-ui-text-secondary);
-		font-size: 0.74rem;
+		font-size: 0.78rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.completion-details {
+		display: grid;
+		width: 100%;
+		border-top: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.completion-details summary {
+		display: flex;
+		min-height: 2.75rem;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.7rem;
+		padding: 0.55rem 0;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.84rem;
+		font-weight: 700;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	.completion-details summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.completion-details summary :global(svg) {
+		flex: 0 0 auto;
+		transition: transform 160ms ease;
+	}
+
+	.completion-details[open] summary :global(svg) {
+		transform: rotate(180deg);
+	}
+
+	.completion-details summary:focus-visible {
+		outline: 3px solid var(--qc-ui-focus-ring);
+		outline-offset: 2px;
+	}
+
+	.completion-details-body {
+		display: grid;
+		gap: 0.55rem;
+		padding-bottom: 0.55rem;
+	}
+
+	.completion-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 1rem;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.78rem;
+	}
+
+	.completion-meta strong {
+		color: var(--qc-ui-text);
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -2796,17 +2767,6 @@
 			var(--qc-ui-surface-raised);
 		color: inherit;
 		text-decoration: none;
-	}
-
-	.rank-move::after {
-		position: absolute;
-		inset: 0 auto 0 -25%;
-		width: 12%;
-		background: linear-gradient(90deg, transparent, color-mix(in srgb, white 12%, transparent));
-		content: '';
-		opacity: 0;
-		pointer-events: none;
-		transform: skewX(-14deg);
 	}
 
 	.rank-move span {
@@ -2839,24 +2799,6 @@
 	.rank-move:focus-visible {
 		outline: 2px solid var(--qc-ui-accent);
 		outline-offset: 2px;
-	}
-
-	:global(html[data-visual-effects='on']) .rank-move::after {
-		animation: rank-scan 1050ms ease-out 180ms both;
-	}
-
-	@keyframes rank-scan {
-		0% {
-			left: -25%;
-			opacity: 0;
-		}
-		25% {
-			opacity: 0.8;
-		}
-		100% {
-			left: 115%;
-			opacity: 0;
-		}
 	}
 
 	.completion-actions {
@@ -2944,15 +2886,7 @@
 			grid-row: auto;
 		}
 
-		.completion-actions {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
 		.automatic-beat-actions {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.completion-score {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
@@ -2970,14 +2904,6 @@
 		.orbit-progress small {
 			overflow: visible;
 			text-overflow: clip;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.rank-move::after,
-		:global(html[data-visual-effects='on']) .rank-move::after {
-			display: none;
-			animation: none;
 		}
 	}
 
