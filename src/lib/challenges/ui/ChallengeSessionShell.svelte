@@ -114,9 +114,7 @@
 >
 	<header class="session-header">
 		<div class="session-left">
-			{#if !complete}
-				<div class="session-audio"><ChallengeSoundToggle /></div>
-			{/if}
+			<div class="session-audio"><ChallengeSoundToggle /></div>
 		</div>
 
 		<div class="session-context">

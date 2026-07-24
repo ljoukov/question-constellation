@@ -10,6 +10,8 @@ import {
 	ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 	publicChallengeCurriculumLinks
 } from '$lib/server/challengeCurriculum';
+import { getChallengeLeaderboard } from '$lib/server/challengeLeaderboard';
+import { emptyChallengeLeaderboard } from '$lib/challenges/leaderboard';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -33,6 +35,10 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 	const challengeProgress = locals.user
 		? ((await parent()).homeSnapshot?.challengeProgress ?? emptyChallengeProgress())
 		: emptyChallengeProgress();
+	const leaderboard = await getChallengeLeaderboard({
+		challengeIds: challengeCatalog.map((challenge) => challenge.id),
+		currentUserId: locals.user?.uid
+	}).catch(() => emptyChallengeLeaderboard());
 
 	return {
 		featuredChallenge: publicChallengePreviewDefinition(featuredChallenge),
@@ -41,6 +47,7 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 		curriculumLinks: publicChallengeCurriculumLinks(curriculumExamples),
 		ks4ScienceUrl: ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 		challengeProgress,
+		leaderboard,
 		user: locals.user
 	};
 };

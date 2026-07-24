@@ -1,0 +1,646 @@
+[
+	{
+		"challengeId": "biology-data-conclusions",
+		"stem": "Disease Z's 65% and W's 12% form a direct ___.",
+		"canonicalAnswer": "comparison",
+		"acceptedAliases": ["contrast"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-cell-differences",
+		"stem": "Size, nucleus and mitochondria are three different feature ___.",
+		"canonicalAnswer": "categories",
+		"acceptedAliases": ["types"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-extra-controls",
+		"stem": "A variable deliberately kept constant is a ___ variable.",
+		"canonicalAnswer": "control",
+		"acceptedAliases": ["controlled"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-enzyme-denature",
+		"stem": "At 45 °C, the enzyme's ___ changes shape.",
+		"canonicalAnswer": "active site",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-reagent-colour",
+		"stem": "A positive Biuret test turns ___.",
+		"canonicalAnswer": "lilac",
+		"acceptedAliases": ["purple"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-heated-food-test",
+		"stem": "Benedict's solution must be ___ with the sample.",
+		"canonicalAnswer": "heated",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-ivf-sequence",
+		"stem": "In IVF, fertilisation happens in the ___.",
+		"canonicalAnswer": "laboratory",
+		"acceptedAliases": ["lab"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-vaccine-immunity",
+		"stem": "Long-term vaccine protection depends on ___ cells.",
+		"canonicalAnswer": "memory",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-homeostasis-control",
+		"stem": "A receptor sends information to the coordination ___.",
+		"canonicalAnswer": "centre",
+		"acceptedAliases": ["center"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-recessive-inheritance",
+		"stem": "The visible characteristic is the ___.",
+		"canonicalAnswer": "phenotype",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-disinfectant-data-conclusions",
+		"stem": "C and D had equal largest clear zones, so their result was a ___.",
+		"canonicalAnswer": "tie",
+		"acceptedAliases": ["draw"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-exercise-recovery-conclusions",
+		"stem": "The runner's recovery is judged against the ___ pulse.",
+		"canonicalAnswer": "resting",
+		"acceptedAliases": ["rest", "baseline"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-bacterial-cell-features",
+		"stem": "A bacterial cell has no ___.",
+		"canonicalAnswer": "nucleus",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-prokaryote-eukaryote-comparison",
+		"stem": "Count each feature ___ only once.",
+		"canonicalAnswer": "category",
+		"acceptedAliases": ["type"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-photosynthesis-control-variables",
+		"stem": "Water temperature should be kept ___.",
+		"canonicalAnswer": "constant",
+		"acceptedAliases": ["controlled"],
+		"preferredHiddenStepIndex": 3
+	},
+	{
+		"challengeId": "biology-osmosis-control-variables",
+		"stem": "A controlled variable must be kept ___.",
+		"canonicalAnswer": "constant",
+		"acceptedAliases": ["controlled"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-catalase-denaturation",
+		"stem": "Excess heat can ___ catalase.",
+		"canonicalAnswer": "denature",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-amylase-denaturation",
+		"stem": "Excess heat changes amylase's ___.",
+		"canonicalAnswer": "active site",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-starch-test-result",
+		"stem": "A positive iodine test turns ___.",
+		"canonicalAnswer": "blue-black",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-lipid-test-result",
+		"stem": "A positive lipid test forms a white ___.",
+		"canonicalAnswer": "emulsion",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-banana-benedicts-test",
+		"stem": "The Benedict's mixture must be ___.",
+		"canonicalAnswer": "heated",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-reducing-sugar-test-sequence",
+		"stem": "After mixing with Benedict's, the sample must be ___.",
+		"canonicalAnswer": "heated",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-ivf-laboratory-fertilisation",
+		"stem": "IVF fertilisation happens in a ___.",
+		"canonicalAnswer": "laboratory",
+		"acceptedAliases": ["lab"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-ivf-embryo-transfer-sequence",
+		"stem": "Before transfer, the embryo must ___.",
+		"canonicalAnswer": "divide",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-flu-vaccine-memory",
+		"stem": "Vaccination leaves behind ___ cells.",
+		"canonicalAnswer": "memory",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "biology-booster-vaccine-response",
+		"stem": "A booster triggers rapid production of ___.",
+		"canonicalAnswer": "antibodies",
+		"acceptedAliases": ["antibody"],
+		"preferredHiddenStepIndex": 3
+	},
+	{
+		"challengeId": "biology-temperature-homeostasis-loop",
+		"stem": "A temperature change is detected by a ___.",
+		"canonicalAnswer": "receptor",
+		"acceptedAliases": ["thermoreceptor"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-blood-glucose-control-loop",
+		"stem": "Insulin lowers raised blood ___.",
+		"canonicalAnswer": "glucose",
+		"acceptedAliases": ["sugar"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "biology-cystic-fibrosis-inheritance",
+		"stem": "An unaffected person with one recessive allele is a ___.",
+		"canonicalAnswer": "carrier",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "biology-recessive-flower-inheritance",
+		"stem": "A recessive colour appears only in a ___ genotype.",
+		"canonicalAnswer": "homozygous recessive",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "chemistry-alloy-hardness",
+		"stem": "Different-sized atoms make metal layers less able to ___.",
+		"canonicalAnswer": "slide",
+		"acceptedAliases": ["move"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-collision-rate",
+		"stem": "At higher temperature, particles move ___.",
+		"canonicalAnswer": "faster",
+		"acceptedAliases": ["quicker"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-stoichiometric-mass",
+		"stem": "Balanced-equation coefficients provide the mole ___.",
+		"canonicalAnswer": "ratio",
+		"acceptedAliases": ["proportion"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-constant-mass",
+		"stem": "Reheating continues until the mass is ___.",
+		"canonicalAnswer": "unchanged",
+		"acceptedAliases": ["constant"],
+		"preferredHiddenStepIndex": 3
+	},
+	{
+		"challengeId": "chemistry-ionic-bonding",
+		"stem": "Oppositely charged ions attract by ___ attraction.",
+		"canonicalAnswer": "electrostatic",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-molten-electrolysis",
+		"stem": "Positive ions move to the ___.",
+		"canonicalAnswer": "cathode",
+		"acceptedAliases": ["negative electrode"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-exothermic-energy",
+		"stem": "An exothermic reaction warms the ___.",
+		"canonicalAnswer": "surroundings",
+		"acceptedAliases": ["environment"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "chemistry-flame-tests",
+		"stem": "The wire loop should be ___ before a flame test.",
+		"canonicalAnswer": "cleaned",
+		"acceptedAliases": ["clean"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "chemistry-equilibrium-pressure",
+		"stem": "Higher pressure favours the side with ___ gas molecules.",
+		"canonicalAnswer": "fewer",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-life-cycle",
+		"stem": "After manufacture and use, the final life-cycle stage is ___.",
+		"canonicalAnswer": "disposal",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 3
+	},
+	{
+		"challengeId": "chemistry-brass-hardness",
+		"stem": "Different-sized atoms make brass layers less able to ___.",
+		"canonicalAnswer": "slide",
+		"acceptedAliases": ["move"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-pure-metal-bending",
+		"stem": "Equal-sized atoms form regular ___.",
+		"canonicalAnswer": "layers",
+		"acceptedAliases": ["rows"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "chemistry-concentration-collisions",
+		"stem": "Higher concentration means more particles per unit ___.",
+		"canonicalAnswer": "volume",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "chemistry-pressure-collisions",
+		"stem": "Compression puts gas particles closer ___.",
+		"canonicalAnswer": "together",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-magnesium-oxide-mass",
+		"stem": "Stoichiometry begins by converting mass to ___.",
+		"canonicalAnswer": "moles",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-carbon-dioxide-mass",
+		"stem": "Balanced-equation coefficients give the mole ___.",
+		"canonicalAnswer": "ratio",
+		"acceptedAliases": ["proportion"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-river-water-solids",
+		"stem": "After evaporation, the residue is cooled before it is ___.",
+		"canonicalAnswer": "weighed",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-water-solids-comparison",
+		"stem": "Use equal measured ___ of water for a fair comparison.",
+		"canonicalAnswer": "volumes",
+		"acceptedAliases": ["volume"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "chemistry-sodium-chloride-bond",
+		"stem": "The sodium and chloride ions are held by ___ attraction.",
+		"canonicalAnswer": "electrostatic",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-magnesium-oxide-bond",
+		"stem": "Magnesium and oxide ions are held by ___ attraction.",
+		"canonicalAnswer": "electrostatic",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-magnesium-chloride-electrolysis",
+		"stem": "Positive magnesium ions move to the ___.",
+		"canonicalAnswer": "cathode",
+		"acceptedAliases": ["negative electrode"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-aluminium-oxide-electrolysis",
+		"stem": "Half-equation charge is balanced using ___.",
+		"canonicalAnswer": "electrons",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-neutralisation-energy",
+		"stem": "A warmer neutralisation mixture indicates an ___ reaction.",
+		"canonicalAnswer": "exothermic",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-cold-pack-energy",
+		"stem": "An instant cold-pack reaction is ___.",
+		"canonicalAnswer": "endothermic",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-lithium-flame",
+		"stem": "Lithium ions produce a ___ flame.",
+		"canonicalAnswer": "crimson",
+		"acceptedAliases": ["crimson red"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-mixed-flame-colours",
+		"stem": "A strong flame colour can ___ another ion's colour.",
+		"canonicalAnswer": "mask",
+		"acceptedAliases": ["hide"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-dimer-equilibrium-pressure",
+		"stem": "Higher pressure favours the side with ___ gas molecules.",
+		"canonicalAnswer": "fewer",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-equal-gas-equilibrium",
+		"stem": "Equal gas totals mean no equilibrium ___ when pressure changes.",
+		"canonicalAnswer": "shift",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "chemistry-reusable-bottle-life-cycle",
+		"stem": "A fair bottle life-cycle comparison must cover the same number of ___.",
+		"canonicalAnswer": "uses",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "chemistry-phone-life-cycle",
+		"stem": "Both phone choices should cover the same service ___.",
+		"canonicalAnswer": "period",
+		"acceptedAliases": ["lifetime"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-gas-pressure",
+		"stem": "Gas pressure comes from collisions with the container ___.",
+		"canonicalAnswer": "walls",
+		"acceptedAliases": ["wall"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-half-range",
+		"stem": "Estimated uncertainty is half the ___.",
+		"canonicalAnswer": "range",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-weight-equation",
+		"stem": "In W = mg, g is the gravitational field ___.",
+		"canonicalAnswer": "strength",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-momentum-sharing",
+		"stem": "In a closed collision, total momentum is ___.",
+		"canonicalAnswer": "conserved",
+		"acceptedAliases": ["constant"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-conductivity-rate",
+		"stem": "Higher thermal conductivity gives a ___ energy-transfer rate.",
+		"canonicalAnswer": "faster",
+		"acceptedAliases": ["higher"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-motor-force",
+		"stem": "A current-carrying wire in a magnetic field feels a ___.",
+		"canonicalAnswer": "force",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-parallel-currents",
+		"stem": "At a junction, branch currents ___.",
+		"canonicalAnswer": "add",
+		"acceptedAliases": ["combine"],
+		"preferredHiddenStepIndex": 3
+	},
+	{
+		"challengeId": "physics-resultant-acceleration",
+		"stem": "Acceleration follows the resultant ___.",
+		"canonicalAnswer": "force",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-radiation-risk",
+		"stem": "The protective screen reduces the radiographer's absorbed ___.",
+		"canonicalAnswer": "dose",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-drag-balance",
+		"stem": "At terminal speed, the resultant force is ___.",
+		"canonicalAnswer": "zero",
+		"acceptedAliases": ["0 N", "0N"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-thinking-distance",
+		"stem": "Thinking distance equals speed times reaction ___.",
+		"canonicalAnswer": "time",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-zero-resultant",
+		"stem": "Zero resultant force means zero ___.",
+		"canonicalAnswer": "acceleration",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-exp-bike-pump-pressure",
+		"stem": "Compressing gas increases wall-collision ___.",
+		"canonicalAnswer": "frequency",
+		"acceptedAliases": ["rate"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-sealed-balloon-pressure",
+		"stem": "For a fixed mass of gas at constant temperature, wall-collision frequency ___ as volume increases.",
+		"canonicalAnswer": "decreases",
+		"acceptedAliases": ["falls", "drops"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-thermometer-half-range",
+		"stem": "Estimated uncertainty equals the range divided by ___.",
+		"canonicalAnswer": "two",
+		"acceptedAliases": ["2"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-extension-half-range",
+		"stem": "To find half-range uncertainty, divide the range by ___.",
+		"canonicalAnswer": "two",
+		"acceptedAliases": ["2"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-moon-weight",
+		"stem": "An object's mass on the Moon stays ___.",
+		"canonicalAnswer": "fixed",
+		"acceptedAliases": ["constant"],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "physics-exp-lifted-crate-weight",
+		"stem": "In W = mg, g is the gravitational field ___.",
+		"canonicalAnswer": "strength",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-trolley-collision-momentum",
+		"stem": "In a closed collision, momentum is ___.",
+		"canonicalAnswer": "conserved",
+		"acceptedAliases": ["constant"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-coupled-carts-momentum",
+		"stem": "After coupling, divide momentum by the combined ___.",
+		"canonicalAnswer": "mass",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-exp-loft-insulation-conductivity",
+		"stem": "Good loft insulation has low thermal ___.",
+		"canonicalAnswer": "conductivity",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "physics-exp-pan-handle-conductivity",
+		"stem": "A safe pan handle has low thermal ___.",
+		"canonicalAnswer": "conductivity",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 0
+	},
+	{
+		"challengeId": "physics-exp-current-wire-motor-effect",
+		"stem": "A current in a magnetic field produces a ___.",
+		"canonicalAnswer": "force",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-exp-magnet-force-pair",
+		"stem": "Motor-effect forces act on both the wire and the ___.",
+		"canonicalAnswer": "magnet",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-parallel-lamp-current",
+		"stem": "At a junction, branch currents ___.",
+		"canonicalAnswer": "add",
+		"acceptedAliases": ["combine"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-parallel-voltage",
+		"stem": "Parallel branches have the full supply ___.",
+		"canonicalAnswer": "voltage",
+		"acceptedAliases": ["p.d.", "pd"],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-exp-sled-resultant-acceleration",
+		"stem": "Acceleration equals resultant force divided by ___.",
+		"canonicalAnswer": "mass",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-exp-loaded-van-acceleration",
+		"stem": "Greater mass gives smaller ___ for the same force.",
+		"canonicalAnswer": "acceleration",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 2
+	},
+	{
+		"challengeId": "physics-exp-xray-dose-risk",
+		"stem": "A higher radiation dose increases tissue-harm ___.",
+		"canonicalAnswer": "risk",
+		"acceptedAliases": ["chance"],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-parachutist-terminal-velocity",
+		"stem": "At terminal velocity, weight and drag are ___.",
+		"canonicalAnswer": "equal",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 3
+	},
+	{
+		"challengeId": "physics-exp-tired-driver-thinking-distance",
+		"stem": "Tiredness increases reaction ___.",
+		"canonicalAnswer": "time",
+		"acceptedAliases": [],
+		"preferredHiddenStepIndex": 1
+	},
+	{
+		"challengeId": "physics-exp-tug-of-war-zero-resultant",
+		"stem": "Equal opposite pulls give a resultant force of ___.",
+		"canonicalAnswer": "zero",
+		"acceptedAliases": ["0 N", "0N"],
+		"preferredHiddenStepIndex": 2
+	}
+]

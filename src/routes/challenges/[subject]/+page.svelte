@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { analyticsEvent } from '$lib/analytics/client';
 	import ChallengePreview from '$lib/challenges/ChallengePreview.svelte';
-	import { challengePath } from '$lib/challenges/routing';
+	import { challengePath, challengePathWithScope } from '$lib/challenges/routing';
 	import {
 		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
 		CHALLENGE_PROGRESS_STORAGE_KEY,
@@ -29,6 +30,8 @@
 	} from '$lib/challenges/seo';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
+	import ChallengeRhythmStrip from '$lib/challenges/ui/ChallengeRhythmStrip.svelte';
+	import ChallengeLeaderboard from '$lib/challenges/ui/ChallengeLeaderboard.svelte';
 	import CurriculumDisclosure from '$lib/challenges/ui/CurriculumDisclosure.svelte';
 	import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 	import type { ChallengeSubject } from '$lib/challenges/types';
@@ -193,6 +196,14 @@
 		if (entry) return 'In progress';
 		return undefined;
 	}
+
+	function recordSubjectPathSelection(source: string) {
+		analyticsEvent('challenge_scope_selected', {
+			scope: data.subject.subject,
+			source,
+			plannerVersion: 'science-path-v1'
+		});
+	}
 </script>
 
 <svelte:head>
@@ -234,12 +245,20 @@
 		</nav>
 
 		<section class="subject-hero" aria-label={`Recommended ${subjectLabel} challenge`}>
+			<header class="path-intro">
+				<span>{data.subject.label} only</span>
+				<strong>One click starts an automatic subject path.</strong>
+				<p>We choose the memory beat and queue the next {data.subject.label} challenge.</p>
+			</header>
 			<ChallengePreview
 				challenge={heroChallenge}
 				headingLevel="h1"
 				headline={heroChallenge.hook}
 				stacked
 				completed={Boolean(progress.challenges[heroChallenge.id]?.completedAt)}
+				href={challengePathWithScope(heroChallenge, data.subject.subject)}
+				actionLabel={`Start ${data.subject.label} path`}
+				onstart={() => recordSubjectPathSelection('challenge_subject_primary')}
 			/>
 		</section>
 
@@ -256,6 +275,16 @@
 			</div>
 		</section>
 
+		<ChallengeRhythmStrip />
+
+		<ChallengeLeaderboard
+			snapshot={data.leaderboard}
+			scopeLabel={data.subject.label}
+			personalScore={totalBestScore}
+			personalCompleted={completedCount}
+			signedIn={Boolean(data.user)}
+		/>
+
 		<section class="recommended-cases" aria-labelledby="recommended-cases-title">
 			<header>
 				<h2 id="recommended-cases-title">More {data.subject.label} challenges</h2>
@@ -264,16 +293,16 @@
 			<div>
 				{#each otherChallenges as challenge (challenge.id)}
 					<ChallengeCardLink
-						href={challengePath(challenge)}
+						href={challengePathWithScope(challenge, data.subject.subject)}
 						eyebrow={challengeEyebrow(challenge)}
 						markLabel={`${challenge.marks} ${challenge.marks === 1 ? 'mark' : 'marks'}`}
 						title={challenge.title}
-						description={challenge.hook}
 						meta={challenge.topic}
 						visualChallenge={challenge}
 						complete={Boolean(progress.challenges[challenge.id]?.completedAt)}
 						balanced
 						analyticsLabel={`Open ${challenge.title} challenge`}
+						onclick={() => recordSubjectPathSelection('challenge_subject_catalogue')}
 					/>
 				{/each}
 			</div>
@@ -281,7 +310,7 @@
 
 		<CurriculumDisclosure>
 			<ul class="curriculum-links" aria-label={`Official ${data.subject.label} curriculum links`}>
-				{#each data.curriculumLinks as link (link.officialUrl)}
+				{#each data.curriculumLinks as link (`${link.officialUrl}\u0000${link.topicLabel}`)}
 					<li>
 						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 						<a href={link.officialUrl} target="_blank" rel="noreferrer">
@@ -347,6 +376,38 @@
 		gap: 0.38rem;
 		color: var(--qc-ui-text);
 		font-weight: 700;
+	}
+
+	.subject-hero {
+		display: grid;
+		gap: 0.65rem;
+		min-width: 0;
+	}
+
+	.path-intro {
+		display: grid;
+		gap: 0.12rem;
+		padding-left: 0.72rem;
+		border-left: 3px solid var(--qc-ui-accent);
+	}
+
+	.path-intro span {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.68rem;
+		font-weight: 800;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.path-intro strong {
+		font-size: 1rem;
+	}
+
+	.path-intro p {
+		margin: 0;
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.82rem;
+		line-height: 1.4;
 	}
 
 	.activity-strip {

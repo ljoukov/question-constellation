@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { ChallengeProgress } from './progress';
-import { mostRecentlyCompletedChallenge, recommendedUnfinishedChallenge } from './recommendations';
+import {
+	mostRecentlyCompletedChallenge,
+	recommendedChallengePathStep,
+	recommendedUnfinishedChallenge
+} from './recommendations';
 
 const challenges = [
 	{ id: 'biology-one', subject: 'biology', slug: 'one' },
@@ -103,5 +107,112 @@ describe('challenge recommendations', () => {
 
 		expect(mostRecentlyCompletedChallenge(challenges, completed)?.id).toBe('biology-two');
 		expect(mostRecentlyCompletedChallenge(challenges, progress())).toBeNull();
+	});
+});
+
+describe('automatic challenge paths', () => {
+	const pathChallenges = [
+		{
+			id: 'biology-standard',
+			subject: 'biology',
+			slug: 'biology-standard',
+			difficulty: 'standard',
+			arc: 'read-the-evidence'
+		},
+		{
+			id: 'chemistry-standard',
+			subject: 'chemistry',
+			slug: 'chemistry-standard',
+			difficulty: 'standard',
+			arc: 'read-the-evidence'
+		},
+		{
+			id: 'chemistry-starter',
+			subject: 'chemistry',
+			slug: 'chemistry-starter',
+			difficulty: 'starter',
+			arc: 'complete-the-method'
+		},
+		{
+			id: 'physics-starter',
+			subject: 'physics',
+			slug: 'physics-starter',
+			difficulty: 'starter',
+			arc: 'connect-cause-to-effect'
+		}
+	] as const;
+
+	it('rotates to the next subject and softens difficulty after a supported mixed round', () => {
+		expect(
+			recommendedChallengePathStep(pathChallenges, progress(), {
+				currentChallenge: pathChallenges[0],
+				scope: 'mixed',
+				roundScore: 400
+			})?.id
+		).toBe('chemistry-starter');
+	});
+
+	it('stays inside a subject path and raises demand only after a fluent round', () => {
+		expect(
+			recommendedChallengePathStep(pathChallenges, progress(), {
+				currentChallenge: pathChallenges[2],
+				scope: 'chemistry',
+				roundScore: 500
+			})?.id
+		).toBe('chemistry-standard');
+	});
+
+	it('resumes genuine unfinished work before applying the new-path heuristic', () => {
+		const activeProgress = progress({
+			'physics-starter': entry({
+				stage: 'repair',
+				completedAt: null,
+				updatedAt: '2026-07-19T10:08:00.000Z'
+			})
+		});
+
+		expect(
+			recommendedChallengePathStep(pathChallenges, activeProgress, {
+				currentChallenge: pathChallenges[0],
+				scope: 'mixed',
+				roundScore: 500
+			})?.id
+		).toBe('physics-starter');
+	});
+
+	it('does not let an old partial attempt interrupt an active mixed orbit', () => {
+		const activeProgress = progress({
+			'physics-starter': entry({
+				stage: 'repair',
+				completedAt: null,
+				updatedAt: '2026-07-19T10:08:00.000Z'
+			})
+		});
+
+		expect(
+			recommendedChallengePathStep(pathChallenges, activeProgress, {
+				currentChallenge: pathChallenges[0],
+				scope: 'mixed',
+				roundScore: 500,
+				resumeStarted: false
+			})?.id
+		).toBe('chemistry-standard');
+	});
+
+	it('returns null instead of replaying solved work when a scope is complete', () => {
+		expect(
+			recommendedChallengePathStep(
+				pathChallenges,
+				progress({
+					'chemistry-standard': entry(),
+					'chemistry-starter': entry()
+				}),
+				{
+					currentChallenge: pathChallenges[0],
+					scope: 'chemistry',
+					roundScore: 450
+				}
+			)
+		).toBeNull();
 	});
 });

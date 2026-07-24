@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { analyticsEvent } from '$lib/analytics/client';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
@@ -18,8 +19,34 @@
 	} from '@lucide/svelte';
 	import { onMount, tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import type { ChallengeChoice, ChallengeDefinition } from './types';
-	import { challengePath, challengeSubjectLabel } from './routing';
+	import type { PublicChallengeDefinition, PublicNextChallengeDefinition } from './authoredData';
+	import {
+		challengeInterludeDefinitions,
+		type ChallengeInterludeMechanic,
+		type ChallengeInterludeResult
+	} from './challengeInterludes';
+	import {
+		challengeSessionTotals,
+		chooseAutomaticInterludeMechanic,
+		emptyChallengeSession,
+		readChallengeSession,
+		recordChallengeInterludeCompletion,
+		recordChallengeRound,
+		writeChallengeSession,
+		type ChallengeSessionState
+	} from './challengeSession';
+	import {
+		emptyChallengeLeaderboard,
+		projectChallengeLeaderboard,
+		type ChallengeLeaderboardSnapshot
+	} from './leaderboard';
+	import type { ChallengeChoice } from './types';
+	import {
+		challengePath,
+		challengePathWithScope,
+		challengeSubjectLabel,
+		type ChallengePathScope
+	} from './routing';
 	import {
 		calculateChallengeScore,
 		emptyChallengeProgress,
@@ -33,16 +60,20 @@
 		type ChallengeProgressUpdatedDetail,
 		syncChallengeProgress
 	} from './progressSync';
-	import { recommendedUnfinishedChallenge } from './recommendations';
+	import { CHALLENGE_PATH_PLANNER_VERSION, recommendedChallengePathStep } from './recommendations';
 	import { playChallengeSound } from './sound';
+	import type { ShortRecallPrompt } from './shortRecall';
 	import ChallengeButton from './ui/ChallengeButton.svelte';
+	import ChallengeCelebration from './ui/ChallengeCelebration.svelte';
 	import ChallengeChoiceControl from './ui/ChallengeChoice.svelte';
+	import ChallengeInterlude from './ui/ChallengeInterlude.svelte';
 	import ChallengeSessionShell from './ui/ChallengeSessionShell.svelte';
 	import ChallengeVisualStory from './ui/ChallengeVisualStory.svelte';
 	import ThemeAwareChallengeArt from './ui/ThemeAwareChallengeArt.svelte';
 	import { challengeVisual } from './visuals';
 
 	type Stage = 'showdown' | 'diagnose' | 'repair' | 'transfer' | 'complete';
+	type CompletionView = 'result' | 'interlude' | 'checkpoint';
 
 	let {
 		challenge,
@@ -50,13 +81,19 @@
 		nextChallenges,
 		initialProgress = null,
 		userId = null,
+		leaderboard = emptyChallengeLeaderboard(),
+		shortRecallPrompt = null,
+		pathScope = challenge.subject,
 		curriculum
 	}: {
-		challenge: ChallengeDefinition;
+		challenge: PublicChallengeDefinition;
 		chain: AnswerChain;
-		nextChallenges: Array<Pick<ChallengeDefinition, 'id' | 'slug' | 'subject'>>;
+		nextChallenges: PublicNextChallengeDefinition[];
 		initialProgress?: ChallengeProgress | null;
 		userId?: string | null;
+		leaderboard?: ChallengeLeaderboardSnapshot;
+		shortRecallPrompt?: ShortRecallPrompt | null;
+		pathScope?: ChallengePathScope;
 		curriculum?: {
 			topicLabel: string;
 			officialUrl: string;
@@ -98,13 +135,7 @@
 	let stageElapsedDisplaySeconds = $state(0);
 	let progressSnapshot = $state<ChallengeProgress>(emptyChallengeProgress());
 	let roundScore = $state<number | null>(null);
-	let roundTimeMs = $state<number | null>(null);
-	let bestScore = $state<number | null>(null);
-	let bestTimeMs = $state<number | null>(null);
-	let recommendedNextChallenge = $state<Pick<
-		ChallengeDefinition,
-		'id' | 'slug' | 'subject'
-	> | null>(null);
+	let recommendedNextChallenge = $state<PublicNextChallengeDefinition | null>(null);
 	let exitTimerPaused = $state(false);
 	let exitTimerPausedAt = $state(0);
 	let stagePausedMs = $state(0);
@@ -112,6 +143,11 @@
 	let roundPlayRecorded = $state(false);
 	let stageTimerStopped = $state(false);
 	let stageElapsedMsAtStop = $state<number | null>(null);
+	let completionView = $state<CompletionView>('result');
+	let selectedInterlude = $state<ChallengeInterludeMechanic | null>(null);
+	let challengeSession = $state<ChallengeSessionState>(emptyChallengeSession());
+	let earnedPersonalBest = $state(false);
+	let previousPersonalBest = $state<number | null>(null);
 
 	const selectedShowdownCorrect = $derived(selectedAnswer === challenge.strongerAnswer);
 	const visibleStage = $derived(reviewStage ?? stage);
@@ -169,20 +205,73 @@
 			!repairSupportUsed &&
 			!transferHintOpen
 	);
-	const firstTryStepCount = $derived(
-		[
-			selectedShowdownCorrect,
-			diagnosisAttempts === 1,
-			repairAttempts === 1,
-			transferAttempts === 1
-		].filter(Boolean).length
-	);
 	const completionTitle = $derived(
 		challenge.id === 'physics-zero-resultant'
 			? 'You used balanced forces to explain a stationary parcel and a moving glider.'
 			: challenge.id === 'physics-half-range'
 				? 'You calculated uncertainty from repeated readings and used the same steps with new values.'
 				: 'You found the problem, fixed the answer and used the method on a new question.'
+	);
+	const sessionTotals = $derived(challengeSessionTotals(challengeSession));
+	const currentPersonalBest = $derived(
+		progressSnapshot.challenges[challenge.id]?.bestScore ?? roundScore ?? 0
+	);
+	const atlasBestScore = $derived(
+		Object.values(progressSnapshot.challenges).reduce(
+			(total, entry) => total + (entry.bestScore ?? 0),
+			0
+		)
+	);
+	const atlasCompletedCount = $derived(
+		Object.values(progressSnapshot.challenges).filter((entry) => Boolean(entry.completedAt)).length
+	);
+	const leaderboardProjection = $derived(
+		projectChallengeLeaderboard({
+			snapshot: leaderboard,
+			score: atlasBestScore,
+			completed: atlasCompletedCount,
+			includeCurrentUser: Boolean(userId)
+		})
+	);
+	const automaticInterlude = $derived<ChallengeInterludeMechanic>(
+		repairSupportUsed || transferHintOpen
+			? 'faded-examiner'
+			: chooseAutomaticInterludeMechanic(roundScore ?? 400, challengeSession)
+	);
+	const automaticInterludeDefinition = $derived(
+		challengeInterludeDefinitions.find((definition) => definition.id === automaticInterlude) ??
+			challengeInterludeDefinitions[0]
+	);
+	const automaticInterludeReason = $derived.by(() => {
+		if (automaticInterlude === 'faded-examiner') {
+			return repairSupportUsed || transferHintOpen || (roundScore ?? 400) <= 425
+				? 'A calm worked example follows a round where support or another look will help.'
+				: 'This orbit opens with a calm worked example before recall rises.';
+		}
+		if (automaticInterlude === 'weakness-lens') {
+			return 'A calm classification beat revisits the exact weakness from this answer.';
+		}
+		if (automaticInterlude === 'chain-echo') {
+			return 'A one-or-two-word recall beat follows this fluent round.';
+		}
+		if (automaticInterlude === 'link-order') {
+			return 'A short ordering beat rebuilds the answer chain without extra typing.';
+		}
+		if (automaticInterlude === 'reason-match') {
+			return 'A quick reason match reconnects each diagnosis with its reviewed evidence.';
+		}
+		return 'A quick examiner judgement beat varies the recall pattern.';
+	});
+	const nextChallengeHref = $derived(
+		recommendedNextChallenge
+			? challengePathWithScope(recommendedNextChallenge, pathScope)
+			: pathScope === 'mixed'
+				? '/challenges'
+				: `/challenges/${pathScope}`
+	);
+	const pathExitHref = $derived(pathScope === 'mixed' ? '/challenges' : `/challenges/${pathScope}`);
+	const pathLabel = $derived(
+		pathScope === 'mixed' ? 'Mixed science' : challengeSubjectLabel(pathScope)
 	);
 
 	$effect(() => {
@@ -213,6 +302,7 @@
 			storage: window.localStorage,
 			userId
 		});
+		challengeSession = readChallengeSession(window.sessionStorage);
 		const handleProgressUpdated = (event: Event) => {
 			const detail = (event as CustomEvent<ChallengeProgressUpdatedDetail>).detail;
 			if (!detail?.progress) return;
@@ -245,6 +335,9 @@
 			challengeId: challenge.id,
 			subject: challenge.subject,
 			mechanic: challenge.mechanic,
+			sessionPacing: 'mixed-orbit-v1',
+			pathScope,
+			pathPlannerVersion: CHALLENGE_PATH_PLANNER_VERSION,
 			stage,
 			...extra
 		};
@@ -319,8 +412,11 @@
 		return nextProgress;
 	}
 
-	async function focusStage() {
+	async function focusStage(scrollSessionToTop = false) {
 		await tick();
+		if (scrollSessionToTop) {
+			challengeGame?.scrollIntoView({ behavior: 'auto', block: 'start' });
+		}
 		stageHeading?.focus({ preventScroll: true });
 	}
 
@@ -504,15 +600,76 @@
 			transferFirstTryCorrect: transferAttempts === 1
 		});
 		roundScore = score;
-		roundTimeMs = durationMs;
+		previousPersonalBest = progressSnapshot.challenges[challenge.id]?.bestScore ?? null;
+		earnedPersonalBest = previousPersonalBest === null || score > previousPersonalBest;
 		const completedProgress = recordProgress('complete', false, { score, durationMs });
-		const completedEntry = completedProgress.challenges[challenge.id];
-		bestScore = completedEntry?.bestScore ?? score;
-		bestTimeMs = completedEntry?.bestTimeMs ?? durationMs;
-		recommendedNextChallenge = recommendedUnfinishedChallenge(nextChallenges, completedProgress, {
-			currentChallengeId: challenge.id,
-			preferredSubject: challenge.subject
+		const completedAtlasScore = Object.values(completedProgress.challenges).reduce(
+			(total, entry) => total + (entry.bestScore ?? 0),
+			0
+		);
+		const completedAtlasCount = Object.values(completedProgress.challenges).filter((entry) =>
+			Boolean(entry.completedAt)
+		).length;
+		const completedLeaderboardProjection = projectChallengeLeaderboard({
+			snapshot: leaderboard,
+			score: completedAtlasScore,
+			completed: completedAtlasCount,
+			includeCurrentUser: Boolean(userId)
 		});
+		recommendedNextChallenge = recommendedChallengePathStep(nextChallenges, completedProgress, {
+			currentChallenge: challenge,
+			scope: pathScope,
+			roundScore: score,
+			resumeStarted: false
+		});
+		if (recommendedNextChallenge) {
+			const nextEntry = completedProgress.challenges[recommendedNextChallenge.id];
+			analyticsEvent(
+				'challenge_next_assigned',
+				eventContext({
+					nextChallengeId: recommendedNextChallenge.id,
+					nextSubject: recommendedNextChallenge.subject,
+					nextDifficulty: recommendedNextChallenge.difficulty,
+					nextArc: recommendedNextChallenge.arc,
+					nextMechanic: recommendedNextChallenge.mechanic,
+					reason:
+						nextEntry && !nextEntry.completedAt
+							? 'resume-started'
+							: pathScope === 'mixed'
+								? 'subject-rotation'
+								: score <= 425
+									? 'recovery'
+									: 'subject-path'
+				})
+			);
+		}
+		if (browser) {
+			challengeSession = recordChallengeRound({
+				session: challengeSession,
+				challengeId: challenge.id,
+				score
+			});
+			writeChallengeSession(challengeSession, window.sessionStorage);
+		}
+		const completedSessionTotals = challengeSessionTotals(challengeSession);
+		analyticsEvent(
+			'challenge_interlude_assigned',
+			eventContext({
+				interludeMechanic: automaticInterlude,
+				assignmentReason:
+					repairSupportUsed || transferHintOpen || score <= 425
+						? 'recovery'
+						: completedSessionTotals.currentOrbitPosition === 1
+							? 'orbit-calm'
+							: completedSessionTotals.currentOrbitPosition === 2
+								? 'orbit-recall'
+								: 'orbit-discrimination',
+				selectionMode: 'automatic',
+				sessionStartedAt: challengeSession.startedAt,
+				sessionOrbit: completedSessionTotals.currentOrbitNumber,
+				sessionOrbitPosition: completedSessionTotals.currentOrbitPosition
+			})
+		);
 		analyticsEvent(
 			'challenge_round_complete',
 			eventContext({
@@ -523,7 +680,21 @@
 				transferAttempts,
 				repairSupportUsed,
 				transferHintUsed: transferHintOpen,
-				completedWithoutFeedback
+				completedWithoutFeedback,
+				assignedInterlude: automaticInterlude,
+				interludeSelectionMode: 'automatic',
+				newPersonalBest: earnedPersonalBest,
+				previousPersonalBest,
+				personalBest: completedProgress.challenges[challenge.id]?.bestScore ?? score,
+				atlasScore: completedAtlasScore,
+				atlasCompletedCount: completedAtlasCount,
+				previousLeaderboardRank: completedLeaderboardProjection.previousRank,
+				projectedLeaderboardRank: completedLeaderboardProjection.projectedRank,
+				projectedLeaderboardRankImproved:
+					earnedPersonalBest && completedLeaderboardProjection.rankImproved,
+				pointsToNextLeaderboardRank: completedLeaderboardProjection.pointsToNextRank,
+				sessionChallengeCount: challengeSessionTotals(challengeSession).challengeCount,
+				sessionInterludeCount: challengeSessionTotals(challengeSession).interludeCount
 			})
 		);
 	}
@@ -535,7 +706,7 @@
 		stage = 'complete';
 		haptics.success();
 		void playChallengeSound('complete');
-		void focusStage();
+		void focusStage(true);
 	}
 
 	function replay() {
@@ -560,16 +731,77 @@
 		shareMessage = '';
 		completedStageElapsedMs = 0;
 		roundScore = null;
-		roundTimeMs = null;
-		bestScore = null;
-		bestTimeMs = null;
+		earnedPersonalBest = false;
+		previousPersonalBest = null;
 		recommendedNextChallenge = null;
+		completionView = 'result';
+		selectedInterlude = null;
 		roundCompletionRecorded = false;
 		roundPlayRecorded = true;
 		resetStageTimer();
 		recordProgress('showdown', true);
 		analyticsEvent('challenge_replay', eventContext());
 		void focusStage();
+	}
+
+	function startAutomaticInterlude() {
+		selectedInterlude = automaticInterlude;
+		completionView = 'interlude';
+		announcement = `${automaticInterludeDefinition.label} is ready. There is no timer.`;
+		haptics.selection();
+		void playChallengeSound('select');
+		void focusStage(true);
+	}
+
+	function finishInterlude(result: ChallengeInterludeResult) {
+		if (browser) {
+			challengeSession = recordChallengeInterludeCompletion({
+				session: challengeSession,
+				challengeId: challenge.id,
+				challengeScore: roundScore ?? 400,
+				mechanic: result.mechanic,
+				score: result.score
+			});
+			writeChallengeSession(challengeSession, window.sessionStorage);
+		}
+		completionView = 'checkpoint';
+		announcement = `Memory beat complete. Run score ${challengeSessionTotals(challengeSession).totalScore} points.`;
+		const totals = challengeSessionTotals(challengeSession);
+		analyticsEvent(
+			'challenge_session_checkpoint',
+			eventContext({
+				interludeMechanic: result.mechanic,
+				interludeDurationMs: result.durationMs,
+				interludeAttempts: result.attempts,
+				sessionChallengeCount: totals.challengeCount,
+				sessionInterludeCount: totals.interludeCount,
+				sessionScore: totals.totalScore,
+				runStreak: totals.interludeCount,
+				sessionOrbit: totals.currentOrbitNumber,
+				sessionOrbitPosition: totals.currentOrbitPosition,
+				orbitComplete: totals.orbitComplete
+			})
+		);
+		void focusStage(true);
+	}
+
+	function recordSessionDecision(
+		decision: 'continue' | 'pause',
+		checkpoint: 'post_challenge' | 'post_beat' | 'orbit'
+	) {
+		analyticsEvent(
+			'challenge_session_decision',
+			eventContext({
+				decision,
+				checkpoint,
+				sessionStartedAt: challengeSession.startedAt,
+				sessionChallengeCount: sessionTotals.challengeCount,
+				sessionInterludeCount: sessionTotals.interludeCount,
+				sessionScore: sessionTotals.totalScore,
+				sessionOrbit: sessionTotals.currentOrbitNumber,
+				sessionOrbitPosition: sessionTotals.currentOrbitPosition
+			})
+		);
 	}
 
 	function reviewCompletedStage(index: number) {
@@ -645,22 +877,14 @@
 	function isCorrectChoice(choices: ChallengeChoice[], id: string | null) {
 		return Boolean(id && choices.find((choice) => choice.id === id)?.correct);
 	}
-
-	function formatDuration(durationMs: number | null) {
-		if (durationMs === null) return '—';
-		const totalSeconds = Math.max(0, Math.round(durationMs / 1000));
-		const minutes = Math.floor(totalSeconds / 60);
-		const seconds = String(totalSeconds % 60).padStart(2, '0');
-		return `${minutes}:${seconds}`;
-	}
 </script>
 
 <div class="challenge-game" bind:this={challengeGame}>
 	<p class="challenge-announcement" aria-live="polite" aria-atomic="true">{announcement}</p>
 	<ChallengeSessionShell
-		exitHref={`/challenges/${challenge.subject}`}
+		exitHref={pathExitHref}
 		exitLabel="Leave challenge"
-		eyebrow={`GCSE ${subjectLabel}`}
+		eyebrow={`${pathLabel} path · GCSE ${subjectLabel}`}
 		title={challenge.title}
 		steps={stageOrder}
 		activeIndex={Math.min(stagePosition, stageOrder.length - 1)}
@@ -681,74 +905,288 @@
 				in:fly={{ y: reduceMotion ? 0 : 18, duration: motionDuration }}
 			>
 				{#if visibleStage === 'complete'}
-					<div class="completion-card" tabindex="-1" bind:this={stageHeading}>
-						<div class="completion-icon" aria-hidden="true">
-							<Check size={34} strokeWidth={2.5} />
+					{#if completionView === 'interlude' && selectedInterlude}
+						<div class="interlude-stage">
+							{#key selectedInterlude}
+								<ChallengeInterlude
+									{challenge}
+									{shortRecallPrompt}
+									mechanic={selectedInterlude}
+									sessionStartedAt={challengeSession.startedAt}
+									sessionOrbit={sessionTotals.currentOrbitNumber}
+									sessionOrbitPosition={sessionTotals.currentOrbitPosition}
+									{pathScope}
+									pathPlannerVersion={CHALLENGE_PATH_PLANNER_VERSION}
+									oncomplete={finishInterlude}
+								/>
+							{/key}
 						</div>
-						<p class="completion-kicker">
-							{completedWithoutFeedback ? 'Solved without hints' : 'Challenge complete'}
-						</p>
-						<h2>{completionTitle}</h2>
-						<p>You found the problem, chose the fix and used it on another question.</p>
-
-						<div class="completion-score" aria-label="Challenge result">
-							<div>
-								<span>Points earned</span>
-								<strong>+{roundScore ?? 400}</strong>
-								<small>{firstTryStepCount} of 4 steps first try</small>
+					{:else if completionView === 'checkpoint'}
+						<div
+							class:orbit-celebration={sessionTotals.orbitComplete}
+							class="completion-card checkpoint-card"
+							tabindex="-1"
+							bind:this={stageHeading}
+						>
+							{#if sessionTotals.orbitComplete}
+								<ChallengeCelebration variant="orbit" />
+							{/if}
+							<div class="completion-icon" aria-hidden="true">
+								<Check size={30} strokeWidth={2.5} />
 							</div>
-							<div>
-								<span>Total time</span>
-								<strong>{formatDuration(roundTimeMs)}</strong>
-							</div>
-							<div>
-								<span>Personal best</span>
-								<strong>{bestScore ?? roundScore ?? 400} pts</strong>
-								{#if bestTimeMs !== null}<small>{formatDuration(bestTimeMs)}</small>{/if}
-							</div>
-						</div>
-						<p class="score-note">Retries never take points away. Feedback helps you finish.</p>
+							<p class="completion-kicker">
+								{sessionTotals.orbitComplete
+									? `Orbit ${sessionTotals.currentOrbitNumber} complete`
+									: `Round ${sessionTotals.currentOrbitPosition} of 3 banked`}
+							</p>
+							<h2>
+								{sessionTotals.orbitComplete
+									? 'Three challenge peaks. Three lighter memory beats.'
+									: 'Memory beat banked. Return to a focused challenge when you’re ready.'}
+							</h2>
+							<p>
+								{sessionTotals.orbitComplete
+									? 'That is a complete run. Continue only if you still have useful attention.'
+									: 'The change of pace is deliberate: solve, notice what mattered, then return fresh.'}
+							</p>
 
-						<div class="completion-chain">
-							<span>Method</span>
-							<strong>{challenge.memoryHandle}</strong>
-						</div>
+							<div
+								class="orbit-progress"
+								aria-label={`Orbit progress: ${sessionTotals.currentOrbitPosition} of 3 rounds`}
+							>
+								{#each [1, 2, 3] as position (position)}
+									<div class:complete={position <= sessionTotals.currentOrbitPosition}>
+										<span>{position}</span>
+										<small
+											>{position <= sessionTotals.currentOrbitPosition ? 'Banked' : 'Next'}</small
+										>
+									</div>
+								{/each}
+							</div>
 
-						<div class="completion-primary">
+							<div class="completion-score" aria-label="Session result">
+								<div>
+									<span>Memory beat</span>
+									<strong>+50</strong>
+									<small>Consolidation banked</small>
+								</div>
+								<div>
+									<span>This run</span>
+									<strong>{sessionTotals.totalScore} pts</strong>
+									<small>
+										{sessionTotals.interludeCount}
+										{sessionTotals.interludeCount === 1 ? 'memory beat' : 'memory beats'}
+									</small>
+								</div>
+								<div>
+									<span>Run streak</span>
+									<strong>{sessionTotals.interludeCount}</strong>
+									<small>Challenge + beat pairs</small>
+								</div>
+							</div>
+
 							{#if recommendedNextChallenge}
+								<div class="next-assignment">
+									<span>Automatically queued · {pathLabel} path</span>
+									<strong>{recommendedNextChallenge.title}</strong>
+									<small>
+										GCSE {challengeSubjectLabel(recommendedNextChallenge.subject)} ·
+										{recommendedNextChallenge.marks}
+										{recommendedNextChallenge.marks === 1 ? 'mark' : 'marks'} · about
+										{recommendedNextChallenge.estimatedMinutes} min
+									</small>
+								</div>
+							{:else}
+								<div class="next-assignment path-complete">
+									<span>Path complete</span>
+									<strong>No unfinished {pathLabel.toLowerCase()} challenge remains.</strong>
+									<small>Your completed challenges stay available to replay.</small>
+								</div>
+							{/if}
+
+							<div class="checkpoint-actions">
+								{#if sessionTotals.orbitComplete}
+									<ChallengeButton
+										href={pathExitHref}
+										onclick={() => recordSessionDecision('pause', 'orbit')}
+										analyticsLabel={`Challenge ${challenge.id}: finish ${pathScope} orbit`}
+										fullWidth
+									>
+										Finish for now
+									</ChallengeButton>
+									{#if recommendedNextChallenge}
+										<ChallengeButton
+											href={nextChallengeHref}
+											variant="secondary"
+											onclick={() => recordSessionDecision('continue', 'orbit')}
+											analyticsLabel={`Challenge ${challenge.id}: start next ${pathScope} orbit with ${recommendedNextChallenge.id}`}
+											fullWidth
+										>
+											Next orbit: {challengeSubjectLabel(recommendedNextChallenge.subject)}
+											<ArrowRight size={18} aria-hidden="true" />
+										</ChallengeButton>
+									{/if}
+								{:else}
+									{#if recommendedNextChallenge}
+										<ChallengeButton
+											href={nextChallengeHref}
+											onclick={() => recordSessionDecision('continue', 'post_beat')}
+											analyticsLabel={`Challenge ${challenge.id}: continue ${pathScope} path with ${recommendedNextChallenge.id}`}
+											fullWidth
+										>
+											Continue to {challengeSubjectLabel(recommendedNextChallenge.subject)}
+											<ArrowRight size={18} aria-hidden="true" />
+										</ChallengeButton>
+									{/if}
+									<ChallengeButton
+										href={pathExitHref}
+										variant="secondary"
+										onclick={() => recordSessionDecision('pause', 'post_beat')}
+										analyticsLabel={`Challenge ${challenge.id}: finish ${pathScope} path for now`}
+										fullWidth
+									>
+										Finish for now
+									</ChallengeButton>
+								{/if}
+							</div>
+						</div>
+					{:else}
+						<div
+							class:record-celebration={earnedPersonalBest}
+							class="completion-card"
+							tabindex="-1"
+							bind:this={stageHeading}
+						>
+							{#if earnedPersonalBest}
+								<ChallengeCelebration variant="record" />
+							{/if}
+							<div class="completion-icon" aria-hidden="true">
+								<Check size={30} strokeWidth={2.5} />
+							</div>
+							<p class="completion-kicker">
+								{completedWithoutFeedback ? 'Solved without hints' : 'Challenge complete'}
+							</p>
+							<h2>{completionTitle}</h2>
+							<p>You found the problem, chose the fix and used it on another question.</p>
+
+							<div class="completion-score" aria-label="Challenge result">
+								<div>
+									<span>Round score</span>
+									<strong>{roundScore ?? 400} pts</strong>
+									<small>
+										{earnedPersonalBest
+											? 'New personal best'
+											: roundScore === currentPersonalBest
+												? 'Matched your best'
+												: `Personal best ${currentPersonalBest}`}
+									</small>
+								</div>
+								<div>
+									<span>Atlas score</span>
+									<strong>{atlasBestScore.toLocaleString('en-GB')}</strong>
+									<small>{atlasCompletedCount} unique complete</small>
+								</div>
+								<div>
+									<span>This run</span>
+									<strong>{sessionTotals.totalScore} pts</strong>
+									<small>Round {sessionTotals.currentOrbitPosition} of 3</small>
+								</div>
+							</div>
+
+							{#if userId && earnedPersonalBest && leaderboardProjection.rankImproved && leaderboardProjection.previousRank !== null && leaderboardProjection.projectedRank !== null}
+								<a
+									class="rank-move"
+									href={resolve('/challenges')}
+									data-analytics-label={`Challenge ${challenge.id}: view rank move`}
+								>
+									<span>Atlas rank move</span>
+									<strong>
+										#{leaderboardProjection.previousRank} → #{leaderboardProjection.projectedRank}
+									</strong>
+									<small>Open the challenge board</small>
+								</a>
+							{:else if userId && leaderboardProjection.projectedRank === 1}
+								<a
+									class="rank-move"
+									href={resolve('/challenges')}
+									data-analytics-label={`Challenge ${challenge.id}: view atlas lead`}
+								>
+									<span>Atlas board</span>
+									<strong>Rank #1</strong>
+									<small>Your best score from each unique challenge</small>
+								</a>
+							{:else if userId && leaderboardProjection.nextRival && leaderboardProjection.pointsToNextRank !== null}
+								<a
+									class="rank-move next-rank"
+									href={resolve('/challenges')}
+									data-analytics-label={`Challenge ${challenge.id}: view next leaderboard rank`}
+								>
+									<span>Next atlas rank</span>
+									<strong>
+										{leaderboardProjection.pointsToNextRank.toLocaleString('en-GB')} pts
+									</strong>
+									<small>to rank {leaderboardProjection.nextRival.rank}</small>
+								</a>
+							{/if}
+
+							<div class="completion-chain">
+								<span>Method you just used</span>
+								<strong>{challenge.memoryHandle}</strong>
+							</div>
+
+							<section class="automatic-beat" aria-labelledby="automatic-beat-title">
+								<div class="automatic-beat-icon" aria-hidden="true">
+									<Sparkles size={21} strokeWidth={2.2} />
+								</div>
+								<div>
+									<span>Up next · automatically paced</span>
+									<h3 id="automatic-beat-title">{automaticInterludeDefinition.label}</h3>
+									<p>{automaticInterludeReason}</p>
+									<small>
+										{automaticInterludeDefinition.action} ·
+										{automaticInterludeDefinition.intensity} · no timer
+									</small>
+								</div>
+							</section>
+
+							<div class="automatic-beat-actions">
 								<ChallengeButton
-									href={challengePath(recommendedNextChallenge)}
-									analyticsLabel={`Challenge ${challenge.id}: next unfinished challenge ${recommendedNextChallenge.id}`}
+									onclick={startAutomaticInterlude}
+									analyticsLabel={`Challenge ${challenge.id}: start assigned ${automaticInterlude}`}
 									fullWidth
 								>
-									Play your next unfinished challenge
+									Continue to {automaticInterludeDefinition.label}
 									<ArrowRight size={18} aria-hidden="true" />
 								</ChallengeButton>
-							{:else}
-								<ChallengeButton href={`/challenges/${challenge.subject}`} fullWidth>
-									Choose another {subjectLabel} challenge
-									<ArrowRight size={18} aria-hidden="true" />
+								<ChallengeButton
+									href={pathExitHref}
+									variant="secondary"
+									onclick={() => recordSessionDecision('pause', 'post_challenge')}
+									analyticsLabel={`Challenge ${challenge.id}: finish before assigned memory beat`}
+									fullWidth
+								>
+									Finish for now
 								</ChallengeButton>
-							{/if}
-						</div>
+							</div>
 
-						<div class="completion-actions">
-							<ChallengeButton variant="secondary" onclick={replay} fullWidth>
-								<RotateCcw size={17} aria-hidden="true" />
-								Play again
-							</ChallengeButton>
-							<ChallengeButton variant="secondary" onclick={shareChallenge} fullWidth>
-								{#if canNativeShare}
-									<Share2 size={17} aria-hidden="true" />
-									Share
-								{:else}
-									<Copy size={17} aria-hidden="true" />
-									Copy link
-								{/if}
-							</ChallengeButton>
+							<div class="completion-actions">
+								<ChallengeButton variant="secondary" onclick={replay} fullWidth>
+									<RotateCcw size={17} aria-hidden="true" />
+									Replay challenge
+								</ChallengeButton>
+								<ChallengeButton variant="secondary" onclick={shareChallenge} fullWidth>
+									{#if canNativeShare}
+										<Share2 size={17} aria-hidden="true" />
+										Share
+									{:else}
+										<Copy size={17} aria-hidden="true" />
+										Copy link
+									{/if}
+								</ChallengeButton>
+							</div>
+							{#if shareMessage}<p class="share-message" role="status">{shareMessage}</p>{/if}
 						</div>
-						{#if shareMessage}<p class="share-message" role="status">{shareMessage}</p>{/if}
-					</div>
+					{/if}
 				{:else}
 					<div class:transfer-context={visibleStage === 'transfer'} class="learning-layout">
 						<aside
@@ -1507,6 +1945,7 @@
 	}
 
 	.completion-card {
+		position: relative;
 		display: grid;
 		gap: 0.8rem;
 		width: min(100%, 46rem);
@@ -1518,6 +1957,13 @@
 		color: var(--qc-ui-text);
 		text-align: left;
 		outline: none;
+		isolation: isolate;
+	}
+
+	.completion-card.record-celebration .completion-icon,
+	.completion-card.orbit-celebration .completion-icon {
+		border-color: var(--qc-ui-accent);
+		box-shadow: 0 0 1.8rem color-mix(in srgb, var(--qc-ui-accent) 22%, transparent);
 	}
 
 	.completion-icon {
@@ -1583,11 +2029,6 @@
 
 	.completion-chain > strong {
 		font-size: 1.15rem;
-	}
-
-	.completion-primary {
-		width: min(100%, 42rem);
-		margin-top: 0.3rem;
 	}
 
 	.completion-actions {
@@ -2188,8 +2629,14 @@
 	}
 
 	.completion-card {
-		width: min(100%, 40rem);
+		width: min(100%, 48rem);
 		gap: 0.68rem;
+	}
+
+	.interlude-stage {
+		width: min(100%, 48rem);
+		margin: 0 auto;
+		padding: clamp(0.15rem, 1vw, 0.6rem);
 	}
 
 	.completion-chain {
@@ -2209,6 +2656,94 @@
 	.completion-chain > strong {
 		font-size: 1rem;
 		font-weight: 620;
+	}
+
+	.automatic-beat {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.7rem;
+		width: 100%;
+		padding: 0.75rem 0.82rem;
+		border: 1px solid var(--qc-ui-accent-border);
+		background:
+			linear-gradient(110deg, var(--qc-ui-accent-muted), transparent 72%),
+			var(--qc-ui-surface-raised);
+	}
+
+	.automatic-beat-icon {
+		display: inline-grid;
+		width: 2.5rem;
+		height: 2.5rem;
+		place-items: center;
+		border: 1px solid var(--qc-ui-accent-border);
+		color: var(--qc-ui-accent-text);
+	}
+
+	.automatic-beat > div:last-child {
+		display: grid;
+		gap: 0.16rem;
+		min-width: 0;
+	}
+
+	.automatic-beat span,
+	.next-assignment > span {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.68rem;
+		font-weight: 820;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.automatic-beat h3,
+	.automatic-beat p {
+		margin: 0;
+	}
+
+	.automatic-beat h3 {
+		font-size: 1.08rem;
+		font-weight: 680;
+	}
+
+	.automatic-beat p,
+	.automatic-beat small,
+	.next-assignment small {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.76rem;
+		line-height: 1.4;
+	}
+
+	.automatic-beat small {
+		color: var(--qc-ui-text-muted);
+		font-weight: 720;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+	}
+
+	.automatic-beat-actions {
+		display: grid;
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+		gap: 0.55rem;
+		width: 100%;
+		padding-bottom: 0.15rem;
+		border-bottom: 1px solid var(--qc-ui-border-subtle);
+	}
+
+	.next-assignment {
+		display: grid;
+		gap: 0.18rem;
+		width: 100%;
+		padding: 0.7rem 0.78rem;
+		border-left: 3px solid var(--qc-ui-accent);
+		background: var(--qc-ui-surface-muted);
+	}
+
+	.next-assignment strong {
+		font-size: 0.98rem;
+		line-height: 1.35;
+	}
+
+	.next-assignment.path-complete {
+		border-left-color: var(--qc-ui-border-strong);
 	}
 
 	.completion-score {
@@ -2248,16 +2783,139 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.completion-card > .score-note {
-		max-width: none;
-		color: var(--qc-ui-accent-text);
-		font-size: 0.82rem;
-		font-weight: 620;
+	.rank-move {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 0.16rem 0.8rem;
+		overflow: hidden;
+		padding: 0.68rem 0.78rem;
+		border: 1px solid var(--qc-ui-accent-border);
+		background:
+			linear-gradient(105deg, var(--qc-ui-accent-muted), transparent 62%),
+			var(--qc-ui-surface-raised);
+		color: inherit;
+		text-decoration: none;
 	}
 
-	.completion-primary,
+	.rank-move::after {
+		position: absolute;
+		inset: 0 auto 0 -25%;
+		width: 12%;
+		background: linear-gradient(90deg, transparent, color-mix(in srgb, white 12%, transparent));
+		content: '';
+		opacity: 0;
+		pointer-events: none;
+		transform: skewX(-14deg);
+	}
+
+	.rank-move span {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.68rem;
+		font-weight: 820;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.rank-move strong {
+		grid-row: 1 / span 2;
+		grid-column: 2;
+		align-self: center;
+		color: var(--qc-ui-text);
+		font-size: 1.05rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rank-move small {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.74rem;
+	}
+
+	.rank-move:hover,
+	.rank-move:focus-visible {
+		border-color: var(--qc-ui-accent);
+	}
+
+	.rank-move:focus-visible {
+		outline: 2px solid var(--qc-ui-accent);
+		outline-offset: 2px;
+	}
+
+	:global(html[data-visual-effects='on']) .rank-move::after {
+		animation: rank-scan 1050ms ease-out 180ms both;
+	}
+
+	@keyframes rank-scan {
+		0% {
+			left: -25%;
+			opacity: 0;
+		}
+		25% {
+			opacity: 0.8;
+		}
+		100% {
+			left: 115%;
+			opacity: 0;
+		}
+	}
+
 	.completion-actions {
 		width: 100%;
+	}
+
+	.orbit-progress {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.45rem;
+		width: 100%;
+	}
+
+	.orbit-progress > div {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.4rem;
+		align-items: center;
+		min-width: 0;
+		padding: 0.55rem 0.65rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		background: var(--qc-ui-surface-raised);
+		color: var(--qc-ui-text-muted);
+	}
+
+	.orbit-progress > div.complete {
+		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
+		color: var(--qc-ui-accent-text);
+	}
+
+	.orbit-progress span {
+		display: inline-grid;
+		width: 1.65rem;
+		height: 1.65rem;
+		place-items: center;
+		border: 1px solid currentColor;
+		font-size: 0.75rem;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.orbit-progress small {
+		overflow: hidden;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+		text-overflow: ellipsis;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.checkpoint-actions {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.55rem;
+		width: 100%;
+		padding-top: 0.2rem;
+		border-top: 1px solid var(--qc-ui-border-subtle);
 	}
 
 	@media (max-width: 800px) {
@@ -2290,8 +2948,36 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
+		.automatic-beat-actions {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
 		.completion-score {
 			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.checkpoint-actions {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.orbit-progress > div {
+			grid-template-columns: minmax(0, 1fr);
+			justify-items: center;
+			gap: 0.25rem;
+			padding: 0.45rem 0.2rem;
+		}
+
+		.orbit-progress small {
+			overflow: visible;
+			text-overflow: clip;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rank-move::after,
+		:global(html[data-visual-effects='on']) .rank-move::after {
+			display: none;
+			animation: none;
 		}
 	}
 

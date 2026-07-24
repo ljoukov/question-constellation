@@ -8,7 +8,7 @@
 		compact = false,
 		showLabel = true
 	}: {
-		challenge: ChallengeDefinition;
+		challenge: Pick<ChallengeDefinition, 'id' | 'memoryHandle'>;
 		compact?: boolean;
 		showLabel?: boolean;
 	} = $props();

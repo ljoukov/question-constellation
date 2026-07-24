@@ -9,19 +9,18 @@
 		href,
 		eyebrow,
 		title,
-		description,
 		meta,
 		markLabel,
 		visualChallenge,
 		art,
 		complete = false,
 		balanced = false,
-		analyticsLabel
+		analyticsLabel,
+		onclick
 	}: {
 		href: string;
 		eyebrow?: string;
 		title: string;
-		description?: string;
 		meta?: string;
 		markLabel?: string;
 		visualChallenge?: PublicChallengePreviewDefinition;
@@ -29,6 +28,7 @@
 		complete?: boolean;
 		balanced?: boolean;
 		analyticsLabel?: string;
+		onclick?: (event: MouseEvent) => void;
 	} = $props();
 
 	const visualArt = $derived(
@@ -44,6 +44,7 @@
 	class:has-card-art={showCardArt}
 	href={resolve(href as '/')}
 	data-analytics-label={analyticsLabel}
+	{onclick}
 >
 	{#if showCardArt}
 		<div class="card-visual">
@@ -64,21 +65,22 @@
 			{#if eyebrow}<span class="card-eyebrow">{eyebrow}</span>{/if}
 		</div>
 		<strong>{title}</strong>
-		{#if description}<p>{description}</p>{/if}
-		{#if meta}<small>{meta}</small>{/if}
 	</div>
-	<span class="card-action" aria-hidden="true">
-		<span>{complete ? 'Play again' : 'Play'}</span>
-		{#if complete}<Check size={18} strokeWidth={2.4} />{:else}<ArrowRight size={18} />{/if}
-	</span>
+	<div class="card-footer">
+		{#if meta}<small>{meta}</small>{/if}
+		<span class="card-action" aria-hidden="true">
+			<span>{complete ? 'Play again' : 'Play'}</span>
+			{#if complete}<Check size={18} strokeWidth={2.4} />{:else}<ArrowRight size={18} />{/if}
+		</span>
+	</div>
 </a>
 
 <style>
 	a {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 1rem;
-		align-items: center;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.85rem;
+		align-items: stretch;
 		min-width: 0;
 		padding: 1rem;
 		border: 1px solid var(--qc-ui-border-subtle);
@@ -103,12 +105,11 @@
 	a.balanced {
 		box-sizing: border-box;
 		height: 100%;
-		align-items: stretch;
-		grid-template-rows: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
 	}
 
 	a.balanced.has-card-art {
-		grid-template-rows: auto minmax(0, 1fr);
+		grid-template-rows: auto minmax(0, 1fr) auto;
 	}
 
 	.card-copy {
@@ -119,8 +120,8 @@
 
 	a.balanced .card-copy {
 		height: 100%;
-		grid-template-rows: auto 4.45rem 4.2rem minmax(2.1rem, 1fr);
-		align-content: stretch;
+		grid-template-rows: auto minmax(0, 1fr);
+		align-content: start;
 	}
 
 	.card-visual {
@@ -138,7 +139,7 @@
 	}
 
 	.card-eyebrow,
-	.card-copy small {
+	.card-footer small {
 		color: var(--qc-ui-text-muted);
 		font-size: 0.76rem;
 		font-weight: 650;
@@ -170,35 +171,33 @@
 	}
 
 	a.balanced .card-copy strong,
-	a.balanced .card-copy p,
-	a.balanced .card-copy small {
+	a.balanced .card-footer small {
 		display: -webkit-box;
 		overflow: hidden;
 		-webkit-box-orient: vertical;
 	}
 
-	a.balanced .card-copy strong,
-	a.balanced .card-copy p {
+	a.balanced .card-copy strong {
 		line-clamp: 3;
 		-webkit-line-clamp: 3;
 	}
 
-	a.balanced .card-copy small {
+	a.balanced .card-footer small {
 		line-clamp: 2;
 		-webkit-line-clamp: 2;
-		align-self: end;
-		margin-top: 0;
 	}
 
-	.card-copy p {
+	.card-footer {
+		display: flex;
+		min-width: 0;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.card-footer small {
+		min-width: 0;
 		margin: 0;
-		color: var(--qc-ui-text-secondary);
-		font-size: 0.9rem;
-		line-height: 1.45;
-	}
-
-	.card-copy small {
-		margin-top: 0.25rem;
 		font-weight: 550;
 		letter-spacing: 0;
 		text-transform: none;
@@ -208,8 +207,8 @@
 		display: inline-flex;
 		width: auto;
 		height: 2.65rem;
+		flex: 0 0 auto;
 		gap: 0.42rem;
-		align-self: center;
 		align-items: center;
 		justify-content: center;
 		padding: 0 0.7rem;
@@ -218,10 +217,6 @@
 		font-size: 0.78rem;
 		font-weight: 700;
 		white-space: nowrap;
-	}
-
-	a.balanced .card-action {
-		align-self: end;
 	}
 
 	a.complete .card-action {
@@ -246,18 +241,9 @@
 		}
 
 		a.balanced .card-copy strong,
-		a.balanced .card-copy p,
-		a.balanced .card-copy small {
+		a.balanced .card-footer small {
 			display: block;
 			overflow: visible;
-		}
-
-		a.balanced .card-copy small {
-			margin-top: 0.25rem;
-		}
-
-		a.balanced .card-action {
-			align-self: center;
 		}
 	}
 </style>

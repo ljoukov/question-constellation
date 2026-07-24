@@ -13,13 +13,19 @@
 		stacked = false,
 		headingLevel = 'h3',
 		headline,
-		completed = false
+		completed = false,
+		href = challengePath(challenge),
+		actionLabel,
+		onstart
 	}: {
 		challenge: PublicChallengePreviewDefinition;
 		stacked?: boolean;
 		headingLevel?: 'h1' | 'h2' | 'h3';
 		headline?: string;
 		completed?: boolean;
+		href?: string;
+		actionLabel?: string;
+		onstart?: (event: MouseEvent) => void;
 	} = $props();
 
 	const subjectLabel = $derived(challengeSubjectLabel(challenge.subject));
@@ -64,10 +70,11 @@
 
 		<div class="preview-actions">
 			<ChallengeButton
-				href={challengePath(challenge)}
+				{href}
+				onclick={onstart}
 				analyticsLabel={`${completed ? 'Replay' : 'Start'} challenge: ${challenge.id}`}
 			>
-				{completed ? 'Play again' : 'Play now'}
+				{actionLabel ?? (completed ? 'Play again' : 'Play now')}
 				<ArrowRight size={17} aria-hidden="true" />
 			</ChallengeButton>
 		</div>

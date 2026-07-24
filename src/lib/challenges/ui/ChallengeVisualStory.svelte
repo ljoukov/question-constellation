@@ -14,7 +14,7 @@
 		expandable = false,
 		illustrationOverride = null
 	}: {
-		challenge: ChallengeDefinition;
+		challenge: Pick<ChallengeDefinition, 'id' | 'subject' | 'memoryHandle'>;
 		mode?: 'teaser' | 'gap' | 'earned';
 		compact?: boolean;
 		expandable?: boolean;

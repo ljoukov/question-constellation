@@ -181,6 +181,9 @@
 				{nextChallenges}
 				{initialProgress}
 				{userId}
+				leaderboard={data.leaderboard}
+				shortRecallPrompt={data.shortRecallPrompt}
+				pathScope={data.pathScope}
 				{curriculum}
 			/>
 		{/key}

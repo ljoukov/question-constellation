@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { analyticsEvent } from '$lib/analytics/client';
 	import ChallengePreview from '$lib/challenges/ChallengePreview.svelte';
+	import ChallengeRhythmStrip from '$lib/challenges/ui/ChallengeRhythmStrip.svelte';
+	import ChallengeLeaderboard from '$lib/challenges/ui/ChallengeLeaderboard.svelte';
 	import {
 		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
 		CHALLENGE_PROGRESS_STORAGE_KEY,
@@ -20,6 +23,7 @@
 		mostRecentlyCompletedChallenge,
 		recommendedUnfinishedChallenge
 	} from '$lib/challenges/recommendations';
+	import { challengePathWithScope } from '$lib/challenges/routing';
 	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
 	import {
 		challengeSocialImage,
@@ -70,6 +74,7 @@
 				...subject,
 				completed: entries.filter((entry) => Boolean(entry?.completedAt)).length,
 				totalBestScore: entries.reduce((total, entry) => total + (entry?.bestScore ?? 0), 0),
+				nextChallenge,
 				art: nextChallenge ? subjectArtForChallenge(nextChallenge) : undefined
 			};
 		})
@@ -170,6 +175,14 @@
 	function subjectHref(subject: ChallengeSubject) {
 		return `/challenges/${subject}` as const;
 	}
+
+	function recordScopeSelection(scope: 'mixed' | ChallengeSubject, source: string) {
+		analyticsEvent('challenge_scope_selected', {
+			scope,
+			source,
+			plannerVersion: 'science-path-v1'
+		});
+	}
 </script>
 
 <svelte:head>
@@ -205,13 +218,21 @@
 			<strong aria-current="page">Challenges</strong>
 		</nav>
 
-		<section class="play-first" aria-label="Recommended GCSE Science challenge">
+		<section class="play-first" aria-label="Recommended mixed science path">
+			<header class="path-intro">
+				<span>Recommended path</span>
+				<strong>Mixed science</strong>
+				<p>Choose once. We rotate Biology, Chemistry and Physics and queue every next step.</p>
+			</header>
 			<ChallengePreview
 				challenge={featuredChallenge}
 				stacked
 				headingLevel="h1"
 				headline={featuredChallenge.hook}
 				completed={Boolean(progress.challenges[featuredChallenge.id]?.completedAt)}
+				href={challengePathWithScope(featuredChallenge, 'mixed')}
+				actionLabel="Start mixed science"
+				onstart={() => recordScopeSelection('mixed', 'challenge_hub_primary')}
 			/>
 		</section>
 
@@ -228,15 +249,36 @@
 			</div>
 		</section>
 
-		<section class="subject-paths" aria-label="Choose a subject">
+		<ChallengeRhythmStrip />
+
+		<ChallengeLeaderboard
+			snapshot={data.leaderboard}
+			scopeLabel="All science"
+			personalScore={totalBestScore}
+			personalCompleted={totalCompleted}
+			signedIn={Boolean(data.user)}
+		/>
+
+		<section class="subject-paths" aria-labelledby="subject-paths-title">
+			<header>
+				<span>Prefer one subject?</span>
+				<h2 id="subject-paths-title">Pick once. The path stays automatic.</h2>
+			</header>
 			<div>
 				{#each subjectGroups as subject (subject.subject)}
 					<ChallengeCardLink
-						href={subjectHref(subject.subject)}
-						eyebrow={`${subject.completed} complete`}
-						title={`GCSE ${subject.label}`}
-						meta={`${subject.totalBestScore.toLocaleString('en-GB')} points`}
+						href={subject.nextChallenge
+							? challengePathWithScope(subject.nextChallenge, subject.subject)
+							: subjectHref(subject.subject)}
+						eyebrow={`${subject.label} only · ${subject.completed} complete`}
+						title={`GCSE ${subject.label} path`}
+						meta={subject.nextChallenge
+							? `Next: ${subject.nextChallenge.title}`
+							: 'All challenges complete'}
 						art={subject.art}
+						complete={!subject.nextChallenge}
+						analyticsLabel={`Start automatic ${subject.subject} challenge path`}
+						onclick={() => recordScopeSelection(subject.subject, 'challenge_hub_subject_path')}
 					/>
 				{/each}
 			</div>
@@ -244,7 +286,7 @@
 
 		<CurriculumDisclosure>
 			<ul class="curriculum-links" aria-label="Official GCSE science curriculum links">
-				{#each data.curriculumLinks as link (link.officialUrl)}
+				{#each data.curriculumLinks as link (`${link.officialUrl}\u0000${link.topicLabel}`)}
 					<li>
 						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 						<a href={link.officialUrl} target="_blank" rel="noreferrer">
@@ -308,7 +350,41 @@
 	}
 
 	.play-first {
+		display: grid;
+		gap: 0.65rem;
 		min-width: 0;
+	}
+
+	.path-intro,
+	.subject-paths > header {
+		display: grid;
+		gap: 0.12rem;
+		padding-left: 0.72rem;
+		border-left: 3px solid var(--qc-ui-accent);
+	}
+
+	.path-intro span,
+	.subject-paths > header span {
+		color: var(--qc-ui-accent-text);
+		font-size: 0.68rem;
+		font-weight: 800;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.path-intro strong {
+		font-size: 1.08rem;
+	}
+
+	.path-intro p,
+	.subject-paths h2 {
+		margin: 0;
+	}
+
+	.path-intro p {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.84rem;
+		line-height: 1.45;
 	}
 
 	.activity-strip {
@@ -375,6 +451,11 @@
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 0.7rem;
+	}
+
+	.subject-paths h2 {
+		font-size: clamp(1.08rem, 2vw, 1.3rem);
+		font-weight: 650;
 	}
 
 	.curriculum-links {

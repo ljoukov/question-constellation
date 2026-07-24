@@ -1,11 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-	getUserChallengeProgress: vi.fn()
+	getUserChallengeProgress: vi.fn(),
+	getChallengeLeaderboard: vi.fn(),
+	getChallengeShortRecallPrompt: vi.fn()
 }));
 
 vi.mock('$lib/server/challengeProgress', () => ({
 	getUserChallengeProgress: mocks.getUserChallengeProgress
+}));
+
+vi.mock('$lib/server/challengeLeaderboard', () => ({
+	getChallengeLeaderboard: mocks.getChallengeLeaderboard
+}));
+
+vi.mock('$lib/server/challengeShortRecall', () => ({
+	getChallengeShortRecallPrompt: mocks.getChallengeShortRecallPrompt
 }));
 
 import { challengesForSubject } from '$lib/challenges/catalog';
@@ -59,6 +69,20 @@ function snapshotParent() {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	mocks.getChallengeLeaderboard.mockResolvedValue({
+		entries: [],
+		currentUserEntry: null,
+		participantCount: 0
+	});
+	mocks.getChallengeShortRecallPrompt.mockResolvedValue({
+		challengeId: 'biology-data-conclusions',
+		stem: 'A conclusion needs a supported ___.',
+		canonicalAnswer: 'comparison',
+		acceptedAliases: ['contrast'],
+		spellingVariants: [],
+		preferredHiddenStepIndex: 1,
+		contentVersion: 'short-recall-v1'
+	});
 });
 
 describe('challenge routes use the one-row parent snapshot', () => {
@@ -72,6 +96,10 @@ describe('challenge routes use the one-row parent snapshot', () => {
 		expect(result).toMatchObject({ challengeProgress, user });
 		expect(parent).toHaveBeenCalledOnce();
 		expect(mocks.getUserChallengeProgress).not.toHaveBeenCalled();
+		expect(mocks.getChallengeLeaderboard).toHaveBeenCalledOnce();
+		expect(mocks.getChallengeLeaderboard).toHaveBeenCalledWith(
+			expect.objectContaining({ currentUserId: user.uid })
+		);
 	});
 
 	it('loads a signed-in challenge subject without reading normalized progress rows', async () => {
@@ -85,6 +113,7 @@ describe('challenge routes use the one-row parent snapshot', () => {
 		expect(result).toMatchObject({ challengeProgress, user });
 		expect(parent).toHaveBeenCalledOnce();
 		expect(mocks.getUserChallengeProgress).not.toHaveBeenCalled();
+		expect(mocks.getChallengeLeaderboard).toHaveBeenCalledOnce();
 	});
 
 	it('loads a signed-in challenge leaf without reading normalized progress rows', async () => {
@@ -95,15 +124,28 @@ describe('challenge routes use the one-row parent snapshot', () => {
 				subject: 'biology',
 				slug: completedChallenge?.slug ?? 'smoking-risk-data-conclusions'
 			},
+			url: new URL(
+				`http://localhost/challenges/biology/${completedChallenge?.slug ?? 'smoking-risk-data-conclusions'}?scope=mixed`
+			),
 			parent
 		} as never);
 
-		expect(result).toMatchObject({ initialProgress: challengeProgress, user });
+		expect(result).toMatchObject({ initialProgress: challengeProgress, pathScope: 'mixed', user });
+		if (!result) throw new Error('Expected challenge leaf data.');
+		expect(result.challenge).not.toHaveProperty('hook');
+		expect(result.challenge).not.toHaveProperty('sourceQuestionId');
+		expect(result.challenge).not.toHaveProperty('transferQuestionId');
+		expect(result.shortRecallPrompt).toMatchObject({
+			challengeId: completedChallenge.id
+		});
 		expect(parent).toHaveBeenCalledOnce();
 		expect(mocks.getUserChallengeProgress).not.toHaveBeenCalled();
+		expect(mocks.getChallengeLeaderboard).toHaveBeenCalledWith(
+			expect.objectContaining({ currentUserId: user.uid })
+		);
 	});
 
-	it('keeps public challenge routes signed-out and free of personal reads', async () => {
+	it('keeps public challenge routes signed-out and free of per-user snapshot reads', async () => {
 		const parent = vi.fn();
 		const result = await challengeHubLoad({
 			locals: { user: null },
@@ -116,6 +158,9 @@ describe('challenge routes use the one-row parent snapshot', () => {
 		});
 		expect(parent).not.toHaveBeenCalled();
 		expect(mocks.getUserChallengeProgress).not.toHaveBeenCalled();
+		expect(mocks.getChallengeLeaderboard).toHaveBeenCalledWith(
+			expect.objectContaining({ currentUserId: undefined })
+		);
 	});
 });
 

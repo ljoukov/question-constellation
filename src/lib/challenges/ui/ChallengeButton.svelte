@@ -35,6 +35,7 @@
 		href={resolve(href as '/')}
 		aria-label={ariaLabel}
 		data-analytics-label={analyticsLabel}
+		{onclick}
 	>
 		{@render children()}
 	</a>

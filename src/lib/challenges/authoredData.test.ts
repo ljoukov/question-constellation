@@ -21,10 +21,11 @@ describe('authored challenge route data', () => {
 		}
 	});
 
-	it('does not expose optional paper provenance in the learner payload', () => {
+	it('does not expose catalogue copy or optional paper provenance in the leaf-game payload', () => {
 		for (const challenge of challengeCatalog) {
 			const publicChallenge = publicChallengeDefinition(challenge);
 
+			expect(publicChallenge).not.toHaveProperty('hook');
 			expect(publicChallenge).not.toHaveProperty('sourceQuestionId');
 			expect(publicChallenge).not.toHaveProperty('transferQuestionId');
 			expect(publicChallenge.id).toBe(challenge.id);
@@ -55,12 +56,26 @@ describe('authored challenge route data', () => {
 		expect(preview).not.toHaveProperty('repairChoices');
 		expect(preview).not.toHaveProperty('sourceQuestionId');
 		expect(preview).not.toHaveProperty('transferQuestionId');
+		expect(preview.hook).toBe(challenge.hook);
 	});
 
-	it('serialises only route identity for the next challenge', () => {
+	it('serialises only the safe fields needed to plan and explain the next challenge', () => {
 		const next = publicNextChallengeDefinition(challengeCatalog[1]);
 
-		expect(Object.keys(next).sort()).toEqual(['id', 'slug', 'subject']);
+		expect(Object.keys(next).sort()).toEqual(
+			[
+				'arc',
+				'difficulty',
+				'estimatedMinutes',
+				'id',
+				'marks',
+				'mechanic',
+				'slug',
+				'subject',
+				'title',
+				'topic'
+			].sort()
+		);
 		expect(next).not.toHaveProperty('staticAnswers');
 		expect(next).not.toHaveProperty('showdownExplanation');
 	});

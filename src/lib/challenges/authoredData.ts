@@ -7,7 +7,7 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K 
 
 export type PublicChallengeDefinition = DistributiveOmit<
 	ChallengeDefinition,
-	'sourceQuestionId' | 'transferQuestionId'
+	'hook' | 'sourceQuestionId' | 'transferQuestionId'
 >;
 
 export type PublicChallengePreviewDefinition = Pick<
@@ -23,7 +23,19 @@ export type PublicChallengePreviewDefinition = Pick<
 	| 'previewQuestion'
 >;
 
-export type PublicNextChallengeDefinition = Pick<ChallengeDefinition, 'id' | 'slug' | 'subject'>;
+export type PublicNextChallengeDefinition = Pick<
+	ChallengeDefinition,
+	| 'id'
+	| 'slug'
+	| 'subject'
+	| 'title'
+	| 'topic'
+	| 'difficulty'
+	| 'arc'
+	| 'marks'
+	| 'estimatedMinutes'
+	| 'mechanic'
+>;
 
 /**
  * Builds the small method model used by the challenge UI from its reviewed,
@@ -60,11 +72,12 @@ export function buildAuthoredChallengeChain(challenge: ChallengeDefinition): Ans
 	};
 }
 
-/** Remove internal paper-row references before serialising challenge data. */
+/** Build the full-game payload while omitting catalogue copy and internal provenance. */
 export function publicChallengeDefinition(
 	challenge: ChallengeDefinition
 ): PublicChallengeDefinition {
 	const publicChallenge = { ...challenge };
+	delete (publicChallenge as Partial<ChallengeDefinition>).hook;
 	delete publicChallenge.sourceQuestionId;
 	delete publicChallenge.transferQuestionId;
 	return publicChallenge;
@@ -94,6 +107,13 @@ export function publicNextChallengeDefinition(
 	return {
 		id: challenge.id,
 		slug: challenge.slug,
-		subject: challenge.subject
+		subject: challenge.subject,
+		title: challenge.title,
+		topic: challenge.topic,
+		difficulty: challenge.difficulty,
+		arc: challenge.arc,
+		marks: challenge.marks,
+		estimatedMinutes: challenge.estimatedMinutes,
+		mechanic: challenge.mechanic
 	};
 }

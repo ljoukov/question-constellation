@@ -17,6 +17,9 @@ The documents are:
 
 - [Subject Priority and Challenge Strategy](./subject-priority-and-challenge-strategy.md) — the full product, subject, mechanic, acquisition, and validation recommendation.
 - [GCSE Biology Long-Tail Search Demand Audit](./gcse-biology-long-tail-search-demand-audit-2026-07-17.md) — the exact-query, first-party traffic, Student Room, competition, and hub-first acquisition correction.
+- [Challenge session pacing and memory beats](./session-pacing-and-memory-beats.md) — the
+  mixed-intensity orbit, six implemented memory mechanics, child-centred guardrails, and measurement
+  plan.
 
 Supporting audit data:
 
@@ -29,3 +32,8 @@ Authoring and publication:
   illustration gates, deterministic checks, and browser review.
 - [Science challenge expansion, 21 July 2026](./science-expansion-2026-07-21.md) — the reviewed
   20-per-subject cohort, curriculum coverage, transfer-solvability audit, and release evidence.
+- [Independent generated-science verification](./generated-science-verification.md) — the
+  three-verifier empty-context gate, frozen dispatch ledger, deterministic per-wave work packets,
+  repair loop, and accepted provenance archive.
+- [Generated science question art in R2](./science-question-art-r2.md) — deterministic art planning,
+  visual review, collision audit, upload and readback.
