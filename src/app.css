@@ -12944,20 +12944,71 @@ html[data-theme='dark'] .app-shell {
 
 .qc-practice-result-header {
 	display: grid;
-	gap: 0.35rem;
+	grid-template-areas:
+		'kicker'
+		'title'
+		'meta'
+		'note';
+	gap: 0.28rem;
+	width: min(100%, 980px);
+	box-sizing: border-box;
+	padding: 0.15rem 0 0.35rem;
+}
+
+.qc-practice-result-header:focus,
+.qc-practice-result-header:focus-visible {
+	outline: none;
 }
 
 .qc-practice-result-header p {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.38rem;
+	gap: 0.28rem 0.42rem;
 	margin: 0;
 	color: #526778;
 	font-size: 0.94rem;
+	line-height: 1.4;
+}
+
+.qc-practice-result-header .qc-real-kicker {
+	grid-area: kicker;
+}
+
+.qc-practice-result-header h2 {
+	grid-area: title;
+}
+
+.qc-practice-result-meta {
+	grid-area: meta;
+	align-items: baseline;
+}
+
+.qc-practice-result-header .qc-assisted-evidence-note {
+	grid-area: note;
+	margin-top: 0.25rem;
 }
 
 .qc-practice-result-header strong {
 	color: #102033;
+}
+
+@media (min-width: 720px) {
+	.qc-practice-result-header {
+		grid-template-areas:
+			'kicker meta'
+			'title meta'
+			'note note';
+		grid-template-columns: minmax(0, 1fr) minmax(16rem, auto);
+		column-gap: clamp(1.25rem, 3vw, 2.5rem);
+		align-items: end;
+	}
+
+	.qc-practice-result-meta {
+		justify-content: flex-end;
+		justify-self: end;
+		max-width: 30rem;
+		text-align: right;
+	}
 }
 
 .qc-practice-static-checklist {
@@ -13164,7 +13215,7 @@ html[data-theme='dark'] .app-shell {
 	font-size: 1.1rem;
 }
 
-.qc-practice-page .qc-question-layout.singleton .qc-real-kicker {
+.qc-practice-page .qc-question-layout.singleton .qc-question-rail > .qc-real-kicker {
 	grid-area: subject;
 	align-self: end;
 	font-size: 0.75rem;
@@ -13201,7 +13252,7 @@ html[data-theme='dark'] .app-shell {
 
 	.qc-practice-page .qc-question-layout.singleton .qc-icon-back,
 	.qc-practice-page .qc-question-layout.singleton .qc-question-rail h1,
-	.qc-practice-page .qc-question-layout.singleton .qc-real-kicker {
+	.qc-practice-page .qc-question-layout.singleton .qc-question-rail > .qc-real-kicker {
 		grid-area: auto;
 		text-align: left;
 	}
@@ -13211,7 +13262,7 @@ html[data-theme='dark'] .app-shell {
 		font-size: clamp(1.2rem, 2vw, 1.45rem);
 	}
 
-	.qc-practice-page .qc-question-layout.singleton .qc-real-kicker {
+	.qc-practice-page .qc-question-layout.singleton .qc-question-rail > .qc-real-kicker {
 		font-size: 0.88rem;
 	}
 

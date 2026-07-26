@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { ExternalLink, ShieldCheck, X } from '@lucide/svelte';
 
 	let {
@@ -82,15 +83,15 @@
 				<p>Official curriculum</p>
 				<h2 id={titleId}>{topicLabel}</h2>
 			</div>
-			<button
-				type="button"
-				class="curriculum-dialog-close"
-				aria-label="Close curriculum information"
-				bind:this={closeButton}
-				onclick={closeDialog}
-			>
-				<X size={21} strokeWidth={2.2} aria-hidden="true" />
-			</button>
+			<span class="curriculum-dialog-close">
+				<IconButton
+					label="Close curriculum information"
+					onclick={closeDialog}
+					bind:element={closeButton}
+				>
+					<X size={18} strokeWidth={2.3} aria-hidden="true" />
+				</IconButton>
+			</span>
 		</header>
 
 		<div class="curriculum-dialog-content">
@@ -181,7 +182,6 @@
 	}
 
 	.curriculum-trigger:focus-visible,
-	.curriculum-dialog-close:focus-visible,
 	.curriculum-links a:focus-visible {
 		outline: 3px solid var(--qc-ui-accent-text);
 		outline-offset: 2px;
@@ -247,8 +247,7 @@
 		text-wrap: balance;
 	}
 
-	.curriculum-dialog-icon,
-	.curriculum-dialog-close {
+	.curriculum-dialog-icon {
 		display: grid;
 		width: 2.75rem;
 		height: 2.75rem;
@@ -261,22 +260,7 @@
 	}
 
 	.curriculum-dialog-close {
-		padding: 0;
-		border: 1px solid var(--qc-ui-border-subtle);
-		border-radius: 0;
-		background: var(--qc-ui-surface-raised);
-		color: var(--qc-ui-text-muted);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.curriculum-dialog-close:hover {
-		border-color: var(--qc-ui-accent-strong);
-		background: var(--qc-ui-surface-muted);
-		color: var(--qc-ui-accent-text);
+		display: inline-flex;
 	}
 
 	.curriculum-dialog-content {
@@ -376,8 +360,7 @@
 			font-size: 1.05rem;
 		}
 
-		.curriculum-dialog-icon,
-		.curriculum-dialog-close {
+		.curriculum-dialog-icon {
 			width: 2.5rem;
 			height: 2.5rem;
 		}
@@ -390,7 +373,6 @@
 	@media (prefers-reduced-motion: reduce) {
 		.curriculum-trigger,
 		.curriculum-trigger-icon,
-		.curriculum-dialog-close,
 		.curriculum-links a {
 			transition: none;
 		}

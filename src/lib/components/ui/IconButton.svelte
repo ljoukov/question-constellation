@@ -6,17 +6,27 @@
 		onclick,
 		children,
 		disabled = false,
-		title = label
+		title = label,
+		element = $bindable(null)
 	}: {
 		label: string;
 		onclick?: (event: MouseEvent) => void;
 		children: Snippet;
 		disabled?: boolean;
 		title?: string;
+		element?: HTMLButtonElement | null;
 	} = $props();
 </script>
 
-<button class="qc-icon-button" type="button" aria-label={label} {title} {disabled} {onclick}>
+<button
+	class="qc-icon-button"
+	type="button"
+	aria-label={label}
+	{title}
+	{disabled}
+	{onclick}
+	bind:this={element}
+>
 	{@render children()}
 </button>
 
@@ -25,13 +35,13 @@
 		display: inline-grid;
 		place-items: center;
 		flex: 0 0 auto;
-		width: 2.75rem;
-		height: 2.75rem;
+		width: 2.5rem;
+		height: 2.5rem;
 		padding: 0;
-		border: 1px solid var(--qc-ui-border);
-		border-radius: 999px;
+		border: 1px solid var(--qc-ui-border-subtle);
+		border-radius: 50%;
 		background: var(--qc-ui-surface-raised, var(--qc-ui-surface));
-		box-shadow: 0 4px 14px var(--qc-ui-shadow);
+		box-shadow: none;
 		color: var(--qc-ui-text-muted);
 		font: inherit;
 		cursor: pointer;
@@ -53,7 +63,7 @@
 	}
 
 	.qc-icon-button:focus-visible {
-		outline: 3px solid color-mix(in srgb, var(--qc-ui-accent) 32%, transparent);
+		outline: 3px solid var(--qc-ui-focus-ring);
 		outline-offset: 2px;
 	}
 
@@ -64,5 +74,11 @@
 
 	.qc-icon-button :global(svg) {
 		pointer-events: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.qc-icon-button {
+			transition: none;
+		}
 	}
 </style>

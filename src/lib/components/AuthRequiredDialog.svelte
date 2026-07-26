@@ -20,6 +20,7 @@
 
 	let backdrop = $state<HTMLElement | null>(null);
 	let panel = $state<HTMLElement | null>(null);
+	let closeButton = $state<HTMLButtonElement | null>(null);
 
 	$effect(() => {
 		if (!open || typeof document === 'undefined') return;
@@ -44,7 +45,8 @@
 				sibling.inert = true;
 				sibling.setAttribute('aria-hidden', 'true');
 			}
-			focusableElements()[0]?.focus() ?? panel.focus();
+			if (closeButton) closeButton.focus();
+			else panel.focus();
 		});
 
 		return () => {
@@ -121,9 +123,11 @@
 		>
 			<header class="auth-dialog-header">
 				<h2 id="auth-dialog-title">{title}</h2>
-				<IconButton label="Close sign-in dialog" onclick={onDismiss}>
-					<X size={19} strokeWidth={2.3} aria-hidden="true" />
-				</IconButton>
+				<span class="auth-dialog-close">
+					<IconButton label="Close sign-in dialog" onclick={onDismiss} bind:element={closeButton}>
+						<X size={18} strokeWidth={2.3} aria-hidden="true" />
+					</IconButton>
+				</span>
 			</header>
 			<p id="auth-dialog-description">
 				Your answer stays here. After sign-in, you will return and the check will start.
@@ -143,65 +147,148 @@
 		z-index: 1000;
 		display: grid;
 		place-items: center;
-		padding: 1rem;
-		background: color-mix(in srgb, var(--qc-ui-canvas) 38%, rgb(2 6 23 / 0.72));
-		backdrop-filter: blur(8px);
+		padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+			max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+		background: color-mix(in srgb, var(--qc-ui-text) 34%, transparent);
+		backdrop-filter: blur(6px);
 	}
 
 	.auth-dialog {
+		position: relative;
 		display: grid;
-		gap: 0.8rem;
-		width: min(100%, 30rem);
-		padding: clamp(1.25rem, 4vw, 2rem);
-		border: 1px solid var(--qc-ui-border);
-		border-radius: 1rem;
-		background: var(--qc-ui-surface);
-		box-shadow: 0 24px 80px rgb(2 6 23 / 0.28);
+		gap: 0.7rem;
+		width: min(100%, 28rem);
+		max-height: calc(100dvh - 2rem);
+		box-sizing: border-box;
+		padding: clamp(1.15rem, 3vw, 1.5rem);
+		overflow-y: auto;
+		border: 1px solid var(--qc-ui-border-strong);
+		border-radius: 0;
+		background: var(--qc-ui-surface-raised);
+		box-shadow: 0 1.5rem 4rem var(--qc-ui-shadow);
 		color: var(--qc-ui-text);
 	}
 
+	.auth-dialog:focus,
+	.auth-dialog:focus-visible {
+		outline: none;
+	}
+
 	.auth-dialog-header {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 1rem;
-		align-items: start;
+		padding-right: 2.7rem;
 	}
 
 	.auth-dialog h2 {
 		margin: 0;
 		font-family: inherit;
-		font-size: clamp(1.65rem, 5vw, 2.1rem);
-		font-weight: 750;
-		letter-spacing: -0.025em;
+		font-size: clamp(1.45rem, 4vw, 1.9rem);
+		font-weight: 720;
+		letter-spacing: -0.02em;
+		line-height: 1.1;
+	}
+
+	.auth-dialog-close {
+		position: absolute;
+		top: 0.7rem;
+		right: 0.7rem;
+		display: inline-flex;
 	}
 
 	.auth-dialog > p {
 		margin: 0;
-		color: var(--qc-ui-text-muted);
-		line-height: 1.55;
+		max-width: 41ch;
+		color: var(--qc-ui-text-secondary);
+		line-height: 1.5;
 	}
 
 	.auth-dialog-actions {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.75rem;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.65rem;
 		margin-top: 0.35rem;
 	}
 
 	.auth-dialog-actions button {
-		min-height: 40px;
-		padding: 0.55rem 0.8rem;
-		border: 0;
-		background: transparent;
-		color: var(--qc-ui-text-muted);
+		display: inline-flex;
+		min-height: 3rem;
+		align-items: center;
+		justify-content: center;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid var(--qc-ui-border-strong);
+		border-radius: 0;
+		background: var(--qc-ui-surface-raised);
+		color: var(--qc-ui-text);
 		font: inherit;
-		font-weight: 700;
+		font-size: 0.92rem;
+		font-weight: 680;
+		text-align: center;
+		white-space: nowrap;
 		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease,
+			color 150ms ease;
 	}
 
 	.auth-dialog-actions button:hover {
-		color: var(--qc-ui-text);
+		border-color: var(--qc-ui-border-control);
+		background: var(--qc-ui-surface-muted);
 	}
 
+	.auth-dialog-actions button:focus-visible,
+	.auth-dialog-actions :global(.google-sign-in:focus-visible) {
+		outline: 3px solid var(--qc-ui-focus-ring);
+		outline-offset: 2px;
+	}
+
+	.auth-dialog-actions :global(.google-sign-in) {
+		width: 100%;
+		min-width: 0;
+		height: auto;
+		min-height: 3rem;
+		justify-content: center;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid var(--qc-ui-accent-border);
+		border-radius: 0;
+		background: var(--qc-ui-accent-muted);
+		box-shadow: none;
+		color: var(--qc-ui-accent-text);
+		font: inherit;
+		font-size: 0.92rem;
+		font-weight: 680;
+		white-space: nowrap;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease,
+			color 150ms ease;
+	}
+
+	.auth-dialog-actions :global(.google-sign-in:hover) {
+		border-color: var(--qc-ui-accent);
+		background: color-mix(in srgb, var(--qc-ui-accent) 22%, var(--qc-ui-surface-raised));
+		box-shadow: none;
+	}
+
+	.auth-dialog-actions :global(.google-sign-in img) {
+		box-sizing: border-box;
+		padding: 2px;
+		background: #fff;
+	}
+
+	.auth-dialog-actions :global(.google-sign-in span) {
+		padding-right: 0;
+	}
+
+	@media (max-width: 480px) {
+		.auth-dialog-actions {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.auth-dialog-actions button,
+		.auth-dialog-actions :global(.google-sign-in) {
+			transition: none;
+		}
+	}
 </style>

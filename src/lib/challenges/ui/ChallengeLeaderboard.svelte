@@ -145,9 +145,10 @@
 	<footer>
 		<ShieldCheck size={15} strokeWidth={2.2} aria-hidden="true" />
 		<span>
-			Generated aliases only—never learner names. {snapshot.participantCount.toLocaleString(
+			Generated aliases only. Learner names are never shown. {snapshot.participantCount.toLocaleString(
 				'en-GB'
-			)} on this board.
+			)}
+			{snapshot.participantCount === 1 ? 'participant' : 'participants'} on this board.
 		</span>
 	</footer>
 </section>

@@ -129,6 +129,7 @@
 	let markingPointsUsed = $state(false);
 	let answerExternalInputSources = $state<ExternalInputSource[]>([]);
 	let rewriteExternalInputSources = $state<ExternalInputSource[]>([]);
+	let copyAttempt = $state(0);
 	let authDialogOpen = $state(false);
 	let checkingRewrite = $state(false);
 	let migratedAnonymousState = false;
@@ -542,6 +543,11 @@
 		pendingAttemptSignature = '';
 		pendingResponseDurationMs = null;
 		persistSciencePracticeState();
+	}
+
+	function blockCopy(event: ClipboardEvent) {
+		event.preventDefault();
+		copyAttempt += 1;
 	}
 
 	function recordMarkSchemeReveal() {
@@ -1075,7 +1081,7 @@
 {:else}
 	<main
 		class="qc-real-app qc-practice-page qc-test-taking-view"
-		oncopy={(event) => event.preventDefault()}
+		oncopy={blockCopy}
 		oncut={(event) => event.preventDefault()}
 	>
 		<AppTopbar
@@ -1139,6 +1145,7 @@
 							rows={answerRows}
 							extended={data.question.meta.marks >= 20}
 							placeholder="Write your answer..."
+							{copyAttempt}
 							onValueChange={setAnswerText}
 							onExternalInput={(source) => markAnswerExternalInput(source)}
 						/>
@@ -1206,7 +1213,7 @@
 									: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
 						</h2>
 						{#if hasMissingLinks}
-							<p>
+							<p class="qc-practice-result-meta">
 								<strong>
 									{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ??
 										data.question.meta.marks}
@@ -1293,6 +1300,7 @@
 								rows={answerRows}
 								extended={data.question.meta.marks >= 20}
 								placeholder="Rewrite your answer..."
+								{copyAttempt}
 								onValueChange={setRewriteText}
 								onExternalInput={(source) => markAnswerExternalInput(source, true)}
 							/>
