@@ -5,6 +5,11 @@
 		type AssetCanvasPoint,
 		type AssetCanvasStroke
 	} from '../assetCanvasAnswer';
+	import {
+		normalizedLabeledAnswerKey,
+		parseLabeledAnswerMap,
+		serializeLabeledAnswerFields
+	} from '../labeledAnswers';
 	import type { ExamPaperAsset, ExamResponse } from '../types';
 	import MathText from './MathText.svelte';
 
@@ -322,11 +327,11 @@
 			numberAnswer = answer;
 		}
 		if (response.kind === 'labeled-lines') {
-			const parsed = answerMap(answer);
+			const parsed = parseLabeledAnswerMap(answer);
 			const nextAnswers = Object.fromEntries(
 				labeledFields().map((field) => [
 					field.label,
-					parsed.get(normalizedAnswer(field.label)) ?? ''
+					parsed.get(normalizedLabeledAnswerKey(field.label)) ?? ''
 				])
 			);
 			if (JSON.stringify(nextAnswers) !== JSON.stringify(labeledAnswers)) {
@@ -411,14 +416,9 @@
 		if (response.kind !== 'labeled-lines') return '';
 		const choiceAnswer =
 			labeledChoice !== null && response.choiceOptions?.[labeledChoice]
-				? [`Choice: ${response.choiceOptions[labeledChoice]}`]
-				: [];
-		return [
-			...choiceAnswer,
-			...labeledFields()
-				.map((field) => `${field.label}: ${nextAnswers[field.label] ?? ''}`.trim())
-				.filter(Boolean)
-		].join('\n');
+				? response.choiceOptions[labeledChoice]
+				: null;
+		return serializeLabeledAnswerFields(labeledFields(), nextAnswers, choiceAnswer);
 	}
 
 	function serializeMatchingAnswers(nextAnswers = matchingAnswers) {
@@ -520,27 +520,6 @@
 		if (response.kind !== 'labeled-lines') return;
 		labeledChoice = labeledChoice === index ? null : index;
 		emitAnswer(serializeLabeledAnswers());
-	}
-
-	function answerMap(value: string) {
-		return new Map(
-			value
-				.split(/\r?\n/)
-				.map((line) => {
-					const [label, ...rest] = line.split(':');
-					const key = normalizedAnswer(label ?? '');
-					if (!key) return null;
-					return [key, rest.join(':').trim()] as const;
-				})
-				.filter((entry): entry is readonly [string, string] => Boolean(entry))
-		);
-	}
-
-	function normalizedAnswer(value: string) {
-		return value
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, ' ')
-			.trim();
 	}
 
 	function toggleChoice(index: number) {
